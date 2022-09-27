@@ -1,0 +1,9 @@
+[deps]
+CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+ExactPredicates = "429591f6-91af-11e9-00e2-59fbe8cec110"
+Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+MeshViz = "9ecf9c4f-6e5a-4b5e-83ae-06f2c7a661d8"
+Meshes = "eacbb407-ea5a-433e-ab97-5258b1ca43fa"
+SimpleGraphs = "55797a34-41de-5266-9ec1-32ac4eb504d3"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
