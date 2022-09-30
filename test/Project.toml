@@ -1,5 +1,8 @@
 [deps]
+CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 ExactPredicates = "429591f6-91af-11e9-00e2-59fbe8cec110"
+Meshes = "eacbb407-ea5a-433e-ab97-5258b1ca43fa"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
 SimpleGraphs = "55797a34-41de-5266-9ec1-32ac4eb504d3"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
