@@ -4,7 +4,7 @@ using ExactPredicates.Codegen
 using Test
 using Random
 using DelaunayTriangulation
-using CairoMakie
+using OffsetArrays
 const DT = DelaunayTriangulation
 
 #@testset "DelaunayTriangulation.jl" begin
