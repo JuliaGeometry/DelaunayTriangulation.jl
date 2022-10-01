@@ -28,5 +28,6 @@ export coords, getx, gety
 export Triangles, triangles 
 export Points, points, add_point!
 export Triangulation 
-export adjacent, adjacent2vertex, graph, history, triangles, points
+export adjacent, adjacent2vertex, graph, history, triangles, points, neighbours
+export triangulate
 end
