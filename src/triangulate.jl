@@ -218,10 +218,12 @@ function remove_bounding_triangle!(DT::Triangulation)
 end
 
 """
-    add_point!(DT::Triangulation, r)
+    add_point!(DT::Triangulation, r::Integer)
     add_point!(T::Triangles, HG::HistoryDAG,
      adj::Adjacent, adj2v::Adjacent2Vertex, 
      DG::DelaunayGraph, root, pts, r)
+
+Adds `get_points(pts, r)` to the triangulation. 
 """
 function add_point!(T::Triangles, HG::HistoryDAG,
     adj::Adjacent, adj2v::Adjacent2Vertex,
@@ -247,9 +249,20 @@ function add_point!(T::Triangles, HG::HistoryDAG,
     end
 end
 @doc (@doc add_point!(::Triangles, ::HistoryDAG, ::Adjacent, ::Adjacent2Vertex, ::DelaunayGraph, ::Any, ::Any, ::Any))
-function add_point!(DT::Triangulation, r)
+function add_point!(DT::Triangulation, r::Integer)
     add_point!(triangles(DT), history(DT), adjacent(DT),
         adjacent2vertex(DT), graph(DT), root(DT), points(DT), r)
+    return nothing
+end
+
+"""
+    add_point!(DT::Triangulation, p)
+
+Adds the point `p` into the triangulation.
+"""
+function add_point!(DT::Triangulation, p)
+    add_point!(points(DT), Point(p))
+    add_point!(DT, lastindex(points(DT)))
     return nothing
 end
 

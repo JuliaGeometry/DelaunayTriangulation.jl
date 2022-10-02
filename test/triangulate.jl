@@ -1197,6 +1197,19 @@ end
     DTri = triangulate(pts; trim=false)
     @test DT.is_delaunay(DTri)
 
+    pts = Points(p1, p2, p3, p4, p5, p6, p7, p8)
+    DTri = triangulate(pts; shuffle_pts=false, trim=false)
+    DTri2 = triangulate(Points(p1, p2, p3, p4, p5, p6, p7); shuffle_pts=false, trim=false)
+    add_point!(DTri2, [-1.68, -0.77])
+    @test triangles(DTri2).triangles == triangles(DTri).triangles
+
+    pts = Points(p1, p2, p3, p4, p5, p6, p7, p8)
+    DTri = triangulate(pts; shuffle_pts=false, trim=true)
+    DTri2 = triangulate(Points(p1, p2, p3, p4, p5, p6, p7); shuffle_pts=false, trim=false)
+    add_point!(DTri2, [-1.68, -0.77])
+    DT.remove_bounding_triangle!(DTri2)
+    @test triangles(DTri2).triangles == triangles(DTri).triangles
+
     for _ in 1:10000
         x = rand(100)
         y = rand(100)
