@@ -48,7 +48,7 @@ DTri2 = triangulate(Points(p1, p2, p3, p4, p5, p6, p7); shuffle_pts=false, trim=
 add_point!(DTri2, [-1.68, -0.77])
 # triangles(DTri2).triangles == triangles(DTri).triangles
 ```
-The bounding triangle can be removed separately from `triangulate` by using `DelaunayTriangulation.remove_bounding_triangle!(DT)`:
+The bounding triangle can be removed separately from `triangulate` by using `DelaunayTriangulation.remove_bounding_triangle!`:
 ```julia
 DTri = triangulate(pts; shuffle_pts=false, trim=true)
 DTri2 = triangulate(Points(p1, p2, p3, p4, p5, p6, p7); shuffle_pts=false, trim=false)
