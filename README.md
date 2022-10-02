@@ -155,7 +155,7 @@ DTri = triangulate(pts;
     IntegerType=Int16, EdgeType=CustomEdge, TriangleType=CustomTriangle)
 ```
 
-It is important to note that the use of `Float32` is not currently being used, since the predicates used all require a conversion to `Float64`. If you do want to compute the predicates using a type other than `Float64`, you will have to sacrifice the guarantee that the predicates are and define new methods for `ExactPredicates.orient` and `ExactPredicates.incircle`. (Note that converting to `Float64` already loses some of this guarantee, anyway.) The following retriangulates using new definitions of the predicates.
+It is important to note that the use of `Float32` is not currently being used, since the predicates used all require a conversion to `Float64`. If you do want to compute the predicates using a type other than `Float64`, you will have to sacrifice the guarantee that the predicates are exact and define new methods for `ExactPredicates.orient` and `ExactPredicates.incircle`. (Note that converting to `Float64` already loses some of this guarantee, anyway.) The following retriangulates using new definitions of the predicates.
 
 ```julia
 function ExactPredicates.orient(p::CustomPoint, q::CustomPoint, r::CustomPoint)
