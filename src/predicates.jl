@@ -83,6 +83,20 @@ function intriangle(T::AbstractTriangle, pts::Points, p::AbstractPoint)
 end
 
 """
+    find_edge(T::AbstractTriangle, pts, p)
+
+Finds the edge of `T` that the point `p` is on, using the point set in `pts`. This function assumes that 
+`intriangle(T, pts, p) == 0`.
+"""
+function find_edge(T::AbstractTriangle, pts, p)
+    i, j, k = T 
+    leftofline(pts, p, i, j) == 0 && return (i, j)
+    leftofline(pts, p, j, k) == 0 && return (j, k)
+    leftofline(pts, p, k, i) == 0 && return (k, i)
+    throw("The point $p is not on an edge of $T.")
+end
+
+"""
     edge_on_bounding_triangle(i, j)
 
 Returns true if `(i, j)` is an edge of bounding triangle $(BoundingTriangle).
@@ -114,7 +128,8 @@ function islegal(i::I, j::I, k::I, ℓ::I, pts::Points) where I
     end
     throw("Error occured.")
     =#
-    return incircle(pts, i, j, k, ℓ) ≤ I(0)
+    incirc = incircle(pts, i, j, k, ℓ)
+    return incirc == 0 || incirc == -1
 end
 @doc (@doc islegal(::Any, ::Any, ::Any, ::Any, ::Points))
 function islegal(i, j, adj::Adjacent, pts::Points)

@@ -42,7 +42,7 @@
     @test adjacent(Tri) isa DT.Adjacent{Int64,Edge{Int64}}
     @test adjacent2vertex(Tri) isa DT.Adjacent2Vertex{Int64,Edge{Int64}}
     @test graph(Tri) isa DT.DelaunayGraph{Int64}
-    @test history(Tri) isa DT.HistoryDAG{Int64,Triangle{Int64}}
+    @test history(Tri) isa DT.HistoryGraph{Int64,Triangle{Int64}}
     @test triangles(Tri) isa Triangles{Int64,Triangle{Int64}}
     @test points(Tri) isa Points{Float64,Vector{Float64},Point{Float64,Vector{Float64}}}
     @test DT.root(Tri) isa Triangle{Int64}
@@ -93,7 +93,7 @@
     @test adjacent(Tri3) isa DT.Adjacent{Int16,Edge{Int16}}
     @test adjacent2vertex(Tri3) isa DT.Adjacent2Vertex{Int16,Edge{Int16}}
     @test graph(Tri3) isa DT.DelaunayGraph{Int16}
-    @test history(Tri3) isa DT.HistoryDAG{Int16,Triangle{Int16}}
+    @test history(Tri3) isa DT.HistoryGraph{Int16,Triangle{Int16}}
     @test triangles(Tri3) isa Triangles{Int16,Triangle{Int16}}
     @test points(Tri3) isa Points{Float64,Vector{Float64},Point{Float64,Vector{Float64}}}
     @test DT.root(Tri3) isa Triangle{Int16}
@@ -110,7 +110,7 @@ end
     p5 = Point(2.0, 3.0)
     pts = Points(p1, p2, p3, p4, p5)
 
-    HG = DT.HistoryDAG()
+    HG = DT.HistoryGraph()
     DT.add_triangle!(HG, DT.BoundingTriangle)
 
     DT.add_triangle!(HG, Triangle(DT.LowerLeftBoundingIndex, DT.LowerRightBoundingIndex, 1),
@@ -264,7 +264,7 @@ end
     pts = Points(p1, p2, p3, p4, p5)
 
     # Building an example triangulation
-    HG = DT.HistoryDAG()
+    HG = DT.HistoryGraph()
     DT.add_triangle!(HG, DT.BoundingTriangle)
     DT.add_triangle!(HG, Triangle(DT.LowerLeftBoundingIndex, DT.LowerRightBoundingIndex, 1),
         Triangle(DT.LowerLeftBoundingIndex, 1, DT.UpperBoundingIndex),
@@ -433,7 +433,7 @@ end
     pts = Points(p1, p2, p3, p4, p5)
 
     # Building an example triangulation
-    HG = DT.HistoryDAG()
+    HG = DT.HistoryGraph()
     DT.add_triangle!(HG, DT.BoundingTriangle)
     DT.add_triangle!(HG, Triangle(DT.LowerLeftBoundingIndex, DT.LowerRightBoundingIndex, 1),
         Triangle(DT.LowerLeftBoundingIndex, 1, DT.UpperBoundingIndex),
@@ -631,7 +631,7 @@ end
     pts = Points(p1, p2, p3, p4, p5)
 
     # Building an example triangulation
-    HG = DT.HistoryDAG()
+    HG = DT.HistoryGraph()
     DT.add_triangle!(HG, DT.BoundingTriangle)
     DT.add_triangle!(HG, Triangle(DT.LowerLeftBoundingIndex, DT.LowerRightBoundingIndex, 1),
         Triangle(DT.LowerLeftBoundingIndex, 1, DT.UpperBoundingIndex),
@@ -830,7 +830,7 @@ end
     pts = Points(p1, p2, p3, p4, p5)
 
     # Building an example triangulation
-    HG = DT.HistoryDAG()
+    HG = DT.HistoryGraph()
     DT.add_triangle!(HG, DT.BoundingTriangle)
     DT.add_triangle!(HG, Triangle(DT.LowerLeftBoundingIndex, DT.LowerRightBoundingIndex, 1),
         Triangle(DT.LowerLeftBoundingIndex, 1, DT.UpperBoundingIndex),
@@ -1224,7 +1224,7 @@ end
     end
 end
 
-using CairoMakie
+import CairoMakie: poly!, Figure, Axis, lines!, save
 fig = Figure()
 ax = Axis(fig[1, 1])
 x = rand(100)
@@ -1262,7 +1262,7 @@ save("figures/test_triangulation.png", fig)
     @test adjacent(DTri) isa DT.Adjacent{Int16,Edge{Int16}}
     @test adjacent2vertex(DTri) isa DT.Adjacent2Vertex{Int16,Edge{Int16}}
     @test graph(DTri) isa DT.DelaunayGraph{Int16}
-    @test history(DTri) isa DT.HistoryDAG{Int16,Triangle{Int16}}
+    @test history(DTri) isa DT.HistoryGraph{Int16,Triangle{Int16}}
     @test triangles(DTri) isa Triangles{Int16,Triangle{Int16}}
     @test points(DTri) isa Points{Float64,Vector{Float64},Point{Float64,Vector{Float64}}}
     @test DT.root(DTri) isa Triangle{Int16}
@@ -1321,7 +1321,7 @@ end
     @test adjacent(DTri) isa DT.Adjacent{Int16,CustomEdge}
     @test adjacent2vertex(DTri) isa DT.Adjacent2Vertex{Int16,CustomEdge}
     @test graph(DTri) isa DT.DelaunayGraph{Int16}
-    @test history(DTri) isa DT.HistoryDAG{Int16,CustomTriangle}
+    @test history(DTri) isa DT.HistoryGraph{Int16,CustomTriangle}
     @test triangles(DTri) isa Triangles{Int16,CustomTriangle}
     @test points(DTri) isa Points{Float32,NTuple{2,Float32},CustomPoint}
     @test DT.root(DTri) isa CustomTriangle
@@ -1389,3 +1389,68 @@ end
         CustomTriangle(3, 2, 1)
     ])
 end
+
+#=
+p1 = Point(5.0, 2.0)
+p2 = Point(6.0, 3.0)
+p3 = Point(7.0, 4.0)
+p4 = Point(6.0, 7.0)
+p5 = Point(5.0, 6.0)
+p6 = Point(4.0, 5.0)
+p7 = Point(10.0, 7.0)
+p8 = Point(12.0, 5.0)
+p9 = Point(3.0, 9.0)
+pts = Points(p1, p2, p3, p4, p5, p6, p7, p8, p9)
+DTri = triangulate(pts;shuffle_pts=false)
+@test DT.is_delaunay(DTri)
+@test triangles(DTri).triangles == Set{Triangle{Int64}}([
+    Triangle(5, 2, 3),
+    Triangle(8, 3, 2),
+    Triangle(9, 4, 7),
+    Triangle(9, 6, 5),
+    Triangle(8, 2, 1),
+    Triangle(7, 3, 8),
+    Triangle(7, 4, 3),
+    Triangle(6, 2, 5),
+    Triangle(5, 3, 4),
+    Triangle(9, 5, 4),
+    Triangle(6, 1, 2)
+])
+@test all(orient(T, pts) == 1 for T in triangles(DTri))
+
+import CairoMakie: poly!, Figure, Axis, lines!
+fig = Figure()
+ax = Axis(fig[1, 1])
+DTri = triangulate(pts)
+Tmat = zeros(Int64, num_triangles(DTri), 3)
+for (i, T) in enumerate(triangles(DTri))
+    Tmat[i, :] = [geti(T), getj(T), getk(T)]
+end
+pmat = zeros(num_points(DTri), 2)
+for (i, p) in enumerate(points(DTri))
+    pmat[i, :] = [getx(p), gety(p)]
+end
+poly!(ax, pmat, Tmat, strokewidth=2)
+for (i, j) in adjacent2vertex(DTri, DelaunayTriangulation.BoundaryIndex)
+    p = DT.get_point(DTri, i)
+    q = DT.get_point(DTri, j)
+    lines!(ax, [getx(p), getx(q)], [gety(p), gety(q)], color=:red, linewidth=5)
+end
+fig
+
+for _ in 1:50 # Seemed to fail sometimes on input order, so this is for safety 
+    p1 = Point(5.0, 2.0)
+    p2 = Point(6.0, 3.0)
+    p3 = Point(7.0, 4.0)
+    p4 = Point(6.0, 7.0)
+    p5 = Point(5.0, 6.0)
+    p6 = Point(4.0, 5.0)
+    p7 = Point(10.0, 7.0)
+    p8 = Point(12.0, 5.0)
+    p9 = Point(3.0, 9.0)
+    pts = Points(p1, p2, p3, p4, p5, p6, p7, p8, p9)
+    DTri = triangulate(pts)
+    @test DT.is_delaunay(DTri)
+    @test all(orient(T, pts) ≥ 0 for T in triangles(DTri))
+end
+=#

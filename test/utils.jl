@@ -4,7 +4,7 @@
 ##
 ############################################
 @testset "Can we correctly find the root of a DAG?" begin
-    𝒟 = DT.HistoryDAG()
+    𝒟 = DT.HistoryGraph()
     add!(DT.graph(𝒟), Triangle((1, 2, 3)))
     add!(DT.graph(𝒟), Triangle((4, 5, 6)))
     add!(DT.graph(𝒟), Triangle((7, 8, 9)))

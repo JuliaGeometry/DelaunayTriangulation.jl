@@ -45,14 +45,14 @@ end
     @test DT.graph(dg) == tvg
 end
 
-@testset "HistoryDAG" begin
-    hg = DT.HistoryDAG()
+@testset "HistoryGraph" begin
+    hg = DT.HistoryGraph()
     @test hg.graph == DirectedGraph{Triangle{Int16}}()
-    @test typeof(hg) == DT.HistoryDAG{Int64,Triangle{Int64}}
+    @test typeof(hg) == DT.HistoryGraph{Int64,Triangle{Int64}}
     @test isconcretetype(typeof(hg))
-    hg = DT.HistoryDAG{Int16,Triangle{Int16}}()
+    hg = DT.HistoryGraph{Int16,Triangle{Int16}}()
     @test hg.graph == DirectedGraph{Triangle{Int16}}()
-    @test typeof(hg) == DT.HistoryDAG{Int16,Triangle{Int16}}
+    @test typeof(hg) == DT.HistoryGraph{Int16,Triangle{Int16}}
     @test graph(hg) == DirectedGraph{Triangle{Int16}}()
     dg = DirectedGraph{Triangle{Int64}}()
     add!(dg, Triangle(1, 2, 3))
@@ -60,6 +60,6 @@ end
     add!(dg, Triangle(7, 8, 9))
     add!(dg, Triangle(1, 2, 3), Triangle(4, 5, 6))
     add!(dg, Triangle(1, 2, 3), Triangle(7, 8, 9))
-    hg = DT.HistoryDAG(dg)
+    hg = DT.HistoryGraph(dg)
     @test hg.graph == dg
 end

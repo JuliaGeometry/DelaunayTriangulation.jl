@@ -60,27 +60,25 @@ end
 graph(G::DelaunayGraph) = G.graph
 
 """
-    struct HistoryDAG{I,T<:AbstractTriangle{I}} 
+    struct HistoryGraph{I,T<:AbstractTriangle{I}} 
 
-The point location graph for the Delaunay triangulation. This is a directed acyclic graph, 
+The point location graph for the Delaunay triangulation. This is a directed graph, 
 implemented using `DirectedGraph`, that stores the history of the triangulation as points are 
 inserted. The graph can be accessed using [`graph`](@ref).
 """
-struct HistoryDAG{I,T<:AbstractTriangle{I}}
+struct HistoryGraph{I,T<:AbstractTriangle{I}}
     graph::DirectedGraph{T}
-    function HistoryDAG{I,T}() where {I,T}
+    function HistoryGraph{I,T}() where {I,T}
         G = DirectedGraph{T}()
-        forbid_loops!(G)
         TDAG = new{I,T}(G)
         return TDAG
     end
-    HistoryDAG() = HistoryDAG{Int64,Triangle{Int64}}()
-    function HistoryDAG(HG::DirectedGraph{T}) where {I,T<:AbstractTriangle{I}}
-        forbid_loops!(HG)
+    HistoryGraph() = HistoryGraph{Int64,Triangle{Int64}}()
+    function HistoryGraph(HG::DirectedGraph{T}) where {I,T<:AbstractTriangle{I}}
         return new{I,T}(HG)
     end
 end
-graph(G::HistoryDAG) = G.graph
+graph(G::HistoryGraph) = G.graph
 
 """
     Triangulation{A,A2V,DG,H,T,P,R}
@@ -91,7 +89,7 @@ Struct for a Delaunay triangulation. See also [`triangulate`](@ref).
 - `adjacent`: The adjacent map. See [`Adjacent`](@ref).
 - `adjacent2vertex`: The adjacent-to-vertex map. See [`Adjacent2Vertex`](@ref).
 - `graph`: The graph representation of the triangulation. See also [`DelaunayGraph`](@ref).
-- `history`: The history structure for the triangulation. See also [`HistoryDAG`](@ref).
+- `history`: The history structure for the triangulation. See also [`HistoryGraph`](@ref).
 - `triangles`: The triangles that define the triangulation. See also [`Triangles`](@ref) and [`Triangle`](@ref).
 - `points`: The point set of the triangulation. See also [`Points`](@ref) and [`Point`](@ref).
 - `root`: The root of `history`.

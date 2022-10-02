@@ -214,14 +214,14 @@ end
     @test DT.get_neighbour(DG, 3) == Set([1])
 end
 
-@testset "HistoryDAG" begin
+@testset "HistoryGraph" begin
     dg = DirectedGraph{Triangle{Int64}}()
     add!(dg, Triangle(1, 2, 3))
     add!(dg, Triangle(4, 5, 6))
     add!(dg, Triangle(7, 8, 9))
     add!(dg, Triangle(1, 2, 3), Triangle(4, 5, 6))
     add!(dg, Triangle(1, 2, 3), Triangle(7, 8, 9))
-    hg = DT.HistoryDAG(dg)
+    hg = DT.HistoryGraph(dg)
     @test out_neighbors(hg, Triangle(1, 2, 3)) == Set([Triangle(4, 5, 6), Triangle(7, 8, 9)])
     @test in_neighbors(hg, Triangle(7, 8, 9)) == [Triangle(1, 2, 3)]
     @test in_deg(hg, Triangle(1, 2, 3)) == 0
@@ -239,7 +239,6 @@ end
     DT.add_edge!(hg, Triangle(18, 19, 17), Triangle(1, 2, 3))
     @test Triangle(1, 2, 3) ∈ out_neighbors(hg, Triangle(17, 18, 19))
     DT.add_edge!(hg, Triangle(9, 7, 8), Triangle(13, 15, 11))
-    @test Triangle(11, 13, 15) ∈ out_neighbors(hg, Triangle(7, 8, 9))
     og = out_deg(hg, Triangle(7, 8, 9))
     DT.add_edge!(hg, Triangle(9, 7, 8), Triangle(13, 15, 11))
     DT.add_edge!(hg, Triangle(9, 7, 8), Triangle(13, 15, 11))
@@ -247,7 +246,7 @@ end
     DT.add_edge!(hg, Triangle(9, 7, 8), Triangle(13, 15, 11))
     @test og == out_deg(hg, Triangle(7, 8, 9))
 
-    H = DT.HistoryDAG()
+    H = DT.HistoryGraph()
     DT.add_triangle!(H, Triangle(1, 2, 3))
     DT.add_triangle!(H, Triangle(4, 5, 6))
     DT.add_edge!(H, Triangle(1, 2, 3), Triangle((4, 5, 6)))
@@ -261,8 +260,8 @@ end
     DT.add_triangle!(H, Triangle(3, 1, 2))
     @test Htrue.graph == H.graph
 
-    H = DT.HistoryDAG()
-    HH = DT.HistoryDAG()
+    H = DT.HistoryGraph()
+    HH = DT.HistoryGraph()
     T₁ = Triangle((1, 2, 3))
     T₂ = Triangle((4, 5, 6))
     T₃ = Triangle((7, 8, 9))

@@ -4,27 +4,29 @@
 ##
 ############################################
 """
-    find_root(G::HistoryDAG; method=:brute)
+    find_root(G::HistoryGraph; method=:brute)
 
 Finds the root of the graph `G`, using one of two methods:
 - `method=:brute`: Uses brute force to look for the root, defining the root to be the point with zero out-degree.
 - `method=:rng`: Uses randomised searching to look for the root.
 
 See also [`_find_root_brute`](@ref) and [`_find_root_rng`](@ref).
+
+Note that these methods only work when the graph is acyclic.
 """
-function find_root(G::HistoryDAG; method=:brute)
+function find_root(G::HistoryGraph; method=:brute)
     if method == :brute
         return _find_root_brute(G)
     elseif method == :rng
         return _find_root_rng(G)
     end
 end
-function _find_root_brute(G::HistoryDAG)
+function _find_root_brute(G::HistoryGraph)
     for (k, v) in graph(G).NN
         length(v) == 0 && return k
     end
 end
-function _find_root_rng(G::HistoryDAG)
+function _find_root_rng(G::HistoryGraph)
     verts = vlist(graph(G))
     num_verts = length(verts)
     starting_node = verts[rand(1:num_verts)]

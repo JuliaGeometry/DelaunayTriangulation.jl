@@ -170,6 +170,38 @@ function update_after_insertion!(adj2v::Adjacent2Vertex, i, j, k, r)
     return nothing
 end
 
+"""
+    update_after_split!(adj2v::Adjacent2Vertex, i, j, k, ℓ, r)
+
+Updates the map `adj2v` after the edge `(i, j)`, incident to the two positively 
+oriented triangles `(i, j, k)` and `(j, i, ℓ)`, is split into two so that the triangles 
+`(i, j, k)` and `(j, i, ℓ`) are split from a point `r` to the points `k` and `ℓ`, 
+respectively, assuming `r` is on the edge `(i, j)`.
+"""
+function update_after_split!(adj2v::Adjacent2Vertex, i, j, k, ℓ, r)
+    # Delete old edges 
+    delete_edge!(adj2v, i, j, k)
+    delete_edge!(adj2v, i, ℓ, j)
+    delete_edge!(adj2v, j, k, i)
+    delete_edge!(adj2v, j, i, ℓ)
+    delete_edge!(adj2v, k, i, j)
+    delete_edge!(adj2v, ℓ, j, i)
+    # Add new edges 
+    add_edge!(adj2v, i, r, k)
+    add_edge!(adj2v, i, ℓ, r)
+    add_edge!(adj2v, j, k, r)
+    add_edge!(adj2v, j, r, ℓ)
+    add_edge!(adj2v, k, i, r)
+    add_edge!(adj2v, k, r, j)
+    add_edge!(adj2v, ℓ, r, i)
+    add_edge!(adj2v, ℓ, j, r)
+    add_edge!(adj2v, r, k, i)
+    add_edge!(adj2v, r, j, k)
+    add_edge!(adj2v, r, ℓ, r)
+    add_edge!(adj2v, r, ℓ, j)
+    return nothing
+end
+
 ## DelaunayGraph 
 """
     add_point!(DG::DelaunayGraph, u...)
@@ -243,45 +275,45 @@ function delete_point!(DG::DelaunayGraph, u...)
     return nothing
 end
 
-## HistoryDAG 
+## HistoryGraph 
 """
-    SimpleGraphs.out_neighbors(G::HistoryDAG, T)
+    SimpleGraphs.out_neighbors(G::HistoryGraph, T)
 
 Returns the set of triangles that `T` was replaced by in the triangulation.
 """
-SimpleGraphs.out_neighbors(G::HistoryDAG, T) = graph(G).N[T] # The version in SimpleGraphs is allocating...
-SimpleGraphs.in_neighbors(G::HistoryDAG, T) = SimpleGraphs.in_neighbors(graph(G), T) # Need the allocating version for find_root. Only place it's used anyway.
+SimpleGraphs.out_neighbors(G::HistoryGraph, T) = graph(G).N[T] # The version in SimpleGraphs is allocating...
+SimpleGraphs.in_neighbors(G::HistoryGraph, T) = SimpleGraphs.in_neighbors(graph(G), T) # Need the allocating version for find_root. Only place it's used anyway.
 
-SimpleGraphs.in_deg(G::HistoryDAG, T) = SimpleGraphs.in_deg(graph(G), T)
-SimpleGraphs.out_deg(G::HistoryDAG, T) = SimpleGraphs.out_deg(graph(G), T)
+SimpleGraphs.in_deg(G::HistoryGraph, T) = SimpleGraphs.in_deg(graph(G), T)
+SimpleGraphs.out_deg(G::HistoryGraph, T) = SimpleGraphs.out_deg(graph(G), T)
 
 """
-    add_triangle!(D::HistoryDAG, T::AbstractTriangle...)
+    add_triangle!(D::HistoryGraph, T::AbstractTriangle...)
 
 Adds the triangles in `T` into the graph `D`. Checks are made for 
 circular shifts of the vertices of `T` to avoid duplicates.
 """
-function add_triangle!(D::HistoryDAG, T::AbstractTriangle)
+function add_triangle!(D::HistoryGraph, T::AbstractTriangle)
     has(graph(D), T) && return nothing
     has(graph(D), shift_triangle_1(T)) && return nothing
     has(graph(D), shift_triangle_2(T)) && return nothing
     add!(graph(D), T)
     return nothing
 end
-@doc (@doc add_triangle!(::HistoryDAG, ::AbstractTriangle))
-function add_triangle!(D::HistoryDAG, T::AbstractTriangle...)
+@doc (@doc add_triangle!(::HistoryGraph, ::AbstractTriangle))
+function add_triangle!(D::HistoryGraph, T::AbstractTriangle...)
     for V in T
         add_triangle!(D, V)
     end
 end
 
 """
-    add_edge!(G::HistoryDAG, T::AbstractTriangle, V::AbstractTriangle...)
+    add_edge!(G::HistoryGraph, T::AbstractTriangle, V::AbstractTriangle...)
 
 Adds a directed edge from `T` to the triangles in `V`, making checks for circular shifts 
 in the vertices of `T` and `V`.
 """
-function add_edge!(G::HistoryDAG, T::AbstractTriangle, V::AbstractTriangle)
+function add_edge!(G::HistoryGraph, T::AbstractTriangle, V::AbstractTriangle)
     for i in 0:2
         Tshift = shift_triangle(T, i)
         if has(graph(G), Tshift)
@@ -296,8 +328,8 @@ function add_edge!(G::HistoryDAG, T::AbstractTriangle, V::AbstractTriangle)
     end
     return nothing
 end
-@doc (@doc add_edge!(::HistoryDAG, ::AbstractTriangle, ::AbstractTriangle))
-function add_edge!(G::HistoryDAG, T::AbstractTriangle, V::AbstractTriangle...)
+@doc (@doc add_edge!(::HistoryGraph, ::AbstractTriangle, ::AbstractTriangle))
+function add_edge!(G::HistoryGraph, T::AbstractTriangle, V::AbstractTriangle...)
     for V in V
         add_edge!(G, T, V)
     end

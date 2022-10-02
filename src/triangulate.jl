@@ -23,7 +23,7 @@ function initialise_triangulation(pts;
         I(UpperBoundingIndex),
         I(LowerLeftBoundingIndex))
     T = Triangles{I,TriangleType}(Set{TriangleType}([root]))
-    HG = HistoryDAG{I,TriangleType}()
+    HG = HistoryGraph{I,TriangleType}()
     adj = Adjacent{I,EdgeType}()
     adj2v = Adjacent2Vertex{I,EdgeType}()
     DG = DelaunayGraph{I}()
@@ -48,7 +48,7 @@ function initialise_triangulation(pts;
 end
 
 """
-    locate_triangle(HG::HistoryDAG, pts, p, init=find_root(HG; method=:rng))
+    locate_triangle(HG::HistoryGraph, pts, p, init=find_root(HG; method=:rng))
 
 Given the point location data structure `HG` and a set of `pts`, finds the triangle in 
 the current triangulation such that `p` is in its interior. The point location starts at `init`.
@@ -57,7 +57,7 @@ The function is recursive, and returns a tuple `(tri, flag)`:
     - `tri`: This is the triangle that `p` is in.
     - `flag`: If `flag == 0`, then `p` is on an edge of `tri`. Otherwise, it is in the open interior.
 """
-function locate_triangle(HG::HistoryDAG, pts, p, init=find_root(HG; method=:rng))
+function locate_triangle(HG::HistoryGraph, pts, p, init=find_root(HG; method=:rng))
     if out_deg(HG, init) == 0
         return init, intriangle(init, pts, p)
     end
@@ -71,7 +71,8 @@ end
 """
     add_point!(T, HG, adj, adj2v, DG, Tᵢⱼₖ, r)
 
-Given a triangulation `T`, adds the `r`th point of the point set into the triangulation.
+Given a triangulation `T`, adds the `r`th point of the point set into the triangulation, assuming 
+that `r` is in the interior of the triangle `Tᵢⱼₖ`.
 
 # Arguments 
 - `T`: The current triangulation.
@@ -85,7 +86,7 @@ Given a triangulation `T`, adds the `r`th point of the point set into the triang
 # Outputs 
 `T`, `HG`, `adj`, `adj2v`, and `DG` are all updated in-place.
 """
-function add_point!(T::Triangles{I,V}, HG::HistoryDAG,
+function add_point!(T::Triangles{I,V}, HG::HistoryGraph,
     adj::Adjacent, adj2v::Adjacent2Vertex,
     DG::DelaunayGraph, Tᵢⱼₖ::V, r) where {I,V<:AbstractTriangle{I}}
     i, j, k = Tᵢⱼₖ # The triangle to be split into three
@@ -96,10 +97,59 @@ function add_point!(T::Triangles{I,V}, HG::HistoryDAG,
     add_edge!(HG, Tᵢⱼₖ, T₁, T₂, T₃) # Add edges from the old triangle to the new triangles
     add_triangle!(adj, T₁, T₂, T₃) # Add the new edges into the adjacency list
     update_after_insertion!(adj2v, i, j, k, r)
+    add_point!(DG, r)
     add_neighbour!(DG, r, i, j, k)
-    add_neighbour!(DG, i, r)
-    add_neighbour!(DG, j, r)
-    add_neighbour!(DG, k, r)
+    #add_neighbour!(DG, i, r)
+    #add_neighbour!(DG, j, r)
+    #add_neighbour!(DG, k, r)
+    return nothing
+end
+
+"""
+    split_triangle!(T, HG, adj, adj2v, DG, i, j, k, ℓ, r)
+
+Given a triangulation `T`, adds the `r`th point of the point set into the triangulation, assumed 
+to be on the edge `(i, j)` of the triangulation, by splitting the triangles `(i, j, k)` and `(j, ℓ, i)` 
+both into two.
+
+# Arguments 
+- `T`: The current triangulation.
+- `HG`: The point location data structure.
+- `adj`: The adjacency list.
+- `adj2v`: The adjacent-to-vertex list.
+- `DG`: The vertex-neighbour data structure.
+- `i, j`: The edge that the `r`th point is on.
+- `k`: `(i, j, k)` is positively oriented.
+- `ℓ`: `(j, i, ℓ`)` is positively oriented. 
+- `r`: The point being added, assumed to be on the edge `(i, j)`.
+
+# Outputs 
+`T`, `HG`, `adj`, `adj2v`, and `DG` are all updated in-place.
+"""
+function split_triangle!(T::Triangles{I,V}, HG::HistoryGraph,
+    adj::Adjacent, adj2v::Adjacent2Vertex,
+    DG::DelaunayGraph, i, j, k, ℓ, r) where {I,V<:AbstractTriangle{I}}
+    # The triangles 
+    Tᵢⱼₖ = V(i, j, k)
+    Tⱼᵢₗ = V(j, i, ℓ)
+    Tᵢᵣₖ = V(i, r, k)
+    Tᵣⱼₖ = V(r, j, k)
+    Tᵣᵢₗ = V(r, i, ℓ)
+    Tⱼᵣₗ = V(j, r, ℓ)
+    # Delete the old triangles 
+    delete_triangle!(T, Tᵢⱼₖ, Tⱼᵢₗ)
+    delete_edge!(adj, i, j)
+    # Add the new triangles 
+    add_triangle!(T, Tᵢᵣₖ, Tᵣⱼₖ, Tᵣᵢₗ, Tⱼᵣₗ)
+    add_triangle!(adj, Tᵢᵣₖ, Tᵣⱼₖ, Tᵣᵢₗ, Tⱼᵣₗ)
+    update_after_split!(adj2v, i, j, k, ℓ, r)
+    add_triangle!(HG, Tᵢᵣₖ, Tᵣⱼₖ, Tᵣᵢₗ, Tⱼᵣₗ)
+    add_edge!(HG, Tᵢⱼₖ, Tᵢᵣₖ, Tᵣⱼₖ)
+    add_edge!(HG, Tⱼᵢₗ, Tᵣᵢₗ, Tⱼᵣₗ)
+    # Update the graph 
+    add_point!(DG, r)
+    add_neighbour!(DG, r, i, j, k, ℓ)
+    delete_neighbour!(DG, i, j)
     return nothing
 end
 
@@ -122,7 +172,7 @@ It is assumed that `(i, k, j)` and `(i, j, r)` are positively oriented triangles
 # Outputs 
 `T`, `HG`, `adj`, `adj2v`, and `DG` are all updated in-place.
 """
-function flip_edge!(T::Triangles{I,V}, HG::HistoryDAG,
+function flip_edge!(T::Triangles{I,V}, HG::HistoryGraph,
     adj::Adjacent, adj2v::Adjacent2Vertex, DG::DelaunayGraph, i, j, k, r) where {I,V<:AbstractTriangle{I}}
     # The old triangles
     Tᵢₖⱼ = V(i, k, j)
@@ -164,7 +214,7 @@ Legalises the edge `(i, j)` if it is illegal.
 # Outputs 
 `T`, `HG`, `adj`, `adj2v`, and `DG` are all updated in-place.
 """
-function legalise_edge!(T::Triangles, HG::HistoryDAG,
+function legalise_edge!(T::Triangles, HG::HistoryGraph,
     adj::Adjacent, adj2v::Adjacent2Vertex,
     DG::DelaunayGraph, i, j, r, pts::Points)
     if !islegal(i, j, adj, pts)
@@ -219,36 +269,35 @@ end
 
 """
     add_point!(DT::Triangulation, r::Integer)
-    add_point!(T::Triangles, HG::HistoryDAG,
+    add_point!(T::Triangles, HG::HistoryGraph,
      adj::Adjacent, adj2v::Adjacent2Vertex, 
      DG::DelaunayGraph, root, pts, r)
 
 Adds `get_points(pts, r)` to the triangulation. 
 """
-function add_point!(T::Triangles, HG::HistoryDAG,
+function add_point!(T::Triangles, HG::HistoryGraph,
     adj::Adjacent, adj2v::Adjacent2Vertex,
     DG::DelaunayGraph, root, pts, r)
     pᵣ = get_point(pts, r)
     Tᵢⱼₖ, interior_flag = locate_triangle(HG, pts, pᵣ, root)
-    i, j, k = Tᵢⱼₖ
     if interior_flag == 1
+        i, j, k = Tᵢⱼₖ
         add_point!(T, HG, adj, adj2v, DG, Tᵢⱼₖ, r)
         legalise_edge!(T, HG, adj, adj2v, DG, i, j, r, pts)
         legalise_edge!(T, HG, adj, adj2v, DG, j, k, r, pts)
         legalise_edge!(T, HG, adj, adj2v, DG, k, i, r, pts)
     else
-        eᵢⱼ, pₖ = locate_edge(pᵣ, 𝒯ᵢⱼₖ)
-        𝒯ᵢₗⱼ = adjacent_triangles(𝒯, 𝒯ᵢⱼₖ, eᵢⱼ)
-        pₗ = select_adjacent_vertex(𝒯, eᵢⱼ, 𝒯ᵢₗⱼ)
-        add_edges!(𝒯, 𝒟, pᵣ, pₖ)
-        add_edges!(𝒯, 𝒟, pᵣ, pₗ)
-        legalise_edge!(𝒯, 𝒟, 𝒯ᵢₗⱼ, pᵣ, pᵢ, pₗ)
-        legalise_edge!(𝒯, 𝒟, 𝒯ᵢₗⱼ, pᵣ, pₗ, pⱼ)
-        legalise_edge!(𝒯, 𝒟, 𝒯ᵢⱼₖ, pᵣ, pⱼ, pₖ)
-        legalise_edge!(𝒯, 𝒟, 𝒯ᵢⱼₖ, pᵣ, pₖ, pᵢ)
+        i, j = find_edge(Tᵢⱼₖ, pts, pᵣ)
+        k = get_edge(adj, i, j)
+        ℓ = get_edge(adj, j, i)
+        split_triangle!(T, HG, adj, adj2v, DG, i, j, k, ℓ, r)
+        legalise_edge!(T, HG, adj, adj2v, DG, i, ℓ, r, pts)
+        legalise_edge!(T, HG, adj, adj2v, DG, ℓ, j, r, pts)
+        legalise_edge!(T, HG, adj, adj2v, DG, j, k, r, pts)
+        legalise_edge!(T, HG, adj, adj2v, DG, k, i, r, pts)
     end
 end
-@doc (@doc add_point!(::Triangles, ::HistoryDAG, ::Adjacent, ::Adjacent2Vertex, ::DelaunayGraph, ::Any, ::Any, ::Any))
+@doc (@doc add_point!(::Triangles, ::HistoryGraph, ::Adjacent, ::Adjacent2Vertex, ::DelaunayGraph, ::Any, ::Any, ::Any))
 function add_point!(DT::Triangulation, r::Integer)
     add_point!(triangles(DT), history(DT), adjacent(DT),
         adjacent2vertex(DT), graph(DT), root(DT), points(DT), r)
@@ -278,9 +327,9 @@ You can use custom integer, triangle, and edge types by using the keyword argume
 `IntegerType`, `TriangleType`, and `EdgeType`. See their definitions in 
 [`initialise_triangulation`](@ref).
 """
-function triangulate(pts; shuffle_pts=true, trim=true, method = :berg,
-    IntegerType=Int64,TriangleType=Triangle{IntegerType},EdgeType=Edge{IntegerType})
-    DT = initialise_triangulation(pts;IntegerType,TriangleType,EdgeType)
+function triangulate(pts; shuffle_pts=true, trim=true, method=:berg,
+    IntegerType=Int64, TriangleType=Triangle{IntegerType}, EdgeType=Edge{IntegerType})
+    DT = initialise_triangulation(pts; IntegerType, TriangleType, EdgeType)
     shuffle_pts && @views shuffle!(points(DT))
     for r in eachindex(points(DT))
         add_point!(DT, r)
