@@ -72,8 +72,14 @@ fields:
 - `width::T`: The width of the collection of points, defined by `xmax - xmin`.
 - `height::T`: The height of the collection of points, defined by `ymax - ymin`.
 - `max_width_height`: The maximum of `width` and `height`.
+- `lower_left_bounding_triangle_coords`: The coordinate of the lower-left vertex of the bounding triangle. 
+- `lower_right_bounding_triangle_coords`: The coordinate of the lower-right vertex of the bounding triangle. 
+- `upper_bounding_triangle_coords`: The coordinate of the upper vertex of the bounding triangle. 
 
 (Strictly speaking, the 'centroid' is the centre of the box that tightly bounds the points.)
+
+If you wish to provide specific values for the bounding triangle's coordinates, then the constructor `Points` 
+accepts keyword arguments `pLR`, `pLL`, and `pU` for the lower-right, lower-left, and upper vertices, respectively.
 """
 struct Points{T,A,P<:AbstractPoint{T,A}}
     points::Vector{P}
@@ -89,7 +95,8 @@ struct Points{T,A,P<:AbstractPoint{T,A}}
     lower_left_bounding_triangle_coords::P
     lower_right_bounding_triangle_coords::P
     upper_bounding_triangle_coords::P
-    function Points(points::AbstractVector{P}) where {T,A,P<:AbstractPoint{T,A}}
+    function Points(points::AbstractVector{P};
+        pLL=nothing, pLR=nothing, pU=nothing) where {T,A,P<:AbstractPoint{T,A}}
         xmin = typemax(T)
         xmax = typemin(T)
         ymin = typemax(T)
@@ -113,16 +120,17 @@ struct Points{T,A,P<:AbstractPoint{T,A}}
         xcentroid = (xmax + xmin) / 2
         ycentroid = (ymax + ymin) / 2
         max_width_height = max(width, height)
-        lower_left_bounding_triangle_coords = P(xcentroid - BoundingTriangleShift * max_width_height,
-            ycentroid - max_width_height)
-        lower_right_bounding_triangle_coords = P(xcentroid + BoundingTriangleShift * max_width_height,
-            ycentroid - max_width_height)
-        upper_bounding_triangle_coords = P(xcentroid, ycentroid + BoundingTriangleShift * max_width_height)
+        lower_left_bounding_triangle_coords = isnothing(pLL) ? P(xcentroid - BoundingTriangleShift * max_width_height + rand(T) * eps(T),
+            ycentroid - max_width_height + rand(T) * eps(T)) : pLL
+        lower_right_bounding_triangle_coords = isnothing(pLR) ? P(xcentroid + BoundingTriangleShift * max_width_height + rand(T) * eps(T),
+            ycentroid - max_width_height + rand(T) * eps(T)) : pLR
+        upper_bounding_triangle_coords = isnothing(pU) ? P(xcentroid + rand(T) * eps(T), ycentroid + BoundingTriangleShift * max_width_height + rand(T) * eps(T)) : pU
         return new{T,A,P}(points, xcentroid, ycentroid, xmin, xmax, ymin,
             ymax, width, height, max_width_height, lower_left_bounding_triangle_coords,
             lower_right_bounding_triangle_coords, upper_bounding_triangle_coords)
     end
-    Points(points::NTuple{N,P}) where {N,T,A,P<:AbstractPoint{T,A}} = Points(collect(points))
+    Points(points::NTuple{N,P};
+        pLL=nothing, pLR=nothing, pU=nothing) where {N,T,A,P<:AbstractPoint{T,A}} = Points(collect(points); pLL, pLR, pU)
 end
 points(pts::Points) = pts.points
 Base.length(pts::Points) = length(points(pts))

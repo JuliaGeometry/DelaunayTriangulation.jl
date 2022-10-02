@@ -133,9 +133,12 @@ end
     @test DT.get_point(pts, 2) == p₂
     @test DT.get_point(pts, 3) == p₃
     @test DT.get_point(pts, 4) == p₄
-    @test DT.get_point(pts, DT.LowerRightBoundingIndex) == Point(-6.0 + DT.BoundingTriangleShift * 22.0, 3.35 - 22.0)
-    @test DT.get_point(pts, DT.LowerLeftBoundingIndex) == Point(-6.0 - DT.BoundingTriangleShift * 22.0, 3.35 - 22.0)
-    @test DT.get_point(pts, DT.UpperBoundingIndex) == Point(-6.0, 3.35 + DT.BoundingTriangleShift * 22.0)
+    @test getx(DT.get_point(pts, DT.LowerRightBoundingIndex)) ≈ -6.0 + DT.BoundingTriangleShift * 22.0
+    @test gety(DT.get_point(pts, DT.LowerRightBoundingIndex)) ≈ 3.35 - 22.0
+    @test getx(DT.get_point(pts, DT.LowerLeftBoundingIndex)) == -6.0 - DT.BoundingTriangleShift * 22.0
+    @test gety(DT.get_point(pts, DT.LowerLeftBoundingIndex)) == 3.35 - 22.0
+    @test getx(DT.get_point(pts, DT.UpperBoundingIndex)) ≈ -6.0
+    @test gety(DT.get_point(pts, DT.UpperBoundingIndex)) ≈ 3.35 + DT.BoundingTriangleShift * 22.0
     @test DT.get_point(pts, DT.LowerRightBoundingIndex) == pts.lower_right_bounding_triangle_coords
     @test DT.get_point(pts, DT.LowerLeftBoundingIndex) == pts.lower_left_bounding_triangle_coords
     @test DT.get_point(pts, DT.UpperBoundingIndex) == pts.upper_bounding_triangle_coords
@@ -157,6 +160,11 @@ end
     p₄ = Point(-17.0, 5.0)
     pts_vec = [p₁, p₂, p₃, p₄]
     pts = Points(pts_vec)
-    @test firstindex(pts)==1
-    @test lastindex(pts)==4
+    @test firstindex(pts) == 1
+    @test lastindex(pts) == 4
+
+    pts = Points(pts_vec; pLL=Point(2.0, 2.0), pLR=Point(5.0, 7.23), pU=Point(0.0, 0.0))
+    @test pts.lower_left_bounding_triangle_coords == Point(2.0, 2.0)
+    @test pts.lower_right_bounding_triangle_coords == Point(5.0, 7.23)
+    @test pts.upper_bounding_triangle_coords == Point(0.0, 0.0)
 end
