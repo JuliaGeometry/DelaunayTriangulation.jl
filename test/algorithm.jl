@@ -216,6 +216,14 @@ end
     @test length(T_tris) == 6
     @test eltype(T_set) == Triangle{Int64}
     @test eltype(Triangles{Int,Triangle{Int}}) == Triangle{Int64}
+    T_testset2 = Set{Triangle{Int}}()
+    T_testsetint2 = Int64[]
+    for (i, T) in enumerate(T_tris)
+        push!(T_testset2, T)
+        push!(T_testsetint2, i)
+    end
+    @test T_set == T_testset2
+    @test T_testsetint2 == [1, 2, 3, 4, 5, 6]
 end
 
 @testset "Points" begin
@@ -2259,7 +2267,28 @@ for _ in 1:10000
     @test DT.is_delaunay(DTri)
     DTri = triangulate(pts; trim=false)
     @test DT.is_delaunay(DTri)
+    @test 1 == num_points(DTri) - num_edges(DTri) + num_triangles(DTri) # Euler's formula
 end
+
+#=
+fig = Figure()
+ax = Axis(fig[1, 1])
+x = rand(100)
+y = rand(100)
+pts = Points([Point(x, y) for (x, y) in zip(x, y)])
+DTri = triangulate(pts)
+Tmat = zeros(Int64, num_triangles(DTri), 3)
+for (i, T) in enumerate(triangles(DTri))
+    Tmat[i, :] = [geti(T), getj(T), getk(T)]
+end
+pmat = zeros(num_points(DTri), 2)
+for (i, p) in enumerate(points(DTri))
+    pmat[i, :] = [getx(p), gety(p)]
+end
+poly!(ax, pmat, Tmat, strokewidth=2)
+fig
+=#
+
 ############################################
 ##
 ## UTILITY FUNCTIONS 
@@ -2350,4 +2379,16 @@ end
     @test !DT.is_delaunay(DTri)
     DT.legalise_edge!(T, HG, adj, adj2v, DG, i, j, r, pts)
     @test DT.is_delaunay(DTri)
+end
+
+@testset "Testing that we get the correct number of edges, points, and triangles" begin
+    p1 = Point(5.0, 5.0)
+    p2 = Point(1.0, -1.0)
+    p3 = Point(-2.0, 2.0)
+    p4 = Point(-1.0, 4.0)
+    pts = Points(p1, p2, p3, p4)
+    DTri = triangulate(pts)
+    @test num_triangles(DTri) == 2
+    @test num_points(DTri) == 4
+    @test num_edges(DTri) == 5
 end

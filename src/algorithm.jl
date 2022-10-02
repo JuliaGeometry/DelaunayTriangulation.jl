@@ -243,6 +243,7 @@ Base.iterate(T::Triangles, state) = Base.iterate(triangles(T), state)
 Base.eltype(::Triangles{I,T}) where {I,T<:AbstractTriangle{I}} = T
 Base.eltype(::Type{Triangles{I,T}}) where {I,T<:AbstractTriangle{I}} = T
 Base.length(T::Triangles) = length(T.triangles)
+Base.enumerate(T::Triangles) = Base.enumerate(triangles(T))
 
 """
     add_triangle!(T::Triangles, V::AbstractTriangle...)
@@ -1199,8 +1200,8 @@ insertion. The points are shuffled in-place, but this shuffling can be disabled 
 setting `shuffle_pts=false`. The bounding triangle of the triangulation can be retained 
 by setting `trim=true`.
 """
-function triangulate(pts; shuffle_pts=true, trim=true)
-    Base.require_one_based_indexing(pts)
+function triangulate(pts; shuffle_pts=true, trim=true, method = :berg)
+    # Base.require_one_based_indexing(pts)
     DT = initialise_triangulation(pts)
     shuffle_pts && @views shuffle!(points(DT))
     for r in eachindex(points(DT))
@@ -1253,6 +1254,10 @@ adjacent(DT::Triangulation, u, v) = get_edge(adjacent(DT), u, v)
 adjacent2vertex(DT::Triangulation, u) = get_edge(adjacent2vertex(DT), u)
 neighbours(DT::Triangulation, u) = get_neighbour(graph(DT), u)
 points(DT::Triangulation, i) = get_point(points(DT), i)
+edges(DT::Triangulation) = edges(adjacent(DT))
+num_triangles(DT::Triangulation) = length(triangles(DT))
+num_points(DT::Triangulation) = length(points(DT))
+num_edges(DT::Triangulation) = num_triangles(DT) + num_points(DT) - 1 # Euler's formula; could also use length(edges(DT)) ÷ 2 
 
 """
     is_point_higher(p, q)
