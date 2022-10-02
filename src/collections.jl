@@ -120,11 +120,9 @@ struct Points{T,A,P<:AbstractPoint{T,A}}
         xcentroid = (xmax + xmin) / 2
         ycentroid = (ymax + ymin) / 2
         max_width_height = max(width, height)
-        lower_left_bounding_triangle_coords = isnothing(pLL) ? P(xcentroid - BoundingTriangleShift * max_width_height + rand(T) * eps(T),
-            ycentroid - max_width_height + rand(T) * eps(T)) : pLL
-        lower_right_bounding_triangle_coords = isnothing(pLR) ? P(xcentroid + BoundingTriangleShift * max_width_height + rand(T) * eps(T),
-            ycentroid - max_width_height + rand(T) * eps(T)) : pLR
-        upper_bounding_triangle_coords = isnothing(pU) ? P(xcentroid + rand(T) * eps(T), ycentroid + BoundingTriangleShift * max_width_height + rand(T) * eps(T)) : pU
+        lower_left_bounding_triangle_coords = isnothing(pLL) ? P(xcentroid - BoundingTriangleShift * max_width_height, ycentroid - max_width_height) : pLL
+        lower_right_bounding_triangle_coords = isnothing(pLR) ? P(xcentroid + BoundingTriangleShift * max_width_height, ycentroid - max_width_height) : pLR
+        upper_bounding_triangle_coords = isnothing(pU) ? P(xcentroid, ycentroid + BoundingTriangleShift * max_width_height) : pU
         return new{T,A,P}(points, xcentroid, ycentroid, xmin, xmax, ymin,
             ymax, width, height, max_width_height, lower_left_bounding_triangle_coords,
             lower_right_bounding_triangle_coords, upper_bounding_triangle_coords)
@@ -134,9 +132,9 @@ struct Points{T,A,P<:AbstractPoint{T,A}}
 end
 points(pts::Points) = pts.points
 Base.length(pts::Points) = length(points(pts))
-Points(pts::AbstractVector) = Points(Point.(pts))
+Points(pts::AbstractVector; pLL=nothing, pLR=nothing, pU=nothing) = Points(Point.(pts); pLL, pLR, pU)
 Points(pts::Points) = pts
-Points(pts...) = Points(collect(pts))
+Points(pts...; pLL=nothing, pLR=nothing, pU=nothing) = Points(collect(pts); pLL, pLR, pU)
 Base.iterate(pts::Points) = Base.iterate(points(pts))
 Base.iterate(pts::Points, state) = Base.iterate(points(pts), state)
 Base.eltype(::Points{T,A,P}) where {T,A,P<:AbstractPoint{T,A}} = P

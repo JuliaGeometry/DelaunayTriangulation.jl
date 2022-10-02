@@ -18,6 +18,6 @@ const BoundaryIndex = 0
 """The first index where physical points begin."""
 const FirstPointIndex = 1
 """The multiplier for shifting the bounding triangle."""
-const BoundingTriangleShift = 20
+const BoundingTriangleShift = 27.3919105998678246734637673334353499992
 """The minimum width and height of the bounding box."""
-const MinWidthHeight = 0.001
+const MinWidthHeight = 0.00182829999105935935923828882837273741
