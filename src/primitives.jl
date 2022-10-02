@@ -13,8 +13,20 @@ Typically an `NTuple{2, Int64}`. Edges are iterable, writing
 
 which returns `(initial(e), terminal(e))`. Note that we define `length(e::AbstractEdge) = 2`.
 
-`AbstractEdge`s must have a method for constucting from a function call, i.e. if `E::AbstractEdge{I}`,
+`AbstractEdges` must have methods for
+
+- `initial(e)`: The start of the edge.
+- `terminal(e)`: The end of the edge.
+
+`AbstractEdge`s must also have a method for constucting from a function call, i.e. if `E::AbstractEdge{I}`,
 then `E(i, j)` should construct an edge of that type.
+
+If you are defining a new edge that has mutable containers, you would encounter issues 
+with accessing dictionaries. The solution to this is to either switch to an immutable container, 
+or define new methods for `==` and `hash`. We define these two new methods below to avoid this 
+issue. See https://stackoverflow.com/a/31460387 for a discussion on this. The new methods we 
+define say that two edges are equal if `(initial(e), terminal(e))` is the same `Tuple` for 
+both edges, and `hash(e::AbstractEdge, h::UInt) = hash(initial(e), hash(terminal(e), h))`.
 """
 abstract type AbstractEdge{I} end
 function Base.iterate(e::AbstractEdge, state=1)
@@ -29,6 +41,8 @@ end
 Base.eltype(::AbstractEdge{I}) where {I} = I
 Base.eltype(::Type{AbstractEdge{I}}) where {I} = I
 Base.length(e::AbstractEdge) = 2
+Base.:(==)(pq::AbstractEdge, rs::AbstractEdge) = initial(pq) == initial(rs) && terminal(pq) == terminal(rs) 
+Base.hash(pq::AbstractEdge, h::UInt) = hash(initial(pq), hash(terminal(pq), h))
 
 """
     abstract type AbstractTriangle{I} end
@@ -40,11 +54,11 @@ Typically an `NTuple{3, Int64}`.
 - `geti(T)`: The first vertex.
 - `getj(T)`: The second vertex. 
 - `getk(T)`: The third vertex. 
-- `indices(T)`: The indices for all three vertices.
 
 `AbstractTriangle`s must also have a method for constucting from a function call, i.e. 
-if `V::AbstractTriangle{I}`, then `E(i, j, k)` should construct a triangle of that type
-with indices `(i, j, k)`.
+if `V::AbstractTriangle{I}`, then `V(i, j, k)` should construct a triangle of that type
+with indices `(i, j, k)`. A similar method is also needed for `NTuple{3, I}`, i.e. 
+`V((i, j, k))` must give the same result as `V(i, j, k)`.
 
 Circular shifts of a triangle's indices can be obtained via 
 
@@ -69,6 +83,7 @@ will return `(geti(T), getj(T), getk(T))`. Note that we define `length(T::Abstra
 Triangles are equal if their nidices are equal (up to a circular shift).
 """
 abstract type AbstractTriangle{I} end
+indices(T::AbstractTriangle) = (geti(T), getj(T), getk(T))
 shift_triangle_indices_0(T::AbstractTriangle) = (geti(T), getj(T), getk(T))
 shift_triangle_indices_1(T::AbstractTriangle) = (getj(T), getk(T), geti(T))
 shift_triangle_indices_2(T::AbstractTriangle) = (getk(T), geti(T), getj(T))
@@ -104,13 +119,26 @@ Abstract type representing a point with element type `T` stored in a container o
 type `A`. Typically a `Vector{Float64}` or `SVector{2, Float64}`.
 
 `AbstractPoint`s must have methods for:
-- `coords(p)`: The coordinates of the point.
 - `getx(p)`: Get the `x`-coordinate of the point.
 - `gety(p)`: Get the `y`-coordinate of the point.
 
 `AbstractPoint`s must also have a method for constucting from a function call, i.e. 
 if `P::AbstractPoint{T, A}`, then `P(x, y)` should construct a point of that type
-with coordinates `(x, y)`.
+with coordinates `(x, y)`. Similarly, `P((x, y))` must give the same result as `P(x, y)`.
+
+Note that for compatibility with ExactPredicates.jl, whenever `T ≠ Float64` the function 
+`Tuple` is defined to return `(Float64(getx(p)), Float64(gety(p)))` rather than 
+`(T(getx(p)), T(gety(p))`, as exact predicates are not currently available 
+for non-`Float64` types. (This means that `T` is not really used anywhere, 
+but to make it easier in the future in case we can use it in other places we 
+explicitly support it.)) If you really do want to use predicates with a 
+custom `T`, you will need to redefine the methods 
+
+- `ExactPredicates.orient(p::AbstractPoint, q::AbstractPoint, r::AbstractPoint)`
+- `ExactPredicates.incircle(p::AbstractPoint, q::AbstractPoint, r::AbstractPoint, s::AbstractPoint)`
+
+for your new type; just note that the resulting predicates will no longer be guaranteed. (Our 
+conversion from `T` to `Float64` may not also be exact anyway, note.)
 
 Points are iterable, writing 
 
@@ -119,7 +147,8 @@ Points are iterable, writing
 gives `x = getx(p)` and `y = gety(p)`. Note that we define `length(p) = 2`.
 """
 abstract type AbstractPoint{T,A} end
-Base.Tuple(p::AbstractPoint{T,A}) where {T,A} = (getx(p), gety(p))
+Base.Tuple(p::AbstractPoint{Float64,A}) where {A} = (getx(p), gety(p))
+Base.Tuple(p::AbstractPoint) = (Float64(getx(p)), Float64(gety(p)))
 function Base.iterate(p::AbstractPoint, state=1)
     if state == 1
         return (getx(p), state + 1)
@@ -171,7 +200,6 @@ struct Triangle{I} <: AbstractTriangle{I}
     Triangle{I}(indices) where {I} = new{I}(indices)
     Triangle{I}(i, j, k) where {I} = Triangle(convert(I, i), convert(I, j), convert(I, k))
 end
-indices(T::Triangle) = T.indices
 geti(T::Triangle) = T.indices[1]
 getj(T::Triangle) = T.indices[2]
 getk(T::Triangle) = T.indices[3]

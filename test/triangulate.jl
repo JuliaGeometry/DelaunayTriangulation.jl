@@ -1210,14 +1210,16 @@ end
     DT.remove_bounding_triangle!(DTri2)
     @test triangles(DTri2).triangles == triangles(DTri).triangles
 
-    for _ in 1:10000
+    for _ in 1:250
         x = rand(100)
         y = rand(100)
         pts = Points([Point(x, y) for (x, y) in zip(x, y)])
         DTri = triangulate(pts)
         @test DT.is_delaunay(DTri)
+        @test all(orient(T, pts) == 1 for T in triangles(DTri))
         DTri = triangulate(pts; trim=false)
         @test DT.is_delaunay(DTri)
+        @test all(orient(T, pts) == 1 for T in triangles(DTri))
         @test 1 == num_points(DTri) - num_edges(DTri) + num_triangles(DTri) # Euler's formula
     end
 end
@@ -1276,4 +1278,94 @@ save("figures/test_triangulation.png", fig)
     @test DT.get_point(DTri, 6) == p6
     @test DT.get_point(DTri, 7) == p7
     @test DT.get_point(DTri, 8) == p8
+end
+
+@testset "Custom primitives" begin
+    using StaticArrays
+    struct CustomEdge <: DelaunayTriangulation.AbstractEdge{Int16}
+        uv::Vector{Int16}
+        CustomEdge(i::Int16, j::Int16) = new([i, j])
+        CustomEdge(i, j) = CustomEdge(Int16(i), Int16(j))
+    end
+    DelaunayTriangulation.initial(e::CustomEdge) = first(e.uv)
+    DelaunayTriangulation.terminal(e::CustomEdge) = last(e.uv)
+
+    struct CustomTriangle <: DelaunayTriangulation.AbstractTriangle{Int16}
+        ijk::SVector{3,Int16}
+        CustomTriangle(i, j, k) = new(SVector{3,Int16}(i, j, k))
+        CustomTriangle(ijk::NTuple{3,Int16}) = CustomTriangle(ijk[1], ijk[2], ijk[3])
+    end
+    DelaunayTriangulation.geti(T::CustomTriangle) = T.ijk[1]
+    DelaunayTriangulation.getj(T::CustomTriangle) = T.ijk[2]
+    DelaunayTriangulation.getk(T::CustomTriangle) = T.ijk[3]
+
+    struct CustomPoint <: DelaunayTriangulation.AbstractPoint{Float32,NTuple{2,Float32}}
+        coords::NTuple{2,Float32}
+        CustomPoint(x::Float32, y::Float32) = new((x, y))
+        CustomPoint(x, y) = CustomPoint(Float32(x), Float32(y))
+        CustomPoint(xy::NTuple{2,T}) where {T} = CustomPoint(xy[1], xy[2])
+    end
+    DelaunayTriangulation.getx(p::CustomPoint) = p.coords[1]
+    DelaunayTriangulation.gety(p::CustomPoint) = p.coords[2]
+
+    p1 = CustomPoint(2.0, 0.0)
+    p2 = CustomPoint(2.8, -1.0)
+    p3 = CustomPoint(-1.37, 3.5)
+    p4 = CustomPoint(5.81, 3.0)
+    p5 = CustomPoint(17.1, 10.2)
+    pts = Points(p1, p2, p3, p4, p5)
+    DTri = triangulate(pts;
+        IntegerType=Int16, EdgeType=CustomEdge, TriangleType=CustomTriangle)
+
+    @test points(DTri).points == Points(pts).points
+    @test adjacent(DTri) isa DT.Adjacent{Int16,CustomEdge}
+    @test adjacent2vertex(DTri) isa DT.Adjacent2Vertex{Int16,CustomEdge}
+    @test graph(DTri) isa DT.DelaunayGraph{Int16}
+    @test history(DTri) isa DT.HistoryDAG{Int16,CustomTriangle}
+    @test triangles(DTri) isa Triangles{Int16,CustomTriangle}
+    @test points(DTri) isa Points{Float32,NTuple{2,Float32},CustomPoint}
+    @test DT.root(DTri) isa CustomTriangle
+    @test DTri isa Triangulation{typeof(adjacent(DTri)),typeof(adjacent2vertex(DTri)),
+        typeof(graph(DTri)),typeof(history(DTri)),typeof(triangles(DTri)),
+        typeof(points(DTri)),typeof(DT.root(DTri))}
+    @test DT.is_delaunay(DTri)
+
+    pts = Points(p1, p2, p3, p4, p5)
+    DTri = triangulate(pts;
+        IntegerType=Int16, EdgeType=CustomEdge, TriangleType=CustomTriangle, shuffle_pts=false)
+    @test triangles(DTri).triangles == Set{CustomTriangle}([
+        CustomTriangle(5, 4, 2),
+        CustomTriangle(5, 3, 4),
+        CustomTriangle(4, 1, 2),
+        CustomTriangle(4, 3, 1),
+        CustomTriangle(3, 2, 1)
+    ])
+
+    function ExactPredicates.orient(p::CustomPoint, q::CustomPoint, r::CustomPoint)
+        detval = (getx(p) - getx(r)) * (gety(q) - gety(r)) - (gety(p) - gety(r)) * (getx(q) - getx(r))
+        return sign(detval)
+    end
+    function ExactPredicates.incircle(p::CustomPoint, q::CustomPoint, r::CustomPoint, s::CustomPoint)
+        val11 = getx(p) - getx(s)
+        val21 = getx(q) - getx(s)
+        val31 = getx(r) - getx(s)
+        val12 = gety(p) - gety(s)
+        val22 = gety(q) - gety(s)
+        val32 = gety(r) - gety(s)
+        val13 = (getx(p) - getx(s))^2 + (gety(p) - gety(s))^2
+        val23 = (getx(q) - getx(s))^2 + (gety(q) - gety(s))^2
+        val33 = (getx(r) - getx(s))^2 + (gety(r) - gety(s))^2
+        return val11 * val22 * val33 - val11 * val23 * val32 - val12 * val21 * val33 + val12 * val23 * val31 + val13 * val21 * val32 - val13 * val22 * val31
+    end
+
+    pts = Points(p1, p2, p3, p4, p5)
+    DTri = triangulate(pts;
+        IntegerType=Int16, EdgeType=CustomEdge, TriangleType=CustomTriangle, shuffle_pts=false)
+    @test triangles(DTri).triangles == Set{CustomTriangle}([
+        CustomTriangle(5, 4, 2),
+        CustomTriangle(5, 3, 4),
+        CustomTriangle(4, 1, 2),
+        CustomTriangle(4, 3, 1),
+        CustomTriangle(3, 2, 1)
+    ])
 end

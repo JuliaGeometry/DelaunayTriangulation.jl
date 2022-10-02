@@ -98,7 +98,7 @@ end
 Returns `true` if the edge `(i, j)` is legal. It is assumed that 
 `(i, j, k)` and `(j, i, ℓ)` are positively oriented triangles.
 """
-function islegal(i, j, k, ℓ, pts::Points)
+function islegal(i::I, j::I, k::I, ℓ::I, pts::Points) where I
     #=
     if i ≥ FirstPointIndex && j ≥ FirstPointIndex && k ≥ FirstPointIndex && ℓ ≥ FirstPointIndex
         return incircle(pts, i, j, k, ℓ) ≤ 0
@@ -114,7 +114,7 @@ function islegal(i, j, k, ℓ, pts::Points)
     end
     throw("Error occured.")
     =#
-    return incircle(pts, i, j, k, ℓ) ≤ 0
+    return incircle(pts, i, j, k, ℓ) ≤ I(0)
 end
 @doc (@doc islegal(::Any, ::Any, ::Any, ::Any, ::Points))
 function islegal(i, j, adj::Adjacent, pts::Points)

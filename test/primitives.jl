@@ -159,4 +159,6 @@ end
     @test length(p) == 2
     @test eltype(p) == Float32
     @test typeof(x) == typeof(y) == Float32
+    @test Tuple(p) === (17.0, 3.0)
+    @test typeof(Tuple(p)) == NTuple{2, Float64}
 end
