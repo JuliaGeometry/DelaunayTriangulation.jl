@@ -1,35 +1,15 @@
 using SimpleGraphs
 using ExactPredicates
-using ExactPredicates.Codegen
 using Test
 using Random
 using DelaunayTriangulation
 using OffsetArrays
 const DT = DelaunayTriangulation
 
-#@testset "DelaunayTriangulation.jl" begin
-    @testset "Adjacency data structure" begin
-        include("adjacent.jl")
-    end
-    @testset "Delaunay graph representation" begin
-        include("delaunay_graph.jl")
-    end
-    @testset "History DAG" begin
-        include("history_dag.jl")
-    end
-    @testset "Geometrical and Delaunay predicates" begin
-        include("predicates.jl")
-    end
-    @testset "Representation for a collection of triangles" begin
-        include("triangulation_struct.jl")
-    end
-    @testset "Initialisation for triangulating" begin
-        include("initialisation.jl")
-    end
-    @testset "Flipping an edge in a triangulation" begin
-        include("edge_flip.jl")
-    end
-    @testset "Some examples of Delaunay triangulations" begin
-        include("examples.jl")
-    end
-#end
+@testset "Primitives" begin include("primitives.jl") end
+@testset "Collections" begin include("collections.jl") end 
+@testset "Struct definitions" begin include("struct_definitions.jl") end 
+@testset "Struct updates" begin include("struct_updates.jl") end
+@testset "Predicates" begin include("predicates.jl") end
+@testset "Triangulation" begin include("triangulate.jl") end
+@testset "Utility functions" begin include("utils.jl") end

@@ -1,204 +1,239 @@
+############################################
+##
+## MAIN TRIANGULATION FUNCTIONS
+##
+############################################
 """
-    locate_triangle(𝒟::HistoryDAG, pts, p, init=find_root(𝒟; method=:rng))
+    initialise_triangulation(pts; 
+    IntegerType=Int64,
+    TriangleType=Triangle{IntegerType},
+    EdgeType=Edge{IntegerType})
 
-Given the point location data structure `D` and a set of `pts`, finds the triangle in 
-the current triangulation such that `p` is in its interior. The point location starts at `init`.
-The function is recursive, and returns a tuple `(tri, flag)`:
-    - `tri`: This is the triangle that `p` is in.
-    - `flag`: If `flag == 0`, then `p` is on an edge of `tri`. Otherwise, it is in the open interior.
+This function returns the initial form of a [`Triangulation`](@ref) data structure, storing 
+the points in `pts` (converted into a `Points` type). You can specify custom integer, 
+triangle, and edge types using the keywords `IntegerType`, `TriangleType`, and 
+`EdgeType`, respectively.
 """
-function locate_triangle(𝒟::HistoryDAG, pts, p, init=find_root(𝒟; method=:rng))
-    if out_deg(𝒟, init) == 0
-        return init, intriangle(init, pts, p)
-    end
-    out = out_neighbors(𝒟, init)
-    for T in out
-        intriangle(T, pts, p) ≥ 0 && return locate_triangle(𝒟, pts, p, T)
-    end
+function initialise_triangulation(pts;
+    IntegerType::Type{I}=Int64,
+    TriangleType=Triangle{IntegerType},
+    EdgeType=Edge{IntegerType}) where {I}
+    # The data structures
+    root = TriangleType(I(LowerRightBoundingIndex),
+        I(UpperBoundingIndex),
+        I(LowerLeftBoundingIndex))
+    T = Triangles{I,TriangleType}(Set{TriangleType}([root]))
+    HG = HistoryDAG{I,TriangleType}()
+    adj = Adjacent{I,EdgeType}()
+    adj2v = Adjacent2Vertex{I,EdgeType}()
+    DG = DelaunayGraph{I}()
+    # Add the root to the DAG
+    add_triangle!(HG, root)
+    # Add the initial adjacencies 
+    add_edge!(adj, I(LowerRightBoundingIndex), I(UpperBoundingIndex), I(LowerLeftBoundingIndex))
+    add_edge!(adj, I(UpperBoundingIndex), I(LowerLeftBoundingIndex), I(LowerRightBoundingIndex))
+    add_edge!(adj, I(LowerLeftBoundingIndex), I(LowerRightBoundingIndex), I(UpperBoundingIndex))
+    add_edge!(adj, I(LowerRightBoundingIndex), I(LowerLeftBoundingIndex), I(BoundaryIndex))
+    add_edge!(adj, I(LowerLeftBoundingIndex), I(UpperBoundingIndex), I(BoundaryIndex))
+    add_edge!(adj, I(UpperBoundingIndex), I(LowerRightBoundingIndex), I(BoundaryIndex))
+    add_edge!(adj2v, I(LowerLeftBoundingIndex), I(LowerRightBoundingIndex), I(UpperBoundingIndex))
+    add_edge!(adj2v, I(LowerRightBoundingIndex), I(UpperBoundingIndex), I(LowerLeftBoundingIndex))
+    add_edge!(adj2v, I(UpperBoundingIndex), I(LowerLeftBoundingIndex), I(LowerRightBoundingIndex))
+    # Add the initial neighbours 
+    add_point!(DG, I(LowerLeftBoundingIndex), I(LowerRightBoundingIndex), I(UpperBoundingIndex))
+    add_neighbour!(DG, I(LowerLeftBoundingIndex), I(LowerRightBoundingIndex), I(UpperBoundingIndex))
+    add_neighbour!(DG, I(LowerRightBoundingIndex), I(LowerLeftBoundingIndex), I(UpperBoundingIndex))
+    add_neighbour!(DG, I(UpperBoundingIndex), I(LowerLeftBoundingIndex), I(LowerRightBoundingIndex))
+    return Triangulation(adj, adj2v, DG, HG, T, Points(pts), root)
 end
 
 """
-    add_point!(𝒯, 𝒟, 𝒜, 𝒜⁻¹, Tᵢⱼₖ, r)
+    locate_triangle(HG::HistoryDAG, pts, p, init=find_root(HG; method=:rng))
 
-Given a triangulation `𝒯`, adds the `r`th point of the point set into the triangulation.
+Given the point location data structure `HG` and a set of `pts`, finds the triangle in 
+the current triangulation such that `p` is in its interior. The point location starts at `init`.
+The function is recursive, and returns a tuple `(tri, flag)`:
+
+    - `tri`: This is the triangle that `p` is in.
+    - `flag`: If `flag == 0`, then `p` is on an edge of `tri`. Otherwise, it is in the open interior.
+"""
+function locate_triangle(HG::HistoryDAG, pts, p, init=find_root(HG; method=:rng))
+    if out_deg(HG, init) == 0
+        return init, intriangle(init, pts, p)
+    end
+    out = out_neighbors(HG, init)
+    for T in out
+        intriangle(T, pts, p) ≥ 0 && return locate_triangle(HG, pts, p, T)
+    end
+    throw("Failed to find triangle.")
+end
+
+"""
+    add_point!(T, HG, adj, adj2v, DG, Tᵢⱼₖ, r)
+
+Given a triangulation `T`, adds the `r`th point of the point set into the triangulation.
 
 # Arguments 
-- `𝒯`: The current triangulation.
-- `𝒟`: The point location data structure.
-- `𝒜`: The adjacency list.
-- `𝒜⁻¹`: The adjacent-to-vertex list.
-- `𝒟𝒢`: The vertex-neighbour data structure.
+- `T`: The current triangulation.
+- `HG`: The point location data structure.
+- `adj`: The adjacency list.
+- `adj2v`: The adjacent-to-vertex list.
+- `DG`: The vertex-neighbour data structure.
 -` Tᵢⱼₖ`: The triangle that the `r`th point is inside of. Must be positively oriented.
 - `r`: The index of the point in the original point set that is being introduced.
 
 # Outputs 
-`𝒯`, `𝒟`, and `𝒜` are all updated in-place.
+`T`, `HG`, `adj`, `adj2v`, and `DG` are all updated in-place.
 """
-function add_point!(𝒯, 𝒟, 𝒜, 𝒜⁻¹, 𝒟𝒢, Tᵢⱼₖ, r)
+function add_point!(T::Triangles{I,V}, HG::HistoryDAG,
+    adj::Adjacent, adj2v::Adjacent2Vertex,
+    DG::DelaunayGraph, Tᵢⱼₖ::V, r) where {I,V<:AbstractTriangle{I}}
     i, j, k = Tᵢⱼₖ # The triangle to be split into three
-    delete_triangle!(𝒯, Tᵢⱼₖ) # Now that we've split the triangle, we can remove the triangle
-    T₁, T₂, T₃ = TriangleType((i, j, r)), TriangleType((j, k, r)), TriangleType((k, i, r)) # New triangles to add. Note that these triangles are all positively oriented.
-    add_triangle!(𝒯, T₁, T₂, T₃) # The three new triangles
-    add_triangle!(𝒟, T₁, T₂, T₃) # Add the new triangles into DAG
-    add_edge!(𝒟, Tᵢⱼₖ, T₁, T₂, T₃) # Add edges from the old triangle to the new triangles
-    update_adjacent!(𝒜, T₁, T₂, T₃) # Add the new edges into the adjacency list
-    update_adjacent2vertex_addition!(𝒜⁻¹, i, j, k, r)
-    add_neighbour!(𝒟𝒢, r, i, j, k)
-    add_neighbour!(𝒟𝒢, i, r)
-    add_neighbour!(𝒟𝒢, j, r)
-    add_neighbour!(𝒟𝒢, k, r)
+    delete_triangle!(T, Tᵢⱼₖ) # Now that we've split the triangle, we can remove the triangle
+    T₁, T₂, T₃ = V(i, j, r), V(j, k, r), V(k, i, r) # New triangles to add. Note that these triangles are all positively oriented.
+    add_triangle!(T, T₁, T₂, T₃) # The three new triangles
+    add_triangle!(HG, T₁, T₂, T₃) # Add the new triangles into DAG
+    add_edge!(HG, Tᵢⱼₖ, T₁, T₂, T₃) # Add edges from the old triangle to the new triangles
+    add_triangle!(adj, T₁, T₂, T₃) # Add the new edges into the adjacency list
+    update_after_insertion!(adj2v, i, j, k, r)
+    add_neighbour!(DG, r, i, j, k)
+    add_neighbour!(DG, i, r)
+    add_neighbour!(DG, j, r)
+    add_neighbour!(DG, k, r)
     return nothing
 end
 
 """
-    flip_edge!(𝒯, 𝒟, 𝒜, 𝒜⁻¹, i, j, k, r)
+    flip_edge!(T, HG, adj, adj2v, DG, i, j, k, r)
 
 Performs an edge flip, flipping the edge `(i, j)` into the edge `(k, r)`.
 
 # Arguments
-- `𝒯`: The current triangulation.
-- `𝒟`: The point location data structure.
-- `𝒜`: The adjacency list.
-- `𝒜⁻¹`: The adjacent-to-vertex list.
-- `𝒟𝒢`: The vertex-neighbour data structure.
+- `T`: The current triangulation.
+- `HG`: The point location data structure.
+- `adj`: The adjacency list.
+- `adj2v`: The adjacent-to-vertex list.
+- `DG`: The vertex-neighbour data structure.
 - `i, j`: The current edge.
 - `k, r`: Indices for the points the edge is flipped onto.
 
 It is assumed that `(i, k, j)` and `(i, j, r)` are positively oriented triangles.
 
 # Outputs 
-`𝒯`, `𝒟`, and `𝒜` are all updated in-place.
+`T`, `HG`, `adj`, `adj2v`, and `DG` are all updated in-place.
 """
-function flip_edge!(𝒯::Triangles, 𝒟::HistoryDAG,
-    𝒜::Adjacent, 𝒜⁻¹::Adjacent2Vertex, 𝒟𝒢::DelaunayGraph, i, j, k, r)
+function flip_edge!(T::Triangles{I,V}, HG::HistoryDAG,
+    adj::Adjacent, adj2v::Adjacent2Vertex, DG::DelaunayGraph, i, j, k, r) where {I,V<:AbstractTriangle{I}}
     # The old triangles
-    Tᵢₖⱼ = TriangleType((i, k, j))
-    Tᵢⱼᵣ = TriangleType((i, j, r))
-    delete_triangle!(𝒯, Tᵢₖⱼ, Tᵢⱼᵣ)
-    delete_edge!(𝒜, i, j)
-    delete_neighbour!(𝒟𝒢, i, j) #delete_neighbour!(𝒟𝒢, j, i)
+    Tᵢₖⱼ = V(i, k, j)
+    Tᵢⱼᵣ = V(i, j, r)
+    delete_triangle!(T, Tᵢₖⱼ, Tᵢⱼᵣ)
+    delete_edge!(adj, i, j)
+    delete_neighbour!(DG, i, j) #delete_neighbour!(DG, j, i)
     # The new triangles 
-    Tᵣₖⱼ = TriangleType((r, k, j))
-    Tᵣᵢₖ = TriangleType((r, i, k))
+    Tᵣₖⱼ = V(r, k, j)
+    Tᵣᵢₖ = V(r, i, k)
     # Add the new triangles to the data structure
-    add_triangle!(𝒯, Tᵣₖⱼ, Tᵣᵢₖ)
-    add_triangle!(𝒟, Tᵣₖⱼ, Tᵣᵢₖ)
-    update_adjacent!(𝒜, Tᵣₖⱼ, Tᵣᵢₖ)
-    update_adjacent2vertex_flip!(𝒜⁻¹, i, j, k, r)
+    add_triangle!(T, Tᵣₖⱼ, Tᵣᵢₖ)
+    add_triangle!(HG, Tᵣₖⱼ, Tᵣᵢₖ)
+    add_triangle!(adj, Tᵣₖⱼ, Tᵣᵢₖ)
+    update_after_flip!(adj2v, i, j, k, r)
     # Connect the new triangles to the replaced triangles in the DAG
-    add_edge!(𝒟, Tᵢₖⱼ, Tᵣₖⱼ, Tᵣᵢₖ)
-    add_edge!(𝒟, Tᵢⱼᵣ, Tᵣₖⱼ, Tᵣᵢₖ)
+    add_edge!(HG, Tᵢₖⱼ, Tᵣₖⱼ, Tᵣᵢₖ)
+    add_edge!(HG, Tᵢⱼᵣ, Tᵣₖⱼ, Tᵣᵢₖ)
     # Add the new neighbours 
-    add_neighbour!(𝒟𝒢, r, k) # add_neighbour!(𝒟𝒢, k, r)
+    add_neighbour!(DG, r, k) # add_neighbour!(𝒟𝒢, k, r)
     return nothing
 end
 
 """
-    legalise_edge!(𝒯, 𝒟, 𝒜, i, j, r, pts)
+    legalise_edge!(T, HG, adj, adj2v, DG, i, j, r, pts)
     
 Legalises the edge `(i, j)` if it is illegal.
 
 # Arguments 
-- `𝒯`: The current triangulation.
-- `𝒟`: The point location data structure.
-- `𝒜`: The adjacency list.
-- `𝒟𝒢`: The vertex-neighbour data structure.
+- `T`: The current triangulation.
+- `HG`: The point location data structure.
+- `adj`: The adjacency list.
+- `adj2v`: The adjacent-to-vertex list.
+- `DG`: The vertex-neighbour data structure.
 - `i, j`: The edge to make legal. Nothing happens if `is_legal(i, j, 𝒜, pts)`.
 - `r`: The point being added into the triangulation. 
 - `pts`: The point set of the triangulation.
 
 # Outputs 
-`𝒯`, `𝒟`, `𝒜`, and `𝒟𝒢` are all updated in-place.
+`T`, `HG`, `adj`, `adj2v`, and `DG` are all updated in-place.
 """
-function legalise_edge!(𝒯, 𝒟, 𝒜, 𝒜⁻¹, 𝒟𝒢, i, j, r, pts)
-    @show i, j, r
-    if !is_legal(i, j, 𝒜, pts)
-        e = 𝒜(j, i)
-        @show i, j, e, r
-        flip_edge!(𝒯, 𝒟, 𝒜, 𝒜⁻¹, 𝒟𝒢, i, j, e, r)
-        legalise_edge!(𝒯, 𝒟, 𝒜, 𝒜⁻¹, 𝒟𝒢, i, e, r, pts)
-        legalise_edge!(𝒯, 𝒟, 𝒜, 𝒜⁻¹, 𝒟𝒢, e, j, r, pts)
+function legalise_edge!(T::Triangles, HG::HistoryDAG,
+    adj::Adjacent, adj2v::Adjacent2Vertex,
+    DG::DelaunayGraph, i, j, r, pts::Points)
+    if !islegal(i, j, adj, pts)
+        e = get_edge(adj, j, i)
+        flip_edge!(T, HG, adj, adj2v, DG, i, j, e, r)
+        legalise_edge!(T, HG, adj, adj2v, DG, i, e, r, pts)
+        legalise_edge!(T, HG, adj, adj2v, DG, e, j, r, pts)
     end
     return nothing
 end
 
 """
-    initialise_triangulation()
+    remove_bounding_triangle!(DT::Triangulation)
+    remove_bounding_triangle!(T, adj, adj2v, DG)
 
-This function returns the initial data structures for the Delaunay triangulation:
+Remove the bounding triangle from the triangulation, where 
 
-- `𝒯`: Data structure to contain the list of triangles.
-- `𝒟`: The directed acyclic graph storing the history of the triangulation. 
-- `𝒜`: The adjacency list.
-- `𝒟𝒢`: A dictionary that maps points to their neighbours.
-- `root`: The root of `𝒟`, `𝒯[begin]`.
+- `T`: The current triangulation.
+- `adj`: The adjacency list.
+- `adj2v`: The adjacent-to-vertex list.
+- `DG`: The vertex-neighbour data structure.
+
+These structures are updated in-place.
 """
-function initialise_triangulation()
-    # The data structures
-    root = TriangleType((LargeRightIdx + 1, LargeLeftIdx, LargeRightIdx))
-    𝒯 = Triangles(Set([root]))
-    𝒟 = HistoryDAG()
-    𝒜 = Adjacent()
-    𝒜⁻¹ = Adjacent2Vertex()
-    𝒟𝒢 = DelaunayGraph()
-    # Add the root to the DAG
-    add_triangle!(𝒟, root)
-    # Add the initial adjacencies 
-    𝒜[(LargeRightIdx + 1, LargeLeftIdx)] = LargeRightIdx
-    𝒜[(LargeLeftIdx, LargeRightIdx)] = LargeRightIdx + 1
-    𝒜[(LargeRightIdx, LargeRightIdx + 1)] = LargeLeftIdx
-    𝒜[(LargeLeftIdx, LargeRightIdx + 1)] = BoundaryIdx
-    𝒜[(LargeRightIdx, LargeLeftIdx)] = BoundaryIdx
-    𝒜[(LargeRightIdx + 1, LargeRightIdx)] = BoundaryIdx
-    𝒜⁻¹[LargeRightIdx] = Set([(LargeRightIdx + 1, LargeLeftIdx)])
-    𝒜⁻¹[LargeLeftIdx] = Set([(LargeRightIdx, LargeRightIdx + 1)])
-    𝒜⁻¹[LargeRightIdx+1] = Set([(LargeLeftIdx, LargeRightIdx)])
-    # Add the initial neighbours 
-    add_neighbour!(𝒟𝒢, LargeRightIdx + 1, LargeLeftIdx, LargeRightIdx)
-    add_neighbour!(𝒟𝒢, LargeLeftIdx, LargeRightIdx, LargeRightIdx + 1)
-    add_neighbour!(𝒟𝒢, LargeRightIdx, LargeRightIdx + 1, LargeLeftIdx)
-    return 𝒯, 𝒟, 𝒜, 𝒜⁻¹, 𝒟𝒢, root
-end
-
-"""
-    remove_bounding_triangle!(𝒯::Triangles, 𝒜::Adjacent, 𝒜⁻¹::Adjacent2Vertex, 𝒟𝒢::DelaunayGraph)
-
-Remove the bounding triangle from the triangulation.
-"""
-function remove_bounding_triangle!(𝒯::Triangles, 𝒜::Adjacent, 𝒜⁻¹::Adjacent2Vertex, 𝒟𝒢::DelaunayGraph)
-    for w in (-1, 0)
-        neighbours = 𝒜⁻¹[w]
+function remove_bounding_triangle!(T::Triangles{I,V}, adj::Adjacent,
+    adj2v::Adjacent2Vertex, DG::DelaunayGraph) where {I,V<:AbstractTriangle{I}}
+    for w in BoundingTriangle
+        neighbours = get_edge(adj2v, w)
         for (u, v) in neighbours # (u, v, w) is a triangle..
-            delete_edge!(𝒜, w, u; protect_boundary=false)
-            delete_edge!(𝒜, w, v; protect_boundary=false)
-            delete_edge!(𝒜⁻¹, u, v, w)
-            delete_edge!(𝒜⁻¹, v, w, u)
-            if u ≥ 1 && v ≥ 1 # This can only be a boundary edge
-                add_edge!(𝒜⁻¹, BoundaryIdx, u, v)
-                𝒜[(u, v)] = BoundaryIdx
+            delete_edge!(adj, w, u; protect_boundary=false)
+            delete_edge!(adj, w, v; protect_boundary=false)
+            delete_edge!(adj2v, u, v, w)
+            delete_edge!(adj2v, v, w, u)
+            if u ≥ FirstPointIndex && v ≥ FirstPointIndex # This can only be a boundary edge
+                add_edge!(adj2v, BoundaryIndex, u, v)
+                add_edge!(adj, u, v, BoundaryIndex)
             end
-            delete_triangle!(𝒯, TriangleType((u, v, w)))
+            delete_triangle!(T, V(u, v, w))
         end
-        delete_point!(𝒟𝒢, w)
-        delete_point!(𝒜⁻¹, w)
+        delete_point!(DG, w)
+        delete_point!(adj2v, w)
     end
     return nothing
 end
-function remove_bounding_triangle!(𝒟𝒯::Triangulation)
-    remove_bounding_triangle!(triangles(𝒟𝒯), adjacent(𝒟𝒯), adjacent2vertex(𝒟𝒯), graph(𝒟𝒯))
+@doc (@doc remove_bounding_triangle!(::Triangles{I,V}, ::Adjacent,
+    ::Adjacent2Vertex, ::DelaunayGraph) where {I,V<:AbstractTriangle{I}})
+function remove_bounding_triangle!(DT::Triangulation)
+    remove_bounding_triangle!(triangles(DT),
+        adjacent(DT), adjacent2vertex(DT), graph(DT))
     return nothing
 end
 
-function add_point!(𝒯, 𝒟, 𝒜, 𝒜⁻¹, 𝒟𝒢, root, pts, r)
-    pᵣ = pts[r]
-    𝒯ᵢⱼₖ, interior_flag = locate_triangle(𝒟, pts, pᵣ, root)
-    i, j, k = 𝒯ᵢⱼₖ
-    @show interior_flag
+"""
+    add_point!(DT::Triangulation, r)
+    add_point!(T::Triangles, HG::HistoryDAG,
+     adj::Adjacent, adj2v::Adjacent2Vertex, 
+     DG::DelaunayGraph, root, pts, r)
+"""
+function add_point!(T::Triangles, HG::HistoryDAG,
+    adj::Adjacent, adj2v::Adjacent2Vertex,
+    DG::DelaunayGraph, root, pts, r)
+    pᵣ = get_point(pts, r)
+    Tᵢⱼₖ, interior_flag = locate_triangle(HG, pts, pᵣ, root)
+    i, j, k = Tᵢⱼₖ
     if interior_flag == 1
-        add_point!(𝒯, 𝒟, 𝒜, 𝒜⁻¹, 𝒟𝒢, 𝒯ᵢⱼₖ, r)
-        legalise_edge!(𝒯, 𝒟, 𝒜, 𝒜⁻¹, 𝒟𝒢, i, j, r, pts)
-        legalise_edge!(𝒯, 𝒟, 𝒜, 𝒜⁻¹, 𝒟𝒢, j, k, r, pts)
-        legalise_edge!(𝒯, 𝒟, 𝒜, 𝒜⁻¹, 𝒟𝒢, k, i, r, pts)
+        add_point!(T, HG, adj, adj2v, DG, Tᵢⱼₖ, r)
+        legalise_edge!(T, HG, adj, adj2v, DG, i, j, r, pts)
+        legalise_edge!(T, HG, adj, adj2v, DG, j, k, r, pts)
+        legalise_edge!(T, HG, adj, adj2v, DG, k, i, r, pts)
     else
         eᵢⱼ, pₖ = locate_edge(pᵣ, 𝒯ᵢⱼₖ)
         𝒯ᵢₗⱼ = adjacent_triangles(𝒯, 𝒯ᵢⱼₖ, eᵢⱼ)
@@ -211,15 +246,28 @@ function add_point!(𝒯, 𝒟, 𝒜, 𝒜⁻¹, 𝒟𝒢, root, pts, r)
         legalise_edge!(𝒯, 𝒟, 𝒯ᵢⱼₖ, pᵣ, pₖ, pᵢ)
     end
 end
+@doc (@doc add_point!(::Triangles, ::HistoryDAG, ::Adjacent, ::Adjacent2Vertex, ::DelaunayGraph, ::Any, ::Any, ::Any))
+function add_point!(DT::Triangulation, r)
+    add_point!(triangles(DT), history(DT), adjacent(DT),
+        adjacent2vertex(DT), graph(DT), root(DT), points(DT), r)
+    return nothing
+end
 
-function triangulate(pts; sort_pts=true, shuffle_pts=true, trim=true)
-    Base.require_one_based_indexing(pts)
-    𝒯, 𝒟, 𝒜, 𝒜⁻¹, 𝒟𝒢, root = initialise_triangulation()
-    sort_pts && partial_highest_point_sort!(pts, 1) # p0 = pts[begin]
-    shuffle_pts && @views shuffle!(pts[begin+1:end])
-    for r = (firstindex(pts)+1):lastindex(pts)
-        add_point!(𝒯, 𝒟, 𝒜, 𝒜⁻¹, 𝒟𝒢, root, pts, r)
+"""
+    triangulate(pts; shuffle_pts=true, trim=true)
+
+Computes the Delaunay triangulation of the points in `pts` using randomised incremental 
+insertion. The points are shuffled in-place, but this shuffling can be disabled by 
+setting `shuffle_pts=false`. The bounding triangle of the triangulation can be retained 
+by setting `trim=true`.
+"""
+function triangulate(pts; shuffle_pts=true, trim=true, method = :berg)
+    # Base.require_one_based_indexing(pts)
+    DT = initialise_triangulation(pts)
+    shuffle_pts && @views shuffle!(points(DT))
+    for r in eachindex(points(DT))
+        add_point!(DT, r)
     end
-    trim && remove_bounding_triangle!(𝒯, 𝒜, 𝒜⁻¹, 𝒟𝒢)
-    return 𝒯, 𝒟, 𝒜, 𝒜⁻¹, 𝒟𝒢
+    trim && remove_bounding_triangle!(DT)
+    return DT
 end

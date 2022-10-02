@@ -1,64 +1,63 @@
-function ExactPredicates.orient(𝒯::TriangleType, pts)
-    u, v, w = 𝒯
-    return orient(pts[u], pts[v], pts[w])
+############################################
+##
+## PREDICATES 
+##
+############################################
+"""
+    ExactPredicates.orient(T::AbstractTriangle, pts::Points)
+
+Tests if the triangle `T` is positively oriented.
+"""
+function ExactPredicates.orient(T::AbstractTriangle, pts::Points)
+    u, v, w = T
+    pu, pv, pw = get_point(pts, u), get_point(pts, v), get_point(pts, w)
+    return orient(pu, pv, pw)
 end
-function ExactPredicates.incircle(pts, i, j, k, ℓ)
-    return incircle(pts[i], pts[j], pts[k], pts[ℓ])
+
+"""
+    ExactPredicates.incircle(pts::Points, i, j, k, ℓ)
+
+Tests if `get_point(pts, ℓ)` is in the circle through `(get_point(pts, i), get_point(pts, j), get_point(pts, k))`.
+"""
+function ExactPredicates.incircle(pts::Points, i, j, k, ℓ)
+    pti, ptj, ptk, ptℓ = get_point(pts, i), get_point(pts, j), get_point(pts, k), get_point(pts, ℓ)
+    return incircle(pti, ptj, ptk, ptℓ)
 end
-
-"""
-    is_point_higher(p, q)
-    is_point_lower(p, q)
-
-Tests if `p` is lexicographically higher than `q`, where we say that `p = (xp, yp)`
-is lexicographically higher than `q = (xq, yp)` if `yp > yq` or 
-`yp = yq` and `xq > xp`.
-"""
-is_point_higher(p, q) = (p[2] > q[2]) || (p[2] == q[2] && q[1] > p[1])
-is_point_lower(p, q) = is_point_higher(q, p)
-
-"""
-    partial_highest_point_sort!(v, k)
-
-Partially sorts the first `v` so that the first `k` entries are the highest points, with the first 
-being the highest (acccording to `is_point_higher`).
-"""
-partial_highest_point_sort!(v, k) = partialsort!(v, k, lt = is_point_higher)
 
 """
     leftofline(p, pᵢ, pⱼ)
 
 Tests if `p` is to the left of the line from `pᵢ` to `pⱼ`.
 """
-leftofline(p, pᵢ, pⱼ) = orient(pᵢ, pⱼ, p)
+leftofline(p::AbstractPoint, pᵢ::AbstractPoint, pⱼ::AbstractPoint) = orient(pᵢ, pⱼ, p)
 """
     leftofline(pts, p, i, j)
 
 Tests if the point `p` is to the left of the oriented line through 
 `pts[i]` to `pts[j]`. Checks are made for non-positive indices.
 """
-function leftofline(pts, p, i, j)
-    if j == LargeRightIdx && i > LargeRightIdx      # p₀ → pᵢ
-        return is_point_higher(p, pts[i]) ? 1 : -1
-    elseif j == LargeLeftIdx && i > LargeRightIdx   # p₋₁ → pᵢ
-        return is_point_lower(p, pts[i]) ? 1 : -1
-    elseif i == LargeRightIdx && j > LargeRightIdx  # p₀ → pᵢ
-        return is_point_lower(p, pts[j]) ? 1 : -1
-    elseif i == LargeLeftIdx && j > LargeRightIdx   # p₋₁ → pᵢ
-        return is_point_higher(p, pts[j]) ? 1 : -1
-    elseif i == LargeRightIdx && j == LargeLeftIdx  # p₀ → p₋₁
+function leftofline(pts::Points, p::AbstractPoint, i, j)
+    if i == LowerRightBoundingIndex && j == LowerLeftBoundingIndex
         return -1
-    elseif i == LargeLeftIdx && j == LargeRightIdx  # p₋₁ → p₀
+    elseif i == LowerRightBoundingIndex && j == UpperBoundingIndex
         return 1
+    elseif i == LowerLeftBoundingIndex && j == LowerRightBoundingIndex
+        return 1
+    elseif i == LowerLeftBoundingIndex && j == UpperBoundingIndex
+        return -1
+    elseif i == UpperBoundingIndex && j == LowerLeftBoundingIndex
+        return 1
+    elseif i == UpperBoundingIndex && j == LowerRightBoundingIndex
+        return -1
     end
-    return leftofline(pts[i], pts[j], p) # If a line is from i → j, then k is left of i → j is (i, j, k) is a counter-clockwise triangle
+    return leftofline(get_point(pts, i), get_point(pts, j), p) # If a line is from i → j, then k is left of i → j is (i, j, k) is a counter-clockwise triangle
 end
 
 """
-    intriangle(𝒯::TriangleType, pts, p)
+    intriangle(T::AbstractTriangle, pts::Points, p::AbstractPoint)
 
-Tests if the point `p` is in the triangle `𝒯`, where the vertices of 
-`𝒯 = (i, j, k)` are `(pts[i], pts[j], pts[k])`. It is assumed that `𝒯` is 
+Tests if the point `p` is in the triangle `T`, where the vertices of 
+`T = (i, j, k)` are `(pts[i], pts[j], pts[k])`. It is assumed that `T` is 
 positively oriented.
 """
 function intriangle(e1, e2, e3) # https://stackoverflow.com/a/2049593
@@ -72,8 +71,11 @@ function intriangle(e1, e2, e3) # https://stackoverflow.com/a/2049593
         return -1
     end
 end
-function intriangle(𝒯::TriangleType, pts, p)
-    i, j, k = 𝒯
+function intriangle(T::AbstractTriangle, pts::Points, p::AbstractPoint)
+    i, j, k = T
+    if i < FirstPointIndex && j < FirstPointIndex && k < FirstPointIndex
+        return 1 # all poiints are in the bounding triangle
+    end
     e1 = leftofline(pts, p, i, j)
     e2 = leftofline(pts, p, j, k)
     e3 = leftofline(pts, p, k, i)
@@ -81,41 +83,43 @@ function intriangle(𝒯::TriangleType, pts, p)
 end
 
 """
-    edge_on_large_triangle(i, j)
+    edge_on_bounding_triangle(i, j)
 
-Returns true if `(i, j)` is an edge of the triangle `(1, -1, 0)`.
+Returns true if `(i, j)` is an edge of bounding triangle $(BoundingTriangle).
 """
-function edge_on_large_triangle(i, j)
-    if i > (LargeRightIdx + 1) || j > (LargeRightIdx + 1) # = 1 case can be p₀ 
-        return false
-    elseif (i, j) == (LargeRightIdx + 1, LargeRightIdx) ||
-           (i, j) == (LargeRightIdx, LargeLeftIdx) ||
-           (i, j) == (LargeLeftIdx, LargeRightIdx + 1) ||
-           (i, j) == (LargeRightIdx, LargeRightIdx + 1) ||
-           (i, j) == (LargeLeftIdx, LargeRightIdx) ||
-           (i, j) == (LargeRightIdx + 1, LargeLeftIdx)
-        return true
-    else
-        return false
-    end
+function edge_on_bounding_triangle(i, j)
+    return i < FirstPointIndex && j < FirstPointIndex
 end
 
 """
-    is_legal(i, j, 𝒜, pts)
+    islegal(i, j, k, ℓ, pts::Points)
+    islegal(i, j, adj::Adjacent, pts::Points)
 
-Tests if the edge `(i, j)` is a legal edge. `𝒜` is the adjacency list of the triangulation, and `pts` is the point set.
-Returns `true` if the edge is legal.
+Returns `true` if the edge `(i, j)` is legal. It is assumed that 
+`(i, j, k)` and `(j, i, ℓ)` are positively oriented triangles.
 """
-function is_legal(i, j, k, ℓ, pts)
-    if i > LargeRightIdx && j > LargeRightIdx && k > LargeRightIdx && ℓ > LargeRightIdx
+function islegal(i, j, k, ℓ, pts::Points)
+    #=
+    if i ≥ FirstPointIndex && j ≥ FirstPointIndex && k ≥ FirstPointIndex && ℓ ≥ FirstPointIndex
         return incircle(pts, i, j, k, ℓ) ≤ 0
     else
-        return min(k, ℓ) < min(i, j)
+        num_neg = num_less(FirstPointIndex, (i, j, k, ℓ))
+        if num_neg == 1
+            return !(i < FirstPointIndex || j < FirstPointIndex)
+        elseif num_neg == 2
+            return min(i, j) < min(k, ℓ)
+        else
+            throw("Error occured.")
+        end
     end
+    throw("Error occured.")
+    =#
+    return incircle(pts, i, j, k, ℓ) ≤ 0
 end
-function is_legal(i, j, 𝒜::Adjacent, pts)
-    edge_on_large_triangle(i, j) && return true
-    k, ℓ = 𝒜(i, j), 𝒜(j, i)
-    return is_legal(i, j, k, ℓ, pts)
+@doc (@doc islegal(::Any, ::Any, ::Any, ::Any, ::Points))
+function islegal(i, j, adj::Adjacent, pts::Points)
+    edge_on_bounding_triangle(i, j) && return true
+    k = get_edge(adj, i, j)
+    ℓ = get_edge(adj, j, i)
+    return islegal(i, j, k, ℓ, pts)
 end
-

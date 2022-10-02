@@ -2,24 +2,16 @@ module DelaunayTriangulation
 
 using SimpleGraphs 
 using ExactPredicates
-using ExactPredicates.Codegen 
 using Random
 
-#=
-const TriangleType = NTuple{3, Int64}
-const EdgeType = NTuple{2, Int64}
-const LargeRightIdx = 0 # p₋₁
-const LargeLeftIdx = -1 # p₋₂
-const BoundaryIdx = -2  # ∅
-const Adjacent2VertexVector = Set{EdgeType}
-
-include("data_structures.jl")
+include("primitives.jl")
+include("constants.jl")
+include("collections.jl")
+include("struct_definitions.jl")
+include("struct_updates.jl")
 include("predicates.jl")
-include("update_structure.jl")
 include("triangulate.jl")
-=#
-
-include("algorithm.jl")
+include("utils.jl")
 
 export Edge, Triangle, Point
 export initial, terminal
