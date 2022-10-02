@@ -1238,6 +1238,12 @@ end
     end
     poly!(ax, pmat, Tmat, strokewidth=2)
     fig
+
+    for (i, j) in adjacent2vertex(DTri, DT.BoundaryIndex)
+        p = DT.get_point(DTri, i)
+        q = DT.get_point(DTri, j)
+        lines!(ax, [getx(p), getx(q)], [gety(p), gety(q)], color=:red, linewidth=5)
+    end
     =#
 end
 
@@ -1251,7 +1257,7 @@ end
     p7 = Point(-1.34, 4.83)
     p8 = Point(-1.68, -0.77)
     pts = Points(p1, p2, p3, p4, p5, p6, p7, p8)
-    DTri = triangulate(pts; IntegerType=Int16)
+    DTri = triangulate(pts; IntegerType=Int16,shuffle_pts=false)
     @test points(DTri).points == Points(pts).points
     @test adjacent(DTri) isa DT.Adjacent{Int16,Edge{Int16}}
     @test adjacent2vertex(DTri) isa DT.Adjacent2Vertex{Int16,Edge{Int16}}
@@ -1264,4 +1270,12 @@ end
         typeof(graph(DTri)),typeof(history(DTri)),typeof(triangles(DTri)),
         typeof(points(DTri)),typeof(DT.root(DTri))}
     @test DT.is_delaunay(DTri)
+    @test DT.get_point(DTri, 1) == p1
+    @test DT.get_point(DTri, 2) == p2
+    @test DT.get_point(DTri, 3) == p3
+    @test DT.get_point(DTri, 4) == p4
+    @test DT.get_point(DTri, 5) == p5
+    @test DT.get_point(DTri, 6) == p6
+    @test DT.get_point(DTri, 7) == p7
+    @test DT.get_point(DTri, 8) == p8
 end
