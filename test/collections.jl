@@ -150,4 +150,13 @@ end
     Random.seed!(292991)
     shuffle!(pts_copy2)
     @test pts_copy.points == pts_copy2
+
+    p₁ = Point(2.0, 5.0)
+    p₂ = Point(5.0, 1.7)
+    p₃ = Point(2.2, 2.2)
+    p₄ = Point(-17.0, 5.0)
+    pts_vec = [p₁, p₂, p₃, p₄]
+    pts = Points(pts_vec)
+    @test firstindex(pts)==1
+    @test lastindex(pts)==4
 end
