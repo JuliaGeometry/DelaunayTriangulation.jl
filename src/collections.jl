@@ -118,7 +118,7 @@ struct Points{T,A,P<:AbstractPoint{T,A}}
         lower_right_bounding_triangle_coords = P(xcentroid + BoundingTriangleShift * max_width_height,
             ycentroid - max_width_height)
         upper_bounding_triangle_coords = P(xcentroid, ycentroid + BoundingTriangleShift * max_width_height)
-        new{T,A,P}(points, xcentroid, ycentroid, xmin, xmax, ymin,
+        return new{T,A,P}(points, xcentroid, ycentroid, xmin, xmax, ymin,
             ymax, width, height, max_width_height, lower_left_bounding_triangle_coords,
             lower_right_bounding_triangle_coords, upper_bounding_triangle_coords)
     end
