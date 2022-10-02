@@ -1243,7 +1243,7 @@ for (i, j) in adjacent2vertex(DTri, DelaunayTriangulation.BoundaryIndex)
     q = DT.get_point(DTri, j)
     lines!(ax, [getx(p), getx(q)], [gety(p), gety(q)], color=:red, linewidth=5)
 end
-save("test/figures/test_triangulation.png", fig)
+save("figures/test_triangulation.png", fig)
 
 @testset "Custom integer types" begin
     p1 = Point(-6.88, 3.61)
