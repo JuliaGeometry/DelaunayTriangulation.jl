@@ -82,6 +82,20 @@ struct HistoryDAG{I,T<:AbstractTriangle{I}}
 end
 graph(G::HistoryDAG) = G.graph
 
+"""
+    Triangulation{A,A2V,DG,H,T,P,R}
+
+Struct for a Delaunay triangulation. See also [`triangulate`](@ref).
+
+# Fields 
+- `adjacent`: The adjacent map. See [`Adjacent`](@ref).
+- `adjacent2vertex`: The adjacent-to-vertex map. See [`Adjacent2Vertex`](@ref).
+- `graph`: The graph representation of the triangulation. See also [`DelaunayGraph`](@ref).
+- `history`: The history structure for the triangulation. See also [`HistoryDAG`](@ref).
+- `triangles`: The triangles that define the triangulation. See also [`Triangles`](@ref) and [`Triangle`](@ref).
+- `points`: The point set of the triangulation. See also [`Points`](@ref) and [`Point`](@ref).
+- `root`: The root of `history`.
+"""
 struct Triangulation{A,A2V,DG,H,T,P,R}
     adjacent::A
     adjacent2vertex::A2V
