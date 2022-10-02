@@ -1191,6 +1191,11 @@ end
     @test DT.is_delaunay(DTri)
     DTri = triangulate(pts; trim=false)
     @test DT.is_delaunay(DTri)
+    pts = [[-6.88, 3.61], [-6.08, -0.43], [-0.3, 2.01], [5.1, -1.27], [6.18, 1.87], [3.08, 4.43], [-1.34, 4.83], [-1.68], [-0.77]]
+    DTri = triangulate(pts)
+    @test DT.is_delaunay(DTri)
+    DTri = triangulate(pts; trim=false)
+    @test DT.is_delaunay(DTri)
 
     for _ in 1:10000
         x = rand(100)
