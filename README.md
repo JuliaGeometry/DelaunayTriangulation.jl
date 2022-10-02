@@ -48,7 +48,7 @@ DTri2 = triangulate(Points(p1, p2, p3, p4, p5, p6, p7); shuffle_pts=false, trim=
 add_point!(DTri2, [-1.68, -0.77])
 # triangles(DTri2).triangles == triangles(DTri).triangles
 ```
-The bounding triangle can be removed separately from `triangulate` by using `DelaunayTriangulation.remove_bounding_triangle!(DT)`:
+The bounding triangle can be removed separately from `triangulate` by using `DelaunayTriangulation.remove_bounding_triangle!`:
 ```julia
 DTri = triangulate(pts; shuffle_pts=false, trim=true)
 DTri2 = triangulate(Points(p1, p2, p3, p4, p5, p6, p7); shuffle_pts=false, trim=false)
@@ -155,7 +155,7 @@ DTri = triangulate(pts;
     IntegerType=Int16, EdgeType=CustomEdge, TriangleType=CustomTriangle)
 ```
 
-It is important to note that the use of `Float32` is not currently being used, since the predicates used all require a conversion to `Float64`. If you do want to compute the predicates using a type other than `Float64`, you will have to sacrifice the guarantee that the predicates are and define new methods for `ExactPredicates.orient` and `ExactPredicates.incircle`. (Note that converting to `Float64` already loses some of this guarantee, anyway.) The following retriangulates using new definitions of the predicates.
+It is important to note that the use of `Float32` is not currently being used, since the predicates used all require a conversion to `Float64`. If you do want to compute the predicates using a type other than `Float64`, you will have to sacrifice the guarantee that the predicates are exact and define new methods for `ExactPredicates.orient` and `ExactPredicates.incircle`. (Note that converting to `Float64` already loses some of this guarantee, anyway.) The following retriangulates using new definitions of the predicates.
 
 ```julia
 function ExactPredicates.orient(p::CustomPoint, q::CustomPoint, r::CustomPoint)
