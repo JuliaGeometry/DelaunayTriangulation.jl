@@ -84,7 +84,7 @@ The definition of each field is as follows, letting `DT` be of type `Triangulati
 
 # Visualisation
 
-The package does not currently provide any visualisation features, but note that it is very easy to visualise a triangulation using the above structures. For example, the following code will plot a triangulation along with the convex hull, using very basic ideas. Note that this could of course be refined (e.g. the convex hull hull could be obtained and plotted as one line, rather than plotting many boundary segments separately).
+The package does not currently provide any visualisation features, but note that it is very easy to visualise a triangulation using the above structures. For example, the following code will plot a triangulation along with the convex hull, using very basic ideas. Note that this could of course be refined (e.g. the convex hull could be obtained and plotted as one line, rather than plotting many boundary segments separately).
 
 ```julia
 using CairoMakie
