@@ -136,7 +136,6 @@ end
     p = Point(2.7, 13.01)
     tp = Tuple(p)
     @test tp == (2.7, 13.01)
-    @test Point(p) == p
 
     p₁ = Point(2.0, 5.0)
     p₂ = Point(5.0, 1.7)

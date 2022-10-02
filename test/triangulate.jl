@@ -1200,13 +1200,13 @@ end
     pts = Points(p1, p2, p3, p4, p5, p6, p7, p8)
     DTri = triangulate(pts; shuffle_pts=false, trim=false)
     DTri2 = triangulate(Points(p1, p2, p3, p4, p5, p6, p7); shuffle_pts=false, trim=false)
-    add_point!(DTri2, [-1.68, -0.77])
+    add_point!(DTri2, Point(-1.68, -0.77))
     @test triangles(DTri2).triangles == triangles(DTri).triangles
 
     pts = Points(p1, p2, p3, p4, p5, p6, p7, p8)
     DTri = triangulate(pts; shuffle_pts=false, trim=true)
     DTri2 = triangulate(Points(p1, p2, p3, p4, p5, p6, p7); shuffle_pts=false, trim=false)
-    add_point!(DTri2, [-1.68, -0.77])
+    add_point!(DTri2, Point(-1.68, -0.77))
     DT.remove_bounding_triangle!(DTri2)
     @test triangles(DTri2).triangles == triangles(DTri).triangles
 
@@ -1345,7 +1345,7 @@ end
     pts = Points(p1, p2, p3)
     DTri = triangulate(pts;
         IntegerType=Int16, EdgeType=CustomEdge, TriangleType=CustomTriangle, trim=false, shuffle_pts=false)
-    add_point!(DTri, (5.81, 3.0)) # (5.81, 3.0) will get converted correctly to p4
+    add_point!(DTri, CustomPoint(5.81, 3.0)) # (5.81, 3.0) will get converted correctly to p4
     add_point!(DTri, p5)
     DelaunayTriangulation.remove_bounding_triangle!(DTri)
     @test triangles(DTri).triangles == Set{CustomTriangle}([
