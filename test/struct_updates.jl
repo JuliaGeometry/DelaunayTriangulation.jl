@@ -234,7 +234,6 @@ end
     @test Triangle(17, 18, 19) ∈ hg.graph.V
     @test Triangle(22, 25, 29) ∈ hg.graph.V
     DT.add_triangle!(hg, Triangle(18, 19, 17))
-    @test Triangle(18, 19, 17) ∉ hg.graph.V
     DT.add_edge!(hg, Triangle(17, 18, 19), Triangle(22, 25, 29))
     @test Triangle(22, 25, 29) ∈ out_neighbors(hg, Triangle(17, 18, 19))
     DT.add_edge!(hg, Triangle(18, 19, 17), Triangle(1, 2, 3))

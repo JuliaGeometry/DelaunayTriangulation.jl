@@ -172,12 +172,12 @@ function ExactPredicates.incircle(p::CustomPoint, q::CustomPoint, r::CustomPoint
     val13 = (getx(p) - getx(s))^2 + (gety(p) - gety(s))^2
     val23 = (getx(q) - getx(s))^2 + (gety(q) - gety(s))^2
     val33 = (getx(r) - getx(s))^2 + (gety(r) - gety(s))^2
-    return val11 * val22 * val33 -
+    return sign(val11 * val22 * val33 -
            val11 * val23 * val32 -
            val12 * val21 * val33 +
            val12 * val23 * val31 +
            val13 * val21 * val32 -
-           val13 * val22 * val31
+           val13 * val22 * val31)
 end
 
 pts = Points(p1, p2, p3, p4, p5)
