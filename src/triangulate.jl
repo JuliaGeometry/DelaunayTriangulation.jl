@@ -249,7 +249,7 @@ function add_point!(T::Triangles, HG::HistoryDAG,
     end
 end
 @doc (@doc add_point!(::Triangles, ::HistoryDAG, ::Adjacent, ::Adjacent2Vertex, ::DelaunayGraph, ::Any, ::Any, ::Any))
-function add_point!(DT::Triangulation, r::Integer)
+function add_point!(DT::Triangulation{A,A2V,DG,H,T,P,R}, r::Integer) where {A,A2V,DG,H,T,PT,PA,PP,P<:Points{PT,PA,PP},R}
     add_point!(triangles(DT), history(DT), adjacent(DT),
         adjacent2vertex(DT), graph(DT), root(DT), points(DT), r)
     return nothing
@@ -260,8 +260,8 @@ end
 
 Adds the point `p` into the triangulation.
 """
-function add_point!(DT::Triangulation, p)
-    add_point!(points(DT), Point(p))
+function add_point!(DT::Triangulation{A,A2V,DG,H,T,P,R}, p) where {A,A2V,DG,H,T,PT,PA,PP,P<:Points{PT,PA,PP},R}
+    add_point!(points(DT), PP(p))
     add_point!(DT, lastindex(points(DT)))
     return nothing
 end

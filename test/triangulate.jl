@@ -1341,6 +1341,21 @@ end
         CustomTriangle(3, 2, 1)
     ])
 
+    # Can also add points correctly 
+    pts = Points(p1, p2, p3)
+    DTri = triangulate(pts;
+        IntegerType=Int16, EdgeType=CustomEdge, TriangleType=CustomTriangle, trim=false, shuffle_pts=false)
+    add_point!(DTri, (5.81, 3.0)) # (5.81, 3.0) will get converted correctly to p4
+    add_point!(DTri, p5)
+    DelaunayTriangulation.remove_bounding_triangle!(DTri)
+    @test triangles(DTri).triangles == Set{CustomTriangle}([
+        CustomTriangle(5, 4, 2),
+        CustomTriangle(5, 3, 4),
+        CustomTriangle(4, 1, 2),
+        CustomTriangle(4, 3, 1),
+        CustomTriangle(3, 2, 1)
+    ])
+
     function ExactPredicates.orient(p::CustomPoint, q::CustomPoint, r::CustomPoint)
         detval = (getx(p) - getx(r)) * (gety(q) - gety(r)) - (gety(p) - gety(r)) * (getx(q) - getx(r))
         return sign(detval)
@@ -1356,11 +1371,11 @@ end
         val23 = (getx(q) - getx(s))^2 + (gety(q) - gety(s))^2
         val33 = (getx(r) - getx(s))^2 + (gety(r) - gety(s))^2
         return sign(val11 * val22 * val33 -
-               val11 * val23 * val32 -
-               val12 * val21 * val33 +
-               val12 * val23 * val31 +
-               val13 * val21 * val32 -
-               val13 * val22 * val31)
+                    val11 * val23 * val32 -
+                    val12 * val21 * val33 +
+                    val12 * val23 * val31 +
+                    val13 * val21 * val32 -
+                    val13 * val22 * val31)
     end
 
     pts = Points(p1, p2, p3, p4, p5)

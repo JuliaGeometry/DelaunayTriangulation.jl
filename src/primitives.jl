@@ -160,6 +160,7 @@ end
 Base.eltype(::AbstractPoint{T,A}) where {T,A} = T
 Base.eltype(::Type{AbstractPoint{T,A}}) where {T,A} = T
 Base.length(p::AbstractPoint) = 2
+(::Type{P})(p::P) where {P<:AbstractPoint} = p
 
 ############################################
 ##
@@ -218,6 +219,7 @@ struct Point{T,A} <: AbstractPoint{T,A}
     Point(x::T, y::T) where {T} = new{T,Vector{T}}(T[x, y])
     Point{A}(x, y) where {A} = new{eltype(A),A}(convert(A, eltype(A)[x, y]))
     Point(coords::A) where {A} = new{eltype(coords),A}(coords)
+    Point(p::P) where {P<:Point} = p
     Point{T,A}(x, y) where {T,A} = new{T,A}(A(collect((x, y))))
 end
 coords(p::Point) = p.coords
