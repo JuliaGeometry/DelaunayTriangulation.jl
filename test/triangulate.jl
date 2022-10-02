@@ -1240,3 +1240,28 @@ end
     fig
     =#
 end
+
+@testset "Custom integer types" begin
+    p1 = Point(-6.88, 3.61)
+    p2 = Point(-6.08, -0.43)
+    p3 = Point(-0.3, 2.01)
+    p4 = Point(5.1, -1.27)
+    p5 = Point(6.18, 1.87)
+    p6 = Point(3.08, 4.43)
+    p7 = Point(-1.34, 4.83)
+    p8 = Point(-1.68, -0.77)
+    pts = Points(p1, p2, p3, p4, p5, p6, p7, p8)
+    DTri = triangulate(pts; IntegerType=Int16)
+    @test points(DTri).points == Points(pts).points
+    @test adjacent(DTri) isa DT.Adjacent{Int16,Edge{Int16}}
+    @test adjacent2vertex(DTri) isa DT.Adjacent2Vertex{Int16,Edge{Int16}}
+    @test graph(DTri) isa DT.DelaunayGraph{Int16}
+    @test history(DTri) isa DT.HistoryDAG{Int16,Triangle{Int16}}
+    @test triangles(DTri) isa Triangles{Int16,Triangle{Int16}}
+    @test points(DTri) isa Points{Float64,Vector{Float64},Point{Float64,Vector{Float64}}}
+    @test DT.root(DTri) isa Triangle{Int16}
+    @test DTri isa Triangulation{typeof(adjacent(DTri)),typeof(adjacent2vertex(DTri)),
+        typeof(graph(DTri)),typeof(history(DTri)),typeof(triangles(DTri)),
+        typeof(points(DTri)),typeof(DT.root(DTri))}
+    @test DT.is_delaunay(DTri)
+end

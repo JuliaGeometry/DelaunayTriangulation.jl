@@ -273,10 +273,14 @@ Computes the Delaunay triangulation of the points in `pts` using randomised incr
 insertion. The points are shuffled in-place, but this shuffling can be disabled by 
 setting `shuffle_pts=false`. The bounding triangle of the triangulation can be retained 
 by setting `trim=true`.
+
+You can use custom integer, triangle, and edge types by using the keyword arguments 
+`IntegerType`, `TriangleType`, and `EdgeType`. See their definitions in 
+[`initialise_triangulation`](@ref).
 """
-function triangulate(pts; shuffle_pts=true, trim=true, method = :berg)
-    # Base.require_one_based_indexing(pts)
-    DT = initialise_triangulation(pts)
+function triangulate(pts; shuffle_pts=true, trim=true, method = :berg,
+    IntegerType=Int64,TriangleType=Triangle{IntegerType},EdgeType=Edge{IntegerType})
+    DT = initialise_triangulation(pts;IntegerType,TriangleType,EdgeType)
     shuffle_pts && @views shuffle!(points(DT))
     for r in eachindex(points(DT))
         add_point!(DT, r)
