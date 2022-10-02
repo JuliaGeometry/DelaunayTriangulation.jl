@@ -1220,32 +1220,30 @@ end
         @test DT.is_delaunay(DTri)
         @test 1 == num_points(DTri) - num_edges(DTri) + num_triangles(DTri) # Euler's formula
     end
-
-    #=
-    fig = Figure()
-    ax = Axis(fig[1, 1])
-    x = rand(100)
-    y = rand(100)
-    pts = Points([Point(x, y) for (x, y) in zip(x, y)])
-    DTri = triangulate(pts)
-    Tmat = zeros(Int64, num_triangles(DTri), 3)
-    for (i, T) in enumerate(triangles(DTri))
-        Tmat[i, :] = [geti(T), getj(T), getk(T)]
-    end
-    pmat = zeros(num_points(DTri), 2)
-    for (i, p) in enumerate(points(DTri))
-        pmat[i, :] = [getx(p), gety(p)]
-    end
-    poly!(ax, pmat, Tmat, strokewidth=2)
-    fig
-
-    for (i, j) in adjacent2vertex(DTri, DT.BoundaryIndex)
-        p = DT.get_point(DTri, i)
-        q = DT.get_point(DTri, j)
-        lines!(ax, [getx(p), getx(q)], [gety(p), gety(q)], color=:red, linewidth=5)
-    end
-    =#
 end
+
+using CairoMakie
+fig = Figure()
+ax = Axis(fig[1, 1])
+x = rand(100)
+y = rand(100)
+pts = Points([Point(x, y) for (x, y) in zip(x, y)])
+DTri = triangulate(pts)
+Tmat = zeros(Int64, num_triangles(DTri), 3)
+for (i, T) in enumerate(triangles(DTri))
+    Tmat[i, :] = [geti(T), getj(T), getk(T)]
+end
+pmat = zeros(num_points(DTri), 2)
+for (i, p) in enumerate(points(DTri))
+    pmat[i, :] = [getx(p), gety(p)]
+end
+poly!(ax, pmat, Tmat, strokewidth=2)
+for (i, j) in adjacent2vertex(DTri, DelaunayTriangulation.BoundaryIndex)
+    p = DT.get_point(DTri, i)
+    q = DT.get_point(DTri, j)
+    lines!(ax, [getx(p), getx(q)], [gety(p), gety(q)], color=:red, linewidth=5)
+end
+save("test/figures/test_triangulation.png", fig)
 
 @testset "Custom integer types" begin
     p1 = Point(-6.88, 3.61)
@@ -1257,7 +1255,7 @@ end
     p7 = Point(-1.34, 4.83)
     p8 = Point(-1.68, -0.77)
     pts = Points(p1, p2, p3, p4, p5, p6, p7, p8)
-    DTri = triangulate(pts; IntegerType=Int16,shuffle_pts=false)
+    DTri = triangulate(pts; IntegerType=Int16, shuffle_pts=false)
     @test points(DTri).points == Points(pts).points
     @test adjacent(DTri) isa DT.Adjacent{Int16,Edge{Int16}}
     @test adjacent2vertex(DTri) isa DT.Adjacent2Vertex{Int16,Edge{Int16}}
