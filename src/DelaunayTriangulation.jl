@@ -23,4 +23,5 @@ export Triangulation
 export adjacent, adjacent2vertex, graph, history, triangles, points, neighbours
 export triangulate
 export num_points, num_triangles, edges, num_edges
+export get_point
 end
