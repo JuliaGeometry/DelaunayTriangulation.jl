@@ -148,6 +148,9 @@ upper_bounding_triangle_coords(pts::Points) = pts.upper_bounding_triangle_coords
 Base.size(pts::Points) = Base.size(points(pts))
 Base.eachindex(pts::Points) = Base.eachindex(points(pts))
 Random.shuffle!(pts::Points) = Random.shuffle!(points(pts))
+Base.lastindex(pts::Points) = Base.lastindex(points(pts))
+Base.firstindex(pts::Points) = Base.firstindex(points(pts))
+
 
 """
     get_point(pts::Points, i)
