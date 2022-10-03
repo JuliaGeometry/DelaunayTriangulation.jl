@@ -1,14 +1,12 @@
 name = "DelaunayTriangulation"
 uuid = "927a84f5-c5f4-47a5-9785-b46e178433df"
 authors = ["DanielVandH <danj.vandenheuvel@gmail.com> and contributors"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 ExactPredicates = "429591f6-91af-11e9-00e2-59fbe8cec110"
-Meshes = "eacbb407-ea5a-433e-ab97-5258b1ca43fa"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 SimpleGraphs = "55797a34-41de-5266-9ec1-32ac4eb504d3"
-StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
 ExactPredicates = "2"
