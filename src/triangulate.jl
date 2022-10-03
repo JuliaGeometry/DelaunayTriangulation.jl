@@ -327,13 +327,17 @@ You can use custom integer, triangle, and edge types by using the keyword argume
 `IntegerType`, `TriangleType`, and `EdgeType`. See their definitions in 
 [`initialise_triangulation`](@ref).
 """
+function triangulate!(DT::Triangulation)
+    for r in eachindex(points(DT))
+        add_point!(DT, r)
+    end
+    return nothing
+end
 function triangulate(pts; shuffle_pts=true, trim=true, method=:berg,
     IntegerType=Int64, TriangleType=Triangle{IntegerType}, EdgeType=Edge{IntegerType})
     DT = initialise_triangulation(pts; IntegerType, TriangleType, EdgeType)
     shuffle_pts && @views shuffle!(points(DT))
-    for r in eachindex(points(DT))
-        add_point!(DT, r)
-    end
+    triangulate!(DT)
     trim && remove_bounding_triangle!(DT)
     return DT
 end
