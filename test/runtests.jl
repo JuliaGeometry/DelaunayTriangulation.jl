@@ -27,3 +27,6 @@ end
 @testset "Utility functions" begin
     include("utils.jl")
 end
+@testset "Points with labels" begin
+    include("cells.jl")
+end
