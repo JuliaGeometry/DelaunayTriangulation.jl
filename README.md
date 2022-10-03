@@ -4,6 +4,7 @@
 - [Triangulation Structure](#triangulation-structure)
 - [Visualisation](#visualisation)
 - [Custom Points, Edges, and Triangles](#custom-points-edges-and-triangles)
+  - [Application: Cells with labels](#application-points-with-labels)
   
 Package for computing the Delaunay triangulation for a given set of points, using randomised incremental insertion. The method used is that given in the second edition of the book "Computational Geometry: Algorithms and Applications" by de Berg et al. (1999). All the necessary geometrical predicates are computed rigorously using the great package [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl), and support is provided for custom points, triangles, edges, and data types other than `Float64` and `Int64` (with a slight caveat for different float types; see the end of this README).
 
