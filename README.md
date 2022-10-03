@@ -268,4 +268,51 @@ scatter!(ax, getx.(points(DTri)),
 
 ![A triangulation of cells coloured by label](https://github.com/DanielVandH/DelaunayTriangulation.jl/blob/main/test/figures/cell_application.png)
 
-There appear to be some slight overhead to this approach (about 1.4x slower), for reasons that are as of yet unclear, but it is probably still faster than working with standard points and then mapping back onto the correct labels after the triangulation.
+There appear to be some slight overhead to this approach (about 1.4x slower, see the benchmark below), for reasons that are as of yet unclear, but it is probably still faster than working with standard points and then mapping back onto the correct labels after the triangulation.
+
+```julia
+n = 1000
+labels = [Physical, Ghost, Boundary]
+cell_x, cell_y, cell_k = 10randn(n), 10randn(n), rand(eachindex(labels), n)
+cells = convert(Vector{Cell{L} where L}, Cell.(cell_x, cell_y, getindex.(Ref(labels), cell_k)))
+pts = Points(cells)
+function cell_study(pts)
+    DTri = DelaunayTriangulation.triangulate(pts; shuffle_pts=false)
+    return DTri
+end
+standard_points = Point.(cell_x, cell_y)
+standard_pts = Points(standard_points)
+function standard_study(standard_pts)
+    DTri = DelaunayTriangulation.triangulate(standard_pts; shuffle_pts=false)
+    return DTri
+end
+using BenchmarkTools
+cell_timings = @benchmark $cell_study($pts)
+standard_timings = @benchmark $standard_study($standard_pts)
+```
+```julia
+julia> cell_timings
+BenchmarkTools.Trial: 119 samples with 1 evaluation.
+ Range (min … max):  33.847 ms … 69.224 ms  ┊ GC (min … max): 0.00% … 38.12%
+ Time  (median):     40.107 ms              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   42.061 ms ±  7.878 ms  ┊ GC (mean ± σ):  5.18% ± 10.41%
+
+    █ ▄▄ ▅ ▂ ▄ ▇ 
+  ▆▃█▆██▇███▇█▇█▇▆▅▅▅▅▆▃▅▁▁▃▁▁▁▁▁▁▁▁▁▁▃▁▁▁▃▃▁▅▁▅▃▁▁▁▃▁▁▁▁▃▁▃▃ ▃
+  33.8 ms         Histogram: frequency by time        68.5 ms <
+
+ Memory estimate: 19.39 MiB, allocs estimate: 190911.
+
+julia> standard_timings
+BenchmarkTools.Trial: 169 samples with 1 evaluation.
+ Range (min … max):  21.595 ms … 58.689 ms  ┊ GC (min … max): 0.00% … 44.66%
+ Time  (median):     28.298 ms              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   29.674 ms ±  7.227 ms  ┊ GC (mean ± σ):  6.13% ± 11.89%
+
+    ▁▁▂▁  ▇ ▃▄▄▅█
+  ▆▃████▆██▇█████▇▆▄▃▄▃▄▄▁▁▁▄▁▁▁▁▁▁▁▁▁▁▁▁▁▁▃▄▁▃▁▃▅▃▁▁▁▁▃▁▁▃▁▃ ▃
+  21.6 ms         Histogram: frequency by time        56.4 ms <
+
+ Memory estimate: 16.24 MiB, allocs estimate: 89960.
+ ```
+
