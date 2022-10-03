@@ -21,7 +21,7 @@ p6 = Point(3.08, 4.43)
 p7 = Point(-1.34, 4.83)
 p8 = Point(-1.68, -0.77)
 pts = Points(p1, p2, p3, p4, p5, p6, p7, p8) # A collection of Points - also comes from the package
-DT = triangulate(pts) # You can use DelaunayTriangulation.is_delaunay(DTri) to verify this is Delaunay 
+DT = triangulate(pts) # You can use DelaunayTriangulation.is_delaunay(DT) to verify this is Delaunay 
 ```
 
 The following would also work:
