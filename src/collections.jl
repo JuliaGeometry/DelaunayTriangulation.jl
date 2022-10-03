@@ -131,6 +131,11 @@ struct Points{T,A,P<:AbstractPoint{T,A}}
     end
     Points(points::NTuple{N,P};
         pLL=nothing, pLR=nothing, pU=nothing) where {N,T,A,P<:AbstractPoint{T,A}} = Points(collect(points); pLL, pLR, pU)
+    Points{T,A,P}(points, xcentroid, ycentroid, xmin, xmax, ymin, ymax, width, height,
+        max_width_height, lower_left_bounding_triangle_coords, lower_right_bounding_triangle_coords,
+        upper_bounding_triangle_coords) where {T,A,P} = new{T,A,P}(points, xcentroid, ycentroid, xmin, xmax, ymin, ymax, width, height,
+        max_width_height, lower_left_bounding_triangle_coords, lower_right_bounding_triangle_coords,
+        upper_bounding_triangle_coords)
 end
 points(pts::Points) = pts.points
 Base.length(pts::Points) = length(points(pts))
