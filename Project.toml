@@ -12,6 +12,7 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
 ExactPredicates = "2"
+Meshes = "0.25"
 SimpleGraphs = "0.8"
 julia = "1.8"
 
