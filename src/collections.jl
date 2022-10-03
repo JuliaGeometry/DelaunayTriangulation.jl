@@ -120,9 +120,11 @@ struct Points{T,A,P<:AbstractPoint{T,A}}
         xcentroid = (xmax + xmin) / 2
         ycentroid = (ymax + ymin) / 2
         max_width_height = max(width, height)
-        lower_left_bounding_triangle_coords = isnothing(pLL) ? P(xcentroid - BoundingTriangleShift * max_width_height, ycentroid - max_width_height) : pLL
-        lower_right_bounding_triangle_coords = isnothing(pLR) ? P(xcentroid + BoundingTriangleShift * max_width_height, ycentroid - max_width_height) : pLR
-        upper_bounding_triangle_coords = isnothing(pU) ? P(xcentroid, ycentroid + BoundingTriangleShift * max_width_height) : pU
+        lower_left_bounding_triangle_coords = isnothing(pLL) ? P(xcentroid - BoundingTriangleShift * max_width_height - rand(T)^2,
+            ycentroid - max_width_height - rand(T)^2) : pLL
+        lower_right_bounding_triangle_coords = isnothing(pLR) ? P(xcentroid + BoundingTriangleShift * max_width_height + rand(T)^2 * eps(T),
+            ycentroid - max_width_height + rand(T)^2) : pLR
+        upper_bounding_triangle_coords = isnothing(pU) ? P(xcentroid + rand(T)^2, ycentroid + BoundingTriangleShift * max_width_height + rand(T)^2) : pU
         return new{T,A,P}(points, xcentroid, ycentroid, xmin, xmax, ymin,
             ymax, width, height, max_width_height, lower_left_bounding_triangle_coords,
             lower_right_bounding_triangle_coords, upper_bounding_triangle_coords)
