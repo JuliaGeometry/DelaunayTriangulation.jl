@@ -4,6 +4,7 @@
 - [Triangulation Structure](#triangulation-structure)
 - [Visualisation](#visualisation)
 - [Custom Points, Edges, and Triangles](#custom-points-edges-and-triangles)
+  - [Application: Cells with labels](#application-points-with-labels)
   
 Package for computing the Delaunay triangulation for a given set of points, using randomised incremental insertion. The method used is that given in the second edition of the book "Computational Geometry: Algorithms and Applications" by de Berg et al. (1999). All the necessary geometrical predicates are computed rigorously using the great package [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl), and support is provided for custom points, triangles, edges, and data types other than `Float64` and `Int64` (with a slight caveat for different float types; see the end of this README).
 
@@ -184,3 +185,134 @@ pts = Points(p1, p2, p3, p4, p5)
 DTri = triangulate(pts;
     IntegerType=Int16, EdgeType=CustomEdge, TriangleType=CustomTriangle, shuffle_pts=false)
 ```
+
+## Application: Points with labels 
+
+Let us give an example that takes the above ideas with custom points and applies it to a problem where the points we want to triangulate have labels. In particular, suppose each point represents a cell that is either physical, non-physical (a 'ghost' cell), or a boundary cell. One possible way to implement such a point is:
+```julia
+abstract type AbstractLabel end
+struct Physical <: AbstractLabel end
+struct Ghost <: AbstractLabel end
+struct Boundary <: AbstractLabel end
+struct Cell{L<:AbstractLabel} <: DelaunayTriangulation.AbstractPoint{Float64,Vector{Float64}}
+    x::Float64 
+    y::Float64
+    label::Type{L}
+    Cell(x::Float64, y::Float64, label::Type{L}) where {L} = new{L}(x, y, label)
+    Cell(x, y, label) = Cell(Float64(x), Float64(y), label)
+    Cell{L}(x, y) where {L} = Cell(x, y, L)
+end
+DelaunayTriangulation.getx(p::Cell) = p.x
+DelaunayTriangulation.gety(p::Cell) = p.y
+getlabel(::Cell{L}) where {L} = L
+```
+Here we are defining separate structs to define the labels, and a struct `Cell` that stores the point's coordinates and its label.
+
+To now compute the triangulations, we unfortunately need to redefine a new method for `Points` since we currently use coordinates for the bounding triangle's vertices (see [#5](https://github.com/DanielVandH/DelaunayTriangulation.jl/issues/5)). The following function defines the new method, with the only change being that we now define the bounding triangle's coordinates as being ghost cells.
+```julia
+function DelaunayTriangulation.Points(points::Vector{Cell{L} where L})
+    xmin, xmax, ymin, ymax = typemax(Float64), typemin(Float64), typemax(Float64), typemin(Float64)
+    for pt in points
+        getx(pt) < xmin && (xmin = getx(pt))
+        getx(pt) > xmax && (xmax = getx(pt))
+        gety(pt) < ymin && (ymin = gety(pt))
+        gety(pt) > ymax && (ymax = gety(pt))
+    end
+    width, height = xmax - xmin, ymax - ymin
+    xc, yc = (xmax + xmin) / 2, (ymax + ymin) / 2
+    max_width_height = max(width, height)
+    lower_left = Cell{Ghost}(xc - DelaunayTriangulation.BoundingTriangleShift * max_width_height, yc - max_width_height)
+    lower_right = Cell{Ghost}(xc + DelaunayTriangulation.BoundingTriangleShift * max_width_height, yc - max_width_height)
+    upper_bounding = Cell{Ghost}(xc, yc + DelaunayTriangulation.BoundingTriangleShift * max_width_height)
+    return Points{Float64,Vector{Float64},Cell{L} where L}(points, xc, yc, xmin, xmax, ymin,
+        ymax, width, height, max_width_height, lower_left,
+        lower_right, upper_bounding)
+end
+```
+
+This is all that we need to do. Let's generate a set of cells and triangulate, colouring each point by its label.
+```julia
+
+n = 100
+labels = [Physical, Ghost, Boundary]
+Random.seed!(29291)
+cell_x, cell_y, cell_k = 10randn(n), 10randn(n), rand(eachindex(labels), n)
+cells = convert(Vector{Cell{L} where L}, Cell.(cell_x, cell_y, getindex.(Ref(labels), cell_k)))
+pts = Points(cells)
+DTri = triangulate(pts; shuffle_pts=false)
+
+using CairoMakie
+fig = Figure()
+ax = Axis(fig[1, 1])
+Tmat = zeros(Int64, num_triangles(DTri), 3)
+pmat = zeros(num_points(DTri), 2)
+for (i, T) in enumerate(triangles(DTri))
+    Tmat[i, :] = [geti(T), getj(T), getk(T)]
+end
+for (i, p) in enumerate(points(DTri))
+    pmat[i, :] = [getx(p), gety(p)]
+end
+poly!(ax, pmat, Tmat, strokewidth=2, color=(:white, 0))
+for (i, j) in adjacent2vertex(DTri, DelaunayTriangulation.BoundaryIndex)
+    p = DT.get_point(DTri, i)
+    q = DT.get_point(DTri, j)
+    lines!(ax, [getx(p), getx(q)], [gety(p), gety(q)], color=:red, linewidth=3)
+end
+colors = Dict(labels .=> [:green, :blue, :magenta])
+scatter!(ax, getx.(points(DTri)),
+    gety.(points(DTri)),
+    color=getindex.(Ref(colors), getlabel.(points(DTri))),
+    markersize=11)
+```
+
+
+![A triangulation of cells coloured by label](https://github.com/DanielVandH/DelaunayTriangulation.jl/blob/main/test/figures/cell_application.png)
+
+There appear to be some slight overhead to this approach (about 1.4x slower, see the benchmark below), for reasons that are as of yet unclear, but it is probably still faster than working with standard points and then mapping back onto the correct labels after the triangulation.
+
+```julia
+n = 1000
+labels = [Physical, Ghost, Boundary]
+cell_x, cell_y, cell_k = 10randn(n), 10randn(n), rand(eachindex(labels), n)
+cells = convert(Vector{Cell{L} where L}, Cell.(cell_x, cell_y, getindex.(Ref(labels), cell_k)))
+pts = Points(cells)
+function cell_study(pts)
+    DTri = DelaunayTriangulation.triangulate(pts; shuffle_pts=false)
+    return DTri
+end
+standard_points = Point.(cell_x, cell_y)
+standard_pts = Points(standard_points)
+function standard_study(standard_pts)
+    DTri = DelaunayTriangulation.triangulate(standard_pts; shuffle_pts=false)
+    return DTri
+end
+using BenchmarkTools
+cell_timings = @benchmark $cell_study($pts)
+standard_timings = @benchmark $standard_study($standard_pts)
+```
+```julia
+julia> cell_timings
+BenchmarkTools.Trial: 119 samples with 1 evaluation.
+ Range (min … max):  33.847 ms … 69.224 ms  ┊ GC (min … max): 0.00% … 38.12%
+ Time  (median):     40.107 ms              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   42.061 ms ±  7.878 ms  ┊ GC (mean ± σ):  5.18% ± 10.41%
+
+    █ ▄▄ ▅ ▂ ▄ ▇ 
+  ▆▃█▆██▇███▇█▇█▇▆▅▅▅▅▆▃▅▁▁▃▁▁▁▁▁▁▁▁▁▁▃▁▁▁▃▃▁▅▁▅▃▁▁▁▃▁▁▁▁▃▁▃▃ ▃
+  33.8 ms         Histogram: frequency by time        68.5 ms <
+
+ Memory estimate: 19.39 MiB, allocs estimate: 190911.
+
+julia> standard_timings
+BenchmarkTools.Trial: 169 samples with 1 evaluation.
+ Range (min … max):  21.595 ms … 58.689 ms  ┊ GC (min … max): 0.00% … 44.66%
+ Time  (median):     28.298 ms              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   29.674 ms ±  7.227 ms  ┊ GC (mean ± σ):  6.13% ± 11.89%
+
+    ▁▁▂▁  ▇ ▃▄▄▅█
+  ▆▃████▆██▇█████▇▆▄▃▄▃▄▄▁▁▁▄▁▁▁▁▁▁▁▁▁▁▁▁▁▁▃▄▁▃▁▃▅▃▁▁▁▁▃▁▁▃▁▃ ▃
+  21.6 ms         Histogram: frequency by time        56.4 ms <
+
+ Memory estimate: 16.24 MiB, allocs estimate: 89960.
+ ```
+
