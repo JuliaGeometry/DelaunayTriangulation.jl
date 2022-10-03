@@ -1390,6 +1390,7 @@ end
     ])
 end
 
+
 #=
 p1 = Point(5.0, 2.0)
 p2 = Point(6.0, 3.0)
@@ -1401,7 +1402,7 @@ p7 = Point(10.0, 7.0)
 p8 = Point(12.0, 5.0)
 p9 = Point(3.0, 9.0)
 pts = Points(p1, p2, p3, p4, p5, p6, p7, p8, p9)
-DTri = triangulate(pts;shuffle_pts=false)
+DTri = triangulate(pts)
 @test DT.is_delaunay(DTri)
 @test triangles(DTri).triangles == Set{Triangle{Int64}}([
     Triangle(5, 2, 3),
@@ -1453,4 +1454,56 @@ for _ in 1:50 # Seemed to fail sometimes on input order, so this is for safety
     @test DT.is_delaunay(DTri)
     @test all(orient(T, pts) ≥ 0 for T in triangles(DTri))
 end
+
+
+import CairoMakie: poly!, Figure, Axis, lines!
+p1 = Point(0.0, 5.0)
+p2 = Point(5.0, 0.0)
+p3 = Point(2.5, 7.5)
+p4 = Point(5.0, 5.0)
+p5 = Point(0.0, 0.0)
+p6 = Point(2.5, 5.0)
+pts = Points(p1, p2, p3, p4, p5)
+DTri = triangulate(pts; shuffle_pts=false, trim=false)
+T, HG, adj, adj2v, DG, root = triangles(DTri),
+history(DTri), adjacent(DTri), adjacent2vertex(DTri),
+graph(DTri), DT.root(DTri)
+r = 6
+add_point!(pts, p6)
+pᵣ = get_point(pts, r)
+Tᵢⱼₖ, interior_flag = DT.locate_triangle(HG, pts, pᵣ, root)
+i, j, k = Tᵢⱼₖ
+DT.leftofline(pts, pᵣ, i, j)
+DT.leftofline(pts, pᵣ, j, k)
+DT.leftofline(pts, pᵣ, k, i)
+k = DT.get_edge(adj, i, j)
+ℓ = DT.get_edge(adj, j, i)
+DT.split_triangle!(T, HG, adj, adj2v, DG, i, j, k, ℓ, r)
+DT.legalise_edge!(T, HG, adj, adj2v, DG, i, ℓ, r, pts)
+DT.legalise_edge!(T, HG, adj, adj2v, DG, ℓ, j, r, pts)
+DT.legalise_edge!(T, HG, adj, adj2v, DG, j, k, r, pts)
+DT.legalise_edge!(T, HG, adj, adj2v, DG, k, i, r, pts)
+DT.remove_bounding_triangle!(DTri)
+
+
+i, j = DT.find_edge(Tᵢⱼₖ, pts, pᵣ)
+
+
+fig = Figure()
+ax = Axis(fig[1, 1])
+Tmat = zeros(Int64, num_triangles(DTri), 3)
+for (i, T) in enumerate(triangles(DTri))
+    Tmat[i, :] = [geti(T), getj(T), getk(T)]
+end
+pmat = zeros(num_points(DTri), 2)
+for (i, p) in enumerate(points(DTri))
+    pmat[i, :] = [getx(p), gety(p)]
+end
+poly!(ax, pmat, Tmat, strokewidth=2)
+for (i, j) in adjacent2vertex(DTri, DelaunayTriangulation.BoundaryIndex)
+    p = DT.get_point(DTri, i)
+    q = DT.get_point(DTri, j)
+    lines!(ax, [getx(p), getx(q)], [gety(p), gety(q)], color=:red, linewidth=5)
+end
+fig
 =#
