@@ -1,7 +1,7 @@
 name = "DelaunayTriangulation"
 uuid = "927a84f5-c5f4-47a5-9785-b46e178433df"
 authors = ["DanielVandH <danj.vandenheuvel@gmail.com> and contributors"]
-version = "0.1.1"
+version = "0.1.2"
 
 [deps]
 ExactPredicates = "429591f6-91af-11e9-00e2-59fbe8cec110"
