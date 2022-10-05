@@ -254,8 +254,8 @@ for (i, p) in enumerate(points(DTri))
 end
 poly!(ax, pmat, Tmat, strokewidth=2, color=(:white, 0))
 for (i, j) in adjacent2vertex(DTri, DelaunayTriangulation.BoundaryIndex)
-    p = DT.get_point(DTri, i)
-    q = DT.get_point(DTri, j)
+    p = DelaunayTriangulation.get_point(DTri, i)
+    q = DelaunayTriangulation.get_point(DTri, j)
     lines!(ax, [getx(p), getx(q)], [gety(p), gety(q)], color=:red, linewidth=3)
 end
 colors = Dict(labels .=> [:green, :blue, :magenta])
