@@ -950,7 +950,7 @@ end
     @test typeof(Tri) <: DT.AbstractTriangulation
     @test typeof(Tri) <: DT.AbstractUnconstrainedTriangulation
 
-    Tri3 = UnconstrainedTriangulation(pts; IntegerType=Int16)
+    Tri3 = UnconstrainedTriangulation(pts; IntegerType=Int16,method=:berg)
     @test adjacent(Tri3) == Tri3.adjacent
     @test adjacent2vertex(Tri3) == Tri3.adjacent2vertex
     @test graph(Tri3) == Tri3.graph
@@ -1874,7 +1874,7 @@ end
     p4 = (-1.0, 4.0)
     pts = [p1, p2, p3, p4]
 
-    DTri = DT.UnconstrainedTriangulation(pts)
+    DTri = DT.UnconstrainedTriangulation(pts;method=:berg)
     T, HG, adj, adj2v, DG, root = triangles(DTri), pointlocation(DTri),
     adjacent(DTri), adjacent2vertex(DTri), graph(DTri), DT.BoundingTriangle
 
@@ -2095,9 +2095,9 @@ end
     @test DT.islegal(j, k, adj, pts)
     @test DT.islegal(k, i, adj, pts)
 
-    DTri = triangulate(pts)
+    DTri = triangulate(pts;method=:berg)
     @test DT.is_delaunay(DTri)
-    DTri = triangulate(pts; trim=false)
+    DTri = triangulate(pts; trim=false,method=:berg)
     @test DT.is_delaunay(DTri)
 end
 
@@ -2111,25 +2111,25 @@ end
     p7 = (-1.34, 4.83)
     p8 = (-1.68, -0.77)
     pts = [p1, p2, p3, p4, p5, p6, p7, p8]
-    DTri = triangulate(pts)
+    DTri = triangulate(pts;method=:berg)
     @test DT.is_delaunay(DTri)
-    DTri = triangulate(pts; trim=false)
+    DTri = triangulate(pts; trim=false,method=:berg)
     @test DT.is_delaunay(DTri)
     pts = [[-6.88, 3.61], [-6.08, -0.43], [-0.3, 2.01], [5.1, -1.27], [6.18, 1.87], [3.08, 4.43], [-1.34, 4.83], [-1.68, -0.77]]
     DTri = triangulate(pts)
     @test DT.is_delaunay(DTri)
-    DTri = triangulate(pts; trim=false)
+    DTri = triangulate(pts; trim=false,method=:berg)
     @test DT.is_delaunay(DTri)
 
     pts = [p1, p2, p3, p4, p5, p6, p7, p8]
-    DTri = triangulate(pts; randomise=false, trim=false)
-    DTri2 = triangulate([p1, p2, p3, p4, p5, p6, p7]; randomise=false, trim=false)
+    DTri = triangulate(pts; randomise=false, trim=false,method=:berg)
+    DTri2 = triangulate([p1, p2, p3, p4, p5, p6, p7]; randomise=false, trim=false,method=:berg)
     add_point!(DTri2, (-1.68, -0.77))
     @test triangles(DTri2) == triangles(DTri)
 
     pts = [p1, p2, p3, p4, p5, p6, p7, p8]
-    DTri = triangulate(pts; randomise=false, trim=true)
-    DTri2 = triangulate([p1, p2, p3, p4, p5, p6, p7]; randomise=false, trim=false)
+    DTri = triangulate(pts; randomise=false, trim=true,method=:berg)
+    DTri2 = triangulate([p1, p2, p3, p4, p5, p6, p7]; randomise=false, trim=false,method=:berg)
     add_point!(DTri2, (-1.68, -0.77))
     DT.remove_bounding_triangle!(DTri2)
     @test triangles(DTri2) == triangles(DTri)
@@ -2138,10 +2138,10 @@ end
         x = rand(100)
         y = rand(100)
         pts = [(x, y) for (x, y) in zip(x, y)]
-        DTri = triangulate(pts)
+        DTri = triangulate(pts;method=:berg)
         @test DT.is_delaunay(DTri)
         @test all(DT.isoriented(T, pts) == 1 for T in triangles(DTri))
-        DTri = triangulate(pts; trim=false)
+        DTri = triangulate(pts; method=:berg,trim=false)
         @test DT.is_delaunay(DTri)
         @test all(DT.isoriented(T, pts) == 1 for T in triangles(DTri))
         @test 1 == num_points(DTri) - num_edges(DTri) + num_triangles(DTri) # Euler's formula
@@ -2154,7 +2154,7 @@ ax = Axis(fig[1, 1])
 x = rand(100)
 y = rand(100)
 pts = [(x, y) for (x, y) in zip(x, y)]
-DTri = triangulate(pts)
+DTri = triangulate(pts;method=:berg)
 Tmat = zeros(Int64, num_triangles(DTri), 3)
 for (i, T) in enumerate(triangles(DTri))
     Tmat[i, :] = [geti(T), getj(T), getk(T)]
@@ -2181,7 +2181,7 @@ save("figures/test_triangulation.png", fig)
     p7 = (-1.34, 4.83)
     p8 = (-1.68, -0.77)
     pts = [p1, p2, p3, p4, p5, p6, p7, p8]
-    DTri = triangulate(pts; IntegerType=Int16, randomise=false)
+    DTri = triangulate(pts; IntegerType=Int16, randomise=false,method=:berg)
     @test points(DTri) == pts
     @test adjacent(DTri) isa DT.Adjacent{Int16,NTuple{2,Int16}}
     @test adjacent2vertex(DTri) isa DT.Adjacent2Vertex{Int16,Set{NTuple{2,Int16}},NTuple{2,Int16}}
