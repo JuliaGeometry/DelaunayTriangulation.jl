@@ -10,7 +10,7 @@ const UpperBoundingIndex = -2
 """The index used to represent the lower-left of the bounding triangle, p₋₃."""
 const LowerLeftBoundingIndex = -3
 """The triangle representing the bounding triangle for any triangulation."""
-const BoundingTriangle = Triangle(LowerRightBoundingIndex,
+const BoundingTriangle = (LowerRightBoundingIndex,
     UpperBoundingIndex,
     LowerLeftBoundingIndex)
 """The index used to represent the unbounded part of the triangulation, i.e. the boundary."""

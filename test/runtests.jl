@@ -3,9 +3,9 @@ using ExactPredicates
 using Test
 using Random
 using DelaunayTriangulation
-using OffsetArrays
 const DT = DelaunayTriangulation
 
+#=
 @testset "Primitives" begin
     include("primitives.jl")
 end
@@ -30,3 +30,6 @@ end
 @testset "Points with labels" begin
     include("cells.jl")
 end
+=#
+
+@testset "All" begin include("algorithm.jl") end
