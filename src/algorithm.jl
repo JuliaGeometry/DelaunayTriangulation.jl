@@ -1271,6 +1271,12 @@ function add_point!(DT::AbstractTriangulation{T,E,Ts,Es,Ps,I}, p) where {T,E,Ts,
     return nothing
 end
 
+############################################
+##
+## TRIANGULATION METHODS
+##
+############################################
+
 """
     triangulate!(DT::AbstractTriangulation; randomise=true, trim=true)
 
