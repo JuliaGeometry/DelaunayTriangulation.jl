@@ -49,6 +49,7 @@ end
     @test T == Set{NTuple{3,Int64}}([(2, 3, 1), (7, 10, 15), (18, 19, 23)])
     DT.delete_triangle!(T, (2, 3, 1), (7, 10, 15))
     @test T == Set{NTuple{3,Int64}}([(18, 19, 23)])
+    @test DT.triangle_type(typeof(T)) == NTuple{3, Int64}
 end
 
 @testset "Points" begin

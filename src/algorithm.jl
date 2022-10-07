@@ -1053,6 +1053,7 @@ that `r` is in the interior of the triangle `Tᵢⱼₖ`.
 `T`, `HG`, `adj`, `adj2v`, and `DG` are all updated in-place.
 """
 function add_point!(T, HG::HistoryGraph, adj, adj2v, DG, Tᵢⱼₖ::V, r) where {V}
+    #=
     i, j, k = indices(Tᵢⱼₖ)                     # The triangle to be split into three
     delete_triangle!(T, Tᵢⱼₖ)                   # Now that we've split the triangle, we can remove the triangle
     Tᵢⱼᵣ = construct_triangle(V, i, j, r)
@@ -1065,6 +1066,16 @@ function add_point!(T, HG::HistoryGraph, adj, adj2v, DG, Tᵢⱼₖ::V, r) where
     update_after_insertion!(adj2v, i, j, k, r)  # Update the adjacent-to-vertex map 
     add_point!(DG, r)                           # Add the rth point into the vertex set
     add_neighbour!(DG, r, i, j, k)              # Connect the new edges
+    =#
+    i, j, k = indices(Tᵢⱼₖ)
+    Tᵢⱼᵣ = construct_triangle(V, i, j, r)
+    Tⱼₖᵣ = construct_triangle(V, j, k, r)
+    Tₖᵢᵣ = construct_triangle(V, k, i, r) 
+    add_triangle!(HG, Tᵢⱼᵣ, Tⱼₖᵣ, Tₖᵢᵣ)
+    add_edge!(HG, Tᵢⱼₖ, Tᵢⱼᵣ, Tⱼₖᵣ, Tₖᵢᵣ)
+    add_triangle!(T, adj, adj2v, DG, i, j, r, k; delete_adjacent_neighbours = false)
+    add_triangle!(T, adj, adj2v, DG, j, k, r, i; delete_adjacent_neighbours = false)
+    add_triangle!(T, adj, adj2v, DG, k, i, r, j; delete_adjacent_neighbours = false)
     return nothing
 end
 
