@@ -81,3 +81,29 @@ function add_triangle!(T::Ts, adj::Adjacent, adj2v::Adjacent2Vertex,
     add_triangle!(HG, V, i, j, r, k)
     return nothing
 end
+
+"""
+    split_point!(T, HG::HistoryGraph, adj, adj2v, DG, Tᵢⱼₖ::V, r) where V
+
+Given a triangulation `T`, adds the `r`th point of the point set into the triangulation, assuming 
+that `r` is in the interior of the triangle `Tᵢⱼₖ`.
+
+# Arguments 
+- `T`: The current set of triangles defining the triangulation.
+- `HG`: The point location data structure.
+- `adj`: The adjacency list.
+- `adj2v`: The adjacent-to-vertex list.
+- `DG`: The vertex-neighbour data structure.
+-` Tᵢⱼₖ`: The triangle that the `r`th point is inside of. Must be positively oriented.
+- `r`: The index of the point in the original point set that is being introduced.
+
+# Outputs 
+`T`, `HG`, `adj`, `adj2v`, and `DG` are all updated in-place.
+"""
+function split_triangle!(T, HG::HistoryGraph, adj, adj2v, DG, Tᵢⱼₖ::V, r) where {V}
+    i, j, k = indices(Tᵢⱼₖ)
+    add_triangle!(T, adj, adj2v, DG, HG, i, j, r, k; delete_adjacent_neighbours=false)
+    add_triangle!(T, adj, adj2v, DG, HG, j, k, r, i; delete_adjacent_neighbours=false)
+    add_triangle!(T, adj, adj2v, DG, HG, k, i, r, j; delete_adjacent_neighbours=false)
+    return nothing
+end

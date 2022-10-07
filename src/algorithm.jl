@@ -1036,32 +1036,6 @@ function locate_triangle(HG::HistoryGraph, pts, r::I, init=find_root(HG; method=
 end
 
 """
-    add_point!(T, HG::HistoryGraph, adj, adj2v,DG, Tᵢⱼₖ::V, r) where V
-
-Given a triangulation `T`, adds the `r`th point of the point set into the triangulation, assuming 
-that `r` is in the interior of the triangle `Tᵢⱼₖ`.
-
-# Arguments 
-- `T`: The current set of triangles defining the triangulation.
-- `HG`: The point location data structure.
-- `adj`: The adjacency list.
-- `adj2v`: The adjacent-to-vertex list.
-- `DG`: The vertex-neighbour data structure.
--` Tᵢⱼₖ`: The triangle that the `r`th point is inside of. Must be positively oriented.
-- `r`: The index of the point in the original point set that is being introduced.
-
-# Outputs 
-`T`, `HG`, `adj`, `adj2v`, and `DG` are all updated in-place.
-"""
-function add_point!(T, HG::HistoryGraph, adj, adj2v, DG, Tᵢⱼₖ::V, r) where {V}
-    i, j, k = indices(Tᵢⱼₖ)
-    add_triangle!(T, adj, adj2v, DG, HG, i, j, r, k; delete_adjacent_neighbours=false)
-    add_triangle!(T, adj, adj2v, DG, HG, j, k, r, i; delete_adjacent_neighbours=false)
-    add_triangle!(T, adj, adj2v, DG, HG, k, i, r, j; delete_adjacent_neighbours=false)
-    return nothing
-end
-
-"""
     split_triangle!(T, HG, adj, adj2v, DG, i, j, k, ℓ, r)
 
 Given a triangulation `T`, adds the `r`th point of the point set into the triangulation, assumed 
@@ -1228,7 +1202,7 @@ function add_point!(T, HG::HistoryGraph, adj, adj2v, DG, root, pts, r)
     Tᵢⱼₖ, interior_flag = locate_triangle(HG, pts, r, root)
     if interior_flag == 1
         i, j, k = Tᵢⱼₖ
-        add_point!(T, HG, adj, adj2v, DG, Tᵢⱼₖ, r)
+        split_triangle!(T, HG, adj, adj2v, DG, Tᵢⱼₖ, r)
         legalise_edge!(T, HG, adj, adj2v, DG, i, j, r, pts)
         legalise_edge!(T, HG, adj, adj2v, DG, j, k, r, pts)
         legalise_edge!(T, HG, adj, adj2v, DG, k, i, r, pts)
