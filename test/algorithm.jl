@@ -230,6 +230,9 @@ end
     @test DT.get_edge(adj, 3, 5) == 2
     @test DT.get_edge(adj, 5, 2) == 3
     @test DT.get_edge(adj, 2, 3) == 5
+    DT.delete_edge!(adj, 2, 3; delete_uv_only = true)
+    @test DT.get_edge(adj, 3, 2) == 1 
+    @test_throws KeyError DT.get_edge(adj, 2, 3)
 
     adj = DT.Adjacent{Int64,NTuple{2,Int64}}()
     DT.add_edge!(adj, 2, 3, 7)
@@ -1249,7 +1252,7 @@ end
     DT.add_neighbour!(DG, 3, DT.LowerLeftBoundingIndex, 1, 2)
 
     # Now do the actual test 
-    DT.add_point!(T, HG, adj, adj2v, DG, DT.construct_triangle(NTuple{3,Int64}, DT.LowerLeftBoundingIndex, 3, 1), 4)
+    DT.split_triangle!(T, HG, adj, adj2v, DG, DT.construct_triangle(NTuple{3,Int64}, DT.LowerLeftBoundingIndex, 3, 1), 4)
     @test DT.construct_triangle(NTuple{3,Int64}, DT.LowerLeftBoundingIndex, 3, 1) ∉ T
     @test DT.construct_triangle(NTuple{3,Int64}, DT.LowerLeftBoundingIndex, 3, 4) ∈ T
     @test DT.construct_triangle(NTuple{3,Int64}, 3, 1, 4) ∈ T
@@ -1416,7 +1419,7 @@ end
     DT.add_neighbour!(DG, 1, DT.LowerLeftBoundingIndex, DT.LowerRightBoundingIndex, DT.UpperBoundingIndex, 2, 3)
     DT.add_neighbour!(DG, 2, DT.LowerLeftBoundingIndex, DT.LowerRightBoundingIndex, 1, 3)
     DT.add_neighbour!(DG, 3, DT.LowerLeftBoundingIndex, 1, 2)
-    DT.add_point!(T, HG, adj, adj2v, DG, DT.construct_triangle(NTuple{3,Int64}, DT.LowerLeftBoundingIndex, 3, 1), 4)
+    DT.split_triangle!(T, HG, adj, adj2v, DG, DT.construct_triangle(NTuple{3,Int64}, DT.LowerLeftBoundingIndex, 3, 1), 4)
     i, j = 3, 1
     r, k = 4, 2
     DT.flip_edge!(T, HG, adj, adj2v, DG, i, j, k, r)
@@ -1618,7 +1621,7 @@ end
     DT.add_neighbour!(DG, 1, DT.LowerLeftBoundingIndex, DT.LowerRightBoundingIndex, DT.UpperBoundingIndex, 2, 3)
     DT.add_neighbour!(DG, 2, DT.LowerLeftBoundingIndex, DT.LowerRightBoundingIndex, 1, 3)
     DT.add_neighbour!(DG, 3, DT.LowerLeftBoundingIndex, 1, 2)
-    DT.add_point!(T, HG, adj, adj2v, DG, DT.construct_triangle(NTuple{3,Int64}, DT.LowerLeftBoundingIndex, 3, 1), 4)
+    DT.split_triangle!(T, HG, adj, adj2v, DG, DT.construct_triangle(NTuple{3,Int64}, DT.LowerLeftBoundingIndex, 3, 1), 4)
     i, j = 3, 1
     r, k = 4, 2
     @test !DT.islegal(i, j, adj, pts)
@@ -1821,7 +1824,7 @@ end
     DT.add_neighbour!(DG, 1, DT.LowerLeftBoundingIndex, DT.LowerRightBoundingIndex, DT.UpperBoundingIndex, 2, 3)
     DT.add_neighbour!(DG, 2, DT.LowerLeftBoundingIndex, DT.LowerRightBoundingIndex, 1, 3)
     DT.add_neighbour!(DG, 3, DT.LowerLeftBoundingIndex, 1, 2)
-    DT.add_point!(T, HG, adj, adj2v, DG, DT.construct_triangle(NTuple{3,Int64}, DT.LowerLeftBoundingIndex, 3, 1), 4)
+    DT.split_triangle!(T, HG, adj, adj2v, DG, DT.construct_triangle(NTuple{3,Int64}, DT.LowerLeftBoundingIndex, 3, 1), 4)
     i, j = 3, 1
     r, k = 4, 2
     DT.legalise_edge!(T, HG, adj, adj2v, DG, i, j, r, pts)
@@ -1888,7 +1891,7 @@ end
     @test i == DT.LowerRightBoundingIndex
     @test j == DT.UpperBoundingIndex
     @test k == DT.LowerLeftBoundingIndex
-    DT.add_point!(T, HG, adj, adj2v, DG, Tᵢⱼₖ, r)
+    DT.split_triangle!(T, HG, adj, adj2v, DG, Tᵢⱼₖ, r)
     @test T == Set{NTuple{3,Int64}}([
         DT.construct_triangle(NTuple{3,Int64}, DT.LowerRightBoundingIndex, DT.UpperBoundingIndex, 1),
         DT.construct_triangle(NTuple{3,Int64}, DT.UpperBoundingIndex, DT.LowerLeftBoundingIndex, 1),
@@ -1942,7 +1945,7 @@ end
     i, j, k = Tᵢⱼₖ
     @test Tᵢⱼₖ == DT.construct_triangle(NTuple{3,Int64}, DT.LowerLeftBoundingIndex, DT.LowerRightBoundingIndex, 1)
     @test interior_flag == 1
-    DT.add_point!(T, HG, adj, adj2v, DG, Tᵢⱼₖ, r)
+    DT.split_triangle!(T, HG, adj, adj2v, DG, Tᵢⱼₖ, r)
     @test T == Set{NTuple{3,Int64}}([
         DT.construct_triangle(NTuple{3,Int64}, DT.LowerRightBoundingIndex, DT.UpperBoundingIndex, 1),
         DT.construct_triangle(NTuple{3,Int64}, DT.LowerRightBoundingIndex, 1, 2),
@@ -2022,7 +2025,7 @@ end
     pᵣ = DT.get_point(pts, r)
     Tᵢⱼₖ, interior_flag = DT.locate_triangle(HG, pts, r, root)
     i, j, k = Tᵢⱼₖ
-    add_point!(T, HG, adj, adj2v, DG, Tᵢⱼₖ, r)
+    DT.split_triangle!(T, HG, adj, adj2v, DG, Tᵢⱼₖ, r)
     @test !DT.islegal(i, j, adj, pts)
     @test DT.islegal(j, k, adj, pts)
     @test DT.islegal(k, i, adj, pts)
