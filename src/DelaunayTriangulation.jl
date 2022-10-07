@@ -33,6 +33,6 @@ export num_points, num_triangles, edges, num_edges
 export add_point!
 export geti, getj, getk, indices
 export getx, gety
-
+export get_edge
 
 end
