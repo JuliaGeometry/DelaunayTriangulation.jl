@@ -445,9 +445,8 @@ set `protect_boundary=true`. If you only want to delete `(u, v)` and instead pro
 """
 function delete_edge!(adj::Adjacent{I,E}, u, v; protect_boundary=true, delete_uv_only=false) where {I,E}
     Euv = construct_edge(E, u, v)
-    Evu = !delete_uv_only ? construct_edge(E, v, u) : nothing
     (!protect_boundary || get_edge(adj, Euv) ≠ I(BoundaryIndex)) && delete!(adjacent(adj), Euv)
-    !delete_uv_only && (!protect_boundary || get_edge(adj, Evu) ≠ I(BoundaryIndex)) && delete!(adjacent(adj), Evu)
+    !delete_uv_only && delete_edge!(adj, v, u; protect_boundary, delete_uv_only=true)
     return nothing
 end
 
