@@ -741,6 +741,7 @@ struct HistoryGraph{T}
     graph::DirectedGraph{T}
     function HistoryGraph{T}() where {T}
         G = DirectedGraph{T}()
+        forbid_loops!(G)
         TDAG = new{T}(G)
         return TDAG
     end
