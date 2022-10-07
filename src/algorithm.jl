@@ -1054,29 +1054,10 @@ that `r` is in the interior of the triangle `Tᵢⱼₖ`.
 `T`, `HG`, `adj`, `adj2v`, and `DG` are all updated in-place.
 """
 function add_point!(T, HG::HistoryGraph, adj, adj2v, DG, Tᵢⱼₖ::V, r) where {V}
-    #=
-    i, j, k = indices(Tᵢⱼₖ)                     # The triangle to be split into three
-    delete_triangle!(T, Tᵢⱼₖ)                   # Now that we've split the triangle, we can remove the triangle
-    Tᵢⱼᵣ = construct_triangle(V, i, j, r)
-    Tⱼₖᵣ = construct_triangle(V, j, k, r)
-    Tₖᵢᵣ = construct_triangle(V, k, i, r)       # New triangles to add. Note that these triangles are all positively oriented.
-    add_triangle!(T, Tᵢⱼᵣ, Tⱼₖᵣ, Tₖᵢᵣ)          # The three new triangles
-    add_triangle!(HG, Tᵢⱼᵣ, Tⱼₖᵣ, Tₖᵢᵣ)         # Add the new triangles into the DAG
-    add_edge!(HG, Tᵢⱼₖ, Tᵢⱼᵣ, Tⱼₖᵣ, Tₖᵢᵣ)       # Add edges from the old triangle to the new triangles
-    add_triangle!(adj, Tᵢⱼᵣ, Tⱼₖᵣ, Tₖᵢᵣ)        # Add the new edges into the adjacency list
-    update_after_insertion!(adj2v, i, j, k, r)  # Update the adjacent-to-vertex map 
-    add_point!(DG, r)                           # Add the rth point into the vertex set
-    add_neighbour!(DG, r, i, j, k)              # Connect the new edges
-    =#
     i, j, k = indices(Tᵢⱼₖ)
-    Tᵢⱼᵣ = construct_triangle(V, i, j, r)
-    Tⱼₖᵣ = construct_triangle(V, j, k, r)
-    Tₖᵢᵣ = construct_triangle(V, k, i, r) 
-    add_triangle!(HG, Tᵢⱼᵣ, Tⱼₖᵣ, Tₖᵢᵣ)
-    add_edge!(HG, Tᵢⱼₖ, Tᵢⱼᵣ, Tⱼₖᵣ, Tₖᵢᵣ)
-    add_triangle!(T, adj, adj2v, DG, i, j, r, k; delete_adjacent_neighbours = false)
-    add_triangle!(T, adj, adj2v, DG, j, k, r, i; delete_adjacent_neighbours = false)
-    add_triangle!(T, adj, adj2v, DG, k, i, r, j; delete_adjacent_neighbours = false)
+    add_triangle!(T, adj, adj2v, DG, HG, i, j, r, k; delete_adjacent_neighbours=false)
+    add_triangle!(T, adj, adj2v, DG, HG, j, k, r, i; delete_adjacent_neighbours=false)
+    add_triangle!(T, adj, adj2v, DG, HG, k, i, r, j; delete_adjacent_neighbours=false)
     return nothing
 end
 
@@ -1101,7 +1082,7 @@ both into two.
 # Outputs 
 `T`, `HG`, `adj`, `adj2v`, and `DG` are all updated in-place.
 """
-function split_triangle!(T::Ts, HG, adj, adj2v, DG, i, j, k, ℓ, r) where Ts
+function split_triangle!(T::Ts, HG, adj, adj2v, DG, i, j, k, ℓ, r) where {Ts}
     # The triangles 
     V = triangle_type(Ts)
     Tᵢⱼₖ = construct_triangle(V, i, j, k)
@@ -1146,7 +1127,7 @@ It is assumed that `(i, k, j)` and `(i, j, r)` are positively oriented triangles
 # Outputs 
 `T`, `HG`, `adj`, `adj2v`, and `DG` are all updated in-place.
 """
-function flip_edge!(T::Ts, HG, adj, adj2v, DG, i, j, k, r) where Ts
+function flip_edge!(T::Ts, HG, adj, adj2v, DG, i, j, k, r) where {Ts}
     # The old triangles
     V = triangle_type(Ts)
     Tᵢₖⱼ = construct_triangle(V, i, k, j)
@@ -1271,7 +1252,7 @@ Adds the `r`th point of the point set in `DT` into the triangulation.
 function add_point!(DT::AbstractTriangulation{T,E,Ts,Es,Ps,I}, r::I) where {T,E,Ts,Es,Ps,I}
     add_point!(triangles(DT), pointlocation(DT), adjacent(DT),
         adjacent2vertex(DT), graph(DT),
-        construct_triangle(T, I(LowerRightBoundingIndex), I(UpperBoundingIndex), I(LowerLeftBoundingIndex)), 
+        construct_triangle(T, I(LowerRightBoundingIndex), I(UpperBoundingIndex), I(LowerLeftBoundingIndex)),
         points(DT), I(r))
     return nothing
 end

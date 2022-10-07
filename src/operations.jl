@@ -51,16 +51,33 @@ function add_triangle!(DG::DelaunayGraph, i, j, r, k; delete_adjacent_neighbours
     return nothing
 end
 """
+    add_triangle!(HG::HistoryGraph, V, i, j, r, k)
+
+Adds the triangle `(i, j, r)` into `T`, deleting `(i, j, k)`. This method updates 
+the history graph `HG` accordingly. `V` is the triangle type.
+"""
+function add_triangle!(HG::HistoryGraph, V, i, j, r, k)
+    Tᵢⱼₖ = construct_triangle(V, i, j, k)
+    Tᵢⱼᵣ = construct_triangle(V, i, j, r)
+    add_triangle!(HG, Tᵢⱼᵣ)
+    add_edge!(HG, Tᵢⱼₖ, Tᵢⱼᵣ)
+    return nothing
+end
+"""
     add_triangle!(T, adj::Adjacent, adj2v::Adjacent2Vertex, DG::DelaunayGraph, i, j, r, k; delete_adjacent_neighbours = true)
 
 Adds the triangle `(i, j, r)` into the triangulation, assuming the `r`th point is to the left 
 of the directed edge `(i, j)`. and `k = get_edge(adj, i, j)`. If `(i, j, k)` should all remain 
 neighbours, set `delete_adjacent_neighbours = false`.
 """
-function add_triangle!(T, adj::Adjacent, adj2v::Adjacent2Vertex, DG::DelaunayGraph, i, j, r, k; delete_adjacent_neighbours=true)
+function add_triangle!(T::Ts, adj::Adjacent, adj2v::Adjacent2Vertex,
+    DG::DelaunayGraph, HG::HistoryGraph,
+    i, j, r, k; delete_adjacent_neighbours=true) where Ts
     add_triangle!(T, i, j, r, k)
     add_triangle!(adj, i, j, r)
     add_triangle!(adj2v, i, j, r, k)
     add_triangle!(DG, i, j, r, k; delete_adjacent_neighbours)
+    V = triangle_type(Ts)
+    add_triangle!(HG, V, i, j, r, k)
     return nothing
 end
