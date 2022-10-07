@@ -7,6 +7,7 @@ using Random
 #include("primitives.jl")
 include("constants.jl")
 include("algorithm.jl")
+include("operations.jl")
 #include("collections.jl")
 #include("struct_definitions.jl")
 #include("struct_updates.jl")

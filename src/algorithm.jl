@@ -56,6 +56,8 @@ methods, assuming `TrianglesType` is your struct for the collection of triangles
 
 - `construct_triangles(::Type{TrianglesType})`: Creates an empty collection of type `TrianglesType`. Triangles will be pushed into this using `push!`. We do provide a default implementation of this,
 namely `construct_triangles(::Type{T}) where T = T()`, but you could define your own method for this.
+- `triangle_type(::Type{TrianglesType}):`: Returns the type of triangle in your collection, allowing for the creation of a triangle that can be pushed into the collection. We do provide a 
+default implementation for this, namely `triangle_type(::Type{T}) where T = eltype(T)`, but you could define your own method for this.
 - `Base.delete!(T::TrianglesType, V::TriangleType)`: Deletes the triangle `V` from the collection `T`.
 
 # Collection of Edges Interface 
@@ -98,6 +100,7 @@ function gety end
 
 ## Triangles 
 function construct_triangles end # construct_triangles(::Type{Triangles})
+function triangle_type end       # triangle_type(::Type{Triangles})
 
 """
     add_triangle!(T, V::Vararg{Tri, N}) where {Tri, N}
@@ -165,6 +168,7 @@ gety(p::Base.AbstractVecOrTuple) = p[2]
 
 ## Triangles 
 construct_triangles(::Type{T}) where {T} = T()
+triangle_type(::Type{T}) where {T} = eltype(T)
 
 ## Points 
 function get_point(pts::AbstractVector, i)
@@ -1085,9 +1089,9 @@ both into two.
 # Outputs 
 `T`, `HG`, `adj`, `adj2v`, and `DG` are all updated in-place.
 """
-function split_triangle!(T, HG, adj, adj2v, DG, i, j, k, ℓ, r)
+function split_triangle!(T::Ts, HG, adj, adj2v, DG, i, j, k, ℓ, r) where Ts
     # The triangles 
-    V = eltype(T)
+    V = triangle_type(Ts)
     Tᵢⱼₖ = construct_triangle(V, i, j, k)
     Tⱼᵢₗ = construct_triangle(V, j, i, ℓ)
     Tᵢᵣₖ = construct_triangle(V, i, r, k)
@@ -1130,9 +1134,9 @@ It is assumed that `(i, k, j)` and `(i, j, r)` are positively oriented triangles
 # Outputs 
 `T`, `HG`, `adj`, `adj2v`, and `DG` are all updated in-place.
 """
-function flip_edge!(T, HG, adj, adj2v, DG, i, j, k, r)
+function flip_edge!(T::Ts, HG, adj, adj2v, DG, i, j, k, r) where Ts
     # The old triangles
-    V = eltype(T)
+    V = triangle_type(Ts)
     Tᵢₖⱼ = construct_triangle(V, i, k, j)
     Tᵢⱼᵣ = construct_triangle(V, i, j, r)
     delete_triangle!(T, Tᵢₖⱼ, Tᵢⱼᵣ)
@@ -1195,8 +1199,8 @@ Remove the bounding triangle from the triangulation, where
 
 These structures are updated in-place.
 """
-function remove_bounding_triangle!(T, adj, adj2v, DG::DelaunayGraph{I}) where {I}
-    V = eltype(T)
+function remove_bounding_triangle!(T::Ts, adj, adj2v, DG::DelaunayGraph{I}) where {I,Ts}
+    V = triangle_type(Ts)
     for w in indices(BoundingTriangle)
         w = I(w)
         neighbours = get_edge(adj2v, w)
