@@ -1007,6 +1007,32 @@ function _find_root_rng(G::HistoryGraph)
     end
 end
 
+"""
+    is_boundary_edge(i, j, adj::Adjacent{I, E}) where {I, E}
+
+Returns `true` if the edge `(i, j)` is a boundary edge of the triangulation, 
+and `false` otherwise.
+"""
+function is_boundary_edge(ij, adj::Adjacent{I, E}) where {I, E}
+    return get_edge(adj, ij) == I(BoundaryIndex)
+end
+function is_boundary_edge(i, j, adj::Adjacent{I, E}) where {I, E}
+    return get_edge(adj, i, j) == I(BoundaryIndex)
+end
+
+"""
+    is_valid_edge(ij, adj::Adjacent)
+
+Returns `true` if the edge `(i, j)` is an edge of the triangulation, 
+and `false` otherwise.
+"""
+function is_valid_edge(ij, adj::Adjacent)
+    return ij ∈ edges(adj)
+end
+function is_valid_edge(i, j, adj::Adjacent{I, E}) where {I, E}
+    return construct_edge(E, i, j) ∈ edges(adj)
+end
+
 ############################################
 ##
 ## TRIANGULATION OPERATIONS

@@ -4,6 +4,7 @@ using Test
 using Random
 using DelaunayTriangulation
 const DT = DelaunayTriangulation
+using StaticArrays
 
 #=
 @testset "Primitives" begin

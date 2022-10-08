@@ -49,7 +49,7 @@ end
     @test T == Set{NTuple{3,Int64}}([(2, 3, 1), (7, 10, 15), (18, 19, 23)])
     DT.delete_triangle!(T, (2, 3, 1), (7, 10, 15))
     @test T == Set{NTuple{3,Int64}}([(18, 19, 23)])
-    @test DT.triangle_type(typeof(T)) == NTuple{3, Int64}
+    @test DT.triangle_type(typeof(T)) == NTuple{3,Int64}
 end
 
 @testset "Points" begin
@@ -230,8 +230,8 @@ end
     @test DT.get_edge(adj, 3, 5) == 2
     @test DT.get_edge(adj, 5, 2) == 3
     @test DT.get_edge(adj, 2, 3) == 5
-    DT.delete_edge!(adj, 2, 3; delete_uv_only = true)
-    @test DT.get_edge(adj, 3, 2) == 1 
+    DT.delete_edge!(adj, 2, 3; delete_uv_only=true)
+    @test DT.get_edge(adj, 3, 2) == 1
     @test_throws KeyError DT.get_edge(adj, 2, 3)
 
     adj = DT.Adjacent{Int64,NTuple{2,Int64}}()
@@ -905,6 +905,40 @@ end
     @test DT.find_edge(T, pts, length(pts)) == (5, 2)
 end
 
+@testset "Testing if we can identify boundary and invalid edges" begin
+    p1 = @SVector[0.0, 1.0]
+    p2 = @SVector[3.0, -1.0]
+    p3 = @SVector[2.0, 0.0]
+    p4 = @SVector[-1.0, 2.0]
+    p5 = @SVector[4.0, 2.0]
+    p6 = @SVector[-2.0, -1.0]
+    pts = [p1, p2, p3, p4, p5, p6]
+    tri = triangulate(pts; randomise=false)
+    p7 = @SVector[2.0, 1.0]
+    newtri = deepcopy(tri)
+    push!(points(newtri), p7)
+    DT.split_triangle!(triangles(newtri),
+        pointlocation(newtri), adjacent(newtri),
+        adjacent2vertex(newtri), graph(newtri),
+        (1, 3, 5), 7)
+    @test DT.is_boundary_edge((5, 2), adjacent(newtri))
+    @test !DT.is_boundary_edge((2, 5), adjacent(newtri))
+    @test DT.is_boundary_edge((2, 6), adjacent(newtri))
+    @test DT.is_boundary_edge((6, 4), adjacent(newtri))
+    @test DT.is_boundary_edge((4, 5), adjacent(newtri))
+    @test !DT.is_boundary_edge((1, 7), adjacent(newtri))
+    @test !DT.is_boundary_edge((7, 3), adjacent(newtri))
+    @test !DT.is_boundary_edge((6, 3), adjacent(newtri))
+    @test !DT.is_boundary_edge((3, 6), adjacent(newtri))
+    @test all(DT.is_valid_edge(ij, adjacent(newtri)) for ij in edges((newtri)))
+    @test !DT.is_valid_edge(7, 4, adjacent(newtri))
+    @test !DT.is_valid_edge((2, 7), adjacent(newtri))
+    @test !DT.is_valid_edge(7, 6, adjacent(newtri))
+    @test !DT.is_valid_edge((7, 6), adjacent(newtri))
+    @test !DT.is_valid_edge(2, 2, adjacent(newtri))
+    @test !DT.is_valid_edge((4, 11), adjacent(newtri))
+end
+
 ############################################
 ##
 ## UNCONSTRAINED INCREMENTAL TRIANGULATION
@@ -954,7 +988,7 @@ end
     @test typeof(Tri) <: DT.AbstractTriangulation
     @test typeof(Tri) <: DT.AbstractUnconstrainedTriangulation
 
-    Tri3 = UnconstrainedTriangulation(pts; IntegerType=Int16,method=:berg)
+    Tri3 = UnconstrainedTriangulation(pts; IntegerType=Int16, method=:berg)
     @test adjacent(Tri3) == Tri3.adjacent
     @test adjacent2vertex(Tri3) == Tri3.adjacent2vertex
     @test graph(Tri3) == Tri3.graph
@@ -1878,7 +1912,7 @@ end
     p4 = (-1.0, 4.0)
     pts = [p1, p2, p3, p4]
 
-    DTri = DT.UnconstrainedTriangulation(pts;method=:berg)
+    DTri = DT.UnconstrainedTriangulation(pts; method=:berg)
     T, HG, adj, adj2v, DG, root = triangles(DTri), pointlocation(DTri),
     adjacent(DTri), adjacent2vertex(DTri), graph(DTri), DT.BoundingTriangle
 
@@ -2099,9 +2133,9 @@ end
     @test DT.islegal(j, k, adj, pts)
     @test DT.islegal(k, i, adj, pts)
 
-    DTri = triangulate(pts;method=:berg)
+    DTri = triangulate(pts; method=:berg)
     @test DT.is_delaunay(DTri)
-    DTri = triangulate(pts; trim=false,method=:berg)
+    DTri = triangulate(pts; trim=false, method=:berg)
     @test DT.is_delaunay(DTri)
 end
 
@@ -2115,25 +2149,25 @@ end
     p7 = (-1.34, 4.83)
     p8 = (-1.68, -0.77)
     pts = [p1, p2, p3, p4, p5, p6, p7, p8]
-    DTri = triangulate(pts;method=:berg)
+    DTri = triangulate(pts; method=:berg)
     @test DT.is_delaunay(DTri)
-    DTri = triangulate(pts; trim=false,method=:berg)
+    DTri = triangulate(pts; trim=false, method=:berg)
     @test DT.is_delaunay(DTri)
     pts = [[-6.88, 3.61], [-6.08, -0.43], [-0.3, 2.01], [5.1, -1.27], [6.18, 1.87], [3.08, 4.43], [-1.34, 4.83], [-1.68, -0.77]]
     DTri = triangulate(pts)
     @test DT.is_delaunay(DTri)
-    DTri = triangulate(pts; trim=false,method=:berg)
+    DTri = triangulate(pts; trim=false, method=:berg)
     @test DT.is_delaunay(DTri)
 
     pts = [p1, p2, p3, p4, p5, p6, p7, p8]
-    DTri = triangulate(pts; randomise=false, trim=false,method=:berg)
-    DTri2 = triangulate([p1, p2, p3, p4, p5, p6, p7]; randomise=false, trim=false,method=:berg)
+    DTri = triangulate(pts; randomise=false, trim=false, method=:berg)
+    DTri2 = triangulate([p1, p2, p3, p4, p5, p6, p7]; randomise=false, trim=false, method=:berg)
     add_point!(DTri2, (-1.68, -0.77))
     @test triangles(DTri2) == triangles(DTri)
 
     pts = [p1, p2, p3, p4, p5, p6, p7, p8]
-    DTri = triangulate(pts; randomise=false, trim=true,method=:berg)
-    DTri2 = triangulate([p1, p2, p3, p4, p5, p6, p7]; randomise=false, trim=false,method=:berg)
+    DTri = triangulate(pts; randomise=false, trim=true, method=:berg)
+    DTri2 = triangulate([p1, p2, p3, p4, p5, p6, p7]; randomise=false, trim=false, method=:berg)
     add_point!(DTri2, (-1.68, -0.77))
     DT.remove_bounding_triangle!(DTri2)
     @test triangles(DTri2) == triangles(DTri)
@@ -2142,10 +2176,10 @@ end
         x = rand(100)
         y = rand(100)
         pts = [(x, y) for (x, y) in zip(x, y)]
-        DTri = triangulate(pts;method=:berg)
+        DTri = triangulate(pts; method=:berg)
         @test DT.is_delaunay(DTri)
         @test all(DT.isoriented(T, pts) == 1 for T in triangles(DTri))
-        DTri = triangulate(pts; method=:berg,trim=false)
+        DTri = triangulate(pts; method=:berg, trim=false)
         @test DT.is_delaunay(DTri)
         @test all(DT.isoriented(T, pts) == 1 for T in triangles(DTri))
         @test 1 == num_points(DTri) - num_edges(DTri) + num_triangles(DTri) # Euler's formula
@@ -2158,7 +2192,7 @@ ax = Axis(fig[1, 1])
 x = rand(100)
 y = rand(100)
 pts = [(x, y) for (x, y) in zip(x, y)]
-DTri = triangulate(pts;method=:berg)
+DTri = triangulate(pts; method=:berg)
 Tmat = zeros(Int64, num_triangles(DTri), 3)
 for (i, T) in enumerate(triangles(DTri))
     Tmat[i, :] = [geti(T), getj(T), getk(T)]
@@ -2185,7 +2219,7 @@ save("figures/test_triangulation.png", fig)
     p7 = (-1.34, 4.83)
     p8 = (-1.68, -0.77)
     pts = [p1, p2, p3, p4, p5, p6, p7, p8]
-    DTri = triangulate(pts; IntegerType=Int16, randomise=false,method=:berg)
+    DTri = triangulate(pts; IntegerType=Int16, randomise=false, method=:berg)
     @test points(DTri) == pts
     @test adjacent(DTri) isa DT.Adjacent{Int16,NTuple{2,Int16}}
     @test adjacent2vertex(DTri) isa DT.Adjacent2Vertex{Int16,Set{NTuple{2,Int16}},NTuple{2,Int16}}
@@ -2215,14 +2249,663 @@ end
     D = DT.HistoryGraph{NTuple{3,Int64}}()
     add!(DT.graph(D), (1, 2, 3))
     add!(DT.graph(D), (4, 5, 6))
-    add!(DT.graph(D),(7, 8, 9))
+    add!(DT.graph(D), (7, 8, 9))
     add!(DT.graph(D), (10, 11, 12))
     add!(DT.graph(D), (13, 14, 15))
-    add!(DT.graph(D),(1, 2, 3), (4, 5, 6))
+    add!(DT.graph(D), (1, 2, 3), (4, 5, 6))
     add!(DT.graph(D), (1, 2, 3), (7, 8, 9))
-    add!(DT.graph(D),(7, 8, 9), (10, 11, 12))
+    add!(DT.graph(D), (7, 8, 9), (10, 11, 12))
     add!(DT.graph(D), (7, 8, 9), (4, 5, 6))
     add!(DT.graph(D), (4, 5, 6), (13, 14, 15))
     @test DT.find_root(D; method=:brute) == (1, 2, 3)
     @test all(DT.find_root(D; method=:rng) == (1, 2, 3) for _ in 1:10)
+end
+
+############################################
+##
+## DELETING A TRIANGLE 
+##
+############################################
+@testset "Deleting a triangle" begin
+    p1 = @SVector[0.0, 1.0]
+    p2 = @SVector[3.0, -1.0]
+    p3 = @SVector[2.0, 0.0]
+    p4 = @SVector[-1.0, 2.0]
+    p5 = @SVector[4.0, 2.0]
+    p6 = @SVector[-2.0, -1.0]
+    pts = [p1, p2, p3, p4, p5, p6]
+    tri = triangulate(pts; randomise=false)
+    p7 = @SVector[2.0, 1.0]
+    newtri = deepcopy(tri)
+    push!(points(newtri), p7)
+    DT.split_triangle!(triangles(newtri),
+        pointlocation(newtri), adjacent(newtri),
+        adjacent2vertex(newtri), graph(newtri),
+        (1, 3, 5), 7)
+    newtri2 = deepcopy(newtri)
+    DT.delete_triangle!(triangles(newtri2),
+        adjacent(newtri2),
+        adjacent2vertex(newtri2), graph(newtri2),
+        1, 3, 7)
+    @test triangles(newtri2) == Set{NTuple{3,Int64}}([
+        (6, 3, 1),
+        (6, 2, 3),
+        (5, 3, 2),
+        (5, 1, 7),
+        (3, 5, 7),
+        (6, 1, 4),
+        (5, 4, 1)
+    ])
+    @test length(triangles(newtri2)) == 7
+    @test (1, 3, 7) ∉ triangles(newtri2) &&
+          (3, 7, 1) ∉ triangles(newtri2) &&
+          (7, 1, 3) ∉ triangles(newtri2)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 7, 1)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 3)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 7)
+    @test DT.get_edge(adjacent(newtri2), 4, 5) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 5, 4) == 1
+    @test DT.get_edge(adjacent(newtri2), 4, 1) == 5
+    @test DT.get_edge(adjacent(newtri2), 1, 4) == 6
+    @test DT.get_edge(adjacent(newtri2), 4, 6) == 1
+    @test DT.get_edge(adjacent(newtri2), 6, 4) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 6, 1) == 4
+    @test DT.get_edge(adjacent(newtri2), 1, 6) == 3
+    @test DT.get_edge(adjacent(newtri2), 6, 3) == 1
+    @test DT.get_edge(adjacent(newtri2), 3, 6) == 2
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 3)
+    @test DT.get_edge(adjacent(newtri2), 3, 1) == 6
+    @test DT.get_edge(adjacent(newtri2), 3, 2) == 5
+    @test DT.get_edge(adjacent(newtri2), 2, 3) == 6
+    @test DT.get_edge(adjacent(newtri2), 6, 2) == 3
+    @test DT.get_edge(adjacent(newtri2), 2, 6) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 2, 5) == 3
+    @test DT.get_edge(adjacent(newtri2), 5, 2) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 5, 3) == 2
+    @test DT.get_edge(adjacent(newtri2), 3, 5) == 7
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 7)
+    @test DT.get_edge(adjacent(newtri2), 7, 3) == 5
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 7, 1)
+    @test DT.get_edge(adjacent(newtri2), 1, 7) == 5
+    @test DT.is_boundary_edge(2, 6, adjacent(newtri2))
+    @test DT.is_boundary_edge(6, 4, adjacent(newtri2))
+    @test DT.is_boundary_edge(4, 5, adjacent(newtri2))
+    @test DT.is_boundary_edge(5, 2, adjacent(newtri2))
+    @test DT.get_edge(adjacent2vertex(newtri2), 1) == Set{NTuple{2,Int64}}([
+        (7, 5),
+        (4, 6),
+        (6, 3),
+        (5, 4)
+    ])
+    @test DT.get_edge(adjacent2vertex(newtri2), 2) == Set{NTuple{2,Int64}}([
+        (5, 3),
+        (3, 6)
+    ])
+    @test DT.get_edge(adjacent2vertex(newtri2), 3) == Set{NTuple{2,Int64}}([
+        (5, 7),
+        (1, 6),
+        (2, 5),
+        (6, 2)
+    ])
+    @test DT.get_edge(adjacent2vertex(newtri2), 4) == Set{NTuple{2,Int64}}([
+        (6, 1),
+        (1, 5)
+    ])
+    @test DT.get_edge(adjacent2vertex(newtri2), 5) == Set{NTuple{2,Int64}}([
+        (4, 1),
+        (1, 7),
+        (7, 3),
+        (3, 2)
+    ])
+    @test DT.get_edge(adjacent2vertex(newtri2), 6) == Set{NTuple{2,Int64}}([
+        (3, 1),
+        (2, 3),
+        (1, 4)
+    ])
+    @test DT.get_edge(adjacent2vertex(newtri2), 7) == Set{NTuple{2,Int64}}([
+        (5, 1),
+        (3, 5)
+    ])
+    @test DT.get_edge(adjacent2vertex(newtri2), DT.BoundaryIndex) == Set{NTuple{2,Int64}}([
+        (4, 5),
+        (5, 2),
+        (2, 6),
+        (6, 4)
+    ])
+    @test (1, 3) ∉ DT.get_edge(adjacent2vertex(newtri2), 7)
+    @test (3, 7) ∉ DT.get_edge(adjacent2vertex(newtri2), 1)
+    @test (7, 1) ∉ DT.get_edge(adjacent2vertex(newtri2), 3)
+    @test DT.get_neighbour(graph(newtri2), 1) == Set{Int64}([
+        4, 5, 7, 3, 6
+    ])
+    @test DT.get_neighbour(graph(newtri2), 2) == Set{Int64}([
+        3, 6, 5
+    ])
+    @test DT.get_neighbour(graph(newtri2), 3) == Set{Int64}([
+        7, 1, 5, 6, 2
+    ])
+    @test DT.get_neighbour(graph(newtri2), 4) == Set{Int64}([
+        6, 1, 5
+    ])
+    @test DT.get_neighbour(graph(newtri2), 5) == Set{Int64}([
+        7, 1, 4, 2, 3
+    ])
+    @test DT.get_neighbour(graph(newtri2), 6) == Set{Int64}([
+        4, 1, 3, 2
+    ])
+    @test DT.get_neighbour(graph(newtri2), 7) == Set{Int64}([
+        5, 3, 1
+    ])
+    @test DT.get_edge(adjacent(newtri2), 1, 4) == 6
+    @test DT.get_edge(adjacent(newtri2), 4, 1) == 5
+    @test DT.get_edge(adjacent(newtri2), 1, 6) == 3
+    @test DT.get_edge(adjacent(newtri2), 6, 1) == 4
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 3)
+    @test DT.get_edge(adjacent(newtri2), 3, 1) == 6
+    @test DT.get_edge(adjacent(newtri2), 1, 7) == 5
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 7, 1)
+    @test DT.get_edge(adjacent(newtri2), 1, 5) == 4
+    @test DT.get_edge(adjacent(newtri2), 5, 1) == 7
+    @test DT.get_edge(adjacent(newtri2), 4, 5) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 5, 4) == 1
+    @test DT.get_edge(adjacent(newtri2), 4, 6) == 1
+    @test DT.get_edge(adjacent(newtri2), 6, 4) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 6, 3) == 1
+    @test DT.get_edge(adjacent(newtri2), 3, 6) == 2
+    @test DT.get_edge(adjacent(newtri2), 3, 2) == 5
+    @test DT.get_edge(adjacent(newtri2), 2, 3) == 6
+    @test DT.get_edge(adjacent(newtri2), 7, 5) == 1
+    @test DT.get_edge(adjacent(newtri2), 5, 7) == 3
+    @test DT.get_edge(adjacent(newtri2), 7, 3) == 5
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 7)
+    @test DT.get_edge(adjacent(newtri2), 3, 5) == 7
+    @test DT.get_edge(adjacent(newtri2), 5, 3) == 2
+    @test DT.get_edge(adjacent(newtri2), 2, 5) == 3
+    @test DT.get_edge(adjacent(newtri2), 5, 2) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 2, 6) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 6, 2) == 3
+    @test DT.get_edge(adjacent(newtri2), 2, 5) == 3
+    @test DT.get_edge(adjacent(newtri2), 5, 2) == DT.BoundaryIndex
+
+    DT.delete_triangle!(triangles(newtri2),
+        adjacent(newtri2),
+        adjacent2vertex(newtri2), graph(newtri2),
+        3, 2, 5)
+
+    @test triangles(newtri2) == Set{NTuple{3,Int64}}([
+        (6, 3, 1),
+        (6, 2, 3),
+        (5, 1, 7),
+        (3, 5, 7),
+        (6, 1, 4),
+        (5, 4, 1)
+    ])
+    @test length(triangles(newtri2)) == 6
+    @test (1, 3, 7) ∉ triangles(newtri2) &&
+          (3, 7, 1) ∉ triangles(newtri2) &&
+          (7, 1, 3) ∉ triangles(newtri2) &&
+          (3, 2, 5) ∉ triangles(newtri2) &&
+          (2, 5, 3) ∉ triangles(newtri2) &&
+          (5, 3, 2) ∉ triangles(newtri2)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 7, 1)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 3)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 7)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 5)
+    @test DT.get_edge(adjacent(newtri2), 4, 5) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 5, 4) == 1
+    @test DT.get_edge(adjacent(newtri2), 4, 1) == 5
+    @test DT.get_edge(adjacent(newtri2), 1, 4) == 6
+    @test DT.get_edge(adjacent(newtri2), 4, 6) == 1
+    @test DT.get_edge(adjacent(newtri2), 6, 4) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 6, 1) == 4
+    @test DT.get_edge(adjacent(newtri2), 1, 6) == 3
+    @test DT.get_edge(adjacent(newtri2), 6, 3) == 1
+    @test DT.get_edge(adjacent(newtri2), 3, 6) == 2
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 3)
+    @test DT.get_edge(adjacent(newtri2), 3, 1) == 6
+    @test DT.get_edge(adjacent(newtri2), 3, 2) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 2, 3) == 6
+    @test DT.get_edge(adjacent(newtri2), 6, 2) == 3
+    @test DT.get_edge(adjacent(newtri2), 2, 6) == DT.BoundaryIndex
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 5)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 5, 2)
+    @test DT.get_edge(adjacent(newtri2), 5, 3) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 3, 5) == 7
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 7)
+    @test DT.get_edge(adjacent(newtri2), 7, 3) == 5
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 7, 1)
+    @test DT.get_edge(adjacent(newtri2), 1, 7) == 5
+    @test DT.is_boundary_edge(2, 6, adjacent(newtri2))
+    @test DT.is_boundary_edge(6, 4, adjacent(newtri2))
+    @test DT.is_boundary_edge(4, 5, adjacent(newtri2))
+    @test DT.is_boundary_edge(5, 3, adjacent(newtri2))
+    @test DT.is_boundary_edge(3, 2, adjacent(newtri2))
+    @test DT.get_edge(adjacent2vertex(newtri2), 1) == Set{NTuple{2,Int64}}([
+        (7, 5),
+        (4, 6),
+        (6, 3),
+        (5, 4)
+    ])
+    @test DT.get_edge(adjacent2vertex(newtri2), 2) == Set{NTuple{2,Int64}}([
+        (3, 6)
+    ])
+    @test DT.get_edge(adjacent2vertex(newtri2), 3) == Set{NTuple{2,Int64}}([
+        (5, 7),
+        (1, 6),
+        (6, 2)
+    ])
+    @test DT.get_edge(adjacent2vertex(newtri2), 4) == Set{NTuple{2,Int64}}([
+        (6, 1),
+        (1, 5)
+    ])
+    @test DT.get_edge(adjacent2vertex(newtri2), 5) == Set{NTuple{2,Int64}}([
+        (4, 1),
+        (1, 7),
+        (7, 3),
+    ])
+    @test DT.get_edge(adjacent2vertex(newtri2), 6) == Set{NTuple{2,Int64}}([
+        (3, 1),
+        (2, 3),
+        (1, 4)
+    ])
+    @test DT.get_edge(adjacent2vertex(newtri2), 7) == Set{NTuple{2,Int64}}([
+        (5, 1),
+        (3, 5)
+    ])
+    @test DT.get_edge(adjacent2vertex(newtri2), DT.BoundaryIndex) == Set{NTuple{2,Int64}}([
+        (4, 5),
+        (2, 6),
+        (6, 4),
+        (5, 3),
+        (3, 2)
+    ])
+    @test (1, 3) ∉ DT.get_edge(adjacent2vertex(newtri2), 7)
+    @test (3, 7) ∉ DT.get_edge(adjacent2vertex(newtri2), 1)
+    @test (7, 1) ∉ DT.get_edge(adjacent2vertex(newtri2), 3)
+    @test (3, 2) ∉ DT.get_edge(adjacent2vertex(newtri2), 7)
+    @test (2, 5) ∉ DT.get_edge(adjacent2vertex(newtri2), 1)
+    @test (5, 3) ∉ DT.get_edge(adjacent2vertex(newtri2), 3)
+    @test DT.get_edge(adjacent(newtri2), 5, 3) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 3, 2) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 2, 6) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 6, 4) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 4, 5) == DT.BoundaryIndex
+    @test DT.get_neighbour(graph(newtri2), 1) == Set{Int64}([
+        4, 5, 7, 3, 6
+    ])
+    @test DT.get_neighbour(graph(newtri2), 2) == Set{Int64}([
+        3, 6
+    ])
+    @test DT.get_neighbour(graph(newtri2), 3) == Set{Int64}([
+        7, 1, 5, 6, 2
+    ])
+    @test DT.get_neighbour(graph(newtri2), 4) == Set{Int64}([
+        6, 1, 5
+    ])
+    @test DT.get_neighbour(graph(newtri2), 5) == Set{Int64}([
+        7, 1, 4, 3
+    ])
+    @test DT.get_neighbour(graph(newtri2), 6) == Set{Int64}([
+        4, 1, 3, 2
+    ])
+    @test DT.get_neighbour(graph(newtri2), 7) == Set{Int64}([
+        5, 3, 1
+    ])
+    @test DT.get_edge(adjacent(newtri2), 1, 4) == 6
+    @test DT.get_edge(adjacent(newtri2), 4, 1) == 5
+    @test DT.get_edge(adjacent(newtri2), 1, 5) == 4
+    @test DT.get_edge(adjacent(newtri2), 5, 1) == 7
+    @test DT.get_edge(adjacent(newtri2), 1, 7) == 5
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 7, 1)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 3)
+    @test DT.get_edge(adjacent(newtri2), 3, 1) == 6
+    @test DT.get_edge(adjacent(newtri2), 1, 6) == 3
+    @test DT.get_edge(adjacent(newtri2), 6, 1) == 4
+    @test DT.get_edge(adjacent(newtri2), 2, 3) == 6
+    @test DT.get_edge(adjacent(newtri2), 3, 2) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 2, 6) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 6, 2) == 3
+    @test DT.get_edge(adjacent(newtri2), 3, 6) == 2
+    @test DT.get_edge(adjacent(newtri2), 6, 3) == 1
+    @test DT.get_edge(adjacent(newtri2), 3, 5) == 7
+    @test DT.get_edge(adjacent(newtri2), 5, 3) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 4, 5) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 5, 4) == 1
+    @test DT.get_edge(adjacent(newtri2), 4, 6) == 1
+    @test DT.get_edge(adjacent(newtri2), 6, 4) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 5, 7) == 3
+    @test DT.get_edge(adjacent(newtri2), 7, 5) == 1
+
+    DT.delete_triangle!(triangles(newtri2),
+        adjacent(newtri2),
+        adjacent2vertex(newtri2), graph(newtri2),
+        3, 6, 2)
+
+    @test triangles(newtri2) == Set{NTuple{3,Int64}}([
+        (6, 3, 1),
+        (5, 1, 7),
+        (3, 5, 7),
+        (6, 1, 4),
+        (5, 4, 1)
+    ])
+    @test length(triangles(newtri2)) == 5
+    @test (1, 3, 7) ∉ triangles(newtri2) &&
+          (3, 7, 1) ∉ triangles(newtri2) &&
+          (7, 1, 3) ∉ triangles(newtri2) &&
+          (3, 2, 5) ∉ triangles(newtri2) &&
+          (2, 5, 3) ∉ triangles(newtri2) &&
+          (5, 3, 2) ∉ triangles(newtri2) &&
+          (3, 6, 2) ∉ triangles(newtri2) &&
+          (6, 2, 3) ∉ triangles(newtri2) &&
+          (2, 3, 6) ∉ triangles(newtri2)
+    @test DT.get_edge(adjacent(newtri2), 1, 7) == 5
+    @test DT.get_edge(adjacent(newtri2), 1, 4) == 6
+    @test DT.get_edge(adjacent(newtri2), 6, 1) == 4
+    @test DT.get_edge(adjacent(newtri2), 1, 5) == 4
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 7, 1)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 3)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 7)
+    @test DT.get_edge(adjacent(newtri2), 5, 3) == DT.BoundaryIndex
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 5)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 2)
+    @test DT.get_edge(adjacent(newtri2), 3, 6) == DT.BoundaryIndex
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 6, 2)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 3)
+    @test !DT.is_valid_edge(7, 1, adjacent(newtri2))
+    @test !DT.is_valid_edge(1, 3, adjacent(newtri2))
+    @test !DT.is_valid_edge(3, 7, adjacent(newtri2))
+    @test DT.is_valid_edge(5, 3, adjacent(newtri2))
+    @test !DT.is_valid_edge(2, 5, adjacent(newtri2))
+    @test !DT.is_valid_edge(3, 2, adjacent(newtri2))
+    @test DT.is_valid_edge(3, 6, adjacent(newtri2))
+    @test !DT.is_valid_edge(6, 2, adjacent(newtri2))
+    @test !DT.is_valid_edge(2, 3, adjacent(newtri2))
+    @test DT.get_edge(adjacent(newtri2), 4, 5) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 5, 4) == 1
+    @test DT.get_edge(adjacent(newtri2), 4, 1) == 5
+    @test DT.get_edge(adjacent(newtri2), 1, 4) == 6
+    @test DT.get_edge(adjacent(newtri2), 4, 6) == 1
+    @test DT.get_edge(adjacent(newtri2), 6, 4) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 6, 1) == 4
+    @test DT.get_edge(adjacent(newtri2), 1, 6) == 3
+    @test DT.get_edge(adjacent(newtri2), 6, 3) == 1
+    @test DT.get_edge(adjacent(newtri2), 3, 6) == DT.BoundaryIndex
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 3)
+    @test DT.get_edge(adjacent(newtri2), 3, 1) == 6
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 2)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 3)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 6, 2)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 6)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 5)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 5, 2)
+    @test DT.get_edge(adjacent(newtri2), 5, 3) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 3, 5) == 7
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 7)
+    @test DT.get_edge(adjacent(newtri2), 7, 3) == 5
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 7, 1)
+    @test DT.get_edge(adjacent(newtri2), 1, 7) == 5
+    @test_throws KeyError DT.is_boundary_edge(2, 6, adjacent(newtri2))
+    @test DT.is_boundary_edge(6, 4, adjacent(newtri2))
+    @test DT.is_boundary_edge(4, 5, adjacent(newtri2))
+    @test DT.is_boundary_edge(5, 3, adjacent(newtri2))
+    @test DT.is_boundary_edge(3, 6, adjacent(newtri2))
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 3)
+    @test DT.get_edge(adjacent2vertex(newtri2), 1) == Set{NTuple{2,Int64}}([
+        (7, 5),
+        (4, 6),
+        (6, 3),
+        (5, 4)
+    ])
+    @test DT.get_edge(adjacent2vertex(newtri2), 2) == Set{NTuple{2,Int64}}([
+    ])
+    @test DT.get_edge(adjacent2vertex(newtri2), 3) == Set{NTuple{2,Int64}}([
+        (5, 7),
+        (1, 6),
+    ])
+    @test DT.get_edge(adjacent2vertex(newtri2), 4) == Set{NTuple{2,Int64}}([
+        (6, 1),
+        (1, 5)
+    ])
+    @test DT.get_edge(adjacent2vertex(newtri2), 5) == Set{NTuple{2,Int64}}([
+        (4, 1),
+        (1, 7),
+        (7, 3),
+    ])
+    @test DT.get_edge(adjacent2vertex(newtri2), 6) == Set{NTuple{2,Int64}}([
+        (3, 1),
+        (1, 4)
+    ])
+    @test DT.get_edge(adjacent2vertex(newtri2), 7) == Set{NTuple{2,Int64}}([
+        (5, 1),
+        (3, 5)
+    ])
+    @test DT.get_edge(adjacent2vertex(newtri2), DT.BoundaryIndex) == Set{NTuple{2,Int64}}([
+        (4, 5),
+        (6, 4),
+        (5, 3),
+        (3, 6)
+    ])
+    @test (1, 3) ∉ DT.get_edge(adjacent2vertex(newtri2), 7)
+    @test (3, 7) ∉ DT.get_edge(adjacent2vertex(newtri2), 1)
+    @test (7, 1) ∉ DT.get_edge(adjacent2vertex(newtri2), 3)
+    @test (3, 2) ∉ DT.get_edge(adjacent2vertex(newtri2), 7)
+    @test (2, 5) ∉ DT.get_edge(adjacent2vertex(newtri2), 1)
+    @test (5, 3) ∉ DT.get_edge(adjacent2vertex(newtri2), 3)
+    @test DT.get_neighbour(graph(newtri2), 1) == Set{Int64}([
+        4, 5, 7, 3, 6
+    ])
+    @test DT.get_neighbour(graph(newtri2), 2) == Set{Int64}([
+    ])
+    @test DT.get_neighbour(graph(newtri2), 3) == Set{Int64}([
+        7, 1, 5, 6
+    ])
+    @test DT.get_neighbour(graph(newtri2), 4) == Set{Int64}([
+        6, 1, 5
+    ])
+    @test DT.get_neighbour(graph(newtri2), 5) == Set{Int64}([
+        7, 1, 4, 3
+    ])
+    @test DT.get_neighbour(graph(newtri2), 6) == Set{Int64}([
+        4, 1, 3
+    ])
+    @test DT.get_neighbour(graph(newtri2), 7) == Set{Int64}([
+        5, 3, 1
+    ])
+    @test DT.get_edge(adjacent(newtri2), 1, 4) == 6
+    @test DT.get_edge(adjacent(newtri2), 4, 1) == 5
+    @test DT.get_edge(adjacent(newtri2), 1, 6) == 3
+    @test DT.get_edge(adjacent(newtri2), 6, 1) == 4
+    @test DT.get_edge(adjacent(newtri2), 1, 7) == 5
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 7, 1)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 3)
+    @test DT.get_edge(adjacent(newtri2), 3, 1) == 6
+    @test DT.get_edge(adjacent(newtri2), 1, 5) == 4
+    @test DT.get_edge(adjacent(newtri2), 5, 1) == 7
+    @test DT.get_edge(adjacent(newtri2), 3, 6) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 6, 3) == 1
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 7)
+    @test DT.get_edge(adjacent(newtri2), 7, 3) == 5
+    @test DT.get_edge(adjacent(newtri2), 3, 5) == 7
+    @test DT.get_edge(adjacent(newtri2), 5, 3) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 4, 6) == 1
+    @test DT.get_edge(adjacent(newtri2), 6, 4) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 4, 5) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 5, 4) == 1
+    @test DT.get_edge(adjacent(newtri2), 5, 7) == 3
+    @test DT.get_edge(adjacent(newtri2), 7, 5) == 1
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 3)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 7)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 7, 1)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 2)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 5)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 2)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 6)
+
+    DT.delete_triangle!(triangles(newtri2),
+        adjacent(newtri2),
+        adjacent2vertex(newtri2), graph(newtri2),
+        5, 1, 7)
+
+    @test triangles(newtri2) == Set{NTuple{3,Int64}}([
+        (6, 3, 1),
+        (3, 5, 7),
+        (6, 1, 4),
+        (5, 4, 1)
+    ])
+    @test length(triangles(newtri2)) == 4
+    @test (1, 3, 7) ∉ triangles(newtri2) &&
+          (3, 7, 1) ∉ triangles(newtri2) &&
+          (7, 1, 3) ∉ triangles(newtri2) &&
+          (3, 2, 5) ∉ triangles(newtri2) &&
+          (2, 5, 3) ∉ triangles(newtri2) &&
+          (5, 3, 2) ∉ triangles(newtri2) &&
+          (3, 6, 2) ∉ triangles(newtri2) &&
+          (6, 2, 3) ∉ triangles(newtri2) &&
+          (2, 3, 6) ∉ triangles(newtri2) &&
+          (5, 1, 7) ∉ triangles(newtri2) &&
+          (1, 7, 5) ∉ triangles(newtri2) &&
+          (7, 5, 1) ∉ triangles(newtri2)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 7)
+    @test DT.get_edge(adjacent(newtri2), 1, 4) == 6
+    @test DT.get_edge(adjacent(newtri2), 6, 1) == 4
+    @test DT.get_edge(adjacent(newtri2), 1, 5) == 4
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 7, 1)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 3)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 7)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 5)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 2)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 6, 2)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 3)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 7)
+    @test !DT.is_valid_edge(7, 1, adjacent(newtri2))
+    @test !DT.is_valid_edge(1, 3, adjacent(newtri2))
+    @test !DT.is_valid_edge(3, 7, adjacent(newtri2))
+    @test DT.is_valid_edge(5, 3, adjacent(newtri2))
+    @test !DT.is_valid_edge(2, 5, adjacent(newtri2))
+    @test !DT.is_valid_edge(3, 2, adjacent(newtri2))
+    @test DT.is_valid_edge(3, 6, adjacent(newtri2))
+    @test !DT.is_valid_edge(6, 2, adjacent(newtri2))
+    @test !DT.is_valid_edge(2, 3, adjacent(newtri2))
+    @test !DT.is_valid_edge(5, 1, adjacent(newtri2))
+    @test !DT.is_valid_edge(1, 7, adjacent(newtri2))
+    @test !DT.is_valid_edge(7, 5, adjacent(newtri2))
+    @test DT.get_edge(adjacent(newtri2), 4, 5) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 5, 4) == 1
+    @test DT.get_edge(adjacent(newtri2), 4, 1) == 5
+    @test DT.get_edge(adjacent(newtri2), 1, 4) == 6
+    @test DT.get_edge(adjacent(newtri2), 4, 6) == 1
+    @test DT.get_edge(adjacent(newtri2), 6, 4) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 6, 1) == 4
+    @test DT.get_edge(adjacent(newtri2), 1, 6) == 3
+    @test DT.get_edge(adjacent(newtri2), 6, 3) == 1
+    @test DT.get_edge(adjacent(newtri2), 3, 6) == DT.BoundaryIndex
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 3)
+    @test DT.get_edge(adjacent(newtri2), 3, 1) == 6
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 2)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 3)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 6, 2)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 6)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 5)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 5, 2)
+    @test DT.get_edge(adjacent(newtri2), 5, 3) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 3, 5) == 7
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 7)
+    @test DT.get_edge(adjacent(newtri2), 7, 3) == 5
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 7, 1)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 7)
+    @test_throws KeyError DT.is_boundary_edge(2, 6, adjacent(newtri2))
+    @test DT.is_boundary_edge(6, 4, adjacent(newtri2))
+    @test DT.is_boundary_edge(4, 5, adjacent(newtri2))
+    @test DT.is_boundary_edge(5, 3, adjacent(newtri2))
+    @test DT.is_boundary_edge(3, 6, adjacent(newtri2))
+    @test DT.get_edge(adjacent2vertex(newtri2), 1) == Set{NTuple{2,Int64}}([
+        (4, 6),
+        (6, 3),
+        (5, 4)
+    ])
+    @test DT.get_edge(adjacent2vertex(newtri2), 2) == Set{NTuple{2,Int64}}([
+    ])
+    @test DT.get_edge(adjacent2vertex(newtri2), 3) == Set{NTuple{2,Int64}}([
+        (5, 7),
+        (1, 6),
+    ])
+    @test DT.get_edge(adjacent2vertex(newtri2), 4) == Set{NTuple{2,Int64}}([
+        (6, 1),
+        (1, 5)
+    ])
+    @test DT.get_edge(adjacent2vertex(newtri2), 5) == Set{NTuple{2,Int64}}([
+        (4, 1),
+        (7, 3),
+    ])
+    @test DT.get_edge(adjacent2vertex(newtri2), 6) == Set{NTuple{2,Int64}}([
+        (3, 1),
+        (1, 4)
+    ])
+    @test DT.get_edge(adjacent2vertex(newtri2), 7) == Set{NTuple{2,Int64}}([
+        (3, 5)
+    ])
+    @test DT.get_edge(adjacent2vertex(newtri2), DT.BoundaryIndex) == Set{NTuple{2,Int64}}([
+        (4, 5),
+        (6, 4),
+        (5, 3),
+        (3, 6)
+    ])
+    @test (1, 3) ∉ DT.get_edge(adjacent2vertex(newtri2), 7)
+    @test (3, 7) ∉ DT.get_edge(adjacent2vertex(newtri2), 1)
+    @test (7, 1) ∉ DT.get_edge(adjacent2vertex(newtri2), 3)
+    @test (3, 2) ∉ DT.get_edge(adjacent2vertex(newtri2), 7)
+    @test (2, 5) ∉ DT.get_edge(adjacent2vertex(newtri2), 1)
+    @test (5, 3) ∉ DT.get_edge(adjacent2vertex(newtri2), 3)
+    @test (5, 1) ∉ DT.get_edge(adjacent2vertex(newtri2), 7)
+    @test (1, 7) ∉ DT.get_edge(adjacent2vertex(newtri2), 5)
+    @test (7, 5) ∉ DT.get_edge(adjacent2vertex(newtri2), 1)
+    @test DT.get_neighbour(graph(newtri2), 1) == Set{Int64}([
+        4, 5, 3, 6
+    ])
+    @test DT.get_neighbour(graph(newtri2), 2) == Set{Int64}([
+    ])
+    @test DT.get_neighbour(graph(newtri2), 3) == Set{Int64}([
+        7, 1, 5, 6
+    ])
+    @test DT.get_neighbour(graph(newtri2), 4) == Set{Int64}([
+        6, 1, 5
+    ])
+    @test DT.get_neighbour(graph(newtri2), 5) == Set{Int64}([
+        7, 1, 4, 3
+    ])
+    @test DT.get_neighbour(graph(newtri2), 6) == Set{Int64}([
+        4, 1, 3
+    ])
+    @test DT.get_neighbour(graph(newtri2), 7) == Set{Int64}([
+        5, 3
+    ])
+    @test DT.get_edge(adjacent(newtri2), 1, 4) == 6
+    @test DT.get_edge(adjacent(newtri2), 1, 6) == 3
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 3)
+    @test DT.get_edge(adjacent(newtri2), 1, 5) == 4
+    @test DT.get_edge(adjacent(newtri2), 4, 1) == 5
+    @test DT.get_edge(adjacent(newtri2), 6, 1) == 4
+    @test DT.get_edge(adjacent(newtri2), 3, 1) == 6
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 5, 1)
+    @test DT.get_edge(adjacent(newtri2), 3, 5) == 7
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 7)
+    @test DT.get_edge(adjacent(newtri2), 3, 6) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 5, 3) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 7, 3) == 5
+    @test DT.get_edge(adjacent(newtri2), 6, 3) == 1
+    @test DT.get_edge(adjacent(newtri2), 4, 6) == 1
+    @test DT.get_edge(adjacent(newtri2), 6, 4) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 4, 5) == DT.BoundaryIndex
+    @test DT.get_edge(adjacent(newtri2), 5, 4) == 1
+    @test DT.get_edge(adjacent(newtri2), 5, 7) == 3
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 3)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 7)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 7, 1)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 2)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 5)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 6, 2)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 3)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 5, 1)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 7)
+    @test_throws KeyError DT.get_edge(adjacent(newtri2), 7, 5)
 end
