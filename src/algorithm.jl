@@ -375,7 +375,7 @@ function islegal(i, j, adj, pts)
 end
 function islegal(i::I, j::I, k::I, ℓ::I, pts) where {I}
     incirc = isincircle(pts, i, j, k, ℓ)
-    return incirc == I(0) || incirc == I(-1)
+    return incirc == I(-1) || incirc == I(0)
 end
 
 ############################################
@@ -1054,7 +1054,7 @@ function locate_triangle(HG::HistoryGraph, pts, r::I, init=find_root(HG; method=
     out = out_neighbors(HG, init)
     for T in out
         isin = isintriangle(T, pts, r)
-        (isin == I(0) || isin == I(1)) && return locate_triangle(HG, pts, r, T)
+        (isin == I(1) || isin == I(0)) && return locate_triangle(HG, pts, r, T)
     end
     throw("Failed to find triangle.")
 end
