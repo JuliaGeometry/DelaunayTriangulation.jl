@@ -212,3 +212,31 @@ function split_triangle!(T, HG::HistoryGraph, adj, adj2v, DG, Tᵢⱼₖ::V, r) 
     add_triangle!(T, adj, adj2v, DG, HG, k, i, r, j; delete_adjacent_neighbours=false)
     return nothing
 end
+
+"""
+    legalise_edge!(T, HG, adj, adj2v, DG, i, j, r, pts)
+    
+Legalises the edge `(i, j)` if it is illegal.
+
+# Arguments 
+- `T`: The current set of triangles defining the triangulation.
+- `HG`: The point location data structure.
+- `adj`: The adjacency list.
+- `adj2v`: The adjacent-to-vertex list.
+- `DG`: The vertex-neighbour data structure.
+- `i, j`: The edge to make legal. Nothing happens if `is_legal(i, j, 𝒜, pts)`.
+- `r`: The point being added into the triangulation. 
+- `pts`: The point set of the triangulation.
+
+# Outputs 
+`T`, `HG`, `adj`, `adj2v`, and `DG` are all updated in-place.
+"""
+function legalise_edge!(T, HG, adj, adj2v, DG, i, j, r, pts)
+    if !islegal(i, j, adj, pts)
+        e = get_edge(adj, j, i)
+        flip_edge!(T, HG, adj, adj2v, DG, i, j, e, r)
+        legalise_edge!(T, HG, adj, adj2v, DG, i, e, r, pts)
+        legalise_edge!(T, HG, adj, adj2v, DG, e, j, r, pts)
+    end
+    return nothing
+end

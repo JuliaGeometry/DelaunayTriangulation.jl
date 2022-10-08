@@ -392,9 +392,9 @@ field `adjacent` as a `Dict{E, I}`, where `E` is the edge type and `I` is the
 integer type.
 """
 struct Adjacent{I,E} # Adjacent{IntegerType, EdgeType}
-    adjacent::Dict{E,I}
+    adjacent::DefaultDict{E,I}
     function Adjacent{I,E}() where {I,E}
-        A = Dict{E,I}()
+        A = DefaultDict{E,I}(I(DefaultAdjacentValue))
         adj = new{I,E}(A)
         return adj
     end
@@ -1024,11 +1024,12 @@ end
 Returns `true` if the edge `(i, j)` is an edge of the triangulation, 
 and `false` otherwise.
 """
-function is_valid_edge(ij, adj::Adjacent)
-    return ij ∈ edges(adj)
+function is_valid_edge(ij, adj::Adjacent{I, E}) where {I, E}
+    return get_edge(adj, ij) ≠ I(DefaultAdjacentValue)
 end
 function is_valid_edge(i, j, adj::Adjacent{I, E}) where {I, E}
-    return construct_edge(E, i, j) ∈ edges(adj)
+    ij = construct_edge(E, i, j)
+    return is_valid_edge(ij, adj)
 end
 
 ############################################
@@ -1103,34 +1104,6 @@ function split_triangle!(T::Ts, HG, adj, adj2v, DG, i, j, k, ℓ, r) where {Ts}
     add_point!(DG, r)
     add_neighbour!(DG, r, i, j, k, ℓ)
     delete_neighbour!(DG, i, j)
-    return nothing
-end
-
-"""
-    legalise_edge!(T, HG, adj, adj2v, DG, i, j, r, pts)
-    
-Legalises the edge `(i, j)` if it is illegal.
-
-# Arguments 
-- `T`: The current set of triangles defining the triangulation.
-- `HG`: The point location data structure.
-- `adj`: The adjacency list.
-- `adj2v`: The adjacent-to-vertex list.
-- `DG`: The vertex-neighbour data structure.
-- `i, j`: The edge to make legal. Nothing happens if `is_legal(i, j, 𝒜, pts)`.
-- `r`: The point being added into the triangulation. 
-- `pts`: The point set of the triangulation.
-
-# Outputs 
-`T`, `HG`, `adj`, `adj2v`, and `DG` are all updated in-place.
-"""
-function legalise_edge!(T, HG, adj, adj2v, DG, i, j, r, pts)
-    if !islegal(i, j, adj, pts)
-        e = get_edge(adj, j, i)
-        flip_edge!(T, HG, adj, adj2v, DG, i, j, e, r)
-        legalise_edge!(T, HG, adj, adj2v, DG, i, e, r, pts)
-        legalise_edge!(T, HG, adj, adj2v, DG, e, j, r, pts)
-    end
     return nothing
 end
 

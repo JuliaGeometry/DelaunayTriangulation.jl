@@ -5,6 +5,7 @@ using Random
 using DelaunayTriangulation
 const DT = DelaunayTriangulation
 using StaticArrays
+import DataStructures: DefaultDict
 
 #=
 @testset "Primitives" begin

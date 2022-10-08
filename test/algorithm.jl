@@ -92,14 +92,14 @@ end
 ############################################
 @testset "Adjacent" begin
     adj = DT.Adjacent{Int64,NTuple{2,Int64}}()
-    @test adj.adjacent == Dict{NTuple{2,Int64},Int64}()
+    @test adj.adjacent == DefaultDict{NTuple{2,Int64},Int64}(DT.DefaultAdjacentValue)
     @test typeof(adj) == DT.Adjacent{Int64,NTuple{2,Int64}}
     @test isconcretetype(typeof(adj))
     adj = DT.Adjacent{Int16,NTuple{2,Int16}}()
-    @test adj.adjacent == Dict{NTuple{2,Int16},Int16}()
+    @test adj.adjacent == DefaultDict{NTuple{2,Int16},Int16}(Int16(DT.DefaultAdjacentValue))
     @test typeof(adj) == DT.Adjacent{Int16,NTuple{2,Int16}}
     @test isconcretetype(typeof(adj))
-    @test DT.adjacent(adj) == Dict{NTuple{2,Int16},Int16}()
+    @test DT.adjacent(adj) == DefaultDict{NTuple{2,Int16},Int16}(Int16(DT.DefaultAdjacentValue))
 end
 
 @testset "Adjacent2Vertex" begin
@@ -174,22 +174,23 @@ end
     DT.add_edge!(adj, (7, 5), 3)
     @test DT.get_edge(adj, 5, 7) == DT.get_edge(adj, (5, 7)) == 9
     DT.delete_edge!(adj, 5, 7)
-    @test_throws KeyError DT.get_edge(adj, 5, 7)
-    @test_throws KeyError DT.get_edge(adj, (5, 7))
+    @test DT.get_edge(adj, 5, 7) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, (5, 7)) == DT.DefaultAdjacentValue
     DT.delete_edge!(adj, i, j)
-    @test_throws KeyError DT.get_edge(adj, (i, j))
-    @test_throws KeyError DT.get_edge(adj, i, j)
-    @test_throws KeyError DT.get_edge(adj, (j, i))
-    @test_throws KeyError DT.get_edge(adj, i, j)
+    @test DT.get_edge(adj, i,j) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, j,i) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, (i,j)) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, (j,i)) == DT.DefaultAdjacentValue
+
     DT.add_edge!(adj, 16, 13, 5)
     DT.add_edge!(adj, 13, 16, DT.BoundaryIndex)
     DT.delete_edge!(adj, 16, 13)
-    @test_throws KeyError DT.get_edge(adj, 16, 13)
+    @test DT.get_edge(adj, (16,13)) == DT.DefaultAdjacentValue
     @test DT.get_edge(adj, 13, 16) == DT.BoundaryIndex
     DT.add_edge!(adj, 16, 13, 5)
     DT.delete_edge!(adj, 16, 13; protect_boundary=false)
-    @test_throws KeyError DT.get_edge(adj, 16, 13)
-    @test_throws KeyError DT.get_edge(adj, 13, 16)
+    @test DT.get_edge(adj, (16,13)) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, (13,16)) == DT.DefaultAdjacentValue
     adj = DT.Adjacent{Int64,NTuple{2,Int64}}()
     T1 = DT.construct_triangle(NTuple{3,Int64}, 1, 2, 3)
     T2 = DT.construct_triangle(NTuple{3,Int64}, 4, 5, 6)
@@ -232,7 +233,7 @@ end
     @test DT.get_edge(adj, 2, 3) == 5
     DT.delete_edge!(adj, 2, 3; delete_uv_only=true)
     @test DT.get_edge(adj, 3, 2) == 1
-    @test_throws KeyError DT.get_edge(adj, 2, 3)
+    @test DT.get_edge(adj, (2,3)) == DT.DefaultAdjacentValue
 
     adj = DT.Adjacent{Int64,NTuple{2,Int64}}()
     DT.add_edge!(adj, 2, 3, 7)
@@ -1513,7 +1514,7 @@ end
     @test DT.get_edge(adj, 3, DT.LowerLeftBoundingIndex) == 2
     @test DT.get_edge(adj, 3, 4) == DT.LowerLeftBoundingIndex
     @test DT.get_edge(adj, 4, DT.LowerLeftBoundingIndex) == 3
-    @test_throws KeyError DT.get_edge(adj, 3, 1) == 4
+    @test DT.get_edge(adj, 3, 1) == DT.DefaultAdjacentValue
     @test DT.get_edge(adj, 1, 4) == 2
     @test DT.get_edge(adj, 4, 3) == 2
     @test DT.get_edge(adj, 4, 1) == DT.LowerLeftBoundingIndex
@@ -1527,7 +1528,7 @@ end
     @test DT.get_edge(adj, 3, 2) == 4
     @test DT.get_edge(adj, 4, 2) == 1
     @test DT.get_edge(adj, 2, 4) == 3
-    @test_throws KeyError DT.get_edge(adj, 1, 3)
+    @test DT.get_edge(adj, 1,3) == DT.DefaultAdjacentValue
     @test DT.get_edge(adj2v, DT.LowerLeftBoundingIndex) == Set{NTuple{2,Int64}}([
         (DT.LowerRightBoundingIndex, 2),
         (2, 3),
@@ -1716,7 +1717,7 @@ end
     @test DT.get_edge(adj, 3, DT.LowerLeftBoundingIndex) == 2
     @test DT.get_edge(adj, 3, 4) == DT.LowerLeftBoundingIndex
     @test DT.get_edge(adj, 4, DT.LowerLeftBoundingIndex) == 3
-    @test_throws KeyError DT.get_edge(adj, 3, 1) == 4
+    @test DT.get_edge(adj, 3, 1) == DT.DefaultAdjacentValue
     @test DT.get_edge(adj, 1, 4) == 2
     @test DT.get_edge(adj, 4, 3) == 2
     @test DT.get_edge(adj, 4, 1) == DT.LowerLeftBoundingIndex
@@ -1730,7 +1731,7 @@ end
     @test DT.get_edge(adj, 3, 2) == 4
     @test DT.get_edge(adj, 4, 2) == 1
     @test DT.get_edge(adj, 2, 4) == 3
-    @test_throws KeyError DT.get_edge(adj, 1, 3)
+    @test DT.get_edge(adj, 1,3) == DT.DefaultAdjacentValue
     @test DT.get_edge(adj2v, DT.LowerLeftBoundingIndex) == Set{NTuple{2,Int64}}([
         (DT.LowerRightBoundingIndex, 2),
         (2, 3),
@@ -2283,6 +2284,7 @@ end
         adjacent2vertex(newtri), graph(newtri),
         (1, 3, 5), 7)
     newtri2 = deepcopy(newtri)
+    adj = adjacent(newtri2)
     DT.delete_triangle!(triangles(newtri2),
         adjacent(newtri2),
         adjacent2vertex(newtri2), graph(newtri2),
@@ -2300,9 +2302,9 @@ end
     @test (1, 3, 7) ∉ triangles(newtri2) &&
           (3, 7, 1) ∉ triangles(newtri2) &&
           (7, 1, 3) ∉ triangles(newtri2)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 7, 1)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 3)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 7)
+    @test DT.get_edge(adj, 7, 1) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 1, 3) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 3, 7) == DT.DefaultAdjacentValue
     @test DT.get_edge(adjacent(newtri2), 4, 5) == DT.BoundaryIndex
     @test DT.get_edge(adjacent(newtri2), 5, 4) == 1
     @test DT.get_edge(adjacent(newtri2), 4, 1) == 5
@@ -2313,7 +2315,7 @@ end
     @test DT.get_edge(adjacent(newtri2), 1, 6) == 3
     @test DT.get_edge(adjacent(newtri2), 6, 3) == 1
     @test DT.get_edge(adjacent(newtri2), 3, 6) == 2
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 3)
+    @test DT.get_edge(adj, 1,3) == DT.DefaultAdjacentValue
     @test DT.get_edge(adjacent(newtri2), 3, 1) == 6
     @test DT.get_edge(adjacent(newtri2), 3, 2) == 5
     @test DT.get_edge(adjacent(newtri2), 2, 3) == 6
@@ -2323,9 +2325,9 @@ end
     @test DT.get_edge(adjacent(newtri2), 5, 2) == DT.BoundaryIndex
     @test DT.get_edge(adjacent(newtri2), 5, 3) == 2
     @test DT.get_edge(adjacent(newtri2), 3, 5) == 7
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 7)
     @test DT.get_edge(adjacent(newtri2), 7, 3) == 5
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 7, 1)
+    @test DT.get_edge(adj, 3, 7) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 7,1) == DT.DefaultAdjacentValue
     @test DT.get_edge(adjacent(newtri2), 1, 7) == 5
     @test DT.is_boundary_edge(2, 6, adjacent(newtri2))
     @test DT.is_boundary_edge(6, 4, adjacent(newtri2))
@@ -2400,10 +2402,10 @@ end
     @test DT.get_edge(adjacent(newtri2), 4, 1) == 5
     @test DT.get_edge(adjacent(newtri2), 1, 6) == 3
     @test DT.get_edge(adjacent(newtri2), 6, 1) == 4
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 3)
     @test DT.get_edge(adjacent(newtri2), 3, 1) == 6
     @test DT.get_edge(adjacent(newtri2), 1, 7) == 5
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 7, 1)
+    @test DT.get_edge(adj, 1,3) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 7,1) == DT.DefaultAdjacentValue
     @test DT.get_edge(adjacent(newtri2), 1, 5) == 4
     @test DT.get_edge(adjacent(newtri2), 5, 1) == 7
     @test DT.get_edge(adjacent(newtri2), 4, 5) == DT.BoundaryIndex
@@ -2417,7 +2419,7 @@ end
     @test DT.get_edge(adjacent(newtri2), 7, 5) == 1
     @test DT.get_edge(adjacent(newtri2), 5, 7) == 3
     @test DT.get_edge(adjacent(newtri2), 7, 3) == 5
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 7)
+    @test DT.get_edge(adj, 3, 7) == DT.DefaultAdjacentValue
     @test DT.get_edge(adjacent(newtri2), 3, 5) == 7
     @test DT.get_edge(adjacent(newtri2), 5, 3) == 2
     @test DT.get_edge(adjacent(newtri2), 2, 5) == 3
@@ -2447,10 +2449,10 @@ end
           (3, 2, 5) ∉ triangles(newtri2) &&
           (2, 5, 3) ∉ triangles(newtri2) &&
           (5, 3, 2) ∉ triangles(newtri2)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 7, 1)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 3)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 7)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 5)
+    @test DT.get_edge(adj, 7, 1) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 1, 3) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 3, 7) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 2, 1) == DT.DefaultAdjacentValue
     @test DT.get_edge(adjacent(newtri2), 4, 5) == DT.BoundaryIndex
     @test DT.get_edge(adjacent(newtri2), 5, 4) == 1
     @test DT.get_edge(adjacent(newtri2), 4, 1) == 5
@@ -2461,19 +2463,19 @@ end
     @test DT.get_edge(adjacent(newtri2), 1, 6) == 3
     @test DT.get_edge(adjacent(newtri2), 6, 3) == 1
     @test DT.get_edge(adjacent(newtri2), 3, 6) == 2
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 3)
     @test DT.get_edge(adjacent(newtri2), 3, 1) == 6
     @test DT.get_edge(adjacent(newtri2), 3, 2) == DT.BoundaryIndex
     @test DT.get_edge(adjacent(newtri2), 2, 3) == 6
     @test DT.get_edge(adjacent(newtri2), 6, 2) == 3
     @test DT.get_edge(adjacent(newtri2), 2, 6) == DT.BoundaryIndex
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 5)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 5, 2)
+    @test DT.get_edge(adj, 1, 3) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj,2,5) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 5,2) == DT.DefaultAdjacentValue
     @test DT.get_edge(adjacent(newtri2), 5, 3) == DT.BoundaryIndex
     @test DT.get_edge(adjacent(newtri2), 3, 5) == 7
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 7)
     @test DT.get_edge(adjacent(newtri2), 7, 3) == 5
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 7, 1)
+    @test DT.get_edge(adj, 3, 7) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 7, 1) == DT.DefaultAdjacentValue
     @test DT.get_edge(adjacent(newtri2), 1, 7) == 5
     @test DT.is_boundary_edge(2, 6, adjacent(newtri2))
     @test DT.is_boundary_edge(6, 4, adjacent(newtri2))
@@ -2556,8 +2558,8 @@ end
     @test DT.get_edge(adjacent(newtri2), 1, 5) == 4
     @test DT.get_edge(adjacent(newtri2), 5, 1) == 7
     @test DT.get_edge(adjacent(newtri2), 1, 7) == 5
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 7, 1)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 3)
+    @test DT.get_edge(adj, 7,1) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 1,3) == DT.DefaultAdjacentValue
     @test DT.get_edge(adjacent(newtri2), 3, 1) == 6
     @test DT.get_edge(adjacent(newtri2), 1, 6) == 3
     @test DT.get_edge(adjacent(newtri2), 6, 1) == 4
@@ -2602,15 +2604,15 @@ end
     @test DT.get_edge(adjacent(newtri2), 1, 4) == 6
     @test DT.get_edge(adjacent(newtri2), 6, 1) == 4
     @test DT.get_edge(adjacent(newtri2), 1, 5) == 4
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 7, 1)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 3)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 7)
     @test DT.get_edge(adjacent(newtri2), 5, 3) == DT.BoundaryIndex
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 5)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 2)
     @test DT.get_edge(adjacent(newtri2), 3, 6) == DT.BoundaryIndex
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 6, 2)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 3)
+    @test DT.get_edge(adj, 7, 1) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 1, 3) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 3, 7) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 2, 5) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 3, 2) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 6, 2) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 2, 3) == DT.DefaultAdjacentValue
     @test !DT.is_valid_edge(7, 1, adjacent(newtri2))
     @test !DT.is_valid_edge(1, 3, adjacent(newtri2))
     @test !DT.is_valid_edge(3, 7, adjacent(newtri2))
@@ -2630,26 +2632,26 @@ end
     @test DT.get_edge(adjacent(newtri2), 1, 6) == 3
     @test DT.get_edge(adjacent(newtri2), 6, 3) == 1
     @test DT.get_edge(adjacent(newtri2), 3, 6) == DT.BoundaryIndex
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 3)
     @test DT.get_edge(adjacent(newtri2), 3, 1) == 6
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 2)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 3)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 6, 2)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 6)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 5)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 5, 2)
+    @test DT.get_edge(adj, 1, 3) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 3, 2) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 2, 3) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 6, 2) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 2, 6) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 2, 5) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 5, 2) == DT.DefaultAdjacentValue
     @test DT.get_edge(adjacent(newtri2), 5, 3) == DT.BoundaryIndex
     @test DT.get_edge(adjacent(newtri2), 3, 5) == 7
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 7)
     @test DT.get_edge(adjacent(newtri2), 7, 3) == 5
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 7, 1)
     @test DT.get_edge(adjacent(newtri2), 1, 7) == 5
-    @test_throws KeyError DT.is_boundary_edge(2, 6, adjacent(newtri2))
+    @test DT.get_edge(adj, 3, 7) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 7, 1) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 2, 6) == DT.DefaultAdjacentValue
     @test DT.is_boundary_edge(6, 4, adjacent(newtri2))
     @test DT.is_boundary_edge(4, 5, adjacent(newtri2))
     @test DT.is_boundary_edge(5, 3, adjacent(newtri2))
     @test DT.is_boundary_edge(3, 6, adjacent(newtri2))
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 3)
+    @test DT.get_edge(adj, 2,3) == DT.DefaultAdjacentValue
     @test DT.get_edge(adjacent2vertex(newtri2), 1) == Set{NTuple{2,Int64}}([
         (7, 5),
         (4, 6),
@@ -2716,14 +2718,14 @@ end
     @test DT.get_edge(adjacent(newtri2), 1, 6) == 3
     @test DT.get_edge(adjacent(newtri2), 6, 1) == 4
     @test DT.get_edge(adjacent(newtri2), 1, 7) == 5
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 7, 1)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 3)
+    @test DT.get_edge(adj, 7,1) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 1,3) == DT.DefaultAdjacentValue
     @test DT.get_edge(adjacent(newtri2), 3, 1) == 6
     @test DT.get_edge(adjacent(newtri2), 1, 5) == 4
     @test DT.get_edge(adjacent(newtri2), 5, 1) == 7
     @test DT.get_edge(adjacent(newtri2), 3, 6) == DT.BoundaryIndex
     @test DT.get_edge(adjacent(newtri2), 6, 3) == 1
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 7)
+    @test DT.get_edge(adj, 3, 7) == DT.DefaultAdjacentValue
     @test DT.get_edge(adjacent(newtri2), 7, 3) == 5
     @test DT.get_edge(adjacent(newtri2), 3, 5) == 7
     @test DT.get_edge(adjacent(newtri2), 5, 3) == DT.BoundaryIndex
@@ -2733,13 +2735,13 @@ end
     @test DT.get_edge(adjacent(newtri2), 5, 4) == 1
     @test DT.get_edge(adjacent(newtri2), 5, 7) == 3
     @test DT.get_edge(adjacent(newtri2), 7, 5) == 1
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 3)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 7)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 7, 1)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 2)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 5)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 2)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 6)
+    @test DT.get_edge(adj, 1,3) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 3, 7) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 7,1) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 3, 2) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 2,5) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 3, 2) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 2,6) == DT.DefaultAdjacentValue
 
     DT.delete_triangle!(triangles(newtri2),
         adjacent(newtri2),
@@ -2764,19 +2766,19 @@ end
           (2, 3, 6) ∉ triangles(newtri2) &&
           (5, 1, 7) ∉ triangles(newtri2) &&
           (1, 7, 5) ∉ triangles(newtri2) &&
-          (7, 5, 1) ∉ triangles(newtri2)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 7)
+          (7, 5, 1) ∉ triangles(newtri2)    
     @test DT.get_edge(adjacent(newtri2), 1, 4) == 6
     @test DT.get_edge(adjacent(newtri2), 6, 1) == 4
     @test DT.get_edge(adjacent(newtri2), 1, 5) == 4
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 7, 1)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 3)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 7)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 5)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 2)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 6, 2)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 3)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 7)
+    @test DT.get_edge(adj, 7, 1) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 1, 3) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 3, 7) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 2, 5) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 3, 2) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 6, 2) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 2, 3) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 1, 7) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 3, 1) == 6
     @test !DT.is_valid_edge(7, 1, adjacent(newtri2))
     @test !DT.is_valid_edge(1, 3, adjacent(newtri2))
     @test !DT.is_valid_edge(3, 7, adjacent(newtri2))
@@ -2799,21 +2801,21 @@ end
     @test DT.get_edge(adjacent(newtri2), 1, 6) == 3
     @test DT.get_edge(adjacent(newtri2), 6, 3) == 1
     @test DT.get_edge(adjacent(newtri2), 3, 6) == DT.BoundaryIndex
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 3)
     @test DT.get_edge(adjacent(newtri2), 3, 1) == 6
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 2)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 3)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 6, 2)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 6)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 5)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 5, 2)
+    @test DT.get_edge(adj, 1,3) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 3,2) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 2,3) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 6,2) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 2,6) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 2,5) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 5,2) == DT.DefaultAdjacentValue
     @test DT.get_edge(adjacent(newtri2), 5, 3) == DT.BoundaryIndex
     @test DT.get_edge(adjacent(newtri2), 3, 5) == 7
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 7)
     @test DT.get_edge(adjacent(newtri2), 7, 3) == 5
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 7, 1)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 7)
-    @test_throws KeyError DT.is_boundary_edge(2, 6, adjacent(newtri2))
+    @test DT.get_edge(adj, 3, 7) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 7,1) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 1,7) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 2,6) == DT.DefaultAdjacentValue
     @test DT.is_boundary_edge(6, 4, adjacent(newtri2))
     @test DT.is_boundary_edge(4, 5, adjacent(newtri2))
     @test DT.is_boundary_edge(5, 3, adjacent(newtri2))
@@ -2881,14 +2883,14 @@ end
     ])
     @test DT.get_edge(adjacent(newtri2), 1, 4) == 6
     @test DT.get_edge(adjacent(newtri2), 1, 6) == 3
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 3)
     @test DT.get_edge(adjacent(newtri2), 1, 5) == 4
     @test DT.get_edge(adjacent(newtri2), 4, 1) == 5
     @test DT.get_edge(adjacent(newtri2), 6, 1) == 4
     @test DT.get_edge(adjacent(newtri2), 3, 1) == 6
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 5, 1)
     @test DT.get_edge(adjacent(newtri2), 3, 5) == 7
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 7)
+    @test DT.get_edge(adj, 1, 3) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 5,1) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 3, 7) == DT.DefaultAdjacentValue
     @test DT.get_edge(adjacent(newtri2), 3, 6) == DT.BoundaryIndex
     @test DT.get_edge(adjacent(newtri2), 5, 3) == DT.BoundaryIndex
     @test DT.get_edge(adjacent(newtri2), 7, 3) == 5
@@ -2898,14 +2900,14 @@ end
     @test DT.get_edge(adjacent(newtri2), 4, 5) == DT.BoundaryIndex
     @test DT.get_edge(adjacent(newtri2), 5, 4) == 1
     @test DT.get_edge(adjacent(newtri2), 5, 7) == 3
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 3)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 7)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 7, 1)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 3, 2)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 5)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 6, 2)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 2, 3)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 5, 1)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 1, 7)
-    @test_throws KeyError DT.get_edge(adjacent(newtri2), 7, 5)
+    @test DT.get_edge(adj, 1, 3) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 3, 7) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 7,1) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 3,2) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 2,5) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 6,2) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 2,3) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 5,1) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 1,7) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 7,5) == DT.DefaultAdjacentValue
 end

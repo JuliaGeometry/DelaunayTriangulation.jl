@@ -3,6 +3,7 @@ module DelaunayTriangulation
 using SimpleGraphs
 using ExactPredicates
 using Random
+import DataStructures: DefaultDict
 
 #include("primitives.jl")
 include("constants.jl")

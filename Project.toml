@@ -4,6 +4,7 @@ authors = ["DanielVandH <danj.vandenheuvel@gmail.com> and contributors"]
 version = "0.1.2"
 
 [deps]
+DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 ExactPredicates = "429591f6-91af-11e9-00e2-59fbe8cec110"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 SimpleGraphs = "55797a34-41de-5266-9ec1-32ac4eb504d3"

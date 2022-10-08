@@ -21,3 +21,5 @@ const FirstPointIndex = 1
 const BoundingTriangleShift = 27.3919105998678246734637673334353499992
 """The minimum width and height of the bounding box."""
 const MinWidthHeight = 0.00182829999105935935923828882837273741
+"""Representation of an empty set for the default value in Adjacent."""
+const DefaultAdjacentValue = -4
