@@ -281,7 +281,7 @@ end
 Tests if the `ℓ`th point in `pts` is inside the circumdisk of the 
 triangle `T`. 
 """
-function isincircle(T, pts, ℓ) 
+function isincircle(T, pts, ℓ)
     i, j, k = indices(T)
     return isincircle(pts, i, j, k, ℓ)
 end
@@ -1021,10 +1021,10 @@ end
 Returns `true` if the edge `(i, j)` is a boundary edge of the triangulation, 
 and `false` otherwise.
 """
-function is_boundary_edge(ij, adj::Adjacent{I, E}) where {I, E}
+function is_boundary_edge(ij, adj::Adjacent{I,E}) where {I,E}
     return get_edge(adj, ij) == I(BoundaryIndex)
 end
-function is_boundary_edge(i, j, adj::Adjacent{I, E}) where {I, E}
+function is_boundary_edge(i, j, adj::Adjacent{I,E}) where {I,E}
     return get_edge(adj, i, j) == I(BoundaryIndex)
 end
 
@@ -1034,10 +1034,10 @@ end
 Returns `true` if the edge `(i, j)` is an edge of the triangulation, 
 and `false` otherwise.
 """
-function is_valid_edge(ij, adj::Adjacent{I, E}) where {I, E}
+function is_valid_edge(ij, adj::Adjacent{I,E}) where {I,E}
     return get_edge(adj, ij) ≠ I(DefaultAdjacentValue)
 end
-function is_valid_edge(i, j, adj::Adjacent{I, E}) where {I, E}
+function is_valid_edge(i, j, adj::Adjacent{I,E}) where {I,E}
     ij = construct_edge(E, i, j)
     return is_valid_edge(ij, adj)
 end
@@ -1213,18 +1213,17 @@ end
 ############################################
 
 """
-    triangulate!(DT::AbstractTriangulation; randomise=true, trim=true)
+    triangulate!(DT::AbstractTriangulation; randomise=true)
 
 Completes the Delaunay triangulation `DT`. Use the keyword argument 
 `randomise=true` to randomise the insertion order, and `trim=true` 
 to remove the bounding triangle.
 """
-function triangulate!(DT::AbstractTriangulation{T,E,Ts,Es,Ps,I}; randomise=true, trim=true) where {T,E,Ts,Es,Ps,I}
+function triangulate!(DT::AbstractTriangulation{T,E,Ts,Es,Ps,I}; randomise=true) where {T,E,Ts,Es,Ps,I}
     pt_order = randomise ? shuffle(eachindex(points(DT))) : eachindex(points(DT))
     map(pt_order) do r
         add_point!(DT, I(r))
     end
-    trim && remove_bounding_triangle!(DT)
     return nothing
 end
 
@@ -1252,6 +1251,9 @@ function triangulate(pts; randomise=true, trim=true, method=:berg,
     TrianglesType::Type{Ts}=Set{TriangleType},
     EdgesType::Type{Es}=Set{EdgeType}) where {I,T,E,Ts,Es}
     DT = UnconstrainedTriangulation(pts; IntegerType, TriangleType, EdgeType, TrianglesType, EdgesType, method)
-    triangulate!(DT; randomise, trim)
+    triangulate!(DT; randomise)
+    if method == :berg && trim
+        remove_bounding_triangle!(DT)
+    end
     return DT
 end
