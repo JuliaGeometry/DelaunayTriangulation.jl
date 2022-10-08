@@ -966,6 +966,7 @@ end
         (10, 4, 8)
     ]
 end
+
 ############################################
 ##
 ## UNCONSTRAINED INCREMENTAL TRIANGULATION
@@ -2271,7 +2272,7 @@ end
 ##
 ## UTILITIES
 ##
-############################################
+############################################ 
 @testset "Can we correctly find the root of a DAG?" begin
     D = DT.HistoryGraph{NTuple{3,Int64}}()
     add!(DT.graph(D), (1, 2, 3))

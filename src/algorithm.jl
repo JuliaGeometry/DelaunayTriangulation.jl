@@ -1162,7 +1162,7 @@ end
 
 Adds `get_point(pts, r)` to the triangulation. 
 """
-function add_point!(T, HG::HistoryGraph, adj, adj2v, DG, root, pts, r)
+function add_point_berg!(T, HG::HistoryGraph, adj, adj2v, DG, root, pts, r)
     Tᵢⱼₖ, interior_flag = locate_triangle(HG, pts, r, root)
     if interior_flag == 1
         i, j, k = Tᵢⱼₖ
@@ -1187,11 +1187,17 @@ end
 
 Adds the `r`th point of the point set in `DT` into the triangulation.
 """
-function add_point!(DT::AbstractTriangulation{T,E,Ts,Es,Ps,I}, r::I) where {T,E,Ts,Es,Ps,I}
-    add_point!(triangles(DT), pointlocation(DT), adjacent(DT),
-        adjacent2vertex(DT), graph(DT),
+function add_point_berg!(DT::AbstractTriangulation{T,E,Ts,Es,Ps,I}, r::I) where {T,E,Ts,Es,Ps,I}
+    add_point_berg!(
+        triangles(DT),
+        pointlocation(DT),
+        adjacent(DT),
+        adjacent2vertex(DT),
+        graph(DT),
         construct_triangle(T, I(LowerRightBoundingIndex), I(UpperBoundingIndex), I(LowerLeftBoundingIndex)),
-        points(DT), I(r))
+        points(DT),
+        I(r)
+    )
     return nothing
 end
 
@@ -1200,9 +1206,11 @@ end
 
 Adds the point `p` into the triangulation.
 """
-function add_point!(DT::AbstractTriangulation{T,E,Ts,Es,Ps,I}, p) where {T,E,Ts,Es,Ps,I}
+function add_point!(DT::AbstractTriangulation{T,E,Ts,Es,Ps,I}, p; method=:berg) where {T,E,Ts,Es,Ps,I}
     add_point!(points(DT), p)
-    add_point!(DT, I(lastindex(points(DT))))
+    if method == :berg
+        add_point_berg!(DT, I(lastindex(points(DT))))
+    end
     return nothing
 end
 
@@ -1211,19 +1219,26 @@ end
 ## TRIANGULATION METHODS
 ##
 ############################################
-
 """
-    triangulate!(DT::AbstractTriangulation; randomise=true)
+    triangulate_berg!(DT::AbstractUnconstrainedTriangulation; randomise=true, trim=true)
 
-Completes the Delaunay triangulation `DT`. Use the keyword argument 
+Completes the Delaunay triangulation `DT` using de Berg's method. Use the keyword argument 
 `randomise=true` to randomise the insertion order, and `trim=true` 
 to remove the bounding triangle.
 """
-function triangulate!(DT::AbstractTriangulation{T,E,Ts,Es,Ps,I}; randomise=true) where {T,E,Ts,Es,Ps,I}
+function triangulate_berg!(DT::AbstractUnconstrainedTriangulation{T,E,Ts,Es,Ps,I}; randomise=true, trim=true) where {T,E,Ts,Es,Ps,I}
     pt_order = randomise ? shuffle(eachindex(points(DT))) : eachindex(points(DT))
+    𝒯 = triangles(DT)
+    ℋ𝒢 = pointlocation(DT)
+    𝒜 = adjacent(DT)
+    𝒜⁻¹ = adjacent2vertex(DT)
+    𝒟𝒢 = graph(DT)
+    root = construct_triangle(T, I(LowerRightBoundingIndex), I(UpperBoundingIndex), I(LowerLeftBoundingIndex))
+    𝒫 = points(DT)
     map(pt_order) do r
-        add_point!(DT, I(r))
+        add_point_berg!(𝒯, ℋ𝒢, 𝒜, 𝒜⁻¹, 𝒟𝒢, root, 𝒫, I(r))
     end
+    trim && remove_bounding_triangle!(DT)
     return nothing
 end
 
@@ -1236,7 +1251,7 @@ Computes the unconstrained Delaunay triangulation of `pts`.
 
 # Keyword Arguments 
 - `randomise=true`: Randomise the insertion order.
-- `trim=true`: Remove the bounding triangle.
+- `trim=true`: Remove the bounding triangle (only needed if `method=:berg`).
 - `method=:berg`: The method to use. See `?available_methods` for a description of the available methods.
 - `IntegerType::Type{I}=Int64`: The integer type.
 - `TriangleType::Type{T}=NTuple{3,I}`: The triangle type. 
@@ -1251,9 +1266,8 @@ function triangulate(pts; randomise=true, trim=true, method=:berg,
     TrianglesType::Type{Ts}=Set{TriangleType},
     EdgesType::Type{Es}=Set{EdgeType}) where {I,T,E,Ts,Es}
     DT = UnconstrainedTriangulation(pts; IntegerType, TriangleType, EdgeType, TrianglesType, EdgesType, method)
-    triangulate!(DT; randomise)
-    if method == :berg && trim
-        remove_bounding_triangle!(DT)
+    if method == :berg
+        triangulate_berg!(DT; randomise, trim)
     end
     return DT
 end
