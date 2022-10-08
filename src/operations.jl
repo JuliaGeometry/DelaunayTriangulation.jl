@@ -6,13 +6,19 @@ of the directed edge `(i, j)`. and `k = get_edge(adj, i, j)`. If `(i, j, k)` sho
 neighbours, set `delete_adjacent_neighbours = false`.
 """
 function add_triangle!(T::Ts, adj::Adjacent, adj2v::Adjacent2Vertex,
-    DG::DelaunayGraph, HG::HistoryGraph,
-    i, j, r, k; delete_adjacent_neighbours=true) where {Ts}
+    DG::DelaunayGraph, i, j, r, k; delete_adjacent_neighbours=true) where Ts 
     V = triangle_type(Ts)
     add_triangle!(T, V, i, j, r, k)
     add_triangle!(adj, i, j, r)
     add_triangle!(adj2v, i, j, r, k)
     add_triangle!(DG, i, j, r, k; delete_adjacent_neighbours)
+    return nothing 
+end
+function add_triangle!(T::Ts, adj::Adjacent, adj2v::Adjacent2Vertex,
+    DG::DelaunayGraph, HG::HistoryGraph,
+    i, j, r, k; delete_adjacent_neighbours=true) where {Ts}
+    V = triangle_type(Ts)
+    add_triangle!(T,adj,adj2v,DG,i,j,r,k; delete_adjacent_neighbours)
     add_triangle!(HG, V, i, j, r, k)
     return nothing
 end
@@ -240,3 +246,35 @@ function legalise_edge!(T, HG, adj, adj2v, DG, i, j, r, pts)
     end
     return nothing
 end
+
+#=
+function locate_triangle(T, pts, r)
+    for V in T 
+        if isintriangle(V, pts, r)
+            return V 
+        end 
+    end
+end
+function add_point_bowyer!(T, adj, adj2v, DG, pts, r)
+    V = locate_triangle(T, pts, r)
+    i, j, k = indices(V)
+    delete_triangle!(T, adj, adj2v, DG, i, j, k)
+    dig_cavity!(T, adj, adj2v, DG, pts, r, i, j)
+    dig_cavity!(T, adj, adj2v, DG, pts, r, j, k)
+    dig_cavity!(T, adj, adj2v, DG, pts, r, k, i)
+    return nothing 
+end
+function dig_cavity!(T, adj::Adjacent{I, E}, adj2v, DG, pts, r, i, j) where {I, E}
+    ℓ = get_edge(adj, j, i) # (j, i, ℓ) is the triangle on the other side of the edge (i, j) from r 
+    if ℓ == DefaultAdjacentValue
+        return nothing # The triangle has already been deleted in this case 
+    end
+    δ = isincircle(pts, r, i, j, ℓ)
+    if δ == I(1) 
+        delete_triangle!(T, adj, adj2v, DG, j, i, ℓ)
+        dig_cavity!(T, adj, adj2v, DG, pts, r, i, ℓ)
+        dig_cavity!(T, adj, adj2v, DG, pts, r, ℓ, j)
+    else
+        add_triangle!()
+end
+=#
