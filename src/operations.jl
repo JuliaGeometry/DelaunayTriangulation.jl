@@ -54,9 +54,10 @@ end
 
 Deletes the triangle `(i, j, k)` from the triangulation, assuming `(i, j, k)` is a positively oriented triangle. 
 """
-function delete_triangle!(T, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex,
-    DG::DelaunayGraph, i, j, k) where {I,E}
-    delete_triangle!(T, i, j, k)
+function delete_triangle!(T::Ts, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex,
+    DG::DelaunayGraph, i, j, k) where {Ts,I,E}
+    V = triangle_type(Ts)
+    delete_triangle!(T, V, i, j, k)
     delete_triangle!(adj, i, j, k)
     delete_triangle!(adj2v, i, j, k)
     ij_is_valid = is_valid_edge(j, i, adj)
@@ -73,8 +74,7 @@ function delete_triangle!(T, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex,
     !ki_is_valid && delete_neighbour!(DG, k, i)
     return nothing
 end
-function delete_triangle!(T::Ts, i, j, k) where {Ts}
-    V = triangle_type(Ts)
+function delete_triangle!(T, V, i, j, k)
     delT = construct_triangle(V, i, j, k)
     delete_triangle!(T, delT)
     return nothing
@@ -118,7 +118,8 @@ end
 
 #=
 function flip_edge!(T::Ts, HG::HistoryGraph, adj::Adjacent, adj2v::Adjacent2Vertex, DG::DelaunayGraph, i, j, k, r) where Ts 
-    
+    V = triangle_type(Ts)
+
 end
 =#
 """
