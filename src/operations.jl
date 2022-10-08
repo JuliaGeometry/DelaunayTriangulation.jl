@@ -7,17 +7,16 @@ neighbours, set `delete_adjacent_neighbours = false`.
 """
 function add_triangle!(T::Ts, adj::Adjacent, adj2v::Adjacent2Vertex,
     DG::DelaunayGraph, HG::HistoryGraph,
-    i, j, r, k; delete_adjacent_neighbours=true) where {Ts}
-    add_triangle!(T, i, j, r, k)
+    i, j, r, k; delete_adjacent_neighbours=true) where Ts
+    V = triangle_type(Ts)
+    add_triangle!(T, V, i, j, r, k)
     add_triangle!(adj, i, j, r)
     add_triangle!(adj2v, i, j, r, k)
     add_triangle!(DG, i, j, r, k; delete_adjacent_neighbours)
-    V = triangle_type(Ts)
     add_triangle!(HG, V, i, j, r, k)
     return nothing
 end
-function add_triangle!(T::Ts, i, j, r, k) where {Ts}
-    V = triangle_type(Ts)
+function add_triangle!(T, V, i, j, r, k)
     newT = construct_triangle(V, i, j, r)
     oldT = construct_triangle(V, i, j, k)
     add_triangle!(T, newT)
@@ -117,12 +116,11 @@ function delete_boundary_edge!(i, j, k, adj::Adjacent{I,E}, adj2v::Adjacent2Vert
     return nothing
 end
 
-
-
-
-
-
-
+#=
+function flip_edge!(T::Ts, HG::HistoryGraph, adj::Adjacent, adj2v::Adjacent2Vertex, DG::DelaunayGraph, i, j, k, r) where Ts 
+    
+end
+=#
 """
     split_triangle!(T, HG::HistoryGraph, adj, adj2v, DG, Tᵢⱼₖ::V, r) where V
 
