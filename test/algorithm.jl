@@ -177,20 +177,20 @@ end
     @test DT.get_edge(adj, 5, 7) == DT.DefaultAdjacentValue
     @test DT.get_edge(adj, (5, 7)) == DT.DefaultAdjacentValue
     DT.delete_edge!(adj, i, j)
-    @test DT.get_edge(adj, i,j) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, j,i) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, (i,j)) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, (j,i)) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, i, j) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, j, i) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, (i, j)) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, (j, i)) == DT.DefaultAdjacentValue
 
     DT.add_edge!(adj, 16, 13, 5)
     DT.add_edge!(adj, 13, 16, DT.BoundaryIndex)
     DT.delete_edge!(adj, 16, 13)
-    @test DT.get_edge(adj, (16,13)) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, (16, 13)) == DT.DefaultAdjacentValue
     @test DT.get_edge(adj, 13, 16) == DT.BoundaryIndex
     DT.add_edge!(adj, 16, 13, 5)
     DT.delete_edge!(adj, 16, 13; protect_boundary=false)
-    @test DT.get_edge(adj, (16,13)) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, (13,16)) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, (16, 13)) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, (13, 16)) == DT.DefaultAdjacentValue
     adj = DT.Adjacent{Int64,NTuple{2,Int64}}()
     T1 = DT.construct_triangle(NTuple{3,Int64}, 1, 2, 3)
     T2 = DT.construct_triangle(NTuple{3,Int64}, 4, 5, 6)
@@ -233,7 +233,7 @@ end
     @test DT.get_edge(adj, 2, 3) == 5
     DT.delete_edge!(adj, 2, 3; delete_uv_only=true)
     @test DT.get_edge(adj, 3, 2) == 1
-    @test DT.get_edge(adj, (2,3)) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, (2, 3)) == DT.DefaultAdjacentValue
 
     adj = DT.Adjacent{Int64,NTuple{2,Int64}}()
     DT.add_edge!(adj, 2, 3, 7)
@@ -940,6 +940,32 @@ end
     @test !DT.is_valid_edge((4, 11), adjacent(newtri))
 end
 
+@testset "Testing if we can identify what triangles contain a point in their circumdisk" begin
+    p1 = (5.0, 6.0)
+    p2 = (9.0, 6.0)
+    p3 = (13.0, 5.0)
+    p4 = (10.38, 0.0)
+    p5 = (12.64, -1.69)
+    p6 = (2.0, -2.0)
+    p7 = (3.0, 4.0)
+    p8 = (7.5, 3.53)
+    p9 = (4.02, 1.85)
+    p10 = (4.26, 0.0)
+    pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]
+    tri = triangulate(pts; randomise=false)
+    p11 = (6.0, 2.5)
+    push!(pts, p11)
+    bw_in = NTuple{3,Int64}[]
+    for T in triangles(tri)
+        DT.isincircle(T, pts, 11) == 1 && push!(bw_in, T)
+    end
+    @test bw_in == [
+        (8, 1, 7),
+        (10, 8, 9),
+        (8, 7, 9),
+        (10, 4, 8)
+    ]
+end
 ############################################
 ##
 ## UNCONSTRAINED INCREMENTAL TRIANGULATION
@@ -1528,7 +1554,7 @@ end
     @test DT.get_edge(adj, 3, 2) == 4
     @test DT.get_edge(adj, 4, 2) == 1
     @test DT.get_edge(adj, 2, 4) == 3
-    @test DT.get_edge(adj, 1,3) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 1, 3) == DT.DefaultAdjacentValue
     @test DT.get_edge(adj2v, DT.LowerLeftBoundingIndex) == Set{NTuple{2,Int64}}([
         (DT.LowerRightBoundingIndex, 2),
         (2, 3),
@@ -1731,7 +1757,7 @@ end
     @test DT.get_edge(adj, 3, 2) == 4
     @test DT.get_edge(adj, 4, 2) == 1
     @test DT.get_edge(adj, 2, 4) == 3
-    @test DT.get_edge(adj, 1,3) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 1, 3) == DT.DefaultAdjacentValue
     @test DT.get_edge(adj2v, DT.LowerLeftBoundingIndex) == Set{NTuple{2,Int64}}([
         (DT.LowerRightBoundingIndex, 2),
         (2, 3),
@@ -2315,7 +2341,7 @@ end
     @test DT.get_edge(adjacent(newtri2), 1, 6) == 3
     @test DT.get_edge(adjacent(newtri2), 6, 3) == 1
     @test DT.get_edge(adjacent(newtri2), 3, 6) == 2
-    @test DT.get_edge(adj, 1,3) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 1, 3) == DT.DefaultAdjacentValue
     @test DT.get_edge(adjacent(newtri2), 3, 1) == 6
     @test DT.get_edge(adjacent(newtri2), 3, 2) == 5
     @test DT.get_edge(adjacent(newtri2), 2, 3) == 6
@@ -2327,7 +2353,7 @@ end
     @test DT.get_edge(adjacent(newtri2), 3, 5) == 7
     @test DT.get_edge(adjacent(newtri2), 7, 3) == 5
     @test DT.get_edge(adj, 3, 7) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, 7,1) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 7, 1) == DT.DefaultAdjacentValue
     @test DT.get_edge(adjacent(newtri2), 1, 7) == 5
     @test DT.is_boundary_edge(2, 6, adjacent(newtri2))
     @test DT.is_boundary_edge(6, 4, adjacent(newtri2))
@@ -2404,8 +2430,8 @@ end
     @test DT.get_edge(adjacent(newtri2), 6, 1) == 4
     @test DT.get_edge(adjacent(newtri2), 3, 1) == 6
     @test DT.get_edge(adjacent(newtri2), 1, 7) == 5
-    @test DT.get_edge(adj, 1,3) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, 7,1) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 1, 3) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 7, 1) == DT.DefaultAdjacentValue
     @test DT.get_edge(adjacent(newtri2), 1, 5) == 4
     @test DT.get_edge(adjacent(newtri2), 5, 1) == 7
     @test DT.get_edge(adjacent(newtri2), 4, 5) == DT.BoundaryIndex
@@ -2469,8 +2495,8 @@ end
     @test DT.get_edge(adjacent(newtri2), 6, 2) == 3
     @test DT.get_edge(adjacent(newtri2), 2, 6) == DT.BoundaryIndex
     @test DT.get_edge(adj, 1, 3) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj,2,5) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, 5,2) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 2, 5) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 5, 2) == DT.DefaultAdjacentValue
     @test DT.get_edge(adjacent(newtri2), 5, 3) == DT.BoundaryIndex
     @test DT.get_edge(adjacent(newtri2), 3, 5) == 7
     @test DT.get_edge(adjacent(newtri2), 7, 3) == 5
@@ -2558,8 +2584,8 @@ end
     @test DT.get_edge(adjacent(newtri2), 1, 5) == 4
     @test DT.get_edge(adjacent(newtri2), 5, 1) == 7
     @test DT.get_edge(adjacent(newtri2), 1, 7) == 5
-    @test DT.get_edge(adj, 7,1) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, 1,3) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 7, 1) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 1, 3) == DT.DefaultAdjacentValue
     @test DT.get_edge(adjacent(newtri2), 3, 1) == 6
     @test DT.get_edge(adjacent(newtri2), 1, 6) == 3
     @test DT.get_edge(adjacent(newtri2), 6, 1) == 4
@@ -2651,7 +2677,7 @@ end
     @test DT.is_boundary_edge(4, 5, adjacent(newtri2))
     @test DT.is_boundary_edge(5, 3, adjacent(newtri2))
     @test DT.is_boundary_edge(3, 6, adjacent(newtri2))
-    @test DT.get_edge(adj, 2,3) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 2, 3) == DT.DefaultAdjacentValue
     @test DT.get_edge(adjacent2vertex(newtri2), 1) == Set{NTuple{2,Int64}}([
         (7, 5),
         (4, 6),
@@ -2718,8 +2744,8 @@ end
     @test DT.get_edge(adjacent(newtri2), 1, 6) == 3
     @test DT.get_edge(adjacent(newtri2), 6, 1) == 4
     @test DT.get_edge(adjacent(newtri2), 1, 7) == 5
-    @test DT.get_edge(adj, 7,1) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, 1,3) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 7, 1) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 1, 3) == DT.DefaultAdjacentValue
     @test DT.get_edge(adjacent(newtri2), 3, 1) == 6
     @test DT.get_edge(adjacent(newtri2), 1, 5) == 4
     @test DT.get_edge(adjacent(newtri2), 5, 1) == 7
@@ -2735,13 +2761,13 @@ end
     @test DT.get_edge(adjacent(newtri2), 5, 4) == 1
     @test DT.get_edge(adjacent(newtri2), 5, 7) == 3
     @test DT.get_edge(adjacent(newtri2), 7, 5) == 1
-    @test DT.get_edge(adj, 1,3) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 1, 3) == DT.DefaultAdjacentValue
     @test DT.get_edge(adj, 3, 7) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, 7,1) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 7, 1) == DT.DefaultAdjacentValue
     @test DT.get_edge(adj, 3, 2) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, 2,5) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 2, 5) == DT.DefaultAdjacentValue
     @test DT.get_edge(adj, 3, 2) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, 2,6) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 2, 6) == DT.DefaultAdjacentValue
 
     DT.delete_triangle!(triangles(newtri2),
         adjacent(newtri2),
@@ -2766,7 +2792,7 @@ end
           (2, 3, 6) ∉ triangles(newtri2) &&
           (5, 1, 7) ∉ triangles(newtri2) &&
           (1, 7, 5) ∉ triangles(newtri2) &&
-          (7, 5, 1) ∉ triangles(newtri2)    
+          (7, 5, 1) ∉ triangles(newtri2)
     @test DT.get_edge(adjacent(newtri2), 1, 4) == 6
     @test DT.get_edge(adjacent(newtri2), 6, 1) == 4
     @test DT.get_edge(adjacent(newtri2), 1, 5) == 4
@@ -2802,20 +2828,20 @@ end
     @test DT.get_edge(adjacent(newtri2), 6, 3) == 1
     @test DT.get_edge(adjacent(newtri2), 3, 6) == DT.BoundaryIndex
     @test DT.get_edge(adjacent(newtri2), 3, 1) == 6
-    @test DT.get_edge(adj, 1,3) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, 3,2) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, 2,3) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, 6,2) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, 2,6) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, 2,5) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, 5,2) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 1, 3) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 3, 2) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 2, 3) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 6, 2) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 2, 6) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 2, 5) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 5, 2) == DT.DefaultAdjacentValue
     @test DT.get_edge(adjacent(newtri2), 5, 3) == DT.BoundaryIndex
     @test DT.get_edge(adjacent(newtri2), 3, 5) == 7
     @test DT.get_edge(adjacent(newtri2), 7, 3) == 5
     @test DT.get_edge(adj, 3, 7) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, 7,1) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, 1,7) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, 2,6) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 7, 1) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 1, 7) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 2, 6) == DT.DefaultAdjacentValue
     @test DT.is_boundary_edge(6, 4, adjacent(newtri2))
     @test DT.is_boundary_edge(4, 5, adjacent(newtri2))
     @test DT.is_boundary_edge(5, 3, adjacent(newtri2))
@@ -2889,7 +2915,7 @@ end
     @test DT.get_edge(adjacent(newtri2), 3, 1) == 6
     @test DT.get_edge(adjacent(newtri2), 3, 5) == 7
     @test DT.get_edge(adj, 1, 3) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, 5,1) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 5, 1) == DT.DefaultAdjacentValue
     @test DT.get_edge(adj, 3, 7) == DT.DefaultAdjacentValue
     @test DT.get_edge(adjacent(newtri2), 3, 6) == DT.BoundaryIndex
     @test DT.get_edge(adjacent(newtri2), 5, 3) == DT.BoundaryIndex
@@ -2902,12 +2928,12 @@ end
     @test DT.get_edge(adjacent(newtri2), 5, 7) == 3
     @test DT.get_edge(adj, 1, 3) == DT.DefaultAdjacentValue
     @test DT.get_edge(adj, 3, 7) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, 7,1) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, 3,2) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, 2,5) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, 6,2) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, 2,3) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, 5,1) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, 1,7) == DT.DefaultAdjacentValue
-    @test DT.get_edge(adj, 7,5) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 7, 1) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 3, 2) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 2, 5) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 6, 2) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 2, 3) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 5, 1) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 1, 7) == DT.DefaultAdjacentValue
+    @test DT.get_edge(adj, 7, 5) == DT.DefaultAdjacentValue
 end

@@ -262,11 +262,11 @@ end
 """
     isincircle(pts, i, j, k, ℓ)
 
-Tests if the `i`th point is in the circle through the 
-`j`th, `k`th, and `ℓ` points (as obtained via `get_point(pts, i)`, etc.).
+Tests if the `ℓ`th point is in the circle through the 
+`i`th, `j`th, and `k` points (as obtained via `get_point(pts, i)`, etc.).
 Returns `1` if the point is inside, `0` if the point is on the circle,
 and `-1` if the point is outside. It is assumed that the 
-`j`th, `k`th`, and `ℓ`th points are provided counter-clockwise. 
+`i`th, `j`th`, and `k`th points are provided counter-clockwise. 
 
 The check is exact, making use of `ExactPredicates.incircle` (unless 
 you define a new method for it for your point type, obviously).
@@ -274,6 +274,16 @@ you define a new method for it for your point type, obviously).
 function isincircle(pts, i::I, j::I, k::I, ℓ::I) where {I}
     pᵢ, pⱼ, pₖ, pₗ = get_point(pts, i, j, k, ℓ)
     return I(incircle(pᵢ, pⱼ, pₖ, pₗ))
+end
+"""
+    isincircle(T, pts, ℓ) 
+
+Tests if the `ℓ`th point in `pts` is inside the circumdisk of the 
+triangle `T`. 
+"""
+function isincircle(T, pts, ℓ) 
+    i, j, k = indices(T)
+    return isincircle(pts, i, j, k, ℓ)
 end
 
 """
