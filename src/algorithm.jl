@@ -457,9 +457,7 @@ Adds the edges of the triangle `T` to the adjacent map `adj`.`
 """
 function add_triangle!(adj::Adjacent, T)
     i, j, k = T
-    add_edge!(adj, i, j, k)
-    add_edge!(adj, j, k, i)
-    add_edge!(adj, k, i, j)
+    add_triangle!(adj, i, j, k)
 end
 @doc (@doc add_triangle!(::Adjacent, ::Any))
 function add_triangle!(adj::Adjacent, T::Vararg{Tri,N}) where {Tri,N}
@@ -1105,49 +1103,6 @@ function split_triangle!(T::Ts, HG, adj, adj2v, DG, i, j, k, ℓ, r) where {Ts}
     add_point!(DG, r)
     add_neighbour!(DG, r, i, j, k, ℓ)
     delete_neighbour!(DG, i, j)
-    return nothing
-end
-
-"""
-    flip_edge!(T, HG, adj, adj2v, DG, i, j, k, r)
-
-Performs an edge flip, flipping the edge `(i, j)` into the edge `(k, r)`.
-
-# Arguments
-- `T`: The current set of triangles defining the triangulation.
-- `HG`: The point location data structure.
-- `adj`: The adjacency list.
-- `adj2v`: The adjacent-to-vertex list.
-- `DG`: The vertex-neighbour data structure.
-- `i, j`: The current edge.
-- `k, r`: Indices for the points the edge is flipped onto.
-
-It is assumed that `(i, k, j)` and `(i, j, r)` are positively oriented triangles.
-
-# Outputs 
-`T`, `HG`, `adj`, `adj2v`, and `DG` are all updated in-place.
-"""
-function flip_edge!(T::Ts, HG, adj, adj2v, DG, i, j, k, r) where {Ts}
-    # The old triangles
-    V = triangle_type(Ts)
-    Tᵢₖⱼ = construct_triangle(V, i, k, j)
-    Tᵢⱼᵣ = construct_triangle(V, i, j, r)
-    delete_triangle!(T, Tᵢₖⱼ, Tᵢⱼᵣ)
-    delete_edge!(adj, i, j)
-    delete_neighbour!(DG, i, j) #delete_neighbour!(DG, j, i)
-    # The new triangles 
-    Tᵣₖⱼ = construct_triangle(V, r, k, j)
-    Tᵣᵢₖ = construct_triangle(V, r, i, k)
-    # Add the new triangles to the data structure
-    add_triangle!(T, Tᵣₖⱼ, Tᵣᵢₖ)
-    add_triangle!(HG, Tᵣₖⱼ, Tᵣᵢₖ)
-    add_triangle!(adj, Tᵣₖⱼ, Tᵣᵢₖ)
-    update_after_flip!(adj2v, i, j, k, r)
-    # Connect the new triangles to the replaced triangles in the DAG
-    add_edge!(HG, Tᵢₖⱼ, Tᵣₖⱼ, Tᵣᵢₖ)
-    add_edge!(HG, Tᵢⱼᵣ, Tᵣₖⱼ, Tᵣᵢₖ)
-    # Add the new neighbours 
-    add_neighbour!(DG, r, k) # add_neighbour!(DG, k, r)
     return nothing
 end
 

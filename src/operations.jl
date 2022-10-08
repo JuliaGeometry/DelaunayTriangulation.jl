@@ -7,7 +7,7 @@ neighbours, set `delete_adjacent_neighbours = false`.
 """
 function add_triangle!(T::Ts, adj::Adjacent, adj2v::Adjacent2Vertex,
     DG::DelaunayGraph, HG::HistoryGraph,
-    i, j, r, k; delete_adjacent_neighbours=true) where Ts
+    i, j, r, k; delete_adjacent_neighbours=true) where {Ts}
     V = triangle_type(Ts)
     add_triangle!(T, V, i, j, r, k)
     add_triangle!(adj, i, j, r)
@@ -116,12 +116,77 @@ function delete_boundary_edge!(i, j, k, adj::Adjacent{I,E}, adj2v::Adjacent2Vert
     return nothing
 end
 
-#=
-function flip_edge!(T::Ts, HG::HistoryGraph, adj::Adjacent, adj2v::Adjacent2Vertex, DG::DelaunayGraph, i, j, k, r) where Ts 
-    V = triangle_type(Ts)
+"""
+    flip_edge!(T, HG, adj, adj2v, DG, i, j, k, r)
 
+Performs an edge flip, flipping the edge `(i, j)` into the edge `(k, r)`.
+
+# Arguments
+- `T`: The current set of triangles defining the triangulation.
+- `HG`: The point location data structure.
+- `adj`: The adjacency list.
+- `adj2v`: The adjacent-to-vertex list.
+- `DG`: The vertex-neighbour data structure.
+- `i, j`: The current edge.
+- `k, r`: Indices for the points the edge is flipped onto.
+
+It is assumed that `(i, k, j)` and `(i, j, r)` are positively oriented triangles.
+
+# Outputs 
+`T`, `HG`, `adj`, `adj2v`, and `DG` are all updated in-place.
+"""
+function flip_edge!(T::Ts, HG::HistoryGraph, adj::Adjacent,
+    adj2v::Adjacent2Vertex, DG::DelaunayGraph, i, j, k, r) where {Ts}
+    V = triangle_type(Ts)
+    Tᵢₖⱼ = construct_triangle(V, i, k, j)
+    Tᵢⱼᵣ = construct_triangle(V, i, j, r)
+    Tᵣₖⱼ = construct_triangle(V, r, k, j)
+    Tᵣᵢₖ = construct_triangle(V, r, i, k)
+    flip_edge!(T, Tᵢₖⱼ, Tᵢⱼᵣ, Tᵣₖⱼ, Tᵣᵢₖ)
+    flip_edge!(adj, i, j, k, r)
+    flip_edge!(adj2v, i, j, k, r)
+    flip_edge!(DG, i, j, k, r)
+    flip_edge!(HG, Tᵢₖⱼ, Tᵢⱼᵣ, Tᵣₖⱼ, Tᵣᵢₖ)
+    return nothing
 end
-=#
+function flip_edge!(T, Tᵢₖⱼ::V, Tᵢⱼᵣ::V, Tᵣₖⱼ::V, Tᵣᵢₖ::V) where {V}
+    delete_triangle!(T, Tᵢₖⱼ, Tᵢⱼᵣ)
+    add_triangle!(T, Tᵣₖⱼ, Tᵣᵢₖ)
+    return nothing
+end
+function flip_edge!(adj::Adjacent{I,E}, i::I, j::I, k::I, r::I) where {I,E}
+    delete_edge!(adj, i, j)
+    add_triangle!(adj, r, k, j)
+    add_triangle!(adj, r, i, k)
+    return nothing
+end
+function flip_edge!(adj2v::Adjacent2Vertex{I,Es,E}, i::I, j::I, k::I, r::I) where {I,Es,E}
+    delete_edge!(adj2v, i, k, j)
+    delete_edge!(adj2v, i, j, r)
+    delete_edge!(adj2v, j, r, i)
+    delete_edge!(adj2v, j, i, k)
+    delete_edge!(adj2v, k, j, i)
+    delete_edge!(adj2v, r, i, j)
+    add_edge!(adj2v, i, k, r)
+    add_edge!(adj2v, j, r, k)
+    add_edge!(adj2v, k, j, r)
+    add_edge!(adj2v, k, r, i)
+    add_edge!(adj2v, r, k, j)
+    add_edge!(adj2v, r, i, k)
+    return nothing
+end
+function flip_edge!(DG::DelaunayGraph{I}, i::I, j::I, k::I, r::I) where {I}
+    delete_neighbour!(DG, i, j)
+    add_neighbour!(DG, r, k)
+    return nothing
+end
+function flip_edge!(HG::HistoryGraph{V}, Tᵢₖⱼ::V, Tᵢⱼᵣ::V, Tᵣₖⱼ::V, Tᵣᵢₖ::V) where {V}
+    add_triangle!(HG, Tᵣₖⱼ, Tᵣᵢₖ)
+    add_edge!(HG, Tᵢₖⱼ, Tᵣₖⱼ, Tᵣᵢₖ)
+    add_edge!(HG, Tᵢⱼᵣ, Tᵣₖⱼ, Tᵣᵢₖ)
+    return nothing
+end
+
 """
     split_triangle!(T, HG::HistoryGraph, adj, adj2v, DG, Tᵢⱼₖ::V, r) where V
 
