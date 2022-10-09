@@ -10,6 +10,7 @@ Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 SimpleGraphs = "55797a34-41de-5266-9ec1-32ac4eb504d3"
 
 [compat]
+DataStructures = "0.18"
 ExactPredicates = "2"
 SimpleGraphs = "0.8"
 julia = "1.8"
