@@ -34,5 +34,16 @@ end
 end
 =#
 
-@testset "All" begin include("algorithm.jl") end
-
+# @testset "All" begin include("algorithm.jl") end
+include("functions.jl")
+include("interface.jl")
+include("data_structures.jl")
+include("predicates.jl")
+include("add_triangle.jl")
+include("delete_triangle.jl")
+include("flip_edge.jl")
+include("split_triangle.jl")
+include("utils.jl")
+include("deberg.jl")
+include("split_edge.jl")
+include("legalise_edge.jl")

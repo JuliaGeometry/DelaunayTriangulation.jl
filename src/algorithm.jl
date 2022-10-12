@@ -965,6 +965,9 @@ struct UnconstrainedTriangulation{T,E,Ts,Es,Ps,I,PL} <: AbstractUnconstrainedTri
             add_edge!(adj2v, I(LowerLeftBoundingIndex), I(LowerRightBoundingIndex), I(UpperBoundingIndex))
             add_edge!(adj2v, I(LowerRightBoundingIndex), I(UpperBoundingIndex), I(LowerLeftBoundingIndex))
             add_edge!(adj2v, I(UpperBoundingIndex), I(LowerLeftBoundingIndex), I(LowerRightBoundingIndex))
+            add_edge!(adj2v, I(BoundaryIndex), I(LowerRightBoundingIndex), I(LowerLeftBoundingIndex))
+            add_edge!(adj2v, I(BoundaryIndex), I(LowerLeftBoundingIndex), I(UpperBoundingIndex))
+            add_edge!(adj2v, I(BoundaryIndex), I(UpperBoundingIndex), I(LowerRightBoundingIndex))
             # Add the initial neighbours 
             add_point!(DG, I(LowerLeftBoundingIndex), I(LowerRightBoundingIndex), I(UpperBoundingIndex))
             add_neighbour!(DG, I(LowerLeftBoundingIndex), I(LowerRightBoundingIndex), I(UpperBoundingIndex))
@@ -1040,6 +1043,36 @@ end
 function is_valid_edge(i, j, adj::Adjacent{I,E}) where {I,E}
     ij = construct_edge(E, i, j)
     return is_valid_edge(ij, adj)
+end
+
+"""
+    check_triangle_edge_validity_and_boundary(i, j, k, adj::Adjacent{I, E}) where {I, E}
+
+Checks the edges of the positively oriented triangle with indices 
+`(i, j, k)` and returns Booleans for their existence and whether 
+they are boundary edges. If the triangle `T` is `(i, j, k)`, then the returned values are, 
+in order,
+
+1. `is_valid_edge(j, i, adj)` -- Does the edge `(j, i)` exist in the triangulation?
+2. `is_valid_edge(k, j, adj)`
+3. `is_valid_edge(i, k, adj)`
+4. `is_boundary_edge(j, i, adj)` -- Is the edge `(j, i)` a boundary edge?
+5. `is_boundary_edge(k, j, adj)`
+6. `is_boundary_edge(i, k, adj)`
+"""
+function check_triangle_edge_validity_and_boundary(i, j, k, adj::Adjacent{I,E}) where {I,E}
+    ji_is_valid = is_valid_edge(j, i, adj)
+    kj_is_valid = is_valid_edge(k, j, adj)
+    ik_is_valid = is_valid_edge(i, k, adj)
+    ji_is_boundary = ji_is_valid && is_boundary_edge(j, i, adj)
+    kj_is_boundary = kj_is_valid && is_boundary_edge(k, j, adj)
+    ik_is_boundary = ik_is_valid && is_boundary_edge(i, k, adj)
+    return ji_is_valid,
+    kj_is_valid,
+    ik_is_valid,
+    ji_is_boundary,
+    kj_is_boundary,
+    ik_is_boundary
 end
 
 ############################################
@@ -1228,15 +1261,15 @@ to remove the bounding triangle.
 """
 function triangulate_berg!(DT::AbstractUnconstrainedTriangulation{T,E,Ts,Es,Ps,I}; randomise=true, trim=true) where {T,E,Ts,Es,Ps,I}
     pt_order = randomise ? shuffle(eachindex(points(DT))) : eachindex(points(DT))
-    𝒯 = triangles(DT)
-    ℋ𝒢 = pointlocation(DT)
-    𝒜 = adjacent(DT)
-    𝒜⁻¹ = adjacent2vertex(DT)
-    𝒟𝒢 = graph(DT)
+    Tris = triangles(DT)
+    HG = pointlocation(DT)
+    adj = adjacent(DT)
+    adj2v = adjacent2vertex(DT)
+    DG = graph(DT)
     root = construct_triangle(T, I(LowerRightBoundingIndex), I(UpperBoundingIndex), I(LowerLeftBoundingIndex))
-    𝒫 = points(DT)
+    pts = points(DT)
     map(pt_order) do r
-        add_point_berg!(𝒯, ℋ𝒢, 𝒜, 𝒜⁻¹, 𝒟𝒢, root, 𝒫, I(r))
+        add_point_berg!(Tris, HG, adj, adj2v, DG, root, pts, I(r))
     end
     trim && remove_bounding_triangle!(DT)
     return nothing

@@ -7,8 +7,20 @@ import DataStructures: DefaultDict
 
 #include("primitives.jl")
 include("constants.jl")
-include("algorithm.jl")
-include("operations.jl")
+include("interface.jl")
+include("data_structures.jl")
+include("predicates.jl")
+include("add_triangle.jl")
+include("utils.jl")
+include("delete_triangle.jl")
+include("split_triangle.jl")
+include("flip_edge.jl")
+include("legalise_edge.jl")
+include("split_edge.jl")
+include("locate_triangle.jl")
+include("deberg.jl")
+#include("algorithm.jl")
+#include("operations.jl")
 #include("collections.jl")
 #include("struct_definitions.jl")
 #include("struct_updates.jl")
@@ -36,5 +48,6 @@ export add_point!
 export geti, getj, getk, indices
 export getx, gety
 export get_edge
+
 
 end
