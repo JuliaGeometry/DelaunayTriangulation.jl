@@ -38,13 +38,27 @@ function triangulate_berg(pts;
     return T, adj, adj2v, DG, HG
 end
 
-function remove_bounding_triangle!(T, adj::Adjacent{I,E}, adj2v, DG) where {I,E}
+function remove_bounding_triangle!(T::Ts, adj::Adjacent{I,E}, adj2v, DG) where {I,E,Ts}
+    V = triangle_type(Ts)
     for w ∈ (I(LowerRightBoundingIndex), I(UpperBoundingIndex), I(LowerLeftBoundingIndex))
-        for (u, v) in get_edge(adj2v, w)
-            delete_triangle!(u, v, w, T, adj, adj2v, DG)
+        for (u, v) in get_edge(adj2v, w) # (u, v, w) is a triangle..
+            delete_edge!(adj, w, u)
+            delete_edge!(adj, w, v)
+            delete_edge!(adj, u, w)
+            delete_edge!(adj, v, w)
+            delete_edge!(adj2v, u, v, w)
+            delete_edge!(adj2v, v, w, u)
+            if u ≥ I(FirstPointIndex) && v ≥ I(FirstPointIndex) # This can only be a boundary edge
+                add_edge!(adj2v, I(BoundaryIndex), u, v)
+                add_edge!(adj, u, v, I(BoundaryIndex))
+            end
+            delete_triangle!(T, construct_triangle(V, u, v, w))
         end
         delete_point!(DG, w)
         delete_point!(adj2v, w)
     end
+    delete_edge!(adj2v, I(BoundaryIndex), I(LowerRightBoundingIndex), I(LowerLeftBoundingIndex))
+    delete_edge!(adj2v, I(BoundaryIndex), I(LowerLeftBoundingIndex), I(UpperBoundingIndex))
+    delete_edge!(adj2v, I(BoundaryIndex), I(UpperBoundingIndex), I(LowerRightBoundingIndex))
     return nothing
 end
