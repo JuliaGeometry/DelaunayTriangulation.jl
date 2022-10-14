@@ -1,5 +1,6 @@
 """
-    is_boundary_edge(i, j, adj::Adjacent{I, E}) where {I, E}
+is_boundary_edge(i, j, adj::Adjacent{I, E}) where {I, E}
+is_boundary_edge(i, j, adj2v::Adjacent{I, E}) where {I, E}
 
 Returns `true` if the edge `(i, j)` is a boundary edge of the triangulation, 
 and `false` otherwise.
@@ -11,6 +12,13 @@ function is_boundary_edge(i, j, adj::Adjacent{I,E}) where {I,E}
     ij = construct_edge(E, i, j)
     return is_boundary_edge(ij, adj)
 end
+function is_boundary_edge(ij, adj2v::Adjacent2Vertex{I,Es,E}) where {I,Es,E}
+    return ij ∈ get_edge(adj2v, I(BoundaryIndex))
+end
+function is_boundary_edge(i, j, adj2v::Adjacent2Vertex{I,Es,E}) where {I,Es,E}
+    ij = construct_edge(E, i, j)
+    return is_boundary_edge(ij, adj2v)
+end
 
 """
     edge_exists(i, j, adj::Adjacent{I, E}) where {I, E}
@@ -18,10 +26,10 @@ end
 Returns `true` if the edge `(i, j)` is an edge in the triangulation, 
 and `false` otherwise.
 """
-function edge_exists(ij, adj::Adjacent{I, E}) where {I, E}
+function edge_exists(ij, adj::Adjacent{I,E}) where {I,E}
     return get_edge(adj, ij) ≠ I(DefaultAdjacentValue)
-end 
-function edge_exists(i, j, adj::Adjacent{I, E}) where {I, E}
+end
+function edge_exists(i, j, adj::Adjacent{I,E}) where {I,E}
     ij = construct_edge(E, i, j)
     return edge_exists(ij, adj)
 end
@@ -53,24 +61,45 @@ function is_delaunay(adj, pts)
     end
     return true
 end
-function validate_triangulation(T, adj::Adjacent{I,E},adj2v,DG,pts) where {I, E}
+function validate_triangulation(T, adj::Adjacent{I,E}, adj2v, DG, pts) where {I,E}
     ## Check triangle orientation 
-    for T in T 
-        isoriented(T, pts) == -1 && return false 
-    end 
+    for T in T
+        isoriented(T, pts) == -1 && return false
+    end
     ## Test that all edges are legal 
-    !is_delaunay(adj, pts) && return false 
+    !is_delaunay(adj, pts) && return false
     ## Check that the adjacent map and the adjacent-to-vertex map edge 
     for (w, S) in adjacent2vertex(adj2v)
         for (i, j) in S
-            get_edge(adj, i, j) ≠ w && return false 
-        end 
+            get_edge(adj, i, j) ≠ w && return false
+        end
     end
     ## Check the graph 
-    for (i, j) in graph(DG).E 
-        (i, j) ∉ edges(adj) && return false 
-        (j, i) ∉ edges(adj) && return false 
+    for (i, j) in graph(DG).E
+        (i, j) ∉ edges(adj) && return false
+        (j, i) ∉ edges(adj) && return false
     end
     ## Done 
-    return true 
+    return true
+end
+
+"""
+    clear_empty_keys!(adj::Adjacent, DG::DelaunayGraph)
+
+Deletes all the keys `(i, j)` in `adj` such that `get_edge(adj, i, j) = $(DefaultAdjacentValue)`.
+"""
+function clear_empty_keys!(adj::Adjacent{I,E}, DG::DelaunayGraph) where {I,E}
+    num_edges_unoriented = length(graph(DG).E)
+    all_edges = Vector{E}(undef, 2num_edges_unoriented)
+    k = 1
+    for (i, j) in graph(DG).E
+        all_edges[k] = construct_edge(E, i, j)
+        all_edges[num_edges_unoriented+k] = construct_edge(E, j, i)
+        k += 1
+    end
+    invalid_edges = setdiff(edges(adj), all_edges)
+    for (i, j) in invalid_edges 
+        delete_edge!(adj, i, j)
+    end
+    return nothing
 end
