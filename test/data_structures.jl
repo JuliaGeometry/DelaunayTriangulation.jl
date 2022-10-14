@@ -226,46 +226,6 @@ end
     @test DT.get_edge(adj2v, 3) == Set{NTuple{2,Int64}}([(10, 11), (13, 5)])
     DT.delete_point!(adj2v, 10)
     @test_throws KeyError DT.get_edge(adj2v, 10)
-
-    #=
-    adj2v = DT.Adjacent2Vertex{Int64,Set{NTuple{2,Int64}},NTuple{2,Int64}}()
-    i, j, k, r = 5, 9, 13, 6
-    DT.add_edge!(adj2v, i, k, j)
-    DT.add_edge!(adj2v, i, j, r)
-    DT.add_edge!(adj2v, i, 20, 30) # need to make sure we aren't just removing all the edges
-    DT.add_edge!(adj2v, j, i, k)
-    DT.add_edge!(adj2v, j, r, i)
-    DT.add_edge!(adj2v, j, 50, 70)
-    DT.add_edge!(adj2v, k, j, i)
-    DT.add_edge!(adj2v, k, 100, 110)
-    DT.add_edge!(adj2v, r, i, j)
-    DT.add_edge!(adj2v, r, 130, 150)
-    DT.add_edge!(adj2v, 17, 19, 32)
-    DT.update_after_flip!(adj2v, i, j, k, r)
-    @test DT.get_edge(adj2v, i) == Set{NTuple{2,Int64}}([(k, r), (20, 30)])
-    @test DT.get_edge(adj2v, j) == Set{NTuple{2,Int64}}([(r, k), (50, 70)])
-    @test DT.get_edge(adj2v, k) == Set{NTuple{2,Int64}}([(r, i), (j, r), (100, 110)])
-    @test DT.get_edge(adj2v, r) == Set{NTuple{2,Int64}}([(i, k), (k, j), (130, 150)])
-    @test DT.get_edge(adj2v, 17) == Set{NTuple{2,Int64}}([(19, 32)])
-    @test length(DT.adjacent2vertex(adj2v)) == 5
-
-    adj2v = DT.Adjacent2Vertex{Int64,Set{NTuple{2,Int64}},NTuple{2,Int64}}()
-    i, j, k, r = 17, 13, 29, 9
-    DT.add_edge!(adj2v, i, j, k)
-    DT.add_edge!(adj2v, i, 170, 302)
-    DT.add_edge!(adj2v, j, k, i)
-    DT.add_edge!(adj2v, j, 500, 501)
-    DT.add_edge!(adj2v, k, i, j)
-    DT.add_edge!(adj2v, k, 177, 111)
-    DT.add_edge!(adj2v, 37, 400, 1)
-    DT.update_after_insertion!(adj2v, i, j, k, r)
-    @test DT.get_edge(adj2v, i) == Set{NTuple{2,Int64}}([(j, r), (r, k), (170, 302)])
-    @test DT.get_edge(adj2v, j) == Set{NTuple{2,Int64}}([(k, r), (r, i), (500, 501)])
-    @test DT.get_edge(adj2v, k) == Set{NTuple{2,Int64}}([(i, r), (r, j), (177, 111)])
-    @test DT.get_edge(adj2v, r) == Set{NTuple{2,Int64}}([(j, k), (k, i), (i, j)])
-    @test DT.get_edge(adj2v, 37) == Set{NTuple{2,Int64}}([(400, 1)])
-    @test length(DT.adjacent2vertex(adj2v)) == 5
-    =#
 end
 
 @testset "DelaunayGraph" begin
@@ -294,6 +254,7 @@ end
     @test 17 ∉ DT.graph(DG).V
     @test 101 ∉ DT.graph(DG).V
     @test 291 ∉ DT.graph(DG).V
+    @test edges(DG) == DG.graph.E
 
     tvn = UndirectedGraph{Int64}()
     add!(tvn, 1)
@@ -325,6 +286,7 @@ end
     @test isempty(DG_empty.graph.V)
     DT.add_neighbour!.(Ref(DG_empty), 2, [3, 4, 5, 1])
     @test DT.get_neighbour(DG_empty, 2) == Set([3, 4, 5, 1])
+    @test edges(DG) == DG.graph.E
 
     tvn = UndirectedGraph{Int64}()
     add!(tvn, 1)
@@ -338,6 +300,7 @@ end
     @test DT.get_neighbour(DG, 1) == Set([3, 4, 5, 9])
     @test DT.get_neighbour(DG, 2) == Set([11, 9, 8, 15, 16])
     @test DT.get_neighbour(DG, 3) == Set([1])
+    @test edges(DG) == DG.graph.E
 end
 
 @testset "HistoryGraph" begin

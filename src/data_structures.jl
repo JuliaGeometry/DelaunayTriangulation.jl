@@ -200,6 +200,7 @@ struct DelaunayGraph{I}
     DelaunayGraph(DG::UndirectedGraph{I}) where {I} = new{I}(DG)
 end
 graph(G::DelaunayGraph) = G.graph
+edges(G::DelaunayGraph) = graph(G).E
 
 """
     add_point!(DG::DelaunayGraph, u)
