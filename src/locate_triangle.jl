@@ -33,7 +33,7 @@ function jump_and_march(k::I, q, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex{I,Es
             j = i
             pⱼ = pᵢ
             i = get_edge(adj, i, k)
-            i == 0 && return jump_and_march(j, q, adj, adj2v, pts; TriangleType)
+            i == I(BoundaryIndex) && return jump_and_march(j, q, adj, adj2v, pts; TriangleType)
             pᵢ = get_point(pts, i)
         end
     else
@@ -41,7 +41,7 @@ function jump_and_march(k::I, q, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex{I,Es
             i = j
             pᵢ = pⱼ
             j = get_edge(adj, k, j)
-            j == 0 && return jump_and_march(i, q, adj, adj2v, pts; TriangleType)
+            j == I(BoundaryIndex) && return jump_and_march(i, q, adj, adj2v, pts; TriangleType)
             pⱼ = get_point(pts, j)
         end
     end
