@@ -15,13 +15,35 @@ function locate_triangle(HG::HistoryGraph, pts, r::I, init=find_root(HG; method=
 end
 
 """
-    jump_and_march(k::I, q, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex{I,Es,E}, pts;
+    select_initial_point(pts, q; m = ceil(Int64, length(pts)^(1/3)))
+
+Selects an initial point for the jump-and-march algorithm.
+"""
+function select_initial_point(pts, q; m=ceil(Int64, length(pts)^(1 / 3)))
+    current_dist = typemax(eltype(q))
+    current_idx = 0
+    n = length(pts)
+    for _ in 1:m # Not using replacement, but probability of duplicates is approximately 0.5n^(-1/3)
+        i = rand(1:n)
+        pᵢ = get_point(pts, i)
+        sq_dist = (getx(pᵢ) - getx(q))^2 + (gety(pᵢ) - gety(q))^2
+        if sq_dist < current_dist
+            current_dist = sq_dist
+            current_idx = i
+        end
+    end
+    return current_idx
+end
+"""
+    jump_and_march(q, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex{I,Es,E}, pts;
+        k = select_initial_point(pts, q),
         TriangleType::Type{V}=NTuple{3,Int64}) where {I,E,Es,V}
 
 Uses the jump and march algorithm to locate the triangle `T` in the triangulation that 
 contains the query point, starting at the vertex `k`.
 """
-function jump_and_march(k::I, q, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex{I,Es,E}, pts;
+function jump_and_march(q, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex{I,Es,E}, pts;
+    k=select_initial_point(pts, q),
     TriangleType::Type{V}=NTuple{3,Int64}) where {I,E,Es,V}
     p = get_point(pts, k)
     i, j = rand(get_edge(adj2v, k))
@@ -33,7 +55,7 @@ function jump_and_march(k::I, q, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex{I,Es
             j = i
             pⱼ = pᵢ
             i = get_edge(adj, i, k)
-            i == I(BoundaryIndex) && return jump_and_march(j, q, adj, adj2v, pts; TriangleType)
+            i == I(BoundaryIndex) && return jump_and_march(q, adj, adj2v, pts; TriangleType, k=j)
             pᵢ = get_point(pts, i)
         end
     else
@@ -41,7 +63,7 @@ function jump_and_march(k::I, q, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex{I,Es
             i = j
             pᵢ = pⱼ
             j = get_edge(adj, k, j)
-            j == I(BoundaryIndex) && return jump_and_march(i, q, adj, adj2v, pts; TriangleType)
+            j == I(BoundaryIndex) && return jump_and_march(q, adj, adj2v, pts; TriangleType, k=i)
             pⱼ = get_point(pts, j)
         end
     end
@@ -50,6 +72,7 @@ function jump_and_march(k::I, q, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex{I,Es
     pᵢ, pⱼ = pⱼ, pᵢ # pᵢ is left of pq, pⱼ is right of pq 
     while orient(pᵢ, pⱼ, q) == I(1)
         k = get_edge(adj, i, j)
+        k == I(BoundaryIndex) && return jump_and_march(q, adj, adj2v, pts; TriangleType, k=i)
         pₖ = get_point(pts, k)
         if orient(p, q, pₖ) == I(-1)
             j = k
