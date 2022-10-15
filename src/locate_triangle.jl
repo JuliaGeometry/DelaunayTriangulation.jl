@@ -21,7 +21,7 @@ Selects an initial point for the jump-and-march algorithm.
 """
 function select_initial_point(pts, q; m=ceil(Int64, length(pts)^(1 / 3)))
     current_dist = typemax(eltype(q))
-    current_idx = firstindex(pts) - 1
+    current_idx = firstindex(pts) - 1 # Just some index not in eachindex(pts)
     for _ in 1:m # Not using replacement, but probability of duplicates is approximately 0.5n^(-1/3)
         i = rand(eachindex(pts))
         pᵢ = get_point(pts, i)
