@@ -7,7 +7,7 @@ using Random
 const DT = DelaunayTriangulation
 import DataStructures: DefaultDict
 
-function triplot!(ax, T, pts; kwargs...)
+function triplot!(ax, T, pts; markersize=11, kwargs...)
     Tmat = zeros(Int64, length(T), 3)
     for (i, T) in enumerate(T)
         Tmat[i, :] = [geti(T), getj(T), getk(T)]
@@ -17,7 +17,7 @@ function triplot!(ax, T, pts; kwargs...)
         pmat[i, :] = [getx(p), gety(p)]
     end
     poly!(ax, pmat, Tmat; kwargs...)
-    scatter!(ax, pmat, color=:red, markersize=11)
+    scatter!(ax, pmat, color=:red, markersize=markersize)
 end
 
 function example_triangulation()
@@ -80,4 +80,30 @@ function example_empty_triangulation()
     adj = DT.Adjacent(DefaultDict(DT.DefaultAdjacentValue, Dict{NTuple{2,Int64},Int64}()))
     adj2v = DT.Adjacent2Vertex(Dict(DT.BoundaryIndex => Set{NTuple{2,Int64}}()))
     return pts, T, DG, adj, adj2v
+end
+
+function circle_three_points(a, b, c)
+    ax, ay = a
+    bx, by = b
+    cx, cy = c
+    d1x, d1y = [by - ay, ax - bx]
+    d2x, d2y = [cy - ay, ax - cx]
+    k = d2x * d1y - d2y * d1x
+    s1x, s1y = [(ax + bx) / 2, (ay + by) / 2]
+    s2x, s2y = [(ax + cx) / 2, (ay + cy) / 2]
+    ℓ = d1x * (s2y - s1y) - d1y * (s2x - s1x)
+    m = ℓ / k
+    centx, centy = [s2x + m * d2x, s2y + m * d2y]
+    dx = centx - ax
+    dy = centy - ay
+    r = sqrt(dx^2 + dy^2)
+    return [centx, centy], r
+end
+
+function circle_data(a, b, c)
+    θ = LinRange(0, 2π, 500)
+    (h, k), r = circle_three_points(a, b, c)
+    circx = h .+ r * sin.(θ)
+    circy = k .+ r * cos.(θ)
+    return circx, circy
 end
