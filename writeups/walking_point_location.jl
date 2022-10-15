@@ -11,7 +11,7 @@ fig = Figure(fontsize=55)
 ax = Axis(fig[1, 1])
 triplot!(ax, T, pts; strokewidth=2, color=(:white, 0), markersize=0)
 q = @SVector[0.7, 2.0]
-text!(ax, [q[1] - 0.4], [q[2] - 0.75]; text=L"q", textsize=38)
+text!(ax, [q[1] - 0.4], [q[2] - 0.75]; text=L"q", textsize=55)
 scatter!(ax, [q[1]], [q[2]], color=:blue, markersize=14)
 xlims!(ax, -5, 5.0)
 ylims!(ax, -5.0, 5.0)
@@ -49,7 +49,7 @@ marked = [(46, 38, 41),
     (36, 4, 3)]
 triplot!(ax, marked, pts; strokewidth=2, color=(:lightblue, 0.5), markersize=0)
 lines!(ax, [s[1], q], color=colors[1], linewidth=5)
-tq = text!(ax, [q[1] - 0.4], [q[2] - 0.6]; text=L"q", textsize=38)
+tq = text!(ax, [q[1] - 0.4], [q[2] - 0.6]; text=L"q", textsize=55)
 scatter!(ax, [q[1]], [q[2]], color=:blue, markersize=14)
 save("writeups/figures/point_location_marked_simplices.pdf", fig)
 
@@ -57,7 +57,7 @@ xlims!(ax, -2.0, 3.0)
 ylims!(ax, 0.8, 5.3)
 text!(ax, pts; text=[L"%$s" for s in 1:n], textsize=55, color=:red)
 delete!(ax, tq)
-tq = text!(ax, [q[1] - 0.2], [q[2] - 0.3]; text=L"q", textsize=38)
+tq = text!(ax, [q[1] - 0.2], [q[2] - 0.3]; text=L"q", textsize=55)
 save("writeups/figures/point_location_marked_simplices_zoomed.pdf", fig)
 
 ## Example initialisation 
@@ -136,10 +136,10 @@ scatter!(ax, q, color=:blue, markersize=11)
 lines!(ax, [pts[end], q], color=:blue, linewidth=3)
 scatter!(ax, pts[end], color=:blue, markersize=11)
 text!(ax, (q[1] + 0.1, q[2] - 0.5); text=[L"q"], textsize=55)
-triplot!(ax, [(8, 3, 4)], pts; strokewidth=2, color=(:lightblue, 0.5))
+triplot!(ax, [(8, 5, 4)], pts; strokewidth=2, color=(:lightblue, 0.5))
 text!(ax, [(pts[4][1] + 0.2, pts[4][2] - 0.5),
-        (pts[3]),
-        (pts[8][1] - 0.1, pts[8][2] - 1.2)]; text=[L"p_i", L"p_j", L"p_k"], textsize=55)
+        (pts[5][1], pts[5][2]-1.0),
+        (pts[8][1] - 0.1, pts[8][2] - 1.2)]; text=[L"p_j", L"p_i", L"p_k"], textsize=55)
 save("writeups/figures/point_location_counterclockwise_a.pdf", fig)
 
 fig = Figure(fontsize=55)
