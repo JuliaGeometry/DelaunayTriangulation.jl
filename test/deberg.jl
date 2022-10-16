@@ -144,8 +144,8 @@
         @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
 
         # Random triangulations
-        for _ in 1:250
-            n = rand(5:1000)
+        for _ in 1:1781
+            n = rand(3:1000)
             x = rand(n)
             y = rand(n)
             pts = [(x, y) for (x, y) in zip(x, y)]
