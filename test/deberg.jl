@@ -144,7 +144,7 @@
         @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
 
         # Random triangulations
-        for _ in 1:1781
+        for _ in 1:178
             n = rand(3:1000)
             x = rand(n)
             y = rand(n)
