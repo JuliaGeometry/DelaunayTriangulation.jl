@@ -17,7 +17,7 @@ end
 """
     select_initial_point(pts, q; m = ceil(Int64, length(pts)^(1/3)))
 
-Selects an initial point for the jump-and-march algorithm.
+Selects an initial point for the jump-and-march algorithm for the query point `q`.
 """
 function select_initial_point(pts, q; m=ceil(Int64, length(pts)^(1 / 3)))
     current_dist = typemax(eltype(q))
@@ -32,6 +32,18 @@ function select_initial_point(pts, q; m=ceil(Int64, length(pts)^(1 / 3)))
         end
     end
     return current_idx
+end
+"""
+    select_initial_point(pts, q::Integer; m=ceil(Int64, length(pts)^(1 / 3)))
+
+Selects an initial point for the jump-and-march algorithm for the query point `q`. It is assumed 
+that the query point `q` is given by `get_point(pts, q)`, and that `q` is a point being added into 
+a triangulation. That is, the initial point will not be `q`.
+"""
+function select_initial_point(pts, q::Integer; m=ceil(Int64, length(pts)^(1 / 3)))
+    not_q_pts = @views pts[Not(q)] # use Not(q) so that we don't accidentally start the search at the point q being added
+    start_idx = @views select_initial_point(not_q_pts, get_point(pts, q); m) 
+    return not_q_pts.indices[1][start_idx]
 end
 """
     jump_and_march(q, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex{I,Es,E}, pts;
@@ -84,4 +96,9 @@ function jump_and_march(q, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex{I,Es,E}, p
     # Swap the orientation to get a positively oriented triangle 
     k = get_edge(adj, j, i)
     return construct_triangle(V, j, i, k)
+end
+function jump_and_march(q::I, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex{I,Es,E}, pts;
+    k=select_initial_point(pts, q),
+    TriangleType::Type{V}=NTuple{3,Int64}) where {I,E,Es,V}
+    return jump_and_march(get_point(pts, q), adj, adj2v, pts; k, TriangleType)
 end
