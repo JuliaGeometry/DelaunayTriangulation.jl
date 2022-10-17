@@ -21,6 +21,25 @@
                     τ = jump_and_march(q, adj, adj2v, pts)
                     @test DT.isintriangle(τ, _pts, n + 1) == 1
                     @test DT.isoriented(τ, pts) == 1
+                    τ = jump_and_march(n+1, adj, adj2v, _pts; k=k, pt_idx = 1:n)
+                    @test DT.isintriangle(τ, _pts, n + 1) == 1
+                    @test DT.isoriented(τ, pts) == 1
+                    τ = jump_and_march(n+1, adj, adj2v, _pts; pt_idx = 1:n)
+                    @test DT.isintriangle(τ, _pts, n + 1) == 1
+                    @test DT.isoriented(τ, pts) == 1
+
+                    τ = jump_and_march(q, adj, adj2v, pts; k=k, pt_idx = [1])
+                    @test DT.isintriangle(τ, _pts, n + 1) == 1
+                    @test DT.isoriented(τ, pts) == 1
+                    τ = jump_and_march(q, adj, adj2v, pts; pt_idx = [1])
+                    @test DT.isintriangle(τ, _pts, n + 1) == 1
+                    @test DT.isoriented(τ, pts) == 1
+                    τ = jump_and_march(n+1, adj, adj2v, _pts; k=k, pt_idx = [1])
+                    @test DT.isintriangle(τ, _pts, n + 1) == 1
+                    @test DT.isoriented(τ, pts) == 1
+                    τ = jump_and_march(n+1, adj, adj2v, _pts; pt_idx = [1])
+                    @test DT.isintriangle(τ, _pts, n + 1) == 1
+                    @test DT.isoriented(τ, pts) == 1
                 end
                 pop!(_pts)
                 for q in (a, b, c)

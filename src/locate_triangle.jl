@@ -15,15 +15,15 @@ function locate_triangle(HG::HistoryGraph, pts, r::I, init=find_root(HG; method=
 end
 
 """
-    select_initial_point(pts, q; m = ceil(Int64, length(pts)^(1/3)))
+    select_initial_point(pts, q; m = ceil(Int64, length(pts)^(1/3)), pt_idx = eachindex(pts))
 
 Selects an initial point for the jump-and-march algorithm for the query point `q`.
 """
-function select_initial_point(pts, q; m=ceil(Int64, length(pts)^(1 / 3)))
+function select_initial_point(pts, q; m=ceil(Int64, length(pts)^(1 / 3)), pt_idx=eachindex(pts))
     current_dist = typemax(eltype(q))
     current_idx = firstindex(pts) - 1 # Just some index not in eachindex(pts)
     for _ in 1:m # Not using replacement, but probability of duplicates is approximately 0.5n^(-1/3)
-        i = rand(eachindex(pts))
+        i = rand(pt_idx)
         pᵢ = get_point(pts, i)
         sq_dist = (getx(pᵢ) - getx(q))^2 + (gety(pᵢ) - gety(q))^2
         if sq_dist < current_dist
@@ -40,21 +40,21 @@ Selects an initial point for the jump-and-march algorithm for the query point `q
 that the query point `q` is given by `get_point(pts, q)`, and that `q` is a point being added into 
 a triangulation. That is, the initial point will not be `q`.
 """
-function select_initial_point(pts, q::Integer; m=ceil(Int64, length(pts)^(1 / 3)))
-    not_q_pts = @views pts[Not(q)] # use Not(q) so that we don't accidentally start the search at the point q being added
-    start_idx = @views select_initial_point(not_q_pts, get_point(pts, q); m) 
-    return not_q_pts.indices[1][start_idx]
+function select_initial_point(pts, q::Integer; m=ceil(Int64, length(pts)^(1 / 3)), pt_idx=eachindex(pts))
+    return select_initial_point(pts, get_point(pts, q); m, pt_idx)
 end
 """
     jump_and_march(q, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex{I,Es,E}, pts;
-        k = select_initial_point(pts, q),
+        pt_idx = eachindex(pts),
+        k = select_initial_point(pts, q), 
         TriangleType::Type{V}=NTuple{3,Int64}) where {I,E,Es,V}
 
 Uses the jump and march algorithm to locate the triangle `T` in the triangulation that 
 contains the query point, starting at the vertex `k`.
 """
 function jump_and_march(q, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex{I,Es,E}, pts;
-    k=select_initial_point(pts, q),
+    pt_idx=eachindex(pts), m=ceil(Int64, length(pts)^(1 / 3)),
+    k=select_initial_point(pts, q; m, pt_idx),
     TriangleType::Type{V}=NTuple{3,Int64}) where {I,E,Es,V}
     p = get_point(pts, k)
     i, j = rand(get_edge(adj2v, k))
@@ -98,7 +98,8 @@ function jump_and_march(q, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex{I,Es,E}, p
     return construct_triangle(V, j, i, k)
 end
 function jump_and_march(q::I, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex{I,Es,E}, pts;
-    k=select_initial_point(pts, q),
+    pt_idx=eachindex(pts), m=ceil(Int64, length(pts)^(1 / 3)),
+    k=select_initial_point(pts, q; m, pt_idx),
     TriangleType::Type{V}=NTuple{3,Int64}) where {I,E,Es,V}
     return jump_and_march(get_point(pts, q), adj, adj2v, pts; k, TriangleType)
 end
