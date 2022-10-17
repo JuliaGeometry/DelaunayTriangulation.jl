@@ -134,3 +134,38 @@ end
         )
     )
 end
+
+@testset "Can we correctly compare collections of triangles" begin
+    T = [(1, 5, 7), (10, 5, 3), (1, 2, 3), (3, 2, 1), (7, 10, 0)]
+    V = [(1, 5, 7), (10, 5, 3), (1, 2, 3), (3, 2, 1), (7, 10, 0)]
+    @test DT.compare_triangle_sets(T, V)
+    @test DT.compare_triangle_sets(V, T)
+    V = [(1, 5, 7), (10, 5, 3), (1, 2, 3), (3, 2, 1)]
+    @test !DT.compare_triangle_sets(T, V)
+    @test !DT.compare_triangle_sets(V, T)
+    V = [(1, 5, 7), (10, 5, 3), (1, 2, 3), (1, 3, 2), (0, 7, 10)]
+    @test DT.compare_triangle_sets(T, V)
+    @test DT.compare_triangle_sets(V, T)
+    V = [(1, 5, 7), (10, 5, 3), (1, 2, 3), (3, 2, 1), (7, 6, 3)]
+    @test !DT.compare_triangle_sets(T, V)
+    @test !DT.compare_triangle_sets(V, T)
+    V = [(5, 1, 7), (10, 5, 3), (1, 2, 3), (3, 2, 1), (7, 6, 3)]
+    @test !DT.compare_triangle_sets(T, V)
+    @test !DT.compare_triangle_sets(V, T)
+    T = Set{NTuple{3,Int64}}([(1, 5, 7), (10, 5, 3), (1, 2, 3), (3, 2, 1), (7, 10, 0)])
+    V = Set{NTuple{3,Int64}}([(1, 5, 7), (10, 5, 3), (1, 2, 3), (3, 2, 1), (7, 10, 0)])
+    @test DT.compare_triangle_sets(T, V)
+    @test DT.compare_triangle_sets(V, T)
+    V = Set{NTuple{3,Int64}}([(1, 5, 7), (10, 5, 3), (1, 2, 3), (3, 2, 1)])
+    @test !DT.compare_triangle_sets(T, V)
+    @test !DT.compare_triangle_sets(V, T)
+    V = Set{NTuple{3,Int64}}([(1, 5, 7), (10, 5, 3), (1, 2, 3), (1, 3, 2), (0, 7, 10)])
+    @test DT.compare_triangle_sets(T, V)
+    @test DT.compare_triangle_sets(V, T)
+    V = Set{NTuple{3,Int64}}([(1, 5, 7), (10, 5, 3), (1, 2, 3), (3, 2, 1), (7, 6, 3)])
+    @test !DT.compare_triangle_sets(T, V)
+    @test !DT.compare_triangle_sets(V, T)
+    V = Set{NTuple{3,Int64}}([(5, 1, 7), (10, 5, 3), (1, 2, 3), (3, 2, 1), (7, 6, 3)])
+    @test !DT.compare_triangle_sets(T, V)
+    @test !DT.compare_triangle_sets(V, T)
+end

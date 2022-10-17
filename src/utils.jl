@@ -103,3 +103,18 @@ function clear_empty_keys!(adj::Adjacent{I,E}, DG::DelaunayGraph) where {I,E}
     end
     return nothing
 end
+
+"""
+    compare_triangle_sets(T, V)
+
+Compares the collections of triangles `T` and `V`, checking for equality. This function is 
+needed to check for equality even with circularly-shifted indices in the triangles. Returns `true` 
+if the two collections are equivalent, and false otherwise.
+"""
+function compare_triangle_sets(T, V)
+    length(T) ≠ length(V) && return false 
+    for T in T 
+        (T ∉ V && shift_triangle_1(T) ∉ V && shift_triangle_2(T) ∉ V) && return false  
+    end
+    return true
+end
