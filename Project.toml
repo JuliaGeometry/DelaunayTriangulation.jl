@@ -1,12 +1,11 @@
 name = "DelaunayTriangulation"
 uuid = "927a84f5-c5f4-47a5-9785-b46e178433df"
 authors = ["DanielVandH <danj.vandenheuvel@gmail.com> and contributors"]
-version = "0.2.0"
+version = "0.3.0"
 
 [deps]
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 ExactPredicates = "429591f6-91af-11e9-00e2-59fbe8cec110"
-InvertedIndices = "41ab1584-1d38-5bbf-9106-f11c6c58b48f"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 SimpleGraphs = "55797a34-41de-5266-9ec1-32ac4eb504d3"
 
