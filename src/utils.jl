@@ -98,7 +98,7 @@ function clear_empty_keys!(adj::Adjacent{I,E}, DG::DelaunayGraph) where {I,E}
         k += 1
     end
     invalid_edges = setdiff(edges(adj), all_edges)
-    for (i, j) in invalid_edges 
+    for (i, j) in invalid_edges
         delete_edge!(adj, i, j)
     end
     return nothing
@@ -112,9 +112,27 @@ needed to check for equality even with circularly-shifted indices in the triangl
 if the two collections are equivalent, and false otherwise.
 """
 function compare_triangle_sets(T, V)
-    length(T) ≠ length(V) && return false 
-    for T in T 
-        (T ∉ V && shift_triangle_1(T) ∉ V && shift_triangle_2(T) ∉ V) && return false  
+    length(T) ≠ length(V) && return false
+    for T in T
+        (T ∉ V && shift_triangle_1(T) ∉ V && shift_triangle_2(T) ∉ V) && return false
     end
     return true
+end
+
+"""
+    compare_unconstrained_triangulations(T1, adj1, adj2v1, DG1, T2, adj2, adj2v2, DG2)
+
+Compares the triangulation `(T1, adj1, adj2v1, DG1)` to the triangulation `(T2, adj2, adj2v2, DG2)`.
+Could cause issues with triangulations of collinear points depending on the choices made during 
+the algorithm.
+"""
+function compare_unconstrained_triangulations(T1, adj1, adj2v1, DG1, T2, adj2, adj2v2, DG2)
+    adj = deepcopy(adj1)
+    _adj = deepcopy(adj2)
+    clear_empty_keys!(adj, DG1)
+    clear_empty_keys!(_adj, DG2)
+    return compare_triangle_sets(T1, T2) &&
+           adjacent(adj) == adjacent(_adj) &&
+           adjacent2vertex(adj2v1) == adjacent2vertex(adj2v2) &&
+           graph(DG1) == graph(DG2)
 end

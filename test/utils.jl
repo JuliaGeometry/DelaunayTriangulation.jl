@@ -169,3 +169,30 @@ end
     @test !DT.compare_triangle_sets(T, V)
     @test !DT.compare_triangle_sets(V, T)
 end
+
+@testset "Can we correctly compare triangulations?" begin
+    p1 = (5.0, 6.0)
+    p2 = (9.0, 6.0)
+    p3 = (13.0, 5.0)
+    p4 = (10.38, 0.0)
+    p5 = (12.64, -1.69)
+    p6 = (2.0, -2.0)
+    p7 = (3.0, 4.0)
+    p8 = (7.5, 3.53)
+    p9 = (4.02, 1.85)
+    p10 = (4.26, 0.0)
+    pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]
+    Random.seed!(928881)
+    T, adj, adj2v, DG, HG = DT.triangulate_berg(pts)
+    @test DT.compare_unconstrained_triangulations(T, adj, adj2v, DG, T, adj, adj2v, DG)
+    @test !DT.compare_unconstrained_triangulations(T, adj, adj2v, DG, Set{NTuple{3,Int64}}([(5, 1, 7), (10, 5, 3), (1, 2, 3), (3, 2, 1), (7, 6, 3)]), adj, adj2v, DG)
+    adj2 = deepcopy(adj)
+    adj2.adjacent[(6, 10)] = 120
+    @test !DT.compare_unconstrained_triangulations(T, adj, adj2v, DG, T, adj2, adj2v, DG)
+    adj2v2 = deepcopy(adj2v)
+    DT.delete_point!(adj2v2, 3)
+    @test !DT.compare_unconstrained_triangulations(T, adj, adj2v, DG, T, adj, adj2v2, DG)
+    DG2 = deepcopy(DG)
+    DT.delete_point!(DG2, 7)
+    @test !DT.compare_unconstrained_triangulations(T, adj, adj2v, DG, T, adj, adj2v, DG2)
+end
