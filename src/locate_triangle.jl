@@ -40,7 +40,7 @@ Selects an initial point for the jump-and-march algorithm for the query point `q
 that the query point `q` is given by `get_point(pts, q)`, and that `q` is a point being added into 
 a triangulation. That is, the initial point will not be `q`.
 """
-function select_initial_point(pts, q::Integer;pt_idx=eachindex(pts)),m=ceil(Int64, length(pt_idx)^(1 / 3))
+function select_initial_point(pts, q::Integer;pt_idx=eachindex(pts),m=ceil(Int64, length(pt_idx)^(1 / 3)))
     return select_initial_point(pts, get_point(pts, q); m, pt_idx)
 end
 """
