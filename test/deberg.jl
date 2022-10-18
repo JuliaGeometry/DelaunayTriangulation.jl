@@ -143,7 +143,7 @@
         @test DT.is_delaunay(adj, pts)
         @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
 
-        # Random triangulations
+        ## Random triangulations
         for _ in 1:178
             n = rand(3:1000)
             x = rand(n)
@@ -159,6 +159,64 @@
             num_pts = length(pts)
             num_eg = length(DT.graph(DG).E)
             num_tris = length(T)
+            @test 1 == num_pts - num_eg + num_tris # Euler's formula
+        end
+
+        ## Randomised insertion order 
+        for _ in 1:32
+            n = rand(3:1000)
+            x = rand(n)
+            y = rand(n)
+            pts = [(x, y) for (x, y) in zip(x, y)]
+            T, adj, adj2v, DG, HG = DT.triangulate_berg(pts; randomise=false,
+                IntegerType, TriangleType, EdgeType, TrianglesType, EdgesType)
+            @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
+            @test all(DT.isoriented(T, pts) == 1 for T in T)
+            for (i, j) in adj2v.adjacent2vertex[DT.BoundaryIndex]
+                @test i ≥ DT.FirstPointIndex && j ≥ DT.FirstPointIndex
+            end
+            num_pts = length(pts)
+            num_eg = length(DT.graph(DG).E)
+            num_tris = length(T)
+            @test 1 == num_pts - num_eg + num_tris # Euler's formula
+            _T, _adj, _adj2v, _DG, _HG = DT.triangulate_berg(pts; randomise=false,
+                IntegerType, TriangleType, EdgeType, TrianglesType, EdgesType)
+            @test T == _T # Not only are the triangles equivalent, they are exactly equal 
+            @test DT.compare_unconstrained_triangulations(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
+        end
+
+        ## Removing the bounding triangle 
+        for _ in 1:32
+            n = rand(3:1000)
+            x = rand(n)
+            y = rand(n)
+            pts = [(x, y) for (x, y) in zip(x, y)]
+            T, adj, adj2v, DG, HG = DT.triangulate_berg(pts;
+                IntegerType, TriangleType, EdgeType, TrianglesType, EdgesType)
+            @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
+            @test all(DT.isoriented(T, pts) == 1 for T in T)
+            for (i, j) in adj2v.adjacent2vertex[DT.BoundaryIndex]
+                @test i ≥ DT.FirstPointIndex && j ≥ DT.FirstPointIndex
+            end
+            num_pts = length(pts)
+            num_eg = length(DT.graph(DG).E)
+            num_tris = length(T)
+            @test 1 == num_pts - num_eg + num_tris # Euler's formula
+            _T, _adj, _adj2v, _DG, _HG = DT.triangulate_berg(pts; trim=false,
+                IntegerType, TriangleType, EdgeType, TrianglesType, EdgesType)
+            @test DT.validate_triangulation(_T, _adj, _adj2v, _DG, pts)
+            @test all(DT.isoriented(_T, pts) == 1 for _T in _T)
+            @test !DT.compare_unconstrained_triangulations(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
+            DT.remove_bounding_triangle!(_T, _adj, _adj2v, _DG)
+            @test DT.compare_unconstrained_triangulations(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
+            @test DT.validate_triangulation(_T, _adj, _adj2v, _DG, pts)
+            @test all(DT.isoriented(_T, pts) == 1 for _T in _T)
+            for (i, j) in adj2v.adjacent2vertex[DT.BoundaryIndex]
+                @test i ≥ DT.FirstPointIndex && j ≥ DT.FirstPointIndex
+            end
+            num_pts = length(pts)
+            num_eg = length(DT.graph(_DG).E)
+            num_tris = length(_T)
             @test 1 == num_pts - num_eg + num_tris # Euler's formula
         end
     end
