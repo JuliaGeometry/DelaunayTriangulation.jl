@@ -1,5 +1,3 @@
-#function add_point_bowyer!(T::Ts, adj, adj2v, DG, pts, r;
-
 function add_point_berg!(T, adj::Adjacent{I,E}, adj2v, DG, HG, pts, r) where {I,E}
     r = I(r)
     Tᵢⱼₖ, flag = locate_triangle(HG, pts, r, (I(LowerRightBoundingIndex), I(UpperBoundingIndex), I(LowerLeftBoundingIndex)))

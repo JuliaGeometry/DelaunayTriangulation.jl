@@ -14,6 +14,14 @@ function locate_triangle(HG::HistoryGraph, pts, r::I, init=find_root(HG; method=
     end
 end
 
+function locate_triangle(T, pts, r::I) where {I}# brute force
+    for V in T
+        if isintriangle(V, pts, r) ≠ I(-1)
+            return V
+        end
+    end
+end
+
 """
     select_initial_point(pts, q; m = ceil(Int64, length(pts)^(1/3)), pt_idx = eachindex(pts))
 

@@ -1,10 +1,3 @@
-function locate_triangle(T, pts, r::I) where {I}# brute force for now. deal with it later.
-    for V in T
-        if isintriangle(V, pts, r) ≠ I(-1)
-            return V
-        end
-    end
-end
 function add_point_bowyer!(T::Ts, adj, adj2v, DG, pts, r;
     pt_idx=graph(DG).V, m=ceil(Int64, length(pt_idx)^(1 / 3)),
     initial_search_point=select_initial_point(pts, r; pt_idx, m)) where {Ts} # only works for inside points currently. also fails for collinear points

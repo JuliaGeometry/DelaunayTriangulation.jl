@@ -1,5 +1,5 @@
 @testset "Point location with DAG or jump-and-march" begin
-    for n = 3:350
+    for n = 3:111
         r = 5sqrt.(rand(n))
         θ = 2π * rand(n)
         pts = [@SVector[r * cos(θ), r * sin(θ)] for (r, θ) in zip(r, θ)]
