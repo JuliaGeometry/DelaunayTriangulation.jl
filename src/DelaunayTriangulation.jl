@@ -19,6 +19,7 @@ include("legalise_edge.jl")
 include("split_edge.jl")
 include("locate_triangle.jl")
 include("deberg.jl")
+include("add_point_bowyer.jl")
 #include("algorithm.jl")
 #include("operations.jl")
 #include("collections.jl")
@@ -48,6 +49,6 @@ export add_point!
 export geti, getj, getk, indices
 export getx, gety
 export get_edge
-
+export locate_triangle, jump_and_march
 
 end
