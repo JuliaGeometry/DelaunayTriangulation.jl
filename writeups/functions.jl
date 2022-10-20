@@ -4,14 +4,20 @@ using StaticArrays
 using SimpleGraphs
 using Test
 using Random
+using StatsBase
 const DT = DelaunayTriangulation
 import DataStructures: DefaultDict
 
 function triplot!(ax, T, pts; markersize=11, kwargs...)
     Tmat = zeros(Int64, length(T), 3)
+    tri_length = 0
     for (i, T) in enumerate(T)
-        Tmat[i, :] = [geti(T), getj(T), getk(T)]
+        if !any(==(DT.BoundaryIndex), (geti(T), getj(T), getk(T)))
+            tri_length += 1
+            Tmat[tri_length, :] .= [geti(T), getj(T), getk(T)]
+        end
     end
+    Tmat = @views Tmat[1:tri_length, :]
     pmat = zeros(length(pts), 2)
     for (i, p) in enumerate(pts)
         pmat[i, :] = [getx(p), gety(p)]
