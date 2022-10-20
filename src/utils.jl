@@ -136,3 +136,25 @@ function compare_unconstrained_triangulations(T1, adj1, adj2v1, DG1, T2, adj2, a
            adjacent2vertex(adj2v1) == adjacent2vertex(adj2v2) &&
            graph(DG1) == graph(DG2)
 end
+
+"""
+    check_adjacent_is_adjacent2vertex_inverse(adj, adj2v)
+
+Checks if `adj` and `adj2v` are related so that, if `get_edge(adj, i, j) = k`,
+then `(i, j) ∈ get_edge(adj2v, k)`. Returns `true` if so, and `false` otherwise.
+"""
+function check_adjacent_is_adjacent2vertex_inverse(adj::Adjacent{I, E}, adj2v) where {I, E}
+    # Check adj2v 
+    for (k, S) in adjacent2vertex(adj2v)
+        for ij in S
+            get_edge(adj, ij) ≠ k && return false 
+        end 
+    end
+    # Check adj
+    for (ij, k) in adjacent(adj)
+        if k ≠ I(DefaultAdjacentValue)
+            ij ∉ get_edge(adj2v, k) && return false 
+        end 
+    end 
+    return true
+end

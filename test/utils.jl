@@ -135,7 +135,7 @@ end
     )
 end
 
-@testset "Can we correctly compare collections of triangles" begin
+@testset "Can we correctly compare collections of triangles?" begin
     T = [(1, 5, 7), (10, 5, 3), (1, 2, 3), (3, 2, 1), (7, 10, 0)]
     V = [(1, 5, 7), (10, 5, 3), (1, 2, 3), (3, 2, 1), (7, 10, 0)]
     @test DT.compare_triangle_sets(T, V)
@@ -195,4 +195,57 @@ end
     DG2 = deepcopy(DG)
     DT.delete_point!(DG2, 7)
     @test !DT.compare_unconstrained_triangulations(T, adj, adj2v, DG, T, adj, adj2v, DG2)
+end
+
+@testset "Can we correctly validate the relationship between Adjacent and Adjacent2Vertex?" begin
+    adj = DT.Adjacent(DefaultDict(DT.DefaultAdjacentValue,
+        Dict(
+            (1, 2) => 3, (2, 3) => 1, (3, 1) => 2,
+            (3, 2) => 4, (2, 4) => 3, (4, 3) => 2,
+            (3, 4) => 5, (4, 5) => 3, (5, 3) => 4,
+            (4, 2) => 6, (2, 6) => 4, (6, 4) => 2,
+            (5, 4) => 6, (4, 6) => 5, (6, 5) => 4,
+            (2, 1) => DT.BoundaryIndex, (1, DT.BoundaryIndex) => 2, (DT.BoundaryIndex, 2) => 1,
+            (1, 3) => DT.BoundaryIndex, (3, DT.BoundaryIndex) => 1, (DT.BoundaryIndex, 1) => 3,
+            (3, 5) => DT.BoundaryIndex, (5, DT.BoundaryIndex) => 3, (DT.BoundaryIndex, 3) => 5,
+            (5, 6) => DT.BoundaryIndex, (6, DT.BoundaryIndex) => 5, (DT.BoundaryIndex, 5) => 6,
+            (6, 2) => DT.BoundaryIndex, (2, DT.BoundaryIndex) => 6, (DT.BoundaryIndex, 6) => 2
+        )))
+    adj2v = DT.Adjacent2Vertex(
+        Dict(
+            DT.BoundaryIndex => Set{NTuple{2,Int64}}([(1, 3), (3, 5), (5, 6), (6, 2), (2, 1)]),
+            1 => Set{NTuple{2,Int64}}([(2, 3), (3, DT.BoundaryIndex), (DT.BoundaryIndex, 2)]),
+            2 => Set{NTuple{2,Int64}}([(3, 1), (4, 3), (6, 4), (1, DT.BoundaryIndex), (DT.BoundaryIndex, 6)]),
+            3 => Set{NTuple{2,Int64}}([(1, 2), (2, 4), (4, 5), (DT.BoundaryIndex, 1), (5, DT.BoundaryIndex)]),
+            4 => Set{NTuple{2,Int64}}([(3, 2), (2, 6), (6, 5), (5, 3)]),
+            5 => Set{NTuple{2,Int64}}([(3, 4), (4, 6), (6, DT.BoundaryIndex), (DT.BoundaryIndex, 3)]),
+            6 => Set{NTuple{2,Int64}}([(4, 2), (5, 4), (DT.BoundaryIndex, 5), (2, DT.BoundaryIndex)])
+        )
+    )
+    @test DT.check_adjacent_is_adjacent2vertex_inverse(adj, adj2v)
+    adj2v = DT.Adjacent2Vertex(
+        Dict(
+            DT.BoundaryIndex => Set{NTuple{2,Int64}}([(1, 3), (3, 5), (5, 6), (10, 11), (6, 2), (2, 1)]),
+            1 => Set{NTuple{2,Int64}}([(2, 3), (3, DT.BoundaryIndex), (DT.BoundaryIndex, 2)]),
+            2 => Set{NTuple{2,Int64}}([(3, 1), (4, 3), (6, 4), (1, DT.BoundaryIndex), (DT.BoundaryIndex, 6)]),
+            3 => Set{NTuple{2,Int64}}([(1, 2), (2, 4), (4, 5), (DT.BoundaryIndex, 1), (5, DT.BoundaryIndex)]),
+            4 => Set{NTuple{2,Int64}}([(3, 2), (2, 6), (6, 5), (5, 3)]),
+            5 => Set{NTuple{2,Int64}}([(3, 4), (4, 6), (6, DT.BoundaryIndex), (DT.BoundaryIndex, 3)]),
+            6 => Set{NTuple{2,Int64}}([(4, 2), (5, 4), (DT.BoundaryIndex, 5), (2, DT.BoundaryIndex)])
+        )
+    )
+    @test !DT.check_adjacent_is_adjacent2vertex_inverse(adj, adj2v)
+    adj2v = DT.Adjacent2Vertex(
+        Dict(
+            DT.BoundaryIndex => Set{NTuple{2,Int64}}([(1, 3), (3, 5), (5, 6), (6, 2), (2, 1)]),
+            1 => Set{NTuple{2,Int64}}([(2, 3), (3, DT.BoundaryIndex), (DT.BoundaryIndex, 2)]),
+            2 => Set{NTuple{2,Int64}}([(3, 1), (4, 3), (6, 4), (1, DT.BoundaryIndex), (DT.BoundaryIndex, 6)]),
+            3 => Set{NTuple{2,Int64}}([(1, 2), (2, 4), (4, 5), (DT.BoundaryIndex, 1), (5, DT.BoundaryIndex)]),
+            4 => Set{NTuple{2,Int64}}([(3, 2), (2, 6), (6, 5), (5, 3)]),
+            5 => Set{NTuple{2,Int64}}([(3, 4), (4, 6), (6, DT.BoundaryIndex), (DT.BoundaryIndex, 3)]),
+            6 => Set{NTuple{2,Int64}}([(4, 2), (5, 4), (DT.BoundaryIndex, 5), (2, DT.BoundaryIndex)])
+        )
+    )
+    DT.get_edge(adj, 92918, 29991) # Should just skip over the empty keys
+    @test DT.check_adjacent_is_adjacent2vertex_inverse(adj, adj2v)
 end
