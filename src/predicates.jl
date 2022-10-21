@@ -31,8 +31,18 @@ and `-1` if the point is outside. It is assumed that the
 
 The check is exact, making use of `ExactPredicates.incircle` (unless 
 you define a new method for it for your point type, obviously).
+
+Checks are made for ghost triangles, which are triangles of the form `(i, j, $BoundaryIndex)`. We say 
+that a point is in the circumcircle of `(i, j, $BoundaryIndex)` if it is to the left of `(i, j)`.
 """
 function isincircle(pts, i::I, j::I, k::I, ℓ::I) where {I}
+    if i == I(BoundaryIndex)
+        return I(isleftofline(pts, j, k, ℓ))
+    elseif j == I(BoundaryIndex)
+        return I(isleftofline(pts, k, i, ℓ))
+    elseif k == I(BoundaryIndex)
+        return I(isleftofline(pts, i, j, ℓ))
+    end
     pᵢ, pⱼ, pₖ, pₗ = get_point(pts, i, j, k, ℓ)
     return I(incircle(pᵢ, pⱼ, pₖ, pₗ))
 end
@@ -140,9 +150,9 @@ triangulation, and `pts` is the point set.
 """
 function islegal(i, j, adj, pts)
     edge_on_bounding_triangle(i, j) && return true
-    is_boundary_edge(i, j, adj) && return true 
+    is_boundary_edge(i, j, adj) && return true
     is_boundary_edge(j, i, adj) && return true
-    !edge_exists(i, j, adj) && return true 
+    !edge_exists(i, j, adj) && return true
     !edge_exists(j, i, adj) && return true
     k = get_edge(adj, i, j)
     ℓ = get_edge(adj, j, i)
