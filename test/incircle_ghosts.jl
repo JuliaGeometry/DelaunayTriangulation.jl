@@ -118,5 +118,4 @@
     @test DT.isincircle(pts, 8, 7, 11, 28) == -1
     @test DT.isincircle(pts, 8, 11, 10, 28) == -1
     @test DT.isincircle(pts, 6, 4, 7, 28) == -1
-
 end
