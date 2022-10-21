@@ -71,14 +71,16 @@ gety(p::Base.AbstractVecOrTuple) = p[2]
 
 function get_point end      # get_point(::Points, ::I)
 
-function get_point(pts::AbstractVector, i)
-    if i ≥ FirstPointIndex
+function get_point(pts::AbstractVector, i::I) where I
+    if i ≥ I(FirstPointIndex)
         return pts[i]
-    elseif i == LowerRightBoundingIndex
+    elseif i == I(BoundaryIndex) # this is useful when working with the Bowyer-Watson algorithm, don't take this as meaning the boundary is represented as the centroid
+        return CentroidCoordinates
+    elseif i == I(LowerRightBoundingIndex)
         return lower_right_bounding_triangle_coords(pts)
-    elseif i == LowerLeftBoundingIndex
+    elseif i == I(LowerLeftBoundingIndex)
         return lower_left_bounding_triangle_coords(pts)
-    elseif i == UpperBoundingIndex
+    elseif i == I(UpperBoundingIndex)
         return upper_bounding_triangle_coords(pts)
     end
     throw(BoundsError(pts, i))

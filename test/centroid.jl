@@ -28,3 +28,14 @@ end
         @test DT.CentroidCoordinates.n == length(pts) - j
     end
 end
+
+@testset "Can we correctly access a set of points at the boundary index?" begin
+    pts = rand(SVector{2,Float64}, 1827301)
+    for i in shuffle(Int64[zeros(5000)..., (1:length(pts))...])
+        if i == 0
+            @test DT.get_point(pts, i) == DT.CentroidCoordinates
+        else
+            @test DT.get_point(pts, i) == pts[i]
+        end
+    end
+end

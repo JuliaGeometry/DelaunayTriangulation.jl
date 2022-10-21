@@ -73,7 +73,7 @@ end
     @test DT.get_point(pts, DT.LowerRightBoundingIndex) == DT.lower_right_bounding_triangle_coords(pts)
     @test DT.get_point(pts, DT.LowerLeftBoundingIndex) == DT.lower_left_bounding_triangle_coords(pts)
     @test DT.get_point(pts, DT.UpperBoundingIndex) == DT.upper_bounding_triangle_coords(pts)
-    @test_throws BoundsError DT.get_point(pts, 0)
+    # @test_throws BoundsError DT.get_point(pts, 0)
     @test_throws BoundsError DT.get_point(pts, -5)
     @test_throws BoundsError DT.get_point(pts, 17)
 end
