@@ -3,6 +3,7 @@ module DelaunayTriangulation
 using SimpleGraphs
 using ExactPredicates
 using Random
+using MutableNamedTuples
 import DataStructures: DefaultDict
 
 include("constants.jl")

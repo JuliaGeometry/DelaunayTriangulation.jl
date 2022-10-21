@@ -190,3 +190,46 @@ function check_adjacent_is_adjacent2vertex_inverse(adj::Adjacent{I,E}, adj2v) wh
     end
     return true
 end
+
+"""
+    clear_centroid_coordinates!(::Type{T} = Float64) where {T}
+
+Resets the centroid coordinates in `CentroidCoordinates` to be 
+`(zero(T), zero(T))`.
+"""
+function clear_centroid_coordinates!(::Type{T}=Float64) where {T}
+    CentroidCoordinates.x = zero(T)
+    CentroidCoordinates.y = zero(T)
+    CentroidCoordinates.n = 0
+    return nothing
+end
+
+"""
+    update_centroid_after_new_point!(pts, i)
+
+Updates the centroid coordinates in `CentroidCoordinates` after a new point 
+`get_point(pts, i)` was added.
+"""
+function update_centroid_after_new_point!(pts, i)
+    new_pt = get_point(pts, i)
+    n = CentroidCoordinates.n
+    CentroidCoordinates.x = 1 / (n + 1) * (n * CentroidCoordinates.x + getx(new_pt))
+    CentroidCoordinates.y = 1 / (n + 1) * (n * CentroidCoordinates.y + gety(new_pt))
+    CentroidCoordinates.n += 1
+    return nothing
+end
+
+"""
+    update_centroid_after_deleted_point!(pts, i)
+
+Updates the centroid coordinates in `CentroidCoordinates` after the point
+`get_point(pts, i)` was deleted.
+"""
+function update_centroid_after_deleted_point!(pts, i)
+    new_pt = get_point(pts, i)
+    n = CentroidCoordinates.n
+    CentroidCoordinates.x = 1 / (n - 1) * (n * CentroidCoordinates.x - getx(new_pt))
+    CentroidCoordinates.y = 1 / (n - 1) * (n * CentroidCoordinates.y - gety(new_pt))
+    CentroidCoordinates.n -= 1
+    return nothing
+end

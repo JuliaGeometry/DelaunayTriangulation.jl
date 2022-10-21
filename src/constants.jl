@@ -23,3 +23,5 @@ const BoundingTriangleShift = 27.3919105998678246734637673334353499992
 const MinWidthHeight = 0.00182829999105935935923828882837273741
 """Representation of an empty set for the default value in Adjacent."""
 const DefaultAdjacentValue = -4
+"""Mutable coordinates for the centroid."""
+const CentroidCoordinates = MutableNamedTuple(x = 0.0, y = 0.0, n = 0)
