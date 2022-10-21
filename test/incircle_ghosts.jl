@@ -11,7 +11,6 @@
     p10 = @SVector[4.74, 2.21]
     p11 = @SVector[2.32, -0.27]
     pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11]
-    centr = mean(pts)
     T, adj, adj2v, DG, HG = DT.triangulate_berg(pts)
     [DT.delete_triangle!(i, j, k, T, adj, adj2v, DG) for (i, j, k) in (
         (1, 8, 9), (9, 8, 10), (10, 11, 5), (5, 7, 4), (4, 6, 3), (3, 6, 2), (2, 6, 1)
