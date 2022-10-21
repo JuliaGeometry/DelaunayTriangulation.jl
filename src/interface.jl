@@ -75,7 +75,7 @@ function get_point(pts::AbstractVector, i::I) where I
     if i ≥ I(FirstPointIndex)
         return pts[i]
     elseif i == I(BoundaryIndex) # this is useful when working with the Bowyer-Watson algorithm, don't take this as meaning the boundary is represented as the centroid
-        return CentroidCoordinates
+        return (CentroidCoordinates.x, CentroidCoordinates.y) # Might not be compatible with the points a user actually uses, but this only gets used in ExactPredicates which converts everything to a Tuple anyway!
     elseif i == I(LowerRightBoundingIndex)
         return lower_right_bounding_triangle_coords(pts)
     elseif i == I(LowerLeftBoundingIndex)
