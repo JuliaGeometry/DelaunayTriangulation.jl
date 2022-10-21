@@ -105,6 +105,20 @@ function clear_empty_keys!(adj::Adjacent{I,E}, DG::DelaunayGraph) where {I,E}
 end
 
 """
+    clear_empty_keys!(adj2v::Adjacent2Vertex)
+
+Deletes any keys from `adj2v` that map to empty sets.
+"""
+function clear_empty_keys!(adj2v::Adjacent2Vertex)
+    for (w, S) in adjacent2vertex(adj2v)
+        if isempty(S)
+            delete_point!(adj2v, w)
+        end
+    end
+    return nothing
+end
+
+"""
     compare_triangle_sets(T, V)
 
 Compares the collections of triangles `T` and `V`, checking for equality. This function is 
@@ -131,9 +145,13 @@ function compare_unconstrained_triangulations(T1, adj1, adj2v1, DG1, T2, adj2, a
     _adj = deepcopy(adj2)
     clear_empty_keys!(adj, DG1)
     clear_empty_keys!(_adj, DG2)
+    adj2v = deepcopy(adj2v1)
+    _adj2v = deepcopy(adj2v2)
+    clear_empty_keys!(adj2v)
+    clear_empty_keys!(_adj2v)
     return compare_triangle_sets(T1, T2) &&
            adjacent(adj) == adjacent(_adj) &&
-           adjacent2vertex(adj2v1) == adjacent2vertex(adj2v2) &&
+           adjacent2vertex(adj2v) == adjacent2vertex(_adj2v) &&
            graph(DG1) == graph(DG2)
 end
 
@@ -143,18 +161,18 @@ end
 Checks if `adj` and `adj2v` are related so that, if `get_edge(adj, i, j) = k`,
 then `(i, j) ∈ get_edge(adj2v, k)`. Returns `true` if so, and `false` otherwise.
 """
-function check_adjacent_is_adjacent2vertex_inverse(adj::Adjacent{I, E}, adj2v) where {I, E}
+function check_adjacent_is_adjacent2vertex_inverse(adj::Adjacent{I,E}, adj2v) where {I,E}
     # Check adj2v 
     for (k, S) in adjacent2vertex(adj2v)
         for ij in S
-            get_edge(adj, ij) ≠ k && return false 
-        end 
+            get_edge(adj, ij) ≠ k && return false
+        end
     end
     # Check adj
     for (ij, k) in adjacent(adj)
         if k ≠ I(DefaultAdjacentValue)
-            ij ∉ get_edge(adj2v, k) && return false 
-        end 
-    end 
+            ij ∉ get_edge(adj2v, k) && return false
+        end
+    end
     return true
 end
