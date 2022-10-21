@@ -81,6 +81,8 @@ function isleftofline(pts, i::I, j::I, k::I) where {I}
         return I(1)
     elseif i == I(UpperBoundingIndex) && j == I(LowerRightBoundingIndex)
         return I(-1)
+    elseif i == I(BoundaryIndex) || j == I(BoundaryIndex)
+        j, i = i, j # If the line is ℓ₀ⱼ, then this is parallel with the line ℓⱼₚ, where ₚ is the centroid. But 0 maps to p (`get_point(pts, 0)` is the centroid), so let's just swap the coordinates. Similarly, for the line ℓᵢ₀, we just consider ℓₚᵢ, so again we swap.
     end
     pᵢ, pⱼ, pₖ = get_point(pts, i, j, k)
     return I(orient(pᵢ, pⱼ, pₖ))
