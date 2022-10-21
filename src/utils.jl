@@ -119,6 +119,20 @@ function clear_empty_keys!(adj2v::Adjacent2Vertex)
 end
 
 """
+    clear_empty_points!(DG::DelaunayGraph)
+
+Deletes points from the graph `DG` that have degree 0. 
+"""
+function clear_empty_points!(DG::DelaunayGraph)
+    for (w, S) in graph(DG).N
+        if isempty(S)
+            delete_point!(DG, w)
+        end
+    end
+    return nothing
+end
+
+"""
     compare_triangle_sets(T, V)
 
 Compares the collections of triangles `T` and `V`, checking for equality. This function is 

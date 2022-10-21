@@ -285,3 +285,50 @@ end
         6 => Set{NTuple{2,Int64}}([(4, 2), (5, 4), (DT.BoundaryIndex, 5), (2, DT.BoundaryIndex)])
     )
 end
+
+@testset "Can we correctly clear degree 0 points from a DelaunayGraph?" begin
+    DG = DT.DelaunayGraph(UndirectedGraph(
+        [
+            0 0 0
+            0 1 1
+            0 1 1
+        ]
+    ))
+    DT.clear_empty_points!(DG)
+    @test DG.graph == relabel(UndirectedGraph([1 1; 1 1]), Dict((1, 2) .=> (2, 3)))
+    DT.clear_empty_points!(DG)
+    @test DG.graph == relabel(UndirectedGraph([1 1; 1 1]), Dict((1, 2) .=> (2, 3)))
+    DG = DT.DelaunayGraph(UndirectedGraph(
+        [
+            0 1 0 0
+            1 1 1 0
+            0 1 1 0
+            0 0 0 0
+        ]
+    ))
+    DT.clear_empty_points!(DG)
+    @test DG.graph == relabel(UndirectedGraph([0 1 0; 1 1 1; 0 1 1]))
+    DT.clear_empty_points!(DG)
+    @test DG.graph == relabel(UndirectedGraph([0 1 0; 1 1 1; 0 1 1]))
+    DG = DT.DelaunayGraph(UndirectedGraph(
+        [
+            0 1 0 0
+            1 1 1 0
+            0 1 1 0
+            0 0 0 0
+        ]
+    ))
+    DT.clear_empty_points!(DG)
+    @test DG.graph == relabel(UndirectedGraph([0 1 0; 1 1 1; 0 1 1]))
+    DT.clear_empty_points!(DG)
+    @test DG.graph == relabel(UndirectedGraph([0 1 0; 1 1 1; 0 1 1]))
+    DG = DT.DelaunayGraph(UndirectedGraph(
+        [
+            1 0 1
+            0 0 0
+            1 0 0
+        ]
+    ))
+    DT.clear_empty_points!(DG)
+    @test DG.graph == relabel(UndirectedGraph([1 1; 1 0]), Dict((1,2).=>(1,3)))
+end
