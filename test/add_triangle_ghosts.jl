@@ -1,4 +1,3 @@
-
 @testset "Testing all the boundary cases" begin
     T = Set{NTuple{3,Int64}}()
     adj = DT.Adjacent{Int64,NTuple{2,Int64}}()
