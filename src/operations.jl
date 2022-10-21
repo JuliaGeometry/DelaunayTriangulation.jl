@@ -179,7 +179,7 @@ end
 ###################################################
 function delete_triangle!(i, j, k, T::Ts,
     adj::Adjacent{I,E}, adj2v::Adjacent2Vertex{I,Es,E},
-    DG::DelaunayGraph{I}; protect_boundary=false) where {I,E,Es,Ts}
+    DG::DelaunayGraph{I}; protect_boundary=false, update_ghost_edges=false) where {I,E,Es,Ts}
     V = triangle_type(Ts)
     Tᵢⱼₖ = construct_triangle(V, i, j, k)
     delete_triangle!(T, Tᵢⱼₖ)
@@ -203,16 +203,16 @@ function delete_triangle!(i, j, k, T::Ts,
     !protect_ik_neighbour && delete_neighbour!(DG, k, i)
     !protect_kj_neighbour && delete_neighbour!(DG, j, k)
     if num_bnd_edges == 1
-        delete_boundary_edges_single!(i, j, k, ji_bnd, ik_bnd, kj_bnd, adj, adj2v)
+        delete_boundary_edges_single!(i, j, k, ji_bnd, ik_bnd, kj_bnd, T, adj, adj2v, DG; update_ghost_edges)
     elseif num_bnd_edges == 2
-        delete_boundary_edges_double!(i, j, k, ji_bnd, ik_bnd, kj_bnd, adj, adj2v)
+        delete_boundary_edges_double!(i, j, k, ji_bnd, ik_bnd, kj_bnd, T, adj, adj2v, DG; update_ghost_edges)
     elseif num_bnd_edges == 3 # length(T) == 0
-        delete_boundary_edges_triple!(i, j, k, adj, adj2v)
+        delete_boundary_edges_triple!(i, j, k, T, adj, adj2v, DG; update_ghost_edges)
     end
     return nothing
 end
 function delete_boundary_edges_single!(i, j, k, ji_bnd, ik_bnd, kj_bnd,
-    adj::Adjacent{I,E}, adj2v::Adjacent2Vertex) where {I,E}
+    T::Ts, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex, DG; update_ghost_edges) where {Ts,I,E}
     u, v, w = choose_uvw(ji_bnd, kj_bnd, ik_bnd, i, j, k)
     delete_edge!(adj, v, u)
     delete_edge!(adj2v, I(BoundaryIndex), v, u)
@@ -220,10 +220,31 @@ function delete_boundary_edges_single!(i, j, k, ji_bnd, ik_bnd, kj_bnd,
     add_edge!(adj, w, u, I(BoundaryIndex))
     add_edge!(adj2v, I(BoundaryIndex), v, w)
     add_edge!(adj2v, I(BoundaryIndex), w, u)
+    if update_ghost_edges # Delete vu∂, add vw∂ and wu∂. See some of the comments in add_boundary_edges_double! for more info.
+        # Ghost edges
+        add_edge!(adj, w, I(BoundaryIndex), v)
+        add_edge!(adj, I(BoundaryIndex), v, w)
+        add_edge!(adj, u, I(BoundaryIndex), w)
+        add_edge!(adj, I(BoundaryIndex), w, u)
+        delete_edge!(adj2v, v, u, I(BoundaryIndex))
+        delete_edge!(adj2v, u, I(BoundaryIndex), v)
+        add_edge!(adj2v, v, w, I(BoundaryIndex))
+        add_edge!(adj2v, w, I(BoundaryIndex), v)
+        add_edge!(adj2v, w, u, I(BoundaryIndex))
+        add_edge!(adj2v, u, I(BoundaryIndex), w)
+        add_neighbour!(DG, I(BoundaryIndex), w)
+        # Ghost triangles
+        V = triangle_type(Ts)
+        T1 = construct_triangle(V, v, u, I(BoundaryIndex))
+        T2 = construct_triangle(V, v, w, I(BoundaryIndex))
+        T3 = construct_triangle(V, w, u, I(BoundaryIndex))
+        add_triangle!(T, T2, T3)
+        delete_triangle!(T, T1)
+    end
     return nothing
 end
 function delete_boundary_edges_double!(i, j, k, ji_bnd, ik_bnd, kj_bnd,
-    adj::Adjacent{I,E}, adj2v::Adjacent2Vertex) where {I,E}
+    T::Ts, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex, DG; update_ghost_edges) where {Ts,I,E}
     u, v, w = choose_uvw(!ji_bnd, !kj_bnd, !ik_bnd, i, j, k)
     delete_edge!(adj, u, w)
     delete_edge!(adj, w, v)
@@ -231,15 +252,58 @@ function delete_boundary_edges_double!(i, j, k, ji_bnd, ik_bnd, kj_bnd,
     delete_edge!(adj2v, I(BoundaryIndex), w, v)
     add_edge!(adj, u, v, I(BoundaryIndex))
     add_edge!(adj2v, I(BoundaryIndex), u, v)
+    if update_ghost_edges # Delete uw∂ and wv∂ and add uv∂. See some of the comments in add_boundary_edges_single! for more info.
+        # Ghost edges
+        add_edge!(adj, v, I(BoundaryIndex), u)
+        add_edge!(adj, I(BoundaryIndex), u, v)
+        delete_edge!(adj, w, I(BoundaryIndex))
+        delete_edge!(adj, I(BoundaryIndex), w)
+        delete_edge!(adj2v, u, w, I(BoundaryIndex))
+        delete_edge!(adj2v, w, I(BoundaryIndex), u)
+        delete_edge!(adj2v, w, v, I(BoundaryIndex))
+        delete_edge!(adj2v, v, I(BoundaryIndex), w)
+        add_edge!(adj2v, u, v, I(BoundaryIndex))
+        add_edge!(adj2v, v, I(BoundaryIndex), u)
+        delete_neighbour!(DG, I(BoundaryIndex), w)
+        # Ghost triangles
+        V = triangle_type(Ts)
+        T1 = construct_triangle(V, u, w, I(BoundaryIndex))
+        T2 = construct_triangle(V, w, v, I(BoundaryIndex))
+        T3 = construct_triangle(V, u, v, I(BoundaryIndex))
+        add_triangle!(T, T3)
+        delete_triangle!(T, T1, T2)
+    end
     return nothing
 end
-function delete_boundary_edges_triple!(i, j, k, adj::Adjacent{I,E}, adj2v) where {I,E}
+function delete_boundary_edges_triple!(i, j, k, T::Ts, adj::Adjacent{I,E}, adj2v, DG; update_ghost_edges) where {Ts,I,E}
     delete_edge!(adj, k, j)
     delete_edge!(adj, j, i)
     delete_edge!(adj, i, k)
     delete_edge!(adj2v, I(BoundaryIndex), k, j)
     delete_edge!(adj2v, I(BoundaryIndex), j, i)
     delete_edge!(adj2v, I(BoundaryIndex), i, k)
+    if update_ghost_edges # Delete ji∂, kj∂, and ik∂. See some of the comments in add_boundary_edges_triple! for more info.
+        # Ghost edges
+        delete_edge!(adj, i, I(BoundaryIndex))
+        delete_edge!(adj, I(BoundaryIndex), j)
+        delete_edge!(adj, j, I(BoundaryIndex))
+        delete_edge!(adj, I(BoundaryIndex), k)
+        delete_edge!(adj, k, I(BoundaryIndex))
+        delete_edge!(adj, I(BoundaryIndex), i)
+        delete_edge!(adj2v, j, i, I(BoundaryIndex))
+        delete_edge!(adj2v, i, I(BoundaryIndex), j)
+        delete_edge!(adj2v, k, j, I(BoundaryIndex))
+        delete_edge!(adj2v, j, I(BoundaryIndex), k)
+        delete_edge!(adj2v, i, k, I(BoundaryIndex))
+        delete_edge!(adj2v, k, I(BoundaryIndex), i)
+        delete_neighbour!(DG, I(BoundaryIndex), i, j, k)
+        # Ghost triangles 
+        V = triangle_type(Ts)
+        T1 = construct_triangle(V, j, i, I(BoundaryIndex))
+        T2 = construct_triangle(V, k, j, I(BoundaryIndex))
+        T3 = construct_triangle(V, i, k, I(BoundaryIndex))
+        delete_triangle!(T, T1, T2, T3)
+    end
     return nothing
 end
 
