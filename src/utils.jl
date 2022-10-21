@@ -233,3 +233,23 @@ function update_centroid_after_deleted_point!(pts, i)
     CentroidCoordinates.n -= 1
     return nothing
 end
+
+"""
+    compute_centroid!(pts)
+
+Updates `CentroidCoordinates` with the centroid of `pts`.
+"""
+function compute_centroid!(pts)
+    n = length(pts)
+    clear_centroid_coordinates!()
+    for p in pts
+        x = getx(p)
+        y = gety(p)
+        CentroidCoordinates.x += x 
+        CentroidCoordinates.y += y 
+    end
+    CentroidCoordinates.x /= n 
+    CentroidCoordinates.y /= n
+    CentroidCoordinates.n = n
+    return nothing
+end

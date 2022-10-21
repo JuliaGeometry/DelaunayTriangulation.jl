@@ -39,3 +39,14 @@ end
         end
     end
 end
+
+@testset "Can we correctly compute the centroid of some given points?" begin 
+    DT.CentroidCoordinates.x = 0.291
+    DT.CentroidCoordinates.y = 0.4991
+    DT.CentroidCoordinates.n = 99
+    pts = rand(SVector{2,Float64}, 1827301)
+    DT.compute_centroid!(pts)
+    @test DT.CentroidCoordinates.x ≈ sum(pts)[1]/length(pts)
+    @test DT.CentroidCoordinates.y ≈ sum(pts)[2]/length(pts)
+    @test DT.CentroidCoordinates.n == length(pts)
+end
