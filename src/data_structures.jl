@@ -58,25 +58,13 @@ function add_edge!(adj::Adjacent{I,E}, u, v, w) where {I,E}
 end
 
 """
-    delete_edge!(adj::Adjacent{I, E}, u, v; protect_boundary=true, delete_uv_only=false) where {I,E}
+    delete_edge!(adj::Adjacent{I,E}, u, v) where {I,E}
 
-Deletes the edge `(u, v)` from the map `adj`. This function also deletes the edge
-`(v, u)`. If the boundary needs to be protected, so that `(u, v)` is not deleted if 
-the adjacent vertex to `(u, v)` is `$BoundaryIndex` (and similarly for `(v, u)`), 
-set `protect_boundary=true`. If you only want to delete `(u, v)` and instead protect 
-`(v, u)`, set `delete_uv_only=false`.
+Deletes the edge `(u, v)` from the map `adj`. 
 """
-function delete_edge!(adj::Adjacent{I,E}, u, v; protect_boundary=true, delete_uv_only=false) where {I,E}
+function delete_edge!(adj::Adjacent{I,E}, u, v) where {I,E}
     Euv = construct_edge(E, u, v)
     delete!(adjacent(adj), Euv)
-    #=
-    if !protect_boundary || (get_edge(adj, Euv) ≠ I(BoundaryIndex))
-        delete!(adjacent(adj), Euv)
-    end
-    if !delete_uv_only 
-        delete_edge!(adj, v, u; protect_boundary, delete_uv_only=true)
-    end 
-    =#
     return nothing
 end
 
