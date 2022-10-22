@@ -135,56 +135,74 @@
         pts[12] = @SVector[3.382, 4.3599]
         q = DT.get_point(pts, 12)
         @test DT.straight_line_search_ghost_triangles(q, adj, k, pts) == (9, 10)
+        @test DT.is_boundary_edge(9, 10, adj)
         pts[12] = @SVector[15.27, 9.77]
         q = DT.get_point(pts, 12)
         @test DT.straight_line_search_ghost_triangles(q, adj, k, pts) == (9, 10)
+        @test DT.is_boundary_edge(9, 10, adj)
         pts[12] = @SVector[18.0, 0.0]
         q = DT.get_point(pts, 12)
         @test DT.straight_line_search_ghost_triangles(q, adj, k, pts) == (10, 5)
+        @test DT.is_boundary_edge(10, 5,adj)
         pts[12] = @SVector[20.257, 7.27]
         q = DT.get_point(pts, 12)
         @test DT.straight_line_search_ghost_triangles(q, adj, k, pts) == (10, 5)
+        @test DT.is_boundary_edge(10, 5,adj)
         pts[12] = @SVector[12.0, -8.0]
         q = DT.get_point(pts, 12)
         @test DT.straight_line_search_ghost_triangles(q, adj, k, pts) == (5, 4)
+        @test DT.is_boundary_edge(5, 4, adj)
         pts[12] = @SVector[0.466, -5.18]
         q = DT.get_point(pts, 12)
         @test DT.straight_line_search_ghost_triangles(q, adj, k, pts) == (5, 4)
+        @test DT.is_boundary_edge(5, 4, adj)
         pts[12] = @SVector[-2.746, -4.614]
         q = DT.get_point(pts, 12)
         @test DT.straight_line_search_ghost_triangles(q, adj, k, pts) == (4, 3)
+        @test DT.is_boundary_edge(4, 3, adj)
         pts[12] = @SVector[-6.94, -3.37]
         q = DT.get_point(pts, 12)
         @test DT.straight_line_search_ghost_triangles(q, adj, k, pts) == (4, 3)
+        @test DT.is_boundary_edge(4, 3, adj)
         pts[12] = @SVector[-4.999, -2.749]
         q = DT.get_point(pts, 12)
         @test DT.straight_line_search_ghost_triangles(q, adj, k, pts) == (4, 3)
+        @test DT.is_boundary_edge(4, 3, adj)
         pts[12] = @SVector[-7.046, -1.45]
         q = DT.get_point(pts, 12)
         @test DT.straight_line_search_ghost_triangles(q, adj, k, pts) == (3, 2)
+        @test DT.is_boundary_edge(3, 2, adj)
         pts[12] = @SVector[-73.36, 1.30258]
         q = DT.get_point(pts, 12)
         @test DT.straight_line_search_ghost_triangles(q, adj, k, pts) == (3, 2)
+        @test DT.is_boundary_edge(3, 2, adj)
         pts[12] = @SVector[-8.0, 2.0]
         q = DT.get_point(pts, 12)
         @test DT.straight_line_search_ghost_triangles(q, adj, k, pts) == (3, 2)
+        @test DT.is_boundary_edge(3,2, adj)
         pts[12] = @SVector[-7.17, 2.96]
         q = DT.get_point(pts, 12)
         @test DT.straight_line_search_ghost_triangles(q, adj, k, pts) == (2, 1)
+        @test DT.is_boundary_edge(2,1, adj)
         pts[12] = @SVector[-6.0, 4.0]
         q = DT.get_point(pts, 12)
         @test DT.straight_line_search_ghost_triangles(q, adj, k, pts) == (2, 1)
+        @test DT.is_boundary_edge(2,1, adj)
         pts[12] = @SVector[-9.39, 7.46]
         q = DT.get_point(pts, 12)
         @test DT.straight_line_search_ghost_triangles(q, adj, k, pts) == (2, 1)
+        @test DT.is_boundary_edge(2,1, adj)
         pts[12] = @SVector[-3.0, 4.17]
         q = DT.get_point(pts, 12)
         @test DT.straight_line_search_ghost_triangles(q, adj, k, pts) == (1, 9)
+        @test DT.is_boundary_edge(1,9,adj)
         pts[12] = @SVector[0.0, 6.0]
         q = DT.get_point(pts, 12)
         @test DT.straight_line_search_ghost_triangles(q, adj, k, pts) == (1, 9)
+        @test DT.is_boundary_edge(1,9,adj)
         pts[12] = @SVector[2.47, 7.027]
         q = DT.get_point(pts, 12)
         @test DT.straight_line_search_ghost_triangles(q, adj, k, pts) == (9, 10)
+        @test DT.is_boundary_edge(9, 10, adj)
     end
 end
