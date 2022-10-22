@@ -53,63 +53,141 @@ function select_initial_point(pts, q::Integer; pt_idx=eachindex(pts), m=ceil(Int
 end
 
 """
-    select_random_edge(k, adj2v; include_ghost_edges = true)
-
-Selects a random edge out of triangles containing the `k`th point, where `adj2v` is 
-an `Adjacent2Vertex` map. If the edge selected cannot be a ghost edge, set 
-`include_ghost_edges=false`.
-"""
-function select_random_edge(k, adj2v; include_ghost_edges=true)
-    i, j = rand(get_edge(adj2v, k))
-    if include_ghost_edges 
-        return i, j 
-    else 
-        while is_ghost_edge(i, j)
-            i, j = rand(get_edge(adj2v, k)) # Could give another ghost edge, or even the same edge, but that's ok for now. Won't be too often.
-        end
-    end
-    return i, j
-end
-
-"""
-    select_initial_triangle(q, adj::Adjacent{I, E}, adj2v, k, pts) where {I, E}
+    select_initial_triangle(q, adj::Adjacent{I, E}, adj2v, DG, k, pts) where {I, E}
 
 Given a query point `q` and an initial point `k` (from e.g. [`select_initial_point`](@ref)),
 finds the triangle `(i, j, k)` to start the jump and march algorithm (see [`jump_and_march`](@ref)) in.
 Returns `p, i, j, pᵢ, pⱼ` such that `pᵢ = get_point(pts, i)`, `pⱼ = get_point(pts, j)`, 
 `p = get_point(pts, k)`, and `pᵢ` is to the left of `pq` and `pⱼ` is to the right of `pq`.
 """
-function select_initial_triangle(q, adj::Adjacent{I,E}, adj2v, k, pts) where {I,E}
+function select_initial_triangle(q, adj::Adjacent{I,E}, adj2v, DG, k, pts) where {I,E}
+    #if !is_boundary_point(k, adj, DG)
+    return select_initial_triangle_interior_start(q, adj, adj2v, DG, k, pts)
+    #end
+end
+"""
+    select_initial_triangle_interior_start(q, adj::Adjacent{I,E}, adj2v, DG, k, pts) where {I,E}
+
+Selects an initial triangle, assuming that the point that we are starting at is in the interior of the triangulation.
+"""
+function select_initial_triangle_interior_start(q, adj::Adjacent{I,E}, adj2v, DG, k, pts) where {I,E}
     p = get_point(pts, k)
-    i, j = select_random_edge(k, adj2v; include_ghost_edges=false)
+    i, j = rand(get_edge(adj2v, k))
     pᵢ = get_point(pts, i)
     pⱼ = get_point(pts, j)
     # Find the initial triangle to start in
-    if orient(p, q, pⱼ) == I(1)
-        while orient(p, q, pᵢ) == I(1)
+    if orient(p, q, pⱼ) == 1
+        while orient(p, q, pᵢ) == 1
             j = i
             pⱼ = pᵢ
             i = get_edge(adj, i, k)
-            i == I(BoundaryIndex) && return select_initial_triangle(q, adj, adj2v, j, pts)
+            i == I(BoundaryIndex) && return select_initial_triangle(q, adj, adj2v, DG, j, pts)
             pᵢ = get_point(pts, i)
         end
     else
-        while orient(p, q, pⱼ) == I(-1)
+        while orient(p, q, pⱼ) == -1
             i = j
             pᵢ = pⱼ
             j = get_edge(adj, k, j)
-            j == I(BoundaryIndex) && return select_initial_triangle(q, adj, adj2v, i, pts)
+            j == I(BoundaryIndex) && return select_initial_triangle(q, adj, adj2v, DG, i, pts)
             pⱼ = get_point(pts, j)
         end
     end
-    # Now do the straight line search 
     i, j = j, i
     pᵢ, pⱼ = pⱼ, pᵢ # pᵢ is left of pq, pⱼ is right of pq 
     return p, i, j, pᵢ, pⱼ
 end
+"""
+    check_interior_edge_intersections(q, adj::Adjacent{I, E}, DG, k, pts) where {I, E}
+
+Checks if any of the interior edges starting from the boundary point `get_point(pts, k)` 
+intersect the line `pq`, where `p = get_point(pts, k)`. If such an intersection exists, 
+returns `(i, j, true)` where `(i, j)` is the edge that intersections `pq`, otherwise returns `(0, 0, false)`.
+"""
+function check_interior_edge_intersections(q, adj::Adjacent{I,E}, DG, k, pts) where {I,E}
+    p = get_point(pts, k)
+    i = get_edge(adj, k, I(BoundaryIndex)) # Note that this is at the left
+    pᵢ = get_point(pts, i)
+    o1 = orient(p, q, pᵢ) # Is pᵢ to the left of pq?
+    for _ in 1:(deg(graph(DG), k)-2) # There are deg(graph(DG), k) neighbours, but one of those is ∂, and we've already picked one, hence why we subtract 2.
+        j = get_edge(adj, k, i)
+        pⱼ = get_point(pts, j)
+        o2 = orient(p, q, pⱼ) # Is pⱼ to the left of pq?
+        if ExactPredicates.opposite_signs(o1, o2) # If they're opposite signs, we have an intersection 
+            if meet(p, q, pᵢ, pⱼ) == 1 # Does pq intersect pᵢpⱼ? It's possible that we have opposite signs but q is on the other side, so we do need to check this.
+                return i, j, true
+            end
+        end
+        o1, i, pᵢ = o2, j, pⱼ # Step onto the next triangle
+    end
+    return I(0), I(0), false
+end
+"""
+    check_query_point_in_interior_triangle(q, adj::Adjacent{I, E}, k, pts) where {I, E}
+
+Checks if the query point `q` is inside one of the solid triangles with `k` as one of its vertices, checking 
+only the boundary edges for this. Returns `(u, v, w, true)` if the query point is inside `(u, v, w)`, and 
+`(0, 0, 0, false)` if the query point is in none of the checked triangles. This function only works 
+if the result of [`check_interior_edge_intersections`](@ref) fails to return an edge.
+"""
+function check_query_point_in_interior_triangle(q, adj::Adjacent{I,E}, k, pts) where {I,E}
+    p = get_point(pts, k)
+    i = get_edge(adj, k, I(BoundaryIndex)) # To the left of p
+    j = get_edge(adj, I(BoundaryIndex), k) # To the right of p 
+    pᵢ, pⱼ = get_point(pts, i, j)
+    if orient(p, pᵢ, q) == 1 # if q is left of ppᵢ
+        r = get_edge(adj, k, i)
+        pᵣ = get_point(pts, r)
+        if orient(pᵣ, p, q) == 1 # Just being to the left of the above edge isn't enough.
+            return k, i, r, true
+        end
+    end
+    if orient(pⱼ, p, q) == 1 # if q is left of pⱼp
+        r = get_edge(adj, j, k)
+        pᵣ = get_point(pts, r)
+        if orient(p, pᵣ, q) == 1
+            return j, k, r, true
+        end
+    end
+    return I(0), I(0), I(0), false
+end
+"""
+    straight_line_search_ghost_triangles(q, adj::Adjacent{I, E}, k, pts) where {I, E}
+
+Finds the ghost triangle containing `q`, starting at the `k`th point `get_point(pts, k)`, assuming 
+that `get_point(pts, k)` is on the boundary of the triangulation and `q` is outside of the triangulation. 
+The returned value is the boundary edge `(i, j)` so that the ghost triangle `(i, j, $BoundaryIndex)` is the 
+one that contains `q`. If `q` is inside the triangulation, the returned value is meaningless.
+"""
+function straight_line_search_ghost_triangles(q, adj::Adjacent{I,E}, k, pts) where {I,E}
+    pc = get_point(pts, I(BoundaryIndex))
+    pᵢ = get_point(pts, k)
+    i = k
+    if orient(pc, pᵢ, q) == 1 # This means that q is left of the ghost edge through pᵢ = pₖ, so we'll rotate left around the boundary
+        j = get_edge(adj, i, I(BoundaryIndex))
+        pⱼ = get_point(pts, j)
+        while orient(pc, pⱼ, q) == 1
+            i = j
+            pᵢ = pⱼ
+            j = get_edge(adj, i, I(BoundaryIndex))
+            pⱼ = get_point(pts, j)
+        end
+        return j, i # In this case, we need to swap the orientation so that i, j is a boundary edge 
+    else # if orient(pc, pᵢ, q) == -1, which means that q is right of the ghost edge through pᵢ = pₖ, so we'll rotate right around the boundary 
+        j = get_edge(adj, I(BoundaryIndex), i)
+        pⱼ = get_point(pts, j)
+        while orient(pc, pⱼ, q) == -1
+            i = j
+            pᵢ = pⱼ
+            j = get_edge(adj, I(BoundaryIndex), i)
+            pⱼ = get_point(pts, j)
+        end
+        return i, j
+    end
+end
 
 """
-    jump_and_march(q, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex{I,Es,E}, pts;
+    jump_and_march(q, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex{I,Es,E}, DG, pts;
         pt_idx = eachindex(pts),
         k = select_initial_point(pts, q), 
         TriangleType::Type{V}=NTuple{3,Int64}) where {I,E,Es,V}
@@ -117,14 +195,15 @@ end
 Uses the jump and march algorithm to locate the triangle `T` in the triangulation that 
 contains the query point, starting at the vertex `k`.
 """
-function jump_and_march(q, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex{I,Es,E}, pts;
+function jump_and_march(q, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex{I,Es,E}, DG, pts;
     pt_idx=eachindex(pts), m=ceil(Int64, length(pt_idx)^(1 / 3)),
     k=select_initial_point(pts, q; m, pt_idx),
     TriangleType::Type{V}=NTuple{3,Int64}) where {I,E,Es,V}
-    p, i, j, pᵢ, pⱼ = select_initial_triangle(q, adj, adj2v, k, pts)
+    p, i, j, pᵢ, pⱼ = select_initial_triangle(q, adj, adj2v, DG, k, pts)
+    # Now do the straight line search 
     while orient(pᵢ, pⱼ, q) == I(1)
         k = get_edge(adj, i, j)
-        k == I(BoundaryIndex) && return jump_and_march(q, adj, adj2v, pts; TriangleType, k=i)
+        k == I(BoundaryIndex) && return jump_and_march(q, adj, adj2v, DG, pts; TriangleType, k=i)
         pₖ = get_point(pts, k)
         if orient(p, q, pₖ) == I(-1)
             j = k
@@ -138,9 +217,9 @@ function jump_and_march(q, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex{I,Es,E}, p
     k = get_edge(adj, j, i)
     return construct_triangle(V, j, i, k)
 end
-function jump_and_march(q::I, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex{I,Es,E}, pts;
+function jump_and_march(q::I, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex{I,Es,E}, DG, pts;
     pt_idx=eachindex(pts), m=ceil(Int64, length(pt_idx)^(1 / 3)),
     k=select_initial_point(pts, q; m, pt_idx),
     TriangleType::Type{V}=NTuple{3,Int64}) where {I,E,Es,V}
-    return jump_and_march(get_point(pts, q), adj, adj2v, pts; k, TriangleType)
+    return jump_and_march(get_point(pts, q), adj, adj2v, DG, pts; k, TriangleType)
 end
