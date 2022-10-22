@@ -117,9 +117,9 @@ function check_interior_edge_intersections(q, adj::Adjacent{I,E}, DG, k, pts) wh
         o2 = orient(p, q, pⱼ) # Is pⱼ to the left of pq?
         if ExactPredicates.opposite_signs(o1, o2) # If they're opposite signs, we have an intersection 
             if meet(p, q, pᵢ, pⱼ) == 1 # Does pq intersect pᵢpⱼ? It's possible that we have opposite signs but q is on the other side, so we do need to check this. Note that we don't need this in the interior edge case because of the ability to completely rotate around.
-                return i, j, true, false
+            return j, i, true, false # Switch i, j so that pi is left of pq and pj is right of pq
             elseif orient(pⱼ, p, q) == 1 && orient(p, pᵢ, q) == 1 # It may not intersect, but it could be inside the triangle. 
-                 return i, j, false, true
+                return i, j, false, true
             end
         end
         o1, i, pᵢ = o2, j, pⱼ # Step onto the next triangle
