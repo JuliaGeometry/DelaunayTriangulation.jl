@@ -3,6 +3,19 @@
 ## PREDICATES
 ##
 ############################################
+@testset "Orient with coordinates rather than tuples" begin
+    for _ in 1:2381
+        pᵢ = 62rand(2)
+        pⱼ = 37rand(2)
+        pₖ = 87rand(2)
+        @test orient(pᵢ, pⱼ, pₖ) == orient(pᵢ..., pⱼ..., pₖ...)
+        pᵢ = 13 .* Tuple(rand(2))
+        pⱼ = 5 .* Tuple(rand(2))
+        pₖ = 53 .* Tuple(rand(2))
+        @test orient(pᵢ, pⱼ, pₖ) == orient(pᵢ..., pⱼ..., pₖ...)
+    end
+end
+
 @testset "Orientation of a triangle's points" begin
     p0 = Float64[5, 5]
     p1 = Float64[4.5, 2.5]

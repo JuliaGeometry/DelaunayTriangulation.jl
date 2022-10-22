@@ -1,3 +1,7 @@
+function ExactPredicates.orient(pᵢx, pᵢy, pⱼx, pⱼy, pₖx, pₖy)
+    return orient((pᵢx, pᵢy), (pⱼx, pⱼy), (pₖx, pₖy))
+end
+
 """
     isoriented(T, pts)
 
