@@ -1,6 +1,6 @@
 """
-is_boundary_edge(i, j, adj::Adjacent{I, E}) where {I, E}
-is_boundary_edge(i, j, adj2v::Adjacent{I, E}) where {I, E}
+    is_boundary_edge(i, j, adj::Adjacent{I, E}) where {I, E}
+    is_boundary_edge(i, j, adj2v::Adjacent{I, E}) where {I, E}
 
 Returns `true` if the edge `(i, j)` is a boundary edge of the triangulation, 
 and `false` otherwise.
@@ -18,6 +18,16 @@ end
 function is_boundary_edge(i, j, adj2v::Adjacent2Vertex{I,Es,E}) where {I,Es,E}
     ij = construct_edge(E, i, j)
     return is_boundary_edge(ij, adj2v)
+end
+
+"""
+    is_ghost_edge(i::I, j::I) where {I, E}
+
+Returns `true` if the edge `(i, j)` is a ghost edge of the triangulation, 
+and `false` otherwise.
+"""
+function is_ghost_edge(i::I, j::I) where {I}
+    return i == I(BoundaryIndex) || j == I(BoundaryIndex)
 end
 
 """
@@ -245,10 +255,10 @@ function compute_centroid!(pts)
     for p in pts
         x = getx(p)
         y = gety(p)
-        CentroidCoordinates.x += x 
-        CentroidCoordinates.y += y 
+        CentroidCoordinates.x += x
+        CentroidCoordinates.y += y
     end
-    CentroidCoordinates.x /= n 
+    CentroidCoordinates.x /= n
     CentroidCoordinates.y /= n
     CentroidCoordinates.n = n
     return nothing

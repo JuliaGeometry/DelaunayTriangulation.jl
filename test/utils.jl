@@ -332,3 +332,12 @@ end
     DT.clear_empty_points!(DG)
     @test DG.graph == relabel(UndirectedGraph([1 1; 1 0]), Dict((1,2).=>(1,3)))
 end
+
+@testset "Can we correctly identify a ghost edge?" begin 
+    @test DT.is_ghost_edge(2, 0)
+    @test DT.is_ghost_edge(0, 2)
+    @test DT.is_ghost_edge(0, 5)
+    @test !DT.is_ghost_edge(5, 3)
+    @test !DT.is_ghost_edge(3, 5)
+    @test !DT.is_ghost_edge(7, 13)
+end
