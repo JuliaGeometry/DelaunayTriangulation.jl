@@ -208,6 +208,10 @@ end
     DT.add_edge!(adj, 2, 3, 7)
     DT.add_edge!(adj, 5, 7, 17)
     @test collect(DT.edges(adj)) == [(2, 3), (5, 7)] || collect(DT.edges(adj)) == [(5, 7), (2, 3)]
+
+    @inferred DT.get_edge(adj, 2, 3)
+    @inferred DT.get_edge(adj, (2,3))
+    @inferred DT.get_edge(adj, -3, 50)
 end
 
 @testset "Adjacent2Vertex" begin

@@ -14,13 +14,13 @@ field `adjacent` as a `Dict{E, I}`, where `E` is the edge type and `I` is the
 integer type.
 """
 struct Adjacent{I,E} # Adjacent{IntegerType, EdgeType}
-    adjacent::DefaultDict{E,I}
+    adjacent::DefaultDict{E,I,I}
     function Adjacent{I,E}() where {I,E}
-        A = DefaultDict{E,I}(I(DefaultAdjacentValue))
+        A = DefaultDict{E,I,I}(I(DefaultAdjacentValue))
         adj = new{I,E}(A)
         return adj
     end
-    Adjacent(adj::DefaultDict{E, I}) where {I, E} = new{I, E}(adj)
+    Adjacent(adj::DefaultDict{E,I,I}) where {I,E} = new{I,E}(adj)
 end
 adjacent(adj::Adjacent) = adj.adjacent
 edges(adj::Adjacent) = keys(adjacent(adj))
@@ -32,9 +32,9 @@ edges(adj::Adjacent) = keys(adjacent(adj))
 Returns the vertex `w` such that `(u, v, w)` is a positively oriented triangle, indexing 
 the adjacent map `adj` at the key `(u, v)`.
 """
-get_edge(adj::Adjacent, uv) = adjacent(adj)[uv]
+@inline get_edge(adj::Adjacent{I,E}, uv::E) where {I,E} = adjacent(adj)[uv]::I
 @doc (@doc get_edge(::Adjacent, ::Any))
-function get_edge(adj::Adjacent{I,E}, u, v) where {I,E}
+@inline function get_edge(adj::Adjacent{I,E}, u, v) where {I,E}
     uv = construct_edge(E, u, v)
     w = get_edge(adj, uv)
     return w
@@ -114,7 +114,7 @@ struct Adjacent2Vertex{I,Es,E}
         TA2V = new{I,Es,E}(D)
         return TA2V
     end
-    Adjacent2Vertex(adj2v::Dict{I, Es}) where {I, Es} = new{I,Es,eltype(iterate(adj2v)[1][2])}(adj2v)
+    Adjacent2Vertex(adj2v::Dict{I,Es}) where {I,Es} = new{I,Es,eltype(iterate(adj2v)[1][2])}(adj2v)
 end
 adjacent2vertex(adj2v::Adjacent2Vertex) = adj2v.adjacent2vertex
 
