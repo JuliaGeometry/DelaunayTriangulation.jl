@@ -101,8 +101,10 @@ end
     check_interior_edge_intersections(q, adj::Adjacent{I, E}, DG, k, pts) where {I, E}
 
 Checks if any of the interior edges starting from the boundary point `get_point(pts, k)` 
-intersect the line `pq`, where `p = get_point(pts, k)`. If such an intersection exists, 
-returns `(i, j, true)` where `(i, j)` is the edge that intersections `pq`, otherwise returns `(0, 0, false)`.
+intersect the line `pq`, where `p = get_point(pts, k)`. Returns:
+- `(i, j, true, false)`: If `pq` intersects the edge `(i, j)`.
+- `(i, j, false, true)`: If `pq` does not intersect `(i, j)`, but instead `(i, j, k)` contains `q`.
+- `(0, 0, false, false)`: If `pq` does not intersect `(i, j)`.
 """
 function check_interior_edge_intersections(q, adj::Adjacent{I,E}, DG, k, pts) where {I,E}
     p = get_point(pts, k)
@@ -114,42 +116,15 @@ function check_interior_edge_intersections(q, adj::Adjacent{I,E}, DG, k, pts) wh
         pⱼ = get_point(pts, j)
         o2 = orient(p, q, pⱼ) # Is pⱼ to the left of pq?
         if ExactPredicates.opposite_signs(o1, o2) # If they're opposite signs, we have an intersection 
-            if meet(p, q, pᵢ, pⱼ) == 1 # Does pq intersect pᵢpⱼ? It's possible that we have opposite signs but q is on the other side, so we do need to check this.
-                return i, j, true
+            if meet(p, q, pᵢ, pⱼ) == 1 # Does pq intersect pᵢpⱼ? It's possible that we have opposite signs but q is on the other side, so we do need to check this. Note that we don't need this in the interior edge case because of the ability to completely rotate around.
+                return i, j, true, false
+            elseif orient(pⱼ, p, q) == 1 && orient(p, pᵢ, q) == 1 # It may not intersect, but it could be inside the triangle. 
+                 return i, j, false, true
             end
         end
         o1, i, pᵢ = o2, j, pⱼ # Step onto the next triangle
     end
-    return I(0), I(0), false
-end
-"""
-    check_query_point_in_interior_triangle(q, adj::Adjacent{I, E}, k, pts) where {I, E}
-
-Checks if the query point `q` is inside one of the solid triangles with `k` as one of its vertices, checking 
-only the boundary edges for this. Returns `(u, v, w, true)` if the query point is inside `(u, v, w)`, and 
-`(0, 0, 0, false)` if the query point is in none of the checked triangles. This function only works 
-if the result of [`check_interior_edge_intersections`](@ref) fails to return an edge.
-"""
-function check_query_point_in_interior_triangle(q, adj::Adjacent{I,E}, k, pts) where {I,E}
-    p = get_point(pts, k)
-    i = get_edge(adj, k, I(BoundaryIndex)) # To the left of p
-    j = get_edge(adj, I(BoundaryIndex), k) # To the right of p 
-    pᵢ, pⱼ = get_point(pts, i, j)
-    if orient(p, pᵢ, q) == 1 # if q is left of ppᵢ
-        r = get_edge(adj, k, i)
-        pᵣ = get_point(pts, r)
-        if orient(pᵣ, p, q) == 1 # Just being to the left of the above edge isn't enough.
-            return k, i, r, true
-        end
-    end
-    if orient(pⱼ, p, q) == 1 # if q is left of pⱼp
-        r = get_edge(adj, j, k)
-        pᵣ = get_point(pts, r)
-        if orient(p, pᵣ, q) == 1
-            return j, k, r, true
-        end
-    end
-    return I(0), I(0), I(0), false
+    return I(0), I(0), false, false
 end
 """
     straight_line_search_ghost_triangles(q, adj::Adjacent{I, E}, k, pts) where {I, E}
