@@ -67,11 +67,11 @@ end
 
     p = [[1.0, 2.0], [5.0, 2.0], [5.0, 1.0], [17.0, 2.0]]
     @test DT.number_type(p) == Float64
-    @test DT.get_point(p, 1) == [1.0, 2.0]
-    @test DT.get_point(p, 2) == [5.0, 2.0]
-    @test DT.get_point(p, 3) == [5.0, 1.0]
-    @test DT.get_point(p, 4) == [17.0, 2.0]
-    @test DT.get_point(p, 1, 2, 3, 4) == ([1.0, 2.0], [5.0, 2.0], [5.0, 1.0], [17.0, 2.0])
+    @test DT.get_point(p, 1) == (1.0, 2.0)
+    @test DT.get_point(p, 2) == (5.0, 2.0)
+    @test DT.get_point(p, 3) == (5.0, 1.0)
+    @test DT.get_point(p, 4) == (17.0, 2.0)
+    @test DT.get_point(p, 1, 2, 3, 4) == ((1.0, 2.0), (5.0, 2.0), (5.0, 1.0), (17.0, 2.0))
 
     p₁ = [2.0, 5.0]
     p₂ = [5.0, 1.7]

@@ -68,22 +68,23 @@ function gety end
 
 getx(p::Base.AbstractVecOrTuple) = p[1]
 gety(p::Base.AbstractVecOrTuple) = p[2]
-number_type(::T) where {T<:Number} = T
-number_type(p::Base.AbstractVecOrTuple) = number_type(p[begin])
+@inline number_type(::T) where {T<:Number} = T
+@inline number_type(p::Base.AbstractVecOrTuple) = number_type(p[begin])
 
 function get_point end      # get_point(::Points, ::I)
 
 @inline function get_point(pts::AbstractVector, i::I) where I
+    T = number_type(pts)
     if i ≥ I(FirstPointIndex)
-        return pts[i]
+        return NTuple{2,T}(pts[i])
     elseif i == I(BoundaryIndex) # this is useful when working with the Bowyer-Watson algorithm, don't take this as meaning the boundary is represented as the centroid
-        return (CentroidCoordinates.x, CentroidCoordinates.y) # Might not be compatible with the points a user actually uses, but this only gets used in ExactPredicates which converts everything to a Tuple anyway!
+        return NTuple{2,T}((CentroidCoordinates.x, CentroidCoordinates.y)) # Might not be compatible with the points a user actually uses, but this only gets used in ExactPredicates which converts everything to a Tuple anyway!
     elseif i == I(LowerRightBoundingIndex)
-        return lower_right_bounding_triangle_coords(pts)
+        return NTuple{2,T}(lower_right_bounding_triangle_coords(pts))
     elseif i == I(LowerLeftBoundingIndex)
-        return lower_left_bounding_triangle_coords(pts)
+        return NTuple{2,T}(lower_left_bounding_triangle_coords(pts))
     elseif i == I(UpperBoundingIndex)
-        return upper_bounding_triangle_coords(pts)
+        return NTuple{2,T}(upper_bounding_triangle_coords(pts))
     end
     throw(BoundsError(pts, i))
 end

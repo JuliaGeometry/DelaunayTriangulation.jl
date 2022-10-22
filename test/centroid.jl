@@ -35,7 +35,7 @@ end
         if i == 0
             @test DT.get_point(pts, i) == (DT.CentroidCoordinates.x, DT.CentroidCoordinates.y)
         else
-            @test DT.get_point(pts, i) == pts[i]
+            @test DT.get_point(pts, i) == NTuple{2, Float64}(pts[i])
         end
     end
 end
