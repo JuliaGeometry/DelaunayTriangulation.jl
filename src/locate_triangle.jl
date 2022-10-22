@@ -81,7 +81,7 @@ Returns `p, i, j, pᵢ, pⱼ` such that `pᵢ = get_point(pts, i)`, `pⱼ = get_
 """
 function select_initial_triangle(q, adj::Adjacent{I,E}, adj2v, k, pts) where {I,E}
     p = get_point(pts, k)
-    i, j = rand(get_edge(adj2v, k))
+    i, j = select_random_edge(k, adj2v; include_ghost_edges=false)
     pᵢ = get_point(pts, i)
     pⱼ = get_point(pts, j)
     # Find the initial triangle to start in
