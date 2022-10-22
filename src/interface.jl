@@ -68,10 +68,12 @@ function gety end
 
 getx(p::Base.AbstractVecOrTuple) = p[1]
 gety(p::Base.AbstractVecOrTuple) = p[2]
+number_type(::T) where {T<:Number} = T
+number_type(p::Base.AbstractVecOrTuple) = number_type(p[begin])
 
 function get_point end      # get_point(::Points, ::I)
 
-function get_point(pts::AbstractVector, i::I) where I
+@inline function get_point(pts::AbstractVector, i::I) where I
     if i ≥ I(FirstPointIndex)
         return pts[i]
     elseif i == I(BoundaryIndex) # this is useful when working with the Bowyer-Watson algorithm, don't take this as meaning the boundary is represented as the centroid
@@ -85,7 +87,7 @@ function get_point(pts::AbstractVector, i::I) where I
     end
     throw(BoundsError(pts, i))
 end
-function get_point(pts::AbstractVector, i::Vararg{I,N}) where {I,N}
+@inline function get_point(pts::AbstractVector, i::Vararg{I,N}) where {I,N}
     return ntuple(j -> get_point(pts, i[j]), Val(N))
 end
 function point_stats(points)

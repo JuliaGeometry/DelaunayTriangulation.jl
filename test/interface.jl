@@ -28,9 +28,13 @@ end
     p = [1.0, 5.0]
     @test DT.getx(p) == 1.0
     @test DT.gety(p) == 5.0
+    @test DT.number_type(p) == Float64
     p = (1.388182, 5.0001)
     @test DT.getx(p) == 1.388182
     @test DT.gety(p) == 5.0001
+    @test DT.number_type(p) == Float64
+    p = (1.398219f0, 5.09291f0)
+    @test DT.number_type(p) == Float32
 end
 
 @testset "Triangles" begin
@@ -49,6 +53,7 @@ end
 
 @testset "Points" begin
     p = [(1.0, 2.0), (5.0, 2.0), (5.0, 1.0), (17.0, 2.0)]
+    @test DT.number_type(p) == Float64
     @test DT.get_point(p, 1) == (1.0, 2.0)
     @test DT.get_point(p, 2) == (5.0, 2.0)
     @test DT.get_point(p, 3) == (5.0, 1.0)
@@ -58,12 +63,22 @@ end
     @test p == [(1.0, 2.0), (5.0, 2.0), (5.0, 1.0), (17.0, 2.0), (1.0, 5.0)]
     DT.add_point!(p, (1.0, 2.0), (5.0, 17.0))
     @test p == [(1.0, 2.0), (5.0, 2.0), (5.0, 1.0), (17.0, 2.0), (1.0, 5.0), (1.0, 2.0), (5.0, 17.0)]
+    @test DT.number_type(p) == Float64
+
+    p = [[1.0, 2.0], [5.0, 2.0], [5.0, 1.0], [17.0, 2.0]]
+    @test DT.number_type(p) == Float64
+    @test DT.get_point(p, 1) == [1.0, 2.0]
+    @test DT.get_point(p, 2) == [5.0, 2.0]
+    @test DT.get_point(p, 3) == [5.0, 1.0]
+    @test DT.get_point(p, 4) == [17.0, 2.0]
+    @test DT.get_point(p, 1, 2, 3, 4) == ([1.0, 2.0], [5.0, 2.0], [5.0, 1.0], [17.0, 2.0])
 
     p₁ = [2.0, 5.0]
     p₂ = [5.0, 1.7]
     p₃ = [2.2, 2.2]
     p₄ = [-17.0, 5.0]
     pts = [p₁, p₂, p₃, p₄]
+    @test DT.number_type(p) == Float64
     @test DT.get_point(pts, DT.LowerRightBoundingIndex)[1] ≈ -6.0 + DT.BoundingTriangleShift * 22.0 rtol = 1e-1
     @test DT.get_point(pts, DT.LowerRightBoundingIndex)[2] ≈ 3.35 - 22.0 rtol = 1e-1
     @test DT.get_point(pts, DT.LowerLeftBoundingIndex)[1] ≈ -6.0 - DT.BoundingTriangleShift * 22.0 rtol = 1e-1
@@ -76,4 +91,7 @@ end
     # @test_throws BoundsError DT.get_point(pts, 0)
     @test_throws BoundsError DT.get_point(pts, -5)
     @test_throws BoundsError DT.get_point(pts, 17)
+
+    pts = [(1.0f0, 2.0f0), (2.1f0, 2.9f0)]
+    @test DT.number_type(pts) == Float32
 end
