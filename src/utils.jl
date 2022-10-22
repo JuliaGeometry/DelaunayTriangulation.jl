@@ -45,12 +45,20 @@ function edge_exists(i, j, adj::Adjacent{I,E}) where {I,E}
 end
 
 """
-    is_boundary_point(k, DG::DelaunayGraph{I}) where {I}
+    is_boundary_point(u, adj, DG::DelaunayGraph{I}) where {I}
 
-Tests if the point `k` is on the boundary of the triangulation with graph `DG`.
+Tests if the point `u` is on the boundary of the triangulation with graph `DG` and
+adjacent map `adj`.
 """
-function is_boundary_point(k, DG::DelaunayGraph{I}) where {I}
-    return k ∈ get_neighbour(DG, I(BoundaryIndex))
+function is_boundary_point(u, adj, DG::DelaunayGraph{I}) where {I}
+    if I(BoundaryIndex) ∈ graph(DG).V
+        return u ∈ get_neighbour(DG, I(BoundaryIndex))
+    else
+        for v in get_neighbour(DG, u)
+            is_boundary_edge(u, v, adj) && return true
+        end
+        return false
+    end
 end
 
 """

@@ -343,6 +343,7 @@ end
 end
 
 @testset "Can we correctly identify a boundary point?" begin
+    # Testing when ∂ ∈ DG.graph.V
     p1 = @SVector[-3.32, 3.53]
     p2 = @SVector[-5.98, 2.17]
     p3 = @SVector[-6.36, -1.55]
@@ -377,7 +378,14 @@ end
         DT.add_triangle!(i, j, k, T, adj, adj2v, DG; update_ghost_edges=true)
     end
     k = [9, 10, 5, 4, 3, 2, 1]
-    @test all(DT.is_boundary_point(k, DG) for k in k)
+    @test all(DT.is_boundary_point(k, adj, DG) for k in k)
     k = [6, 7, 8, 11]
-    @test all(!DT.is_boundary_point(k, DG) for k in k)
+    @test all(!DT.is_boundary_point(k, adj, DG) for k in k)
+
+    # Testing when ∂ ∉ DG.graph.V 
+    T, adj, adj2v, DG, HG = DT.triangulate_berg(pts)
+    k = [9, 10, 5, 4, 3, 2, 1]
+    @test all(DT.is_boundary_point(k, adj, DG) for k in k)
+    k = [6, 7, 8, 11]
+    @test all(!DT.is_boundary_point(k, adj, DG) for k in k)
 end
