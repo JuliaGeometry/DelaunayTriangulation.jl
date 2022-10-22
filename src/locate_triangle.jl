@@ -53,6 +53,25 @@ function select_initial_point(pts, q::Integer; pt_idx=eachindex(pts), m=ceil(Int
 end
 
 """
+    select_random_edge(k, adj2v; include_ghost_edges = true)
+
+Selects a random edge out of triangles containing the `k`th point, where `adj2v` is 
+an `Adjacent2Vertex` map. If the edge selected cannot be a ghost edge, set 
+`include_ghost_edges=false`.
+"""
+function select_random_edge(k, adj2v; include_ghost_edges=true)
+    i, j = rand(get_edge(adj2v, k))
+    if include_ghost_edges 
+        return i, j 
+    else 
+        while is_ghost_edge(i, j)
+            i, j = rand(get_edge(adj2v, k)) # Could give another ghost edge, or even the same edge, but that's ok for now. Won't be too often.
+        end
+    end
+    return i, j
+end
+
+"""
     select_initial_triangle(q, adj::Adjacent{I, E}, adj2v, k, pts) where {I, E}
 
 Given a query point `q` and an initial point `k` (from e.g. [`select_initial_point`](@ref)),
@@ -60,7 +79,7 @@ finds the triangle `(i, j, k)` to start the jump and march algorithm (see [`jump
 Returns `p, i, j, pᵢ, pⱼ` such that `pᵢ = get_point(pts, i)`, `pⱼ = get_point(pts, j)`, 
 `p = get_point(pts, k)`, and `pᵢ` is to the left of `pq` and `pⱼ` is to the right of `pq`.
 """
-function select_initial_triangle(q, adj::Adjacent{I, E}, adj2v, k, pts) where {I, E}
+function select_initial_triangle(q, adj::Adjacent{I,E}, adj2v, k, pts) where {I,E}
     p = get_point(pts, k)
     i, j = rand(get_edge(adj2v, k))
     pᵢ = get_point(pts, i)
