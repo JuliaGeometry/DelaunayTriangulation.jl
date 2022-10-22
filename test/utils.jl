@@ -330,14 +330,54 @@ end
         ]
     ))
     DT.clear_empty_points!(DG)
-    @test DG.graph == relabel(UndirectedGraph([1 1; 1 0]), Dict((1,2).=>(1,3)))
+    @test DG.graph == relabel(UndirectedGraph([1 1; 1 0]), Dict((1, 2) .=> (1, 3)))
 end
 
-@testset "Can we correctly identify a ghost edge?" begin 
+@testset "Can we correctly identify a ghost edge?" begin
     @test DT.is_ghost_edge(2, 0)
     @test DT.is_ghost_edge(0, 2)
     @test DT.is_ghost_edge(0, 5)
     @test !DT.is_ghost_edge(5, 3)
     @test !DT.is_ghost_edge(3, 5)
     @test !DT.is_ghost_edge(7, 13)
+end
+
+@testset "Can we correctly identify a boundary point?" begin
+    p1 = @SVector[-3.32, 3.53]
+    p2 = @SVector[-5.98, 2.17]
+    p3 = @SVector[-6.36, -1.55]
+    p4 = @SVector[-2.26, -4.31]
+    p5 = @SVector[6.34, -3.23]
+    p6 = @SVector[-3.24, 1.01]
+    p7 = @SVector[0.14, -1.51]
+    p8 = @SVector[0.2, 1.25]
+    p9 = @SVector[1.0, 4.0]
+    p10 = @SVector[4.74, 2.21]
+    p11 = @SVector[2.32, -0.27]
+    pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11]
+    T = Set{NTuple{3,Int64}}()
+    adj = DT.Adjacent{Int64,NTuple{2,Int64}}()
+    adj2v = DT.Adjacent2Vertex{Int64,Set{NTuple{2,Int64}},NTuple{2,Int64}}()
+    DG = DT.DelaunayGraph{Int64}()
+    for (i, j, k) in (
+        (1, 2, 6),
+        (1, 6, 8),
+        (9, 1, 8),
+        (9, 8, 10),
+        (10, 8, 11),
+        (8, 7, 11),
+        (8, 6, 7),
+        (6, 2, 3),
+        (6, 3, 4),
+        (6, 4, 7),
+        (7, 4, 5),
+        (11, 7, 5),
+        (10, 11, 5)
+    )
+        DT.add_triangle!(i, j, k, T, adj, adj2v, DG; update_ghost_edges=true)
+    end
+    k = [9, 10, 5, 4, 3, 2, 1]
+    @test all(DT.is_boundary_point(k, DG) for k in k)
+    k = [6, 7, 8, 11]
+    @test all(!DT.is_boundary_point(k, DG) for k in k)
 end
