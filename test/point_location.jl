@@ -225,8 +225,10 @@ end
         q16, q17, q18, q19, q20]
     for (i, _qs) in enumerate(qs)
         for q in _qs
-            τ = jump_and_march(q, adj, adj2v, DG, pts; pt_idx=1:11)
-            @test τ == Ts[i] || τ == DT.shift_triangle_1(Ts[i]) || τ == DT.shift_triangle_2(Ts[i])
+            for k in 1:11
+                τ = jump_and_march(q, adj, adj2v, DG, pts; pt_idx=1:11, k=k)
+                @test τ == Ts[i] || τ == DT.shift_triangle_1(Ts[i]) || τ == DT.shift_triangle_2(Ts[i])
+            end
         end
     end
 end
