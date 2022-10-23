@@ -61,16 +61,6 @@ Returns `p, i, j, pᵢ, pⱼ` such that `pᵢ = get_point(pts, i)`, `pⱼ = get_
 `p = get_point(pts, k)`, and `pᵢ` is to the left of `pq` and `pⱼ` is to the right of `pq`.
 """
 function select_initial_triangle(q, adj::Adjacent{I,E}, adj2v, DG, k, pts) where {I,E}
-    #if !is_boundary_point(k, adj, DG)
-    return select_initial_triangle_interior_start(q, adj, adj2v, DG, k, pts)
-    #end
-end
-"""
-    select_initial_triangle_interior_start(q, adj::Adjacent{I,E}, adj2v, DG, k, pts) where {I,E}
-
-Selects an initial triangle, assuming that the point that we are starting at is in the interior of the triangulation.
-"""
-function select_initial_triangle_interior_start(q, adj::Adjacent{I,E}, adj2v, DG, k, pts) where {I,E}
     p = get_point(pts, k)
     i, j = rand(get_edge(adj2v, k))
     pᵢ = get_point(pts, i)
@@ -175,7 +165,7 @@ function jump_and_march(q, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex{I,Es,E}, D
     k=select_initial_point(pts, q; m, pt_idx),
     TriangleType::Type{V}=NTuple{3,Int64}) where {I,E,Es,V}
     if !is_boundary_point(k, adj, DG) || !triangulation_has_ghost_triangles(adj, adj2v) # If the triangulation does not have ghost triangles, we cannot use the methods below.
-        p, i, j, pᵢ, pⱼ = select_initial_triangle_interior_start(q, adj, adj2v, DG, k, pts)
+        p, i, j, pᵢ, pⱼ = select_initial_triangle(q, adj, adj2v, DG, k, pts)
     else
         i, j, intersects_edge, inside_triangle = check_interior_edge_intersections(q, adj, DG, k, pts)
         if inside_triangle
