@@ -280,3 +280,16 @@ function compute_centroid!(pts)
     CentroidCoordinates.n = n
     return nothing
 end
+
+"""
+    triangulation_has_ghost_triangles(adj::Adjacent{I, E}, adj2v) where {I, E}
+
+Tests if the triangulation with adjacent map `adj` and adjacent-to-vertex map `adj2v` contains 
+ghost triangles, returning `true` if so and `false` otherwise. This test is done by testing some 
+element of `get_edge(adj2v, $BoundaryIndex)`, say `(u, v)`, and then seeing if `(v, $BoundaryIndex)`
+is a valid key in `adj`.
+"""
+function triangulation_has_ghost_triangles(adj::Adjacent{I, E}, adj2v) where {I, E}
+    u, v = iterate(get_edge(adj2v, I(BoundaryIndex)))[1]
+    return edge_exists(v, I(BoundaryIndex), adj)
+end 
