@@ -110,6 +110,8 @@ function check_interior_edge_intersections(q, adj::Adjacent{I,E}, DG, k, pts) wh
                 return j, i, true, false # Switch i, j so that pi is left of pq and pj is right of pq
             elseif orient(pⱼ, p, q) == 1 && orient(p, pᵢ, q) == 1 # It may not intersect, but it could be inside the triangle. 
                 return i, j, false, true
+            else 
+                return I(0), I(0), false, false # q must be on the otherside of p away from the interior, meaning it's in the exterior
             end
         end
         o1, i, pᵢ = o2, j, pⱼ # Step onto the next triangle
