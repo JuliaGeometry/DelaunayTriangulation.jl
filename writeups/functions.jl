@@ -11,7 +11,7 @@ import DataStructures: DefaultDict
 function triplot!(ax, T, pts; markersize=11, kwargs...)
     Tmat = zeros(Int64, length(T), 3)
     tri_length = 0
-    for (i, T) in enumerate(T)
+    for T in T
         if !any(==(DT.BoundaryIndex), (geti(T), getj(T), getk(T)))
             tri_length += 1
             Tmat[tri_length, :] .= [geti(T), getj(T), getk(T)]
