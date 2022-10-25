@@ -37,7 +37,7 @@ function triangulate_berg(pts;
     adj2v = Adjacent2Vertex{I,Es,E}()
     DG = DelaunayGraph{I}()
     HG = HistoryGraph{V}()
-    add_triangle!(I(-1), I(-2), I(-3), T, adj, adj2v, DG, HG)
+    add_triangle!(I(LowerRightBoundingIndex), I(UpperBoundingIndex), I(LowerLeftBoundingIndex), T, adj, adj2v, DG, HG)
     for r in pt_order
         add_point_berg!(T, adj, adj2v, DG, HG, pts, r)
     end
