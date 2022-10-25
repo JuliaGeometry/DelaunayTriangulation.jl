@@ -35,9 +35,12 @@ end
 
 Returns `true` if the triangle `T` is a ghost triangle.
 """
+function is_ghost_triangle(i, j, k)
+    return is_ghost_edge(i, j) || is_ghost_edge(j, k) || is_ghost_edge(k, i)
+end
 function is_ghost_triangle(T) 
     i, j, k = indices(T)
-    return is_ghost_edge(i, j) || is_ghost_edge(j, k) || is_ghost_edge(k, i)
+    return is_ghost_triangle(i, j, k)
 end
 
 """

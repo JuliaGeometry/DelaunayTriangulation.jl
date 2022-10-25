@@ -448,6 +448,10 @@ end
     @test DT.is_ghost_triangle(T)
     @test DT.is_ghost_triangle(DT.shift_triangle_1(T))
     @test DT.is_ghost_triangle(DT.shift_triangle_2(T))
+    @test DT.is_ghost_triangle(1, 2, 0)
+    @test DT.is_ghost_triangle(0, 5, 3)
+    @test DT.is_ghost_triangle(5, 0, 1)
+    @test !DT.is_ghost_triangle(1, 3, 7)
 end
 
 @testset "Can we correctly rotate ghost triangles into the standard boundary configuration?" begin
