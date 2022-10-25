@@ -64,7 +64,7 @@ a triangulation. That is, the initial point will not be `q`.
 """
 function select_initial_point(pts, q::Integer; pt_idx=eachindex(pts), m=ceil(Int64, length(pt_idx)^(1 / 3)),
     try_points=())
-    return select_initial_point(pts, get_point(pts, q); m, pt_idx)
+    return select_initial_point(pts, get_point(pts, q); m, pt_idx, try_points)
 end
 
 """

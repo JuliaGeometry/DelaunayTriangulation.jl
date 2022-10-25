@@ -238,6 +238,8 @@ end
     for k in eachindex(pts) # If we start at the point, we should get that point back
         j = DT.select_initial_point(pts, pts[k]; try_points=k)
         @test j == k
+        j = DT.select_initial_point(pts, k; try_points=k)
+        @test j == k
     end
     for k in eachindex(pts) # Starting at the closest point that isn't the point itself
         diffs = [pts[k] - p for p in pts[setdiff(eachindex(pts), k)]]
@@ -245,6 +247,8 @@ end
         norm_diffs = [norm_diffs[1:(k-1)]..., Inf, norm_diffs[(k):end]...] # so argmin is the correct index in eachindex(pts)
         i = argmin(norm_diffs)
         j = DT.select_initial_point(pts, pts[k]; pt_idx=setdiff(eachindex(pts), k), try_points=i)
+        @test j == i
+        j = DT.select_initial_point(pts, k; pt_idx=setdiff(eachindex(pts), k), try_points=i)
         @test j == i
     end
 end
