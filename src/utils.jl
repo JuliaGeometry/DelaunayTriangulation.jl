@@ -91,6 +91,22 @@ function choose_uvw(e1, e2, e3, i, j, k)
     end
 end
 
+"""
+    rotate_triangle_to_boundary_form(T)
+
+This rotates the ghost triangle `T = (i, j, k)` so that it takes the form 
+`T = (u, v, $BoundaryIndex)`. This change is done out-of-place.
+"""
+function rotate_ghost_triangle_to_boundary_form(T::V) where{V}
+    i, j, k = indices(T)
+    e1 = is_ghost_edge(i, j)
+    e2 = is_ghost_edge(j, k)
+    e3 = is_ghost_edge(k, i)
+    u, v, w = choose_uvw(!e1, !e2, !e3, i, j, k)
+    rotated_T = construct_triangle(V, u, v, w)
+    return rotated_T
+end
+
 function is_delaunay(adj, pts)
     tri_edges = edges(adj)
     for (i, j) in tri_edges
