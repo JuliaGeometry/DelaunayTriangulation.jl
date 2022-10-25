@@ -460,4 +460,13 @@ end
     T = (1, 0, 7)
     newT = DT.rotate_ghost_triangle_to_boundary_form(T)
     @test newT == (7, 1, 0)
+    i, j, k = 3, 5, 0
+    u, v, w = DT.rotate_ghost_triangle_to_boundary_form(i, j, k)
+    @test (u, v, w) == (3, 5, 0)
+    i, j, k = 0, 4, 5
+    u, v, w = DT.rotate_ghost_triangle_to_boundary_form(i, j, k)
+    @test (u, v, w) == (4, 5, 0)
+    i, j, k = 1, 0, 7
+    u, v, w = DT.rotate_ghost_triangle_to_boundary_form(i, j, k)
+    @test (u, v, w) == (7, 1, 0)
 end
