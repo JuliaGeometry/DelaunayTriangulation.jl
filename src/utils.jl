@@ -386,3 +386,14 @@ function compare_deberg_to_bowyerwatson(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG
     e2 = compare_unconstrained_triangulations(Tbw, adjbw, adj2vbw, DGbw, Tdb, adjdb, adj2vdb, DGdb) 
     return e1 && e2
 end
+"""
+    compare_deberg_to_bowyerwatson(T, adj, adj2v, DG, pts)
+
+Compares the results from a triangulation using the Bowyer-Watson method, `(T, adj, adj2v, DG)`, using the point 
+set `pts` to those from de Berg's method. If both are identical, return `true`, and `false` otherwise. Any changes are made 
+out-of-place.
+"""
+function compare_deberg_to_bowyerwatson(T, adj, adj2v, DG, pts)
+    _T, _adj, _adj2v, _DG, _ = triangulate_berg(pts)
+    return compare_deberg_to_bowyerwatson(T,adj,adj2v,DG,_T,_adj,_adj2v,_DG)
+end
