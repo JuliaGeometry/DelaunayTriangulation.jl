@@ -31,6 +31,16 @@ function is_ghost_edge(i::I, j::I) where {I}
 end
 
 """
+    is_ghost_triangle(T) 
+
+Returns `true` if the triangle `T` is a ghost triangle.
+"""
+function is_ghost_triangle(T) 
+    i, j, k = indices(T)
+    return is_ghost_edge(i, j) || is_ghost_edge(j, k) || is_ghost_edge(k, i)
+end
+
+"""
     edge_exists(i, j, adj::Adjacent{I, E}) where {I, E}
 
 Returns `true` if the edge `(i, j)` is an edge in the triangulation, 

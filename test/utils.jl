@@ -440,3 +440,12 @@ end
     T, adj, adj2v, DG, HG = DT.triangulate_berg(pts)
     @test !DT.triangulation_has_ghost_triangles(adj, adj2v)
 end
+
+@testset "Can we correctly identify ghost triangles?" begin
+    T = (3, 7, 5)
+    @test !DT.is_ghost_triangle(T)
+    T = (1, 2, 0)
+    @test DT.is_ghost_triangle(T)
+    @test DT.is_ghost_triangle(DT.shift_triangle_1(T))
+    @test DT.is_ghost_triangle(DT.shift_triangle_2(T))
+end
