@@ -63,6 +63,7 @@
 end
 
 @testset "Adding a point outside of the triangulation" begin
+      ## Small example
       p1 = @SVector[-3.32, 3.53]
       p2 = @SVector[-5.98, 2.17]
       p3 = @SVector[-6.36, -1.55]
@@ -120,7 +121,9 @@ end
       DT.add_ghost_triangles!(_T, _adj, _adj2v, _DG)
       @test DT.compare_unconstrained_triangulations(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
       @test DT.compare_deberg_to_bowyerwatson(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
+      @test DT.compare_deberg_to_bowyerwatson(T, adj, adj2v, DG, pts)
 
       DT.remove_ghost_triangles!(T, adj, adj2v, DG)
       @test !DT.compare_deberg_to_bowyerwatson(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
+      @test !DT.compare_deberg_to_bowyerwatson(T, adj, adj2v, DG, pts)
 end
