@@ -27,14 +27,15 @@ end
 
 Selects an initial point for the jump-and-march algorithm for the query point `q`.
 """
-function select_initial_point(pts, q; m=ceil(Int64, length(pts)^(1 / 3)), pt_idx=eachindex(pts))
+function select_initial_point(pts, q; m=ceil(Int64, length(pts)^(1 / 3)), pt_idx=eachindex(pts),
+    try_points=())
     current_dist = typemax(eltype(q))
     current_idx = firstindex(pts) - 27 # Just some index not in pt_idx
     samples = 1
     while samples ≤ m # Not using replacement, but probability of duplicates is approximately 0.5length(pt_idx)^(-1/3)
         i = rand(pt_idx)
-        if i == BoundaryIndex 
-            continue 
+        if i == BoundaryIndex
+            continue
         end
         pᵢ = get_point(pts, i)
         sq_dist = (getx(pᵢ) - getx(q))^2 + (gety(pᵢ) - gety(q))^2
@@ -43,6 +44,14 @@ function select_initial_point(pts, q; m=ceil(Int64, length(pts)^(1 / 3)), pt_idx
             current_idx = i
         end
         samples += 1
+    end
+    for i in try_points
+        pᵢ = get_point(pts, i)
+        sq_dist = (getx(pᵢ) - getx(q))^2 + (gety(pᵢ) - gety(q))^2
+        if sq_dist < current_dist
+            current_dist = sq_dist
+            current_idx = i
+        end
     end
     return current_idx
 end
@@ -53,7 +62,8 @@ Selects an initial point for the jump-and-march algorithm for the query point `q
 that the query point `q` is given by `get_point(pts, q)`, and that `q` is a point being added into 
 a triangulation. That is, the initial point will not be `q`.
 """
-function select_initial_point(pts, q::Integer; pt_idx=eachindex(pts), m=ceil(Int64, length(pt_idx)^(1 / 3)))
+function select_initial_point(pts, q::Integer; pt_idx=eachindex(pts), m=ceil(Int64, length(pt_idx)^(1 / 3)),
+    try_points=())
     return select_initial_point(pts, get_point(pts, q); m, pt_idx)
 end
 
@@ -115,7 +125,7 @@ function check_interior_edge_intersections(q, adj::Adjacent{I,E}, DG, k, pts) wh
                 return j, i, true, false # Switch i, j so that pi is left of pq and pj is right of pq
             elseif orient(pⱼ, p, q) == 1 && orient(p, pᵢ, q) == 1 # It may not intersect, but it could be inside the triangle. 
                 return i, j, false, true
-            else 
+            else
                 return I(0), I(0), false, false # q must be on the otherside of p away from the interior, meaning it's in the exterior
             end
         end

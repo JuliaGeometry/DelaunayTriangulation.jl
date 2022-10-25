@@ -232,3 +232,19 @@ end
         end
     end
 end
+
+@testset "Selecting an initial point" begin
+    pts = rand(SVector{2,Float64}, 5831)
+    for k in eachindex(pts) # If we start at the point, we should get that point back
+        j = DT.select_initial_point(pts, pts[k]; try_points=k)
+        @test j == k
+    end
+    for k in eachindex(pts) # Starting at the closest point that isn't the point itself
+        diffs = [pts[k] - p for p in pts[setdiff(eachindex(pts), k)]]
+        norm_diffs = getindex.(diffs, 1) .^ 2 .+ getindex.(diffs, 2) .^ 2
+        norm_diffs = [norm_diffs[1:(k-1)]..., Inf, norm_diffs[(k):end]...] # so argmin is the correct index in eachindex(pts)
+        i = argmin(norm_diffs)
+        j = DT.select_initial_point(pts, pts[k]; pt_idx=setdiff(eachindex(pts), k), try_points=i)
+        @test j == i
+    end
+end
