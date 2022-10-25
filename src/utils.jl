@@ -333,3 +333,23 @@ function remove_ghost_triangles!(T::Ts, adj::Adjacent{I,E}, adj2v, DG) where {Ts
     delete_point!(DG, I(BoundaryIndex))
     return nothing
 end
+
+"""
+    compare_deberg_to_bowyerwatson(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
+
+Compares the results from a triangulation using de Berg's method, `(_T, _adj, _adj2v, _DG)`, to those 
+with the Bowyer-Watson method, `(T, adj, adj2v, DG)`. Ghosts triangles are added to the data structures 
+from de Berg's method and then compared to the Bowyer-Watson results, and then we remove the ghost triangles 
+from both and compare. If both are identical, return `true`, and `false` otherwise. Any changes are made 
+out-of-place.
+"""
+function compare_deberg_to_bowyerwatson(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
+    Tbw, adjbw, adj2vbw, DGbw = deepcopy(T), deepcopy(adj), deepcopy(adj2v), deepcopy(DG)
+    Tdb, adjdb, adj2vdb, DGdb = deepcopy(_T), deepcopy(_adj), deepcopy(_adj2v), deepcopy(_DG)
+    add_ghost_triangles!(Tdb, adjdb, adj2vdb, DGdb)
+    e1 = compare_unconstrained_triangulations(Tbw, adjbw, adj2vbw, DGbw, Tdb, adjdb, adj2vdb, DGdb)
+    remove_ghost_triangles!(Tdb, adjdb, adj2vdb, DGdb)
+    remove_ghost_triangles!(Tbw, adjbw, adj2vbw, DGbw)
+    e2 = compare_unconstrained_triangulations(Tbw, adjbw, adj2vbw, DGbw, Tdb, adjdb, adj2vdb, DGdb) 
+    return e1 && e2
+end
