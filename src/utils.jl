@@ -289,7 +289,47 @@ ghost triangles, returning `true` if so and `false` otherwise. This test is done
 element of `get_edge(adj2v, $BoundaryIndex)`, say `(u, v)`, and then seeing if `(v, $BoundaryIndex)`
 is a valid key in `adj`.
 """
-function triangulation_has_ghost_triangles(adj::Adjacent{I, E}, adj2v) where {I, E}
+function triangulation_has_ghost_triangles(adj::Adjacent{I,E}, adj2v) where {I,E}
     u, v = iterate(get_edge(adj2v, I(BoundaryIndex)))[1]
     return edge_exists(v, I(BoundaryIndex), adj)
-end 
+end
+
+"""
+    add_ghost_triangles!(T::Ts, adj::Adjacent{I, E}, adj2v, DG) where {Ts, I, E}
+
+Adds ghost triangles to the triangulation `(T, adj, adj2v, DG)`. These structures 
+are updated in-place.
+"""
+function add_ghost_triangles!(T::Ts, adj::Adjacent{I,E}, adj2v, DG) where {Ts,I,E}
+    V = triangle_type(Ts)
+    for (u, v) in get_edge(adj2v, I(BoundaryIndex))
+        add_edge!(adj, v, I(BoundaryIndex), u)
+        add_edge!(adj, I(BoundaryIndex), u, v)
+        add_edge!(adj2v, u, v, I(BoundaryIndex))
+        add_edge!(adj2v, v, I(BoundaryIndex), u)
+        add_neighbour!(DG, I(BoundaryIndex), u, v)
+        Tg = construct_triangle(V, u, v, I(BoundaryIndex))
+        add_triangle!(T, Tg)
+    end
+    return nothing
+end
+
+"""
+    remove_ghost_triangles!(T::Ts, adj::Adjacent{I, E}, adj2v, DG) where {Ts, I, E}
+
+Removes ghost triangles from the triangulation `(T, adj, adj2v, DG)`. These structures 
+are updated in-place.
+"""
+function remove_ghost_triangles!(T::Ts, adj::Adjacent{I,E}, adj2v, DG) where {Ts,I,E}
+    V = triangle_type(Ts)
+    for (u, v) in get_edge(adj2v, I(BoundaryIndex))
+        delete_edge!(adj, v, I(BoundaryIndex))
+        delete_edge!(adj, I(BoundaryIndex), u)
+        delete_edge!(adj2v, u, v, I(BoundaryIndex))
+        delete_edge!(adj2v, v, I(BoundaryIndex), u)
+        Tg = construct_triangle(V, u, v, I(BoundaryIndex))
+        delete_triangle!(T, Tg)
+    end
+    delete_point!(DG, I(BoundaryIndex))
+    return nothing
+end
