@@ -29,9 +29,12 @@ Selects an initial point for the jump-and-march algorithm for the query point `q
 """
 function select_initial_point(pts, q; m=ceil(Int64, length(pts)^(1 / 3)), pt_idx=eachindex(pts))
     current_dist = typemax(eltype(q))
-    current_idx = firstindex(pts) - 1 # Just some index not in eachindex(pts)
+    current_idx = firstindex(pts) - 27 # Just some index not in pt_idx
     for _ in 1:m # Not using replacement, but probability of duplicates is approximately 0.5n^(-1/3)
         i = rand(pt_idx)
+        if i == BoundaryIndex 
+            continue 
+        end
         pᵢ = get_point(pts, i)
         sq_dist = (getx(pᵢ) - getx(q))^2 + (gety(pᵢ) - gety(q))^2
         if sq_dist < current_dist
