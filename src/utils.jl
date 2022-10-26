@@ -142,6 +142,8 @@ in `T` are Delaunay, if `adj` and `adj2v` are inverses of each other, and if
 all the edges in `DG` are in `adj`. Returns `true` if so, and `false` otherwise.
 """
 function validate_triangulation(T, adj::Adjacent{I,E}, adj2v, DG, pts) where {I,E}
+    _adj = deepcopy(adj)
+    clear_empty_keys!(_adj)
     ## Check triangle orientation 
     for T in T
         isoriented(T, pts) == -1 && return false
@@ -149,17 +151,36 @@ function validate_triangulation(T, adj::Adjacent{I,E}, adj2v, DG, pts) where {I,
     ## Test that all edges are legal 
     !is_delaunay(T, pts) && return false
     ## Check that the adjacent map and the adjacent-to-vertex map are inverses
-    !check_adjacent_is_adjacent2vertex_inverse(adj, adj2v) && return false
+    !check_adjacent_is_adjacent2vertex_inverse(_adj, adj2v) && return false
     ## Check the graph 
     for (i, j) in graph(DG).E
-        if triangulation_has_ghost_triangles(adj, adj2v)
-            (i, j) ∉ edges(adj) && return false
-            (j, i) ∉ edges(adj) && return false
+        if triangulation_has_ghost_triangles(_adj, adj2v)
+            (i, j) ∉ edges(_adj) && return false
+            (j, i) ∉ edges(_adj) && return false
         else
-            if i ≠ 0 && j ≠ 00
-                (i, j) ∉ edges(adj) && return false
-                (j, i) ∉ edges(adj) && return false
+            if i ≠ I(BoundaryIndex) && j ≠ I(BoundaryIndex) 
+                (i, j) ∉ edges(_adj) && return false
+                (j, i) ∉ edges(_adj) && return false
             end
+        end
+    end
+    ## Check the edges
+    for T in T
+        i, j, k = indices(T)
+        get_edge(_adj, i, j) ≠ k && return false
+        get_edge(_adj, j, k) ≠ i && return false
+        get_edge(_adj, k, i) ≠ j && return false
+    end
+    ## Check that every edge is incident to two triangles if it is not a boundary edge, and one otherwise
+    for (i, j) in edges(_adj)
+        vij = get_edge(_adj, i, j)
+        vji = get_edge(_adj, j, i)
+        if is_boundary_edge(i, j, adj)
+            vij ≠ I(BoundaryIndex) && return false
+        elseif is_boundary_edge(j, i, adj)
+            vji ≠ I(BoundaryIndex) && return false
+        elseif i ≠ I(BoundaryIndex) && j ≠ I(BoundaryIndex)
+            (vij < I(LowerLeftBoundingIndex) || vji < I(LowerLeftBoundingIndex)) && return false
         end
     end
     ## Done 
