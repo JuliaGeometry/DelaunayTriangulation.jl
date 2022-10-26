@@ -61,7 +61,7 @@ end
     DG = DT.DelaunayGraph{Int64}()
     DT.add_triangle!(1, 2, 3, T, adj, adj2v, DG; update_ghost_edges=true)
     @test all(DT.isoriented(T, pts) == 1 for T in T)
-    DT.add_triangle!(T, (2,3,0))
+    DT.add_triangle!(T, (2, 3, 0))
     @test !all(DT.isoriented(T, pts) == 1 for T in T)
 end
 
@@ -514,66 +514,3 @@ end
         end
     end
 end
-
-#=
-@testset "Testing if we can identify boundary and invalid edges" begin
-    p1 = @SVector[0.0, 1.0]
-    p2 = @SVector[3.0, -1.0]
-    p3 = @SVector[2.0, 0.0]
-    p4 = @SVector[-1.0, 2.0]
-    p5 = @SVector[4.0, 2.0]
-    p6 = @SVector[-2.0, -1.0]
-    pts = [p1, p2, p3, p4, p5, p6]
-    tri = triangulate(pts; randomise=false)
-    p7 = @SVector[2.0, 1.0]
-    newtri = deepcopy(tri)
-    push!(points(newtri), p7)
-    DT.split_triangle!(triangles(newtri),
-        pointlocation(newtri), adjacent(newtri),
-        adjacent2vertex(newtri), graph(newtri),
-        (1, 3, 5), 7)
-    @test DT.is_boundary_edge((5, 2), adjacent(newtri))
-    @test !DT.is_boundary_edge((2, 5), adjacent(newtri))
-    @test DT.is_boundary_edge((2, 6), adjacent(newtri))
-    @test DT.is_boundary_edge((6, 4), adjacent(newtri))
-    @test DT.is_boundary_edge((4, 5), adjacent(newtri))
-    @test !DT.is_boundary_edge((1, 7), adjacent(newtri))
-    @test !DT.is_boundary_edge((7, 3), adjacent(newtri))
-    @test !DT.is_boundary_edge((6, 3), adjacent(newtri))
-    @test !DT.is_boundary_edge((3, 6), adjacent(newtri))
-    @test all(DT.is_valid_edge(ij, adjacent(newtri)) for ij in edges((newtri)))
-    @test !DT.is_valid_edge(7, 4, adjacent(newtri))
-    @test !DT.is_valid_edge((2, 7), adjacent(newtri))
-    @test !DT.is_valid_edge(7, 6, adjacent(newtri))
-    @test !DT.is_valid_edge((7, 6), adjacent(newtri))
-    @test !DT.is_valid_edge(2, 2, adjacent(newtri))
-    @test !DT.is_valid_edge((4, 11), adjacent(newtri))
-end
-
-@testset "Testing if we can identify what triangles contain a point in their circumdisk" begin
-    p1 = (5.0, 6.0)
-    p2 = (9.0, 6.0)
-    p3 = (13.0, 5.0)
-    p4 = (10.38, 0.0)
-    p5 = (12.64, -1.69)
-    p6 = (2.0, -2.0)
-    p7 = (3.0, 4.0)
-    p8 = (7.5, 3.53)
-    p9 = (4.02, 1.85)
-    p10 = (4.26, 0.0)
-    pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]
-    tri = triangulate(pts; randomise=false)
-    p11 = (6.0, 2.5)
-    push!(pts, p11)
-    bw_in = NTuple{3,Int64}[]
-    for T in triangles(tri)
-        DT.isincircle(T, pts, 11) == 1 && push!(bw_in, T)
-    end
-    @test bw_in == [
-        (8, 1, 7),
-        (10, 8, 9),
-        (8, 7, 9),
-        (10, 4, 8)
-    ]
-end
-=#
