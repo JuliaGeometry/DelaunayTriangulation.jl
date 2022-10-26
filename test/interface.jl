@@ -22,6 +22,26 @@ end
     @test DT.shift_triangle(T, 1) == (23, 15, 5)
     @test DT.shift_triangle(T, 2) == (15, 5, 23)
     @test DT.shift_triangle(T, 0) == (5, 23, 15)
+
+    pts = [
+        (-2.26, -4.31),
+        (-6.36, -1.55),
+        (-3.32, 3.53)
+    ]
+    T = DT.construct_positively_oriented_triangle(NTuple{3,Int64}, 1, 2, 3, pts)
+    @test T == (3, 2, 1)
+    T = DT.construct_positively_oriented_triangle(NTuple{3,Int64}, 3, 2, 1, pts)
+    @test T == (3, 2, 1)
+    for _ in 1:5000
+        pts = rand(SVector{2,Float64}, 3)
+        T1 = DT.construct_positively_oriented_triangle(NTuple{3,Int64}, 1, 2, 3, pts)
+        T2 = DT.construct_positively_oriented_triangle(NTuple{3,Int64}, 2, 3, 1, pts)
+        T3 = DT.construct_positively_oriented_triangle(NTuple{3,Int64}, 3, 1, 2, pts)
+        T4 = DT.construct_positively_oriented_triangle(NTuple{3,Int64}, 3, 2, 1, pts)
+        T5 = DT.construct_positively_oriented_triangle(NTuple{3,Int64}, 2, 1, 3, pts)
+        T6 = DT.construct_positively_oriented_triangle(NTuple{3,Int64}, 1, 3, 2, pts)
+        @test all(DT.isoriented(T, pts) == 1 for T in (T1, T2, T3, T4, T5, T6))
+    end
 end
 
 @testset "Point" begin

@@ -16,6 +16,13 @@ geti(T::NTuple{3,I}) where {I} = T[1]
 getj(T::NTuple{3,I}) where {I} = T[2]
 getk(T::NTuple{3,I}) where {I} = T[3]
 construct_triangle(::Type{NTuple{3,I}}, i, j, k) where {I} = (i, j, k)
+function construct_positively_oriented_triangle(::Type{V}, i, j, k, pts) where V
+    T = construct_triangle(V, i, j, k)
+    if isoriented(T, pts) == -1
+        T = construct_triangle(V, k, j, i)
+    end
+    return T
+end
 
 shift_triangle_1(T::V) where {V} = construct_triangle(V, getj(T), getk(T), geti(T))
 shift_triangle_2(T::V) where {V} = construct_triangle(V, getk(T), geti(T), getj(T))
