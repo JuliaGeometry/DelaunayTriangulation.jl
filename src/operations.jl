@@ -356,6 +356,7 @@ end
 #/
 #/
 ###################################################
+#split ij at r
 function split_edge!(i, j, r, T, adj, adj2v, DG)
     k = get_edge(adj, i, j)
     delete_triangle!(i, j, k, T, adj, adj2v, DG; protect_boundary=!is_boundary_edge(j, i, adj))

@@ -35,9 +35,9 @@
     @test DT.isincircle(pts, 9, 10, 0, 14) == 1
     @test DT.isincircle(pts, 10, 0, 9, 14) == 1
     @test DT.isincircle(pts, 0, 9, 10, 14) == 1
-    @test DT.isincircle(pts, 9, 10, 0, 9) == 0
-    @test DT.isincircle(pts, 10, 0, 9, 9) == 0
-    @test DT.isincircle(pts, 0, 9, 10, 9) == 0
+    @test DT.isincircle(pts, 9, 10, 0, 9) == -1
+    @test DT.isincircle(pts, 10, 0, 9, 9) == -1
+    @test DT.isincircle(pts, 0, 9, 10, 9) == -1
     @test DT.isincircle(pts, 10, 9, 8, 14) == -1
     p15 = @SVector[1.57, 2.514]
     push!(pts, p15)
@@ -89,12 +89,12 @@
     @test DT.isincircle(pts, 4, 3, 0, 24) == 1
     @test DT.isincircle(pts, 3, 0, 4, 24) == 1
     @test DT.isincircle(pts, 0, 4, 3, 24) == 1
-    @test DT.isincircle(pts, 4, 3, 0, 4) == 0
-    @test DT.isincircle(pts, 3, 0, 4, 4) == 0
-    @test DT.isincircle(pts, 0, 4, 3, 4) == 0
-    @test DT.isincircle(pts, 4, 3, 0, 3) == 0
-    @test DT.isincircle(pts, 3, 0, 4, 3) == 0
-    @test DT.isincircle(pts, 0, 4, 3, 3) == 0
+    @test DT.isincircle(pts, 4, 3, 0, 4) == -1
+    @test DT.isincircle(pts, 3, 0, 4, 4) == -1
+    @test DT.isincircle(pts, 0, 4, 3, 4) == -1
+    @test DT.isincircle(pts, 4, 3, 0, 3) == -1
+    @test DT.isincircle(pts, 3, 0, 4, 3) == -1
+    @test DT.isincircle(pts, 0, 4, 3, 3) == -1
     p25 = @SVector[-6.3327007, -1.7257]
     push!(pts, p25)
     @test DT.isincircle(pts, 4, 3, 0, 25) == 1
@@ -125,7 +125,7 @@ end
     p9 = (10.0, -2.0)
     p13 = (8.0, 2.0)
     pts = [p8, p9, p13]
-    @test DT.isincircle(pts, 1, 2, 0, 3) == 1
+    @test DT.isincircle(pts, 1, 2, 0, 3) == 0
     push!(pts, (2.0, 14.0))
     @test DT.isincircle(pts, 1, 2, 0, 4) == -1
     push!(pts, (12.0, -6.0))

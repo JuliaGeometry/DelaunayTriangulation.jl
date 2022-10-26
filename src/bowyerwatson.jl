@@ -11,7 +11,7 @@ function add_point_bowyer!(T::Ts, adj::Adjacent{I,E}, adj2v, DG, pts, r;
     dig_cavity!(r, k, i, T, adj, adj2v, DG, pts)
     return nothing
 end
-function dig_cavity!(r, i, j, T, adj::Adjacent{I,E}, adj2v, DG, pts) where {I,E}
+function dig_cavity!(r, i, j, T::Ts, adj::Adjacent{I,E}, adj2v, DG, pts) where {Ts,I,E}
     ℓ = get_edge(adj, j, i) # (j, i, ℓ) is the triangle on the other side of the edge (i, j) from r 
     if ℓ == I(DefaultAdjacentValue)
         return nothing # The triangle has already been deleted in this case 
@@ -22,7 +22,11 @@ function dig_cavity!(r, i, j, T, adj::Adjacent{I,E}, adj2v, DG, pts) where {I,E}
         dig_cavity!(r, i, ℓ, T, adj, adj2v, DG, pts)
         dig_cavity!(r, ℓ, j, T, adj, adj2v, DG, pts)
     else # Must be an edge of the polygonal cavity. Note that this also covers the ℓ ≠ I(BoundaryIndex) case
+        #if is_ghost_triangle(i, j, ℓ) && isoriented(construct_triangle(triangle_type(Ts), r, i, j), pts) == 0
+        #    split_edge!(j, i, r, T, adj, adj2v, DG) # i, j isn't there anymore
+        #else
         add_triangle!(r, i, j, T, adj, adj2v, DG, update_ghost_edges=false)
+        #end
     end
     return nothing
 end

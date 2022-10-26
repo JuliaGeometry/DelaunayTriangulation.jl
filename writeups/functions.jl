@@ -8,7 +8,7 @@ using StatsBase
 const DT = DelaunayTriangulation
 import DataStructures: DefaultDict
 
-function triplot!(ax, T, pts; markersize=11, plot_ghost_edges=false, DG=nothing, kwargs...)
+function triplot!(ax, T, pts; markersize=11, plot_ghost_edges=false, DG=nothing, recompute_centroid=true, kwargs...)
     Tmat = zeros(Int64, length(T), 3)
     tri_length = 0
     for T in T
@@ -25,7 +25,9 @@ function triplot!(ax, T, pts; markersize=11, plot_ghost_edges=false, DG=nothing,
     poly!(ax, pmat, Tmat; kwargs...)
     scatter!(ax, pmat, color=:red, markersize=markersize)
     if plot_ghost_edges
-        DT.compute_centroid!(pts)
+        if recompute_centroid
+            DT.compute_centroid!(pts)
+        end
         pcx, pcy = DT.get_point(pts, DT.BoundaryIndex)
         for u in DT.get_neighbour(DG, DT.BoundaryIndex)
             px, py = DT.get_point(pts, u)
