@@ -48,18 +48,19 @@
         7 => Set{NTuple{2,Int64}}([]),
         8 => Set{NTuple{2,Int64}}([(5, 2)])
     )
-    true_DG = UndirectedGraph(
-        [
-            0 0 1 1 1 1 0 0
-            0 0 1 0 1 1 0 1
-            1 1 0 0 1 1 0 0
-            1 0 0 0 1 1 0 0
-            1 1 1 1 0 0 0 1
-            1 1 1 1 0 0 0 0
-            0 0 0 0 0 0 0 0
-            0 1 0 0 1 0 0 0
-        ]
-    )
+    true_DG = relabel(UndirectedGraph(
+            [
+                0 0 1 0 1 1 1 0 1
+                0 0 0 1 1 1 1 0 0
+                1 0 0 1 0 1 1 0 1
+                0 1 1 0 0 1 1 0 0
+                1 1 0 0 0 1 1 0 0
+                1 1 1 1 1 0 0 0 1
+                1 1 1 1 1 0 0 0 0
+                0 0 0 0 0 0 0 0 0
+                1 0 1 0 0 1 0 0 0
+            ]
+        ), Dict(1:9 .=> 0:8))
     @test T == true_T
     @test adjacent(adj) == true_adj
     @test adjacent2vertex(adj2v) == true_adj2v
@@ -103,18 +104,19 @@
             7 => Set{NTuple{2,Int64}}([]),
             8 => Set{NTuple{2,Int64}}([])
         )
-        true_DG = UndirectedGraph(
-            [
-                0 0 1 1 1 1 0 0
-                0 0 1 0 1 1 0 0
-                1 1 0 0 1 1 0 0
-                1 0 0 0 1 1 0 0
-                1 1 1 1 0 0 0 0
-                1 1 1 1 0 0 0 0
-                0 0 0 0 0 0 0 0
-                0 0 0 0 0 0 0 0
-            ]
-        )
+        true_DG = relabel(UndirectedGraph(
+                [
+                    0 0 1 0 1 1 1 0 0
+                    0 0 0 1 1 1 1 0 0
+                    1 0 0 1 0 1 1 0 0
+                    0 1 1 0 0 1 1 0 0
+                    1 1 0 0 0 1 1 0 0
+                    1 1 1 1 1 0 0 0 0
+                    1 1 1 1 1 0 0 0 0
+                    0 0 0 0 0 0 0 0 0
+                    0 0 0 0 0 0 0 0 0
+                ]
+            ), Dict(1:9 .=> 0:8))
         @test Tc == true_T
         @test adjacent(adjc) == true_adj
         @test adjacent2vertex(adj2vc) == true_adj2v
@@ -160,18 +162,19 @@
             7 => Set{NTuple{2,Int64}}([]),
             8 => Set{NTuple{2,Int64}}([])
         )
-        true_DG = UndirectedGraph(
-            [
-                0 0 1 1 1 1 0 0
-                0 0 1 0 1 0 0 0
-                1 1 0 0 1 1 0 0
-                1 0 0 0 1 1 0 0
-                1 1 1 1 0 0 0 0
-                1 0 1 1 0 0 0 0
-                0 0 0 0 0 0 0 0
-                0 0 0 0 0 0 0 0
-            ]
-        )
+        true_DG = relabel(UndirectedGraph(
+                [
+                    0 0 1 1 1 1 1 0 0
+                    0 0 0 1 1 1 1 0 0
+                    1 0 0 1 0 1 0 0 0
+                    1 1 1 0 0 1 1 0 0
+                    1 1 0 0 0 1 1 0 0
+                    1 1 1 1 1 0 0 0 0
+                    1 1 0 1 1 0 0 0 0
+                    0 0 0 0 0 0 0 0 0
+                    0 0 0 0 0 0 0 0 0
+                ]
+            ), Dict(1:9 .=> 0:8))
         @test Tc == true_T
         @test adjacent(adjc) == true_adj
         @test adjacent2vertex(adj2vc) == true_adj2v
@@ -193,7 +196,7 @@ end
         2 => Set{NTuple{2,Int64}}(),
         3 => Set{NTuple{2,Int64}}()
     )
-    true_DG = UndirectedGraph([0 0 0; 0 0 0; 0 0 0])
+    true_DG = relabel(UndirectedGraph([0 0 0 0; 0 0 0 0; 0 0 0 0; 0 0 0 0]), Dict(1:4 .=> 0:3))
     DT.delete_triangle!(1, 2, 3, T, adj, adj2v, DG)
     @test T == true_T
     @test adjacent(adj) == true_adj

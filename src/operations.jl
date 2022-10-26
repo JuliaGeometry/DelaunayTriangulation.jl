@@ -66,6 +66,7 @@ function add_boundary_edges_single!(i, j, k, ij_bnd, jk_bnd, ki_bnd,
     add_edge!(adj2v, I(BoundaryIndex), u, w)
     add_edge!(adj2v, I(BoundaryIndex), w, v)
     delete_edge!(adj2v, I(BoundaryIndex), u, v)
+    add_neighbour!(DG, I(BoundaryIndex), w) # Note that u and v are already in DG[∂]
     if update_ghost_edges
         #= 
         For the Bowyer-Watson algorithm, we need to handle the ghost handles appropriately. In this case,  
@@ -85,7 +86,6 @@ function add_boundary_edges_single!(i, j, k, ij_bnd, jk_bnd, ki_bnd,
         add_edge!(adj2v, v, I(BoundaryIndex), w)
         delete_edge!(adj2v, u, v, I(BoundaryIndex))
         delete_edge!(adj2v, v, I(BoundaryIndex), u)
-        add_neighbour!(DG, I(BoundaryIndex), w) # Note that u and v are already in DG[∂]
         # Ghost triangles
         V = triangle_type(Ts)
         T1 = construct_triangle(V, u, w, I(BoundaryIndex))
@@ -103,6 +103,7 @@ function add_boundary_edges_double!(i, j, k, ij_bnd, jk_bnd, ki_bnd,
     add_edge!(adj2v, I(BoundaryIndex), v, u)
     delete_edge!(adj2v, I(BoundaryIndex), v, w)
     delete_edge!(adj2v, I(BoundaryIndex), w, u)
+    delete_neighbour!(DG, I(BoundaryIndex), w) # u and v are still in DG[∂]
     if update_ghost_edges
         #= 
         For the Bowyer-Watson algorithm, we need to handle the ghost handles appropriately. In this case,  
@@ -121,7 +122,6 @@ function add_boundary_edges_double!(i, j, k, ij_bnd, jk_bnd, ki_bnd,
         delete_edge!(adj2v, u, I(BoundaryIndex), w)
         delete_edge!(adj2v, v, w, I(BoundaryIndex))
         delete_edge!(adj2v, w, I(BoundaryIndex), v)
-        delete_neighbour!(DG, I(BoundaryIndex), w) # u and v are still in DG[∂]
         # Ghost triangles
         V = triangle_type(Ts)
         T1 = construct_triangle(V, v, u, I(BoundaryIndex))
@@ -140,6 +140,7 @@ function add_boundary_edges_triple!(i, j, k, T::Ts, adj::Adjacent{I,E},
     add_edge!(adj2v, I(BoundaryIndex), j, i)
     add_edge!(adj2v, I(BoundaryIndex), i, k)
     add_edge!(adj2v, I(BoundaryIndex), k, j)
+    add_neighbour!(DG, I(BoundaryIndex), i, j, k)
     if update_ghost_edges
         #= 
         For the Bowyer-Watson algorithm, we need to handle the ghost handles appropriately. In this case,  
@@ -159,7 +160,6 @@ function add_boundary_edges_triple!(i, j, k, T::Ts, adj::Adjacent{I,E},
         add_edge!(adj2v, j, I(BoundaryIndex), k)
         add_edge!(adj2v, i, k, I(BoundaryIndex))
         add_edge!(adj2v, k, I(BoundaryIndex), i)
-        add_neighbour!(DG, I(BoundaryIndex), i, j, k)
         # Ghost triangles
         V = triangle_type(Ts)
         T1 = construct_triangle(V, j, i, I(BoundaryIndex))
@@ -220,6 +220,7 @@ function delete_boundary_edges_single!(i, j, k, ji_bnd, ik_bnd, kj_bnd,
     add_edge!(adj, w, u, I(BoundaryIndex))
     add_edge!(adj2v, I(BoundaryIndex), v, w)
     add_edge!(adj2v, I(BoundaryIndex), w, u)
+    add_neighbour!(DG, I(BoundaryIndex), w)
     if update_ghost_edges # Delete vu∂, add vw∂ and wu∂. See some of the comments in add_boundary_edges_double! for more info.
         # Ghost edges
         add_edge!(adj, w, I(BoundaryIndex), v)
@@ -232,7 +233,6 @@ function delete_boundary_edges_single!(i, j, k, ji_bnd, ik_bnd, kj_bnd,
         add_edge!(adj2v, w, I(BoundaryIndex), v)
         add_edge!(adj2v, w, u, I(BoundaryIndex))
         add_edge!(adj2v, u, I(BoundaryIndex), w)
-        add_neighbour!(DG, I(BoundaryIndex), w)
         # Ghost triangles
         V = triangle_type(Ts)
         T1 = construct_triangle(V, v, u, I(BoundaryIndex))
@@ -252,6 +252,7 @@ function delete_boundary_edges_double!(i, j, k, ji_bnd, ik_bnd, kj_bnd,
     delete_edge!(adj2v, I(BoundaryIndex), w, v)
     add_edge!(adj, u, v, I(BoundaryIndex))
     add_edge!(adj2v, I(BoundaryIndex), u, v)
+    delete_neighbour!(DG, I(BoundaryIndex), w)
     if update_ghost_edges # Delete uw∂ and wv∂ and add uv∂. See some of the comments in add_boundary_edges_single! for more info.
         # Ghost edges
         add_edge!(adj, v, I(BoundaryIndex), u)
@@ -264,7 +265,6 @@ function delete_boundary_edges_double!(i, j, k, ji_bnd, ik_bnd, kj_bnd,
         delete_edge!(adj2v, v, I(BoundaryIndex), w)
         add_edge!(adj2v, u, v, I(BoundaryIndex))
         add_edge!(adj2v, v, I(BoundaryIndex), u)
-        delete_neighbour!(DG, I(BoundaryIndex), w)
         # Ghost triangles
         V = triangle_type(Ts)
         T1 = construct_triangle(V, u, w, I(BoundaryIndex))
@@ -282,6 +282,7 @@ function delete_boundary_edges_triple!(i, j, k, T::Ts, adj::Adjacent{I,E}, adj2v
     delete_edge!(adj2v, I(BoundaryIndex), k, j)
     delete_edge!(adj2v, I(BoundaryIndex), j, i)
     delete_edge!(adj2v, I(BoundaryIndex), i, k)
+    delete_neighbour!(DG, I(BoundaryIndex), i, j, k)
     if update_ghost_edges # Delete ji∂, kj∂, and ik∂. See some of the comments in add_boundary_edges_triple! for more info.
         # Ghost edges
         delete_edge!(adj, i, I(BoundaryIndex))
@@ -296,7 +297,6 @@ function delete_boundary_edges_triple!(i, j, k, T::Ts, adj::Adjacent{I,E}, adj2v
         delete_edge!(adj2v, j, I(BoundaryIndex), k)
         delete_edge!(adj2v, i, k, I(BoundaryIndex))
         delete_edge!(adj2v, k, I(BoundaryIndex), i)
-        delete_neighbour!(DG, I(BoundaryIndex), i, j, k)
         # Ghost triangles 
         V = triangle_type(Ts)
         T1 = construct_triangle(V, j, i, I(BoundaryIndex))

@@ -49,15 +49,16 @@
         6 => Set{NTuple{2,Int64}}([(2, 3), (3, 1), (1, 4)]),
         7 => Set{NTuple{2,Int64}}([(3, 5), (5, 4), (4, 1), (1, 3)])
     )
-    true_DG = UndirectedGraph([
-        0 0 1 1 0 1 1
-        0 0 1 0 1 1 0
-        1 1 0 0 1 1 1
-        1 0 0 0 1 1 1
-        0 1 1 1 0 0 1
-        1 1 1 1 0 0 0
-        1 0 1 1 1 0 0
-    ])
+    true_DG = relabel(UndirectedGraph([
+            0 0 1 0 1 1 1 0
+            0 0 0 1 1 0 1 1
+            1 0 0 1 0 1 1 0
+            0 1 1 0 0 1 1 1
+            1 1 0 0 0 1 1 1
+            1 0 1 1 1 0 0 1
+            1 1 1 1 1 0 0 0
+            0 1 0 1 1 1 0 0
+        ]), Dict(1:8 .=> 0:7))
     @test T == true_T
     @test adjacent(adj) == true_adj
     @test adjacent2vertex(adj2v) == true_adj2v

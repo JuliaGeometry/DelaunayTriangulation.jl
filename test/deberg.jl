@@ -42,16 +42,17 @@
             5 => EdgesType([(1, 2), (2, 4), (4, 6)]),
             6 => EdgesType([(5, 4)])
         )
-        true_DG = UndirectedGraph(
-            IntegerType[
-                0 1 1 0 1 0
-                1 0 1 1 1 0
-                1 1 0 1 0 0
-                0 1 1 0 1 1
-                1 1 0 1 0 1
-                0 0 0 1 1 0
-            ]
-        )
+        true_DG = relabel(UndirectedGraph(
+                IntegerType[
+                    0 1 0 1 1 1 1
+                    1 0 1 1 0 1 0
+                    0 1 0 1 1 1 0
+                    1 1 1 0 1 0 0
+                    1 0 1 1 0 1 1
+                    1 1 1 0 1 0 1
+                    1 0 0 0 1 1 0
+                ]
+            ), Dict(1:7 .=> 0:6))
         @test T == true_T
         @test DT.adjacent(adj) == true_adj
         @test DT.adjacent2vertex(adj2v) == true_adj2v
@@ -125,7 +126,8 @@
             10 => EdgesType([(7, 3), (3, 2), (2, 5), (5, 7)])
         )
         true_DG = UndirectedGraph{Int64}()
-        add!.(Ref(true_DG), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+        add!.(Ref(true_DG), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+        add!.(Ref(true_DG), 0, [2, 4, 5, 6, 9])
         add!.(Ref(true_DG), 1, [4, 6, 3, 8, 9])
         add!.(Ref(true_DG), 2, [5, 10, 3, 6])
         add!.(Ref(true_DG), 3, [10, 7, 8, 1, 6, 2])
@@ -157,7 +159,7 @@
                 @test i ≥ DT.FirstPointIndex && j ≥ DT.FirstPointIndex
             end
             num_pts = length(pts)
-            num_eg = length(DT.graph(DG).E)
+            num_eg = length(DT.graph(DG).E) - length(DT.get_neighbour(DG, DT.BoundaryIndex)) # don't include the boundary connections
             num_tris = length(T)
             @test 1 == num_pts - num_eg + num_tris # Euler's formula
         end
@@ -176,7 +178,7 @@
                 @test i ≥ DT.FirstPointIndex && j ≥ DT.FirstPointIndex
             end
             num_pts = length(pts)
-            num_eg = length(DT.graph(DG).E)
+            num_eg = length(DT.graph(DG).E) - length(DT.get_neighbour(DG, DT.BoundaryIndex))
             num_tris = length(T)
             @test 1 == num_pts - num_eg + num_tris # Euler's formula
             _T, _adj, _adj2v, _DG, _HG = DT.triangulate_berg(pts; randomise=false,
@@ -199,7 +201,7 @@
                 @test i ≥ DT.FirstPointIndex && j ≥ DT.FirstPointIndex
             end
             num_pts = length(pts)
-            num_eg = length(DT.graph(DG).E)
+            num_eg = length(DT.graph(DG).E) - length(DT.get_neighbour(DG, DT.BoundaryIndex))
             num_tris = length(T)
             @test 1 == num_pts - num_eg + num_tris # Euler's formula
             _T, _adj, _adj2v, _DG, _HG = DT.triangulate_berg(pts; trim=false,
@@ -215,7 +217,7 @@
                 @test i ≥ DT.FirstPointIndex && j ≥ DT.FirstPointIndex
             end
             num_pts = length(pts)
-            num_eg = length(DT.graph(_DG).E)
+            num_eg = length(DT.graph(_DG).E) - length(DT.get_neighbour(DG, DT.BoundaryIndex))
             num_tris = length(_T)
             @test 1 == num_pts - num_eg + num_tris # Euler's formula
         end

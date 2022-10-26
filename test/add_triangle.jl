@@ -42,15 +42,17 @@
     )
     true_DG = UndirectedGraph(
         [
-            0 0 1 1 1 1 1
-            0 0 1 0 1 0 0
-            1 1 0 0 1 1 1
-            1 0 0 0 1 1 0
-            1 1 1 1 0 0 0
-            1 0 1 1 0 0 0
-            1 0 1 0 0 0 0
+            0 0 1 1 1 1 1 0
+            0 0 0 1 1 1 1 1
+            1 0 0 1 0 1 0 0
+            1 1 1 0 0 1 1 1
+            1 1 0 0 0 1 1 0
+            1 1 1 1 1 0 0 0
+            1 1 0 1 1 0 0 0
+            0 1 0 1 0 0 0 0
         ]
     )
+    true_DG = relabel(true_DG, Dict(1:8 .=> 0:7))
     @test T == true_T
     @test adjacent(adj) == true_adj
     @test adjacent2vertex(adj2v) == true_adj2v
@@ -94,18 +96,19 @@
             7 => Set{NTuple{2,Int64}}([(1, 3)]),
             8 => Set{NTuple{2,Int64}}([(5, 2)])
         )
-        true_DG = UndirectedGraph(
-            [
-                0 0 1 1 1 1 1 0
-                0 0 1 0 1 0 0 1
-                1 1 0 0 1 1 1 0
-                1 0 0 0 1 1 0 0
-                1 1 1 1 0 0 0 1
-                1 0 1 1 0 0 0 0
-                1 0 1 0 0 0 0 0
-                0 1 0 0 1 0 0 0
-            ]
-        )
+        true_DG = relabel(UndirectedGraph(
+                [
+                    0 0 1 1 1 1 1 0 1
+                    0 0 0 1 1 1 1 1 0
+                    1 0 0 1 0 1 0 0 1
+                    1 1 1 0 0 1 1 1 0
+                    1 1 0 0 0 1 1 0 0
+                    1 1 1 1 1 0 0 0 1
+                    1 1 0 1 1 0 0 0 0
+                    0 1 0 1 0 0 0 0 0
+                    1 0 1 0 0 1 0 0 0
+                ]
+            ), Dict(1:9 .=> 0:8))
         @test Tc == true_T
         @test adjacent(adjc) == true_adj
         @test adjacent2vertex(adj2vc) == true_adj2v
@@ -153,18 +156,19 @@
             7 => Set{NTuple{2,Int64}}([(1, 3)]),
             8 => Set{NTuple{2,Int64}}([(5, 2)])
         )
-        true_DG = UndirectedGraph(
-            [
-                0 0 1 1 1 1 1 0
-                0 0 1 0 1 1 0 1
-                1 1 0 0 1 1 1 0
-                1 0 0 0 1 1 0 0
-                1 1 1 1 0 0 0 1
-                1 1 1 1 0 0 0 0
-                1 0 1 0 0 0 0 0
-                0 1 0 0 1 0 0 0
-            ]
-        )
+        true_DG = relabel(UndirectedGraph(
+                [
+                    0 0 1 0 1 1 1 0 1
+                    0 0 0 1 1 1 1 1 0
+                    1 0 0 1 0 1 1 0 1
+                    0 1 1 0 0 1 1 1 0
+                    1 1 0 0 0 1 1 0 0
+                    1 1 1 1 1 0 0 0 1
+                    1 1 1 1 1 0 0 0 0
+                    0 1 0 1 0 0 0 0 0
+                    1 0 1 0 0 1 0 0 0
+                ]
+            ), Dict(1:9 .=> 0:8))
         @test Tc == true_T
         @test adjacent(adjc) == true_adj
         @test adjacent2vertex(adj2vc) == true_adj2v
@@ -172,7 +176,7 @@
     end
 end
 
-@testset "Adding into an empty triangulation" begin 
+@testset "Adding into an empty triangulation" begin
     pts, T, DG, adj, adj2v = example_empty_triangulation()
     p1, p2, p3 = pts
     true_T = Set{NTuple{3,Int64}}([(1, 2, 3)])
@@ -185,7 +189,12 @@ end
         2 => Set{NTuple{2,Int64}}([(3, 1)]),
         3 => Set{NTuple{2,Int64}}([(1, 2)])
     )
-    true_DG = UndirectedGraph([0 1 1; 1 0 1; 1 1 0])
+    true_DG = relabel(UndirectedGraph([
+            0 1 1 1
+            1 0 1 1
+            1 1 0 1
+            1 1 1 0
+        ]), Dict(1:4 .=> 0:3))
     DT.add_triangle!(1, 2, 3, T, adj, adj2v, DG)
     @test T == true_T
     @test adjacent(adj) == true_adj

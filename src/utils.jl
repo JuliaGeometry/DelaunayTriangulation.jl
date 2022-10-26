@@ -152,19 +152,27 @@ function validate_triangulation(T, adj::Adjacent{I,E}, adj2v, DG, pts) where {I,
     !check_adjacent_is_adjacent2vertex_inverse(adj, adj2v) && return false
     ## Check the graph 
     for (i, j) in graph(DG).E
-        (i, j) ∉ edges(adj) && return false
-        (j, i) ∉ edges(adj) && return false
+        if triangulation_has_ghost_triangles(adj, adj2v)
+            (i, j) ∉ edges(adj) && return false
+            (j, i) ∉ edges(adj) && return false
+        else
+            if i ≠ 0 && j ≠ 00
+                (i, j) ∉ edges(adj) && return false
+                (j, i) ∉ edges(adj) && return false
+            end
+        end
     end
     ## Done 
     return true
 end
 
 """
-    clear_empty_keys!(adj::Adjacent, DG::DelaunayGraph)
+    clear_empty_keys!(adj::Adjacent)
 
 Deletes all the keys `(i, j)` in `adj` such that `get_edge(adj, i, j) = $(DefaultAdjacentValue)`.
 """
-function clear_empty_keys!(adj::Adjacent{I,E}, DG::DelaunayGraph) where {I,E}
+function clear_empty_keys!(adj::Adjacent{I,E}) where {I,E}
+    #=
     num_edges_unoriented = length(graph(DG).E)
     all_edges = Vector{E}(undef, 2num_edges_unoriented)
     k = 1
@@ -176,6 +184,12 @@ function clear_empty_keys!(adj::Adjacent{I,E}, DG::DelaunayGraph) where {I,E}
     invalid_edges = setdiff(edges(adj), all_edges)
     for (i, j) in invalid_edges
         delete_edge!(adj, i, j)
+    end
+    =#
+    for ((i, j), k) in adjacent(adj)
+        if k == I(DefaultAdjacentValue)
+            delete_edge!(adj, i, j)
+        end
     end
     return nothing
 end
@@ -233,8 +247,8 @@ the algorithm.
 function compare_unconstrained_triangulations(T1, adj1, adj2v1, DG1, T2, adj2, adj2v2, DG2)
     adj = deepcopy(adj1)
     _adj = deepcopy(adj2)
-    clear_empty_keys!(adj, DG1)
-    clear_empty_keys!(_adj, DG2)
+    clear_empty_keys!(adj)
+    clear_empty_keys!(_adj)
     adj2v = deepcopy(adj2v1)
     _adj2v = deepcopy(adj2v2)
     clear_empty_keys!(adj2v)
@@ -356,7 +370,7 @@ function add_ghost_triangles!(T::Ts, adj::Adjacent{I,E}, adj2v, DG) where {Ts,I,
         add_edge!(adj, I(BoundaryIndex), u, v)
         add_edge!(adj2v, u, v, I(BoundaryIndex))
         add_edge!(adj2v, v, I(BoundaryIndex), u)
-        add_neighbour!(DG, I(BoundaryIndex), u, v)
+        #add_neighbour!(DG, I(BoundaryIndex), u, v)
         Tg = construct_triangle(V, u, v, I(BoundaryIndex))
         add_triangle!(T, Tg)
     end
@@ -379,7 +393,7 @@ function remove_ghost_triangles!(T::Ts, adj::Adjacent{I,E}, adj2v, DG) where {Ts
         Tg = construct_triangle(V, u, v, I(BoundaryIndex))
         delete_triangle!(T, Tg)
     end
-    delete_point!(DG, I(BoundaryIndex))
+    #delete_point!(DG, I(BoundaryIndex))
     return nothing
 end
 

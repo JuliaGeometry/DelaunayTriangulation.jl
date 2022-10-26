@@ -18,8 +18,8 @@
 
       DT.add_point_bowyer!(T, adj, adj2v, DG, pts, 11)
       _T, _adj, _adj2v, _DG, _HG = DT.triangulate_berg(pts)
-      DT.clear_empty_keys!(adj, DG)
-      DT.clear_empty_keys!(_adj, _DG)
+      DT.clear_empty_keys!(adj)
+      DT.clear_empty_keys!(_adj)
       @test DT.compare_triangle_sets(T, _T) &&
             adjacent(adj) == adjacent(_adj) &&
             adjacent2vertex(adj2v) == adjacent2vertex(_adj2v) &&
@@ -29,8 +29,8 @@
       push!(pts, p12)
       DT.add_point_bowyer!(T, adj, adj2v, DG, pts, 12)
       _T, _adj, _adj2v, _DG, _HG = DT.triangulate_berg(pts)
-      DT.clear_empty_keys!(adj, DG)
-      DT.clear_empty_keys!(_adj, _DG)
+      DT.clear_empty_keys!(adj)
+      DT.clear_empty_keys!(_adj)
       @test DT.compare_triangle_sets(T, _T) &&
             adjacent(adj) == adjacent(_adj) &&
             adjacent2vertex(adj2v) == adjacent2vertex(_adj2v) &&
@@ -40,8 +40,8 @@
       push!(pts, p13)
       DT.add_point_bowyer!(T, adj, adj2v, DG, pts, 13)
       _T, _adj, _adj2v, _DG, _HG = DT.triangulate_berg(pts)
-      DT.clear_empty_keys!(adj, DG)
-      DT.clear_empty_keys!(_adj, _DG)
+      DT.clear_empty_keys!(adj)
+      DT.clear_empty_keys!(_adj)
       @test DT.compare_triangle_sets(T, _T) &&
             adjacent(adj) == adjacent(_adj) &&
             adjacent2vertex(adj2v) == adjacent2vertex(_adj2v) &&

@@ -58,6 +58,7 @@ function remove_bounding_triangle!(T::Ts, adj::Adjacent{I,E}, adj2v, DG) where {
             if u ≥ I(FirstPointIndex) && v ≥ I(FirstPointIndex) # This can only be a boundary edge
                 add_edge!(adj2v, I(BoundaryIndex), u, v)
                 add_edge!(adj, u, v, I(BoundaryIndex))
+                add_neighbour!(DG, I(BoundaryIndex), u, v)
             end
             delete_triangle!(T, construct_triangle(V, u, v, w))
         end

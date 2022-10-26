@@ -14,14 +14,15 @@ function example_triangulation()
         (5, 1, 3)
     ])
     A = [
-        0 0 1 1 1 1
-        0 0 1 0 1 0
-        1 1 0 0 1 1
-        1 0 0 0 1 1
-        1 1 1 1 0 0
-        1 0 1 1 0 0
+        0 0 1 1 1 1 1
+        0 0 0 1 1 1 1
+        1 0 0 1 0 1 0
+        1 1 1 0 0 1 1
+        1 1 0 0 0 1 1
+        1 1 1 1 1 0 0
+        1 1 0 1 1 0 0
     ]
-    DG = DT.DelaunayGraph(UndirectedGraph(A))
+    DG = DT.DelaunayGraph(relabel(UndirectedGraph(A), Dict(1:7 .=> 0:6)))
     adj = DT.Adjacent(DefaultDict(DT.DefaultAdjacentValue,
         Dict(
             (6, 3) => 1, (3, 1) => 6, (1, 6) => 3,
@@ -59,4 +60,3 @@ function example_empty_triangulation()
     adj2v = DT.Adjacent2Vertex(Dict(DT.BoundaryIndex => Set{NTuple{2,Int64}}()))
     return pts, T, DG, adj, adj2v
 end
-    

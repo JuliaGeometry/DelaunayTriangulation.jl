@@ -111,7 +111,7 @@ end
                 (-3, 2), (5, 10), (2, -1), (-3, 5), (8, 5)) .=> DT.DefaultAdjacentValue)...
         )
     )
-    DT.clear_empty_keys!(adj, DG)
+    DT.clear_empty_keys!(adj)
     @test adjacent(adj) == DefaultDict(DT.DefaultAdjacentValue,
         Dict(
             (8, 3) => 2, (3, 2) => 8, (2, 8) => 3,
@@ -382,7 +382,6 @@ end
     k = [6, 7, 8, 11]
     @test all(!DT.is_boundary_point(k, adj, DG) for k in k)
 
-    # Testing when ∂ ∉ DG.graph.V 
     T, adj, adj2v, DG, HG = DT.triangulate_berg(pts)
     k = [9, 10, 5, 4, 3, 2, 1]
     @test all(DT.is_boundary_point(k, adj, DG) for k in k)
