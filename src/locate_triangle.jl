@@ -179,7 +179,7 @@ contains the query point, starting at the vertex `k`.
 """
 function jump_and_march(q, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex{I,Es,E}, DG, pts;
     pt_idx=graph(DG).V, m=ceil(Int64, length(pt_idx)^(1 / 3)),
-    k=select_initial_point(pts, q; m, pt_idx),
+    k=I(select_initial_point(pts, q; m, pt_idx)),
     TriangleType::Type{V}=NTuple{3,Int64}) where {I,E,Es,V}
     if !is_boundary_point(k, adj, DG) || !triangulation_has_ghost_triangles(adj, adj2v) # If the triangulation does not have ghost triangles, we cannot use the methods below.
         p, i, j, pᵢ, pⱼ = select_initial_triangle(q, adj, adj2v, DG, k, pts)
