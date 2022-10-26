@@ -61,6 +61,8 @@ end
     DG = DT.DelaunayGraph{Int64}()
     DT.add_triangle!(1, 2, 3, T, adj, adj2v, DG; update_ghost_edges=true)
     @test all(DT.isoriented(T, pts) == 1 for T in T)
+    DT.add_triangle!(T, (2,3,0))
+    @test !all(DT.isoriented(T, pts) == 1 for T in T)
 end
 
 @testset "Testing if points are in a given circle" begin
