@@ -119,3 +119,17 @@
     @test DT.isincircle(pts, 8, 11, 10, 28) == -1
     @test DT.isincircle(pts, 6, 4, 7, 28) == -1
 end
+
+@testset "Circumdisk of a ghost triangle on the edge" begin
+    p8 = (6.0, 6.0)
+    p9 = (10.0, -2.0)
+    p13 = (8.0, 2.0)
+    pts = [p8, p9, p13]
+    @test DT.isincircle(pts, 1, 2, 0, 3) == 1
+    push!(pts, (2.0, 14.0))
+    @test DT.isincircle(pts, 1, 2, 0, 4) == -1
+    push!(pts, (12.0, -6.0))
+    @test DT.isincircle(pts, 1, 2, 0, 5) == -1
+    push!(pts, (34.0, -6.0))
+    @test DT.isincircle(pts, 1, 2, 0, 6) == 1
+end
