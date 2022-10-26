@@ -176,7 +176,7 @@ end
 @testset "Larger random examples" begin
       for r in 1:137
             for IntegerType in (Int64, Int32, Int16)
-                  n = rand(3:1000)
+                  n = rand(3:10000)
                   pts = rand(SVector{2,Float64}, n)
                   T, adj, adj2v, DG = DT.triangulate_bowyer(pts; trim=false, IntegerType)
                   @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
