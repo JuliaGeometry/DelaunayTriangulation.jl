@@ -44,14 +44,17 @@ Checks are made for ghost triangles, which are triangles of the form `(i, j, $Bo
 that a point is in the circumcircle of `(i, j, $BoundaryIndex)` if it is to the left of `(i, j)`.
 """
 function isincircle(pts, i::I, j::I, k::I, ℓ::I) where {I}
-    if i == I(BoundaryIndex)
-        return I(isleftofline(pts, j, k, ℓ))
-    elseif j == I(BoundaryIndex)
-        return I(isleftofline(pts, k, i, ℓ))
-    elseif k == I(BoundaryIndex)
-        return I(isleftofline(pts, i, j, ℓ))
-    end
     pᵢ, pⱼ, pₖ, pₗ = get_point(pts, i, j, k, ℓ)
+    if i == I(BoundaryIndex)
+        in_open_halfplane = I(isleftofline(pts, j, k, ℓ))
+        return in_open_halfplane == I(0) ? I(-sameside(pₗ, pⱼ, pₖ)) : in_open_halfplane # If in_in_open_halfplane = 0, then the point is collinear with the edge, so we need to check if the point is on the edge or away from it.
+    elseif j == I(BoundaryIndex)
+        in_open_halfplane = I(isleftofline(pts, k, i, ℓ))
+        return in_open_halfplane == I(0) ? I(-sameside(pₗ, pₖ, pᵢ)) : in_open_halfplane
+    elseif k == I(BoundaryIndex)
+        in_open_halfplane = I(isleftofline(pts, i, j, ℓ))
+        return in_open_halfplane == I(0) ? I(-sameside(pₗ, pᵢ, pⱼ)) : in_open_halfplane
+    end
     return I(incircle(pᵢ, pⱼ, pₖ, pₗ))
 end
 """
