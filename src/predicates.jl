@@ -21,7 +21,11 @@ you define a new method for it for your point type, obviously).
 function isoriented(T, pts)
     i, j, k = indices(T)
     pᵢ, pⱼ, pₖ = get_point(pts, i, j, k)
-    return orient(pᵢ, pⱼ, pₖ)
+    if !is_ghost_triangle(i, j, k)
+        return orient(pᵢ, pⱼ, pₖ)
+    else
+        return orient(pₖ, pⱼ, pᵢ) # Ghost triangles have the 0 point represented at a centroid which is inwards, so flip the orientation
+    end
 end
 
 """

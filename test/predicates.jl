@@ -49,6 +49,20 @@ end
     @test orient(p₂, p₁, [5.0, 2.0]) == 0
 end
 
+@testset "Orientation of ghost edges" begin
+    p1 = @SVector[-3.32, 3.53]
+    p2 = @SVector[-5.98, 2.17]
+    p3 = @SVector[-6.36, -1.55]
+    pts = [p1, p2, p3]
+    DT.compute_centroid!(pts)
+    T = Set{NTuple{3,Int64}}()
+    adj = DT.Adjacent{Int64,NTuple{2,Int64}}()
+    adj2v = DT.Adjacent2Vertex{Int64,Set{NTuple{2,Int64}},NTuple{2,Int64}}()
+    DG = DT.DelaunayGraph{Int64}()
+    DT.add_triangle!(1, 2, 3, T, adj, adj2v, DG; update_ghost_edges=true)
+    @test all(DT.isoriented(T, pts) == 1 for T in T)
+end
+
 @testset "Testing if points are in a given circle" begin
     p0 = Float64[5, 5]
     p1 = Float64[4.5, 2.5]
