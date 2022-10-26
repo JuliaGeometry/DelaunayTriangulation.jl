@@ -56,7 +56,7 @@
         @test DT.adjacent(adj) == true_adj
         @test DT.adjacent2vertex(adj2v) == true_adj2v
         @test graph(DG) == true_DG
-        @test DT.is_delaunay(adj, pts)
+        @test DT.is_delaunay(T, pts)
         @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
 
         ## Triangulation with some collinear points
@@ -140,7 +140,7 @@
         @test adj.adjacent == true_adj
         @test adj2v.adjacent2vertex == true_adj2v
         @test DG.graph.N == true_DG.N
-        @test DT.is_delaunay(adj, pts)
+        @test DT.is_delaunay(T, pts)
         @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
 
         ## Random triangulations

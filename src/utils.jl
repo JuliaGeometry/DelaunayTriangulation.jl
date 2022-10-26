@@ -38,7 +38,7 @@ Returns `true` if the triangle `T` is a ghost triangle.
 function is_ghost_triangle(i, j, k)
     return is_ghost_edge(i, j) || is_ghost_edge(j, k) || is_ghost_edge(k, i)
 end
-function is_ghost_triangle(T) 
+function is_ghost_triangle(T)
     i, j, k = indices(T)
     return is_ghost_triangle(i, j, k)
 end
@@ -107,33 +107,49 @@ function rotate_ghost_triangle_to_boundary_form(i, j, k)
     u, v, w = choose_uvw(!e1, !e2, !e3, i, j, k)
     return u, v, w
 end
-function rotate_ghost_triangle_to_boundary_form(T::V) where{V}
+function rotate_ghost_triangle_to_boundary_form(T::V) where {V}
     i, j, k = indices(T)
     u, v, w = rotate_ghost_triangle_to_boundary_form(i, j, k)
     rotated_T = construct_triangle(V, u, v, w)
     return rotated_T
 end
 
-function is_delaunay(adj, pts)
-    tri_edges = edges(adj)
-    for (i, j) in tri_edges
-        edge_exists(i, j, adj) && !is_boundary_edge(i, j, adj) && !is_boundary_edge(j, i, adj) && !islegal(i, j, adj, pts) && return false
+"""
+    is_delaunay(T::Ts, pts) where {Ts}
+
+Tests if the triangulation `T` is Delaunay by checking that the open circumdisk of each triangle contains no 
+points inside it. This check is slow since we intentionally check every point instead of only 
+checking the neighbouring triangles, ensuring that no mistakes have been made e.g. with overlapping 
+triangles. Returns `true` if the triangulation is indeed Delaunay, and `false` otherwise.
+"""
+function is_delaunay(T::Ts, pts) where {Ts}
+    V = triangle_type(Ts)
+    I = integer_type(V)
+    for T in T
+        for r in eachindex(pts)
+            r = I(r)
+            isincircle(T, pts, r) == -1
+        end
     end
     return true
 end
+
+"""
+    validate_triangulation(T, adj::Adjacent{I,E}, adj2v, DG, pts) where {I,E}
+
+Tests that all the triangles in `T` are positively oriented, if all the triangles 
+in `T` are Delaunay, if `adj` and `adj2v` are inverses of each other, and if 
+all the edges in `DG` are in `adj`. Returns `true` if so, and `false` otherwise.
+"""
 function validate_triangulation(T, adj::Adjacent{I,E}, adj2v, DG, pts) where {I,E}
     ## Check triangle orientation 
     for T in T
         isoriented(T, pts) == -1 && return false
     end
     ## Test that all edges are legal 
-    !is_delaunay(adj, pts) && return false
-    ## Check that the adjacent map and the adjacent-to-vertex map edge 
-    for (w, S) in adjacent2vertex(adj2v)
-        for (i, j) in S
-            get_edge(adj, i, j) ≠ w && return false
-        end
-    end
+    !is_delaunay(T, pts) && return false
+    ## Check that the adjacent map and the adjacent-to-vertex map are inverses
+    !check_adjacent_is_adjacent2vertex_inverse(adj, adj2v) && return false
     ## Check the graph 
     for (i, j) in graph(DG).E
         (i, j) ∉ edges(adj) && return false
@@ -383,7 +399,7 @@ function compare_deberg_to_bowyerwatson(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG
     e1 = compare_unconstrained_triangulations(Tbw, adjbw, adj2vbw, DGbw, Tdb, adjdb, adj2vdb, DGdb)
     remove_ghost_triangles!(Tdb, adjdb, adj2vdb, DGdb)
     remove_ghost_triangles!(Tbw, adjbw, adj2vbw, DGbw)
-    e2 = compare_unconstrained_triangulations(Tbw, adjbw, adj2vbw, DGbw, Tdb, adjdb, adj2vdb, DGdb) 
+    e2 = compare_unconstrained_triangulations(Tbw, adjbw, adj2vbw, DGbw, Tdb, adjdb, adj2vdb, DGdb)
     return e1 && e2
 end
 """
@@ -395,5 +411,5 @@ out-of-place.
 """
 function compare_deberg_to_bowyerwatson(T, adj, adj2v, DG, pts)
     _T, _adj, _adj2v, _DG, _ = triangulate_berg(pts)
-    return compare_deberg_to_bowyerwatson(T,adj,adj2v,DG,_T,_adj,_adj2v,_DG)
+    return compare_deberg_to_bowyerwatson(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
 end
