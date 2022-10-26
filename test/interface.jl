@@ -42,6 +42,10 @@ end
         T6 = DT.construct_positively_oriented_triangle(NTuple{3,Int64}, 1, 3, 2, pts)
         @test all(DT.isoriented(T, pts) == 1 for T in (T1, T2, T3, T4, T5, T6))
     end
+
+    @test DT.integer_type(NTuple{3, Int64}) == Int64 
+    @test DT.integer_type(NTuple{3, Int32}) == Int32
+    @test DT.integer_type(NTuple{3, Int16}) == Int16
 end
 
 @testset "Point" begin
