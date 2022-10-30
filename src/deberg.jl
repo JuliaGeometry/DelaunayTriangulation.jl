@@ -31,7 +31,7 @@ function triangulate_berg(pts;
     TrianglesType::Type{Ts}=Set{TriangleType},
     randomise=true,
     trim=true) where {I,E,V,Es,Ts}
-    pt_order = randomise ? shuffle(eachindex(pts)) : eachindex(pts)
+    pt_order = randomise ? shuffle(_eachindex(pts)) : _eachindex(pts)
     T = Ts()
     adj = Adjacent{I,E}()
     adj2v = Adjacent2Vertex{I,Es,E}()

@@ -43,7 +43,7 @@ function triangulate_bowyer(pts;
     randomise=true,
     trim=true,
     try_last_inserted_point=true) where {I,E,V,Es,Ts}
-    pt_order = randomise ? shuffle(eachindex(pts)) : eachindex(pts)
+    pt_order = randomise ? shuffle(_eachindex(pts)) : _eachindex(pts)
     T = Ts()
     adj = Adjacent{I,E}()
     adj2v = Adjacent2Vertex{I,Es,E}()
@@ -85,7 +85,7 @@ function lazy_triangulate_bowyer(pts;
     randomise=true,
     trim=true,
     try_last_inserted_point=true) where {I,E,VV,Es,Ts}
-    pt_order = randomise ? shuffle(eachindex(pts)) : eachindex(pts)
+    pt_order = randomise ? shuffle(_eachindex(pts)) : _eachindex(pts)
     T = Ts()
     adj = Adjacent{I,E}()
     adj2v = Adjacent2Vertex{I,Es,E}()
@@ -98,7 +98,11 @@ function lazy_triangulate_bowyer(pts;
     end
     u, v, w = indices(initial_triangle)
     add_triangle!(u, v, w, T, adj, adj2v, DG; update_ghost_edges=true)
-    compute_centroid!(@view pts[pt_order[begin:(begin+2)]])
+    compute_centroid!((
+        get_point(pts, pt_order[firstindex(pt_order)]),
+        get_point(pts, pt_order[firstindex(pt_order)+1]),
+        get_point(pts, pt_order[firstindex(pt_order)+2])
+    ))
     ## Loop over all the points 
     for (num_points, new_point) in enumerate(@view pt_order[(begin+3):end])
         pr = get_point(pts, new_point)

@@ -126,7 +126,7 @@ function is_delaunay(T::Ts, pts) where {Ts}
     V = triangle_type(Ts)
     I = integer_type(V)
     for T in T
-        for r in eachindex(pts)
+        for r in _eachindex(pts)
             r = I(r)
             isincircle(T, pts, r) == -1
         end

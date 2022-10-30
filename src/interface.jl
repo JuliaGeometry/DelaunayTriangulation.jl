@@ -80,6 +80,8 @@ gety(p::Base.AbstractVecOrTuple) = p[2]
 @inline number_type(p::Base.AbstractVecOrTuple) = number_type(p[begin])
 @inline number_type(p::Base.AbstractArray) = number_type(p[begin])
 
+_eachindex(pts) = eachindex(pts)
+
 function get_point end      # get_point(::Points, ::I)
 
 function _get_point(pts, i::I) where I 
