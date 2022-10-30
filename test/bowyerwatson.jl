@@ -196,9 +196,11 @@ end
       function DT._eachindex(pts::AbstractMatrix)
             return axes(pts, 2)
       end
-      pts = rand(2, 250)
-      T, adj, adj2v, DG = DT.triangulate_bowyer(pts)
-      pts2 = [pts[:, i] for i in axes(pts, 2)]
-      _T, _adj, _adj2v, _DG = DT.triangulate_berg(pts2)
-      @test DT.compare_unconstrained_triangulations(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
+      for _ in 1:100
+            pts = rand(2, 250)
+            T, adj, adj2v, DG = DT.triangulate_bowyer(pts)
+            pts2 = [pts[:, i] for i in axes(pts, 2)]
+            _T, _adj, _adj2v, _DG = DT.triangulate_bowyer(pts2)
+            @test DT.compare_unconstrained_triangulations(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
+      end
 end

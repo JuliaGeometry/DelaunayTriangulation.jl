@@ -82,9 +82,9 @@ gety(p::Base.AbstractVecOrTuple) = p[2]
 
 _eachindex(pts) = eachindex(pts)
 
-function get_point end      # get_point(::Points, ::I)
+function get_point end      # get_point(::pts, ::I)
 
-function _get_point(pts, i::I) where I 
+function _get_point(pts, i::I) where {I}
     return pts[i]
 end
 @inline function get_point(pts, i::I) where {I}
@@ -93,7 +93,7 @@ end
         pᵢ = _get_point(pts, i)
         return (getx(pᵢ), gety(pᵢ))
     elseif i == I(BoundaryIndex) # this is useful when working with the Bowyer-Watson algorithm, don't take this as meaning the boundary is represented as the centroid
-        return NTuple{2,T}((CentroidCoordinates.x, CentroidCoordinates.y)) # Might not be compatible with the points a user actually uses, but this only gets used in ExactPredicates which converts everything to a Tuple anyway!
+        return NTuple{2,T}((CentroidCoordinates.x, CentroidCoordinates.y)) # Might not be compatible with the pts a user actually uses, but this only gets used in ExactPredicates which converts everything to a Tuple anyway!
     elseif i == I(LowerRightBoundingIndex)
         return NTuple{2,T}(lower_right_bounding_triangle_coords(pts))
     elseif i == I(LowerLeftBoundingIndex)
@@ -106,13 +106,14 @@ end
 @inline function get_point(pts, i::Vararg{I,N}) where {I,N}
     return ntuple(j -> get_point(pts, i[j]), Val(N))
 end
-function point_stats(points)
+function point_stats(pts)
     T = Float64
     xmin = typemax(T)
     xmax = typemin(T)
     ymin = typemax(T)
     ymax = typemin(T)
-    for pt in points
+    for i in _eachindex(pts)
+        pt = get_point(pts, i)
         if getx(pt) < xmin
             xmin = getx(pt)
         end
@@ -133,18 +134,18 @@ function point_stats(points)
     max_width_height = max(width, height)
     return xcentroid, ycentroid, max_width_height
 end
-function lower_right_bounding_triangle_coords(points)
-    xcentroid, ycentroid, max_width_height = point_stats(points)
+function lower_right_bounding_triangle_coords(pts)
+    xcentroid, ycentroid, max_width_height = point_stats(pts)
     return (xcentroid + BoundingTriangleShift * max_width_height,
         ycentroid - max_width_height)
 end
-function lower_left_bounding_triangle_coords(points)
-    xcentroid, ycentroid, max_width_height = point_stats(points)
+function lower_left_bounding_triangle_coords(pts)
+    xcentroid, ycentroid, max_width_height = point_stats(pts)
     return (xcentroid - BoundingTriangleShift * max_width_height,
         ycentroid - max_width_height)
 end
-function upper_bounding_triangle_coords(points)
-    xcentroid, ycentroid, max_width_height = point_stats(points)
+function upper_bounding_triangle_coords(pts)
+    xcentroid, ycentroid, max_width_height = point_stats(pts)
     return (xcentroid,
         ycentroid + BoundingTriangleShift * max_width_height)
 end
