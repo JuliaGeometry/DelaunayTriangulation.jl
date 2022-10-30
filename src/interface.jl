@@ -81,7 +81,7 @@ gety(p::Base.AbstractVecOrTuple) = p[2]
 
 function get_point end      # get_point(::Points, ::I)
 
-@inline function get_point(pts::AbstractVector, i::I) where {I}
+@inline function get_point(pts, i::I) where {I}
     T = number_type(pts)
     if i ≥ I(FirstPointIndex)
         return NTuple{2,T}(pts[i])
@@ -96,7 +96,7 @@ function get_point end      # get_point(::Points, ::I)
     end
     throw(BoundsError(pts, i))
 end
-@inline function get_point(pts::AbstractVector, i::Vararg{I,N}) where {I,N}
+@inline function get_point(pts, i::Vararg{I,N}) where {I,N}
     return ntuple(j -> get_point(pts, i[j]), Val(N))
 end
 function point_stats(points)
