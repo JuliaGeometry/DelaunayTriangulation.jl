@@ -81,10 +81,14 @@ gety(p::Base.AbstractVecOrTuple) = p[2]
 
 function get_point end      # get_point(::Points, ::I)
 
+function _get_point(pts, i::I) where I 
+    return pts[i]
+end
 @inline function get_point(pts, i::I) where {I}
     T = number_type(pts)
     if i ≥ I(FirstPointIndex)
-        return NTuple{2,T}(pts[i])
+        pᵢ = _get_point(pts, i)
+        return (getx(pᵢ), gety(pᵢ))
     elseif i == I(BoundaryIndex) # this is useful when working with the Bowyer-Watson algorithm, don't take this as meaning the boundary is represented as the centroid
         return NTuple{2,T}((CentroidCoordinates.x, CentroidCoordinates.y)) # Might not be compatible with the points a user actually uses, but this only gets used in ExactPredicates which converts everything to a Tuple anyway!
     elseif i == I(LowerRightBoundingIndex)

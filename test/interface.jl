@@ -118,4 +118,6 @@ end
 
     pts = [(1.0f0, 2.0f0), (2.1f0, 2.9f0)]
     @test DT.number_type(pts) == Float32
+
+    @test DT._get_point(pts, 1) == (1.0f0, 2.0f0)
 end
