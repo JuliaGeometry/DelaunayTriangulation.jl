@@ -70,3 +70,77 @@ function triangulate_bowyer(pts;
     trim && remove_ghost_triangles!(T, adj, adj2v, DG)
     return T, adj, adj2v, DG
 end
+
+function lazy_triangulate_bowyer(pts;
+    IntegerType::Type{I}=Int64,
+    EdgeType::Type{E}=NTuple{2,IntegerType},
+    TriangleType::Type{VV}=NTuple{3,IntegerType},
+    EdgesType::Type{Es}=Set{EdgeType},
+    TrianglesType::Type{Ts}=Set{TriangleType},
+    randomise=true,
+    trim=true,
+    try_last_inserted_point=true) where {I,E,VV,Es,Ts}
+    pt_order = randomise ? shuffle(eachindex(pts)) : eachindex(pts)
+    T = Ts()
+    adj = Adjacent{I,E}()
+    adj2v = Adjacent2Vertex{I,Es,E}()
+    DG = DelaunayGraph{I}()
+    initial_triangle = construct_positively_oriented_triangle(TriangleType, I(pt_order[begin]), I(pt_order[begin+1]), I(pt_order[begin+2]), pts)
+    while isoriented(initial_triangle, pts) == 0 # We cannot start with a degenerate triangle
+        pt_order = collect(pt_order) # We need to collect so that we can change the order of the points 
+        reverse!(@view pt_order[begin:(begin+2)]) # This makes it counter-clockwise
+        initial_triangle = construct_positively_oriented_triangle(TriangleType, I(pt_order[begin]), I(pt_order[begin+1]), I(pt_order[begin+2]), pts)
+    end
+    u, v, w = indices(initial_triangle)
+    add_triangle!(u, v, w, T, adj, adj2v, DG; update_ghost_edges=true)
+    compute_centroid!(@view pts[pt_order[begin:(begin+2)]])
+    ## Loop over all the points 
+    for (num_points, new_point) in enumerate(@view pt_order[(begin+3):end])
+        pr = get_point(pts, new_point)
+        ## Find all triangles that contain the new point in its circumdisk 
+        bad_triangle_edge_list = Es()
+        for V in T
+            u, v, w = indices(V)
+            pu, pv, pw = get_point(pts, u, v, w)
+            ## Is the new point in the circumdisk of V?
+            # First consider if V is a ghost triangle
+            if u == I(BoundaryIndex)
+                if orient(pv, pw, pr) ≥ 0 # Is pr left of (v, w)?
+                    push!(bad_triangle_edge_list, (u, v), (v, w), (w, u))
+                    delete_triangle!(u, v, w, T, adj, adj2v, DG; protect_boundary=true)
+                end
+            elseif v == I(BoundaryIndex)
+                if orient(pw, pu, pr) ≥ 0 # Is pr left of (w, u)?
+                    push!(bad_triangle_edge_list, (u, v), (v, w), (w, u))
+                    delete_triangle!(u, v, w, T, adj, adj2v, DG; protect_boundary=true)
+                end
+            elseif w == I(BoundaryIndex)
+                if orient(pu, pv, pr) ≥ 0 # Is pr left of (u, v)?
+                    push!(bad_triangle_edge_list, (u, v), (v, w), (w, u))
+                    delete_triangle!(u, v, w, T, adj, adj2v, DG; protect_boundary=true)
+                end
+            else # Otherwise, V is a solid triangle
+                if incircle(pu, pv, pw, pr) == 1
+                    push!(bad_triangle_edge_list, (u, v), (v, w), (w, u))
+                    delete_triangle!(u, v, w, T, adj, adj2v, DG; protect_boundary=true)
+                end
+            end
+        end
+        ## Now we need to find the boundary of the cavity 
+        polygon_edges = Es()
+        for (i, j) in bad_triangle_edge_list
+            if (j, i) ∉ bad_triangle_edge_list
+                push!(polygon_edges, (i, j))
+            end
+        end
+        ## Add the new triangles 
+        for (u, v) in polygon_edges
+            add_triangle!(u, v, new_point, T, adj, adj2v, DG; update_ghost_edges=false)
+        end
+        ## Update the centroid
+        update_centroid_after_new_point!(pts, new_point)
+    end
+    ## Remove the ghost triangles and return 
+    trim && remove_ghost_triangles!(T, adj, adj2v, DG)
+    return T, adj, adj2v, DG
+end
