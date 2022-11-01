@@ -74,8 +74,8 @@ construct_edge(::Type{Vector{I}}, i, j) where {I} = I[i, j]
 function getx end
 function gety end
 
-getx(p::Base.AbstractVecOrTuple) = p[1]
-gety(p::Base.AbstractVecOrTuple) = p[2]
+getx(p) = p[1]
+gety(p) = p[2]
 @inline number_type(::T) where {T<:Number} = T
 @inline number_type(p::Base.AbstractVecOrTuple) = number_type(p[begin])
 @inline number_type(p::Base.AbstractArray) = number_type(p[begin])
