@@ -30,8 +30,10 @@ function triangulate_berg(pts;
     EdgesType::Type{Es}=Set{EdgeType},
     TrianglesType::Type{Ts}=Set{TriangleType},
     randomise=true,
-    trim=true) where {I,E,V,Es,Ts}
-    pt_order = randomise ? shuffle(_eachindex(pts)) : _eachindex(pts)
+    trim=true,
+    skip_pts=Set{Int64}()) where {I,E,V,Es,Ts}
+    pt_order = randomise ? shuffle(_eachindex(pts)) : collect(_eachindex(pts))
+    setdiff!(pt_order, skip_pts)
     T = Ts()
     adj = Adjacent{I,E}()
     adj2v = Adjacent2Vertex{I,Es,E}()

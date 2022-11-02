@@ -42,8 +42,10 @@ function triangulate_bowyer(pts;
     TrianglesType::Type{Ts}=Set{TriangleType},
     randomise=true,
     trim=true,
-    try_last_inserted_point=true) where {I,E,V,Es,Ts}
-    pt_order = randomise ? shuffle(_eachindex(pts)) : _eachindex(pts)
+    try_last_inserted_point=true,
+    skip_pts = Set{Int64}()) where {I,E,V,Es,Ts}
+    pt_order = randomise ? shuffle(_eachindex(pts)) : collect(_eachindex(pts))
+    setdiff!(pt_order, skip_pts) 
     T = Ts()
     adj = Adjacent{I,E}()
     adj2v = Adjacent2Vertex{I,Es,E}()
@@ -58,9 +60,9 @@ function triangulate_bowyer(pts;
     add_triangle!(u, v, w, T, adj, adj2v, DG; update_ghost_edges=true)
     # compute_centroid!(@view pts[pt_order[begin:(begin+2)]]) # Can't use this, else ArrayPartitions support fails
     compute_centroid!((
-        get_point(pts, pt_order[firstindex(pt_order)]),
-        get_point(pts, pt_order[firstindex(pt_order)+1]),
-        get_point(pts, pt_order[firstindex(pt_order)+2])
+        get_point(pts, pt_order[begin]), 
+        get_point(pts, pt_order[begin+1]),
+        get_point(pts, pt_order[begin+2])
     ))
     for (num_points, new_point) in enumerate(@view pt_order[(begin+3):end])
         last_inserted_point_number = num_points + 3 - 1 # + 3 for the first three points already inserted

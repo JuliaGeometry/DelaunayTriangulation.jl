@@ -448,3 +448,22 @@ function compare_deberg_to_bowyerwatson(T, adj, adj2v, DG, pts)
     _T, _adj, _adj2v, _DG, _ = triangulate_berg(pts)
     return compare_deberg_to_bowyerwatson(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
 end
+
+"""
+    select_valid_start_of_vector!(pt_order, skip_pts; r=3)
+
+Circularly shifts parts the vector `pt_order` in place until `pt_order[begin:(begin+r-1)]` contains none 
+of the elements in `skip_pts`. In particular, we shift until the first element contains no element 
+in `skip_pts`, and then we shift `pt_order[(begin+1):end]` until the second element of the original vector 
+contains no element in `skip_pts`, and so on.
+"""
+function select_valid_start_of_vector!(pt_order, skip_pts; r=3)
+    for i in 0:(r-1)
+        j = 0
+        while pt_order[begin+i] ∈ skip_pts
+            @views circshift!(pt_order[(begin+i):end], 1)
+            j += 1
+        end
+    end
+    return nothing
+end
