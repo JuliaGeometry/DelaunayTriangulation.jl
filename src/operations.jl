@@ -27,14 +27,15 @@
 ###################################################
 function add_triangle!(i, j, k, T::Ts,
     adj::Adjacent{I,E}, adj2v::Adjacent2Vertex{I,Es,E},
-    DG::DelaunayGraph{I}; update_ghost_edges=false) where {I,E,Es,Ts}
+    DG::DelaunayGraph{I}; update_ghost_edges=false,
+    protect_boundary=false) where {I,E,Es,Ts}
     V = triangle_type(Ts)
     Tᵢⱼₖ = construct_triangle(V, i, j, k)
     add_triangle!(T, Tᵢⱼₖ)
     ij_bnd = is_boundary_edge(i, j, adj)
     jk_bnd = is_boundary_edge(j, k, adj)
     ki_bnd = is_boundary_edge(k, i, adj)
-    num_bnd_edges = count((ij_bnd, jk_bnd, ki_bnd))
+    num_bnd_edges = protect_boundary ? 0 : count((ij_bnd, jk_bnd, ki_bnd))
     add_edge!(adj, i, j, k)
     add_edge!(adj, j, k, i)
     add_edge!(adj, k, i, j)
@@ -47,7 +48,7 @@ function add_triangle!(i, j, k, T::Ts,
         add_boundary_edges_single!(i, j, k, ij_bnd, jk_bnd, ki_bnd, T, adj, adj2v, DG; update_ghost_edges)
     elseif num_bnd_edges == 2
         add_boundary_edges_double!(i, j, k, ij_bnd, jk_bnd, ki_bnd, T, adj, adj2v, DG; update_ghost_edges)
-    elseif length(T) == 1 # If this is true, then we just have a single triangle, and thus num_bnd_edges should be 3 
+    elseif length(T) == 1 && !protect_boundary # If this is true, then we just have a single triangle, and thus num_bnd_edges should be 3 
         add_boundary_edges_triple!(i, j, k, T, adj, adj2v, DG; update_ghost_edges)
     end
     return nothing

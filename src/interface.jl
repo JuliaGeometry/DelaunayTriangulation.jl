@@ -81,12 +81,12 @@ gety(p) = p[2]
 @inline number_type(p::Base.AbstractArray) = number_type(p[begin])
 
 _eachindex(pts) = eachindex(pts)
+_eachindex(pts::AbstractMatrix) = axes(pts, 2)
 
 function get_point end      # get_point(::pts, ::I)
 
-function _get_point(pts, i::I) where {I}
-    return pts[i]
-end
+_get_point(pts, i) = pts[i]
+_get_point(pts::AbstractMatrix, i) = @view pts[:, i]
 @inline function get_point(pts, i::I) where {I}
     T = number_type(pts)
     if i ≥ I(FirstPointIndex)
@@ -106,6 +106,7 @@ end
 @inline function get_point(pts, i::Vararg{I,N}) where {I,N}
     return ntuple(j -> get_point(pts, i[j]), Val(N))
 end
+
 function point_stats(pts)
     T = Float64
     xmin = typemax(T)

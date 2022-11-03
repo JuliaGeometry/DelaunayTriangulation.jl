@@ -1,1 +1,8 @@
 /Manifest.toml
+/test/Manifest.toml
+test/meshgeometry.geo
+gmsh-4.9.4-Windows64/
+test/meshgeometry.msh
+meshgeometry.geo
+meshgeometry.msh
+dev/Manifest.toml
