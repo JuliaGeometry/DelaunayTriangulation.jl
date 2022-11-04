@@ -351,9 +351,10 @@ end
 Updates `CentroidCoordinates` with the centroid of `pts`.
 """
 function compute_centroid!(pts)
-    n = length(pts)
+    n = num_points(pts)
     clear_centroid_coordinates!()
-    for p in pts
+    for i in _eachindex(pts)
+        p = get_point(pts, i)
         x = getx(p)
         y = gety(p)
         CentroidCoordinates.x += x

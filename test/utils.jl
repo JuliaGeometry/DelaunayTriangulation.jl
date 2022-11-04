@@ -525,6 +525,12 @@ end
     @test DT.CentroidCoordinates.x ≈ sum(pts)[1] / length(pts)
     @test DT.CentroidCoordinates.y ≈ sum(pts)[2] / length(pts)
     @test DT.CentroidCoordinates.n == length(pts)
+
+    _pts = reduce(hcat, pts)
+    DT.compute_centroid!(_pts)
+    @test DT.CentroidCoordinates.x ≈ sum(pts)[1] / length(pts)
+    @test DT.CentroidCoordinates.y ≈ sum(pts)[2] / length(pts)
+    @test DT.CentroidCoordinates.n == size(_pts, 2)
 end
 
 @testset "Removing duplicate triangles" begin
