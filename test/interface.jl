@@ -43,9 +43,9 @@ end
         @test all(DT.isoriented(T, pts) == 1 for T in (T1, T2, T3, T4, T5, T6))
     end
 
-    @test DT.integer_type(NTuple{3, Int64}) == Int64 
-    @test DT.integer_type(NTuple{3, Int32}) == Int32
-    @test DT.integer_type(NTuple{3, Int16}) == Int16
+    @test DT.integer_type(NTuple{3,Int64}) == Int64
+    @test DT.integer_type(NTuple{3,Int32}) == Int32
+    @test DT.integer_type(NTuple{3,Int16}) == Int16
 end
 
 @testset "Point" begin
@@ -73,6 +73,13 @@ end
     DT.delete_triangle!(T, (2, 3, 1), (7, 10, 15))
     @test T == Set{NTuple{3,Int64}}([(18, 19, 23)])
     @test DT.triangle_type(typeof(T)) == NTuple{3,Int64}
+
+    T = Set{NTuple{3,Int64}}([(1, 2, 3), (4, 5, 6), (7, 8, 9), (10, 11, 12)])
+    @test num_triangles(T) == 4
+    T = Set{NTuple{3,Int64}}([(10, 11, 12)])
+    @test num_triangles(T) == 1
+    T = Set{NTuple{3,Int64}}()
+    @test num_triangles(T) == 0
 end
 
 @testset "Points" begin
@@ -120,4 +127,9 @@ end
     @test DT.number_type(pts) == Float32
 
     @test DT._get_point(pts, 1) == (1.0f0, 2.0f0)
+
+    pts = [(1.0f0, 2.0f0), (2.1f0, 2.9f0), (1.0f0, 3.0f0), (5.0f0, 7.3f0)]
+    @test num_points(pts) == 4
+    pts = [(1, 3), (4, 5)]
+    @test num_points(pts) == 2
 end
