@@ -226,17 +226,17 @@ end
 
 @testset "Matrix points" begin
     function DT._get_point(pts::AbstractMatrix, i)
-          return @view pts[:, i]
+        return @view pts[:, i]
     end
     function DT._eachindex(pts::AbstractMatrix)
-          return axes(pts, 2)
+        return axes(pts, 2)
     end
     for _ in 1:100
-          pts = rand(2, 250)
-          T, adj, adj2v, DG = DT.triangulate_berg(pts)
-          pts2 = [pts[:, i] for i in axes(pts, 2)]
-          _T, _adj, _adj2v, _DG = DT.triangulate_berg(pts2)
-          @test DT.compare_unconstrained_triangulations(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
+        pts = rand(2, 250)
+        T, adj, adj2v, DG = DT.triangulate_berg(pts)
+        pts2 = [pts[:, i] for i in axes(pts, 2)]
+        _T, _adj, _adj2v, _DG = DT.triangulate_berg(pts2)
+        @test DT.compare_unconstrained_triangulations(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
     end
 end
 
@@ -298,9 +298,9 @@ end
     _T, _adj, _adj2v, _DG, _HG = @views DT.triangulate_berg(pts[1:7])
     n = length(pts)
     for i in 8:n
-          DT.add_point_bowyer!(T, adj, adj2v, DG, pts, i)
-          DT.add_point_berg!(_T, _adj, _adj2v, _DG, _HG, pts, i)
-          @test DT.compare_unconstrained_triangulations(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
+        DT.add_point_bowyer!(T, adj, adj2v, DG, pts, i)
+        DT.add_point_berg!(_T, _adj, _adj2v, _DG, _HG, pts, i)
+        @test DT.compare_unconstrained_triangulations(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
     end
 end
 
@@ -324,21 +324,21 @@ end
     adj2v = DT.Adjacent2Vertex{Int64,Set{NTuple{2,Int64}},NTuple{2,Int64}}()
     DG = DT.DelaunayGraph{Int64}()
     for (i, j, k) in (
-          (1, 2, 6),
-          (1, 6, 8),
-          (9, 1, 8),
-          (9, 8, 10),
-          (10, 8, 11),
-          (8, 7, 11),
-          (8, 6, 7),
-          (6, 2, 3),
-          (6, 3, 4),
-          (6, 4, 7),
-          (7, 4, 5),
-          (11, 7, 5),
-          (10, 11, 5)
+        (1, 2, 6),
+        (1, 6, 8),
+        (9, 1, 8),
+        (9, 8, 10),
+        (10, 8, 11),
+        (8, 7, 11),
+        (8, 6, 7),
+        (6, 2, 3),
+        (6, 3, 4),
+        (6, 4, 7),
+        (7, 4, 5),
+        (11, 7, 5),
+        (10, 11, 5)
     )
-          DT.add_triangle!(i, j, k, T, adj, adj2v, DG; update_ghost_edges=true)
+        DT.add_triangle!(i, j, k, T, adj, adj2v, DG; update_ghost_edges=true)
     end
     p12 = @SVector[4.382, 3.2599]
     push!(pts, p12)
@@ -405,45 +405,45 @@ end
     p31 = @SVector[-2.66, 14.95]
     p32 = @SVector[6.58, 15.746]
     pts = [p1, p2, p3, p4, p5, p6, p7, p8,
-          p9, p10, p11, p12, p13, p14, p15, p16, p17,
-          p18, p19, p20, p21, p22, p23, p24, p25,
-          p26, p27, p28, p29, p30, p31, p32]
+        p9, p10, p11, p12, p13, p14, p15, p16, p17,
+        p18, p19, p20, p21, p22, p23, p24, p25,
+        p26, p27, p28, p29, p30, p31, p32]
     for _ in 1:500
-          T, adj, adj2v, DG = DT.triangulate_bowyer(pts; trim=false)
-          _T, _adj, _adj2v, _DG, _HG = DT.triangulate_berg(pts)
-          @test DT.compare_deberg_to_bowyerwatson(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
+        T, adj, adj2v, DG = DT.triangulate_bowyer(pts; trim=false)
+        _T, _adj, _adj2v, _DG, _HG = DT.triangulate_berg(pts)
+        @test DT.compare_deberg_to_bowyerwatson(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
     end
 end
 
 @testset "Larger random examples" begin
     for r in 1:137
-          for IntegerType in (Int64, Int32, Int16)
-                n = rand(3:1000)
-                pts = rand(SVector{2,Float64}, n)
-                T, adj, adj2v, DG = DT.triangulate_bowyer(pts; trim=false, IntegerType)
-                @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
-                _T, _adj, _adj2v, _DG = deepcopy(T), deepcopy(adj), deepcopy(adj2v), deepcopy(DG)
-                DT.remove_ghost_triangles!(_T, _adj, _adj2v, _DG)
-                @test DT.validate_triangulation(_T, _adj, _adj2v, _DG, pts)
-                DT.add_ghost_triangles!(_T, _adj, _adj2v, _DG)
-                DT.compare_unconstrained_triangulations(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
-          end
+        for IntegerType in (Int64, Int32, Int16)
+            n = rand(3:1000)
+            pts = rand(SVector{2,Float64}, n)
+            T, adj, adj2v, DG = DT.triangulate_bowyer(pts; trim=false, IntegerType)
+            @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
+            _T, _adj, _adj2v, _DG = deepcopy(T), deepcopy(adj), deepcopy(adj2v), deepcopy(DG)
+            DT.remove_ghost_triangles!(_T, _adj, _adj2v, _DG)
+            @test DT.validate_triangulation(_T, _adj, _adj2v, _DG, pts)
+            DT.add_ghost_triangles!(_T, _adj, _adj2v, _DG)
+            DT.compare_unconstrained_triangulations(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
+        end
     end
 end
 
 @testset "Matrix points" begin
     function DT._get_point(pts::AbstractMatrix, i)
-          return @view pts[:, i]
+        return @view pts[:, i]
     end
     function DT._eachindex(pts::AbstractMatrix)
-          return axes(pts, 2)
+        return axes(pts, 2)
     end
     for _ in 1:100
-          pts = rand(2, 250)
-          T, adj, adj2v, DG = DT.triangulate_bowyer(pts)
-          pts2 = [pts[:, i] for i in axes(pts, 2)]
-          _T, _adj, _adj2v, _DG = DT.triangulate_bowyer(pts2)
-          @test DT.compare_unconstrained_triangulations(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
+        pts = rand(2, 250)
+        T, adj, adj2v, DG = DT.triangulate_bowyer(pts)
+        pts2 = [pts[:, i] for i in axes(pts, 2)]
+        _T, _adj, _adj2v, _DG = DT.triangulate_bowyer(pts2)
+        @test DT.compare_unconstrained_triangulations(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
     end
 end
 
@@ -505,7 +505,7 @@ end
 end
 
 @testset "Skipping points" begin
-    for _ in 1:250
+    for _ in 1:2500
         n = rand(3:500)
         pts = rand(2, n)
         skip_pts = Set{Int64}(rand(1:n, n ÷ 4))
@@ -514,7 +514,7 @@ end
         for i in skip_pts
             @test i ∉ DG.graph.V
         end
-        _T, _adj, _adj2v, _DG = DT.triangulate_berg(pts; skip_pts)
+        _T, _adj, _adj2v, _DG = DT.triangulate_berg(pts; skip_pts, trim=false)
         @test DT.validate_triangulation(_T, _adj, _adj2v, _DG, pts)
         for i in skip_pts
             @test i ∉ DG.graph.V
@@ -525,7 +525,7 @@ end
         for i in skip_pts
             @test i ∉ DG.graph.V
         end
-        _T, _adj, _adj2v, _DG = DT.triangulate_berg(pts; skip_pts, randomise=false)
+        _T, _adj, _adj2v, _DG = DT.triangulate_berg(pts; skip_pts, randomise=false, trim=false)
         @test DT.validate_triangulation(_T, _adj, _adj2v, _DG, pts)
         for i in skip_pts
             @test i ∉ DG.graph.V
