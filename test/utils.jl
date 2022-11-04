@@ -511,18 +511,79 @@ end
         if i == 0
             @test DT.get_point(pts, i) == (DT.CentroidCoordinates.x, DT.CentroidCoordinates.y)
         else
-            @test DT.get_point(pts, i) == NTuple{2, Float64}(pts[i])
+            @test DT.get_point(pts, i) == NTuple{2,Float64}(pts[i])
         end
     end
 end
 
-@testset "Can we correctly compute the centroid of some given points?" begin 
+@testset "Can we correctly compute the centroid of some given points?" begin
     DT.CentroidCoordinates.x = 0.291
     DT.CentroidCoordinates.y = 0.4991
     DT.CentroidCoordinates.n = 99
     pts = rand(SVector{2,Float64}, 1827301)
     DT.compute_centroid!(pts)
-    @test DT.CentroidCoordinates.x ≈ sum(pts)[1]/length(pts)
-    @test DT.CentroidCoordinates.y ≈ sum(pts)[2]/length(pts)
+    @test DT.CentroidCoordinates.x ≈ sum(pts)[1] / length(pts)
+    @test DT.CentroidCoordinates.y ≈ sum(pts)[2] / length(pts)
     @test DT.CentroidCoordinates.n == length(pts)
+end
+
+@testset "Removing duplicate triangles" begin
+    T = (1, 5, 3)
+    @test DT.sort_triangle(T) == (1, 5, 3)
+    T = (7, 1, 3)
+    @test DT.sort_triangle(T) == (1, 3, 7)
+    T = (2, 3, 1)
+    @test DT.sort_triangle(T) == (1, 2, 3)
+
+    T = Set{NTuple{3,Int64}}([
+        (1, 2, 3),
+        (10, 9, 3),
+        (11, 5, 1),
+        (193, 12, 10),
+        (5, 3, 1),
+        (19, 18, 17),
+        (17, 5, 23),
+        (20, 50, 72),
+        (30, 31, 32),
+        (20, 13, 37)
+    ])
+    V = DT.sort_triangles(T)
+    @test V == Set{NTuple{3,Int64}}([
+        (1, 2, 3),
+        (3, 10, 9),
+        (1, 11, 5),
+        (10, 193, 12),
+        (1, 5, 3),
+        (17, 19, 18),
+        (5, 23, 17),
+        (20, 50, 72),
+        (30, 31, 32),
+        (13, 37, 20)
+    ])
+    @test DT.compare_triangle_sets(T, V)
+
+    T = Set{NTuple{3,Int64}}([
+        (1, 2, 3),
+        (2, 3, 1),
+        (3, 1, 2),
+        (4, 5, 6),
+        (11, 8, 3),
+        (3, 11, 8),
+        (18, 13, 1)
+    ])
+    V = DT.remove_duplicate_triangles(T)
+    @test V == Set{NTuple{3,Int64}}([
+        (1, 2, 3),
+        (4, 5, 6),
+        (1, 18, 13),
+        (3, 11, 8),
+    ])
+    T = Set{NTuple{3,Int64}}([
+        (11, 9, 1),
+        (1, 11, 9)
+    ])
+    V = DT.remove_duplicate_triangles(T)
+    @test V == Set{NTuple{3,Int64}}([
+        (1, 11, 9)
+    ])
 end

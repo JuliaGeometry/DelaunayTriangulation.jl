@@ -36,5 +36,6 @@ export num_triangles, num_points
 export number_type
 export get_point, _get_point
 export convex_hull
+export construct_triangle, construct_triangles
 
 end

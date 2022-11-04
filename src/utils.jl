@@ -158,7 +158,7 @@ function validate_triangulation(T, adj::Adjacent{I,E}, adj2v, DG, pts) where {I,
             (i, j) ∉ edges(_adj) && return false
             (j, i) ∉ edges(_adj) && return false
         else
-            if i ≠ I(BoundaryIndex) && j ≠ I(BoundaryIndex) 
+            if i ≠ I(BoundaryIndex) && j ≠ I(BoundaryIndex)
                 (i, j) ∉ edges(_adj) && return false
                 (j, i) ∉ edges(_adj) && return false
             end
@@ -466,4 +466,54 @@ function select_valid_start_of_vector!(pt_order, skip_pts; r=3)
         end
     end
     return nothing
+end
+
+"""
+    sort_triangle(T::V) where {V}
+
+Given a triangle `T = (i, j, k)`, sorts it so that the first index is the smallest, maintaining 
+the orientation of `T`.
+"""
+function sort_triangle(T::V) where {V}
+    i, j, k = indices(T)
+    minijk = min(i, j, k)
+    if minijk == i
+        return construct_triangle(V, i, j, k)
+    elseif minijk == j
+        return construct_triangle(V, j, k, i)
+    else
+        return construct_triangle(V, k, i, j)
+    end
+end
+
+"""
+    sort_triangles(T::Ts) where {Ts}
+
+Sorts the triangles in the collection `T` so that each triangle's first vertex 
+has the smallest value. The orientation of each triangle is preserved.
+"""
+function sort_triangles(T::Ts) where {Ts}
+    tris = construct_triangles(Ts)
+    for τ in T
+        σ = sort_triangle(τ)
+        add_triangle!(tris, σ)
+    end
+    return tris
+end
+
+"""
+    remove_duplicate_triangles(T) 
+
+Removes duplicate triangles from `T`. This procedure also sorts the triangles 
+so that the first index of each triangle is the smallest. Orientations are 
+preserved.
+"""
+function remove_duplicate_triangles(T)
+    V = sort_triangles(T)
+    if T isa Set
+        return V
+    else
+        unique!(V)
+        return V
+    end
 end
