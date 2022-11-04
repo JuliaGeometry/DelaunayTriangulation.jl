@@ -532,3 +532,30 @@ end
         end
     end
 end
+
+@testset "Construction" begin
+    a = 0.0
+    b = 5.0
+    c = 0.0
+    d = 10.0
+    Nˣ = 5
+    Nʸ = 3
+    T, adj, adj2v, DG, pts, BN = triangulate_structured(a, b, c, d, Nˣ, Nʸ; return_boundary_types=true)
+    @test length(edges(adj)) ÷ 2 == 30
+    @test num_triangles(T) == 16
+    @test pts == reduce(hcat, [[0, 0], [1.25, 0], [2.5, 0], [3.75, 0],
+        [5, 0], [0, 5], [1.25, 5.0], [2.5, 5], [3.75, 5], [5, 5], [0, 10], [1.25, 10],
+        [2.5, 10], [3.75, 10], [5, 10]])
+    @test BN[1] == [1, 2, 3, 4, 5]
+    @test BN[2] == [5, 10, 15]
+    @test BN[3] == [15, 14, 13, 12, 11]
+    @test BN[4] == [11, 6, 1]
+
+    T, adj, adj2v, DG, pts, BN = triangulate_structured(a, b, c, d, Nˣ, Nʸ; return_boundary_types=true, single_boundary=true)
+    @test length(edges(adj)) ÷ 2 == 30
+    @test num_triangles(T) == 16
+    @test pts == reduce(hcat, [[0, 0], [1.25, 0], [2.5, 0], [3.75, 0],
+        [5, 0], [0, 5], [1.25, 5.0], [2.5, 5], [3.75, 5], [5, 5], [0, 10], [1.25, 10],
+        [2.5, 10], [3.75, 10], [5, 10]])
+    @test BN == [1, 2, 3, 4, 5, 10, 15, 14, 13, 12, 11, 6]
+end

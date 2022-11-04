@@ -29,9 +29,9 @@ similarly for `y` (and, of course, `x[end][end] = x[1][1]` and similarly for `y`
 - `BN`: The indices of the boundary nodes.
 """
 function generate_mesh end
-@noinline function generate_mesh(x::Vector{Vector{Float64}}, y::Vector{Vector{Float64}}, ref; 
-    mesh_algorithm = 6, verbosity = 0, gmsh_path = "./gmsh-4.9.4-Windows64/gmsh.exe",
-    num_threads = Base.Threads.nthreads())
+@noinline function generate_mesh(x::Vector{Vector{Float64}}, y::Vector{Vector{Float64}}, ref;
+    mesh_algorithm=6, verbosity=0, gmsh_path="./gmsh-4.9.4-Windows64/gmsh.exe",
+    num_threads=Base.Threads.nthreads())
     ## Mesh generation
     all_x = reduce(vcat, x)
     all_y = reduce(vcat, y)
@@ -41,16 +41,16 @@ function generate_mesh end
     open("meshgeometry.geo", "w") do fout
         # Define parameters
         #write(fout, "SetFactory(\"OpenCASCADE\");\n")
-        write(fout, "r = $ref;\n")                                                      
-        write(fout, "Mesh.Algorithm = $mesh_algorithm;\n")                             
-        write(fout, "Mesh.Format = 1;\n")     
+        write(fout, "r = $ref;\n")
+        write(fout, "Mesh.Algorithm = $mesh_algorithm;\n")
+        write(fout, "Mesh.Format = 1;\n")
         write(fout, "General.Verbosity = $verbosity;\n") #https://gitlab.onelab.info/gmsh/gmsh/-/issues/1133                                      
         # Start by defining the points 
-        for k in 1:Nbpts 
-            write(fout, @sprintf("Point(%i) = {%2.15f,%2.15f,0,r};\n", k, all_x[k], all_y[k])) 
+        for k in 1:Nbpts
+            write(fout, @sprintf("Point(%i) = {%2.15f,%2.15f,0,r};\n", k, all_x[k], all_y[k]))
         end
-        left_starts = [1, cumsum(length.(x[1:end-1])).+1...]
-        right_starts = [cumsum(length.(x)).-1...]
+        left_starts = [1, cumsum(length.(x[1:end-1])) .+ 1...]
+        right_starts = [cumsum(length.(x)) .- 1...]
         # Fit splines through the individual sections 
         for key in keys
             write(fout, "BSpline($key) = {")
@@ -61,20 +61,20 @@ function generate_mesh end
         end
         # Now define the plane surfaces
         write(fout, "Line Loop(2881000) = {")
-        for key in keys[1:end-1] 
+        for key in keys[1:end-1]
             write(fout, "$key, ")
         end
         write(fout, "$(keys[end])};\n")
         write(fout, "Plane Surface($(2length(keys)+1)) = {2881000};\n")
         # Now define the physical properties 
-        for key in keys 
+        for key in keys
             write(fout, "Physical Line($(key)) = {$key};\n")
         end
         write(fout, "Physical Surface($(5000 + length(keys))) = {$(2length(keys)+1)};\n")
         #write(fout, "Coherence;")
     end
     command = [gmsh_path; "meshgeometry.geo"; "-2"; "-format"; "msh2"; "-nt"; "$num_threads"]
-    run(`$command`)                                                                    
+    run(`$command`)
     ## Read the mesh
     elements = ElasticArray{Int64}(undef, 3, 0)
     boundary_nodes = [Vector{Int64}([]) for _ in 1:length(x)]
@@ -144,14 +144,14 @@ function generate_mesh end
     T, adj, adj2v, DG = triangulate(elements, nodes, boundary_nodes)
     return T, adj, adj2v, DG, nodes, unique.(boundary_nodes)
 end
-@inline function generate_mesh(x::Vector{LinRange{Float64, Int64}}, y::Vector{LinRange{Float64, Int64}}, ref; mesh_algorithm = 6, verbosity = 0, gmsh_path = "./gmsh-4.9.4-Windows64/gmsh.exe", num_threads = Base.Threads.nthreads())
+@inline function generate_mesh(x::Vector{LinRange{Float64,Int64}}, y::Vector{LinRange{Float64,Int64}}, ref; mesh_algorithm=6, verbosity=0, gmsh_path="./gmsh-4.9.4-Windows64/gmsh.exe", num_threads=Base.Threads.nthreads())
     return generate_mesh(collect.(x), collect.(y), ref; verbosity, mesh_algorithm, gmsh_path, num_threads)
 end
-@inline function generate_mesh(x::Vector{Float64}, y::Vector{Float64}, ref; verbosity = 0, mesh_algorithm = 6, gmsh_path = "./gmsh-4.9.4-Windows64/gmsh.exe", num_threads = Base.Threads.nthreads())
+@inline function generate_mesh(x::Vector{Float64}, y::Vector{Float64}, ref; verbosity=0, mesh_algorithm=6, gmsh_path="./gmsh-4.9.4-Windows64/gmsh.exe", num_threads=Base.Threads.nthreads())
     return generate_mesh([x], [y], ref; verbosity, mesh_algorithm, gmsh_path, num_threads)
 end
 
-function triangulate(triangles::AbstractMatrix{I},
+function triangulate(triangles,
     nodes::AbstractMatrix,
     boundary_nodes;
     IntegerType::Type{I}=Int64,
@@ -165,25 +165,26 @@ function triangulate(triangles::AbstractMatrix{I},
     adj = Adjacent{I,E}()
     adj2v = Adjacent2Vertex{I,Es,E}()
     DG = DelaunayGraph{I}()
-    for (i, j, k) in eachcol(triangles)
+    itr = triangles isa AbstractMatrix ? eachcol(triangles) : triangles
+    for (i, j, k) in itr
         add_triangle!(i, j, k, T, adj, adj2v, DG; protect_boundary=true)
     end
-    for i in boundary_nodes 
+    for i in boundary_nodes
         add_neighbour!(DG, I(BoundaryIndex), i)
     end
     cx, cy = sum(nodes; dims=2) / size(nodes, 2)
     θ = zeros(length(boundary_nodes))
-    for i in boundary_nodes 
+    for (j, i) in pairs(boundary_nodes)
         p = @view nodes[:, i]
         x, y = p
-        θ[i] = atan(y - cy, x - cx)
+        θ[j] = atan(y - cy, x - cx)
     end
     sort_idx = sortperm(θ)
     permute!(boundary_nodes, sort_idx)
     reverse!(boundary_nodes) # cw 
     n = length(boundary_nodes)
     push!(boundary_nodes, boundary_nodes[begin])
-    for i in 1:n 
+    for i in 1:n
         u = boundary_nodes[i]
         v = boundary_nodes[i+1]
         add_edge!(adj2v, I(BoundaryIndex), u, v)
