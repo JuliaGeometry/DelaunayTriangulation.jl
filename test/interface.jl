@@ -132,4 +132,11 @@ end
     @test num_points(pts) == 4
     pts = [(1, 3), (4, 5)]
     @test num_points(pts) == 2
+
+    pts = [1.0 2.0 3.0
+        2.0 5.0 -2.0]
+    @test DT.number_type(pts) == Float64
+    pts = [1.0f0 8.3f0 172.3f0
+        -32.0f0 17.3f0 23.0f0]
+    @test DT.number_type(pts) == Float32
 end
