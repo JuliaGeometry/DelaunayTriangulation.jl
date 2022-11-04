@@ -15,6 +15,7 @@ SimpleGraphs = "55797a34-41de-5266-9ec1-32ac4eb504d3"
 
 [compat]
 DataStructures = "0.18"
+ElasticArrays = "1"
 ExactPredicates = "2"
 MutableNamedTuples = "0.1"
 SimpleGraphs = "0.8"
