@@ -25,6 +25,8 @@ function construct_positively_oriented_triangle(::Type{V}, i, j, k, pts) where {
 end
 integer_type(::Type{NTuple{3,I}}) where {I} = I
 
+edges(T::NTuple{3,I}) where {I} = ((geti(T), getj(T)), (getj(T), getk(T)), (getk(T), geti(T)))
+
 shift_triangle_1(T::V) where {V} = construct_triangle(V, getj(T), getk(T), geti(T))
 shift_triangle_2(T::V) where {V} = construct_triangle(V, getk(T), geti(T), getj(T))
 shift_triangle(T::V, i) where {V} = i == 0 ? T : (i == 1 ? shift_triangle_1(T) : shift_triangle_2(T))

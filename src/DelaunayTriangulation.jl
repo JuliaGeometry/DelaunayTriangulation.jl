@@ -20,6 +20,7 @@ include("bowyerwatson.jl")
 include("locate_triangle.jl")
 include("deberg.jl")
 include("gmsh.jl")
+include("convex_hull.jl")
 
 export adjacent, adjacent2vertex, graph, pointlocation, triangles, points, neighbours
 export triangulate, triangulate!
@@ -33,5 +34,7 @@ export locate_triangle, jump_and_march
 export generate_mesh, triangulate 
 export num_triangles, num_points
 export number_type
+export get_point, _get_point
+export convex_hull
 
 end

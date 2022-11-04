@@ -32,3 +32,6 @@ end
 @testset "Gmsh" begin
     include("gmsh.jl")
 end
+@testset "Convex Hull" begin
+    include("convex_hull.jl")
+end

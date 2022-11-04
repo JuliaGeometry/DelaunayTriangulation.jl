@@ -46,6 +46,11 @@ end
     @test DT.integer_type(NTuple{3,Int64}) == Int64
     @test DT.integer_type(NTuple{3,Int32}) == Int32
     @test DT.integer_type(NTuple{3,Int16}) == Int16
+
+    T = (2, 5, 7)
+    @test edges(T) == ((2, 5), (5, 7), (7, 2))
+    T = (9, 10, 3)
+    @test edges(T) == ((9, 10), (10, 3), (3, 9))
 end
 
 @testset "Point" begin
