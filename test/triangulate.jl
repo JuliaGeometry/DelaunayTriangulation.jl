@@ -505,7 +505,7 @@ end
 end
 
 @testset "Skipping points" begin
-    for _ in 1:2500
+    for _ in 1:250
         n = rand(3:500)
         pts = rand(2, n)
         skip_pts = Set{Int64}(rand(1:n, n ÷ 4))
