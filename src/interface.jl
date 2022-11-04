@@ -52,6 +52,7 @@ function delete_triangle!(T, V::Vararg{Tri,N}) where {Tri,N}
     return nothing
 end
 
+num_triangles(T) = length(T)
 ###################################################
 #/
 #/
@@ -161,3 +162,6 @@ function add_point!(pts, p::Vararg{P,N}) where {P,N}
     end
     return nothing
 end
+
+num_points(pts) = length(pts)
+num_points(pts::AbstractMatrix) = size(pts, 2)
