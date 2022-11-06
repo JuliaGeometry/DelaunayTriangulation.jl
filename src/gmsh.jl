@@ -158,9 +158,11 @@ function triangulate(triangles,
     EdgeType::Type{E}=NTuple{2,IntegerType},
     TriangleType::Type{V}=NTuple{3,IntegerType},
     EdgesType::Type{Es}=Set{EdgeType},
-    TrianglesType::Type{Ts}=Set{TriangleType}) where {I,E,V,Es,Ts}
+    TrianglesType::Type{Ts}=Set{TriangleType},
+    sort_boundary=true) where {I,E,V,Es,Ts}
+    boundary_nodes = deepcopy(boundary_nodes)
     boundary_nodes = reduce(vcat, boundary_nodes)
-    unique!(boundary_nodes)
+    sort_boundary && unique!(boundary_nodes)
     T = Ts()
     adj = Adjacent{I,E}()
     adj2v = Adjacent2Vertex{I,Es,E}()
@@ -172,16 +174,18 @@ function triangulate(triangles,
     for i in boundary_nodes
         add_neighbour!(DG, I(BoundaryIndex), i)
     end
-    cx, cy = sum(nodes; dims=2) / size(nodes, 2)
-    θ = zeros(length(boundary_nodes))
-    for (j, i) in pairs(boundary_nodes)
-        p = @view nodes[:, i]
-        x, y = p
-        θ[j] = atan(y - cy, x - cx)
+    if sort_boundary
+        cx, cy = sum(nodes; dims=2) / size(nodes, 2)
+        θ = zeros(length(boundary_nodes))
+        for (j, i) in pairs(boundary_nodes)
+            p = @view nodes[:, i]
+            x, y = p
+            θ[j] = atan(y - cy, x - cx)
+        end
+        sort_idx = sortperm(θ)
+        permute!(boundary_nodes, sort_idx)
+        reverse!(boundary_nodes) # cw 
     end
-    sort_idx = sortperm(θ)
-    permute!(boundary_nodes, sort_idx)
-    reverse!(boundary_nodes) # cw 
     n = length(boundary_nodes)
     push!(boundary_nodes, boundary_nodes[begin])
     for i in 1:n
