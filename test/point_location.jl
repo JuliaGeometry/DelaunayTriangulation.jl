@@ -42,21 +42,38 @@
                     @test DT.isoriented(τ, pts) == 1
                 end
                 pop!(_pts)
-                for q in (a, b, c)
-                    push!(_pts, q)
-                    τ, flag = locate_triangle(HG, _pts, n + 1, DT.BoundingTriangle)
-                    @test DT.isintriangle(τ, _pts, n + 1) == flag == 0
-                    @test DT.isoriented(τ, pts) == 1
-                    for _ in 1:4
-                        τ = jump_and_march(q, adj, adj2v, DG, pts; k=k)
-                        @test DT.isintriangle(τ, _pts, n + 1) == 0
-                        @test DT.isoriented(τ, pts) == 1
-                        τ = jump_and_march(q, adj, adj2v, DG, pts)
-                        @test DT.isintriangle(τ, _pts, n + 1) == 0
-                        @test DT.isoriented(τ, pts) == 1
-                    end
-                    pop!(_pts)
-                end
+            end
+        end
+    end
+end
+
+@testset "Finding points which are already in the triangulation" begin
+    for _ in 1:100
+        n = rand(3:500)
+        r = 5sqrt.(rand(n))
+        θ = 2π * rand(n)
+        pts = [@SVector[r * cos(θ), r * sin(θ)] for (r, θ) in zip(r, θ)]
+        T, adj, adj2v, DG = DT.triangulate_bowyer(pts)
+        j = 0
+        for V in T
+            i, j, k = indices(V)
+            q1 = get_point(pts, i)
+            q2 = get_point(pts, j)
+            q3 = get_point(pts, k)
+            for _k in DT._eachindex(pts)
+                τ1 = jump_and_march(q1, adj, adj2v, DG, pts; k=_k)
+                τ2 = jump_and_march(q2, adj, adj2v, DG, pts; k=_k)
+                τ3 = jump_and_march(q3, adj, adj2v, DG, pts; k=_k)
+                @test DT.isintriangle(τ1, pts, i) == 0
+                @test DT.isoriented(τ1, pts) == 1
+                @test DT.isintriangle(τ2, pts, j) == 0
+                @test DT.isoriented(τ2, pts) == 1
+                @test DT.isintriangle(τ3, pts, k) == 0
+                @test DT.isoriented(τ3, pts) == 1
+            end
+            j += 1
+            if j > ceil(Int64, 0.45n^(1 / 3))
+                break
             end
         end
     end
@@ -296,94 +313,94 @@ end
     pts[12] = @SVector[3.0, 1.0]
     q = DT.get_point(pts, 12)
     p = DT.get_point(pts, k)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 9, pts) == (10, 8, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 10, pts) == (8, 11, false, true)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 5, pts) == (11, 10, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 4, pts) == (7, 5, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 3, pts) == (6, 4, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 2, pts) == (1, 6, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 1, pts) == (9, 8, true, false)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 9, pts) == (10, 8, true, false,9)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 10, pts) == (8, 11, false, true,10)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 5, pts) == (11, 10, true, false,5)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 4, pts) == (7, 5, true, false,4)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 3, pts) == (6, 4, true, false,3)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 2, pts) == (1, 6, true, false,2)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 1, pts) == (9, 8, true, false,1)
     pts[12] = @SVector[4.14, -1.95]
     q = DT.get_point(pts, 12)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 9, pts) == (10, 8, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 10, pts) == (5, 11, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 5, pts) == (11, 7, false, true)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 4, pts) == (7, 5, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 3, pts) == (6, 4, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 2, pts) == (1, 6, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 1, pts) == (8, 6, true, false)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 9, pts) == (10, 8, true, false,9)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 10, pts) == (5, 11, true, false,10)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 5, pts) == (11, 7, false, true,5)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 4, pts) == (7, 5, true, false,4)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 3, pts) == (6, 4, true, false,3)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 2, pts) == (1, 6, true, false,2)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 1, pts) == (8, 6, true, false,1)
     pts[12] = @SVector[5.83, -5.2]
     q = DT.get_point(pts, 12)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 9, pts) == (10, 8, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 10, pts) == (5, 11, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 5, pts) == (0, 0, false, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 4, pts) == (0, 0, false, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 3, pts) == (6, 4, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 2, pts) == (6, 3, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 1, pts) == (8, 6, true, false)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 9, pts) == (10, 8, true, false,9)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 10, pts) == (5, 11, true, false,10)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 5, pts) == (0, 0, false, false,5)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 4, pts) == (0, 0, false, false,4)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 3, pts) == (6, 4, true, false,3)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 2, pts) == (6, 3, true, false,2)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 1, pts) == (8, 6, true, false,1)
     pts[12] = @SVector[-2.84, 2.25]
     q = DT.get_point(pts, 12)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 9, pts) == (8, 1, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 10, pts) == (8, 9, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 5, pts) == (7, 11, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 4, pts) == (6, 7, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 3, pts) == (2, 6, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 2, pts) == (1, 6, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 1, pts) == (6, 8, false, true)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 9, pts) == (8, 1, true, false,9)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 10, pts) == (8, 9, true, false,10)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 5, pts) == (7, 11, true, false,5)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 4, pts) == (6, 7, true, false,4)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 3, pts) == (2, 6, true, false,3)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 2, pts) == (1, 6, true, false,2)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 1, pts) == (6, 8, false, true,1)
     pts[12] = @SVector[-4.19, 2.89]
     q = DT.get_point(pts, 12)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 9, pts) == (8, 1, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 10, pts) == (8, 9, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 5, pts) == (7, 11, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 4, pts) == (3, 6, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 3, pts) == (2, 6, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 2, pts) == (6, 1, false, true)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 1, pts) == (2, 6, false, true)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 9, pts) == (8, 1, true, false,9)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 10, pts) == (8, 9, true, false,10)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 5, pts) == (7, 11, true, false,5)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 4, pts) == (3, 6, true, false,4)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 3, pts) == (2, 6, true, false,3)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 2, pts) == (6, 1, false, true,2)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 1, pts) == (2, 6, false, true,1)
     pts[12] = @SVector[-4.375, -2.44]
     q = DT.get_point(pts, 12)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 9, pts) == (8, 1, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 10, pts) == (11, 8, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 5, pts) == (4, 7, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 4, pts) == (6, 3, false, true)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 3, pts) == (4, 6, false, true)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 2, pts) == (6, 3, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 1, pts) == (6, 2, true, false)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 9, pts) == (8, 1, true, false,9)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 10, pts) == (11, 8, true, false,10)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 5, pts) == (4, 7, true, false,5)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 4, pts) == (6, 3, false, true,4)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 3, pts) == (4, 6, false, true,3)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 2, pts) == (6, 3, true, false,2)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 1, pts) == (6, 2, true, false,1)
     pts[12] = @SVector[1.79, 2.34]
     q = DT.get_point(pts, 12)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 9, pts) == (8, 10, false, true)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 10, pts) == (9, 8, false, true)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 5, pts) == (11, 10, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 4, pts) == (6, 7, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 3, pts) == (6, 4, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 2, pts) == (1, 6, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 1, pts) == (9, 8, true, false)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 9, pts) == (8, 10, false, true,9)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 10, pts) == (9, 8, false, true,10)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 5, pts) == (11, 10, true, false,5)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 4, pts) == (6, 7, true, false,4)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 3, pts) == (6, 4, true, false,3)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 2, pts) == (1, 6, true, false,2)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 1, pts) == (9, 8, true, false,1)
     pts[12] = @SVector[0.34, 3.25]
     q = DT.get_point(pts, 12)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 9, pts) == (1, 8, false, true)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 10, pts) == (8, 9, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 5, pts) == (11, 10, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 4, pts) == (6, 7, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 3, pts) == (6, 4, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 2, pts) == (1, 6, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 1, pts) == (8, 9, false, true)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 9, pts) == (1, 8, false, true,9)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 10, pts) == (8, 9, true, false,10)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 5, pts) == (11, 10, true, false,5)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 4, pts) == (6, 7, true, false,4)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 3, pts) == (6, 4, true, false,3)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 2, pts) == (1, 6, true, false,2)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 1, pts) == (8, 9, false, true,1)
     pts[12] = @SVector[4.6, 5.49]
     q = DT.get_point(pts, 12)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 9, pts) == (0, 0, false, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 10, pts) == (0, 0, false, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 5, pts) == (0, 0, false, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 4, pts) == (6, 7, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 3, pts) == (6, 4, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 2, pts) == (1, 6, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 1, pts) == (0, 0, false, false)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 9, pts) == (0, 0, false, false,9)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 10, pts) == (0, 0, false, false,10)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 5, pts) == (0, 0, false, false,5)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 4, pts) == (6, 7, true, false,4)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 3, pts) == (6, 4, true, false,3)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 2, pts) == (1, 6, true, false,2)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 1, pts) == (0, 0, false, false,1)
     pts[12] = @SVector[0.0, 5.0]
     q = DT.get_point(pts, 12)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 9, pts) == (0, 0, false, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 10, pts) == (0, 0, false, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 5, pts) == (11, 10, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 4, pts) == (6, 7, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 3, pts) == (2, 6, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 2, pts) == (1, 6, true, false)
-    @test DT.check_interior_edge_intersections(q, adj, DG, 1, pts) == (0, 0, false, false)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 9, pts) == (0, 0, false, false,9)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 10, pts) == (0, 0, false, false,10)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 5, pts) == (11, 10, true, false,5)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 4, pts) == (6, 7, true, false,4)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 3, pts) == (2, 6, true, false,3)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 2, pts) == (1, 6, true, false,2)
+    @test DT.check_interior_edge_intersections(q, adj, DG, 1, pts) == (0, 0, false, false,1)
 
     # Test the straight line search
     for k in [9, 10, 5, 4, 3, 2, 1]
@@ -398,11 +415,11 @@ end
         pts[12] = @SVector[18.0, 0.0]
         q = DT.get_point(pts, 12)
         @test DT.straight_line_search_ghost_triangles(q, adj, k, pts) == (10, 5)
-        @test DT.is_boundary_edge(10, 5,adj)
+        @test DT.is_boundary_edge(10, 5, adj)
         pts[12] = @SVector[20.257, 7.27]
         q = DT.get_point(pts, 12)
         @test DT.straight_line_search_ghost_triangles(q, adj, k, pts) == (10, 5)
-        @test DT.is_boundary_edge(10, 5,adj)
+        @test DT.is_boundary_edge(10, 5, adj)
         pts[12] = @SVector[12.0, -8.0]
         q = DT.get_point(pts, 12)
         @test DT.straight_line_search_ghost_triangles(q, adj, k, pts) == (5, 4)
@@ -434,27 +451,27 @@ end
         pts[12] = @SVector[-8.0, 2.0]
         q = DT.get_point(pts, 12)
         @test DT.straight_line_search_ghost_triangles(q, adj, k, pts) == (3, 2)
-        @test DT.is_boundary_edge(3,2, adj)
+        @test DT.is_boundary_edge(3, 2, adj)
         pts[12] = @SVector[-7.17, 2.96]
         q = DT.get_point(pts, 12)
         @test DT.straight_line_search_ghost_triangles(q, adj, k, pts) == (2, 1)
-        @test DT.is_boundary_edge(2,1, adj)
+        @test DT.is_boundary_edge(2, 1, adj)
         pts[12] = @SVector[-6.0, 4.0]
         q = DT.get_point(pts, 12)
         @test DT.straight_line_search_ghost_triangles(q, adj, k, pts) == (2, 1)
-        @test DT.is_boundary_edge(2,1, adj)
+        @test DT.is_boundary_edge(2, 1, adj)
         pts[12] = @SVector[-9.39, 7.46]
         q = DT.get_point(pts, 12)
         @test DT.straight_line_search_ghost_triangles(q, adj, k, pts) == (2, 1)
-        @test DT.is_boundary_edge(2,1, adj)
+        @test DT.is_boundary_edge(2, 1, adj)
         pts[12] = @SVector[-3.0, 4.17]
         q = DT.get_point(pts, 12)
         @test DT.straight_line_search_ghost_triangles(q, adj, k, pts) == (1, 9)
-        @test DT.is_boundary_edge(1,9,adj)
+        @test DT.is_boundary_edge(1, 9, adj)
         pts[12] = @SVector[0.0, 6.0]
         q = DT.get_point(pts, 12)
         @test DT.straight_line_search_ghost_triangles(q, adj, k, pts) == (1, 9)
-        @test DT.is_boundary_edge(1,9,adj)
+        @test DT.is_boundary_edge(1, 9, adj)
         pts[12] = @SVector[2.47, 7.027]
         q = DT.get_point(pts, 12)
         @test DT.straight_line_search_ghost_triangles(q, adj, k, pts) == (9, 10)

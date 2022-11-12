@@ -203,7 +203,7 @@ end
         -1 -1 0
         -1 -1 -1
     ]
-    ev = [1, 0, -1, 0, 0, 0, -1, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -1, 0, 0, 0, -1, 0, -1]
+    ev = [1, 0, -1, 0, 0, -1, -1, -1, -1, 0, 0, -1, 0, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
     @test all(DT.isintriangle(e[i, 1], e[i, 2], e[i, 3]) == ev[i] for i in eachindex(ev))
 end
 
@@ -384,6 +384,85 @@ end
     @test DT.isintriangle(DT.construct_triangle(NTuple{3,Int64}, DT.UpperBoundingIndex, DT.LowerLeftBoundingIndex, DT.LowerRightBoundingIndex), pts, length(pts)) == 1
     push!(pts, [-2.02, 13.4])
     @test DT.isintriangle(DT.construct_triangle(NTuple{3,Int64}, DT.UpperBoundingIndex, DT.LowerLeftBoundingIndex, DT.LowerRightBoundingIndex), pts, length(pts)) == 1
+
+    p1 = [8.0, 3.0]
+    p2 = [9.0, 2.0]
+    p3 = [9.0, 3.0]
+    p4 = [9.0, 4.0]
+    pts = [p1, p2, p3, p4]
+    i, j, k = 1, 2, 3
+    ℓ = 4
+    @test DT.isintriangle(DT.construct_triangle(NTuple{3,Int64}, i, j, k), pts, ℓ) == -1
+
+    p1, p2, p3 = ([2.858866215272096, -2.220975375945989], [0.25559192484080395, -0.37340906332046214], [1.3855904656897817, -2.47947044705479])
+    pts = [p1, p2, p3]
+    τ1 = DT.construct_triangle(NTuple{3,Int64}, 1, 2, 3)
+    τ2 = DT.construct_triangle(NTuple{3,Int64}, 2, 3, 1)
+    τ3 = DT.construct_triangle(NTuple{3,Int64}, 3, 1, 2)
+    e = zeros(Int64, 9)
+    e[1] = DT.isintriangle(τ1, pts, 1)
+    e[2] = DT.isintriangle(τ2, pts, 2)
+    e[3] = DT.isintriangle(τ3, pts, 3)
+    e[4] = DT.isintriangle(τ1, pts, 1)
+    e[5] = DT.isintriangle(τ2, pts, 2)
+    e[6] = DT.isintriangle(τ3, pts, 3)
+    e[7] = DT.isintriangle(τ1, pts, 1)
+    e[8] = DT.isintriangle(τ2, pts, 2)
+    e[9] = DT.isintriangle(τ3, pts, 3)
+    @test all(e .== 0)
+
+    for _ in 1:5000
+        n = rand(3:5000)
+        pts = rand(SVector{2,Float64}, n)
+        i, j, k = rand(1:n, 3)
+        while length(unique((i, j, k))) < 3
+            i, j, k = rand(1:n, 3)
+
+        end
+        τ = DT.construct_positively_oriented_triangle(NTuple{3,Int64}, i, j, k, pts)
+        i, j, k = indices(τ)
+        τ1 = DT.construct_triangle(NTuple{3,Int64}, i, j, k)
+        τ2 = DT.construct_triangle(NTuple{3,Int64}, j, k, i)
+        τ3 = DT.construct_triangle(NTuple{3,Int64}, k, i, j)
+        e = zeros(Int64, 9)
+        e[1] = DT.isintriangle(τ1, pts, i)
+        e[2] = DT.isintriangle(τ2, pts, j)
+        e[3] = DT.isintriangle(τ3, pts, k)
+        e[4] = DT.isintriangle(τ1, pts, i)
+        e[5] = DT.isintriangle(τ2, pts, j)
+        e[6] = DT.isintriangle(τ3, pts, k)
+        e[7] = DT.isintriangle(τ1, pts, i)
+        e[8] = DT.isintriangle(τ2, pts, j)
+        e[9] = DT.isintriangle(τ3, pts, k)
+        @test all(e .== 0)
+    end
+    for _ in 1:5000
+        n = rand(3:5000)
+        r = 5sqrt.(rand(n))
+        θ = 2π * rand(n)
+        pts = [@SVector[r * cos(θ), r * sin(θ)] for (r, θ) in zip(r, θ)]
+        i, j, k = rand(1:n, 3)
+        while length(unique((i, j, k))) < 3
+            i, j, k = rand(1:n, 3)
+
+        end
+        τ = DT.construct_positively_oriented_triangle(NTuple{3,Int64}, i, j, k, pts)
+        i, j, k = indices(τ)
+        τ1 = DT.construct_triangle(NTuple{3,Int64}, i, j, k)
+        τ2 = DT.construct_triangle(NTuple{3,Int64}, j, k, i)
+        τ3 = DT.construct_triangle(NTuple{3,Int64}, k, i, j)
+        e = zeros(Int64, 9)
+        e[1] = DT.isintriangle(τ1, pts, i)
+        e[2] = DT.isintriangle(τ2, pts, j)
+        e[3] = DT.isintriangle(τ3, pts, k)
+        e[4] = DT.isintriangle(τ1, pts, i)
+        e[5] = DT.isintriangle(τ2, pts, j)
+        e[6] = DT.isintriangle(τ3, pts, k)
+        e[7] = DT.isintriangle(τ1, pts, i)
+        e[8] = DT.isintriangle(τ2, pts, j)
+        e[9] = DT.isintriangle(τ3, pts, k)
+        @test all(e .== 0)
+    end
 end
 
 @testset "Test if edge is on the bounding triangle" begin

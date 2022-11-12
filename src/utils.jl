@@ -21,6 +21,20 @@ function is_boundary_edge(i, j, adj2v::Adjacent2Vertex{I,Es,E}) where {I,Es,E}
 end
 
 """
+    is_boundary_triangle(T, adj)
+
+Returns `true` if `T` has any edges on the boundary, and `false` otherwise. Note that this is 
+different from testing if `T` is a ghost triangle - it is assumed that `T` is a solid triangle.
+"""
+function is_boundary_triangle(T, adj)
+    i, j, k = indices(T)
+    return is_boundary_edge(k, j, adj) ||
+           is_boundary_edge(j, i, adj) ||
+           is_boundary_edge(i, k, adj)
+
+end
+
+"""
     is_ghost_edge(i::I, j::I) where {I, E}
 
 Returns `true` if the edge `(i, j)` is a ghost edge of the triangulation, 
@@ -146,41 +160,41 @@ function validate_triangulation(T, adj::Adjacent{I,E}, adj2v, DG, pts) where {I,
     clear_empty_keys!(_adj)
     ## Check triangle orientation 
     for T in T
-        isoriented(T, pts) == -1 && return false
+        isoriented(T, pts) == -1 && (@show "Not all triangles are positively oriented."; return false)
     end
     ## Test that all edges are legal 
-    !is_delaunay(T, pts) && return false
+    !is_delaunay(T, pts) && (@show "Not all edges are legal."; return false)
     ## Check that the adjacent map and the adjacent-to-vertex map are inverses
-    !check_adjacent_is_adjacent2vertex_inverse(_adj, adj2v) && return false
+    !check_adjacent_is_adjacent2vertex_inverse(_adj, adj2v) && (@show "The Adjacent and Adjacent2Vertex maps are not inverses of each other."; return false)
     ## Check the graph 
     for (i, j) in graph(DG).E
         if triangulation_has_ghost_triangles(_adj, adj2v)
-            (i, j) ∉ edges(_adj) && return false
-            (j, i) ∉ edges(_adj) && return false
+            (i, j) ∉ edges(_adj) && (@show "The adjacent map is missing an edge."; return false)
+            (j, i) ∉ edges(_adj) && (@show "The adjacent map is missing an edge."; return false)
         else
             if i ≠ I(BoundaryIndex) && j ≠ I(BoundaryIndex)
-                (i, j) ∉ edges(_adj) && return false
-                (j, i) ∉ edges(_adj) && return false
+                (i, j) ∉ edges(_adj) && (@show "The adjacent map is missing an edge."; return false)
+                (j, i) ∉ edges(_adj) && (@show "The adjacent map is missing an edge."; return false)
             end
         end
     end
     ## Check the edges
     for T in T
         i, j, k = indices(T)
-        get_edge(_adj, i, j) ≠ k && return false
-        get_edge(_adj, j, k) ≠ i && return false
-        get_edge(_adj, k, i) ≠ j && return false
+        get_edge(_adj, i, j) ≠ k && (@show "An adjacent key is incorrect."; return false)
+        get_edge(_adj, j, k) ≠ i && (@show "An adjacent key is incorrect."; return false)
+        get_edge(_adj, k, i) ≠ j && (@show "An adjacent key is incorrect."; return false)
     end
     ## Check that every edge is incident to two triangles if it is not a boundary edge, and one otherwise
     for (i, j) in edges(_adj)
         vij = get_edge(_adj, i, j)
         vji = get_edge(_adj, j, i)
         if is_boundary_edge(i, j, adj)
-            vij ≠ I(BoundaryIndex) && return false
+            vij ≠ I(BoundaryIndex) && (@show "An adjacent key is incorrect."; return false)
         elseif is_boundary_edge(j, i, adj)
-            vji ≠ I(BoundaryIndex) && return false
+            vji ≠ I(BoundaryIndex) && (@show "An adjacent key is incorrect."; return false)
         elseif i ≠ I(BoundaryIndex) && j ≠ I(BoundaryIndex)
-            (vij < I(LowerLeftBoundingIndex) || vji < I(LowerLeftBoundingIndex)) && return false
+            (vij < I(LowerLeftBoundingIndex) || vji < I(LowerLeftBoundingIndex)) && (@show "An adjacent key is incorrect."; return false)
         end
     end
     ## Done 
@@ -274,10 +288,28 @@ function compare_unconstrained_triangulations(T1, adj1, adj2v1, DG1, T2, adj2, a
     _adj2v = deepcopy(adj2v2)
     clear_empty_keys!(adj2v)
     clear_empty_keys!(_adj2v)
-    return compare_triangle_sets(T1, T2) &&
-           adjacent(adj) == adjacent(_adj) &&
-           adjacent2vertex(adj2v) == adjacent2vertex(_adj2v) &&
-           graph(DG1) == graph(DG2)
+    e1 = compare_triangle_sets(T1, T2)
+    e2 = adjacent(adj) == adjacent(_adj)
+    e3 = adjacent2vertex(adj2v) == adjacent2vertex(_adj2v)
+    e4 = graph(DG1) == graph(DG2)
+    !e1 && (@show "Unequal triangle sets."; return false)
+    !e2 && (@show "Unequal adjacent maps."; return false)
+    !e3 && (@show "Unequal adjacent2vertex maps."; return false)
+    !e4 && (@show "Unequal graphs."; return false)
+    return true
+end
+
+"""
+    setdiff_triangles(T::Ts, _T::Ts) where {Ts}
+
+Allows `setdiff` to be used for triangle sets, checking for equalities under 
+circular shifts.
+"""
+function setdiff_triangles(T::Ts, _T::Ts) where {Ts}
+    V = sort_triangles(T)
+    _V = sort_triangles(_T)
+    setdiff!(V, _V)
+    return V
 end
 
 """
@@ -290,13 +322,13 @@ function check_adjacent_is_adjacent2vertex_inverse(adj::Adjacent{I,E}, adj2v) wh
     # Check adj2v 
     for (k, S) in adjacent2vertex(adj2v)
         for ij in S
-            get_edge(adj, ij) ≠ k && return false
+            get_edge(adj, ij) ≠ k && (@show (ij, k); return false)
         end
     end
     # Check adj
     for (ij, k) in adjacent(adj)
         if k ≠ I(DefaultAdjacentValue)
-            ij ∉ get_edge(adj2v, k) && return false
+            ij ∉ get_edge(adj2v, k) && (@show (ij, k); return false)
         end
     end
     return true

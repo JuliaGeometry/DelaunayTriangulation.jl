@@ -8,7 +8,7 @@ using StatsBase
 const DT = DelaunayTriangulation
 import DataStructures: DefaultDict
 
-function triplot!(ax, T, pts; markersize=11, plot_ghost_edges=false, DG=nothing, recompute_centroid=true, kwargs...)
+function triplot!(ax, T, pts; markersize=11, plot_ghost_edges=false, DG=nothing, recompute_centroid=true, plot_all_pts=false, kwargs...)
     Tmat = zeros(Int64, length(T), 3)
     tri_length = 0
     for T in T
@@ -19,11 +19,16 @@ function triplot!(ax, T, pts; markersize=11, plot_ghost_edges=false, DG=nothing,
     end
     Tmat = @views Tmat[1:tri_length, :]
     pmat = zeros(length(pts), 2)
-    for (i, p) in enumerate(pts)
+    for i in DT._eachindex(pts)
+        p = _get_point(pts, i)
         pmat[i, :] = [getx(p), gety(p)]
     end
     poly!(ax, pmat, Tmat; kwargs...)
-    scatter!(ax, pmat, color=:red, markersize=markersize)
+    if plot_all_pts
+        scatter!(ax, pmat, color=:red, markersize=markersize)
+    else
+        scatter!(ax, pmat[setdiff(collect(DG.graph.V), 0), :], color=:red, markersize=markersize)
+    end
     if plot_ghost_edges
         if recompute_centroid
             DT.compute_centroid!(pts)

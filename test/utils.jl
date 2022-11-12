@@ -499,8 +499,8 @@ end
     for (j, i) in enumerate(idx)
         DT.update_centroid_after_deleted_point!(pts, i)
         pxy = (sum(pts) - sum(pts[idx[1:j]])) / (length(pts) - j)
-        @test DT.CentroidCoordinates.x ≈ pxy[1]
-        @test DT.CentroidCoordinates.y ≈ pxy[2]
+        @test DT.CentroidCoordinates.x ≈ pxy[1] rtol=1e-7
+        @test DT.CentroidCoordinates.y ≈ pxy[2] rtol=1e-7
         @test DT.CentroidCoordinates.n == length(pts) - j
     end
 end
@@ -591,5 +591,51 @@ end
     V = DT.remove_duplicate_triangles(T)
     @test V == Set{NTuple{3,Int64}}([
         (1, 11, 9)
+    ])
+end
+
+@testset "Testing if a triangle is a boundary triangle" begin
+    a = 0.0
+    b = 10.0
+    c = 0.0
+    d = 10.0
+    nx = 11
+    ny = 11
+    function DT._get_point(pts::AbstractMatrix, i)
+        return @view pts[:, i]
+    end
+    function DT._eachindex(pts::AbstractMatrix)
+        return axes(pts, 2)
+    end
+    T, adj, adj2v, DG, pts = triangulate_structured(a, b, c, d, nx, ny)
+    @test DT.is_boundary_triangle((1, 2, 12), adj)
+    @test !DT.is_boundary_triangle((12, 2, 1), adj)
+    @test DT.is_boundary_triangle((2, 3, 13), adj)
+end
+
+@testset "Setdiff for triangles" begin
+    V = Set{NTuple{3,Int64}}([
+        (1, 2, 3),
+        (4, 5, 6),
+        (7, 8, 9)
+    ])
+    _V = DT.setdiff_triangles(V, V)
+    @test _V == Set{NTuple{3,Int64}}()
+    T = Set{NTuple{3,Int64}}([
+        (1, 2, 3),
+        (13, 11, 3),
+        (7, 10, 11),
+        (5, 6, 23),
+        (5, 10, 173),
+    ])
+    _T = Set{NTuple{3,Int64}}([
+        (11, 3, 13),
+        (5, 10, 200),
+        (23, 5, 6),
+        (7, 10, 11)
+    ])
+    @test DT.setdiff_triangles(T, _T) == Set{NTuple{3,Int64}}([
+        (1, 2, 3),
+        (5, 10, 173)
     ])
 end

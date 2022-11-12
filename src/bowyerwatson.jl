@@ -4,29 +4,44 @@ function add_point_bowyer!(T::Ts, adj::Adjacent{I,E}, adj2v, DG, pts, r;
     r = I(r)
     tri_type = triangle_type(Ts)
     V = jump_and_march(r, adj, adj2v, DG, pts; k=initial_search_point, TriangleType=tri_type)
+    flag = isintriangle(V, pts, r)
     i, j, k = indices(V)
+    ℓ₁ = get_edge(adj, j, i)
+    ℓ₂ = get_edge(adj, k, j)
+    ℓ₃ = get_edge(adj, i, k)
     delete_triangle!(i, j, k, T, adj, adj2v, DG; protect_boundary=true, update_ghost_edges=false)
-    dig_cavity!(r, i, j, T, adj, adj2v, DG, pts)
-    dig_cavity!(r, j, k, T, adj, adj2v, DG, pts)
-    dig_cavity!(r, k, i, T, adj, adj2v, DG, pts)
+    dig_cavity!(r, i, j, ℓ₁, T, adj, adj2v, DG, pts)
+    dig_cavity!(r, j, k, ℓ₂, T, adj, adj2v, DG, pts)
+    dig_cavity!(r, k, i, ℓ₃, T, adj, adj2v, DG, pts)
+    if flag == 0 && (is_boundary_triangle(V, adj) || is_ghost_triangle(V)) && !is_boundary_point(r, adj, DG) # Need to fix the ghost edges if the point is added onto an existing boundary edge. Note that the last condition is in case the ghost edges were already corrected added
+        _i, _j = find_edge(V, pts, r)
+        #is_bnd_pnt_i = is_boundary_point(_i, adj, DG)
+        #is_bnd_pnt_j = is_boundary_point(_j, adj, DG)
+        if is_boundary_edge(_i, _j, adj) || is_boundary_edge(_j, _i, adj)
+            if !is_boundary_edge(_i, _j, adj)
+                _i, _j = _j, _i
+            end
+            delete_triangle!(_j, _i, r, T, adj, adj2v, DG; protect_boundary=true, update_ghost_edges=false)
+            delete_triangle!(_i, _j, I(BoundaryIndex), T, adj, adj2v, DG; protect_boundary=true, update_ghost_edges=false)
+            add_triangle!(r, _j, I(BoundaryIndex), T, adj, adj2v, DG; update_ghost_edges=false)
+            add_triangle!(_i, r, I(BoundaryIndex), T, adj, adj2v, DG; update_ghost_edges=false)
+        end
+    end
     return nothing
 end
-function dig_cavity!(r, i, j, T::Ts, adj::Adjacent{I,E}, adj2v, DG, pts) where {Ts,I,E}
-    ℓ = get_edge(adj, j, i) # (j, i, ℓ) is the triangle on the other side of the edge (i, j) from r 
+function dig_cavity!(r, i, j, ℓ, T::Ts, adj::Adjacent{I,E}, adj2v, DG, pts) where {Ts,I,E}
     if ℓ == I(DefaultAdjacentValue)
         return nothing # The triangle has already been deleted in this case 
     end
-    δ = ℓ ≠ I(BoundaryIndex) && isincircle(pts, r, i, j, ℓ)# Boundary edges form part of the boundary on the polygonal cavity if we have reached ℓ = BoundaryIndex. This will not cause issues with the ghost triangles since, if these ghost triangles are relevant, we will have started in one (since this means the point must be in the exterior), and so one of the dig cavity calls will have found it.  
-    if δ == I(1)
+    incirc = isincircle(pts, r, i, j, ℓ)
+    if incirc == I(1) && ℓ ≠ I(BoundaryIndex)
+        ℓ₁ = get_edge(adj, ℓ, i)
+        ℓ₂ = get_edge(adj, j, ℓ)
         delete_triangle!(j, i, ℓ, T, adj, adj2v, DG; protect_boundary=true, update_ghost_edges=false) # Notice that we don't need the update_ghost_edges argument, since we will step over ghost edges already and add them into the triangulation if necessary
-        dig_cavity!(r, i, ℓ, T, adj, adj2v, DG, pts)
-        dig_cavity!(r, ℓ, j, T, adj, adj2v, DG, pts)
+        dig_cavity!(r, i, ℓ, ℓ₁, T, adj, adj2v, DG, pts)
+        dig_cavity!(r, ℓ, j, ℓ₂, T, adj, adj2v, DG, pts)
     else # Must be an edge of the polygonal cavity. Note that this also covers the ℓ ≠ I(BoundaryIndex) case
-        #if is_ghost_triangle(i, j, ℓ) && isoriented(construct_triangle(triangle_type(Ts), r, i, j), pts) == 0
-        #    split_edge!(j, i, r, T, adj, adj2v, DG) # i, j isn't there anymore
-        #else
         add_triangle!(r, i, j, T, adj, adj2v, DG, update_ghost_edges=false)
-        #end
     end
     return nothing
 end
@@ -43,31 +58,30 @@ function triangulate_bowyer(pts;
     randomise=true,
     trim=true,
     try_last_inserted_point=true,
-    skip_pts = Set{Int64}()) where {I,E,V,Es,Ts}
+    skip_pts=Set{Int64}()) where {I,E,V,Es,Ts}
     pt_order = randomise ? shuffle(_eachindex(pts)) : collect(_eachindex(pts))
-    setdiff!(pt_order, skip_pts) 
+    setdiff!(pt_order, skip_pts)
     T = Ts()
     adj = Adjacent{I,E}()
     adj2v = Adjacent2Vertex{I,Es,E}()
     DG = DelaunayGraph{I}()
     initial_triangle = construct_positively_oriented_triangle(TriangleType, I(pt_order[begin]), I(pt_order[begin+1]), I(pt_order[begin+2]), pts)
-    while isoriented(initial_triangle, pts) == 0 # We cannot start with a degenerate triangle
-        pt_order = collect(pt_order) # We need to collect so that we can change the order of the points 
-        reverse!(@view pt_order[begin:(begin+2)]) # This makes it counter-clockwise
+    while isoriented(initial_triangle, pts) == 0 # We cannot start with a degenerate triangle. We need to shift the insertion order
+        circshift!(pt_order, 1)
         initial_triangle = construct_positively_oriented_triangle(TriangleType, I(pt_order[begin]), I(pt_order[begin+1]), I(pt_order[begin+2]), pts)
     end
     u, v, w = indices(initial_triangle)
     add_triangle!(u, v, w, T, adj, adj2v, DG; update_ghost_edges=true)
     # compute_centroid!(@view pts[pt_order[begin:(begin+2)]]) # Can't use this, else ArrayPartitions support fails
     compute_centroid!((
-        get_point(pts, pt_order[begin]), 
+        get_point(pts, pt_order[begin]),
         get_point(pts, pt_order[begin+1]),
         get_point(pts, pt_order[begin+2])
     ))
     for (num_points, new_point) in enumerate(@view pt_order[(begin+3):end])
         last_inserted_point_number = num_points + 3 - 1 # + 3 for the first three points already inserted
         last_inserted_point = pt_order[last_inserted_point_number]
-        pt_idx = @view pt_order[begin:last_inserted_point_number] # + 3 for the first three points already inserted
+        pt_idx = @view pt_order[begin:last_inserted_point_number]
         m = ceil(Int64, length(pt_idx)^(1 / 3))
         initial_search_point = I(select_initial_point(pts, new_point; pt_idx, m, try_points=try_last_inserted_point ? last_inserted_point : ()))
         add_point_bowyer!(T, adj, adj2v, DG, pts, new_point;

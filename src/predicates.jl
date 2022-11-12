@@ -151,7 +151,11 @@ function isintriangle(T, pts, ℓ::I) where {I}
     )
 end
 function isintriangle(e1::I, e2::I, e3::I) where {I}
-    if e1 == I(0) || e2 == I(0) || e3 == I(0)
+    isinexterior = e1 == I(-1) || e2 == I(-1) || e3 == I(-1)
+    if isinexterior 
+        return I(-1)
+    end
+    if e1 == I(0) || e2 == I(0) || e3 == I(0) 
         return I(0)
     end
     isininterior = e1 == I(1) && e2 == I(1) && e3 == I(1)

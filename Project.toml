@@ -1,7 +1,7 @@
 name = "DelaunayTriangulation"
 uuid = "927a84f5-c5f4-47a5-9785-b46e178433df"
 authors = ["Daniel VandenHeuvel <danj.vandenheuvel@gmail.com>"]
-version = "0.3.14"
+version = "0.3.15"
 
 [deps]
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
@@ -19,6 +19,8 @@ ExactPredicates = "2"
 MutableNamedTuples = "0.1"
 SimpleGraphs = "0.8"
 julia = "1.8"
+Scanf = "0.5"
+ElasticArrays = "1"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

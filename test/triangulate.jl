@@ -559,3 +559,112 @@ end
         [2.5, 10], [3.75, 10], [5, 10]])
     @test BN == [1, 2, 3, 4, 5, 10, 15, 14, 13, 12, 11, 6]
 end
+
+@testset "Collinear" begin
+    a = 0.0
+    b = 10.0
+    c = 0.0
+    d = 10.0
+    nx = 11
+    ny = 11
+    function DT._get_point(pts::AbstractMatrix, i)
+        return @view pts[:, i]
+    end
+    function DT._eachindex(pts::AbstractMatrix)
+        return axes(pts, 2)
+    end
+    Random.seed!(299756756791)
+    _T, _adj, _adj2v, _DG, pts, BN = triangulate_structured(a, b, c, d, nx, ny; return_boundary_types=true, single_boundary=true)
+
+    T, adj, adj2v, DG = DT.triangulate_bowyer(pts; randomise=false)
+    @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
+    @test DG.graph.N[DT.BoundaryIndex] == _DG.graph.N[DT.BoundaryIndex]
+
+    Random.seed!(2820088771)
+    T, adj, adj2v, DG = DT.triangulate_bowyer(pts)
+    @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
+    @test DG.graph.N[DT.BoundaryIndex] == _DG.graph.N[DT.BoundaryIndex]
+    @test DG.graph.N[DT.BoundaryIndex] == _DG.graph.N[DT.BoundaryIndex]
+
+    Random.seed!(20288888)
+    T, adj, adj2v, DG = DT.triangulate_bowyer(pts)
+    @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
+    @test DG.graph.N[DT.BoundaryIndex] == _DG.graph.N[DT.BoundaryIndex]
+
+    Random.seed!(1375560)
+    T, adj, adj2v, DG = DT.triangulate_bowyer(pts)
+    @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
+    @test DG.graph.N[DT.BoundaryIndex] == _DG.graph.N[DT.BoundaryIndex]
+
+    Random.seed!(17115)
+    T, adj, adj2v, DG = DT.triangulate_bowyer(pts)
+    @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
+    @test DG.graph.N[DT.BoundaryIndex] == _DG.graph.N[DT.BoundaryIndex]
+
+    Random.seed!(668591)
+    T, adj, adj2v, DG = DT.triangulate_bowyer(pts)
+    @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
+    @test DG.graph.N[DT.BoundaryIndex] == _DG.graph.N[DT.BoundaryIndex]
+
+    for _ in 1:5000
+        n = rand(1:2000000)
+        Random.seed!(n)
+        @show n
+        T, adj, adj2v, DG = DT.triangulate_bowyer(pts)
+        e1 = DT.validate_triangulation(T, adj, adj2v, DG, pts)
+        if !e1
+            throw("") # Want to capture the seed. This won't always happen even if the triangulation fails, note, since we can have infinite loops when the point location fails.
+        end
+        @test e1
+        @test DG.graph.N[DT.BoundaryIndex] == _DG.graph.N[DT.BoundaryIndex]
+    end
+
+    a = 0.0
+    b = 5.0
+    c = 0.0
+    d = 17.0
+    nx = 67
+    ny = 31
+    _T, _adj, _adj2v, _DG, pts, BN = triangulate_structured(a, b, c, d, nx, ny; return_boundary_types=true, single_boundary=true)
+    T, adj, adj2v, DG = DT.triangulate_bowyer(pts; randomise=false)
+    @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
+    @test DG.graph.N[DT.BoundaryIndex] == _DG.graph.N[DT.BoundaryIndex]
+
+    Random.seed!(2820088771)
+    T, adj, adj2v, DG = DT.triangulate_bowyer(pts)
+    @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
+    @test DG.graph.N[DT.BoundaryIndex] == _DG.graph.N[DT.BoundaryIndex]
+    @test DG.graph.N[DT.BoundaryIndex] == _DG.graph.N[DT.BoundaryIndex]
+
+    Random.seed!(20288888)
+    T, adj, adj2v, DG = DT.triangulate_bowyer(pts)
+    @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
+    @test DG.graph.N[DT.BoundaryIndex] == _DG.graph.N[DT.BoundaryIndex]
+
+    Random.seed!(1375560)
+    T, adj, adj2v, DG = DT.triangulate_bowyer(pts)
+    @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
+    @test DG.graph.N[DT.BoundaryIndex] == _DG.graph.N[DT.BoundaryIndex]
+
+    Random.seed!(17115)
+    T, adj, adj2v, DG = DT.triangulate_bowyer(pts)
+    @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
+    @test DG.graph.N[DT.BoundaryIndex] == _DG.graph.N[DT.BoundaryIndex]
+
+    Random.seed!(668591)
+    T, adj, adj2v, DG = DT.triangulate_bowyer(pts)
+    @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
+    @test DG.graph.N[DT.BoundaryIndex] == _DG.graph.N[DT.BoundaryIndex]
+    for _ in 1:60
+        m = rand(1:2000000)
+        Random.seed!(m)
+        @show m
+        T, adj, adj2v, DG = DT.triangulate_bowyer(pts)
+        e1 = DT.validate_triangulation(T, adj, adj2v, DG, pts)
+        if !e1
+            throw("") # Want to capture the seed. This won't always happen even if the triangulation fails, note, since we can have infinite loops when the point location fails.
+        end
+        @test e1
+        @test DG.graph.N[DT.BoundaryIndex] == _DG.graph.N[DT.BoundaryIndex]
+    end
+end
