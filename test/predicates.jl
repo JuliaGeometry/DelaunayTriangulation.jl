@@ -810,3 +810,28 @@ end
     @test DT.isleftofline(pts, 10, DT.BoundaryIndex, 16) == -1
     @test DT.locate_triangle(T, pts, 16) == (10, 5, DT.BoundaryIndex)
 end
+
+@testset "Testing if a point is inside the convex hull" begin
+    for _ in 1:200
+        pts = rand(SVector{2,Float64}, 250)
+        T, adj, adj2v, DG = triangulate_bowyer(pts)
+        BN = convex_hull(DG, pts)
+        for _ in 1:100
+            q = 3rand(SVector{2,Float64})
+            push!(pts, q)
+            V = DT.locate_triangle(T, pts, length(pts))
+            if isnothing(V)
+                @test DT.isinconvexhull(pts, BN, q) == -1
+            else
+                @test DT.isinconvexhull(pts, BN, q) == 1
+            end
+            pop!(pts)
+        end
+        for V in T
+            i, j, k = indices(V)
+            u, v, w = get_point(pts, i, j, k)
+            q = (u .+ v .+ w) ./ 3
+            @test DT.isinconvexhull(pts, BN, q) == 1
+        end
+    end
+end

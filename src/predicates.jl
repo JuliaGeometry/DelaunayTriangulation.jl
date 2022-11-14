@@ -207,3 +207,26 @@ function islegal(i::I, j::I, k::I, ℓ::I, pts) where {I}
     incirc = isincircle(pts, i, j, k, ℓ)
     return incirc == I(-1) || incirc == I(0)
 end
+
+"""
+    isinconvexhull(pts, BN, q)
+
+Tests if the point `q` is inside the convex hull `pts[BN]`, assuming that the `pts[BN]` are in counter-clockwise 
+order. Returns `1` if the point is inside, `0` if the point is on, or `-1` if the point is 
+outside of the convex hull.
+"""
+function isinconvexhull(pts, BN, q)
+    for i in eachindex(BN)
+        u = BN[i]
+        j = i == lastindex(BN) ? firstindex(BN) : i + 1
+        v = BN[j]
+        r, s = get_point(pts, u, v) 
+        o = orient(r, s, q)
+        if o == 0 
+            return 0
+        elseif o == -1 
+            return -1
+        end
+    end
+    return 1
+end

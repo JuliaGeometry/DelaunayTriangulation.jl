@@ -499,8 +499,8 @@ end
     for (j, i) in enumerate(idx)
         DT.update_centroid_after_deleted_point!(pts, i)
         pxy = (sum(pts) - sum(pts[idx[1:j]])) / (length(pts) - j)
-        @test DT.CentroidCoordinates.x ≈ pxy[1] rtol=1e-7
-        @test DT.CentroidCoordinates.y ≈ pxy[2] rtol=1e-7
+        @test DT.CentroidCoordinates.x ≈ pxy[1] rtol = 1e-7
+        @test DT.CentroidCoordinates.y ≈ pxy[2] rtol = 1e-7
         @test DT.CentroidCoordinates.n == length(pts) - j
     end
 end
@@ -638,4 +638,129 @@ end
         (1, 2, 3),
         (5, 10, 173)
     ])
+end
+
+@testset "Sorting a boundary" begin
+    Random.seed!(228818181)
+    A = (0.4, 2.6)#1
+    B = (1.1428403421814, 2.9209248186714)#2
+    C = (2.0927803855902, 2.381117619401)#3
+    D = (2.011356953298, 1.6271969500289)#4
+    E = (1.4172674658328, 1.0300917798863)#5
+    F = (0.4160608169067, 1.4402246240247)#6
+    G = (0.0571945782857, 2.1700198319768)#7
+    ref = (1.1790285343113, 2.121768909137)
+    pts = [A, B, C, D, E, F, G]
+    θ = zeros(length(pts))
+    idx_vec = zeros(Int64, length(pts))
+    boundary_idx = shuffle(collect(1:7))
+    DelaunayTriangulation.sort_boundary!(θ, idx_vec, pts, boundary_idx, ref)
+    @test boundary_idx == [6, 5, 4, 3, 2, 1, 7]
+
+    for _ in 1:250
+        θ = LinRange(0, 2π - 1 / 200, 250)
+        x = cos.(θ)
+        y = sin.(θ)
+        pts = [[x, y] for (x, y) in zip(x, y)]
+        ref = [0.0, 0.0]
+        ψ = zeros(length(θ))
+        idx_vec = zeros(Int64, length(pts))
+        boundary_idx = collect(1:length(pts))
+        shuffle!(boundary_idx)
+        DelaunayTriangulation.sort_boundary!(ψ, idx_vec, pts, boundary_idx, ref)
+        shift_idx = findfirst(boundary_idx .== 1)
+        circshift!(boundary_idx, shift_idx - 1)
+        @test boundary_idx == collect(1:length(pts))
+    end
+
+    for _ in 1:250
+        θ = LinRange(0, 2π - 1 / 200, 250)
+        x = cos.(θ)
+        y = sin.(θ)
+        pts = [[x, y] for (x, y) in zip(x, y)]
+        ref = [0.0, 0.0]
+        boundary_idx = collect(1:length(pts))
+        shuffle!(boundary_idx)
+        DelaunayTriangulation.sort_boundary!(pts, boundary_idx, ref)
+        shift_idx = findfirst(boundary_idx .== 1)
+        circshift!(boundary_idx, shift_idx - 1)
+        @test boundary_idx == collect(1:length(pts))
+    end
+
+    for _ in 1:250
+        pts = rand(SVector{2,Float64}, 500)
+        T, adj, adj2v, DG = DT.triangulate_bowyer(pts)
+        ref = get_point(pts, DT.BoundaryIndex)
+        BN = convex_hull(DG, pts)
+        DG_BN = DT.get_neighbour(DG, DT.BoundaryIndex) |> collect
+        θ = zeros(length(DG_BN))
+        idx_vec = zeros(Int64, length(DG_BN))
+        DT.sort_boundary!(θ, idx_vec, pts, DG_BN, ref)
+        shift_idx = findfirst(DG_BN .== BN[1])
+        circshift!(DG_BN, shift_idx - 1)
+        @test DG_BN == BN
+    end
+
+    for _ in 1:2500
+        pts = rand(SVector{2,Float64}, 500)
+        T, adj, adj2v, DG = DT.triangulate_bowyer(pts)
+        ref = get_point(pts, DT.BoundaryIndex)
+        BN = convex_hull(DG, pts)
+        DG_BN = DT.get_neighbour(DG, DT.BoundaryIndex) |> collect
+        DT.sort_boundary!(pts, DG_BN, ref)
+        shift_idx = findfirst(DG_BN .== BN[1])
+        circshift!(DG_BN, shift_idx - 1)
+        @test DG_BN == BN
+    end
+end
+
+@testset "Sorting a boundary for a point on the boundary" begin
+    Random.seed!(2992991)
+    qa = (-1.4, 0.61)
+    qb = (1.0, 1.0)
+    qc = (0.0, -2.0)
+    qd = (1.0, 3.0)
+    qe = (0.0, 0.0)
+    qf = (-0.56, 1.53)
+    qg = (2.22, 1.43)
+    qh = (2.46, -0.57)
+    qi = (-0.68, -1.07)
+    pts = [qa, qb, qc, qd, qe, qf, qg, qh, qi]
+    T, adj, adj2v, DG = DT.triangulate_bowyer(pts; trim=false)
+    i = 6
+    BN = [5, 2, 4, 0, 1]
+    DT.sort_boundary!(pts, BN, pts[i])
+    @test BN == [1, 5, 2, 4, 0]
+    i = 1
+    BN = [6, 9, 5, 0]
+    DT.sort_boundary!(pts, BN, pts[i])
+    @test BN == [9, 5, 6, 0]
+    i = 9
+    BN = DT.get_neighbour(DG, i) |> collect
+    DT.sort_boundary!(pts, BN, pts[i])
+    @test BN == [0, 3, 5, 1]
+    i = 4
+    BN = DT.get_neighbour(DG, i) |> collect
+    DT.sort_boundary!(pts, BN, pts[i])
+    @test BN == [6, 2, 7, 0]
+end
+
+@testset "Area of a polygon" begin
+    Random.seed!(2992991)
+    qa = (-1.4, 0.61)
+    qb = (1.0, 1.0)
+    qc = (0.0, -2.0)
+    qd = (1.0, 3.0)
+    qe = (0.0, 0.0)
+    qf = (-0.56, 1.53)
+    qg = (2.22, 1.43)
+    qh = (2.46, -0.57)
+    qi = (-0.68, -1.07)
+    pts = [qa, qb, qc, qd, qe, qf, qg, qh, qi]
+    T, adj, adj2v, DG = DT.triangulate_bowyer(pts)
+    BN = convex_hull(DG, pts)
+    pts_BN = pts[BN]
+    @test DT.area(pts_BN) ≈ 11.6082
+    reverse!(pts_BN)
+    @test DT.area(pts_BN) ≈ -11.6082
 end

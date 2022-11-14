@@ -35,3 +35,6 @@ end
 @testset "Convex Hull" begin
     include("convex_hull.jl")
 end
+@testset "Voronoi tessellations" begin 
+    include("voronoi.jl")
+end

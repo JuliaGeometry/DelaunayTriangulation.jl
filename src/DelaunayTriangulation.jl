@@ -22,6 +22,7 @@ include("deberg.jl")
 include("gmsh.jl")
 include("convex_hull.jl")
 include("structured.jl")
+include("voronoi.jl")
 
 export adjacent, adjacent2vertex, graph, pointlocation, triangles, points, neighbours
 export triangulate, triangulate!
@@ -38,9 +39,11 @@ export number_type
 export get_point, _get_point
 export convex_hull
 export construct_triangle, construct_triangles
-export triangulate_boywer 
+export triangulate_bowyer 
 export triangulate_berg
 export triangulate_structured
 export triangulate
+export voronoi 
+export VoronoiTessellation
 
 end

@@ -272,6 +272,7 @@ function delete_point!(DG::DelaunayGraph, u::Vararg{I,N}) where {I,N}
     return nothing
 end
 
+num_neighbours(DG::DelaunayGraph, u) = deg(graph(DG), u)
 ###################################################
 #/
 #/

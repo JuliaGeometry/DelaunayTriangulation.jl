@@ -550,3 +550,65 @@ function remove_duplicate_triangles(T)
         return V
     end
 end
+
+"""
+    sort_boundary!(θ, idx_vec, all_pts, boundary_idx, ref)
+    sort_boundary!(all_pts, boundary_idx, ref)
+
+Sorts the boundary defined by `all_pts` at the indices `boundary_idx`, 
+using the reference point `ref` to sort. The sorting is counter-clockwise.
+The vectors `θ`, `idx_vec`, and `boundary_idx` are all modified in-place. The 
+second method can be used to avoid creating these cache vectors manually, noting 
+that `boundary_idx` will still be modified in-place.
+
+# Arguments 
+- `θ`: The vector which will store the angles from `ref` to the points specified by `boundary_idx`.
+- `idx_vec`: This will be updated in-place with the sorting order. 
+- `all_pts`: The complete point set. 
+- `boundary_idx`: Indices in `all_pts` corresponding to the boundary to be sorted. 
+- `ref`: The reference point to compute angles about. 
+
+# Outputs 
+There are no outputs.
+"""
+function sort_boundary!(θ, idx_vec, all_pts, boundary_idx, ref)
+    cx, cy = ref
+    for (j, i) in pairs(boundary_idx)
+        x, y = get_point(all_pts, i)
+        θ[j] = atan(y - cy, x - cx) + π
+        if i == BoundaryIndex
+            θ[j] = (θ[j] + π) % 2π # Remember that this point is the centroid if we are at the boundary index, so reflect it across the boundary edge (add +π) to get the correct angle
+        end
+    end
+    sortperm!(idx_vec, θ)
+    permute!(boundary_idx, idx_vec)
+    return nothing
+end
+function sort_boundary!(all_pts, boundary_idx, ref)
+    θ = zeros(number_type(all_pts), length(boundary_idx))
+    idx_vec = zeros(Int64, length(boundary_idx))
+    sort_boundary!(θ, idx_vec, all_pts, boundary_idx, ref)
+    return nothing
+end
+
+"""
+    area(pts)
+
+Computes the area of the polygon defined by `pts`, assuming the points are given in 
+counter-clockwise order, using the shoelace formula.
+"""
+function area(pts)
+    F = number_type(pts)
+    A = zero(F)
+    _indices = _eachindex(pts)
+    for i in _indices
+        pᵢ_current = get_point(pts, i)
+        pᵢ_prev = get_point(pts, i == first(_indices) ? last(_indices) : i - 1)
+        pᵢ_next = get_point(pts, i == last(_indices) ? first(_indices) : i + 1)
+        xᵢ = getx(pᵢ_current)
+        yᵢ₊₁ = gety(pᵢ_next)
+        yᵢ₋₁ = gety(pᵢ_prev)
+        A += xᵢ * (yᵢ₊₁ - yᵢ₋₁)
+    end 
+    return 0.5A
+end

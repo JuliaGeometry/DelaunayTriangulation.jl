@@ -305,6 +305,12 @@ end
     @test DT.get_neighbour(DG, 2) == Set([11, 9, 8, 15, 16])
     @test DT.get_neighbour(DG, 3) == Set([1])
     @test edges(DG) == DG.graph.E
+
+    pts = rand(SVector{2, Float64}, 250)
+    T, adj, adj2v, DG = DT.triangulate_bowyer(pts)
+    for i in eachindex(pts)
+        @test deg(graph(DG), i) == DT.num_neighbours(DG, i)
+    end
 end
 
 @testset "HistoryGraph" begin

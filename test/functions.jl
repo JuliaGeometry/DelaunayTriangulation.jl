@@ -60,3 +60,53 @@ function example_empty_triangulation()
     adj2v = DT.Adjacent2Vertex(Dict(DT.BoundaryIndex => Set{NTuple{2,Int64}}()))
     return pts, T, DG, adj, adj2v
 end
+
+function circle_three_points(a, b, c)
+    ax, ay = a
+    bx, by = b
+    cx, cy = c
+    d1x, d1y = [by - ay, ax - bx]
+    d2x, d2y = [cy - ay, ax - cx]
+    k = d2x * d1y - d2y * d1x
+    s1x, s1y = [(ax + bx) / 2, (ay + by) / 2]
+    s2x, s2y = [(ax + cx) / 2, (ay + cy) / 2]
+    ℓ = d1x * (s2y - s1y) - d1y * (s2x - s1x)
+    m = ℓ / k
+    centx, centy = [s2x + m * d2x, s2y + m * d2y]
+    dx = centx - ax
+    dy = centy - ay
+    r = sqrt(dx^2 + dy^2)
+    return [centx, centy], r
+end
+
+function slow_get_voronoi_cells(T::Ts, DG, i, pts, tri_to_idx, adj, adj2v) where {Ts}
+    has_ghosts_flag = true
+    if !DT.triangulation_has_ghost_triangles(adj, adj2v)
+        has_ghosts_flag = false
+        DT.add_ghost_triangles!(T, adj, adj2v, DG)
+    end
+    V = DT.triangle_type(Ts)
+    nghs = DT.get_neighbour(DG, i) |> collect
+    ref = DT.get_point(pts, i)
+    DT.sort_boundary!(pts, nghs, ref)
+    cell_idx = Int64[]
+    for j in eachindex(nghs)
+        _i, _j, _k = i, nghs[j], nghs[j == length(nghs) ? 1 : j + 1]
+        if !DT.is_ghost_triangle(_i, _j, _k)
+            τ = construct_triangle(V, i, nghs[j], nghs[j == length(nghs) ? 1 : j + 1])
+            if τ ∉ T
+                τ = DT.shift_triangle_1(τ)
+            end
+            if τ ∉ T
+                τ = DT.shift_triangle_1(τ)
+            end
+            push!(cell_idx, tri_to_idx[τ])
+        else
+            push!(cell_idx, DT.BoundaryIndex)
+        end
+    end
+    if !has_ghosts_flag
+        DT.remove_ghost_triangles!(T, adj, adj2v, DG)
+    end
+    return cell_idx
+end
