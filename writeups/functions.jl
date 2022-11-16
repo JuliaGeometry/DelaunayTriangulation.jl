@@ -49,7 +49,7 @@ function DT._eachindex(pts::AbstractMatrix)
     return axes(pts, 2)
 end
 
-function voronoiplot!(ax, vorn, pts, DG; markersize=11, kwargs...)
+function voronoiplot!(ax, vorn, pts, DG; markersize=11, trunc=4, kwargs...)
     makie_polygons = Vector{Makie.Polygon}(undef, num_points(pts))
     xmax = -Inf
     ymax = -Inf
@@ -118,7 +118,7 @@ function voronoiplot!(ax, vorn, pts, DG; markersize=11, kwargs...)
                         if DT.isinconvexhull(pts, BN, prev_circ) == 1
                             t = 10000
                             next_pt = prev_circ .* (1 - t) .+ mid_pt .* t
-                            while getx(next_pt)^2 / xmax^2 + gety(next_pt)^2 / ymax^2 > 12
+                            while getx(next_pt)^2 / xmax^2 + gety(next_pt)^2 / ymax^2 > trunc^2
                                 t = t / 2
                                 next_pt = prev_circ .* (1 - t) .+ mid_pt .* t
                             end
@@ -126,7 +126,7 @@ function voronoiplot!(ax, vorn, pts, DG; markersize=11, kwargs...)
                         else
                             t = 10000
                             next_pt = mid_pt .* (1 - t) .+ prev_circ .* t
-                            while getx(next_pt)^2 / xmax^2 + gety(next_pt)^2 / ymax^2 > 12
+                            while getx(next_pt)^2 / xmax^2 + gety(next_pt)^2 / ymax^2 > trunc^2
                                 t = t / 2
                                 next_pt = mid_pt .* (1 - t) .+ prev_circ .* t
                             end
@@ -176,7 +176,7 @@ function voronoiplot!(ax, vorn, pts, DG; markersize=11, kwargs...)
                         if DT.isinconvexhull(pts, BN, next_circ) == 1
                             t = 10000
                             next_pt = next_circ .* (1 - t) .+ mid_pt .* t
-                            while getx(next_pt)^2 / xmax^2 + gety(next_pt)^2 / ymax^2 > 12
+                            while getx(next_pt)^2 / xmax^2 + gety(next_pt)^2 / ymax^2 > trunc^2
                                 t = t / 2
                                 next_pt = next_circ .* (1 - t) .+ mid_pt .* t
                             end
@@ -184,7 +184,7 @@ function voronoiplot!(ax, vorn, pts, DG; markersize=11, kwargs...)
                         else
                             t = 10000
                             next_pt = mid_pt .* (1 - t) .+ next_circ .* t
-                            while getx(next_pt)^2 / xmax^2 + gety(next_pt)^2 / ymax^2 > 12
+                            while getx(next_pt)^2 / xmax^2 + gety(next_pt)^2 / ymax^2 > trunc^2
                                 t = t / 2
                                 next_pt = mid_pt .* (1 - t) .+ next_circ .* t
                             end
@@ -198,13 +198,17 @@ function voronoiplot!(ax, vorn, pts, DG; markersize=11, kwargs...)
             makie_polygons[i] = Makie.Polygon(Makie.Point2.(_pts))
         end
     end
+    #=
     for i in BN # the boundary orientations can get a bit messed up
-        mkpi = makie_polygons[i].exterior.points.parent.data
-        bn_idx = collect(eachindex(mkpi))
-        DT.sort_boundary!(mkpi, bn_idx, get_point(pts, i))
-        fixed_pts = mkpi[bn_idx]
-        makie_polygons[i] = Makie.Polygon(fixed_pts)
+        if DT.BoundaryIndex ∈ vorn.polygons[i] # Don't need to do anything if we already trimmed the unbounded triangles
+            mkpi = makie_polygons[i].exterior.points.parent.data
+            bn_idx = collect(eachindex(mkpi))
+            DT.sort_boundary!(mkpi, bn_idx, get_point(pts, i))
+            fixed_pts = mkpi[bn_idx]
+            makie_polygons[i] = Makie.Polygon(fixed_pts)
+        end
     end
+    =#
     poly!(ax, makie_polygons, color=rand(RGBf, length(makie_polygons)); kwargs...)
     scatter!(ax, vorn.circumcenters, color=:purple, markersize=markersize)
     return makie_polygons

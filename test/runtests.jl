@@ -5,6 +5,7 @@ using Random
 using DelaunayTriangulation
 const DT = DelaunayTriangulation
 using StaticArrays
+using LinearAlgebra
 import DataStructures: DefaultDict
 
 include("functions.jl")

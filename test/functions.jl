@@ -79,12 +79,7 @@ function circle_three_points(a, b, c)
     return [centx, centy], r
 end
 
-function slow_get_voronoi_cells(T::Ts, DG, i, pts, tri_to_idx, adj, adj2v) where {Ts}
-    has_ghosts_flag = true
-    if !DT.triangulation_has_ghost_triangles(adj, adj2v)
-        has_ghosts_flag = false
-        DT.add_ghost_triangles!(T, adj, adj2v, DG)
-    end
+function slow_get_voronoi_cells(T::Ts, DG, i, pts, tri_to_idx) where {Ts}
     V = DT.triangle_type(Ts)
     nghs = DT.get_neighbour(DG, i) |> collect
     ref = DT.get_point(pts, i)
@@ -104,9 +99,6 @@ function slow_get_voronoi_cells(T::Ts, DG, i, pts, tri_to_idx, adj, adj2v) where
         else
             push!(cell_idx, DT.BoundaryIndex)
         end
-    end
-    if !has_ghosts_flag
-        DT.remove_ghost_triangles!(T, adj, adj2v, DG)
     end
     return cell_idx
 end

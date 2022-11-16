@@ -152,10 +152,10 @@ function isintriangle(T, pts, ℓ::I) where {I}
 end
 function isintriangle(e1::I, e2::I, e3::I) where {I}
     isinexterior = e1 == I(-1) || e2 == I(-1) || e3 == I(-1)
-    if isinexterior 
+    if isinexterior
         return I(-1)
     end
-    if e1 == I(0) || e2 == I(0) || e3 == I(0) 
+    if e1 == I(0) || e2 == I(0) || e3 == I(0)
         return I(0)
     end
     isininterior = e1 == I(1) && e2 == I(1) && e3 == I(1)
@@ -165,7 +165,18 @@ function isintriangle(e1::I, e2::I, e3::I) where {I}
         return I(-1)
     end
 end
-
+function isintriangle(p::P, q::P, r::P, s::P) where {P}
+    o1 = orient(p, q, s)
+    o2 = orient(q, r, s)
+    o3 = orient(r, p, s)
+    if any(==(-1), (o1, o2, o3))
+        return -1
+    elseif any(==(0), (o1, o2, o3))
+        return 0
+    else
+        return 1
+    end
+end
 """
     find_edge(T, pts, ℓ)
 
@@ -220,11 +231,11 @@ function isinconvexhull(pts, BN, q)
         u = BN[i]
         j = i == lastindex(BN) ? firstindex(BN) : i + 1
         v = BN[j]
-        r, s = get_point(pts, u, v) 
+        r, s = get_point(pts, u, v)
         o = orient(r, s, q)
-        if o == 0 
+        if o == 0
             return 0
-        elseif o == -1 
+        elseif o == -1
             return -1
         end
     end

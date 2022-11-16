@@ -207,20 +207,6 @@ end
 Deletes all the keys `(i, j)` in `adj` such that `get_edge(adj, i, j) = $(DefaultAdjacentValue)`.
 """
 function clear_empty_keys!(adj::Adjacent{I,E}) where {I,E}
-    #=
-    num_edges_unoriented = length(graph(DG).E)
-    all_edges = Vector{E}(undef, 2num_edges_unoriented)
-    k = 1
-    for (i, j) in graph(DG).E
-        all_edges[k] = construct_edge(E, i, j)
-        all_edges[num_edges_unoriented+k] = construct_edge(E, j, i)
-        k += 1
-    end
-    invalid_edges = setdiff(edges(adj), all_edges)
-    for (i, j) in invalid_edges
-        delete_edge!(adj, i, j)
-    end
-    =#
     for ((i, j), k) in adjacent(adj)
         if k == I(DefaultAdjacentValue)
             delete_edge!(adj, i, j)
@@ -609,6 +595,50 @@ function area(pts)
         yᵢ₊₁ = gety(pᵢ_next)
         yᵢ₋₁ = gety(pᵢ_prev)
         A += xᵢ * (yᵢ₊₁ - yᵢ₋₁)
-    end 
+    end
     return 0.5A
+end
+
+"""
+    find_first_boundary_index(v)
+
+Given a vector `v`, find the first `i` such that `v[i] == $BoundaryIndex`, treating the 
+vector as circular. It is assumed that `v` only has two elements such that `v[i] == $BoundaryIndex`, and 
+that these elements always appear next to each other. If no such index exists, returns `nothing`.
+"""
+function find_first_boundary_index(v)
+    idx = findfirst(v .== BoundaryIndex)
+    isnothing(idx) && return idx
+    prev_idx = idx == firstindex(v) ? lastindex(v) : idx - 1
+    if v[prev_idx] == BoundaryIndex
+        return prev_idx
+    else
+        return idx
+    end
+end
+
+"""
+    corss_2d(u, v)
+
+Computes the product `2d_cross(u, v) = ux * vy - uy * vx`.
+"""
+function cross_2d(u, v)
+    ux, uy = u
+    vx, vy = v
+    return ux * vy - uy * vx
+end
+
+"""
+    intersection_of_two_line_segments(p, q, r, s)
+
+Finds the intersection point of the two line segments `pq` and `rs`, assuming 
+that an intersection exists. 
+
+https://stackoverflow.com/a/565282
+"""
+function intersection_of_two_line_segments(p, q, r, s)
+    rpsr = cross_2d(r .- p, s .- r)
+    qpsr = cross_2d(q .- p, s .- r)
+    t = rpsr / qpsr
+    return p .+ (q .- p) .* t
 end

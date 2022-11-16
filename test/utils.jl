@@ -764,3 +764,57 @@ end
     reverse!(pts_BN)
     @test DT.area(pts_BN) ≈ -11.6082
 end
+
+@testset "Finding the first boundary index" begin
+    v = [1, 3, 0, 0]
+    @test DT.find_first_boundary_index(v) == 3
+    v = [0, 1, 3, 0]
+    @test DT.find_first_boundary_index(v) == 4
+    v = [0, 0, 8, 10]
+    @test DT.find_first_boundary_index(v) == 1
+    v = [9, 1, 3, 0, 0, 5]
+    @test DT.find_first_boundary_index(v) == 4
+    v = [1, 3, 5, 7]
+    @test DT.find_first_boundary_index(v) === nothing
+end
+
+@testset "Two-dimensional cross product" begin
+    u = [2.0, 3.0]
+    v = [6.3, 7.1]
+    @test DT.cross_2d(u, v) == cross([u..., 0.0], [v..., 0.0])[3]
+    for _ in 1:500
+        u = 15rand(2)
+        v = 15rand(2)
+        @test DT.cross_2d(u, v) == cross([u..., 0.0], [v..., 0.0])[3]
+    end
+end
+
+@testset "Intersections" begin
+    p = (-8.04, 4.74)
+    q = (-1.56, -5.32)
+    r = (3.64, 4.7)
+    s = (-12.78, -4.28)
+    @test DT.intersection_of_two_line_segments(p, q, r, s) |> collect ≈
+          DT.intersection_of_two_line_segments(r, s, p, q) |> collect ≈
+          DT.intersection_of_two_line_segments(q, p, r, s) |> collect ≈
+          DT.intersection_of_two_line_segments(q, p, s, r) |> collect ≈
+          [-4.9782513757098, -0.0132702407962]
+    p = (-3.6776328459745, 2.7776569098864)
+    q = (-6.3950281994953, 2.5340463209513)
+    r = (-2.70866118888, 1.9910799176567)
+    s = (-5.7635834535008, 2.977401142607)
+    @test DT.intersection_of_two_line_segments(p, q, r, s) |> collect ≈
+          DT.intersection_of_two_line_segments(r, s, p, q) |> collect ≈
+          DT.intersection_of_two_line_segments(q, p, r, s) |> collect ≈
+          DT.intersection_of_two_line_segments(q, p, s, r) |> collect ≈
+          [-4.8260418530713, 2.6747036924995]
+    p = (3.0, 6.0)
+    q = (3.0, 0.0)
+    r = (5.0, 2.0)
+    s = (1.0, 2.0)
+    @test DT.intersection_of_two_line_segments(p, q, r, s) |> collect ≈
+          DT.intersection_of_two_line_segments(r, s, p, q) |> collect ≈
+          DT.intersection_of_two_line_segments(q, p, r, s) |> collect ≈
+          DT.intersection_of_two_line_segments(q, p, s, r) |> collect ≈
+          [3.0, 2.0]
+end
