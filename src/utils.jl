@@ -609,7 +609,8 @@ that these elements always appear next to each other. If no such index exists, r
 function find_first_boundary_index(v)
     idx = findfirst(v .== BoundaryIndex)
     isnothing(idx) && return idx
-    prev_idx = idx == firstindex(v) ? lastindex(v) : idx - 1
+    #prev_idx = idx == firstindex(v) ? lastindex(v) : idx - 1
+    prev_idx = previndex_circular(v, idx)
     if v[prev_idx] == BoundaryIndex
         return prev_idx
     else
@@ -641,4 +642,31 @@ function intersection_of_two_line_segments(p, q, r, s)
     qpsr = cross_2d(q .- p, s .- r)
     t = rpsr / qpsr
     return p .+ (q .- p) .* t
+end
+
+"""
+    nextindex_circular(v, i)
+
+Given a vector `v` and an index `i`, finds the index `i+1`, where `lastindex(v) + 1` gets mapped to `firstindex(v)`.
+"""
+function nextindex_circular(v, i)
+    return i == lastindex(v) ? firstindex(v) : i + 1
+end
+
+"""
+    previndex_circular(v, i)
+
+Given a vector `v` and an index `i`, finds the index `i-1`, where `firstindex(v) - 1` gets mapped to `lastindex(v)`.
+"""
+function previndex_circular(v, i)
+    return i == firstindex(v) ? lastindex(v) : i - 1
+end
+
+"""
+    is_vertex_of(T, i)
+
+Returns `true` if `i` is a vertex of `T`, and `false` otherwise.
+"""
+function is_vertex_of(T, i)
+    return i == geti(T) || i == getj(T) || i == getk(T)
 end

@@ -818,3 +818,34 @@ end
           DT.intersection_of_two_line_segments(q, p, s, r) |> collect ≈
           [3.0, 2.0]
 end
+
+@testset "Circular indices" begin
+    v = [1, 2, 3, 4, 5]
+    @test DT.nextindex_circular(v, 1) == 2
+    @test DT.nextindex_circular(v, 2) == 3
+    @test DT.nextindex_circular(v, 3) == 4
+    @test DT.nextindex_circular(v, 4) == 5
+    @test DT.nextindex_circular(v, 5) == 1
+    @test DT.previndex_circular(v, 1) == 5
+    @test DT.previndex_circular(v, 2) == 1
+    @test DT.previndex_circular(v, 3) == 2
+    @test DT.previndex_circular(v, 4) == 3
+    @test DT.previndex_circular(v, 5) == 4
+    for _ in 1:209
+        v = rand(Float64, rand(1:3000))
+        for i in eachindex(v)
+            ni = i == length(v) ? 1 : i + 1
+            pri = i == 1 ? length(v) : i - 1
+            @test DT.nextindex_circular(v, i) == ni
+            @test DT.previndex_circular(v, i) == pri
+        end
+    end
+end
+
+@testset "Testing if an index is a vertex of triangle" begin
+    T = (1, 5, 7)
+    @test DT.is_vertex_of(T, 1)
+    @test DT.is_vertex_of(T, 5)
+    @test DT.is_vertex_of(T, 7)
+    @test !DT.is_vertex_of(T, 3)
+end

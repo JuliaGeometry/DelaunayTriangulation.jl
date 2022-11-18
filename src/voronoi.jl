@@ -10,6 +10,7 @@ end
 triangle_type(::VoronoiTessellation{CCs,PGs,TTI,ITT,GN,CTP}) where {CCs,PGs,TTI,ITT,GN,CTP} = triangle_type(TTI)
 triangle_type(::Type{Dict{V,I}}) where {V,I<:Integer} = V
 triangle_type(::Type{Dict{I,V}}) where {V,I<:Integer} = V
+number_type(vorn::VoronoiTessellation) = number_type(vorn.generators)
 
 function add_polygon!(cent_to_poly::Dict{I,E}, r, i) where {I,E}
     existing_polys = get!(E, cent_to_poly, r)
@@ -180,8 +181,7 @@ function trim_voronoi_cell!(vorn::VoronoiTessellation, adj, i::Integer)
     if idx === nothing
         return nothing
     end
-    poly_indices = eachindex(poly)
-    next_idx = idx == last(poly_indices) ? first(poly_indices) : idx + 1
+    next_idx = nextindex_circular(poly, idx)
     # Truncate the first unbounded line at the midpoint 
     boundary_point = get_edge(adj, BoundaryIndex, i)
     midpt_idx = get_triangle_idx(vorn, i, boundary_point, BoundaryIndex)
@@ -249,6 +249,159 @@ function find_circumcenters_outside_convex_hull(vorn::VoronoiTessellation, T, ad
 end
 
 """
+    get_neighbouring_circumcenters(vorn::VoronoiTessellation, i, adj)
+
+Given a circumcenter index `i`, a Voronoi tessellation `vorn`, and an adjacent map `adj` for
+the dual triangulation, finds the neighbouring circumcenters. The results are listed in 
+counter-clockwise order.
+
+Only works on the untrimmed version of the tessellation.
+"""
+function get_neighbouring_circumcenters(vorn::VoronoiTessellation, i, adj)
+    τ = vorn.idx_to_triangle[i]
+    i, j, k = indices(τ)
+    u = get_edge(adj, j, i) # Remember that the polygons are defined by connecting neighbouring circumcenters
+    v = get_edge(adj, k, j)
+    w = get_edge(adj, i, k)
+    e1 = u == BoundaryIndex
+    e2 = v == BoundaryIndex
+    e3 = w == BoundaryIndex # Don't want to include ghost triangles with their actual index, they should go to BoundaryIndex
+    if any((e1, e2, e3))
+        w, u, v = choose_uvw(e1, e2, e3, u, v, w) # This puts the BoundaryIndex into w
+        k, i, j = choose_uvw(e1, e2, e3, i, j, k) # Need to rotate i, j, k in the same way as above
+    end
+    a = get_triangle_idx(vorn, j, i, u)
+    b = get_triangle_idx(vorn, k, j, v)
+    if any((e1, e2, e3))
+        c = BoundaryIndex
+    else
+        c = get_triangle_idx(vorn, i, k, w)
+    end
+    return (a, b, c)
+end
+
+"""
+    find_intersections_of_exterior_circumcenters_with_convex_hull(vorn::VoronoiTessellation, exterior_circumcenters::Dict{I,E}, adj) where {I,E}
+
+Given some circumcenters that are outside of the triangulation's convex hull, finds the coordinates of the edges connecting that circumcenter to its 
+neighbours with the convex hull. If no such intersection exists, stores `(NaN, NaN)`. The returned result is a `Dict` mapping the circumcenter indices 
+(those in `exterior_circumcenters`) to the two coordinates.
+"""
+function find_intersections_of_exterior_circumcenters_with_convex_hull(vorn::VoronoiTessellation, exterior_circumcenters::Dict{I,E}, adj) where {I,E}
+    F = number_type(vorn)
+    intersection_coordinates = Dict{I,NTuple{3,NTuple{2,F}}}()
+    for (j, (u, v)) in exterior_circumcenters
+        ## Get the coordinates of the relevant polygonal edges
+        a, b, c = get_neighbouring_circumcenters(vorn, j, adj)
+        pa, pb, pc = get_point(vorn.circumcenters, a, b, c)
+        pu, pv = get_point(vorn.generators, u, v)
+        pj = get_point(vorn.circumcenters, j)
+        ## We only need to have the coordinates if the edges intersect the convex hull 
+        o1 = meet(pu, pv, pj, pa)
+        o2 = meet(pu, pv, pj, pb)
+        if c ≠ BoundaryIndex
+            o3 = meet(pu, pv, pj, pc)
+        end
+        ## Compute the intersection coordinates 
+        intersection_uv_a = o1 == 1 ? intersection_of_two_line_segments(pu, pv, pj, pa) : pa .* NaN
+        intersection_uv_b = o2 == 1 ? intersection_of_two_line_segments(pu, pv, pj, pb) : pb .* NaN
+        if c ≠ BoundaryIndex
+            intersection_uv_c = o3 == 1 ? intersection_of_two_line_segments(pu, pv, pj, pc) : pc .* NaN
+        else
+            intersection_uv_c = pc .* NaN
+        end
+        ## Store the coordinates 
+        intersection_coordinates[j] = (intersection_uv_a, intersection_uv_b, intersection_uv_c)
+    end
+    return intersection_coordinates
+end
+
+"""
+    move_exterior_circumcenter_to_convex_hull_intersection!(vorn::VoronoiTessellation, exterior_circumcenters, 
+        intersection_coordinates) 
+
+Given a Voronoi tessellation `vorn`, a `Dict` of `exterior_circumcenters` from [`find_circumcenters_outside_convex_hull`](@ref), a `Dict` of 
+coordinates `intersection_coordinates` from `find_intersections_of_exterior_circumcenters_with_convex_hull`](@ref), and a circumcenter index `j` 
+(assumed to be in `keys(exterior_circumcenters)`), updates the polygons so that the edge going to this exterior circumcenter are cut off at the 
+intersection. This update is done in-place. A value is returned, giving a `Dict` that maps polygons to the number of intersections of its edges 
+with the convex hull.
+"""
+function move_exterior_circumcenter_to_convex_hull_intersection!(vorn::VoronoiTessellation, exterior_circumcenters,
+    intersection_coordinates::Dict{I,NTuple{3,NTuple{2,F}}}, num_exterior_verts, j::I) where {I,F}
+    ## Start by moving the circumenters to the intersection coordinates
+    u, v = exterior_circumcenters[j]
+    P = vorn.polygons[u]
+    Q = vorn.polygons[v]
+    pa, pb, pc = intersection_coordinates[j]
+    if !isnan(first(pa))
+        num_exterior_verts[u] = u ∈ keys(num_exterior_verts) ? num_exterior_verts[u] + 1 : 1
+    end
+    if !isnan(first(pb))
+        num_exterior_verts[v] = v ∈ keys(num_exterior_verts) ? num_exterior_verts[v] + 1 : 1
+    end
+    pa_index = length(vorn.circumcenters) + 1
+    pb_index = length(vorn.circumcenters) + 2
+    push!(vorn.circumcenters, pa)
+    push!(vorn.circumcenters, pb)
+    P[findfirst(==(j), P)] = pa_index
+    Q[findfirst(==(j), Q)] = pb_index
+    ## The bounded polygon then needs to be closed
+    return nothing
+end
+function move_exterior_circumcenter_to_convex_hull_intersection!(vorn::VoronoiTessellation, exterior_circumcenters,
+    intersection_coordinates::Dict{I,NTuple{3,NTuple{2,F}}}) where {I,F}
+    num_exterior_verts = Dict{I,I}()
+    for j in keys(exterior_circumcenters)
+        move_exterior_circumcenter_to_convex_hull_intersection!(vorn, exterior_circumcenters, intersection_coordinates, num_exterior_verts, j)
+    end
+    return num_exterior_verts
+end
+
+"""
+    get_modified_polygons(exterior_circumcenters)
+
+Given a list of `exterior_circumcenters`, returns a `Set` of polygons to be modified.
+"""
+function get_modified_polygons(exterior_circumcenters)
+    modified_polygons = Set{Int64}()
+    for (u, v) in values(exterior_circumcenters)
+        push!(modified_polygons, u, v)
+    end
+    return modified_polygons
+end
+
+"""
+    close_polygon!(vorn::VoronoiTessellation, added_generator_indices, num_exterior_vertices, u)
+
+Given a Voronoi tessellation `vorn` and a generator `u` corresponding to an unbounded polygon `vorn.polygons[u]`, closes it by 
+replacing the two unbounded edges with a segment going through the generator. The argument `added_generator_indices` maps a generator 
+to its position in `vorn.circumcenters`, modifying in-place if the generator is not already in `vorn.circumcenters`. The 
+argument `num_exterior_vertices` is the result from [`get_number_exterior_vertices`](@ref). Note that if a polygon only 
+has one intersection with an exterior vertex, rather than with two edges, an intersection is introduced at the midpoint of an edge 
+on the convex hull to close through.
+"""
+function close_polygon!(vorn::VoronoiTessellation, added_generator_indices, num_exterior_vertices, u)
+    # Start by adding the generators into the circumcenter list if needed
+    P = vorn.polygons[u]
+    if u ∉ keys(added_generator_indices)
+        pu = get_point(vorn.generators, u)
+        push!(vorn.circumcenters, pu)
+        added_generator_indices[u] = length(vorn.circumcenters)
+    end
+    # Now close the polygon
+    if num_exterior_vertices[u] == 2
+        # If there are two intersections, then the only way to close the polygon is to go through the generator
+        pu_index = added_generator_indices[u]
+        P_boundary_idx = find_first_boundary_index(P)
+        P_second_boundary_idx = nextindex_circular(P, P_boundary_idx)
+        P[P_boundary_idx] = pu_index
+        deleteat!(P, P_second_boundary_idx)
+    else
+
+    end
+end
+
+"""
     polygon_is_bounded(vorn, i)
 
 Given a Voronoi tessellation `vorn` and a polygon `i`, 
@@ -299,10 +452,10 @@ function truncate_bounded_polygon_outside_convex_hull(vorn::VoronoiTessellation,
         bounded_polygon = vorn.polygons[bounded_polygon_idx]
         _j_idx = findfirst(bounded_polygon .== _j) # Finds where _j is in the list of vertices for the bounded polygon
         # Find the circumcenters that connect with _j 
-        next_j_idx = _j_idx == lastindex(bounded_polygon) ? firstindex(bounded_polygon) : _j_idx + 1
-        prev_j_idx = _j_idx == firstindex(bounded_polygon) ? lastindex(bounded_polygon) : _j_idx - 1
-        next_idx = _j_idx == lastindex(bounded_polygon) ? first(bounded_polygon) : bounded_polygon[next_j_idx]
-        prev_idx = _j_idx == firstindex(bounded_polygon) ? last(bounded_polygon) : bounded_polygon[prev_j_idx]
+        next_j_idx = nextindex_circular(bounded_polygon, _j_idx)
+        prev_j_idx = previndex_circular(bounded_polygon, _j_idx)
+        next_idx = bounded_polygon[next_j_idx]
+        prev_idx = bounded_polygon[prev_j_idx]
         # Now get the triangle that is on the boundary, and rotate it so that its first two vertices give the boundary edge 
         boundary_τ = vorn.idx_to_triangle[_j]
         u, v, w = indices(boundary_τ)
@@ -370,14 +523,14 @@ function truncate_bounded_polygon_outside_convex_hull(vorn::VoronoiTessellation,
     for (P, num_exterior_vertices) in modified_polygons
         verts = vorn.polygons[P]
         idx = find_first_boundary_index(verts)
-        idx_2 = idx == lastindex(verts) ? firstindex(verts) : idx + 1
+        idx_2 = nextindex_circular(verts, idx)
         if num_exterior_vertices == 2
             verts[idx] = added_points[P] # This is the generator 
             deleteat!(verts, idx_2)
             add_polygon!(vorn.circumcenter_to_polygons, added_points[P], P)
         else # Chop the edge that goes to the exterior circumcentre, but the other one gets taken to the midpoint
             j = findfirst(verts .> orig_num_circumcenters) # This will be the one that was taken to a new midpoint
-            prev_j_idx = j == firstindex(verts) ? lastindex(verts) : j - 1
+            prev_j_idx = previndex_circular(verts, j)
             if verts[prev_j_idx] == BoundaryIndex
                 boundary_point = get_edge(adj, BoundaryIndex, P)
                 midpt_idx = get_triangle_idx(vorn, P, boundary_point, BoundaryIndex)

@@ -12,7 +12,7 @@ include("functions.jl")
 @testset "Interface" begin
     include("interface.jl")
 end
-@testset "Interface" begin
+@testset "Data Structures" begin
     include("data_structures.jl")
 end
 @testset "Geometrical Predicates" begin
@@ -36,6 +36,8 @@ end
 @testset "Convex Hull" begin
     include("convex_hull.jl")
 end
+#=
 @testset "Voronoi tessellations" begin 
     include("voronoi.jl")
 end
+=#

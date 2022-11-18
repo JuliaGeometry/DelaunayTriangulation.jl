@@ -14,13 +14,13 @@ Scanf = "6ef1bc8b-493b-44e1-8d40-549aa65c4b41"
 SimpleGraphs = "55797a34-41de-5266-9ec1-32ac4eb504d3"
 
 [compat]
-DataStructures = "0.18"
-ExactPredicates = "2"
-MutableNamedTuples = "0.1"
-SimpleGraphs = "0.8"
-julia = "1.8"
-Scanf = "0.5"
-ElasticArrays = "1"
+DataStructures = "^0.18"
+ElasticArrays = "^1"
+MutableNamedTuples = "^0.1"
+Scanf = "^0.5"
+SimpleGraphs = "^0.8"
+julia = "^1.8"
+ExactPredicates = "^2"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
