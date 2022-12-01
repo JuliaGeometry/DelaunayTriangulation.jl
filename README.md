@@ -12,9 +12,11 @@
   - [Example](#example)
 - [A note on Voronoi tessellations](#a-note-on-voronoi-tessellations)
 
-This is a package for creating (unconstrained) two-dimensional Delaunay triangulations. The great package [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl) is used for all geometric predicates. There also exist routines for building the convex hull (from the triangulation), and currently commented-out Voronoi tessellation code (see some discussion at the end). Much of the work in this package is derived from the book *Delaunay Mesh Generation* by Cheng, Dey, and Shewchuk (2013). Point location is implemented using the jump-and-march algorithm of Mücke, Saias, and Zhu (1999); see `jump_and_march`.
+This is a package for creating (unconstrained) two-dimensional Delaunay triangulations. The great package [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl) is used for all geometric predicates. There also exist routines for building the convex hull (from the triangulation), and currently commented-out Voronoi tessellation code (see some discussion at the end). Much of the work in this package is derived from the book *Delaunay Mesh Generation* by Cheng, Dey, and Shewchuk (2013). Point location is implemented using the jump-and-march algorithm of Mücke, Saias, and Zhu (1999); see `jump_and_march`. I hope to eventually build up to constrained Delaunay triangulations, weighted Delaunay triangulations, etc., when I eventually find the time.
 
 The package has two algorithms for computing Delauanay triangulations, namely de Berg's method from de Berg et al. (1999), and the Bowyer-Watson algorithm as presented by Cheng, Dey, and Shewchuk (2013). de Berg's method is the slowest of the two, and has less features, so we recommend the Bowyer-Watson algorithm in the function `triangulate_bowyer`. Keep reading for more examples, and see the tests for more features.
+
+Feel free to use the issues tab for any questions / feedback / etc.
 
 # Getting started
 
@@ -112,6 +114,14 @@ poly!(ax, pts, [collect(T)[i][j] for i in 1:length(T), j in 1:3], color = (:whit
 ```
 
 ![A structured triangulation](https://github.com/DanielVandH/DelaunayTriangulation.jl/blob/main/test_fig2.png?raw=true)
+
+## Gmsh 
+
+Support is also added for a simple mesh generator with Gmsh (see https://gmsh.info/), tested up to v4.9.4 on Windows 64. The function for this is `generate_mesh`, and accepts inputs of points that in counter-clockwise order. This is especially useful for e.g. finite volume codes. Currently I only have code working for simply connected domains - it would be nice to have an alternative, but this is the best I can do with the time I have.
+
+Let me give an example. In my directory, I have downloaded `gmsh` and saved it as `gmsh-4.9.4-Windows64`, so I define
+```julia
+GMSH_PATH = 
 
 # Customisation 
 
