@@ -4,6 +4,7 @@
 - [Getting started](#getting-started)
   - [de Berg's method](#de-bergs-method)
   - [Bowyer-Watson algorithm](#bowyer-watson-algorithm)
+  - [Structured triangulation](#structured-triangulation)
 - [Customisation](#customisation)
   - [Triangle interface](#triangle-interface)
   - [Edge interface](#edge-interface)
@@ -93,6 +94,24 @@ lines!(ax, hcat(pts[:, ch], pts[:, ch[1]]), color = :red, linewidth = 4)
 ```
 
 ![A triangulation](https://github.com/DanielVandH/DelaunayTriangulation.jl/blob/main/test_fig.png?raw=true)
+
+## Structured triangulation
+
+It may sometimes be convenient to have a structured triangulation for a rectangular geometry. A structured triangulation is simply one where all the triangles have the same shape. Here is an example:
+```julia 
+a = 0.0
+b = 10.0
+c = 0.0
+d = 10.0
+nx = 20
+ny = 10
+T, adj, adj2v, DG, pts = triangulate_structured(a, b, c, d, nx, ny)
+fig = Figure()
+ax = Axis(fig[1, 1])
+poly!(ax, pts, [collect(T)[i][j] for i in 1:length(T), j in 1:3], color = (:white, 0.0), strokewidth = 2)
+```
+
+![A structured triangulation](https://github.com/DanielVandH/DelaunayTriangulation.jl/blob/main/test_fig2.png?raw=true)
 
 # Customisation 
 
