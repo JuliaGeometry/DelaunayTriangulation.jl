@@ -14,3 +14,6 @@ function convex_hull(DG::DelaunayGraph{I}, pts) where {I}
     permute!(ch_pts_idx, sort_idx)
     return ch_pts_idx
 end
+
+#TODO: Add method that just uses ghost triangles. There'd be no need to compute 
+# anything.
