@@ -1,6 +1,6 @@
 function add_point_bowyer!(T::Ts, adj::Adjacent{I,E}, adj2v, DG, pts, r;
     pt_idx=graph(DG).V, m=ceil(Int64, length(pt_idx)^(1 / 3)),
-    initial_search_point=select_initial_point(pts, r; pt_idx, m)) where {Ts,I,E} # only works for inside points currently. also fails for collinear points
+    initial_search_point=select_initial_point(pts, r; pt_idx, m)) where {Ts,I,E} 
     r = I(r)
     tri_type = triangle_type(Ts)
     V = jump_and_march(r, adj, adj2v, DG, pts; k=initial_search_point, TriangleType=tri_type)
