@@ -47,7 +47,38 @@ function dig_cavity!(r, i, j, ℓ, T::Ts, adj::Adjacent{I,E}, adj2v, DG, pts) wh
 end
 
 """
+    triangulate_bowyer(pts;
+        IntegerType::Type{I}=Int64,
+        EdgeType::Type{E}=NTuple{2,IntegerType},
+        TriangleType::Type{V}=NTuple{3,IntegerType},
+        EdgesType::Type{Es}=Set{EdgeType},
+        TrianglesType::Type{Ts}=Set{TriangleType},
+        randomise=true,
+        trim=true,
+        try_last_inserted_point=true,
+        skip_pts=Set{Int64}())
 
+Triangulates the set of points `pts` using the Bowyer-Watson algorithm.
+
+# Inputs 
+- `pts`: The point set.
+
+# Keyword Arguments 
+- `IntegerType::Type{I}=Int64`: Type used to represent integers. 
+- `EdgeType::Type{E}=NTuple{2,IntegerType}`: Type used to represent edges. 
+- TriangleType::Type{V}=NTuple{3,IntegerType}: Type used to represent triangles. 
+- EdgesType::Type{Es}=Set{EdgeType}: Type used to represent a collection of edges.
+- TrianglesType::Type{Ts}=Set{TriangleType}: Type used to represent a collection of triangles. 
+- `randomise=true`: Whether to randomise the insertion order.
+- `trim=true`: Whether to remove the ghost triangles at the end.
+- `try_last_inserted_point=true`: At each stage, this should be `true` if the point that was last inserted should also be tried for initialising [`jump_and_march`](@ref).
+- `skip_pts`: There may be points you want to avoid adding into the triangulation, but they still exist in `pts`. If this is the case, add the indices for the points into a `Set` and set this keyword to this set.
+
+# Outputs 
+- `T`: The set of triangles. 
+- `adj`: The [`Adjacent`](@ref) map.
+- `adj2v`: The [`Adjacent2Vertex`](@ref) map.
+- `DG`: The `[DelaunayGraph`](@ref).
 """
 function triangulate_bowyer(pts;
     IntegerType::Type{I}=Int64,
