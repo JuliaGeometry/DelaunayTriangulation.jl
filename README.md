@@ -19,7 +19,7 @@ The package has two algorithms for computing Delauanay triangulations, namely de
 
 I provide a PDF in the README, called `DelaunayTriangulation.pdf`, that outlines some of my working for the algorithms used in this package. I have tried to keep up with it, but feel free to ask about it or raise any issues that are in the document. I plan on rewriting it once I eventually add constrained/weighted Delaunay triangulations in the future.
 
-Feel free to use the issues tab for any questions / feedback / etc.
+Feel free to use the issues tab for any questions / feedback / etc (or email me at vandenh2@qut.edu.au).
 
 # Getting started
 
