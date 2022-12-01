@@ -849,3 +849,22 @@ end
     @test DT.is_vertex_of(T, 7)
     @test !DT.is_vertex_of(T, 3)
 end
+
+@testset "Comparing individual triangles" begin
+    T = (1, 2, 3)
+    V = (2, 3, 1)
+    @test DelaunayTriangulation.compare_triangles(T, V)
+    @test DelaunayTriangulation.compare_triangles(V, T)
+    T = (2, 3, 1)
+    @test DelaunayTriangulation.compare_triangles(T, V)
+    @test DelaunayTriangulation.compare_triangles(V, T)
+    T = (3, 1, 2)
+    @test DelaunayTriangulation.compare_triangles(T, V)
+    @test DelaunayTriangulation.compare_triangles(V, T)
+    T = (1, 3, 2)
+    @test !DelaunayTriangulation.compare_triangles(T, V)
+    @test !DelaunayTriangulation.compare_triangles(V, T)
+    T = (5, 7, 1)
+    @test !DelaunayTriangulation.compare_triangles(T, V)
+    @test !DelaunayTriangulation.compare_triangles(V, T)
+end

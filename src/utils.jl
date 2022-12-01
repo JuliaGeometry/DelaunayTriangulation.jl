@@ -670,3 +670,27 @@ Returns `true` if `i` is a vertex of `T`, and `false` otherwise.
 function is_vertex_of(T, i)
     return i == geti(T) || i == getj(T) || i == getk(T)
 end
+
+"""
+    compare_triangles(T, V)
+
+Let `T = (u, v, w)` and `V = (i, j, k)`. This function sees if `T == V`, 
+returning `true` if so, where we say that `T == V` if any of the following 
+hold:
+
+- `(u, v, w) == (i, j, k)`,
+- `(v, w, u) == (i, j, k)`,
+- `(w, u, v) == (i, j, k)`.
+
+Returns false otherwise.
+"""
+function compare_triangles(T, V)
+    if (geti(T), getj(T), getk(T)) == (geti(V), getj(V), getk(V))
+        return true 
+    elseif (getj(T), getk(T), geti(T)) == (geti(V), getj(V), getk(V))
+        return true 
+    elseif (getk(T), geti(T), getj(T)) == (geti(V), getj(V), getk(V))
+        return true 
+    end
+    return false
+end

@@ -22,8 +22,9 @@ include("deberg.jl")
 include("gmsh.jl")
 include("convex_hull.jl")
 include("structured.jl")
+#=
 include("voronoi.jl")
-
+=#
 export adjacent, adjacent2vertex, graph, pointlocation, triangles, points, neighbours
 export triangulate, triangulate!
 export UnconstrainedTriangulation
@@ -43,7 +44,8 @@ export triangulate_bowyer
 export triangulate_berg
 export triangulate_structured
 export triangulate
+#=
 export voronoi 
 export VoronoiTessellation
-
+=#
 end
