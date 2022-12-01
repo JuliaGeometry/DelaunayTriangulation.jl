@@ -201,7 +201,7 @@ DT.geti(CT::CustomTriangle) = CT.i
 DT.getj(CT::CustomTriangle) = CT.j
 DT.getk(CT::CustomTriangle) = CT.k
 DT.construct_triangle(::Type{CustomTriangle}, i, j, k) = CustomTriangle(i, j, k)
-DT.integer_type(::Type{CustomTriangle}) = Int64
+DT.integer_type(::Type{CustomTriangle}) = Int32
 
 # Triangles 
 DT.construct_triangles(::Type{CustomTriangles}) = CustomTriangles(CustomTriangle[])
