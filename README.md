@@ -5,6 +5,7 @@
   - [de Berg's method](#de-bergs-method)
   - [Bowyer-Watson algorithm](#bowyer-watson-algorithm)
   - [Structured triangulation](#structured-triangulation)
+  - [Gmsh](#gmsh)
 - [Customisation](#customisation)
   - [Triangle interface](#triangle-interface)
   - [Edge interface](#edge-interface)
@@ -122,6 +123,7 @@ Support is also added for a simple mesh generator with Gmsh (see https://gmsh.in
 Let me give an example. In my directory, I have downloaded `gmsh` and saved it as `gmsh-4.9.4-Windows64`, so I define
 ```julia
 GMSH_PATH = 
+```
 
 # Customisation 
 
