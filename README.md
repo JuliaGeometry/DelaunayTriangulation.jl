@@ -25,7 +25,7 @@ Feel free to use the issues tab for any questions / feedback / etc.
 
 ## de Berg's method
 
-It is easy to construct a triangulation. Here is a simple example, where we use the method outlined in the book by de Berg et al. (1999) to construct the triangulation; this triangulation adds points one at a time, constructing the Delaunay triangulation $\mathcal DT(\mathcal P_n)$ from $\mathcal DT(\mathcal P_{n-1})$, $\mathcal P_n = \mathcal P_{n-1} \cup \{p_n\}$ using edge flips. Using `triangulate_berg`, this triangulation can be computed:
+It is easy to construct a triangulation. Here is a simple example, where we use the method outlined in the book by de Berg et al. (1999) to construct the triangulation; this triangulation adds points one at a time, constructing the Delaunay triangulation $\mathcal D\mathcal T(\mathcal P_n)$ from $\mathcal D\mathcal T(\mathcal P_{n-1})$, $\mathcal P_n = \mathcal P_{n-1} \cup {p_n}$ using edge flips. Using `triangulate_berg`, this triangulation can be computed:
 
 ```julia
 using DelaunayTriangulation
