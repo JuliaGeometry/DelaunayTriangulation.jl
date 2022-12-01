@@ -1,6 +1,6 @@
-function add_point_berg!(T, adj::Adjacent{I,E}, adj2v, DG, HG, pts, r) where {I,E}
+function add_point_berg!(T, adj::Adjacent{I,E}, adj2v, DG, HG::HistoryGraph{Tri}, pts, r) where {I,E,Tri}
     r = I(r)
-    Tᵢⱼₖ, flag = locate_triangle(HG, pts, r, (I(LowerRightBoundingIndex), I(UpperBoundingIndex), I(LowerLeftBoundingIndex)))
+    Tᵢⱼₖ, flag = locate_triangle(HG, pts, r, construct_triangle(Tri, I(LowerRightBoundingIndex), I(UpperBoundingIndex), I(LowerLeftBoundingIndex)))
     if flag == 1
         i, j, k = indices(Tᵢⱼₖ)
         split_triangle!(i, j, k, r, T, adj, adj2v, DG, HG)
@@ -34,7 +34,7 @@ function triangulate_berg(pts;
     skip_pts=Set{Int64}()) where {I,E,V,Es,Ts}
     pt_order = randomise ? shuffle(_eachindex(pts)) : collect(_eachindex(pts))
     setdiff!(pt_order, skip_pts)
-    T = Ts()
+    T = construct_triangles(Ts)
     adj = Adjacent{I,E}()
     adj2v = Adjacent2Vertex{I,Es,E}()
     DG = DelaunayGraph{I}()

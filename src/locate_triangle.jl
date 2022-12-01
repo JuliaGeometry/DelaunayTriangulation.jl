@@ -77,7 +77,7 @@ Returns `p, i, j, pᵢ, pⱼ` such that `pᵢ = get_point(pts, i)`, `pⱼ = get_
 """
 function select_initial_triangle(q, adj::Adjacent{I,E}, adj2v, DG, k, pts) where {I,E}
     p = get_point(pts, k)
-    i, j = rand(get_edge(adj2v, k))
+    i, j = rand(get_edge(adj2v, k)) # We can't just use iterate(get_edge(adj2v, k))[1], the rand is needed in case the routine somehow gets stuck.
     pᵢ = get_point(pts, i)
     pⱼ = get_point(pts, j)
     while orient(p, q, pⱼ) == 0

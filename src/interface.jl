@@ -11,10 +11,10 @@ function getj end               # getj(::Triangle)
 function getk end               # getk(::Triangle)
 function construct_triangle end # construct_triangle(::Type{Triangle}, ::I, ::I, ::I)
 
-indices(T::NTuple{3,I}) where {I} = T
 geti(T::NTuple{3,I}) where {I} = T[1]
 getj(T::NTuple{3,I}) where {I} = T[2]
 getk(T::NTuple{3,I}) where {I} = T[3]
+indices(T) = (geti(T), getj(T), getk(T))
 construct_triangle(::Type{NTuple{3,I}}, i, j, k) where {I} = (i, j, k)
 function construct_positively_oriented_triangle(::Type{V}, i, j, k, pts) where {V}
     T = construct_triangle(V, i, j, k)
@@ -25,7 +25,7 @@ function construct_positively_oriented_triangle(::Type{V}, i, j, k, pts) where {
 end
 integer_type(::Type{NTuple{3,I}}) where {I} = I
 
-edges(T::NTuple{3,I}) where {I} = ((geti(T), getj(T)), (getj(T), getk(T)), (getk(T), geti(T)))
+edges(T) = ((geti(T), getj(T)), (getj(T), getk(T)), (getk(T), geti(T)))
 
 shift_triangle_1(T::V) where {V} = construct_triangle(V, getj(T), getk(T), geti(T))
 shift_triangle_2(T::V) where {V} = construct_triangle(V, getk(T), geti(T), getj(T))
@@ -110,6 +110,7 @@ end
     return ntuple(j -> get_point(pts, i[j]), Val(N))
 end
 
+# this is a rubbish way to do this. Should use Ref's somewhere and compute this incrementally.
 function point_stats(pts)
     T = Float64
     xmin = typemax(T)

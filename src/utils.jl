@@ -250,10 +250,13 @@ Compares the collections of triangles `T` and `V`, checking for equality. This f
 needed to check for equality even with circularly-shifted indices in the triangles. Returns `true` 
 if the two collections are equivalent, and false otherwise.
 """
-function compare_triangle_sets(T, V)
+function compare_triangle_sets(T::Ts, V::Vs) where {Ts,Vs}
+    VsT = triangle_type(Vs)
     length(T) ≠ length(V) && return false
     for T in T
-        (T ∉ V && shift_triangle_1(T) ∉ V && shift_triangle_2(T) ∉ V) && return false
+        i, j, k = indices(T)
+        _T = construct_triangle(VsT, i, j, k)
+        (_T ∉ V && shift_triangle_1(_T) ∉ V && shift_triangle_2(_T) ∉ V) && return false
     end
     return true
 end
@@ -686,11 +689,11 @@ Returns false otherwise.
 """
 function compare_triangles(T, V)
     if (geti(T), getj(T), getk(T)) == (geti(V), getj(V), getk(V))
-        return true 
+        return true
     elseif (getj(T), getk(T), geti(T)) == (geti(V), getj(V), getk(V))
-        return true 
+        return true
     elseif (getk(T), geti(T), getj(T)) == (geti(V), getj(V), getk(V))
-        return true 
+        return true
     end
     return false
 end

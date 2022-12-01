@@ -66,9 +66,9 @@ Triangulates the set of points `pts` using the Bowyer-Watson algorithm.
 # Keyword Arguments 
 - `IntegerType::Type{I}=Int64`: Type used to represent integers. 
 - `EdgeType::Type{E}=NTuple{2,IntegerType}`: Type used to represent edges. 
-- TriangleType::Type{V}=NTuple{3,IntegerType}: Type used to represent triangles. 
-- EdgesType::Type{Es}=Set{EdgeType}: Type used to represent a collection of edges.
-- TrianglesType::Type{Ts}=Set{TriangleType}: Type used to represent a collection of triangles. 
+- `TriangleType::Type{V}=NTuple{3,IntegerType}`: Type used to represent triangles. 
+- `EdgesType::Type{Es}=Set{EdgeType}`: Type used to represent a collection of edges.
+- `TrianglesType::Type{Ts}=Set{TriangleType}`: Type used to represent a collection of triangles. 
 - `randomise=true`: Whether to randomise the insertion order.
 - `trim=true`: Whether to remove the ghost triangles at the end.
 - `try_last_inserted_point=true`: At each stage, this should be `true` if the point that was last inserted should also be tried for initialising [`jump_and_march`](@ref).
@@ -92,7 +92,7 @@ function triangulate_bowyer(pts;
     skip_pts=Set{Int64}()) where {I,E,V,Es,Ts}
     pt_order = randomise ? shuffle(_eachindex(pts)) : collect(_eachindex(pts))
     setdiff!(pt_order, skip_pts)
-    T = Ts()
+    T = construct_triangles(Ts)
     adj = Adjacent{I,E}()
     adj2v = Adjacent2Vertex{I,Es,E}()
     DG = DelaunayGraph{I}()
