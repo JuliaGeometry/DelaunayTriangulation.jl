@@ -32,7 +32,7 @@ export edges
 export add_point!
 export geti, getj, getk, indices
 export getx, gety
-export get_edge
+export get_edge, get_neighbour
 export locate_triangle, jump_and_march
 export generate_mesh, triangulate 
 export num_triangles, num_points
