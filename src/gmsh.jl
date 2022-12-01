@@ -153,7 +153,7 @@ end
 
 function triangulate(triangles,
     nodes::AbstractMatrix,
-    boundary_nodes; # BOUNDARY NODES MUST BE CLOCKWISE 🦘🐇
+    boundary_nodes; # BOUNDARY NODES MUST BE CLOCKWISE
     IntegerType::Type{I}=Int64,
     EdgeType::Type{E}=NTuple{2,IntegerType},
     TriangleType::Type{V}=NTuple{3,IntegerType},
