@@ -15,17 +15,17 @@
 
 This is a package for creating (unconstrained) two-dimensional Delaunay triangulations. The great package [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl) is used for all geometric predicates. There also exist routines for building the convex hull (from the triangulation), and currently commented-out Voronoi tessellation code (see some discussion at the end). Much of the work in this package is derived from the book *Delaunay Mesh Generation* by Cheng, Dey, and Shewchuk (2013). Point location is implemented using the jump-and-march algorithm of Mücke, Saias, and Zhu (1999); see `jump_and_march`. I hope to eventually build up to constrained Delaunay triangulations, weighted Delaunay triangulations, etc., when I eventually find the time. Mesh refinement is also a priority.
 
-The package has two algorithms for computing Delauanay triangulations, namely de Berg's method from de Berg et al. (1999), and the Bowyer-Watson algorithm as presented by Cheng, Dey, and Shewchuk (2013). de Berg's method is the slowest of the two, and has less features, so we recommend the Bowyer-Watson algorithm in the function `triangulate_bowyer`. Keep reading for more examples, and see the tests for more features. You can also see the `writeups` folder for some (very) rough code that I used while testing some of this code -- I make no promises that all the code there still works.
+The package has two algorithms for computing Delauanay triangulations, namely de Berg's method from de Berg et al. (1999), and the Bowyer-Watson algorithm as presented by Cheng, Dey, and Shewchuk (2013). de Berg's method is the slowest of the two, and has less features (and is somehow more problematic as evident by the three existing issues for de Berg's method), so we recommend the Bowyer-Watson algorithm in the function `triangulate_bowyer`. Keep reading for more examples, and see the tests for more features. You can also see the `writeups` folder for some (very) rough code that I used while testing some of this code -- I make no promises that all the code there still works.
 
-I provide a PDF in the README, called `DelaunayTriangulation.pdf`, that outlines some of my working for the algorithms used in this package. I have tried to keep up with it, but feel free to ask about it or raise any issues that are in the document. I plan on rewriting it once I eventually add constrained/weighted Delaunay triangulations in the future.
+I provide a PDF in the main directory, called `DelaunayTriangulation.pdf`, that outlines some of my working for the algorithms used in this package. I have tried to keep up with it, but feel free to ask about it or raise any issues that are in the document. I plan on rewriting it once I eventually add constrained/weighted Delaunay triangulations in the future.
 
-Feel free to use the issues tab for any questions / feedback / etc.
+Feel free to use the issues tab for any questions / feedback / etc (or email me at vandenh2@qut.edu.au).
 
 # Getting started
 
 ## de Berg's method
 
-It is easy to construct a triangulation. Here is a simple example, where we use the method outlined in the book by de Berg et al. (1999) to construct the triangulation; this triangulation adds points one at a time, constructing the Delaunay triangulation $\mathcal DT(\mathcal P_n)$ from $\mathcal DT(\mathcal P_{n-1})$, $\mathcal P_n = \mathcal P_{n-1} \cup \{p_n\}$ using edge flips. Using `triangulate_berg`, this triangulation can be computed:
+It is easy to construct a triangulation. Here is a simple example, where we use the method outlined in the book by de Berg et al. (1999) to construct the triangulation; this triangulation adds points one at a time, constructing the Delaunay triangulation $\mathcal D\mathcal T(\mathcal P_n)$ from $\mathcal D\mathcal T(\mathcal P_{n-1})$, $\mathcal P_n = \mathcal P_{n-1} \cup {p_n}$ using edge flips. Using `triangulate_berg`, this triangulation can be computed:
 
 ```julia
 using DelaunayTriangulation
@@ -120,7 +120,7 @@ poly!(ax, pts, [collect(T)[i][j] for i in 1:length(T), j in 1:3], color = (:whit
 
 ## Gmsh 
 
-Support is also added for a simple mesh generator with Gmsh (see https://gmsh.info/), tested up to v4.9.4 on Windows 64. The function for this is `generate_mesh`, and accepts inputs of points that in counter-clockwise order. This is especially useful for e.g. finite volume codes. Currently I only have code working for simply connected domains - it would be nice to have an alternative, but this is the best I can do with the time I have (the alternative would require me to think a lot more about ghost nodes, boundary edges, etc. when the domain has holes, and the impact this would have on the existing code and existing data structures).
+Support is also added for a simple mesh generator with Gmsh (see https://gmsh.info/), tested up to v4.9.4 on Windows 64. The function for this is `generate_mesh`, and accepts inputs of boundary points that are in counter-clockwise order. This is especially useful for e.g. finite volume codes. Currently I only have code working for simply connected domains - it would be nice to have an alternative, but this is the best I can do with the time I have (the alternative would require me to think a lot more about ghost nodes, boundary edges, etc. when the domain has holes, and the impact this would have on the existing code and existing data structures).
 
 Let me give an example. In my directory, I have downloaded `gmsh` and saved it as `gmsh-4.9.4-Windows64`, so I define
 ```julia
@@ -137,7 +137,7 @@ x = cos.(θ)
 y = sin.(θ)
 T, adj, adj2v, DG, pts, BN = generate_mesh(x, y, 0.1; mesh_algorithm=mesh_algo, gmsh_path=GMSH_PATH)
 ```
-The argument `0.1` is the refinement parameter for Gmsh; please see the Gmsh documentation for more information about this. This function call starts by processing the Gmsh script, and then builds up a list of elements, nodes, and boundary nodes. Then, using `triangulate`, the result is converting into our data structures. The outputs `T`, `adj`, `adj2v`, `DG`, and `pts` are as before. The only new result is `BN`. This is a `Vector{Vector{Int64}}`, with `BN[1]` representing the boundary nodes. The reason that this is a vector of vectors is so that a boundary can be represented as having multiple boundary segments, i.e. any boundary $\Gamma = \bigcup_{i=1}^n \Gamma_i$ such that $\Gamma$ is a simple closed curve and $\Gamma_i \cap \Gamma_j = \emptyset$, $i \neq j$.
+The argument `0.1` is the refinement parameter for Gmsh; please see the Gmsh documentation for more information about this. This function call starts by processing the Gmsh script, and then builds up a list of elements, nodes, and boundary nodes. Then, using `triangulate`, the result is converting into our data structures. The outputs `T`, `adj`, `adj2v`, `DG`, and `pts` are as before. The only new result is `BN`. This is a `Vector{Vector{Int64}}`, with `BN[1]` representing the boundary nodes. The reason that this is a vector of vectors is so that a boundary can be represented as having multiple boundary segments, i.e. any boundary $\Gamma = \cup_i \Gamma_i$ such that $\Gamma$ is a simple closed curve and $\Gamma_i \cap \Gamma_j = \emptyset$, $i \neq j$.
 
 Let us demonstrate this boundary feature with a more pathological example. We consider a boundary with five segments. It is important that the boundarys are all given in a counter-clockwise orientation, and that the endpoints of the boundaries all line up, with the last segment's endpoint existing in the next segment as its initial point.
 ```julia
