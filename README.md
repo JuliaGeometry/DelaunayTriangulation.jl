@@ -17,7 +17,7 @@ This is a package for creating (unconstrained) two-dimensional Delaunay triangul
 
 The package has two algorithms for computing Delauanay triangulations, namely de Berg's method from de Berg et al. (1999), and the Bowyer-Watson algorithm as presented by Cheng, Dey, and Shewchuk (2013). de Berg's method is the slowest of the two, and has less features (and is somehow more problematic as evident by the three existing issues for de Berg's method), so we recommend the Bowyer-Watson algorithm in the function `triangulate_bowyer`. Keep reading for more examples, and see the tests for more features. You can also see the `writeups` folder for some (very) rough code that I used while testing some of this code -- I make no promises that all the code there still works.
 
-I provide a PDF in the README, called `DelaunayTriangulation.pdf`, that outlines some of my working for the algorithms used in this package. I have tried to keep up with it, but feel free to ask about it or raise any issues that are in the document. I plan on rewriting it once I eventually add constrained/weighted Delaunay triangulations in the future.
+I provide a PDF in the main directory, called `DelaunayTriangulation.pdf`, that outlines some of my working for the algorithms used in this package. I have tried to keep up with it, but feel free to ask about it or raise any issues that are in the document. I plan on rewriting it once I eventually add constrained/weighted Delaunay triangulations in the future.
 
 Feel free to use the issues tab for any questions / feedback / etc (or email me at vandenh2@qut.edu.au).
 
