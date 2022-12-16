@@ -95,7 +95,7 @@
             Dict{EdgeType,IntegerType}(
                 (((-2, 1), (6, -2), (8, -1), (6, 5), (3, 9),
                     (3, -1), (-1, 6), (9, 6), (-3, 8), (5, 3),
-                    (8, 6), (8, -2), (-3, 5), (8, 5), (3, 5)) .=> DT.DefaultAdjacentValue)...,
+                    (8, 6), (8, -2), (-3, 5), (8, 5)) .=> DT.DefaultAdjacentValue)...,
                 (5, 10) => 2, (10, 2) => 5, (2, 5) => 10,
                 (5, 9) => 7, (9, 7) => 5, (7, 5) => 9,
                 (3, 6) => 2, (6, 2) => 3, (2, 3) => 6,
@@ -666,5 +666,60 @@ end
         end
         @test e1
         @test DG.graph.N[DT.BoundaryIndex] == _DG.graph.N[DT.BoundaryIndex]
+    end
+end
+
+@testset "Handling duplicate points" begin
+    a = 0.0
+    b = 1.0
+    c = 0.0
+    d = 0.0
+    nx = 23
+    ny = 28
+    T, adj, adj2v, DG, pts = triangulate_structured(a, b, c, d, nx, ny)
+    @test_throws "The points must all be unique." triangulate_bowyer(pts)
+    @test_throws "The points must all be unique." triangulate_berg(pts)
+end
+
+@testset "Issue #21" begin
+    Random.seed!(292888111)
+    L = 2.0
+    R = 1.0
+    num_boundary_cells = 250
+    num_interior_cells = 500
+
+    ## The boundary 
+    boundary_cells = [
+        [[x, 0.0] for x in LinRange(0, L, num_boundary_cells ÷ 4)]...,
+        [[L, y] for y in LinRange(0, L, num_boundary_cells ÷ 4)]...,
+        [[x, L] for x in LinRange(L, 0, num_boundary_cells ÷ 4)]...,
+        [[0.0, y] for y in LinRange(L, 0, num_boundary_cells ÷ 4)]...
+    ]
+
+    ## Generate the interior 
+    x = L * rand(num_interior_cells)
+    y = L * rand(num_interior_cells)
+    interior_cells = [[x, y] for (x, y) in zip(x, y)]
+
+    # Filter out the circle 
+    bad_idx = Int64[]
+    void_centre = [L / 2, L / 2]
+    for i in eachindex(interior_cells)
+        @views _x, _y = interior_cells[i]
+        radsq = (_x - void_centre[1])^2 + (_y - void_centre[2])^2
+        radsq < R^2 && push!(bad_idx, i)
+    end
+    deleteat!(interior_cells, bad_idx)
+
+    ## Combine the boundary and interior cells
+    cells = vcat(interior_cells, boundary_cells)
+    interior_cell_idx = eachindex(interior_cells)
+    boundary_cell_idx = lastindex(interior_cells) .+ eachindex(boundary_cells)
+    cells = reduce(hcat, cells)
+    cells = unique(cells; dims=2)
+
+    for _ in 1:500
+        T, adj, adj2v, dg, HG = DT.triangulate_berg(cells)
+        @test DT.validate_triangulation(T, adj, adj2v, dg, cells)
     end
 end

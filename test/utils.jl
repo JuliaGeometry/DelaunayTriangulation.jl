@@ -868,3 +868,14 @@ end
     @test !DelaunayTriangulation.compare_triangles(T, V)
     @test !DelaunayTriangulation.compare_triangles(V, T)
 end
+
+@testset "Testing if a point set is unique" begin
+pts = [[1.0, 2.0], [3.0, 4.0]]
+@test DT.all_points_are_unique(pts)
+push!(pts, [3.0, 4.0])
+@test !DT.all_points_are_unique(pts)
+pts = [1.0 2.0 3.0 1.37; 3.5 1.2 0.0 7.1]
+@test DT.all_points_are_unique(pts)
+pts = [1.0 2.3 4.5 1.0; 3.5 2.3 4.5 3.5]
+@test !DT.all_points_are_unique(pts)
+end

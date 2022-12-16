@@ -32,6 +32,7 @@ function triangulate_berg(pts;
     randomise=true,
     trim=true,
     skip_pts=Set{Int64}()) where {I,E,V,Es,Ts}
+    !all_points_are_unique(pts) && throw("The points must all be unique.")
     pt_order = randomise ? shuffle(_eachindex(pts)) : collect(_eachindex(pts))
     setdiff!(pt_order, skip_pts)
     T = construct_triangles(Ts)

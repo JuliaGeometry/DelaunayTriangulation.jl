@@ -366,8 +366,8 @@ function split_edge!(i, j, r, T, adj, adj2v, DG)
     return nothing
 end
 function split_edge!(i, j, r, T, adj, adj2v, DG, HG::HistoryGraph{V}) where {V}
-    split_edge!(i, j, r, T, adj, adj2v, DG)
     k = get_edge(adj, i, j)
+    split_edge!(i, j, r, T, adj, adj2v, DG)
     Tᵢⱼₖ = construct_triangle(V, i, j, k)
     Tᵢᵣₖ = construct_triangle(V, i, r, k)
     Tᵣⱼₖ = construct_triangle(V, r, j, k)

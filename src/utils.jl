@@ -697,3 +697,15 @@ function compare_triangles(T, V)
     end
     return false
 end
+
+"""
+    all_points_are_unique(pts)
+
+Returns `true` if all the points in `pts` are unique, and `false` otherwise. 
+See also `Base.allunique`.
+"""
+function all_points_are_unique(pts) # see also allunique
+    # Need to get all the points as tuples in a vector so that allunique can be used 
+    vec_pts = [get_point(pts, i) for i in _eachindex(pts)]
+    return allunique(vec_pts)
+end

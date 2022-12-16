@@ -15,5 +15,17 @@ function convex_hull(DG::DelaunayGraph{I}, pts) where {I}
     return ch_pts_idx
 end
 
+function convex_hull(adj::Adjacent{I,E}, adj2v::Adjacent2Vertex) where {I,E}
+    num_bnd_pts = length(get_edge(adj2v, I(BoundaryIndex)))
+    bnd_pts = zeros(I, num_bnd_pts)
+    i, _ = iterate(get_edge(adj2v, I(BoundaryIndex)))[1] # need to start somewhere 
+    bnd_pts[1] = i
+    for j in 2:num_bnd_pts
+        i = get_edge(adj, i, I(BoundaryIndex))
+        bnd_pts[j] = i
+    end
+    return bnd_pts
+end
+
 #TODO: Add method that just uses ghost triangles. There'd be no need to compute 
 # anything.
