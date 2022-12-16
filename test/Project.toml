@@ -1,5 +1,4 @@
 [deps]
-CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 ElasticArrays = "fdbdab4c-e67f-52f5-8c3f-e7b388dad3d4"
 ExactPredicates = "429591f6-91af-11e9-00e2-59fbe8cec110"
