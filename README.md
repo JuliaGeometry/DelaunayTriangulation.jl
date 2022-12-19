@@ -1,5 +1,7 @@
 # DelaunayTriangulation
 
+[![DOI](https://zenodo.org/badge/540660309.svg)](https://zenodo.org/badge/latestdoi/540660309)
+
 - [DelaunayTriangulation](#delaunaytriangulation)
 - [Getting started](#getting-started)
   - [de Berg's method](#de-bergs-method)
