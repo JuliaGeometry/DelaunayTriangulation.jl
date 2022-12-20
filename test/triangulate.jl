@@ -29,8 +29,7 @@
                 (4, 2) => 3, (2, 3) => 4, (3, 4) => 2,
                 (4, 5) => 2, (5, 2) => 4, (2, 4) => 5,
                 (4, 6) => 5, (6, 5) => 4, (5, 4) => 6,
-                (((1, 5), (5, 6), (6, 4), (4, 3), (3, 1)) .=> DT.BoundaryIndex)...,
-                (((1, -1), (3, -1), (-1, 2), (2, -2), (2, 6), (-3, 2), (3, 6)) .=> DT.DefaultAdjacentValue)...
+                (((1, 5), (5, 6), (6, 4), (4, 3), (3, 1)) .=> DT.BoundaryIndex)...
             )
         )
         true_adj2v = Dict{IntegerType,EdgesType}(
@@ -93,9 +92,6 @@
         )
         true_adj = DefaultDict(DT.DefaultAdjacentValue,
             Dict{EdgeType,IntegerType}(
-                (((-2, 1), (6, -2), (8, -1), (6, 5), (3, 9),
-                    (3, -1), (-1, 6), (9, 6), (-3, 8), (5, 3),
-                    (8, 6), (8, -2), (-3, 5), (8, 5)) .=> DT.DefaultAdjacentValue)...,
                 (5, 10) => 2, (10, 2) => 5, (2, 5) => 10,
                 (5, 9) => 7, (9, 7) => 5, (7, 5) => 9,
                 (3, 6) => 2, (6, 2) => 3, (2, 3) => 6,
@@ -721,5 +717,18 @@ end
     for _ in 1:500
         T, adj, adj2v, dg, HG = DT.triangulate_berg(cells)
         @test DT.validate_triangulation(T, adj, adj2v, dg, cells)
+    end
+end
+
+@testset "Edges all exist" begin
+    pts = rand(2, 500)
+    T, adj, adj2v, DG = triangulate_bowyer(pts)
+    for e in edges(adj)
+        @test e ∈ edges(DG) || reverse(e) ∈ edges(DG)
+    end
+    for e in edges(DG)
+        if DT.BoundaryIndex ∉ e
+            @test e ∈ edges(adj)
+        end
     end
 end

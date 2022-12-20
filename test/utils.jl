@@ -81,7 +81,7 @@ end
     p10 = (4.26, 0.0)
     pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]
     Random.seed!(928881)
-    T, adj, adj2v, DG, HG = DT.triangulate_berg(pts)
+    T, adj, adj2v, DG, HG = DT.triangulate_berg(pts; trim_empty_features=false)
     p11 = (6.0, 2.5)
     push!(pts, p11)
     r = 11

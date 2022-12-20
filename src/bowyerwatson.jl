@@ -89,6 +89,7 @@ function triangulate_bowyer(pts;
     randomise=true,
     trim=true,
     try_last_inserted_point=true,
+    trim_empty_features = true,
     skip_pts=Set{Int64}()) where {I,E,V,Es,Ts}
     !all_points_are_unique(pts) && throw("The points must all be unique.")
     pt_order = randomise ? shuffle(_eachindex(pts)) : collect(_eachindex(pts))
@@ -120,6 +121,8 @@ function triangulate_bowyer(pts;
             pt_idx, m, initial_search_point)
         update_centroid_after_new_point!(pts, new_point)
     end
+    trim_empty_features && clear_empty_keys!(adj)
+    trim_empty_features && clear_empty_points!(DG)
     trim && remove_ghost_triangles!(T, adj, adj2v, DG)
     return T, adj, adj2v, DG
 end
