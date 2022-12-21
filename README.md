@@ -138,7 +138,7 @@ mesh_algo = 6
 θ = LinRange(0, 2π, 250)
 x = cos.(θ)
 y = sin.(θ)
-T, adj, adj2v, DG, pts, BN = generate_mesh(x, y, 0.1; mesh_algorithm=mesh_algo, gmsh_path=GMSH_PATH)
+(T, adj, adj2v, DG, pts), BN = generate_mesh(x, y, 0.1; mesh_algorithm=mesh_algo, gmsh_path=GMSH_PATH)
 ```
 The argument `0.1` is the refinement parameter for Gmsh; please see the Gmsh documentation for more information about this. This function call starts by processing the Gmsh script, and then builds up a list of elements, nodes, and boundary nodes. Then, using `triangulate`, the result is converting into our data structures. The outputs `T`, `adj`, `adj2v`, `DG`, and `pts` are as before. The only new result is `BN`. This is a `Vector{Vector{Int64}}`, with `BN[1]` representing the boundary nodes. The reason that this is a vector of vectors is so that a boundary can be represented as having multiple boundary segments, i.e. any boundary $\Gamma = \cup_i \Gamma_i$ such that $\Gamma$ is a simple closed curve and $\Gamma_i \cap \Gamma_j = \emptyset$, $i \neq j$.
 
