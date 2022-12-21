@@ -81,7 +81,7 @@ end
     p10 = (4.26, 0.0)
     pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]
     Random.seed!(928881)
-    T, adj, adj2v, DG, HG = DT.triangulate_berg(pts; trim_empty_features=false)
+    (T, adj, adj2v, DG), HG = DT.triangulate_berg(pts; trim_empty_features=false)
     p11 = (6.0, 2.5)
     push!(pts, p11)
     r = 11
@@ -183,7 +183,7 @@ end
     p10 = (4.26, 0.0)
     pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]
     Random.seed!(928881)
-    T, adj, adj2v, DG, HG = DT.triangulate_berg(pts)
+    (T, adj, adj2v, DG), HG = DT.triangulate_berg(pts)
     @test DT.compare_unconstrained_triangulations(T, adj, adj2v, DG, T, adj, adj2v, DG)
     @test !DT.compare_unconstrained_triangulations(T, adj, adj2v, DG, Set{NTuple{3,Int64}}([(5, 1, 7), (10, 5, 3), (1, 2, 3), (3, 2, 1), (7, 6, 3)]), adj, adj2v, DG)
     adj2 = deepcopy(adj)
@@ -382,7 +382,7 @@ end
     k = [6, 7, 8, 11]
     @test all(!DT.is_boundary_point(k, adj, DG) for k in k)
 
-    T, adj, adj2v, DG, HG = DT.triangulate_berg(pts)
+    (T, adj, adj2v, DG), HG = DT.triangulate_berg(pts)
     k = [9, 10, 5, 4, 3, 2, 1]
     @test all(DT.is_boundary_point(k, adj, DG) for k in k)
     k = [6, 7, 8, 11]
@@ -436,7 +436,8 @@ end
     p10 = (4.26, 0.0)
     pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]
     Random.seed!(928881)
-    T, adj, adj2v, DG, HG = DT.triangulate_berg(pts)
+    tri, HG = DT.triangulate_berg(pts)
+    T, adj, adj2v, DG = tri
     @test !DT.triangulation_has_ghost_triangles(adj, adj2v)
 end
 
@@ -870,12 +871,12 @@ end
 end
 
 @testset "Testing if a point set is unique" begin
-pts = [[1.0, 2.0], [3.0, 4.0]]
-@test DT.all_points_are_unique(pts)
-push!(pts, [3.0, 4.0])
-@test !DT.all_points_are_unique(pts)
-pts = [1.0 2.0 3.0 1.37; 3.5 1.2 0.0 7.1]
-@test DT.all_points_are_unique(pts)
-pts = [1.0 2.3 4.5 1.0; 3.5 2.3 4.5 3.5]
-@test !DT.all_points_are_unique(pts)
+    pts = [[1.0, 2.0], [3.0, 4.0]]
+    @test DT.all_points_are_unique(pts)
+    push!(pts, [3.0, 4.0])
+    @test !DT.all_points_are_unique(pts)
+    pts = [1.0 2.0 3.0 1.37; 3.5 1.2 0.0 7.1]
+    @test DT.all_points_are_unique(pts)
+    pts = [1.0 2.3 4.5 1.0; 3.5 2.3 4.5 3.5]
+    @test !DT.all_points_are_unique(pts)
 end

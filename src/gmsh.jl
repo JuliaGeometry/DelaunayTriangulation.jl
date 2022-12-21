@@ -142,7 +142,7 @@ function generate_mesh end
         end
     end
     T, adj, adj2v, DG = triangulate(elements, nodes, boundary_nodes)
-    return T, adj, adj2v, DG, nodes, unique.(boundary_nodes)
+    return Triangulation(T, adj, adj2v, DG, nodes), unique.(boundary_nodes)
 end
 @inline function generate_mesh(x::Vector{LinRange{Float64,Int64}}, y::Vector{LinRange{Float64,Int64}}, ref; mesh_algorithm=6, verbosity=0, gmsh_path="./gmsh-4.9.4-Windows64/gmsh.exe", num_threads=Base.Threads.nthreads())
     return generate_mesh(collect.(x), collect.(y), ref; verbosity, mesh_algorithm, gmsh_path, num_threads)

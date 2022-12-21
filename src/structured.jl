@@ -69,7 +69,7 @@ function triangulate_structured(a, b, c, d, Nˣ, Nʸ; return_boundary_types=fals
         BNy = Vector{Vector{Float64}}([[], [], [], []])
         if single_boundary
             BN = ch_idx
-            return T, adj, adj2v, DG, points, BN
+            return Triangulation(T, adj, adj2v, DG, points), BN
         end
         for i in ch_idx
             if points[1, i] == a
@@ -104,8 +104,8 @@ function triangulate_structured(a, b, c, d, Nˣ, Nʸ; return_boundary_types=fals
         BN[2] .= BN[2][idx₂]
         BN[3] .= BN[3][idx₃]
         BN[4] .= BN[4][idx₄]
-        return T, adj, adj2v, DG, points, BN
+        return Triangulation(T, adj, adj2v, DG, points), BN
     else
-        return T, adj, adj2v, DG, points
+        return Triangulation(T, adj, adj2v, DG, points)
     end
 end

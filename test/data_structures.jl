@@ -210,7 +210,7 @@ end
     @test collect(DT.edges(adj)) == [(2, 3), (5, 7)] || collect(DT.edges(adj)) == [(5, 7), (2, 3)]
 
     @inferred DT.get_edge(adj, 2, 3)
-    @inferred DT.get_edge(adj, (2,3))
+    @inferred DT.get_edge(adj, (2, 3))
     @inferred DT.get_edge(adj, -3, 50)
 end
 
@@ -306,7 +306,7 @@ end
     @test DT.get_neighbour(DG, 3) == Set([1])
     @test edges(DG) == DG.graph.E
 
-    pts = rand(SVector{2, Float64}, 250)
+    pts = rand(SVector{2,Float64}, 250)
     T, adj, adj2v, DG = DT.triangulate_bowyer(pts)
     for i in eachindex(pts)
         @test deg(graph(DG), i) == DT.num_neighbours(DG, i)
@@ -377,4 +377,71 @@ end
     DT.add_edge!(HH, T₁, T₂)
     DT.add_edge!(HH, T₁, T₃)
     @test DT.graph(H) == DT.graph(HH)
+end
+
+###################################################
+#/
+#/
+#/ Storing a Delaunay triangulation 
+#/
+#/
+###################################################
+@testset "Testing from the Bowyer-Watson algorithm" begin
+    pts = rand(2, 500)
+    Random.seed!(2929292)
+    T, adj, adj2v, DG = triangulate_bowyer(pts)
+    tri = Triangulation(T, adj, adj2v, DG, pts)
+
+    @test DT.get_triangles(tri) === T
+    @test DT.get_adjacent(tri) === adj
+    @test DT.get_adjacent2vertex(tri) === adj2v
+    @test DT.get_graph(tri) === DG
+    @test DT.get_points(tri) === pts
+
+    _T, _adj, _adj2v, _DG, _pts = tri
+    @test _T === T
+    @test _adj === adj
+    @test _adj2v === adj2v
+    @test _DG === DG
+    @test _pts === pts
+
+    Random.seed!(2929292)
+    _tri = triangulate_bowyer(pts)
+    @test _tri isa Triangulation
+    @test _tri.triangles == T
+    @test _tri.adjacent.adjacent == adj.adjacent
+    @test _tri.adjacent2vertex.adjacent2vertex == adj2v.adjacent2vertex
+    @test _tri.graph.graph == DG.graph
+    @test _tri.points == pts
+end
+
+@testset "Testing from de Berg's method" begin
+    pts = rand(2, 500)
+    Random.seed!(29292222292)
+    (T, adj, adj2v, DG), HG = triangulate_berg(pts)
+    @test HG isa DT.HistoryGraph
+    tri = Triangulation(T, adj, adj2v, DG, pts)
+
+    @test DT.get_triangles(tri) === T
+    @test DT.get_adjacent(tri) === adj
+    @test DT.get_adjacent2vertex(tri) === adj2v
+    @test DT.get_graph(tri) === DG
+    @test DT.get_points(tri) === pts
+
+    _T, _adj, _adj2v, _DG, _pts = tri
+    @test _T === T
+    @test _adj === adj
+    @test _adj2v === adj2v
+    @test _DG === DG
+    @test _pts === pts
+
+    Random.seed!(29292222292)
+    _tri, _HG = triangulate_berg(pts)
+    @test _tri isa Triangulation
+    @test _tri.triangles == T
+    @test _tri.adjacent.adjacent == adj.adjacent
+    @test _tri.adjacent2vertex.adjacent2vertex == adj2v.adjacent2vertex
+    @test _tri.graph.graph == DG.graph
+    @test _tri.points == pts
+    @test HG.graph == _HG.graph
 end

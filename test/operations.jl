@@ -1667,11 +1667,12 @@ end
         DT.add_triangle!(i, j, k, T, adj, adj2v, DG; update_ghost_edges=true)
     end
 
-    _T, _adj, _adj2v, _DG, _HG = DT.triangulate_berg(pts)
+    (_T, _adj, _adj2v, _DG), _HG = DT.triangulate_berg(pts)
     DT.add_ghost_triangles!(_T, _adj, _adj2v, _DG)
     @test DT.compare_unconstrained_triangulations(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
 
-    _T, _adj, _adj2v, _DG, _HG = DT.triangulate_berg(pts)
+    tri, _HG = DT.triangulate_berg(pts)
+    _T, _adj, _adj2v, _DG = tri
     DT.remove_ghost_triangles!(T, adj, adj2v, DG)
     @test DT.compare_unconstrained_triangulations(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
 end

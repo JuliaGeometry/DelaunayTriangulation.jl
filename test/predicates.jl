@@ -472,15 +472,15 @@ end
             @test all(e .== 0)
 
             pu, pv, pw = get_point(pts, i, j, k)
-            e[1] = DT.isintriangle(pu,pv,pw,pu)
-            e[2] = DT.isintriangle(pv,pw,pu,pu)
-            e[3] = DT.isintriangle(pw,pu,pv,pu)
-            e[4] = DT.isintriangle(pu,pv,pw,pv)
-            e[5] = DT.isintriangle(pv,pw,pu,pv)
-            e[6] = DT.isintriangle(pw,pu,pv,pv)
-            e[7] = DT.isintriangle(pu,pv,pw,pw)
-            e[8] = DT.isintriangle(pv,pw,pu,pw)
-            e[9] = DT.isintriangle(pw,pu,pv,pw)
+            e[1] = DT.isintriangle(pu, pv, pw, pu)
+            e[2] = DT.isintriangle(pv, pw, pu, pu)
+            e[3] = DT.isintriangle(pw, pu, pv, pu)
+            e[4] = DT.isintriangle(pu, pv, pw, pv)
+            e[5] = DT.isintriangle(pv, pw, pu, pv)
+            e[6] = DT.isintriangle(pw, pu, pv, pv)
+            e[7] = DT.isintriangle(pu, pv, pw, pw)
+            e[8] = DT.isintriangle(pv, pw, pu, pw)
+            e[9] = DT.isintriangle(pw, pu, pv, pw)
             @test all(e .== 0)
         end
     end
@@ -628,7 +628,7 @@ end
     p10 = @SVector[4.74, 2.21]
     p11 = @SVector[2.32, -0.27]
     pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11]
-    T, adj, adj2v, DG, HG = DT.triangulate_berg(pts)
+    (T, adj, adj2v, DG), HG = DT.triangulate_berg(pts)
     [DT.delete_triangle!(i, j, k, T, adj, adj2v, DG) for (i, j, k) in (
         (1, 8, 9), (9, 8, 10), (10, 11, 5), (5, 7, 4), (4, 6, 3), (3, 6, 2), (2, 6, 1)
     )]
@@ -764,7 +764,7 @@ end
     p10 = @SVector[4.74, 2.21]
     p11 = @SVector[2.32, -0.27]
     pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11]
-    T, adj, adj2v, DG, HG = DT.triangulate_berg(pts)
+    (T, adj, adj2v, DG), HG = DT.triangulate_berg(pts)
     [DT.delete_triangle!(i, j, k, T, adj, adj2v, DG) for (i, j, k) in (
         (1, 8, 9), (9, 8, 10), (10, 11, 5), (5, 7, 4), (4, 6, 3), (3, 6, 2), (2, 6, 1)
     )]
@@ -835,7 +835,8 @@ end
 @testset "Testing if a point is inside the convex hull" begin
     for _ in 1:200
         pts = rand(SVector{2,Float64}, 250)
-        T, adj, adj2v, DG = triangulate_bowyer(pts)
+        tri = triangulate_bowyer(pts)
+        T, adj, adj2v, DG = tri
         BN = convex_hull(DG, pts)
         for _ in 1:100
             q = 3rand(SVector{2,Float64})

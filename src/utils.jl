@@ -467,7 +467,7 @@ set `pts` to those from de Berg's method. If both are identical, return `true`, 
 out-of-place.
 """
 function compare_deberg_to_bowyerwatson(T, adj, adj2v, DG, pts)
-    _T, _adj, _adj2v, _DG, _ = triangulate_berg(pts)
+    (_T, _adj, _adj2v, _DG), _ = triangulate_berg(pts)
     return compare_deberg_to_bowyerwatson(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
 end
 

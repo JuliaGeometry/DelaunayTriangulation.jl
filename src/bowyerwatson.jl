@@ -56,6 +56,7 @@ end
         randomise=true,
         trim=true,
         try_last_inserted_point=true,
+        trim_empty_features=true,
         skip_pts=Set{Int64}())
 
 Triangulates the set of points `pts` using the Bowyer-Watson algorithm.
@@ -72,13 +73,17 @@ Triangulates the set of points `pts` using the Bowyer-Watson algorithm.
 - `randomise=true`: Whether to randomise the insertion order.
 - `trim=true`: Whether to remove the ghost triangles at the end.
 - `try_last_inserted_point=true`: At each stage, this should be `true` if the point that was last inserted should also be tried for initialising [`jump_and_march`](@ref).
+- `trim_empty_features = true`: Whether to remove keys from the `Adjacent` map that refer to deleted edges, and edges from the `DelaunayGraph` that refer to deleted edges.
 - `skip_pts`: There may be points you want to avoid adding into the triangulation, but they still exist in `pts`. If this is the case, add the indices for the points into a `Set` and set this keyword to this set.
 
 # Outputs 
+The output is a `Triangulation` struct, containing
+
 - `T`: The set of triangles. 
 - `adj`: The [`Adjacent`](@ref) map.
 - `adj2v`: The [`Adjacent2Vertex`](@ref) map.
 - `DG`: The `[DelaunayGraph`](@ref).
+- `pts`: The provided point set.
 """
 function triangulate_bowyer(pts;
     IntegerType::Type{I}=Int64,
@@ -124,7 +129,7 @@ function triangulate_bowyer(pts;
     trim_empty_features && clear_empty_keys!(adj)
     trim_empty_features && clear_empty_points!(DG)
     trim && remove_ghost_triangles!(T, adj, adj2v, DG)
-    return T, adj, adj2v, DG
+    return Triangulation(T, adj, adj2v, DG, pts)
 end
 
 function lazy_triangulate_bowyer(pts;

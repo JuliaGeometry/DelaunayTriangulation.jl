@@ -38,7 +38,8 @@ p4 = [-1.0, 2.0]
 p5 = [4.0, 2.0]
 p6 = [-2.0, -1.0]
 pts = [p1, p2, p3, p4, p5, p6]
-T, adj, adj2v, DG, HG = triangulate_berg(pts)
+tri, HG = triangulate_berg(pts)
+T, adj, adj2v, DG = tri # tri is a Triangulation struct, see ?Triangulation
 ```
 This function `triangulate_berg` creates the triangulation for the given `pts`, returning:
 - `T`: This is the set of triangles, of default type `Set{NTuple{3, Int64}}`. By default, triangles are represented as tuples of indices `(i, j, k)` so that `(pts[i], pts[j], pts[k])` are the points representing the triangle. All triangles `T` are positively oriented.
@@ -166,7 +167,9 @@ y5 = [0.8815, 0.8056, 0.80268, 0.73258, 0.6, 0.598, 0.5777, 0.525, 0.4346, 0.364
 x = [x1, x2, x3, x4, x5]
 y = [y1, y2, y3, y4, y5]
 ## Mesh 
-T, adj, adj2v, DG, pts, BN = generate_mesh(x, y, 0.05; gmsh_path=GMSH_PATH)
+tri, BN = generate_mesh(x, y, 0.05; gmsh_path=GMSH_PATH)
+T = tri.triangles 
+pts = tri.points
 ## Visualise 
 fig = Figure()
 ax = Axis(fig[1, 1])
@@ -358,7 +361,7 @@ This all applies equally as well to `triangulate_berg`.
 
 ```julia
 Random.seed!(_seed) # Keep the same insertion order for later
-T, adj, adj2v, DG = triangulate_berg(pts; 
+(T, adj, adj2v, DG), _ = triangulate_berg(pts; 
     IntegerType = Int32,
     EdgeType = CustomEdge, 
     TriangleType = CustomTriangle, 

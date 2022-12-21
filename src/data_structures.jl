@@ -376,3 +376,49 @@ function add_edge!(G::HistoryGraph, T, V::Vararg{Tri,N}) where {Tri,N}
     end
     return nothing
 end
+
+###################################################
+#/
+#/
+#/ Triangulation 
+#/
+#/
+################################################### 
+"""
+    Triangulation{T,I,E,Es}
+
+Data structure for a triangulation.
+
+# Fields 
+- `triangles::T`: Structure containing the collection of triangles.
+- `adjacent::Adjacent{I,E}`: The adjacent map.
+- `adjacent2vertex::Adjacent2Vertex{I,Es,E}`: The adjacent-to-vertex map. 
+- `graph::DelaunayGraph{I}`: The Delaunay graph. 
+- `points::P`: The point set.
+"""
+struct Triangulation{T,I,E,Es,P}
+    triangles::T
+    adjacent::Adjacent{I,E}
+    adjacent2vertex::Adjacent2Vertex{I,Es,E}
+    graph::DelaunayGraph{I}
+    points::P
+end
+get_triangles(tri::Triangulation) = tri.triangles
+get_adjacent(tri::Triangulation) = tri.adjacent
+get_adjacent2vertex(tri::Triangulation) = tri.adjacent2vertex
+get_graph(tri::Triangulation) = tri.graph
+get_points(tri::Triangulation) = tri.points
+
+function Base.iterate(tri::Triangulation, state=1)
+    if state == 1
+        return (get_triangles(tri), 2)
+    elseif state == 2
+        return (get_adjacent(tri), 3)
+    elseif state == 3
+        return (get_adjacent2vertex(tri), 4)
+    elseif state == 4
+        return (get_graph(tri), 5)
+    elseif state == 5
+        return (get_points(tri), nothing)
+    end
+end

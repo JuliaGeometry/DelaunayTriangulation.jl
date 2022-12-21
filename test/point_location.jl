@@ -3,7 +3,7 @@
         r = 5sqrt.(rand(n))
         θ = 2π * rand(n)
         pts = [@SVector[r * cos(θ), r * sin(θ)] for (r, θ) in zip(r, θ)]
-        T, adj, adj2v, DG, HG = DT.triangulate_berg(pts)
+        (T, adj, adj2v, DG), HG = DT.triangulate_berg(pts)
         _pts = deepcopy(pts)
         for k in rand(1:n, ceil(Int64, 0.45n^(1 / 3)))
             for _ in 1:length(T)

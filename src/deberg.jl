@@ -23,6 +23,45 @@ function add_point_berg!(T, adj::Adjacent{I,E}, adj2v, DG, HG::HistoryGraph{Tri}
     return nothing
 end
 
+"""
+    triangulate_berg(pts;
+        IntegerType::Type{I}=Int64,
+        EdgeType::Type{E}=NTuple{2,IntegerType},
+        TriangleType::Type{V}=NTuple{3,IntegerType},
+        EdgesType::Type{Es}=Set{EdgeType},
+        TrianglesType::Type{Ts}=Set{TriangleType},
+        randomise=true,
+        trim=true,
+        trim_empty_features=true,
+        skip_pts=Set{Int64}()) where {I,E,V,Es,Ts}
+
+Triangulates the set of points `pts` using the de Berg's algorithm.
+
+# Inputs 
+- `pts`: The point set.
+
+# Keyword Arguments 
+- `IntegerType::Type{I}=Int64`: Type used to represent integers. 
+- `EdgeType::Type{E}=NTuple{2,IntegerType}`: Type used to represent edges. 
+- `TriangleType::Type{V}=NTuple{3,IntegerType}`: Type used to represent triangles. 
+- `EdgesType::Type{Es}=Set{EdgeType}`: Type used to represent a collection of edges.
+- `TrianglesType::Type{Ts}=Set{TriangleType}`: Type used to represent a collection of triangles. 
+- `randomise=true`: Whether to randomise the insertion order.
+- `trim=true`: Whether to remove the ghost triangles at the end.
+- `trim_empty_features = true`: Whether to remove keys from the `Adjacent` map that refer to deleted edges, and edges from the `DelaunayGraph` that refer to deleted edges.
+- `skip_pts`: There may be points you want to avoid adding into the triangulation, but they still exist in `pts`. If this is the case, add the indices for the points into a `Set` and set this keyword to this set.
+
+# Outputs 
+The output is a `Triangulation` struct, containing
+
+- `T`: The set of triangles. 
+- `adj`: The [`Adjacent`](@ref) map.
+- `adj2v`: The [`Adjacent2Vertex`](@ref) map.
+- `DG`: The `[DelaunayGraph`](@ref).
+- `pts`: The provided point set.
+
+The second output is `HG`, a [`HistoryGraph`](@ref).
+"""
 function triangulate_berg(pts;
     IntegerType::Type{I}=Int64,
     EdgeType::Type{E}=NTuple{2,IntegerType},
@@ -48,7 +87,7 @@ function triangulate_berg(pts;
     trim_empty_features && clear_empty_keys!(adj)
     trim_empty_features && clear_empty_points!(DG)
     trim && remove_bounding_triangle!(T, adj, adj2v, DG)
-    return T, adj, adj2v, DG, HG
+    return Triangulation(T, adj, adj2v, DG, pts), HG
 end
 
 function remove_bounding_triangle!(T::Ts, adj::Adjacent{I,E}, adj2v, DG) where {I,E,Ts}

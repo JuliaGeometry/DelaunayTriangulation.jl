@@ -13,7 +13,7 @@
         TrianglesType = Set{TriangleType}
         EdgesType = Set{EdgeType}
         Random.seed!(92994881)
-        T, adj, adj2v, DG, HG = DT.triangulate_berg(pts;
+        (T, adj, adj2v, DG), HG = DT.triangulate_berg(pts;
             IntegerType, TriangleType, EdgeType, TrianglesType, EdgesType)
         true_T = TrianglesType([
             (5, 1, 2),
@@ -72,8 +72,9 @@
         p10 = @SVector[2.5, 0.5]
         pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]
         Random.seed!(929947476781)
-        T, adj, adj2v, DG, HG = DT.triangulate_berg(pts;
+        tri, HG = DT.triangulate_berg(pts;
             IntegerType, TriangleType, EdgeType, TrianglesType, EdgesType)
+        T, adj, adj2v, DG = tri
         true_T = TrianglesType([
             (5, 10, 2),
             (5, 9, 7),
@@ -147,7 +148,7 @@
             x = rand(n)
             y = rand(n)
             pts = [(x, y) for (x, y) in zip(x, y)]
-            T, adj, adj2v, DG, HG = DT.triangulate_berg(pts;
+            (T, adj, adj2v, DG), HG = DT.triangulate_berg(pts;
                 IntegerType, TriangleType, EdgeType, TrianglesType, EdgesType)
             @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
             @test all(DT.isoriented(T, pts) == 1 for T in T)
@@ -166,7 +167,7 @@
             x = rand(n)
             y = rand(n)
             pts = [(x, y) for (x, y) in zip(x, y)]
-            T, adj, adj2v, DG, HG = DT.triangulate_berg(pts; randomise=false,
+            (T, adj, adj2v, DG), HG = DT.triangulate_berg(pts; randomise=false,
                 IntegerType, TriangleType, EdgeType, TrianglesType, EdgesType)
             @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
             @test all(DT.isoriented(T, pts) == 1 for T in T)
@@ -177,7 +178,7 @@
             num_eg = length(DT.graph(DG).E) - length(DT.get_neighbour(DG, DT.BoundaryIndex))
             num_tris = length(T)
             @test 1 == num_pts - num_eg + num_tris # Euler's formula
-            _T, _adj, _adj2v, _DG, _HG = DT.triangulate_berg(pts; randomise=false,
+            (_T, _adj, _adj2v, _DG), _HG = DT.triangulate_berg(pts; randomise=false,
                 IntegerType, TriangleType, EdgeType, TrianglesType, EdgesType)
             @test T == _T # Not only are the triangles equivalent, they are exactly equal 
             @test DT.compare_unconstrained_triangulations(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
@@ -189,8 +190,9 @@
             x = rand(n)
             y = rand(n)
             pts = [(x, y) for (x, y) in zip(x, y)]
-            T, adj, adj2v, DG, HG = DT.triangulate_berg(pts;
+            tri, HG = DT.triangulate_berg(pts;
                 IntegerType, TriangleType, EdgeType, TrianglesType, EdgesType)
+            T, adj, adj2v, DG = tri
             @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
             @test all(DT.isoriented(T, pts) == 1 for T in T)
             for (i, j) in adj2v.adjacent2vertex[DT.BoundaryIndex]
@@ -200,7 +202,7 @@
             num_eg = length(DT.graph(DG).E) - length(DT.get_neighbour(DG, DT.BoundaryIndex))
             num_tris = length(T)
             @test 1 == num_pts - num_eg + num_tris # Euler's formula
-            _T, _adj, _adj2v, _DG, _HG = DT.triangulate_berg(pts; trim=false,
+            (_T, _adj, _adj2v, _DG), _HG = DT.triangulate_berg(pts; trim=false,
                 IntegerType, TriangleType, EdgeType, TrianglesType, EdgesType)
             @test DT.validate_triangulation(_T, _adj, _adj2v, _DG, pts)
             @test all(DT.isoriented(_T, pts) == 1 for _T in _T)
@@ -229,9 +231,9 @@ end
     end
     for _ in 1:100
         pts = rand(2, 250)
-        T, adj, adj2v, DG = DT.triangulate_berg(pts)
+        (T, adj, adj2v, DG), _ = DT.triangulate_berg(pts)
         pts2 = [pts[:, i] for i in axes(pts, 2)]
-        _T, _adj, _adj2v, _DG = DT.triangulate_berg(pts2)
+        (_T, _adj, _adj2v, _DG), _ = DT.triangulate_berg(pts2)
         @test DT.compare_unconstrained_triangulations(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
     end
 end
@@ -250,12 +252,12 @@ end
     p10 = (4.26, 0.0)
     pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]
     Random.seed!(928881)
-    T, adj, adj2v, DG, HG = DT.triangulate_berg(pts)
+    (T, adj, adj2v, DG), HG = DT.triangulate_berg(pts)
     p11 = (6.0, 2.5)
     push!(pts, p11)
 
     DT.add_point_bowyer!(T, adj, adj2v, DG, pts, 11)
-    _T, _adj, _adj2v, _DG, _HG = DT.triangulate_berg(pts)
+    (_T, _adj, _adj2v, _DG), _HG = DT.triangulate_berg(pts)
     DT.clear_empty_keys!(adj)
     DT.clear_empty_keys!(_adj)
     @test DT.compare_triangle_sets(T, _T) &&
@@ -266,7 +268,7 @@ end
     p12 = (10.3, 2.85)
     push!(pts, p12)
     DT.add_point_bowyer!(T, adj, adj2v, DG, pts, 12)
-    _T, _adj, _adj2v, _DG, _HG = DT.triangulate_berg(pts)
+    (_T, _adj, _adj2v, _DG), _HG = DT.triangulate_berg(pts)
     DT.clear_empty_keys!(adj)
     DT.clear_empty_keys!(_adj)
     @test DT.compare_triangle_sets(T, _T) &&
@@ -277,7 +279,7 @@ end
     p13 = (7.5, 3.5)
     push!(pts, p13)
     DT.add_point_bowyer!(T, adj, adj2v, DG, pts, 13)
-    _T, _adj, _adj2v, _DG, _HG = DT.triangulate_berg(pts)
+    (_T, _adj, _adj2v, _DG), _HG = DT.triangulate_berg(pts)
     DT.clear_empty_keys!(adj)
     DT.clear_empty_keys!(_adj)
     @test DT.compare_triangle_sets(T, _T) &&
@@ -290,8 +292,8 @@ end
     n = 1381
     pts = [(rand((-1, 1)) * R * rand(), rand((-1, 1)) * R * rand()) for _ in 1:n] # rand((-1, 1)) to get random signs
     pushfirst!(pts, (-11.0, -11.0), (11.0, -11.0), (11.0, 11.0), (-11.0, 11.0)) # bounding box to guarantee interior insertions only
-    T, adj, adj2v, DG, HG = @views DT.triangulate_berg(pts[1:7])
-    _T, _adj, _adj2v, _DG, _HG = @views DT.triangulate_berg(pts[1:7])
+    (T, adj, adj2v, DG), HG = @views DT.triangulate_berg(pts[1:7])
+    (_T, _adj, _adj2v, _DG), _HG = @views DT.triangulate_berg(pts[1:7])
     n = length(pts)
     for i in 8:n
         DT.add_point_bowyer!(T, adj, adj2v, DG, pts, i)
@@ -339,7 +341,7 @@ end
     p12 = @SVector[4.382, 3.2599]
     push!(pts, p12)
     DT.add_point_bowyer!(T, adj, adj2v, DG, pts, 12)
-    _T, _adj, _adj2v, _DG, _HG = DT.triangulate_berg(pts)
+    (_T, _adj, _adj2v, _DG), _HG = DT.triangulate_berg(pts)
     DT.add_ghost_triangles!(_T, _adj, _adj2v, _DG)
     @test DT.compare_unconstrained_triangulations(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
     @test DT.compare_deberg_to_bowyerwatson(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
@@ -355,7 +357,7 @@ end
     DT.add_point_bowyer!(T, adj, adj2v, DG, pts, 15)
     DT.add_point_bowyer!(T, adj, adj2v, DG, pts, 16)
     DT.add_point_bowyer!(T, adj, adj2v, DG, pts, 17)
-    _T, _adj, _adj2v, _DG, _HG = DT.triangulate_berg(pts)
+    (_T, _adj, _adj2v, _DG), _HG = DT.triangulate_berg(pts)
     DT.add_ghost_triangles!(_T, _adj, _adj2v, _DG)
     @test DT.compare_unconstrained_triangulations(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
     @test DT.compare_deberg_to_bowyerwatson(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
@@ -406,7 +408,7 @@ end
         p26, p27, p28, p29, p30, p31, p32]
     for _ in 1:500
         T, adj, adj2v, DG = DT.triangulate_bowyer(pts; trim=false)
-        _T, _adj, _adj2v, _DG, _HG = DT.triangulate_berg(pts)
+        (_T, _adj, _adj2v, _DG), _HG = DT.triangulate_berg(pts)
         @test DT.compare_deberg_to_bowyerwatson(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
     end
 end
@@ -436,7 +438,8 @@ end
     end
     for _ in 1:100
         pts = rand(2, 250)
-        T, adj, adj2v, DG = DT.triangulate_bowyer(pts)
+        tri = DT.triangulate_bowyer(pts)
+        T, adj, adj2v, DG = tri
         pts2 = [pts[:, i] for i in axes(pts, 2)]
         _T, _adj, _adj2v, _DG = DT.triangulate_bowyer(pts2)
         @test DT.compare_unconstrained_triangulations(T, adj, adj2v, DG, _T, _adj, _adj2v, _DG)
@@ -510,7 +513,7 @@ end
         for i in skip_pts
             @test i ∉ DG.graph.V
         end
-        _T, _adj, _adj2v, _DG = DT.triangulate_berg(pts; skip_pts, trim=false)
+        (_T, _adj, _adj2v, _DG), _ = DT.triangulate_berg(pts; skip_pts, trim=false)
         @test DT.validate_triangulation(_T, _adj, _adj2v, _DG, pts)
         for i in skip_pts
             @test i ∉ DG.graph.V
@@ -521,7 +524,7 @@ end
         for i in skip_pts
             @test i ∉ DG.graph.V
         end
-        _T, _adj, _adj2v, _DG = DT.triangulate_berg(pts; skip_pts, randomise=false, trim=false)
+        (_T, _adj, _adj2v, _DG), _ = DT.triangulate_berg(pts; skip_pts, randomise=false, trim=false)
         @test DT.validate_triangulation(_T, _adj, _adj2v, _DG, pts)
         for i in skip_pts
             @test i ∉ DG.graph.V
@@ -536,7 +539,7 @@ end
     d = 10.0
     Nˣ = 5
     Nʸ = 3
-    T, adj, adj2v, DG, pts, BN = triangulate_structured(a, b, c, d, Nˣ, Nʸ; return_boundary_types=true)
+    (T, adj, adj2v, DG, pts), BN = triangulate_structured(a, b, c, d, Nˣ, Nʸ; return_boundary_types=true)
     @test length(edges(adj)) ÷ 2 == 30
     @test num_triangles(T) == 16
     @test pts == reduce(hcat, [[0, 0], [1.25, 0], [2.5, 0], [3.75, 0],
@@ -547,7 +550,7 @@ end
     @test BN[3] == [15, 14, 13, 12, 11]
     @test BN[4] == [11, 6, 1]
 
-    T, adj, adj2v, DG, pts, BN = triangulate_structured(a, b, c, d, Nˣ, Nʸ; return_boundary_types=true, single_boundary=true)
+    (T, adj, adj2v, DG, pts), BN = triangulate_structured(a, b, c, d, Nˣ, Nʸ; return_boundary_types=true, single_boundary=true)
     @test length(edges(adj)) ÷ 2 == 30
     @test num_triangles(T) == 16
     @test pts == reduce(hcat, [[0, 0], [1.25, 0], [2.5, 0], [3.75, 0],
@@ -570,7 +573,7 @@ end
         return axes(pts, 2)
     end
     Random.seed!(299756756791)
-    _T, _adj, _adj2v, _DG, pts, BN = triangulate_structured(a, b, c, d, nx, ny; return_boundary_types=true, single_boundary=true)
+    (_T, _adj, _adj2v, _DG, pts), BN = triangulate_structured(a, b, c, d, nx, ny; return_boundary_types=true, single_boundary=true)
 
     T, adj, adj2v, DG = DT.triangulate_bowyer(pts; randomise=false)
     @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
@@ -621,7 +624,7 @@ end
     d = 17.0
     nx = 67
     ny = 31
-    _T, _adj, _adj2v, _DG, pts, BN = triangulate_structured(a, b, c, d, nx, ny; return_boundary_types=true, single_boundary=true)
+    (_T, _adj, _adj2v, _DG, pts), BN = triangulate_structured(a, b, c, d, nx, ny; return_boundary_types=true, single_boundary=true)
     T, adj, adj2v, DG = DT.triangulate_bowyer(pts; randomise=false)
     @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
     @test DG.graph.N[DT.BoundaryIndex] == _DG.graph.N[DT.BoundaryIndex]
@@ -715,7 +718,7 @@ end
     cells = unique(cells; dims=2)
 
     for _ in 1:500
-        T, adj, adj2v, dg, HG = DT.triangulate_berg(cells)
+        (T, adj, adj2v, dg), HG = DT.triangulate_berg(cells)
         @test DT.validate_triangulation(T, adj, adj2v, dg, cells)
     end
 end

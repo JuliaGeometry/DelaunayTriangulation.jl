@@ -44,6 +44,8 @@ export triangulate_bowyer
 export triangulate_berg
 export triangulate_structured
 export triangulate
+export Triangulation 
+
 #=
 export voronoi 
 export VoronoiTessellation
