@@ -1,6 +1,6 @@
 function add_point_bowyer!(T::Ts, adj::Adjacent{I,E}, adj2v, DG, pts, r;
     pt_idx=graph(DG).V, m=ceil(Int64, length(pt_idx)^(1 / 3)),
-    initial_search_point=select_initial_point(pts, r; pt_idx, m)) where {Ts,I,E} 
+    initial_search_point=select_initial_point(pts, r; pt_idx, m)) where {Ts,I,E}
     r = I(r)
     tri_type = triangle_type(Ts)
     V = jump_and_march(r, adj, adj2v, DG, pts; k=initial_search_point, TriangleType=tri_type)
@@ -94,15 +94,27 @@ function triangulate_bowyer(pts;
     randomise=true,
     trim=true,
     try_last_inserted_point=true,
-    trim_empty_features = true,
+    trim_empty_features=true,
     skip_pts=Set{Int64}()) where {I,E,V,Es,Ts}
-    !all_points_are_unique(pts) && throw("The points must all be unique.")
-    pt_order = randomise ? shuffle(_eachindex(pts)) : collect(_eachindex(pts))
-    setdiff!(pt_order, skip_pts)
     T = construct_triangles(Ts)
     adj = Adjacent{I,E}()
     adj2v = Adjacent2Vertex{I,Es,E}()
     DG = DelaunayGraph{I}()
+    _triangulate_bowyer!(T, adj, adj2v, DG, pts; IntegerType, TriangleType, randomise, trim, try_last_inserted_point, trim_empty_features, skip_pts)
+    return Triangulation(T, adj, adj2v, DG, pts)
+end
+
+function _triangulate_bowyer!(T, adj, adj2v, DG, pts;
+    IntegerType::Type{I}=Int64,
+    TriangleType::Type{V}=NTuple{3,IntegerType},
+    randomise=true,
+    trim=true,
+    try_last_inserted_point=true,
+    trim_empty_features=true,
+    skip_pts=Set{Int64}()) where {I,V}
+    !all_points_are_unique(pts) && throw("The points must all be unique.")
+    pt_order = randomise ? shuffle(_eachindex(pts)) : collect(_eachindex(pts))
+    setdiff!(pt_order, skip_pts)
     initial_triangle = construct_positively_oriented_triangle(TriangleType, I(pt_order[begin]), I(pt_order[begin+1]), I(pt_order[begin+2]), pts)
     while isoriented(initial_triangle, pts) == 0 # We cannot start with a degenerate triangle. We need to shift the insertion order
         circshift!(pt_order, 1)
@@ -129,7 +141,7 @@ function triangulate_bowyer(pts;
     trim_empty_features && clear_empty_keys!(adj)
     trim_empty_features && clear_empty_points!(DG)
     trim && remove_ghost_triangles!(T, adj, adj2v, DG)
-    return Triangulation(T, adj, adj2v, DG, pts)
+    return nothing
 end
 
 function lazy_triangulate_bowyer(pts;
