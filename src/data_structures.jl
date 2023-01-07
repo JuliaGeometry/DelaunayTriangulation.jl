@@ -422,3 +422,63 @@ function Base.iterate(tri::Triangulation, state=1)
         return (get_points(tri), nothing)
     end
 end
+
+"""
+    triangulate(triangles,
+        nodes::AbstractMatrix,
+        boundary_nodes; 
+        IntegerType::Type{I}=Int64,
+        EdgeType::Type{E}=NTuple{2,IntegerType},
+        TriangleType::Type{V}=NTuple{3,IntegerType},
+        EdgesType::Type{Es}=Set{EdgeType},
+        TrianglesType::Type{Ts}=Set{TriangleType},
+        sort_boundary=true) where {I,E,V,Es,Ts}
+
+Given an existing set of `triangles` (all in counter-clockwise order), `nodes`, and `boundary_nodes` (listed in clockwise order),
+puts them into a [`Triangulation`](@ref) struct.
+"""
+function triangulate(triangles,
+    nodes::AbstractMatrix,
+    boundary_nodes; # BOUNDARY NODES MUST BE CLOCKWISE
+    IntegerType::Type{I}=Int64,
+    EdgeType::Type{E}=NTuple{2,IntegerType},
+    TriangleType::Type{V}=NTuple{3,IntegerType},
+    EdgesType::Type{Es}=Set{EdgeType},
+    TrianglesType::Type{Ts}=Set{TriangleType},
+    sort_boundary=true) where {I,E,V,Es,Ts}
+    boundary_nodes = deepcopy(boundary_nodes)
+    boundary_nodes = reduce(vcat, boundary_nodes)
+    sort_boundary && unique!(boundary_nodes)
+    T = Ts()
+    adj = Adjacent{I,E}()
+    adj2v = Adjacent2Vertex{I,Es,E}()
+    DG = DelaunayGraph{I}()
+    itr = triangles isa AbstractMatrix ? eachcol(triangles) : triangles
+    for (i, j, k) in itr
+        add_triangle!(i, j, k, T, adj, adj2v, DG; protect_boundary=true)
+    end
+    for i in boundary_nodes
+        add_neighbour!(DG, I(BoundaryIndex), i)
+    end
+    if sort_boundary
+        cx, cy = sum(nodes; dims=2) / size(nodes, 2)
+        θ = zeros(length(boundary_nodes))
+        for (j, i) in pairs(boundary_nodes)
+            p = @view nodes[:, i]
+            x, y = p
+            θ[j] = atan(y - cy, x - cx)
+        end
+        sort_idx = sortperm(θ)
+        permute!(boundary_nodes, sort_idx)
+        reverse!(boundary_nodes) # cw 
+    end
+    n = length(boundary_nodes)
+    push!(boundary_nodes, boundary_nodes[begin])
+    for i in 1:n
+        u = boundary_nodes[i]
+        v = boundary_nodes[i+1]
+        add_edge!(adj2v, I(BoundaryIndex), u, v)
+        add_edge!(adj, u, v, I(BoundaryIndex))
+    end
+    return T, adj, adj2v, DG
+end

@@ -33,7 +33,7 @@ end
         ch_ghosts = convex_hull(adj, adj2v)
         @test length(CH) == length(ch_ghosts)
         idx = findfirst(ch_ghosts .== first(CH))
-        circshift!(ch_ghosts, idx - 1)
+        circshift!(ch_ghosts, 1 - idx)
         @test CH == ch_ghosts
     end
 end

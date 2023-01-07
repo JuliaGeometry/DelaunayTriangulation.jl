@@ -123,7 +123,7 @@ poly!(ax, pts, [collect(T)[i][j] for i in 1:length(T), j in 1:3], color = (:whit
 
 ## Gmsh 
 
-Support is also added for a simple mesh generator with Gmsh (see https://gmsh.info/), tested up to v4.9.4 on Windows 64. The function for this is `generate_mesh`, and accepts inputs of boundary points that are in counter-clockwise order. This is especially useful for e.g. finite volume codes. Currently I only have code working for simply connected domains - it would be nice to have an alternative, but this is the best I can do with the time I have (the alternative would require me to think a lot more about ghost nodes, boundary edges, etc. when the domain has holes, and the impact this would have on the existing code and existing data structures).
+Support is also added for a simple mesh generator with Gmsh (see https://gmsh.info/), tested up to v4.9.4 on Windows 64. The function for this is `generate_mesh`, and accepts inputs of boundary points that are in counter-clockwise order. This is especially useful for e.g. finite volume codes. Currently I only have code working for simply connected domains - it would be nice to have an alternative, but this is the best I can do with the time I have (the alternative would require me to think a lot more about ghost nodes, boundary edges, etc. when the domain has holes, and the impact this would have on the existing code and existing data structures) -- this will eventually be supported.
 
 Let me give an example. In my directory, I have downloaded `gmsh` and saved it as `gmsh-4.9.4-Windows64`, so I define
 ```julia
@@ -184,6 +184,8 @@ lines!(ax, pts[:, BN[5]], color=:darkgreen, linewidth=4)
 ![A Gmsh triangulation](https://github.com/DanielVandH/DelaunayTriangulation.jl/blob/main/test_fig3.png?raw=true)
 
 As you can see, the triangulation successfully works on this non-convex geometry, and we have been able to clearly identify where in `pts` all the boundary nodes are. This makes it especially useful for example for applying boundary conditions in a finite volume code.
+
+You can also use `generate_mesh(a, b, c, d, ref)` to generate the mesh for a rectangle $[a, b] \times [c, d]$.
 
 # Customisation 
 

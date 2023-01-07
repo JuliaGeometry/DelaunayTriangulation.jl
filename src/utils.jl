@@ -483,7 +483,7 @@ function select_valid_start_of_vector!(pt_order, skip_pts; r=3)
     for i in 0:(r-1)
         j = 0
         while pt_order[begin+i] ∈ skip_pts
-            @views circshift!(pt_order[(begin+i):end], 1)
+            @views circshift!(pt_order[(begin+i):end], -1)
             j += 1
         end
     end
