@@ -549,6 +549,23 @@ end
     @test BN[2] == [5, 10, 15]
     @test BN[3] == [15, 14, 13, 12, 11]
     @test BN[4] == [11, 6, 1]
+    @test T == Set{NTuple{3,Int64}}(((6, 2, 7),
+        (11, 7, 12),
+        (9, 5, 10),
+        (14, 10, 15),
+        (8, 9, 13),
+        (4, 5, 9),
+        (8, 4, 9),
+        (7, 8, 12),
+        (1, 2, 6),
+        (2, 3, 7),
+        (6, 7, 11),
+        (13, 9, 14),
+        (12, 8, 13),
+        (9, 10, 14),
+        (3, 4, 8),
+        (7, 3, 8)))
+    @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
 
     (T, adj, adj2v, DG, pts), BN = triangulate_structured(a, b, c, d, Nˣ, Nʸ; return_boundary_types=true, single_boundary=true)
     @test length(edges(adj)) ÷ 2 == 30
@@ -557,6 +574,49 @@ end
         [5, 0], [0, 5], [1.25, 5.0], [2.5, 5], [3.75, 5], [5, 5], [0, 10], [1.25, 10],
         [2.5, 10], [3.75, 10], [5, 10]])
     @test BN == [1, 2, 3, 4, 5, 10, 15, 14, 13, 12, 11, 6]
+    @test T == Set{NTuple{3,Int64}}(((6, 2, 7),
+        (11, 7, 12),
+        (9, 5, 10),
+        (14, 10, 15),
+        (8, 9, 13),
+        (4, 5, 9),
+        (8, 4, 9),
+        (7, 8, 12),
+        (1, 2, 6),
+        (2, 3, 7),
+        (6, 7, 11),
+        (13, 9, 14),
+        (12, 8, 13),
+        (9, 10, 14),
+        (3, 4, 8),
+        (7, 3, 8)))
+    @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
+
+    Random.seed!(191919882771)
+    (T, adj, adj2v, DG, pts), BN = triangulate_structured(a, b, c, d, Nˣ, Nʸ; return_boundary_types=true, single_boundary=true, randomly_flip=true)
+    @test length(edges(adj)) ÷ 2 == 30
+    @test num_triangles(T) == 16
+    @test pts == reduce(hcat, [[0, 0], [1.25, 0], [2.5, 0], [3.75, 0],
+        [5, 0], [0, 5], [1.25, 5.0], [2.5, 5], [3.75, 5], [5, 5], [0, 10], [1.25, 10],
+        [2.5, 10], [3.75, 10], [5, 10]])
+    @test BN == [1, 2, 3, 4, 5, 10, 15, 14, 13, 12, 11, 6]
+    @test T == Set{NTuple{3,Int64}}(((11, 7, 12),
+        (9, 5, 10),
+        (9, 15, 14),
+        (9, 10, 15),
+        (4, 5, 9),
+        (2, 3, 8),
+        (8, 4, 9),
+        (1, 7, 6),
+        (7, 8, 12),
+        (2, 8, 7),
+        (6, 7, 11),
+        (13, 9, 14),
+        (12, 8, 13),
+        (13, 8, 9),
+        (3, 4, 8),
+        (1, 2, 7)))
+    @test DT.validate_triangulation(T, adj, adj2v, DG, pts)
 end
 
 @testset "Collinear" begin
