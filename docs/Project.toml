@@ -1,0 +1,4 @@
+[deps]
+DelaunayTriangulation = "59b81b67-bdd8-41a5-8f6b-bad6861ee075"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+LiveServer = "16fef848-5104-11e9-1b77-fb7a48bbb589"
