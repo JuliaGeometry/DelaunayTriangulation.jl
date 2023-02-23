@@ -1,5 +1,5 @@
 name = "DelaunayTriangulation"
-uuid = "59b81b67-bdd8-41a5-8f6b-bad6861ee075"
+uuid = "927a84f5-c5f4-47a5-9785-b46e178433df"
 authors = ["Daniel VandenHeuvel <danj.vandenheuvel@gmail.com>"]
 version = "0.4.0"
 
