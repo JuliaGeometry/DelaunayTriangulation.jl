@@ -14,10 +14,12 @@ jobs:
   test:
     name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
     runs-on: ${{ matrix.os }}
+    contiue-on-error: true.
     strategy:
       fail-fast: false
       matrix:
         version:
+          - '1.0'
           - '1.8'
           - 'nightly'
         os:
@@ -33,10 +35,8 @@ jobs:
       - uses: julia-actions/cache@v1
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
-      - name: Upload coverage reports to Codecov 
-        if: always()
-        uses: julia-actions/julia-processcoverage@v1
-        uses: codecov/codecov-action@v3
+      - uses: julia-actions/julia-processcoverage@v1
+      - uses: codecov/codecov-action@v3
         with:
           files: lcov.info
   docs:
