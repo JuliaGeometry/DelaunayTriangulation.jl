@@ -334,6 +334,7 @@ end
     i = [0.0, 0.5]
     j = [1.5, 3.0]
     pts = [a, b, c, d, e, f, g, h, i, j]
+    tri = DT.triangulate_bowyer_watson(pts; delete_ghosts=false)
     fig, ax, sc, = triplot(tri)
     save("$save_path/small_example.png", fig)
 end

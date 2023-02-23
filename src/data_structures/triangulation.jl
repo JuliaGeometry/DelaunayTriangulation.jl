@@ -258,7 +258,7 @@ function Base.show(io::IO, ::MIME"text/plain", tri::Triangulation)
     println(io, "    Has ghost triangles: $(has_ghost_triangles(tri))")
     println(io, "    Number of points: $(num_points(tri))")
     println(io, "    Number of triangles: $(num_triangles(tri))")
-    println(io, "    Number of edges: $(num_edges(tri))")
+    print(io, "    Number of edges: $(num_edges(tri))")
 end
 
 Base.@constprop :aggressive function Triangulation(points::P;

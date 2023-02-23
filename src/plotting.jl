@@ -71,7 +71,7 @@ MakieCore.@recipe(Triplot, points, triangles, boundary_nodes, convex_hull) do sc
                                 strokewidth=1,
                                 ghost_edge_extension_factor=10.0,
                                 plot_convex_hull=true,
-                                convex_hull_color=:grey,
+                                convex_hull_color=:red,
                                 convex_hull_linestyle=:dash,
                                 convex_hull_linewidth=2)
 end
