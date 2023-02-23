@@ -6,11 +6,6 @@ CurrentModule = DelaunayTriangulation
 
 As defined in the data structures section, we have the ability for computing convex hulls. These can be computed outside of the triangulation process, using our implementation of Graham's scan. 
 
-```@docs 
-ConvexHull 
-convex_hull(::Any)
-```
-
 Here is an example.
 
 ```julia
