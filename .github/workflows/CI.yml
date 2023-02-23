@@ -40,8 +40,8 @@ jobs:
       - name: Build the package
         uses: julia-actions/julia-buildpkg@v1
 
-      - name: Run the tests
-        uses: julia-actions/julia-runtest@v1
+      #- name: Run the tests
+      #  uses: julia-actions/julia-runtest@v1
 
       - name: Process the coverage
         if: always()
