@@ -1,9 +1,13 @@
 """
-    add_point!(tri::Triangulation, new_point; 
-        point_indices=Iterators.filter(!is_boundary_index, get_vertices(tri)),
-        m = default_num_samples(length(point_indices)),
-        try_points = (),
-        initial_search_point = integer_type(tri)(select_initial_point(get_points(tri), new_point; point_indices, m, try_points)))
+    add_point!(tri::Triangulation, new_point;
+    point_indices=get_vertices(tri),
+    m=default_num_samples(length(point_indices)),
+    try_points=(),
+    initial_search_point=integer_type(tri)(select_initial_point(get_points(tri),
+                                                                new_point;
+                                                                point_indices,
+                                                                m,
+                                                                try_points)))
        
 Adds the point `new_point` into the triangulation.
 
