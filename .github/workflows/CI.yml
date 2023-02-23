@@ -25,19 +25,30 @@ jobs:
         arch:
           - x64
     steps:
-      - name: Get tests going
+      - name: Checkout repository for access
         uses: actions/checkout@v2
+
+      - name: Setup Julia
         uses: julia-actions/setup-julia@v1
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
+
+      - name: Cache artifacts, etc.
         uses: julia-actions/cache@v1
+
+      - name: Build the package
         uses: julia-actions/julia-buildpkg@v1
+
+      - name: Run the tests
         uses: julia-actions/julia-runtest@v1
 
-      - name: Get test coverage
+      - name: Process the coverage
         if: always()
         uses: julia-actions/julia-processcoverage@v1
+
+      - name: Upload the resutls
+        if: always()
         uses: codecov/codecov-action@v3
         with:
           files: lcov.info
