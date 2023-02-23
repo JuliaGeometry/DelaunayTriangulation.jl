@@ -83,6 +83,6 @@ scatter!(ax, [x], [y], color=:blue, markersize=23)
 
 ```@raw html
 <figure>
-    <img src='../figs/pole_of_inaccessibility.png', alt='Triangulation'><br>
+    <img src='../figs/pole_of_inaccessibility.png', alt='Pole of inaccessibility'><br>
 </figure>
 ```
