@@ -59,7 +59,7 @@ with a `Dict`, e.g. if `adj` is a corresponding [`Adjacent`](@ref) map,
 
 ```julia
 for (vertex, edge_list) in adj2v 
-    for edge in edge_list
+    for edge in each_edge(edge_list)
         get_adjacent(adj, edge) == vertex 
     end
 end
