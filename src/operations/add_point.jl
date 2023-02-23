@@ -20,7 +20,7 @@ also be careful with using this if you have deleted ghost triangles.
 - `new_point`: The index of the point in `get_points(tri)` to add. 
 
 # Keyword Arguments 
-- `point_indices=Iterators.filter(!is_boundary_index, get_vertices(tri))`: The currently inserted points in `tri`. 
+- `point_indices=get_vertices(tri)`: The currently inserted points in `tri`. 
 - `m=default_num_samples(length(point_indices))`: How many points to sample. 
 - `try_points()`: Points to consider when sampling for point location. 
 - `initial_search_point=integer_type(tri)(select_initial_point(get_points(tri), new_point; point_indices, m, try_points)))`: Where to start the point location. 
