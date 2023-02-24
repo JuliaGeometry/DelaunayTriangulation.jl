@@ -13,7 +13,7 @@ triangulate_rectangle
 
 The `single_boundary` argument is useful if you want to, for example, have a boundary condition for the entire boundary or for each side of the boundary separately. 
 
-An example of the single boundary case is below.
+An example of the four boundary case is below.
 
 ```julia
 a, b, c, d = 2.0, 10.0, -5.0, 7.5
@@ -37,7 +37,7 @@ lines!(ax, tri.points[:, get_boundary_nodes(tri, 4)]; linewidth=4)
 
 The blue edges show the interpretation of the ghost edges.
 
-An example of the four boundary case is below.
+An example of the single boundary case is below.
 
 ```julia
 tri = DT.triangulate_rectangle(a, b, c, d, nx, ny; single_boundary=true)
