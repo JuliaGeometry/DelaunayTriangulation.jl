@@ -85,6 +85,7 @@ export each_ghost_triangle
 export get_vertices
 export clear_empty_features!
 export get_indices
+export get_convex_hull_indices
 
 include("predicates/certificate.jl")
 include("predicates/boundaries_and_ghosts.jl")
