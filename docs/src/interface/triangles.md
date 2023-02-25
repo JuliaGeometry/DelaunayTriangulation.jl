@@ -24,6 +24,7 @@ triangle_edges
 rotate_triangle 
 construct_positively_oriented_triangle(::Type{V}, ::Any, ::Any, ::Any, ::Any) where {V}
 compare_triangles 
+sort_triangle
 ```
 
 ## Collection of Triangles 
@@ -39,9 +40,10 @@ num_triangles
 add_to_triangles! 
 delete_from_triangles!
 each_triangle 
+remove_duplicate_triangles
 ```
 
-You must also provide definitions for `Base.in` and `Base.sizehint!` for your type.
+You must also provide definitions for `Base.in` and `Base.sizehint!` for your type. You need `Base.unique!` to use `remove_duplicate_triangles`, unless your collection is a `Set`.
 Note also that `Triangulation`s also define `each_solid_triangle` and `each_ghost_triangle`.
 
 ### Generic Methods 
@@ -53,4 +55,5 @@ add_triangle!(::Ts, ::Integer, ::Integer, ::Integer) where {Ts}
 delete_triangle!(::Any, ::Vararg{F, N}) where {F, N}
 delete_triangle!(::Ts, ::Integer, ::Integer, ::Integer) where {Ts}
 compare_triangle_collections 
+sort_triangles
 ```

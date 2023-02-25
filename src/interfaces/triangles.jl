@@ -253,7 +253,7 @@ and this method just calls the two-argument method after constructing
 the triangle with [`construct_triangle`](@ref).
 """
 function contains_triangle end
-function contains_triangle(T::F, V::S) where {F, S}
+function contains_triangle(T::F, V::S) where {F,S}
     if T ∈ V
         return (T, true)
     end
@@ -271,6 +271,24 @@ function contains_triangle(i, j, k, V::Ts) where {Ts}
     F = triangle_type(Ts)
     T = construct_triangle(F, i, j, k)
     return contains_triangle(T, V)
+end
+
+"""
+    sort_triangle(T::V) where {V}
+    
+Given a triangle `T = (i, j, k)`, sorts it so that the first index is the smallest, maintaining 
+the orientation of `T`.
+"""
+function sort_triangle(T::V) where {V}
+    i, j, k = indices(T)
+    minijk = min(i, j, k)
+    if minijk == i
+        return construct_triangle(V, i, j, k)
+    elseif minijk == j
+        return construct_triangle(V, j, k, i)
+    else
+        return construct_triangle(V, k, i, j)
+    end
 end
 
 """
@@ -414,4 +432,33 @@ function compare_triangle_collections(T, V)
         !flag && return false
     end
     return true
+end
+
+"""
+    sort_triangles(T::Ts) where {Ts}
+
+Sorts the triangles in the collection `T` so that each triangle's first vertex 
+has the smallest value. The orientation of each triangle is preserved.
+"""
+function sort_triangles(T::Ts) where {Ts}
+    tris = initialise_triangles(Ts)
+    for τ in each_triangle(T)
+        σ = sort_triangle(τ)
+        add_triangle!(tris, σ)
+    end
+    return tris
+end
+
+"""
+    remove_duplicate_triangles(T::Ts) where {Ts} 
+
+Removes duplicate triangles from `T`. This procedure also sorts the triangles 
+so that the first index of each triangle is the smallest. Orientations are 
+preserved.
+"""
+function remove_duplicate_triangles end
+function remove_duplicate_triangles(T::Ts) where {Ts}
+    V = sort_triangles(T)
+    Ts <: Set || unique!(V)
+    return V
 end

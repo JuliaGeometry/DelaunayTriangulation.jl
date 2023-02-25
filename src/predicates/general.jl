@@ -15,19 +15,53 @@ incircle_predicate(a, b, c, p) = incircle(getxy(a), getxy(b), getxy(c), getxy(p)
 """
     sameside_predicate(a, b, p)
 
-Returns `ExactPredicates.sameside(p, a, b)`.
+Returns `ExactPredicates.sameside(p, a, b)` (but we redefine it here).
 
 (The difference in the argument order is to match the convention that the 
 main point being tested is the last argument.)
 """
-sameside_predicate(a, b, p) = sameside(getxy(p), getxy(a), getxy(b))
+function sameside_predicate(a, b, p)
+    _p = getxy(p)
+    _a = getxy(a)
+    _b = getxy(b)
+    if _a < _p && _b < _p || _a > _p && _b > _p
+        return 1
+    elseif _a < _p && _b > _p || _a > _p && _b < _p
+        return -1
+    else
+        return 0
+    end
+end
+
+opposite_signs(x, y) = xor(x, y) == -2 # also from ExactPredicates.jl 
 
 """
     meet_predicate(p, q, a, b) 
 
-Returns `ExactPredicates.meet(p, q, a, b)`.
+Returns `ExactPredicates.meet(p, q, a, b)`  (but we redefine it here).
 """
-meet_predicate(p, q, a, b) = meet(getxy(p), getxy(q), getxy(a), getxy(b))
+function meet_predicate(p, q, a, b)
+    pqa = orient_predicate(p, q, a)
+    pqb = orient_predicate(p, q, b)
+    abp = orient_predicate(a, b, p)
+    abq = orient_predicate(a, b, q)
+    if opposite_signs(pqa, pqb) && opposite_signs(abp, abq)
+        return 1
+    elseif (pqa ≠ 0 && pqa == pqb) || (abq ≠ 0 && abp == abq)
+        return -1
+    elseif pqa == 0 && pqb == 0
+        if sameside_predicate(a, b, p) == 1 &&
+           sameside_predicate(a, b, q) == 1 &&
+           sameside_predicate(p, q, a) == 1 &&
+           sameside_predicate(p, q, b) == 1
+            return -1
+        else
+            return 0
+        end
+    else
+        return 0
+    end
+end
 
 """
     triangle_orientation(p, q, r)
@@ -43,7 +77,7 @@ See also [`orient_predicate`](@ref).
 @inline function triangle_orientation(p, q, r)
     cert = orient_predicate(p, q, r)
     return convert_certificate(cert, Cert.NegativelyOriented, Cert.Degenerate,
-                               Cert.PositivelyOriented)
+        Cert.PositivelyOriented)
 end
 
 """
@@ -100,7 +134,7 @@ function point_position_on_line_segment(a, b, p)
     if is_outside(converted_cert) # Do we have "a ---- b ---- p" or "p ---- a ---- b"?
         ap_cert = sameside_predicate(a, p, b)
         converted_ap_cert = convert_certificate(ap_cert, Cert.On, Cert.Degenerate,
-                                                Cert.Outside)
+            Cert.Outside)
         return is_on(converted_ap_cert) ? Cert.Right : Cert.Left
     end
     return converted_cert

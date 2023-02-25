@@ -37,7 +37,7 @@ T3 = SVector{3,Int32}((i, j, k))
 for T in (T1, T2, T3)
     for r in 0:2
         @test DT.rotate_triangle(T, r) ==
-              DT.construct_triangle(typeof(T), ((i, j, k), (j, k, i), (k, i, j))[r + 1]...)
+              DT.construct_triangle(typeof(T), ((i, j, k), (j, k, i), (k, i, j))[r+1]...)
     end
 end
 
@@ -53,10 +53,10 @@ end
 Ts1 = Set{typeof(T1)}(((1, 2, 3), (4, 6, 1), (10, 6, 1), (3, 10, 9), (5, 10, 3)))
 Ts2 = Set{typeof(T2)}(([1, 2, 3], [4, 6, 1], [10, 6, 1], [3, 10, 9], [5, 10, 3]))
 Ts3 = Set{typeof(T3)}((SVector{3,Int32}((1, 2, 3)),
-                       SVector{3,Int32}((4, 6, 1)),
-                       SVector{3,Int32}((10, 6, 1)),
-                       SVector{3,Int32}((3, 10, 9)),
-                       SVector{3,Int32}((5, 10, 3))))
+    SVector{3,Int32}((4, 6, 1)),
+    SVector{3,Int32}((10, 6, 1)),
+    SVector{3,Int32}((3, 10, 9)),
+    SVector{3,Int32}((5, 10, 3))))
 
 @test_throws "The" DT.initialise_triangles(String)
 for T in (T1, T2, T3)
@@ -164,25 +164,85 @@ points = [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]
       (1, 2, 3)
 
 T = Set{NTuple{3,Int64}}(((1, 2, 3),
-                          (2, 3, 4),
-                          (4, 5, 6),
-                          (6, 9, 11)))
+    (2, 3, 4),
+    (4, 5, 6),
+    (6, 9, 11)))
 V = Set{NTuple{3,Int64}}(((1, 2, 3),
-                          (2, 3, 4),
-                          (4, 5, 6),
-                          (6, 9, 11)))
+    (2, 3, 4),
+    (4, 5, 6),
+    (6, 9, 11)))
 @test DT.compare_triangle_collections(T, V)
 V = Set{NTuple{3,Int64}}(((1, 2, 3),
-                          (2, 3, 4),
-                          (4, 5, 6)))
+    (2, 3, 4),
+    (4, 5, 6)))
 @test !DT.compare_triangle_collections(T, V)
 V = Set{NTuple{3,Int64}}(((3, 1, 2),
-                          (3, 4, 2),
-                          (6, 4, 5),
-                          (6, 9, 11)))
+    (3, 4, 2),
+    (6, 4, 5),
+    (6, 9, 11)))
 @test DT.compare_triangle_collections(T, V)
 V = Set{NTuple{3,Int64}}(((3, 1, 2),
-                          (3, 4, 2),
-                          (6, 4, 5),
-                          (6, 11, 9)))
+    (3, 4, 2),
+    (6, 4, 5),
+    (6, 11, 9)))
 @test !DT.compare_triangle_collections(T, V)
+
+T = (1, 7, 5)
+sortT = (1, 7, 5)
+@test DT.sort_triangle(T) == sortT
+T = [3, 1, 5]
+@test DT.sort_triangle(T) == [1, 5, 3]
+T = (5, 7, 1)
+@test DT.sort_triangle(T) == (1, 5, 7)
+
+T = Set{NTuple{3,Int64}}([
+    (1, 2, 3),
+    (10, 9, 3),
+    (11, 5, 1),
+    (193, 12, 10),
+    (5, 3, 1),
+    (19, 18, 17),
+    (17, 5, 23),
+    (20, 50, 72),
+    (30, 31, 32),
+    (20, 13, 37)
+])
+V = DT.sort_triangles(T)
+@test V == Set{NTuple{3,Int64}}([
+    (1, 2, 3),
+    (3, 10, 9),
+    (1, 11, 5),
+    (10, 193, 12),
+    (1, 5, 3),
+    (17, 19, 18),
+    (5, 23, 17),
+    (20, 50, 72),
+    (30, 31, 32),
+    (13, 37, 20)
+])
+@test DT.compare_triangle_collections(T, V)
+
+T = Set{NTuple{3,Int64}}([
+    (1, 2, 3),
+    (2, 3, 1),
+    (3, 1, 2),
+    (4, 5, 6),
+    (11, 8, 3),
+    (3, 11, 8),
+    (18, 13, 1)
+])
+V = DT.remove_duplicate_triangles(T)
+@test V == Set{NTuple{3,Int64}}([
+    (1, 2, 3),
+    (4, 5, 6),
+    (1, 18, 13),
+    (3, 11, 8),
+])
+T = Set{NTuple{3,Int64}}([
+    (11, 9, 1),
+    (1, 11, 9)
+])
+V = DT.remove_duplicate_triangles(T)
+@test V == Set{NTuple{3,Int64}}([
+    (1, 11, 9)
+])

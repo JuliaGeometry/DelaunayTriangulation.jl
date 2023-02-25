@@ -11,7 +11,7 @@ The package makes its simple for customing the interface used for defining point
 - Triangles: `NTuple{3, Int64}`.
 - Collections of triangles: `Set{NTuple{3, Int64}}`
 
-We also give support for customing how points are represented, and by default we support collections of points given as matrices (with each point its own column), or vectors of vectors. The number type used for representing coordinates has to be Float64 to support ExactPredicates.jl, although if you like you could customise `orient_predicate`, `incircle_predicate`, `sameside_predicate` and `meet_predicate`, even circumventing ExactPredicates.jl if you like.
+We also give support for customing how points are represented, and by default we support collections of points given as matrices (with each point its own column), or vectors of vectors. The number type used for representing coordinates has to be Float64 to support ExactPredicates.jl, although if you like you could customise `orient_predicate` and `incircle_predicate`, even circumventing ExactPredicates.jl if you like. See the predicates section in the sidebar for a further discussion of changing these predicate definitions.
 
 We also provide a customisable interface for representing boundary nodes, although for unconstrained triangulations this is relevant. By default, we support boundary nodes represented according to the following, where we let `BN` refer to the collection of boundary nodes:
 
