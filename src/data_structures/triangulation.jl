@@ -448,6 +448,8 @@ abstract type AbstractEachTriangle{T} end
 Base.IteratorSize(::Type{<:AbstractEachTriangle}) = Base.SizeUnknown()
 Base.IteratorEltype(::Type{<:AbstractEachTriangle{T}}) where {T} = Base.IteratorEltype(T)
 Base.eltype(::Type{<:AbstractEachTriangle{T}}) where {T} = triangle_type(T)
+initialise_triangles(::Type{<:AbstractEachTriangle{T}}) where {T} = initialise_triangles(T)
+each_triangle(itr::AbstractEachTriangle) = itr
 struct EachSolidTriangle{T} <: AbstractEachTriangle{T}
     triangles::T
 end
