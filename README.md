@@ -62,4 +62,4 @@ xlims!(ax, -0.5, 2.5)
 ylims!(ax, -0.5, 6.5)
 ```
 
-![A triangulation](https://github.com/DanielVandH/DelaunayTriangulation.jl/blob/main/test/figures/gmsh_example_3.png?raw=true)
+![A triangulation](https://github.com/DanielVandH/DelaunayTriangulation.jl/blob/main/test/figures/gmsh_example_3.png?raw=true) 
