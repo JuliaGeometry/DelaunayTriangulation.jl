@@ -456,7 +456,6 @@ Removes duplicate triangles from `T`. This procedure also sorts the triangles
 so that the first index of each triangle is the smallest. Orientations are 
 preserved.
 """
-function remove_duplicate_triangles end
 function remove_duplicate_triangles(T::Ts) where {Ts}
     V = sort_triangles(T)
     Ts <: Set || unique!(V)

@@ -213,6 +213,8 @@ circshift!(ch.indices, 1 - shift)
 @test DT.construct_positively_oriented_triangle(tri, 140, 3, 1126) == (3, 140, 1126)
 @inferred DT.construct_positively_oriented_triangle(tri, 3, 140, 1126)
 _solid_itr = each_solid_triangle(tri)
+@test DelaunayTriangulation.each_triangle(_solid_itr) == _solid_itr
+@test DT.initialise_triangles(typeof(_solid_itr)) == Set{NTuple{3,Int64}}()
 @test Base.IteratorSize(_solid_itr) == Base.SizeUnknown()
 @test Base.IteratorEltype(_solid_itr) == Base.HasEltype()
 @test Base.eltype(_solid_itr) == NTuple{3,Int64}
@@ -221,18 +223,21 @@ _solid_tri = collect(_solid_itr)
 @inferred collect(_solid_itr)
 @test all(!DT.is_ghost_triangle, _solid_tri)
 _ghost_itr = each_ghost_triangle(tri)
+@test DT.initialise_triangles(typeof(_ghost_itr)) == Set{NTuple{3,Int64}}()
 @test Base.IteratorSize(_ghost_itr) == Base.SizeUnknown()
 @test Base.IteratorEltype(_ghost_itr) == Base.HasEltype()
 @test Base.eltype(_ghost_itr) == NTuple{3,Int64}
 @test each_ghost_triangle(tri) isa DT.EachGhostTriangle
 _ghost_tri = collect(_ghost_itr)
 @inferred collect(_ghost_itr)
+@test DelaunayTriangulation.each_triangle(_ghost_itr) == _ghost_itr
 @test all(DT.is_ghost_triangle, _ghost_tri)
 @test length(_ghost_tri) + length(_solid_tri) == num_triangles(tri)
 ___tri = generate_mesh(x, y, 0.1; convert_result=true, add_ghost_triangles=true)
 DT.delete_ghost_triangles!(___tri)
 @test collect(each_triangle(___tri)) == collect(each_solid_triangle(___tri))
 @test length(collect(each_ghost_triangle(___tri))) == 0
+@test DelaunayTriangulation.sort_triangles(each_solid_triangle(tri)) == DelaunayTriangulation.sort_triangles(get_triangles(___tri))
 
 # Edges 
 @test DT.edge_type(tri) == NTuple{2,Int64}
