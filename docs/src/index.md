@@ -10,4 +10,11 @@ This is a package for computing Delaunay triangulations of planar point sets. We
 
 To ensure that the triangulations are robust to degeneracies, we use ExactPredicates.jl for all geometrical predicates. The results from these predicates are handled through a Certificate module, as outlined in the predicates section in the sidebar.
 
-Much of the work in this package is derived from the book *Delaunay Mesh Generation* by Cheng, Dey, and Shewchuk (2013)
+Much of the work in this package is derived from the book *Delaunay Mesh Generation* by Cheng, Dey, and Shewchuk (2013).
+
+For the future, the top priorities would be:
+
+1. Triangulation of convex polygons, and hence support for vertex deletion.
+2. Constrained Delaunay triangulation.
+3. Spatial sorting.
+4. (Clipped) Voronoi tessellations.

@@ -2,6 +2,8 @@ using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using CairoMakie
 
+include("../test_setup.jl")
+
 save_path = basename(pwd()) == "test" ? "figures" : "test/figures"
 
 ch = ConvexHull(rand(2, 500), [1, 2, 4, 5, 6, 10, 29, 45, 71, 1])
@@ -35,4 +37,4 @@ fig = Figure()
 ax = Axis(fig[1, 1])
 scatter!(ax, pts)
 lines!(ax, pts[ch.indices])
-save("$save_path/convex_hull_1.png", fig)
+SAVE_FIGURE && save("$save_path/convex_hull_1.png", fig)

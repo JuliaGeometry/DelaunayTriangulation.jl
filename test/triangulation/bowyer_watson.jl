@@ -5,6 +5,7 @@ using StableRNGs
 using CairoMakie
 using DataStructures
 
+include("../test_setup.jl")
 include("../helper_functions.jl")
 
 save_path = basename(pwd()) == "test" ? "figures" : "test/figures"
@@ -108,7 +109,7 @@ end
         convex_hull_linewidth=7)
     xlims!(ax, -6, 12)
     ylims!(ax, -6, 12)
-    save("$save_path/test_bowyer_watson_1.png", fig)
+    SAVE_FIGURE && save("$save_path/test_bowyer_watson_1.png", fig)
     BI = DT.BoundaryIndex
     @test get_triangles(tri) == Set{NTuple{3,Int64}}(((3, 2, BI),
         (4, BI, 5),
@@ -133,7 +134,7 @@ end
         convex_hull_linewidth=7, convex_hull_linestyle=:solid)
     xlims!(ax, -5.0, 5.0)
     ylims!(ax, -5.0, 5.0)
-    save("$save_path/test_bowyer_watson_2.png", fig)
+    SAVE_FIGURE && save("$save_path/test_bowyer_watson_2.png", fig)
     validate_triangulation(tri)
 end
 
@@ -336,5 +337,5 @@ end
     pts = [a, b, c, d, e, f, g, h, i, j]
     tri = DT.triangulate_bowyer_watson(pts; delete_ghosts=false)
     fig, ax, sc, = triplot(tri)
-    save("$save_path/small_example.png", fig)
+    SAVE_FIGURE && save("$save_path/small_example.png", fig)
 end

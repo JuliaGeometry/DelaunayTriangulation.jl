@@ -6,6 +6,7 @@ using CairoMakie
 
 save_path = basename(pwd()) == "test" ? "figures" : "test/figures"
 
+include("./test_setup.jl")
 include("./helper_functions.jl")
 
 tri, label_map, index_map = simple_geometry()
@@ -392,4 +393,4 @@ lines!(ax, bn1, color=:red, linewidth=4)
 lines!(ax, bn2, color=:red, linewidth=4)
 lines!(ax, bn3, color=:red, linewidth=4)
 scatter!(ax, [x], [y], color=:blue, markersize=23)
-save("$save_path/pole_of_inaccessibility.png", fig)
+SAVE_FIGURE && save("$save_path/pole_of_inaccessibility.png", fig)

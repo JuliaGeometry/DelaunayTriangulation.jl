@@ -85,6 +85,7 @@ export each_ghost_triangle
 export get_vertices
 export clear_empty_features!
 export get_indices
+export get_convex_hull_indices
 
 include("predicates/certificate.jl")
 include("predicates/boundaries_and_ghosts.jl")
@@ -190,6 +191,7 @@ information.
 - [`rotate_triangle`](@ref): Uses the [`geti`](@ref), [`getj`](@ref), and [`getk`](@ref) definitions.
 - [`construct_positively_oriented_triangle`](@ref): Uses existing definitions.
 - [`compare_triangles`](@ref): Uses the [`geti`](@ref), [`getj`](@ref), and [`getk`](@ref) definitions.
+- [`sort_triangle`](@ref): Uses the [`indices`](@ref) and [`construct_triangle`](@ref) definitions.
 
 ## Collection of Triangles 
 
@@ -209,7 +211,10 @@ must be mutable.
 - [`each_triangle`](@ref): Must be defined. 
 - `Base.in`: Must be defined.
 - `Base.sizehint!`: Must be defined.
+- `Base.unique!`: Must be defined, unless your collection is a `Set`.
 - [`compare_triangle_collections`](@ref): Calls [`num_triangles`](@ref), [`each_triangle`](@ref), and [`contains_triangle`](@ref).
+- [`sort_triangles`](@ref): Uses the [`initialise_triangles`](@ref), [`each_triangle`](@ref), [`sort_triangle`](@ref), and [`add_triangle!`](@ref) definitions.
+- [`remove_duplicate_triangles`](@ref): Uses `Base.unique!`.
 
 Note that [`Triangulation`](@ref)s also define [`each_solid_triangle`](@ref) and [`each_ghost_triangle`](@ref).
 # Edge Interface 

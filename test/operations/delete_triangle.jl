@@ -4,6 +4,7 @@ using CairoMakie
 import SimpleGraphs: relabel, UndirectedGraph
 using DataStructures
 
+include("../test_setup.jl")
 save_path = basename(pwd()) == "test" ? "figures" : "test/figures"
 
 include("../helper_functions.jl")
@@ -57,7 +58,7 @@ triplot!(ax, tri; show_ghost_edges=true, ghost_edge_extension_factor=2.0)
 xlims!(ax, -2, 22)
 ylims!(ax, -2, 22)
 
-save("$save_path/test_delete_triangles.png", fig)
+SAVE_FIGURE && save("$save_path/test_delete_triangles.png", fig)
 
 ### Simpler test 
 tri = example_triangulation()

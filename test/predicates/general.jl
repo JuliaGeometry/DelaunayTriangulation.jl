@@ -5,21 +5,49 @@ const DT = DelaunayTriangulation
 
 include("../helper_functions.jl")
 
-p, q, r = eachcol(rand(2, 3))
-@test DT.orient_predicate(p, q, r) == orient(p, q, r)
-@inferred DT.orient_predicate(p, q, r)
+@test DT.opposite_signs(1, -1)
+@test DT.opposite_signs(-1, 1)
+@test !DT.opposite_signs(0, 0)
+@test !DT.opposite_signs(0, 1)
+@test !DT.opposite_signs(1, 0)
+@test !DT.opposite_signs(0, -1)
+@test !DT.opposite_signs(-1, 0)
+@test !DT.opposite_signs(1, 1)
+@test !DT.opposite_signs(-1, -1)
 
-a, b, c, p = eachcol(rand(2, 4))
-@test DT.incircle_predicate(a, b, c, p) == incircle(a, b, c, p)
-@inferred DT.incircle_predicate(a, b, c, p)
+for _ in 1:1500
+    p, q, r = eachcol(rand(2, 3))
+    @test DT.orient_predicate(p, q, r) == orient(p, q, r)
+    @inferred DT.orient_predicate(p, q, r)
 
-p, a, b = eachcol(rand(2, 3))
-@test DT.sameside_predicate(a, b, p) == sameside(p, a, b)
-@inferred DT.sameside_predicate(a, b, p)
+    a, b, c, p = eachcol(rand(2, 4))
+    @test DT.incircle_predicate(a, b, c, p) == incircle(a, b, c, p)
+    @inferred DT.incircle_predicate(a, b, c, p)
 
-p, q, a, b = eachcol(rand(2, 4))
-@test DT.meet_predicate(p, q, a, b) == meet(p, q, a, b)
-@inferred DT.meet_predicate(p, q, a, b)
+    p, a, b = eachcol(rand(2, 3))
+    @test DT.sameside_predicate(a, b, p) == sameside(p, a, b)
+    @inferred DT.sameside_predicate(a, b, p)
+
+    p, q, a, b = eachcol(rand(2, 4))
+    @test DT.meet_predicate(p, q, a, b) == meet(p, q, a, b)
+    @inferred DT.meet_predicate(p, q, a, b)
+end
+
+x = [float(i) for i in 0:5, _ in 0:5]
+y = [float(j) for _ in 0:5, j in 0:5]
+for _ in 1:15000
+    p = (rand(x), rand(y))
+    q = (rand(x), rand(y))
+    r = (rand(x), rand(y))
+    s = (rand(x), rand(y))
+    a = (rand(x), rand(y))
+    b = (rand(x), rand(y))
+    c = (rand(x), rand(y))
+    @test DT.orient_predicate(p, q, r) == orient(p, q, r)
+    @test DT.incircle_predicate(a, b, c, p) == incircle(a, b, c, p)
+    @test DT.sameside_predicate(a, b, p) == sameside(p, a, b)
+    @test DT.meet_predicate(p, q, a, b) == meet(p, q, a, b)
+end
 
 p1, q1, r1 = (3.0, 1.5), (4.5, 1.5), (4.0, 2.0) # +
 p2, q2, r2 = (3.0, 1.5), (4.5, 1.5), (3.4, 1.2) # - 
@@ -29,7 +57,13 @@ p5, q5, r5 = (5.0, 1.4), (3.8, 1.4), (4.6, 1.4) # 0
 p6, q6, r6 = (5.0, 1.4), (3.8, 1.4), (4.4, 0.8) # +
 pqr = ((p1, q1, r1), (p2, q2, r2), (p3, q3, r3),
     (p4, q4, r4), (p5, q5, r5), (p6, q6, r6))
+    (p4, q4, r4), (p5, q5, r5), (p6, q6, r6))
 results = [Certificate.PositivelyOriented,
+    Certificate.NegativelyOriented,
+    Certificate.NegativelyOriented,
+    Certificate.Degenerate,
+    Certificate.Degenerate,
+    Certificate.PositivelyOriented]
     Certificate.NegativelyOriented,
     Certificate.NegativelyOriented,
     Certificate.Degenerate,
@@ -47,6 +81,10 @@ end
 R = 5
 a, b, c = (0.0, 5.0), (-3.0, -4.0), (3.0, 4.0)
 p1, p2, p3, p4, p5 = [(0.0, -5.0),
+    (5.0, 0.0),
+    (-5.0, 0.0),
+    (-3.0, 4.0),
+    (3.0, -4.0)]
     (5.0, 0.0),
     (-5.0, 0.0),
     (-3.0, 4.0),
@@ -95,6 +133,11 @@ results = [Certificate.Left,
     Certificate.Collinear,
     Certificate.Collinear,
     Certificate.Left]
+    Certificate.Right,
+    Certificate.Right,
+    Certificate.Collinear,
+    Certificate.Collinear,
+    Certificate.Left]
 for ((p, q, r), result) in zip(pqr, results)
     @test DT.point_position_relative_to_line(p, q, r) == result
     @inferred DT.point_position_relative_to_line(p, q, r)
@@ -122,6 +165,7 @@ c1, c2, c3 = (4.0, 3.0), (2.0, 3.0), (6.0, 3.0) # in, out, out
 @test DT.is_degenerate(DT.point_position_on_line_segment(p, q, q))
 p, q = (4.0, 5.0), (4.0, 1.50)
 c1, c2, c3, c4, c5, c6, c7, c8 = (4.0, 3.0), (4.0, 2.5), (4.0, 4.0), (4.0, 4.5), (4.0, 1.0),
+(4.0, 6.0), (4.0, 6.5), (4.0, 0.5)
 (4.0, 6.0), (4.0, 6.5), (4.0, 0.5)
 @test DT.is_on(DT.point_position_on_line_segment(p, q, c1))
 @test DT.is_on(DT.point_position_on_line_segment(p, q, c2))
@@ -161,7 +205,22 @@ results = [Certificate.Single,
     Certificate.Touching,
     Certificate.Single,
     Certificate.Single]
+    Certificate.None,
+    Certificate.None,
+    Certificate.Multiple,
+    Certificate.Single,
+    Certificate.Touching,
+    Certificate.None,
+    Certificate.Touching,
+    Certificate.Multiple,
+    Certificate.Touching,
+    Certificate.Touching,
+    Certificate.Single,
+    Certificate.Single]
 pqab = ((p1, q1, a1, b1), (p2, q2, a2, b2), (p3, q3, a3, b3), (p4, q4, a4, b4),
+    (p5, q5, a5, b5), (p6, q6, a6, b6), (p7, q7, a7, b7), (p8, q8, a8, b8),
+    (p9, q9, a9, b9), (p10, q10, a10, b10), (p11, q11, a11, b11), (p12, q12, a12, b12),
+    (p13, q13, a13, b13))
     (p5, q5, a5, b5), (p6, q6, a6, b6), (p7, q7, a7, b7), (p8, q8, a8, b8),
     (p9, q9, a9, b9), (p10, q10, a10, b10), (p11, q11, a11, b11), (p12, q12, a12, b12),
     (p13, q13, a13, b13))
@@ -178,7 +237,13 @@ d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12 = (1.76, 4.06), (1.24, 4.109),
 (2.0, 0.0),
 (0.5, 1.0), (6.0, 1.0), (6.0, 0.0),
 (1.0, 6.0) # outside
+(2.589, 0.505), (3.19, -0.186),
+(3.875, 4.53), (4.8, 2.698), (2.0, 6.5),
+(2.0, 0.0),
+(0.5, 1.0), (6.0, 1.0), (6.0, 0.0),
+(1.0, 6.0) # outside
 e1, e2, e3, e4, e5, e6, e7, e8, e9, e10 = (2.0, 3.0), (2.0, 2.5), (2.0, 4.5), (2.0, 1.5),
+(2.5, 1.0), (3.5, 1.0), (4.5, 1.0), p, q, r # on 
 (2.5, 1.0), (3.5, 1.0), (4.5, 1.0), p, q, r # on 
 for c in (c1, c2, c3, c4)
     @test DT.point_position_relative_to_triangle(p, q, r, c) == Certificate.Inside
@@ -197,6 +262,8 @@ p, q = (3.0, 4.0), (6.0, 4.0)
 c, d, e, f, g, h, i, j, k, ℓ = (2.0, 4.0), (7.0, 4.0), (5.0, 5.0),
 (4.0, 6.0), (6.0, 7.0), (4.0, 4.0), (5.0, 4.0),
 (3.0, 2.0), (5.0, 3.0), (6.0, 1.0)
+(4.0, 6.0), (6.0, 7.0), (4.0, 4.0), (5.0, 4.0),
+(3.0, 2.0), (5.0, 3.0), (6.0, 1.0)
 @test DT.is_outside(DT.point_position_relative_to_oriented_outer_halfplane(p, q, c))
 @test DT.is_outside(DT.point_position_relative_to_oriented_outer_halfplane(p, q, d))
 @test DT.is_inside(DT.point_position_relative_to_oriented_outer_halfplane(p, q, e))
@@ -212,6 +279,9 @@ c, d, e, f, g, h, i, j, k, ℓ = (2.0, 4.0), (7.0, 4.0), (5.0, 5.0),
 @inferred DT.is_outside(DT.point_position_relative_to_oriented_outer_halfplane(p, q, ℓ))
 p, q = (3.0, 4.0), (6.0, 7.0)
 c, d, e, f, g, h, i, j, k, ℓ = (3.0, 5.0), (3.0, 7.0), (4.0, 8.0),
+(2.0, 3.0), (5.787, 3.774), (4.128, 1.626),
+(6.95784, 7.715), (4.0, 5.0), (5.0, 6.0),
+(4.143, 6.57)
 (2.0, 3.0), (5.787, 3.774), (4.128, 1.626),
 (6.95784, 7.715), (4.0, 5.0), (5.0, 6.0),
 (4.143, 6.57)

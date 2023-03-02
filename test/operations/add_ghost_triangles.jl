@@ -2,6 +2,7 @@ using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using CairoMakie
 
+include("../test_setup.jl")
 include("../helper_functions.jl")
 
 save_path = basename(pwd()) == "test" ? "figures" : "test/figures"
@@ -52,4 +53,4 @@ ax = Axis(fig[1, 2])
 triplot!(ax, tri; show_ghost_edges=true, ghost_edge_extension_factor=2.0)
 xlims!(ax, -2, 22)
 ylims!(ax, -2, 22)
-save("$save_path/test_add_ghost_triangles.png", fig)
+SAVE_FIGURE && save("$save_path/test_add_ghost_triangles.png", fig)

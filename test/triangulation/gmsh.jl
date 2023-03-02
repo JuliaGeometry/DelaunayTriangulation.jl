@@ -1,9 +1,11 @@
 using Test
 using LinearAlgebra
 using ..DelaunayTriangulation
-const DT = DelaunayTriangulation.DT
+const DT = DelaunayTriangulation
 using CairoMakie
 using DataStructures
+
+include("../test_setup.jl")
 
 include("../helper_functions.jl")
 
@@ -1055,7 +1057,7 @@ lines!(ax, nodes[:, boundary_nodes[4][4]]; color=:orange, linewidth=6)
 
 lines!(ax, nodes[:, boundary_nodes[5][1]]; color=:red, linewidth=6)
 
-save("$save_path/sparse_example_triangulation.png", fig)
+SAVE_FIGURE && save("$save_path/sparse_example_triangulation.png", fig)
 
 ## A square
 x = [0.0, 2.0, 2.0, 0.0, 0.0]
@@ -1082,7 +1084,7 @@ elements4, nodes4, boundary_nodes4 = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5;
 ax = Axis(fig[2, 2])
 mesh!(ax, nodes4, elements4')
 
-save("$save_path/square_triangulation.png", fig)
+SAVE_FIGURE && save("$save_path/square_triangulation.png", fig)
 
 @test elements1 == elements3
 @test nodes1 == nodes3
@@ -1596,7 +1598,7 @@ ax = Axis(fig[1, 2], xlabel=L"x", ylabel=L"y", width=300, height=300,
     title=L"(b):$ $  Coarse mesh", titlealign=:left)
 triplot!(ax, tri2)
 resize_to_layout!(fig)
-save("$save_path/gmsh_example_1.png", fig)
+SAVE_FIGURE && save("$save_path/gmsh_example_1.png", fig)
 
 ### Another specific example with multiple segments 
 # The first segment 
@@ -1633,7 +1635,7 @@ for (i, segment_index) in enumerate(values(bn_map))
     lines!(ax, get_points(tri)[:, bn_nodes], color=colors[i], linewidth=4)
 end
 resize_to_layout!(fig)
-save("$save_path/gmsh_example_2.png", fig)
+SAVE_FIGURE && save("$save_path/gmsh_example_2.png", fig)
 
 ### For the docs 
 x1 = [collect(LinRange(0, 2, 4)),
@@ -1670,4 +1672,4 @@ tri = generate_mesh(x, y, 0.2)
 fig, ax, sc = triplot(tri; show_ghost_edges=true, convex_hull_linestyle=:solid, convex_hull_linewidth=4)
 xlims!(ax, -0.5, 2.5)
 ylims!(ax, -0.5, 6.5)
-save("$save_path/gmsh_example_3.png", fig)
+SAVE_FIGURE && save("$save_path/gmsh_example_3.png", fig)

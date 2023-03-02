@@ -452,6 +452,8 @@ abstract type AbstractEachTriangle{T} end
 Base.IteratorSize(::Type{<:AbstractEachTriangle}) = Base.SizeUnknown()
 Base.IteratorEltype(::Type{<:AbstractEachTriangle{T}}) where {T} = Base.IteratorEltype(T)
 Base.eltype(::Type{<:AbstractEachTriangle{T}}) where {T} = triangle_type(T)
+initialise_triangles(::Type{<:AbstractEachTriangle{T}}) where {T} = initialise_triangles(T)
+each_triangle(itr::AbstractEachTriangle) = itr
 struct EachSolidTriangle{T} <: AbstractEachTriangle{T}
     triangles::T
 end
@@ -570,8 +572,8 @@ function brute_force_search(tri::Triangulation, q)
     return brute_force_search(get_triangles(tri), q, get_points(tri), get_boundary_map(tri))
 end
 function jump_and_march(tri::Triangulation, q;
-    m=default_num_samples(num_points(tri)),
     point_indices=each_point_index(tri),
+    m=default_num_samples(length(point_indices)),
     try_points=(),
     k=select_initial_point(get_points(tri), q; m, point_indices,
         try_points),
@@ -1187,8 +1189,8 @@ searching over all triangles.
 
 @doc """
     jump_and_march(tri::Triangulation, q;
-        m=default_num_samples(num_points(tri)),
         point_indices=each_point_index(tri),
+        m=default_num_samples(length(point_indices)),
         try_points=(),
         k=select_initial_point(get_points(tri), q; m, point_indices, try_points),
         check_existence::C=Val(has_multiple_segments(tri)),

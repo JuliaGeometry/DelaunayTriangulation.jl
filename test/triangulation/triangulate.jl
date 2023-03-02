@@ -5,6 +5,7 @@ using Test
 using DataStructures
 using CairoMakie
 
+include("../test_setup.jl")
 include("../helper_functions.jl")
 
 save_path = basename(pwd()) == "test" ? "figures" : "test/figures"
@@ -288,4 +289,4 @@ triplot!(ax, tri1; show_convex_hull=true, convex_hull_linewidth=4)
 ax = Axis(fig[1, 2], xlabel=L"x", ylabel=L"y",aspect=1,width=300,height=300)
 triplot!(ax, tri2; show_convex_hull=true, convex_hull_linewidth=4)
 resize_to_layout!(fig)
-save("$save_path/custom_interface_testing.png", fig)
+SAVE_FIGURE && save("$save_path/custom_interface_testing.png", fig)
