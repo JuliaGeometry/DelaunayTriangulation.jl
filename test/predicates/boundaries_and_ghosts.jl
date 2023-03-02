@@ -27,13 +27,13 @@ boundary_nodes = get_boundary_nodes(tri2)
 @inferred DT.is_boundary_index(BI)
 
 adj = DT.Adjacent(DefaultDict(DT.DefaultAdjacentValue,
-                              Dict((1, 2) => 5,
-                                   (2, 7) => 1,
-                                   (5, 3) => BI,
-                                   (3, 5) => 7,
-                                   (5, 7) => BI - 1,
-                                   (7, 5) => 13,
-                                   (13, 3) => BI - 2)))
+    Dict((1, 2) => 5,
+        (2, 7) => 1,
+        (5, 3) => BI,
+        (3, 5) => 7,
+        (5, 7) => BI - 1,
+        (7, 5) => 13,
+        (13, 3) => BI - 2)))
 results = [false, false, true, false, true, false, true, false, false]
 edges = [(1, 2), (2, 7), (5, 3), (3, 5), (5, 7), (7, 5), (13, 3), (23, 5), (36, 3)]
 for (ij, result) in zip(edges, results)
@@ -84,8 +84,8 @@ end
 @test !DT.is_interior_curve(1)
 idx = BI
 map1 = OrderedDict(idx => (1, 1), idx - 1 => (1, 2), idx - 2 => (1, 3), idx - 3 => (1, 4),
-                   idx - 4 => (2, 1), idx - 5 => (2, 2),
-                   idx - 6 => (3, 1), idx - 7 => (3, 2))
+    idx - 4 => (2, 1), idx - 5 => (2, 2),
+    idx - 6 => (3, 1), idx - 7 => (3, 2))
 @test !DT.is_interior_curve(idx, map1)
 @test !DT.is_interior_curve(idx - 1, map1)
 @test !DT.is_interior_curve(idx - 2, map1)
@@ -167,9 +167,9 @@ DT.delete_ghost_triangles!(tri)
 @test !DT.has_ghost_triangles(tri)
 
 @test all(i -> DT.is_outer_boundary_index(i, tri.boundary_map),
-          [BI, BI - 1, BI - 2, BI - 3])
+    [BI, BI - 1, BI - 2, BI - 3])
 @test !any(i -> DT.is_outer_boundary_index(i, tri.boundary_map),
-           [1, 2, BI - 4, BI - 5, BI - 6])
+    [1, 2, BI - 4, BI - 5, BI - 6])
 @test all(i -> DT.is_outer_boundary_index(tri, i), [BI, BI - 1, BI - 2, BI - 3])
 @test !any(i -> DT.is_outer_boundary_index(tri, i), [1, 2, BI - 4, BI - 5, BI - 6])
 @test DT.is_outer_boundary_index(BI, tri2.boundary_map)
@@ -187,3 +187,13 @@ __tri = DT.triangulate_bowyer_watson(_tri.points)
 push!(__tri.constrained_edges, (1, 2), (2, 3), (4, 5))
 @test !DT.has_boundary_nodes(__tri)
 @test DT.is_constrained(__tri)
+
+p1 = @SVector[-3.32, 3.53]
+p2 = @SVector[-5.98, 2.17]
+p3 = @SVector[-6.36, -1.55]
+pts = [p1, p2, p3]
+tri = triangulate(pts; delete_ghosts=false)
+@test all(DT.is_positively_oriented(DT.triangle_orientation(tri, T)) for T in each_triangle(tri))
+DT.add_triangle!(get_triangles(tri), (2, 3, -1))
+@test !all(DT.is_positively_oriented(DT.triangle_orientation(tri, T)) for T in each_triangle(tri))
+

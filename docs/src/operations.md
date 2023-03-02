@@ -13,4 +13,8 @@ add_point!(::Triangulation, ::Any)
 add_triangle!(::Ts, ::Integer, ::Integer, ::Integer) where {Ts<:Triangulation}
 delete_ghost_triangles!(::Triangulation)
 delete_triangle!(::Ts, ::Integer, ::Integer, ::Integer) where {Ts<:Triangulation}
+split_edge!
+split_triangle!
+flip_edge!
+legalise_edge!
 ```

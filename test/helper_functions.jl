@@ -200,3 +200,79 @@ end
 macro _adj(i, j, k)
     return :(($i, $j) => $k, ($j, $k) => $i, ($k, $i) => $j)
 end
+
+function example_triangulation()
+    p1 = @SVector[0.0, 1.0]
+    p2 = @SVector[3.0, -1.0]
+    p3 = @SVector[2.0, 0.0]
+    p4 = @SVector[-1.0, 2.0]
+    p5 = @SVector[4.0, 2.0]
+    p6 = @SVector[-2.0, -1.0]
+    p7 = @SVector[2.0, 1.0]
+    p8 = @SVector[5.0, 1.0]
+    pts = [p1, p2, p3, p4, p5, p6, p7, p8]
+    T = Set{NTuple{3,Int64}}([
+        (6, 3, 1),
+        (3, 2, 5),
+        (4, 1, 5),
+        (4, 6, 1),
+        (5, 1, 3)
+    ])
+    A = [
+        0 0 1 1 1 1 1
+        0 0 0 1 1 1 1
+        1 0 0 1 0 1 0
+        1 1 1 0 0 1 1
+        1 1 0 0 0 1 1
+        1 1 1 1 1 0 0
+        1 1 0 1 1 0 0
+    ]
+    DG = DT.Graph(DT.SimpleGraphs.relabel(DT.SimpleGraphs.UndirectedGraph(A), Dict(1:7 .=> [-1, (1:6)...])))
+    adj = DT.Adjacent(DT.DataStructures.DefaultDict(DT.DefaultAdjacentValue,
+        Dict(
+            (6, 3) => 1, (3, 1) => 6, (1, 6) => 3,
+            (3, 2) => 5, (2, 5) => 3, (5, 3) => 2,
+            (4, 1) => 5, (1, 5) => 4, (5, 4) => 1,
+            (4, 6) => 1, (6, 1) => 4, (1, 4) => 6,
+            (5, 1) => 3, (1, 3) => 5, (3, 5) => 1,
+            (4, 5) => DT.BoundaryIndex, (5, 2) => DT.BoundaryIndex,
+            (2, 3) => DT.BoundaryIndex, (3, 6) => DT.BoundaryIndex,
+            (6, 4) => DT.BoundaryIndex
+        )
+    ))
+    adj2v = DT.Adjacent2Vertex(Dict(
+        DT.BoundaryIndex => Set{NTuple{2,Int64}}([(4, 5), (5, 2), (2, 3), (3, 6), (6, 4)]),
+        1 => Set{NTuple{2,Int64}}([(5, 4), (3, 5), (6, 3), (4, 6)]),
+        2 => Set{NTuple{2,Int64}}([(5, 3)]),
+        3 => Set{NTuple{2,Int64}}([(1, 6), (5, 1), (2, 5)]),
+        4 => Set{NTuple{2,Int64}}([(1, 5), (6, 1)]),
+        5 => Set{NTuple{2,Int64}}([(4, 1), (1, 3), (3, 2)]),
+        6 => Set{NTuple{2,Int64}}([(1, 4), (3, 1)])
+    ))
+    tri = Triangulation(pts, T, adj, adj2v, DG,
+        Int64[],
+        DT.DataStructures.OrderedDict{Int64,Vector{Int64}}(),
+        DT.DataStructures.OrderedDict{Int64,UnitRange{Int64}}(),
+        Set{NTuple{2,Int64}}(),
+        ConvexHull(pts, [2, 6, 4, 5, 2]))
+    return tri
+end
+
+function example_empty_triangulation()
+    p1 = @SVector[0.0, 1.0]
+    p2 = @SVector[3.0, -1.0]
+    p3 = @SVector[2.0, 0.0]
+    pts = [p1, p2, p3]
+    T = Set{NTuple{3,Int64}}([])
+    A = zeros(Int64, 0, 0)
+    DG = DT.Graph(DT.SimpleGraphs.UndirectedGraph(A))
+    adj = DT.Adjacent(DT.DataStructures.DefaultDict(DT.DefaultAdjacentValue, Dict{NTuple{2,Int64},Int64}()))
+    adj2v = DT.Adjacent2Vertex(Dict(DT.BoundaryIndex => Set{NTuple{2,Int64}}()))
+    tri = Triangulation(pts, T, adj, adj2v, DG,
+        Int64[],
+        DT.DataStructures.OrderedDict{Int64,Vector{Int64}}(),
+        DT.DataStructures.OrderedDict{Int64,UnitRange{Int64}}(),
+        Set{NTuple{2,Int64}}(),
+        ConvexHull(pts, [2, 6, 4, 5, 2]))
+    return tri
+end

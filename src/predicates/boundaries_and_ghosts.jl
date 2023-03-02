@@ -174,7 +174,9 @@ Given an [`Adjacent`](@ref) map `adj` and an [`Adjacent2Vertex`](@ref) map `adj2
 tests if the corresponding triangulation contains ghost triangles.
 """
 function has_ghost_triangles(adj::Adjacent{I,E}, adj2v) where {I,E}
+    I(BoundaryIndex) ∉ keys(get_adjacent2vertex(adj2v)) && return false
     outer_boundary_edges = get_adjacent2vertex(adj2v, I(BoundaryIndex))
+    is_empty(outer_boundary_edges) && return false
     e = first(each_edge(outer_boundary_edges))
     return edge_exists(terminal(e), I(BoundaryIndex), adj)
 end

@@ -99,19 +99,32 @@ include("operations/add_ghost_triangles.jl")
 include("operations/delete_triangle.jl")
 include("operations/delete_ghost_triangles.jl")
 include("operations/add_point.jl")
+include("operations/flip_edge.jl")
+include("operations/split_edge.jl")
+include("operations/split_triangle.jl")
+include("operations/legalise_edge.jl")
 
 export add_ghost_triangles!
 export delete_ghost_triangles!
 export add_point!
+export add_triangle! 
+export delete_triangle! 
+export flip_edge!
+export add_boundary_information!
+export split_edge!
+export split_triangle!
+export legalise_edge!
 
 include("triangulation/gmsh.jl")
 include("triangulation/rectangle.jl")
 include("triangulation/bowyer_watson.jl")
 include("triangulation/triangulate.jl")
+include("triangulation/convex_triangulation.jl")
 
 export generate_mesh
 export triangulate_rectangle
 export triangulate
+export triangulate_convex
 
 include("point_location/brute_force.jl")
 include("point_location/initialisers.jl")

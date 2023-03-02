@@ -79,6 +79,18 @@ using SafeTestsets
         @safetestset "add_point!" begin
             include("operations/add_point.jl")
         end
+        @safetestset "flip_edge!" begin
+            include("operations/flip_edge.jl")
+        end
+        @safetestset "split_triangle!" begin
+            include("operations/split_triangle.jl")
+        end
+        @safetestset "split_edge!" begin
+            include("operations/split_edge.jl")
+        end
+        @safetestset "legalise_edge!" begin
+            include("operations/legalise_edge.jl")
+        end
     end
 
     @testset verbose = true "Predicates" begin

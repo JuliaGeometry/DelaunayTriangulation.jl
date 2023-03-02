@@ -217,3 +217,19 @@ function point_position_relative_to_oriented_outer_halfplane(a, b, p)
         return Cert.Outside
     end
 end
+
+"""
+    is_legal(p, q, r, s)
+
+Given an edge `pq`, incident to two triangles `pqr` and `qps`, tests 
+if the edge `pq` is legal, i.e. if `s` is not inside the triangle through 
+`p`, `q`, and `r`.
+"""
+function is_legal(p, q, r, s)
+    incirc = point_position_relative_to_circle(p, q, r, s)
+    if is_inside(incirc)
+        return Cert.Illegal 
+    else 
+        return Cert.Legal 
+    end
+end

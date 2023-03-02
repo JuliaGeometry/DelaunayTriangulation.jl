@@ -26,6 +26,7 @@ point_position_on_line_segment(::Any, ::Any, ::Any)
 line_segment_intersection_type(::Any, ::Any, ::Any, ::Any) 
 point_position_relative_to_triangle(::Any, ::Any, ::Any, ::Any) 
 point_position_relative_to_oriented_outer_halfplane
+is_legal(::Any, ::Any, ::Any, ::Any)
 ```
 
 ## Boundaries and Ghosts 

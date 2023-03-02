@@ -8,7 +8,11 @@ See also [`triangulate`](@ref) and [`generate_mesh`](@ref).
 # Fields 
 - `points::P`
 
-The nodes in the triangulation.
+The nodes in the triangulation. Do note that this is not necessarily the same 
+as all points that appear in a triangle, which could happen when the triangulation 
+is incomplete or a point has been deleted. `get_vertices` may be useful if you 
+are concerned about this, checking with `is_boundary_index` to ensure no 
+boundary indices are involved.
 - `triangles::Ts`
 
 The triangles in the triangulation. All triangles are positively oriented.
@@ -262,20 +266,20 @@ function Base.show(io::IO, ::MIME"text/plain", tri::Triangulation)
 end
 
 Base.@constprop :aggressive function Triangulation(points::P;
-                                                   IntegerType::Type{I}=Int64,
-                                                   EdgeType::Type{E}=NTuple{2,IntegerType},
-                                                   TriangleType::Type{V}=NTuple{3,
-                                                                                IntegerType},
-                                                   EdgesType::Type{Es}=Set{EdgeType},
-                                                   TrianglesType::Type{Ts}=Set{TriangleType},
-                                                   boundary_nodes::BN=IntegerType[],
-                                                   constrained_edges=initialise_edges(EdgesType)) where {P,
-                                                                                                         Ts,
-                                                                                                         I,
-                                                                                                         E,
-                                                                                                         Es,
-                                                                                                         BN,
-                                                                                                         V}
+    IntegerType::Type{I}=Int64,
+    EdgeType::Type{E}=NTuple{2,IntegerType},
+    TriangleType::Type{V}=NTuple{3,
+        IntegerType},
+    EdgesType::Type{Es}=Set{EdgeType},
+    TrianglesType::Type{Ts}=Set{TriangleType},
+    boundary_nodes::BN=IntegerType[],
+    constrained_edges=initialise_edges(EdgesType)) where {P,
+    Ts,
+    I,
+    E,
+    Es,
+    BN,
+    V}
     T = initialise_triangles(Ts)
     adj = Adjacent{I,E}()
     adj2v = Adjacent2Vertex{I,Es,E}()
@@ -290,7 +294,7 @@ Base.@constprop :aggressive function Triangulation(points::P;
     sizehint!(graph, 3n - 6, n, n)
     sizehint!(ch, n)
     tri = Triangulation(points, T, adj, adj2v, graph, boundary_nodes, bn_map, bn_range,
-                        constrained_edges, ch)
+        constrained_edges, ch)
     return tri
 end
 
@@ -309,14 +313,14 @@ end
 ## Extending methods of adjacent, etc 
 # Adjacent 
 @inline function get_adjacent(tri::Triangulation, uv;
-                              check_existence::V=Val(has_multiple_segments(tri))) where {V}
+    check_existence::V=Val(has_multiple_segments(tri))) where {V}
     return get_adjacent(get_adjacent(tri), uv; check_existence,
-                        boundary_index_ranges=get_boundary_index_ranges(tri))
+        boundary_index_ranges=get_boundary_index_ranges(tri))
 end
 @inline function get_adjacent(tri::Triangulation, u, v;
-                              check_existence::V=Val(has_multiple_segments(tri))) where {V}
+    check_existence::V=Val(has_multiple_segments(tri))) where {V}
     return get_adjacent(get_adjacent(tri), u, v; check_existence,
-                        boundary_index_ranges=get_boundary_index_ranges(tri))
+        boundary_index_ranges=get_boundary_index_ranges(tri))
 end
 @inline add_adjacent!(tri::Triangulation, uv, w) = add_adjacent!(get_adjacent(tri), uv, w)
 @inline function add_adjacent!(tri::Triangulation, u, v, w)
@@ -388,13 +392,13 @@ end
 end
 @inline function get_right_boundary_node(tri::Triangulation, k, boundary_index)
     return get_right_boundary_node(get_adjacent(tri), k, boundary_index,
-                                   get_boundary_index_ranges(tri),
-                                   Val(has_multiple_segments(tri)))
+        get_boundary_index_ranges(tri),
+        Val(has_multiple_segments(tri)))
 end
 @inline function get_left_boundary_node(tri::Triangulation, k, boundary_index)
     return get_left_boundary_node(get_adjacent(tri), k, boundary_index,
-                                  get_boundary_index_ranges(tri),
-                                  Val(has_multiple_segments(tri)))
+        get_boundary_index_ranges(tri),
+        Val(has_multiple_segments(tri)))
 end
 @inline function get_boundary_index_range(tri::Triangulation, i)
     return map_boundary_index(get_boundary_index_ranges(tri), i)
@@ -441,7 +445,7 @@ end
 end
 @inline function construct_positively_oriented_triangle(tri::Triangulation, i, j, k)
     return construct_positively_oriented_triangle(triangle_type(tri), i, j, k,
-                                                  get_points(tri))
+        get_points(tri))
 end
 
 abstract type AbstractEachTriangle{T} end
@@ -514,7 +518,7 @@ end
 end
 @inline function point_position_relative_to_circumcircle(tri::Triangulation, i, j, k, ℓ)
     return point_position_relative_to_circumcircle(i, j, k, ℓ, get_points(tri),
-                                                   get_boundary_map(tri))
+        get_boundary_map(tri))
 end
 @inline function point_position_relative_to_circumcircle(tri::Triangulation, T, ℓ)
     return point_position_relative_to_circumcircle(tri, geti(T), getj(T), getk(T), ℓ)
@@ -530,7 +534,7 @@ end
 end
 @inline function point_position_relative_to_triangle(tri::Triangulation, i, j, k, u)
     return point_position_relative_to_triangle(i, j, k, u, get_points(tri),
-                                               get_boundary_map(tri))
+        get_boundary_map(tri))
 end
 @inline function point_position_relative_to_triangle(tri::Triangulation, T, u)
     return point_position_relative_to_triangle(tri, geti(T), getj(T), getk(T), u)
@@ -549,36 +553,47 @@ end
 @inline function has_boundary_nodes(tri::Triangulation)
     return has_multiple_segments(tri) || num_boundary_edges(get_boundary_nodes(tri)) ≠ 0
 end
+function is_legal(tri::Triangulation, i, j)
+    (is_boundary_edge(tri, i, j) ||
+     is_boundary_edge(tri, j, i) ||
+     !edge_exists(tri, i, j) ||
+     !edge_exists(tri, j, i)) && return Cert.Legal
+    k = get_adjacent(tri, i, j)
+    ℓ = get_adjacent(tri, j, i)
+    p, q, r, s = get_point(tri, i, j, k, ℓ)
+    cert = is_legal(p, q, r, s)
+    return cert
+end
 
 ## Point Location
 function brute_force_search(tri::Triangulation, q)
     return brute_force_search(get_triangles(tri), q, get_points(tri), get_boundary_map(tri))
 end
 function jump_and_march(tri::Triangulation, q;
-                        m=default_num_samples(num_points(tri)),
-                        point_indices=each_point_index(tri),
-                        try_points=(),
-                        k=select_initial_point(get_points(tri), q; m, point_indices,
-                                               try_points),
-                        check_existence::C=Val(has_multiple_segments(tri)),
-                        rng::AbstractRNG=Random.default_rng()) where {C}
+    m=default_num_samples(num_points(tri)),
+    point_indices=each_point_index(tri),
+    try_points=(),
+    k=select_initial_point(get_points(tri), q; m, point_indices,
+        try_points),
+    check_existence::C=Val(has_multiple_segments(tri)),
+    rng::AbstractRNG=Random.default_rng()) where {C}
     return jump_and_march(get_points(tri),
-                          get_adjacent(tri),
-                          get_adjacent2vertex(tri),
-                          get_graph(tri),
-                          get_boundary_index_ranges(tri),
-                          get_boundary_map(tri),
-                          q; m, point_indices, try_points, k,
-                          TriangleType=triangle_type(tri), check_existence, rng)
+        get_adjacent(tri),
+        get_adjacent2vertex(tri),
+        get_graph(tri),
+        get_boundary_index_ranges(tri),
+        get_boundary_map(tri),
+        q; m, point_indices, try_points, k,
+        TriangleType=triangle_type(tri), check_existence, rng)
 end
 
 # Miscellaneous
 @inline integer_type(::Triangulation{P,Ts,I}) where {P,Ts,I} = I
 @inline number_type(::Triangulation{P}) where {P} = number_type(P)
 @inline function compute_representative_points!(tri::Triangulation;
-                                                use_convex_hull=!has_multiple_segments(tri) &&
-                                                                num_boundary_edges(get_boundary_nodes(tri)) ==
-                                                                0)
+    use_convex_hull=!has_multiple_segments(tri) &&
+                    num_boundary_edges(get_boundary_nodes(tri)) ==
+                    0)
     if !use_convex_hull
         compute_representative_points!(get_points(tri), get_boundary_nodes(tri))
     else
@@ -602,14 +617,14 @@ all_boundary_indices(tri::Triangulation) = keys(get_boundary_index_ranges(tri))
 
 ## Triangulating points, triangles, boundary_nodes
 function Triangulation(points::P, triangles::T, boundary_nodes::BN;
-                       IntegerType::Type{I}=Int64,
-                       EdgeType::Type{E}=NTuple{2,IntegerType},
-                       TriangleType::Type{V}=NTuple{3,IntegerType},
-                       EdgesType::Type{Es}=Set{EdgeType},
-                       TrianglesType::Type{Ts}=Set{TriangleType},
-                       add_ghost_triangles=false) where {P,BN,I,E,V,Es,Ts,T}
+    IntegerType::Type{I}=Int64,
+    EdgeType::Type{E}=NTuple{2,IntegerType},
+    TriangleType::Type{V}=NTuple{3,IntegerType},
+    EdgesType::Type{Es}=Set{EdgeType},
+    TrianglesType::Type{Ts}=Set{TriangleType},
+    add_ghost_triangles=false) where {P,BN,I,E,V,Es,Ts,T}
     tri = Triangulation(points; boundary_nodes, IntegerType, EdgeType, TriangleType,
-                        EdgesType, TrianglesType)
+        EdgesType, TrianglesType)
     adj = get_adjacent(tri)
     adj2v = get_adjacent2vertex(tri)
     graph = get_graph(tri)
@@ -1154,6 +1169,14 @@ Given a triangulation `tri`, tests if the triangulation has ghost triangles.
 Given a triangulation `tri`, tests if the triangulation has boundary nodes - 
 these are nodes that are constrained to be there, not those on the convex hull.
 """ has_boundary_nodes(::Triangulation)
+
+@doc """
+
+    is_legal(tri::Triangulation, i, j)
+
+Given a triangulation `tri` and an edge `(i, j)` in `tri`, tests if the edge is legal,
+returning -`Cetificate.Legal` if so and `Certificate.Illegal` otherwise.
+"""
 
 @doc """
     brute_force_search(tri::Triangulation, q)
