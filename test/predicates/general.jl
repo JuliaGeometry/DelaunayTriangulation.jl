@@ -56,14 +56,9 @@ p4, q4, r4 = (2.8, 1.4), (3.8, 1.4), (4.6, 1.4) # 0
 p5, q5, r5 = (5.0, 1.4), (3.8, 1.4), (4.6, 1.4) # 0 
 p6, q6, r6 = (5.0, 1.4), (3.8, 1.4), (4.4, 0.8) # +
 pqr = ((p1, q1, r1), (p2, q2, r2), (p3, q3, r3),
-    (p4, q4, r4), (p5, q5, r5), (p6, q6, r6))
+    (p4, q4, r4), (p5, q5, r5), (p6, q6, r6),
     (p4, q4, r4), (p5, q5, r5), (p6, q6, r6))
 results = [Certificate.PositivelyOriented,
-    Certificate.NegativelyOriented,
-    Certificate.NegativelyOriented,
-    Certificate.Degenerate,
-    Certificate.Degenerate,
-    Certificate.PositivelyOriented]
     Certificate.NegativelyOriented,
     Certificate.NegativelyOriented,
     Certificate.Degenerate,
@@ -81,10 +76,6 @@ end
 R = 5
 a, b, c = (0.0, 5.0), (-3.0, -4.0), (3.0, 4.0)
 p1, p2, p3, p4, p5 = [(0.0, -5.0),
-    (5.0, 0.0),
-    (-5.0, 0.0),
-    (-3.0, 4.0),
-    (3.0, -4.0)]
     (5.0, 0.0),
     (-5.0, 0.0),
     (-3.0, 4.0),
@@ -128,11 +119,6 @@ cert5 = DT.point_position_relative_to_circle(a, b, c, (2.36, 0.9767))
 @inferred DT.is_on(DT.point_position_relative_to_circle(a, b, c, c))
 
 results = [Certificate.Left,
-    Certificate.Right,
-    Certificate.Right,
-    Certificate.Collinear,
-    Certificate.Collinear,
-    Certificate.Left]
     Certificate.Right,
     Certificate.Right,
     Certificate.Collinear,
@@ -205,22 +191,7 @@ results = [Certificate.Single,
     Certificate.Touching,
     Certificate.Single,
     Certificate.Single]
-    Certificate.None,
-    Certificate.None,
-    Certificate.Multiple,
-    Certificate.Single,
-    Certificate.Touching,
-    Certificate.None,
-    Certificate.Touching,
-    Certificate.Multiple,
-    Certificate.Touching,
-    Certificate.Touching,
-    Certificate.Single,
-    Certificate.Single]
 pqab = ((p1, q1, a1, b1), (p2, q2, a2, b2), (p3, q3, a3, b3), (p4, q4, a4, b4),
-    (p5, q5, a5, b5), (p6, q6, a6, b6), (p7, q7, a7, b7), (p8, q8, a8, b8),
-    (p9, q9, a9, b9), (p10, q10, a10, b10), (p11, q11, a11, b11), (p12, q12, a12, b12),
-    (p13, q13, a13, b13))
     (p5, q5, a5, b5), (p6, q6, a6, b6), (p7, q7, a7, b7), (p8, q8, a8, b8),
     (p9, q9, a9, b9), (p10, q10, a10, b10), (p11, q11, a11, b11), (p12, q12, a12, b12),
     (p13, q13, a13, b13))
