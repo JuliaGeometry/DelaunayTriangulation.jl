@@ -24,6 +24,7 @@ function Base.:(==)(ch::ConvexHull, ch2::ConvexHull)
     get_points(ch) ≠ get_points(ch2) && return false
     i1 = get_indices(ch)
     i2 = get_indices(ch2)
+    length(i1) ≠ length(i2) && return false
     return circular_equality(i1, i2)
 end
 function Base.show(io::IO, m::MIME"text/plain", ch::ConvexHull)

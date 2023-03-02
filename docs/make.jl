@@ -19,10 +19,12 @@ makedocs(;
             "Unconstrained Triangulations" => "triangulations/unconstrained.md",
             "Lattice" => "triangulations/lattice.md",
             "Gmsh" => "triangulations/gmsh.md",
-            "Plotting" => "triangulations/plotting.md"
+            "Plotting" => "triangulations/plotting.md",
+            "Convex Polygons" => "triangulations/convex.md"
         ],
         "Triangulation Algorithms" => [
-            "Bowyer-Watson Algorithm" => "tri_algs/bowyer.md"
+            "Bowyer-Watson Algorithm" => "tri_algs/bowyer.md",
+            "Chew's Algorithm for Triangulating Convex Polygons" => "tri_algs/convex.md",
         ],
         "Ghost Triangles and Boundary Handling" => "boundary_handling.md",
         "Other Features" => [

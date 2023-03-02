@@ -16,6 +16,9 @@ using SafeTestsets
         @safetestset "Triangulate" begin
             include("triangulation/triangulate.jl")
         end
+        @safetestset "Convex Triangulation" begin
+            include("triangulation/convex_triangulation.jl")
+        end
     end
 
     @testset verbose = true "Utilities" begin

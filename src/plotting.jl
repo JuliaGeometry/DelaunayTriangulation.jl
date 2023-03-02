@@ -61,7 +61,7 @@ Only relevant if `plot_convex_hull`. The linewidth to use for the convex hull.
 MakieCore.@recipe(Triplot, points, triangles, boundary_nodes, convex_hull) do scene
     return MakieCore.Attributes(; markersize=11,
                                 show_ghost_edges=false,
-                                recompute_centers=true,
+                                recompute_centers=false,
                                 show_all_points=false,
                                 point_color=:red,
                                 strokecolor=:black,
