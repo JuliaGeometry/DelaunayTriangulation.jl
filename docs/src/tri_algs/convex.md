@@ -15,7 +15,7 @@ Let us now describe the algorithm in more detail. The main complexity in the alg
 3. Then, from $i=k$ down to $i=4$:
     a. To delete $v_{\pi_i}$ from the polygon, we can set $\mathcal N[\mathcal P(\pi_i)] \mapsfrom \mathcal N(\pi_i)$ and $\mathcal P[\mathcal N(\pi_i)] = \mathcal P(\pi_i)$, i.e. just connect the two neighbours together.
 4. Now, start the triangulation with the initial triangle through $(v_{\pi_1}$, $v_{\mathcal N(\pi_1)}$, $v_{\mathcal P(\pi_1)}$. If this triangle is degenerate, just repeat the above steps until you find a non-degenerate triangular.
-5. Now that we hav eour initial triangle, we can start adding points in. So, for $i = 4$ up to $i = k$:
+5. Now that we have our initial triangle, we can start adding points in. So, for $i = 4$ up to $i = k$:
     a. Call the routine $\mathcal C(v_{\pi_i}, v_{\mathcal N(\pi_i)}, v_{\mathcal P(\pi_i)})$ to insert $v_{\pi_i}$, defined below.
 
 This routine $\mathcal C(u, v, w)$ is defined as follows:
