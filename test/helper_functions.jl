@@ -1,4 +1,5 @@
 using StaticArrays
+using StableRNGs
 
 const DT = DelaunayTriangulation
 
@@ -132,6 +133,7 @@ function validate_triangulation(tri::Triangulation)
             for r in each_point_index(_tri)
                 if r ∈ get_vertices(tri)
                     cert = DT.point_position_relative_to_circumcircle(_tri, T, r)
+                    DT.is_inside(cert) && @show T, r
                     @test !DT.is_inside(cert)
                 end
             end
@@ -143,10 +145,13 @@ function validate_triangulation(tri::Triangulation)
             vij = get_adjacent(tri, i, j)
             vji = get_adjacent(tri, j, i)
             if DT.is_boundary_edge(_tri, i, j)
+                !DT.is_boundary_index(vij) && @show i, j, vij
                 @test DT.is_boundary_index(vij)
             elseif DT.is_boundary_edge(_tri, j, i)
+                !DT.is_boundary_index(vji) && @show j, i, vji
                 @test DT.is_boundary_index(vji)
             else
+                !(DT.edge_exists(vij) && DT.edge_exists(vji)) && @show i, j, vij, vji
                 @test DT.edge_exists(vij) && DT.edge_exists(vji)
             end
         end
@@ -154,6 +159,7 @@ function validate_triangulation(tri::Triangulation)
         ## Test the adjacent map 
         @async for T in each_triangle(_tri)
             u, v, w = indices(T)
+            all((get_adjacent(_tri, u, v) == w, get_adjacent(_tri, u, v) == w, get_adjacent(_tri, w, u) == v)) || @show u, v, w, T
             @test get_adjacent(_tri, u, v) == w
             @test get_adjacent(_tri, v, w) == u
             @test get_adjacent(_tri, w, u) == v
@@ -171,6 +177,7 @@ function validate_triangulation(tri::Triangulation)
         ## Check that the adjacent and adjacent2vertex maps are inverses 
         @async for (k, S) in get_adjacent2vertex(_tri)
             for ij in DT.each_edge(S)
+                get_adjacent(_tri, ij) == k || @show i, j, k
                 @test get_adjacent(_tri, ij) == k
             end
         end
@@ -274,5 +281,30 @@ function example_empty_triangulation()
         DT.DataStructures.OrderedDict{Int64,UnitRange{Int64}}(),
         Set{NTuple{2,Int64}}(),
         ConvexHull(pts, [2, 6, 4, 5, 2]))
+    return tri
+end
+
+function example_with_special_corners()
+    a = [8.0, 3.0]
+    b = [8.0, 1.0]
+    c = [6.0, 1.0]
+    d = [7.0, 5.0]
+    e = [6.0, 8.0]
+    f = [3.0, 3.0]
+    g = [-1.0, 2.0]
+    h = [-5.0, 5.0]
+    i = [-5.0, 9.0]
+    j = [-5.0, 11.0]
+    k = [-4.0, 10.0]
+    ℓ = [0.0, 9.87]
+    m = [3.0, 11.0]
+    n = [1.0, 7.0]
+    o = [-1.0, 6.0]
+    p = [5.0, 5.0]
+    q = [2.0, 4.0]
+    r = [3.0, 8.0]
+    pts = [a, b, c, d, e, f, g, h, i, j, k, ℓ, m, n, o, p, q, r]
+    rng = StableRNG(29292929292)
+    tri = triangulate(pts; rng, delete_ghosts=false, randomise=false)
     return tri
 end

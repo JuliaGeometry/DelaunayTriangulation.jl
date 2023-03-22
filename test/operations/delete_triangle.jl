@@ -14,7 +14,7 @@ add_ghost_triangles!(tri)
 
 fig = Figure()
 ax = Axis(fig[1, 1])
-triplot!(ax, tri; show_ghost_edges=true, ghost_edge_extension_factor=2.0)
+triplot!(ax, tri; recompute_centers=true, show_ghost_edges=true, ghost_edge_extension_factor=2.0)
 xlims!(ax, -2, 22)
 ylims!(ax, -2, 22)
 all_i = Set{NTuple{3,Int64}}()

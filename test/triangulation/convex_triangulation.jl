@@ -127,28 +127,30 @@ for _ in 1:10000
     validate_triangulation(tri_ch)
 end
 
-pts = rand(2, 50)
-p1 = [0.0, 0.0]
-p2 = [1.0, 0.0]
-p3 = [0.0, 1.0]
-pts[:, 11] .= p1
-pts[:, 27] .= p2
-pts[:, 5] .= p3
-S = [11, 27, 5, 11]
-tri_ch = triangulate_convex(pts, S)
-tri_bw = triangulate(pts; skip_points=setdiff(1:50, [11, 27, 5]), delete_ghosts=false)
-@test get_convex_hull(tri_ch) == get_convex_hull(tri_bw)
-@test DT.compare_triangle_collections(get_triangles(tri_ch), get_triangles(tri_bw))
-@test (get_adjacent ∘ get_adjacent)(tri_ch) == (get_adjacent ∘ get_adjacent)(tri_bw)
-@test (get_adjacent2vertex ∘ get_adjacent2vertex)(tri_ch) == (get_adjacent2vertex ∘ get_adjacent2vertex)(tri_bw)
-@test (get_graph ∘ get_graph)(tri_ch) == (get_graph ∘ get_graph)(tri_bw)
+for _ in 1:15000
+    pts = rand(2, 50)
+    p1 = [0.0, 0.0]
+    p2 = [1.0, 0.0]
+    p3 = [0.0, 1.0]
+    pts[:, 11] .= p1
+    pts[:, 27] .= p2
+    pts[:, 5] .= p3
+    S = [11, 27, 5, 11]
+    tri_ch = triangulate_convex(pts, S)
+    tri_bw = triangulate(pts; skip_points=setdiff(1:50, [11, 27, 5]), delete_ghosts=false)
+    @test get_convex_hull(tri_ch) == get_convex_hull(tri_bw)
+    @test DT.compare_triangle_collections(get_triangles(tri_ch), get_triangles(tri_bw))
+    @test (get_adjacent ∘ get_adjacent)(tri_ch) == (get_adjacent ∘ get_adjacent)(tri_bw)
+    @test (get_adjacent2vertex ∘ get_adjacent2vertex)(tri_ch) == (get_adjacent2vertex ∘ get_adjacent2vertex)(tri_bw)
+    @test (get_graph ∘ get_graph)(tri_ch) == (get_graph ∘ get_graph)(tri_bw)
 
-pts[:, 28] .= [1.0, 1.0]
-S = [11, 27, 28, 5, 11]
-tri_ch = triangulate_convex(pts, S)
-tri_bw = triangulate(pts; skip_points=setdiff(1:50, [11, 27, 5, 28]), delete_ghosts=false)
-@test get_convex_hull(tri_ch) == get_convex_hull(tri_bw)
-@test DT.compare_triangle_collections(get_triangles(tri_ch), get_triangles(tri_bw))
-@test (get_adjacent ∘ get_adjacent)(tri_ch) == (get_adjacent ∘ get_adjacent)(tri_bw)
-@test (get_adjacent2vertex ∘ get_adjacent2vertex)(tri_ch) == (get_adjacent2vertex ∘ get_adjacent2vertex)(tri_bw)
-@test (get_graph ∘ get_graph)(tri_ch) == (get_graph ∘ get_graph)(tri_bw)
+    pts[:, 28] .= [1.01, 1.01]
+    S = [11, 27, 28, 5, 11]
+    tri_ch = triangulate_convex(pts, S)
+    tri_bw = triangulate(pts; skip_points=setdiff(1:50, [11, 27, 5, 28]), delete_ghosts=false)
+    @test get_convex_hull(tri_ch) == get_convex_hull(tri_bw)
+    @test DT.compare_triangle_collections(get_triangles(tri_ch), get_triangles(tri_bw))
+    @test (get_adjacent ∘ get_adjacent)(tri_ch) == (get_adjacent ∘ get_adjacent)(tri_bw)
+    @test (get_adjacent2vertex ∘ get_adjacent2vertex)(tri_ch) == (get_adjacent2vertex ∘ get_adjacent2vertex)(tri_bw)
+    @test (get_graph ∘ get_graph)(tri_ch) == (get_graph ∘ get_graph)(tri_bw)
+end

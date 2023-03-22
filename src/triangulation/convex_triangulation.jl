@@ -66,16 +66,18 @@ function triangulate_convex!(tri::Triangulation, S;
     add_ghost_triangles=false,
     add_convex_hull=false,
     compute_centers=false,
-    delete_empty_features=false)
+    delete_empty_features=false,
+    update_ghost_edges=false,
+    check_orientation::V=Val(false)) where {V}
     next, prev, k, S, shuffled_indices = prepare_convex_triangulation_vectors(S)
     reset_convex_triangulation_vectors!(next, prev, shuffled_indices, k, rng)
     delete_vertices_in_random_order!(next, prev, shuffled_indices, tri, S, k, rng)
     u, v, w = index_shuffled_linked_list(S, next, prev, shuffled_indices, 1)
-    add_triangle!(tri, u, v, w; protect_boundary=true)
+    add_triangle!(tri, u, v, w; protect_boundary=!update_ghost_edges, update_ghost_edges)
     set_S = Set(S)
     for i in 4:k
         u, v, w = index_shuffled_linked_list(S, next, prev, shuffled_indices, i)
-        add_point_convex_triangulation!(tri, u, v, w, set_S)
+        add_point_convex_triangulation!(tri, u, v, w, set_S, update_ghost_edges, check_orientation)
     end
     convex_triangulation_post_processing!(tri,
         S,
@@ -162,7 +164,7 @@ function convex_triangulation_post_processing!(tri,
     return nothing
 end
 
-function add_point_convex_triangulation!(tri::Triangulation, u, v, w, S)
+function add_point_convex_triangulation!(tri::Triangulation, u, v, w, S, update_ghost_edges, check_orientation::V=Val(false)) where {V}
     x = get_adjacent(tri, w, v)
     # In the statement below, we check x ∈ S so that we do not leave the 
     # polygon. If we are just triangulation a convex polygon in isolation, 
@@ -170,15 +172,25 @@ function add_point_convex_triangulation!(tri::Triangulation, u, v, w, S)
     # this is a polygon representing a cavity of a triangulation, this 
     # is just checking that x is a vertex of the cavity. This check should 
     # be O(1), hence why we use Set(S) in triangulate_convex.
-    if x ∈ S && is_inside(point_position_relative_to_circumcircle(tri, u, v, w, x))
+    if x ∈ S && is_inside(point_position_relative_to_circumcircle(tri, u, v, w, x)) && !is_boundary_index(x)
         # uvw and wvx are not Delaunay
-        delete_triangle!(tri, w, v, x; protect_boundary=true)
-        add_point_convex_triangulation!(tri, u, v, x, S)
-        add_point_convex_triangulation!(tri, u, x, w, S)
+        @show w, v, x, get_adjacent(tri, 1, 5)
+        delete_triangle!(tri, w, v, x; protect_boundary=!update_ghost_edges, update_ghost_edges)
+        add_point_convex_triangulation!(tri, u, v, x, S, update_ghost_edges)
+        add_point_convex_triangulation!(tri, u, x, w, S, update_ghost_edges)
         return nothing
     else
         # vw is a Delaunay edge
-        add_triangle!(tri, u, v, w; protect_boundary=true)
+        ## In the case that this function is called because we are deleting a point, in particular a point 
+        ## on the boundary, then we need to be careful about how we repair the (concave) indent left behind. 
+        ## It is possible that the triangle we add makes the triangulation non-planar (i.e. triangles overlap),
+        ## which can be detected by finding that a triangle has somehow become negatively oriented.
+        ## We check this using check_orientation below, which is Val(false) by default. 
+        ## TODO: Find out what the actual issue is so that check_orientation isn't needed at all.
+        if !is_true(check_orientation) || is_positively_oriented(triangle_orientation(tri, u, v, w))
+            @show get_adjacent(tri, 12, 5)
+            add_triangle!(tri, u, v, w; protect_boundary=!update_ghost_edges, update_ghost_edges)
+        end
         return nothing
     end
 end

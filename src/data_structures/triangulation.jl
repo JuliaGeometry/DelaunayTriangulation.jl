@@ -148,6 +148,12 @@ we list below.
 - [`add_ghost_triangles!`](@ref)
 - [`delete_ghost_triangles!`](@ref)
 - [`add_boundary_information!`](@ref)
+- [`add_point!`](@ref)
+- [`delete_point!`](@ref)
+- [`flip_edge!`](@ref)
+- [`legalise_edge!`](@ref)
+- [`split_edge!`](@ref)
+- [`split_triangle!`](@ref)
 
 ## Point location:
 
@@ -210,6 +216,8 @@ we list below.
 - [`edge_type`](@ref)
 - [`num_edges`](@ref)
 - [`each_edge`](@ref)
+- [`each_solid_edge`](@ref)
+- [`each_ghost_edge`](@ref)
 
 ## Working with the `points` field:
 
@@ -230,9 +238,11 @@ we list below.
 - [`point_position_relative_to_triangle`](@ref)
 - [`is_outer_boundary_index`](@ref)
 - [`is_outer_boundary_node`](@ref)
+- [`is_boundary_node`](@ref)
 - [`edge_exists`](@ref)
 - [`has_ghost_triangles`](@ref)
 - [`has_boundary_nodes`](@ref)
+- [`is_legal`](@ref)
 
 ## Miscellaneous:
 
@@ -243,6 +253,7 @@ we list below.
 - [`find_edge`](@ref)
 - [`is_constrained`](@ref)
 - [`all_boundary_indices`](@ref)
+- [`get_surrounding_polygon`](@ref)
 """
 struct Triangulation{P,Ts,I,E,Es,BN,B,BIR}
     points::P
@@ -367,6 +378,8 @@ end
 @inline function delete_boundary_vertices_from_graph!(tri::Triangulation)
     return delete_boundary_vertices_from_graph!(get_graph(tri))
 end
+@inline each_vertex(tri::Triangulation) = each_vertex(get_graph(tri))
+@inline num_vertices(tri::Triangulation) = num_vertices(get_graph(tri))
 
 # Boundary Nodes 
 @inline function has_multiple_curves(tri::Triangulation)
@@ -490,6 +503,43 @@ end
 @inline num_edges(tri::Triangulation) = num_edges(get_graph(tri))
 @inline each_edge(tri::Triangulation) = get_edges(get_graph(tri))
 
+abstract type AbstractEachEdge{E} end
+Base.IteratorSize(::Type{<:AbstractEachEdge}) = Base.SizeUnknown()
+Base.IteratorEltype(::Type{<:AbstractEachEdge{E}}) where {E} = Base.IteratorEltype(E)
+Base.eltype(::Type{<:AbstractEachEdge{E}}) where {E} = edge_type(E)
+initialise_edges(::Type{<:AbstractEachEdge{E}}) where {E} = initialise_edges(E)
+each_edge(itr::AbstractEachEdge) = itr
+struct EachSolidEdge{E} <: AbstractEachEdge{E}
+    edges::E
+end
+struct EachGhostEdge{E} <: AbstractEachEdge{E}
+    edges::E
+end
+each_solid_edge(tri) = EachSolidEdge(each_edge(tri))
+each_ghost_edge(tri) = EachGhostEdge(each_edge(tri))
+function Base.iterate(itr::EachSolidEdge, state...)
+    edges_state = iterate(itr.edges, state...)
+    edges_state === nothing && return nothing
+    edges, state = edges_state
+    while is_ghost_edge(edges)
+        edges_state = iterate(itr.edges, state)
+        edges_state === nothing && return nothing
+        edges, state = edges_state
+    end
+    return edges, state
+end
+function Base.iterate(itr::EachGhostEdge, state...)
+    edges_state = iterate(itr.edges, state...)
+    edges_state === nothing && return nothing
+    edges, state = edges_state
+    while !is_ghost_edge(edges)
+        edges_state = iterate(itr.edges, state)
+        edges_state === nothing && return nothing
+        edges, state = edges_state
+    end
+    return edges, state
+end
+
 # Points 
 @inline function get_point(tri::Triangulation, i)
     return get_point(get_points(tri), get_boundary_map(tri), i)
@@ -500,6 +550,36 @@ end
 @inline each_point_index(tri::Triangulation) = each_point_index(get_points(tri))
 @inline each_point(tri::Triangulation) = each_point(get_points(tri))
 @inline num_points(tri::Triangulation) = num_points(get_points(tri))
+
+abstract type AbstractEachVertex{V} end
+Base.IteratorSize(::Type{<:AbstractEachVertex}) = Base.HasLength()
+Base.IteratorEltype(::Type{<:AbstractEachVertex{V}}) where {V} = Base.IteratorEltype(V)
+Base.eltype(::Type{<:AbstractEachVertex{V}}) where {V} = eltype(V)
+each_vertex(itr::AbstractEachVertex) = itr
+struct EachSolidVertex{V,T} <: AbstractEachVertex{V}
+    vertices::V
+    tri::T
+end
+Base.length(verts::EachSolidVertex) = num_vertices(verts.tri) - length(all_boundary_indices(verts.tri)) * (integer_type(verts.tri)(BoundaryIndex) ∈ verts.vertices)
+struct EachGhostVertex{V,T} <: AbstractEachVertex{V}
+    vertices::V
+    tri::T
+end
+Base.length(verts::EachGhostVertex) = length(all_boundary_indices(verts.tri))
+each_solid_vertex(tri) = EachSolidVertex(each_vertex(tri), tri)
+each_ghost_vertex(tri) = EachGhostVertex(all_boundary_indices(tri), tri)
+function Base.iterate(itr::EachSolidVertex, state...)
+    vertices_state = iterate(itr.vertices, state...)
+    vertices_state === nothing && return nothing
+    vertices, state = vertices_state
+    while is_boundary_index(vertices)
+        vertices_state = iterate(itr.vertices, state...)
+        vertices_state === nothing && return nothing
+        vertices, state = vertices_state
+    end
+    return vertices, state
+end
+Base.iterate(itr::EachGhostVertex, state...) = Base.iterate(itr.vertices, state...)
 
 # Predicates 
 @inline is_boundary_edge(tri::Triangulation, ij) = is_boundary_edge(ij, get_adjacent(tri))
@@ -546,6 +626,9 @@ end
 end
 @inline function is_outer_boundary_node(tri::Triangulation, i)
     return is_outer_boundary_node(i, get_graph(tri), get_boundary_index_ranges(tri))
+end
+@inline function is_boundary_node(tri::Triangulation, i)
+    return is_boundary_node(i, get_graph(tri), get_boundary_index_ranges(tri))
 end
 @inline edge_exists(tri::Triangulation, i, j) = edge_exists(i, j, get_adjacent(tri))
 @inline edge_exists(tri::Triangulation, ij) = edge_exists(ij, get_adjacent(tri))
@@ -616,6 +699,7 @@ function is_constrained(tri::Triangulation)
     return !is_empty(get_constrained_edges(tri)) || has_boundary_nodes(tri)
 end
 all_boundary_indices(tri::Triangulation) = keys(get_boundary_index_ranges(tri))
+get_surrounding_polygon(tri::Triangulation, u; skip_boundary_indices=false) = get_surrounding_polygon(get_adjacent(tri), get_graph(tri), u, get_boundary_index_ranges(tri), Val(has_multiple_segments(tri)); skip_boundary_indices)
 
 ## Triangulating points, triangles, boundary_nodes
 function Triangulation(points::P, triangles::T, boundary_nodes::BN;
@@ -775,6 +859,21 @@ Given a triangulation `tri`, removes all boundary vertices from the
 triangulation `tri`, i.e. all those with index less than $BoundaryIndex (
 see [`is_boundary_index`](@ref)).
 """ delete_boundary_vertices_from_graph!(::Triangulation)
+
+@doc """
+    each_vertex(tri::Triangulation)
+
+Given a triangulation `tri`, returns an iterator over each vertex in the triangulation. Note that 
+these are indices of points rather than the points themselves.
+
+See also [`each_solid_vertex`](@ref) and [`each_ghost_vertex`](@ref).
+""" each_vertex(::Triangulation)
+
+@doc """
+    num_vertices(tri::Triangulation)
+
+Returns the number of vertices in the triangulation `tri`.
+""" num_vertices(::Triangulation)
 
 @doc """
     has_multiple_curves(tri::Triangulation)
@@ -959,7 +1058,25 @@ do not count as two edges.
 Given a triangulation `tri`, returns an iterator over the edges 
 in the triangulation. Note that e.g. `(i, j)` and `(j, i)` will not 
 be iterated over twice, only one of them would be.
+
+See also [`each_solid_edge`](@ref) and [`each_ghost_edge`](@ref).
 """ each_edge(::Triangulation)
+
+@doc """
+    each_solid_edge(tri::Triangulation)
+
+Given a triangulation `tri`, returns an iterator over the solid (i.e. non-ghost) edges.
+
+See also [`each_ghost_edge`](@ref) and [`each_edge`](@ref).
+""" each_solid_edge(::Triangulation)
+
+@doc """
+    each_ghost_edge(tri::Triangulation)
+
+Given a triangulation `tri`, returns an iterator over the ghost edges.
+
+See also [`each_edge`](@ref) and [`each_solid_edge`](@ref).
+""" each_ghost_edge(::Triangulation)
 
 @doc """
     get_point(tri::Triangulation, i...)
@@ -986,22 +1103,45 @@ boundary index `i` is returned. See also [`get_representative_point_coordinates`
 
 Given a triangulation `tri`, returns an iterator over the indices 
 of the points in `tri`. This iterator does not include the boundary 
-indices.
+indices. Note also that this may include points already in the triangulation.
+
+See also [`each_vertex`](@ref), [`each_solid_vertex`](@ref), and [`each_ghost_vertex`](@ref).
 """ each_point_index(::Triangulation)
 
 @doc """
     each_point(tri::Triangulation)
 
 Given a triangulation `tri`, returns an iterator over the coordinates 
-of the points in `tri`. This iterator does not include the centroids 
-of the boundary curves.
+of the points in `tri`, whether they are present in `tri` already or not. 
+This iterator does not include the centroids of the boundary curves.
+
+See also [`each_vertex`](@ref), [`each_solid_vertex`](@ref), and [`each_ghost_vertex`](@ref).
 """ each_point(::Triangulation)
 
 @doc """
     num_points(tri::Triangulation)
 
-Given a triangulation `tri`, returns the number of points.
+Given a triangulation `tri`, returns the number of points. Note that this may include 
+points not already in the triangulation.
+
+See also [`num_vertices`](@ref).
 """ num_points(::Triangulation)
+
+@doc """
+    each_solid_vertex(tri::Triangulation)
+
+Given a triangulation `tri`, returns an iterator over the solid (i.e. non-ghost) vertices.
+
+See also [`each_ghost_vertex`](@ref) and [`each_vertex`](@ref).
+""" each_solid_vertex(::Triangulation)
+
+@doc """
+    each_ghost_vertex(tri::Triangulation)
+
+Given a triangulation `tri`, returns an iterator over the ghost vertices.
+
+See also [`each_vertex`](@ref) and [`each_solid_vertex`](@ref).
+""" each_ghost_vertex(::Triangulation)
 
 @doc """
     is_boundary_edge(tri::Triangulation, ij)
@@ -1152,6 +1292,16 @@ on the outermost boundary of the triangulation.
 """ is_outer_boundary_node(tri::Triangulation, ::Any)
 
 @doc """
+    is_boundary_node(tri::Triangulation, i)
+
+Given a triangulation `tri` and an index `i`, tests if `i` is the index of a node 
+on any part of the boundary of the triangulation. The returned value is a 
+`Tuple`, whose first element is the result of this test, and whose second element 
+is the corresponding boundary index if the test passed and `DefaultAdjacentValue` 
+otherwise.
+""" is_boundary_node(tri::Triangulation, ::Any)
+
+@doc """
     edge_exists(tri::Triangulation, i, j)
     edge_exists(tri::Triangulation, ij)
 
@@ -1275,3 +1425,16 @@ Returns `true` if `tri` has any constrained edges, and `false` otherwise.
 
 Returns an iterator over all boundary indices in the triangulation.
 """ all_boundary_indices(::Triangulation)
+
+@doc """
+    get_surrounding_polygon(tri::Triangulation, u; skip_boundary_indices=false)
+
+Given a triangulation `tri` and a vertex `u`, returns a vector `S` which gives a counter-clockwise 
+sequence of the neighbours of `u`.
+
+When `u` is an outer boundary index, the returned polygon is clockwise.
+
+When `u` is a boundary vertex and you do not have ghost triangles, then this function may return an invalid polygon.
+
+If you want to remove all boundary indices from the result at the end, set `skip_boundary_indices=true`.
+""" get_surrounding_polygon(::Triangulation, ::Any)

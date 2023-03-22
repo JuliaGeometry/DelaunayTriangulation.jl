@@ -197,3 +197,55 @@ tri = triangulate(pts; delete_ghosts=false)
 DT.add_triangle!(get_triangles(tri), (2, 3, -1))
 @test !all(DT.is_positively_oriented(DT.triangle_orientation(tri, T)) for T in each_triangle(tri))
 
+x, y = complicated_geometry()
+tri = generate_mesh(x, y, 2.0; convert_result=true, add_ghost_triangles=true)
+for (boundary_index, segment_index) in get_boundary_map(tri)
+    nodes = get_boundary_nodes(tri, segment_index)
+    for node in nodes
+        flag1, res1 = DT.is_boundary_node(node, get_graph(tri), get_boundary_index_ranges(tri))
+        flag2, res2 = DT.is_boundary_node(tri, node)
+        @test flag1 && flag2 && res1 == res2
+        @test res1 ∈ get_boundary_index_ranges(tri)[boundary_index]
+    end
+end
+reduced_bn = reduce(vcat, reduce(vcat, get_boundary_nodes(tri)))
+for node in each_vertex(tri)
+    if node ∉ reduced_bn
+        flag1, res1 = DT.is_boundary_node(node, get_graph(tri), get_boundary_index_ranges(tri))
+        flag2, res2 = DT.is_boundary_node(tri, node)
+        @test !flag1 && !flag2 && res1 == res2 == DT.DefaultAdjacentValue
+    end
+end
+tri2, label_map, index_map = simple_geometry()
+for (boundary_index, segment_index) in get_boundary_map(tri2)
+    nodes = get_boundary_nodes(tri2, segment_index)
+    for node in nodes
+        flag1, res1 = DT.is_boundary_node(node, get_graph(tri2), get_boundary_index_ranges(tri2))
+        flag2, res2 = DT.is_boundary_node(tri2, node)
+        @test flag1 && flag2 && res1 == res2
+        @test res1 ∈ get_boundary_index_ranges(tri2)[boundary_index]
+    end
+end
+reduced_bn = reduce(vcat, reduce(vcat, get_boundary_nodes(tri)))
+for node in each_vertex(tri2)
+    if node ∉ reduced_bn
+        flag1, res1 = DT.is_boundary_node(node, get_graph(tri2), get_boundary_index_ranges(tri2))
+        flag2, res2 = DT.is_boundary_node(tri2, node)
+        @test !flag1 && !flag2 && res1 == res2 == DT.DefaultAdjacentValue
+    end
+end
+tri3 = example_with_special_corners()
+ch = get_convex_hull_indices(tri3)
+for node in ch
+    flag1, res1 = DT.is_boundary_node(node, get_graph(tri3), get_boundary_index_ranges(tri3))
+    flag2, res2 = DT.is_boundary_node(tri3, node)
+    @test flag1 && flag2 && res1 == res2
+    @test res1 ∈ get_boundary_index_ranges(tri3)[DT.BoundaryIndex]
+end
+for node in each_vertex(tri)
+    if node ∉ ch
+        flag1, res1 = DT.is_boundary_node(node, get_graph(tri3), get_boundary_index_ranges(tri3))
+        flag2, res2 = DT.is_boundary_node(tri3, node)
+        @test !flag1 && !flag2 && res1 == res2 == DT.DefaultAdjacentValue
+    end
+end

@@ -17,4 +17,5 @@ split_edge!
 split_triangle!
 flip_edge!
 legalise_edge!
+delete_point!
 ```

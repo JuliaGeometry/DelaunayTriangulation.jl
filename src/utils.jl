@@ -47,13 +47,13 @@ end
 Given an [`Adjacent`](@ref) map, a boundary node index `k`, a `boundary_index` corresponding to the curve, 
 and `boundary_index_ranges` from [`construct_boundary_index_ranges`](@ref),
 returns the node on the boundary to the right of `k`. `check_existence` can be used if you need to check 
-over all outer boundary indices, in case there are multiple segments and thus multiple possible boundary indices 
+over all boundary indices, in case there are multiple segments and thus multiple possible boundary indices 
 on the boundary.
 
 See also [`get_left_boundary_node`](@ref).
 """
 function get_right_boundary_node(adj::Adjacent{I,E}, k, boundary_index,
-                                 boundary_index_ranges, check_existence::C) where {I,E,C}
+    boundary_index_ranges, check_existence::C) where {I,E,C}
     if is_true(check_existence)
         boundary_index_range = map_boundary_index(boundary_index_ranges, boundary_index)
         for index in boundary_index_range
@@ -72,13 +72,13 @@ end
 Given an [`Adjacent`](@ref) map, a boundary node index `k`, a `boundary_index` corresponding to the curve, 
 and `boundary_index_ranges` from [`construct_boundary_index_ranges`](@ref),
 returns the node on the boundary to the left of `k`. `check_existence` can be used if you need to check 
-over all outer boundary indices, in case there are multiple segments and thus multiple possible boundary indices 
+over all boundary indices, in case there are multiple segments and thus multiple possible boundary indices 
 on the boundary.
 
 See also [`get_right_boundary_node`](@ref).
 """
 function get_left_boundary_node(adj::Adjacent{I,E}, k, boundary_index,
-                                boundary_index_ranges, check_existence::C) where {I,E,C}
+    boundary_index_ranges, check_existence::C) where {I,E,C}
     if is_true(check_existence)
         boundary_index_range = map_boundary_index(boundary_index_ranges, boundary_index)
         for index in boundary_index_range
@@ -140,8 +140,8 @@ Tests if the arrays `A` and `B` are equal up to a circular shift.
 function circular_equality(A, B)
     @assert is_circular(A) && is_circular(B) "The input arrays must satisfy x[begin] == x[end]."
     length(A) ≠ length(B) && return false
-    _A = @views A[begin:(end - 1)]
-    _B = @views B[begin:(end - 1)]
+    _A = @views A[begin:(end-1)]
+    _B = @views B[begin:(end-1)]
     same_idx = findfirst(==(_A[begin]), _B)
     same_idx === nothing && return false
     n = length(_A)
@@ -151,4 +151,50 @@ function circular_equality(A, B)
         a ≠ b && return false
     end
     return true
+end
+
+"""
+    get_surrounding_polygon(adj::Adjacent{I,E}, graph::Graph, u, boundary_index_ranges, check_existence::C; skip_boundary_indices=false) where {I,E,C}
+
+Given an [`Adjacent`](@ref) map, a [`Graph`](@ref), a vertex `u`, `boundary_index_ranges` from [`construct_boundary_index_ranges`](@ref) 
+for handling the case where `u` is on the boundary, returns a vector `S` which gives a counter-clockwise sequence of the neighbours of `u`.
+`check_existence` can be used if you need to check over all boundary indices when `u` is a boundary node, 
+in case there are multiple segments and thus multiple possible boundary indices on the boundary.
+
+When `u` is an outer boundary index, the returned polygon is clockwise.
+
+When `u` is a boundary vertex and you do not have ghost triangles, then this function may return an invalid polygon.
+
+If you want to remove all boundary indices from the result at the end, set `skip_boundary_indices=true`.
+"""
+function get_surrounding_polygon(adj::Adjacent{I,E}, graph::Graph, u, boundary_index_ranges, check_existence::C; skip_boundary_indices=false) where {I,E,C}
+    neighbouring_vertices = get_neighbours(graph, u)
+    v = first(neighbouring_vertices)
+    if !is_boundary_index(u)
+        k = num_neighbours(graph, u)
+        nbnd = count(is_boundary_index, neighbouring_vertices)
+        if nbnd > 0
+            # If we are on a boundary that has multiple boundary indices, k will not 
+            # be counted correctly. This step makes the adjustment.
+            k = k - nbnd + 1 # + 1 because we do still want one boundary index
+        end
+    else
+        # Need to be careful when there are multiple boundary indices - get_neighbours would only 
+        # return the segment for a given boundary index, so we need to check all. The nodes do not uniquely 
+        # appear in a single segment, so we cannot just keep adding to d above. To keep things 
+        # a bit simple, we just take a union. This could be improved.
+        boundary_index_range = map_boundary_index(boundary_index_ranges, u)
+        for index in boundary_index_range
+            neighbouring_vertices = neighbouring_vertices ∪ get_neighbours(graph, index)
+        end
+        k = length(neighbouring_vertices)
+    end
+    S = zeros(I, k)
+    S[1] = v
+    for i in 2:k
+        v = get_adjacent(adj, u, v; check_existence, boundary_index_ranges)
+        S[i] = v
+    end
+    skip_boundary_indices && filter!(!is_boundary_index, S)
+    return S
 end

@@ -15,15 +15,15 @@ include("../helper_functions.jl")
 pts = rand(2, 500)
 tri = Triangulation(pts; IntegerType=Int32)
 @test tri == Triangulation(pts,
-                           Set{NTuple{3,Int32}}(),
-                           DT.Adjacent{Int32,NTuple{2,Int32}}(),
-                           DT.Adjacent2Vertex{Int32,Set{NTuple{2,Int32}},NTuple{2,Int32}}(),
-                           DT.Graph{Int32}(),
-                           Int32[],
-                           OrderedDict{Int32,Vector{Int32}}(Int32(DT.BoundaryIndex) => Int32[]),
-                           OrderedDict{Int32,UnitRange{Int32}}(-1 => -1:-1),
-                           Set{NTuple{2,Int32}}(),
-                           ConvexHull(pts, Int32[]))
+      Set{NTuple{3,Int32}}(),
+      DT.Adjacent{Int32,NTuple{2,Int32}}(),
+      DT.Adjacent2Vertex{Int32,Set{NTuple{2,Int32}},NTuple{2,Int32}}(),
+      DT.Graph{Int32}(),
+      Int32[],
+      OrderedDict{Int32,Vector{Int32}}(Int32(DT.BoundaryIndex) => Int32[]),
+      OrderedDict{Int32,UnitRange{Int32}}(-1 => -1:-1),
+      Set{NTuple{2,Int32}}(),
+      ConvexHull(pts, Int32[]))
 
 ## Gmsh setup
 include("../helper_functions.jl")
@@ -31,7 +31,7 @@ x, y = complicated_geometry()
 tri = generate_mesh(x, y, 0.1; convert_result=true, add_ghost_triangles=true)
 tri_2 = generate_mesh(x[1], y[1], 0.1; convert_result=true, add_ghost_triangles=true)
 tri_3 = generate_mesh([0.0, 2.0, 2.0, 0.0, 0.0], [0.0, 0.0, 2.0, 2.0, 0.0], 0.1;
-                      convert_result=true, add_ghost_triangles=true)
+      convert_result=true, add_ghost_triangles=true)
 tri_4 = generate_mesh(x[2], y[2], 0.1; convert_result=true, add_ghost_triangles=true)
 
 ## Getters 
@@ -117,6 +117,8 @@ DT.delete_boundary_vertices_from_graph!(tri)
 @test all(∉(tri.graph.graph.V), -11:-1)
 @test DT.get_neighbours(tri) == tri.graph.graph.N
 @test DT.get_vertices(tri) == tri.graph.graph.V
+@test get_vertices(tri) == each_vertex(tri)
+@test num_vertices(tri) == length(get_vertices(tri))
 
 # Convex Hull 
 @test DT.get_convex_hull(tri) == tri.convex_hull
@@ -214,7 +216,7 @@ circshift!(ch.indices, 1 - shift)
 @inferred DT.construct_positively_oriented_triangle(tri, 3, 140, 1126)
 _solid_itr = each_solid_triangle(tri)
 @test DelaunayTriangulation.each_triangle(_solid_itr) == _solid_itr
-@test DT.initialise_triangles(typeof(_solid_itr)) == Set{NTuple{3,Int64}}()
+@test DT.initialise_triangles(typeof(_solid_itr)) == Set{NTuple{3,Int64}}() && eltype(DT.initialise_triangles(typeof(_solid_itr))) == NTuple{3,Int64}
 @test Base.IteratorSize(_solid_itr) == Base.SizeUnknown()
 @test Base.IteratorEltype(_solid_itr) == Base.HasEltype()
 @test Base.eltype(_solid_itr) == NTuple{3,Int64}
@@ -223,7 +225,7 @@ _solid_tri = collect(_solid_itr)
 @inferred collect(_solid_itr)
 @test all(!DT.is_ghost_triangle, _solid_tri)
 _ghost_itr = each_ghost_triangle(tri)
-@test DT.initialise_triangles(typeof(_ghost_itr)) == Set{NTuple{3,Int64}}()
+@test DT.initialise_triangles(typeof(_ghost_itr)) == Set{NTuple{3,Int64}}() && eltype(DT.initialise_triangles(typeof(_ghost_itr))) == NTuple{3,Int64}
 @test Base.IteratorSize(_ghost_itr) == Base.SizeUnknown()
 @test Base.IteratorEltype(_ghost_itr) == Base.HasEltype()
 @test Base.eltype(_ghost_itr) == NTuple{3,Int64}
@@ -237,6 +239,8 @@ ___tri = generate_mesh(x, y, 0.1; convert_result=true, add_ghost_triangles=true)
 DT.delete_ghost_triangles!(___tri)
 @test collect(each_triangle(___tri)) == collect(each_solid_triangle(___tri))
 @test length(collect(each_ghost_triangle(___tri))) == 0
+@test sort(collect(filter(!DT.is_ghost_triangle, each_triangle(___tri)))) == sort(collect(each_solid_triangle(___tri)))
+@test sort(collect(filter(DT.is_ghost_triangle, each_triangle(___tri)))) == sort(collect(each_ghost_triangle(___tri)))
 @test DelaunayTriangulation.sort_triangles(each_solid_triangle(tri)) == DelaunayTriangulation.sort_triangles(get_triangles(___tri))
 
 # Edges 
@@ -246,6 +250,32 @@ DT.delete_ghost_triangles!(___tri)
 @inferred DT.num_edges(tri)
 @test DT.each_edge(tri) == tri.graph.graph.E
 @inferred DT.each_edge(tri)
+_solid_itr = each_solid_edge(tri)
+@test DelaunayTriangulation.each_edge(_solid_itr) == _solid_itr
+@test DT.initialise_edges(typeof(_solid_itr)) == Set{NTuple{2,Int64}}() && eltype(DT.initialise_edges(typeof(_solid_itr))) == NTuple{2,Int64}
+@test Base.IteratorSize(_solid_itr) == Base.SizeUnknown()
+@test Base.IteratorEltype(_solid_itr) == Base.HasEltype()
+@test Base.eltype(_solid_itr) == NTuple{2,Int64}
+@test each_solid_edge(tri) isa DT.EachSolidEdge
+_solid_tri = collect(_solid_itr)
+@inferred collect(_solid_itr)
+@test all(!DT.is_ghost_edge, _solid_tri)
+_ghost_itr = each_ghost_edge(tri)
+@test DT.initialise_edges(typeof(_ghost_itr)) == Set{NTuple{2,Int64}}() && eltype(DT.initialise_edges(typeof(_ghost_itr))) == NTuple{2,Int64}
+@test Base.IteratorSize(_ghost_itr) == Base.SizeUnknown()
+@test Base.IteratorEltype(_ghost_itr) == Base.HasEltype()
+@test Base.eltype(_ghost_itr) == NTuple{2,Int64}
+@test each_ghost_edge(tri) isa DT.EachGhostEdge
+_ghost_tri = collect(_ghost_itr)
+@inferred collect(_ghost_itr)
+@test DelaunayTriangulation.each_edge(_ghost_itr) == _ghost_itr
+@test all(DT.is_ghost_edge, _ghost_tri)
+@test length(_ghost_tri) + length(_solid_tri) == num_edges(tri)
+___tri = generate_mesh(x, y, 0.1; convert_result=true, add_ghost_triangles=true)
+DT.delete_ghost_triangles!(___tri)
+@test sort(collect(filter(!DT.is_ghost_edge, each_edge(___tri)))) == sort(collect(each_solid_edge(___tri)))
+@test sort(collect(filter(DT.is_ghost_edge, each_edge(___tri)))) == sort(collect(each_ghost_edge(___tri)))
+@test length(collect(each_ghost_edge(___tri))) == num_edges(___tri) .- length(sort(collect(filter(!DT.is_ghost_edge, each_edge(___tri)))))
 
 # Points
 @test DT.get_point(tri, 2) == Tuple(tri.points[:, 2])
@@ -288,16 +318,54 @@ DT.RepresentativePointList[5] = DT.RepresentativeCoordinates(6.534234, -0.6, 13)
 @test get_point(tri, tri.points[:, 2]) == (tri.points[1, 2], tri.points[2, 2])
 @inferred get_point(tri, tri.points[:, 2]) == (tri.points[1, 2], tri.points[2, 2])
 @test collect(DT.all_boundary_indices(tri)) == [DT.BoundaryIndex,
-                                                DT.BoundaryIndex - 1,
-                                                DT.BoundaryIndex - 2,
-                                                DT.BoundaryIndex - 3,
-                                                DT.BoundaryIndex - 4,
-                                                DT.BoundaryIndex - 5,
-                                                DT.BoundaryIndex - 6,
-                                                DT.BoundaryIndex - 7,
-                                                DT.BoundaryIndex - 8,
-                                                DT.BoundaryIndex - 9,
-                                                DT.BoundaryIndex - 10]
+      DT.BoundaryIndex - 1,
+      DT.BoundaryIndex - 2,
+      DT.BoundaryIndex - 3,
+      DT.BoundaryIndex - 4,
+      DT.BoundaryIndex - 5,
+      DT.BoundaryIndex - 6,
+      DT.BoundaryIndex - 7,
+      DT.BoundaryIndex - 8,
+      DT.BoundaryIndex - 9,
+      DT.BoundaryIndex - 10]
+_triq = generate_mesh(x, y, 0.1; convert_result=true, add_ghost_triangles=true)
+_solid_itr = each_solid_vertex(_triq)
+@test DelaunayTriangulation.each_vertex(_solid_itr) == _solid_itr
+@test Base.IteratorSize(_solid_itr) == Base.HasLength()
+@test Base.IteratorEltype(_solid_itr) == Base.HasEltype()
+@test Base.eltype(_solid_itr) == Int64
+@test each_solid_vertex(_triq) isa DT.EachSolidVertex
+_solid_tri = collect(_solid_itr)
+@inferred collect(_solid_itr)
+@test sort(_solid_tri) == sort(collect(1:1661))
+@test all(!DT.is_boundary_index, _solid_tri)
+_ghost_itr = each_ghost_vertex(_triq)
+@test Base.IteratorSize(_ghost_itr) == Base.HasLength()
+@test Base.IteratorEltype(_ghost_itr) == Base.HasEltype()
+@test Base.eltype(_ghost_itr) == Int64
+@test each_ghost_vertex(_triq) isa DT.EachGhostVertex
+_ghost_tri = collect(_ghost_itr)
+@inferred collect(_ghost_itr)
+@test DelaunayTriangulation.each_vertex(_ghost_itr) == _ghost_itr
+@test all(DT.is_boundary_index, _ghost_tri)
+@test _ghost_tri == [DT.BoundaryIndex,
+      DT.BoundaryIndex - 1,
+      DT.BoundaryIndex - 2,
+      DT.BoundaryIndex - 3,
+      DT.BoundaryIndex - 4,
+      DT.BoundaryIndex - 5,
+      DT.BoundaryIndex - 6,
+      DT.BoundaryIndex - 7,
+      DT.BoundaryIndex - 8,
+      DT.BoundaryIndex - 9,
+      DT.BoundaryIndex - 10]
+@test length(_ghost_tri) == length(_ghost_itr) == sum(<(0), keys(_triq.adjacent2vertex.adjacent2vertex))
+@test length(_solid_tri) == length(_solid_itr) == num_points(_triq)
+___tri = generate_mesh(x, y, 0.1; convert_result=true, add_ghost_triangles=true)
+DT.delete_ghost_triangles!(___tri)
+@test sort(collect(filter(!DT.is_boundary_index, each_vertex(___tri)))) == sort(collect(each_solid_vertex(___tri)))
+@test sort(collect(filter(DT.is_boundary_index, each_vertex(___tri)))) == sort(collect(each_ghost_vertex(___tri)))
+@test length(collect(each_ghost_vertex(___tri))) == num_vertices(___tri) .- length(sort(collect(filter(!DT.is_boundary_index, each_vertex(___tri)))))
 
 # Miscellaneous
 @test DT.integer_type(tri) == Int64
