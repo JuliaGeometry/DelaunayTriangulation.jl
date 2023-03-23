@@ -140,11 +140,11 @@ function add_point_bowyer_watson!(tri::Triangulation, new_point, initial_search_
     dig_cavity!(tri, new_point, j, k, ℓ₂)
     dig_cavity!(tri, new_point, k, i, ℓ₃)
     if is_on(flag) && (is_boundary_triangle(tri, V) ||
-                       is_ghost_triangle(V) && !is_outer_boundary_node(tri, new_point))
+                       is_ghost_triangle(V) && !is_boundary_node(tri, new_point)[1])
         # ^ Need to fix the ghost edges if the point is added onto an existing boundary edge. Note that the last 
         #   condition is in case the ghost edges were already correctly added.
         u, v = find_edge(tri, V, new_point)
-        if is_boundary_edge(tri, u, v) || is_boundary_edge(tri, v, u)
+        if is_boundary_edge(tri, u, v) || is_boundary_edge(tri, v, u) # If the edge is not itself a boundary edge, no need to worry.
             if !is_boundary_edge(tri, u, v)
                 u, v = v, u
             end

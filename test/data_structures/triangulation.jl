@@ -119,6 +119,7 @@ DT.delete_boundary_vertices_from_graph!(tri)
 @test DT.get_vertices(tri) == tri.graph.graph.V
 @test get_vertices(tri) == each_vertex(tri)
 @test num_vertices(tri) == length(get_vertices(tri))
+@test all((DT.num_neighbours(tri, u) == DT.num_neighbours(get_graph(tri), u) for u in DT.get_vertices(tri)))
 
 # Convex Hull 
 @test DT.get_convex_hull(tri) == tri.convex_hull

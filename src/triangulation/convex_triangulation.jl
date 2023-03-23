@@ -128,9 +128,16 @@ function delete_vertices_in_random_order!(next, prev, shuffled_indices, tri, S, 
     ## Check if the three surviving vertices that survived are collinear 
     # Note that we do not need to check for negative orientation here, 
     # since the polygon is provided in a counter-clockwise order already. 
+    # If we are deleting a point on the boundary, though, we need to be careful,
+    # since e.g. if we provide `S = [1, 2, 6, BoundaryIndex, 1]`, then `[2, 6, BoundaryIndex]`
+    # is given in counter-clockwise order but actually the triangle's orientation 
+    # is negative due to the placement of BoundaryIndex.
+    # So, let's just use `if !is_positively_oriented` rather than `is_degenerate`.
+    # (Could also provide the `check_orientation` flag here from the other functions,
+    # but let's not bother.)
     u, v, w = index_shuffled_linked_list(S, next, prev, shuffled_indices, 1)
     degenerate_cert = triangle_orientation(tri, u, v, w)
-    if is_degenerate(degenerate_cert)
+    if !is_positively_oriented(degenerate_cert) #is_degenerate(degenerate_cert)
         reset_convex_triangulation_vectors!(next, prev, shuffled_indices, k, rng)
         delete_vertices_in_random_order!(next, prev, shuffled_indices, tri, S, k, rng)
     end
@@ -172,9 +179,9 @@ function add_point_convex_triangulation!(tri::Triangulation, u, v, w, S, update_
     # this is a polygon representing a cavity of a triangulation, this 
     # is just checking that x is a vertex of the cavity. This check should 
     # be O(1), hence why we use Set(S) in triangulate_convex.
+    @show w, v, x
     if x ∈ S && is_inside(point_position_relative_to_circumcircle(tri, u, v, w, x)) && !is_boundary_index(x)
         # uvw and wvx are not Delaunay
-        @show w, v, x, get_adjacent(tri, 1, 5)
         delete_triangle!(tri, w, v, x; protect_boundary=!update_ghost_edges, update_ghost_edges)
         add_point_convex_triangulation!(tri, u, v, x, S, update_ghost_edges)
         add_point_convex_triangulation!(tri, u, x, w, S, update_ghost_edges)
@@ -188,7 +195,6 @@ function add_point_convex_triangulation!(tri::Triangulation, u, v, w, S, update_
         ## We check this using check_orientation below, which is Val(false) by default. 
         ## TODO: Find out what the actual issue is so that check_orientation isn't needed at all.
         if !is_true(check_orientation) || is_positively_oriented(triangle_orientation(tri, u, v, w))
-            @show get_adjacent(tri, 12, 5)
             add_triangle!(tri, u, v, w; protect_boundary=!update_ghost_edges, update_ghost_edges)
         end
         return nothing

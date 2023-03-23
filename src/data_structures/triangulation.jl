@@ -182,6 +182,7 @@ we list below.
 - [`delete_neighbour!`](@ref)
 - [`delete_vertex!`](@ref)
 - [`delete_boundary_vertices_from_graph!`](@ref)
+- [`num_neighbours`](@ref)
 
 ## Working with the `boundary_nodes` field:
 
@@ -368,6 +369,7 @@ end
 @inline get_neighbours(tri::Triangulation) = get_neighbours(get_graph(tri))
 @inline get_neighbours(tri::Triangulation, u) = get_neighbours(get_graph(tri), u)
 @inline add_vertex!(tri::Triangulation, u...) = add_vertex!(get_graph(tri), u...)
+@inline num_neighbours(tri::Triangulation, u) = num_neighbours(get_graph(tri), u)
 @inline function add_neighbour!(tri::Triangulation, u, v...)
     return add_neighbour!(get_graph(tri), u, v...)
 end
@@ -827,6 +829,13 @@ into the graph `tri.graph`.
 Note that this does not insert the vertex into the triangulation - 
 see [`add_point!`](@ref) for this.
 """ add_vertex!(::Triangulation, ::Vararg)
+
+@doc """
+    num_neighbours(tri::Triangulation, u)
+
+Given a triangulation `tri` and a vertex `u`, returns the number of neighbours 
+of `u`.
+""" num_neighbours(::Triangulation, ::Any)
 
 @doc """
     add_neighbour!(tri::Triangulation, u, v...)
