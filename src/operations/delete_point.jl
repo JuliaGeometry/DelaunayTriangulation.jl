@@ -1,3 +1,8 @@
+"""
+    delete_point!(tri::Triangulation, point; rng::AbstractRNG=Random.default_rng())
+
+Deletes `point` from the triangulation `tri` using Chew's algorithm.
+"""
 function delete_point!(tri::Triangulation, point; rng::AbstractRNG=Random.default_rng())
     ## Start by determining if the node is an outer boundary node or not 
     ## We need to do this here because the information we delete immediately 
