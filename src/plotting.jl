@@ -171,11 +171,13 @@ function MakieCore.plot!(p::Triplot)
         end
 
         ## Get the convex hull edges if needed 
-        idx = get_indices(convex_hull)
-        for i in idx
-            pt = get_point(points, i)
-            x, y = getxy(pt)
-            append!(convex_hull_points[], (x, y))
+        if plot_convex_hull[]
+            idx = get_indices(convex_hull)
+            for i in idx
+                pt = get_point(points, i)
+                x, y = getxy(pt)
+                append!(convex_hull_points[], (x, y))
+            end
         end
     end
 

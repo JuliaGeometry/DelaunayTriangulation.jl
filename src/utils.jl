@@ -26,7 +26,7 @@ function get_boundary_index(i, j)
     throw(ArgumentError("No boundary indices provided."))
 end
 
-function rotate_ghost_triangle_to_standard_form(i, j, k)
+function rotate_ghost_triangle_to_standard_form(i, j, k) # ghost index last
     if is_boundary_index(i)
         return (j, k, i)
     elseif is_boundary_index(j)

@@ -67,8 +67,8 @@ For example, if `boundary_map[-4] = (2, 3)`, this means that the boundary index 
 corresponds to the nodes in `get_boundary_nodes(boundary_nodes, 2, 3)`. If there is just a 
 single continuous curve, so that `boundary_nodes` acts like a vector of integers, then 
 `boundary_map[$BoundaryIndex]` simply returns `boundary_nodes`. See also 
-[`construct_boundary_map`](@ref) and [`map_boundary_index`](@ref). The ordering is so that 
-the lowest magnitude boundary index comes first.
+[`construct_boundary_map`](@ref) and [`map_boundary_index`](@ref). The ordering is such that 
+the boundary index with the lowest absolute value comes first.
 - `boundary_index_ranges::BIR`
 
 This is an `OrderedDict` that maps a boundary index to a range of all other boundary indices 

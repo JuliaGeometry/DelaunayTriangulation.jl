@@ -117,7 +117,13 @@ function simple_geometry()
     return Triangulation(pts, T, boundary_nodes), label_map, index_map
 end
 
-function validate_triangulation(tri::Triangulation)
+function validate_triangulation(tri::Triangulation;
+    ignore_boundary_indices=false)
+    # Tests aren't countered correctly when we use @async, 
+    # so let's build thread-safe counters and then fake a 
+    # testset later. 
+    local passes = Threads.Atomic{Int64}(0)
+    local fails = Threads.Atomic{Int64}(0)
     _tri = deepcopy(tri)
     DT.clear_empty_features!(_tri)
 
@@ -125,6 +131,7 @@ function validate_triangulation(tri::Triangulation)
     @sync begin
         @async for T in each_triangle(_tri)
             cert = DT.triangle_orientation(_tri, T)
+            DT.is_positively_oriented(cert) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
             @test DT.is_positively_oriented(cert)
         end
 
@@ -132,9 +139,12 @@ function validate_triangulation(tri::Triangulation)
         @async for T in each_triangle(_tri)
             for r in each_point_index(_tri)
                 if r ∈ get_vertices(tri)
-                    cert = DT.point_position_relative_to_circumcircle(_tri, T, r)
-                    DT.is_inside(cert) && @show T, r
-                    @test !DT.is_inside(cert)
+                    if !(ignore_boundary_indices && DT.is_ghost_triangle(T))
+                        cert = DT.point_position_relative_to_circumcircle(_tri, T, r)
+                        DT.is_inside(cert) && @show T, r
+                        !DT.is_inside(cert) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
+                        @test !DT.is_inside(cert)
+                    end
                 end
             end
         end
@@ -146,12 +156,15 @@ function validate_triangulation(tri::Triangulation)
             vji = get_adjacent(tri, j, i)
             if DT.is_boundary_edge(_tri, i, j)
                 !DT.is_boundary_index(vij) && @show i, j, vij
+                DT.is_boundary_index(vij) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
                 @test DT.is_boundary_index(vij)
             elseif DT.is_boundary_edge(_tri, j, i)
                 !DT.is_boundary_index(vji) && @show j, i, vji
+                DT.is_boundary_index(vji) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
                 @test DT.is_boundary_index(vji)
             else
                 !(DT.edge_exists(vij) && DT.edge_exists(vji)) && @show i, j, vij, vji
+                DT.edge_exists(vij) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
                 @test DT.edge_exists(vij) && DT.edge_exists(vji)
             end
         end
@@ -159,30 +172,46 @@ function validate_triangulation(tri::Triangulation)
         ## Test the adjacent map 
         @async for T in each_triangle(_tri)
             u, v, w = indices(T)
-            all((get_adjacent(_tri, u, v) == w, get_adjacent(_tri, u, v) == w, get_adjacent(_tri, w, u) == v)) || @show u, v, w, T
-            @test get_adjacent(_tri, u, v) == w
-            @test get_adjacent(_tri, v, w) == u
-            @test get_adjacent(_tri, w, u) == v
+            if !(ignore_boundary_indices && DT.is_ghost_triangle(T))
+                all((get_adjacent(_tri, u, v) == w, get_adjacent(_tri, u, v) == w, get_adjacent(_tri, w, u) == v)) || @show u, v, w, T
+                get_adjacent(_tri, u, v) == w ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
+                @test get_adjacent(_tri, u, v) == w
+                get_adjacent(_tri, v, w) == u ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
+                @test get_adjacent(_tri, v, w) == u
+                get_adjacent(_tri, w, u) == v ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
+                @test get_adjacent(_tri, w, u) == v
+            end
         end
 
         ## Test the adjacent2vertex map 
         E = DT.edge_type(_tri)
         @async for T in each_triangle(_tri)
             u, v, w = indices(T)
-            @test DT.contains_edge(DT.construct_edge(E, v, w), get_adjacent2vertex(_tri, u))
-            @test DT.contains_edge(DT.construct_edge(E, w, u), get_adjacent2vertex(_tri, v))
-            @test DT.contains_edge(DT.construct_edge(E, u, v), get_adjacent2vertex(_tri, w))
+            if !(ignore_boundary_indices && DT.is_ghost_triangle(T))
+                DT.contains_edge(DT.construct_edge(E, v, w), get_adjacent2vertex(_tri, u)) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
+                @test DT.contains_edge(DT.construct_edge(E, v, w), get_adjacent2vertex(_tri, u))
+                DT.contains_edge(DT.construct_edge(E, w, u), get_adjacent2vertex(_tri, v)) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
+                @test DT.contains_edge(DT.construct_edge(E, w, u), get_adjacent2vertex(_tri, v))
+                DT.contains_edge(DT.construct_edge(E, u, v), get_adjacent2vertex(_tri, w)) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
+                @test DT.contains_edge(DT.construct_edge(E, u, v), get_adjacent2vertex(_tri, w))
+            end
         end
 
         ## Check that the adjacent and adjacent2vertex maps are inverses 
         @async for (k, S) in get_adjacent2vertex(_tri)
             for ij in DT.each_edge(S)
-                get_adjacent(_tri, ij) == k || @show i, j, k
-                @test get_adjacent(_tri, ij) == k
+                if !(ignore_boundary_indices && (DT.is_boundary_index(k) || DT.is_ghost_edge(ij)))
+                    get_adjacent(_tri, ij) == k || @show i, j, k
+                    get_adjacent(_tri, ij) == k ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
+                    @test get_adjacent(_tri, ij) == k
+                end
             end
         end
         Base.Threads.@spawn for (ij, k) in get_adjacent(_tri)
-            @test DT.contains_edge(ij, get_adjacent2vertex(_tri, k))
+            if !(ignore_boundary_indices && (DT.is_boundary_index(k) || DT.is_ghost_edge(ij)))
+                DT.contains_edge(ij, get_adjacent2vertex(_tri, k)) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
+                @test DT.contains_edge(ij, get_adjacent2vertex(_tri, k))
+            end
         end
 
         ## Check the graph 
@@ -190,16 +219,28 @@ function validate_triangulation(tri::Triangulation)
             if DT.has_ghost_triangles(_tri)
                 ij = DT.construct_edge(E, i, j)
                 ji = DT.construct_edge(E, j, i)
+                ij ∈ keys((get_adjacent ∘ get_adjacent)(_tri)) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
                 @test ij ∈ keys((get_adjacent ∘ get_adjacent)(_tri))
+                ji ∈ keys((get_adjacent ∘ get_adjacent)(_tri)) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
                 @test ji ∈ keys((get_adjacent ∘ get_adjacent)(_tri))
             else
                 if !DT.is_boundary_index(i) && !DT.is_boundary_index(j)
                     ij = DT.construct_edge(E, i, j)
                     ji = DT.construct_edge(E, j, i)
+                    ij ∈ keys((get_adjacent ∘ get_adjacent)(_tri)) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
                     @test ij ∈ keys((get_adjacent ∘ get_adjacent)(_tri))
+                    ji ∈ keys((get_adjacent ∘ get_adjacent)(_tri)) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
                     @test ji ∈ keys((get_adjacent ∘ get_adjacent)(_tri))
                 end
             end
+        end
+    end
+    @testset "Triangulation validation" begin
+        for _ in 1:passes[]
+            @test true
+        end
+        for _ in 1:fails[]
+            @test false
         end
     end
 end
