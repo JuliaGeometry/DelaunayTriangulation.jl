@@ -94,9 +94,9 @@ using SafeTestsets
         @safetestset "legalise_edge!" begin
             include("operations/legalise_edge.jl")
         end
-        #@safetestset "delete_point!" begin
-        #    include("operations/delete_point.jl")
-        #end
+        @safetestset "delete_point!" begin
+            include("operations/delete_point.jl")
+        end
     end
 
     @testset verbose = true "Predicates" begin
