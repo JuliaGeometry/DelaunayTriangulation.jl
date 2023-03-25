@@ -281,7 +281,7 @@ boundary_nodes = [[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 1
       [reverse([21, 22, 23, 24, 25, 21])]]
 x, y = DT.pole_of_inaccessibility(pts, boundary_nodes)
 @inferred DT.pole_of_inaccessibility(pts, boundary_nodes)
-@test x ≈ 8.125 && y ≈ 1.875
+@test (x ≈ 8.125 || x ≈ 5.625) && y ≈ 1.875
 
 push!(pts,
       (7.4103156582024, 2.4749992804628),

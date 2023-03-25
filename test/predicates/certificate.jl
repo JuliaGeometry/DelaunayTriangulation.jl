@@ -13,7 +13,9 @@ i = [Certificate.Inside,
      Certificate.None,
      Certificate.Single,
      Certificate.Multiple,
-     Certificate.Touching]
+     Certificate.Touching,
+     Certificate.Legal,
+     Certificate.Illegal]
 j = [DT.is_inside,
      DT.is_degenerate,
      DT.is_outside,
@@ -26,7 +28,9 @@ j = [DT.is_inside,
      DT.has_no_intersections,
      DT.has_one_intersection,
      DT.has_multiple_intersections,
-     DT.is_touching]
+     DT.is_touching,
+     DT.is_legal,
+     DT.is_illegal]
 for a in eachindex(i)
     for b in eachindex(j)
         if a == b

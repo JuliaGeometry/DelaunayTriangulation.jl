@@ -136,6 +136,8 @@ end
 Given a node index `i`, a `graph::Graph`, a `Dict` from [`construct_boundary_index_ranges`](@ref),
 returns true if `i` corresponds to a node on the outermost boundary, 
 and `false` otherwise.
+
+See also [`is_boundary_node`](@ref).
 """
 function is_outer_boundary_node(i, graph::Graph{I}, boundary_index_ranges) where {I}
     outer_range = map_boundary_index(boundary_index_ranges, I(BoundaryIndex))
@@ -143,6 +145,25 @@ function is_outer_boundary_node(i, graph::Graph{I}, boundary_index_ranges) where
         i ∈ get_neighbours(graph, boundary_index) && return true
     end
     return false
+end
+
+"""
+    is_boundary_node(i, graph::Graph{I}, boundary_index_ranges) where {I}
+
+Given a node index `i`, a `graph::Graph`, a `Dict` from [`construct_boundary_index_ranges`](@ref),
+returns a `Tuple` whose first element is true if `i` corresponds to a node on any part of the boundary, 
+and `false` otherwise. The second part of the `Tuple` is the corresponding boundary index if indeed `i` 
+is a boundary node, or `I(DefaultAdjacentValue)` otherwise.
+
+See also [`is_outer_boundary_node`](@ref).
+"""
+function is_boundary_node(i, graph::Graph{I}, boundary_index_ranges) where {I}
+    for boundary_index_range in values(boundary_index_ranges)
+        for boundary_index in boundary_index_range
+            i ∈ get_neighbours(graph, boundary_index) && return (true, boundary_index) 
+        end
+    end
+    return (false, I(DefaultAdjacentValue))
 end
 
 """
@@ -174,7 +195,9 @@ Given an [`Adjacent`](@ref) map `adj` and an [`Adjacent2Vertex`](@ref) map `adj2
 tests if the corresponding triangulation contains ghost triangles.
 """
 function has_ghost_triangles(adj::Adjacent{I,E}, adj2v) where {I,E}
+    I(BoundaryIndex) ∉ keys(get_adjacent2vertex(adj2v)) && return false
     outer_boundary_edges = get_adjacent2vertex(adj2v, I(BoundaryIndex))
+    is_empty(outer_boundary_edges) && return false
     e = first(each_edge(outer_boundary_edges))
     return edge_exists(terminal(e), I(BoundaryIndex), adj)
 end

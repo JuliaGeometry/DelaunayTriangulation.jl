@@ -60,24 +60,24 @@ Only relevant if `plot_convex_hull`. The linewidth to use for the convex hull.
 """
 MakieCore.@recipe(Triplot, points, triangles, boundary_nodes, convex_hull) do scene
     return MakieCore.Attributes(; markersize=11,
-                                show_ghost_edges=false,
-                                recompute_centers=true,
-                                show_all_points=false,
-                                point_color=:red,
-                                strokecolor=:black,
-                                triangle_color=(:white, 0.0),
-                                ghost_edge_color=:blue,
-                                ghost_edge_linewidth=1,
-                                strokewidth=1,
-                                ghost_edge_extension_factor=10.0,
-                                plot_convex_hull=true,
-                                convex_hull_color=:red,
-                                convex_hull_linestyle=:dash,
-                                convex_hull_linewidth=2)
+        show_ghost_edges=false,
+        recompute_centers=false,
+        show_all_points=false,
+        point_color=:red,
+        strokecolor=:black,
+        triangle_color=(:white, 0.0),
+        ghost_edge_color=:blue,
+        ghost_edge_linewidth=1,
+        strokewidth=1,
+        ghost_edge_extension_factor=10.0,
+        plot_convex_hull=true,
+        convex_hull_color=:red,
+        convex_hull_linestyle=:dash,
+        convex_hull_linewidth=2)
 end
 function MakieCore.convert_arguments(plot::Type{<:Triplot}, tri::Triangulation)
     return (get_points(tri), get_triangles(tri), get_boundary_nodes(tri),
-            get_convex_hull(tri))
+        get_convex_hull(tri))
 end
 
 function MakieCore.plot!(p::Triplot)
@@ -144,10 +144,12 @@ function MakieCore.plot!(p::Triplot)
             for index in values(boundary_map)
                 curve_index = get_curve_index(index)
                 representative_coordinates = get_representative_point_coordinates(curve_index,
-                                                                                  number_type(points))
+                    number_type(points))
                 cx, cy = getxy(representative_coordinates)
                 bn = !isempty(index) ? get_boundary_nodes(boundary_nodes, index) :
                      get_indices(convex_hull) # If index is empty, there are no constrained boundaries, meaning we want to get the convex hull
+                ## TODO: This needs to get fixed when we use delete_point!, since that will give a convex hull that could end up not 
+                ## being right for the ghost edges in the case where we delete a boundary point.
                 n_edge = num_boundary_edges(bn)
                 for i in 1:n_edge
                     u = get_boundary_nodes(bn, i)
@@ -169,11 +171,13 @@ function MakieCore.plot!(p::Triplot)
         end
 
         ## Get the convex hull edges if needed 
-        idx = get_indices(convex_hull)
-        for i in idx
-            pt = get_point(points, i)
-            x, y = getxy(pt)
-            append!(convex_hull_points[], (x, y))
+        if plot_convex_hull[]
+            idx = get_indices(convex_hull)
+            for i in idx
+                pt = get_point(points, i)
+                x, y = getxy(pt)
+                append!(convex_hull_points[], (x, y))
+            end
         end
     end
 
@@ -185,19 +189,19 @@ function MakieCore.plot!(p::Triplot)
 
     ## Now plot 
     poly!(p, points_2f, triangle_mat;
-          strokewidth=strokewidth[],
-          strokecolor=strokecolor[],
-          color=triangle_color[])
+        strokewidth=strokewidth[],
+        strokecolor=strokecolor[],
+        color=triangle_color[])
     if show_all_points[]
         scatter!(p, points_2f; markersize=markersize[], color=point_color[])
     end
     if show_ghost_edges[]
         linesegments!(p, ghost_edges; color=ghost_edge_color[],
-                      linewidth=ghost_edge_linewidth[])
+            linewidth=ghost_edge_linewidth[])
     end
     if plot_convex_hull[]
         lines!(p, convex_hull_points; color=convex_hull_color[],
-               linewidth=convex_hull_linewidth[], linestyle=convex_hull_linestyle[])
+            linewidth=convex_hull_linewidth[], linestyle=convex_hull_linestyle[])
     end
     return p
 end

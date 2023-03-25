@@ -19,6 +19,8 @@ along with the function that can be used for testing if a given
 - `Single`: `is_single` or `has_one_intersection`
 - `Multiple`: `is_multiple` or `has_multiple_intersections`
 - `Touching`: `is_touching`
+- `Legal`: `is_legal`
+- `Illegal`: `is_illegal`
 """
 EnumX.@enumx Certificate begin
     Inside
@@ -34,6 +36,8 @@ EnumX.@enumx Certificate begin
     Single
     Multiple
     Touching
+    Legal 
+    Illegal
 end
 
 for inst in instances(Certificate.T)

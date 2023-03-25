@@ -1,4 +1,5 @@
 using StaticArrays
+using StableRNGs
 
 const DT = DelaunayTriangulation
 
@@ -116,7 +117,13 @@ function simple_geometry()
     return Triangulation(pts, T, boundary_nodes), label_map, index_map
 end
 
-function validate_triangulation(tri::Triangulation)
+function validate_triangulation(tri::Triangulation;
+    ignore_boundary_indices=false)
+    # Tests aren't countered correctly when we use @async, 
+    # so let's build thread-safe counters and then fake a 
+    # testset later. 
+    local passes = Threads.Atomic{Int64}(0)
+    local fails = Threads.Atomic{Int64}(0)
     _tri = deepcopy(tri)
     DT.clear_empty_features!(_tri)
 
@@ -124,6 +131,7 @@ function validate_triangulation(tri::Triangulation)
     @sync begin
         @async for T in each_triangle(_tri)
             cert = DT.triangle_orientation(_tri, T)
+            DT.is_positively_oriented(cert) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
             @test DT.is_positively_oriented(cert)
         end
 
@@ -131,8 +139,12 @@ function validate_triangulation(tri::Triangulation)
         @async for T in each_triangle(_tri)
             for r in each_point_index(_tri)
                 if r ∈ get_vertices(tri)
-                    cert = DT.point_position_relative_to_circumcircle(_tri, T, r)
-                    @test !DT.is_inside(cert)
+                    if !(ignore_boundary_indices && DT.is_ghost_triangle(T))
+                        cert = DT.point_position_relative_to_circumcircle(_tri, T, r)
+                        DT.is_inside(cert) && @show T, r
+                        !DT.is_inside(cert) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
+                        @test !DT.is_inside(cert)
+                    end
                 end
             end
         end
@@ -143,10 +155,16 @@ function validate_triangulation(tri::Triangulation)
             vij = get_adjacent(tri, i, j)
             vji = get_adjacent(tri, j, i)
             if DT.is_boundary_edge(_tri, i, j)
+                !DT.is_boundary_index(vij) && @show i, j, vij
+                DT.is_boundary_index(vij) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
                 @test DT.is_boundary_index(vij)
             elseif DT.is_boundary_edge(_tri, j, i)
+                !DT.is_boundary_index(vji) && @show j, i, vji
+                DT.is_boundary_index(vji) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
                 @test DT.is_boundary_index(vji)
             else
+                !(DT.edge_exists(vij) && DT.edge_exists(vji)) && @show i, j, vij, vji
+                DT.edge_exists(vij) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
                 @test DT.edge_exists(vij) && DT.edge_exists(vji)
             end
         end
@@ -154,28 +172,46 @@ function validate_triangulation(tri::Triangulation)
         ## Test the adjacent map 
         @async for T in each_triangle(_tri)
             u, v, w = indices(T)
-            @test get_adjacent(_tri, u, v) == w
-            @test get_adjacent(_tri, v, w) == u
-            @test get_adjacent(_tri, w, u) == v
+            if !(ignore_boundary_indices && DT.is_ghost_triangle(T))
+                all((get_adjacent(_tri, u, v) == w, get_adjacent(_tri, u, v) == w, get_adjacent(_tri, w, u) == v)) || @show u, v, w, T
+                get_adjacent(_tri, u, v) == w ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
+                @test get_adjacent(_tri, u, v) == w
+                get_adjacent(_tri, v, w) == u ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
+                @test get_adjacent(_tri, v, w) == u
+                get_adjacent(_tri, w, u) == v ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
+                @test get_adjacent(_tri, w, u) == v
+            end
         end
 
         ## Test the adjacent2vertex map 
         E = DT.edge_type(_tri)
         @async for T in each_triangle(_tri)
             u, v, w = indices(T)
-            @test DT.contains_edge(DT.construct_edge(E, v, w), get_adjacent2vertex(_tri, u))
-            @test DT.contains_edge(DT.construct_edge(E, w, u), get_adjacent2vertex(_tri, v))
-            @test DT.contains_edge(DT.construct_edge(E, u, v), get_adjacent2vertex(_tri, w))
+            if !(ignore_boundary_indices && DT.is_ghost_triangle(T))
+                DT.contains_edge(DT.construct_edge(E, v, w), get_adjacent2vertex(_tri, u)) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
+                @test DT.contains_edge(DT.construct_edge(E, v, w), get_adjacent2vertex(_tri, u))
+                DT.contains_edge(DT.construct_edge(E, w, u), get_adjacent2vertex(_tri, v)) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
+                @test DT.contains_edge(DT.construct_edge(E, w, u), get_adjacent2vertex(_tri, v))
+                DT.contains_edge(DT.construct_edge(E, u, v), get_adjacent2vertex(_tri, w)) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
+                @test DT.contains_edge(DT.construct_edge(E, u, v), get_adjacent2vertex(_tri, w))
+            end
         end
 
         ## Check that the adjacent and adjacent2vertex maps are inverses 
         @async for (k, S) in get_adjacent2vertex(_tri)
             for ij in DT.each_edge(S)
-                @test get_adjacent(_tri, ij) == k
+                if !(ignore_boundary_indices && (DT.is_boundary_index(k) || DT.is_ghost_edge(ij)))
+                    get_adjacent(_tri, ij) == k || @show i, j, k
+                    get_adjacent(_tri, ij) == k ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
+                    @test get_adjacent(_tri, ij) == k
+                end
             end
         end
         Base.Threads.@spawn for (ij, k) in get_adjacent(_tri)
-            @test DT.contains_edge(ij, get_adjacent2vertex(_tri, k))
+            if !(ignore_boundary_indices && (DT.is_boundary_index(k) || DT.is_ghost_edge(ij)))
+                DT.contains_edge(ij, get_adjacent2vertex(_tri, k)) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
+                @test DT.contains_edge(ij, get_adjacent2vertex(_tri, k))
+            end
         end
 
         ## Check the graph 
@@ -183,20 +219,133 @@ function validate_triangulation(tri::Triangulation)
             if DT.has_ghost_triangles(_tri)
                 ij = DT.construct_edge(E, i, j)
                 ji = DT.construct_edge(E, j, i)
+                ij ∈ keys((get_adjacent ∘ get_adjacent)(_tri)) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
                 @test ij ∈ keys((get_adjacent ∘ get_adjacent)(_tri))
+                ji ∈ keys((get_adjacent ∘ get_adjacent)(_tri)) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
                 @test ji ∈ keys((get_adjacent ∘ get_adjacent)(_tri))
             else
                 if !DT.is_boundary_index(i) && !DT.is_boundary_index(j)
                     ij = DT.construct_edge(E, i, j)
                     ji = DT.construct_edge(E, j, i)
+                    ij ∈ keys((get_adjacent ∘ get_adjacent)(_tri)) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
                     @test ij ∈ keys((get_adjacent ∘ get_adjacent)(_tri))
+                    ji ∈ keys((get_adjacent ∘ get_adjacent)(_tri)) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
                     @test ji ∈ keys((get_adjacent ∘ get_adjacent)(_tri))
                 end
             end
+        end
+    end
+    @testset "Triangulation validation" begin
+        for _ in 1:passes[]
+            @test true
+        end
+        for _ in 1:fails[]
+            @test false
         end
     end
 end
 
 macro _adj(i, j, k)
     return :(($i, $j) => $k, ($j, $k) => $i, ($k, $i) => $j)
+end
+
+function example_triangulation()
+    p1 = @SVector[0.0, 1.0]
+    p2 = @SVector[3.0, -1.0]
+    p3 = @SVector[2.0, 0.0]
+    p4 = @SVector[-1.0, 2.0]
+    p5 = @SVector[4.0, 2.0]
+    p6 = @SVector[-2.0, -1.0]
+    p7 = @SVector[2.0, 1.0]
+    p8 = @SVector[5.0, 1.0]
+    pts = [p1, p2, p3, p4, p5, p6, p7, p8]
+    T = Set{NTuple{3,Int64}}([
+        (6, 3, 1),
+        (3, 2, 5),
+        (4, 1, 5),
+        (4, 6, 1),
+        (5, 1, 3)
+    ])
+    A = [
+        0 0 1 1 1 1 1
+        0 0 0 1 1 1 1
+        1 0 0 1 0 1 0
+        1 1 1 0 0 1 1
+        1 1 0 0 0 1 1
+        1 1 1 1 1 0 0
+        1 1 0 1 1 0 0
+    ]
+    DG = DT.Graph(DT.SimpleGraphs.relabel(DT.SimpleGraphs.UndirectedGraph(A), Dict(1:7 .=> [-1, (1:6)...])))
+    adj = DT.Adjacent(DT.DataStructures.DefaultDict(DT.DefaultAdjacentValue,
+        Dict(
+            (6, 3) => 1, (3, 1) => 6, (1, 6) => 3,
+            (3, 2) => 5, (2, 5) => 3, (5, 3) => 2,
+            (4, 1) => 5, (1, 5) => 4, (5, 4) => 1,
+            (4, 6) => 1, (6, 1) => 4, (1, 4) => 6,
+            (5, 1) => 3, (1, 3) => 5, (3, 5) => 1,
+            (4, 5) => DT.BoundaryIndex, (5, 2) => DT.BoundaryIndex,
+            (2, 3) => DT.BoundaryIndex, (3, 6) => DT.BoundaryIndex,
+            (6, 4) => DT.BoundaryIndex
+        )
+    ))
+    adj2v = DT.Adjacent2Vertex(Dict(
+        DT.BoundaryIndex => Set{NTuple{2,Int64}}([(4, 5), (5, 2), (2, 3), (3, 6), (6, 4)]),
+        1 => Set{NTuple{2,Int64}}([(5, 4), (3, 5), (6, 3), (4, 6)]),
+        2 => Set{NTuple{2,Int64}}([(5, 3)]),
+        3 => Set{NTuple{2,Int64}}([(1, 6), (5, 1), (2, 5)]),
+        4 => Set{NTuple{2,Int64}}([(1, 5), (6, 1)]),
+        5 => Set{NTuple{2,Int64}}([(4, 1), (1, 3), (3, 2)]),
+        6 => Set{NTuple{2,Int64}}([(1, 4), (3, 1)])
+    ))
+    tri = Triangulation(pts, T, adj, adj2v, DG,
+        Int64[],
+        DT.DataStructures.OrderedDict{Int64,Vector{Int64}}(),
+        DT.DataStructures.OrderedDict{Int64,UnitRange{Int64}}(),
+        Set{NTuple{2,Int64}}(),
+        ConvexHull(pts, [2, 6, 4, 5, 2]))
+    return tri
+end
+
+function example_empty_triangulation()
+    p1 = @SVector[0.0, 1.0]
+    p2 = @SVector[3.0, -1.0]
+    p3 = @SVector[2.0, 0.0]
+    pts = [p1, p2, p3]
+    T = Set{NTuple{3,Int64}}([])
+    A = zeros(Int64, 0, 0)
+    DG = DT.Graph(DT.SimpleGraphs.UndirectedGraph(A))
+    adj = DT.Adjacent(DT.DataStructures.DefaultDict(DT.DefaultAdjacentValue, Dict{NTuple{2,Int64},Int64}()))
+    adj2v = DT.Adjacent2Vertex(Dict(DT.BoundaryIndex => Set{NTuple{2,Int64}}()))
+    tri = Triangulation(pts, T, adj, adj2v, DG,
+        Int64[],
+        DT.DataStructures.OrderedDict{Int64,Vector{Int64}}(),
+        DT.DataStructures.OrderedDict{Int64,UnitRange{Int64}}(),
+        Set{NTuple{2,Int64}}(),
+        ConvexHull(pts, [2, 6, 4, 5, 2]))
+    return tri
+end
+
+function example_with_special_corners()
+    a = [8.0, 3.0]
+    b = [8.0, 1.0]
+    c = [6.0, 1.0]
+    d = [7.0, 5.0]
+    e = [6.0, 8.0]
+    f = [3.0, 3.0]
+    g = [-1.0, 2.0]
+    h = [-5.0, 5.0]
+    i = [-5.0, 9.0]
+    j = [-5.0, 11.0]
+    k = [-4.0, 10.0]
+    ℓ = [0.0, 9.87]
+    m = [3.0, 11.0]
+    n = [1.0, 7.0]
+    o = [-1.0, 6.0]
+    p = [5.0, 5.0]
+    q = [2.0, 4.0]
+    r = [3.0, 8.0]
+    pts = [a, b, c, d, e, f, g, h, i, j, k, ℓ, m, n, o, p, q, r]
+    rng = StableRNG(29292929292)
+    tri = triangulate(pts; rng, delete_ghosts=false, randomise=false)
+    return tri
 end

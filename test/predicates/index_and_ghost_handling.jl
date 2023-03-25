@@ -32,21 +32,21 @@ for T in each_triangle(tri)
         i, j, k = indices(T)
         for ℓ in (i, j, k)
             cert1 = DT.point_position_relative_to_circumcircle(i, j, k, ℓ, pts,
-                                                               boundary_map)
+                boundary_map)
             cert2 = DT.point_position_relative_to_circumcircle(T, ℓ, pts, boundary_map)
             cert3 = DT.point_position_relative_to_circumcircle(tri, T, ℓ)
             cert4 = DT.point_position_relative_to_circumcircle(tri, i, j, k, ℓ)
             cert5 = DT.point_position_relative_to_circumcircle(tri, pts[:, i], j, k,
-                                                               pts[:, ℓ])
+                pts[:, ℓ])
             cert6 = DT.point_position_relative_to_circumcircle(tri, i, pts[:, j], k, ℓ)
             @test all(DT.is_on, (cert1, cert2, cert3, cert4, cert5, cert6))
             @inferred DT.point_position_relative_to_circumcircle(i, j, k, ℓ, pts,
-                                                                 boundary_map)
+                boundary_map)
             @inferred DT.point_position_relative_to_circumcircle(T, ℓ, pts, boundary_map)
             @inferred DT.point_position_relative_to_circumcircle(tri, T, ℓ)
             @inferred DT.point_position_relative_to_circumcircle(tri, i, j, k, ℓ)
             @inferred DT.point_position_relative_to_circumcircle(tri, pts[:, i], j, k,
-                                                                 pts[:, ℓ])
+                pts[:, ℓ])
             @inferred DT.point_position_relative_to_circumcircle(tri, i, pts[:, j], k, ℓ)
         end
         q = (pts[:, i] .+ pts[:, j] .+ pts[:, k]) ./ 3
@@ -65,20 +65,20 @@ pts = get_points(tri)
 orig_length = length(pts)
 DT.compute_representative_points!(tri)
 DT.RepresentativePointList[1] = DT.RepresentativeCoordinates(mean(reinterpret(reshape,
-                                                                              Float64,
-                                                                              pts[unique(reduce(vcat,
-                                                                                                tri.boundary_nodes[1]))]);
-                                                                  dims=2)..., 0)
+            Float64,
+            pts[unique(reduce(vcat,
+                tri.boundary_nodes[1]))]);
+        dims=2)..., 0)
 DT.RepresentativePointList[2] = DT.RepresentativeCoordinates(mean(reinterpret(reshape,
-                                                                              Float64,
-                                                                              pts[unique(reduce(vcat,
-                                                                                                tri.boundary_nodes[2]))]);
-                                                                  dims=2)..., 0)
+            Float64,
+            pts[unique(reduce(vcat,
+                tri.boundary_nodes[2]))]);
+        dims=2)..., 0)
 DT.RepresentativePointList[3] = DT.RepresentativeCoordinates(mean(reinterpret(reshape,
-                                                                              Float64,
-                                                                              pts[unique(reduce(vcat,
-                                                                                                tri.boundary_nodes[3]))]);
-                                                                  dims=2)..., 0)
+            Float64,
+            pts[unique(reduce(vcat,
+                tri.boundary_nodes[3]))]);
+        dims=2)..., 0)
 boundary_map = DT.get_boundary_map(tri)
 i, j, k = index_map["w"], index_map["m"], index_map["v"]
 ℓ = index_map["z"]
@@ -128,40 +128,40 @@ q1_i = length(pts) - 2
 r1_i = length(pts) - 1
 s1_i = length(pts)
 certs = [("w", "v", "f") => Certificate.Left,
-         ("c", "d", "k") => Certificate.Left,
-         ("r", "q", "j") => Certificate.Right,
-         ("r", "q", "d") => Certificate.Left,
-         ("u", "w", "i") => Certificate.Left,
-         ("c", "d", "e") => Certificate.Collinear,
-         ("g", DT.BoundaryIndex, f1_i) => Certificate.Left,
-         ("g", DT.BoundaryIndex, g1_i) => Certificate.Right,
-         (DT.BoundaryIndex, "g", f1_i) => Certificate.Right,
-         (DT.BoundaryIndex, "g", g1_i) => Certificate.Left,
-         ("a", DT.BoundaryIndex, f1_i) => Certificate.Right,
-         ("e", DT.BoundaryIndex, h1_i) => Certificate.Left,
-         ("e", DT.BoundaryIndex, i1_i) => Certificate.Right,
-         ("ℓ", DT.BoundaryIndex - 1, j1_i) => Certificate.Right,
-         (DT.BoundaryIndex - 1, "ℓ", j1_i) => Certificate.Left,
-         ("i", DT.BoundaryIndex - 1, j1_i) => Certificate.Left,
-         ("i", DT.BoundaryIndex - 1, m1_i) => Certificate.Right,
-         (DT.BoundaryIndex - 1, "i", m1_i) => Certificate.Left,
-         ("j", DT.BoundaryIndex - 1, "b1") => Certificate.Left,
-         ("j", DT.BoundaryIndex - 1, ℓ1_i) => Certificate.Right,
-         ("k", DT.BoundaryIndex - 1, ℓ1_i) => Certificate.Left,
-         ("k", DT.BoundaryIndex - 1, k1_i) => Certificate.Right,
-         (DT.BoundaryIndex - 1, "k", k1_i) => Certificate.Left,
-         ("r", DT.BoundaryIndex - 2, n1_i) => Certificate.Right,
-         ("r", DT.BoundaryIndex - 2, o1_i) => Certificate.Left,
-         (DT.BoundaryIndex - 3, "r", n1_i) => Certificate.Left,
-         (DT.BoundaryIndex - 2, "q", o1_i) => Certificate.Left,
-         ("q", DT.BoundaryIndex - 2, o1_i) => Certificate.Right,
-         ("p", DT.BoundaryIndex - 3, q1_i) => Certificate.Left,
-         ("q", DT.BoundaryIndex - 3, p1_i) => Certificate.Left,
-         ("o", DT.BoundaryIndex - 2, q1_i) => Certificate.Right,
-         ("m", DT.BoundaryIndex - 2, s1_i) => Certificate.Right,
-         (DT.BoundaryIndex - 2, "m", s1_i) => Certificate.Left,
-         (DT.BoundaryIndex - 2, "p", r1_i) => Certificate.Left,
-         ("p", DT.BoundaryIndex - 2, r1_i) => Certificate.Right]
+    ("c", "d", "k") => Certificate.Left,
+    ("r", "q", "j") => Certificate.Right,
+    ("r", "q", "d") => Certificate.Left,
+    ("u", "w", "i") => Certificate.Left,
+    ("c", "d", "e") => Certificate.Collinear,
+    ("g", DT.BoundaryIndex, f1_i) => Certificate.Left,
+    ("g", DT.BoundaryIndex, g1_i) => Certificate.Right,
+    (DT.BoundaryIndex, "g", f1_i) => Certificate.Right,
+    (DT.BoundaryIndex, "g", g1_i) => Certificate.Left,
+    ("a", DT.BoundaryIndex, f1_i) => Certificate.Right,
+    ("e", DT.BoundaryIndex, h1_i) => Certificate.Left,
+    ("e", DT.BoundaryIndex, i1_i) => Certificate.Right,
+    ("ℓ", DT.BoundaryIndex - 1, j1_i) => Certificate.Right,
+    (DT.BoundaryIndex - 1, "ℓ", j1_i) => Certificate.Left,
+    ("i", DT.BoundaryIndex - 1, j1_i) => Certificate.Left,
+    ("i", DT.BoundaryIndex - 1, m1_i) => Certificate.Right,
+    (DT.BoundaryIndex - 1, "i", m1_i) => Certificate.Left,
+    ("j", DT.BoundaryIndex - 1, "b1") => Certificate.Left,
+    ("j", DT.BoundaryIndex - 1, ℓ1_i) => Certificate.Right,
+    ("k", DT.BoundaryIndex - 1, ℓ1_i) => Certificate.Left,
+    ("k", DT.BoundaryIndex - 1, k1_i) => Certificate.Right,
+    (DT.BoundaryIndex - 1, "k", k1_i) => Certificate.Left,
+    ("r", DT.BoundaryIndex - 2, n1_i) => Certificate.Right,
+    ("r", DT.BoundaryIndex - 2, o1_i) => Certificate.Left,
+    (DT.BoundaryIndex - 3, "r", n1_i) => Certificate.Left,
+    (DT.BoundaryIndex - 2, "q", o1_i) => Certificate.Left,
+    ("q", DT.BoundaryIndex - 2, o1_i) => Certificate.Right,
+    ("p", DT.BoundaryIndex - 3, q1_i) => Certificate.Left,
+    ("q", DT.BoundaryIndex - 3, p1_i) => Certificate.Left,
+    ("o", DT.BoundaryIndex - 2, q1_i) => Certificate.Right,
+    ("m", DT.BoundaryIndex - 2, s1_i) => Certificate.Right,
+    (DT.BoundaryIndex - 2, "m", s1_i) => Certificate.Left,
+    (DT.BoundaryIndex - 2, "p", r1_i) => Certificate.Left,
+    ("p", DT.BoundaryIndex - 2, r1_i) => Certificate.Right]
 for ((i, j, u), cert) in certs
     i = i isa String ? index_map[i] : i
     j = j isa String ? index_map[j] : j
@@ -303,24 +303,24 @@ h1_i = length(pts) - 10
 g1_i = length(pts) - 11
 f1_i = length(pts) - 12
 certs = [("g", "h", "b1", f1_i) => Certificate.Inside,
-         ("b1", "i", "g", f1_i) => Certificate.Outside,
-         ("b1", "h", "j", g1_i) => Certificate.Inside,
-         ("i", "b1", "j", h1_i) => Certificate.Inside,
-         ("i", "ℓ", "f", h1_i) => Certificate.Outside,
-         ("h", "a", "s", ℓ1_i) => Certificate.Inside,
-         ("h", "s", "j", k1_i) => Certificate.Inside,
-         ("s", "j", "h", j1_i) => Certificate.Inside,
-         ("i", "g", "b1", i1_i) => Certificate.Inside,
-         ("a", "b", "t", r1_i) => Certificate.On,
-         ("b", "t", "a", r1_i) => Certificate.On,
-         ("a", "t", "s", n1_i) => Certificate.On,
-         ("i", "f", "a1", m1_i) => Certificate.On,
-         ("g", "i", "a1", m1_i) => Certificate.On,
-         ("g", "a1", "f", o1_i) => Certificate.On,
-         ("a1", "f", "g", o1_i) => Certificate.On,
-         ("h", "a", "s", q1_i) => Certificate.On,
-         ("a1", "f", "g", p1_i) => Certificate.On,
-         ("b1", "j", "i", "v") => Certificate.Outside]
+    ("b1", "i", "g", f1_i) => Certificate.Outside,
+    ("b1", "h", "j", g1_i) => Certificate.Inside,
+    ("i", "b1", "j", h1_i) => Certificate.Inside,
+    ("i", "ℓ", "f", h1_i) => Certificate.Outside,
+    ("h", "a", "s", ℓ1_i) => Certificate.Inside,
+    ("h", "s", "j", k1_i) => Certificate.Inside,
+    ("s", "j", "h", j1_i) => Certificate.Inside,
+    ("i", "g", "b1", i1_i) => Certificate.Inside,
+    ("a", "b", "t", r1_i) => Certificate.On,
+    ("b", "t", "a", r1_i) => Certificate.On,
+    ("a", "t", "s", n1_i) => Certificate.On,
+    ("i", "f", "a1", m1_i) => Certificate.On,
+    ("g", "i", "a1", m1_i) => Certificate.On,
+    ("g", "a1", "f", o1_i) => Certificate.On,
+    ("a1", "f", "g", o1_i) => Certificate.On,
+    ("h", "a", "s", q1_i) => Certificate.On,
+    ("a1", "f", "g", p1_i) => Certificate.On,
+    ("b1", "j", "i", "v") => Certificate.Outside]
 for ((i, j, k, u), cert) in certs
     local cert1, cert2, cert3, cert4, cert5, cert6
     i = i isa String ? index_map[i] : i
@@ -333,9 +333,9 @@ for ((i, j, k, u), cert) in certs
         cert1 = DT.point_position_relative_to_triangle(i, j, k, u, pts, tri.boundary_map)
     else
         cert1 = DT.point_position_relative_to_triangle(pts[i], j, pts[k], u, pts,
-                                                       tri.boundary_map)
+            tri.boundary_map)
         @inferred DT.point_position_relative_to_triangle(pts[i], j, pts[k], u, pts,
-                                                         tri.boundary_map)
+            tri.boundary_map)
     end
     cert2 = DT.point_position_relative_to_triangle(T1, u, pts, tri.boundary_map)
     cert3 = DT.point_position_relative_to_triangle(T2, u, pts, tri.boundary_map)
@@ -376,17 +376,17 @@ h1_i = length(pts) - 8
 g1_i = length(pts) - 9
 f1_i = length(pts) - 10
 certs = [("h", "g", DT.BoundaryIndex, f1_i) => Certificate.Inside,
-         ("h", "g", DT.BoundaryIndex, g1_i) => Certificate.Inside,
-         ("h", "g", DT.BoundaryIndex, h1_i) => Certificate.Inside,
-         (DT.BoundaryIndex, "h", "g", i1_i) => Certificate.Inside,
-         ("g", DT.BoundaryIndex, "h", j1_i) => Certificate.On,
-         ("h", "g", DT.BoundaryIndex, k1_i) => Certificate.On,
-         ("h", "g", DT.BoundaryIndex, ℓ1_i) => Certificate.On,
-         (DT.BoundaryIndex, "h", "g", m1_i) => Certificate.On,
-         ("h", "g", DT.BoundaryIndex, n1_i) => Certificate.Outside,
-         ("h", "g", DT.BoundaryIndex, o1_i) => Certificate.Outside,
-         ("h", "g", DT.BoundaryIndex, p1_i) => Certificate.Outside,
-         ("h", "g", DT.BoundaryIndex, "b1") => Certificate.Outside]
+    ("h", "g", DT.BoundaryIndex, g1_i) => Certificate.Inside,
+    ("h", "g", DT.BoundaryIndex, h1_i) => Certificate.Inside,
+    (DT.BoundaryIndex, "h", "g", i1_i) => Certificate.Inside,
+    ("g", DT.BoundaryIndex, "h", j1_i) => Certificate.On,
+    ("h", "g", DT.BoundaryIndex, k1_i) => Certificate.On,
+    ("h", "g", DT.BoundaryIndex, ℓ1_i) => Certificate.On,
+    (DT.BoundaryIndex, "h", "g", m1_i) => Certificate.On,
+    ("h", "g", DT.BoundaryIndex, n1_i) => Certificate.Outside,
+    ("h", "g", DT.BoundaryIndex, o1_i) => Certificate.Outside,
+    ("h", "g", DT.BoundaryIndex, p1_i) => Certificate.Outside,
+    ("h", "g", DT.BoundaryIndex, "b1") => Certificate.Outside]
 DT.RepresentativePointList[1].x = 10.0
 DT.RepresentativePointList[1].y = 10.0
 for ((i, j, k, u), cert) in certs
@@ -426,16 +426,16 @@ i1_i = length(pts) - 2
 j1_i = length(pts) - 1
 k1_i = length(pts)
 certs = [("g", "f", DT.BoundaryIndex, f1_i) => Certificate.Inside,
-         ("f", "e", DT.BoundaryIndex, f1_i) => Certificate.Outside,
-         ("g", "f", DT.BoundaryIndex, g1_i) => Certificate.Inside,
-         ("e", DT.BoundaryIndex, "f", h1_i) => Certificate.On,
-         (DT.BoundaryIndex, "f", "e", h1_i) => Certificate.On,
-         ("f", "e", DT.BoundaryIndex, i1_i) => Certificate.Inside,
-         ("e", DT.BoundaryIndex, "f", j1_i) => Certificate.Inside,
-         (DT.BoundaryIndex, "f", "e", k1_i) => Certificate.On,
-         ("e", "d", DT.BoundaryIndex, k1_i) => Certificate.On,
-         ("b", "a", DT.BoundaryIndex, "s") => Certificate.Outside,
-         (DT.BoundaryIndex, "b", "a", "v") => Certificate.Outside]
+    ("f", "e", DT.BoundaryIndex, f1_i) => Certificate.Outside,
+    ("g", "f", DT.BoundaryIndex, g1_i) => Certificate.Inside,
+    ("e", DT.BoundaryIndex, "f", h1_i) => Certificate.On,
+    (DT.BoundaryIndex, "f", "e", h1_i) => Certificate.On,
+    ("f", "e", DT.BoundaryIndex, i1_i) => Certificate.Inside,
+    ("e", DT.BoundaryIndex, "f", j1_i) => Certificate.Inside,
+    (DT.BoundaryIndex, "f", "e", k1_i) => Certificate.On,
+    ("e", "d", DT.BoundaryIndex, k1_i) => Certificate.On,
+    ("b", "a", DT.BoundaryIndex, "s") => Certificate.Outside,
+    (DT.BoundaryIndex, "b", "a", "v") => Certificate.Outside]
 for ((i, j, k, u), cert) in certs
     local cert1, cert2, cert3, cert4, cert5, cert6
     i = i isa String ? index_map[i] : i
@@ -476,21 +476,21 @@ h1_i = length(pts) - 8
 g1_i = length(pts) - 9
 f1_i = length(pts) - 10
 certs = [("ℓ", "i", DT.BoundaryIndex - 1, f1_i) => Certificate.Inside,
-         ("i", DT.BoundaryIndex - 1, "ℓ", g1_i) => Certificate.Inside,
-         (DT.BoundaryIndex - 1, "ℓ", "i", k1_i) => Certificate.Outside,
-         ("i", "j", DT.BoundaryIndex - 1, k1_i) => Certificate.Inside,
-         ("i", "j", DT.BoundaryIndex - 1, ℓ1_i) => Certificate.On,
-         ("j", "k", DT.BoundaryIndex - 1, o1_i) => Certificate.Inside,
-         ("j", "k", DT.BoundaryIndex - 1, h1_i) => Certificate.Outside,
-         ("i", DT.BoundaryIndex - 1, "ℓ", i1_i) => Certificate.Outside,
-         ("k", DT.BoundaryIndex - 1, "j", j1_i) => Certificate.Inside,
-         (DT.BoundaryIndex - 1, "j", "k", i1_i) => Certificate.Inside,
-         (DT.BoundaryIndex - 1, "k", "ℓ", k1_i) => Certificate.Outside,
-         ("k", "ℓ", DT.BoundaryIndex - 1, n1_i) => Certificate.Inside,
-         ("k", "ℓ", DT.BoundaryIndex - 1, h1_i) => Certificate.Inside,
-         ("ℓ", DT.BoundaryIndex - 1, "k", m1_i) => Certificate.On,
-         ("ℓ", DT.BoundaryIndex - 1, "k", "b1") => Certificate.Outside,
-         ("j", "k", DT.BoundaryIndex - 1, "s") => Certificate.Outside]
+    ("i", DT.BoundaryIndex - 1, "ℓ", g1_i) => Certificate.Inside,
+    (DT.BoundaryIndex - 1, "ℓ", "i", k1_i) => Certificate.Outside,
+    ("i", "j", DT.BoundaryIndex - 1, k1_i) => Certificate.Inside,
+    ("i", "j", DT.BoundaryIndex - 1, ℓ1_i) => Certificate.On,
+    ("j", "k", DT.BoundaryIndex - 1, o1_i) => Certificate.Inside,
+    ("j", "k", DT.BoundaryIndex - 1, h1_i) => Certificate.Outside,
+    ("i", DT.BoundaryIndex - 1, "ℓ", i1_i) => Certificate.Outside,
+    ("k", DT.BoundaryIndex - 1, "j", j1_i) => Certificate.Inside,
+    (DT.BoundaryIndex - 1, "j", "k", i1_i) => Certificate.Inside,
+    (DT.BoundaryIndex - 1, "k", "ℓ", k1_i) => Certificate.Outside,
+    ("k", "ℓ", DT.BoundaryIndex - 1, n1_i) => Certificate.Inside,
+    ("k", "ℓ", DT.BoundaryIndex - 1, h1_i) => Certificate.Inside,
+    ("ℓ", DT.BoundaryIndex - 1, "k", m1_i) => Certificate.On,
+    ("ℓ", DT.BoundaryIndex - 1, "k", "b1") => Certificate.Outside,
+    ("j", "k", DT.BoundaryIndex - 1, "s") => Certificate.Outside]
 for ((i, j, k, u), cert) in certs
     local cert1, cert2, cert3, cert4, cert5, cert6
     i = i isa String ? index_map[i] : i
@@ -540,26 +540,26 @@ h1_i = length(pts) - 12
 g1_i = length(pts) - 13
 f1_i = length(pts) - 14
 certs = [("o", "p", DT.BoundaryIndex - 2, o1_i) => Certificate.On,
-         ("p", DT.BoundaryIndex - 2, "o", n1_i) => Certificate.On,
-         (DT.BoundaryIndex - 2, "o", "p", q1_i) => Certificate.Inside,
-         (DT.BoundaryIndex - 3, "o", "p", t1_i) => Certificate.Outside,
-         ("o", DT.BoundaryIndex - 3, "n", s1_i) => Certificate.Outside,
-         ("n", "o", DT.BoundaryIndex - 3, t1_i) => Certificate.Outside,
-         ("p", "q", DT.BoundaryIndex - 2, p1_i) => Certificate.Outside,
-         ("p", "q", DT.BoundaryIndex - 3, r1_i) => Certificate.Inside,
-         ("q", DT.BoundaryIndex - 3, "p", m1_i) => Certificate.On,
-         (DT.BoundaryIndex - 2, "p", "q", ℓ1_i) => Certificate.On,
-         ("r", DT.BoundaryIndex - 3, "q", k1_i) => Certificate.Inside,
-         ("r", DT.BoundaryIndex - 3, "q", "d") => Certificate.Outside,
-         ("q", "r", DT.BoundaryIndex - 2, j1_i) => Certificate.Inside,
-         ("r", DT.BoundaryIndex - 3, "q", i1_i) => Certificate.Inside,
-         ("r", DT.BoundaryIndex - 3, "q", "m") => Certificate.Outside,
-         ("r", "m", DT.BoundaryIndex - 2, f1_i) => Certificate.Inside,
-         ("m", DT.BoundaryIndex - 3, "r", g1_i) => Certificate.Inside,
-         ("m", DT.BoundaryIndex - 3, "r", r1_i) => Certificate.Outside,
-         ("m", DT.BoundaryIndex - 3, "r", h1_i) => Certificate.Inside,
-         ("m", "n", DT.BoundaryIndex - 2, p1_i) => Certificate.Inside,
-         (DT.BoundaryIndex - 2, "m", "n", s1_i) => Certificate.Outside]
+    ("p", DT.BoundaryIndex - 2, "o", n1_i) => Certificate.On,
+    (DT.BoundaryIndex - 2, "o", "p", q1_i) => Certificate.Inside,
+    (DT.BoundaryIndex - 3, "o", "p", t1_i) => Certificate.Outside,
+    ("o", DT.BoundaryIndex - 3, "n", s1_i) => Certificate.Outside,
+    ("n", "o", DT.BoundaryIndex - 3, t1_i) => Certificate.Outside,
+    ("p", "q", DT.BoundaryIndex - 2, p1_i) => Certificate.Outside,
+    ("p", "q", DT.BoundaryIndex - 3, r1_i) => Certificate.Inside,
+    ("q", DT.BoundaryIndex - 3, "p", m1_i) => Certificate.On,
+    (DT.BoundaryIndex - 2, "p", "q", ℓ1_i) => Certificate.On,
+    ("r", DT.BoundaryIndex - 3, "q", k1_i) => Certificate.Inside,
+    ("r", DT.BoundaryIndex - 3, "q", "d") => Certificate.Outside,
+    ("q", "r", DT.BoundaryIndex - 2, j1_i) => Certificate.Inside,
+    ("r", DT.BoundaryIndex - 3, "q", i1_i) => Certificate.Inside,
+    ("r", DT.BoundaryIndex - 3, "q", "m") => Certificate.Outside,
+    ("r", "m", DT.BoundaryIndex - 2, f1_i) => Certificate.Inside,
+    ("m", DT.BoundaryIndex - 3, "r", g1_i) => Certificate.Inside,
+    ("m", DT.BoundaryIndex - 3, "r", r1_i) => Certificate.Outside,
+    ("m", DT.BoundaryIndex - 3, "r", h1_i) => Certificate.Inside,
+    ("m", "n", DT.BoundaryIndex - 2, p1_i) => Certificate.Inside,
+    (DT.BoundaryIndex - 2, "m", "n", s1_i) => Certificate.Outside]
 for ((i, j, k, u), cert) in certs
     local cert1, cert2, cert3, cert4, cert5, cert6
     i = i isa String ? index_map[i] : i
@@ -576,3 +576,230 @@ for ((i, j, k, u), cert) in certs
     cert6 = DT.point_position_relative_to_triangle(tri, T2, u)
     @test all(==(cert), (cert1, cert2, cert3, cert4, cert5, cert6))
 end
+
+p0 = Float64[5, 5]
+p1 = Float64[4.5, 2.5]
+p2 = Float64[2.5, 1.5]
+p3 = Float64[3, 3.5]
+p4 = Float64[0, 2]
+p5 = Float64[1, 5]
+p6 = Float64[1, 3]
+p7 = Float64[4, -1]
+p8 = Float64[-1, 4]
+pts = [p0, p1, p2, p3, p4, p5, p6, p7, p8]
+bn_map = DT.construct_boundary_map(Int64[])
+@test DT.is_positively_oriented(DT.triangle_orientation((4, 6, 7), pts, bn_map))
+@test DT.is_negatively_oriented(DT.triangle_orientation((4, 7, 6), pts, bn_map))
+@test DT.is_negatively_oriented(DT.triangle_orientation((4, 2, 3), pts, bn_map))
+@test DT.is_positively_oriented(DT.triangle_orientation((4, 7, 3), pts, bn_map))
+@test DT.is_positively_oriented(DT.triangle_orientation((5, 7, 9), pts, bn_map))
+@test DT.is_negatively_oriented(DT.triangle_orientation((5, 9, 7), pts, bn_map))
+@test DT.is_negatively_oriented(DT.triangle_orientation((3, 8, 5), pts, bn_map))
+@test DT.is_degenerate(DT.triangle_orientation((1, 2, 3), [[1.0, 2.0], [1.0, 5.0], [1.0, 8.0]], bn_map))
+pts = [[0, -3.0], [3.0, 0.0], [0.0, 3.0], [-3.0, 0.0]]
+@test DT.is_positively_oriented(DT.triangle_orientation((1, 2, 3), pts, bn_map)) &&
+      DT.is_positively_oriented(DT.triangle_orientation((2, 3, 4), pts, bn_map)) &&
+      DT.is_positively_oriented(DT.triangle_orientation((4, 1, 2), pts, bn_map))
+
+## Testing if a point is in a ghost triangle's circumdisk 
+p1 = @SVector[-3.32, 3.53]
+p2 = @SVector[-5.98, 2.17]
+p3 = @SVector[-6.36, -1.55]
+p4 = @SVector[-2.26, -4.31]
+p5 = @SVector[6.34, -3.23]
+p6 = @SVector[-3.24, 1.01]
+p7 = @SVector[0.14, -1.51]
+p8 = @SVector[0.2, 1.25]
+p9 = @SVector[1.0, 4.0]
+p10 = @SVector[4.74, 2.21]
+p11 = @SVector[2.32, -0.27]
+pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11]
+tri = triangulate(pts; delete_ghosts=false)
+p12 = @SVector[-1.86, 5.99]
+push!(pts, p12)
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 1, 9, DT.BoundaryIndex, 12))
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 9, DT.BoundaryIndex, 1, 12))
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, DT.BoundaryIndex, 1, 9, 12))
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 1, DT.BoundaryIndex, 9, 12))
+p13 = @SVector[-1.86, 102.9]
+push!(pts, p13)
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 1, 9, DT.BoundaryIndex, 13))
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 9, DT.BoundaryIndex, 1, 12))
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, DT.BoundaryIndex, 1, 9, 12))
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 1, DT.BoundaryIndex, 9, 13))
+p14 = @SVector[3.54, 4.684]
+push!(pts, p14)
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 9, 10, DT.BoundaryIndex, 14))
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 10, DT.BoundaryIndex, 9, 14))
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, DT.BoundaryIndex, 9, 10, 14))
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 9, 10, DT.BoundaryIndex, 9))
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 10, DT.BoundaryIndex, 9, 9))
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, DT.BoundaryIndex, 9, 10, 9))
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 10, 9, 8, 14))
+p15 = @SVector[1.57, 2.514]
+push!(pts, p15)
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 9, 10, DT.BoundaryIndex, 15))
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 10, DT.BoundaryIndex, 9, 15))
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, DT.BoundaryIndex, 9, 10, 15))
+p16 = @SVector[6.77, 0.269]
+push!(pts, p16)
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 10, 5, DT.BoundaryIndex, 16))
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 5, DT.BoundaryIndex, 10, 16))
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, DT.BoundaryIndex, 10, 5, 16))
+p17 = @SVector[4.21754, 3.00067]
+push!(pts, p17)
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 10, 5, DT.BoundaryIndex, 17))
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 5, DT.BoundaryIndex, 10, 17))
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, DT.BoundaryIndex, 10, 5, 17))
+p18 = @SVector[4.816, -3.696112]
+push!(pts, p18)
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 5, 4, DT.BoundaryIndex, 18))
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 4, DT.BoundaryIndex, 5, 18))
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, DT.BoundaryIndex, 5, 4, 18))
+p19 = @SVector[6.499685, -2.935]
+push!(pts, p19)
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 5, 4, DT.BoundaryIndex, 19))
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 4, DT.BoundaryIndex, 5, 19))
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, DT.BoundaryIndex, 5, 4, 19))
+p20 = @SVector[2.79587, -4.020351]
+push!(pts, p20)
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 5, 4, DT.BoundaryIndex, 20))
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 4, DT.BoundaryIndex, 5, 20))
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, DT.BoundaryIndex, 5, 4, 20))
+p21 = @SVector[0.0, -4.0]
+push!(pts, p21)
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 5, 4, DT.BoundaryIndex, 21))
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 4, DT.BoundaryIndex, 5, 21))
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, DT.BoundaryIndex, 5, 4, 21))
+p22 = @SVector[-2.815953, -4.25729]
+push!(pts, p22)
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 4, 3, DT.BoundaryIndex, 22))
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 3, DT.BoundaryIndex, 4, 22))
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, DT.BoundaryIndex, 4, 3, 22))
+p23 = @SVector[-1.4317, -4.3196]
+push!(pts, p23)
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 4, 3, DT.BoundaryIndex, 23))
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 3, DT.BoundaryIndex, 4, 23))
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, DT.BoundaryIndex, 4, 3, 23))
+p24 = @SVector[-5.04821, -2.54880]
+push!(pts, p24)
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 4, 3, DT.BoundaryIndex, 24))
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 3, DT.BoundaryIndex, 4, 24))
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, DT.BoundaryIndex, 4, 3, 24))
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 4, 3, DT.BoundaryIndex, 4))
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 3, DT.BoundaryIndex, 4, 4))
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, DT.BoundaryIndex, 4, 3, 4))
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 4, 3, DT.BoundaryIndex, 3))
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 3, DT.BoundaryIndex, 4, 3))
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, DT.BoundaryIndex, 4, 3, 3))
+p25 = @SVector[-6.3327007, -1.7257]
+push!(pts, p25)
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 4, 3, DT.BoundaryIndex, 25))
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 3, DT.BoundaryIndex, 4, 25))
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, DT.BoundaryIndex, 4, 3, 25))
+p26 = @SVector[-6.444937, -0.54101]
+push!(pts, p26)
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 3, 2, DT.BoundaryIndex, 26))
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 2, DT.BoundaryIndex, 3, 26))
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, DT.BoundaryIndex, 3, 2, 26))
+p27 = @SVector[-5.310, 2.87596]
+push!(pts, p27)
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 2, 1, DT.BoundaryIndex, 27))
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 1, DT.BoundaryIndex, 2, 27))
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, DT.BoundaryIndex, 2, 1, 27))
+p28 = @SVector[-5.247746, 0.905588]
+push!(pts, p28)
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 2, 1, DT.BoundaryIndex, 28))
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 1, DT.BoundaryIndex, 2, 28))
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, DT.BoundaryIndex, 2, 1, 28))
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 8, 7, 11, 28))
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 8, 11, 10, 28))
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 6, 4, 7, 28))
+
+## Point on the edge of a ghost triangle's circumdisk 
+p8 = (6.0, 6.0)
+p9 = (10.0, -2.0)
+p13 = (8.0, 2.0)
+p14 = (0.0, 0.0)
+pts = [p8, p9, p13, p14]
+tri = triangulate(pts; delete_ghosts=false)
+@test DT.is_on(DT.point_position_relative_to_circumcircle(tri, 1, 2, DT.BoundaryIndex, 3))
+push!(pts, (2.0, 14.0))
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 1, 2, DT.BoundaryIndex, 5))
+push!(pts, (12.0, -6.0))
+@test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 1, 2, DT.BoundaryIndex, 6))
+push!(pts, (34.0, -6.0))
+@test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 1, 2, DT.BoundaryIndex, 7))
+
+## Can we pick the correct ghost triangle that a point resides in?
+p1 = @SVector[-3.32, 3.53]
+p2 = @SVector[-5.98, 2.17]
+p3 = @SVector[-6.36, -1.55]
+p4 = @SVector[-2.26, -4.31]
+p5 = @SVector[6.34, -3.23]
+p6 = @SVector[-3.24, 1.01]
+p7 = @SVector[0.14, -1.51]
+p8 = @SVector[0.2, 1.25]
+p9 = @SVector[1.0, 4.0]
+p10 = @SVector[4.74, 2.21]
+p11 = @SVector[2.32, -0.27]
+pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11]
+tri = triangulate(pts; delete_ghosts=false, randomise=false)
+p12 = @SVector[3.538447, 3.99844]
+push!(pts, p12)
+@test DT.is_left(DT.point_position_relative_to_line(tri, 9, 10, 12))
+@test DT.is_left(DT.point_position_relative_to_line(tri, 10, DT.BoundaryIndex, 12))
+@test DT.is_left(DT.point_position_relative_to_line(tri, DT.BoundaryIndex, 9, 12))
+@test DT.is_inside(DT.point_position_relative_to_triangle(tri, 9, 10, DT.BoundaryIndex, 12))
+@test DT.is_outside(DT.point_position_relative_to_triangle(tri, 9, 8, 10, 12))
+@test DT.brute_force_search(tri, 12) == (10, DT.BoundaryIndex, 9)
+p13 = @SVector[-1.182399, 4.5127]
+push!(pts, p13)
+@test DT.point_position_relative_to_line(tri, 1, 9, 13) |> DT.is_left
+@test DT.point_position_relative_to_line(tri, 9, 1, 13) |> DT.is_right
+@test DT.point_position_relative_to_line(tri, 9, DT.BoundaryIndex, 13) |> DT.is_left
+@test DT.point_position_relative_to_line(tri, DT.BoundaryIndex, 1, 13) |> DT.is_left
+@test DT.point_position_relative_to_triangle(tri, 1, 9, DT.BoundaryIndex, 13) |> DT.is_inside
+@test DT.point_position_relative_to_triangle(tri, 9, DT.BoundaryIndex, 1, 13) |> DT.is_inside
+@test DT.point_position_relative_to_triangle(tri, DT.BoundaryIndex, 1, 9, 13) |> DT.is_inside
+@test DT.point_position_relative_to_triangle(tri, 1, 6, 8, 13) |> DT.is_outside
+@test DT.brute_force_search(tri, 13) == (9, DT.BoundaryIndex, 1)
+p14 = @SVector[-4.85877, 3.086]
+push!(pts, p14)
+@test DT.point_position_relative_to_line(tri, 2, 1, 14) |> DT.is_left
+@test DT.point_position_relative_to_line(tri, 1, DT.BoundaryIndex, 14) |> DT.is_left
+@test DT.point_position_relative_to_line(tri, DT.BoundaryIndex, 2, 14) |> DT.is_left
+@test DT.point_position_relative_to_line(tri, 10, 5, 14) |> DT.is_right
+@test DT.point_position_relative_to_triangle(tri, 2, 1, DT.BoundaryIndex, 14) |> DT.is_inside
+@test DT.point_position_relative_to_triangle(tri, 1, DT.BoundaryIndex, 2, 14) |> DT.is_inside
+@test DT.point_position_relative_to_triangle(tri, DT.BoundaryIndex, 2, 1, 14) |> DT.is_inside
+@test DT.point_position_relative_to_triangle(tri, 4, 3, DT.BoundaryIndex, 14) |> DT.is_outside
+@test DT.brute_force_search(tri, 14) == (2, 1, DT.BoundaryIndex)
+p15 = @SVector[-2.0, -5.0]
+push!(pts, p15)
+@test DT.point_position_relative_to_line(tri, 5, 4, 15) |> DT.is_left
+@test DT.point_position_relative_to_line(tri, 4, DT.BoundaryIndex, 15) |> DT.is_left
+@test DT.point_position_relative_to_line(tri, DT.BoundaryIndex, 4, 15) |> DT.is_right
+@test DT.point_position_relative_to_line(tri, DT.BoundaryIndex, 5, 15) |> DT.is_left
+@test DT.point_position_relative_to_line(tri, 5, DT.BoundaryIndex, 15) |> DT.is_right
+@test DT.point_position_relative_to_triangle(tri, 5, 4, DT.BoundaryIndex, 15) |> DT.is_inside
+@test DT.point_position_relative_to_triangle(tri, 4, DT.BoundaryIndex, 5, 15) |> DT.is_inside
+@test DT.point_position_relative_to_triangle(tri, DT.BoundaryIndex, 5, 4, 15) |> DT.is_inside
+@test DT.point_position_relative_to_triangle(tri, 6, 7, 8, 15) |> DT.is_outside
+@test DT.point_position_relative_to_triangle(tri, 10, 5, DT.BoundaryIndex, 15) |> DT.is_outside
+@test DT.point_position_relative_to_triangle(tri, 1, 9, DT.BoundaryIndex, 15) |> DT.is_outside
+@test DT.point_position_relative_to_triangle(tri, 9, DT.BoundaryIndex, 1, 15) |> DT.is_outside
+@test DT.point_position_relative_to_triangle(tri, DT.BoundaryIndex, 1, 9, 15) |> DT.is_outside
+@test brute_force_search(tri, 15) == (5, 4, DT.BoundaryIndex)
+p16 = @SVector[16.27, 0.92]
+push!(pts, p16)
+@test DT.point_position_relative_to_line(tri,10,5,16)|>DT.is_left 
+@test DT.point_position_relative_to_line(tri,5,DT.BoundaryIndex,16)|>DT.is_left 
+@test DT.point_position_relative_to_line(tri,DT.BoundaryIndex,10,16)|>DT.is_left 
+@test DT.point_position_relative_to_triangle(tri, 10, 5, DT.BoundaryIndex, 16)|>DT.is_inside 
+@test DT.point_position_relative_to_triangle(tri,6,7,8,16)|>DT.is_outside 
+@test DT.point_position_relative_to_triangle(tri,1,9,DT.BoundaryIndex,16)|>DT.is_outside 
+@test DT.point_position_relative_to_triangle(tri,2,6,3,16)|>DT.is_outside 
+@test DT.point_position_relative_to_triangle(tri,3,2,DT.BoundaryIndex,16)|>DT.is_outside 
+@test DT.point_position_relative_to_line(tri,10,DT.BoundaryIndex,16)|>DT.is_right 
+@test brute_force_search(tri,16) == (10,5,DT.BoundaryIndex)

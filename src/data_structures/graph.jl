@@ -37,6 +37,7 @@ is omitted.)
 ## Accessors 
 - `get_graph(G)`
 - `get_vertices(G)`
+- `each_vertex(G)`
 - `get_edges(G)`
 - `get_neighbours(G)`
 - `get_neighbours(G, u)`
@@ -56,6 +57,7 @@ is omitted.)
 ## Miscellaneous
 - `num_edges(G)`
 - `num_neighbours(G, u)`
+- `num_vertices(G)`
 """
 struct Graph{I}
     graph::UndirectedGraph{I}
@@ -70,7 +72,7 @@ Base.:(==)(G::Graph, H::Graph) = get_graph(G) == get_graph(H)
 function Base.show(io::IO, ::MIME"text/plain", graph::Graph)
     println(io, "Graph")
     println(io, "    Number of edges: $(num_edges(graph))")
-    print(io, "    Number of vertices: $(length(get_vertices(graph)))")
+    print(io, "    Number of vertices: $(num_vertices(graph))")
 end
 
 """
@@ -94,6 +96,13 @@ get_edges(G::Graph) = get_graph(G).E
 Given a `graph`, returns the current set of vertices.
 """
 get_vertices(G::Graph) = get_graph(G).V
+
+"""
+    each_vertex(G::Graph)
+
+Given a `graph`, returns the current set of vertices.
+"""
+each_vertex(G::Graph) = get_vertices(G)
 
 """
     get_neighbours(G::Graph)
@@ -125,6 +134,13 @@ Returns the number of edges `G`. The edges
 `(i, j)` and `(j, i)` will only be counted once.
 """
 num_edges(G::Graph) = length(get_graph(G).E)
+
+"""
+    num_vertices(G::Graph)
+
+Returns the number of vertices in the graph `G`.
+"""
+num_vertices(G::Graph) = length(get_vertices(G))
 
 """
     add_vertex!(G::Graph, u...)

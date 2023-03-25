@@ -25,10 +25,12 @@ Graph
 get_graph(::Graph)
 get_edges(::Graph)
 get_vertices(::Graph)
+each_vertex(::Graph)
 get_neighbours(::Graph)
 get_neighbours(::Graph, ::Any)
 num_neighbours(::Graph, ::Any)
 num_edges(::Graph)
+num_vertices(::Graph)
 add_vertex!(::Graph{I}, ::Vararg{I,N}) where {I,N}
 add_neighbour!(::Graph{I}, ::I, ::I) where {I}
 add_triangle!(::Ts, ::V, ::V, ::V) where {I,V<:Integer,Ts<:Graph{I}}

@@ -17,23 +17,23 @@ triplot!(ax, tri)
 
 DT.add_ghost_triangles!(tri)
 outer_edges = [("a", "b") => DT.BoundaryIndex,
-               ("b", "c") => DT.BoundaryIndex,
-               ("c", "d") => DT.BoundaryIndex,
-               ("d", "e") => DT.BoundaryIndex,
-               ("e", "f") => DT.BoundaryIndex,
-               ("f", "g") => DT.BoundaryIndex,
-               ("g", "h") => DT.BoundaryIndex,
-               ("h", "a") => DT.BoundaryIndex]
+    ("b", "c") => DT.BoundaryIndex,
+    ("c", "d") => DT.BoundaryIndex,
+    ("d", "e") => DT.BoundaryIndex,
+    ("e", "f") => DT.BoundaryIndex,
+    ("f", "g") => DT.BoundaryIndex,
+    ("g", "h") => DT.BoundaryIndex,
+    ("h", "a") => DT.BoundaryIndex]
 inner_edges_1 = [("k", "j") => DT.BoundaryIndex - 1,
-                 ("j", "i") => DT.BoundaryIndex - 1,
-                 ("i", "ℓ") => DT.BoundaryIndex - 1,
-                 ("ℓ", "k") => DT.BoundaryIndex - 1]
+    ("j", "i") => DT.BoundaryIndex - 1,
+    ("i", "ℓ") => DT.BoundaryIndex - 1,
+    ("ℓ", "k") => DT.BoundaryIndex - 1]
 inner_edges_2 = [("r", "q") => DT.BoundaryIndex - 2,
-                 ("q", "p") => DT.BoundaryIndex - 2,
-                 ("p", "o") => DT.BoundaryIndex - 3,
-                 ("o", "n") => DT.BoundaryIndex - 3,
-                 ("n", "m") => DT.BoundaryIndex - 3,
-                 ("m", "r") => DT.BoundaryIndex - 3]
+    ("q", "p") => DT.BoundaryIndex - 2,
+    ("p", "o") => DT.BoundaryIndex - 3,
+    ("o", "n") => DT.BoundaryIndex - 3,
+    ("n", "m") => DT.BoundaryIndex - 3,
+    ("m", "r") => DT.BoundaryIndex - 3]
 
 for ((a, b), k) in outer_edges
     i = index_map[a]
@@ -50,7 +50,7 @@ for ((a, b), k) in outer_edges
 end
 
 ax = Axis(fig[1, 2])
-triplot!(ax, tri; show_ghost_edges=true, ghost_edge_extension_factor=2.0)
+triplot!(ax, tri; show_ghost_edges=true, recompute_centers=true, ghost_edge_extension_factor=2.0)
 xlims!(ax, -2, 22)
 ylims!(ax, -2, 22)
 SAVE_FIGURE && save("$save_path/test_add_ghost_triangles.png", fig)

@@ -1669,7 +1669,7 @@ y5 = [reverse([2.0, 2.0, 3.0, 4.0, 5.0, 2.0])]
 x = [x1, x2, x3, x4, x5]
 y = [y1, y2, y3, y4, y5]
 tri = generate_mesh(x, y, 0.2)
-fig, ax, sc = triplot(tri; show_ghost_edges=true, convex_hull_linestyle=:solid, convex_hull_linewidth=4)
+fig, ax, sc = triplot(tri; recompute_centers=true, show_ghost_edges=true, convex_hull_linestyle=:solid, convex_hull_linewidth=4)
 xlims!(ax, -0.5, 2.5)
 ylims!(ax, -0.5, 6.5)
 SAVE_FIGURE && save("$save_path/gmsh_example_3.png", fig)

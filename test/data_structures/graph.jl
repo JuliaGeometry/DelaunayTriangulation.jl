@@ -102,3 +102,6 @@ DT.delete_neighbour!(g, 13, 5)
 @test g ≠ clean_dg
 DT.clear_empty_points!(g)
 @test g == clean_dg
+
+@test num_vertices(g) == 6
+@test each_vertex(g) == get_vertices(g)

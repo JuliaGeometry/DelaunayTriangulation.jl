@@ -3,7 +3,7 @@ using Test
 using SafeTestsets
 
 @testset verbose = true "DelaunayTriangulation" begin
-    @testset "Triangulation" begin
+    @testset verbose = true "Triangulation" begin
         @safetestset "Gmsh" begin
             include("triangulation/gmsh.jl")
         end
@@ -15,6 +15,9 @@ using SafeTestsets
         end
         @safetestset "Triangulate" begin
             include("triangulation/triangulate.jl")
+        end
+        @safetestset "Convex Triangulation" begin
+            include("triangulation/convex_triangulation.jl")
         end
     end
 
@@ -78,6 +81,21 @@ using SafeTestsets
         end
         @safetestset "add_point!" begin
             include("operations/add_point.jl")
+        end
+        @safetestset "flip_edge!" begin
+            include("operations/flip_edge.jl")
+        end
+        @safetestset "split_triangle!" begin
+            include("operations/split_triangle.jl")
+        end
+        @safetestset "split_edge!" begin
+            include("operations/split_edge.jl")
+        end
+        @safetestset "legalise_edge!" begin
+            include("operations/legalise_edge.jl")
+        end
+        @safetestset "delete_point!" begin
+            include("operations/delete_point.jl")
         end
     end
 

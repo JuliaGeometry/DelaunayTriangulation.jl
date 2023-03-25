@@ -32,7 +32,7 @@ Computes the unconstrained Delaunay triangulation of a set of `points`.
 - `delete_empty_features=true`: Whether to delete any empty neighbourhoods and adjacencies at the end of the triangulation. 
 - `try_last_inserted_point=true`: When finding the next point, this decides if the previously inserted point should also be attempted. 
 - `skip_points=Set{IntegerType}()`: Points to skip over when triangulationg, i.e. points to not include in the triangulation. 
-- `num_sample_rule`: A function of the form `n -> Number`, with `n` the number of points currently in the triangulation, that returns the number of points to sample during the point location steps. 
+- `num_sample_rule::M=default_num_samples`: A function of the form `n -> Number`, with `n` the number of points currently in the triangulation, that returns the number of points to sample during the point location steps. 
 - `rng::AbstractRNG=Random.default_rng()`: The RNG to use.
 - `point_order=get_point_order(points, randomise, skip_points, IntegerType, rng)`: The insertion order. 
 - `recompute_representative_point=true`: At the end of the triangulation, will recompute the `RepresentativePointList` if `true`.
