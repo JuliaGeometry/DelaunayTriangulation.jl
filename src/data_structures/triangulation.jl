@@ -78,11 +78,18 @@ segments, there are four possible boundary indices that a segment could correspo
 - `constrained_edges::Es`
 
 This is the set of extra edges added into the triangulation that you have provided. Note that 
-this will not included any of the other constrained edges from `boundary_nodes`.
+this will not include any of the other constrained edges from `boundary_nodes`, for ths see 
+the `all_constrained_edges` field. Moreover, you should include duplicate edges, i.e.
+do not include both `(i, j)` and `(j, i)` - order is not important here.
 - `convex_hull::ConvexHull{P,Vector{I}}`
 
 This will be a vector of integers corresponding to indices in the points that 
 together give the convex hull of the set of points, with `convex_hull[begin] == convex_hull[end]`.
+
+- `all_constrained_edges::Es`
+
+This is a set of all constrained edges, basically the union of the constrained edges in `constrained_edges`
+and `boundary_nodes`. You shouldn't need to work with this field directly.
 
 # Constructors 
 
@@ -93,7 +100,7 @@ be using [`triangulate`](@ref) or [`generate_mesh`](@ref)).
 
 The default constructor is available, i.e. 
 
-    Triangulation(points, triangles, adjacent, adjacent2vertex, graph, boundary_nodes, constrained_edges, boundary_map, convex_hull)
+    Triangulation(points, triangles, adjacent, adjacent2vertex, graph, boundary_nodes, constrained_edges, boundary_map, convex_hull, all_constrained_edges)
 
 ## Empty Triangulation 
 
@@ -227,6 +234,10 @@ we list below.
 - [`each_point`](@ref)
 - [`num_points`](@ref)
 
+## Working with the `all_constrained_edges` field:
+
+- [`get_all_constrained_edges`](@ref)
+
 ## Predicates:
 
 - [`is_boundary_edge`](@ref)
@@ -266,6 +277,7 @@ struct Triangulation{P,Ts,I,E,Es,BN,B,BIR}
     boundary_map::B
     boundary_index_ranges::BIR
     constrained_edges::Es
+    all_constrained_edges::Es
     convex_hull::ConvexHull{P,Vector{I}}
 end
 function Base.show(io::IO, ::MIME"text/plain", tri::Triangulation)
@@ -299,6 +311,7 @@ Base.@constprop :aggressive function Triangulation(points::P;
     bn_map = construct_boundary_map(boundary_nodes; IntegerType=I)
     bn_range = construct_boundary_index_ranges(boundary_nodes; IntegerType=I)
     ch = ConvexHull(points, I[])
+    all_constrained_edges = merge_constrained_edges(bn_map, boundary_nodes, constrained_edges)
     n = num_points(points)
     sizehint!(T, 2n - 5) # maximum number of triangles
     sizehint!(adj, 3n - 6) # maximum number of edges 
@@ -306,8 +319,27 @@ Base.@constprop :aggressive function Triangulation(points::P;
     sizehint!(graph, 3n - 6, n, n)
     sizehint!(ch, n)
     tri = Triangulation(points, T, adj, adj2v, graph, boundary_nodes, bn_map, bn_range,
-        constrained_edges, ch)
+        constrained_edges, all_constrained_edges, ch)
     return tri
+end
+
+function merge_constrained_edges(bn_map, boundary_nodes, constrained_edges::Es) where {Es}
+    all_constrained = initialise_edges(Es)
+    E = edge_type(Es)
+    for segment_index in values(bn_map)
+        bn_nodes = get_boundary_nodes(boundary_nodes, segment_index)
+        nedges = num_boundary_edges(bn_nodes)
+        for edge_idx in 1:nedges 
+            vᵢ = get_boundary_nodes(bn_nodes, edge_idx)
+            vᵢ₊₁ = get_boundary_nodes(bn_nodes,edge_idx+1)
+            e = construct_edge(E, vᵢ, vᵢ₊₁)
+            add_edge!(all_constrained, e)
+        end
+    end
+    for e in each_edge(constrained_edges)
+        add_edge!(all_constrained, e)
+    end
+    return all_constrained
 end
 
 ## Accessors

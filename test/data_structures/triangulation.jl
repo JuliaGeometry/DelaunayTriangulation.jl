@@ -23,10 +23,10 @@ global tri = Triangulation(pts; IntegerType=Int32)
             OrderedDict{Int32,Vector{Int32}}(Int32(DT.BoundaryIndex) => Int32[]),
             OrderedDict{Int32,UnitRange{Int32}}(-1 => -1:-1),
             Set{NTuple{2,Int32}}(),
+            Set{NTuple{2,Int32}}(),
             ConvexHull(pts, Int32[]))
 end
 
-## Gmsh setup
 include("../helper_functions.jl")
 _x, _y = complicated_geometry()
 global x = _x
@@ -47,6 +47,7 @@ global tri_4 = generate_mesh(x[2], y[2], 0.1; convert_result=true, add_ghost_tri
       @test DT.get_boundary_map(tri) == tri.boundary_map
       @test DT.get_constrained_edges(tri) == tri.constrained_edges
       @test DT.get_convex_hull(tri) == tri.convex_hull
+      @test DT.get_all_constrained_edges(tri) == tri.all_constrained_edges == DT.merge_constrained_edges(get_boundary_map(tri), get_boundary_nodes(tri), get_constrained_edges(tri))
       @inferred DT.get_points(tri)
       @inferred DT.get_triangles(tri)
       @inferred DT.get_adjacent(tri)
@@ -56,6 +57,7 @@ global tri_4 = generate_mesh(x[2], y[2], 0.1; convert_result=true, add_ghost_tri
       @inferred DT.get_boundary_map(tri)
       @inferred DT.get_constrained_edges(tri)
       @inferred DT.get_convex_hull(tri)
+      @inferred DT.get_all_constrained_edges(tri)
 end
 
 @testset "Forwarded methods" begin
@@ -415,4 +417,100 @@ end
             @test collect(DT.all_boundary_indices(_tri)) ==
                   [DT.BoundaryIndex, DT.BoundaryIndex - 1, DT.BoundaryIndex - 2, DT.BoundaryIndex - 3]
       end
+end
+
+@testset "merge_constrained_edges" begin
+      all_bn = get_boundary_nodes(tri)
+      i = rand(1:100000, 50)
+      j = rand(1:100000, 50)
+      all_ce = Set(((i, j) for (i, j) in zip(i, j)))
+      bn_map = get_boundary_map(tri)
+      bn1 = all_bn[1]
+      bn11 = bn1[1]
+      bn12 = bn1[2]
+      bn13 = bn1[3]
+      bn14 = bn1[4]
+      bn2 = all_bn[2][1]
+      bn3 = all_bn[3][1]
+      bn4 = all_bn[4]
+      bn41 = bn4[1]
+      bn42 = bn4[2]
+      bn43 = bn4[3]
+      bn44 = bn4[4]
+      bn5 = all_bn[5][1]
+      e11 = Set(((bn11[i], bn11[i+1]) for i in 1:21))
+      e12 = Set(((bn12[i], bn12[i+1]) for i in 1:60))
+      e13 = Set(((bn13[i], bn13[i+1]) for i in 1:21))
+      e14 = Set(((bn14[i], bn14[i+1]) for i in 1:60))
+      e2 = Set(((bn2[i], bn2[i+1]) for i in 1:49))
+      e3 = Set(((bn3[i], bn3[i+1]) for i in 1:49))
+      e41 = Set(((bn41[i], bn41[i+1]) for i in 1:30))
+      e42 = Set(((bn42[i], bn42[i+1]) for i in 1:6))
+      e43 = Set(((bn43[i], bn43[i+1]) for i in 1:30))
+      e44 = Set(((bn44[i], bn44[i+1]) for i in 1:6))
+      e5 = Set(((bn5[i], bn5[i+1]) for i in 1:66))
+      ace = Set{NTuple{2,Int64}}()
+      for es in (e11, e12, e13, e14, e2, e3, e41, e42, e43, e44, e5)
+            for e in es
+                  push!(ace, e)
+            end
+      end
+      for e in all_ce
+            push!(ace, e)
+      end
+      @test ace == DT.merge_constrained_edges(bn_map, all_bn, all_ce)
+
+      all_bn = get_boundary_nodes(tri_2)
+      i = rand(1:100000, 50)
+      j = rand(1:100000, 50)
+      all_ce = Set(((i, j) for (i, j) in zip(i, j)))
+      bn_map = get_boundary_map(tri_2)
+      bn1 = all_bn[1]
+      bn2 = all_bn[2]
+      bn3 = all_bn[3]
+      bn4 = all_bn[4]
+      e1 = Set(((bn1[i], bn1[i+1]) for i in 1:21))
+      e2 = Set(((bn2[i], bn2[i+1]) for i in 1:60))
+      e3 = Set(((bn3[i], bn3[i+1]) for i in 1:21))
+      e4 = Set(((bn4[i], bn4[i+1]) for i in 1:60))
+      ace = Set{NTuple{2,Int64}}()
+      for es in (e1, e2, e3, e4)
+            for e in es
+                  push!(ace, e)
+            end
+      end
+      for e in all_ce
+            push!(ace, e)
+      end
+      @test ace == DT.merge_constrained_edges(bn_map, all_bn, all_ce)
+
+      all_bn = get_boundary_nodes(tri_3)
+      i = rand(1:100000, 50)
+      j = rand(1:100000, 50)
+      all_ce = Set(((i, j) for (i, j) in zip(i, j)))
+      bn_map = get_boundary_map(tri_3)
+      e = Set(((all_bn[i], all_bn[i+1]) for i in 1:80))
+      ace = Set{NTuple{2,Int64}}()
+      for e in e
+            push!(ace, e)
+      end
+      for e in all_ce
+            push!(ace, e)
+      end
+      @test ace == DT.merge_constrained_edges(bn_map, all_bn, all_ce)
+
+      all_bn = get_boundary_nodes(tri_4)[1]
+      i = rand(1:100000, 50)
+      j = rand(1:100000, 50)
+      all_ce = Set(((i, j) for (i, j) in zip(i, j)))
+      bn_map = get_boundary_map(tri_4)
+      e = Set(((all_bn[i], all_bn[i+1]) for i in 1:49))
+      ace = Set{NTuple{2,Int64}}()
+      for e in e
+            push!(ace, e)
+      end
+      for e in all_ce
+            push!(ace, e)
+      end
+      @test ace == DT.merge_constrained_edges(bn_map, [all_bn], all_ce)
 end

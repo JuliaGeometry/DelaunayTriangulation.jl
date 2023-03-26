@@ -247,6 +247,8 @@ end
     DT.delete_from_edges!(edges::CustomEdges, e) = deleteat!(edges.edges, findfirst(==(e), edges.edges))
     DT.num_edges(edges::CustomEdges) = length(edges.edges)
     DT.is_empty(edges::CustomEdges) = isempty(edges.edges)
+    DT.edge_type(::Type{CustomEdges}) = CustomEdge
+    DT.contains_edge(e::CustomEdge, edges::CustomEdges) = e ∈ edges.edges
 
     struct CustomTriangle
         i::Int32
@@ -281,6 +283,7 @@ end
         EdgesType=CustomEdges,
         TriangleType=CustomTriangle,
         TrianglesType=CustomTriangles)
+    validate_triangulation(tri1)
     tri2 = triangulate(pts)
 
     fig = Figure(fontsize=24)

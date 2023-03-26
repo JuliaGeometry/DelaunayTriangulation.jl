@@ -43,6 +43,8 @@ DT.each_edge(edges::CustomEdges) = edges.edges
 DT.delete_from_edges!(edges::CustomEdges, e) = deleteat!(edges.edges, findfirst(==(e), edges.edges))
 DT.num_edges(edges::CustomEdges) = length(edges.edges)
 DT.is_empty(edges::CustomEdges) = isempty(edges.edges)
+DT.edge_type(::Type{CustomEdges}) = CustomEdge
+DT.contains_edge(e::CustomEdge, edges::CustomEdges) = e ∈ edges.edges
 
 struct CustomTriangle
     i::Int32
