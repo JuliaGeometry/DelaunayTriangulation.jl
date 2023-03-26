@@ -130,7 +130,7 @@ end
 
 Tests if `A[begin] == A[end]`.
 """
-is_circular(A) = A[begin] == A[end]
+is_circular(A) = isempty(A) || (A[begin] == A[end])
 
 """
     circular_equality(A, B)
@@ -140,6 +140,7 @@ Tests if the arrays `A` and `B` are equal up to a circular shift.
 function circular_equality(A, B)
     @assert is_circular(A) && is_circular(B) "The input arrays must satisfy x[begin] == x[end]."
     length(A) ≠ length(B) && return false
+    length(A) == length(B) == 0 && return true
     _A = @views A[begin:(end-1)]
     _B = @views B[begin:(end-1)]
     same_idx = findfirst(==(_A[begin]), _B)
