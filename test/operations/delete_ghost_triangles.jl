@@ -9,9 +9,11 @@ using StructEquality
 
 include("../helper_functions.jl")
 
-tri, label_map, index_map = simple_geometry()
-_tri = deepcopy(tri)
-DT.add_ghost_triangles!(tri)
-DT.delete_ghost_triangles!(tri)
+@testset "Deleting ghost triangles" begin
+    tri, label_map, index_map = simple_geometry()
+    _tri = deepcopy(tri)
+    DT.add_ghost_triangles!(tri)
+    DT.delete_ghost_triangles!(tri)
 
-@test tri == _tri
+    @test tri == _tri
+end
