@@ -88,6 +88,8 @@ global Ts3 = Set{typeof(T3)}((SVector{3,Int32}((1, 2, 3)),
             V = typeof(T)
             @test DT.initialise_triangles(Set{V}) == Set{V}()
         end
+
+        @test DT.initialise_triangles(Vector{NTuple{3,Int64}}) == Vector{NTuple{3,Int64}}()
     end
 
     @testset "Getting the eltype of a collection of triangles" begin
@@ -160,6 +162,11 @@ global Ts3 = Set{typeof(T3)}((SVector{3,Int32}((1, 2, 3)),
             end
             @test length(Ts) == 13
         end
+        T = Vector{NTuple{3,Int64}}()
+        DT.add_triangle!(T, (1, 2, 3))
+        DT.add_triangle!(T, (5, 6, 8), (9, 10, 12))
+        DT.add_triangle!(T, [13, 14, 15])
+        @test T == [(1, 2, 3), (5, 6, 8), (9, 10, 12), (13, 14, 15)]
     end
 
     @testset "Deleting from a collection of triangles" begin

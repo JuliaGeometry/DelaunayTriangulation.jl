@@ -142,6 +142,8 @@ include("point_location/jump_and_march.jl")
 export brute_force_search
 export jump_and_march
 
+include("segment_location/segment_location.jl")
+
 include("plotting.jl")
 
 export triplot

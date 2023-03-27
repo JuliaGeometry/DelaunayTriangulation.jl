@@ -198,6 +198,7 @@ line_segment_intersection_type(::Any, ::Any, ::Any, ::Any)
 point_position_relative_to_triangle(::Any, ::Any, ::Any, ::Any) 
 point_position_relative_to_oriented_outer_halfplane
 is_legal(::Any, ::Any, ::Any, ::Any)
+triangle_line_segment_intersection(::Any, ::Any, ::Any, ::Any, ::Any)
 ```
 
 ## Boundaries and Ghosts 
@@ -232,4 +233,5 @@ point_position_on_line_segment(::Any, ::Any, ::Any, ::Any)
 line_segment_intersection_type(::Any, ::Any, ::Any, ::Any, ::Any)
 point_position_relative_to_triangle(::Any, ::Any, ::Any, ::Any, ::Any, ::AbstractDict)
 point_position_relative_to_triangle(::Any, ::Any, ::Any, ::AbstractDict)
+triangle_line_segment_intersection(::Any, ::Any, ::Any, ::Any, ::Any, ::Any)
 ```

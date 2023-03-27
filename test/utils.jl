@@ -353,7 +353,7 @@ end
             new_e = DT.sort_edge_by_degree(e, graph)
             d1 = DT.num_neighbours(graph, e[1])
             d2 = DT.num_neighbours(graph, e[2])
-            if d1 < d2
+            if d1 ≤ d2
                   @test new_e == e
             else
                   @test new_e == (e[2], e[1])

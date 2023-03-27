@@ -180,6 +180,7 @@ For a given type `S` for some collection (e.g. a `Set`), returns an
 empty instance of that collection. The only method defined is
 
     initialise_triangles(::Type{S}) where {T, S <: Set{T}}
+    initialise_triangles(::Type{V}) where {T,V<:AbstractVector{T}}
 
 which returns a `Set{T}()`. You can extend this function as you need, making sure 
 you extend it for the type rather than for instances of that type.
@@ -189,6 +190,7 @@ function initialise_triangles(::Type{F}) where {F}
     return error("The initialise_triangles function has not been defined for the type $F.")
 end
 initialise_triangles(::Type{S}) where {T,S<:Set{T}} = S()
+initialise_triangles(::Type{V}) where {T,V<:AbstractVector{T}} = V()
 
 """
     triangle_type(::Type{S}) where {S}
@@ -308,11 +310,11 @@ function add_to_triangles! end
 function add_to_triangles!(::S, V) where {S}
     return error("The add_to_triangles! function has not been defined for the type $S.")
 end
-function add_to_triangles!(T::Set{F}, V::F) where {F}
+function add_to_triangles!(T::Union{A,Set{F}}, V::F) where {F,A<:AbstractVector{F}}
     push!(T, V)
     return nothing
 end
-function add_to_triangles!(T::Set{F}, V::G) where {F,G}
+function add_to_triangles!(T::Union{A,Set{F}}, V::G) where {F,G,A<:AbstractVector{F}}
     i, j, k = indices(V)
     V = construct_triangle(F, i, j, k)
     add_to_triangles!(T, V)

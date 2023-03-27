@@ -190,3 +190,23 @@ function point_position_relative_to_triangle(T, u, pts, boundary_map::AbstractDi
     i, j, k = indices(T)
     return point_position_relative_to_triangle(i, j, k, u, pts, boundary_map)
 end
+
+"""
+    triangle_line_segment_intersection(i, j, k, u, v, pts)
+
+Given a triangle `(i, j, k)` and a line segment `(u, v)`,
+with indices corresponding to points in `pts`, tests if `(u, v)` 
+intersects the triangle's interior. Letting `(p, q, r)` be the coordinates 
+corresponding to the triangle's vertices, and `(a, b)` those for the edge's 
+vertices, returns:
+
+- `Cert.Inside`: `(a, b)` is entirely inside `(p, q, r)`.
+- `Cert.Single`: `(a, b)` has one endpoint inside `(p, q, r)`, and the other is outside.
+- `Cert.Outside`: `(a, b)` is entirely outside `(p, q, r)`.
+- `Cert.Touching`: `(a, b)` is on `(p, q, r)`'s boundary, but not in its interior.
+- `Cert.Multiple`: `(a, b)` passes entirely through `(p, q, r)`.
+"""
+function triangle_line_segment_intersection(i, j, k, u, v, pts)
+    p, q, r, a, b = get_point(pts, i, j, k, u, v)
+    return triangle_line_segment_intersection(p, q, r, a, b)
+end

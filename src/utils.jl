@@ -206,8 +206,8 @@ end
 Given an edge `e` of a `graph`, say `e = (u, v)`,
 returns:
 
-- If `deg(u) < deg(v)`, returns `e`;
-- If `deg(u) ≥ deg(v)`, returns `(v, u)`.
+- If `deg(u) ≤ deg(v)`, returns `e`;
+- If `deg(u) > deg(v)`, returns `(v, u)`.
 
 In particular, `e` is sorted so that `initial(e)` is the vertex of `e` 
 with the smallest degree.
@@ -217,7 +217,7 @@ function sort_edge_by_degree(e::E, graph::Graph) where {E}
     v = terminal(e)
     d₁ = num_neighbours(graph, u)
     d₂ = num_neighbours(graph, v)
-    if d₁ < d₂
+    if d₁ ≤ d₂
         return e
     else
         return construct_edge(E, v, u)

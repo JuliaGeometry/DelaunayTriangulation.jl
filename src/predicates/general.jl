@@ -262,8 +262,68 @@ if the edge `pq` is legal, i.e. if `s` is not inside the triangle through
 function is_legal(p, q, r, s)
     incirc = point_position_relative_to_circle(p, q, r, s)
     if is_inside(incirc)
-        return Cert.Illegal 
-    else 
-        return Cert.Legal 
+        return Cert.Illegal
+    else
+        return Cert.Legal
     end
+end
+
+# this is slower than it needs to be. it's only used in tests
+# if we really wanted to, we could implement 
+# https://doi.org/10.1007/s00371-018-01614-1
+"""
+    triangle_line_segment_intersection(p, q, r, a, b)
+
+Given a triangle `(p, q, r)` and a line segment `(a, b)`,
+tests if `(a, b)` intersects the triangle's interior. Returns:
+
+- `Cert.Inside`: `(a, b)` is entirely inside `(p, q, r)`.
+- `Cert.Single`: `(a, b)` has one endpoint inside `(p, q, r)`, and the other is outside.
+- `Cert.Outside`: `(a, b)` is entirely outside `(p, q, r)`.
+- `Cert.Touching`: `(a, b)` is on `(p, q, r)`'s boundary, but not in its interior.
+- `Cert.Multiple`: `(a, b)` passes entirely through `(p, q, r)`.
+"""
+function triangle_line_segment_intersection(p, q, r, a, b)
+    a_pos = point_position_relative_to_triangle(p, q, r, a)
+    b_pos = point_position_relative_to_triangle(p, q, r, b)
+    abp_pos = point_position_relative_to_line(a, b, p)
+    abq_pos = point_position_relative_to_line(a, b, q)
+    abr_pos = point_position_relative_to_line(a, b, r)
+    pqab_int = line_segment_intersection_type(p, q, a, b)
+    qrab_int = line_segment_intersection_type(q, r, a, b)
+    rpab_int = line_segment_intersection_type(r, p, a, b)
+    a_vert = any(==(a), (p, q, r))
+    b_vert = any(==(b), (p, q, r))
+    tri_pos = (a_pos, b_pos)
+    line_pos = (abp_pos, abq_pos, abr_pos)
+    int_pos = (pqab_int, qrab_int, rpab_int)
+    vert_eq = (a_vert, b_vert)
+    if all(is_inside, tri_pos)
+        return Cert.Inside
+    elseif all(vert_eq)
+        return Cert.Touching
+    elseif count(is_single, int_pos) == 2
+        return Cert.Multiple
+    elseif count(is_single, int_pos) == 1 && count(is_inside, tri_pos) == 1
+        return Cert.Single
+    elseif all(is_on, tri_pos) && count(is_collinear, line_pos) == 1 && count(is_touching, int_pos) < 3
+        return Cert.Touching
+    elseif all(is_outside, tri_pos) && !any(is_single, int_pos) && !any(is_multiple, int_pos)
+        return Cert.Outside
+    elseif all(is_outside, tri_pos) && count(is_touching, int_pos) == 2 && count(is_collinear, line_pos) ≥ 1
+        return Cert.Touching
+    elseif all(is_on, tri_pos) && !any(is_collinear, line_pos)
+        return Cert.Inside
+    elseif (all(is_on, tri_pos) && all(is_touching, int_pos)) || (count(is_touching, int_pos) == 2 && count(is_inside, int_pos) == 1)
+        return Cert.Inside
+    elseif all(is_on, tri_pos) && count(is_collinear, line_pos) == 2
+        return Cert.Touching
+    elseif count(is_inside, tri_pos) == 1 && count(is_touching, int_pos) == 2
+        return Cert.Inside
+    elseif count(is_on, tri_pos) == 1 && count(is_touching, int_pos) == 2
+        return Cert.Outside
+    elseif count(is_on, tri_pos) == 1 && count(is_inside, tri_pos) == 1
+        return Cert.Inside
+    end
+    throw("Missed a case.")
 end

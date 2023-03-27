@@ -139,3 +139,7 @@ using SafeTestsets
         end
     end
 end
+
+@safetestset "Triangles" begin
+    include("interfaces/triangles.jl")
+end

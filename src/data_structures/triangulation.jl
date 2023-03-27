@@ -661,6 +661,12 @@ end
 @inline function point_position_relative_to_triangle(tri::Triangulation, T, u)
     return point_position_relative_to_triangle(tri, geti(T), getj(T), getk(T), u)
 end
+@inline function triangle_line_segment_intersection(tri::Triangulation, i, j, k, u, v)
+    return triangle_line_segment_intersection(i, j, k, u, v, get_points(tri))
+end
+@inline function triangle_line_segment_intersection(tri::Triangulation, T, e)
+    return triangle_line_segment_intersection(tri, geti(T), getj(T), getk(T), initial(e), terminal(e))
+end
 @inline function is_outer_boundary_index(tri::Triangulation, i)
     return is_outer_boundary_index(i, get_boundary_map(tri))
 end
@@ -701,7 +707,9 @@ function jump_and_march(tri::Triangulation, q;
     k=select_initial_point(get_points(tri), q; m, point_indices,
         try_points),
     check_existence::C=Val(has_multiple_segments(tri)),
-    rng::AbstractRNG=Random.default_rng()) where {C}
+    store_visited_triangles::F=Val(false),
+    visited_triangles=nothing,
+    rng::AbstractRNG=Random.default_rng()) where {C,F}
     return jump_and_march(get_points(tri),
         get_adjacent(tri),
         get_adjacent2vertex(tri),
@@ -709,8 +717,10 @@ function jump_and_march(tri::Triangulation, q;
         get_boundary_index_ranges(tri),
         get_boundary_map(tri),
         q; m, point_indices, try_points, k,
-        TriangleType=triangle_type(tri), check_existence, rng)
+        TriangleType=triangle_type(tri), check_existence, store_visited_triangles, visited_triangles, rng)
 end
+
+## Segment Location
 
 # Miscellaneous
 @inline integer_type(::Triangulation{P,Ts,I}) where {P,Ts,I} = I
@@ -1326,6 +1336,22 @@ If `T` is a ghost triangle, `Certificate.Inside` is returned.
 """ point_position_relative_to_triangle(::Triangulation, ::Any, ::Any)
 
 @doc """
+    triangle_line_segment_intersection(tri::Triangulation, i, j, k, u, v)
+    triangle_line_segment_intersection(tri::Triangulation, T, e)
+
+Given a triangulation `tri`, a triangle `T = (i, j, k)`, and an edge `e = (u, v)`,
+tests if `e`'s relative interior intersects `T`'s relative interior. Letting `(p, q, r)` 
+be the coordinates corresponding to the triangle's vertices, and `(a, b)` those for the edge's 
+vertices, returns:
+
+- `Cert.Inside`: `(a, b)` is entirely inside `(p, q, r)`.
+- `Cert.Single`: `(a, b)` has one endpoint inside `(p, q, r)`, and the other is outside.
+- `Cert.Outside`: `(a, b)` is entirely outside `(p, q, r)`.
+- `Cert.Touching`: `(a, b)` is on `(p, q, r)`'s boundary, but not in its interior.
+- `Cert.Multiple`: `(a, b)` passes entirely through `(p, q, r)`.
+""" triangle_line_segment_intersection(::Triangulation, ::Any, ::Any)
+
+@doc """
     is_outer_boundary_index(tri::Triangulation, i)
 
 Given a triangulation `tri` and an index `i`, tests if `i` is the index of a boundary 
@@ -1392,7 +1418,9 @@ searching over all triangles.
         try_points=(),
         k=select_initial_point(get_points(tri), q; m, point_indices, try_points),
         check_existence::C=Val(has_multiple_segments(tri)),
-        rng::AbstractRNG=Random.default_rng())
+        store_visited_triangles::F=Val(false),
+        visited_triangles=nothing,
+        rng::AbstractRNG=Random.default_rng()) where {C, F}
 
 Using the jump and march algorithm, finds the triangle in the triangulation `tri` containing the 
 query point `q`.
@@ -1407,6 +1435,9 @@ query point `q`.
 - `try_points=()`: Extra points to try when sampling an initial point from [`select_initial_point`](@ref). Only relevant if `k` is not specified. 
 - `k=select_initial_point(pts, q; m, point_indices, try_points)`: Where to start the algorithm.
 - `check_existence::C=Val(has_multiple_segments(tri))`: Whether to check that the edge exists when using [`get_adjacent`](@ref), helping to correct for incorrect boundary indices in the presence of multiple boundary segments. See [`get_adjacent`](@ref).
+- `stored_visited_triangles::F=Val(false)`: Whether to store visited triangles. Exterior ghost triangles will not be stored.
+- `visited_triangles=nothing`: Object to push visited triangles into.
+- `rng::AbstractRNG`: The RNG to use.
 
 # Output 
 Returns the triangle `V` containing the query point `q`.
