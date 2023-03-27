@@ -81,6 +81,11 @@ This is the set of extra edges added into the triangulation that you have provid
 this will not include any of the other constrained edges from `boundary_nodes`, for ths see 
 the `all_constrained_edges` field. Moreover, you should include duplicate edges, i.e.
 do not include both `(i, j)` and `(j, i)` - order is not important here.
+
+If you have a constrained segment that happens to be collinear with another vertex, and that 
+vertex is on the segment, then we mutate `constrained_edges` so that the segment is split 
+at this vertex. 
+
 - `convex_hull::ConvexHull{P,Vector{I}}`
 
 This will be a vector of integers corresponding to indices in the points that 
