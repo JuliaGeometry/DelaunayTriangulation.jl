@@ -24,4 +24,4 @@ intersecting_triangles = DT.find_all_intersecting_triangles_with_segment(
     Vector{NTuple{3,Int64}}
 )
 @test all(T->DT.is_positively_oriented(DT.triangle_orientation(tri,T)), intersecting_triangles)
-
+[DT.triangle_line_segment_intersection(tri, T, (2, 7)) for T in intersecting_triangles]

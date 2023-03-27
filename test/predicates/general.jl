@@ -657,7 +657,7 @@ end
         (a13, b13),
         (a14, b14)
     ]
-    flags = [DT.triangle_line_segment_intersection(p, q, r, a, b) for (i, (a, b)) in enumerate(ab)]
+    flags = [DT.triangle_line_segment_intersection(p, q, r, a, b) for (a, b) in ab]
     true_flags = [
         Certificate.Inside,
         Certificate.Multiple,
