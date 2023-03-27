@@ -514,3 +514,17 @@ end
       end
       @test ace == DT.merge_constrained_edges(bn_map, [all_bn], all_ce)
 end
+
+@testset "sort_edge_by_degree" begin
+      tri = triangulate(rand(2, 500); delete_ghosts=false)
+      for e in each_edge(tri)
+            new_e = DT.sort_edge_by_degree(tri, e)
+            d1 = DT.num_neighbours(tri, e[1])
+            d2 = DT.num_neighbours(tri, e[2])
+            if d1 < d2
+                  @test new_e == e
+            else
+                  @test new_e == (e[2], e[1])
+            end
+      end
+end

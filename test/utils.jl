@@ -209,7 +209,7 @@ end
             @test DT.circular_equality(x, y) && DT.circular_equality(y, x)
       end
       @test DT.circular_equality([3, 2, 1, 13, 12, 11, 5, 4, 3], [1, 13, 12, 11, 5, 4, 3, 2, 1])
-      @test DT.circular_equality([],[])
+      @test DT.circular_equality([], [])
 end
 
 @testset "get_surrounding_polygon" begin
@@ -342,6 +342,21 @@ end
                   _S = filter(!DT.is_boundary_index, S)
                   DT.is_boundary_index(S[begin]) && push!(_S, _S[begin]) # might have removed a boundary index in the first entry, so we'd no longer have a circular array
                   @test DT.circular_equality(_S, fnc_polys[k])
+            end
+      end
+end
+
+@testset "sort_edge_by_degree" begin
+      tri = triangulate(rand(2, 500); delete_ghosts=false)
+      graph = get_graph(tri)
+      for e in DT.get_edges(graph)
+            new_e = DT.sort_edge_by_degree(e, graph)
+            d1 = DT.num_neighbours(graph, e[1])
+            d2 = DT.num_neighbours(graph, e[2])
+            if d1 < d2
+                  @test new_e == e
+            else
+                  @test new_e == (e[2], e[1])
             end
       end
 end

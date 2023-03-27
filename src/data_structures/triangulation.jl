@@ -271,6 +271,7 @@ we list below.
 - [`is_constrained`](@ref)
 - [`all_boundary_indices`](@ref)
 - [`get_surrounding_polygon`](@ref)
+- [`sort_edge_by_degree`](@ref)
 """
 struct Triangulation{P,Ts,I,E,Es,BN,B,BIR}
     points::P
@@ -334,9 +335,9 @@ function merge_constrained_edges(bn_map, boundary_nodes, constrained_edges::Es) 
     for segment_index in values(bn_map)
         bn_nodes = get_boundary_nodes(boundary_nodes, segment_index)
         nedges = num_boundary_edges(bn_nodes)
-        for edge_idx in 1:nedges 
+        for edge_idx in 1:nedges
             vᵢ = get_boundary_nodes(bn_nodes, edge_idx)
-            vᵢ₊₁ = get_boundary_nodes(bn_nodes,edge_idx+1)
+            vᵢ₊₁ = get_boundary_nodes(bn_nodes, edge_idx + 1)
             e = construct_edge(E, vᵢ, vᵢ₊₁)
             add_edge!(all_constrained, e)
         end
@@ -739,6 +740,7 @@ function is_constrained(tri::Triangulation)
 end
 all_boundary_indices(tri::Triangulation) = keys(get_boundary_index_ranges(tri))
 get_surrounding_polygon(tri::Triangulation, u; skip_boundary_indices=false) = get_surrounding_polygon(get_adjacent(tri), get_graph(tri), u, get_boundary_index_ranges(tri), Val(has_multiple_segments(tri)); skip_boundary_indices)
+sort_edge_by_degree(tri::Triangulation, e) = sort_edge_by_degree(e, get_graph(tri))
 
 ## Triangulating points, triangles, boundary_nodes
 function Triangulation(points::P, triangles::T, boundary_nodes::BN;
@@ -1484,3 +1486,15 @@ When `u` is a boundary vertex and you do not have ghost triangles, then this fun
 
 If you want to remove all boundary indices from the result at the end, set `skip_boundary_indices=true`.
 """ get_surrounding_polygon(::Triangulation, ::Any)
+
+@doc """
+    sort_edge_by_degree(tri::Triangulation, e)
+
+Given an edge `e` of a triangulation `tri`, say `e = (u, v)`,
+returns: 
+
+- If `deg(u) < deg(v)`, returns `e`;
+- If `deg(u) ≥ deg(v)`, returns `(v, u)`.
+
+In particular, `e` is sorted so that `initial(e)` has the least degree.
+""" sort_edge_by_degree(::Triangulation, ::Any)

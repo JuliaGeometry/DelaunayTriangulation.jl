@@ -199,3 +199,27 @@ function get_surrounding_polygon(adj::Adjacent{I,E}, graph::Graph, u, boundary_i
     skip_boundary_indices && filter!(!is_boundary_index, S)
     return S
 end
+
+"""
+    sort_edge_by_degree(e::E, graph::Graph)
+
+Given an edge `e` of a `graph`, say `e = (u, v)`,
+returns:
+
+- If `deg(u) < deg(v)`, returns `e`;
+- If `deg(u) ≥ deg(v)`, returns `(v, u)`.
+
+In particular, `e` is sorted so that `initial(e)` is the vertex of `e` 
+with the smallest degree.
+"""
+function sort_edge_by_degree(e::E, graph::Graph) where {E}
+    u = initial(e)
+    v = terminal(e)
+    d₁ = num_neighbours(graph, u)
+    d₂ = num_neighbours(graph, v)
+    if d₁ < d₂
+        return e
+    else
+        return construct_edge(E, v, u)
+    end
+end

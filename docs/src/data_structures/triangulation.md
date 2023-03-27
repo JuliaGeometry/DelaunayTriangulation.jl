@@ -95,4 +95,5 @@ get_constrained_edges(::Triangulation)
 is_constrained(::Triangulation)
 all_boundary_indices(::Triangulation)
 get_surrounding_polygon(::Triangulation, ::Any)
+sort_edge_by_degree(::Triangulation, ::Any)
 ```
