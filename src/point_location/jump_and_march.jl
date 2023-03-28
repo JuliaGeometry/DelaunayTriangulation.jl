@@ -141,7 +141,10 @@ function _jump_and_march(pts, adj, adj2v, graph::Graph{I}, boundary_index_ranges
             boundary_map,
             k,
             q,
-            check_existence)
+            check_existence,
+            store_visited_triangles,
+            visited_triangles)
+        @show direction, q_pos
         if !is_outside(direction)
             # q is collinear with one of the edges, so let's jump down these edges and try to find q
             q_pos, u, v, w = search_down_adjacent_boundary_edges(pts, adj,
@@ -149,7 +152,9 @@ function _jump_and_march(pts, adj, adj2v, graph::Graph{I}, boundary_index_ranges
                 boundary_map, k, q,
                 direction, q_pos,
                 next_vertex,
-                check_existence)
+                check_existence,
+                store_visited_triangles,
+                visited_triangles)
             if is_on(q_pos)
                 is_true(store_visited_triangles) && add_triangle!(visited_triangles, u, v, w)
                 return construct_triangle(V, u, v, w)
@@ -171,16 +176,18 @@ function _jump_and_march(pts, adj, adj2v, graph::Graph{I}, boundary_index_ranges
             q,
             right_cert,
             left_cert,
-            check_existence)
+            check_existence,
+            store_visited_triangles,
+            visited_triangles)
         if is_inside(triangle_cert)
-            is_true(store_visited_triangles) && add_triangle!(visited_triangles, i, j, k)
+            #is_true(store_visited_triangles) && add_triangle!(visited_triangles, i, j, k)
             return construct_triangle(V, i, j, k)
         elseif is_none(edge_cert)
             u, v = exterior_jump_and_march(pts, adj, boundary_index_ranges, boundary_map, k,
                 q, check_existence)
             return construct_triangle(V, u, v, get_adjacent(adj, u, v))
         else
-            is_true(store_visited_triangles) && add_triangle!(visited_triangles, j, i, k)
+            #is_true(store_visited_triangles) && add_triangle!(visited_triangles, j, i, k)
             p, pᵢ, pⱼ = get_point(pts, boundary_map, k, i, j)
         end
     end
