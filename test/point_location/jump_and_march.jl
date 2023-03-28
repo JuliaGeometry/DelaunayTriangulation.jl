@@ -212,3 +212,28 @@ DT.RepresentativePointList[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
         end
     end
 end
+
+@testset "Small geometry with some collinearities" begin
+    a = [0.0, 0.0]
+    b = [0.0, 1.0]
+    c = [0.0, 4.0]
+    d = [2.0, 0.0]
+    e = [6.0, 0.0]
+    f = [8.0, 0.0]
+    g = [8.0, 0.5]
+    h = [7.5, 1.0]
+    i = [4.0, 0.5]
+    j = [4.0, 4.0]
+    k = [8.0, 4.0]
+    pts = [a, b, c, d, e, f, g, h, i, j, k]
+    rng = StableRNG(213)
+    tri = triangulate(pts; rng, delete_ghosts=false, randomise=false)
+    for qi in each_solid_vertex(tri)
+        for k in each_solid_vertex(tri)
+            q = get_point(tri, qi)
+            T = jump_and_march(tri, q; k)
+            @test DT.is_positively_oriented(DT.triangle_orientation(tri, T))
+            @test DT.is_on(DT.point_position_relative_to_triangle(tri, T, q))
+        end
+    end
+end
