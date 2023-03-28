@@ -302,6 +302,7 @@ function example_triangulation()
         DT.DataStructures.OrderedDict{Int64,Vector{Int64}}(),
         DT.DataStructures.OrderedDict{Int64,UnitRange{Int64}}(),
         Set{NTuple{2,Int64}}(),
+        Set{NTuple{2,Int64}}(),
         ConvexHull(pts, [2, 6, 4, 5, 2]))
     return tri
 end
@@ -320,6 +321,7 @@ function example_empty_triangulation()
         Int64[],
         DT.DataStructures.OrderedDict{Int64,Vector{Int64}}(),
         DT.DataStructures.OrderedDict{Int64,UnitRange{Int64}}(),
+        Set{NTuple{2,Int64}}(),
         Set{NTuple{2,Int64}}(),
         ConvexHull(pts, [2, 6, 4, 5, 2]))
     return tri
@@ -352,18 +354,18 @@ end
 
 function shewchuk_example_constrained()
     a = [0.0, 0.0]
-    b = [0.0,1.0]
-    c=[0.0,4.0]
-    d=[2.0,0.0]
-    e=[6.0,0.0]
-    f=[8.0,0.0]
-    g=[8.0,0.5]
-    h=[7.5,1.0]
-    i=[4.0,0.5]
-    j=[4.0,4.0]
-    k=[8.0,4.0]
-    pts = [a,b,c,d,e,f,g,h,i,j,k]
+    b = [0.0, 1.0]
+    c = [0.0, 4.0]
+    d = [2.0, 0.0]
+    e = [6.0, 0.0]
+    f = [8.0, 0.0]
+    g = [8.0, 0.5]
+    h = [7.5, 1.0]
+    i = [4.0, 0.5]
+    j = [4.0, 4.0]
+    k = [8.0, 4.0]
+    pts = [a, b, c, d, e, f, g, h, i, j, k]
     rng = StableRNG(213)
-    tri = triangulate(pts;rng,delete_ghosts=false,randomise=false)
-    return tri 
+    tri = triangulate(pts; rng, delete_ghosts=false, randomise=false)
+    return tri
 end

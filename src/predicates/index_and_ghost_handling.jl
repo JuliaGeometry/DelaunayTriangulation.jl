@@ -204,9 +204,9 @@ vertices, returns:
 - `Cert.Single`: `(a, b)` has one endpoint inside `(p, q, r)`, and the other is outside.
 - `Cert.Outside`: `(a, b)` is entirely outside `(p, q, r)`.
 - `Cert.Touching`: `(a, b)` is on `(p, q, r)`'s boundary, but not in its interior.
-- `Cert.Multiple`: `(a, b)` passes entirely through `(p, q, r)`.
+- `Cert.Multiple`: `(a, b)` passes entirely through `(p, q, r)`. This includes the case where a point is on the boundary of `(p, q, r)`.
 """
-function triangle_line_segment_intersection(i, j, k, u, v, pts)
+@inline function triangle_line_segment_intersection(i, j, k, u, v, pts)
     p, q, r, a, b = get_point(pts, i, j, k, u, v)
     return triangle_line_segment_intersection(p, q, r, a, b)
 end

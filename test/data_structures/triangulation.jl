@@ -528,3 +528,24 @@ end
             end
       end
 end
+
+@testset "triangle_line_segment_intersection" begin
+      n = 60
+      for _ in 1:10
+            n += rand(1:125)
+            tri = triangulate(12randn(2, n))
+            for qi in each_solid_vertex(tri)
+                  for k in each_solid_vertex(tri)
+                        q = get_point(tri, qi)
+                        visited_triangles = NTuple{3,Int64}[]
+                        jump_and_march(tri, q;
+                              k,
+                              store_visited_triangles=true,
+                              visited_triangles)
+                        @test all(T -> DT.is_positively_oriented(DT.triangle_orientation(tri, T)), visited_triangles)
+                        @test all(!DT.is_none, [DT.triangle_line_segment_intersection(tri, T, (qi, k)) for T in visited_triangles])
+                        @test allunique(visited_triangles)
+                  end
+            end
+      end
+end

@@ -717,7 +717,9 @@ function jump_and_march(tri::Triangulation, q;
         get_boundary_index_ranges(tri),
         get_boundary_map(tri),
         q; m, point_indices, try_points, k,
-        TriangleType=triangle_type(tri), check_existence, store_visited_triangles, visited_triangles, rng)
+        TriangleType=triangle_type(tri), check_existence, 
+        store_visited_triangles, visited_triangles, 
+        rng)
 end
 
 ## Segment Location
@@ -1348,7 +1350,7 @@ vertices, returns:
 - `Cert.Single`: `(a, b)` has one endpoint inside `(p, q, r)`, and the other is outside.
 - `Cert.Outside`: `(a, b)` is entirely outside `(p, q, r)`.
 - `Cert.Touching`: `(a, b)` is on `(p, q, r)`'s boundary, but not in its interior.
-- `Cert.Multiple`: `(a, b)` passes entirely through `(p, q, r)`.
+- `Cert.Multiple`: `(a, b)` passes entirely through `(p, q, r)`. This includes the case where a point is on the boundary of `(p, q, r)`.
 """ triangle_line_segment_intersection(::Triangulation, ::Any, ::Any)
 
 @doc """

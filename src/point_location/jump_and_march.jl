@@ -132,7 +132,7 @@ function _jump_and_march(pts, adj, adj2v, graph::Graph{I}, boundary_index_ranges
             boundary_map, k, q,
             boundary_index_ranges,
             check_existence, rng)
-        is_true(store_visited_triangles) && (@show 1; add_triangle!(visited_triangles, j, i, k))
+        is_true(store_visited_triangles) && add_triangle!(visited_triangles, j, i, k)
     else
         # We have an outer boundary node. First, let us check the neighbouring boundary edges. 
         direction, q_pos, next_vertex, right_cert, left_cert = check_for_intersections_with_adjacent_boundary_edges(pts,
@@ -151,7 +151,7 @@ function _jump_and_march(pts, adj, adj2v, graph::Graph{I}, boundary_index_ranges
                 next_vertex,
                 check_existence)
             if is_on(q_pos)
-                is_true(store_visited_triangles) && (@show 2; add_triangle!(visited_triangles, u, v, w))
+                is_true(store_visited_triangles) && add_triangle!(visited_triangles, u, v, w)
                 return construct_triangle(V, u, v, w)
             else
                 u, v = exterior_jump_and_march(pts, adj, boundary_index_ranges,
@@ -173,24 +173,22 @@ function _jump_and_march(pts, adj, adj2v, graph::Graph{I}, boundary_index_ranges
             left_cert,
             check_existence)
         if is_inside(triangle_cert)
-            is_true(store_visited_triangles) && (@show 3; add_triangle!(visited_triangles, i, j, k))
+            is_true(store_visited_triangles) && add_triangle!(visited_triangles, i, j, k)
             return construct_triangle(V, i, j, k)
         elseif is_none(edge_cert)
             u, v = exterior_jump_and_march(pts, adj, boundary_index_ranges, boundary_map, k,
                 q, check_existence)
             return construct_triangle(V, u, v, get_adjacent(adj, u, v))
         else
-            is_true(store_visited_triangles) && (@show 4; add_triangle!(visited_triangles, j, i, k))
+            is_true(store_visited_triangles) && add_triangle!(visited_triangles, j, i, k)
             p, pᵢ, pⱼ = get_point(pts, boundary_map, k, i, j)
         end
     end
     if q == p || q == pᵢ || q == pⱼ
         orientation = triangle_orientation(pᵢ, pⱼ, p)
         if is_positively_oriented(orientation)
-            is_true(store_visited_triangles) && (@show 5; add_triangle!(visited_triangles, i, j, k))
             return construct_triangle(V, i, j, k)
         else
-            is_true(store_visited_triangles) && (@show 6; add_triangle!(visited_triangles, j, i, k))
             return construct_triangle(V, j, i, k)
         end
     end
@@ -222,7 +220,7 @@ function _jump_and_march(pts, adj, adj2v, graph::Graph{I}, boundary_index_ranges
         k = get_adjacent(adj, i, j; check_existence, boundary_index_ranges)
         pₖ = get_point(pts, boundary_map, k)
         pₖ_pos = point_position_relative_to_line(p, q, pₖ)
-        is_true(store_visited_triangles) && (@show 7; add_triangle!(visited_triangles, i, j, k))
+        is_true(store_visited_triangles) && add_triangle!(visited_triangles, i, j, k)
         if is_right(pₖ_pos)
             j, pⱼ = k, pₖ
             last_changed = j
@@ -245,7 +243,7 @@ function _jump_and_march(pts, adj, adj2v, graph::Graph{I}, boundary_index_ranges
                 j, pⱼ = k, pₖ
                 last_changed = j
             end
-            is_true(store_visited_triangles) && (@show 10; add_triangle!(visited_triangles, i, j, k))
+            is_true(store_visited_triangles) && add_triangle!(visited_triangles, i, j, k)
         end
         arrangement = triangle_orientation(pᵢ, pⱼ, q)
     end
@@ -254,7 +252,7 @@ function _jump_and_march(pts, adj, adj2v, graph::Graph{I}, boundary_index_ranges
     if is_degenerate(arrangement)
         pₖ = get_point(pts, boundary_map, k) # Need to have this here in case we skip the entire loop, above, meaning pₖ won't exist
         in_cert = point_position_relative_to_triangle(pᵢ, pⱼ, pₖ, q) # ... Maybe there is a better way to compute this, reusing previous certificates? Not sure. ...
-        is_true(store_visited_triangles) && (@show 11; add_triangle!(visited_triangles, i, j, k))
+        is_true(store_visited_triangles) && add_triangle!(visited_triangles, i, j, k)
         if is_outside(in_cert)
             return _jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges,
                 boundary_map, q,
@@ -264,6 +262,6 @@ function _jump_and_march(pts, adj, adj2v, graph::Graph{I}, boundary_index_ranges
     end
     # Swap the orientation to get a positively oriented triangle, remembering that we kept pᵢ on the left of pq and pⱼ on the right 
     k = get_adjacent(adj, j, i; check_existence, boundary_index_ranges)
-    is_true(store_visited_triangles) && (@show 12; add_triangle!(visited_triangles, j, i, k))
+    is_true(store_visited_triangles) && add_triangle!(visited_triangles, j, i, k)
     return construct_triangle(V, j, i, k)
 end
