@@ -717,12 +717,36 @@ function jump_and_march(tri::Triangulation, q;
         get_boundary_index_ranges(tri),
         get_boundary_map(tri),
         q; m, point_indices, try_points, k,
-        TriangleType=triangle_type(tri), check_existence, 
-        store_visited_triangles, visited_triangles, 
+        TriangleType=triangle_type(tri), check_existence,
+        store_visited_triangles, visited_triangles,
         rng)
 end
 
 ## Segment Location
+function locate_intersecting_triangles(tri::Triangulation, e;
+    check_existence::C=Val(has_multiple_segments(tri)),
+    rng::AbstractRNG=Random.default_rng()) where {C}
+    pts = get_points(tri)
+    adj = get_adjacent(tri)
+    adj2v = get_adjacent2vertex(tri)
+    graph = get_graph(tri)
+    boundary_index_ranges = get_boundary_index_ranges(tri)
+    boundary_map = get_boundary_map(tri)
+    T = get_triangles(tri)
+    Ts = typeof(T)
+    return locate_intersecting_triangles(e,
+        pts,
+        adj,
+        adj2v,
+        graph,
+        boundary_index_ranges,
+        boundary_map,
+        triangle_type(tri),
+        Ts,
+        check_existence,
+        rng)
+end
+
 
 # Miscellaneous
 @inline integer_type(::Triangulation{P,Ts,I}) where {P,Ts,I} = I
@@ -1444,6 +1468,15 @@ query point `q`.
 # Output 
 Returns the triangle `V` containing the query point `q`.
 """ jump_and_march(::Triangulation, ::Any)
+
+@doc """
+    locate_intersecting_triangles(tri::Triangulation, e;
+        check_existence::C=Val(has_multiple_segments(tri)),
+        rng::AbstractRNG=Random.default_rng()) where {C}
+
+Given a triangulation `tri` and a segment `e`, returns a set 
+of triangles whose interior intersects `e`.
+""" locate_intersecting_triangles(::Triangulation, ::Any)
 
 @doc """
     integer_type(tri::Triangulation{P,Ts,I}) where {P,Ts,I}

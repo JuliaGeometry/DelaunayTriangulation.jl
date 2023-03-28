@@ -1,5 +1,5 @@
 """
-    find_all_intersecting_triangles_with_segment(
+    locate_intersecting_triangles(
         e,
         pts,
         adj,
@@ -15,7 +15,7 @@
 Given an edge `e` of a triangulation, returns a set of 
 triangles whose interior intersects the edge. 
 """
-function find_all_intersecting_triangles_with_segment(
+function locate_intersecting_triangles(
     e,
     pts,
     adj,

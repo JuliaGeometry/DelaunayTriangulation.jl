@@ -105,6 +105,7 @@ global Ts3 = Set{typeof(T3)}((SVector{3,Int32}((1, 2, 3)),
         for Ts in (Ts1, Ts2, Ts3)
             @test num_triangles(Ts) == length(Ts) == 5
         end
+        @test num_triangles([(1, 2, 3), (4, 5, 6), (10, 11, 12)]) == 3
     end
 
     @testset "Seeing if a collection contains a triangle" begin
@@ -200,6 +201,8 @@ global Ts3 = Set{typeof(T3)}((SVector{3,Int32}((1, 2, 3)),
         end
         T = [1 2 3; 4 5 6; 7 8 9]'
         @test each_triangle(T) == eachcol(T)
+        V = [(1,2,3),(4,5,6),(10,11,12),(30,31,32),(7,10,11)]
+        @test each_triangle(V) == V
     end
 
     @testset "Getting a positively oriented triangle" begin

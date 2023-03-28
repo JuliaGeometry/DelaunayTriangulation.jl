@@ -219,6 +219,7 @@ Given a collection of triangles `T`, returns the number of triangles
 in `T`. The only method currently defined is 
 
     num_triangles(T::Set)
+    num_triangles(T::AbstractVector) 
 
 which returns `length(T)`. You can extend this function as you need.
 """
@@ -227,6 +228,7 @@ function num_triangles(::F) where {F}
     return error("The num_triangles function has not been defined for the type $F.")
 end
 num_triangles(T::Set) = length(T)
+num_triangles(T::AbstractVector) = length(T)
 
 """
     contains_triangle(T::F, V::S) where {F, S}
@@ -410,9 +412,10 @@ defined are
 
     each_triangle(V::Set)
     each_triangle(V::AbstractMatrix)
+    each_triangle(V::AbstractVector)
 
-with the first method simply returning `V`, and the second returning 
-`eachcol(V)`. You can extend this function as you need.
+with the first method simply returning `V`, the second returning 
+`eachcol(V)`, and the third returning `V`. You can extend this function as you need.
 """
 function each_triangle end
 function each_triangle(::F) where {F}
@@ -420,6 +423,7 @@ function each_triangle(::F) where {F}
 end
 each_triangle(V::Set) = V
 each_triangle(V::AbstractMatrix) = eachcol(V)
+each_triangle(V::AbstractVector) = V
 
 """
     compare_triangle_collections(T, V)
