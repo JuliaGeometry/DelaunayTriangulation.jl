@@ -330,7 +330,7 @@ function search_down_adjacent_boundary_edges(pts, adj::Adjacent{I,E},
             return (Cert.Outside, i, j,
                 get_adjacent(adj, i, j; check_existence, boundary_index_ranges))
         elseif is_on(q_pos) || is_degenerate(q_pos)
-            get_adjacent(adj, j, i; check_existence, boundary_index_ranges)
+            k = get_adjacent(adj, j, i; check_existence, boundary_index_ranges)
             is_true(store_visited_triangles) && add_triangle!(visited_triangles, j, i, k)
             return (Cert.On, j, i, k)
         end
