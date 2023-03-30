@@ -339,7 +339,6 @@ Base.@constprop :aggressive function Triangulation(points::P;
     return tri
 end
 
-#=
 function merge_constrained_edges(bn_map, boundary_nodes, constrained_edges::Es) where {Es}
     all_constrained = initialise_edges(Es)
     E = edge_type(Es)
@@ -358,7 +357,6 @@ function merge_constrained_edges(bn_map, boundary_nodes, constrained_edges::Es) 
     end
     return all_constrained
 end
-=#
 
 ## Accessors
 for n in fieldnames(Triangulation)
@@ -807,7 +805,6 @@ function Triangulation(points::P, triangles::T, boundary_nodes::BN;
     graph = get_graph(tri)
     tris = get_triangles(tri)
     for τ in each_triangle(triangles)
-        # add_triangle!(tri, τ)  # Not using this so that we can avoid boundary handling 
         add_triangle!(adj, τ)
         add_triangle!(adj2v, τ)
         add_triangle!(graph, τ)
@@ -816,6 +813,12 @@ function Triangulation(points::P, triangles::T, boundary_nodes::BN;
     add_boundary_information!(tri)
     add_ghost_triangles && add_ghost_triangles!(tri)
     convex_hull!(tri; reconstruct=true)
+    constrained_edges = get_all_constrained_edges(tri)
+    bn_map = get_boundary_map(tri)
+    all_edges = merge_constrained_edges(bn_map,boundary_nodes,initialise_edges(Es))
+    for edge in each_edge(all_edges)
+        add_edge!(constrained_edges, edge)
+    end
     return tri
 end
 
