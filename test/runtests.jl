@@ -138,4 +138,17 @@ using SafeTestsets
             include("point_location/jump_and_march.jl")
         end
     end
+
+    @testset verbose = true "Constrained Triangulation" begin
+        @safetestset "Segment Location" begin
+            include("constrained_triangulation/segment_location.jl")
+        end
+    end
+end
+
+
+@testset verbose = true "Constrained Triangulation" begin
+    @safetestset "Segment Location" begin
+        include("constrained_triangulation/segment_location.jl")
+    end
 end

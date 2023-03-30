@@ -159,6 +159,9 @@ end
     end
 
     @testset "Segment location in a lattice with constrained edges going back collinear and non-collinear segments" begin
+        a, b = 0, 4
+        c, d = 0.0, 9.0
+        nx, ny = 5, 10
         tri = triangulate_rectangle(a, b, c, d, nx, ny)
         DT.flip_edge!(tri, 34, 38)
         DT.flip_edge!(tri, 2, 7)
