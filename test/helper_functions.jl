@@ -372,8 +372,8 @@ end
 
 function test_intersections(tri, e, allT, constrained_edges)
     for e in ((e[1], e[2]), (e[2], e[1]))
-        intersecting_triangles1, collinear_segments1 = DT.locate_intersecting_triangles(tri, e)
-        intersecting_triangles2, collinear_segments2 = DT.locate_intersecting_triangles(
+        intersecting_triangles1, collinear_segments1, left1, right1 = DT.locate_intersecting_triangles(tri, e)
+        intersecting_triangles2, collinear_segments2, left2, right2 = DT.locate_intersecting_triangles(
             e,
             get_points(tri),
             get_adjacent(tri),
@@ -429,8 +429,8 @@ end
 function test_segment_triangle_intersections(tri, edge, true_triangles, true_collinear_segments, current_constrained_edges)
     constrained_edges = get_constrained_edges(tri)
     for edge in ((edge[1], edge[2]), (edge[2], edge[1]))
-        intersecting_triangles1, collinear_segments1 = DT.locate_intersecting_triangles(tri, edge)
-        intersecting_triangles2, collinear_segments2 = DT.locate_intersecting_triangles(
+        intersecting_triangles1, collinear_segments1, left1, right1 = DT.locate_intersecting_triangles(tri, edge)
+        intersecting_triangles2, collinear_segments2, left2, right2 = DT.locate_intersecting_triangles(
             edge,
             get_points(tri),
             get_adjacent(tri),

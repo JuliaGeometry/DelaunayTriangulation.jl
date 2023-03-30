@@ -152,3 +152,7 @@ end
         include("constrained_triangulation/segment_location.jl")
     end
 end
+
+@safetestset "Jump and March" begin
+    include("point_location/jump_and_march.jl")
+end

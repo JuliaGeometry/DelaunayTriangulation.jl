@@ -74,12 +74,11 @@ end
 function select_initial_triangle_clockwise(pts, adj::Adjacent{I,E}, boundary_map, p, q, pᵢ, pⱼ, i, j, k,
     boundary_index_ranges,
     check_existence::V=Val(has_multiple_segments(boundary_map)),
-    store_visited_triangles::F=Val(false),
-    visited_triangles=nothing,
-    collinear_segments=nothing) where {V,F,I,E}
+    store_history::F=Val(false),
+    history=nothing) where {V,F,I,E}
     line_cert_i = point_position_relative_to_line(p, q, pᵢ)
-    if is_true(store_visited_triangles) && is_collinear(line_cert_i)
-        add_edge!(collinear_segments, construct_edge(E, k, i))
+    if is_true(store_history) && is_collinear(line_cert_i)
+        add_edge!(history, k, i)
     end
     while is_left(line_cert_i)
         j = i
@@ -88,8 +87,8 @@ function select_initial_triangle_clockwise(pts, adj::Adjacent{I,E}, boundary_map
             boundary_index_ranges)
         pᵢ = get_point(pts, boundary_map, i)
         line_cert_i = point_position_relative_to_line(p, q, pᵢ)
-        if is_true(store_visited_triangles) && is_collinear(line_cert_i)
-            add_edge!(collinear_segments, construct_edge(E, k, i))
+        if is_true(store_history) && is_collinear(line_cert_i)
+            add_edge!(history, k, i)
         end
     end
     return i, j, pᵢ, pⱼ
@@ -98,11 +97,10 @@ end
 function select_initial_triangle_counterclockwise(pts, adj::Adjacent{I,E}, boundary_map, line_cert_j, p, q,
     pᵢ, pⱼ, i, j, k, boundary_index_ranges,
     check_existence::V=Val(has_multiple_segments(boundary_map)),
-    store_visited_triangles::F=Val(false),
-    visited_triangles=nothing,
-    collinear_segments=nothing) where {V,F,I,E}
-    if is_true(store_visited_triangles) && is_collinear(line_cert_j)
-        add_edge!(collinear_segments, construct_edge(E, k, j))
+    store_history::F=Val(false),
+    history=nothing) where {V,F,I,E}
+    if is_true(store_history) && is_collinear(line_cert_j)
+        add_edge!(history, k, j)
     end
     while is_right(line_cert_j)
         i = j
@@ -111,8 +109,8 @@ function select_initial_triangle_counterclockwise(pts, adj::Adjacent{I,E}, bound
             boundary_index_ranges)
         pⱼ = get_point(pts, boundary_map, j)
         line_cert_j = point_position_relative_to_line(p, q, pⱼ)
-        if is_true(store_visited_triangles) && is_collinear(line_cert_j)
-            add_edge!(collinear_segments, construct_edge(E, k, j))
+        if is_true(store_history) && is_collinear(line_cert_j)
+            add_edge!(history, k, j)
         end
     end
     return i, j, pᵢ, pⱼ
@@ -128,9 +126,8 @@ end
         q, 
         boundary_index_ranges, 
         check_existence::V = Val(has_multiple_segments(boundary_map)), 
-        store_visited_triangles::F=Val(false),
-        visited_triangles=nothing,
-        collinear_segments=nothing,
+        store_history::F=Val(false),
+        history=nothing,
         rng::AbstractRNG = Random.default_rng()) where {V,F}
 
 Selects an initial triangle for the jump-and-march algorithm, starting from a point with index `k` and 
@@ -146,9 +143,8 @@ holes are fine), and `k` should not be a point on the outer boundary.
 - `q`: The point being searched for.
 - `boundary_index_ranges`: The `Dict` handling the mapping of boundary indices from [`construct_boundary_index_ranges`](@ref).
 - `check_existence::V=Val(has_multiple_segments(boundary_map)))`: Checks for different possible boundary indices when there are multiple segments. See [`get_adjacent`](@ref).
-- `stored_visited_triangles::F=Val(false)`: Whether to store visited triangles. Exterior ghost triangles will not be stored.
-- `visited_triangles=nothing`: Object to push visited triangles into.
-- `collinear_segments=nothing`: Object to push collinear segments into.
+- `store_history::F=Val(false)`: Whether to store visited triangles. Exterior ghost triangles will not be stored.
+- `history=nothing`: The history. This should be a [`PointLocationHistory`](@ref) type if `store_history` is `true`.
 
 # Outputs 
 - `p`: The `k`th point in `pts`. 
@@ -158,9 +154,8 @@ holes are fine), and `k` should not be a point on the outer boundary.
 function select_initial_triangle_interior_node(pts, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex,
     boundary_map, k, q, boundary_index_ranges,
     check_existence::V=Val(has_multiple_segments(boundary_map)),
-    store_visited_triangles::F=Val(false),
-    visited_triangles=nothing,
-    collinear_segments=nothing,
+    store_history::F=Val(false),
+    history=nothing,
     rng::AbstractRNG=Random.default_rng()) where {V,F,I,E}
     p = get_point(pts, boundary_map, k)
     ## Select the initial edge to rotate about
@@ -181,15 +176,15 @@ function select_initial_triangle_interior_node(pts, adj::Adjacent{I,E}, adj2v::A
         # We want q to be in the direction of of ppᵢ or ppⱼ, which just means not left
         if !is_left(on_edge_cert)
             if is_on(on_edge_cert) || is_degenerate(on_edge_cert)
-                is_true(store_visited_triangles) && add_edge!(collinear_segments, construct_edge(E, k, opposing_idx))
+                is_true(store_history) && add_edge!(history, k, opposing_idx)
                 return p, j, i, pⱼ, pᵢ
             else
                 pos_cert = point_position_relative_to_line(p, q, pᵢ)
                 if is_left(pos_cert)
-                    is_true(store_visited_triangles) && add_edge!(collinear_segments, construct_edge(E, k, opposing_idx))
+                    is_true(store_history) && add_edge!(history, k, opposing_idx)
                     return p, i, j, pᵢ, pⱼ
                 else
-                    is_true(store_visited_triangles) && add_edge!(collinear_segments, construct_edge(E, k, opposing_idx))
+                    is_true(store_history) && add_edge!(history, k, opposing_idx)
                     return p, j, i, pⱼ, pᵢ
                 end
             end
@@ -206,18 +201,16 @@ function select_initial_triangle_interior_node(pts, adj::Adjacent{I,E}, adj2v::A
         i, j, pᵢ, pⱼ = select_initial_triangle_clockwise(pts, adj, boundary_map, p, q, pᵢ,
             pⱼ, i, j, k, boundary_index_ranges,
             check_existence,
-            store_visited_triangles,
-            visited_triangles,
-            collinear_segments)
+            store_history,
+            history)
     else
         i, j, pᵢ, pⱼ = select_initial_triangle_counterclockwise(pts, adj, boundary_map,
             line_cert_j, p, q, pᵢ, pⱼ,
             i, j, k,
             boundary_index_ranges,
             check_existence,
-            store_visited_triangles,
-            visited_triangles,
-            collinear_segments)
+            store_history,
+            history)
     end
 
     ## Swap values and return
@@ -310,9 +303,8 @@ end
         q_pos, 
         next_vertex, 
         check_existence::V=Val(has_multiple_segments(boundary_map)),
-        store_visited_triangles::F=Val(false),
-        visited_triangles=nothing,
-        collinear_segments=nothing) where {I,E,V,F}
+        store_history::F=Val(false),
+        history=nothing) where {I,E,V,F}
 
 Given a collection of points `pts`, an [`Adjacent`](@ref) map `adj`, a list of boundary index ranges from [`construct_boundary_index_ranges`](@ref), a boundary map from [`construct_boundary_map`](@ref), an outer boundary index 
 `k` for a point in `pts`, a point `q` being searched for, a `direction` giving the direction of `q` from `get_point(pts, k)`,
@@ -326,34 +318,31 @@ oriented triangle with `q` on the edge `(u, v)`. Otherwise, `(u, v, w)` is a gho
 
 The `check_existence` argument is the same keyword argument from [`get_adjacent`](@ref), and is needed when you use multiple segments in your boundary.
 
-You can store the visited triangles using the last two arguments, and the collinear segments using the last argument.
-
 Note that this function relies on the assumption that the geometry is convex.
 """
 function search_down_adjacent_boundary_edges(pts, adj::Adjacent{I,E},
     boundary_index_ranges, boundary_map, k, q,
     direction, q_pos, next_vertex,
     check_existence::V=Val(has_multiple_segments(boundary_map)),
-    store_visited_triangles::F=Val(false),
-    visited_triangles=nothing,
-    collinear_segments=nothing) where {I,E,V,F}
+    store_history::F=Val(false),
+    history=nothing) where {I,E,V,F}
     i = k
     j = next_vertex
     pⱼ = get_point(pts, boundary_map, j)
     if is_right(direction)
-        if is_true(store_visited_triangles) # in case we don't enter the loop
+        if is_true(store_history) # in case we don't enter the loop
             k′ = get_adjacent(adj, i, j; check_existence, boundary_index_ranges)
-            add_triangle!(visited_triangles, i, j, k′)
-            add_edge!(collinear_segments, construct_edge(E, i, j))
+            add_triangle!(history, i, j, k′)
+            add_edge!(history, i, j)
         end
         while is_right(q_pos)
             i, pᵢ = j, pⱼ
             j = get_right_boundary_node(adj, i, I(BoundaryIndex), boundary_index_ranges,
                 check_existence)
-            if is_true(store_visited_triangles)
+            if is_true(store_history)
                 k′ = get_adjacent(adj, i, j; check_existence, boundary_index_ranges)
-                add_triangle!(visited_triangles, i, j, k′)
-                add_edge!(collinear_segments, construct_edge(E, i, j))
+                add_triangle!(history, i, j, k′)
+                add_edge!(history, i, j)
             end
             pⱼ = get_point(pts, boundary_map, j)
             right_cert = point_position_relative_to_line(pᵢ, pⱼ, q)
@@ -368,19 +357,19 @@ function search_down_adjacent_boundary_edges(pts, adj::Adjacent{I,E},
             return (Cert.On, i, j, k)
         end
     else
-        if is_true(store_visited_triangles) # in case we don't enter the loop
+        if is_true(store_history) # in case we don't enter the loop
             k′ = get_adjacent(adj, j, i; check_existence, boundary_index_ranges)
-            add_triangle!(visited_triangles, j, i, k′)
-            add_edge!(collinear_segments, construct_edge(E, i, j)) # i,j → j, i to get the ordering of the segments
+            add_triangle!(history, j, i, k′)
+            add_edge!(history, i, j) # i,j → j, i to get the ordering of the segments
         end
         while is_left(q_pos)
             i, pᵢ = j, pⱼ
             j = get_left_boundary_node(adj, i, I(BoundaryIndex), boundary_index_ranges,
                 check_existence)
-            if is_true(store_visited_triangles)
+            if is_true(store_history)
                 k′ = get_adjacent(adj, j, i; check_existence, boundary_index_ranges)
-                add_triangle!(visited_triangles, j, i, k′)
-                add_edge!(collinear_segments, construct_edge(E, i, j))
+                add_triangle!(history, j, i, k′)
+                add_edge!(history, i, j)
             end
             pⱼ = get_point(pts, boundary_map, j)
             left_cert = point_position_relative_to_line(pᵢ, pⱼ, q)
@@ -410,9 +399,8 @@ end
         right_cert, 
         left_cert, 
         check_existence::V=Val(has_multiple_segments(boundary_map)), 
-        store_visited_triangles::F=Val(false), 
-        visited_triangles=nothing,
-        collinear_segments=nothing) where {I,E,V,F}
+        store_history::F=Val(false), 
+        history=nothing) where {I,E,V,F}
 
 Checks if the line connecting the `k`th point of `pts` to `q` intersects any of the edges neighbouring the boundary node `k`.
 
@@ -430,9 +418,8 @@ to work on convex geometries.
 - `right_cert`: A certificate giving the position of `q` to the right of the `k`th point. This comes from [`check_for_intersections_with_adjacent_boundary_edges`](@ref).
 - `left_cert`: A certificate giving the position of `q` to the left of the `k`th point. This comes from [`check_for_intersections_with_adjacent_boundary_edges`](@ref).
 - `check_existence::V=Val(has_multiple_segments(boundary_nodes)))`: Checks for different possible boundary indices when there are multiple segments. See [`get_adjacent`](@ref).
-- `stored_visited_triangles::F=Val(false)`: Whether to store visited triangles. Exterior ghost triangles will not be stored.
-- `visited_triangles=nothing`: Object to push visited triangles into.
-- `collinear_segments=nothing`: Object to push collinear segments into.
+- `store_history::F=Val(false)`: Whether to store visited triangles. Exterior ghost triangles will not be stored.
+- `history=nothing`: The history. This should be a [`PointLocationHistory`](@ref) type if `store_history` is `true`.
 
 # Outputs 
 There are several possible forms for the returned values. These are listed below, letting `p` be the `k`th point, `pᵢ` the point corresponding to 
@@ -463,9 +450,8 @@ function check_for_intersections_with_interior_edges_adjacent_to_boundary_node(p
     right_cert,
     left_cert,
     check_existence::V=Val(has_multiple_segments(boundary_map)),
-    store_visited_triangles::F=Val(false),
-    visited_triangles=nothing,
-    collinear_segments=nothing) where {I,E,V,F}
+    store_history::F=Val(false),
+    history=nothing) where {I,E,V,F}
     p = get_point(pts, boundary_map, k)
     other_boundary_node = get_left_boundary_node(adj, k, I(BoundaryIndex),
         boundary_index_ranges, check_existence)
@@ -494,13 +480,13 @@ function check_for_intersections_with_interior_edges_adjacent_to_boundary_node(p
             if has_one_intersection(intersection_cert)
                 # q is not in the triangle, but we still have an intersection. 
                 # In the returned value, we switch i and j so that pᵢ is left of pq and pⱼ is right of pq
-                is_true(store_visited_triangles) && add_triangle!(visited_triangles, i, j, k)
+                is_true(store_history) && add_triangle!(history, i, j, k)
                 return j, i, Cert.Single, Cert.Outside
             elseif is_touching(intersection_cert)
                 # q is on the edge 
-                if is_true(store_visited_triangles)
-                    add_triangle!(visited_triangles, i, j, k)
-                    add_edge!(collinear_segments, construct_edge(E, i, j))
+                if is_true(store_history)
+                    add_triangle!(history, i, j, k)
+                    add_edge!(history, i, j)
                 end
                 return i, j, Cert.On, Cert.Inside
             end
@@ -508,7 +494,7 @@ function check_for_intersections_with_interior_edges_adjacent_to_boundary_node(p
             pⱼp_edge = point_position_relative_to_line(pⱼ, p, q)
             ppᵢ_edge = point_position_relative_to_line(p, pᵢ, q)
             if is_left(pⱼp_edge) && is_left(ppᵢ_edge)
-                is_true(store_visited_triangles) && add_triangle!(visited_triangles, i, j, k)
+                is_true(store_history) && add_triangle!(history, i, j, k)
                 return i, j, Cert.None, Cert.Inside
             end
             # If none of the above lead to a return, then q must be on the other side of p away from the interior, meaning 
@@ -524,16 +510,16 @@ function check_for_intersections_with_interior_edges_adjacent_to_boundary_node(p
             q_cert = point_position_on_line_segment(p, pⱼ, q)
             if is_on(q_cert) || is_degenerate(q_cert)
                 # Here, q is on the edge, so we consider it as being inside the triangle.
-                if is_true(store_visited_triangles)
-                    add_triangle!(visited_triangles, i, j, k)
-                    add_edge!(collinear_segments, construct_edge(E, i, j))
+                if is_true(store_history)
+                    add_triangle!(history, i, j, k)
+                    add_edge!(history, i, j)
                 end
                 return i, j, Cert.On, Cert.Inside
             elseif is_right(q_cert)
                 # Here, q is to the right of ppⱼ, which just means that it is inside the triangulation. 
-                if is_true(store_visited_triangles)
-                    add_triangle!(visited_triangles, i, j, k)
-                    add_edge!(collinear_segments, construct_edge(E, k, j))
+                if is_true(store_history)
+                    add_triangle!(history, i, j, k)
+                    add_edge!(history, k, j)
                 end
                 return j, i, Cert.Right, Cert.Outside # flip i and j to get the correct orientation
             elseif is_left(q_cert)
@@ -554,13 +540,13 @@ function check_for_intersections_with_interior_edges_adjacent_to_boundary_node(p
         if (is_left(certᵢ) && is_right(certⱼ)) || (is_right(certᵢ) && is_left(certⱼ))
             intersection_cert = line_segment_intersection_type(p, q, pᵢ, pⱼ)
             if has_one_intersection(intersection_cert)
-                is_true(store_visited_triangles) && add_triangle!(visited_triangles, i, j, k)
+                is_true(store_history) && add_triangle!(history, i, j, k)
                 return j, i, Cert.Single, Cert.Outside
             end
             pⱼp_edge = point_position_relative_to_line(pⱼ, p, q)
             ppᵢ_edge = point_position_relative_to_line(p, pᵢ, q)
             if is_left(pⱼp_edge) && is_left(ppᵢ_edge)
-                is_true(store_visited_triangles) && add_triangle!(visited_triangles, i, j, k)
+                is_true(store_history) && add_triangle!(history, i, j, k)
                 return i, j, Cert.None, Cert.Inside
             end
             return zero(I), zero(I), Cert.None, Cert.Outside

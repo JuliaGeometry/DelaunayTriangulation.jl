@@ -30,6 +30,7 @@ function locate_intersecting_triangles(
     e = sort_edge_by_degree(e, graph) # faster to start at the minimum degree vertex of the edge
     intersecting_triangles = initialise_triangles(Vs)
     collinear_segments = Vector{E}() # use vector so that we get the ordering of the segments
+    history = PointLocationHistory{Vs,E,I}()
     jump_and_march(
         pts,
         adj,
@@ -42,14 +43,17 @@ function locate_intersecting_triangles(
         k=initial(e),
         TriangleType,
         check_existence,
-        store_visited_triangles=Val(true),
-        visited_triangles=intersecting_triangles,
-        collinear_segments,
+        store_history=Val(true),
+        history,
         rng
     )
+    intersecting_triangles = history.triangles 
+    collinear_segments = history.collinear_segments
+    left_vertices = history.left_vertices
+    right_vertices = history.right_vertices
     if !isempty(collinear_segments)
         connect_segments!(collinear_segments)
         extend_segments!(collinear_segments, e)
     end
-    return intersecting_triangles, collinear_segments
+    return intersecting_triangles, collinear_segments, left_vertices, right_vertices
 end

@@ -70,9 +70,8 @@ end
         k=select_initial_point(pts, q; m, point_indices, try_points),
         TriangleType::Type{V}=NTuple{3,I},
         check_existence::C=Val(has_multiple_segments(boundary_map)),
-        store_visited_triangles::F=Val(false),
-        visited_triangles=nothing,
-        collinear_segments=nothing,
+        store_history::F=Val(false),
+        history=nothing,
         rng::AbstractRNG = Random.default_rng()) where {I,V,C,F}
 
 Using the jump and march algorithm, finds the triangle in the triangulation containing the 
@@ -98,9 +97,8 @@ when it is outside of the triangulation unless ghost triangles are present.
 - `k=select_initial_point(pts, q; m, point_indices, try_points)`: Where to start the algorithm.
 - `TriangleType::Type{V}=NTuple{3,I}`: The type used for representing the triangles. 
 - `check_existence::C=Val(has_multiple_segments(boundary_map))`: Whether to check that the edge exists when using [`get_adjacent`](@ref), helping to correct for incorrect boundary indices in the presence of multiple boundary segments. See [`get_adjacent`](@ref).
-- `stored_visited_triangles::F=Val(false)`: Whether to store visited triangles. Exterior ghost triangles will not be stored.
-- `visited_triangles=nothing`: Object to push visited triangles into.
-- `collinear_segments=nothing`: When storing visited triangles, this object will also store any segments that were collinear with the line from `q` to the initial point `k`.
+- `store_history::F=Val(false)`: Whether to store visited triangles. Exterior ghost triangles will not be stored.
+- `history=nothing`: The history. This should be a [`PointLocationHistory`](@ref) type if `store_history` is `true`.
 - `rng::AbstractRNG`: The RNG to use.
 
 # Output 
@@ -114,19 +112,17 @@ function jump_and_march(pts, adj, adj2v, graph::Graph{I}, boundary_index_ranges,
     k=select_initial_point(pts, q; m, point_indices, try_points),
     TriangleType::Type{V}=NTuple{3,I},
     check_existence::C=Val(has_multiple_segments(boundary_map)),
-    store_visited_triangles::F=Val(false),
-    visited_triangles=nothing,
-    collinear_segments=nothing,
+    store_history::F=Val(false),
+    history=nothing,
     rng::AbstractRNG=Random.default_rng()) where {I,V,C,F}
     return _jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges, boundary_map, q,
-        k, V, check_existence, store_visited_triangles, visited_triangles, collinear_segments, rng)
+        k, V, check_existence, store_history, history, rng)
 end
 function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, boundary_index_ranges,
     boundary_map, q, k, TriangleType::Type{V},
     check_existence::C=Val(has_multiple_segments(boundary_map)),
-    store_visited_triangles::F=Val(false),
-    visited_triangles=nothing,
-    collinear_segments=nothing,
+    store_history::F=Val(false),
+    history=nothing,
     rng::AbstractRNG=Random.default_rng()) where {I,E,V,C,F}
     if !is_outer_boundary_node(k, graph, boundary_index_ranges) || !has_ghost_triangles(adj, adj2v)
         # If k is not a boundary node, then we can rotate around the point k to find an initial triangle 
@@ -135,8 +131,8 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
         p, i, j, pᵢ, pⱼ = select_initial_triangle_interior_node(pts, adj, adj2v,
             boundary_map, k, q,
             boundary_index_ranges,
-            check_existence, store_visited_triangles, visited_triangles, collinear_segments, rng)
-        is_true(store_visited_triangles) && add_triangle!(visited_triangles, j, i, k)
+            check_existence, store_history, history, rng)
+        is_true(store_history) && add_triangle!(history, j, i, k)
     else
         # We have an outer boundary node. First, let us check the neighbouring boundary edges. 
         direction, q_pos, next_vertex, right_cert, left_cert = check_for_intersections_with_adjacent_boundary_edges(pts,
@@ -154,11 +150,9 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
                 direction, q_pos,
                 next_vertex,
                 check_existence,
-                store_visited_triangles,
-                visited_triangles,
-                collinear_segments)
+                store_history,
+                history)
             if is_on(q_pos)
-                #is_true(store_visited_triangles) && add_triangle!(visited_triangles, u, v, w)
                 return construct_triangle(V, u, v, w)
             else
                 u, v = exterior_jump_and_march(pts, adj, boundary_index_ranges,
@@ -179,18 +173,15 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
             right_cert,
             left_cert,
             check_existence,
-            store_visited_triangles,
-            visited_triangles,
-            collinear_segments)
+            store_history,
+            history)
         if is_inside(triangle_cert)
-            #is_true(store_visited_triangles) && add_triangle!(visited_triangles, i, j, k)
             return construct_triangle(V, i, j, k)
         elseif is_none(edge_cert)
             u, v = exterior_jump_and_march(pts, adj, boundary_index_ranges, boundary_map, k,
                 q, check_existence)
             return construct_triangle(V, u, v, get_adjacent(adj, u, v))
         else
-            #is_true(store_visited_triangles) && add_triangle!(visited_triangles, j, i, k)
             p, pᵢ, pⱼ = get_point(pts, boundary_map, k, i, j)
         end
     end
@@ -224,7 +215,7 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
                 return construct_triangle(V, i, j, k)
             else
                 return _jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges,
-                    boundary_map, q, k, V, check_existence, store_visited_triangles, visited_triangles, collinear_segments, rng)
+                    boundary_map, q, k, V, check_existence, store_history, history, rng)
             end
         end
         # Now we can finally move forward. We use check_existence to protect against the issue mentioned above.
@@ -232,17 +223,17 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
         pₖ = get_point(pts, boundary_map, k)
         pₖ_pos = point_position_relative_to_line(p, q, pₖ)
         if is_right(pₖ_pos)
-            is_true(store_visited_triangles) && add_triangle!(visited_triangles, i, j, k)
+            is_true(store_history) && add_triangle!(history, i, j, k)
             j, pⱼ = k, pₖ
             last_changed = j
         elseif is_left(pₖ_pos)
-            is_true(store_visited_triangles) && add_triangle!(visited_triangles, i, j, k)
+            is_true(store_history) && add_triangle!(history, i, j, k)
             i, pᵢ = k, pₖ
             last_changed = i
         else
             # pₖ is collinear with pq. We will first check if q is already in the current triangle
             in_cert = point_position_relative_to_triangle(pᵢ, pⱼ, pₖ, q) # ... Maybe there is a better way to compute this, reusing previous certificates? Not sure. ...
-            if is_true(store_visited_triangles)
+            if is_true(store_history)
                 # We need to be careful about whether or not we want to add another 
                 # collinear segment in this case, since e.g. q might just be on the triangle 
                 # on a separate edge (if !is_outside(in_cert)),
@@ -252,11 +243,11 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
                 # actual edge, rather than trying both as we do below. Usually it's 
                 # the edge last_changed == i ? j : i, but not always...
                 if is_collinear(point_position_relative_to_line(original_k, q, last_changed == i ? j : i, pts, boundary_map))
-                    add_edge!(collinear_segments, construct_edge(E, last_changed == i ? j : i, k))
+                    add_edge!(history, last_changed == i ? j : i, k)
                 elseif last_changed ≠ I(DefaultAdjacentValue) && is_collinear(point_position_relative_to_line(original_k, q, last_changed, pts, boundary_map))
-                    add_edge!(collinear_segments, construct_edge(E, last_changed, k))
+                    add_edge!(history, last_changed, k)
                 end
-                add_triangle!(visited_triangles, i, j, k)
+                add_triangle!(history, i, j, k)
             end
             if !is_outside(in_cert)
                 return construct_triangle(V, i, j, k)
@@ -279,16 +270,39 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
     if is_degenerate(arrangement)
         pₖ = get_point(pts, boundary_map, k) # Need to have this here in case we skip the entire loop, above, meaning pₖ won't exist
         in_cert = point_position_relative_to_triangle(pᵢ, pⱼ, pₖ, q) # ... Maybe there is a better way to compute this, reusing previous certificates? Not sure. ...
-        is_true(store_visited_triangles) && add_triangle!(visited_triangles, i, j, get_adjacent(adj, i, j; check_existence, boundary_index_ranges))
+        is_true(store_history) && add_triangle!(history, i, j, get_adjacent(adj, i, j; check_existence, boundary_index_ranges))
         if is_outside(in_cert)
             return _jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges,
                 boundary_map, q,
                 last_changed == I(DefaultAdjacentValue) ? i :
-                last_changed, V, check_existence, store_visited_triangles, visited_triangles, collinear_segments, rng)
+                last_changed, V, check_existence, store_history, history, rng)
         end
     end
     # Swap the orientation to get a positively oriented triangle, remembering that we kept pᵢ on the left of pq and pⱼ on the right 
     k = get_adjacent(adj, j, i; check_existence, boundary_index_ranges)
-    is_true(store_visited_triangles) && add_triangle!(visited_triangles, j, i, k)
+    is_true(store_history) && add_triangle!(history, j, i, k)
     return construct_triangle(V, j, i, k)
 end
+
+"""
+    PointLocationHistory{T,E,I}
+
+History from using [`jump_and_march`](@ref).
+
+# Fields 
+- `triangles::T`: The visited triangles. 
+- `collinear_segments::Vector{E}`: Segments collinear with the original line `pq` using to jump.
+- `left_vertices::Vector{I}`: Vertices from the visited triangles to the left of `pq`.
+- `right_verices::Vector{I}`: Vertices from the visited triangles to the right of `pq`.
+"""
+struct PointLocationHistory{T,E,I}
+    triangles::T
+    collinear_segments::Vector{E}
+    left_vertices::Vector{I}
+    right_vertices::Vector{I}
+    PointLocationHistory{T,E,I}() where {T,E,I} = new{T,E,I}(initialise_triangles(T), E[], I[], I[])
+end
+add_triangle!(history::Ts, i::I, j::I, k::I) where {Ts<:PointLocationHistory,I<:Integer} = add_triangle!(history.triangles, i, j, k)
+add_edge!(history::PointLocationHistory{T,E}, i, j) where {T,E} = add_edge!(history.collinear_segments, construct_edge(E, i, j))
+add_left_vertex!(history::PointLocationHistory, i) = push!(history.left_vertices, i)
+add_right_vertex!(history::PointLocationHistory, j) = push!(history.right_vertices, j)

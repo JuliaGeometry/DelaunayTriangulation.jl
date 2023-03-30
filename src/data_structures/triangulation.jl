@@ -717,9 +717,8 @@ function jump_and_march(tri::Triangulation, q;
     k=select_initial_point(get_points(tri), q; m, point_indices,
         try_points),
     check_existence::C=Val(has_multiple_segments(tri)),
-    store_visited_triangles::F=Val(false),
-    visited_triangles=nothing,
-    collinear_segments=nothing,
+    store_history::F=Val(false),
+    history=nothing,
     rng::AbstractRNG=Random.default_rng()) where {C,F}
     return jump_and_march(get_points(tri),
         get_adjacent(tri),
@@ -729,7 +728,7 @@ function jump_and_march(tri::Triangulation, q;
         get_boundary_map(tri),
         q; m, point_indices, try_points, k,
         TriangleType=triangle_type(tri), check_existence,
-        store_visited_triangles, visited_triangles, collinear_segments,
+        store_history, history,
         rng)
 end
 
@@ -1461,8 +1460,8 @@ searching over all triangles.
         try_points=(),
         k=select_initial_point(get_points(tri), q; m, point_indices, try_points),
         check_existence::C=Val(has_multiple_segments(tri)),
-        store_visited_triangles::F=Val(false),
-        visited_triangles=nothing,
+        history::F=Val(false),
+        store_history=nothing,
         rng::AbstractRNG=Random.default_rng()) where {C, F}
 
 Using the jump and march algorithm, finds the triangle in the triangulation `tri` containing the 
@@ -1478,8 +1477,8 @@ query point `q`.
 - `try_points=()`: Extra points to try when sampling an initial point from [`select_initial_point`](@ref). Only relevant if `k` is not specified. 
 - `k=select_initial_point(pts, q; m, point_indices, try_points)`: Where to start the algorithm.
 - `check_existence::C=Val(has_multiple_segments(tri))`: Whether to check that the edge exists when using [`get_adjacent`](@ref), helping to correct for incorrect boundary indices in the presence of multiple boundary segments. See [`get_adjacent`](@ref).
-- `stored_visited_triangles::F=Val(false)`: Whether to store visited triangles. Exterior ghost triangles will not be stored.
-- `visited_triangles=nothing`: Object to push visited triangles into.
+- `store_history::F=Val(false)`: Whether to store visited triangles. Exterior ghost triangles will not be stored.
+- `history=nothing`: This should be a [`PointLocationHistory`](@ref) object if `store_history` is true.
 - `rng::AbstractRNG`: The RNG to use.
 
 # Output 
