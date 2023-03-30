@@ -31,6 +31,12 @@ global e3 = SVector{2,Int32}((i, j))
             @test DT.edge_indices(e) == (e[1], e[2])
         end
     end
+
+    @testset "Reversing an edge" begin
+        for e in (e1, e2, e3)
+            @test DT.reverse_edge(e) == DT.construct_edge(typeof(e), reverse(e)...)
+        end
+    end
 end
 
 global es1 = Set{typeof(e1)}(((1, 3), (4, 1), (10, 1), (3, 9), (5, 3)))
@@ -41,7 +47,7 @@ global es3 = Set{typeof(e3)}((SVector{2,Int32}((1, 3)),
     SVector{2,Int32}((3, 9)),
     SVector{2,Int32}((5, 3))))
 
-@testset "Collection of triangles" begin
+@testset "Collection of edges" begin
     @testset "Initialising a collection of edges" begin
         @test_throws "The" DT.initialise_edges(String)
         for es in (es1, es2, es3)
@@ -65,6 +71,7 @@ global es3 = Set{typeof(e3)}((SVector{2,Int32}((1, 3)),
         for es in (es1, es2, es3)
             @test num_edges(es) == length(es) == 5
         end
+        @test num_edges([(1, 2), (2, 3), (4, 5), (10, 11)]) == 4
     end
 
     @testset "Seeing if a collection contains an edge" begin
@@ -128,6 +135,8 @@ global es3 = Set{typeof(e3)}((SVector{2,Int32}((1, 3)),
         end
         E = [1 2; 10 15; 23 5]'
         @test each_edge(E) == eachcol(E)
+        E = [(1, 2), (2, 3), (4, 5)]
+        @test each_edge(E) == E
     end
 
     @testset "Getting a random edge from a collection" begin

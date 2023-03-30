@@ -360,3 +360,52 @@ end
             end
       end
 end
+
+@testset "split_constrained_edge!" begin
+      constrained_edges = Set{NTuple{2,Int64}}(((2, 7),))
+      DT.split_constrained_edge!(constrained_edges, (2, 7), [])
+      @test constrained_edges == Set{NTuple{2,Int64}}(((2, 7),))
+      DT.split_constrained_edge!(constrained_edges, (2, 7), [(2, 3), (3, 5), (10, 12)])
+      @test constrained_edges == Set{NTuple{2,Int64}}(((2, 3), (3, 5), (10, 12)))
+      DT.split_constrained_edge!(constrained_edges, (2, 7), [])
+      @test constrained_edges == Set{NTuple{2,Int64}}(((2, 3), (3, 5), (10, 12)))
+      DT.split_constrained_edge!(constrained_edges, (3, 5), [(2, 10), (11, 15), (2, 3)])
+      @test constrained_edges == Set{NTuple{2,Int64}}(((2, 3), (2, 10), (11, 15), (10, 12)))
+      DT.split_constrained_edge!(constrained_edges, (3, 2), [])
+      @test constrained_edges == Set{NTuple{2,Int64}}(((2, 3), (2, 10), (11, 15), (10, 12)))
+      DT.split_constrained_edge!(constrained_edges, (3, 2), [(10, 2), (23, 10)])
+      @test constrained_edges == Set{NTuple{2,Int64}}(((11, 15), (10, 12), (23, 10), (2, 10)))
+end
+
+@testset "connect_segments!" begin
+      C = [(7, 12), (12, 17), (17, 22), (32, 37), (37, 42), (42, 47)]
+      DT.connect_segments!(C)
+      @test C == [(7, 12), (12, 17), (17, 22), (22, 32), (32, 37), (37, 42), (42, 47)]
+      C = [(4, 9), (19, 24), (24, 29), (34, 39), (39, 44), (44, 49)]
+      DT.connect_segments!(C)
+      @test C == [(4, 9), (9, 19), (19, 24), (24, 29), (29, 34), (34, 39), (39, 44), (44, 49)]
+      C = [(4, 9), (9, 5)]
+      DT.connect_segments!(C)
+      @test C == [(4, 9), (9, 5)]
+      C = [(49, 44), (44, 39), (39, 34), (29, 24), (24, 19), (9, 4)]
+      DT.connect_segments!(C)
+      @test C == [(49, 44), (44, 39), (39, 34), (34, 29), (29, 24), (24, 19), (19, 9), (9, 4)]
+end
+
+@testset "extend_segments!" begin
+      segments = [(7, 12), (12, 17), (17, 22), (22, 27)]
+      constrained_edge = (7, 27)
+      DT.extend_segments!(segments, constrained_edge)
+      @test segments == [(7, 12), (12, 17), (17, 22), (22, 27)]
+      constrained_edge = (2, 32)
+      DT.extend_segments!(segments, constrained_edge)
+      @test segments == [(2, 7), (7, 12), (12, 17), (17, 22), (22, 27), (27, 32)]
+      segments = [(33, 29)]
+      constrained_edge = (37, 29)
+      DT.extend_segments!(segments, constrained_edge)
+      @test segments == [(37, 33), (33, 29)]
+      segments = [(29, 33)]
+      constrained_edge = (29, 37)
+      DT.extend_segments!(segments, constrained_edge)
+      @test segments == [(29, 33), (33, 37)]
+end

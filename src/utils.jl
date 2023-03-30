@@ -223,3 +223,85 @@ function sort_edge_by_degree(e::E, graph::Graph) where {E}
         return construct_edge(E, v, u)
     end
 end
+
+"""
+    split_constrained_edge!(constrained_edges, constrained_edge::E, collinear_segments) where {E}
+
+Given a set of `constrained_edges` and a `constrained_edge` in the set,
+and a vector of segments `collinear_segments` that are collinear with `constrained_edge`,
+replaces `constrained_edge` with those segments in `collinear_segments`.
+"""
+function split_constrained_edge!(constrained_edges, constrained_edge::E, collinear_segments) where {E}
+    if num_edges(collinear_segments) > 0
+        flipped_constrained_edge = reverse_edge(constrained_edge)
+        delete_edge!(constrained_edges, constrained_edge)
+        delete_edge!(constrained_edges, flipped_constrained_edge) # Delete both, in case we have reverse(e) rather than e
+        for e in each_edge(collinear_segments)
+            reverse_e = reverse_edge(e)
+            if !(contains_edge(e, constrained_edges) || contains_edge(reverse_e, constrained_edges))
+                add_edge!(constrained_edges, e)
+            end
+        end
+    end
+    return nothing
+end
+
+"""
+    connect_segments!(segments::AbstractVector{E}) where {E}
+
+Given an ordered vector of `segments`, mutates so that the endpoints connect, preserving order.
+
+```julia-repl
+julia> C = [(7, 12), (12, 17), (17, 22), (32, 37), (37, 42), (42, 47)];
+
+julia> DelaunayTriangulation.connect_segments!(C);
+
+julia> C
+7-element Vector{Tuple{Int64, Int64}}:
+ (7, 12)
+ (12, 17)
+ (17, 22)
+ (32, 37)
+ (37, 42)
+ (42, 47)
+ (22, 32)
+```
+"""
+function connect_segments!(segments::AbstractVector{E}) where {E}
+    f = firstindex(segments)
+    ℓ = lastindex(segments)
+    I = integer_type(E)
+    insert_idxs = Tuple{Int64,I,I}[]
+    shift_idx = 0
+    for i in f:(ℓ-1)
+        eᵢ = segments[i]
+        eᵢ₊₁ = segments[i+1]
+        if terminal(eᵢ) ≠ initial(eᵢ₊₁)
+            push!(insert_idxs, (i + 1 + shift_idx, terminal(eᵢ), initial(eᵢ₊₁)))
+            shift_idx += 1
+        end
+    end
+    for (i, u, v) in insert_idxs
+        insert!(segments, i, construct_edge(E, u, v)) # insert might be a bit slow, but segments should never be large so it's fine
+    end
+    return nothing
+end
+
+"""
+    extend_segments!(segments::AbstractVector{E}, constrained_edge) where {E}
+
+Given an ordered vector of `segments`, ensures that they also represent the 
+replacement of `constrained_edge`.
+"""
+function extend_segments!(segments::AbstractVector{E}, constrained_edge) where {E}
+    constrained_i, constrained_j = edge_indices(constrained_edge)
+    first_i = initial(segments[begin])
+    last_j = terminal(segments[end])
+    if constrained_i ≠ first_i
+        pushfirst!(segments, construct_edge(E, constrained_i, first_i))
+    end
+    if constrained_j ≠ last_j
+        push!(segments, construct_edge(E, last_j, constrained_j))
+    end
+    return nothing
+end
