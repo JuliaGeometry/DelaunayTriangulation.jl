@@ -369,3 +369,100 @@ function shewchuk_example_constrained()
     tri = triangulate(pts; rng, delete_ghosts=false, randomise=false)
     return tri
 end
+
+function test_intersections(tri, e, allT, constrained_edges)
+    for e in ((e[1], e[2]), (e[2], e[1]))
+        intersecting_triangles1, collinear_segments1 = DT.locate_intersecting_triangles(tri, e)
+        intersecting_triangles2, collinear_segments2 = DT.locate_intersecting_triangles(
+            e,
+            get_points(tri),
+            get_adjacent(tri),
+            get_adjacent2vertex(tri),
+            get_graph(tri),
+            get_boundary_index_ranges(tri),
+            get_boundary_map(tri),
+            NTuple{3,Int64},
+            Vector{NTuple{3,Int64}}
+        )
+        for (intersecting_triangles, collinear_segments) in zip(
+            (intersecting_triangles1, intersecting_triangles2),
+            (collinear_segments1, collinear_segments2)
+        )
+            @test all(T -> DT.is_positively_oriented(DT.triangle_orientation(tri, T)), intersecting_triangles)
+            @test all(!DT.is_none, [DT.triangle_line_segment_intersection(tri, T, e) for T in intersecting_triangles])
+            @test DT.compare_triangle_collections(allT, intersecting_triangles)
+            @test allunique(intersecting_triangles)
+            if typeof(constrained_edges) <: AbstractVector
+                @test collinear_segments == constrained_edges
+            else # Tuple of possibilities, in case the edge's endpoints have equal degree so that we could start at any point
+                @test any(==(collinear_segments), constrained_edges)
+            end
+        end
+    end
+end
+
+function test_split_edges(tri, edge, current_constrained_edges)
+    constrained_edges = get_constrained_edges(tri)
+    DT.add_edge!(constrained_edges, edge)
+    _, collinear_segments = DT.locate_intersecting_triangles(tri, edge)
+    DT.split_constrained_edge!(tri, edge, collinear_segments)
+    @test any(==(constrained_edges), current_constrained_edges)
+    return nothing
+end
+
+function sort_edge_vector(E)
+    sorted_E = similar(E)
+    for i in eachindex(E)
+        u, v = E[i]
+        e = (min(u, v), max(u, v))
+        sorted_E[i] = e
+    end
+    return sort(sorted_E)
+end
+
+function compare_edge_vectors(E1, E2)
+    E1s = sort_edge_vector(collect(E1))
+    E2s = sort_edge_vector(collect(E2))
+    return E1s == E2s
+end
+
+function test_segment_triangle_intersections(tri, edge, true_triangles, true_collinear_segments, current_constrained_edges)
+    constrained_edges = get_constrained_edges(tri)
+    for edge in ((edge[1], edge[2]), (edge[2], edge[1]))
+        intersecting_triangles1, collinear_segments1 = DT.locate_intersecting_triangles(tri, edge)
+        intersecting_triangles2, collinear_segments2 = DT.locate_intersecting_triangles(
+            edge,
+            get_points(tri),
+            get_adjacent(tri),
+            get_adjacent2vertex(tri),
+            get_graph(tri),
+            get_boundary_index_ranges(tri),
+            get_boundary_map(tri),
+            NTuple{3,Int64},
+            Vector{NTuple{3,Int64}}
+        )
+        for (intersecting_triangles, collinear_segments) in zip(
+            (intersecting_triangles1, intersecting_triangles2),
+            (collinear_segments1, collinear_segments2)
+        )
+            @test all(T -> DT.is_positively_oriented(DT.triangle_orientation(tri, T)), intersecting_triangles)
+            @test all(!DT.is_none, [DT.triangle_line_segment_intersection(tri, T, edge) for T in intersecting_triangles])
+            if typeof(true_triangles) <: AbstractVector || typeof(true_triangles) <: AbstractSet
+                @test DT.compare_triangle_collections(true_triangles, intersecting_triangles)
+            else
+                @test any(V -> DT.compare_triangle_collections(intersecting_triangles, V), true_triangles)
+            end
+            @test allunique(intersecting_triangles)
+            if typeof(true_collinear_segments) <: AbstractVector || typeof(true_collinear_segments) <: AbstractSet
+                @test collinear_segments == true_collinear_segments
+            else # Tuple of possibilities, in case the edge's endpoints have equal degree so that we could start at any point
+                @test any(==(collinear_segments), true_collinear_segments)
+            end
+        end
+    end
+    constrained_edges = get_constrained_edges(tri)
+    DT.add_edge!(constrained_edges, edge)
+    _, collinear_segments = DT.locate_intersecting_triangles(tri, edge)
+    DT.split_constrained_edge!(tri, edge, collinear_segments)
+    @test compare_edge_vectors(constrained_edges, current_constrained_edges)
+end

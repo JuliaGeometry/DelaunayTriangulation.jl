@@ -31,8 +31,12 @@ that vertex via an edge of a triangle in `triangles`. See also [`Graph`](@ref).
 - `boundary_nodes::BN`
 
 The boundary nodes, with the outer boundary given in counter-clockwise order
-and the inner boundaries given in clockwise order. The default 
-(default because you could customise it if you wish, see 
+and the inner boundaries given in clockwise order. This field defines 
+constrained edges that together form the boundaries of your domain. If any 
+of these edges are collinear with another point, then the edge is split into two 
+at this point, and this field is mutated accordingly.
+
+The default (default because you could customise it if you wish, see 
 [`Interfaces`](@ref)) form of this field depends on your domain:
 
 -- `Vector{Int64}`
@@ -78,8 +82,8 @@ segments, there are four possible boundary indices that a segment could correspo
 - `constrained_edges::Es`
 
 This is the set of extra edges added into the triangulation that you have provided. Note that 
-this will not include any of the other constrained edges from `boundary_nodes`, for ths see 
-the `all_constrained_edges` field. Moreover, you should include duplicate edges, i.e.
+this will not include any of the other constrained edges from `boundary_nodes`, for this see 
+the `all_constrained_edges` field. Moreover, you should not include duplicate edges, i.e.
 do not include both `(i, j)` and `(j, i)` - order is not important here.
 
 If you have a constrained segment that happens to be collinear with another vertex, and that 
@@ -94,7 +98,9 @@ together give the convex hull of the set of points, with `convex_hull[begin] == 
 - `all_constrained_edges::Es`
 
 This is a set of all constrained edges, basically the union of the constrained edges in `constrained_edges`
-and `boundary_nodes`. You shouldn't need to work with this field directly.
+and `boundary_nodes`. You shouldn't need to work with this field directly. Do note, though, that while 
+`constrained_edges` and `boundary_nodes` can be populated even before we add any segments into the triangulation, this field 
+contains the edges actuallly in the triangulation at the present time.
 
 # Constructors 
 
@@ -171,6 +177,9 @@ we list below.
 
 - [`brute_force_search`](@ref)
 - [`jump_and_march`](@ref)
+
+## Segment location: 
+- [`locate_intersecting_triangles`](@ref)
 
 ## Working with the [`Adjacent`](@ref) field:
 
@@ -272,6 +281,7 @@ we list below.
 - [`all_boundary_indices`](@ref)
 - [`get_surrounding_polygon`](@ref)
 - [`sort_edge_by_degree`](@ref)
+- [`split_constrained_edge`](@ref)
 """
 struct Triangulation{P,Ts,I,E,Es,BN,B,BIR}
     points::P
@@ -317,7 +327,7 @@ Base.@constprop :aggressive function Triangulation(points::P;
     bn_map = construct_boundary_map(boundary_nodes; IntegerType=I)
     bn_range = construct_boundary_index_ranges(boundary_nodes; IntegerType=I)
     ch = ConvexHull(points, I[])
-    all_constrained_edges = merge_constrained_edges(bn_map, boundary_nodes, constrained_edges)
+    all_constrained_edges = initialise_edges(EdgesType)#merge_constrained_edges(bn_map, boundary_nodes, constrained_edges)
     n = num_points(points)
     sizehint!(T, 2n - 5) # maximum number of triangles
     sizehint!(adj, 3n - 6) # maximum number of edges 
@@ -329,6 +339,7 @@ Base.@constprop :aggressive function Triangulation(points::P;
     return tri
 end
 
+#=
 function merge_constrained_edges(bn_map, boundary_nodes, constrained_edges::Es) where {Es}
     all_constrained = initialise_edges(Es)
     E = edge_type(Es)
@@ -347,6 +358,7 @@ function merge_constrained_edges(bn_map, boundary_nodes, constrained_edges::Es) 
     end
     return all_constrained
 end
+=#
 
 ## Accessors
 for n in fieldnames(Triangulation)
@@ -709,6 +721,7 @@ function jump_and_march(tri::Triangulation, q;
     check_existence::C=Val(has_multiple_segments(tri)),
     store_visited_triangles::F=Val(false),
     visited_triangles=nothing,
+    collinear_segments=nothing,
     rng::AbstractRNG=Random.default_rng()) where {C,F}
     return jump_and_march(get_points(tri),
         get_adjacent(tri),
@@ -718,7 +731,7 @@ function jump_and_march(tri::Triangulation, q;
         get_boundary_map(tri),
         q; m, point_indices, try_points, k,
         TriangleType=triangle_type(tri), check_existence,
-        store_visited_triangles, visited_triangles,
+        store_visited_triangles, visited_triangles, collinear_segments,
         rng)
 end
 
@@ -777,6 +790,7 @@ end
 all_boundary_indices(tri::Triangulation) = keys(get_boundary_index_ranges(tri))
 get_surrounding_polygon(tri::Triangulation, u; skip_boundary_indices=false) = get_surrounding_polygon(get_adjacent(tri), get_graph(tri), u, get_boundary_index_ranges(tri), Val(has_multiple_segments(tri)); skip_boundary_indices)
 sort_edge_by_degree(tri::Triangulation, e) = sort_edge_by_degree(e, get_graph(tri))
+split_constrained_edge!(tri::Triangulation, constrained_edge, collinear_segments) = split_constrained_edge!(get_constrained_edges(tri), constrained_edge, collinear_segments)
 
 ## Triangulating points, triangles, boundary_nodes
 function Triangulation(points::P, triangles::T, boundary_nodes::BN;
@@ -1564,3 +1578,11 @@ returns:
 
 In particular, `e` is sorted so that `initial(e)` has the least degree.
 """ sort_edge_by_degree(::Triangulation, ::Any)
+
+@doc """
+split_constrained_edge!(tri::Triangulation, constrained_edge, collinear_segments)
+
+Given a set of `constrained_edges` and a `constrained_edge` in the set,
+and a set ofsegments `collinear_segments` that are collinear with `constrained_edge`,
+replaces `constrained_edge` with those segments in `collinear_segments`.
+""" split_constrained_edge!(::Triangulation, ::Any, ::Any)

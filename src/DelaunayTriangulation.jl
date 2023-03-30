@@ -244,6 +244,7 @@ information.
 - [`initial`](@ref): Must be defined. 
 - [`terminal`](@ref): Must be defined. 
 - [`edge_indices`](@ref): Uses the [`initial`](@ref) and [`terminal`](@ref) definitions.
+- [`reverse_edge`](@ref): Uses [`edge_indices`](@ref).
 
 ## Collection of Edges 
 

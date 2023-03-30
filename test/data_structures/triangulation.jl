@@ -47,7 +47,7 @@ global tri_4 = generate_mesh(x[2], y[2], 0.1; convert_result=true, add_ghost_tri
       @test DT.get_boundary_map(tri) == tri.boundary_map
       @test DT.get_constrained_edges(tri) == tri.constrained_edges
       @test DT.get_convex_hull(tri) == tri.convex_hull
-      @test DT.get_all_constrained_edges(tri) == tri.all_constrained_edges == DT.merge_constrained_edges(get_boundary_map(tri), get_boundary_nodes(tri), get_constrained_edges(tri))
+      #@test DT.get_all_constrained_edges(tri) == tri.all_constrained_edges == DT.merge_constrained_edges(get_boundary_map(tri), get_boundary_nodes(tri), get_constrained_edges(tri))
       @inferred DT.get_points(tri)
       @inferred DT.get_triangles(tri)
       @inferred DT.get_adjacent(tri)
@@ -419,6 +419,7 @@ end
       end
 end
 
+#=
 @testset "merge_constrained_edges" begin
       all_bn = get_boundary_nodes(tri)
       i = rand(1:100000, 50)
@@ -514,6 +515,7 @@ end
       end
       @test ace == DT.merge_constrained_edges(bn_map, [all_bn], all_ce)
 end
+=#
 
 @testset "sort_edge_by_degree" begin
       tri = triangulate(rand(2, 500); delete_ghosts=false)
