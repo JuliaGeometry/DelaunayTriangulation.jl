@@ -540,13 +540,19 @@ end
                   for k in each_solid_vertex(tri)
                         q = get_point(tri, qi)
                         visited_triangles = NTuple{3,Int64}[]
+                        collinear_segments= NTuple{2,Int64}[]
                         jump_and_march(tri, q;
                               k,
                               store_visited_triangles=true,
-                              visited_triangles)
+                              visited_triangles,
+                              collinear_segments)
                         @test all(T -> DT.is_positively_oriented(DT.triangle_orientation(tri, T)), visited_triangles)
                         @test all(!DT.is_none, [DT.triangle_line_segment_intersection(tri, T, (qi, k)) for T in visited_triangles])
                         @test allunique(visited_triangles)
+                        if !isempty(collinear_segments)
+                              @test all(E -> DT.is_collinear(DT.point_position_relative_to_line(tri, qi, k, E[1])), collinear_segments)
+                              @test all(E -> DT.is_collinear(DT.point_position_relative_to_line(tri, qi, k, E[2])), collinear_segments)
+                        end
                   end
             end
       end
