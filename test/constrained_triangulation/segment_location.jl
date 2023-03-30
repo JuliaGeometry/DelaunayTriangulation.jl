@@ -240,3 +240,35 @@ end
         end
     end
 end
+
+
+tri = shewchuk_example_constrained()
+e = [(2, 7), (2, 10), (4, 11), (1, 6), (3, 11), (1, 3), (3, 6)]
+allT = [
+    [(2, 4, 3), (3, 4, 10), (10, 4, 9), (9, 5, 10), (5, 8, 10), (5, 6, 8), (8, 6, 7)],
+    [(2, 4, 3), (3, 4, 10)],
+    [(4, 9, 10), (10, 9, 5), (10, 5, 8), (10, 8, 11)],
+    [(1, 4, 2), (4, 5, 9), (5, 6, 8)],
+    [(3, 4, 10), (10, 8, 11)],
+    [(3, 2, 4), (2, 1, 4)],
+    [(3, 4, 10), (10, 4, 9), (10, 9, 5), (8, 5, 6), (5, 8, 10)]
+]
+collinear = [
+    [],
+    [],
+    [],
+    [(1, 4), (4, 5), (5, 6)],
+    ([(11, 10), (10, 3)], [(3, 10), (10, 11)]),
+    [(1, 2), (2, 3)],
+    []
+]
+
+fig, ax, sc = triplot(tri)
+let vert = each_solid_vertex(tri)
+    text!(ax, collect(get_point(tri, vert...)); text=string.(vert))
+end
+lines!(ax, [get_point(tri, 2, 7)...], color=:blue, linestyle=:dash)
+fig
+
+T, C, L, R = DT.locate_intersecting_triangles(tri, (2, 7))
+

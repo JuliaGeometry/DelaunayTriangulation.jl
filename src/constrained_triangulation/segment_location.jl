@@ -8,7 +8,6 @@
         boundary_index_ranges,
         boundary_map,
         TriangleType::Type{V},
-        TrianglesType::Type{Vs},
         check_existence::C=Val(has_multiple_segments(boundary_map)),
         rng::AbstractRNG=Random.default_rng()) where {I,V,Vs,C}
 
@@ -24,13 +23,10 @@ function locate_intersecting_triangles(
     boundary_index_ranges,
     boundary_map,
     TriangleType::Type{V},
-    TrianglesType::Type{Vs},
     check_existence::C=Val(has_multiple_segments(boundary_map)),
-    rng::AbstractRNG=Random.default_rng()) where {I,V,Vs,C,Es,E}
+    rng::AbstractRNG=Random.default_rng()) where {I,V,C,Es,E}
     e = sort_edge_by_degree(e, graph) # faster to start at the minimum degree vertex of the edge
-    intersecting_triangles = initialise_triangles(Vs)
-    collinear_segments = Vector{E}() # use vector so that we get the ordering of the segments
-    history = PointLocationHistory{Vs,E,I}()
+    history = PointLocationHistory{V,E,I}()
     jump_and_march(
         pts,
         adj,

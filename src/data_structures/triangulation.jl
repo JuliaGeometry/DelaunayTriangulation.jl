@@ -752,7 +752,6 @@ function locate_intersecting_triangles(tri::Triangulation, e;
         boundary_index_ranges,
         boundary_map,
         triangle_type(tri),
-        Ts,
         check_existence,
         rng)
 end

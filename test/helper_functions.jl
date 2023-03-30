@@ -382,7 +382,6 @@ function test_intersections(tri, e, allT, constrained_edges)
             get_boundary_index_ranges(tri),
             get_boundary_map(tri),
             NTuple{3,Int64},
-            Vector{NTuple{3,Int64}}
         )
         for (intersecting_triangles, collinear_segments) in zip(
             (intersecting_triangles1, intersecting_triangles2),
@@ -439,7 +438,6 @@ function test_segment_triangle_intersections(tri, edge, true_triangles, true_col
             get_boundary_index_ranges(tri),
             get_boundary_map(tri),
             NTuple{3,Int64},
-            Vector{NTuple{3,Int64}}
         )
         for (intersecting_triangles, collinear_segments) in zip(
             (intersecting_triangles1, intersecting_triangles2),

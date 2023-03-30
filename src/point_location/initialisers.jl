@@ -333,6 +333,9 @@ function search_down_adjacent_boundary_edges(pts, adj::Adjacent{I,E},
         if is_true(store_history) # in case we don't enter the loop
             k′ = get_adjacent(adj, i, j; check_existence, boundary_index_ranges)
             add_triangle!(history, i, j, k′)
+            @show i, j
+            add_left_vertex!(history, i)
+            add_right_vertex!(history, j)
             add_edge!(history, i, j)
         end
         while is_right(q_pos)
@@ -342,6 +345,8 @@ function search_down_adjacent_boundary_edges(pts, adj::Adjacent{I,E},
             if is_true(store_history)
                 k′ = get_adjacent(adj, i, j; check_existence, boundary_index_ranges)
                 add_triangle!(history, i, j, k′)
+                add_left_vertex!(history, i)
+                add_right_vertex!(history, j)
                 add_edge!(history, i, j)
             end
             pⱼ = get_point(pts, boundary_map, j)
@@ -358,8 +363,11 @@ function search_down_adjacent_boundary_edges(pts, adj::Adjacent{I,E},
         end
     else
         if is_true(store_history) # in case we don't enter the loop
+            @show i, j
             k′ = get_adjacent(adj, j, i; check_existence, boundary_index_ranges)
             add_triangle!(history, j, i, k′)
+            add_left_vertex!(history, i)
+            add_right_vertex!(history, j)
             add_edge!(history, i, j) # i,j → j, i to get the ordering of the segments
         end
         while is_left(q_pos)
@@ -369,6 +377,8 @@ function search_down_adjacent_boundary_edges(pts, adj::Adjacent{I,E},
             if is_true(store_history)
                 k′ = get_adjacent(adj, j, i; check_existence, boundary_index_ranges)
                 add_triangle!(history, j, i, k′)
+                add_left_vertex!(history, i)
+                add_right_vertex!(history, j)
                 add_edge!(history, i, j)
             end
             pⱼ = get_point(pts, boundary_map, j)
@@ -480,12 +490,20 @@ function check_for_intersections_with_interior_edges_adjacent_to_boundary_node(p
             if has_one_intersection(intersection_cert)
                 # q is not in the triangle, but we still have an intersection. 
                 # In the returned value, we switch i and j so that pᵢ is left of pq and pⱼ is right of pq
-                is_true(store_history) && add_triangle!(history, i, j, k)
+                if is_true(store_history)
+                    add_triangle!(history, i, j, k)
+                    @show i, j
+                    add_left_vertex!(history, i)
+                    add_right_vertex!(history, j)
+                end
                 return j, i, Cert.Single, Cert.Outside
             elseif is_touching(intersection_cert)
                 # q is on the edge 
                 if is_true(store_history)
+                    @show i, j
                     add_triangle!(history, i, j, k)
+                    add_left_vertex!(history, i)
+                    add_right_vertex!(history, j)
                     add_edge!(history, i, j)
                 end
                 return i, j, Cert.On, Cert.Inside
@@ -494,7 +512,11 @@ function check_for_intersections_with_interior_edges_adjacent_to_boundary_node(p
             pⱼp_edge = point_position_relative_to_line(pⱼ, p, q)
             ppᵢ_edge = point_position_relative_to_line(p, pᵢ, q)
             if is_left(pⱼp_edge) && is_left(ppᵢ_edge)
-                is_true(store_history) && add_triangle!(history, i, j, k)
+                if is_true(store_history)
+                    add_triangle!(history, i, j, k)
+                    add_left_vertex!(history, i)
+                    add_right_vertex!(history, j)
+                end
                 return i, j, Cert.None, Cert.Inside
             end
             # If none of the above lead to a return, then q must be on the other side of p away from the interior, meaning 
@@ -511,14 +533,20 @@ function check_for_intersections_with_interior_edges_adjacent_to_boundary_node(p
             if is_on(q_cert) || is_degenerate(q_cert)
                 # Here, q is on the edge, so we consider it as being inside the triangle.
                 if is_true(store_history)
+                    @show i, j
                     add_triangle!(history, i, j, k)
+                    add_left_vertex!(history, i)
+                    add_right_vertex!(history, j)
                     add_edge!(history, i, j)
                 end
                 return i, j, Cert.On, Cert.Inside
             elseif is_right(q_cert)
                 # Here, q is to the right of ppⱼ, which just means that it is inside the triangulation. 
                 if is_true(store_history)
+                    @show i, j
                     add_triangle!(history, i, j, k)
+                    add_left_vertex!(history, i)
+                    add_right_vertex!(history, j)
                     add_edge!(history, k, j)
                 end
                 return j, i, Cert.Right, Cert.Outside # flip i and j to get the correct orientation
@@ -540,13 +568,22 @@ function check_for_intersections_with_interior_edges_adjacent_to_boundary_node(p
         if (is_left(certᵢ) && is_right(certⱼ)) || (is_right(certᵢ) && is_left(certⱼ))
             intersection_cert = line_segment_intersection_type(p, q, pᵢ, pⱼ)
             if has_one_intersection(intersection_cert)
-                is_true(store_history) && add_triangle!(history, i, j, k)
+                if is_true(store_history)
+                    @show i, j
+                    add_triangle!(history, i, j, k)
+                    add_left_vertex!(history, j)
+                    add_right_vertex!(history, i)
+                end
                 return j, i, Cert.Single, Cert.Outside
             end
             pⱼp_edge = point_position_relative_to_line(pⱼ, p, q)
             ppᵢ_edge = point_position_relative_to_line(p, pᵢ, q)
             if is_left(pⱼp_edge) && is_left(ppᵢ_edge)
-                is_true(store_history) && add_triangle!(history, i, j, k)
+                if is_true(store_history)
+                    add_triangle!(history, i, j, k)
+                    add_left_vertex!(history, i)
+                    add_right_vertex!(history, j)
+                end
                 return i, j, Cert.None, Cert.Inside
             end
             return zero(I), zero(I), Cert.None, Cert.Outside
