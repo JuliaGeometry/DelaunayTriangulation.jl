@@ -307,11 +307,13 @@ end
 
 function read_gmsh(identifiers, identifier_dict)
     boundary_nodes = get_boundary_node_init(identifiers)
-    elements = ElasticArray{Int64}(undef, 3, 0)
-    nodes = ElasticArray{Float64}(undef, 2, 0)
+    elements = NTuple{3, Int64}[]
+    nodes = NTuple{2, Float64}[]
     open("meshgeometry.msh", "r") do fid
         return read_mesh!(fid, elements, nodes, boundary_nodes, identifier_dict)
     end
+    elements = Matrix(reinterpret(reshape, Int64, elements))
+    nodes = Matrix(reinterpret(reshape, Float64, nodes))
     return elements, nodes, boundary_nodes
 end
 
@@ -588,7 +590,7 @@ function read_nodes!(nodes, fid)
     for _ in 1:no_nodes
         tline = readline(fid)
         x, y = read_node_line(tline)
-        append!(nodes, (x, y))
+        push!(nodes, (x, y))
     end
     tline = readline(fid)
     if is_not_string(tline) || tline ≠ "\$EndNodes"
@@ -625,7 +627,7 @@ function read_elements!(elements, boundary_nodes, fid, identifier_dict)
         elm_type, physical_id, u, v, w = read_element_line(tline)
         if elm_type == 2 # 2 means triangle
             no_elements += 1
-            append!(elements, (u, v, w))
+            push!(elements, (u, v, w))
         end
         if physical_id ∈ Base.keys(identifier_dict)
             m, n = identifier_dict[physical_id]

@@ -20,7 +20,6 @@ const FirstPointIndex = DefaultAdjacentValue + 1
 ##
 ####################################################
 using DataStructures
-using ElasticArrays
 using SimpleGraphs
 using ExactPredicates
 using EnumX

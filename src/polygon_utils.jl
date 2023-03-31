@@ -14,6 +14,16 @@ getx(c::Cell) = c.x
 gety(c::Cell) = c.y
 Base.:(<)(p::Cell, q::Cell) = p.max_dist < q.max_dist
 Base.:(==)(p::Cell, q::Cell) = p.max_dist == q.max_dist
+function Base.hash(cell::Cell, h::UInt) 
+    #= 
+    If you remove this definition and run the test labelled "A previously broken example" 
+    in test/polygon_utils.jl, you get an error where two cells that would typically be == 
+    are added into the CellQueue, and so we get a BoundsError since they both map to an index 
+    "9", but you end up with only eight keys. This seems to fix it. 
+    =#
+    h = hash(cell.max_dist, h)
+    return hash(Cell, h)
+end
 
 struct CellQueue{T} # Could a heap be used for this? Duplicate keys could show up...
     queue::PriorityQueue{Cell{T},T,typeof(Base.Order.Reverse)}
@@ -262,9 +272,7 @@ edge. It is useful for our purposes since it is a representative point that is
 guaranteed to be inside the polygon, in contrast to for example a centroid which 
 is not always inside the polygon.
 
-You can control the tolerance of the method using `atol` and `rtol`, 
-so that results are compared to `atol + rtol * w`, where `w` is half the 
-extent of the polygon.
+You can control the tolerance of the method using `precision`.
 
 See https://blog.mapbox.com/a-new-algorithm-for-finding-a-visual-center-of-a-polygon-7c77e6492fbc
 or https://github.com/mapbox/polylabel for more information. This implementation was partially based 

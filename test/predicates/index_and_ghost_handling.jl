@@ -3,11 +3,16 @@ const DT = DelaunayTriangulation
 using DataStructures
 using CairoMakie
 using StatsBase
+using ElasticArrays
 
 include("../helper_functions.jl")
 
 global x, y = complicated_geometry()
-global tri = generate_mesh(x, y, 2.0; convert_result=true, add_ghost_triangles=true)
+_tri = generate_mesh(x, y, 2.0; convert_result=true, add_ghost_triangles=true)
+_pts = ElasticMatrix(get_points(_tri))
+global tri = Triangulation(_pts, _tri.triangles, _tri.adjacent, _tri.adjacent2vertex, _tri.graph,
+    _tri.boundary_nodes, _tri.boundary_map, _tri.boundary_index_ranges,
+    _tri.constrained_edges, ConvexHull(_pts, _tri.convex_hull.indices))
 DT.compute_representative_points!(tri)
 global boundary_map = DT.get_boundary_map(tri)
 global pts = DT.get_points(tri)
@@ -85,7 +90,7 @@ end
             cert3 = DT.point_position_relative_to_circumcircle(tri, T, ℓ)
             cert4 = DT.point_position_relative_to_circumcircle(tri, i, j, k, ℓ)
             @test all(DT.is_inside, (cert1, cert2, cert3, cert4))
-            resize!(pts, (2, ℓ - 1))
+            resize!(pts, 2, ℓ - 1)
         end
     end
 
