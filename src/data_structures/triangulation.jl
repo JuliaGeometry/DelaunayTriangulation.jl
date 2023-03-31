@@ -681,7 +681,9 @@ end
     use_convex_hull=!has_multiple_segments(tri) &&
                     num_boundary_edges(get_boundary_nodes(tri)) ==
                     0)
+                    @show use_convex_hull
     if !use_convex_hull
+        @show get_points(tri), get_boundary_nodes(tri)
         compute_representative_points!(get_points(tri), get_boundary_nodes(tri))
     else
         compute_representative_points!(get_points(tri), get_convex_hull_indices(tri))

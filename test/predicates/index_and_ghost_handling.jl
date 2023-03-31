@@ -78,14 +78,14 @@ end
                 @inferred DT.point_position_relative_to_circumcircle(tri, i, pts[:, j], k, ℓ)
             end
             q = (pts[:, i] .+ pts[:, j] .+ pts[:, k]) ./ 3
-            append!(pts, q)
+            push!(pts, q)
             ℓ = size(pts, 2)
             cert1 = DT.point_position_relative_to_circumcircle(i, j, k, ℓ, pts, boundary_map)
             cert2 = DT.point_position_relative_to_circumcircle(T, ℓ, pts, boundary_map)
             cert3 = DT.point_position_relative_to_circumcircle(tri, T, ℓ)
             cert4 = DT.point_position_relative_to_circumcircle(tri, i, j, k, ℓ)
             @test all(DT.is_inside, (cert1, cert2, cert3, cert4))
-            resize!(pts, (2, ℓ - 1))
+            resize!(pts, ℓ - 1)
         end
     end
 
