@@ -3,7 +3,6 @@ const DT = DelaunayTriangulation
 using CairoMakie
 include("../helper_functions.jl")
 
-tri = shewchuk_example_constrained()
 #=
 fig, ax, sc = triplot(tri)
 let vert = each_solid_vertex(tri)
@@ -263,6 +262,10 @@ end
     end
 
     @testset "Locating polygon cavities" begin
+        a, b = 0, 4
+        c, d = 0.0, 9.0
+        nx, ny = 5, 10
+        tri = triangulate_rectangle(a, b, c, d, nx, ny)
         T, C, L, R = DT.locate_intersecting_triangles(tri, (2, 8))
         @test L == [8, 7, 2]
         @test R == [2, 3, 8]
