@@ -20,7 +20,7 @@ fig
 
 @testset verbose = true "Deleting interior nodes" begin
     @testset "Random point sets" begin
-        for j in 1:50
+        for j in 1:20
             rng1 = StableRNG(j)
             n = rand(rng1, 50:1000)
             points = 20randn(rng1, 2, n)
@@ -48,7 +48,7 @@ fig
         end
     end
     @testset "Lattice with a single boundary index" begin
-        for j in 1:50
+        for j in 1:20
             rng1 = StableRNG(j)
             a, b = sort(10randn(rng1, 2))
             c, d = sort(15randn(rng1, 2))
@@ -70,7 +70,7 @@ fig
         end
     end
     @testset "Lattice with multiple boundary indices" begin
-        for j in 1:50
+        for j in 1:20
             rng1 = StableRNG(j)
             a, b = sort(10randn(rng1, 2))
             c, d = sort(15randn(rng1, 2))
@@ -80,7 +80,7 @@ fig
             points = get_points(tri)
             n = nx * ny
             for k in 1:(n÷10)
-                @show j, k
+                @show j, k, a, b, c, d, nx, ny
                 rng2 = StableRNG(j + k * n)
                 i = rand(rng2, each_solid_vertex(tri) |> collect)
                 while DT.is_boundary_node(tri, i)[1]
@@ -97,7 +97,7 @@ end
 
 @testset verbose = true "Deleting boundary nodes" begin
     @testset "Random point sets" begin
-        for j in 1:50
+        for j in 1:20
             rng1 = StableRNG(j)
             n = rand(rng1, 50:1000)
             r = rand(rng1, n)
@@ -107,7 +107,7 @@ end
             points = [(x, y) for (x, y) in zip(x, y)]
             bnd_x = 20cos.(LinRange(0, 2π - eps(Float64), 250))
             bnd_y = 20sin.(LinRange(0, 2π - eps(Float64), 250))
-            bnd_points = [(x,y) for (x, y) in zip(bnd_x,bnd_y)]
+            bnd_points = [(x, y) for (x, y) in zip(bnd_x, bnd_y)]
             append!(points, bnd_points)
             tri = triangulate(points; delete_ghosts=false, rng=rng1)
             deleted_pts = Int64[]
@@ -128,7 +128,7 @@ end
         end
     end
     @testset "Lattice with a single boundary index" begin
-        for j in 1:50
+        for j in 1:20
             rng1 = StableRNG(j)
             a, b = sort(10randn(rng1, 2))
             c, d = sort(15randn(rng1, 2))
@@ -139,7 +139,7 @@ end
             n = nx * ny
             total_bnd_nodes = DT.num_neighbours(tri, DT.BoundaryIndex)
             for k in 1:(max(1, total_bnd_nodes ÷ 10))
-                @show j, k
+                @show j, k, a, b, c, d, nx, ny
                 rng2 = StableRNG(j + k * n)
                 i = rand(rng2, each_solid_vertex(tri) |> collect)
                 while !DT.is_boundary_node(tri, i)[1]

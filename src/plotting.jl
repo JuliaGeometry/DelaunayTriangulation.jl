@@ -103,10 +103,11 @@ function MakieCore.plot!(p::Triplot)
     convex_hull_linewidth = p[:convex_hull_linewidth]
 
     ## Define all the necessary observables
-    points_2f = MakieCore.Observable(ElasticMatrix{Float64}(undef, 2, 0))
-    triangle_mat = MakieCore.Observable(ElasticMatrix{Int64}(undef, 3, 0))
-    ghost_edges = MakieCore.Observable(ElasticMatrix{Float64}(undef, 2, 0))
-    convex_hull_points = MakieCore.Observable(ElasticMatrix{Float64}(undef, 2, 0))
+    points_2f = MakieCore.Observable(NTuple{2,Float64}[])
+    triangle_mat = MakieCore.Observable(NTuple{3,Int64}[])
+    triangle_mat_2 = MakieCore.Observable{Matrix{Int64}}()
+    ghost_edges = MakieCore.Observable(NTuple{2,Float64}[])
+    convex_hull_points = MakieCore.Observable(NTuple{2,Float64}[])
 
     ## Define the function for updating the observables 
     function update_plot(points, triangles, boundary_nodes, convex_hull)
@@ -119,25 +120,25 @@ function MakieCore.plot!(p::Triplot)
         end
 
         ## Clear out the previous observables
-        resize!(points_2f[], 2, 0)
-        resize!(triangle_mat[], 3, 0)
-        resize!(ghost_edges[], 2, 0)
-        resize!(convex_hull_points[], 2, 0)
+        empty!(points_2f[])
+        empty!(triangle_mat[])
+        empty!(ghost_edges[])
+        empty!(convex_hull_points[])
 
         ## Fill out the points 
         for pt in each_point(points)
             x, y = getxy(pt)
-            append!(points_2f[], (x, y))
+            push!(points_2f[], (x, y))
         end
 
         ## Fill out the triangles 
         for T in each_triangle(triangles)
             if !is_ghost_triangle(T)
                 i, j, k = indices(T)
-                append!(triangle_mat[], (i, j, k))
+                push!(triangle_mat[], (i, j, k))
             end
         end
-        triangle_mat[] = triangle_mat[]'
+        triangle_mat_2[] = Matrix(reinterpret(reshape, Int64, triangle_mat[])')
 
         ## Now get the ghost edges if needed 
         if show_ghost_edges[]
@@ -164,8 +165,8 @@ function MakieCore.plot!(p::Triplot)
                         end_edge_x = cx
                         end_edge_y = cy
                     end
-                    append!(ghost_edges[], (qx, qy))
-                    append!(ghost_edges[], (end_edge_x, end_edge_y))
+                    push!(ghost_edges[], (qx, qy))
+                    push!(ghost_edges[], (end_edge_x, end_edge_y))
                 end
             end
         end
@@ -176,7 +177,7 @@ function MakieCore.plot!(p::Triplot)
             for i in idx
                 pt = get_point(points, i)
                 x, y = getxy(pt)
-                append!(convex_hull_points[], (x, y))
+                push!(convex_hull_points[], (x, y))
             end
         end
     end
@@ -188,7 +189,7 @@ function MakieCore.plot!(p::Triplot)
     update_plot(points[], triangles[], boundary_nodes[], convex_hull[])
 
     ## Now plot 
-    poly!(p, points_2f, triangle_mat;
+    poly!(p, points_2f, triangle_mat_2;
         strokewidth=strokewidth[],
         strokecolor=strokecolor[],
         color=triangle_color[])
