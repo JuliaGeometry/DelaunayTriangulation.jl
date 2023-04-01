@@ -58,6 +58,28 @@ fig
             end
         end
     end
+
+    @testset "Locating polygon cavities" begin
+        tri = fixed_shewchuk_example_constrained()
+        T, C, L, R = DT.locate_intersecting_triangles(tri, (2, 7))
+        @test L == [7, 8, 10, 9, 10, 3, 2]
+        @test R == [2, 4, 5, 6, 7]
+        T, C, L, R = DT.locate_intersecting_triangles(tri, (1, 11))
+        @test L == [11, 10, 3, 2, 1]
+        @test R == [1, 4, 9, 5, 8, 11]
+        T, C, L, R = DT.locate_intersecting_triangles(tri, (8, 9))
+        @test L == [8, 10, 9]
+        @test R == [9, 5, 8]
+        T, C, L, R = DT.locate_intersecting_triangles(tri, (9, 7))
+        @test L == [7, 8, 10, 9]
+        @test R == [9, 5, 6, 7]
+        T, C, L, R = DT.locate_intersecting_triangles(tri, (3, 9))
+        @test L == [3, 4, 9]
+        @test R == [9, 10, 3]
+        T, C, L, R = DT.locate_intersecting_triangles(tri, (2, 8))
+        @test L == [8, 10, 9, 10, 3, 2]
+        @test R == [2, 4, 5, 8]
+    end
 end
 
 @testset "Lattice Example" begin
@@ -239,36 +261,25 @@ end
             end
         end
     end
+
+    @testset "Locating polygon cavities" begin
+        T, C, L, R = DT.locate_intersecting_triangles(tri, (2, 8))
+        @test L == [8, 7, 2]
+        @test R == [2, 3, 8]
+        T, C, L, R = DT.locate_intersecting_triangles(tri, (1, 50))
+        @test L == [50, 49, 44, 39, 38, 33, 28, 27, 22, 17, 16, 11, 6, 1]
+        @test R == [1, 2, 7, 12, 13, 18, 23, 24, 29, 34, 35, 40, 45, 50]
+        T, C, L, R = DT.locate_intersecting_triangles(tri, (1, 39))
+        @test L == [39, 38, 33, 28, 27, 22, 17, 16, 11, 6, 1]
+        @test R == [1, 2, 7, 12, 13, 18, 23, 24, 29, 34, 39]
+        T, C, L, R = DT.locate_intersecting_triangles(tri, (7, 38))
+        @test L == [38, 37, 32, 27, 22, 17, 12, 7]
+        @test R == [7, 8, 13, 18, 23, 28, 33, 38]
+        T, C, L, R = DT.locate_intersecting_triangles(tri, (46, 40))
+        @test L == [40, 44, 48, 47, 46]
+        @test R == [46, 42, 43, 39, 40]
+        T, C, L, R = DT.locate_intersecting_triangles(tri, (32, 19))
+        @test L == [19, 24, 28, 32]
+        @test R == [32, 27, 23, 19]
+    end
 end
-
-
-tri = shewchuk_example_constrained()
-e = [(2, 7), (2, 10), (4, 11), (1, 6), (3, 11), (1, 3), (3, 6)]
-allT = [
-    [(2, 4, 3), (3, 4, 10), (10, 4, 9), (9, 5, 10), (5, 8, 10), (5, 6, 8), (8, 6, 7)],
-    [(2, 4, 3), (3, 4, 10)],
-    [(4, 9, 10), (10, 9, 5), (10, 5, 8), (10, 8, 11)],
-    [(1, 4, 2), (4, 5, 9), (5, 6, 8)],
-    [(3, 4, 10), (10, 8, 11)],
-    [(3, 2, 4), (2, 1, 4)],
-    [(3, 4, 10), (10, 4, 9), (10, 9, 5), (8, 5, 6), (5, 8, 10)]
-]
-collinear = [
-    [],
-    [],
-    [],
-    [(1, 4), (4, 5), (5, 6)],
-    ([(11, 10), (10, 3)], [(3, 10), (10, 11)]),
-    [(1, 2), (2, 3)],
-    []
-]
-
-fig, ax, sc = triplot(tri)
-let vert = each_solid_vertex(tri)
-    text!(ax, collect(get_point(tri, vert...)); text=string.(vert))
-end
-lines!(ax, [get_point(tri, 2, 7)...], color=:blue, linestyle=:dash)
-fig
-
-T, C, L, R = DT.locate_intersecting_triangles(tri, (2, 7))
-

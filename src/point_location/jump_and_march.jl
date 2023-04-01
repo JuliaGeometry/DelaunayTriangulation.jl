@@ -134,18 +134,17 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
             check_existence, store_history, history, rng)
         if is_true(store_history)
             add_triangle!(history, j, i, k)
-            add_left_vertex!(history, i)
-            add_right_vertex!(history, j)
         end
     else
         # We have an outer boundary node. First, let us check the neighbouring boundary edges. 
-        direction, q_pos, next_vertex, right_cert, left_cert = check_for_intersections_with_adjacent_boundary_edges(pts,
-            adj,
-            boundary_index_ranges,
-            boundary_map,
-            k,
-            q,
-            check_existence)
+        direction, q_pos, next_vertex, right_cert, left_cert =
+            check_for_intersections_with_adjacent_boundary_edges(pts,
+                adj,
+                boundary_index_ranges,
+                boundary_map,
+                k,
+                q,
+                check_existence)
         if !is_outside(direction)
             # q is collinear with one of the edges, so let's jump down these edges and try to find q
             q_pos, u, v, w = search_down_adjacent_boundary_edges(pts, adj,
@@ -167,18 +166,19 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
             end
         end
         # If we did not find anything from the neighbouring boundary edges, we can search the neighbouring interior edges
-        i, j, edge_cert, triangle_cert = check_for_intersections_with_interior_edges_adjacent_to_boundary_node(pts,
-            adj,
-            graph,
-            boundary_index_ranges,
-            boundary_map,
-            k,
-            q,
-            right_cert,
-            left_cert,
-            check_existence,
-            store_history,
-            history)
+        i, j, edge_cert, triangle_cert =
+            check_for_intersections_with_interior_edges_adjacent_to_boundary_node(pts,
+                adj,
+                graph,
+                boundary_index_ranges,
+                boundary_map,
+                k,
+                q,
+                right_cert,
+                left_cert,
+                check_existence,
+                store_history,
+                history)
         if is_inside(triangle_cert)
             return construct_triangle(V, i, j, k)
         elseif is_none(edge_cert)
@@ -203,7 +203,18 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
     arrangement = triangle_orientation(pᵢ, pⱼ, q)
     local last_changed # Need this for deciding which variable to use when we hit a collinear point 
     last_changed = I(DefaultAdjacentValue) # just an initial value
+    if is_true(store_history)
+        add_left_vertex!(history, i)
+        add_right_vertex!(history, j)
+    end
     while is_positively_oriented(arrangement)
+        if is_true(store_history)
+            if last_changed == i
+                add_left_vertex!(history, i)
+            elseif last_changed == j
+                add_right_vertex!(history, j)
+            end
+        end
         # We need to step forward. To do this, we need to be careful of boundary indices. 
         # Since a boundary curve may be represented by different boundary indices 
         # at different locations, we need to check for this. The first check 
@@ -229,14 +240,12 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
         if is_right(pₖ_pos)
             if is_true(store_history)
                 add_triangle!(history, i, j, k)
-                add_right_vertex!(history, j)
             end
             j, pⱼ = k, pₖ
             last_changed = j
         elseif is_left(pₖ_pos)
             if is_true(store_history)
                 add_triangle!(history, i, j, k)
-                add_left_vertex!(history, i)
             end
             i, pᵢ = k, pₖ
             last_changed = i
@@ -258,11 +267,6 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
                     add_edge!(history, last_changed, k)
                 end
                 add_triangle!(history, i, j, k)
-                if last_changed == i
-                    add_left_vertex!(history, i)
-                else
-                    add_right_vertex!(history, j)
-                end
             end
             if !is_outside(in_cert)
                 return construct_triangle(V, i, j, k)
@@ -300,14 +304,6 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
     end
     # Swap the orientation to get a positively oriented triangle, remembering that we kept pᵢ on the left of pq and pⱼ on the right 
     k = get_adjacent(adj, j, i; check_existence, boundary_index_ranges)
-    if is_true(store_history)
-        add_triangle!(history, j, i, k)
-        if last_changed == i
-            add_left_vertex!(history, i)
-        else
-            add_right_vertex!(history, j)
-        end
-    end
     return construct_triangle(V, j, i, k)
 end
 

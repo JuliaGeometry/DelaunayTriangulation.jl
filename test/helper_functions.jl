@@ -370,6 +370,24 @@ function shewchuk_example_constrained()
     return tri
 end
 
+function fixed_shewchuk_example_constrained()
+    a = [0.0, 0.0]
+    b = [0.0, 1.0]
+    c = [0.0, 2.5]
+    d = [2.0, 0.0]
+    e = [6.0, 0.0]
+    f = [8.0, 0.0]
+    g = [8.0, 0.5]
+    h = [7.5, 1.0]
+    i = [4.0, 1.0]
+    j = [4.0, 2.5]
+    k = [8.0, 2.5]
+    pts = [a, b, c, d, e, f, g, h, i, j, k]
+    rng = StableRNG(213)
+    tri = triangulate(pts; rng, delete_ghosts=false, randomise=false)
+    return tri
+end
+
 function test_intersections(tri, e, allT, constrained_edges)
     for e in ((e[1], e[2]), (e[2], e[1]))
         intersecting_triangles1, collinear_segments1, left1, right1 = DT.locate_intersecting_triangles(tri, e)

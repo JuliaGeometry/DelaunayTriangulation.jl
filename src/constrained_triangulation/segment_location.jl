@@ -27,6 +27,8 @@ function locate_intersecting_triangles(
     rng::AbstractRNG=Random.default_rng()) where {I,V,C,Es,E}
     e = sort_edge_by_degree(e, graph) # faster to start at the minimum degree vertex of the edge
     history = PointLocationHistory{V,E,I}()
+    add_left_vertex!(history, initial(e))
+    add_right_vertex!(history, initial(e))
     jump_and_march(
         pts,
         adj,
@@ -43,10 +45,13 @@ function locate_intersecting_triangles(
         history,
         rng
     )
-    intersecting_triangles = history.triangles 
+    add_left_vertex!(history, terminal(e))
+    add_right_vertex!(history, terminal(e))
+    intersecting_triangles = history.triangles
     collinear_segments = history.collinear_segments
     left_vertices = history.left_vertices
     right_vertices = history.right_vertices
+    reverse!(left_vertices) # counter-clockwise
     if !isempty(collinear_segments)
         connect_segments!(collinear_segments)
         extend_segments!(collinear_segments, e)

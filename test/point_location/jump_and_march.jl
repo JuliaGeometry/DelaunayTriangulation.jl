@@ -252,5 +252,11 @@ end
     @test history.collinear_segments == [(7, 14)]
     @test history.left_vertices == [10]
     @test history.right_vertices == [20]
+    DT.add_left_vertex!(history, 17)
+    DT.add_right_vertex!(history, 12)
+    DT.add_left_vertex!(history, 19)
+    DT.add_right_vertex!(history, 29)
+    @test history.left_vertices == [10, 17, 19]
+    @test history.right_vertices == [20, 12, 29]
 end
 
