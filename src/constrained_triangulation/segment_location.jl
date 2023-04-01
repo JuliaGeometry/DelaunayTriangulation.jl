@@ -58,3 +58,9 @@ function locate_intersecting_triangles(
     end
     return intersecting_triangles, collinear_segments, left_vertices, right_vertices
 end
+
+function delete_intersected_triangles!(tri, triangles) # don't really _need_ this method, but maybe it makes the code a bit clearer?
+    for τ in each_triangle(triangles)
+        delete_triangle!(tri, τ; protect_boundary=true)
+    end
+end
