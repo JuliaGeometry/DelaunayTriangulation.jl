@@ -28,6 +28,10 @@ end
             @test DT.incircle_predicate(a, b, c, p) == incircle(a, b, c, p)
             @inferred DT.incircle_predicate(a, b, c, p)
 
+            a, b, p, q = eachcol(rand(2, 4))
+            @test DT.parallelorder_predicate(a, b, p, q) == parallelorder(a, b, p, q)
+            @inferred DT.parallelorder_predicate(a, b, p, q)
+
             p, a, b = eachcol(rand(2, 3))
             @test DT.sameside_predicate(a, b, p) == sameside(p, a, b)
             @inferred DT.sameside_predicate(a, b, p)
@@ -685,4 +689,63 @@ end
               DT.triangle_line_segment_intersection(r, p, q, b, a) ==
               true_flags[i]
     end
+end
+
+@testset "point_closest_to_line" begin
+    a = [4.0, 3.0]
+    b = [8.0, 3.0]
+    p = [5.0, 6.0]
+    q = [8.0, 7.0]
+    cert = DT.point_closest_to_line(a, b, p, q)
+    @test DT.is_closer(cert)
+    cert = DT.point_closest_to_line(a, b, q, p)
+    @test DT.is_further(cert)
+    q = [8.0, 6.0]
+    cert = DT.point_closest_to_line(a, b, p, q)
+    @test DT.is_equidistant(cert)
+    cert = DT.point_closest_to_line(a, b, q, p)
+    @test DT.is_equidistant(cert)
+    p = [5.0, 2.0]
+    cert = DT.point_closest_to_line(a, b, p, q)
+    @test DT.is_closer(cert)
+    cert = DT.point_closest_to_line(a, b, q, p)
+    @test DT.is_further(cert)
+    p = [12.0, 2.0]
+    cert = DT.point_closest_to_line(a, b, p, q)
+    @test DT.is_closer(cert)
+    cert = DT.point_closest_to_line(a, b, q, p)
+    @test DT.is_further(cert)
+    p = [7.0, 6.0]
+    q = [5.99, 3.43]
+    cert = DT.point_closest_to_line(a, b, p, q)
+    @test DT.is_further(cert)
+    cert = DT.point_closest_to_line(a, b, q, p)
+    @test DT.is_closer(cert)
+    p = [7.0, 5.0]
+    q = [5.0, 2.0]
+    cert = DT.point_closest_to_line(a, b, p, q)
+    @test DT.is_further(cert)
+    cert = DT.point_closest_to_line(a, b, q, p)
+    @test DT.is_closer(cert)
+
+    b = [4.0, 3.0]
+    a = [8.0, 7.0]
+    p = [12.0, 4.0]
+    q = [5.0, 0.0]
+    cert = DT.point_closest_to_line(a, b, p, q)
+    @test DT.is_further(cert)
+    cert = DT.point_closest_to_line(a, b, q, p)
+    @test DT.is_closer(cert)
+    p = [8.0, 6.0]
+    q = [4.0, 2.0]
+    cert = DT.point_closest_to_line(a, b, p, q)
+    @test DT.is_equidistant(cert)
+    cert = DT.point_closest_to_line(a, b, q, p)
+    @test DT.is_equidistant(cert)
+    p = [8.0, 6.0]
+    q = [9.0, 3.0]
+    cert = DT.point_closest_to_line(a, b, p, q)
+    @test DT.is_closer(cert)
+    cert = DT.point_closest_to_line(a, b, q, p)
+    @test DT.is_further(cert)
 end

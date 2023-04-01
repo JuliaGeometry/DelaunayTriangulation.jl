@@ -21,6 +21,9 @@ along with the function that can be used for testing if a given
 - `Touching`: `is_touching`
 - `Legal`: `is_legal`
 - `Illegal`: `is_illegal`
+- `Closer`: `is_closer`
+- `Further`: `is_further`
+- `Equidistant`: `is_equidistant`
 """
 EnumX.@enumx Certificate begin
     Inside
@@ -38,6 +41,9 @@ EnumX.@enumx Certificate begin
     Touching
     Legal 
     Illegal
+    Closer 
+    Further 
+    Equidistant
 end
 
 for inst in instances(Certificate.T)

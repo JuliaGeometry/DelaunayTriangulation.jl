@@ -259,6 +259,7 @@ we list below.
 - [`triangle_orientation`](@ref)
 - [`point_position_relative_to_circumcircle`](@ref)
 - [`point_position_relative_to_line`](@ref)
+- [`point_closest_to_line`](@ref)
 - [`point_position_on_line_segment`](@ref)
 - [`line_segment_intersection_type`](@ref)
 - [`point_position_relative_to_triangle`](@ref)
@@ -658,6 +659,9 @@ end
 @inline function point_position_relative_to_line(tri::Triangulation, i, j, u)
     return point_position_relative_to_line(i, j, u, get_points(tri), get_boundary_map(tri))
 end
+@inline function point_position_relative_to_line(tri::Triangulation, i, j, u, v)
+    return point_position_relative_to_line(i, j, u, v, get_points(tri))
+end
 @inline function point_position_on_line_segment(tri::Triangulation, i, j, u)
     return point_position_on_line_segment(i, j, u, get_points(tri))
 end
@@ -743,7 +747,6 @@ function locate_intersecting_triangles(tri::Triangulation, e;
     boundary_index_ranges = get_boundary_index_ranges(tri)
     boundary_map = get_boundary_map(tri)
     T = get_triangles(tri)
-    Ts = typeof(T)
     return locate_intersecting_triangles(e,
         pts,
         adj,
@@ -755,7 +758,6 @@ function locate_intersecting_triangles(tri::Triangulation, e;
         check_existence,
         rng)
 end
-
 
 # Miscellaneous
 @inline integer_type(::Triangulation{P,Ts,I}) where {P,Ts,I} = I
@@ -813,7 +815,7 @@ function Triangulation(points::P, triangles::T, boundary_nodes::BN;
     convex_hull!(tri; reconstruct=true)
     constrained_edges = get_all_constrained_edges(tri)
     bn_map = get_boundary_map(tri)
-    all_edges = merge_constrained_edges(bn_map,boundary_nodes,initialise_edges(Es))
+    all_edges = merge_constrained_edges(bn_map, boundary_nodes, initialise_edges(Es))
     for edge in each_edge(all_edges)
         add_edge!(constrained_edges, edge)
     end
@@ -1323,6 +1325,22 @@ If `is_ghost_edge(i, j)`, the oriented line `(a, b)` is flipped
 since the point corresponding to the boundary index will be a 
 centroid which swaps the orientation.
 """ point_position_relative_to_line(::Triangulation, ::Any, ::Any, ::Any)
+
+@doc """
+    point_closest_to_line(tri::Triangulation, i, j, u, v
+
+Let `a, b, p, q` be the points corresponding to the indices `i, j, u, v`,
+respectively, in `tri`.
+
+Given a line `ℓ` through `a` and `b`, tests if `p` is closer to `ℓ` than `q`
+is, returning:
+
+- `Certificate.Closer`: `p` is closer to `ℓ`.
+- `Certificate:Further`: `q` is closer to `ℓ`.
+- `Certificate.Equidistant`: `p` and `q` are the same distance from `ℓ`.
+
+It is assumed that `p` and `q` are to the left of `ℓ`.
+""" point_closest_to_line(::Triangulation, ::Any, ::Any, ::Any, ::Any)
 
 @doc """
     point_position_on_line_segment(tri::Triangulation, i, j, u) 

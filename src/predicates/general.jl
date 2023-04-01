@@ -13,6 +13,13 @@ Returns `ExactPredicates.incircle(a, b, c, p)`.
 incircle_predicate(a, b, c, p) = incircle(getxy(a), getxy(b), getxy(c), getxy(p))
 
 """
+    parallelorder_predicate(a, b, p, q)
+
+Returns `ExactPredicates.parallelorder(a, b, p, q)`.
+"""
+parallelorder_predicate(a, b, p, q) = parallelorder(getxy(a), getxy(b), getxy(p), getxy(q))
+
+"""
     sameside_predicate(a, b, p)
 
 Returns `ExactPredicates.sameside(p, a, b)` (but we redefine it here).
@@ -112,6 +119,35 @@ See also [`orient_predicate`](@ref).
 function point_position_relative_to_line(a, b, p)
     cert = orient_predicate(a, b, p)
     return convert_certificate(cert, Cert.Right, Cert.Collinear, Cert.Left)
+end
+
+"""
+    point_closest_to_line(a, b, p, q)
+
+Given a line `ℓ` through `a` and `b`, tests if `p` is closer to `ℓ` than `q`
+is, returning:
+
+- `Certificate.Closer`: `p` is closer to `ℓ`.
+- `Certificate:Further`: `q` is closer to `ℓ`.
+- `Certificate.Equidistant`: `p` and `q` are the same distance from `ℓ`.
+
+It is assumed that `p` and `q` are to the left of `ℓ`.
+
+### Note 
+
+Note that this function is same as computing numerical values for `o₁ = orient(a, p, b)`
+and `o₂ = orient(a, q, b)` (the determinants, not the signs)` and seeing if `o₁ < o₂`.
+If indeed `o₁ < o₂`, then `p` is closer to `ℓ` then `q`. We cannot obtain values for 
+`o₁` and `o₂` such that the difference `o₁ - o₂` is reliable, but notice that, letting 
+`∧` denote the exterior product, `o₁ = (a - b) ∧ (p - b)` and `o₂ = (a - b) ∧ (q - b)`.
+Thus, `o₁ - o₂ = (a - b) ∧ (p - q) = orient(b - a, p - q)`. These differences `b - a`
+and `p - q` cannot be computed reliably, but we can use the relationship between `orient` 
+and [`parallelorder_predicate`](@ref) to write 
+`orient(b - a, p - q) = parallelorder(a, b, q, p)`. Thus, `o₁ < o₂` if `parallelorder(a, b, q, p) < 0`.
+"""
+function point_closest_to_line(a, b, p, q)
+    cert = parallelorder_predicate(a, b, q, p)
+    return convert_certificate(cert, Cert.Closer, Cert.Equidistant, Cert.Further)
 end
 
 """

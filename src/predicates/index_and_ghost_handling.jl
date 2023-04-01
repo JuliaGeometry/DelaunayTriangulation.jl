@@ -105,6 +105,26 @@ function point_position_relative_to_line(i, j, u, pts, boundary_map)
 end
 
 """
+    point_closest_to_line(i, j, u, v, pts)
+
+Let `a, b, p, q` be the points corresponding to the indices `i, j, u, v`,
+respectively, in `pts`.
+
+Given a line `ℓ` through `a` and `b`, tests if `p` is closer to `ℓ` than `q`
+is, returning:
+
+- `Certificate.Closer`: `p` is closer to `ℓ`.
+- `Certificate:Further`: `q` is closer to `ℓ`.
+- `Certificate.Equidistant`: `p` and `q` are the same distance from `ℓ`.
+
+It is assumed that `p` and `q` are to the left of `ℓ`.
+"""
+function point_closest_to_line(i, j, u, v, pts) 
+    a, b, p, q = get_point(pts, i, j, u, v)
+    return point_closest_to_line(a, b, p, q)
+end
+
+"""
     point_position_on_line_segment(i, j, u, pts)
 
 Given indices `i`, `j`, and `u` corresponding to indices 
