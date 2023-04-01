@@ -65,7 +65,8 @@ function incircle_predicate(a, b, c, d)
 end
 ```
 
-You could use this as a reference if you want to disconnect from using ExactPredicates.jl (or e.g. use the predicates also defined in GeometricalPredicates.jl). This could be useful if you are not too worried about robustness (although you should typically care about this, so be careful) and just want fast code. Let's see what happens if we randomly triangulate some set of $100,000$ points using ExactPredicates.jl versus the definitions above.
+You could use this as a reference if you want to disconnect from using ExactPredicates.jl (or e.g. use the predicates also defined in GeometricalPredicates.jl). This could be useful if you are not too worried about robustness (although you should typically care about this, so be careful) and just want fast code. Let's see what happens if we randomly triangulate some set of $100,000$ points using ExactPredicates.jl versus the definitions above. I note that random triangulations are not the best test for this, rather it would be better to do tests 
+on point sets with a high number of collinearities (which is exactly when you *need* robust predicates), but this is just a demonstration.
 
 ```julia
 using DelaunayTriangulation
