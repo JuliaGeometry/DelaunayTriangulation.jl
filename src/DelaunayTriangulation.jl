@@ -137,6 +137,7 @@ export brute_force_search
 export jump_and_march
 
 include("constrained_triangulation/segment_location.jl")
+include("constrained_triangulation/segment_insertion.jl")
 
 include("plotting.jl")
 
