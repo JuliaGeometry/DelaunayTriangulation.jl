@@ -5,11 +5,6 @@ module DelaunayTriangulation
 ## CONSTANTS 
 ##
 ####################################################
-const DelaunayTriangulation = DelaunayTriangulation
-const DT = DelaunayTriangulation
-
-export DelaunayTriangulation
-
 const DefaultAdjacentValue = 0
 const BoundaryIndex = -1
 const FirstPointIndex = DefaultAdjacentValue + 1
