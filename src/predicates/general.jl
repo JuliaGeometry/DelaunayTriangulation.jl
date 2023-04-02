@@ -136,7 +136,7 @@ It is assumed that `p` and `q` are to the left of `ℓ`.
 ### Note 
 
 Note that this function is same as computing numerical values for `o₁ = orient(a, p, b)`
-and `o₂ = orient(a, q, b)` (the determinants, not the signs)` and seeing if `o₁ < o₂`.
+and `o₂ = orient(a, q, b)` (the determinants, not the signs) and seeing if `o₁ < o₂`.
 If indeed `o₁ < o₂`, then `p` is closer to `ℓ` then `q`. We cannot obtain values for 
 `o₁` and `o₂` such that the difference `o₁ - o₂` is reliable, but notice that, letting 
 `∧` denote the exterior product, `o₁ = (a - b) ∧ (p - b)` and `o₂ = (a - b) ∧ (q - b)`.

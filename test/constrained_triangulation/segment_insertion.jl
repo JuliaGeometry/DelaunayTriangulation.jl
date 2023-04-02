@@ -19,8 +19,13 @@ DT.delete_intersected_triangles!(tri, T)
 P = L 
 P̂ = R 
 
-
 V = L 
 m = length(V)
-next = zeros(m-1)
-prev = zeros(m-1)
+next = zeros(Int64, m-2)
+prev = zeros(Int64, m-2)
+shuffled_indices = zeros(Int64, m-2)
+for i = 2:m-1 
+    next[i] = i + 1 
+    prev[i] = i - 1
+    shuffled_indices[i] = i 
+end

@@ -659,8 +659,8 @@ end
 @inline function point_position_relative_to_line(tri::Triangulation, i, j, u)
     return point_position_relative_to_line(i, j, u, get_points(tri), get_boundary_map(tri))
 end
-@inline function point_position_relative_to_line(tri::Triangulation, i, j, u, v)
-    return point_position_relative_to_line(i, j, u, v, get_points(tri))
+@inline function point_closest_to_line(tri::Triangulation, i, j, u, v)
+    return point_closest_to_line(i, j, u, v, get_points(tri))
 end
 @inline function point_position_on_line_segment(tri::Triangulation, i, j, u)
     return point_position_on_line_segment(i, j, u, get_points(tri))

@@ -542,7 +542,7 @@ end
                               k,
                               store_history=true,
                               history)
-                        visited_triangles = history.triangles 
+                        visited_triangles = history.triangles
                         collinear_segments = history.collinear_segments
                         @test all(T -> DT.is_positively_oriented(DT.triangle_orientation(tri, T)), visited_triangles)
                         @test all(!DT.is_none, [DT.triangle_line_segment_intersection(tri, T, (qi, k)) for T in visited_triangles])
@@ -554,4 +554,25 @@ end
                   end
             end
       end
+end
+
+@testset "point_closest_to_line" begin
+      tri = fixed_shewchuk_example_constrained()
+      i, j = 2, 7
+      u, v = 9, 8
+      @test DT.is_closer(DT.point_closest_to_line(tri, i, j, u, v))
+      @test DT.is_further(DT.point_closest_to_line(tri, i, j, v, u))
+      u, v = 3, 11
+      @test DT.is_closer(DT.point_closest_to_line(tri, i, j, u, v))
+      @test DT.is_further(DT.point_closest_to_line(tri, i, j, v, u))
+      i, j = 7, 2
+      u, v = 6, 1
+      @test DT.is_closer(DT.point_closest_to_line(tri, i, j, u, v))
+      @test DT.is_further(DT.point_closest_to_line(tri, i, j, v, u))
+      u, v = 2, 6
+      @test DT.is_closer(DT.point_closest_to_line(tri, i, j, u, v))
+      @test DT.is_further(DT.point_closest_to_line(tri, i, j, v, u))
+      u, v = 7, 4
+      @test DT.is_closer(DT.point_closest_to_line(tri, i, j, u, v))
+      @test DT.is_further(DT.point_closest_to_line(tri, i, j, v, u))
 end

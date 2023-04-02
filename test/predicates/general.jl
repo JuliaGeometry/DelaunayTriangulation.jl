@@ -748,4 +748,12 @@ end
     @test DT.is_closer(cert)
     cert = DT.point_closest_to_line(a, b, q, p)
     @test DT.is_further(cert)
+    cert = DT.point_closest_to_line(a, b, a, q)
+    @test DT.is_closer(cert)
+    cert = DT.point_closest_to_line(a, b, q, a)
+    @test DT.is_further(cert)
+    cert = DT.point_closest_to_line(a, b, b, q)
+    @test DT.is_closer(cert)
+    cert = DT.point_closest_to_line(a, b, q, b)
+    @test DT.is_further(cert)
 end
