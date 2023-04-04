@@ -96,6 +96,21 @@ function delete_polygon_vertices_in_random_order!(tri::Triangulation, V, shuffle
     return nothing
 end
 
+"""
+    triangulate_cavity_cdt(points, V;
+        IntegerType::Type{I}=Int64,
+        EdgeType::Type{E}=NTuple{2,IntegerType},
+        TriangleType::Type{Vs}=NTuple{3,IntegerType},
+        EdgesType::Type{Es}=Set{EdgeType},
+        TrianglesType::Type{Ts}=Set{TriangleType},
+        rng::AbstractRNG=Random.default_rng()) where {I,E,Vs,Es,Ts}
+    triangulate_cavity_cdt(tri, V; rng::AbstractRNG=Random.default_rng())
+
+Triangulates the cavity, represented as a counter-clockwise list of 
+vertices `V` with indices corresponding to those in `points`, 
+left behind when deleting triangles intersected in a triangulation by an edge. 
+If a triangulation is provided, the points are used from that.
+"""
 function triangulate_cavity_cdt(points, V;
     IntegerType::Type{I}=Int64,
     EdgeType::Type{E}=NTuple{2,IntegerType},
@@ -112,22 +127,37 @@ function triangulate_cavity_cdt(points, V;
     triangulate_cavity_cdt!(tri, V; rng)
     return tri
 end
+function triangulate_cavity_cdt(tri::Triangulation{P,Ts,I,E,Es,BN,B,BIR}, V; rng::AbstractRNG=Random.default_rng()) where {P,Ts,I,E,Es,BN,B,BIR}
+    return triangulate_cavity_cdt(get_points(tri), V;
+        IntegerType=I,
+        EdgeType=E,
+        TriangleType=triangle_type(Ts),
+        EdgesType=Es,
+        TrianglesType=Ts,
+        rng)
+end
 
-function triangulate_cavity_cdt!(tri::Triangulation, V; rng::AbstractRNG=Random.default_rng())
+function setup_cavity_cdt(tri::Triangulation, V; rng::AbstractRNG=Random.default_rng())
     v = V[begin]
     u = V[end]
     prev, next, shuffled_indices = prepare_vertex_linked_list(V)
     delete_polygon_vertices_in_random_order!(tri, V, shuffled_indices, prev, next, u, v, rng)
-    add_triangle!(tri, V[begin], V[shuffled_indices[2]], V[end]; protect_boundary=true, update_ghost_edges=false)
     m = length(V)
     I = integer_type(tri)
-    marked_vertices = Set{I}()
+    marked_vertices = nothing#I[]
+    return prev, next, shuffled_indices, m, marked_vertices
+end
+
+function triangulate_cavity_cdt!(tri::Triangulation, V; rng::AbstractRNG=Random.default_rng())
+    prev, next, shuffled_indices, m, marked_vertices = setup_cavity_cdt(tri, V; rng)
+    add_triangle!(tri, V[begin], V[shuffled_indices[2]], V[end]; protect_boundary=true, update_ghost_edges=false)
     for i in 3:(m-1)
         a, b, c = index_shuffled_linked_list(V, next, prev, shuffled_indices, i)
         add_point_cavity_cdt!(tri, marked_vertices, a, b, c)
+        #=
         if a ∈ marked_vertices
-            throw("...")
         end
+        =#
     end
     return nothing
 end
@@ -139,7 +169,6 @@ function add_point_cavity_cdt!(tri::Triangulation, marked_vertices, u, v, w)
     else
         p, q, r, s = get_point(tri, w, v, x, u) # Don't want to deal with boundary handling here 
         incircle_test = point_position_relative_to_circle(p, q, r, s)
-        #incircle_test = point_position_relative_to_circumcircle(tri, w, v, x, u)
         orient_test = triangle_orientation(tri, u, v, w)
         insert_flag = !is_inside(incircle_test) && is_positively_oriented(orient_test)
     end
@@ -149,19 +178,21 @@ function add_point_cavity_cdt!(tri::Triangulation, marked_vertices, u, v, w)
         delete_triangle!(tri, w, v, x; protect_boundary=true, update_ghost_edges=false)
         add_point_cavity_cdt!(tri, marked_vertices, u, v, x)
         add_point_cavity_cdt!(tri, marked_vertices, u, x, w)
+        #=
         if !is_inside(incircle_test)
             push!(marked_vertices, u, v, w, x)
         end
+        =#
     end
     return nothing
 end
 
 function add_new_triangles!(tri_original::Triangulation, tri_lower, tri_upper)
     for tri in each_triangle(tri_lower)
-        add_triangle!(tri_original, tri; protect_boundary=true,update_ghost_edges=false)
-    end 
+        add_triangle!(tri_original, tri; protect_boundary=true, update_ghost_edges=false)
+    end
     for tri in each_triangle(tri_upper)
-        add_triangle!(tri_original, tri; protect_boundary=true,update_ghost_edges=false)
-    end 
+        add_triangle!(tri_original, tri; protect_boundary=true, update_ghost_edges=false)
+    end
     return nothing
 end

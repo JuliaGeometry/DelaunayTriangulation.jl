@@ -180,6 +180,11 @@ end
             @inferred DT.has_multiple_segments(tri_2)
             @test DT.num_curves(tri) == 5
             @inferred DT.num_curves(tri)
+            a, b = 0.0, 5.0
+            c, d = 3.0, 7.0
+            nx = 12
+            ny = 15
+            @test DT.num_curves(triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 10, 10; add_ghost_triangles=true, single_boundary=false)) == 1
             @test_throws "The" DT.num_segments(tri)
             @test DT.num_segments(tri_2) == 4
             @inferred DT.num_segments(tri_2)

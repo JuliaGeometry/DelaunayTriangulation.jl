@@ -202,7 +202,9 @@ function generate_mesh(x::AAA, y::AAA, ref;
     if !convert_result
         return elements, nodes, boundary_nodes
     else
-        return Triangulation(nodes, elements, boundary_nodes; add_ghost_triangles)
+        tri = Triangulation(nodes, elements, boundary_nodes; add_ghost_triangles)
+        compute_representative_points!(tri)
+        return tri
     end
 end
 
@@ -223,7 +225,9 @@ function generate_mesh(x::AA, y::AA, ref;
     if !convert_result
         return elements, nodes, boundary_nodes[1]
     else
-        return Triangulation(nodes, elements, boundary_nodes[1]; add_ghost_triangles)
+        tri = Triangulation(nodes, elements, boundary_nodes[1]; add_ghost_triangles)
+        compute_representative_points!(tri)
+        return tri
     end
 end
 
@@ -242,7 +246,9 @@ function generate_mesh(x::A, y::A, ref;
     if !convert_result
         return elements, nodes, boundary_nodes[1]
     else
-        return Triangulation(nodes, elements, boundary_nodes[1]; add_ghost_triangles)
+        tri = Triangulation(nodes, elements, boundary_nodes[1]; add_ghost_triangles)
+        compute_representative_points!(tri)
+        return tri
     end
 end
 

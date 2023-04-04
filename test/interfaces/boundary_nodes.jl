@@ -30,6 +30,8 @@ end
 @testset "Getting number of segments/curves" begin
        @test_throws "The" DT.num_curves(String)
        @test DT.num_curves(bn1) == 3
+       @test DT.num_curves(bn2) == 1 
+       @test DT.num_curves(bn3) == 1
        @test_throws "The" DT.num_segments(String)
        @test DT.num_segments(bn2) == 2
 end

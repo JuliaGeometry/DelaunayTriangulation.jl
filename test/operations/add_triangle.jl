@@ -444,7 +444,7 @@ end
       @test (get_graph ∘ get_graph)(tri) == true_DG.graph
       convex_hull!(tri; reconstruct=false)
       DT.compute_representative_points!(tri)
-      validate_triangulation(tri)
+      @test validate_triangulation(tri)
 end
 
 @testset "Larger example" begin
@@ -550,5 +550,5 @@ end
       @test (get_graph ∘ get_graph)(tri) == true_DG.graph
       convex_hull!(tri; reconstruct=false)
       DT.compute_representative_points!(tri)
-      validate_triangulation(tri)
+      @test validate_triangulation(tri)
 end

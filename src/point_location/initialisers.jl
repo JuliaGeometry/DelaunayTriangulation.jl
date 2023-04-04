@@ -333,7 +333,6 @@ function search_down_adjacent_boundary_edges(pts, adj::Adjacent{I,E},
         if is_true(store_history) # in case we don't enter the loop
             k′ = get_adjacent(adj, i, j; check_existence, boundary_index_ranges)
             add_triangle!(history, i, j, k′)
-            @show i, j
             add_edge!(history, i, j)
         end
         while is_right(q_pos)
@@ -359,7 +358,6 @@ function search_down_adjacent_boundary_edges(pts, adj::Adjacent{I,E},
         end
     else
         if is_true(store_history) # in case we don't enter the loop
-            @show i, j
             k′ = get_adjacent(adj, j, i; check_existence, boundary_index_ranges)
             add_triangle!(history, j, i, k′)
             add_edge!(history, i, j) # i,j → j, i to get the ordering of the segments

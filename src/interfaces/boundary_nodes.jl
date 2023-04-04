@@ -63,6 +63,8 @@ function num_curves(::F) where {F}
     return error("The num_curves function has not been defined for the type $F.")
 end
 num_curves(bn::AAA) where {F<:Number,A<:AV{F},AA<:AV{A},AAA<:AV{AA}} = length(bn)
+num_curves(bn::AA) where {F<:Number,A<:AV{F},AA<:AV{A}} = 1
+num_curves(bn::A) where {F<:Number,A<:AV{F}} = 1
 
 """
     num_segments(bn::A)

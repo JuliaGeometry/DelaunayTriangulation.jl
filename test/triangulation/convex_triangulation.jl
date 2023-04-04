@@ -131,7 +131,7 @@ end
     pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12]
     for _ in 1:10000
         tri_ch = triangulate_convex(pts, 1:12)
-        validate_triangulation(tri_ch)
+        @test validate_triangulation(tri_ch)
     end
 end
 

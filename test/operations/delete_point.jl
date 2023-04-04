@@ -43,7 +43,7 @@ fig
                 @test get_adjacent2vertex(tri) == get_adjacent2vertex(_tri)
                 @test get_graph(tri) == get_graph(_tri)
                 convex_hull!(tri)
-                validate_triangulation(tri)
+                @test validate_triangulation(tri)
             end
         end
     end
@@ -65,7 +65,7 @@ fig
                     i = rand(rng2, each_solid_vertex(tri) |> collect)
                 end
                 delete_point!(tri, i; rng=rng2)
-                validate_triangulation(tri)
+                @test validate_triangulation(tri)
             end
         end
     end
@@ -87,8 +87,7 @@ fig
                     i = rand(rng2, each_solid_vertex(tri) |> collect)
                 end
                 delete_point!(tri, i; rng=rng2)
-                validate_triangulation(tri;
-                    ignore_boundary_indices=true)
+                @test validate_triangulation(tri)
             end
         end
     end
@@ -123,7 +122,7 @@ end
                 convex_hull!(tri)
                 DT.compute_representative_points!(tri)
                 push!(deleted_pts, i)
-                validate_triangulation(tri; ignore_boundary_indices=true)
+                @test validate_triangulation(tri; ignore_boundary_indices=true)
             end
         end
     end
@@ -146,7 +145,7 @@ end
                     i = rand(rng2, each_solid_vertex(tri) |> collect)
                 end
                 delete_point!(tri, i; rng=rng2)
-                validate_triangulation(tri)
+                @test validate_triangulation(tri)
             end
         end
     end
@@ -171,7 +170,7 @@ end
                 end
                 @show i
                 delete_point!(tri, i; rng=rng2)
-                validate_triangulation(tri;
+                @test validate_triangulation(tri;
                     ignore_boundary_indices=true)
             end
         end
@@ -184,7 +183,7 @@ end
     rng = StableRNG(292929)
     point = 16
     delete_point!(tri, 16; rng)
-    validate_triangulation(tri)
+    @test validate_triangulation(tri)
     _tri = Triangulation(get_points(tri))
     true_T = [
         10 9 11
@@ -260,7 +259,7 @@ end
             convex_hull!(tri)
             DT.compute_representative_points!(tri)
             _tri = triangulate(get_points(tri); skip_points=_deleted_points, delete_ghosts=false, rng)
-            validate_triangulation(tri)
+            @test validate_triangulation(tri)
             rng = StableRNG(ctr)
             ctr += 1
             clear_empty_features!(tri)

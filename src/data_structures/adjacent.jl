@@ -62,6 +62,11 @@ for (edge, vertex) in adj
     get_adjacent(adj, edge) == vertex 
 end
 ```
+
+Please note that in the case that you have multiple boundary indices, this iteration 
+may not be safe the iteration doesn't make use of `get_adjacent`, which 
+knows how to handle boundary indices properly (if you have just a single 
+boundary, do not worry).
 """
 struct Adjacent{I,E}
     adjacent::DefaultDict{E,I,I}

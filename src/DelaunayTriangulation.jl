@@ -68,6 +68,7 @@ export get_triangles
 export get_boundary_map
 export get_constrained_edges
 export get_boundary_nodes
+export get_all_constrained_edges
 export get_convex_hull
 export get_boundary_index_ranges
 export Triangulation
@@ -86,6 +87,7 @@ export each_solid_edge
 export each_ghost_edge 
 export each_solid_vertex 
 export each_ghost_vertex
+export each_constrained_edge
 
 include("predicates/certificate.jl")
 include("predicates/boundaries_and_ghosts.jl")
@@ -105,6 +107,7 @@ include("operations/split_edge.jl")
 include("operations/split_triangle.jl")
 include("operations/legalise_edge.jl")
 include("operations/delete_point.jl")
+include("operations/add_edge.jl")
 
 export add_ghost_triangles!
 export delete_ghost_triangles!
@@ -117,12 +120,14 @@ export split_edge!
 export split_triangle!
 export legalise_edge!
 export delete_point!
+export add_edge!
 
 include("triangulation/gmsh.jl")
 include("triangulation/rectangle.jl")
 include("triangulation/bowyer_watson.jl")
 include("triangulation/triangulate.jl")
 include("triangulation/convex_triangulation.jl")
+include("triangulation/triangulate_constrained.jl")
 
 export generate_mesh
 export triangulate_rectangle

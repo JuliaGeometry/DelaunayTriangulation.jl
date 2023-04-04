@@ -84,7 +84,8 @@ segments, there are four possible boundary indices that a segment could correspo
 This is the set of extra edges added into the triangulation that you have provided. Note that 
 this will not include any of the other constrained edges from `boundary_nodes`, for this see 
 the `all_constrained_edges` field. Moreover, you should not include duplicate edges, i.e.
-do not include both `(i, j)` and `(j, i)` - order is not important here.
+do not include both `(i, j)` and `(j, i)` - order is not important here. Lastly, you should 
+not include edges that cross each other - things will break.
 
 If you have a constrained segment that happens to be collinear with another vertex, and that 
 vertex is on the segment, then we mutate `constrained_edges` so that the segment is split 
@@ -156,6 +157,7 @@ we list below.
 - [`get_boundary_nodes`](@ref)
 - [`get_boundary_map`](@ref)
 - [`get_boundary_index_ranges`](@ref)
+- [`get_all_constrained_edges`](@ref)
 - [`get_constrained_edges`](@ref)
 - [`get_convex_hull`](@ref)
 
@@ -172,6 +174,7 @@ we list below.
 - [`legalise_edge!`](@ref)
 - [`split_edge!`](@ref)
 - [`split_triangle!`](@ref)
+- [`add_edge!`](@ref)
 
 ## Point location:
 
@@ -306,6 +309,33 @@ function Base.show(io::IO, ::MIME"text/plain", tri::Triangulation)
     print(io, "    Number of edges: $(num_edges(tri))")
 end
 
+function remake_triangulation_with_constraints(tri::Triangulation{P,Ts,I,E,Es,BN,B,BIR}, edges, boundary_nodes) where {P,Ts,I,E,Es,BN,B,BIR}
+    points = get_points(tri)
+    triangles = get_triangles(tri)
+    adjacent = get_adjacent(tri)
+    adjacent2vertex = get_adjacent2vertex(tri)
+    graph = get_graph(tri)
+    boundary_nodes = @something boundary_nodes get_boundary_nodes(tri)
+    bn_map = construct_boundary_map(boundary_nodes; IntegerType=I)
+    bn_range = construct_boundary_index_ranges(boundary_nodes; IntegerType=I)
+    constrained_edges = @something edges get_constrained_edges(tri)
+    all_constrained_edges = get_all_constrained_edges(tri)
+    convex_hull = get_convex_hull(tri)
+    return Triangulation(
+        points,
+        triangles,
+        adjacent,
+        adjacent2vertex,
+        graph,
+        boundary_nodes,
+        bn_map,
+        bn_range,
+        constrained_edges,
+        all_constrained_edges,
+        convex_hull
+    )
+end
+
 Base.@constprop :aggressive function Triangulation(points::P;
     IntegerType::Type{I}=Int64,
     EdgeType::Type{E}=NTuple{2,IntegerType},
@@ -357,6 +387,11 @@ function merge_constrained_edges(bn_map, boundary_nodes, constrained_edges::Es) 
         add_edge!(all_constrained, e)
     end
     return all_constrained
+end
+function merge_constrained_edges(tri::Triangulation)
+    return merge_constrained_edges(
+        get_boundary_map(tri), get_boundary_nodes(tri), get_constrained_edges(tri)
+    )
 end
 
 ## Accessors
@@ -553,6 +588,7 @@ end
 @inline edge_type(::Triangulation{P,Ts,I,E}) where {P,Ts,I,E} = E
 @inline num_edges(tri::Triangulation) = num_edges(get_graph(tri))
 @inline each_edge(tri::Triangulation) = get_edges(get_graph(tri))
+@inline each_constrained_edge(tri::Triangulation) = each_edge(get_all_constrained_edges(tri))
 
 abstract type AbstractEachEdge{E} end
 Base.IteratorSize(::Type{<:AbstractEachEdge}) = Base.SizeUnknown()
@@ -690,7 +726,7 @@ end
 @inline function is_boundary_node(tri::Triangulation, i)
     return is_boundary_node(i, get_graph(tri), get_boundary_index_ranges(tri))
 end
-@inline edge_exists(tri::Triangulation, i, j) = edge_exists(i, j, get_adjacent(tri))
+@inline edge_exists(tri::Triangulation, i, j) = edge_exists(get_adjacent(tri, i, j))
 @inline edge_exists(tri::Triangulation, ij) = edge_exists(ij, get_adjacent(tri))
 @inline function has_ghost_triangles(tri::Triangulation)
     return has_ghost_triangles(get_adjacent(tri), get_adjacent2vertex(tri))
@@ -1178,6 +1214,12 @@ Given a triangulation `tri`, returns an iterator over the ghost edges.
 
 See also [`each_edge`](@ref) and [`each_solid_edge`](@ref).
 """ each_ghost_edge(::Triangulation)
+
+@doc """
+    each_constrained_edge(tri::Triangulation)
+
+Given a triangulation `tri`, returns an iterator over the constrained edges.
+""" each_constrained_edge(::Triangulation)
 
 @doc """
     get_point(tri::Triangulation, i...)

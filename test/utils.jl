@@ -408,4 +408,7 @@ end
       constrained_edge = (29, 37)
       DT.extend_segments!(segments, constrained_edge)
       @test segments == [(29, 33), (33, 37)]
+      segments = [(3, 25), (25, 1)]
+      DT.extend_segments!(segments, (3, 1))
+      @test segments == [(3, 25), (25, 1)]
 end

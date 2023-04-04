@@ -123,7 +123,7 @@ end
         (1, 6, 7),
         (1, 7, BI),
         (1, BI, 2)))
-    validate_triangulation(tri)
+    @test validate_triangulation(tri)
 end
 
 @testset "A random triangulation with a plot" begin
@@ -135,15 +135,15 @@ end
     xlims!(ax, -5.0, 5.0)
     ylims!(ax, -5.0, 5.0)
     SAVE_FIGURE && save("$save_path/test_bowyer_watson_2.png", fig)
-    validate_triangulation(tri)
+    @test validate_triangulation(tri)
 end
 
 @testset "Lots of collinearity" begin
     _tri = triangulate_rectangle(-3.0, 2.0, 5.0, 17.3, 23, 57; single_boundary=true)
-    validate_triangulation(_tri)
+    @test validate_triangulation(_tri)
     for _ in 1:100
         @time tri = DT.triangulate_bowyer_watson(_tri.points)
-        validate_triangulation(tri)
+        @test validate_triangulation(tri)
     end
 end
 
@@ -315,14 +315,14 @@ end
               get_adjacent2vertex(tri) == adj2v &&
               get_graph(tri) == graph &&
               get_convex_hull(tri) == ch
-        validate_triangulation(tri)
+        @test validate_triangulation(tri)
         delete_ghost_triangles!(tri)
         @test DT.compare_triangle_collections(T2, get_triangles(tri)) &&
               get_adjacent(tri) == adj2 &&
               get_adjacent2vertex(tri) == adj2v2 &&
               get_graph(tri) == graph &&
               get_convex_hull(tri) == ch
-        validate_triangulation(tri)
+        @test validate_triangulation(tri)
     end
     a = [1.5, 4.0]
     b = [0.0, 3.5]

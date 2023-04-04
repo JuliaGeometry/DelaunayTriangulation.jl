@@ -19,6 +19,9 @@ using SafeTestsets
         @safetestset "Convex Triangulation" begin
             include("triangulation/convex_triangulation.jl")
         end
+        @safetestset "Constrained Triangulation" begin
+            include("triangulation/constrained.jl")
+        end
     end
 
     @testset verbose = true "Utilities" begin
@@ -27,6 +30,9 @@ using SafeTestsets
         end
         @safetestset "Polygon Utilities" begin
             include("polygon_utils.jl")
+        end
+        @safetestset "Triangulation Validation" begin
+            include("helper_function_tests.jl")
         end
     end
 
@@ -142,6 +148,9 @@ using SafeTestsets
     @testset verbose = true "Constrained Triangulation" begin
         @safetestset "Segment Location" begin
             include("constrained_triangulation/segment_location.jl")
+        end
+        @safetestset "Segment Insertion" begin
+            include("constrained_triangulation/segment_insertion.jl")
         end
     end
 end

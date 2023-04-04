@@ -58,67 +58,206 @@ a triangulation with a constrained edge
     @test DT.vertex_is_closer_than_neighbours(tri, 7, 2, 6, 5, 4)
 end
 
+@testset "Inserting segments into the Shewchuk example" begin
+    tri = fixed_shewchuk_example_constrained()
+    e = (2, 7)
+    T, C, L, R = DT.locate_intersecting_triangles(tri, e)
+    DT.delete_intersected_triangles!(tri, T)
+    points = get_points(tri)
+    _tri_1 = DT.triangulate_cavity_cdt(points, L)
+    _tri_2 = DT.triangulate_cavity_cdt(points, R)
+    DT.add_new_triangles!(tri, _tri_1, _tri_2)
+    true_tri = ([ # two triangles to account for the cocircular points (2, 9, 3, 10)
+            (1, 4, 2)
+            (8, 11, 10)
+            (8, 7, 11)
+            (2, 9, 3)
+            (3, 9, 10)
+            (9, 8, 10)
+            (9, 7, 8)
+            (2, 7, 9)
+            (7, 5, 6)
+            (7, 2, 5)
+            (5, 2, 4)
+            (2, 3, DT.BoundaryIndex)
+            (10, 11, DT.BoundaryIndex)
+            (3, 10, DT.BoundaryIndex)
+            (11, 7, DT.BoundaryIndex)
+            (7, 6, DT.BoundaryIndex)
+            (6, 5, DT.BoundaryIndex)
+            (5, 4, DT.BoundaryIndex)
+            (4, 1, DT.BoundaryIndex)
+            (1, 2, DT.BoundaryIndex)
+        ],
+        [
+            (1, 4, 2)
+            (8, 11, 10)
+            (8, 7, 11)
+            (2, 9, 10)
+            (3, 2, 10)
+            (9, 8, 10)
+            (9, 7, 8)
+            (2, 7, 9)
+            (7, 5, 6)
+            (7, 2, 5)
+            (5, 2, 4)
+            (2, 3, DT.BoundaryIndex)
+            (3, 10, DT.BoundaryIndex)
+            (10, 11, DT.BoundaryIndex)
+            (11, 7, DT.BoundaryIndex)
+            (7, 6, DT.BoundaryIndex)
+            (6, 5, DT.BoundaryIndex)
+            (5, 4, DT.BoundaryIndex)
+            (4, 1, DT.BoundaryIndex)
+            (1, 2, DT.BoundaryIndex)
+        ]
+    )
+    @test any(T -> DT.compare_triangle_collections(get_triangles(tri), T), true_tri)
+    push!(get_all_constrained_edges(tri), e)
+    @test validate_triangulation(tri)
 
-rng = StableRNG(191919)
-tri = fixed_shewchuk_example_constrained()
-e = (2, 7)
-T, C, L, R = DT.locate_intersecting_triangles(tri, e)
-DT.delete_intersected_triangles!(tri, T)
-points = get_points(tri)
-_tri = Triangulation(points)
-V = L
-v = V[begin]
-u = V[end]
-prev, next, shuffled_indices = DT.prepare_vertex_linked_list(V)
-@test prev[2:end-1] == [1, 2, 3, 4, 5]
-@test V[prev[2:end-1]] == [7, 8, 10, 9, 10]
-@test next[2:end-1] == [3, 4, 5, 6, 7]
-@test V[next[2:end-1]] == [10, 9, 10, 3, 2]
-@test shuffled_indices[2:end-1] == [2, 3, 4, 5, 6]
-DT.delete_polygon_vertices_in_random_order!(_tri, V, shuffled_indices, prev, next, u, v, rng)
-add_triangle!(tri, V[begin], V[shuffled_indices[2]], V[end]; protect_boundary=true, update_ghost_edges=false)
+    e = (2, 11)
+    T, C, L, R = DT.locate_intersecting_triangles(tri, e)
+    DT.delete_intersected_triangles!(tri, T)
+    points = get_points(tri)
+    _tri_1 = DT.triangulate_cavity_cdt(points, L)
+    _tri_2 = DT.triangulate_cavity_cdt(points, R)
+    DT.add_new_triangles!(tri, _tri_1, _tri_2)
+    true_tri = [
+        (1, 4, 2)
+        (2, 10, 3)
+        (2, 11, 10)
+        (11, 9, 8)
+        (11, 2, 9)
+        (8, 7, 11)
+        (9, 7, 8)
+        (2, 7, 9)
+        (7, 5, 6)
+        (7, 2, 5)
+        (5, 2, 4)
+        (2, 3, DT.BoundaryIndex)
+        (10, 11, DT.BoundaryIndex)
+        (3, 10, DT.BoundaryIndex)
+        (11, 7, DT.BoundaryIndex)
+        (7, 6, DT.BoundaryIndex)
+        (6, 5, DT.BoundaryIndex)
+        (5, 4, DT.BoundaryIndex)
+        (4, 1, DT.BoundaryIndex)
+        (1, 2, DT.BoundaryIndex)
+    ]
+    @test DT.compare_triangle_collections(get_triangles(tri), true_tri)
+    push!(get_all_constrained_edges(tri), e)
+    @test validate_triangulation(tri)
 
-tri = fixed_shewchuk_example_constrained()
+    e = (1, 7)
+    T, C, L, R = DT.locate_intersecting_triangles(tri, e)
+    DT.delete_intersected_triangles!(tri, T)
+    points = get_points(tri)
+    _tri_1 = DT.triangulate_cavity_cdt(points, L)
+    _tri_2 = DT.triangulate_cavity_cdt(points, R)
+    DT.add_new_triangles!(tri, _tri_1, _tri_2)
+    true_tri = [
+        (2, 10, 3)
+        (1, 7, 2)
+        (7, 4, 5)
+        (7, 1, 4)
+        (11, 2, 9)
+        (8, 7, 11)
+        (9, 7, 8)
+        (2, 7, 9)
+        (7, 5, 6)
+        (11, 9, 8)
+        (2, 11, 10)
+        (2, 3, DT.BoundaryIndex)
+        (10, 11, DT.BoundaryIndex)
+        (3, 10, DT.BoundaryIndex)
+        (11, 7, DT.BoundaryIndex)
+        (7, 6, DT.BoundaryIndex)
+        (6, 5, DT.BoundaryIndex)
+        (5, 4, DT.BoundaryIndex)
+        (4, 1, DT.BoundaryIndex)
+        (1, 2, DT.BoundaryIndex)
+    ]
+    @test DT.compare_triangle_collections(get_triangles(tri), true_tri)
+    push!(get_all_constrained_edges(tri), e)
+    @test validate_triangulation(tri)
+end
 
+@testset "Testing the special corner example with many edges" begin
+    tri = example_with_special_corners()
+    es = [(9, 13), (9, 12), (9, 18), (9, 15), (15, 3), (16, 2)]
+    for e in es
+        if !DT.edge_exists(tri, e)
+            T, C, L, R = DT.locate_intersecting_triangles(tri, e)
+            DT.delete_intersected_triangles!(tri, T)
+            points = get_points(tri)
+            _tri_1 = DT.triangulate_cavity_cdt(points, L)
+            _tri_2 = DT.triangulate_cavity_cdt(points, R)
+            DT.add_new_triangles!(tri, _tri_1, _tri_2)
+        end
+        push!(get_all_constrained_edges(tri), e)
+    end
+    true_tri = [
+        (14, 15, 17)
+        (14, 9, 15)
+        (15, 8, 7)
+        (9, 13, 11)
+        (17, 18, 14)
+        (4, 1, 5)
+        (15, 9, 8)
+        (11, 10, 9)
+        (9, 18, 12)
+        (13, 9, 12)
+        (15, 3, 17)
+        (6, 15, 7)
+        (12, 18, 13)
+        (18, 5, 13)
+        (18, 16, 5)
+        (5, 16, 4)
+        (18, 17, 16)
+        (17, 3, 16)
+        (6, 7, 3)
+        (11, 13, 10)
+        (16, 1, 4)
+        (16, 2, 1)
+        (2, 16, 3)
+        (18, 9, 14)
+        (3, 15, 6)
+        (10, 13, DT.BoundaryIndex)
+        (13, 5, DT.BoundaryIndex)
+        (5, 1, DT.BoundaryIndex)
+        (1, 2, DT.BoundaryIndex)
+        (2, 3, DT.BoundaryIndex)
+        (3, 7, DT.BoundaryIndex)
+        (7, 8, DT.BoundaryIndex)
+        (8, 9, DT.BoundaryIndex)
+        (9, 10, DT.BoundaryIndex)
+    ]
+    @test DT.compare_triangle_collections(get_triangles(tri), true_tri)
+    push!(get_all_constrained_edges(tri), e)
+    @test validate_triangulation(tri)
+end
+
+
+
+tri = example_with_special_corners()
 
 fig, ax, sc = triplot(tri)
 let vert = each_solid_vertex(tri)
     text!(ax, collect(get_point(tri, vert...)); text=string.(vert))
 end
-lines!(ax, [get_point(tri, 2, 7)...], color=:blue, linestyle=:dash)
+lines!(ax, [get_point(tri, 9, 13)...], color=:blue, linestyle=:dash)
 fig
 
-e = (2, 7)
-T, C, L, R = DT.locate_intersecting_triangles(tri, e)
-DT.delete_intersected_triangles!(tri, T)
-_tri_1 = DT.triangulate_cavity_cdt(points, L)
-_tri_2 = DT.triangulate_cavity_cdt(points, R)
 
+
+rng = StableRNG(191919)
+points, edges, mat_edges = get_random_vertices_and_constrained_edges(40, 200, 20, rng)
+tri = triangulate(points) 
 fig, ax, sc = triplot(tri)
-triplot!(ax, _tri_1, strokecolor=:blue)
-triplot!(ax, _tri_2, strokecolor=:red)
-fig
 
-DT.add_new_triangles!(tri, _tri_1, _tri_2)
 
-points = get_points(tri)
-V = L
-_tri = Triangulation(points)
-v = V[begin]
-u = V[end]
-prev, next, shuffled_indices = DT.prepare_vertex_linked_list(V)
-DT.delete_polygon_vertices_in_random_order!(_tri, V, shuffled_indices, prev, next, u, v)
-
-kp = [1 4 2
-    8 11 10
-    8 7 11
-    2 9 3
-    3 9 10
-    9 8 10
-    9 7 8
-    2 7 9
-    7 5 6
-    7 2 5
-    5 2 4]'
-kp = collect(eachcol(kp))
+fig, ax, sc = scatter(points)
+linesegments!(ax, points[mat_edges])
+fig 
 

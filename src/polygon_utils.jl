@@ -232,16 +232,10 @@ function polygon_bounds_single_segment(pts, boundary_nodes)
         vᵢ = get_boundary_nodes(boundary_nodes, i)
         pᵢ = get_point(pts, vᵢ)
         xᵢ, yᵢ = getxy(pᵢ)
-        if xᵢ > xmax
-            xmax = xᵢ
-        elseif xᵢ < xmin
-            xmin = xᵢ
-        end
-        if yᵢ > ymax
-            ymax = yᵢ
-        elseif yᵢ < ymin
-            ymin = yᵢ
-        end
+        xmin = min(xᵢ, xmin)
+        xmax = max(xᵢ, xmax)
+        ymin = min(yᵢ, ymin)
+        ymax = max(yᵢ, ymax)
     end
     return xmin, xmax, ymin, ymax
 end
