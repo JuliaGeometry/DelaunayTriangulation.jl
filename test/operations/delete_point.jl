@@ -91,7 +91,6 @@ fig
             end
         end
     end
-
 end
 
 @testset verbose = true "Deleting boundary nodes" begin
@@ -134,6 +133,7 @@ end
             nx = rand(rng1, 5:25)
             ny = rand(rng1, 5:25)
             tri = triangulate_rectangle(a, b, c, d, nx, ny; add_ghost_triangles=true, single_boundary=true)
+            empty!(get_all_constrained_edges(tri))
             points = get_points(tri)
             n = nx * ny
             total_bnd_nodes = DT.num_neighbours(tri, DT.BoundaryIndex)

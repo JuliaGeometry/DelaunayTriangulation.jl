@@ -26,7 +26,8 @@ end
 
 @testset "Testing Shewchuk's PSLG example" begin
     pts, C = second_shewchuk_example_constrained()
-    for _ in 1:500
+    for i in 1:500
+        rng = StableRNG(i^6)
         tri = triangulate(pts; edges=C, rng)
         @test validate_triangulation(tri)
     end
@@ -35,6 +36,7 @@ end
 @testset "Random parabolas" begin
     for i in 1:50
         @show i
+        rng = StableRNG(i)
         pts = [(2rand(rng) - 1, rand(rng)) for _ in 1:500]
         x = LinRange(-1, 1, 250)
         a = LinRange(0.0, 1.0, 8)

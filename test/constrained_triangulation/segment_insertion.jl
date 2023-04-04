@@ -234,7 +234,6 @@ end
         (9, 10, DT.BoundaryIndex)
     ]
     @test DT.compare_triangle_collections(get_triangles(tri), true_tri)
-    push!(get_all_constrained_edges(tri), e)
     @test validate_triangulation(tri)
 end
 

@@ -83,10 +83,8 @@ function triangulate(points::P; edges=nothing, boundary_nodes=nothing,
     if !isnothing(boundary_nodes)
         delete_boundary_interiors!(tri)
     end
-    #=
     recompute_representative_point && compute_representative_points!(tri)
     delete_ghosts && delete_ghost_triangles!(tri)
     delete_empty_features && clear_empty_features!(tri)
-    =#
     return tri
 end
