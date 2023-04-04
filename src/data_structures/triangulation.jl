@@ -726,8 +726,8 @@ end
 @inline function is_boundary_node(tri::Triangulation, i)
     return is_boundary_node(i, get_graph(tri), get_boundary_index_ranges(tri))
 end
-@inline edge_exists(tri::Triangulation, i, j) = edge_exists(tri, construct_edge(edge_type(tri), i, j))
-@inline edge_exists(tri::Triangulation, ij) = edge_exists(ij, get_adjacent(tri))
+@inline edge_exists(tri::Triangulation, i, j) = edge_exists(get_adjacent(tri, i, j))
+@inline edge_exists(tri::Triangulation, ij) = edge_exists(get_adjacent(tri, ij))
 @inline function has_ghost_triangles(tri::Triangulation)
     return has_ghost_triangles(get_adjacent(tri), get_adjacent2vertex(tri))
 end
