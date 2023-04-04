@@ -136,9 +136,9 @@ function add_point_bowyer_watson!(tri::Triangulation, new_point, initial_search_
     ℓ₂ = get_adjacent(tri, k, j)
     ℓ₃ = get_adjacent(tri, i, k)
     delete_triangle!(tri, V; protect_boundary=true, update_ghost_edges=false)
-    dig_cavity!(tri, new_point, i, j, ℓ₁)
-    dig_cavity!(tri, new_point, j, k, ℓ₂)
-    dig_cavity!(tri, new_point, k, i, ℓ₃)
+    !contains_constrained_edge(tri, i, j) && dig_cavity!(tri, new_point, i, j, ℓ₁)
+    !contains_constrained_edge(tri, j, k) && dig_cavity!(tri, new_point, j, k, ℓ₂)
+    !contains_constrained_edge(tri, k, i) && dig_cavity!(tri, new_point, k, i, ℓ₃)
     if is_on(flag) && (is_boundary_triangle(tri, V) ||
                        is_ghost_triangle(V) && !is_boundary_node(tri, new_point)[1])
         # ^ Need to fix the ghost edges if the point is added onto an existing boundary edge. Note that the last 
@@ -168,8 +168,8 @@ end
         ℓ₁ = get_adjacent(tri, ℓ, i)
         ℓ₂ = get_adjacent(tri, j, ℓ)
         delete_triangle!(tri, j, i, ℓ; protect_boundary=true, update_ghost_edges=false)
-        dig_cavity!(tri, r, i, ℓ, ℓ₁)
-        dig_cavity!(tri, r, ℓ, j, ℓ₂)
+        !contains_constrained_edge(tri, i, ℓ) && dig_cavity!(tri, r, i, ℓ, ℓ₁)
+        !contains_constrained_edge(tri, ℓ, j) && dig_cavity!(tri, r, ℓ, j, ℓ₂)
     else
         # If we are here, then this means that we are on an edge of the polygonal cavity. 
         # Note that this also covers the is_boundary_index(ℓ) case
