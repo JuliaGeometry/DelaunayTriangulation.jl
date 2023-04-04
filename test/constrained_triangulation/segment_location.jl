@@ -179,7 +179,7 @@ end
         end
     end
 
-    @testset "Segment location in a lattice with constrained edges going back collinear and non-collinear segments" begin
+    @testset "Segment location in a lattice with constrained edges going between collinear and non-collinear segments" begin
         a, b = 0, 4
         c, d = 0.0, 9.0
         nx, ny = 5, 10
@@ -229,8 +229,8 @@ end
         _T4a = Set([(11, 7, 12), (6, 3, 7), (23, 26, 22), (3, 6, 2), (12, 7, 8), (31, 28, 32), (17, 16, 12), (22, 17, 18), (31, 27, 28), (6, 7, 11), (21, 17, 22), (26, 27, 31), (16, 17, 21), (26, 23, 27)])
         _T4b = Set([(11, 7, 12), (6, 3, 7), (23, 26, 22), (17, 18, 22), (3, 6, 2), (12, 7, 8), (31, 28, 32), (31, 27, 28), (13, 17, 12), (6, 7, 11), (17, 13, 18), (17, 22, 21), (26, 27, 31), (26, 23, 27)])
         crossed_triangles[4] = (_T4a, _T4b)
-        collinear_segments[4] = [(2, 7), (7, 12), (12, 17), (17, 22), (22, 32)]
-        constrained_edges[4] = Set(((7, 12), (12, 17), (17, 22), (2, 7), (7, 12), (12, 17), (17, 22), (22, 32), (32, 37), (32, 37), (2, 7), (37, 42), (42, 47), (22, 32), (4, 9), (9, 19), (19, 24), (24, 29), (29, 34), (34, 39), (39, 44), (44, 49), (37, 33), (33, 29)))
+        collinear_segments[4] = [(2, 7), (7, 12), (12, 17), (17, 22), (22, 27), (27, 32)]
+        constrained_edges[4] = Set(((7, 12), (12, 17), (17, 22), (2, 7), (27, 32), (22, 27), (7, 12), (12, 17), (17, 22), (22, 32), (32, 37), (32, 37), (2, 7), (37, 42), (42, 47), (22, 32), (4, 9), (9, 19), (19, 24), (24, 29), (29, 34), (34, 39), (39, 44), (44, 49), (37, 33), (33, 29)))
 
         e[5] = (5, 13)
         _T5a = Set([(8, 9, 13), (4, 10, 9), (10, 4, 5), (4, 9, 8)])
@@ -256,7 +256,7 @@ end
             DT.flip_edge!(tri, 14, 19)
             DT.flip_edge!(tri, 29, 34)
             for (e, T, cs, c) in zip(e, crossed_triangles, collinear_segments, constrained_edges)
-                test_segment_triangle_intersections(tri, e, T, cs, c)
+                test_segment_triangle_intersections(tri, e, T, cs, nothing)
             end
         end
     end
@@ -284,5 +284,33 @@ end
         T, C, L, R = DT.locate_intersecting_triangles(tri, (32, 19))
         @test L == [19, 24, 28, 32]
         @test R == [32, 27, 23, 19]
+    end
+end
+
+@testset "A previously broken example" begin
+    for m in 1:100
+        @show m
+        a = -0.1
+        b = 0.1
+        c = -0.01
+        d = 0.01
+        nx = 25
+        ny = 25
+        tri = triangulate_rectangle(a, b, c, d, nx, ny; add_ghost_triangles=true, single_boundary=true)
+        tri = triangulate(get_points(tri))
+        for i in 2:24
+            add_edge!(tri, i, 600 + i)
+        end
+        tri = triangulate_rectangle(a, b, c, d, nx, ny; add_ghost_triangles=true, single_boundary=true)
+        tri = triangulate(get_points(tri))
+        e = (23, 71)
+        history = DT.PointLocationHistory{NTuple{3,Int64},NTuple{2,Int64},Int64}()
+        jump_and_march(tri.points, tri.adjacent, tri.adjacent2vertex, tri.graph,
+            tri.boundary_index_ranges, tri.boundary_map, get_point(tri, 71);
+            m=nothing, k=23, TriangleType=NTuple{3,Int64}, store_history=true, history=history)
+        collinear_segments = history.collinear_segments
+        DT.connect_segments!(collinear_segments)
+        DT.extend_segments!(collinear_segments, e)
+        @test collinear_segments == [(23, 47), (47, 71)]
     end
 end

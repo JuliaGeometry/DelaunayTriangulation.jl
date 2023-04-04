@@ -260,11 +260,25 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
                 # but I'm sure there's a better way. (This is why we have the 
                 # original_k variable.) I'm also sure there's a way to know the 
                 # actual edge, rather than trying both as we do below. Usually it's 
-                # the edge last_changed == i ? j : i, but not always...
+                # the edge last_changed == i ? j : i, but not always... We split this 
+                # into two cases, one where last_changed ≠ 0 and otherwise. This is because 
+                # last_changed ≠ 0 path is a lot more common (> 99%).
                 if is_collinear(point_position_relative_to_line(original_k, q, last_changed == i ? j : i, pts, boundary_map))
                     add_edge!(history, last_changed == i ? j : i, k)
-                elseif last_changed ≠ I(DefaultAdjacentValue) && is_collinear(point_position_relative_to_line(original_k, q, last_changed, pts, boundary_map))
+                elseif edge_exists(last_changed) && is_collinear(point_position_relative_to_line(original_k, q, last_changed, pts, boundary_map))
                     add_edge!(history, last_changed, k)
+                else
+                    # This case here is a lot less likely. I've only found a need for this test once in over 10,000,00 tests.
+                    if pₖ == q
+                        prev = get_adjacent(adj, j, i; check_existence, boundary_index_ranges)
+                        if is_collinear(point_position_relative_to_line(i, p, q, pts, boundary_map))
+                            add_edge!(history, i, k)
+                        elseif is_collinear(point_position_relative_to_line(j, p, q, pts, boundary_map))
+                            add_edge!(history, j, k)
+                        elseif prev ≠ original_k && is_collinear(point_position_relative_to_line(prev, p, q, pts, boundary_map)) # prev ≠ original_k because otherwise we'll say the line segment we started with is collinear with itself, which is true but we don't need that case.
+                            add_edge!(history, prev, k)
+                        end
+                    end
                 end
                 add_triangle!(history, i, j, k)
             end

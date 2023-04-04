@@ -236,27 +236,3 @@ end
     @test DT.compare_triangle_collections(get_triangles(tri), true_tri)
     @test validate_triangulation(tri)
 end
-
-
-
-tri = example_with_special_corners()
-
-fig, ax, sc = triplot(tri)
-let vert = each_solid_vertex(tri)
-    text!(ax, collect(get_point(tri, vert...)); text=string.(vert))
-end
-lines!(ax, [get_point(tri, 9, 13)...], color=:blue, linestyle=:dash)
-fig
-
-
-
-rng = StableRNG(191919)
-points, edges, mat_edges = get_random_vertices_and_constrained_edges(40, 200, 20, rng)
-tri = triangulate(points) 
-fig, ax, sc = triplot(tri)
-
-
-fig, ax, sc = scatter(points)
-linesegments!(ax, points[mat_edges])
-fig 
-

@@ -80,3 +80,78 @@ end
         @test validate_triangulation(tri)
     end
 end
+
+@testset "Lattice" begin
+    for m in 1:20
+        rng = StableRNG(m)
+        @show m
+        a = 0.0
+        b = 5.0
+        c = -3.0
+        d = 7.0
+        nx = 13
+        ny = 20
+        tri = triangulate_rectangle(a, b, c, d, nx, ny; add_ghost_triangles=true, single_boundary=true)
+        add_edge!(tri, 56, 162; rng)
+        for e in [(1, 249), (1, 250), (1, 251), (1, 26), (1, 39), (1, 52)]
+            add_edge!(tri, e; rng)
+        end
+        add_edge!(tri, 190, 99; rng)
+        for e in [(99, 113), (113, 101), (101, 115), (115, 127), (127, 141), (141, 177)]
+            add_edge!(tri, e; rng)
+        end
+        @test validate_triangulation(tri)
+
+        a = 0.0
+        b = 1.0
+        c = 0.0
+        d = 1.0
+        nx = 2
+        ny = 2
+        tri = triangulate_rectangle(a, b, c, d, nx, ny; add_ghost_triangles=true, single_boundary=true)
+        add_edge!(tri, 1, 4; rng)
+        @test validate_triangulation(tri)
+
+        a = -0.1
+        b = 0.1
+        c = -0.01
+        d = 0.01
+        nx = 25
+        ny = 25
+        tri = triangulate_rectangle(a, b, c, d, nx, ny; add_ghost_triangles=true, single_boundary=true)
+        tri = triangulate(get_points(tri))
+        for i in 2:24
+            add_edge!(tri, i, 600 + i; rng)
+        end
+        @test validate_triangulation(tri)
+        tri = triangulate_rectangle(a, b, c, d, nx, ny; add_ghost_triangles=true, single_boundary=true)
+        tri = triangulate(get_points(tri); rng)
+        for e in [(1, 28), (28, 103), (103, 180), (180, 625), (625, 523), (523, 23), (23, 71), (71, 60), (60, 28)]
+            add_edge!(tri, e; rng)
+        end
+        for e in [(402, 227), (227, 430), (430, 437), (437, 614), (527, 602), (528, 603), (555, 605)]
+            add_edge!(tri, e; rng)
+        end
+        @test validate_triangulation(tri)
+
+        a = 0
+        b = 1
+        c = 0
+        d = 5
+        nx = 25
+        ny = 3
+        tri = triangulate_rectangle(a, b, c, d, nx, ny; add_ghost_triangles=true, single_boundary=true)
+        tri = triangulate(get_points(tri); rng)
+        for i in 1:(nx-1)
+            u = i
+            v = 2nx
+            add_edge!(tri, u, v)
+        end
+        for i in 51:75
+            u = i
+            v = 26
+            add_edge!(tri, u, v; rng)
+        end
+        @test validate_triangulation(tri)
+    end
+end

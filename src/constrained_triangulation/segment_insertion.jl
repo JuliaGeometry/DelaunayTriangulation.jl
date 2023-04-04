@@ -144,7 +144,7 @@ function setup_cavity_cdt(tri::Triangulation, V; rng::AbstractRNG=Random.default
     delete_polygon_vertices_in_random_order!(tri, V, shuffled_indices, prev, next, u, v, rng)
     m = length(V)
     I = integer_type(tri)
-    marked_vertices = nothing#I[]
+    marked_vertices = I[]
     return prev, next, shuffled_indices, m, marked_vertices
 end
 
@@ -154,10 +154,9 @@ function triangulate_cavity_cdt!(tri::Triangulation, V; rng::AbstractRNG=Random.
     for i in 3:(m-1)
         a, b, c = index_shuffled_linked_list(V, next, prev, shuffled_indices, i)
         add_point_cavity_cdt!(tri, marked_vertices, a, b, c)
-        #=
         if a ∈ marked_vertices
+            throw("...")
         end
-        =#
     end
     return nothing
 end
@@ -178,11 +177,9 @@ function add_point_cavity_cdt!(tri::Triangulation, marked_vertices, u, v, w)
         delete_triangle!(tri, w, v, x; protect_boundary=true, update_ghost_edges=false)
         add_point_cavity_cdt!(tri, marked_vertices, u, v, x)
         add_point_cavity_cdt!(tri, marked_vertices, u, x, w)
-        #=
         if !is_inside(incircle_test)
             push!(marked_vertices, u, v, w, x)
         end
-        =#
     end
     return nothing
 end

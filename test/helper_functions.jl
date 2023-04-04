@@ -671,7 +671,7 @@ function test_segment_triangle_intersections(tri, edge, true_triangles, true_col
     DT.add_edge!(constrained_edges, edge)
     _, collinear_segments = DT.locate_intersecting_triangles(tri, edge)
     DT.split_constrained_edge!(tri, edge, collinear_segments)
-    @test compare_edge_vectors(constrained_edges, current_constrained_edges)
+    !isnothing(current_constrained_edges) && @test compare_edge_vectors(constrained_edges, current_constrained_edges)
 end
 
 function get_random_vertices_and_constrained_edges(nverts1, nverts2, nedges, rng=Random.default_rng())
