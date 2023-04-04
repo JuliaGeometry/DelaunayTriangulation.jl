@@ -108,6 +108,7 @@ include("operations/split_triangle.jl")
 include("operations/legalise_edge.jl")
 include("operations/delete_point.jl")
 include("operations/add_edge.jl")
+include("operations/delete_holes.jl")
 
 export add_ghost_triangles!
 export delete_ghost_triangles!
@@ -150,6 +151,9 @@ export triplot
 export triplot!
 
 include("utils.jl")
+
+export convert_boundary_points_to_indices
+
 include("polygon_utils.jl")
 
 export number_type
@@ -296,6 +300,7 @@ their docstrings for more information.
 - [`points_are_unique`](@ref): Makes use of the existing methods.
 - [`lexicographic_order`](@ref): Makes use of the existing methods.
 - [`number_type`](@ref): Must be defined.
+- [`push_point!`](@ref): Must be defined.
 
 # Boundary Nodes Interface 
 

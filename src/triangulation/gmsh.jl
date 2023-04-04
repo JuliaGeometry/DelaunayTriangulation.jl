@@ -4,7 +4,8 @@
         gmsh_path="./gmsh-4.11.1-Windows64/gmsh.exe",
         verbosity=0,
         convert_result=true,
-        add_ghost_triangles=false)
+        add_ghost_triangles=false,
+        check_args=true)
 
 Using Gmsh, generates a mesh of the domain defined by `(x, y)`. 
 
@@ -62,6 +63,10 @@ If `true`, the final result is converted into a [`Triangulation`](@ref) type. Ot
 
 If `convert_result`, then this declares whether or not ghost triangles should be added when 
 converting the result into a [`Triangulation`](@ref) type. See also [`Triangulation`](@ref).
+
+- `check_arguments=true`
+
+Whether to verify the arguments have the correct orientation. 
 
 # Outputs 
 If `convert_result`, then the final result is a [`Triangulation`](@ref) type. Otherwise, 
@@ -184,21 +189,17 @@ converted into a [`Triangulation`](@ref) type, and a constructor of
 [`Triangulation`](@ref) is used to accomplish this.
 """
 function generate_mesh(x::AAA, y::AAA, ref;
-                       mesh_algorithm=6,
-                       gmsh_path="./gmsh-4.11.1-Windows64/gmsh.exe",
-                       verbosity=0,
-                       convert_result=true,
-                       add_ghost_triangles=false) where {F<:
-                                                         Number,
-                                                         A<:
-                                                         AbstractVector{F},
-                                                         AA<:
-                                                         AbstractVector{A},
-                                                         AAA<:
-                                                         AbstractVector{AA}}
+    mesh_algorithm=6,
+    gmsh_path="./gmsh-4.11.1-Windows64/gmsh.exe",
+    verbosity=0,
+    convert_result=true,
+    add_ghost_triangles=false,
+    check_arguments=true) where {F<:
+    Number,A<:AbstractVector{F},AA<:AbstractVector{A},AAA<:AbstractVector{AA}}
     identifiers, identifier_dict = write_gmsh(x, y, ref; mesh_algorithm, verbosity)
     run_gmsh(gmsh_path)
     elements, nodes, boundary_nodes = read_gmsh(identifiers, identifier_dict)
+    check_arguments && check_args(nodes, boundary_nodes)
     if !convert_result
         return elements, nodes, boundary_nodes
     else
@@ -209,19 +210,21 @@ function generate_mesh(x::AAA, y::AAA, ref;
 end
 
 function generate_mesh(x::AA, y::AA, ref;
-                       mesh_algorithm=6,
-                       gmsh_path="./gmsh-4.11.1-Windows64/gmsh.exe",
-                       verbosity=0,
-                       convert_result=true,
-                       add_ghost_triangles=false) where {F<:
-                                                         Number,
-                                                         A<:
-                                                         AbstractVector{F},
-                                                         AA<:
-                                                         AbstractVector{A}}
+    mesh_algorithm=6,
+    gmsh_path="./gmsh-4.11.1-Windows64/gmsh.exe",
+    verbosity=0,
+    convert_result=true,
+    add_ghost_triangles=false,
+    check_arguments=true) where {F<:
+    Number,
+    A<:
+    AbstractVector{F},
+    AA<:
+    AbstractVector{A}}
     elements, nodes, boundary_nodes = generate_mesh([x], [y], ref; mesh_algorithm,
-                                                    gmsh_path, verbosity,
-                                                    convert_result=false)
+        gmsh_path, verbosity,
+        convert_result=false)
+    check_arguments && check_args(nodes, boundary_nodes[1])
     if !convert_result
         return elements, nodes, boundary_nodes[1]
     else
@@ -232,17 +235,19 @@ function generate_mesh(x::AA, y::AA, ref;
 end
 
 function generate_mesh(x::A, y::A, ref;
-                       mesh_algorithm=6,
-                       gmsh_path="./gmsh-4.11.1-Windows64/gmsh.exe",
-                       verbosity=0,
-                       convert_result=true,
-                       add_ghost_triangles=false) where {F<:
-                                                         Number,
-                                                         A<:
-                                                         AbstractVector{F}}
+    mesh_algorithm=6,
+    gmsh_path="./gmsh-4.11.1-Windows64/gmsh.exe",
+    verbosity=0,
+    convert_result=true,
+    add_ghost_triangles=false,
+    check_arguments=true) where {F<:
+    Number,
+    A<:
+    AbstractVector{F}}
     elements, nodes, boundary_nodes = generate_mesh([x], [y], ref; mesh_algorithm,
-                                                    gmsh_path, verbosity,
-                                                    convert_result=false)
+        gmsh_path, verbosity,
+        convert_result=false)
+    check_arguments && check_args(nodes, boundary_nodes[1])
     if !convert_result
         return elements, nodes, boundary_nodes[1]
     else
@@ -269,12 +274,12 @@ See the main function [`generate_mesh`](@ref generate_mesh(::AAA, ::AAA, ::Any) 
 arguments.
 """
 function generate_mesh(a, b, c, d, ref;
-                       mesh_algorithm=6,
-                       gmsh_path="./gmsh-4.11.1-Windows64/gmsh.exe",
-                       verbosity=0,
-                       single_boundary=true,
-                       convert_result=true,
-                       add_ghost_triangles=false)
+    mesh_algorithm=6,
+    gmsh_path="./gmsh-4.11.1-Windows64/gmsh.exe",
+    verbosity=0,
+    single_boundary=true,
+    convert_result=true,
+    add_ghost_triangles=false)
     if single_boundary
         x = [a, b, b, a, a]
         y = [c, c, d, d, c]
@@ -283,7 +288,7 @@ function generate_mesh(a, b, c, d, ref;
         y = [[c, c, c], [c, (d + c) / 2, d], [d, d, d], [d, (d + c) / 2, c]]
     end
     tri = generate_mesh(x, y, ref; mesh_algorithm, gmsh_path, verbosity, convert_result,
-                        add_ghost_triangles)
+        add_ghost_triangles)
     return tri
 end
 
@@ -313,8 +318,8 @@ end
 
 function read_gmsh(identifiers, identifier_dict)
     boundary_nodes = get_boundary_node_init(identifiers)
-    elements = NTuple{3, Int64}[]
-    nodes = NTuple{2, Float64}[]
+    elements = NTuple{3,Int64}[]
+    nodes = NTuple{2,Float64}[]
     open("meshgeometry.msh", "r") do fid
         return read_mesh!(fid, elements, nodes, boundary_nodes, identifier_dict)
     end
@@ -391,7 +396,7 @@ function write_line!(fout, idx, i, j)
 end
 
 function write_lines!(fout, x, y, init_point=1, init_line=1)
-    for _ in firstindex(x):(lastindex(x) - 1)
+    for _ in firstindex(x):(lastindex(x)-1)
         write_line!(fout, init_line, init_point, init_point + 1)
         init_line += 1
         init_point += 1
@@ -407,13 +412,13 @@ function write_segments!(fout, x, y, init_point=1, init_line=1)
         seg_x = x[begin]
         seg_y = y[begin]
         # Only do begin:end-1, because it is assumed that seg_x[begin] == seg_x[end]
-        init_point, init_line = @views write_lines!(fout, seg_x[begin:(end - 1)],
-                                                    seg_y[begin:(end - 1)], init_point,
-                                                    init_line)
+        init_point, init_line = @views write_lines!(fout, seg_x[begin:(end-1)],
+            seg_y[begin:(end-1)], init_point,
+            init_line)
         write_line!(fout, init_line, init_point, orig_init_point)
         init_point += 1
         init_line += 1
-        segment_line_idx[1] = orig_init_line:(init_line - 1)
+        segment_line_idx[1] = orig_init_line:(init_line-1)
         return init_point, init_line, segment_line_idx
     else
         orig_init_point_curve = init_point
@@ -425,7 +430,7 @@ function write_segments!(fout, x, y, init_point=1, init_line=1)
             if i == firstindex(x)
                 # If we're at the start of the curve, we just go over each edge of the segment
                 init_point, init_line = write_lines!(fout, seg_x, seg_y, init_point,
-                                                     init_line)
+                    init_line)
                 init_point += 1 # Need to move on to the next segment - skip the same initial point from the next segment and go on
             elseif firstindex(x) < i < lastindex(x)
                 # We are on an interior segment. In this case, the initial point needs to come from 
@@ -434,9 +439,9 @@ function write_segments!(fout, x, y, init_point=1, init_line=1)
                 init_line += 1
                 init_point += 1
                 # Now having added the first point, go over the remainder of the segment 
-                init_point, init_line = @views write_lines!(fout, seg_x[(begin + 1):end],
-                                                            seg_y[(begin + 1):end],
-                                                            init_point, init_line)
+                init_point, init_line = @views write_lines!(fout, seg_x[(begin+1):end],
+                    seg_y[(begin+1):end],
+                    init_point, init_line)
                 init_point += 1
             elseif i == lastindex(x)
                 # If we are on the very last segment (note that this is not the only segment, since we handle 
@@ -449,15 +454,15 @@ function write_segments!(fout, x, y, init_point=1, init_line=1)
                 init_point += 1
                 # Add the points between the initial and terminal points
                 init_point, init_line = @views write_lines!(fout,
-                                                            seg_x[(begin + 1):(end - 1)],
-                                                            seg_y[(begin + 1):(end - 1)],
-                                                            init_point, init_line)
+                    seg_x[(begin+1):(end-1)],
+                    seg_y[(begin+1):(end-1)],
+                    init_point, init_line)
                 # Now connect the last point with the initial point on the curve
                 write_line!(fout, init_line, init_point, orig_init_point_curve)
                 init_line += 1
                 init_point += 1
             end
-            segment_line_idx[j] = orig_init_line:(init_line - 1) # -1 since we increment by 1 even at the end in the above functions
+            segment_line_idx[j] = orig_init_line:(init_line-1) # -1 since we increment by 1 even at the end in the above functions
         end
     end
     return init_point, init_line, segment_line_idx
@@ -469,9 +474,9 @@ function write_curves!(fout, x, y, init_point=1, init_line=1)
     for (j, i) in enumerate(eachindex(x))
         orig_init_line = init_line
         init_point, init_line, segment_line_idx[j] = write_segments!(fout, x[i], y[i],
-                                                                     init_point, init_line)
+            init_point, init_line)
         init_point += 1 # Need to +1 so that we skip the next point, which is the point that connects back with the initial point of the current segment i.e. not the next curve
-        curve_line_idx[j] = orig_init_line:(init_line - 1) # Need to -1 since write_segments! adds an extra +1 at the end
+        curve_line_idx[j] = orig_init_line:(init_line-1) # Need to -1 since write_segments! adds an extra +1 at the end
     end
     num_lines = init_line - 1
     return curve_line_idx, segment_line_idx, num_lines
@@ -479,7 +484,7 @@ end
 
 function write_curve_loop!(fout, curve_idx, line_idxs)
     write(fout, "Curve Loop($curve_idx) = {")
-    for i in firstindex(line_idxs):(lastindex(line_idxs) - 1)
+    for i in firstindex(line_idxs):(lastindex(line_idxs)-1)
         write(fout, "$(line_idxs[i]), ")
     end
     write(fout, "$(line_idxs[end])};\n")
@@ -495,7 +500,7 @@ end
 
 function write_plane_surface!(fout, num_curves)
     write(fout, "Plane Surface(1) = {")
-    for i in 1:(num_curves - 1)
+    for i in 1:(num_curves-1)
         write(fout, "$i, ")
     end
     write(fout, "$num_curves};\n")
@@ -504,7 +509,7 @@ end
 
 function write_physical_curve!(fout, id, segment_range)
     write(fout, "Physical Curve($id) = {")
-    for i in firstindex(segment_range):(lastindex(segment_range) - 1)
+    for i in firstindex(segment_range):(lastindex(segment_range)-1)
         write(fout, "$(segment_range[i]), ")
     end
     write(fout, "$(segment_range[end])};\n")
@@ -519,7 +524,7 @@ function write_physical_curves!(fout, segment_ranges::Vector{UnitRange{Int64}}, 
     return init
 end
 function write_physical_curves!(fout, segment_ranges::Vector{Vector{UnitRange{Int64}}},
-                                init=1)
+    init=1)
     for ranges in segment_ranges
         init = write_physical_curves!(fout, ranges, init)
     end

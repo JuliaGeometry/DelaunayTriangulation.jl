@@ -385,6 +385,14 @@ end
             @test sort(collect(filter(!DT.is_boundary_index, each_vertex(___tri)))) == sort(collect(each_solid_vertex(___tri)))
             @test sort(collect(filter(DT.is_boundary_index, each_vertex(___tri)))) == sort(collect(each_ghost_vertex(___tri)))
             @test length(collect(each_ghost_vertex(___tri))) == num_vertices(___tri) .- length(sort(collect(filter(!DT.is_boundary_index, each_vertex(___tri)))))
+            tri1 = Triangulation([[1.0, 2.0], [3.0, 4.0]])
+            DT.push_point!(tri1, 13.7, 5.0)
+            @test get_points(tri1) == [[1.0, 2.0], [3.0, 4.0], [13.7, 5.0]]
+            @test get_point(tri1, 3) == (13.7, 5.0)
+            tri1 = Triangulation([(1.0, 2.0), (3.0, 4.0)])
+            DT.push_point!(tri1, 13.7, 5.0)
+            @test get_points(tri1) == [(1.0, 2.0), (3.0, 4.0), (13.7, 5.0)]
+            @test get_point(tri1, 3) == (13.7, 5.0)
       end
 
       @testset "Miscellaneous" begin
@@ -580,4 +588,49 @@ end
       u, v = 7, 4
       @test DT.is_closer(DT.point_closest_to_line(tri, i, j, u, v))
       @test DT.is_further(DT.point_closest_to_line(tri, i, j, v, u))
+end
+
+rng = StableRNG(91928281)
+pts = [(rand(rng), rand(rng)) for _ in 1:50]
+bnd_pts = [(0.3cos(θ), 0.3sin(θ)) .+ 0.5 for θ in LinRange(0, 2π - 1 / 250, 25)]
+bnd_id = [(51:75)..., 51]
+append!(pts, bnd_pts)
+global tric = triangulate(pts; boundary_nodes=bnd_id, rng)
+
+@testset "each_constrained_edge" begin
+      @test each_constrained_edge(tric) == each_edge(get_all_constrained_edges(tric))
+end
+
+@testset "contains_constrained_edge" begin
+      @test !DT.contains_constrained_edge(tric, 12, 17)
+      @test DT.contains_constrained_edge(tric, 69, 70)
+      @test DT.contains_constrained_edge(tric, 70, 69)
+      @test !DT.contains_constrained_edge(tric, 32, 41)
+      @test !DT.contains_constrained_edge(tric, 45, 38)
+      @test DT.contains_constrained_edge(tric, 63, 64)
+      @test !DT.contains_constrained_edge(tric, (45, 38))
+      @test !DT.contains_constrained_edge(tric, 26, 22)
+      @test DT.contains_constrained_edge(tric, 64, 65)
+      @test DT.contains_constrained_edge(tric, 55, 54)
+      @test DT.contains_constrained_edge(tric, 58, 57)
+      @test DT.contains_constrained_edge(tric, 59, 60)
+      @test !DT.contains_constrained_edge(tric, 30, 70)
+      @test !DT.contains_constrained_edge(tric, 56, 37)
+      @test DT.contains_constrained_edge(tric, 73, 74)
+end
+
+@testset "get_all_boundary_nodes" begin
+      x, y = complicated_geometry()
+      tri = generate_mesh(x, y, 2.0; convert_result=true, add_ghost_triangles=true)
+      all_bn = DT.get_all_boundary_nodes(tri)
+      @test all_bn == Set(reduce(vcat, reduce(vcat, get_boundary_nodes(tri))))
+      tri2, label_map, index_map = simple_geometry()
+      all_bn = DT.get_all_boundary_nodes(tri2)
+      @test all_bn == Set(reduce(vcat, reduce(vcat, get_boundary_nodes(tri2))))
+      tri3 = triangulate_rectangle(0, 1, 0, 1, 50, 50; add_ghost_triangles=true, single_boundary=false)
+      all_bn = DT.get_all_boundary_nodes(tri3)
+      @test all_bn == Set(reduce(vcat, reduce(vcat, get_boundary_nodes(tri3))))
+      tri4 = triangulate_rectangle(0, 1, 0, 1, 50, 50; add_ghost_triangles=true, single_boundary=true)
+      all_bn = DT.get_all_boundary_nodes(tri4)
+      @test all_bn == Set(reduce(vcat, reduce(vcat, get_boundary_nodes(tri4))))
 end

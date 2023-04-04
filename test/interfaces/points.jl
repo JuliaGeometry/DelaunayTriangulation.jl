@@ -158,4 +158,14 @@ global pts3 = [2.0 1.7 -1.0; 3.5 23.3 0.0]
         idx = DT.lexicographic_order(A)
         @test idx == [3, 1, 2, 8, 7, 4, 5, 6]
     end
+
+    @testset "push_point!" begin
+        p1 = [(1.0, 2.0), (3.0, 4.0)]
+        DT.push_point!(p1, 0.5, 3.0)
+        @test p1 == [(1.0, 2.0), (3.0, 4.0), (0.5, 3.0)]
+        p1 = [[1.0, 2.0], [5.0, 13.7]]
+        DT.push_point!(p1, 13.9, 25.0)
+        @test p1 == [[1.0, 2.0], [5.0, 13.7], [13.9, 25.0]]
+    end
 end
+

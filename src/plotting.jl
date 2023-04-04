@@ -86,7 +86,7 @@ MakieCore.@recipe(Triplot, points, triangles, boundary_nodes, convex_hull, const
 end
 function MakieCore.convert_arguments(plot::Type{<:Triplot}, tri::Triangulation)
     return (get_points(tri), get_triangles(tri), get_boundary_nodes(tri),
-        get_convex_hull(tri), merge_constrained_edges(tri))
+        get_convex_hull(tri), get_all_constrained_edges(tri))
 end
 
 function MakieCore.plot!(p::Triplot)
@@ -207,7 +207,7 @@ function MakieCore.plot!(p::Triplot)
     end
 
     ## Connect the plot so that it updates whenever we change a value 
-    MakieCore.Observables.onany(update_plot, points, triangles, boundary_nodes, convex_hull)
+    MakieCore.Observables.onany(update_plot, points, triangles, boundary_nodes, convex_hull, constrained_edges)
 
     ## Call it once to prepopulate with current values 
     update_plot(points[], triangles[], boundary_nodes[], convex_hull[], constrained_edges[])

@@ -36,6 +36,8 @@ constrained edges that together form the boundaries of your domain. If any
 of these edges are collinear with another point, then the edge is split into two 
 at this point, and this field is mutated accordingly.
 
+You might also want to consider [`convert_boundary_points_to_indices`](@ref).
+
 The default (default because you could customise it if you wish, see 
 [`Interfaces`](@ref)) form of this field depends on your domain:
 
@@ -222,6 +224,8 @@ we list below.
 - [`get_right_boundary_node`](@ref)
 - [`get_left_boundary_node`](@ref)
 
+You might also want to consider [`convert_boundary_points_to_indices`](@ref).
+
 ## Working with the `convex_hull` field:
 
 - [`get_convex_hull_indices`](@ref)
@@ -250,10 +254,13 @@ we list below.
 - [`each_point_index`](@ref)
 - [`each_point`](@ref)
 - [`num_points`](@ref)
+- [`push_point!`](@ref)
 
 ## Working with the `all_constrained_edges` field:
 
 - [`get_all_constrained_edges`](@ref)
+- [`each_constrained_edge`](@ref)
+- [`contains_constrained_edge`](@ref)
 
 ## Predicates:
 
@@ -589,6 +596,16 @@ end
 @inline num_edges(tri::Triangulation) = num_edges(get_graph(tri))
 @inline each_edge(tri::Triangulation) = get_edges(get_graph(tri))
 @inline each_constrained_edge(tri::Triangulation) = each_edge(get_all_constrained_edges(tri))
+@inline function contains_constrained_edge(tri::Triangulation, e)
+    constrained_edges = get_all_constrained_edges(tri)
+    return contains_edge(e, constrained_edges) || contains_edge(reverse_edge(e), constrained_edges)
+end
+@inline function contains_constrained_edge(tri::Triangulation, i, j)
+    E = edge_type(tri)
+    e = construct_edge(E, i, j)
+    return contains_constrained_edge(tri, e)
+end
+
 
 abstract type AbstractEachEdge{E} end
 Base.IteratorSize(::Type{<:AbstractEachEdge}) = Base.SizeUnknown()
@@ -637,6 +654,7 @@ end
 @inline each_point_index(tri::Triangulation) = each_point_index(get_points(tri))
 @inline each_point(tri::Triangulation) = each_point(get_points(tri))
 @inline num_points(tri::Triangulation) = num_points(get_points(tri))
+@inline push_point!(tri::Triangulation, x, y) = push_point!(get_points(tri), x, y)
 
 abstract type AbstractEachVertex{V} end
 Base.IteratorSize(::Type{<:AbstractEachVertex}) = Base.HasLength()
@@ -825,6 +843,19 @@ all_boundary_indices(tri::Triangulation) = keys(get_boundary_index_ranges(tri))
 get_surrounding_polygon(tri::Triangulation, u; skip_boundary_indices=false) = get_surrounding_polygon(get_adjacent(tri), get_graph(tri), u, get_boundary_index_ranges(tri), Val(has_multiple_segments(tri)); skip_boundary_indices)
 sort_edge_by_degree(tri::Triangulation, e) = sort_edge_by_degree(e, get_graph(tri))
 split_constrained_edge!(tri::Triangulation, constrained_edge, collinear_segments) = split_constrained_edge!(get_constrained_edges(tri), constrained_edge, collinear_segments)
+function get_all_boundary_nodes(tri::Triangulation)
+    bn_map = get_boundary_map(tri)
+    all_nodes = Set{integer_type(tri)}()
+    for segment_index in values(bn_map)
+        bn_nodes = get_boundary_nodes(tri, segment_index)
+        nedges = num_boundary_edges(bn_nodes)
+        for node_idx in 1:(nedges+1)
+            vᵢ = get_boundary_nodes(bn_nodes, node_idx)
+            push!(all_nodes, vᵢ)
+        end
+    end
+    return all_nodes
+end
 
 ## Triangulating points, triangles, boundary_nodes
 function Triangulation(points::P, triangles::T, boundary_nodes::BN;
@@ -1222,6 +1253,13 @@ Given a triangulation `tri`, returns an iterator over the constrained edges.
 """ each_constrained_edge(::Triangulation)
 
 @doc """
+    contains_constrained_edge(tri::Triangulation, e)
+    contains_constrained_edge(tri::Triangulation, i, j)
+
+Given a triangulation `tri`, tests if `e = (i, j)` is in the list of constrained edges.
+""" contains_constrained_edge(::Triangulation, ::Any)
+
+@doc """
     get_point(tri::Triangulation, i...)
 
 Given a triangulation `tri` and some indices `i...`, returns 
@@ -1269,6 +1307,12 @@ points not already in the triangulation.
 
 See also [`num_vertices`](@ref).
 """ num_points(::Triangulation)
+
+@doc """
+    push_point!(tri::Triangulation, x, y)
+
+Pushes the point `(x, y)` into the `points` field of the triangulation `tri`.
+""" push_point!(::Triangulation, ::Any, ::Any)
 
 @doc """
     each_solid_vertex(tri::Triangulation)
@@ -1641,9 +1685,16 @@ In particular, `e` is sorted so that `initial(e)` has the least degree.
 """ sort_edge_by_degree(::Triangulation, ::Any)
 
 @doc """
-split_constrained_edge!(tri::Triangulation, constrained_edge, collinear_segments)
+    split_constrained_edge!(tri::Triangulation, constrained_edge, collinear_segments)
 
 Given a set of `constrained_edges` and a `constrained_edge` in the set,
 and a set ofsegments `collinear_segments` that are collinear with `constrained_edge`,
 replaces `constrained_edge` with those segments in `collinear_segments`.
 """ split_constrained_edge!(::Triangulation, ::Any, ::Any)
+
+@doc """
+    get_all_boundary_nodes(tri::Triangulation)
+
+Returns a `Set` of all boundary nodes, obtained from iterating over each individual 
+segment.
+""" get_all_boundary_nodes(::Triangulation)

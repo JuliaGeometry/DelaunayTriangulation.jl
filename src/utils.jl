@@ -305,3 +305,111 @@ function extend_segments!(segments::AbstractVector{E}, constrained_edge) where {
     end
     return nothing
 end
+
+"""
+    convert_boundary_points_to_indices(x, y; existing_points = NTuple{2, Float64}[])
+
+Given some points `(x, y)` representing a boundary, converts their representation into a 
+a set of indices corresponding to each boundary. The points should match the specification 
+given in [`generate_mesh`](@ref). These points also get appended onto the `existing_points` keyword 
+argument, which should be used if you have a pre-existing set of points so that the  
+boundary indices get adjusted accordingly. Points get added into `existing_points` via 
+[`push_point!`](@ref).
+
+The returned value is `(nodes, points)`, with `nodes` the indices and `points` the modified 
+`existing_points` (which are mutated in-place also).
+"""
+function convert_boundary_points_to_indices(x::AAA, y::AAA; existing_points=NTuple{2,Float64}[], check_args=true, adjust=true) where {F<:Number,A<:AbstractVector{F},AA<:AbstractVector{A},AAA<:AbstractVector{AA}}
+    check_args && @assert length(x) == length(y)
+    nodes = [[Int64[] for _ in eachindex(x[i])] for i in eachindex(x)]
+    for i in eachindex(x)
+        _nodes, _ = convert_boundary_points_to_indices(x[i], y[i]; existing_points=existing_points, check_args=true)
+        copyto!(nodes[i], _nodes)
+    end
+    return nodes, existing_points
+end
+function convert_boundary_points_to_indices(x::AA, y::AA; existing_points=NTuple{2,Float64}[], check_args=true, adjust=true) where {F<:Number,A<:AbstractVector{F},AA<:AbstractVector{A}}
+    if check_args
+        @assert length(x) == length(y)
+        @assert all(i -> length(x[i]) == length(y[i]), eachindex(x, y))
+        @assert x[begin][begin] ≈ x[end][end]
+        @assert y[begin][begin] ≈ y[end][end]
+        @assert all(i -> x[i][end] ≈ x[i+1][begin], firstindex(x):(lastindex(x)-1))
+        @assert all(i -> y[i][end] ≈ y[i+1][begin], firstindex(y):(lastindex(y)-1))
+    end
+    nodes = [Int64[] for _ in eachindex(x)]
+    for i in eachindex(x)
+        _nodes, _ = convert_boundary_points_to_indices(x[i], y[i]; existing_points=existing_points, check_args=false, adjust=false)
+        resize!(nodes[i], length(_nodes))
+        copyto!(nodes[i], _nodes)
+    end
+    if adjust
+        for i in firstindex(nodes):(lastindex(nodes)-1)
+            push!(nodes[i], nodes[i+1][begin])
+        end
+        push!(nodes[end], nodes[begin][begin])
+    end
+    return nodes, existing_points
+end
+function convert_boundary_points_to_indices(x::A, y::A; existing_points=NTuple{2,Float64}[], check_args=true, adjust=true) where {F<:Number,A<:AbstractVector{F}}
+    if check_args
+        @assert length(x) == length(y)
+        @assert x[begin] ≈ x[end]
+        @assert y[begin] ≈ y[end]
+    end
+    nodes = Int64[]
+    init = num_points(existing_points) + 1
+    for i in firstindex(x):(lastindex(x)-1)
+        push!(nodes, init)
+        push_point!(existing_points, x[i], y[i])
+        init += 1
+    end
+    adjust && push!(nodes, nodes[begin])
+    return nodes, existing_points
+end
+
+function check_args(points, boundary_nodes)
+    @assert points_are_unique(points) "Duplicate points are not allowed."
+    if !isnothing(boundary_nodes)
+        if has_multiple_curves(boundary_nodes)
+            areas = [polygon_features(points, get_boundary_nodes(boundary_nodes, i))[1] for i in 1:num_curves(boundary_nodes)]
+            @assert areas[1] ≥ 0.0 "The outer boundary curve is clockwise when it should be counter-clockwise."
+            for i in 2:num_curves(boundary_nodes)
+                @assert areas[i] ≤ 0.0 "The $(i)th boundary curve is counter-clockwise when it should be clockwise."
+            end
+            for i in 1:num_curves(boundary_nodes)
+                curve_nodes = get_boundary_nodes(boundary_nodes, i)
+                ns = num_segments(curve_nodes)
+                for j in 1:(ns-1)
+                    segment_nodes_cur = get_boundary_nodes(curve_nodes, j)
+                    segment_nodes_next = get_boundary_nodes(curve_nodes, j + 1)
+                    nnodes_cur = num_boundary_edges(segment_nodes_cur) + 1
+                    @assert get_boundary_nodes(segment_nodes_cur, nnodes_cur) == get_boundary_nodes(segment_nodes_next, 1) "The $(j)th segment of the $(i)th curve does not connect with the start of the $(j+1)th segment."
+                end
+                segment_nodes_first = get_boundary_nodes(curve_nodes, 1)
+                segment_nodes_last = get_boundary_nodes(curve_nodes, ns)
+                nnodes_last = num_boundary_edges(segment_nodes_last) + 1
+                @assert get_boundary_nodes(segment_nodes_first, 1) == get_boundary_nodes(segment_nodes_last, nnodes_last) "The first segment of the $(i)th curve does not connect with the end of the last segment."
+            end
+        else
+            area = polygon_features(points, boundary_nodes)[1]
+            @assert area ≥ 0.0 "The boundary curve is clockwise when it should be counter-clockwise."
+            if has_multiple_segments(boundary_nodes)
+                ns = num_segments(boundary_nodes)
+                for j in 1:(ns-1)
+                    segment_nodes_cur = get_boundary_nodes(boundary_nodes, j)
+                    segment_nodes_next = get_boundary_nodes(boundary_nodes, j + 1)
+                    nnodes_cur = num_boundary_edges(segment_nodes_cur) + 1
+                    @assert get_boundary_nodes(segment_nodes_cur, nnodes_cur) == get_boundary_nodes(segment_nodes_next, 1) "The $(j)th segment does not connect with the start of the $(j+1)th segment."
+                end
+                segment_nodes_first = get_boundary_nodes(boundary_nodes, 1)
+                segment_nodes_last = get_boundary_nodes(boundary_nodes, ns)
+                nnodes_last = num_boundary_edges(segment_nodes_last) + 1
+                @assert get_boundary_nodes(segment_nodes_first, 1) == get_boundary_nodes(segment_nodes_last, nnodes_last) "The first segment of the $(i)th curve does not connect with the end of the last segment."
+            else
+                nnodes = num_boundary_edges(boundary_nodes) + 1
+                @assert get_boundary_nodes(boundary_nodes, 1) == get_boundary_nodes(boundary_nodes, nnodes) "The first boundary node does not equal the last boundary node."
+            end
+        end
+    end
+end

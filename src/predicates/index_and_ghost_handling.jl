@@ -60,11 +60,11 @@ argument - see [`construct_boundary_map`](@ref).
 """
 function point_position_relative_to_circumcircle(i, j, k, ℓ, pts, boundary_map)
     a, b, c, p = get_point(pts, boundary_map, i, j, k, ℓ)
-    if is_outer_boundary_index(i, boundary_map)
+    if is_boundary_index(i)
         return point_position_relative_to_oriented_outer_halfplane(b, c, p)
-    elseif is_outer_boundary_index(j, boundary_map)
+    elseif is_boundary_index(j)
         return point_position_relative_to_oriented_outer_halfplane(c, a, p)
-    elseif is_outer_boundary_index(k, boundary_map)
+    elseif is_boundary_index(k)
         return point_position_relative_to_oriented_outer_halfplane(a, b, p)
     end
     return point_position_relative_to_circle(a, b, c, p)

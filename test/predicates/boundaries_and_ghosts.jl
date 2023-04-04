@@ -257,7 +257,7 @@ end
             @test res1 ∈ get_boundary_index_ranges(tri2)[boundary_index]
         end
     end
-    reduced_bn = reduce(vcat, reduce(vcat, get_boundary_nodes(tri)))
+    reduced_bn = reduce(vcat, reduce(vcat, get_boundary_nodes(tri2)))
     for node in each_vertex(tri2)
         if node ∉ reduced_bn
             flag1, res1 = DT.is_boundary_node(node, get_graph(tri2), get_boundary_index_ranges(tri2))
@@ -273,7 +273,7 @@ end
         @test flag1 && flag2 && res1 == res2
         @test res1 ∈ get_boundary_index_ranges(tri3)[DT.BoundaryIndex]
     end
-    for node in each_vertex(tri)
+    for node in each_vertex(tri3)
         if node ∉ ch
             flag1, res1 = DT.is_boundary_node(node, get_graph(tri3), get_boundary_index_ranges(tri3))
             flag2, res2 = DT.is_boundary_node(tri3, node)

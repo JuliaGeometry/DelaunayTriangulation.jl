@@ -3,6 +3,9 @@ const DT = DelaunayTriangulation
 using CairoMakie
 using StableRNGs
 include("../helper_functions.jl")
+include("../test_setup.jl")
+
+save_path = basename(pwd()) == "test" ? "figures" : "test/figures"
 
 @testset "Test random constrained Delaunay triangulations" begin
     rng = StableRNG(191919)
@@ -155,3 +158,76 @@ end
         @test validate_triangulation(tri)
     end
 end
+
+@testset "Triangulating with a deleted exterior" begin
+    for i in 1:500
+        rng = StableRNG(i)
+        pts = [(rand(rng), rand(rng)) for _ in 1:50]
+        bnd_pts = [(0.3cos(θ), 0.3sin(θ)) .+ 0.5 for θ in LinRange(0, 2π - 1 / 250, 25)]
+        bnd_id = [(51:75)..., 51]
+        append!(pts, bnd_pts)
+        tri = triangulate(pts; boundary_nodes=bnd_id, rng)
+        @test validate_triangulation(tri)
+    end
+end
+
+@testset "Triangulation with two curves" begin
+    for i in 1:50
+        @show i
+        rng = StableRNG(i)
+        pts = [(rand(rng), rand(rng)) for _ in 1:50]
+        x1 = LinRange(0, 1, 100)
+        y1 = LinRange(0, 0, 100)
+        x2 = LinRange(1, 1, 100)
+        y2 = LinRange(0, 1, 100)
+        x3 = LinRange(1, 0, 100)
+        y3 = LinRange(1, 1, 100)
+        x4 = LinRange(0, 0, 100)
+        y4 = LinRange(1, 0, 100)
+        x = [x1..., x2..., x3..., x4...]
+        y = [y1..., y2..., y3..., y4...]
+        outer_square = [(x, y) for (x, y) in zip(x, y)] |> unique
+        push!(outer_square, outer_square[begin])
+        outer_square_x = [first.(outer_square)]
+        outer_square_y = [last.(outer_square)]
+        circ_pts = [(0.3cos(θ), 0.3sin(θ)) .+ 0.5 for θ in LinRange(2π, 0, 50)]
+        circ_pts[end] = circ_pts[1]
+        inner_circle_x = [first.(circ_pts)]
+        inner_circle_y = [last.(circ_pts)]
+        x = [outer_square_x, inner_circle_x]
+        y = [outer_square_y, inner_circle_y]
+        nodes, pts = convert_boundary_points_to_indices(x, y; existing_points=pts)
+        tri = triangulate(pts; boundary_nodes=nodes, rng)
+        @test validate_triangulation(tri)
+        if i == 1
+            fig, ax, sc = triplot(tri)
+            SAVE_FIGURE && save("$save_path/constrained_example.png", fig)
+        end
+    end
+end
+
+_x, _y = complicated_geometry()
+x = _x
+y = _y
+tri_1 = generate_mesh(x, y, 0.1; convert_result=true, add_ghost_triangles=true)
+tri_2 = generate_mesh(x[1], y[1], 0.1; convert_result=true, add_ghost_triangles=true)
+tri_3 = generate_mesh([0.0, 2.0, 2.0, 0.0, 0.0], [0.0, 0.0, 2.0, 2.0, 0.0], 0.1;
+    convert_result=true, add_ghost_triangles=true)
+tri_4 = generate_mesh(reverse(reverse.(x[2])), reverse(reverse.(y[2])), 0.1; convert_result=true, add_ghost_triangles=true)
+a, b = 0.0, 5.0
+c, d = 3.0, 7.0
+nx = 3
+ny = 3
+tri_5 = triangulate_rectangle(a, b, c, d, nx, ny; add_ghost_triangles=true, single_boundary=false)
+tri_6 = triangulate_rectangle(a, b, c, d, nx, ny; add_ghost_triangles=true, single_boundary=true)
+
+for tri in (tri_1, tri_2, tri_3, tri_4, tri_5, tri_6)
+    points = get_points(tri)
+    bn_nodes = get_boundary_nodes(tri)
+    _tri = triangulate(points; boundary_nodes=bn_nodes, delete_ghosts=false, delete_holes=true)
+    @test validate_triangulation(_tri)
+    tri ∉ (tri_5, tri_6) && @test DT.compare_triangle_collections(get_triangles(tri), get_triangles(_tri))
+end
+
+
+

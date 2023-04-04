@@ -59,8 +59,10 @@ function triangulate(points::P; edges=nothing, boundary_nodes=nothing,
     rng::AbstractRNG=Random.default_rng(),
     point_order=get_point_order(points, randomise, skip_points,
         IntegerType, rng),
-    recompute_representative_point=true) where {P,I,E,V,Es,Ts,M}
-    points_are_unique(points) || throw("Duplicate points are not allowed.")
+    recompute_representative_point=true,
+    delete_holes=true,
+    check_arguments=true) where {P,I,E,V,Es,Ts,M}
+    check_arguments && check_args(points, boundary_nodes)
     tri = triangulate_bowyer_watson(points;
         IntegerType,
         EdgeType,
@@ -80,8 +82,10 @@ function triangulate(points::P; edges=nothing, boundary_nodes=nothing,
         tri = remake_triangulation_with_constraints(tri, edges, boundary_nodes)
         triangulate_constrained!(tri; rng)
     end
-    if !isnothing(boundary_nodes)
-        delete_boundary_interiors!(tri)
+    if !isnothing(boundary_nodes) && delete_holes
+        delete_holes!(tri)
+        add_boundary_information!(tri)
+        !delete_ghosts && add_ghost_triangles!(tri)
     end
     recompute_representative_point && compute_representative_points!(tri)
     delete_ghosts && delete_ghost_triangles!(tri)
