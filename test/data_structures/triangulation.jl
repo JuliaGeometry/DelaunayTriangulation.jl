@@ -35,7 +35,7 @@ global tri = generate_mesh(x, y, 0.1; convert_result=true, add_ghost_triangles=t
 global tri_2 = generate_mesh(x[1], y[1], 0.1; convert_result=true, add_ghost_triangles=true)
 global tri_3 = generate_mesh([0.0, 2.0, 2.0, 0.0, 0.0], [0.0, 0.0, 2.0, 2.0, 0.0], 0.1;
       convert_result=true, add_ghost_triangles=true)
-global tri_4 = generate_mesh(x[2], y[2], 0.1; convert_result=true, add_ghost_triangles=true)
+global tri_4 = generate_mesh(reverse(reverse.(x[2])), reverse(reverse.(y[2])), 0.1; convert_result=true, add_ghost_triangles=true)
 
 @testset "Triangulation getters" begin
       @test DT.get_points(tri) == tri.points

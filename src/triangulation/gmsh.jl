@@ -223,7 +223,8 @@ function generate_mesh(x::AA, y::AA, ref;
     AbstractVector{A}}
     elements, nodes, boundary_nodes = generate_mesh([x], [y], ref; mesh_algorithm,
         gmsh_path, verbosity,
-        convert_result=false)
+        convert_result=false,
+        check_arguments)
     check_arguments && check_args(nodes, boundary_nodes[1])
     if !convert_result
         return elements, nodes, boundary_nodes[1]
@@ -246,7 +247,8 @@ function generate_mesh(x::A, y::A, ref;
     AbstractVector{F}}
     elements, nodes, boundary_nodes = generate_mesh([x], [y], ref; mesh_algorithm,
         gmsh_path, verbosity,
-        convert_result=false)
+        convert_result=false,
+        check_arguments)
     check_arguments && check_args(nodes, boundary_nodes[1])
     if !convert_result
         return elements, nodes, boundary_nodes[1]
