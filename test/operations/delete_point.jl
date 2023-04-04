@@ -121,7 +121,7 @@ end
                 convex_hull!(tri)
                 DT.compute_representative_points!(tri)
                 push!(deleted_pts, i)
-                @test validate_triangulation(tri; ignore_boundary_indices=true)
+                @test validate_triangulation(tri)
             end
         end
     end
@@ -170,8 +170,7 @@ end
                 end
                 @show i
                 delete_point!(tri, i; rng=rng2)
-                @test validate_triangulation(tri;
-                    ignore_boundary_indices=true)
+                @test validate_triangulation(tri)
             end
         end
     end
