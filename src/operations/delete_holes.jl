@@ -24,6 +24,7 @@ function find_all_points_to_delete(tri::Triangulation)
     else
         find_all_points_to_delete_node!(points_to_delete, tri, all_bn)
     end
+    filter!(∉(all_bn), points_to_delete)
     return points_to_delete
 end
 function find_all_points_to_delete_curve!(points_to_delete, tri::Triangulation, all_bn)
@@ -103,32 +104,26 @@ function delete_remaining_triangles_connecting_boundary_edges!(tri::Triangulatio
     triangles_to_delete = Set{T}()
     if has_multiple_curves(tri)
         get_triangles_connecting_boundary_edges_curve!(triangles_to_delete, tri)
-        for V in each_triangle(triangles_to_delete)
-            delete_triangle!(tri, V; protect_boundary=true)
-        end
-    end
-    #=
     elseif has_multiple_segments(tri)
         curve_boundary_nodes = get_boundary_nodes(tri)
-        get_triangles_connecting_boundary_edges_segment!(triangles_to_delete, tri, curve_boundary_nodes)
+        get_triangles_connecting_boundary_edges_segment!(triangles_to_delete, tri, true, curve_boundary_nodes)
     else
         get_triangles_connecting_boundary_edges_node!(triangles_to_delete, tri)
     end
     for V in each_triangle(triangles_to_delete)
         delete_triangle!(tri, V; protect_boundary=true)
     end
-    =#
     return nothing
 end
 function get_triangles_connecting_boundary_edges_curve!(triangles, tri::Triangulation)
     nc = num_curves(tri)
-    for curve_index in 2:nc # It's fine for the outer boundary, so skip curve_index = 1 (we just don't want edges through interior holes)
+    for curve_index in 1:nc
         curve_boundary_nodes = get_boundary_nodes(tri, curve_index)
-        get_triangles_connecting_boundary_edges_segment!(triangles, tri, curve_boundary_nodes)
+        get_triangles_connecting_boundary_edges_segment!(triangles, tri, curve_index == 1, curve_boundary_nodes)
     end
     return nothing
 end
-function get_triangles_connecting_boundary_edges_segment!(triangles, tri::Triangulation, curve_boundary_nodes)
+function get_triangles_connecting_boundary_edges_segment!(triangles, tri::Triangulation, check_inside, curve_boundary_nodes)
     I = integer_type(tri)
     flattened_nodes = Set{I}()
     ns = num_segments(curve_boundary_nodes)
@@ -140,7 +135,7 @@ function get_triangles_connecting_boundary_edges_segment!(triangles, tri::Triang
             push!(flattened_nodes, node)
         end
     end
-    search_flattened_nodes!(triangles, tri, flattened_nodes)
+    search_flattened_nodes!(triangles, tri, flattened_nodes, check_inside, curve_boundary_nodes)
     return nothing
 end
 function get_triangles_connecting_boundary_edges_node!(triangles, tri::Triangulation)
@@ -150,17 +145,24 @@ function get_triangles_connecting_boundary_edges_node!(triangles, tri::Triangula
     for node in each_boundary_node(boundary_nodes)
         push!(flattened_nodes, node)
     end
-    search_flattened_nodes!(triangles, tri, flattened_nodes)
+    search_flattened_nodes!(triangles, tri, flattened_nodes, true, boundary_nodes)
 end
-function search_flattened_nodes!(triangles, tri::Triangulation, flattened_nodes)
+function search_flattened_nodes!(triangles, tri::Triangulation, flattened_nodes, check_inside=false, outer_boundary_nodes=nothing)
     T = triangle_type(tri)
     for node in flattened_nodes
         S = get_adjacent2vertex(tri, node)
         for e in each_edge(S)
             u, v = edge_indices(e)
-            if u ∈ flattened_nodes && v ∈ flattened_nodes
+            if u ∈ flattened_nodes && v ∈ flattened_nodes && !contains_constrained_edge(tri, u, v)
                 V = construct_triangle(T, u, v, node)
-                push!(triangles, V)
+                if !check_inside
+                    push!(triangles, V)
+                else
+                    p, q = get_point(tri, u, v)
+                    m = ((getx(p) + getx(q)) / 2, (gety(p) + gety(q)) / 2)
+                    δ = distance_to_polygon(m, get_points(tri), outer_boundary_nodes)
+                    δ < 0 && push!(triangles, V)
+                end
             end
         end
     end
@@ -176,9 +178,7 @@ function delete_holes!(tri::Triangulation)
     points_to_delete = find_all_points_to_delete(tri)
     triangles = find_all_triangles_to_delete(tri, points_to_delete)
     delete_all_exterior_triangles(tri, triangles)
-    if has_multiple_curves(tri) && num_curves(tri) > 2
-        delete_remaining_triangles_connecting_boundary_edges!(tri)
-    end
+    delete_remaining_triangles_connecting_boundary_edges!(tri)
     clear_deleted_points!(tri, points_to_delete)
     return nothing
 end

@@ -1,1 +1,1 @@
-const SAVE_FIGURE = false
+const SAVE_FIGURE = true

@@ -416,7 +416,7 @@ function test_constrained_edges(tri)
     return true
 end
 
-function validate_triangulation(_tri::Triangulation)
+function validate_triangulation(_tri::Triangulation) # doesn't work for non-convex. need to find a better way
     tri = deepcopy(_tri)
     DT.delete_ghost_triangles!(tri)
     DT.add_ghost_triangles!(tri)
