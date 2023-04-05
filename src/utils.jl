@@ -368,14 +368,28 @@ function convert_boundary_points_to_indices(x::A, y::A; existing_points=NTuple{2
     return nodes, existing_points
 end
 
+function get_ordinal_suffix(i) # https://stackoverflow.com/a/13627586
+    let j = i % 10, k = i % 100
+        if j == 1 && k ≠ 11
+            return "st"
+        elseif j == 2 && k ≠ 12
+            return "nd"
+        elseif j == 3 && k ≠ 13
+            return "rd"
+        else
+            return "th"
+        end
+    end
+end
+
 function check_args(points, boundary_nodes)
     @assert points_are_unique(points) "Duplicate points are not allowed."
     if !isnothing(boundary_nodes)
         if has_multiple_curves(boundary_nodes)
             areas = [polygon_features(points, get_boundary_nodes(boundary_nodes, i))[1] for i in 1:num_curves(boundary_nodes)]
-            @assert areas[1] ≥ 0.0 "The outer boundary curve is clockwise when it should be counter-clockwise."
+            @assert areas[1] ≥ 0.0 "The outer boundary curve is clockwise when it should be counter-clockwise. "
             for i in 2:num_curves(boundary_nodes)
-                @assert areas[i] ≤ 0.0 "The $(i)th boundary curve is counter-clockwise when it should be clockwise."
+                @assert areas[i] ≤ 0.0 "The $(i)$(get_ordinal_suffix(i)) boundary curve is counter-clockwise when it should be clockwise. If this is a mistake, e.g. if this curve is inside of another one in which case it should be counter-clockwise, recall triangulate with check_arguments = false."
             end
             for i in 1:num_curves(boundary_nodes)
                 curve_nodes = get_boundary_nodes(boundary_nodes, i)
@@ -384,12 +398,12 @@ function check_args(points, boundary_nodes)
                     segment_nodes_cur = get_boundary_nodes(curve_nodes, j)
                     segment_nodes_next = get_boundary_nodes(curve_nodes, j + 1)
                     nnodes_cur = num_boundary_edges(segment_nodes_cur) + 1
-                    @assert get_boundary_nodes(segment_nodes_cur, nnodes_cur) == get_boundary_nodes(segment_nodes_next, 1) "The $(j)th segment of the $(i)th curve does not connect with the start of the $(j+1)th segment."
+                    @assert get_boundary_nodes(segment_nodes_cur, nnodes_cur) == get_boundary_nodes(segment_nodes_next, 1) "The $(j)$(get_ordinal_suffix(j)) segment of the $(i)$(get_ordinal_suffix(i)) curve does not connect with the start of the $(j+1)$(get_ordinal_suffix(j+1)) segment."
                 end
                 segment_nodes_first = get_boundary_nodes(curve_nodes, 1)
                 segment_nodes_last = get_boundary_nodes(curve_nodes, ns)
                 nnodes_last = num_boundary_edges(segment_nodes_last) + 1
-                @assert get_boundary_nodes(segment_nodes_first, 1) == get_boundary_nodes(segment_nodes_last, nnodes_last) "The first segment of the $(i)th curve does not connect with the end of the last segment."
+                @assert get_boundary_nodes(segment_nodes_first, 1) == get_boundary_nodes(segment_nodes_last, nnodes_last) "The first segment of the $(i)$(get_ordinal_suffix(i)) curve does not connect with the end of the last segment."
             end
         else
             area = polygon_features(points, boundary_nodes)[1]
@@ -400,12 +414,12 @@ function check_args(points, boundary_nodes)
                     segment_nodes_cur = get_boundary_nodes(boundary_nodes, j)
                     segment_nodes_next = get_boundary_nodes(boundary_nodes, j + 1)
                     nnodes_cur = num_boundary_edges(segment_nodes_cur) + 1
-                    @assert get_boundary_nodes(segment_nodes_cur, nnodes_cur) == get_boundary_nodes(segment_nodes_next, 1) "The $(j)th segment does not connect with the start of the $(j+1)th segment."
+                    @assert get_boundary_nodes(segment_nodes_cur, nnodes_cur) == get_boundary_nodes(segment_nodes_next, 1) "The $(j)$(get_ordinal_suffix(j)) segment does not connect with the start of the $(j+1)$(get_ordinal_suffix(j+1)) segment."
                 end
                 segment_nodes_first = get_boundary_nodes(boundary_nodes, 1)
                 segment_nodes_last = get_boundary_nodes(boundary_nodes, ns)
                 nnodes_last = num_boundary_edges(segment_nodes_last) + 1
-                @assert get_boundary_nodes(segment_nodes_first, 1) == get_boundary_nodes(segment_nodes_last, nnodes_last) "The first segment of the $(i)th curve does not connect with the end of the last segment."
+                @assert get_boundary_nodes(segment_nodes_first, 1) == get_boundary_nodes(segment_nodes_last, nnodes_last) "The first segment of the $(i)$(get_ordinal_suffix(i)) curve does not connect with the end of the last segment."
             else
                 nnodes = num_boundary_edges(boundary_nodes) + 1
                 @assert get_boundary_nodes(boundary_nodes, 1) == get_boundary_nodes(boundary_nodes, nnodes) "The first boundary node does not equal the last boundary node."

@@ -18,7 +18,7 @@ function has_multiple_curves(::F) where {F}
     return error("The has_multiple_curves function has not been defined for the type $F.")
 end
 function has_multiple_curves(::AAA) where {F<:Number,A<:AV{F},AA<:AV{A},
-                                           AAA<:AV{AA}}
+    AAA<:AV{AA}}
     return true
 end
 has_multiple_curves(::AA) where {F<:Number,A<:AV{F},AA<:AV{A}} = false
@@ -42,7 +42,7 @@ function has_multiple_segments(::F) where {F}
     return error("The has_multiple_segments function has not been defined for the type $F.")
 end
 function has_multiple_segments(::AAA) where {F<:Number,A<:AV{F},AA<:AV{A},
-                                             AAA<:AV{AA}}
+    AAA<:AV{AA}}
     return true
 end
 has_multiple_segments(::AA) where {F<:Number,A<:AV{F},AA<:AV{A}} = true
@@ -138,8 +138,8 @@ function getboundarynodes(::F, ::Any) where {F}
     return error("The getboundarynodes function has not been defined for the type $F.")
 end
 function getboundarynodes(bn::AAA,
-                          m::Integer) where {F<:Number,A<:AV{F},AA<:AV{A},
-                                             AAA<:AV{AA}}
+    m::Integer) where {F<:Number,A<:AV{F},AA<:AV{A},
+    AAA<:AV{AA}}
     return bn[m]
 end
 getboundarynodes(bn::AA, n::Integer) where {F<:Number,A<:AV{F},AA<:AV{A}} = bn[n]
@@ -210,7 +210,7 @@ end
 The above will work for any form of `bn` also.
 """
 Base.@constprop :aggressive function construct_boundary_map(bn;
-                                                            IntegerType::Type{I}=Int64) where {I}
+    IntegerType::Type{I}=Int64) where {I}
     if has_multiple_curves(bn)
         dict = OrderedDict{I,NTuple{2,I}}()
         nc = num_curves(bn)
@@ -233,6 +233,47 @@ Base.@constprop :aggressive function construct_boundary_map(bn;
         end
     else
         dict = OrderedDict(I(BoundaryIndex) => bn)
+    end
+    return dict
+end
+
+function construct_boundary_edge_map(bn::A; IntegerType::Type{I}=Int64, EdgeType::Type{E}=NTuple{2,IntegerType}) where {A,I,E}
+    if has_multiple_curves(bn)
+        dict = Dict{E,Tuple{NTuple{2,I},I}}()
+        nc = num_curves(bn)
+        for m in 1:nc
+            bn_m = get_boundary_nodes(bn, m)
+            ns = num_segments(bn_m)
+            for n in 1:ns
+                bn_n = get_boundary_nodes(bn_m, n)
+                ne = num_boundary_edges(bn_n)
+                for ℓ in 1:ne
+                    u = get_boundary_nodes(bn_n, ℓ)
+                    v = get_boundary_nodes(bn_n, ℓ + 1)
+                    dict[(u, v)] = ((m, n), ℓ)
+                end
+            end
+        end
+    elseif has_multiple_segments(bn)
+        dict = Dict{E,Tuple{I,I}}()
+        ns = num_segments(bn)
+        for n in 1:ns
+            bn_n = get_boundary_nodes(bn, n)
+            ne = num_boundary_edges(bn_n)
+            for ℓ in 1:ne
+                u = get_boundary_nodes(bn_n, ℓ)
+                v = get_boundary_nodes(bn_n, ℓ + 1)
+                dict[(u, v)] = (n, ℓ)
+            end
+        end
+    else
+        dict = Dict{E,Tuple{A,I}}()
+        ne = num_boundary_edges(bn)
+        for ℓ in 1:ne
+            u = get_boundary_nodes(bn, ℓ)
+            v = get_boundary_nodes(bn, ℓ + 1)
+            dict[(u, v)] = (bn, ℓ)
+        end
     end
     return dict
 end
@@ -340,7 +381,7 @@ OrderedDict{Int64, UnitRange{Int64}} with 7 entries:
 ```
 """
 function construct_boundary_index_ranges(boundary_nodes;
-                                         IntegerType::Type{I}=Int64) where {I}
+    IntegerType::Type{I}=Int64) where {I}
     start = I(BoundaryIndex)
     current_boundary_index = I(BoundaryIndex)
     dict = OrderedDict{I,UnitRange{I}}()
@@ -358,7 +399,7 @@ function construct_boundary_index_ranges(boundary_nodes;
         end
     elseif has_multiple_segments(boundary_nodes)
         ns = num_segments(boundary_nodes)
-        range = (current_boundary_index - ns + 1):current_boundary_index
+        range = (current_boundary_index-ns+1):current_boundary_index
         for _ in 1:ns
             dict[current_boundary_index] = range
             current_boundary_index -= 1

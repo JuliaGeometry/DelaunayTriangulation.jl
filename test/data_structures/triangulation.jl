@@ -20,6 +20,7 @@ global tri = Triangulation(pts; IntegerType=Int32)
             DT.Adjacent2Vertex{Int32,Set{NTuple{2,Int32}},NTuple{2,Int32}}(),
             DT.Graph{Int32}(),
             Int32[],
+            Dict{Tuple{Int32,Int32},Tuple{Vector{Int64},Int64}}(),
             OrderedDict{Int32,Vector{Int32}}(Int32(DT.BoundaryIndex) => Int32[]),
             OrderedDict{Int32,UnitRange{Int32}}(-1 => -1:-1),
             Set{NTuple{2,Int32}}(),
@@ -48,6 +49,7 @@ global tri_4 = generate_mesh(reverse(reverse.(x[2])), reverse(reverse.(y[2])), 0
       @test DT.get_constrained_edges(tri) == tri.constrained_edges
       @test DT.get_convex_hull(tri) == tri.convex_hull
       @test DT.get_all_constrained_edges(tri) == tri.all_constrained_edges == DT.merge_constrained_edges(get_boundary_map(tri), get_boundary_nodes(tri), get_constrained_edges(tri))
+      @test DT.get_boundary_edge_map(tri) == tri.boundary_edge_map == DT.construct_boundary_edge_map(get_boundary_nodes(tri))
       @inferred DT.get_points(tri)
       @inferred DT.get_triangles(tri)
       @inferred DT.get_adjacent(tri)
@@ -58,6 +60,7 @@ global tri_4 = generate_mesh(reverse(reverse.(x[2])), reverse(reverse.(y[2])), 0
       @inferred DT.get_constrained_edges(tri)
       @inferred DT.get_convex_hull(tri)
       @inferred DT.get_all_constrained_edges(tri)
+      @inferred DT.get_boundary_edge_map(tri)
 end
 
 @testset "Forwarded methods" begin
@@ -633,4 +636,13 @@ end
       tri4 = triangulate_rectangle(0, 1, 0, 1, 50, 50; add_ghost_triangles=true, single_boundary=true)
       all_bn = DT.get_all_boundary_nodes(tri4)
       @test all_bn == Set(reduce(vcat, reduce(vcat, get_boundary_nodes(tri4))))
+end
+
+@testset "get_boundary_edge_map" begin
+      x, y = complicated_geometry()
+      tri = generate_mesh(x, y, 2.0; convert_result=true, add_ghost_triangles=true)
+      @test DT.get_boundary_edge_map(tri, 97, 98) == ((3, 1), 36)
+      @test DT.get_boundary_edge_map(tri, 14, 15) == ((2, 1), 2)
+      @test DT.get_boundary_edge_map(tri, (97, 98)) == ((3, 1), 36)
+      @test DT.get_boundary_edge_map(tri, (14, 15)) == ((2, 1), 2)
 end

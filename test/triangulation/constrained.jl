@@ -307,3 +307,61 @@ end
     triplot!(ax, _tri)
     SAVE_FIGURE && save("$save_path/constrained_example_2.png", fig)
 end
+
+#=
+
+x1 = [-3.0, 0.0, 1.0, 2.0, 6.0, 8.0]
+y1 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+x2 = [8.0, 8.0, 8.0, 8.0]
+y2 = [0.0, 3.0, 5.0, 7.0]
+x3 = [8.0, 0.0]
+y3 = [7.0, 7.0]
+x4 = [0.0, 0.0, 3.0, 3.0, 0.0, -3.0, -3.0]
+y4 = [7.0, 5.0, 5.0, 3.0, 3.0, 3.0, 0.0]
+xc1 = [x1, x2, x3, x4]
+yc1 = [y1, y2, y3, y4]
+x1 = [5.0, 7.0, 7.0, 5.0, 5.0]
+y1 = [6.0, 6.0, 1.0, 1.0, 6.0]
+xc2 = [x1]
+yc2 = [y1]
+x1 = [6.5, 5.5, 5.5, 6.5, 6.5]
+y1 = [5.5, 5.5, 1.5, 1.5, 5.5]
+xc3 = [x1]
+yc3 = [y1]
+x = [xc1, xc2, xc3]
+y = [yc1, yc2, yc3]
+pts = [(-2.0, 2.0), (3.0, 1.0), (2.0, 6.0)]
+nodes, points = convert_boundary_points_to_indices(x, y; existing_points=pts)
+edges = [(1, 2)]
+tri = triangulate(points; edges, boundary_nodes=nodes, check_arguments=false)
+add_point!(tri, 3)
+triplot(tri)
+
+
+
+_x, _y = complicated_geometry()
+x = _x
+y = _y
+tri = generate_mesh(x, y, 0.1; convert_result=true, add_ghost_triangles=true)
+bn_nodes = get_boundary_nodes(tri)
+x = Vector{Vector{Vector{Float64}}}(undef, length(bn_nodes))
+y = Vector{Vector{Vector{Float64}}}(undef, length(bn_nodes))
+for i in eachindex(bn_nodes)
+    _x = Vector{Vector{Float64}}(undef, length(bn_nodes[i]))
+    _y = Vector{Vector{Float64}}(undef, length(bn_nodes[i]))
+    for j in eachindex(bn_nodes[i])
+        __x = Vector{Float64}(undef, length(bn_nodes[i][j]))
+        __y = Vector{Float64}(undef, length(bn_nodes[i][j]))
+        for k in eachindex(bn_nodes[i][j])
+            __x[k], __y[k] = get_point(tri, bn_nodes[i][j][k])
+        end
+        _x[j] = __x
+        _y[j] = __y
+    end
+    x[i] = _x
+    y[i] = _y
+end
+interior_points = [get_point(tri, i) for i in setdiff(each_point_index(tri), DT.get_all_boundary_nodes(tri))]
+nodes, pts = convert_boundary_points_to_indices(x, y; existing_points=interior_points)
+
+=#

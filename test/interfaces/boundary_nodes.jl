@@ -30,7 +30,7 @@ end
 @testset "Getting number of segments/curves" begin
        @test_throws "The" DT.num_curves(String)
        @test DT.num_curves(bn1) == 3
-       @test DT.num_curves(bn2) == 1 
+       @test DT.num_curves(bn2) == 1
        @test DT.num_curves(bn3) == 1
        @test_throws "The" DT.num_segments(String)
        @test DT.num_segments(bn2) == 2
@@ -148,3 +148,34 @@ end
               -10 => -10:-7,
               -11 => -11:-11)
 end
+
+@testset "construct_boundary_edge_map" begin
+       bn = [1, 2, 3, 4, 5, 6, 7, 1]
+       bn_map = DT.construct_boundary_edge_map(bn)
+       for (ij, (index, k)) in bn_map
+              S = get_boundary_nodes(bn, index)
+              @test get_boundary_nodes(S, k) == ij[1]
+              @test get_boundary_nodes(S, k + 1) == ij[2]
+       end
+       bn = [[1, 2, 3, 4], [4, 5, 6, 7, 8], [8, 9, 10, 1]]
+       bn_map = DT.construct_boundary_edge_map(bn)
+       for (ij, (index, k)) in bn_map
+              S = get_boundary_nodes(bn, index)
+              @test get_boundary_nodes(S, k) == ij[1]
+              @test get_boundary_nodes(S, k + 1) == ij[2]
+       end
+       bn = [
+              [[1, 2, 3, 4, 5], [5, 6, 7], [7, 8], [8, 9, 10, 1]],
+              [[13, 14, 15, 16, 17], [17, 18, 19, 20], [20, 13]]
+       ]
+       bn_map = DT.construct_boundary_edge_map(bn)
+       for (ij, (index, k)) in bn_map
+              S = get_boundary_nodes(bn, index)
+              @test get_boundary_nodes(S, k) == ij[1]
+              @test get_boundary_nodes(S, k + 1) == ij[2]
+       end
+       bn = Int64[]
+       bn_map = DT.construct_boundary_edge_map(bn)
+       @test bn_map == Dict{Tuple{Int32,Int32},Tuple{Vector{Int64},Int64}}()
+end
+

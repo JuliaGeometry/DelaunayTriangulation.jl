@@ -11,7 +11,7 @@ global x, y = complicated_geometry()
 _tri = generate_mesh(x, y, 2.0; convert_result=true, add_ghost_triangles=true)
 _pts = ElasticMatrix(get_points(_tri))
 global tri = Triangulation(_pts, _tri.triangles, _tri.adjacent, _tri.adjacent2vertex, _tri.graph,
-    _tri.boundary_nodes, _tri.boundary_map, _tri.boundary_index_ranges,
+    _tri.boundary_nodes, _tri.boundary_edge_map, _tri.boundary_map, _tri.boundary_index_ranges,
     _tri.constrained_edges, _tri.all_constrained_edges, ConvexHull(_pts, _tri.convex_hull.indices))
 DT.compute_representative_points!(tri)
 global boundary_map = DT.get_boundary_map(tri)

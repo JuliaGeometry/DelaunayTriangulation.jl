@@ -1,5 +1,5 @@
 """
-    Triangulation{P,Ts,I,E,Es,BN,B,BIR}
+    Triangulation{P,Ts,I,E,Es,BN,BNM,B,BIR}
 
 Struct for a triangulation.
 
@@ -66,6 +66,12 @@ boundary_nodes[m][n+1][begin]` and `boundary_nodes[m][end][end] == boundary_node
 With this form, `boundary_nodes[m]` should be a counter-clockwise list of nodes for `m == 1`,
 while for `m > 1` it` should be a clockwise list of nodes.
 
+- `boundary_edge_map::BNM`
+
+This is an `Dict` that maps all of the boundary edges (the reduced form, collected into a single 
+list rather than split by curves and segments as specified above) to their position in 
+`boundary_nodes`. The edges are stored as `NTuple{2, I}`.
+
 - `boundary_map::B`
 
 This is an `OrderedDict` that maps a given boundary index to its position in `boundary_nodes`.
@@ -114,7 +120,7 @@ be using [`triangulate`](@ref) or [`generate_mesh`](@ref)).
 
 The default constructor is available, i.e. 
 
-    Triangulation(points, triangles, adjacent, adjacent2vertex, graph, boundary_nodes, constrained_edges, boundary_map, convex_hull, all_constrained_edges)
+    Triangulation(points, triangles, adjacent, adjacent2vertex, graph, boundary_nodes, boundary_edge_map, constrained_edges, boundary_map, convex_hull, all_constrained_edges)
 
 ## Empty Triangulation 
 
@@ -162,6 +168,7 @@ we list below.
 - [`get_all_constrained_edges`](@ref)
 - [`get_constrained_edges`](@ref)
 - [`get_convex_hull`](@ref)
+- [`get_boundary_edge_map`](@ref)
 
 ## Operations:
 
@@ -223,6 +230,7 @@ we list below.
 - [`num_outer_boundary_segments`](@ref)
 - [`get_right_boundary_node`](@ref)
 - [`get_left_boundary_node`](@ref)
+- [`get_boundary_edge_map`](@ref)
 
 You might also want to consider [`convert_boundary_points_to_indices`](@ref).
 
@@ -294,13 +302,14 @@ You might also want to consider [`convert_boundary_points_to_indices`](@ref).
 - [`sort_edge_by_degree`](@ref)
 - [`split_constrained_edge`](@ref)
 """
-struct Triangulation{P,Ts,I,E,Es,BN,B,BIR}
+struct Triangulation{P,Ts,I,E,Es,BN,BNM,B,BIR}
     points::P
     triangles::Ts
     adjacent::Adjacent{I,E}
     adjacent2vertex::Adjacent2Vertex{I,Es,E}
     graph::Graph{I}
     boundary_nodes::BN
+    boundary_edge_map::BNM
     boundary_map::B
     boundary_index_ranges::BIR
     constrained_edges::Es
@@ -323,9 +332,36 @@ function remake_triangulation_with_constraints(tri::Triangulation{P,Ts,I,E,Es,BN
     adjacent2vertex = get_adjacent2vertex(tri)
     graph = get_graph(tri)
     boundary_nodes = @something boundary_nodes get_boundary_nodes(tri)
+    boundary_edge_map = construct_boundary_edge_map(boundary_nodes; IntegerType=I, EdgeType=E)
     bn_map = construct_boundary_map(boundary_nodes; IntegerType=I)
     bn_range = construct_boundary_index_ranges(boundary_nodes; IntegerType=I)
     constrained_edges = @something edges get_constrained_edges(tri)
+    all_constrained_edges = get_all_constrained_edges(tri)
+    convex_hull = get_convex_hull(tri)
+    return boundary_edge_map, bn_map, bn_range, Triangulation(
+        points,
+        triangles,
+        adjacent,
+        adjacent2vertex,
+        graph,
+        boundary_nodes,
+        get_boundary_edge_map(tri),
+        get_boundary_map(tri), # Delay putting these in until we are done with the triangulation
+        get_boundary_index_ranges(tri),
+        constrained_edges,
+        all_constrained_edges,
+        convex_hull
+    )
+end
+
+function replace_boundary_dict_information(tri::Triangulation, bnn_map, bn_map, bn_range)
+    points = get_points(tri)
+    triangles = get_triangles(tri)
+    adjacent = get_adjacent(tri)
+    adjacent2vertex = get_adjacent2vertex(tri)
+    graph = get_graph(tri)
+    boundary_nodes = get_boundary_nodes(tri)
+    constrained_edges = get_constrained_edges(tri)
     all_constrained_edges = get_all_constrained_edges(tri)
     convex_hull = get_convex_hull(tri)
     return Triangulation(
@@ -335,6 +371,7 @@ function remake_triangulation_with_constraints(tri::Triangulation{P,Ts,I,E,Es,BN
         adjacent2vertex,
         graph,
         boundary_nodes,
+        bnn_map,
         bn_map,
         bn_range,
         constrained_edges,
@@ -362,6 +399,7 @@ Base.@constprop :aggressive function Triangulation(points::P;
     adj = Adjacent{I,E}()
     adj2v = Adjacent2Vertex{I,Es,E}()
     graph = Graph{I}()
+    bnn_map = construct_boundary_edge_map(boundary_nodes; IntegerType=I, EdgeType=E)
     bn_map = construct_boundary_map(boundary_nodes; IntegerType=I)
     bn_range = construct_boundary_index_ranges(boundary_nodes; IntegerType=I)
     ch = ConvexHull(points, I[])
@@ -372,7 +410,7 @@ Base.@constprop :aggressive function Triangulation(points::P;
     sizehint!(adj2v, n)
     sizehint!(graph, 3n - 6, n, n)
     sizehint!(ch, n)
-    tri = Triangulation(points, T, adj, adj2v, graph, boundary_nodes, bn_map, bn_range,
+    tri = Triangulation(points, T, adj, adj2v, graph, boundary_nodes, bnn_map, bn_map, bn_range,
         constrained_edges, all_constrained_edges, ch)
     return tri
 end
@@ -395,9 +433,9 @@ function merge_constrained_edges(bn_map, boundary_nodes, constrained_edges::Es) 
     end
     return all_constrained
 end
-function merge_constrained_edges(tri::Triangulation)
+function merge_constrained_edges(tri::Triangulation, bn_map=get_boundary_map(tri))
     return merge_constrained_edges(
-        get_boundary_map(tri), get_boundary_nodes(tri), get_constrained_edges(tri)
+        bn_map, get_boundary_nodes(tri), get_constrained_edges(tri)
     )
 end
 
@@ -508,6 +546,12 @@ end
 end
 @inline function get_boundary_index_range(tri::Triangulation, i)
     return map_boundary_index(get_boundary_index_ranges(tri), i)
+end
+@inline function get_boundary_edge_map(tri::Triangulation, ij)
+    return map_boundary_index(get_boundary_edge_map(tri), ij)
+end
+@inline function get_boundary_edge_map(tri::Triangulation, i, j)
+    return get_boundary_edge_map(tri, construct_edge(edge_type(tri), i, j))
 end
 
 # Convex Hull 
@@ -1125,6 +1169,20 @@ of the point to the left of `k` on the outer boundary.
 
 See also [`get_right_boundary_node`](@ref).
 """ get_left_boundary_node(::Triangulation, ::Any, ::Any)
+
+@doc """
+    get_boundary_index_range(tri::Triangulation, i)
+
+Given a triangulation `tri` and a boundary index `i`, returns the 
+corresponding set of boundary indices for that curve.
+""" get_boundary_index_range(::Triangulation, ::Any)
+
+@doc """
+    get_boundary_edge_map(tri::Triangulation, i, j)
+
+Gets the position of the boundary edge `(i, j)` in the set of boundary nodes 
+of the triangulation `tri`.
+""" get_boundary_edge_map(::Triangulation, ::Any, ::Any)
 
 @doc """
     get_convex_hull_indices(tri::Triangulation)

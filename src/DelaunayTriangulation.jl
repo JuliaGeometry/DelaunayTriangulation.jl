@@ -70,6 +70,7 @@ export get_constrained_edges
 export get_boundary_nodes
 export get_all_constrained_edges
 export get_convex_hull
+export get_boundary_edge_map
 export get_boundary_index_ranges
 export Triangulation
 export ConvexHull

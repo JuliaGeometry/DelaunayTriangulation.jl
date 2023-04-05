@@ -79,8 +79,9 @@ function triangulate(points::P; edges=nothing, boundary_nodes=nothing,
         point_order,
         recompute_representative_point=false)
     if !isnothing(edges) || !isnothing(boundary_nodes)
-        tri = remake_triangulation_with_constraints(tri, edges, boundary_nodes)
-        triangulate_constrained!(tri; rng)
+        bnn_map, bn_map, bn_range, tri = remake_triangulation_with_constraints(tri, edges, boundary_nodes)
+        triangulate_constrained!(tri, bnn_map, bn_map; rng)
+        tri = replace_boundary_dict_information(tri, bnn_map, bn_map, bn_range)
     end
     if !isnothing(boundary_nodes) && delete_holes
         delete_holes!(tri)

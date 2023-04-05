@@ -490,6 +490,7 @@ function example_triangulation()
     ))
     tri = Triangulation(pts, T, adj, adj2v, DG,
         Int64[],
+        DT.construct_boundary_edge_map(Int64[]),
         DT.DataStructures.OrderedDict{Int64,Vector{Int64}}(),
         DT.DataStructures.OrderedDict{Int64,UnitRange{Int64}}(),
         Set{NTuple{2,Int64}}(),
@@ -510,6 +511,7 @@ function example_empty_triangulation()
     adj2v = DT.Adjacent2Vertex(Dict(DT.BoundaryIndex => Set{NTuple{2,Int64}}()))
     tri = Triangulation(pts, T, adj, adj2v, DG,
         Int64[],
+        DT.construct_boundary_edge_map(Int64[]),
         DT.DataStructures.OrderedDict{Int64,Vector{Int64}}(),
         DT.DataStructures.OrderedDict{Int64,UnitRange{Int64}}(),
         Set{NTuple{2,Int64}}(),

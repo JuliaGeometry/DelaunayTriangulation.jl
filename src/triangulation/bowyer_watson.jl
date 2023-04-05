@@ -58,7 +58,7 @@ function initialise_bowyer_watson(points::P;
     for pt in (p, q, r)
         update_centroid_after_addition!(1, pt)
     end
-    return tri::Triangulation{P,Ts,I,E,Es,Vector{I},OrderedDict{I,Vector{I}},
+    return tri::Triangulation{P,Ts,I,E,Es,Vector{I},Dict{E,Tuple{Vector{I},I}},OrderedDict{I,Vector{I}},
         OrderedDict{I,UnitRange{I}}}
 end
 
@@ -82,7 +82,7 @@ function triangulate_bowyer_watson(points::P;
     Es,Ts,M}
     tri = initialise_bowyer_watson(points; IntegerType, EdgeType, TriangleType, EdgesType,
         TrianglesType, randomise, skip_points, rng,
-        point_order)::Triangulation{P,Ts,I,E,Es,Vector{I},
+        point_order)::Triangulation{P,Ts,I,E,Es,Vector{I},Dict{E,Tuple{Vector{I},I}},
         OrderedDict{I,Vector{I}},
         OrderedDict{I,UnitRange{I}}}
     _triangulate_bowyer_watson!(tri, point_order, num_sample_rule, delete_ghosts,

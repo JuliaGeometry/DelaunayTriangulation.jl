@@ -1,10 +1,10 @@
 """
-    add_edge!(tri::Triangulation, e; rng::AbstractRNG=Random.default_rng())
-    add_edge!(tri::Triangulation, i, j; rng::AbstractRNG=Random.default_rng())
+    add_edge!(tri::Triangulation, e, bnn_map::AbstractDict = get_boundary_edge_map(tri); rng::AbstractRNG=Random.default_rng())
+    add_edge!(tri::Triangulation, i, j, bnn_map::AbstractDict = get_boundary_edge_map(tri); rng::AbstractRNG=Random.default_rng())
 
 Adds the edge `e = (i, j)` into the triangulation `tri`.
 """
-function add_edge!(tri::Triangulation, e; rng::AbstractRNG=Random.default_rng())
+function add_edge!(tri::Triangulation, e, bnn_map::AbstractDict = get_boundary_edge_map(tri); rng::AbstractRNG=Random.default_rng())
     e = sort_edge_by_degree(tri, e)
     constrained_edges = get_constrained_edges(tri)
     all_constrained_edges = get_all_constrained_edges(tri)
@@ -32,9 +32,9 @@ function add_edge!(tri::Triangulation, e; rng::AbstractRNG=Random.default_rng())
     add_new_triangles!(tri, triangulated_left_cavity, triangulated_right_cavity)
     return nothing
 end
-add_edge!(tri::Triangulation, i, j; rng=Random.default_rng()) =
+add_edge!(tri::Triangulation, i, j, bnn_map::AbstractDict = get_boundary_edge_map(tri); rng=Random.default_rng()) =
     let E = edge_type(tri)
-        add_edge!(tri, construct_edge(E, i, j); rng)
+        add_edge!(tri, construct_edge(E, i, j), bnn_map; rng)
     end
 
 

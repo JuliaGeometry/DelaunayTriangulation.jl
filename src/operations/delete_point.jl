@@ -47,7 +47,7 @@ function _delete_interior_point!(tri, S, rng)
     return nothing
 end
 
-function _delete_boundary_point!(tri::Triangulation{P,Ts,I,E,Es,BN,B,BIR}, S, rng) where {P,Ts,I,E,Es,BN,B,BIR}
+function _delete_boundary_point!(tri::Triangulation{P,Ts,I,E,Es,BN,BNM,B,BIR}, S, rng) where {P,Ts,I,E,Es,BN,BNM,B,BIR}
     local boundary_index
     local boundary_index_in_S
     for (i, s) in pairs(S)
