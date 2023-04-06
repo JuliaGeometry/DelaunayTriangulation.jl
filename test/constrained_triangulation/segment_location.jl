@@ -306,7 +306,7 @@ end
         e = (23, 71)
         history = DT.PointLocationHistory{NTuple{3,Int64},NTuple{2,Int64},Int64}()
         jump_and_march(tri.points, tri.adjacent, tri.adjacent2vertex, tri.graph,
-            tri.boundary_index_ranges, tri.boundary_map, get_point(tri, 71);
+            tri.boundary_index_ranges, DT.get_representative_point_list(tri), tri.boundary_map, get_point(tri, 71);
             m=nothing, k=23, TriangleType=NTuple{3,Int64}, store_history=true, history=history)
         collinear_segments = history.collinear_segments
         DT.connect_segments!(collinear_segments)

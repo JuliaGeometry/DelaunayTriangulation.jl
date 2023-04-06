@@ -488,6 +488,8 @@ function example_triangulation()
         5 => Set{NTuple{2,Int64}}([(4, 1), (1, 3), (3, 2)]),
         6 => Set{NTuple{2,Int64}}([(1, 4), (3, 1)])
     ))
+    rep = DT.get_empty_representative_points()
+    DT.compute_representative_points!(rep, pts, [2, 6, 4, 5, 2])
     tri = Triangulation(pts, T, adj, adj2v, DG,
         Int64[],
         DT.construct_boundary_edge_map(Int64[]),
@@ -495,7 +497,8 @@ function example_triangulation()
         DT.DataStructures.OrderedDict{Int64,UnitRange{Int64}}(),
         Set{NTuple{2,Int64}}(),
         Set{NTuple{2,Int64}}(),
-        ConvexHull(pts, [2, 6, 4, 5, 2]))
+        ConvexHull(pts, [2, 6, 4, 5, 2]),
+        rep)
     return tri
 end
 
@@ -509,6 +512,8 @@ function example_empty_triangulation()
     DG = DT.Graph(DT.SimpleGraphs.UndirectedGraph(A))
     adj = DT.Adjacent(DT.DataStructures.DefaultDict(DT.DefaultAdjacentValue, Dict{NTuple{2,Int64},Int64}()))
     adj2v = DT.Adjacent2Vertex(Dict(DT.BoundaryIndex => Set{NTuple{2,Int64}}()))
+    rep = DT.get_empty_representative_points()
+    DT.compute_representative_points!(rep, pts, [1, 2, 3, 1])
     tri = Triangulation(pts, T, adj, adj2v, DG,
         Int64[],
         DT.construct_boundary_edge_map(Int64[]),
@@ -516,7 +521,8 @@ function example_empty_triangulation()
         DT.DataStructures.OrderedDict{Int64,UnitRange{Int64}}(),
         Set{NTuple{2,Int64}}(),
         Set{NTuple{2,Int64}}(),
-        ConvexHull(pts, [2, 6, 4, 5, 2]))
+        ConvexHull(pts, [1, 2, 3, 1]),
+        rep)
     return tri
 end
 
@@ -591,6 +597,7 @@ function test_intersections(tri, e, allT, constrained_edges)
             get_adjacent2vertex(tri),
             get_graph(tri),
             get_boundary_index_ranges(tri),
+            DT.get_representative_point_list(tri),
             get_boundary_map(tri),
             NTuple{3,Int64},
         )
@@ -647,6 +654,7 @@ function test_segment_triangle_intersections(tri, edge, true_triangles, true_col
             get_adjacent2vertex(tri),
             get_graph(tri),
             get_boundary_index_ranges(tri),
+            DT.get_representative_point_list(tri),
             get_boundary_map(tri),
             NTuple{3,Int64},
         )

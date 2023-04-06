@@ -16,8 +16,8 @@ pts = get_points(tri2)
 adj = get_adjacent(tri2)
 adj2v = get_adjacent2vertex(tri2)
 boundary_map = get_boundary_map(tri2)
-DT.RepresentativePointList[1].x = 10.0
-DT.RepresentativePointList[1].y = 10.0
+tri2.representative_point_list[1].x = 10.0
+tri2.representative_point_list[1].y = 10.0
 graph = get_graph(tri2)
 boundary_nodes = get_boundary_nodes(tri2)
 

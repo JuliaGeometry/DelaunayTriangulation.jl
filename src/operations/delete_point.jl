@@ -37,7 +37,7 @@ function delete_point!(tri::Triangulation, point; rng::AbstractRNG=Random.defaul
     delete_vertex!(tri, point)
     ## Cleanup
     push!(S, S[begin])
-    is_outer_bnd &&_replace_representative_coordinates_after_deletion!(cx, cy)
+    is_outer_bnd && _replace_representative_coordinates_after_deletion!(tri, cx, cy)
     fix_edges_after_deletion!(tri, S)
     return nothing
 end
@@ -96,14 +96,15 @@ function _replace_representative_coordinates_for_deletion!(tri, point)
     scaled_extent = (mc_length + 25pℓpr_length) / mc_length
     ĉx = cx + scaled_extent * (mx - cx)
     ĉy = cy + scaled_extent * (my - cy)
-    representative_coords = RepresentativePointList[1] # the outer boundary also has a curve index of 1 
+    representative_coords = get_representative_point_list(tri)[I(1)] # the outer boundary also has a curve index of 1 
     representative_coords.x = ĉx
     representative_coords.y = ĉy
     return cx, cy
 end
 
-function _replace_representative_coordinates_after_deletion!(cx, cy)
-    representative_coords = RepresentativePointList[1]
+function _replace_representative_coordinates_after_deletion!(tri, cx, cy)
+    I = integer_type(tri)
+    representative_coords = get_representative_point_list(tri)[I(1)]
     representative_coords.x = cx
     representative_coords.y = cy
     return nothing

@@ -20,16 +20,16 @@ index corresponds to an interior curve, this flip is not necessary.
 The mapping of a boundary index is handled via the `boundary_map` 
 argument - see [`construct_boundary_map`](@ref).
 """
-@inline function triangle_orientation(i, j, k, pts, boundary_map)
-    p, q, r = get_point(pts, boundary_map, i, j, k)
+@inline function triangle_orientation(i, j, k, pts, representative_point_list, boundary_map)
+    p, q, r = get_point(pts, representative_point_list, boundary_map, i, j, k)
     if is_outer_ghost_triangle(i, j, k, boundary_map)
         return triangle_orientation(r, q, p) # Exterior ghost triangles have the boundary index represented at a centroid which is inwards, so flip the orientation
     end
     return triangle_orientation(p, q, r) # Ghost triangles have the boundary index represented at a centroid which is inwards, so flip the orientation
 end
-@inline function triangle_orientation(T, pts, boundary_map::AbstractDict)
+@inline function triangle_orientation(T, pts, representative_point_list, boundary_map::AbstractDict)
     i, j, k = indices(T)
-    return triangle_orientation(i, j, k, pts, boundary_map)
+    return triangle_orientation(i, j, k, pts, representative_point_list, boundary_map)
 end
 
 """
@@ -58,8 +58,8 @@ outer halfplane defined by the two other vertices. See also
 The mapping of a boundary index is handled via the `boundary_map` 
 argument - see [`construct_boundary_map`](@ref).
 """
-function point_position_relative_to_circumcircle(i, j, k, ℓ, pts, boundary_map)
-    a, b, c, p = get_point(pts, boundary_map, i, j, k, ℓ)
+function point_position_relative_to_circumcircle(i, j, k, ℓ, pts, representative_point_list, boundary_map)
+    a, b, c, p = get_point(pts, representative_point_list, boundary_map, i, j, k, ℓ)
     if is_boundary_index(i)
         return point_position_relative_to_oriented_outer_halfplane(b, c, p)
     elseif is_boundary_index(j)
@@ -69,9 +69,9 @@ function point_position_relative_to_circumcircle(i, j, k, ℓ, pts, boundary_map
     end
     return point_position_relative_to_circle(a, b, c, p)
 end
-function point_position_relative_to_circumcircle(T, ℓ, pts, boundary_map)
+function point_position_relative_to_circumcircle(T, ℓ, pts, representative_point_list, boundary_map)
     i, j, k = indices(T)
-    return point_position_relative_to_circumcircle(i, j, k, ℓ, pts, boundary_map)
+    return point_position_relative_to_circumcircle(i, j, k, ℓ, pts, representative_point_list, boundary_map)
 end
 
 """
@@ -95,12 +95,12 @@ centroid which swaps the orientation.
 The mapping of a boundary index is handled via the `boundary_map` 
 argument - see [`construct_boundary_map`](@ref).
 """
-function point_position_relative_to_line(i, j, u, pts, boundary_map)
-    a, b, p = get_point(pts, boundary_map, i, j, u)
+function point_position_relative_to_line(i, j, u, pts, representative_point_list, boundary_map)
+    a, b, p = get_point(pts, representative_point_list, boundary_map, i, j, u)
     if !is_outer_ghost_edge(i, j, boundary_map)
         return point_position_relative_to_line(a, b, p)
     else
-        return point_position_relative_to_line(b, a, p) # If the line is ℓ₀ⱼ, then this is parallel with the line ℓⱼₚ, where ₚ is the centroid. But 0 maps to p (`get_point(pts, 0)` is the centroid), so let's just swap the coordinates. Similarly, for the line ℓᵢ₀, we just consider ℓₚᵢ, so again we swap.
+        return point_position_relative_to_line(b, a, p) # If the line is ℓ₀ⱼ, then this is parallel with the line ℓⱼₚ, where ₚ is the centroid. But 0 maps to p (`get_point(pts, -1)` is the centroid), so let's just swap the coordinates. Similarly, for the line ℓᵢ₀, we just consider ℓₚᵢ, so again we swap.
     end
 end
 
@@ -119,7 +119,7 @@ is, returning:
 
 It is assumed that `p` and `q` are to the left of `ℓ`.
 """
-function point_closest_to_line(i, j, u, v, pts) 
+function point_closest_to_line(i, j, u, v, pts)
     a, b, p, q = get_point(pts, i, j, u, v)
     return point_closest_to_line(a, b, p, q)
 end
@@ -184,13 +184,13 @@ Letting `p`, `q`, `a`, and `b` be the points referred to by
 If necessary, the mapping of boundary indices is handled via 
 the boundary map argument from [`construct_boundary_map`](@ref).
 """
-function point_position_relative_to_triangle(i, j, k, u, pts, boundary_map::AbstractDict)
+function point_position_relative_to_triangle(i, j, k, u, pts, representative_point_list, boundary_map::AbstractDict)
     if !is_outer_ghost_triangle(i, j, k, boundary_map)
-        a, b, c, p = get_point(pts, boundary_map, i, j, k, u)
+        a, b, c, p = get_point(pts, representative_point_list, boundary_map, i, j, k, u)
         return point_position_relative_to_triangle(a, b, c, p)
     else
         i, j, k = rotate_ghost_triangle_to_standard_form(i, j, k)
-        a, b, c, p = get_point(pts, boundary_map, i, j, k, u) # a and b are solid vertices, but c is a ghost (mapped to a centroid in the opposite direction)
+        a, b, c, p = get_point(pts, representative_point_list, boundary_map, i, j, k, u) # a and b are solid vertices, but c is a ghost (mapped to a centroid in the opposite direction)
         edge_ab = point_position_relative_to_line(a, b, p)
         is_right(edge_ab) && return Cert.Outside
         if is_collinear(edge_ab)
@@ -206,9 +206,9 @@ function point_position_relative_to_triangle(i, j, k, u, pts, boundary_map::Abst
         return Cert.Inside
     end
 end
-function point_position_relative_to_triangle(T, u, pts, boundary_map::AbstractDict)
+function point_position_relative_to_triangle(T, u, pts, representative_point_list, boundary_map::AbstractDict)
     i, j, k = indices(T)
-    return point_position_relative_to_triangle(i, j, k, u, pts, boundary_map)
+    return point_position_relative_to_triangle(i, j, k, u, pts, representative_point_list, boundary_map)
 end
 
 """

@@ -76,7 +76,7 @@ T = get_triangles(tri)
 bn = get_boundary_nodes(tri)
 fig6 = Figure()
 ax = Axis(fig6[1, 1])
-triplot!(ax, pts, T, bn, get_convex_hull(tri), get_all_constrained_edges(tri);
+triplot!(ax, pts, T, bn, get_convex_hull(tri), get_all_constrained_edges(tri), DT.get_representative_point_list(tri);
     show_ghost_edges=true,
     show_all_points=true,
     markersize=6,
@@ -92,7 +92,7 @@ SAVE_FIGURE && save("$save_path/test_figure_6.png", fig6)
 
 fig7 = Figure()
 ax = Axis(fig7[1, 1])
-triplot!(ax, pts, T, bn, get_convex_hull(tri), get_all_constrained_edges(tri);
+triplot!(ax, pts, T, bn, get_convex_hull(tri), get_all_constrained_edges(tri), DT.get_representative_point_list(tri);
     show_ghost_edges=true,
     show_all_points=true,
     markersize=6,

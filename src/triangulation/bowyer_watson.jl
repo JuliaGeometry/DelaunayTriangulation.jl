@@ -46,20 +46,18 @@ function initialise_bowyer_watson(points::P;
         skip_points, IntegerType,
         rng)) where {P,I,E,V,Es,
     Ts}
-    empty_representative_points!()
     tri = Triangulation(points; IntegerType, EdgeType, TriangleType, EdgesType,
         TrianglesType)
     initial_triangle = get_initial_triangle(tri, point_order) # point_order could get mutated here
     add_triangle!(tri, initial_triangle; update_ghost_edges=true)
-    F = number_type(points)
-    new_representative_point(1, F) # Not I(1) because RepresentativePointList is of type RepresentativeCoordinates{Int64,Float64}
+    new_representative_point!(tri, I(1))
     u, v, w = indices(initial_triangle)
     p, q, r = get_point(tri, u, v, w)
     for pt in (p, q, r)
-        update_centroid_after_addition!(1, pt)
+        update_centroid_after_addition!(tri, I(1), pt)
     end
     return tri::Triangulation{P,Ts,I,E,Es,Vector{I},Dict{E,Tuple{Vector{I},I}},OrderedDict{I,Vector{I}},
-        OrderedDict{I,UnitRange{I}}}
+        OrderedDict{I,UnitRange{I}},Dict{I,RepresentativeCoordinates{I,number_type(P)}}}
 end
 
 function triangulate_bowyer_watson(points::P;
@@ -84,7 +82,7 @@ function triangulate_bowyer_watson(points::P;
         TrianglesType, randomise, skip_points, rng,
         point_order)::Triangulation{P,Ts,I,E,Es,Vector{I},Dict{E,Tuple{Vector{I},I}},
         OrderedDict{I,Vector{I}},
-        OrderedDict{I,UnitRange{I}}}
+        OrderedDict{I,UnitRange{I}},Dict{I,RepresentativeCoordinates{I,number_type(P)}}}
     _triangulate_bowyer_watson!(tri, point_order, num_sample_rule, delete_ghosts,
         delete_empty_features, try_last_inserted_point, rng,
         recompute_representative_point)
@@ -154,7 +152,7 @@ function add_point_bowyer_watson!(tri::Triangulation, new_point, initial_search_
             add_triangle!(tri, u, new_point, I(BoundaryIndex); update_ghost_edges=false)
         end
     end
-    update_centroid_after_addition!(1, q)
+    update_centroid_after_addition!(tri, I(1), q)
     return nothing
 end
 

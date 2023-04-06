@@ -94,7 +94,7 @@ function get_point(pts::P, i::Vararg{Any,N}) where {P,N}
 end
 
 """
-    get_point(pts::P, boundary_map, i...)
+    get_point(pts::P, representative_point_list, boundary_map, i...)
 
 Given points `pts`, a boundary map from [`construct_boundary_map`](@ref) that 
 maps boundary indices to their corresponding curve, and some indices `i...`, returns 
@@ -108,23 +108,23 @@ In the single `i` case, if it is not an integer then we simply return
 `(getx(i), gety(i))`, assuming that it is supposed to represent a single point.
 
 If `is_boundary_index(i)`, then instead of returning the `i`th point, 
-the centroid for the boundary curve corresponding to the 
-boundary index `i` is returned. See also [`get_representative_point_coordinates`](@ref).
+the representative point for the boundary curve corresponding to the 
+boundary index `i` is returned, using the `representative_point_list` argument.
+See also [`get_representative_point_coordinates`](@ref).
 """
-function get_point(pts::P, boundary_map::AbstractDict, i::I) where {P,I<:Integer}
+function get_point(pts::P, representative_point_list::AbstractDict, boundary_map::AbstractDict, i::I) where {P,I<:Integer}
     if !is_boundary_index(i)
         return get_point(pts, i)
     elseif i == I(DefaultAdjacentValue)
         throw(BoundsError(pts, I(DefaultAdjacentValue)))
     else
-        F = number_type(pts)
         curve_index = get_curve_index(boundary_map, i)
-        return get_representative_point_coordinates(curve_index, F)
+        return get_representative_point_coordinates(representative_point_list, curve_index)
     end
 end
-get_point(::P, ::AbstractDict, i) where {P} = (getx(i), gety(i))
-function get_point(pts::P, boundary_map::AbstractDict, i::Vararg{Any,N}) where {P,N}
-    return ntuple(j -> get_point(pts, boundary_map, i[j]), Val(N))
+get_point(::P, ::AbstractDict, ::AbstractDict, i) where {P} = (getx(i), gety(i))
+function get_point(pts::P, representative_point_list::AbstractDict, boundary_map::AbstractDict, i::Vararg{Any,N}) where {P,N}
+    return ntuple(j -> get_point(pts, representative_point_list, boundary_map, i[j]), N)
 end
 
 """

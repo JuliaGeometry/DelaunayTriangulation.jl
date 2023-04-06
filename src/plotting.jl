@@ -64,7 +64,7 @@ Only relevant if the triangulation is constrained. This colours all constrained 
 
 Only relevant if `show_constrained_edges`. The colour to use for the constrained edges.
 """
-MakieCore.@recipe(Triplot, points, triangles, boundary_nodes, convex_hull, constrained_edges) do scene
+MakieCore.@recipe(Triplot, points, triangles, boundary_nodes, convex_hull, constrained_edges, representative_point_list) do scene
     return MakieCore.Attributes(; markersize=11,
         show_ghost_edges=false,
         recompute_centers=false,
@@ -86,7 +86,7 @@ MakieCore.@recipe(Triplot, points, triangles, boundary_nodes, convex_hull, const
 end
 function MakieCore.convert_arguments(plot::Type{<:Triplot}, tri::Triangulation)
     return (get_points(tri), get_triangles(tri), get_boundary_nodes(tri),
-        get_convex_hull(tri), get_all_constrained_edges(tri))
+        get_convex_hull(tri), get_all_constrained_edges(tri), get_representative_point_list(tri))
 end
 
 function MakieCore.plot!(p::Triplot)
@@ -96,6 +96,7 @@ function MakieCore.plot!(p::Triplot)
     boundary_nodes = p[:boundary_nodes]
     convex_hull = p[:convex_hull]
     constrained_edges = p[:constrained_edges]
+    representative_point_list = p[:representative_point_list]
     markersize = p[:markersize]
     show_ghost_edges = p[:show_ghost_edges]
     recompute_centers = p[:recompute_centers]
@@ -124,13 +125,13 @@ function MakieCore.plot!(p::Triplot)
     constrained_edge_points = MakieCore.Observable(NTuple{2,Float64}[])
 
     ## Define the function for updating the observables 
-    function update_plot(points, triangles, boundary_nodes, convex_hull, constrained_edges)
+    function update_plot(points, triangles, boundary_nodes, convex_hull, constrained_edges, representative_point_list)
         boundary_map = construct_boundary_map(boundary_nodes)
         if !has_multiple_segments(boundary_nodes) && num_boundary_edges(boundary_nodes) == 0
             recompute_centers[] &&
-                compute_representative_points!(points, get_indices(convex_hull))
+                compute_representative_points!(representative_point_list, points, get_indices(convex_hull))
         else
-            recompute_centers[] && compute_representative_points!(points, boundary_nodes)
+            recompute_centers[] && compute_representative_points!(representative_point_list, points, boundary_nodes)
         end
 
         ## Clear out the previous observables
@@ -159,8 +160,7 @@ function MakieCore.plot!(p::Triplot)
         if show_ghost_edges[]
             for index in values(boundary_map)
                 curve_index = get_curve_index(index)
-                representative_coordinates = get_representative_point_coordinates(curve_index,
-                    number_type(points))
+                representative_coordinates = get_representative_point_coordinates(representative_point_list, curve_index)
                 cx, cy = getxy(representative_coordinates)
                 bn = !isempty(index) ? get_boundary_nodes(boundary_nodes, index) :
                      get_indices(convex_hull) # If index is empty, there are no constrained boundaries, meaning we want to get the convex hull
@@ -207,10 +207,10 @@ function MakieCore.plot!(p::Triplot)
     end
 
     ## Connect the plot so that it updates whenever we change a value 
-    MakieCore.Observables.onany(update_plot, points, triangles, boundary_nodes, convex_hull, constrained_edges)
+    MakieCore.Observables.onany(update_plot, points, triangles, boundary_nodes, convex_hull, constrained_edges, representative_point_list)
 
     ## Call it once to prepopulate with current values 
-    update_plot(points[], triangles[], boundary_nodes[], convex_hull[], constrained_edges[])
+    update_plot(points[], triangles[], boundary_nodes[], convex_hull[], constrained_edges[], representative_point_list[])
 
     ## Now plot 
     poly!(p, points_2f, triangle_mat_2;

@@ -6,9 +6,9 @@ Given a collection of triangles `T`, a point `r`, a collection of points
 [`construct_boundary_map`](@ref), returns the triangle in `T` containing `r` 
 by searching over all triangles.
 """
-function brute_force_search(T, r, pts, boundary_map)
+function brute_force_search(T, r, pts, representative_point_list, boundary_map)
     for V in each_triangle(T)
-        cert = point_position_relative_to_triangle(V, r, pts, boundary_map)
+        cert = point_position_relative_to_triangle(V, r, pts, representative_point_list, boundary_map)
         if !is_outside(cert)
             return V
         end

@@ -21,6 +21,7 @@ function locate_intersecting_triangles(
     adj2v::Adjacent2Vertex{I,Es,E},
     graph::Graph{I},
     boundary_index_ranges,
+    representative_point_list,
     boundary_map,
     TriangleType::Type{V},
     check_existence::C=Val(has_multiple_segments(boundary_map)),
@@ -35,6 +36,7 @@ function locate_intersecting_triangles(
         adj2v,
         graph,
         boundary_index_ranges,
+        representative_point_list,
         boundary_map,
         get_point(pts, terminal(e));
         m=nothing,

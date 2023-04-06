@@ -99,17 +99,22 @@ If you have a constrained segment that happens to be collinear with another vert
 vertex is on the segment, then we mutate `constrained_edges` so that the segment is split 
 at this vertex. 
 
-- `convex_hull::ConvexHull{P,Vector{I}}`
-
-This will be a vector of integers corresponding to indices in the points that 
-together give the convex hull of the set of points, with `convex_hull[begin] == convex_hull[end]`.
-
 - `all_constrained_edges::Es`
 
 This is a set of all constrained edges, basically the union of the constrained edges in `constrained_edges`
 and `boundary_nodes`. You shouldn't need to work with this field directly. Do note, though, that while 
 `constrained_edges` and `boundary_nodes` can be populated even before we add any segments into the triangulation, this field 
 contains the edges actuallly in the triangulation at the present time.
+
+- `convex_hull::ConvexHull{P,Vector{I}}`
+
+This will be a vector of integers corresponding to indices in the points that 
+together give the convex hull of the set of points, with `convex_hull[begin] == convex_hull[end]`.
+
+- `representative_point_list::RPL`
+
+This is a `Dict` of points giving representative points for each boundary curve, or the convex hull if no boundary 
+nodes are specified. These representative points are used for interpreting ghost vertices.
 
 # Constructors 
 
@@ -169,6 +174,7 @@ we list below.
 - [`get_constrained_edges`](@ref)
 - [`get_convex_hull`](@ref)
 - [`get_boundary_edge_map`](@ref)
+- [`get_representative_point_list`](@ref)
 
 ## Operations:
 
@@ -302,7 +308,7 @@ You might also want to consider [`convert_boundary_points_to_indices`](@ref).
 - [`sort_edge_by_degree`](@ref)
 - [`split_constrained_edge`](@ref)
 """
-struct Triangulation{P,Ts,I,E,Es,BN,BNM,B,BIR}
+struct Triangulation{P,Ts,I,E,Es,BN,BNM,B,BIR,BPL}
     points::P
     triangles::Ts
     adjacent::Adjacent{I,E}
@@ -315,6 +321,7 @@ struct Triangulation{P,Ts,I,E,Es,BN,BNM,B,BIR}
     constrained_edges::Es
     all_constrained_edges::Es
     convex_hull::ConvexHull{P,Vector{I}}
+    representative_point_list::BPL
 end
 function Base.show(io::IO, ::MIME"text/plain", tri::Triangulation)
     println(io, "Delaunay Triangulation.")
@@ -338,6 +345,7 @@ function remake_triangulation_with_constraints(tri::Triangulation{P,Ts,I,E,Es,BN
     constrained_edges = @something edges get_constrained_edges(tri)
     all_constrained_edges = get_all_constrained_edges(tri)
     convex_hull = get_convex_hull(tri)
+    representative_point_list = get_representative_point_list(tri)
     return boundary_edge_map, bn_map, bn_range, Triangulation(
         points,
         triangles,
@@ -350,8 +358,8 @@ function remake_triangulation_with_constraints(tri::Triangulation{P,Ts,I,E,Es,BN
         get_boundary_index_ranges(tri),
         constrained_edges,
         all_constrained_edges,
-        convex_hull
-    )
+        convex_hull,
+        representative_point_list)
 end
 
 function replace_boundary_dict_information(tri::Triangulation, bnn_map, bn_map, bn_range)
@@ -364,6 +372,7 @@ function replace_boundary_dict_information(tri::Triangulation, bnn_map, bn_map, 
     constrained_edges = get_constrained_edges(tri)
     all_constrained_edges = get_all_constrained_edges(tri)
     convex_hull = get_convex_hull(tri)
+    representative_point_list = get_representative_point_list(tri)
     return Triangulation(
         points,
         triangles,
@@ -376,7 +385,8 @@ function replace_boundary_dict_information(tri::Triangulation, bnn_map, bn_map, 
         bn_range,
         constrained_edges,
         all_constrained_edges,
-        convex_hull
+        convex_hull,
+        representative_point_list
     )
 end
 
@@ -404,6 +414,7 @@ Base.@constprop :aggressive function Triangulation(points::P;
     bn_range = construct_boundary_index_ranges(boundary_nodes; IntegerType=I)
     ch = ConvexHull(points, I[])
     all_constrained_edges = initialise_edges(EdgesType)#merge_constrained_edges(bn_map, boundary_nodes, constrained_edges)
+    representative_point_list = get_empty_representative_points(I, number_type(P))
     n = num_points(points)
     sizehint!(T, 2n - 5) # maximum number of triangles
     sizehint!(adj, 3n - 6) # maximum number of edges 
@@ -411,7 +422,7 @@ Base.@constprop :aggressive function Triangulation(points::P;
     sizehint!(graph, 3n - 6, n, n)
     sizehint!(ch, n)
     tri = Triangulation(points, T, adj, adj2v, graph, boundary_nodes, bnn_map, bn_map, bn_range,
-        constrained_edges, all_constrained_edges, ch)
+        constrained_edges, all_constrained_edges, ch, representative_point_list)
     return tri
 end
 
@@ -690,10 +701,10 @@ end
 
 # Points 
 @inline function get_point(tri::Triangulation, i)
-    return get_point(get_points(tri), get_boundary_map(tri), i)
+    return get_point(get_points(tri), get_representative_point_list(tri), get_boundary_map(tri), i)
 end
 @inline function get_point(tri::Triangulation, i::Vararg{Any,N}) where {N}
-    return get_point(get_points(tri), get_boundary_map(tri), i...)
+    return get_point(get_points(tri), get_representative_point_list(tri), get_boundary_map(tri), i...)
 end
 @inline each_point_index(tri::Triangulation) = each_point_index(get_points(tri))
 @inline each_point(tri::Triangulation) = each_point(get_points(tri))
@@ -742,20 +753,20 @@ end
     return is_boundary_triangle(tri, geti(T), getj(T), getk(T))
 end
 @inline function triangle_orientation(tri::Triangulation, i, j, k)
-    return triangle_orientation(i, j, k, get_points(tri), get_boundary_map(tri))
+    return triangle_orientation(i, j, k, get_points(tri), get_representative_point_list(tri), get_boundary_map(tri))
 end
 @inline function triangle_orientation(tri::Triangulation, T)
     return triangle_orientation(tri, geti(T), getj(T), getk(T))
 end
 @inline function point_position_relative_to_circumcircle(tri::Triangulation, i, j, k, ℓ)
     return point_position_relative_to_circumcircle(i, j, k, ℓ, get_points(tri),
-        get_boundary_map(tri))
+        get_representative_point_list(tri), get_boundary_map(tri))
 end
 @inline function point_position_relative_to_circumcircle(tri::Triangulation, T, ℓ)
     return point_position_relative_to_circumcircle(tri, geti(T), getj(T), getk(T), ℓ)
 end
 @inline function point_position_relative_to_line(tri::Triangulation, i, j, u)
-    return point_position_relative_to_line(i, j, u, get_points(tri), get_boundary_map(tri))
+    return point_position_relative_to_line(i, j, u, get_points(tri), get_representative_point_list(tri), get_boundary_map(tri))
 end
 @inline function point_closest_to_line(tri::Triangulation, i, j, u, v)
     return point_closest_to_line(i, j, u, v, get_points(tri))
@@ -768,7 +779,7 @@ end
 end
 @inline function point_position_relative_to_triangle(tri::Triangulation, i, j, k, u)
     return point_position_relative_to_triangle(i, j, k, u, get_points(tri),
-        get_boundary_map(tri))
+        get_representative_point_list(tri), get_boundary_map(tri))
 end
 @inline function point_position_relative_to_triangle(tri::Triangulation, T, u)
     return point_position_relative_to_triangle(tri, geti(T), getj(T), getk(T), u)
@@ -810,7 +821,7 @@ end
 
 ## Point Location
 function brute_force_search(tri::Triangulation, q)
-    return brute_force_search(get_triangles(tri), q, get_points(tri), get_boundary_map(tri))
+    return brute_force_search(get_triangles(tri), q, get_points(tri), get_representative_point_list(tri), get_boundary_map(tri))
 end
 function jump_and_march(tri::Triangulation, q;
     point_indices=each_point_index(tri),
@@ -827,6 +838,7 @@ function jump_and_march(tri::Triangulation, q;
         get_adjacent2vertex(tri),
         get_graph(tri),
         get_boundary_index_ranges(tri),
+        get_representative_point_list(tri),
         get_boundary_map(tri),
         q; m, point_indices, try_points, k,
         TriangleType=triangle_type(tri), check_existence,
@@ -844,32 +856,42 @@ function locate_intersecting_triangles(tri::Triangulation, e;
     graph = get_graph(tri)
     boundary_index_ranges = get_boundary_index_ranges(tri)
     boundary_map = get_boundary_map(tri)
-    T = get_triangles(tri)
+    T = triangle_type(tri)
+    rep = get_representative_point_list(tri)
     return locate_intersecting_triangles(e,
         pts,
         adj,
         adj2v,
         graph,
         boundary_index_ranges,
+        rep,
         boundary_map,
-        triangle_type(tri),
+        T,
         check_existence,
         rng)
 end
 
-# Miscellaneous
-@inline integer_type(::Triangulation{P,Ts,I}) where {P,Ts,I} = I
-@inline number_type(::Triangulation{P}) where {P} = number_type(P)
+## Representative Points 
 @inline function compute_representative_points!(tri::Triangulation;
     use_convex_hull=!has_multiple_segments(tri) &&
                     num_boundary_edges(get_boundary_nodes(tri)) ==
                     0)
     if !use_convex_hull
-        compute_representative_points!(get_points(tri), get_boundary_nodes(tri))
+        compute_representative_points!(get_representative_point_list(tri), get_points(tri), get_boundary_nodes(tri))
     else
-        compute_representative_points!(get_points(tri), get_convex_hull_indices(tri))
+        compute_representative_points!(get_representative_point_list(tri), get_points(tri), get_convex_hull_indices(tri))
     end
 end
+get_representative_point_coordinates(tri::Triangulation, i) = get_representative_point_coordinates(get_representative_point_list(tri), i)
+reset_representative_points!(tri::Triangulation) = reset_representative_points!(get_representative_point_list(tri))
+update_centroid_after_addition!(tri::Triangulation, i, p) = update_centroid_after_addition!(get_representative_point_list(tri), i, p)
+update_centroid_after_deletion!(tri::Triangulation, i, p) = update_centroid_after_deletion!(get_representative_point_list(tri), i, p)
+new_representative_point!(tri::Triangulation, i) = new_representative_point!(get_representative_point_list(tri), i)
+
+## Miscellaneous
+@inline integer_type(::Triangulation{P,Ts,I}) where {P,Ts,I} = I
+@inline number_type(::Triangulation{P}) where {P} = number_type(P)
+
 function clear_empty_features!(tri)
     adj = get_adjacent(tri)
     adj2v = get_adjacent2vertex(tri)

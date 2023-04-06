@@ -15,14 +15,15 @@ boundary_index_ranges = get_boundary_index_ranges(tri)
 boundary_nodes = get_boundary_nodes(tri)
 boundary_map = get_boundary_map(tri)
 DT.compute_representative_points!(tri)
-DT.RepresentativePointList[1].x = 10.0
-DT.RepresentativePointList[1].y = 10.0
+rep = DT.get_representative_point_list(tri)
+rep[1].x = 10.0
+rep[1].y = 10.0
 _pts = tri.points[[12, 11, 10, 9]]
-DT.RepresentativePointList[2].x = mean([8.0, 8.0, 4.0, 4.0])
-DT.RepresentativePointList[2].y = mean([16.0, 6.0, 6.0, 16.0])
+rep[2].x = mean([8.0, 8.0, 4.0, 4.0])
+rep[2].y = mean([16.0, 6.0, 6.0, 16.0])
 _pts = tri.points[[18, 17, 16, 15, 14, 13]]
-DT.RepresentativePointList[3].x = mean([18.0, 18.0, 14.0, 12.0, 14.0, 14.0])
-DT.RepresentativePointList[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
+rep[3].x = mean([18.0, 18.0, 14.0, 12.0, 14.0, 14.0])
+rep[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
 graph = get_graph(tri)
 
 @testset "check_for_intersections_with_adjacent_boundary_edges" begin
@@ -31,87 +32,87 @@ graph = get_graph(tri)
             q = (6.0, 0.0)
             dir, dir_cert, id = DT.check_for_intersections_with_adjacent_boundary_edges(pts, adj,
                   boundary_index_ranges,
-                  boundary_map, k,
+                  rep, boundary_map, k,
                   q)
             @test dir == Certificate.Right && dir_cert == Certificate.On && id == index_map["b"]
             @inferred DT.check_for_intersections_with_adjacent_boundary_edges(pts, adj,
                   boundary_index_ranges,
-                  boundary_map, k, q)
+                  rep, boundary_map, k, q)
             q = (14.0, 0.0)
             dir, dir_cert, id = DT.check_for_intersections_with_adjacent_boundary_edges(pts, adj,
                   boundary_index_ranges,
-                  boundary_map, k,
+                  rep, boundary_map, k,
                   q)
             @test dir == Certificate.Right && dir_cert == Certificate.Right && id == index_map["b"]
             q = (0.0, 4.0)
             dir, dir_cert, id = DT.check_for_intersections_with_adjacent_boundary_edges(pts, adj,
                   boundary_index_ranges,
-                  boundary_map, k,
+                  rep, boundary_map, k,
                   q)
             @test dir == Certificate.Left && dir_cert == Certificate.On && id == index_map["h"]
             q = (0.0, 14.0)
             dir, dir_cert, id = DT.check_for_intersections_with_adjacent_boundary_edges(pts, adj,
                   boundary_index_ranges,
-                  boundary_map, k,
+                  rep, boundary_map, k,
                   q)
             @test dir == Certificate.Left && dir_cert == Certificate.Left && id == index_map["h"]
             q = (-2.0, 0.0)
             dir, dir_cert, id = DT.check_for_intersections_with_adjacent_boundary_edges(pts, adj,
                   boundary_index_ranges,
-                  boundary_map, k,
+                  rep, boundary_map, k,
                   q)
             @test dir == Certificate.Outside && dir_cert == Certificate.Outside && id == k
             q = (0.0, -2.0)
             dir, dir_cert, id = DT.check_for_intersections_with_adjacent_boundary_edges(pts, adj,
                   boundary_index_ranges,
-                  boundary_map, k,
+                  rep, boundary_map, k,
                   q)
             @test dir == Certificate.Outside && dir_cert == Certificate.Outside && id == k
             q = (2.0, -2.0)
             dir, dir_cert, id = DT.check_for_intersections_with_adjacent_boundary_edges(pts, adj,
                   boundary_index_ranges,
-                  boundary_map, k,
+                  rep, boundary_map, k,
                   q)
             @test dir == Certificate.Outside && dir_cert == Certificate.Outside && id == k
             q = (4.0, 4.0)
             dir, dir_cert, id = DT.check_for_intersections_with_adjacent_boundary_edges(pts, adj,
                   boundary_index_ranges,
-                  boundary_map, k,
+                  rep, boundary_map, k,
                   q)
             @test dir == Certificate.Outside && dir_cert == Certificate.Outside && id == k
             k = index_map["d"]
             q = (20.0, 2.0)
             dir, dir_cert, id = DT.check_for_intersections_with_adjacent_boundary_edges(pts, adj,
                   boundary_index_ranges,
-                  boundary_map, k,
+                  rep, boundary_map, k,
                   q)
             @test dir == Certificate.Left && dir_cert == Certificate.On && id == index_map["c"]
             q = (20.0, 17.0)
             dir, dir_cert, id = DT.check_for_intersections_with_adjacent_boundary_edges(pts, adj,
                   boundary_index_ranges,
-                  boundary_map, k,
+                  rep, boundary_map, k,
                   q)
             @test dir == Certificate.Right && dir_cert == Certificate.On && id == index_map["e"]
             q = (20.0, -5.0)
             dir, dir_cert, id = DT.check_for_intersections_with_adjacent_boundary_edges(pts, adj,
                   boundary_index_ranges,
-                  boundary_map, k,
+                  rep, boundary_map, k,
                   q)
             @test dir == Certificate.Left && dir_cert == Certificate.Left && id == index_map["c"]
             q = (20.0, 30.0)
             dir, dir_cert, id = DT.check_for_intersections_with_adjacent_boundary_edges(pts, adj,
                   boundary_index_ranges,
-                  boundary_map, k,
+                  rep, boundary_map, k,
                   q)
             @test dir == Certificate.Right && dir_cert == Certificate.Right && id == index_map["e"]
             q = (10.0, 10.0)
             dir, dir_cert, id = DT.check_for_intersections_with_adjacent_boundary_edges(pts, adj,
                   boundary_index_ranges,
-                  boundary_map, k,
+                  rep, boundary_map, k,
                   q)
             @inferred DT.check_for_intersections_with_adjacent_boundary_edges(pts, adj,
                   boundary_index_ranges,
-                  boundary_map, k, q)
+                  rep, boundary_map, k, q)
             @test dir == Certificate.Outside && dir_cert == Certificate.Outside && id == k
       end
 
@@ -121,65 +122,65 @@ graph = get_graph(tri)
             direction, q_pos, next_vertex = DT.check_for_intersections_with_adjacent_boundary_edges(pts,
                   adj,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q)
             q_cert, u, v, w = DT.search_down_adjacent_boundary_edges(pts, adj, boundary_index_ranges,
-                  boundary_map, k, q, direction,
+                  rep, boundary_map, k, q, direction,
                   q_pos, next_vertex)
             @test DT.is_on(q_cert) && (u, v, w) == (index_map["a"], index_map["b"], index_map["t"])
             q = (10.0, 0.0)
             direction, q_pos, next_vertex = DT.check_for_intersections_with_adjacent_boundary_edges(pts,
                   adj,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q)
             @test DT.is_degenerate(q_pos)
             direction, q_pos, next_vertex = DT.check_for_intersections_with_adjacent_boundary_edges(pts,
                   adj,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q)
             q_cert, u, v, w = DT.search_down_adjacent_boundary_edges(pts, adj, boundary_index_ranges,
-                  boundary_map, k, q, direction,
+                  rep, boundary_map, k, q, direction,
                   q_pos, next_vertex)
             @test DT.is_on(q_cert) && (u, v, w) == (index_map["a"], index_map["b"], index_map["t"])
             q = (12.0, 0.0)
             direction, q_pos, next_vertex = DT.check_for_intersections_with_adjacent_boundary_edges(pts,
                   adj,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q)
             q_cert, u, v, w = DT.search_down_adjacent_boundary_edges(pts, adj, boundary_index_ranges,
-                  boundary_map, k, q, direction,
+                  rep, boundary_map, k, q, direction,
                   q_pos, next_vertex)
             @inferred DT.search_down_adjacent_boundary_edges(pts, adj, boundary_index_ranges,
-                  boundary_map, k, q, direction, q_pos,
+                  rep, boundary_map, k, q, direction, q_pos,
                   next_vertex)
             @test DT.is_on(q_cert) && (u, v, w) == (index_map["b"], index_map["c"], index_map["p"])
             q = (20.0, 0.0)
             direction, q_pos, next_vertex = DT.check_for_intersections_with_adjacent_boundary_edges(pts,
                   adj,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q)
             q_cert, u, v, w = DT.search_down_adjacent_boundary_edges(pts, adj, boundary_index_ranges,
-                  boundary_map, k, q, direction,
+                  rep, boundary_map, k, q, direction,
                   q_pos, next_vertex)
             @test DT.is_on(q_cert) && (u, v, w) == (index_map["b"], index_map["c"], index_map["p"])
             q = (22.0, 0.0)
             direction, q_pos, next_vertex = DT.check_for_intersections_with_adjacent_boundary_edges(pts,
                   adj,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q)
             q_cert, u, v, w = DT.search_down_adjacent_boundary_edges(pts, adj, boundary_index_ranges,
-                  boundary_map, k, q, direction,
+                  rep, boundary_map, k, q, direction,
                   q_pos, next_vertex)
             @test DT.is_outside(q_cert) &&
                   (u, v, w) == (index_map["d"], index_map["c"], DT.BoundaryIndex)
@@ -187,70 +188,70 @@ graph = get_graph(tri)
             direction, q_pos, next_vertex = DT.check_for_intersections_with_adjacent_boundary_edges(pts,
                   adj,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q)
             q_cert, u, v, w = DT.search_down_adjacent_boundary_edges(pts, adj, boundary_index_ranges,
-                  boundary_map, k, q, direction,
+                  rep, boundary_map, k, q, direction,
                   q_pos, next_vertex)
             @test DT.is_on(q_cert) && (u, v, w) == (index_map["h"], index_map["a"], index_map["s"])
             q = (0.0, 10.0)
             direction, q_pos, next_vertex = DT.check_for_intersections_with_adjacent_boundary_edges(pts,
                   adj,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q)
             q_cert, u, v, w = DT.search_down_adjacent_boundary_edges(pts, adj, boundary_index_ranges,
-                  boundary_map, k, q, direction,
+                  rep, boundary_map, k, q, direction,
                   q_pos, next_vertex)
             @test DT.is_on(q_cert) && (u, v, w) == (index_map["h"], index_map["a"], index_map["s"])
             q = (0.0, 12.0)
             direction, q_pos, next_vertex = DT.check_for_intersections_with_adjacent_boundary_edges(pts,
                   adj,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q)
             q_cert, u, v, w = DT.search_down_adjacent_boundary_edges(pts, adj, boundary_index_ranges,
-                  boundary_map, k, q, direction,
+                  rep, boundary_map, k, q, direction,
                   q_pos, next_vertex)
             @test DT.is_on(q_cert) && (u, v, w) == (index_map["g"], index_map["h"], index_map["b1"])
             q = (0.0, 20.0)
             direction, q_pos, next_vertex = DT.check_for_intersections_with_adjacent_boundary_edges(pts,
                   adj,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q)
             q_cert, u, v, w = DT.search_down_adjacent_boundary_edges(pts, adj, boundary_index_ranges,
-                  boundary_map, k, q, direction,
+                  rep, boundary_map, k, q, direction,
                   q_pos, next_vertex)
             @test DT.is_on(q_cert) && (u, v, w) == (index_map["g"], index_map["h"], index_map["b1"])
             q = (0.0, 22.0)
             direction, q_pos, next_vertex = DT.check_for_intersections_with_adjacent_boundary_edges(pts,
                   adj,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q)
             q_cert, u, v, w = DT.search_down_adjacent_boundary_edges(pts, adj, boundary_index_ranges,
-                  boundary_map, k, q, direction,
+                  rep, boundary_map, k, q, direction,
                   q_pos, next_vertex)
             @test DT.is_outside(q_cert) &&
                   (u, v, w) == (index_map["g"], index_map["f"], DT.BoundaryIndex)
             @inferred DT.search_down_adjacent_boundary_edges(pts, adj, boundary_index_ranges,
-                  boundary_map, k, q, direction, q_pos,
+                  rep, boundary_map, k, q, direction, q_pos,
                   next_vertex)
             q = (0.0, 0.0)
             direction, q_pos, next_vertex = DT.check_for_intersections_with_adjacent_boundary_edges(pts,
                   adj,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q)
             q_cert, u, v, w = DT.search_down_adjacent_boundary_edges(pts, adj, boundary_index_ranges,
-                  boundary_map, k, q, direction,
+                  rep, boundary_map, k, q, direction,
                   q_pos, next_vertex)
             @test DT.is_on(q_cert) && (u, v, w) == (index_map["a"], index_map["b"], index_map["t"])
       end
@@ -261,7 +262,7 @@ graph = get_graph(tri)
             direction, q_pos, next_vertex, right_cert, left_cert = DT.check_for_intersections_with_adjacent_boundary_edges(pts,
                   adj,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q)
             @test DT.is_outside(direction)
@@ -269,7 +270,7 @@ graph = get_graph(tri)
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -287,9 +288,9 @@ graph = get_graph(tri)
                         dir, qp, _k, rc, ℓc = DT.check_for_intersections_with_adjacent_boundary_edges(tri.points,
                               tri.adjacent,
                               tri.boundary_index_ranges,
-                              boundary_map,
+                              rep, boundary_map,
                               k,
-                              get_point(tri.points,
+                              get_point(tri.points, rep,
                                     boundary_map,
                                     k))
                         @test DT.is_degenerate(qp)
@@ -310,14 +311,14 @@ end
             dir, dir_cert, id, rc, ℓc = DT.check_for_intersections_with_adjacent_boundary_edges(pts,
                   adj,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k, q)
             @test rc == right_cert && ℓc == left_cert
             i, j, edge_cert, tri_cert = DT.check_for_intersections_with_interior_edges_adjacent_to_boundary_node(pts,
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -325,7 +326,7 @@ end
             @inferred DT.check_for_intersections_with_interior_edges_adjacent_to_boundary_node(pts, adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k, q,
                   right_cert,
                   left_cert)
@@ -338,7 +339,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -352,7 +353,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -366,7 +367,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -380,7 +381,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -394,7 +395,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -402,7 +403,7 @@ end
             @inferred DT.check_for_intersections_with_interior_edges_adjacent_to_boundary_node(pts, adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k, q,
                   right_cert,
                   left_cert)
@@ -416,7 +417,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -430,7 +431,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -444,7 +445,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -458,7 +459,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -472,7 +473,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -486,7 +487,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -500,7 +501,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -514,7 +515,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -528,7 +529,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -542,7 +543,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -556,7 +557,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -564,7 +565,7 @@ end
             @inferred DT.check_for_intersections_with_interior_edges_adjacent_to_boundary_node(pts, adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k, q,
                   right_cert,
                   left_cert)
@@ -577,7 +578,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -591,7 +592,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -605,7 +606,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -619,7 +620,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -631,7 +632,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -645,7 +646,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -659,7 +660,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -677,7 +678,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -691,7 +692,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -705,7 +706,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -719,7 +720,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -733,7 +734,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -747,7 +748,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -761,7 +762,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -775,7 +776,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -789,7 +790,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -803,7 +804,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -817,7 +818,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -831,7 +832,7 @@ end
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
@@ -841,7 +842,7 @@ end
             @inferred DT.check_for_intersections_with_interior_edges_adjacent_to_boundary_node(pts, adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep,     boundary_map,
                   k, q,
                   right_cert,
                   left_cert)
@@ -853,14 +854,14 @@ end
             direction, q_pos, next_vertex, right_cert, left_cert = DT.check_for_intersections_with_adjacent_boundary_edges(pts,
                   adj,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep,  boundary_map,
                   k,
                   q)
             i, j, edge_cert, triangle_cert = DT.check_for_intersections_with_interior_edges_adjacent_to_boundary_node(pts,
                   adj,
                   graph,
                   boundary_index_ranges,
-                  boundary_map,
+                  rep, boundary_map,
                   k,
                   q,
                   right_cert,
