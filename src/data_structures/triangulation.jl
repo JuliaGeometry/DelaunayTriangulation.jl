@@ -398,7 +398,8 @@ Base.@constprop :aggressive function Triangulation(points::P;
     EdgesType::Type{Es}=Set{EdgeType},
     TrianglesType::Type{Ts}=Set{TriangleType},
     boundary_nodes::BN=IntegerType[],
-    constrained_edges=initialise_edges(EdgesType)) where {P,
+    constrained_edges=initialise_edges(EdgesType),
+    representative_point_list = get_empty_representative_points(IntegerType, number_type(points))) where {P,
     Ts,
     I,
     E,
@@ -414,7 +415,6 @@ Base.@constprop :aggressive function Triangulation(points::P;
     bn_range = construct_boundary_index_ranges(boundary_nodes; IntegerType=I)
     ch = ConvexHull(points, I[])
     all_constrained_edges = initialise_edges(EdgesType)#merge_constrained_edges(bn_map, boundary_nodes, constrained_edges)
-    representative_point_list = get_empty_representative_points(I, number_type(P))
     n = num_points(points)
     sizehint!(T, 2n - 5) # maximum number of triangles
     sizehint!(adj, 3n - 6) # maximum number of edges 

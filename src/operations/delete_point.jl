@@ -64,6 +64,7 @@ function _delete_boundary_point!(tri::Triangulation{P,Ts,I,E,Es,BN,BNM,B,BIR}, S
         TriangleType=triangle_type(Ts),
         EdgesType=Es,
         TrianglesType=Ts,
+        representative_point_list = get_representative_point_list(tri),
         rng,
         add_ghost_triangles=false,
         add_convex_hull=false,

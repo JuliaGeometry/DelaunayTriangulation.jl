@@ -40,6 +40,7 @@ function triangulate_convex(points, S;
     TriangleType::Type{V}=NTuple{3,IntegerType},
     EdgesType::Type{Es}=Set{EdgeType},
     TrianglesType::Type{Ts}=Set{TriangleType},
+    representative_point_list = get_empty_representative_points(IntegerType, number_type(points)),
     rng::AbstractRNG=Random.default_rng(),
     add_ghost_triangles=true,
     add_convex_hull=true,
@@ -50,7 +51,8 @@ function triangulate_convex(points, S;
         EdgeType,
         TriangleType,
         EdgesType,
-        TrianglesType)
+        TrianglesType,
+        representative_point_list)
     triangulate_convex!(tri, S;
         rng,
         add_ghost_triangles,
