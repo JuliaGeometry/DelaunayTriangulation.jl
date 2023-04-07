@@ -205,7 +205,7 @@ function point_position_relative_to_triangle(i, j, k, u, pts, representative_poi
         #is_collinear(edge_ca) && return Cert.On
         return Cert.Inside
 
-        # The collinear tests were deleted. It doesn't really make much sense to see if a point is 
+        # The collinear tests were deleted for the ghost edges. It doesn't really make much sense to see if a point is 
         # on the ghost edges. It's not like we can do anything with that information, and if we are using it then 
         # there's no point distinguishing between the two adjacent ghost triangles in that case.
     end
