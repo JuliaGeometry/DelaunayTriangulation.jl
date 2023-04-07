@@ -199,11 +199,15 @@ function point_position_relative_to_triangle(i, j, k, u, pts, representative_poi
         end
         edge_bc = point_position_relative_to_line(c, b, p) # Flipped to match centroid location
         is_right(edge_bc) && return Cert.Outside
-        is_collinear(edge_bc) && return Cert.On # Don't need to check that it's not on the (c, b) part, since we already know we're to the left of (a, b) at this point
+        #is_collinear(edge_bc) && return Cert.On # Don't need to check that it's not on the (c, b) part, since we already know we're to the left of (a, b) at this point
         edge_ca = point_position_relative_to_line(c, a, p)
         is_left(edge_ca) && return Cert.Outside
-        is_collinear(edge_ca) && return Cert.On
+        #is_collinear(edge_ca) && return Cert.On
         return Cert.Inside
+
+        # The collinear tests were deleted. It doesn't really make much sense to see if a point is 
+        # on the ghost edges. It's not like we can do anything with that information, and if we are using it then 
+        # there's no point distinguishing between the two adjacent ghost triangles in that case.
     end
 end
 function point_position_relative_to_triangle(T, u, pts, representative_point_list, boundary_map::AbstractDict)
