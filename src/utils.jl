@@ -229,7 +229,7 @@ end
 
 Given a set of `constrained_edges` and a `constrained_edge` in the set,
 and a vector of segments `collinear_segments` that are collinear with `constrained_edge`,
-replaces `constrained_edge` with those segments in `collinear_segments`.
+replaces `constrained_edge` with those segments in `collinear_segments`. 
 """
 function split_constrained_edge!(constrained_edges, constrained_edge::E, collinear_segments) where {E}
     if num_edges(collinear_segments) > 0
