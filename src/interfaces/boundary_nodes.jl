@@ -237,6 +237,12 @@ Base.@constprop :aggressive function construct_boundary_map(bn;
     return dict
 end
 
+"""
+    construct_boundary_edge_map(bn::A; IntegerType::Type{I}=Int64, EdgeType::Type{E}=NTuple{2,IntegerType}) where {A,I,E}
+
+Constructs a map that takes boundary edges `(i,j)` to a `Tuple` giving the edge's position in the corresponding 
+set of boundary nodes.
+"""
 function construct_boundary_edge_map(bn::A; IntegerType::Type{I}=Int64, EdgeType::Type{E}=NTuple{2,IntegerType}) where {A,I,E}
     if has_multiple_curves(bn)
         dict = Dict{E,Tuple{NTuple{2,I},I}}()
@@ -276,6 +282,26 @@ function construct_boundary_edge_map(bn::A; IntegerType::Type{I}=Int64, EdgeType
         end
     end
     return dict
+end
+
+"""
+    insert_boundary_node!(bn, pos, node)
+
+Inserts a boundary node `node` into the set of boundary nodes `bn` at the position pos`. The first element of `pos` 
+finds the set of boundary nodes that lie on the segment corresponding to this first element, and then the 
+second element of `pos` gives the position of the array to insert `node` into. In particular, 
+
+    insert_boundary_node!(bn, pos, node)
+
+is the same as 
+
+    insert!(get_boundary_nodes(bn, pos[1]), pos[2], node)
+""" 
+function insert_boundary_node! end 
+function insert_boundary_node!(bn, pos, node)
+    nodes = get_boundary_nodes(bn, pos[1])
+    insert!(nodes, pos[2], node)
+    return nothing
 end
 
 """

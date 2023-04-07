@@ -399,7 +399,7 @@ Base.@constprop :aggressive function Triangulation(points::P;
     TrianglesType::Type{Ts}=Set{TriangleType},
     boundary_nodes::BN=IntegerType[],
     constrained_edges=initialise_edges(EdgesType),
-    representative_point_list = get_empty_representative_points(IntegerType, number_type(points))) where {P,
+    representative_point_list=get_empty_representative_points(IntegerType, number_type(points))) where {P,
     Ts,
     I,
     E,
@@ -563,6 +563,37 @@ end
 end
 @inline function get_boundary_edge_map(tri::Triangulation, i, j)
     return get_boundary_edge_map(tri, construct_edge(edge_type(tri), i, j))
+end
+@inline function insert_boundary_node!(tri::Triangulation, pos, node)
+    bn = get_boundary_nodes(tri)
+    insert_boundary_node!(bn, pos, node)
+end
+@inline function split_boundary_edge!(tri::Triangulation, edge, node)
+    i, j = edge_indices(edge)
+    split_boundary_edge!(tri, i, j, node)
+    return nothing
+end
+@inline function split_boundary_edge!(tri::Triangulation, i, j, node)
+    pos = get_boundary_edge_map(tri, i, j)
+    new_pos = (pos[1], pos[2] + 1)
+    bnn = get_boundary_edge_map(tri)
+    insert_boundary_node!(tri, new_pos, node)
+    E = edge_type(tri)
+    delete!(bnn, construct_edge(E, i, j))
+    e1 = construct_edge(E, i, node)
+    e2 = construct_edge(E, node, j)
+    bnn[e1] = (pos[1], pos[2])
+    bnn[e2] = (pos[1], pos[2] + 1)
+    return nothing
+end
+@inline function contains_boundary_edge(tri::Triangulation, e)
+    bnn = get_boundary_edge_map(tri)
+    return e ∈ keys(bnn)
+end
+@inline function contains_boundary_edge(tri::Triangulation, i, j)
+    E = edge_type(tri)
+    e = construct_edge(E, i, j)
+    return contains_boundary_edge(tri, e)
 end
 
 # Convex Hull 
@@ -1205,6 +1236,30 @@ corresponding set of boundary indices for that curve.
 Gets the position of the boundary edge `(i, j)` in the set of boundary nodes 
 of the triangulation `tri`.
 """ get_boundary_edge_map(::Triangulation, ::Any, ::Any)
+
+@doc """
+    insert_boundary_node!(tri::Triangulation, pos, node)
+
+Given a triangulation `tri`, inserts a new boundary node `node` at the position 
+`get_boundary_nodes(get_boundary_nodes(tri, pos[1]), pos[2])`.
+""" insert_boundary_node!(::Triangulation, ::Any, ::Any)
+
+@doc """
+    split_boundary_edge!(tri::Triangulation, edge, node)
+    split_boundary_edge!(tri::Triangulation, i, j, node)
+
+Given a triangulation `tri` and a boundary edge `edge = (i, j)`, replaces the edge 
+with the new edges `(i, node)` and `(node, j)`, updating the boundary nodes and 
+boundary edge map fields accordingly.
+""" split_boundary_edge!(::Triangulation, ::Any, ::Any)
+
+@doc """
+    contains_boundary_edge(tri::Triangulation, i, j)
+    contains_boundary_edge(tri::Triangulation, e)
+
+Given an edge `e = (i, j)` and a triangulation `tri`, tests if the triangulation 
+contains the edge by checking if `e ∈ keys(get_boundary_edge_map(tri))`.
+""" contains_boundary_edge(::Triangulation, ::Any)
 
 @doc """
     get_convex_hull_indices(tri::Triangulation)

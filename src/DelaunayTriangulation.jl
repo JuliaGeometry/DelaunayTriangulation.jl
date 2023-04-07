@@ -326,6 +326,8 @@ corresponding docstrings for more information.
 - [`get_curve_index`](@ref): Makes use of the result from [`construct_boundary_map`](@ref).
 - [`get_segment_index`](@ref): Makes use of the result from [`construct_boundary_map`](@ref).
 - [`num_outer_boundary_segments`](@ref): Makes use of the existing methods.
+- [`construct_boundary_edge_map`](@ref): Makes use of the existing methods.
+- [`insert_boundary_node!`](@ref): Makes use of the existing methods. Assume a definition of `insert!` is given.
 """
 function Interfaces end
 

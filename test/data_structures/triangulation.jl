@@ -649,3 +649,49 @@ end
       @test DT.get_boundary_edge_map(tri, (97, 98)) == ((3, 1), 36)
       @test DT.get_boundary_edge_map(tri, (14, 15)) == ((2, 1), 2)
 end
+
+@testset "split_boundary_edge!" begin
+      x, y = complicated_geometry()
+      tri_1 = generate_mesh(x, y, 0.1; convert_result=true, add_ghost_triangles=true)
+      tri_2 = generate_mesh(x[1], y[1], 0.1; convert_result=true, add_ghost_triangles=true)
+      tri_3 = generate_mesh([0.0, 2.0, 2.0, 0.0, 0.0], [0.0, 0.0, 2.0, 2.0, 0.0], 0.1; convert_result=true, add_ghost_triangles=true)
+      tri_4 = generate_mesh(reverse(reverse.(x[2])), reverse(reverse.(y[2])), 0.1; convert_result=true, add_ghost_triangles=true)
+
+      DT.split_boundary_edge!(tri_1, (129, 130), 17)
+      @test tri_1.boundary_nodes[1][1][1:6] == [1, 128, 129, 17, 130, 131]
+      @test DT.get_boundary_edge_map(tri_1, 129, 17) == ((1, 1), 3)
+      @test DT.get_boundary_edge_map(tri_1, 17, 130) == ((1, 1), 4)
+      @test_throws KeyError DT.get_boundary_edge_map(tri, 129, 130)
+      DT.split_boundary_edge!(tri_1, (266, 267), 50)
+      @test tri_1.boundary_nodes[1][4][45:55] == [262, 263, 264, 265, 266, 50, 267, 268, 269, 270, 271]
+      @test DT.get_boundary_edge_map(tri_1, 266, 50) == ((1, 4), 49)
+      @test DT.get_boundary_edge_map(tri_1, 50, 267) == ((1, 4), 50)
+      @test_throws KeyError DT.get_boundary_edge_map(tri_1, 266, 267)
+      DT.split_boundary_edge!(tri_1, (373, 374), 1777)
+      @test tri_1.boundary_nodes[5][1][36:41] == [371, 372, 373, 1777, 374, 375]
+      @test DT.get_boundary_edge_map(tri_1, 373, 1777) == ((5, 1), 38)
+      @test DT.get_boundary_edge_map(tri_1, 1777, 374) == ((5, 1), 39)
+      @test_throws KeyError DT.get_boundary_edge_map(tri_1, 373, 374)
+
+      DT.split_boundary_edge!(tri_2, 87, 7, 8182)
+      @test tri_2.boundary_nodes[2][58:62] == [85, 86, 87, 8182, 7]
+      @test DT.get_boundary_edge_map(tri_2, 87, 8182) == (2, 60)
+      @test DT.get_boundary_edge_map(tri_2, 8182, 7) == (2, 61)
+      @test_throws KeyError DT.get_boundary_edge_map(tri_2, 87, 7)
+      DT.split_boundary_edge!(tri_2, 10, 106, 5000)
+      @test tri_2.boundary_nodes[4][1:4] == [10, 5000, 106, 107]
+      @test DT.get_boundary_edge_map(tri_2, 10, 5000) == (4, 1)
+      @test DT.get_boundary_edge_map(tri_2, 5000, 106) == (4, 2)
+      @test_throws KeyError DT.get_boundary_edge_map(tri_2, 10, 106)
+
+      DT.split_boundary_edge!(tri_3, 79, 80, 18289)
+      @test tri_3.boundary_nodes[79:82] == [79, 18289, 80, 1]
+      @test DT.get_boundary_edge_map(tri_3, 79, 18289) == (tri_3.boundary_nodes, 79)
+      @test DT.get_boundary_edge_map(tri_3, 18289, 80) == (tri_3.boundary_nodes, 80)
+      @test_throws KeyError DT.get_boundary_edge_map(tri_3, 79, 80)
+      
+      DT.split_boundary_edge!(tri_4, 6, 7, 1200)
+      @test DT.get_boundary_edge_map(tri_4, 6, 1200) == (1, 6)
+      @test DT.get_boundary_edge_map(tri_4, 1200, 7) == (1, 7)
+      @test_throws KeyError DT.get_boundary_edge_map(tri_4, 6, 7)
+end

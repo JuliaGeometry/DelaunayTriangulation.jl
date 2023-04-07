@@ -179,3 +179,30 @@ end
        @test bn_map == Dict{Tuple{Int32,Int32},Tuple{Vector{Int64},Int64}}()
 end
 
+@testset "insert_boundary_node!" begin
+       bn = [1, 2, 3, 4, 5, 6, 7, 1]
+       DT.insert_boundary_node!(bn, (bn, 5), 17)
+       DT.insert_boundary_node!(bn, (bn, 1), 13)
+       @test bn == [13, 1, 2, 3, 4, 17, 5, 6, 7, 1]
+       bn = [[1, 2, 3, 4], [4, 5, 6, 7, 8], [8, 9, 10, 1]]
+       DT.insert_boundary_node!(bn, (1, 2), 9)
+       DT.insert_boundary_node!(bn, (1, 4), 18)
+       DT.insert_boundary_node!(bn, (2, 4), 23)
+       DT.insert_boundary_node!(bn, (3, 1), 5)
+       @test bn == [[1, 9, 2, 18, 3, 4], [4, 5, 6, 23, 7, 8], [5, 8, 9, 10, 1]]
+       bn = [
+              [[1, 2, 3, 4, 5], [5, 6, 7], [7, 8], [8, 9, 10, 1]],
+              [[13, 14, 15, 16, 17], [17, 18, 19, 20], [20, 13]]
+       ]
+       DT.insert_boundary_node!(bn, ((1, 1), 1), 17)
+       DT.insert_boundary_node!(bn, ((1, 2), 3), 38)
+       DT.insert_boundary_node!(bn, ((1, 3), 2), 50)
+       DT.insert_boundary_node!(bn, ((1, 4), 3), 67)
+       DT.insert_boundary_node!(bn, ((2, 1), 3), 500)
+       DT.insert_boundary_node!(bn, ((2, 2), 3), 87)
+       DT.insert_boundary_node!(bn, ((2, 3), 2), 671)
+       @test bn == [
+              [[17, 1, 2, 3, 4, 5], [5, 6, 38, 7], [7, 50, 8], [8, 9, 67, 10, 1]],
+              [[13, 14, 500, 15, 16, 17], [17, 18, 87, 19, 20], [20, 671, 13]]
+       ]
+end
