@@ -25,3 +25,4 @@ rng = StableRNG(8888)
     @test get_graph(tri) == get_graph(_tri)
     @test get_convex_hull(tri) == get_convex_hull(_tri)
 end
+
