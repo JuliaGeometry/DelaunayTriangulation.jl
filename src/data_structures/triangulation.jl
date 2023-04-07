@@ -741,6 +741,7 @@ end
 @inline each_point(tri::Triangulation) = each_point(get_points(tri))
 @inline num_points(tri::Triangulation) = num_points(get_points(tri))
 @inline push_point!(tri::Triangulation, x, y) = push_point!(get_points(tri), x, y)
+@inline push_point!(tri::Triangulation, p) = push_point!(get_points(tri), p)
 
 abstract type AbstractEachVertex{V} end
 Base.IteratorSize(::Type{<:AbstractEachVertex}) = Base.HasLength()
@@ -1445,8 +1446,9 @@ See also [`num_vertices`](@ref).
 
 @doc """
     push_point!(tri::Triangulation, x, y)
+    push_point!(tri::Triangulation, p)
 
-Pushes the point `(x, y)` into the `points` field of the triangulation `tri`.
+Pushes the point `p = (x, y)` into the `points` field of the triangulation `tri`.
 """ push_point!(::Triangulation, ::Any, ::Any)
 
 @doc """

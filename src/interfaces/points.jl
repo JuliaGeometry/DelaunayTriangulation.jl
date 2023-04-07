@@ -217,14 +217,19 @@ lexicographic_order(pts) = (sortperm ∘ collect ∘ each_point)(pts)
 Pushes the point `(x, y)` into `pts`. The only methods currently 
 defined are  
 
-    push_point!(pts::AbstractVector{T}, x, y) where {F,T<:NTuple{2,F}} = (@show x, y; push!(pts, (F(x), F(y))))
+    push_point!(pts::AbstractVector{T}, x, y) where {F,T<:NTuple{2,F}} = push!(pts, (F(x), F(y)))
     push_point!(pts::AbstractVector{T}, x, y) where {F<:Number,T<:AbstractVector{F}} = push!(pts, F[x, y])
 
-You can extend this function as needed.
+You can extend this function as needed. We also provide the method 
+
+    push_point!(pts, p) = push_point!(pts, getx(p), gety(p))
+
+which you can extend if you have a point type `p` that has `getx` and `gety`.
 """
 function push_point! end
-function push_point!(::P, ::Any) where {P}
+function push_point!(::P, ::Any, ::Any) where {P}
     return error("The push_point! function has not been defined for the collection type $P.")
 end
 push_point!(pts::AbstractVector{T}, x, y) where {F,T<:NTuple{2,F}} = push!(pts, (F(x), F(y)))
 push_point!(pts::AbstractVector{T}, x, y) where {F<:Number,T<:AbstractVector{F}} = push!(pts, F[x, y])
+push_point!(pts, p) = push_point!(pts, getx(p), gety(p))
