@@ -416,6 +416,78 @@ function test_constrained_edges(tri)
     return true
 end
 
+function test_boundary_edge_map_matches_boundary_nodes(tri::Triangulation)
+    boundary_edge_map = DT.get_boundary_edge_map(tri)
+    for (edge, pos) in boundary_edge_map
+        flag = DT.get_boundary_nodes(DT.get_boundary_nodes(tri, pos[1]), pos[2]) == DT.initial(edge)
+        if !flag
+            println("Validation of the boundary edge map failed as the edge $edge, mapping to $pos, did not correspond to the correct edge in the boundary nodes.")
+            return false
+        end
+    end
+    return true
+end
+
+function test_boundary_nodes_matches_boundary_edge_map(tri::Triangulation)
+    boundary_nodes = DT.get_boundary_nodes(tri)
+    boundary_edge_map = DT.get_boundary_edge_map(tri)
+    E = DT.edge_type(tri)
+    if DT.has_multiple_curves(tri)
+        nc = DT.num_curves(tri)
+        for i in 1:nc
+            curve_nodes = get_boundary_nodes(tri, i)
+            ns = DT.num_segments(curve_nodes)
+            for j in 1:ns
+                segment_nodes = get_boundary_nodes(curve_nodes, j)
+                ne = DT.num_boundary_edges(segment_nodes)
+                for k in 1:ne
+                    left_node = get_boundary_nodes(segment_nodes, k)
+                    right_node = get_boundary_nodes(segment_nodes, k + 1)
+                    edge = DT.construct_edge(E, left_node, right_node)
+                    pos = DT.get_boundary_edge_map(tri, edge)
+                    flag = pos == ((i, j), k)
+                    if !flag
+                        println("Validation of the boundary nodes failed as the edge $edge, located at $(((i, j), k)), was not correctly mapped to by the boundary edge map, instead giving $pos.")
+                        return false
+                    end
+                end
+            end
+        end
+    elseif DT.has_multiple_segments(tri)
+        ns = DT.num_segments(tri)
+        for i in 1:ns
+            segment_nodes = get_boundary_nodes(tri, i)
+            ne = DT.num_boundary_edges(segment_nodes)
+            for j in 1:ne
+                left_node = get_boundary_nodes(segment_nodes, j)
+                right_node = get_boundary_nodes(segment_nodes, j + 1)
+                edge = DT.construct_edge(E, left_node, right_node)
+                pos = DT.get_boundary_edge_map(tri, edge)
+                flag = pos == (i, j)
+                if !flag
+                    println("Validation of the boundary nodes failed as the edge $edge, located at $((i, j)), was not correctly mapped to by the boundary edge map, instead giving $pos.")
+                    return false
+                end
+            end
+        end
+    else
+        ne = DT.num_boundary_edges(boundary_nodes)
+        for i in 1:ne
+            left_node = get_boundary_nodes(boundary_nodes, i)
+            right_node = get_boundary_nodes(boundary_nodes, i + 1)
+            edge = DT.construct_edge(E, left_node, right_node)
+            pos = DT.get_boundary_edge_map(tri, edge)
+            flag = pos == (get_boundary_nodes(tri), i)
+            if !flag
+                println("Validation of the boundary nodes failed as the edge $edge, located at $((get_boundary_nodes(tri), i)), was not correctly mapped to by the boundary edge map, instead giving $pos.")
+                return false
+            end
+        end
+    end
+    return true
+end
+
+
 function validate_triangulation(_tri::Triangulation) # doesn't work for non-convex. need to find a better way
     tri = deepcopy(_tri)
     DT.delete_ghost_triangles!(tri)
@@ -433,7 +505,9 @@ function validate_triangulation(_tri::Triangulation) # doesn't work for non-conv
            test_graph_matches_adjacent_map(tri) &&
            test_graph_matches_triangles(tri) &&
            test_adjacent_map_matches_graph(tri) &&
-           test_constrained_edges(tri)
+           test_constrained_edges(tri) &&
+           test_boundary_edge_map_matches_boundary_nodes(tri) &&
+           test_boundary_nodes_matches_boundary_edge_map(tri)
 end
 
 macro _adj(i, j, k)
@@ -753,4 +827,23 @@ function second_shewchuk_example_constrained()
         p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24,
         p25, p26, p27, p28]
     return pts, Set(C)
+end
+
+function example_for_testing_add_point_on_constrained_triangulation()
+    A = [0; 3]
+    B = [4; 0]
+    C = [7; 6]
+    D = [-4; 8]
+    E = [-2; 5]
+    F = [-3; -2]
+    G = [6; -4]
+    H = [4; 4]
+    I = [3; 7]
+    J = [-3; 3]
+    K = [1; 1]
+    L = [5; 3]
+    M = [2; 2]
+    N = [1.6; 2]
+    P = [A, B, C, D, E, F, G, H, I, J, K, L, M, N]
+    return P, Set([(1, 2)])
 end

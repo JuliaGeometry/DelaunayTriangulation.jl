@@ -246,12 +246,14 @@ end
     @test history.collinear_segments == NTuple{2,Int64}[]
     @test history.left_vertices == Int64[]
     @test history.right_vertices == Int64[]
+    @test history.collinear_point_indices == Int64[]
     DT.add_triangle!(history, 2, 3, 4)
     DT.add_edge!(history, 7, 14)
     DT.add_left_vertex!(history, 10)
     DT.add_right_vertex!(history, 20)
     @test history.triangles == [(2, 3, 4)]
     @test history.collinear_segments == [(7, 14)]
+    @test num_edges(history) == 1
     @test history.left_vertices == [10]
     @test history.right_vertices == [20]
     DT.add_left_vertex!(history, 17)
@@ -260,5 +262,12 @@ end
     DT.add_right_vertex!(history, 29)
     @test history.left_vertices == [10, 17, 19]
     @test history.right_vertices == [20, 12, 29]
+    add_edge!(history, 37, 23)
+    add_edge!(history, 50, 101)
+    @test num_edges(history) == 3
+    DT.add_index!(history, 2)
+    DT.add_index!(history, 7)
+    DT.add_index!(history, 13)
+    @test history.collinear_point_indices == [2, 7, 13]
 end
 

@@ -596,3 +596,26 @@ end
             "th"
       ]
 end
+
+@testset "fix_segment!" begin
+      c = [(2, 15), (2, 28), (2, 41), (2, 54)]
+      bad_indices = [1, 2, 3, 4]
+      DT.fix_segments!(c, bad_indices)
+      @test c == [(2, 15), (15, 28), (28, 41), (41, 54)]
+      c = [(2, 15), (15, 28), (28, 41), (2, 54)]
+      bad_indices = [1, 4]
+      DT.fix_segments!(c, bad_indices)
+      @test c == [(2, 15), (15, 28), (28, 41), (41, 54)]
+      c = [(2, 15), (15, 28), (2, 41), (41, 54)]
+      bad_indices = [1, 3]
+      DT.fix_segments!(c, bad_indices)
+      @test c == [(2, 15), (15, 28), (28, 41), (41, 54)]
+      c = [(2, 15), (15, 28), (2, 41), (41, 54)]
+      bad_indices = [3]
+      DT.fix_segments!(c, bad_indices)
+      @test c == [(2, 15), (15, 28), (28, 41), (41, 54)]
+      c = [(2, 7), (2, 12), (12, 17), (2, 22), (2, 27), (2, 32), (32, 37), (2, 42), (42, 47)]
+      bad_indices = [2, 4, 5, 6, 8]
+      DT.fix_segments!(c, bad_indices)
+      @test c == [(2, 7), (7, 12), (12, 17), (17, 22), (22, 27), (27, 32), (32, 37), (37, 42), (42, 47)]
+end

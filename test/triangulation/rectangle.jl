@@ -14,10 +14,10 @@ save_path = basename(pwd()) == "test" ? "figures" : "test/figures"
     fig, ax, sc = triplot(tri; recompute_centers=true, show_ghost_edges=true)
     xlims!(ax, a - 0.5, b + 0.5)
     ylims!(ax, c - 0.5, d + 0.5)
-    lines!(ax, tri.points[:, tri.boundary_nodes[1]]; linewidth=4)
-    lines!(ax, tri.points[:, tri.boundary_nodes[2]]; linewidth=4)
-    lines!(ax, tri.points[:, tri.boundary_nodes[3]]; linewidth=4)
-    lines!(ax, tri.points[:, tri.boundary_nodes[4]]; linewidth=4)
+    lines!(ax, tri.points[tri.boundary_nodes[1]]; linewidth=4)
+    lines!(ax, tri.points[tri.boundary_nodes[2]]; linewidth=4)
+    lines!(ax, tri.points[tri.boundary_nodes[3]]; linewidth=4)
+    lines!(ax, tri.points[tri.boundary_nodes[4]]; linewidth=4)
     SAVE_FIGURE && save("$save_path/rectangular_triangulation_1.png", fig)
     @test tri.boundary_nodes[1] == 1:20
     @test tri.boundary_nodes[2] == 20:20:200

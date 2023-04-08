@@ -346,14 +346,14 @@ function remake_triangulation_with_constraints(tri::Triangulation{P,Ts,I,E,Es,BN
     all_constrained_edges = get_all_constrained_edges(tri)
     convex_hull = get_convex_hull(tri)
     representative_point_list = get_representative_point_list(tri)
-    return boundary_edge_map, bn_map, bn_range, Triangulation(
+    return bn_map, bn_range, Triangulation(
         points,
         triangles,
         adjacent,
         adjacent2vertex,
         graph,
         boundary_nodes,
-        get_boundary_edge_map(tri),
+        boundary_edge_map,
         get_boundary_map(tri), # Delay putting these in until we are done with the triangulation
         get_boundary_index_ranges(tri),
         constrained_edges,
@@ -362,7 +362,7 @@ function remake_triangulation_with_constraints(tri::Triangulation{P,Ts,I,E,Es,BN
         representative_point_list)
 end
 
-function replace_boundary_dict_information(tri::Triangulation, bnn_map, bn_map, bn_range)
+function replace_boundary_dict_information(tri::Triangulation, bn_map, bn_range)
     points = get_points(tri)
     triangles = get_triangles(tri)
     adjacent = get_adjacent(tri)
@@ -371,6 +371,7 @@ function replace_boundary_dict_information(tri::Triangulation, bnn_map, bn_map, 
     boundary_nodes = get_boundary_nodes(tri)
     constrained_edges = get_constrained_edges(tri)
     all_constrained_edges = get_all_constrained_edges(tri)
+    bnn_map = get_boundary_edge_map(tri)
     convex_hull = get_convex_hull(tri)
     representative_point_list = get_representative_point_list(tri)
     return Triangulation(
@@ -580,10 +581,37 @@ end
     insert_boundary_node!(tri, new_pos, node)
     E = edge_type(tri)
     delete!(bnn, construct_edge(E, i, j))
-    e1 = construct_edge(E, i, node)
-    e2 = construct_edge(E, node, j)
-    bnn[e1] = (pos[1], pos[2])
-    bnn[e2] = (pos[1], pos[2] + 1)
+    # When we add in a new node, we still have to modify the whole set of nodes to the right, shifting their index by 1.
+    # I wonder if we should use a better data structure this, but alas.
+    nodes = get_boundary_nodes(tri, pos[1])
+    ne = num_boundary_edges(nodes)
+    for k in pos[2]:ne
+        u = get_boundary_nodes(nodes, k)
+        v = get_boundary_nodes(nodes, k + 1)
+        e = construct_edge(E, u, v)
+        bnn[e] = (pos[1], k)
+    end
+    return nothing
+end
+@inline function split_boundary_edge_at_collinear_segments!(tri::Triangulation, collinear_segments)
+    # To understand this function, consider for example a segment (u, v) such that the points r₁, …, r₅ 
+    # are collinear with u and v. We want to split the boundary edge (u, v) into 5 edges, each of which
+    # is collinear with the points r₁, …, r₅. We assume that u < r₁ < ⋯ < r₅ < v. With this setup, we can first split 
+    # (u, v) at r₁, then split (r₁, v) at r₂, and so on: 
+    #   u -------------------------------- v
+    #   u -- r₁ -------------------------- v -> split(r₀, v, r₁) 
+    #   u -- r₁ -- r₂ -------------------- v -> split(r₁, v, r₂)
+    #   u -- r₁ -- r₂ -- r₃ -------------- v -> split(r₂, v, r₃)
+    #   u -- r₁ -- r₂ -- r₃ -- r₄ -------- v -> split(r₃, v, r₄)
+    #   u -- r₁ -- r₂ -- r₃ -- r₄ -- r₅ -- v -> split(r₄, v, r₅),
+    # letting u = r₀. 
+    v = terminal(last(collinear_segments))
+    for k in (firstindex(collinear_segments)):(lastindex(collinear_segments)-1)
+        segment = collinear_segments[k]
+        rₖ₋₁ = initial(segment)
+        rₖ = terminal(segment)
+        split_boundary_edge!(tri, rₖ₋₁, v, rₖ)
+    end
     return nothing
 end
 @inline function contains_boundary_edge(tri::Triangulation, e)
@@ -879,7 +907,7 @@ function jump_and_march(tri::Triangulation, q;
 end
 
 ## Segment Location
-function locate_intersecting_triangles(tri::Triangulation, e;
+function locate_intersecting_triangles(tri::Triangulation, e, rotate=Val(true);
     check_existence::C=Val(has_multiple_segments(tri)),
     rng::AbstractRNG=Random.default_rng()) where {C}
     pts = get_points(tri)
@@ -900,6 +928,7 @@ function locate_intersecting_triangles(tri::Triangulation, e;
         boundary_map,
         T,
         check_existence,
+        rotate,
         rng)
 end
 
@@ -1253,6 +1282,18 @@ Given a triangulation `tri` and a boundary edge `edge = (i, j)`, replaces the ed
 with the new edges `(i, node)` and `(node, j)`, updating the boundary nodes and 
 boundary edge map fields accordingly.
 """ split_boundary_edge!(::Triangulation, ::Any, ::Any)
+
+@doc """
+    split_boundary_edge_at_collinear_segments(tri::Triangulation, collinear_segments)
+    split_boundary_edge_at_collinear_segments(tri::Triangulation, collinear_segments)
+
+Given a triangulation `tri` and a a set of `collinear_segments` that 
+represent collinearity with a boundary edge `(u, v)`, splits the boundary edge at the collinear segments, updating the
+boundary nodes and boundary edge map fields accordingly.
+
+It is assumed that the collinear segments are sorted in the order that they appear in the boundary edge, 
+and `(initial(collinear_segments[begin]), terminal(collinear_segments[end])) == (u, v)`.
+""" split_boundary_edge_at_collinear_segments(::Triangulation, ::Any)
 
 @doc """
     contains_boundary_edge(tri::Triangulation, i, j)

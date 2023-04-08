@@ -205,8 +205,8 @@ end
         _T1c = Set([(11, 7, 12), (6, 3, 7), (23, 26, 22), (17, 18, 22), (3, 6, 2), (38, 42, 37), (12, 7, 8), (37, 32, 38), (42, 38, 43), (31, 28, 32), (31, 27, 28), (13, 17, 12), (36, 32, 37), (42, 43, 47), (6, 7, 11), (17, 13, 18), (31, 32, 36), (17, 22, 21), (26, 27, 31), (26, 23, 27)])
         _T1d = Set([(11, 7, 12), (6, 3, 7), (23, 26, 22), (42, 41, 37), (3, 6, 2), (12, 7, 8), (37, 32, 38), (31, 28, 32), (41, 42, 46), (17, 16, 12), (22, 17, 18), (31, 27, 28), (46, 42, 47), (36, 32, 37), (6, 7, 11), (21, 17, 22), (31, 32, 36), (26, 27, 31), (16, 17, 21), (26, 23, 27)])
         crossed_triangles[1] = (_T1a, _T1b, _T1c, _T1d)
-        collinear_segments[1] = [(2, 7), (7, 12), (12, 17), (17, 22), (22, 32), (32, 37), (37, 42), (42, 47)]
-        constrained_edges[1] = Set(((7, 12), (12, 17), (17, 22), (32, 37), (37, 42), (42, 47), (22, 32), (2, 7)))
+        collinear_segments[1] = [(2, 7), (7, 12), (12, 17), (17, 22), (22, 27), (27, 32), (32, 37), (37, 42), (42, 47)]
+        constrained_edges[1] = [(7, 12), (12, 17), (17, 22), (22, 27), (27, 32), (32, 37), (37, 42), (42, 47), (2, 7)] |> unique
 
         e[2] = (4, 49)
         _T2a = Set([(9, 8, 4), (10, 13, 9), (23, 19, 24), (44, 48, 43), (33, 34, 39), (14, 18, 13), (44, 43, 39), (15, 18, 14), (48, 44, 49), (29, 24, 25), (19, 23, 18), (30, 33, 29), (44, 39, 40), (29, 33, 28), (29, 28, 24), (34, 33, 30), (14, 13, 10), (9, 13, 8), (19, 18, 15)])
@@ -214,8 +214,8 @@ end
         _T2c = Set([(10, 13, 9), (44, 48, 43), (33, 34, 39), (44, 43, 39), (15, 14, 10), (15, 18, 14), (48, 44, 49), (29, 24, 25), (30, 33, 29), (44, 39, 40), (29, 33, 28), (29, 28, 24), (19, 20, 24), (34, 33, 30), (20, 19, 15), (10, 14, 13), (10, 9, 4), (15, 19, 18)])
         _T2d = Set([(9, 8, 4), (10, 13, 9), (23, 19, 24), (44, 48, 43), (30, 34, 33), (14, 18, 13), (44, 43, 39), (24, 29, 28), (35, 34, 30), (15, 18, 14), (48, 44, 49), (34, 35, 39), (19, 23, 18), (25, 29, 24), (30, 33, 29), (44, 39, 40), (14, 13, 10), (30, 29, 25), (9, 13, 8), (19, 18, 15)])
         crossed_triangles[2] = (_T2a, _T2b, _T2c, _T2d)
-        collinear_segments[2] = [(49, 44), (44, 39), (39, 34), (34, 29), (29, 24), (24, 19), (19, 9), (9, 4)]
-        constrained_edges[2] = Set(((7, 12), (12, 17), (17, 22), (32, 37), (37, 42), (42, 47), (22, 32), (2, 7), (4, 9), (9, 19), (19, 24), (24, 29), (29, 34), (34, 39), (39, 44), (44, 49)))
+        collinear_segments[2] = [(49, 44), (44, 39), (39, 34), (34, 29), (29, 24), (24, 19), (19, 14), (14, 9), (9, 4)]
+        constrained_edges[2] = append!(constrained_edges[1] |> copy, collinear_segments[2]) |> unique
 
         e[3] = (29, 37)
         _T3a = Set([(38, 32, 33), (30, 33, 29), (32, 38, 37), (39, 33, 34), (34, 33, 30), (38, 33, 39)])
@@ -223,28 +223,29 @@ end
         _T3c = Set([(28, 33, 32), (32, 38, 37), (33, 28, 29), (32, 33, 38)])
         crossed_triangles[3] = (_T3a, _T3b, _T3c)
         collinear_segments[3] = ([(37, 33), (33, 29)], [(29, 33), (33, 37)])
-        constrained_edges[3] = Set(((7, 12), (12, 17), (17, 22), (32, 37), (2, 7), (37, 42), (42, 47), (22, 32), (4, 9), (9, 19), (19, 24), (24, 29), (29, 34), (34, 39), (39, 44), (44, 49), (37, 33), (33, 29)))
+        constrained_edges[3] = append!(constrained_edges[2] |> copy, collinear_segments[3][1]) |> unique
 
         e[4] = (2, 32)
         _T4a = Set([(11, 7, 12), (6, 3, 7), (23, 26, 22), (3, 6, 2), (12, 7, 8), (31, 28, 32), (17, 16, 12), (22, 17, 18), (31, 27, 28), (6, 7, 11), (21, 17, 22), (26, 27, 31), (16, 17, 21), (26, 23, 27)])
         _T4b = Set([(11, 7, 12), (6, 3, 7), (23, 26, 22), (17, 18, 22), (3, 6, 2), (12, 7, 8), (31, 28, 32), (31, 27, 28), (13, 17, 12), (6, 7, 11), (17, 13, 18), (17, 22, 21), (26, 27, 31), (26, 23, 27)])
         crossed_triangles[4] = (_T4a, _T4b)
         collinear_segments[4] = [(2, 7), (7, 12), (12, 17), (17, 22), (22, 27), (27, 32)]
-        constrained_edges[4] = Set(((7, 12), (12, 17), (17, 22), (2, 7), (27, 32), (22, 27), (7, 12), (12, 17), (17, 22), (22, 32), (32, 37), (32, 37), (2, 7), (37, 42), (42, 47), (22, 32), (4, 9), (9, 19), (19, 24), (24, 29), (29, 34), (34, 39), (39, 44), (44, 49), (37, 33), (33, 29)))
+        constrained_edges[4] = append!(constrained_edges[3] |> copy, collinear_segments[4]) |> unique
 
         e[5] = (5, 13)
         _T5a = Set([(8, 9, 13), (4, 10, 9), (10, 4, 5), (4, 9, 8)])
         crossed_triangles[5] = Set([(8, 9, 13), (4, 10, 9), (10, 4, 5), (4, 9, 8)])
         collinear_segments[5] = [(5, 9), (9, 13)]
-        constrained_edges[5] = Set(((7, 12), (5, 9), (9, 13), (12, 17), (17, 22), (2, 7), (7, 12), (12, 17), (17, 22), (22, 32), (32, 37), (32, 37), (2, 7), (37, 42), (42, 47), (22, 32), (4, 9), (9, 19), (19, 24), (24, 29), (29, 34), (34, 39), (39, 44), (44, 49), (37, 33), (33, 29)))
+        constrained_edges[5] = append!(constrained_edges[4] |> copy, collinear_segments[5]) |> unique
 
         e[6] = (3, 20)
         _T6 = Set([(18, 22, 17), (23, 18, 19), (23, 19, 24), (22, 18, 23)])
         crossed_triangles[6] = Set([(10, 13, 9), (15, 18, 14), (19, 15, 20), (4, 8, 3), (9, 13, 8), (15, 19, 18), (10, 14, 13), (15, 14, 10), (9, 8, 4)])
         collinear_segments[6] = []
-        constrained_edges[6] = Set(((7, 12), (5, 9), (3, 20), (9, 13), (12, 17), (17, 22), (2, 7), (7, 12), (12, 17), (17, 22), (22, 32), (32, 37), (32, 37), (2, 7), (37, 42), (42, 47), (22, 32), (4, 9), (9, 19), (19, 24), (24, 29), (29, 34), (34, 39), (39, 44), (44, 49), (37, 33), (33, 29)))
+        constrained_edges[6] = append!(constrained_edges[5] |> copy, collinear_segments[6]) |> unique
+        push!(constrained_edges[6], (3, 20))
 
-        for _ in 1:250
+        for i in 1:250
             tri = triangulate_rectangle(a, b, c, d, nx, ny)
             DT.flip_edge!(tri, 34, 38)
             DT.flip_edge!(tri, 2, 7)
@@ -256,7 +257,7 @@ end
             DT.flip_edge!(tri, 14, 19)
             DT.flip_edge!(tri, 29, 34)
             for (e, T, cs, c) in zip(e, crossed_triangles, collinear_segments, constrained_edges)
-                test_segment_triangle_intersections(tri, e, T, cs, nothing)
+                test_segment_triangle_intersections(tri, e, T, cs, c)
             end
         end
     end
@@ -313,4 +314,30 @@ end
         DT.extend_segments!(collinear_segments, e)
         @test collinear_segments == [(23, 47), (47, 71)]
     end
+end
+
+@testset "Some other previously broken examples, dealing with segments going through points without passing through segments" begin
+    tri = triangulate_rectangle(0, 5, 0, 10, 6, 11; add_ghost_triangles=true)
+    e = (14, 40)
+    history = DT.PointLocationHistory{NTuple{3,Int64},NTuple{2,Int64},Int64}()
+    jump_and_march(tri.points, tri.adjacent, tri.adjacent2vertex, tri.graph,
+        tri.boundary_index_ranges, DT.get_representative_point_list(tri), tri.boundary_map, get_point(tri, 40);
+        m=nothing, k=14, TriangleType=NTuple{3,Int64}, store_history=true, history=history)
+    collinear_segments = history.collinear_segments
+    DT.fix_segments!(collinear_segments, history.collinear_point_indices)
+    DT.connect_segments!(collinear_segments)
+    DT.extend_segments!(collinear_segments, e)
+    @test collinear_segments == [(14, 27), (27, 40)]
+
+    e = (2, 54)
+    history = DT.PointLocationHistory{NTuple{3,Int64},NTuple{2,Int64},Int64}()
+    jump_and_march(tri.points, tri.adjacent, tri.adjacent2vertex, tri.graph,
+        tri.boundary_index_ranges, DT.get_representative_point_list(tri), tri.boundary_map, get_point(tri, 54);
+        m=nothing, k=2, TriangleType=NTuple{3,Int64}, store_history=true, history=history)
+    collinear_segments = history.collinear_segments
+    bad_indices = history.collinear_point_indices
+    DT.fix_segments!(collinear_segments, bad_indices)
+    DT.connect_segments!(collinear_segments)
+    DT.extend_segments!(collinear_segments, e)
+    @test collinear_segments == [(2, 15), (15, 28), (28, 41), (41, 54)]
 end

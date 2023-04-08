@@ -247,6 +247,46 @@ function split_constrained_edge!(constrained_edges, constrained_edge::E, colline
 end
 
 """
+    fix_segments!(segments::AbstractVector{E}, bad_indices) where {E}
+
+If we have edges in `segments` that are `bad`, meaning are not valid edges, found via 
+`bad_indices`, this function fixes them.
+
+For example, if we had 
+
+```julia-repl
+julia> c = [(2, 15), (2, 28), (2, 41)]
+```
+
+then these edges come from connecting the start of a constrained segment with a point that 
+it goes through, but they are not actual segments in the triangulation (because they 
+all start with 2). So, using `bad_indices = [1, 2, 3]`, the function mutates `c` 
+to give 
+
+```julia-repl
+julia> bad_indices = [1, 2, 3]
+julia> fix_segments!(c, bad_indices)
+julia> c
+3-element Vector{Tuple{Int64, Int64}}:
+ (2, 15)
+ (15, 28)
+ (28, 41)
+```
+"""
+function fix_segments!(segments::AbstractVector{E}, bad_indices) where {E}
+    for i in bad_indices
+        if i == firstindex(segments) # If it starts with a bad index, then no problem, it connects two valid indices.
+            continue
+        else
+            prev = segments[i-1]
+            cur = segments[i]
+            segments[i] = construct_edge(E, terminal(prev), terminal(cur))
+        end
+    end
+    return nothing
+end
+
+"""
     connect_segments!(segments::AbstractVector{E}) where {E}
 
 Given an ordered vector of `segments`, mutates so that the endpoints connect, preserving order.

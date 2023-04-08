@@ -25,8 +25,9 @@ function locate_intersecting_triangles(
     boundary_map,
     TriangleType::Type{V},
     check_existence::C=Val(has_multiple_segments(boundary_map)),
+    rotate=Val(true),
     rng::AbstractRNG=Random.default_rng()) where {I,V,C,Es,E}
-    e = sort_edge_by_degree(e, graph) # faster to start at the minimum degree vertex of the edge
+    e = is_true(rotate) ? sort_edge_by_degree(e, graph) : e # faster to start at the minimum degree vertex of the edge
     history = PointLocationHistory{V,E,I}()
     add_left_vertex!(history, initial(e))
     add_right_vertex!(history, initial(e))
@@ -51,10 +52,12 @@ function locate_intersecting_triangles(
     add_right_vertex!(history, terminal(e))
     intersecting_triangles = history.triangles
     collinear_segments = history.collinear_segments
+    bad_indices = history.collinear_point_indices
     left_vertices = history.left_vertices
     right_vertices = history.right_vertices
     reverse!(left_vertices) # counter-clockwise
     if !isempty(collinear_segments)
+        fix_segments!(collinear_segments, bad_indices)
         connect_segments!(collinear_segments)
         extend_segments!(collinear_segments, e)
     end

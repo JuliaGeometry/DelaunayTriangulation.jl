@@ -16,21 +16,21 @@ you want the four sides of the boundary to be separated use `single_boundary = t
 Returns a [`Triangulation`](@ref).
 """
 function triangulate_rectangle(a, b, c, d, nx, ny;
-                               single_boundary=false,
-                               add_ghost_triangles=true,
-                               IntegerType::Type{I}=Int64,
-                               EdgeType::Type{E}=NTuple{2,IntegerType},
-                               TriangleType::Type{V}=NTuple{3,IntegerType},
-                               EdgesType::Type{Es}=Set{EdgeType},
-                               TrianglesType::Type{Ts}=Set{TriangleType}) where {I,E,V,
-                                                                                 Es,Ts}
+    single_boundary=false,
+    add_ghost_triangles=true,
+    IntegerType::Type{I}=Int64,
+    EdgeType::Type{E}=NTuple{2,IntegerType},
+    TriangleType::Type{V}=NTuple{3,IntegerType},
+    EdgesType::Type{Es}=Set{EdgeType},
+    TrianglesType::Type{Ts}=Set{TriangleType}) where {I,E,V,
+    Es,Ts}
 
     ## Define the triangles
     T = initialise_triangles(Ts)
     sub2ind = LinearIndices((1:nx, 1:ny))
     idx = 1
-    for j in 1:(ny - 1)
-        for i in 1:(nx - 1)
+    for j in 1:(ny-1)
+        for i in 1:(nx-1)
             u = sub2ind[CartesianIndex(i, j)]
             v = sub2ind[CartesianIndex(i + 1, j)]
             w = sub2ind[CartesianIndex(i, j + 1)]
@@ -45,7 +45,7 @@ function triangulate_rectangle(a, b, c, d, nx, ny;
     end
 
     ## Define the points 
-    points = Matrix{Float64}(undef, 2, nx * ny)
+    points = Vector{NTuple{2,Float64}}(undef, nx * ny)
     Δx = (b - a) / (nx - 1)
     Δy = (d - c) / (ny - 1)
     for j in 1:ny
@@ -53,8 +53,7 @@ function triangulate_rectangle(a, b, c, d, nx, ny;
         for i in 1:nx
             x = a + (i - 1) * Δx
             idx = sub2ind[CartesianIndex(i, j)]
-            points[1, idx] = x
-            points[2, idx] = y
+            points[idx] = (x, y)
         end
     end
 
@@ -70,23 +69,23 @@ function triangulate_rectangle(a, b, c, d, nx, ny;
         b2[j] = sub2ind[CartesianIndex(nx, j)]
     end
     for i in nx:-1:1
-        b3[nx - i + 1] = sub2ind[CartesianIndex(i, ny)]
+        b3[nx-i+1] = sub2ind[CartesianIndex(i, ny)]
     end
     for j in ny:-1:1
-        b4[ny - j + 1] = sub2ind[CartesianIndex(1, j)]
+        b4[ny-j+1] = sub2ind[CartesianIndex(1, j)]
     end
     if single_boundary
         boundary_nodes = [b1...,
-                          b2[(begin + 1):end]...,
-                          b3[(begin + 1):end]...,
-                          b4[(begin + 1):end]...]
+            b2[(begin+1):end]...,
+            b3[(begin+1):end]...,
+            b4[(begin+1):end]...]
     else
         boundary_nodes = [b1, b2, b3, b4]
     end
 
     ## Now triangulate 
     tri = Triangulation(points, T, boundary_nodes; IntegerType, EdgeType, TriangleType,
-                        EdgesType, TrianglesType, add_ghost_triangles)
+        EdgesType, TrianglesType, add_ghost_triangles)
     compute_representative_points!(tri)
     return tri
 end
