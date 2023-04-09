@@ -111,7 +111,7 @@ end
     pts = [p1, p2, p3, p4, p5, p6, p7]
     S = collect(1:7)
     tri = triangulate_convex(pts, S)
-    fig, ax, sc = triplot(tri; plot_convex_hull=false)
+    fig, ax, sc = triplot(tri; show_convex_hull=false)
     SAVE_FIGURE && save("$save_path/convex_triangulation_example.png", fig)
 end
 

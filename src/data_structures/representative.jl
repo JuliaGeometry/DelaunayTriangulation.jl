@@ -31,10 +31,6 @@ See also [`RepresentativePointList`](@ref).
 - `x`: The `x`-coordinate. 
 - `y`: The `y`-coordinate. 
 - `n`: The number of points defining the centroid, if that is what is being used.
-
-# Usage 
-
-See `reset!`, `add_point!`, `delete_point!`, and `compute_representative_point!`.
 """
 mutable struct RepresentativeCoordinates{I,T}
     x::T
@@ -97,35 +93,6 @@ function compute_centroid!(c::RepresentativeCoordinates, pts)
     return nothing
 end
 
-"""
-    const RepresentativePointList = Dict{Int64,RepresentativeCoordinates{Int64, Float64}}()
-
-This is a list of points for a set of representative points corresponding to multiple 
-curves.
-
-See also `update_centroid_after_addition`, `update_centroid_after_deletion`,
-`reset_centroids!`, `empty_centroids!`, [`get_representative_point_coordinates`](@ref),
-and `new_centroid`.
-
-!!! warning
-    While the function [`compute_representative_points!`](@ref) computes 
-    an appropriate visual center of the polygon represented by the curves, i.e. by joining 
-    points, the update functions like `update_centroid_after_addition` 
-    and `update_centroid_after_deletion` treat the centroid as if it is a 
-    mean of all the points. If you need to use the actual visual centers of the 
-    polygons, you will need to reuse [`compute_representative_points!`](@ref) again (as is 
-    done at the end of [`triangulate`](@ref)).
-"""
-#const RepresentativePointList = Dict{Int64,RepresentativeCoordinates{Int64,Float64}}()
-
-#=
-function reset_representative_points!()
-    for c in values(RepresentativePointList)
-        reset!(c)
-    end
-    return nothing
-end
-=#
 function reset_representative_points!(rep)
     for c in values(rep)
         reset!(c)
@@ -136,23 +103,10 @@ function empty_representative_points!(rep)
     empty!(rep)
 end
 
-#=
-function empty_representative_points!()
-    empty!(RepresentativePointList)
-    return nothing
-end
-=#
 function get_empty_representative_points(::Type{I}=Int64, ::Type{F}=Float64) where {I,F}
     return Dict{I,RepresentativeCoordinates{I,F}}()
 end
 
-#=
-function update_centroid_after_addition!(i::I, p) where {I}
-    centroid = get!(RepresentativeCoordinates{Int64,Float64}, RepresentativePointList, i)
-    add_point!(centroid, p)
-    return nothing
-end
-=#
 function update_centroid_after_addition!(representative_point_list::Dict{I,RepresentativeCoordinates{I,F}}, i::I, p) where {I,F}
     centroid = get!(RepresentativeCoordinates{I,F}, representative_point_list, i)
     add_point!(centroid, p)
@@ -164,29 +118,13 @@ function update_centroid_after_deletion!(representative_point_list::Dict{I,Repre
     delete_point!(centroid, p)
     return nothing
 end
-#=
-function update_centroid_after_deletion!(i::I, p) where {I}
-    centroid = RepresentativePointList[i]
-    delete_point!(centroid, p)
-    return nothing
-end
-=#
 
 """
-    get_representative_point_coordinates(i::I, ::Type{T}) where {I, T}
+    get_representative_point_coordinates(representative_point_list, i)
 
-Given an index `i` and some number type `T`, returns the coordinates 
-corresponding to the centroid in [`RepresentativePointList`](@ref) at the key `i`.
-The returned value is a `Tuple` `(T(x), T(y))` of the coordinates.
+Returns the coordinates of the `i`th representative point, given as a `Tuple` `(x, y)`
+rather than in the [`RepresentativeCoordinates`](@ref) form.
 """
-#=
-function get_representative_point_coordinates(i::I, ::Type{T}) where {I,T}
-    centroid = RepresentativePointList[i]
-    x = getx(centroid)
-    y = gety(centroid)
-    return (T(x), T(y))
-end
-=#
 function get_representative_point_coordinates(representative_point_list::Dict{I,RepresentativeCoordinates{I,T}}, i) where {I,T}
     centroid = representative_point_list[i]
     x = getx(centroid)
@@ -194,27 +132,20 @@ function get_representative_point_coordinates(representative_point_list::Dict{I,
     return (T(x), T(y))
 end
 
-#=
-function new_representative_point(i::I, ::Type{F}) where {I,T}
-    RepresentativePointList[i] = RepresentativeCoordinates(zero(T), zero(T), zero(I))
-    return nothing
-end
-=#
 function new_representative_point!(representative_point_list::Dict{I,RepresentativeCoordinates{I,T}}, i::I) where {I,T}
     representative_point_list[i] = RepresentativeCoordinates(zero(T), zero(T), zero(I))
     return nothing
 end
 
 """
-    compute_representative_points!(points, boundary_nodes; precision = 1.0)
+    compute_representative_points!(representative_point_list, points, boundary_nodes; precision = one(number_type(points)))
 
 Given a list of `points` and a list of `boundary_nodes`, computes visual centers for 
-the polygons represented by these curves using [`pole_of_inaccessibility`](@ref). The 
-keyword argument `precision` is the precision used in [`pole_of_inaccessibility`](@ref).
-
-See also [`RepresentativePointList`](@ref).
+the polygons represented by these curves using [`pole_of_inaccessibility`](@ref), placing the results 
+into `representative_point_list`. The keyword argument `precision` is the precision used in [`pole_of_inaccessibility`](@ref).
 
 !!! warning
+
     While this function computes an appropriate visual center of the polygon represented
     by the curves, i.e. by joining points, the update functions like `update_centroid_after_addition` 
     and `update_centroid_after_deletion` treat the centroid as if it is a 
@@ -222,8 +153,7 @@ See also [`RepresentativePointList`](@ref).
     polygons, you will need to reuse this function again (as is 
     done at the end of [`triangulate`](@ref)).
 """
-function compute_representative_points!(representative_point_list, points, boundary_nodes;
-    precision=one(number_type(points)))
+function compute_representative_points!(representative_point_list, points, boundary_nodes; precision=one(number_type(points)))
     reset_representative_points!(representative_point_list)
     if has_multiple_curves(boundary_nodes)
         nc = num_curves(boundary_nodes)

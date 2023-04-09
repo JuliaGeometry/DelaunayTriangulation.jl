@@ -137,11 +137,11 @@ end
         else
             rep = DT.get_representative_point_list(tri)
         end
-        x1, y1 = polylabel(tri.points, tri.boundary_nodes)
-        x2, y2 = polylabel(tri.points, tri.boundary_nodes[2])
-        x3, y3 = polylabel(tri.points, tri.boundary_nodes[3])
-        x4, y4 = polylabel(tri.points, tri.boundary_nodes[4])
-        x5, y5 = polylabel(tri.points, tri.boundary_nodes[5])
+        x1, y1 = DT.polylabel(tri.points, tri.boundary_nodes)
+        x2, y2 = DT.polylabel(tri.points, tri.boundary_nodes[2])
+        x3, y3 = DT.polylabel(tri.points, tri.boundary_nodes[3])
+        x4, y4 = DT.polylabel(tri.points, tri.boundary_nodes[4])
+        x5, y5 = DT.polylabel(tri.points, tri.boundary_nodes[5])
         d1 = DT.distance_to_polygon((x1, y1), tri.points, tri.boundary_nodes)
         d2 = DT.distance_to_polygon((x2, y2), tri.points, tri.boundary_nodes[2])
         d3 = DT.distance_to_polygon((x3, y3), tri.points, tri.boundary_nodes[3])

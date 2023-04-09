@@ -21,15 +21,15 @@ include("./helper_functions.jl")
             index_map["g"],
             index_map["h"],
             index_map["a"]]
-      a, (cx, cy) = polygon_features(pts, boundary_nodes)
-      @inferred polygon_features(pts, boundary_nodes)
+      a, (cx, cy) = DT.polygon_features(pts, boundary_nodes)
+      @inferred DT.polygon_features(pts, boundary_nodes)
       @test a ≈ 400.0 && cx ≈ 10.0 && cy ≈ 10.0
       boundary_nodes = [index_map["j"],
             index_map["k"],
             index_map["ℓ"],
             index_map["i"],
             index_map["j"]]
-      a, (cx, cy) = polygon_features(pts, boundary_nodes)
+      a, (cx, cy) = DT.polygon_features(pts, boundary_nodes)
       @test a ≈ 40.0 && cx ≈ 6.0 && cy ≈ 11.0
       boundary_nodes = [[index_map["a"],
                   index_map["b"],
@@ -42,8 +42,8 @@ include("./helper_functions.jl")
             [index_map["g"],
                   index_map["h"],
                   index_map["a"]]]
-      a, (cx, cy) = polygon_features(pts, boundary_nodes)
-      @inferred polygon_features(pts, boundary_nodes)
+      a, (cx, cy) = DT.polygon_features(pts, boundary_nodes)
+      @inferred DT.polygon_features(pts, boundary_nodes)
       @test a ≈ 400.0 && cx ≈ 10.0 && cy ≈ 10.0
       boundary_nodes = [[index_map["j"],
                   index_map["k"]],
@@ -52,10 +52,10 @@ include("./helper_functions.jl")
                   index_map["i"]],
             [index_map["i"],
                   index_map["j"]]]
-      a, (cx, cy) = polygon_features(pts, boundary_nodes)
+      a, (cx, cy) = DT.polygon_features(pts, boundary_nodes)
       @test a ≈ 40.0 && cx ≈ 6.0 && cy ≈ 11.0
-      a, (cx, cy) = polygon_features(pts, tri.boundary_nodes)
-      @inferred polygon_features(pts, tri.boundary_nodes)
+      a, (cx, cy) = DT.polygon_features(pts, tri.boundary_nodes)
+      @inferred DT.polygon_features(pts, tri.boundary_nodes)
       a1, a2, a3 = 400.0, 32.0, 40.0
       c1, c2, c3 = (10.0, 10.0), (15.58333333333, 7.0), (6.0, 11.0)
       @test a ≈ a1 - a2 - a3
@@ -343,7 +343,7 @@ end
             q = DT.CellQueue{Float64}()
             @test isempty(q)
             @test q.queue.o == Base.Order.Reverse
-            c = DT.Cell(polygon_features(pts, boundary_nodes)[2]..., 10.0, pts, boundary_nodes)
+            c = DT.Cell(DT.polygon_features(pts, boundary_nodes)[2]..., 10.0, pts, boundary_nodes)
             DT.insert_cell!(q, c)
             @test q.queue[c] == c.max_dist
             @inferred DT.get_next_cell!(q)
@@ -556,6 +556,6 @@ end
             198, 207, 216, 215, 214, 213, 212, 211, 210, 209, 208, 199,
             190, 181, 172, 163, 154, 145, 136, 127, 118, 109, 100, 91, 82,
             73, 64, 55, 46, 37, 28, 19, 10, 1]
-      pc = polylabel(PT, BN)
+      pc = DT.polylabel(PT, BN)
       @test collect(pc) ≈ collect(DT.polygon_features(PT, BN)[2])
 end

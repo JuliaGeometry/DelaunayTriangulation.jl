@@ -134,3 +134,10 @@ function _delete_point_2!(tri::Triangulation, point)
     delete_vertex!(tri, point)
     return nothing
 end
+
+"""
+    get_surronding_polygon(tri, u; skip_boundary_indices=false)
+
+Returns the set of neighbours of `u` in counter-clockwise order. If `skip_boundary_indices` is `true`, then boundary indices are not included in the set.
+"""
+@inline get_surrounding_polygon(tri::Triangulation, u; skip_boundary_indices=false) = get_surrounding_polygon(get_adjacent(tri), get_graph(tri), u, get_boundary_index_ranges(tri), Val(has_multiple_segments(tri)); skip_boundary_indices)

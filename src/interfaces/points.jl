@@ -83,12 +83,7 @@ calls [`getpoint`](@ref) - you do not need to
 extend this method. 
 """
 function get_point end
-function get_point(pts::P, i) where {P}
-    return getpoint(pts, i)
-end
-#function get_point(pts::P, i1, i2::Vararg{Any, N}) where {P,I,N} # need to split into two args to disambiguate with the method below
-#    return (get_point(pts, i1), ntuple(j -> get_point(pts, i2[j]), Val(N))...)
-#end
+get_point(pts::P, i) where {P} = getpoint(pts, i)
 function get_point(pts::P, i::Vararg{Any,N}) where {P,N}
     return ntuple(j -> get_point(pts, i[j]), Val(N))
 end

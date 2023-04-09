@@ -2,13 +2,13 @@
     add_ghost_triangles!(tri::Triangulation)
 
 Given a [`Triangulation`](@ref) `tri`, adds the ghost triangles into `tri`. In particular, 
-the `triangles, [`Adjacent`](@ref), and [`Adjacent2Vertex`](@ref) fields are updated so that 
+the `triangles`, [`Adjacent`](@ref), and [`Adjacent2Vertex`](@ref) fields are updated so that 
 ghost triangles are stored in them.
 
-A ghost triangle is a triangle of the form `(i, j, k)` where only one of the indices, say `i`, 
-satisfies `is_boundary_index(i)`.
+!!! note 
 
-No values are returned.
+    A ghost triangle is a triangle of the form `(i, j, k)` where only one of the indices, say `i`, 
+    satisfies `is_boundary_index(i)`.
 """
 function add_ghost_triangles!(tri::Triangulation)
     boundary_indices = all_boundary_indices(tri)

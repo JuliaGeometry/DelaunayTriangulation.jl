@@ -1,3 +1,8 @@
+"""
+    is_true(b)
+
+Returns `true` if `b` is `true`, `Val{true}`, or `Val(true)`. Returns `false` otherwise.
+"""
 is_true(b::Bool) = b
 is_true(b::Val{true}) = true
 is_true(b::Val{false}) = false
@@ -14,6 +19,13 @@ number_type(::Type{T}) where {T<:AbstractArray} = number_type(eltype(T))
 number_type(::Type{NTuple{N,T}}) where {N,T} = T
 number_type(::Type{T}) where {T<:Number} = T
 
+"""
+    get_boundary_index(i, j, k)
+    get_boundary_index(i, j)
+
+Given three indices `i`, `j`, and `k`, returns the index corresponding to a boundary index. If no boundary index is provided, an `ArgumentError` is thrown.
+Similarly for the second method, which takes two indices.
+"""
 function get_boundary_index(i, j, k)
     is_boundary_index(i) && return i
     is_boundary_index(j) && return j
@@ -26,6 +38,13 @@ function get_boundary_index(i, j)
     throw(ArgumentError("No boundary indices provided."))
 end
 
+"""
+    rotate_ghost_triangle_to_standard_form(i, j, k)
+    rotate_ghost_triangle_to_standard_form(T::V) where {V}
+
+Given a triangle `T = (i, j, k)`, rotates it to a new triangle `T′ = (u, v, w)`
+such that `w` is a boundary index.
+"""
 function rotate_ghost_triangle_to_standard_form(i, j, k) # ghost index last
     if is_boundary_index(i)
         return (j, k, i)
@@ -41,14 +60,21 @@ function rotate_ghost_triangle_to_standard_form(T::V) where {V}
     return construct_triangle(V, u, v, w)
 end
 
+
 """
     get_right_boundary_node(adj::Adjacent{I,E}, k, boundary_index, boundary_index_ranges, check_existence::C) where {I,E,C}
 
-Given an [`Adjacent`](@ref) map, a boundary node index `k`, a `boundary_index` corresponding to the curve, 
-and `boundary_index_ranges` from [`construct_boundary_index_ranges`](@ref),
-returns the node on the boundary to the right of `k`. `check_existence` can be used if you need to check 
-over all boundary indices, in case there are multiple segments and thus multiple possible boundary indices 
-on the boundary.
+Returns the node on the boundary that is to the right of `k`.
+
+# Arguments 
+- `adj::Adjacent`: The [`Adjacent`](@ref) map.
+- `k`: The boundary node index.
+- `boundary_index`: The boundary index corresponding to the curve.
+- `boundary_index_ranges`: The boundary index ranges from [`construct_boundary_index_ranges`](@ref).
+- `check_existence::C`: Whether to check over all boundary indices, in case there are multiple segments and thus multiple possible boundary indices on the boundary.
+
+# Outputs 
+- `i`: The node on the boundary to the right of `k`.
 
 See also [`get_left_boundary_node`](@ref).
 """
@@ -69,11 +95,17 @@ end
 """
     get_left_boundary_node(adj::Adjacent{I,E}, k, boundary_index, boundary_index_ranges, check_existence::C) where {I,E,C}
 
-Given an [`Adjacent`](@ref) map, a boundary node index `k`, a `boundary_index` corresponding to the curve, 
-and `boundary_index_ranges` from [`construct_boundary_index_ranges`](@ref),
-returns the node on the boundary to the left of `k`. `check_existence` can be used if you need to check 
-over all boundary indices, in case there are multiple segments and thus multiple possible boundary indices 
-on the boundary.
+Returns the node on the boundary that is to the left of `k`.
+
+# Arguments
+- `adj::Adjacent`: The [`Adjacent`](@ref) map.
+- `k`: The boundary node index.
+- `boundary_index`: The boundary index corresponding to the curve.
+- `boundary_index_ranges`: The boundary index ranges from [`construct_boundary_index_ranges`](@ref).
+- `check_existence::C`: Whether to check over all boundary indices, in case there are multiple segments and thus multiple possible boundary indices on the boundary.
+
+# Outputs
+- `i`: The node on the boundary to the left of `k`.
 
 See also [`get_right_boundary_node`](@ref).
 """
@@ -94,9 +126,8 @@ end
 """
     find_edge(T, points, ℓ)
 
-Given a triangle `T` and a set of points `points`, with 
-the `ℓ`th point of `points` on an edge of `T`, returns 
-the edge `(u, v)` that the point is on.
+Given a triangle `T` with indices corresponding to `points`, returns the edge of `T` that contains the point `ℓ`.
+It is assumed that the point `ℓ` is on an edge of `T`. If this is not the case, an error is thrown.
 """
 function find_edge(T, points, ℓ)
     r = get_point(points, ℓ)
@@ -128,14 +159,15 @@ end
 """
     is_circular(A)
 
-Tests if `A[begin] == A[end]`.
+Tests if `A[begin] == A[end]`. Also returns `true` if `A` is empty.
 """
 is_circular(A) = isempty(A) || (A[begin] == A[end])
 
 """
     circular_equality(A, B)
 
-Tests if the arrays `A` and `B` are equal up to a circular shift.
+Tests if the arrays `A` and `B` are equal up to a circular shift, assuming `A` 
+and `B` are circular.
 """
 function circular_equality(A, B)
     @assert is_circular(A) && is_circular(B) "The input arrays must satisfy x[begin] == x[end]."
@@ -157,16 +189,25 @@ end
 """
     get_surrounding_polygon(adj::Adjacent{I,E}, graph::Graph, u, boundary_index_ranges, check_existence::C; skip_boundary_indices=false) where {I,E,C}
 
-Given an [`Adjacent`](@ref) map, a [`Graph`](@ref), a vertex `u`, `boundary_index_ranges` from [`construct_boundary_index_ranges`](@ref) 
-for handling the case where `u` is on the boundary, returns a vector `S` which gives a counter-clockwise sequence of the neighbours of `u`.
-`check_existence` can be used if you need to check over all boundary indices when `u` is a boundary node, 
-in case there are multiple segments and thus multiple possible boundary indices on the boundary.
+Given a point `u`, returns a vector `S` which gives a counter-clockwise sequence of the neighbours of `u`. 
 
-When `u` is an outer boundary index, the returned polygon is clockwise.
+# Arguments 
+- `adj::Adjacent{I,E}`: The [`Adjacent`](@ref) map.
+- `graph::Graph`: The [`Graph`](@ref).
+- `u`: The vertex.
+- `boundary_index_ranges`: The output of [`construct_boundary_index_ranges`](@ref).
+- `check_existence::C`: Whether to check over all boundary indices, in case there are multiple segments and thus multiple possible boundary indices on the boundary.
 
-When `u` is a boundary vertex and you do not have ghost triangles, then this function may return an invalid polygon.
+# Keyword Arguments
+- `skip_boundary_indices=false`: Whether to remove all boundary indices from the result at the end.
 
-If you want to remove all boundary indices from the result at the end, set `skip_boundary_indices=true`.
+# Outputs 
+- `S`: The surrounding polygon.
+
+!!! notes 
+
+    - When `u` is an outer boundary index, the returned polygon is clockwise.
+    - When `u` is a boundary vertex and you do not have ghost triangles, then this function may return an invalid polygon.
 """
 function get_surrounding_polygon(adj::Adjacent{I,E}, graph::Graph, u, boundary_index_ranges, check_existence::C; skip_boundary_indices=false) where {I,E,C}
     neighbouring_vertices = get_neighbours(graph, u)
@@ -227,9 +268,7 @@ end
 """
     split_constrained_edge!(constrained_edges, constrained_edge::E, collinear_segments) where {E}
 
-Given a set of `constrained_edges` and a `constrained_edge` in the set,
-and a vector of segments `collinear_segments` that are collinear with `constrained_edge`,
-replaces `constrained_edge` with those segments in `collinear_segments`. 
+Splits the `constrained_edge` at the segments in `collinear_segments`, updating `constrained_edges` accordingly.
 """
 function split_constrained_edge!(constrained_edges, constrained_edge::E, collinear_segments) where {E}
     if num_edges(collinear_segments) > 0
@@ -249,8 +288,9 @@ end
 """
     fix_segments!(segments::AbstractVector{E}, bad_indices) where {E}
 
-If we have edges in `segments` that are `bad`, meaning are not valid edges, found via 
-`bad_indices`, this function fixes them.
+Fixes the overlapping segments in `segments`, referred to via `bad_indices`.
+
+## Example 
 
 For example, if we had 
 
@@ -290,6 +330,8 @@ end
     connect_segments!(segments::AbstractVector{E}) where {E}
 
 Given an ordered vector of `segments`, mutates so that the endpoints connect, preserving order.
+
+## Example
 
 ```julia-repl
 julia> C = [(7, 12), (12, 17), (17, 22), (32, 37), (37, 42), (42, 47)];
@@ -332,6 +374,21 @@ end
 
 Given an ordered vector of `segments`, ensures that they also represent the 
 replacement of `constrained_edge`.
+
+## Example 
+
+```julia-repl
+julia> segments = [(2, 7), (7, 12), (12, 49)];
+julia> constrained_edge = (1, 68);
+julia> extend_segments!(segments, constrained_edge);
+julia> segments
+5-element Vector{Tuple{Int64, Int64}}:
+ (1, 2)
+ (2, 7)
+ (7, 12)
+ (12, 49)
+ (49, 68)
+```
 """
 function extend_segments!(segments::AbstractVector{E}, constrained_edge) where {E}
     constrained_i, constrained_j = edge_indices(constrained_edge)
@@ -347,14 +404,12 @@ function extend_segments!(segments::AbstractVector{E}, constrained_edge) where {
 end
 
 """
-    convert_boundary_points_to_indices(x, y; existing_points = NTuple{2, Float64}[])
+    convert_boundary_points_to_indices(x, y; existing_points = NTuple{2, Float64}[], check_args=true, adjust=true)
 
-Given some points `(x, y)` representing a boundary, converts their representation into a 
-a set of indices corresponding to each boundary. The points should match the specification 
-given in [`generate_mesh`](@ref). These points also get appended onto the `existing_points` keyword 
-argument, which should be used if you have a pre-existing set of points so that the  
-boundary indices get adjusted accordingly. Points get added into `existing_points` via 
-[`push_point!`](@ref).
+Given some points `(x, y)` representing a boundary, converts their representation into a set of 
+indices corresponding to each boundary. The points should match the specification of a boundary 
+defined in the documentation. These points also get appended onto the set of points given by the 
+`existing_points` keyword argument, which should be used if you have a pre-existing set of points.
 
 The returned value is `(nodes, points)`, with `nodes` the indices and `points` the modified 
 `existing_points` (which are mutated in-place also).
@@ -383,7 +438,7 @@ function convert_boundary_points_to_indices(x::AA, y::AA; existing_points=NTuple
         resize!(nodes[i], length(_nodes))
         copyto!(nodes[i], _nodes)
     end
-    if adjust
+    if adjust # needed so that the different segments connect
         for i in firstindex(nodes):(lastindex(nodes)-1)
             push!(nodes[i], nodes[i+1][begin])
         end
@@ -408,6 +463,26 @@ function convert_boundary_points_to_indices(x::A, y::A; existing_points=NTuple{2
     return nodes, existing_points
 end
 
+"""
+    get_ordinal_suffix(i)
+
+Returns the ordinal suffix for the given integer `i`. 
+
+## Example
+
+```julia-repl
+julia> get_ordinal_suffix(1)
+"st"
+julia> get_ordinal_suffix(2)
+"nd"
+julia> get_ordinal_suffix(3)
+"rd"    
+julia> get_ordinal_suffix(4)
+"th"
+julia> get_ordinal_suffix(11)
+"th"
+```
+"""
 function get_ordinal_suffix(i) # https://stackoverflow.com/a/13627586
     let j = i % 10, k = i % 100
         if j == 1 && k ≠ 11
@@ -422,6 +497,14 @@ function get_ordinal_suffix(i) # https://stackoverflow.com/a/13627586
     end
 end
 
+"""
+    check_args(points, boundary_nodes)
+
+Checks the arguments `points` and `boundary_nodes` to make sure that they are valid. If they are
+not, an error is thrown. This function is called by `triangulate` if the `check_args` keyword
+argument is set to `true`. If you are sure that your arguments are valid, you can set this
+keyword argument to `false` to speed up the triangulation process.
+"""
 function check_args(points, boundary_nodes)
     @assert points_are_unique(points) "Duplicate points are not allowed."
     if !isnothing(boundary_nodes)

@@ -1,109 +1,34 @@
 """
     generate_mesh(x, y, ref;
-        mesh_algorithm=6,
-        gmsh_path="./gmsh-4.11.1-Windows64/gmsh.exe",
-        verbosity=0,
-        convert_result=true,
-        add_ghost_triangles=false,
-        check_args=true)
+        mesh_algorithm = 6, 
+        gmsh_path = "./gmsh-4.11.1-Windows64/gmsh.exe",
+        verbosity = 0, 
+        convert_result = true, 
+        add_ghost_triangles = false, 
+        check_args = true)
 
-Using Gmsh, generates a mesh of the domain defined by `(x, y)`. 
+Using Gmsh, generates a mesh of the domain defined by `(x, y)`.
 
-# Arguments
-- `x, y`
+# Arguments 
+- `x, y`: These are the coordinates defining the curves that define the boundaries of the domain. All curves are to be positively oriented, meaning the outermost boundary should be counter-clockwise while the interior boundaries should be clockwise. The accepted forms of `x, y` are outlined in in the boundary handling section of the docs.
 
-These are the coordinates defining the curves that define the boundaries of the domain. All 
-curves are to be positively oriented, meaning the outermost boundary should be counter-clockwise 
-while the interior boundaries should be clockwise.
-
-There are three accepted forms for `x, y`:
-
--- `Vector{Vector{Vector{Float64}}}`: Multiple holes 
-
-This form for `x` and `y` will separate the generated domain into separate curves, 
-where `(x[1], y[1])` is the outer-most boundary and the remaining parts of `x`
-and `y` define holes inside the domain. In general, `(x[m][n], y[m][n])` is the 
-`n`th segment of the `m`th curve. It is assumed that `x[m][n][end] == x[m][n+1][begin]`,
-and that `x[m][end][end] == x[m][begin][1]`, i.e. separate segments have shared endpoints.
-Similar conditions hold for `y`. In this case, `(x[1], y[1])` should define a counter-clockwise 
-curve while `(x[m], y[m])` should be a clockwise curve for `m > 1`.
-
--- `Vector{Vector{Float64}}`: One boundary, multiple segments 
-
-This form for `x` and `y` uses just one boundary, but splits the boundary into multiple 
-segments as described above. As in the case above, separate segments should have shared 
-endpoints. In this case, the boundary should be provided counter-clockwise.
-
--- `Vector{Float64}`: One boundary, one segment 
-
-This form for `x` and `y` uses just one boundary, and assumes the boundary is one 
-continuous segment. It is assumed that `x[begin] == x[end]` and similarly for `y`. The boundary 
-should be provided counter-clockwise.
-
-- `ref`
-
-This is the refinement parameter - smaller `ref` means more elements. 
+- `ref`: The refinement parameter -- smaller `ref` means more elements. 
 
 # Keyword Arguments 
-- `mesh_algorithm=6`
-
-The algorithm to use for meshing. `6` means Frontal-Delaunay.
-- `gmsh_path="./gmsh-4.11.1-Windows64/gmsh.exe"`
-
-The location of the gmsh executable.
-- `verbosity=0`
-
-The verbosity level for Gmsh.
-- `convert_result=true`
-
-If `true`, the final result is converted into a [`Triangulation`](@ref) type. Otherwise, 
-`(triangles, points, boundary_nodes)` is returned.
-
-- `add_ghost_triangles=false`
-
-If `convert_result`, then this declares whether or not ghost triangles should be added when 
-converting the result into a [`Triangulation`](@ref) type. See also [`Triangulation`](@ref).
-
-- `check_arguments=true`
-
-Whether to verify the arguments have the correct orientation. 
+- `mesh_algorithm = 6`: The meshing algorithm to use. See the Gmsh documentation for more information. The default `6` means Frontal-Delaunay. 
+- `gmsh_path = "./gmsh-4.11.1-Windows64/gmsh.exe"`: The path to the Gmsh executable.
+- `verbosity = 0`: The verbosity of the Gmsh output.
+- `convert_result = true`: Whether to convert the Gmsh output to a [`Triangulation`](@ref).
+- `add_ghost_triangles = false`: Whether to add ghost triangles to the triangulation.
+- `check_args = true`: Whether to check the validity of the arguments.
 
 # Outputs 
-If `convert_result`, then the final result is a [`Triangulation`](@ref) type. Otherwise, 
-the following values are returned:
+If `convert_result`, then the final result is a [`Triangulation`](@ref) type for the mesh. Otherwise, 
+the following values are returned: 
 
-- `elements`
-
-The triangular elements for the mesh. 
-- `nodes`
-
-The nodes in the mesh. 
-- `boundary_nodes`
-
-The boundary nodes in the mesh. All boundaries are positively oriented relative to the interior, 
-meaning the outermost boundary is counter-clockwise while the interior boundaries are clockwise.
-
-The form of `boundary_nodes` matches the form of `x` and `y`, i.e. (also 
-including matching endpoints):
-
--- `Vector{Vector{Vector{Float64}}}`
-
-In this case, `boundary_nodes[m][n]` give the indices in `nodes` 
-corresponding to the boundary specified by `(x[m][n], y[m][n])`. The nodes 
-`boundary_nodes[1]` define a counter-clockwise curve, while `boundary_nodes[m]`
-is clockwise for `m > 1`.
-
--- `Vector{Vector{Float64}}`
-
-In this case, `boundary_nodes[n]` gives the indices in `nodes` 
-corresponding to the boundary specified by `(x[n], y[n])`. The boundary nodes 
-define a counter-clockwise curve in this case.
-
--- `Vector{Float64}`
-
-In this case, `boundary_nodes` gives the indices in `nodes` 
-corresponding to the boundary specified by `(x, y)`. The boundary nodes 
-define a counter-clockwise curve in this case.
+- `elements`: The triangular elements of the mesh. 
+- `nodes`: The nodes in the mesh. 
+- `boundary_nodes`: The bonudary nodes in the mesh.  All boundaries are positively oriented relative to the interior, meaning the outermost boundary is counter-clockwise while the interior boundaries are clockwise, and match the form of `(x, y)`. 
 
 # Extended help 
 
@@ -194,8 +119,7 @@ function generate_mesh(x::AAA, y::AAA, ref;
     verbosity=0,
     convert_result=true,
     add_ghost_triangles=false,
-    check_arguments=true) where {F<:
-    Number,A<:AbstractVector{F},AA<:AbstractVector{A},AAA<:AbstractVector{AA}}
+    check_arguments=true) where {F<:Number,A<:AbstractVector{F},AA<:AbstractVector{A},AAA<:AbstractVector{AA}}
     identifiers, identifier_dict = write_gmsh(x, y, ref; mesh_algorithm, verbosity)
     run_gmsh(gmsh_path)
     elements, nodes, boundary_nodes = read_gmsh(identifiers, identifier_dict)
@@ -215,16 +139,8 @@ function generate_mesh(x::AA, y::AA, ref;
     verbosity=0,
     convert_result=true,
     add_ghost_triangles=false,
-    check_arguments=true) where {F<:
-    Number,
-    A<:
-    AbstractVector{F},
-    AA<:
-    AbstractVector{A}}
-    elements, nodes, boundary_nodes = generate_mesh([x], [y], ref; mesh_algorithm,
-        gmsh_path, verbosity,
-        convert_result=false,
-        check_arguments)
+    check_arguments=true) where {F<:Number,A<:AbstractVector{F},AA<:AbstractVector{A}}
+    elements, nodes, boundary_nodes = generate_mesh([x], [y], ref; mesh_algorithm, gmsh_path, verbosity, convert_result=false, check_arguments)
     check_arguments && check_args(nodes, boundary_nodes[1])
     if !convert_result
         return elements, nodes, boundary_nodes[1]
@@ -241,14 +157,8 @@ function generate_mesh(x::A, y::A, ref;
     verbosity=0,
     convert_result=true,
     add_ghost_triangles=false,
-    check_arguments=true) where {F<:
-    Number,
-    A<:
-    AbstractVector{F}}
-    elements, nodes, boundary_nodes = generate_mesh([x], [y], ref; mesh_algorithm,
-        gmsh_path, verbosity,
-        convert_result=false,
-        check_arguments)
+    check_arguments=true) where {F<:Number,A<:AbstractVector{F}}
+    elements, nodes, boundary_nodes = generate_mesh([x], [y], ref; mesh_algorithm, gmsh_path, verbosity, convert_result=false, check_arguments)
     check_arguments && check_args(nodes, boundary_nodes[1])
     if !convert_result
         return elements, nodes, boundary_nodes[1]
@@ -270,7 +180,7 @@ end
 
 Generates a mesh of a rectangle `[a, b] × [c, d]`. Use `single_boundary=true` if 
 each side of the rectangle should be treated the same, and `single_boundary=false` if 
-you want boundary nodes for each side of the rectangle
+you want the boundary nodes to be segmented each side of the rectangle.
      
 See the main function [`generate_mesh`](@ref generate_mesh(::AAA, ::AAA, ::Any) where {F<:Number,A<:AbstractVector{F},AA<:AbstractVector{A},AAA<:AbstractVector{AA}}) for a description of the other 
 arguments.

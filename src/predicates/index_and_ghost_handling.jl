@@ -1,31 +1,30 @@
 
 """
-    triangle_orientation(i, j, k, pts, boundary_map)
-    triangle_orientation(T, pts, boundary_map)
+    triangle_orientation(i, j, k, pts, representative_point_list, boundary_map)
+    triangle_orientation(T, pts, representative_point_list, boundary_map)
 
-Given a triangle `T = (i, j, k)`, with indices corresponding 
-to points in `pts`, computes the orientation of the triangle. In
-particular, returns:
+Given a triangle `T = (i, j, k)`, with indices corresponding to points in `pts`, computes the orientation of the triangle,
+using `boundary_map` from [`construct_boundary_map`](@ref) to map boundary indices to their corresponding points in
+`representative_point_list`. We return:
 
 - `Certificate.PositivelyOriented`: The triangle is positively oriented.
 - `Certificate.Degenerate`: The triangle is degenerate, meaning the coordinates are collinear. 
 - `Certificate.NegativelyOriented`: The triangle is negatively oriented.
 
-A test is also made for the case that `is_ghost_triangle(T)`: If  `T` 
-is a ghost triangle, then the index corresponding to a boundary index 
-points to a centroid, in which case one of the edges has its orientation 
-flipped. This case will also be handled correctly.  In case the boundary 
-index corresponds to an interior curve, this flip is not necessary.
+!!! notes
 
-The mapping of a boundary index is handled via the `boundary_map` 
-argument - see [`construct_boundary_map`](@ref).
+    A test is also made for the case that `is_outer_ghost_triangle(T)`: If  `T` 
+    is a ghost triangle, then the index corresponding to a boundary index 
+    points to a centroid, in which case one of the edges has its orientation 
+    flipped. This case will also be handled correctly. In case the boundary 
+    index corresponds to an interior curve, this flip is not necessary.
 """
 @inline function triangle_orientation(i, j, k, pts, representative_point_list, boundary_map)
     p, q, r = get_point(pts, representative_point_list, boundary_map, i, j, k)
     if is_outer_ghost_triangle(i, j, k, boundary_map)
         return triangle_orientation(r, q, p) # Exterior ghost triangles have the boundary index represented at a centroid which is inwards, so flip the orientation
     end
-    return triangle_orientation(p, q, r) # Ghost triangles have the boundary index represented at a centroid which is inwards, so flip the orientation
+    return triangle_orientation(p, q, r)
 end
 @inline function triangle_orientation(T, pts, representative_point_list, boundary_map::AbstractDict)
     i, j, k = indices(T)
@@ -33,30 +32,22 @@ end
 end
 
 """
-    point_position_relative_to_circumcircle(i, j, k, ℓ, pts, boundary_map)
-    point_position_relative_to_circumcircle(T, ℓ, pts, boundary_map)
+    point_position_relative_to_circumcircle(i, j, k, ℓ, pts, representative_point_list, boundary_map)
+    point_position_relative_to_circumcircle(T, ℓ, pts, representative_point_list, boundary_map)
 
-Given a triangle `T = (i, j, k)`, with indices corresponding 
-to points in `pts`, and a point with index `ℓ`, `pₗ`, computes 
-the position this point `pₗ` relative to the triangle's circumcircle,
-making use of [`point_position_relative_to_circle`](@ref).
-
-The returned values are:
+Tests if the `ℓ`th point of `pts` is inside the circumcircle of the triangle `T = (i, j, k)`, using the `boundary_map` to map 
+boundary indices to their corresponding points in `representative_point_list`, returning:
 
 - `Certificate.Outside`: `pₗ` is outside of the circumcircle.
 - `Certificate.On`: `pₗ` is on the circumcircle.
 - `Certificate.Inside`: `pₗ` is inside the circumcircle.
 
-A test is also made for the case that `is_ghost_triangle(T)`: When `T`
-is a ghost triangle, one of its indices is a boundary index, say `i`. 
-Since this vertex is treated as being out at infinity, the circumcircle 
-degenerates into the line through the other two vertices. Thus, we test 
-that `pₗ` is inside this circumcircle by seeing if it is in the oriented 
-outer halfplane defined by the two other vertices. See also 
-[`point_position_relative_to_oriented_outer_halfplane`](@ref).
+!!! notes
 
-The mapping of a boundary index is handled via the `boundary_map` 
-argument - see [`construct_boundary_map`](@ref).
+    A test is also made for the case that `is_ghost_triangle(T)`: When `T` is a ghost triangle, one of its indices is a boundary index, say `i`. Since this vertex 
+    is treated as being out at infinity, the circumcircle degenerates into the line through the other two vertices and out to infinity in that direction. 
+    Thus, we test that the `ℓ`th point is inside this circumcircle by seeing if it is in the oriented outer halfplane defined by the other two vertices, 
+    accomplished via [`point_position_relative_to_oriented_outer_halfplane`](@ref).
 """
 function point_position_relative_to_circumcircle(i, j, k, ℓ, pts, representative_point_list, boundary_map)
     a, b, c, p = get_point(pts, representative_point_list, boundary_map, i, j, k, ℓ)
@@ -75,49 +66,45 @@ function point_position_relative_to_circumcircle(T, ℓ, pts, representative_poi
 end
 
 """
-    point_position_relative_to_line(i, j, u, pts, boundary_map)
+    point_position_relative_to_line(i, j, u, pts, representative_point_list, boundary_map)
 
-Given indices `i`, `j`, and `u` corresponding to indices 
-of points in the collection of points `pts`, corresponding to 
-coordinates say `a`, `b`, and `p`, respectively, computes the 
-position of `p` relative to the oriented line `(a, b)`. 
-
-The returned values are:
+Computes the position of the `u`th point of `pts` relative to the line through the `i`th and `j`th points, 
+respectively, of `pts`. Boundary indices are mapped to their corresponding points in `representative_point_list` via 
+the `boundary_map` argument from [`construct_boundary_map`](@ref). The returned values are:
 
 - `Certificate.Left`: `p` is to the left of the line. 
 - `Certificate.Collinear`: `p` is on the line.
-- `Certificate.Right`: `p` is to the right of the line.
+- `Certificate.Right`: `p` is to the right of the line,
 
-If `is_outer_ghost_edge(i, j, boundary_map)`, the oriented line `(a, b)` is flipped 
-since the point corresponding to the boundary index will be a 
-centroid which swaps the orientation.
+where `p` is the `u`th point of `pts`.
 
-The mapping of a boundary index is handled via the `boundary_map` 
-argument - see [`construct_boundary_map`](@ref).
+!!! notes
+
+    If `is_outer_ghost_edge(i, j, boundary_map)`, the orientation of the line is flipped as the point corresponding to the boundary index will be a
+    centroid which swaps the orientation.
 """
 function point_position_relative_to_line(i, j, u, pts, representative_point_list, boundary_map)
     a, b, p = get_point(pts, representative_point_list, boundary_map, i, j, u)
     if !is_outer_ghost_edge(i, j, boundary_map)
         return point_position_relative_to_line(a, b, p)
     else
-        return point_position_relative_to_line(b, a, p) # If the line is ℓ₀ⱼ, then this is parallel with the line ℓⱼₚ, where ₚ is the centroid. But 0 maps to p (`get_point(pts, -1)` is the centroid), so let's just swap the coordinates. Similarly, for the line ℓᵢ₀, we just consider ℓₚᵢ, so again we swap.
+        return point_position_relative_to_line(b, a, p) # Exterior ghost edges have the boundary index represented at a centroid which is inwards, so flip the orientation
     end
 end
 
 """
     point_closest_to_line(i, j, u, v, pts)
 
-Let `a, b, p, q` be the points corresponding to the indices `i, j, u, v`,
-respectively, in `pts`.
-
-Given a line `ℓ` through `a` and `b`, tests if `p` is closer to `ℓ` than `q`
-is, returning:
+Let `a, b, p, q` be the points corresponding to the indices `i, j, u, v`, respectively, in `pts`, and let `ℓ`
+be the oriented line through `a` and `b`. This function tests if `p` is closer to `ℓ` than `q` is, returning:
 
 - `Certificate.Closer`: `p` is closer to `ℓ`.
 - `Certificate:Further`: `q` is closer to `ℓ`.
 - `Certificate.Equidistant`: `p` and `q` are the same distance from `ℓ`.
 
-It is assumed that `p` and `q` are to the left of `ℓ`.
+!!! notes 
+
+    It is assumed that `p` and `q` are to the left of `ℓ`.
 """
 function point_closest_to_line(i, j, u, v, pts)
     a, b, p, q = get_point(pts, i, j, u, v)
@@ -127,13 +114,8 @@ end
 """
     point_position_on_line_segment(i, j, u, pts)
 
-Given indices `i`, `j`, and `u` corresponding to indices 
-of points in the collection of points `pts`, corresponding to 
-coordinates say `a`, `b`, and `p`, respectively, computes the 
-position of `p` relative to the oriented line segment `(a, b)`,
-assuming that the three points are collinear.
-
-The returned values are:
+Given indices `i`, `j`, and `u` corresponding to points `a`, `b`, and `p` in `pts`, respectively, computes the position 
+of `p` relative to the oriented line segment `(a, b)`, assuming that the three points are collinear. The returned values are:
 
 - `Certificate.On`: `p` is on the line segment, meaning between `a` and `b`.
 - `Certificate.Degenerate`: Either `p == a` or `p == b`, i.e. `p` is one of the endpoints. 
@@ -148,13 +130,8 @@ end
 """
     line_segment_intersection_type(u, v, i, j, pts)
 
-Given two pairs of indices `(u, v)` and `(i, j)`, with 
-all indices corresponding to points in `pts`, tests 
-the number of intersections between the two line segments 
-associated with these indices.
-
-Letting `p`, `q`, `a`, and `b` be the points referred to by 
-`u`, `v`, `i`, and `j`, respectively, we return:
+Let `u`, `v`, `i`, and `j` be indices corresponding to points `p`, `q`, `a`, and `b`, respectively, in `pts`. This 
+function tests the number of intersections between the two line segments `(p, q)` and `(a, b)`, returning:
 
 - `Certificate.None`: The line segments do not meet at any points. 
 - `Certificate.Multiple`: The closed line segments `[p, q]` and `[a, b]` meet in one or several points. 
@@ -167,22 +144,17 @@ function line_segment_intersection_type(u, v, i, j, pts)
 end
 
 """
-    point_position_relative_to_triangle(i, j, k, u, pts, boundary_map)
-    point_position_relative_to_triangle(T, u, pts, boundary_map)
+    point_position_relative_to_triangle(i, j, k, u, pts, representative_point_list, boundary_map)
+    point_position_relative_to_triangle(T, u, pts, representative_point_list, boundary_map)
 
-Given a triangle `T = (i, j, k)` and another index `u`, 
-with indices referring to points in `pts`, computes 
-the position of `u` relative to the triangle.
-
-Letting `p`, `q`, `a`, and `b` be the points referred to by 
-`i`, `j`, `k`, and `u`, respectively, we return:
+Given a triangle `T = (i, j, k)`, with indices referring to points in `pts`,
+computes the position of `u`, corresponding to a point `p`, relative to `T`, with 
+any boundary indices mapped to their corresponding representative points in `representative_point_list` 
+via the `boundary_map` argument from [`construct_boundary_map`](@ref). The returned values are:
 
 - `Certificate.Outside`: `p` is outside of the triangle. 
 - `Certificate.On`: `p` is on one of the edges. 
 - `Certificate.Inside`: `p` is inside the triangle.
-
-If necessary, the mapping of boundary indices is handled via 
-the boundary map argument from [`construct_boundary_map`](@ref).
 """
 function point_position_relative_to_triangle(i, j, k, u, pts, representative_point_list, boundary_map::AbstractDict)
     if !is_outer_ghost_triangle(i, j, k, boundary_map)

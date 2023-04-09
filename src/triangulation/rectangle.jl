@@ -10,10 +10,10 @@
 
 Computes a triangulation of the rectangular grid `[a, b] × [c, d]` with points `(xᵢ, yⱼ)`, 
 `i = 1, …, nx`, `j = 1, …, ny`, where `xᵢ = a + (i-1)(b-a)/(nx-1)` and `yⱼ = b + (j-1)(d-c)/(ny-1)`. If 
-the boundary of the rectangle should be considreed as one single boundary, use `single_boundary = false`, and if 
+the boundary of the rectangle should be considered as one single boundary, use `single_boundary = false`, and if 
 you want the four sides of the boundary to be separated use `single_boundary = true`. 
 
-Returns a [`Triangulation`](@ref).
+Returns a [`Triangulation`](@ref) representing the triangulation.
 """
 function triangulate_rectangle(a, b, c, d, nx, ny;
     single_boundary=false,
@@ -22,8 +22,7 @@ function triangulate_rectangle(a, b, c, d, nx, ny;
     EdgeType::Type{E}=NTuple{2,IntegerType},
     TriangleType::Type{V}=NTuple{3,IntegerType},
     EdgesType::Type{Es}=Set{EdgeType},
-    TrianglesType::Type{Ts}=Set{TriangleType}) where {I,E,V,
-    Es,Ts}
+    TrianglesType::Type{Ts}=Set{TriangleType}) where {I,E,V,Es,Ts}
 
     ## Define the triangles
     T = initialise_triangles(Ts)

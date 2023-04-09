@@ -105,7 +105,7 @@ end
     tri = DT.triangulate_bowyer_watson(points; rng, delete_ghosts=false)
     @inferred DT.triangulate_bowyer_watson(points; rng, delete_ghosts=false)
     fig, ax, sc = triplot(tri; show_ghost_edges=true, recompute_centers=true,
-        plot_convex_hull=true, convex_hull_color=:red,
+        show_convex_hull=true, convex_hull_color=:red,
         convex_hull_linewidth=7)
     xlims!(ax, -6, 12)
     ylims!(ax, -6, 12)
@@ -130,7 +130,7 @@ end
     pts = randn(2, 500)
     tri = DT.triangulate_bowyer_watson(pts; delete_ghosts=false)
     fig, ax, sc = triplot(tri; show_ghost_edges=true, recompute_centers=true,
-        plot_convex_hull=true, convex_hull_color=:red,
+        show_convex_hull=true, convex_hull_color=:red,
         convex_hull_linewidth=7, convex_hull_linestyle=:solid)
     xlims!(ax, -5.0, 5.0)
     ylims!(ax, -5.0, 5.0)

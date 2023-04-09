@@ -77,9 +77,9 @@ end
 function Base.:(==)(adj2v::Adjacent2Vertex, adj2v2::Adjacent2Vertex)
     return get_adjacent2vertex(adj2v) == get_adjacent2vertex(adj2v2)
 end
-function Base.show(io::IO, m::MIME"text/plain", adj2v::Adjacent2Vertex{I, Es,E}) where {I,Es, E}
+function Base.show(io::IO, m::MIME"text/plain", adj2v::Adjacent2Vertex{I,Es,E}) where {I,Es,E}
     println(io, "Adjacent{$I, $Es, $E}, with map:")
-    show(io,m,get_adjacent2vertex(adj2v))
+    show(io, m, get_adjacent2vertex(adj2v))
 end
 
 """
@@ -154,8 +154,7 @@ map. In particular, adds the edges `(i, j)`, `(j, k)`, and `(k, i)`
 into the set of edges associated with the vertices `k`, `i`, and `j`,
 respectively, in the map.
 """
-function add_triangle!(adj2v::Ts, i::V, j::V,
-                       k::V) where {I,Es,E,V<:Integer,Ts<:Adjacent2Vertex{I,Es,E}} # the signature here is for resolving a method ambiguity
+function add_triangle!(adj2v::Ts, i::V, j::V, k::V) where {I,Es,E,V<:Integer,Ts<:Adjacent2Vertex{I,Es,E}} # the signature here is for resolving a method ambiguity
     for (u, v, w) in ((i, j, k), (j, k, i), (k, i, j))
         add_adjacent2vertex!(adj2v, I(w), I(u), I(v))
     end
@@ -189,9 +188,7 @@ map. In particular, deletes the edges `(i, j)`, `(j, k)`, and `(k, i)`
 from the set of edges associated with the vertices `k`, `i`, and `j`,
 respectively, from the map.
 """
-function delete_triangle!(adj2v::Ts, i::V, j::V,
-                          k::V) where {I,Es,E,V<:Integer,
-                                       Ts<:Adjacent2Vertex{I,Es,E}} # the signature here is for resolving a method ambiguity
+function delete_triangle!(adj2v::Ts, i::V, j::V, k::V) where {I,Es,E,V<:Integer,Ts<:Adjacent2Vertex{I,Es,E}} # the signature here is for resolving a method ambiguity
     for (u, v, w) in ((i, j, k), (j, k, i), (k, i, j))
         delete_adjacent2vertex!(adj2v, w, u, v)
     end

@@ -1,5 +1,5 @@
 """
-    triangulate(points::P;, edges=nothing, boundary_nodes=nothing,
+    triangulate(points::P; edges=nothing, boundary_nodes=nothing,
         IntegerType::Type{I}=Int64,
         EdgeType::Type{E}=NTuple{2,IntegerType},
         TriangleType::Type{V}=NTuple{3,IntegerType},
@@ -13,7 +13,9 @@
         num_sample_rule::M=default_num_samples,
         rng::AbstractRNG=Random.default_rng(),
         point_order=get_point_order(points, randomise, skip_points, IntegerType, rng),
-        recompute_representative_point=true
+        recompute_representative_point=true,
+        delete_holes=true,
+        check_arguments=true
     ) where {P,I,E,V,Es,Ts,M}
 
 Computes the unconstrained Delaunay triangulation of a set of `points`. If `edges` is provided, 
@@ -24,8 +26,8 @@ nodes, with all triangles inside the boundaries deleted.
 - `points::P`: The set of points to compute the triangulation of. 
 
 # Keyword Arguments 
-- `edges=nothing`: Any constrained edges to insert. If `nothing`, an unconstrained triangulation is built.
-- `boundary_nodes=nothing`: Any boundaries to define. The specification of these boundary nodes is outlined in the documentation. All triangles away from a defined boundary are deleted.
+- `edges=nothing`: Any constrained edges to insert. If `nothing`, an unconstrained triangulation is built. The constrained edges should not intersect each other, and they should not cross over boundary edges.
+- `boundary_nodes=nothing`: Any boundaries to define. The specification of these boundary nodes is outlined in the boundary handling section of the documentation. All triangles away from a defined boundary are deleted if `delete_holes`.
 - `IntegerType::Type{I}=Int64`: The integer type to use for indexing. 
 - `EdgeType::Type{E}=NTuple{2,IntegerType}`: The type to use for representing edges. 
 - `TriangleType::Type{V}=NTuple{3,IntegerType}`: The type to use for representing triangles. 
@@ -40,6 +42,8 @@ nodes, with all triangles inside the boundaries deleted.
 - `rng::AbstractRNG=Random.default_rng()`: The RNG to use.
 - `point_order=get_point_order(points, randomise, skip_points, IntegerType, rng)`: The insertion order. 
 - `recompute_representative_point=true`: At the end of the triangulation, will recompute the `RepresentativePointList` if `true`.
+- `delete_holes=true`: Whether to delete the exterior faces of all boundaries.
+- `check_arguments=true`: Whether to check the arguments for validity.
 
 # Outputs 
 Returns a [`Triangulation`](@ref).

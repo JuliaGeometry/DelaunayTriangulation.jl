@@ -1,15 +1,9 @@
 """
+    add_triangle!(tri::Triangulation, u, v, w; protect_boundary=false, update_ghost_edges=false)
     add_triangle!(tri::Triangulation, T; protect_boundary=false, update_ghost_edges=false)
-    add_triangle!(tri::Ts, u::Integer, v::Integer, w::Integer; protect_boundary=false, update_ghost_edges=false) where {Ts<:Triangulation}
 
-Given a triangle `T`, or a triple of integers `u, v, w`, adds the triangle into 
-the [`Triangulation`](@ref) type `tri`, updating the [`Adjacent`](@ref), 
-[`Adjacent2Vertex`](@ref), [`Graph`](@ref), and triangles fields.
-
-To update the ghost triangles directly, set `update_ghost_edges=true`. The other parts of the 
-boundary information will be handled, though, unless you set `protect_boundary=true`.
-
-No values are returned.
+Given a triangle `T = (u, v, w)`, adds the triangle into the triangulation `tri`. To update the ghost triangles directly, 
+set `update_ghost_edges=true`. The other parts of the boundary information will be handled, though, unless you set `protect_boundary=true`.
 """
 function add_triangle!(tri::Ts, u::Integer, v::Integer, w::Integer;
     protect_boundary=false, update_ghost_edges=false) where {Ts<:Triangulation}

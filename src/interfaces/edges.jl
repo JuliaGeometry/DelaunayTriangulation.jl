@@ -68,7 +68,7 @@ edge_indices(e) = (initial(e), terminal(e))
 
 Given an edge `e`, returns `(terminal(e), initial(e))`.
 """
-function reverse_edge end 
+function reverse_edge end
 function reverse_edge(e::E) where {E}
     u, v = edge_indices(e)
     return construct_edge(E, v, u)
@@ -172,14 +172,8 @@ function add_to_edges! end
 function add_to_edges!(::S, e) where {S}
     return error("The add_to_edges! function has not been defined for the type $S.")
 end
-function add_to_edges!(E::Set, e)
-    push!(E, e)
-    return nothing
-end
-function add_to_edges!(E::Vector, e)
-    push!(E, e)
-    return nothing 
-end
+add_to_edges!(E::Set, e) = push!(E, e)
+add_to_edges!(E::Vector, e) = push!(E, e)
 
 """
     add_edge!(E, e...)
@@ -219,16 +213,12 @@ function delete_from_edges!(::S, e) where {S}
 end
 function delete_from_edges!(E::Set{F}, e::F) where {F}
     has_e = contains_edge(e, E)
-    if has_e
-        delete!(E, e)
-    end
+    has_e && delete!(E, e)
     return nothing
 end
 function delete_from_edges!(Es::A, e::E) where {E,A<:AbstractVector{E}}
     has_e = contains_edge(e, Es)
-    if has_e
-        filter!(E -> e ≠ E, Es)
-    end
+    has_e && filter!(E -> e ≠ E, Es)
     return nothing
 end
 function delete_from_edges!(Es::E, i::Integer, j::Integer) where {E}

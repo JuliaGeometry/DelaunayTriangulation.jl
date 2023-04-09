@@ -1,14 +1,12 @@
 """
     delete_ghost_triangles!(tri::Triangulation)
 
-Given a [`Triangulation`](@ref) `tri`, deletes the ghost triangles from `tri`. In particular, 
-the `triangles`, [`Adjacent`](@ref), and [`Adjacent2Vertex`](@ref) fields are updated so that 
-ghost triangles are no longer stored in them.
+Deletes the ghost triangles from the triangulation `tri`.
 
-A ghost triangle is a triangle of the form `(i, j, k)` where one of the indices, say `i`, 
-satisfies `is_boundary_index(i)`.
+!!! note 
 
-No values are returned.
+    A ghost triangle is a triangle of the form `(i, j, k)` where only one of the indices, say `i`, 
+    satisfies `is_boundary_index(i)`.
 """
 function delete_ghost_triangles!(tri::Triangulation)
     boundary_indices = all_boundary_indices(tri)

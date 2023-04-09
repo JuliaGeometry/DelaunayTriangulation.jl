@@ -1,13 +1,10 @@
 """
     add_boundary_information!(tri::Triangulation)
 
-Given a [`Triangulation`](@ref) `tri`, adds boundary information into `tri`. In particular, 
-the [`Adjacent`](@ref), [`Adjacent2Vertex`](@ref), and [`Graph`](@ref) fields are updated so that e.g. 
-boundary edges map to a corresponding boundary index from [`Adjacent`](@ref), boundary indices map 
-to sets of boundary edges from [`Adjacent2Vertex`](@ref), and boundary indices map to boundary 
-nodes from [`Graph`](@ref). 
-
-No values are returned.
+Given a triangulation `tri`, adds boundary information into `tri`. In particular, 
+the `Adjacent`, `Adjacent2Vertex`, and `Graph` fields are updated so that e.g. boundary edges 
+map to their corresponding boundary indices, boundary indices map to their boundary edges 
+via the [`Adjacent2Vertex`](@ref) map, and boundary indices are included in the [`Graph`](@ref).
 """
 function add_boundary_information!(tri::Triangulation)
     I = integer_type(tri)

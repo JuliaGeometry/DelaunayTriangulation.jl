@@ -1,3 +1,9 @@
+"""
+    default_num_samples(num_points)
+
+Returns `ceil(cbrt(num_points))`. This is the default number of samples 
+to use when sampling in the jump-and-march algorithm.
+"""
 default_num_samples(num_points::I) where {I} = ceil(I, cbrt(num_points))
 
 function compare_distance(current_dist, current_idx, pts, i, qx, qy)
@@ -13,18 +19,26 @@ end
 
 """
     select_initial_point(pts, q;
-    point_indices=each_point_index(pts),
-    m=default_num_samples(length(point_indices)),
-    try_points=(),
-    rng::AbstractRNG = Random.default_rng())
+        point_indices=each_point_index(pts),
+        m=default_num_samples(length(point_indices)),
+        try_points=(),
+        rng::AbstractRNG=Random.default_rng())
 
-Given a collection of points and a point `q`, select `m` random points from `pts` 
-and return the index `i` that corresponds a point `get_point(pts, i)` closest to `q`, 
-out of all indices in `point_indices` and `try_points`. The indices are randomly 
-selected from `point_indices`, but you can guarantee points to try using 
-`try_points`. 
+Given a collection of points and a point `q`, select `m` random points from `pts` and return 
+the one that is closet to `q`.
 
-If `q` is an integer, then the point compared to becomes `get_point(pts, q)`.
+# Arguments 
+- `pts`: The set of points.
+- `q`: The coordinates of the query point, or its index in `pts`.
+
+# Keyword Arguments
+- `point_indices=each_point_index(pts)`: The indices of the points to consider.
+- `m=default_num_samples(length(point_indices))`: The number of points to sample.
+- `try_points=()`: The indices of points to try in addition to the sampled points.
+- `rng::AbstractRNG=Random.default_rng()`: The random number generator to use.
+
+# Outputs 
+- `k`: The index of the point in `pts` that is closest to `q` out of the points sampled.
 """
 function select_initial_point(pts, q;
     point_indices=each_point_index(pts),
@@ -35,7 +49,7 @@ function select_initial_point(pts, q;
     current_dist = typemax(F)
     current_idx = first(point_indices) # Just some index, doesn't matter 
     qx, qy = getxy(q)
-    for _ in 1:m  # Not using replacement, but probability of duplicates is approximately 0.5length(pt_idx)^(-1/3)
+    for _ in 1:m  # Not using replacement, but probability of duplicates is approximately 0.5length(point_indices)^(-1/3)
         i = rand(rng, point_indices)
         is_boundary_index(i) && continue
         current_dist, current_idx = compare_distance(current_dist, current_idx, pts, i, qx,
@@ -119,40 +133,50 @@ end
 """
     select_initial_triangle_interior_node(
         pts, 
-        adj::Adjacent, 
-        adj2v::Adjacent2Vertex, 
+        adj, 
+        adj2v, 
+        representative_point_list, 
         boundary_map, 
         k, 
         q, 
         boundary_index_ranges, 
-        check_existence::V = Val(has_multiple_segments(boundary_map)), 
-        store_history::F=Val(false),
+        check_existence=Val(has_multiple_segments(boundary_map)),
+        store_history=Val(false),
         history=nothing,
-        rng::AbstractRNG = Random.default_rng()) where {V,F}
+        rng::AbstractRNG = Random.default_rng())
 
-Selects an initial triangle for the jump-and-march algorithm, starting from a point with index `k` and 
-searching for the point `q`. The point `q` should be contained within the outermost boundary (interior 
-holes are fine), and `k` should not be a point on the outer boundary.
+Selects an initial triangle for the jump-and-march algorithm, starting from a point with index `k` 
+and finding the triangle such that the line from the `k`th point to `q` intersects it. It is assumed 
+that `k` is a point that is not on the boundary. 
 
 # Arguments 
-- `pts`: The collection of points. 
+- `pts`: The set of points. 
 - `adj`: The [`Adjacent`](@ref) map.
 - `adj2v`: The [`Adjacent2Vertex`](@ref) map.
-- `boundary_map`: The map taking boundary indices to their boundary segment location. See [`construct_boundary_map`](@ref).
+- `representative_point_list`: The list of representative points, giving the coordinates of points corresponding to boundary indices.
+- `boundary_map`: The map taking boundary indices to their corresponding segment in the boundary nodes. See [`construct_boundary_map`](@ref).
 - `k`: The index of the point in `pts` that we are starting at.
 - `q`: The point being searched for.
-- `boundary_index_ranges`: The `Dict` handling the mapping of boundary indices from [`construct_boundary_index_ranges`](@ref).
-- `check_existence::V=Val(has_multiple_segments(boundary_map)))`: Checks for different possible boundary indices when there are multiple segments. See [`get_adjacent`](@ref).
-- `store_history::F=Val(false)`: Whether to store visited triangles. Exterior ghost triangles will not be stored.
+- `boundary_index_ranges`: The `Dict` handling the mapping of boundary indices to the range of boundary indices belonging to the same curve. See [`construct_boundary_index_ranges`](@ref).
+- `check_existence=Val(has_multiple_segments(boundary_map))`: Checks for different possible boundary indices when there are multiple segments. See [`get_adjacent`](@ref).
+- `store_history=Val(false)`: Whether to store visited triangles. Exterior ghost triangles will not be stored.
 - `history=nothing`: The history. This should be a [`PointLocationHistory`](@ref) type if `store_history` is `true`.
+- `rng::AbstractRNG = Random.default_rng()`: The random number generator.
 
 # Outputs 
-- `p`: The `k`th point in `pts`. 
+- `p`: The `k`th point in `pts`.
 - `i, j`: These are indices defining the edge of a triangle including the point `p`, such that `i` is to the left of the line `pq` and `j` is to the right of `pq`.
 - `pᵢ, pⱼ`: The points in `pts` corresponding to the indices in `i` and `j`, respectively.
 """
-function select_initial_triangle_interior_node(pts, adj::Adjacent{I,E}, adj2v::Adjacent2Vertex,
-    representative_point_list, boundary_map, k, q, boundary_index_ranges,
+function select_initial_triangle_interior_node(
+    pts,
+    adj::Adjacent{I,E},
+    adj2v::Adjacent2Vertex,
+    representative_point_list,
+    boundary_map,
+    k,
+    q,
+    boundary_index_ranges,
     check_existence::V=Val(has_multiple_segments(boundary_map)),
     store_history::F=Val(false),
     history=nothing,
@@ -222,47 +246,52 @@ end
 """
     check_for_intersections_with_adjacent_boundary_edges(
         pts, 
-        adj::Adjacent{I,E}, 
+        adj, 
         boundary_index_ranges, 
         boundary_map, 
         k, 
         q, 
-        check_existence::V = Val(has_multiple_segments(boundary_map))) where {I,E,V}
+        check_existence = Val(has_multiple_segments(boundary_map)))
 
-Given a collection of points `pts`, an [`Adjacent`](@ref) map `adjacent`, a list of boundary index ranges from [`construct_boundary_index_ranges`](@ref), a boundary map from
-[`construct_boundary_map`](@ref), an outer boundary point `k`, and a query point `q`, 
-checks the edges adjacent to `k` along the outer boundary for `q`.
+Assuming that `k` is on the outer boundary, this function searches down the boundary edges adjacent to `k` to try and locate a triangle 
+or edge containing `q`.
 
-The `check_existence` argument is the same keyword argument from [`get_adjacent`](@ref), and is needed when you use multiple segments in your boundary.
+See also [`search_down_adjacent_boundary_edges`](@ref), which uses this function to determine an initial direction to search along a 
+straight boundary in case `q` is collinear with it.
 
-See also [`search_down_adjacent_boundary_edges`](@ref), which uses this function to determine an initial direction 
-to search along a straight boundary in case `q` is collinear with it.
-    
-The possible returned values are: 
+# Arguments 
+- `pts`: The set of points. 
+- `adj`: The [`Adjacent`](@ref) map.
+- `boundary_index_ranges`: The list of boundary index ranges from [`construct_boundary_index_ranges`](@ref), giving a range of boundary indices for a given boundary index all belonging to the same curve. 
+- `boundary_map`: The boundary map from [`construct_boundary_map`](@ref), which maps a boundary index to its corresponding segment. 
+- `k`: The outer boundary point `k` to start searching from.
+- `q`: The query point `q`.
+- `check_existence`: The same keyword argument from [`get_adjacent`](@ref), and is needed when you use multiple segments in your boundary.
 
-- `(Certificate.Outside, Certificate.Outside, k)`
+# Outputs 
+The output is a 5-tuple, with the first three elements having several possible forms:
 
-Here, the point `q` is not collinear with either of the adjacent boundary edges.
-- `(Certificate.Right, C, r)`, where `C` is either `Certificate.On` or `Certificate.Right` and `r` is the vertex to the right of `k`, i.e. `get_adjacent(adj, k, $BoundaryIndex)`
+- `(Certificate.Outside, Certificate.Outside, k)`: The point `q` is not collinear with either of the adjacent boundary edges.
+- `(Certificate.Right, C, r)`, where `C` is either `Certificate.On` or `Certificate.Right` and `r` is the vertex right of `k`: The point `q` is collinear with the edge to the right of `k`. If `C` is `Certificate.On`, then `q` is on the edge, whereas `C` being `Certificate.Right` means it is right of the edge. 
+- `(Certificate.Left, C, ℓ)`, where `C` is either `Certificate.On` or `Certificate.Left` and `ℓ` is the vertex left of `k`: The point `q` is collinear with the edge to the left of `k`. If `C` is `Certificate.On`, then `q` is on the edge, whereas `C` being `Certificate.Left` means it is left of the edge.
 
-This output means that `q` is collinear with the edge to the right of `k`. `C = Certificate.On` 
-means it is on this edge, while `C = Certificate.Right` means that `q` is to the right of this edge.
-- `(Certificate.Left, C, ℓ)`, where `C` is either `Certificate.On` or `Certificate.Left` and `ℓ` is the vertex to the left of `k`, i.e. `get_adjacent(adj, $BoundaryIndex, k)`
+In the latter two outputs above, `C` could also be `Certificate.Degenerate`, which means that `q` is `get_point(pts, r)` or `get_point(pts, ℓ)`, respectively.
 
-This output means that `q` is collinear with the edge to the left of `k`. `C = Certificate.On` 
-means it is on this edge, while `C = Certificate.Left` means that `q` is to the left of this edge.
+The latter two elements of the tuple are: 
 
-In these two outputs above, `C` could also mean `Certificate.Degenerate`, which means that `q` is `get_point(pts, r)` or `get_point(pts, ℓ)`, 
-respectively.
+- `right_cert`: The position of `q` relative to the edge `(p, p_right)`, where `p_right` is the point on the boundary to the right of `p`.
+- `left_cert`: The position of `q` relative to the edge `(p, p_left)`, where `p_left` is the point on the boundary to the left of `p`.
 
-In addition to these three returned values, the fourth and fifth returned values are `(right_cert, left_cert)`, which give the 
-position of `q` relative to the edges `(p, p_right)` and `(p, p_left)`, respectively, where `p_right` is the point on the boundary 
-to the right and `p_left` is the point on the boundary to the left of `p`. These returned values are useful in case we need 
-to go to [`check_for_intersections_with_interior_edges_adjacent_to_boundary_node`](@ref), since we can reuse these certificates.
+These returned values are useful in case we need to go to [`check_for_intersections_with_interior_edges_adjacent_to_boundary_node`](@ref), since we can reuse these certificates.
 """
-function check_for_intersections_with_adjacent_boundary_edges(pts, adj::Adjacent{I,E},
+function check_for_intersections_with_adjacent_boundary_edges(
+    pts,
+    adj::Adjacent{I,E},
     boundary_index_ranges,
-    representative_point_list, boundary_map, k, q,
+    representative_point_list,
+    boundary_map,
+    k,
+    q,
     check_existence::V=Val(has_multiple_segments(boundary_map))) where {I,E,V}
     p = get_point(pts, representative_point_list, boundary_map, k)
     right = get_right_boundary_node(adj, k, I(BoundaryIndex), boundary_index_ranges,
@@ -294,35 +323,57 @@ end
 """
     search_down_adjacent_boundary_edges(
         pts, 
-        adj::Adjacent{I,E}, 
+        adj,
         boundary_index_ranges, 
+        representative_point_list, 
         boundary_map, 
         k, 
         q,
-        direction,
+        direction, 
         q_pos, 
-        next_vertex, 
-        check_existence::V=Val(has_multiple_segments(boundary_map)),
-        store_history::F=Val(false),
-        history=nothing) where {I,E,V,F}
+        next_vertex,
+        check_existence=Val(has_multiple_segments(boundary_map)),
+        store_history=Val(false),
+        history=nothing) 
 
-Given a collection of points `pts`, an [`Adjacent`](@ref) map `adj`, a list of boundary index ranges from [`construct_boundary_index_ranges`](@ref), a boundary map from [`construct_boundary_map`](@ref), an outer boundary index 
-`k` for a point in `pts`, a point `q` being searched for, a `direction` giving the direction of `q` from `get_point(pts, k)`,
-a certificate for the position of q from this point, and the next vertex in the direction of `q` (these last three arguments 
-coming from [`check_for_intersections_with_adjacent_boundary_edges`](@ref)), walks down the edges that `q` is 
-collinear with until an edge is found that `q` is on or until finding that `q` is outside of the triangulation. 
+Starting at the outer boundary node `k`, walks down the boundary in the direction of `q` until finding `q` or finding that it is outside of the triangulation. 
 
-The returned value takes the form `(cert, u, v, w)`, with `cert = Certificate.On` if `q` is on the edge `(u, v)` and 
-`cert = Certificate.Outside` if `q` is outside of the triangulation. If `is_on(cert)`, then `(u, v, w)` is a positively 
-oriented triangle with `q` on the edge `(u, v)`. Otherwise, `(u, v, w)` is a ghost triangle that should be close to `q`.
+# Arguments 
+- `pts`: The collection of points.
+- `adj`: The [`Adjacent`](@ref) map.
+- `boundary_index_ranges`: The list of boundary index ranges from [`construct_boundary_index_ranges`](@ref).
+- `representative_point_list`: The list of representative points. 
+- `boundary_map`: The boundary map from [`construct_boundary_map`](@ref).
+- `k`: The outer boundary index.
+- `q`: The point being searched for.
+- `direction`: The direction of `q` from `get_point(pts, k)`.
+- `q_pos`: The certificate for the position of `q` from this point `k`.
+- `next_vertex`: The next vertex in the direction of `q` (this argument comes from [`check_for_intersections_with_adjacent_boundary_edges`](@ref)).
+- `check_existence=Val(has_multiple_segments(boundary_map))`: The same keyword argument from [`get_adjacent`](@ref), and is needed when you use multiple segments in your boundary.
+- `store_history=Val(false)`: Whether to store the history of the search.
+- `history=nothing`: The history of the search.
 
-The `check_existence` argument is the same keyword argument from [`get_adjacent`](@ref), and is needed when you use multiple segments in your boundary.
+# Outputs 
+The output takes the form `(cert, u, v, w)`, where: 
 
-Note that this function relies on the assumption that the geometry is convex.
+- `cert`: This is `Certificate.On` if `q` is on the edge `(u, v)`, and `Certificate.Outside` if `q` is outside of the triangulation.
+- `(u, v, w)`: If `is_on(cert)`, then this is a positively oriented triangle with `q` on the edge `(u, v)`. Otherwise, `(u, v, w)` is a ghost triangle close to `q`.
+
+!!! warning 
+
+    This function relies on the assumption that the geometry is convex.
 """
-function search_down_adjacent_boundary_edges(pts, adj::Adjacent{I,E},
-    boundary_index_ranges, representative_point_list, boundary_map, k, q,
-    direction, q_pos, next_vertex,
+function search_down_adjacent_boundary_edges(
+    pts,
+    adj::Adjacent{I,E},
+    boundary_index_ranges,
+    representative_point_list,
+    boundary_map,
+    k,
+    q,
+    direction,
+    q_pos,
+    next_vertex,
     check_existence::V=Val(has_multiple_segments(boundary_map)),
     store_history::F=Val(false),
     history=nothing) where {I,E,V,F}
@@ -337,8 +388,7 @@ function search_down_adjacent_boundary_edges(pts, adj::Adjacent{I,E},
         end
         while is_right(q_pos)
             i, pᵢ = j, pⱼ
-            j = get_right_boundary_node(adj, i, I(BoundaryIndex), boundary_index_ranges,
-                check_existence)
+            j = get_right_boundary_node(adj, i, I(BoundaryIndex), boundary_index_ranges, check_existence)
             if is_true(store_history)
                 k′ = get_adjacent(adj, i, j; check_existence, boundary_index_ranges)
                 add_triangle!(history, i, j, k′)
@@ -346,12 +396,10 @@ function search_down_adjacent_boundary_edges(pts, adj::Adjacent{I,E},
             end
             pⱼ = get_point(pts, representative_point_list, boundary_map, j)
             right_cert = point_position_relative_to_line(pᵢ, pⱼ, q)
-            q_pos = !is_collinear(right_cert) ? Cert.Outside :
-                    point_position_on_line_segment(pᵢ, pⱼ, q)
+            q_pos = !is_collinear(right_cert) ? Cert.Outside : point_position_on_line_segment(pᵢ, pⱼ, q)
         end
         if is_outside(q_pos)
-            return (Cert.Outside, j, i,
-                get_adjacent(adj, j, i; check_existence, boundary_index_ranges))
+            return (Cert.Outside, j, i, get_adjacent(adj, j, i; check_existence, boundary_index_ranges))
         elseif is_on(q_pos) || is_degenerate(q_pos)
             k = get_adjacent(adj, i, j; check_existence, boundary_index_ranges)
             return (Cert.On, i, j, k)
@@ -364,8 +412,7 @@ function search_down_adjacent_boundary_edges(pts, adj::Adjacent{I,E},
         end
         while is_left(q_pos)
             i, pᵢ = j, pⱼ
-            j = get_left_boundary_node(adj, i, I(BoundaryIndex), boundary_index_ranges,
-                check_existence)
+            j = get_left_boundary_node(adj, i, I(BoundaryIndex), boundary_index_ranges, check_existence)
             if is_true(store_history)
                 k′ = get_adjacent(adj, j, i; check_existence, boundary_index_ranges)
                 add_triangle!(history, j, i, k′)
@@ -373,12 +420,10 @@ function search_down_adjacent_boundary_edges(pts, adj::Adjacent{I,E},
             end
             pⱼ = get_point(pts, representative_point_list, boundary_map, j)
             left_cert = point_position_relative_to_line(pᵢ, pⱼ, q)
-            q_pos = !is_collinear(left_cert) ? Cert.Outside :
-                    point_position_on_line_segment(pⱼ, pᵢ, q)
+            q_pos = !is_collinear(left_cert) ? Cert.Outside : point_position_on_line_segment(pⱼ, pᵢ, q)
         end
         if is_outside(q_pos)
-            return (Cert.Outside, i, j,
-                get_adjacent(adj, i, j; check_existence, boundary_index_ranges))
+            return (Cert.Outside, i, j, get_adjacent(adj, i, j; check_existence, boundary_index_ranges))
         elseif is_on(q_pos) || is_degenerate(q_pos)
             k = get_adjacent(adj, j, i; check_existence, boundary_index_ranges)
             return (Cert.On, j, i, k)
@@ -390,35 +435,34 @@ end
 """
     check_for_intersections_with_interior_edges_adjacent_to_boundary_node(
         pts,
-        adj::Adjacent{I,E}, 
-        graph::Graph{I}, 
+        adj, 
+        graph, 
         boundary_index_ranges, 
+        representative_point_list,
         boundary_map, 
         k, 
         q, 
         right_cert, 
         left_cert, 
-        check_existence::V=Val(has_multiple_segments(boundary_map)), 
-        store_history::F=Val(false), 
-        history=nothing) where {I,E,V,F}
+        check_existence=Val(has_multiple_segments(boundary_map)), 
+        store_history=Val(false), 
+        history=nothing)
 
 Checks if the line connecting the `k`th point of `pts` to `q` intersects any of the edges neighbouring the boundary node `k`.
 
-This function should only be used after [`check_for_intersections_with_adjacent_boundary_edges`](@ref), and currently is only guaranteed 
-to work on convex geometries. 
-
 # Arguments 
 - `pts`: The collection of points. 
-- `adj::Adjacent{I,E}`: The [`Adjacent`](@ref) map.
-- `graph::Graph{I}`: The [`Graph`](@ref).
+- `adj`: The [`Adjacent`](@ref) map.
+- `graph`: The [`Graph`](@ref).
 - `boundary_index_ranges`: The boundary index range mapping from [`construct_boundary_index_ranges`](@ref).
+- `representative_point_list`: The list of representative points.
 - `boundary_map`: The map that handles the mapping of boundary indices to boundary segments. Sse [`construct_boundary_map`](@ref).
 - `k`: The boundary node.
 - `q`: The point we are searching for. 
 - `right_cert`: A certificate giving the position of `q` to the right of the `k`th point. This comes from [`check_for_intersections_with_adjacent_boundary_edges`](@ref).
 - `left_cert`: A certificate giving the position of `q` to the left of the `k`th point. This comes from [`check_for_intersections_with_adjacent_boundary_edges`](@ref).
-- `check_existence::V=Val(has_multiple_segments(boundary_nodes)))`: Checks for different possible boundary indices when there are multiple segments. See [`get_adjacent`](@ref).
-- `store_history::F=Val(false)`: Whether to store visited triangles. Exterior ghost triangles will not be stored.
+- `check_existence=Val(has_multiple_segments(boundary_nodes)))`: Checks for different possible boundary indices when there are multiple segments. See [`get_adjacent`](@ref).
+- `store_history=Val(false)`: Whether to store visited triangles. Exterior ghost triangles will not be stored.
 - `history=nothing`: The history. This should be a [`PointLocationHistory`](@ref) type if `store_history` is `true`.
 
 # Outputs 
@@ -433,21 +477,27 @@ The line `pq` intersects the edge `pᵢpⱼ`, and `(j, i, k)` is a positively or
 The point `q` is inside the positively oriented triangle `(i, j, k)`.
 - `(zero(I), zero(I), Cert.None, Cert.Outside)`
 
-The point `q` is outside of the triangulation.
+The point `q` is outside of the triangulation. Note that `I` is the integer type.
 - `(i, j, Cert.On, Cert.Inside)`
 
 The point `q` is on the edge `pᵢpⱼ`, and so is inside the positively oriented triangle `(i, j, k)`.
 - `(i, j, Cert.Right, Cert.Outside)`
 
 The point `q` is collinear with the edge `pᵢpⱼ`, but is off of it and further into the triangulation. 
+
+!!! warning 
+
+    This function should only be used after [`check_for_intersections_with_adjacent_boundary_edges`](@ref), and currently is only guaranteed to work on convex geometries. 
 """
-function check_for_intersections_with_interior_edges_adjacent_to_boundary_node(pts,
+function check_for_intersections_with_interior_edges_adjacent_to_boundary_node(
+    pts,
     adj::Adjacent{I,E},
     graph::Graph{I},
     boundary_index_ranges,
     representative_point_list,
     boundary_map,
-    k, q,
+    k, 
+    q,
     right_cert,
     left_cert,
     check_existence::V=Val(has_multiple_segments(boundary_map)),

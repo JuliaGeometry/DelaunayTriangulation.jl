@@ -39,6 +39,18 @@ include("./helper_functions.jl")
     tri = triangulate(pts; delete_ghosts=false)
     DT.delete_vertex!(tri, 3)
     @test !validate_triangulation(tri)
+    tri = triangulate(pts; delete_ghosts=false)
+    push!(tri.triangles, (11, 17, 20))
+    @test !test_iterators(tri)
+    @test !validate_triangulation(tri)
+    tri = triangulate(pts; delete_ghosts=true)
+    push!(tri.triangles, (11, 17, -20))
+    @test !test_iterators(tri)
+    @test !validate_triangulation(tri)
+    tri = triangulate(pts; delete_ghosts=false)
+    push!(tri.triangles, (11, 17, 20000))
+    @test !test_iterators(tri)
+    @test !validate_triangulation(tri)
 end
 
 @testset "Validating constrained triangulations" begin
@@ -51,7 +63,7 @@ end
     @test validate_triangulation(tri_2)
     tri_3 = generate_mesh([0.0, 2.0, 2.0, 0.0, 0.0], [0.0, 0.0, 2.0, 2.0, 0.0], 0.1;
         convert_result=true, add_ghost_triangles=true)
-        @test validate_triangulation(tri_3)
+    @test validate_triangulation(tri_3)
     tri_4 = generate_mesh(reverse(reverse.(x[2])), reverse(reverse.(y[2])), 0.1; convert_result=true, add_ghost_triangles=true)
     @test validate_triangulation(tri_4)
     a, b = 0.0, 5.0
@@ -62,4 +74,8 @@ end
     @test validate_triangulation(tri_5)
     tri_6 = triangulate_rectangle(a, b, c, d, nx, ny; add_ghost_triangles=true, single_boundary=true)
     @test validate_triangulation(tri_6)
+    push!(tri_6.triangles, (11,1191919, 2000))
+    @test !validate_triangulation(tri_6)
+    push!(tri_5.triangles, (-1,-2,-3))
+    @test !validate_triangulation(tri_5)
 end

@@ -8,10 +8,12 @@ tests if the point with index `jᵢ` is closer to the line than those with index
 method extracts these latter two indices using the linked list `(prev, next)` of vertices 
 and a shuffled set of indices `shuffled_indices` together with the original vertex list `V`.
 
-This function is useful for constrained triangulations since the algorithm 
-used will not work if a point being inserted on the cavity has interior angle 
-of 360° or greater. This is possible only if a vertex is closer to the line than 
-its neighbours on the polygon.
+!!! note 
+
+    This function is useful for constrained triangulations since the algorithm 
+    used will not work if a point being inserted on the cavity has interior angle 
+    of 360° or greater. This is possible only if a vertex is closer to the line than 
+    its neighbours on the polygon.
 """
 function vertex_is_closer_than_neighbours(tri::Triangulation, u, v, jᵢ, jᵢ₋₁, jᵢ₊₁)
     prev_comp = point_closest_to_line(tri, u, v, jᵢ, jᵢ₋₁)

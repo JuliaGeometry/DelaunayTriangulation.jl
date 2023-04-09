@@ -1,23 +1,32 @@
 """
     exterior_jump_and_march(
         pts, 
-        adj::Adjacent{I,E}, 
+        adj, 
         boundary_index_ranges, 
+        representative_point_list,
         boundary_map, 
         k, 
         q, 
-        check_existence::V=Val(has_multiple_segments(boundary_map))) where {I,E,V}
+        check_existence=Val(has_multiple_segments(boundary_map))) 
 
-Given a collection of points `pts`, an [`Adjacent`](@ref) map `adj`, a `Dict` mapping boundary indices to ranges from 
-[`construct_boundary_index_ranges`](@ref), a boundary map 
-from [`construct_boundary_map`](@ref), a vertex `k`, and a point `q` outside of 
-the triangulation, returns the edge `(i, j)` such that the ghost triangle 
-`(i, j, $BoundaryIndex)` contains `q`. 
+Given a point `q` outside of the triangulation, finds the ghost triangle containing it.
 
-The `check_existence` argument is used to check that the edge exists when using [`get_adjacent`](@ref), 
-helping to correct for incorrect boundary indices in the presence of multiple boundary segments. See [`get_adjacent`](@ref).
+# Arguments 
+- `pts`: The collection of points.
+- `adj`: The [`Adjacent`](@ref) map.
+- `boundary_index_ranges`: A `Dict` mapping boundary indices to ranges from [`construct_boundary_index_ranges`](@ref).
+- `representative_point_list`: A `Dict` mapping curve indices to representative points.
+- `boundary_map`: A boundary map from [`construct_boundary_map`](@ref).
+- `k`: The vertex to start from.
+- `q`: The point outside of the triangulation.
+- `check_existence=Val(has_multiple_segments(boundary_map)))`: Used to check that the edge exists when using [`get_adjacent`](@ref), in case there are multiple segments.
 
-The result is meaningless if `q` is inside of the triangulation.
+# Ouptut 
+- The edge `(i, j)` such that the ghost triangle `(i, j, g)` contains `q`, and `g = get_adjacent(adj, i, j)`.
+
+!!! warning 
+
+    The result is meaningless if `q` is inside of the triangulation.
 """
 function exterior_jump_and_march(
     pts,
@@ -64,7 +73,7 @@ function exterior_jump_and_march(
 end
 
 """
-    jump_and_march(pts, adj, adj2v, graph::Graph{I}, boundary_index_ranges, boundary_map, q;
+    jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges, representative_point_list, boundary_map, q;
         m=default_num_samples(num_points(pts)),
         point_indices=each_point_index(pts),
         try_points=(),
@@ -78,16 +87,12 @@ end
 Using the jump and march algorithm, finds the triangle in the triangulation containing the 
 query point `q`.
 
-If your triangulation does not have ghost triangles, and the point `q` is outside of the triangulation, 
-this function may fail to terminate. You may like to add ghost triangles in this case (using 
-[`add_ghost_triangles!`](@ref)), noting that there is no actual triangle that `q` is inside 
-when it is outside of the triangulation unless ghost triangles are present. 
-
 # Arguments 
 - `pts`: The collection of points.
 - `adj`: The [`Adjacent`](@ref) map.
-- `graph::Graph{I}`: The [`Graph`](@ref).
+- `graph`: The [`Graph`](@ref).
 - `boundary_index_ranges`: The `Dict` mapping boundary indices to ranges from [`construct_boundary_index_ranges`](@ref).
+- `representative_point_list`: The `Dict` mapping curve indices to representative points.
 - `boundary_map`: The boundary map from [`construct_boundary_map`](@ref) handling the mapping of boundary indices. 
 - `q`: The query point.
 
@@ -104,6 +109,13 @@ when it is outside of the triangulation unless ghost triangles are present.
 
 # Output 
 Returns the triangle `V` containing the query point `q`.
+
+!!! warning 
+
+    If your triangulation does not have ghost triangles, and the point `q` is outside of the triangulation, 
+    this function may fail to terminate. You may like to add ghost triangles in this case (using 
+    [`add_ghost_triangles!`](@ref)), noting that there is no actual triangle that `q` is inside of
+    when it is outside of the triangulation unless ghost triangles are present. 
 """
 function jump_and_march(pts, adj, adj2v, graph::Graph{I}, boundary_index_ranges,
     representative_point_list, boundary_map, q;

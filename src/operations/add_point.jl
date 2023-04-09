@@ -1,48 +1,28 @@
 """
-    add_point!(tri::Triangulation, new_point;
-    point_indices=get_vertices(tri),
-    m=default_num_samples(length(point_indices)),
-    try_points=(),
-    initial_search_point=integer_type(tri)(select_initial_point(get_points(tri),
-                                                                new_point;
-                                                                point_indices,
-                                                                m,
-                                                                try_points)))
-    add_point!(tri::Triangulation, new_point_x, new_point_y;
+add_point!(tri::Triangulation, new_point[, new_point_y];
     point_indices=get_vertices(tri),
     m=default_num_samples(length(point_indices)),
     try_points=(),
     rng::AbstractRNG=Random.default_rng(),
-    initial_search_point=integer_type(tri)(select_initial_point(get_points(tri),
-        (new_point_x, new_point_y),
-        point_indices,
-        m,
-        try_points,
-        rng)))                                                                
-                                                                
-       
-Adds the point `new_point` into the triangulation.
+    initial_search_point=integer_type(tri)(select_initial_point(get_points(tri),new_point;point_indices,m,try_points,rng)),
+    update_representative_point=false)
 
-This function will not update the convex hull - if you need it to 
-be corrected, you could use e.g. [`convex_hull!`](@ref). You should 
-also be careful with using this if you have deleted ghost triangles.
+Adds the point `new_point` to the triangulation `tri`.
 
 # Arguments 
-- `tri::Triangulation`: The triangulation. 
-- `new_point`: The index of the point in `get_points(tri)` to add. If instead this is simply a point rather than an index, it is assumed it is not present in `get_points(tri)` and instead gets inserted into `get_points(tri)` via `push_point!(tri, new_point)`, meaning `new_point` has index `num_points(tri) + 1`.
+- `tri::Triangulation`: The [`Triangulation`](@ref).
+- `new_point[, new_point_y]`: The point to add. This `new_point` can be an integer, in which case `get_point(tri, new_point)` is added. If `new_point` is just a set of coordinates, we add that into `tri` via [`push_point!`](@ref) and then add that index into `tri`. Lastly, if we provide `(new_point, new_point_y)`, then the point is treated as this `Tuple` and inserted.
 
 # Keyword Arguments 
-- `point_indices=get_vertices(tri)`: The currently inserted points in `tri`. 
-- `m=default_num_samples(length(point_indices))`: How many points to sample. 
-- `try_points()`: Points to consider when sampling for point location. 
-- `rng::AbstractRNG=Random.default_rng()`: The RNG.
-- `initial_search_point=integer_type(tri)(select_initial_point(get_points(tri), new_point; point_indices, m, try_points)))`: Where to start the point location. 
-
-# Outputs 
-There are no outputs, but `tri` is updated in-place.
+- `point_indices=each_solid_vertex(tri)`: The indices of the non-ghost points in the triangulation.
+- `m=default_num_samples(length(point_indices))`: The number of points to sample from `point_indices` to use as the initial search point.
+- `try_points=()`: A list of points to try as the initial search point in addition to those sampled.
+- `rng::AbstractRNG=Random.default_rng()`: The random number generator to use.
+- `initial_search_point=integer_type(tri)(select_initial_point(get_points(tri),new_point;point_indices,m,try_points,rng))`: The initial search point to use. If this is not provided, then we use [`select_initial_point`](@ref) to select one.
+- `update_representative_point=false`: Whether to update the representative point list after adding the new point.
 """
 function add_point!(tri::Triangulation, new_point;
-    point_indices=get_vertices(tri),
+    point_indices=each_solid_vertex(tri),
     m=default_num_samples(length(point_indices)),
     try_points=(),
     rng::AbstractRNG=Random.default_rng(),

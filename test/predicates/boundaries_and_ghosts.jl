@@ -211,7 +211,7 @@ end
     __tri = DT.triangulate_bowyer_watson(_tri.points)
     @test !DT.has_boundary_nodes(__tri)
     @test !DT.is_constrained(__tri)
-    push!(__tri.constrained_edges, (1, 2), (2, 3), (4, 5))
+    push!(__tri.all_constrained_edges, (1, 2), (2, 3), (4, 5))
     @test !DT.has_boundary_nodes(__tri)
     @test DT.is_constrained(__tri)
 end

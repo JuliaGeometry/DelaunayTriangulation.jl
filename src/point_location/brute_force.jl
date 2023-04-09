@@ -1,10 +1,9 @@
 """
-    brute_force_search(T, r, pts, boundary_map)
+    brute_force_search(T, r, pts, representative_point_list, boundary_map)
 
-Given a collection of triangles `T`, a point `r`, a collection of points 
-`pts`, and a boundary map handling the mapping of boundary indices from 
-[`construct_boundary_map`](@ref), returns the triangle in `T` containing `r` 
-by searching over all triangles.
+Searches for the triangle in `T` containing the point `r` in `T` using brute force, simply 
+searching over all triangles. Ghost triangles are handled via the `representative_point_list`
+and `boundary_map` from [`construct_boudary_map`](@ref).
 """
 function brute_force_search(T, r, pts, representative_point_list, boundary_map)
     for V in each_triangle(T)

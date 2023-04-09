@@ -41,10 +41,7 @@ function has_multiple_segments end
 function has_multiple_segments(::F) where {F}
     return error("The has_multiple_segments function has not been defined for the type $F.")
 end
-function has_multiple_segments(::AAA) where {F<:Number,A<:AV{F},AA<:AV{A},
-    AAA<:AV{AA}}
-    return true
-end
+has_multiple_segments(::AAA) where {F<:Number,A<:AV{F},AA<:AV{A},AAA<:AV{AA}} = true
 has_multiple_segments(::AA) where {F<:Number,A<:AV{F},AA<:AV{A}} = true
 has_multiple_segments(::A) where {F<:Number,A<:AV{F}} = false
 
@@ -90,7 +87,7 @@ needs to be defined for individual segments. We define the method
 
     num_boundary_edges(bn::A) where {A<:AbstractVector}
 
-which returns `length(bn) -1` (`-1` because it is assumed that `bn[begin] == bn[end]`). 
+which returns `length(bn) - 1` (`-1` because it is assumed that `bn[begin] == bn[end]`). 
 This is the only method that needs to be extended.
 
 See also [`getboundarynodes`](@ref).
@@ -137,11 +134,7 @@ function getboundarynodes end
 function getboundarynodes(::F, ::Any) where {F}
     return error("The getboundarynodes function has not been defined for the type $F.")
 end
-function getboundarynodes(bn::AAA,
-    m::Integer) where {F<:Number,A<:AV{F},AA<:AV{A},
-    AAA<:AV{AA}}
-    return bn[m]
-end
+getboundarynodes(bn::AAA, m::Integer) where {F<:Number,A<:AV{F},AA<:AV{A},AAA<:AV{AA}} = bn[m]
 getboundarynodes(bn::AA, n::Integer) where {F<:Number,A<:AV{F},AA<:AV{A}} = bn[n]
 getboundarynodes(bn::A, ℓ::Integer) where {F<:Number,A<:AV{F}} = bn[ℓ]
 getboundarynodes(bn, m::Integer, n::Integer) = getboundarynodes(getboundarynodes(bn, m), n)
@@ -209,8 +202,7 @@ end
 
 The above will work for any form of `bn` also.
 """
-Base.@constprop :aggressive function construct_boundary_map(bn;
-    IntegerType::Type{I}=Int64) where {I}
+Base.@constprop :aggressive function construct_boundary_map(bn; IntegerType::Type{I}=Int64) where {I}
     if has_multiple_curves(bn)
         dict = OrderedDict{I,NTuple{2,I}}()
         nc = num_curves(bn)
@@ -296,8 +288,8 @@ second element of `pos` gives the position of the array to insert `node` into. I
 is the same as 
 
     insert!(get_boundary_nodes(bn, pos[1]), pos[2], node)
-""" 
-function insert_boundary_node! end 
+"""
+function insert_boundary_node! end
 function insert_boundary_node!(bn, pos, node)
     nodes = get_boundary_nodes(bn, pos[1])
     insert!(nodes, pos[2], node)
@@ -406,8 +398,7 @@ OrderedDict{Int64, UnitRange{Int64}} with 7 entries:
   -7 => -7:-4
 ```
 """
-function construct_boundary_index_ranges(boundary_nodes;
-    IntegerType::Type{I}=Int64) where {I}
+function construct_boundary_index_ranges(boundary_nodes; IntegerType::Type{I}=Int64) where {I}
     start = I(BoundaryIndex)
     current_boundary_index = I(BoundaryIndex)
     dict = OrderedDict{I,UnitRange{I}}()

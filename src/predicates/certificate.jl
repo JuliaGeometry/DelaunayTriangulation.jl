@@ -1,10 +1,8 @@
 """
     Certificate
 
-An `Enum` type that represents results from a geometric 
-predicate. Below we provide a list of available certificates, 
-along with the function that can be used for testing if a given 
-`Certificate` matches that `certificate`.
+An `Enum` type that represents results from a geometric predicate. Below we provide a list of available certificates, 
+along with the function that can be used for testing if a given `Certificate` matches that `certificate`.
 
 - `Inside`: `is_inside`
 - `Degenerate`: `is_degenerate`
@@ -64,7 +62,7 @@ has_multiple_intersections(cert::Certificate.T) = is_multiple(cert)
     elseif cert == I(1)
         return Cert3
     end
-    throw(ArgumentError("The provided certificate value, $cert, must be one of (-1, 0, 1)."))
+    throw(ArgumentError("The provided certificate value, $cert, must be one of ($(I(-1)), $(I(0)), $(I(1))."))
 end
 
 const Cert = Certificate

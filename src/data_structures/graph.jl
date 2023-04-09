@@ -15,19 +15,6 @@ The `UndirectedGraph` that maps a vertex `u` to a list of edges,
 `V`, such that `(u, v)` is an edge of the triangulation for each 
 `v` in `V`. 
 
-# Constructors 
-The graph can be constructed in three ways:
-
-- `Graph{I}() where {I}`
-
-Creates an empty graph. 
-- `Graph()`
-
-Creates an empty graph with `I = Int64`.
-- `Graph(G::UndirectedGraph{I}) where {I}`
-
-Creates a `Graph` from an existing `UndirectedGraph`.
-
 # Extended help
 You should not work with the `graph` field directly. We provide 
 the following functions for working with `Graph`, where `G` denotes 
@@ -212,10 +199,12 @@ end
 Given a graph `G`, deletes the triangle `(i, j, k)` deletes `G`. In particular, the 
 indices `(i, j, k)` will no longer be neighbours of each other.
 
-Be careful with using this function - you could have a triangle `(j, i, ℓ)`, say, 
-which will also be affected since the graph is undirected. Note also 
-that the vertices `(i, j, k)` will not be removed - only the neighbourhoods 
-are affected.
+!!! notes
+
+    Be careful with using this function - you could have a triangle `(j, i, ℓ)`, say, 
+    which will also be affected since the graph is undirected. Note also 
+    that the vertices `(i, j, k)` will not be removed - only the neighbourhoods 
+    are affected.
 """
 function delete_triangle!(G::Ts, i::V, j::V, k::V) where {I,V<:Integer,Ts<:Graph{I}} # the signature here is for resolving a method ambiguity
     delete_neighbour!(G, I(i), I(j), I(k))

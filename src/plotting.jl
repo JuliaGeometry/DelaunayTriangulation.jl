@@ -1,71 +1,68 @@
 """
-    triplot(!)(points, triangles, boundary_nodes, convex_hull, constrained_edges, args...; kwargs...)
-    triplot(!)(tri::Triangulation, args...; kwargs...)
+    triplot(!)(points, triangles, boundary_nodes, convex_hull, constrained_edges, representative_point_list; kwargs...)
+    triplot(!)(tri::Triangulation; kwargs...)
 
-Plots a triangulation. The available attributes are:
+Plots a triangulation. 
 
+# Attributes 
 - `markersize=11`
 
-Markersize for the points. 
+Size of the points.
 - `show_ghost_edges=false`
 
-Whether to plot interpretations of the ghost edges. If the ghost edges 
-are on the outermost boundary, then a ghost edge is a line starting at 
-the solid vertex and parallel with the vertex of the domain, pointing 
-outwards. If the ghost edge is an interior ghost edge, then an edge 
-is shown that connects with the centroid of the corresponding interior.
-- `recompute_centers=true`
+Whether to show ghost edges.
+- `recompute_centers=false`
 
-Only relevant if `show_ghost_edges`. This will recompute the representative centers for 
-each region if needed. 
+Whether to recompute `tri.representative_point_list`.
 - `show_all_points=false`
 
-Whether to plot all points. If `false`, only plots those that correspond 
-to a solid triangle. 
+Whether to show all points, regardless of whether they appear in the triangulation.
 - `point_color=:red`
 
-Only relevant if `show_all_points`. Colour to use for the points.
+Colour of the points.
 - `strokecolor=:black`
 
-Colour to use for the edges of the triangles.
+Colours of the triangle edges.
 - `triangle_color=(:white, 0.0)`
 
-Colour to use for the triangles. 
+Colours of the triangles.
 - `ghost_edge_color=:blue`
 
-Only relevant if `show_ghost_edges`. Colour to use for the ghost edges. 
+Colours of the ghost edges.
 - `ghost_edge_linewidth=1`
 
-Only relevant if `show_ghost_edges`. Linewidth to use for the ghost edges.
+Width of the ghost edges.
 - `strokewidth=1`
 
-The width of the triangle edges.
+Width of the triangle edges.
 - `ghost_edge_extension_factor=10.0`
 
-Only relevant if `show_ghost_edges`. For the outermost ghost edges, we extrapolate 
-a line to decide its extent away from the boundary. This is the factor 
-used.
-- `plot_convex_hull=true`
+Factor that scales the length of the ghost edges.
+- `show_convex_hull=true`
 
-Whether to also plot the convex hull of the points.
-- `convex_hull_color=:grey'
+Whether to show the convex hull.
+- `convex_hull_color=:red`
 
-Only relevant if `plot_convex_hull`. The linecolor to use for the convex hull.
+Colour of the convex hull.
 - `convex_hull_linestyle=:dash`
 
-Only relevant if `plot_convex_hull`. The linestyle to use for the convex hull.
+Linestyle for the convex hull edges.
 - `convex_hull_linewidth=2`
 
-Only relevant if `plot_convex_hull`. The linewidth to use for the convex hull.
+Width of the convex hull.
 - `show_constrained_edges=true`
 
-Only relevant if the triangulation is constrained. This colours all constrained edges.
+Whether to show the constrained edges.
 - `constrained_edge_color=:magenta`
 
-Only relevant if `show_constrained_edges`. The colour to use for the constrained edges.
+Colour of the constrained edges.
+- `constrained_edge_linewidth=2`
+
+Width of the constrained edges.
 """
 MakieCore.@recipe(Triplot, points, triangles, boundary_nodes, convex_hull, constrained_edges, representative_point_list) do scene
-    return MakieCore.Attributes(; markersize=11,
+    return MakieCore.Attributes(;
+        markersize=11,
         show_ghost_edges=false,
         recompute_centers=false,
         show_all_points=false,
@@ -76,13 +73,14 @@ MakieCore.@recipe(Triplot, points, triangles, boundary_nodes, convex_hull, const
         ghost_edge_linewidth=1,
         strokewidth=1,
         ghost_edge_extension_factor=10.0,
-        plot_convex_hull=true,
+        show_convex_hull=true,
         convex_hull_color=:red,
         convex_hull_linestyle=:dash,
         convex_hull_linewidth=2,
         show_constrained_edges=true,
         constrained_edge_color=:magenta,
-        constrained_edge_linewidth=2)
+        constrained_edge_linewidth=2
+    )
 end
 function MakieCore.convert_arguments(plot::Type{<:Triplot}, tri::Triangulation)
     return (get_points(tri), get_triangles(tri), get_boundary_nodes(tri),
@@ -108,7 +106,7 @@ function MakieCore.plot!(p::Triplot)
     ghost_edge_linewidth = p[:ghost_edge_linewidth]
     strokewidth = p[:strokewidth]
     ghost_edge_extension_factor = p[:ghost_edge_extension_factor]
-    plot_convex_hull = p[:plot_convex_hull]
+    show_convex_hull = p[:show_convex_hull]
     convex_hull_color = p[:convex_hull_color]
     convex_hull_linestyle = p[:convex_hull_linestyle]
     convex_hull_linewidth = p[:convex_hull_linewidth]
@@ -127,11 +125,12 @@ function MakieCore.plot!(p::Triplot)
     ## Define the function for updating the observables 
     function update_plot(points, triangles, boundary_nodes, convex_hull, constrained_edges, representative_point_list)
         boundary_map = construct_boundary_map(boundary_nodes)
-        if !has_multiple_segments(boundary_nodes) && num_boundary_edges(boundary_nodes) == 0
-            recompute_centers[] &&
+        if recompute_centers[]
+            if !has_multiple_segments(boundary_nodes) && num_boundary_edges(boundary_nodes) == 0
                 compute_representative_points!(representative_point_list, points, get_indices(convex_hull))
-        else
-            recompute_centers[] && compute_representative_points!(representative_point_list, points, boundary_nodes)
+            else
+                compute_representative_points!(representative_point_list, points, boundary_nodes)
+            end
         end
 
         ## Clear out the previous observables
@@ -187,7 +186,7 @@ function MakieCore.plot!(p::Triplot)
         end
 
         ## Get the convex hull edges if needed 
-        if plot_convex_hull[]
+        if show_convex_hull[]
             idx = get_indices(convex_hull)
             for i in idx
                 pt = get_point(points, i)
@@ -213,24 +212,10 @@ function MakieCore.plot!(p::Triplot)
     update_plot(points[], triangles[], boundary_nodes[], convex_hull[], constrained_edges[], representative_point_list[])
 
     ## Now plot 
-    poly!(p, points_2f, triangle_mat_2;
-        strokewidth=strokewidth[],
-        strokecolor=strokecolor[],
-        color=triangle_color[])
-    if show_all_points[]
-        scatter!(p, points_2f; markersize=markersize[], color=point_color[])
-    end
-    if show_ghost_edges[]
-        linesegments!(p, ghost_edges; color=ghost_edge_color[],
-            linewidth=ghost_edge_linewidth[])
-    end
-    if plot_convex_hull[]
-        lines!(p, convex_hull_points; color=convex_hull_color[],
-            linewidth=convex_hull_linewidth[], linestyle=convex_hull_linestyle[])
-    end
-    if show_constrained_edges[]
-        linesegments!(p, constrained_edge_points; color=constrained_edge_color[],
-            linewidth=constrained_edge_linewidth[])
-    end
+    poly!(p, points_2f, triangle_mat_2; strokewidth=strokewidth[], strokecolor=strokecolor[], color=triangle_color[])
+    show_all_points[] && scatter!(p, points_2f; markersize=markersize[], color=point_color[])
+    show_ghost_edges[] && linesegments!(p, ghost_edges; color=ghost_edge_color[], linewidth=ghost_edge_linewidth[])
+    show_convex_hull[] && lines!(p, convex_hull_points; color=convex_hull_color[], linewidth=convex_hull_linewidth[], linestyle=convex_hull_linestyle[])
+    show_constrained_edges[] && linesegments!(p, constrained_edge_points; color=constrained_edge_color[], linewidth=constrained_edge_linewidth[])
     return p
 end

@@ -487,6 +487,166 @@ function test_boundary_nodes_matches_boundary_edge_map(tri::Triangulation)
     return true
 end
 
+function test_iterators(tri::Triangulation)
+    I = DT.integer_type(tri)
+    T = NTuple{3,I}
+    E = NTuple{2,I}
+    solid_triangles = T[]
+    ghost_triangles = T[]
+    all_triangles = T[]
+    solid_vertices = Set{I}()
+    ghost_vertices = Set{I}()
+    all_vertices = Set{I}()
+    solid_edges = E[]
+    ghost_edges = E[]
+    all_edges = E[]
+    for T in get_triangles(tri)
+        i, j, k = DT.indices(T)
+        push!(all_triangles, (i, j, k))
+        if DT.is_ghost_triangle(i, j, k)
+            push!(ghost_triangles, (i, j, k))
+        else 
+            push!(solid_triangles, (i, j, k))
+        end
+        for (u, v) in DT.triangle_edges(i, j, k)
+            push!(all_edges, (u, v))
+            if DT.is_ghost_edge(u, v)
+                push!(ghost_edges, (u, v))
+            else 
+                push!(solid_edges, (u, v))
+            end
+        end
+        for k in (i, j, k)
+            push!(all_vertices,k)
+            if DT.is_boundary_index(k)
+                push!(ghost_vertices, k)
+            else 
+                push!(solid_vertices, k)
+            end
+        end
+    end
+    flag1 = allunique(all_triangles)
+    flag2 = allunique(all_edges)
+    flag3 = allunique(solid_triangles)
+    flag4 = allunique(solid_edges)
+    flag5 = allunique(ghost_triangles)
+    flag6 = allunique(ghost_edges)
+    if !flag1 
+        println("Validation of the triangle iterator failed as it returned duplicate triangles.")
+        return false
+    elseif !flag2 
+        println("Validation of the edge iterator failed as it returned duplicate edges.")
+        return false
+    elseif !flag3 
+        println("Validation of the solid triangle iterator failed as it returned duplicate triangles.")
+        return false
+    elseif !flag4
+        println("Validation of the solid edge iterator failed as it returned duplicate edges.")
+        return false
+    elseif !flag5
+        println("Validation of the ghost triangle iterator failed as it returned duplicate triangles.")
+        return false
+    elseif !flag6
+        println("Validation of the ghost edge iterator failed as it returned duplicate edges.")
+        return false
+    end
+    for (i, e) in enumerate(all_edges)
+         u, v = DT.edge_indices(e)
+         all_edges[i] = (min(u, v), max(u, v))
+    end
+    for (i, e) in enumerate(solid_edges)
+         u, v = DT.edge_indices(e)
+         solid_edges[i] = (min(u, v), max(u, v))
+    end
+    for (i, e) in enumerate(ghost_edges)
+         u, v = DT.edge_indices(e)
+         ghost_edges[i] = (min(u, v), max(u, v))
+    end
+    unique!(all_edges)
+    unique!(solid_edges)
+    unique!(ghost_edges)
+    flag7 = length(all_triangles) == length(each_triangle(tri))
+    flag8 = length(all_edges) == length(each_edge(tri))
+    flag9 = length(solid_triangles) == length(each_solid_triangle(tri))
+    flag10 = length(solid_edges) == length(each_solid_edge(tri))
+    flag11 = length(ghost_triangles) == length(each_ghost_triangle(tri))
+    flag12 = length(ghost_edges) == length(each_ghost_edge(tri))
+    flag13 = length(all_vertices) == length(each_vertex(tri))
+    flag14 = length(solid_vertices) == length(each_solid_vertex(tri))
+    flag15 = length(ghost_vertices) == length(each_ghost_vertex(tri))
+    if !flag7 
+        println("Validation of the triangle iterator failed as it returned a different number of triangles to the each_triangle iterator.")
+        return false
+    elseif !flag8
+        println("Validation of the edge iterator failed as it returned a different number of edges to the each_edge iterator.")
+        return false
+    elseif !flag9
+        println("Validation of the solid triangle iterator failed as it returned a different number of triangles to the each_solid_triangle iterator.")
+        return false
+    elseif !flag10
+        println("Validation of the solid edge iterator failed as it returned a different number of edges to the each_solid_edge iterator.")
+        return false
+    elseif !flag11
+        println("Validation of the ghost triangle iterator failed as it returned a different number of triangles to the each_ghost_triangle iterator.")
+        return false
+    elseif !flag12
+        println("Validation of the ghost edge iterator failed as it returned a different number of edges to the each_ghost_edge iterator.")
+        return false
+    elseif !flag13
+        println("Validation of the vertex iterator failed as it returned a different number of vertices to the each_vertex iterator.")
+        return false
+    elseif !flag14
+        println("Validation of the solid vertex iterator failed as it returned a different number of vertices to the each_solid_vertex iterator.")
+        return false
+    elseif !flag15
+        println("Validation of the ghost vertex iterator failed as it returned a different number of vertices to the each_ghost_vertex iterator.")
+        return false
+    end
+    all_vertices = collect(all_vertices)
+    solid_vertices = collect(solid_vertices)
+    ghost_vertices = collect(ghost_vertices)
+    sort!(all_vertices)
+    sort!(solid_vertices)
+    sort!(ghost_vertices)
+    flag16 = DT.compare_triangle_collections(all_triangles, collect(each_triangle(tri)))
+    flag17 = DT.compare_triangle_collections(solid_triangles, collect(each_solid_triangle(tri)))
+    flag18 = DT.compare_triangle_collections(ghost_triangles, collect(each_ghost_triangle(tri)))
+    flag19 = compare_edge_vectors(all_edges, each_edge(tri))
+    flag20 = compare_edge_vectors(solid_edges, each_solid_edge(tri))
+    flag21 = compare_edge_vectors(ghost_edges, each_ghost_edge(tri))
+    flag22 = all_vertices == sort(collect(each_vertex(tri)))
+    flag23 = solid_vertices == sort(collect(each_solid_vertex(tri)))
+    flag24 = ghost_vertices == sort(collect(each_ghost_vertex(tri)))
+    if !flag16 
+        println("Validation of the triangle iterator failed as it returned a different set of triangles to the each_triangle iterator.")
+        return false
+    elseif !flag17
+        println("Validation of the solid triangle iterator failed as it returned a different set of triangles to the each_solid_triangle iterator.")
+        return false
+    elseif !flag18
+        println("Validation of the ghost triangle iterator failed as it returned a different set of triangles to the each_ghost_triangle iterator.")
+        return false
+    elseif !flag19
+        println("Validation of the edge iterator failed as it returned a different set of edges to the each_edge iterator.")
+        return false
+    elseif !flag20
+        println("Validation of the solid edge iterator failed as it returned a different set of edges to the each_solid_edge iterator.")
+        return false
+    elseif !flag21
+        println("Validation of the ghost edge iterator failed as it returned a different set of edges to the each_ghost_edge iterator.")
+        return false
+    elseif !flag22
+        println("Validation of the vertex iterator failed as it returned a different set of vertices to the each_vertex iterator.")
+        return false
+    elseif !flag23
+        println("Validation of the solid vertex iterator failed as it returned a different set of vertices to the each_solid_vertex iterator.")
+        return false
+    elseif !flag24
+        println("Validation of the ghost vertex iterator failed as it returned a different set of vertices to the each_ghost_vertex iterator.")
+        return false
+    end
+    return true
+end
 
 function validate_triangulation(_tri::Triangulation) # doesn't work for non-convex. need to find a better way
     tri = deepcopy(_tri)
@@ -507,7 +667,8 @@ function validate_triangulation(_tri::Triangulation) # doesn't work for non-conv
            test_adjacent_map_matches_graph(tri) &&
            test_constrained_edges(tri) &&
            test_boundary_edge_map_matches_boundary_nodes(tri) &&
-           test_boundary_nodes_matches_boundary_edge_map(tri)
+           test_boundary_nodes_matches_boundary_edge_map(tri) && 
+           test_iterators(tri)
 end
 
 macro _adj(i, j, k)

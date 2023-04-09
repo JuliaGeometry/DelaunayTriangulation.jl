@@ -220,6 +220,7 @@ end
       end
 
       @testset "Triangles" begin
+            tri = generate_mesh(x, y, 0.1; convert_result=true, add_ghost_triangles=true)
             @test DT.triangle_type(tri) == NTuple{3,Int64}
             @inferred DT.triangle_type(tri)
             @test DT.num_triangles(tri) == length(tri.triangles)
@@ -238,7 +239,7 @@ end
             _solid_itr = each_solid_triangle(tri)
             @test DelaunayTriangulation.each_triangle(_solid_itr) == _solid_itr
             @test DT.initialise_triangles(typeof(_solid_itr)) == Set{NTuple{3,Int64}}() && eltype(DT.initialise_triangles(typeof(_solid_itr))) == NTuple{3,Int64}
-            @test Base.IteratorSize(_solid_itr) == Base.SizeUnknown()
+            @test Base.IteratorSize(_solid_itr) == Base.HasLength()
             @test Base.IteratorEltype(_solid_itr) == Base.HasEltype()
             @test Base.eltype(_solid_itr) == NTuple{3,Int64}
             @test each_solid_triangle(tri) isa DT.EachSolidTriangle
@@ -247,7 +248,7 @@ end
             @test all(!DT.is_ghost_triangle, _solid_tri)
             _ghost_itr = each_ghost_triangle(tri)
             @test DT.initialise_triangles(typeof(_ghost_itr)) == Set{NTuple{3,Int64}}() && eltype(DT.initialise_triangles(typeof(_ghost_itr))) == NTuple{3,Int64}
-            @test Base.IteratorSize(_ghost_itr) == Base.SizeUnknown()
+            @test Base.IteratorSize(_ghost_itr) == Base.HasLength()
             @test Base.IteratorEltype(_ghost_itr) == Base.HasEltype()
             @test Base.eltype(_ghost_itr) == NTuple{3,Int64}
             @test each_ghost_triangle(tri) isa DT.EachGhostTriangle
@@ -256,6 +257,8 @@ end
             @test DelaunayTriangulation.each_triangle(_ghost_itr) == _ghost_itr
             @test all(DT.is_ghost_triangle, _ghost_tri)
             @test length(_ghost_tri) + length(_solid_tri) == num_triangles(tri)
+            @test length(_solid_tri) == DT.num_solid_triangles(tri) == length(_solid_itr)
+            @test length(_ghost_tri) == DT.num_ghost_triangles(tri) == length(_ghost_itr)
             ___tri = generate_mesh(x, y, 0.1; convert_result=true, add_ghost_triangles=true)
             DT.delete_ghost_triangles!(___tri)
             @test collect(each_triangle(___tri)) == collect(each_solid_triangle(___tri))
@@ -266,6 +269,7 @@ end
       end
 
       @testset "Edges" begin
+            tri = generate_mesh(x, y, 0.1; convert_result=true, add_ghost_triangles=true)
             @test DT.edge_type(tri) == NTuple{2,Int64}
             @inferred DT.edge_type(tri)
             @test DT.num_edges(tri) == length(tri.graph.graph.E)
@@ -275,7 +279,7 @@ end
             _solid_itr = each_solid_edge(tri)
             @test DelaunayTriangulation.each_edge(_solid_itr) == _solid_itr
             @test DT.initialise_edges(typeof(_solid_itr)) == Set{NTuple{2,Int64}}() && eltype(DT.initialise_edges(typeof(_solid_itr))) == NTuple{2,Int64}
-            @test Base.IteratorSize(_solid_itr) == Base.SizeUnknown()
+            @test Base.IteratorSize(_solid_itr) == Base.HasLength()
             @test Base.IteratorEltype(_solid_itr) == Base.HasEltype()
             @test Base.eltype(_solid_itr) == NTuple{2,Int64}
             @test each_solid_edge(tri) isa DT.EachSolidEdge
@@ -284,7 +288,7 @@ end
             @test all(!DT.is_ghost_edge, _solid_tri)
             _ghost_itr = each_ghost_edge(tri)
             @test DT.initialise_edges(typeof(_ghost_itr)) == Set{NTuple{2,Int64}}() && eltype(DT.initialise_edges(typeof(_ghost_itr))) == NTuple{2,Int64}
-            @test Base.IteratorSize(_ghost_itr) == Base.SizeUnknown()
+            @test Base.IteratorSize(_ghost_itr) == Base.HasLength()
             @test Base.IteratorEltype(_ghost_itr) == Base.HasEltype()
             @test Base.eltype(_ghost_itr) == NTuple{2,Int64}
             @test each_ghost_edge(tri) isa DT.EachGhostEdge
@@ -298,6 +302,8 @@ end
             @test sort(collect(filter(!DT.is_ghost_edge, each_edge(___tri)))) == sort(collect(each_solid_edge(___tri)))
             @test sort(collect(filter(DT.is_ghost_edge, each_edge(___tri)))) == sort(collect(each_ghost_edge(___tri)))
             @test length(collect(each_ghost_edge(___tri))) == num_edges(___tri) .- length(sort(collect(filter(!DT.is_ghost_edge, each_edge(___tri)))))
+            @test length(collect(each_ghost_edge(___tri))) == DT.num_ghost_edges(___tri)== length(_ghost_itr)
+            @test length(collect(each_solid_edge(___tri))) == DT.num_solid_edges(___tri) == length(_solid_itr)
       end
 
       @testset "Points" begin
@@ -429,12 +435,10 @@ end
             ℓ = (6.5, 3.5)
             @test DT.find_edge(_tri, T, ℓ) == (51, 41)
             @inferred DT.find_edge(_tri, T, ℓ)
+            push!(get_all_constrained_edges(_tri), (1, 2))
             @test DT.is_constrained(_tri)
-            empty!(_tri.boundary_nodes)
-            _tri = @set _tri.boundary_nodes = Int64[]
+            empty!(get_all_constrained_edges(_tri))
             @test !DT.is_constrained(_tri)
-            _tri = @set _tri.boundary_nodes = [2, 3, 4, 5, 6]
-            @test DT.is_constrained(_tri)
             @test collect(DT.all_boundary_indices(_tri)) ==
                   [DT.BoundaryIndex, DT.BoundaryIndex - 1, DT.BoundaryIndex - 2, DT.BoundaryIndex - 3]
       end
@@ -696,4 +700,18 @@ end
       @test DT.get_boundary_edge_map(tri_4, 6, 1200) == (1, 6)
       @test DT.get_boundary_edge_map(tri_4, 1200, 7) == (1, 7)
       @test_throws KeyError DT.get_boundary_edge_map(tri_4, 6, 7)
+end
+
+@testset "Random sampling of vertices" begin
+      tri = triangulate(rand(2,500);delete_ghosts=false)
+      solid = Int64[]
+      ghost = Int64[]
+      solid_itr = each_solid_vertex(tri)
+      ghost_itr = each_ghost_vertex(tri)
+      for _ in 1:100_000
+            push!(solid, rand(solid_itr))
+            push!(ghost, rand(ghost_itr))
+      end
+      @test all(!DT.is_boundary_index, solid)
+      @test all(DT.is_boundary_index, ghost)
 end

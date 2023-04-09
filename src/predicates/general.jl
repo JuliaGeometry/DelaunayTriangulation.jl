@@ -1,21 +1,53 @@
 """
     orient_predicate(p, q, r)
 
-Returns `ExactPredicates.orient(p, q, r)`.
+Returns `ExactPredicates.orient(p, q, r)`, in particular we return:
+
+- `1`: `(p, q, r)` is positively oriented.
+- `0`: `(p, q, r)` is collinear / degenerate. 
+- `-1`: `(p, q, r)` is negatively oriented.
+
+!!! notes 
+
+The orient predicate is defined by the determinant 
+
+```math 
+\\text{orient}(p, q, r) = \\text{sgn} \\det \\begin{vmatrix} p_x & p_y & 1 \\\\ q_x & q_y & 1 \\\\ r_x & r_y & 1 \\end{vmatrix} = \\text{sgn} \\det \\begin{vmatrix} p_x-r_x & p_y-r_y \\ q_x-r_x & q_y-r_y \\end{vmatrix}.
+```
 """
 orient_predicate(p, q, r) = orient(getxy(p), getxy(q), getxy(r))
 
 """
     incircle_predicate(a, b, c, p)
 
-Returns `ExactPredicates.incircle(a, b, c, p)`.
+Returns `ExactPredicates.incircle(a, b, c, p)`, in particular we return: 
+
+- `1`: If `p` is inside the circle defined by `(a, b, c)`.
+- `0`: If `p` is on the circle defined by `(a, b, c)`.
+- `-1`: If `p` is outside the circle defined by `(a, b, c)`.
+
+!!! notes 
+
+    The incircle predicate is defined by the determinant 
+
+    ```math
+    \\text{incircle}(a, b, c, d) = \\text{sgn} \\det \\begin{vmatrix} a_x & a_y & a_x^2 + a_y^2 & 1 \\\\ b_x & b_y & b_x62 + b_y^2 & 1 \\\\ c_x & c_y & c_x^2 + c_y^2 & 1 \\\\ d_x & d_y & d_x^2 + d_y^2 & 1 \\end{vmatrix} = \\text{sgn} \\det \\begin{vmatrix} a_x - d_x & a_y - d_y & (a_x - d_x)^2 + (a_y - d_y)^2 \\\\ b_x - d_x & b_y - d_y & (b_x - d_x)^2 + (b_y - d_y)^2 \\\\ c_x - d_x & c_y - d_y & (c_x - d_x)^2 + (c_y - d_y)^2 \\end{vmatrix}.
+    ```
 """
 incircle_predicate(a, b, c, p) = incircle(getxy(a), getxy(b), getxy(c), getxy(p))
 
 """
     parallelorder_predicate(a, b, p, q)
 
-Returns `ExactPredicates.parallelorder(a, b, p, q)`.
+Returns `ExactPredicates.parallelorder(a, b, p, q)`, in particular we return:
+
+- `1`: `q` is closer to the line `(a, b)` than `p`.
+- `0`: `p` and `q` are equidistant from the line `(a, b)`.
+- `-1`: `p` is closer to the line `(a, b)` than `q`.
+
+!!! notes
+
+    The parallelorder predicate is the same as `orient_predicate(b-a, q-p, 0)`.
 """
 parallelorder_predicate(a, b, p, q) = parallelorder(getxy(a), getxy(b), getxy(p), getxy(q))
 
@@ -24,8 +56,10 @@ parallelorder_predicate(a, b, p, q) = parallelorder(getxy(a), getxy(b), getxy(p)
 
 Returns `ExactPredicates.sameside(p, a, b)` (but we redefine it here).
 
-(The difference in the argument order is to match the convention that the 
-main point being tested is the last argument.)
+!!! notes 
+
+    The difference in the argument order to ExactPredicates.jl is to match the convention that the 
+    main point being tested is the last argument.
 """
 function sameside_predicate(a, b, p)
     _p = getxy(p)
@@ -40,6 +74,11 @@ function sameside_predicate(a, b, p)
     end
 end
 
+"""
+    opposite_signs(x,y)
+
+From ExactPredicates.jl, returns `true` if `x` and `y` have opposite signs, and `false` otherwise.
+"""
 opposite_signs(x, y) = xor(x, y) == -2 # also from ExactPredicates.jl 
 
 """
@@ -133,17 +172,17 @@ is, returning:
 
 It is assumed that `p` and `q` are to the left of `ℓ`.
 
-### Note 
+!!! note 
 
-Note that this function is same as computing numerical values for `o₁ = orient(a, p, b)`
-and `o₂ = orient(a, q, b)` (the determinants, not the signs) and seeing if `o₁ < o₂`.
-If indeed `o₁ < o₂`, then `p` is closer to `ℓ` then `q`. We cannot obtain values for 
-`o₁` and `o₂` such that the difference `o₁ - o₂` is reliable, but notice that, letting 
-`∧` denote the exterior product, `o₁ = (a - b) ∧ (p - b)` and `o₂ = (a - b) ∧ (q - b)`.
-Thus, `o₁ - o₂ = (a - b) ∧ (p - q) = orient(b - a, p - q)`. These differences `b - a`
-and `p - q` cannot be computed reliably, but we can use the relationship between `orient` 
-and [`parallelorder_predicate`](@ref) to write 
-`orient(b - a, p - q) = parallelorder(a, b, q, p)`. Thus, `o₁ < o₂` if `parallelorder(a, b, q, p) < 0`.
+    Note that this function is same as computing numerical values for `o₁ = orient(a, p, b)`
+    and `o₂ = orient(a, q, b)` (the determinants, not the signs) and seeing if `o₁ < o₂`.
+    If indeed `o₁ < o₂`, then `p` is closer to `ℓ` then `q`. We cannot obtain values for 
+    `o₁` and `o₂` such that the difference `o₁ - o₂` is reliable, but notice that, letting 
+    `∧` denote the exterior product, `o₁ = (a - b) ∧ (p - b)` and `o₂ = (a - b) ∧ (q - b)`.
+    Thus, `o₁ - o₂ = (a - b) ∧ (p - q) = orient(b - a, p - q, 0)`. These differences `b - a`
+    and `p - q` cannot be computed reliably, but we can use the relationship between `orient` 
+    and [`parallelorder_predicate`](@ref) to write 
+    `orient(b - a, p - q, 0) = parallelorder(a, b, q, p)`. Thus, `o₁ < o₂` if `parallelorder(a, b, q, p) == -1`.
 """
 function point_closest_to_line(a, b, p, q)
     cert = parallelorder_predicate(a, b, q, p)
@@ -169,8 +208,7 @@ function point_position_on_line_segment(a, b, p)
     converted_cert = convert_certificate(cert, Cert.On, Cert.Degenerate, Cert.Outside)
     if is_outside(converted_cert) # Do we have "a ---- b ---- p" or "p ---- a ---- b"?
         ap_cert = sameside_predicate(a, p, b)
-        converted_ap_cert = convert_certificate(ap_cert, Cert.On, Cert.Degenerate,
-            Cert.Outside)
+        converted_ap_cert = convert_certificate(ap_cert, Cert.On, Cert.Degenerate, Cert.Outside)
         return is_on(converted_ap_cert) ? Cert.Right : Cert.Left
     end
     return converted_cert
@@ -216,14 +254,12 @@ function line_segment_intersection_type(p, q, a, b)
         =#
         collinear_cert_1 = point_position_relative_to_line(a, b, p)
         collinear_cert_2 = point_position_relative_to_line(a, b, q)
-        if (is_collinear(collinear_cert_1) && !is_collinear(collinear_cert_2)) ||
-           (!is_collinear(collinear_cert_1) && is_collinear(collinear_cert_2))
+        if (is_collinear(collinear_cert_1) && !is_collinear(collinear_cert_2)) || (!is_collinear(collinear_cert_1) && is_collinear(collinear_cert_2))
             return Cert.Touching
         end
         collinear_cert_3 = point_position_relative_to_line(p, q, a)
         collinear_cert_4 = point_position_relative_to_line(p, q, b)
-        if (is_collinear(collinear_cert_3) && !is_collinear(collinear_cert_4)) ||
-           (!is_collinear(collinear_cert_3) && is_collinear(collinear_cert_4))
+        if (is_collinear(collinear_cert_3) && !is_collinear(collinear_cert_4)) || (!is_collinear(collinear_cert_3) && is_collinear(collinear_cert_4))
             return Cert.Touching
         end
     end
@@ -264,13 +300,15 @@ end
 
 Given an edge with coordinates `(a, b)` and a point `p`, 
 tests the position of `p` relative to the oriented outer halfplane defined 
-by `(a, b)`. The oriented outer halfplane is the union of the open halfplane 
-defined by the region to the left of the oriented line `(a, b)`, and the 
-open line segment `(a, b)`. The returned values are:
+by `(a, b)`. The returned values are:
 
 - `Cert.Outside`: `p` is outside of the oriented outer halfplane, meaning to the right of the line `(a, b)` or collinear with `a` and `b` but not on the line segment `(a, b)`.
 - `Cert.On`: `p` is on the open line segment `(a, b)`.
 - `Cert.Inside`: `p` is inside of the oriented outer halfplane, meaning to the left of the line `(a, b)`.
+
+!!! notes 
+
+    The oriented outer halfplane is the union of the open halfplane defined by the region to the left of the oriented line `(a, b)`, and the open line segment `(a, b)`. 
 """
 function point_position_relative_to_oriented_outer_halfplane(a, b, p)
     in_open_halfplane = point_position_relative_to_line(a, b, p)
@@ -435,20 +473,20 @@ function triangle_line_segment_intersection(p, q, r, a, b)
         #   3. It is possible that ab does not touch an edge with an endpoint, but its interior touches one of the points of the triangle, but doesn't go inside the triangle: num_touching == 2
         #   4. Another case is that ab is completely collinear with an edge. This happens when num_multiple == 1. This case is hard to distinguish from 3, so to handle it we need to do some more orientation tests.
         #   5. In all other cases, ab goes through the triangle and out the other side
-        if num_none == 3 
-            return Cert.Outside 
-        elseif num_multiple == 1 || num_touching == 2 
+        if num_none == 3
+            return Cert.Outside
+        elseif num_multiple == 1 || num_touching == 2
             # This is for cases 3 or 4 above. We need to see how ab line up with the vertices of (p, q, r)
             abp = point_position_relative_to_line(a, b, p)
             abq = point_position_relative_to_line(a, b, q)
             abr = point_position_relative_to_line(a, b, r)
             if count(is_collinear, (abp, abq, abr)) == 2
                 return Cert.Touching # lines up with an edge 
-            else 
+            else
                 return Cert.Outside # interior only just touches a single vertex 
             end
         else
-            return Cert.Multiple 
+            return Cert.Multiple
         end
     end
 end

@@ -101,7 +101,7 @@ triplot!(ax, pts, T, bn, get_convex_hull(tri), get_all_constrained_edges(tri), D
     ghost_edge_color=:darkgreen,
     triangle_color=(:blue, 0.3),
     recompute_centers=false,
-    plot_convex_hull=true,
+    show_convex_hull=true,
     convex_hull_linewidth=7,
     convex_hull_linestyle=:dash,
     convex_hull_color=:red,

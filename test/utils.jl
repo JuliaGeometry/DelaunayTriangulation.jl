@@ -14,12 +14,12 @@ include("./helper_functions.jl")
 end
 
 @testset "number_type" begin
-      @test number_type([1, 2, 3]) == Int64
-      @test number_type([1.0, 2.0, 3.0]) == Float64
-      @test number_type([1.0 2.0; 3.0 3.5; 10.0 17.3]) == Float64
-      @test number_type((1.0, 5.0)) == Float64
-      @test number_type([(1.0f0, 2.0f0), (1.7f0, 2.5f0)]) == Float32
-      @test number_type(2.4) == Float64
+      @test DT.number_type([1, 2, 3]) == Int64
+      @test DT.number_type([1.0, 2.0, 3.0]) == Float64
+      @test DT.number_type([1.0 2.0; 3.0 3.5; 10.0 17.3]) == Float64
+      @test DT.number_type((1.0, 5.0)) == Float64
+      @test DT.number_type([(1.0f0, 2.0f0), (1.7f0, 2.5f0)]) == Float32
+      @test DT.number_type(2.4) == Float64
 end
 
 @testset "get_boundary_index" begin
