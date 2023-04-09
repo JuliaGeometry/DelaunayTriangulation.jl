@@ -258,6 +258,11 @@ the triangle with [`construct_triangle`](@ref).
 """
 function contains_triangle end
 function contains_triangle(T::F, V::S) where {F,S}
+    if F ≠ triangle_type(S)
+        i, j, k = indices(T)
+        FF = triangle_type(S)
+        T = construct_triangle(FF, i, j, k)
+    end
     if T ∈ V
         return (T, true)
     end

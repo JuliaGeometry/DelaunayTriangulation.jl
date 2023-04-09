@@ -500,7 +500,7 @@ function test_iterators(tri::Triangulation)
     solid_edges = E[]
     ghost_edges = E[]
     all_edges = E[]
-    for T in get_triangles(tri)
+    for T in each_triangle(tri)
         i, j, k = DT.indices(T)
         push!(all_triangles, (i, j, k))
         if DT.is_ghost_triangle(i, j, k)
