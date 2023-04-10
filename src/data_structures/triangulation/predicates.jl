@@ -57,6 +57,12 @@ Computes the position of the `u`th point of `tri` relative to the line segment w
     boundary_map = get_boundary_map(tri)
     return point_position_relative_to_line(i, j, u, points, representative_point_list, boundary_map)
 end
+
+"""
+    point_closest_to_line(tri::Triangulation, i, j, u, v) 
+
+Tests which of the points `u` or `v` is closest to the line segment with indices `(i, j)` in `tri`.
+"""
 @inline point_closest_to_line(tri::Triangulation, i, j, u, v) = point_closest_to_line(i, j, u, v, get_points(tri))
 
 """

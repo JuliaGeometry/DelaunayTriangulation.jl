@@ -3,7 +3,7 @@
 
 Searches for the triangle in `T` containing the point `r` in `T` using brute force, simply 
 searching over all triangles. Ghost triangles are handled via the `representative_point_list`
-and `boundary_map` from [`construct_boudary_map`](@ref).
+and `boundary_map` from [`construct_boundary_map`](@ref).
 """
 function brute_force_search(T, r, pts, representative_point_list, boundary_map)
     for V in each_triangle(T)

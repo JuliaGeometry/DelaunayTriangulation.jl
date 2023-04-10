@@ -50,7 +50,7 @@ Delaunay Triangulation.
 As we describe in more detail in the data structures section in the sidebar, `tri` has several fields:
 ```julia-repl 
 julia> propertynames(tri)
-(:points, :triangles, :adjacent, :adjacent2vertex, :graph, :boundary_nodes, :boundary_map, :boundary_index_ranges, :constrained_edges, :convex_hull)
+(:points, :triangles, :adjacent, :adjacent2vertex, :graph, :boundary_nodes, :boundary_edge_map, :boundary_map, :boundary_index_ranges, :constrained_edges, :all_constrained_edges, :convex_hull, :representative_point_list)
 ```
 We explain each field below.
 
@@ -191,6 +191,8 @@ Dict{Int64, Set{Int64}} with 11 entries:
 
 - `tri.boundary_nodes`: This is a list of all fixed boundary nodes in the triangulation. In our case, we have none. See the Gmsh section for an example. The actual nodes on the boundary in this case can be obtained via `tri.convex_hull`.
 
+- `tri.boundary_edge_map`: This is a `Dict` that maps all boundary edges to their position in `tri.boundary_nodes`. See the Gmsh section for an example.
+
 - `tri.boundary_map`: This would be a list mapping boundary indices to all the fixed boundary nodes in `tri.boundary_nodes` corresponding to that index. This map is empty in this case as we have no fixed boundary nodes,, but see the Gmsh section for an example.
 
 - `tri.boundary_index_ranges`: This is be a list mapping indices of boundary curves to all boundary indices belonging to that curve. In this case, we have 
@@ -203,7 +205,9 @@ OrderedCollections.OrderedDict{Int64, UnitRange{Int64}} with 1 entry:
 
 This tells us that whenever we see a `-1` as a vertex, we have a ghost vertex corresponding to the outer curve, so e.g. if `get_adjacent(tri, u, v) == -1`, then `(u, v)` is an edge on the boundary. A better example is in the Gmsh section.
 
-- `tri.constrained_edges`: This would be the collection of constrained edges if we had any.
+- `tri.constrained_edges`: This would be the collection of constrained edges if we had any. See the constrained trangulation section.
+
+- `tri.all_constrained_edges`: This is a collection of all constrained edges currently in the triangulation, including the boundary edges. We have none here, but see the constrained triangulation section.
 
 - `tri.convex_hull`: This is the `ConvexHull` of `tri.points`. In this case, we have
 
@@ -219,4 +223,12 @@ Convex hull.
  2
  9
  7
+```
+
+ - `tri.representative_point_list`: This is the `Dict` that maps curve indices to the coordinate used for representing corresponding boundary indices. Typically, these points are near the centroid of the curve; see the `pole_of_inaccessibility` function. In our case,
+
+```julia-repl
+julia> tri.representative_point_list
+Dict{Int64, DelaunayTriangulation.RepresentativeCoordinates{Int64, Float64}} with 1 entry:
+  1 => RepresentativeCoordinates{Int64, Float64}(1.51155, 1.43234, 0)
 ```

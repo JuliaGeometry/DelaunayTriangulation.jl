@@ -41,7 +41,7 @@ When considering constrained triangulations, we allow for a set of boundary node
 2. A single boundary with no holes, but the boundary is split into multiple segments that can be identified separately via boundary indices. For example, a square with a boundary index for each side.
 3. A boundary comprising multiple disjoint curves, i.e. a multiply-connected domain. For example, a square with a circular hole inside. The most support is provided for the case where no interior hole contains another interior, but it is allowed (see the discussion in the constrained triangulation section).
 
-We do also provide support for much more complex geometries, such as disjoint regions, but the support is only for constructing the mesh. Limited support exists, for example, for point location in such regions. See the examples in the constrained triangulation section.
+We do also provide support for much more complex geometries, such as disjoint regions, but the support is only for constructing the mesh. Limited support exists, for example, for point location in such regions. See the examples in the constrained triangulation section. There might also be issues with domains that are non-convex.
 
 The way to represent boundaries can be customised as needed (see the Interfaces section), but by default we provide the following specifications; this specification is what we use in the `convert_boundary_points_to_indices` function. The specification that follows is also valid for `generate_mesh` where coordinates are used instead of indices. Let `bn` be the set of boundary nodes and `I` the integer type.
 

@@ -23,7 +23,7 @@ triangles whose interior intersects the edge.
 - `graph`: The [`Graph`](@ref) data structure.
 - `boundary_index_ranges`: The boundary index ranges from [`construct_boundary_index_ranges`](@ref).
 - `representative_point_list`: The representative point list.
-- `boundary_map`: The boundary map from [`construct_boundary_node_map`](@ref).
+- `boundary_map`: The boundary map from [`construct_boundary_map`](@ref).
 - `TriangleType`: The type of triangle to use.
 - `check_existence`: Whether to check for the existence of the edge in the triangulation when using [`get_adjacent`](@ref).
 - `rng`: The random number generator to use.

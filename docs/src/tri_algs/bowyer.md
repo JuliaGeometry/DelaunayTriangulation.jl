@@ -16,3 +16,12 @@ The main idea behind the algorithm is to insert points one at a time, deleting t
 6. Steps 2--5 are repeated for each new point, until we have finally added all points. Once this is done, we compute the convex hull of the points with `convex_hull!`, stepping over the boundary using the ghost triangles from the triangulation to get all the boundary nodes efficiently.
 7. Next, if the keyword argument `recompute_representative_point` is true, we can give a better representative point for the central part of the domain than the centroid by computing the pole of inaccessibility. This is done with `compute_representative_points!`.
 8. Finally, to clean up, we can delete all ghost triangles (if the keyword argument `delete_ghosts` is true) with `delete_ghost_triangles!`. Then, if the keyword argument `delete_empty_features` is true, we can delete all keys from the `Adjacent` map that map to empty values with `clear_empty_features!`, which would also clean up empty sets from the `Adjacent2Vertex` map and empty neighbourhoods from the `Graph`.
+
+## Modifications for a constrained Delaunay triangulation
+
+The Bowyer-Watson algorithm requires two modifications for adding points into a constrained Delaunay triangulation. The modifications are:
+
+1. Avoid walking over any constrained edges when performing the depth-first search.
+2. If a point is added onto a constrained segment, split the segment in two and perform the depth-first search on each side of the segment.
+
+With just these two modifications, the algorithm works.

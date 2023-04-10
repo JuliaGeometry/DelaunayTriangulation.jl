@@ -405,8 +405,9 @@ end
 
 """
     convert_boundary_points_to_indices(x, y; existing_points = NTuple{2, Float64}[], check_args=true, adjust=true)
+    convert_boundary_points_to_indices(xy; existing_points = NTuple{2, Float64}[], check_args=true, adjust=true)
 
-Given some points `(x, y)` representing a boundary, converts their representation into a set of 
+Given some points `(x, y)` representing a boundary, or `xy` giving the points combined rather than separated, converts their representation into a set of 
 indices corresponding to each boundary. The points should match the specification of a boundary 
 defined in the documentation. These points also get appended onto the set of points given by the 
 `existing_points` keyword argument, which should be used if you have a pre-existing set of points.
@@ -427,7 +428,7 @@ function convert_boundary_points_to_indices(x::AA, y::AA; existing_points=NTuple
     if check_args
         @assert length(x) == length(y)
         @assert all(i -> length(x[i]) == length(y[i]), eachindex(x, y))
-        @assert x[begin][begin] ≈ x[end][end]
+        @assert x[begin][begin] ≈ x[end][end] 
         @assert y[begin][begin] ≈ y[end][end]
         @assert all(i -> x[i][end] ≈ x[i+1][begin], firstindex(x):(lastindex(x)-1))
         @assert all(i -> y[i][end] ≈ y[i+1][begin], firstindex(y):(lastindex(y)-1))
@@ -461,6 +462,21 @@ function convert_boundary_points_to_indices(x::A, y::A; existing_points=NTuple{2
     end
     adjust && push!(nodes, nodes[begin])
     return nodes, existing_points
+end
+function convert_boundary_points_to_indices(xy::A; existing_points=NTuple{2,Float64}[], check_args=true,adjust=true) where {F,A<:AbstractVector{F}}
+    x = [getx(xy[i]) for i in eachindex(xy)]
+    y = [gety(xy[i]) for i in eachindex(xy)]
+    return convert_boundary_points_to_indices(x, y; existing_points=existing_points, check_args=check_args, adjust=adjust)
+end
+function convert_boundary_points_to_indices(xy::AA; existing_points=NTuple{2,Float64}[], check_args=true,adjust=true) where {F,A<:AbstractVector{F},AA<:AbstractVector{A}}
+    x = [[getx(xy[i][j]) for j in eachindex(xy[i])] for i in eachindex(xy)]
+    y = [[gety(xy[i][j]) for j in eachindex(xy[i])] for i in eachindex(xy)]
+    return convert_boundary_points_to_indices(x, y; existing_points=existing_points, check_args=check_args, adjust=adjust)
+end
+function convert_boundary_points_to_indices(xy::AAA; existing_points=NTuple{2,Float64}[], check_args=true,adjust=true) where {F,A<:AbstractVector{F},AA<:AbstractVector{A},AAA<:AbstractVector{AA}}
+    x = [[[getx(xy[i][j][k]) for k in eachindex(xy[i][j])] for j in eachindex(xy[i])] for i in eachindex(xy)]
+    y = [[[gety(xy[i][j][k]) for k in eachindex(xy[i][j])] for j in eachindex(xy[i])] for i in eachindex(xy)]
+    return convert_boundary_points_to_indices(x, y; existing_points=existing_points, check_args=check_args, adjust=adjust)
 end
 
 """

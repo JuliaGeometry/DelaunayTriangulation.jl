@@ -148,9 +148,12 @@ function test_planarity(tri) # just check's Euler's formula. Doesn't guarantee p
     return true
 end
 
-function test_triangle_orientation(tri)
+function test_triangle_orientation(tri; check_ghost_triangle_orientation=true)
     for T in each_triangle(tri)
         cert = DT.triangle_orientation(tri, T)
+        if DT.is_ghost_triangle(T) && !check_ghost_triangle_orientation
+            continue 
+        end
         flag = DT.is_positively_oriented(cert)
         if !flag
             println("Orientation test failed for the triangle $T.")
@@ -160,8 +163,11 @@ function test_triangle_orientation(tri)
     return true
 end
 
-function test_delaunay_criterion(tri)
+function test_delaunay_criterion(tri; check_ghost_triangle_delaunay=true)
     for T in each_triangle(tri)
+        if DT.is_ghost_triangle(T) && !check_ghost_triangle_delaunay
+            continue 
+        end
         for r in each_solid_vertex(tri)
             cert = DT.point_position_relative_to_circumcircle(tri, T, r)
             if DT.is_inside(cert)
@@ -648,14 +654,14 @@ function test_iterators(tri::Triangulation)
     return true
 end
 
-function validate_triangulation(_tri::Triangulation) # doesn't work for non-convex. need to find a better way
+function validate_triangulation(_tri::Triangulation; check_ghost_triangle_orientation=true, check_ghost_triangle_delaunay=true) # doesn't work for non-convex. need to find a better way
     tri = deepcopy(_tri)
     DT.delete_ghost_triangles!(tri)
     DT.add_ghost_triangles!(tri)
     DT.clear_empty_features!(tri)
     return test_planarity(tri) &&
-           test_triangle_orientation(tri) &&
-           test_delaunay_criterion(tri) &&
+           test_triangle_orientation(tri; check_ghost_triangle_orientation) &&
+           test_delaunay_criterion(tri; check_ghost_triangle_delaunay) &&
            test_each_edge_has_two_incident_triangles(tri) &&
            test_adjacent2vertex_map_matches_triangles(tri) &&
            test_adjacent2vertex_map_matches_triangles(tri) &&

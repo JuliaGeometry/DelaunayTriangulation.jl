@@ -35,7 +35,7 @@ ax = Axis(fig[1, 1], xlabel=L"x", ylabel=L"y", width=300, height=300,
     title=L"(a):$ $ Dense mesh", titlealign=:left)
 triplot!(ax, tri)
 ax = Axis(fig[1, 2], xlabel=L"x", ylabel=L"y", width=300, height=300,
-    title=L"(a):$ $  Coarse mesh", titlealign=:left)
+    title=L"(b):$ $  Coarse mesh", titlealign=:left)
 triplot!(ax, tri2)
 resize_to_layout!(fig)
 ```
@@ -68,6 +68,47 @@ Similarly, `tri.boundary_map` is now populated:
 julia> get_boundary_map(tri)
 OrderedDict{Int64, Vector{Int64}} with 1 entry:
   -1 => [1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1]
+```
+
+We now also have `tri.boundary_edge_map`:
+
+```julia-repl
+julia> tri.boundary_edge_map
+Dict{Tuple{Int64, Int64}, Tuple{Vector{Int64}, Int64}} with 177 entries:
+  (116, 20)  => ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 36)
+  (78, 158)  => ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 136)
+  (11, 105)  => ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 16)
+  (106, 13)  => ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 19)
+  (103, 10)  => ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 13)
+  (145, 56)  => ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 101)
+  (169, 87)  => ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 156)
+  (110, 111) => ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 27)
+  (128, 42)  => ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 70)
+  (43, 130)  => ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 73)
+  (30, 31)   => ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 56)
+  (156, 77)  => ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 133)
+  (3, 4)     => ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 3)
+  (112, 113) => ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 30)
+  (41, 128)  => ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 69)
+  (153, 74)  => ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 127)
+  (133, 47)  => ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 80)
+  ⋮          => ⋮
+```
+
+In this case, each output of `(i, j)` is the `Tuple` `(get_boundary_nodes(tri), k)`. For example,
+
+```julia-repl
+julia> u, v = 133, 47;
+
+julia> pos = get_boundary_edge_map(tri, u, v);
+
+julia> segment_nodes = get_boundary_nodes(tri, pos[1]);
+
+julia> get_boundary_nodes(segment_nodes, pos[2]) == u # edges start at the left
+true
+
+julia> get_boundary_nodes(segment_nodes, pos[2]+1) == v
+true
 ```
 
 ## Example II: Single boundary curve with multiple segments 
@@ -130,7 +171,42 @@ OrderedDict{Int64, Int64} with 5 entries:
   -5 => 5
 ```
 
-This map makes it simple to iterate over all parts of a boundary, as we show in the above code when plotting.
+This map makes it simple to iterate over all parts of a boundary, as we show in the above code when plotting. The `tri.boundary_edge_map` in this case is:
+
+```julia-repl
+julia> get_boundary_edge_map(tri)
+Dict{Tuple{Int64, Int64}, Tuple{Int64, Int64}} with 262 entries:
+  (118, 8)   => (1, 14)
+  (55, 56)   => (3, 10)
+  (34, 154)  => (2, 28)
+  (213, 214) => (4, 35)
+  (223, 224) => (4, 50)
+  (143, 29)  => (2, 12)
+  (24, 135)  => (1, 47)
+  (178, 179) => (2, 65)
+  (132, 22)  => (1, 42)
+  (46, 178)  => (2, 64)
+  (169, 42)  => (2, 51)
+  (154, 155) => (2, 29)
+  (115, 5)   => (1, 8)
+  (43, 172)  => (2, 55)
+  (261, 262) => (5, 38)
+  (146, 147) => (2, 17)
+  (49, 184)  => (3, 1)
+  ⋮          => ⋮
+```
+
+For example, 
+
+```julia-repl
+julia> let pos = get_boundary_edge_map(tri, 115, 5)
+       segment_nodes = get_boundary_nodes(tri, pos[1])
+       u′ = get_boundary_nodes(segment_nodes, pos[2])
+       v′ = get_boundary_nodes(segment_nodes, pos[2]+1)
+       u′ == 115 && v′ == 5
+       end
+true
+```
 
 ## Example III: Multiple boundaries
 
@@ -183,13 +259,13 @@ ylims!(ax, -0.5, 6.5)
 The blue edges show the interpretation of the ghost edges (you can delete via `delete_ghost_triangles!` if you want). For the outer boundary, these edges are pointing away from the interior, collinear with a point in the center, as we can obtain via:
 
 ```julia-repl
-julia> DelaunayTriangulation.get_representative_point_coordinates(1, Float64)
+julia> DelaunayTriangulation.get_representative_point_coordinates(tri, 1)
 ```
 
 or, alternatively,
 
 ```julia-repl 
-julia> DelaunayTriangulation.RepresentativePointList
+julia> DelaunayTriangulation.get_representative_point_list(tri)
 Dict{Int64, DelaunayTriangulation.RepresentativeCoordinates{Int64, Float64}} with 5 entries:
   5 => RepresentativeCoordinates{Int64, Float64}(0.475, 3.5, 0)
   4 => RepresentativeCoordinates{Int64, Float64}(1.25, 3.5, 0)
@@ -259,7 +335,7 @@ end
 
 (which includes the last part of each segment) could be used. It is up to you based on your interface how you prefer to write this. Notice also that in the previous example we used a similar style, using `get_boundary_nodes(tri, segment_index)` also. The function `get_boundary_nodes` can be used with either single integers or `Tuple`s, making it simple to iterate with this exact pattern whether we have a contiguous boundary curve, a segmented boundary curve, or multiple boundaries. 
 
-A last feature to note is `tri.boundary_index_ranges`, which will tell us what other boundary indices belong to a curve given a known boundary index for that curve. This can be useful if we want to rotate around a boundary curve based on a given boundary index (see e.g. how it is used in the `get_left_boundary_node` and `get_right_boundary_node` functions). This field is a major part of making point location work in these inner boundaries, making `get_adjacent` work properly in this case (see e.g. the code in `_safe_get_adjacent`).
+Another feature to note is `tri.boundary_index_ranges`, which will tell us what other boundary indices belong to a curve given a known boundary index for that curve. This can be useful if we want to rotate around a boundary curve based on a given boundary index (see e.g. how it is used in the `get_left_boundary_node` and `get_right_boundary_node` functions). This field is a major part of making point location work in these inner boundaries, making `get_adjacent` work properly in this case (see e.g. the code in `_safe_get_adjacent`).
 
 ```julia-repl
 julia> get_boundary_index_ranges(tri)
@@ -283,3 +359,30 @@ So, for example, we see tha the boundary index `-3` belongs to a curve that also
 julia> DelaunayTriangulation.get_curve_index(tri, -3)
 1
 ```
+
+The last feature to show is the new `tri.boundary_edge_map` for this case, given by
+
+```julia-repl
+julia> get_boundary_edge_map(tri)
+Dict{Tuple{Int64, Int64}, Tuple{Tuple{Int64, Int64}, Int64}} with 252 entries:
+  (55, 56)   => ((2, 1), 43)
+  (130, 2)   => ((1, 1), 4)
+  (92, 93)   => ((3, 1), 31)
+  (213, 214) => ((4, 3), 3)
+  (14, 15)   => ((2, 1), 2)
+  (172, 10)  => ((1, 3), 12)
+  (203, 112) => ((4, 1), 5)
+  (178, 179) => ((1, 4), 7)
+  (121, 122) => ((4, 4), 2)
+  (151, 152) => ((1, 2), 17)
+  (26, 27)   => ((2, 1), 14)
+  (171, 172) => ((1, 3), 11)
+  (88, 89)   => ((3, 1), 27)
+  (132, 133) => ((1, 1), 7)
+  (133, 3)   => ((1, 1), 8)
+  (146, 147) => ((1, 2), 12)
+  (46, 47)   => ((2, 1), 34)
+  ⋮          => ⋮
+```
+
+As before, `(u, v) = (get_boundary_nodes(segment_nodes, pos[2]), get_boundary_nodes(segment_nodes, pos[2]+1)`, where `segment_nodes = get_boundary_nodes(tri, pos[1])` and `pos = get_boundary_edge_map(tri, u, v)`. This pattern is true for any form of boundary nodes, in fact.

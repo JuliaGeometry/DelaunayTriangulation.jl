@@ -29,11 +29,20 @@ You should not need to call into this method directly.
 The core complexity of the algorithm comes from having to find the direction of the point from an initial search point. The docstrings for some of these initialisers are given below.
 
 ```@docs 
+default_num_samples
 select_initial_point 
 select_initial_triangle_interior_node 
 check_for_intersections_with_adjacent_boundary_edges
 search_down_adjacent_boundary_edges
 check_for_intersections_with_interior_edges_adjacent_to_boundary_node
+```
+
+## History 
+
+If you need to, you can also store the history of the algorithm. This is primarily only used for (and only tested for) constrained triangulations, as it helps us locate which triangles to delete. The struct we use for storing history is given below.
+
+```@docs 
+PointLocationHistory 
 ```
 
 ## Basic Description of the Algorithm

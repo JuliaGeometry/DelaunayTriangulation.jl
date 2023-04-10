@@ -312,14 +312,14 @@ This function is also commonly called `polylabel`.
 
 !!! notes 
 
-The pole of inaccessibility is a point within a polygon that is furthest from an 
-edge. It is useful for our purposes since it is a representative point that is 
-guaranteed to be inside the polygon, in contrast to for example a centroid which 
-is not always inside the polygon.
+    The pole of inaccessibility is a point within a polygon that is furthest from an 
+    edge. It is useful for our purposes since it is a representative point that is 
+    guaranteed to be inside the polygon, in contrast to for example a centroid which 
+    is not always inside the polygon.
 
-For more information about this, see e.g. https://blog.mapbox.com/a-new-algorithm-for-finding-a-visual-center-of-a-polygon-7c77e6492fbc
-or https://github.com/mapbox/polylabel. This implementation was partially based 
-on https://github.com/Twista/python-polylabel and https://github.com/asinghvi17/Polylabel.jl.
+    For more information about this, see e.g. [this blog post](https://blog.mapbox.com/a-new-algorithm-for-finding-a-visual-center-of-a-polygon-7c77e6492fbc)
+    or [the original repo](https://github.com/mapbox/polylabel). This implementation was partially based 
+    on [the python implementation](https://github.com/Twista/python-polylabel) and [this other Julia implementation](https://github.com/asinghvi17/Polylabel.jl).
 """
 function pole_of_inaccessibility(pts, boundary_nodes; precision=one(number_type(pts)))
     F = number_type(pts)

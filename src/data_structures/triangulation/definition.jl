@@ -27,10 +27,10 @@ The [`Graph`](@ref).
 
 The boundary nodes in the triangulation that you provide, matching the specification given in the 
 documentation.
-- `boundary_node_map::BNM`
+- `boundary_edge_map::BNM`
 
 This is a `Dict` that maps all of the boundary edges to their position 
-in `boundary_nodes`. See also [`construct_boundary_node_map`](@ref).
+in `boundary_nodes`. See also [`construct_boundary_edge_map`](@ref).
 - `boundary_index_ranges::BIR`
 
 This is an `OrderedDict` that maps a boundary index to a range of all other boundary indices 

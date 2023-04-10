@@ -15,7 +15,7 @@ end
 
 Returns an iterator over the indices of the points of `tri`.
 
-See also [`each_vertex`](@ref), [`each_solid_vertex](@ref) and [`each_ghost_point`](@ref).
+See also [`each_vertex`](@ref), [`each_solid_vertex](@ref) and [`each_ghost_vertex`](@ref).
 """
 @inline each_point_index(tri::Triangulation) = each_point_index(get_points(tri))
 
@@ -24,7 +24,7 @@ See also [`each_vertex`](@ref), [`each_solid_vertex](@ref) and [`each_ghost_poin
 
 Returns an iterator over the points of `tri`. 
 
-See also [`each_vertex`](@ref), [`each_solid_vertex](@ref) and [`each_ghost_point`](@ref).
+See also [`each_vertex`](@ref), [`each_solid_vertex](@ref) and [`each_ghost_vertex`](@ref).
 """
 @inline each_point(tri::Triangulation) = each_point(get_points(tri))
 

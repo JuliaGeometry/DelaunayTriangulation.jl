@@ -17,6 +17,7 @@ makedocs(;
     pages=["Home" => "index.md",
         "Triangulations" => [
             "Unconstrained Triangulations" => "triangulations/unconstrained.md",
+            "Constrained Triangulations" => "triangulations/constrained.md",
             "Lattice" => "triangulations/lattice.md",
             "Gmsh" => "triangulations/gmsh.md",
             "Plotting" => "triangulations/plotting.md",
@@ -25,8 +26,9 @@ makedocs(;
         "Triangulation Algorithms" => [
             "Bowyer-Watson Algorithm" => "tri_algs/bowyer.md",
             "Chew's Algorithm for Triangulating Convex Polygons" => "tri_algs/convex.md",
+            "Constrained Triangulations" => "tri_algs/constrained.md",
         ],
-        "Ghost Triangles and Boundary Handling" => "boundary_handling.md",
+        "Ghost Triangles, Boundary Handling, and Boundary Specification" => "boundary_handling.md",
         "Other Features" => [
             "Point Location" => "other_features/point_location.md",
             "Pole of Inaccessibility and Polygons" => "other_features/pole_of_inaccessibility.md",
@@ -36,7 +38,6 @@ makedocs(;
             "Adjacent" => "data_structures/adjacent.md",
             "Adjacent2Vertex" => "data_structures/adjacent2vertex.md",
             "Graph" => "data_structures/graph.md",
-            "Representative Coordinates" => "data_structures/representative.md",
             "Convex Hull" => "data_structures/convex_hull.md",
             "Triangulation" => "data_structures/triangulation.md"
         ],

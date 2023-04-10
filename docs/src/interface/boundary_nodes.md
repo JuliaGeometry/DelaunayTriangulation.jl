@@ -4,7 +4,7 @@ CurrentModule = DelaunayTriangulation
 
 ## Boundary Nodes
 
-As mentioned at the start of this section, the interface for representing boundary nodes allows for support for a contiguous boundary, a segmented boundary, and multiple separate boundaries. This interface is customisable, and we define the following methods for this.
+As mentioned at the start of this section, the interface for representing boundary nodes allows for support for a contiguous boundary, a segmented boundary, and multiple separate boundaries. (There is also support for more complex geometries, as described in the constrained triangulation section, although features like point location have limited support for e.g. non-convex domains and regions with holes inside holes.) This interface is customisable, and we define the following methods for this.
 
 ### Necessary Methods 
 
