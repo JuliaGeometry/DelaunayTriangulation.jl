@@ -122,6 +122,8 @@ num_points(::Triangulation)
 push_point!(::Triangulation, ::Any, ::Any)
 each_solid_vertex 
 each_ghost_vertex
+num_solid_vertices 
+num_ghost_vertices
 ```
 
 ## Triangles Methods

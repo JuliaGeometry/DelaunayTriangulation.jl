@@ -53,7 +53,7 @@ Returns the number of ghost edges in `tri`.
 function num_ghost_edges(tri::Triangulation)
     all_bnd_idx = all_boundary_indices(tri)
     num_ghosts = 0
-    for i in all_bnd_idx 
+    for i in all_bnd_idx
         bnd_ngh = get_neighbours(tri, i)
         num_ghosts += length(bnd_ngh)
     end

@@ -70,6 +70,7 @@ include("data_structures/triangulation/segment_location.jl")
 include("data_structures/triangulation/predicates.jl")
 include("data_structures/triangulation/representative_points.jl")
 include("data_structures/representative.jl")
+include("data_structures/statistics.jl")
 
 export get_adjacent
 export get_adjacent2vertex
@@ -102,6 +103,7 @@ export each_ghost_edge
 export each_solid_vertex 
 export each_ghost_vertex
 export each_constrained_edge
+export statistics
 
 include("predicates/certificate.jl")
 include("predicates/boundaries_and_ghosts.jl")

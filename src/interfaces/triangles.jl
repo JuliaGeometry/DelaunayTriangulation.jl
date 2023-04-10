@@ -176,10 +176,10 @@ end
 """
     initialise_triangles(::Type{S})
 
-For a given type `S` for some collection (e.g. a `Set`), returns an
+For a given type `S` for some collection (e.g. a `AbstractSet`), returns an
 empty instance of that collection. The only method defined is
 
-    initialise_triangles(::Type{S}) where {T, S <: Set{T}}
+    initialise_triangles(::Type{S}) where {T, S <: AbstractSet{T}}
     initialise_triangles(::Type{V}) where {T,V<:AbstractVector{T}}
 
 which returns a `Set{T}()`. You can extend this function as you need, making sure 
@@ -189,7 +189,7 @@ function initialise_triangles end
 function initialise_triangles(::Type{F}) where {F}
     return error("The initialise_triangles function has not been defined for the type $F.")
 end
-initialise_triangles(::Type{S}) where {T,S<:Set{T}} = S()
+initialise_triangles(::Type{S}) where {T,S<:AbstractSet{T}} = S()
 initialise_triangles(::Type{V}) where {T,V<:AbstractVector{T}} = V()
 
 """
@@ -197,9 +197,9 @@ initialise_triangles(::Type{V}) where {T,V<:AbstractVector{T}} = V()
 
 For a given type `S` representing a collection of triangles, 
 returns the type of triangle used inside `S`, e.g. `NTuple{3, Int64}`
-if `S = Set{NTuple{3, Int64}}`. The only methods defined are
+if `S = AbstractSet{NTuple{3, Int64}}`. The only methods defined are
 
-    triangle_type(::Type{S}) where {T, S <: Set{T}}
+    triangle_type(::Type{S}) where {T, S <: AbstractSet{T}}
     triangle_type(::Type{A}) where {T, A <: AbstractVector{E}}
 
 which returns `T`. You can extend this function as you need, making sure 
@@ -209,7 +209,7 @@ function triangle_type end
 function triangle_type(::Type{F}) where {F}
     return error("The triangle_type function has not been defined for the type $F.")
 end
-triangle_type(::Type{S}) where {T,S<:Set{T}} = T
+triangle_type(::Type{S}) where {T,S<:AbstractSet{T}} = T
 triangle_type(::Type{A}) where {T,A<:AbstractVector{T}} = T
 
 """
@@ -218,7 +218,7 @@ triangle_type(::Type{A}) where {T,A<:AbstractVector{T}} = T
 Given a collection of triangles `T`, returns the number of triangles 
 in `T`. The only method currently defined is 
 
-    num_triangles(T::Set)
+    num_triangles(T::AbstractSet)
     num_triangles(T::AbstractVector) 
 
 which returns `length(T)`. You can extend this function as you need.
@@ -227,7 +227,7 @@ function num_triangles end
 function num_triangles(::F) where {F}
     return error("The num_triangles function has not been defined for the type $F.")
 end
-num_triangles(T::Set) = length(T)
+num_triangles(T::AbstractSet) = length(T)
 num_triangles(T::AbstractVector) = length(T)
 
 """
@@ -306,8 +306,8 @@ end
 Given a collection of triangles `T`, pushes `V` into it. The only 
 methods currently defined are
 
-    add_to_triangles!(T::Set{F}, V::F) where {F}
-    add_to_triangles!(T::Set{F}, V) where {F}
+    add_to_triangles!(T::AbstractSet{F}, V::F) where {F}
+    add_to_triangles!(T::AbstractSet{F}, V) where {F}
 
 which simply call `push!(T, V)`. The latter method reconstructs `V` 
 using [`indices`] and [`construct_triangle`](@ref). You can extend this function  
@@ -317,11 +317,11 @@ function add_to_triangles! end
 function add_to_triangles!(::S, V) where {S}
     return error("The add_to_triangles! function has not been defined for the type $S.")
 end
-function add_to_triangles!(T::Union{A,Set{F}}, V::F) where {F,A<:AbstractVector{F}}
+function add_to_triangles!(T::Union{A,AbstractSet{F}}, V::F) where {F,A<:AbstractVector{F}}
     push!(T, V)
     return nothing
 end
-function add_to_triangles!(T::Union{A,Set{F}}, V::G) where {F,G,A<:AbstractVector{F}}
+function add_to_triangles!(T::Union{A,AbstractSet{F}}, V::G) where {F,G,A<:AbstractVector{F}}
     i, j, k = indices(V)
     V = construct_triangle(F, i, j, k)
     add_to_triangles!(T, V)
@@ -361,7 +361,7 @@ Given a collection of triangles `V` of type `S`, containing
 triangles of type `F`, deletes the triangle `T` from `V`. 
 The only method currently defined is 
 
-    delete_from_triangles!(V::Set{F}, T::F) where {F}.
+    delete_from_triangles!(V::AbstractSet{F}, T::F) where {F}.
     
 which just calls `delete!` on `V`. The function already assumes that `T` 
 is already in `V`, and that `T` doesn't need to be rotated at all.
@@ -370,7 +370,7 @@ function delete_from_triangles! end
 function delete_from_triangles!(::S, T) where {S}
     return error("The delete_from_triangles! function has not been defined for the type $S.")
 end
-function delete_from_triangles!(V::Set{F}, T::F) where {F}
+function delete_from_triangles!(V::AbstractSet{F}, T::F) where {F}
     delete!(V, T)
     return nothing
 end
@@ -415,7 +415,7 @@ For a given collection of triangles `V`, returns an iterator that
 goes over each triangle in the collection. The methods currently 
 defined are 
 
-    each_triangle(V::Set)
+    each_triangle(V::AbstractSet)
     each_triangle(V::AbstractMatrix)
     each_triangle(V::AbstractVector)
 
@@ -426,7 +426,7 @@ function each_triangle end
 function each_triangle(::F) where {F}
     return error("The each_triangle function has not been defined for the type $F.")
 end
-each_triangle(V::Set) = V
+each_triangle(V::AbstractSet) = V
 each_triangle(V::AbstractMatrix) = eachcol(V)
 each_triangle(V::AbstractVector) = V
 
@@ -469,6 +469,6 @@ preserved.
 """
 function remove_duplicate_triangles(T::Ts) where {Ts}
     V = sort_triangles(T)
-    Ts <: Set || unique!(V)
+    Ts <: AbstractSet || unique!(V)
     return V
 end

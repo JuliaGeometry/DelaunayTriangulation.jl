@@ -566,3 +566,29 @@ function check_args(points, boundary_nodes)
         end
     end
 end
+
+"""
+    min_max(a, b)
+
+Returns `(min(a, b), max(a, b))`.
+"""
+function min_max(a, b)
+    if b < a 
+        return b, a 
+    else 
+        return a, b 
+    end
+end
+
+"""
+    min_med_max(a, b, c)
+
+Returns `(min(a, b, c), med(a, b, c), max(a, b, c)), where `med(a, b, c)`
+is the value that is neither `min(a, b, c)` or `max(a, b, c)`.
+"""
+function min_med_max(a, b, c)
+    b, c = min_max(b, c)
+    a, c = min_max(a, c)
+    a, b = min_max(a, b)
+    return a, b, c 
+end

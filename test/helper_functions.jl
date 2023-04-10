@@ -1,5 +1,6 @@
 using StaticArrays
 using StableRNGs
+using LinearAlgebra
 using Random
 
 const DT = DelaunayTriangulation
@@ -152,7 +153,7 @@ function test_triangle_orientation(tri; check_ghost_triangle_orientation=true)
     for T in each_triangle(tri)
         cert = DT.triangle_orientation(tri, T)
         if DT.is_ghost_triangle(T) && !check_ghost_triangle_orientation
-            continue 
+            continue
         end
         flag = DT.is_positively_oriented(cert)
         if !flag
@@ -166,7 +167,7 @@ end
 function test_delaunay_criterion(tri; check_ghost_triangle_delaunay=true)
     for T in each_triangle(tri)
         if DT.is_ghost_triangle(T) && !check_ghost_triangle_delaunay
-            continue 
+            continue
         end
         for r in each_solid_vertex(tri)
             cert = DT.point_position_relative_to_circumcircle(tri, T, r)
@@ -511,22 +512,22 @@ function test_iterators(tri::Triangulation)
         push!(all_triangles, (i, j, k))
         if DT.is_ghost_triangle(i, j, k)
             push!(ghost_triangles, (i, j, k))
-        else 
+        else
             push!(solid_triangles, (i, j, k))
         end
         for (u, v) in DT.triangle_edges(i, j, k)
             push!(all_edges, (u, v))
             if DT.is_ghost_edge(u, v)
                 push!(ghost_edges, (u, v))
-            else 
+            else
                 push!(solid_edges, (u, v))
             end
         end
         for k in (i, j, k)
-            push!(all_vertices,k)
+            push!(all_vertices, k)
             if DT.is_boundary_index(k)
                 push!(ghost_vertices, k)
-            else 
+            else
                 push!(solid_vertices, k)
             end
         end
@@ -537,13 +538,13 @@ function test_iterators(tri::Triangulation)
     flag4 = allunique(solid_edges)
     flag5 = allunique(ghost_triangles)
     flag6 = allunique(ghost_edges)
-    if !flag1 
+    if !flag1
         println("Validation of the triangle iterator failed as it returned duplicate triangles.")
         return false
-    elseif !flag2 
+    elseif !flag2
         println("Validation of the edge iterator failed as it returned duplicate edges.")
         return false
-    elseif !flag3 
+    elseif !flag3
         println("Validation of the solid triangle iterator failed as it returned duplicate triangles.")
         return false
     elseif !flag4
@@ -557,16 +558,16 @@ function test_iterators(tri::Triangulation)
         return false
     end
     for (i, e) in enumerate(all_edges)
-         u, v = DT.edge_indices(e)
-         all_edges[i] = (min(u, v), max(u, v))
+        u, v = DT.edge_indices(e)
+        all_edges[i] = (min(u, v), max(u, v))
     end
     for (i, e) in enumerate(solid_edges)
-         u, v = DT.edge_indices(e)
-         solid_edges[i] = (min(u, v), max(u, v))
+        u, v = DT.edge_indices(e)
+        solid_edges[i] = (min(u, v), max(u, v))
     end
     for (i, e) in enumerate(ghost_edges)
-         u, v = DT.edge_indices(e)
-         ghost_edges[i] = (min(u, v), max(u, v))
+        u, v = DT.edge_indices(e)
+        ghost_edges[i] = (min(u, v), max(u, v))
     end
     unique!(all_edges)
     unique!(solid_edges)
@@ -580,7 +581,7 @@ function test_iterators(tri::Triangulation)
     flag13 = length(all_vertices) == length(each_vertex(tri))
     flag14 = length(solid_vertices) == length(each_solid_vertex(tri))
     flag15 = length(ghost_vertices) == length(each_ghost_vertex(tri))
-    if !flag7 
+    if !flag7
         println("Validation of the triangle iterator failed as it returned a different number of triangles to the each_triangle iterator.")
         return false
     elseif !flag8
@@ -623,7 +624,7 @@ function test_iterators(tri::Triangulation)
     flag22 = all_vertices == sort(collect(each_vertex(tri)))
     flag23 = solid_vertices == sort(collect(each_solid_vertex(tri)))
     flag24 = ghost_vertices == sort(collect(each_ghost_vertex(tri)))
-    if !flag16 
+    if !flag16
         println("Validation of the triangle iterator failed as it returned a different set of triangles to the each_triangle iterator.")
         return false
     elseif !flag17
@@ -673,7 +674,7 @@ function validate_triangulation(_tri::Triangulation; check_ghost_triangle_orient
            test_adjacent_map_matches_graph(tri) &&
            test_constrained_edges(tri) &&
            test_boundary_edge_map_matches_boundary_nodes(tri) &&
-           test_boundary_nodes_matches_boundary_edge_map(tri) && 
+           test_boundary_nodes_matches_boundary_edge_map(tri) &&
            test_iterators(tri)
 end
 
@@ -1013,4 +1014,188 @@ function example_for_testing_add_point_on_constrained_triangulation()
     N = [1.6; 2]
     P = [A, B, C, D, E, F, G, H, I, J, K, L, M, N]
     return P, Set([(1, 2)])
+end
+
+function validate_statistics(tri::Triangulation, stats=statistics(tri))
+    ## Build up the array (see also test_iterators)
+    I = DT.integer_type(tri)
+    T = NTuple{3,I}
+    E = NTuple{2,I}
+    solid_triangles = T[]
+    ghost_triangles = T[]
+    all_triangles = T[]
+    solid_vertices = Set{I}()
+    ghost_vertices = Set{I}()
+    all_vertices = Set{I}()
+    solid_edges = E[]
+    ghost_edges = E[]
+    all_edges = E[]
+    for T in each_triangle(tri)
+        i, j, k = DT.indices(T)
+        push!(all_triangles, (i, j, k))
+        if DT.is_ghost_triangle(i, j, k)
+            push!(ghost_triangles, (i, j, k))
+        else
+            push!(solid_triangles, (i, j, k))
+        end
+        for (u, v) in DT.triangle_edges(i, j, k)
+            push!(all_edges, (u, v))
+            if DT.is_ghost_edge(u, v)
+                push!(ghost_edges, (u, v))
+            else
+                push!(solid_edges, (u, v))
+            end
+        end
+        for k in (i, j, k)
+            push!(all_vertices, k)
+            if DT.is_boundary_index(k)
+                push!(ghost_vertices, k)
+            else
+                push!(solid_vertices, k)
+            end
+        end
+    end
+    push!(all_vertices, DT.all_boundary_indices(tri)...)
+    push!(ghost_vertices, DT.all_boundary_indices(tri)...)
+    for e in each_ghost_edge(tri)
+        u, v = DT.edge_indices(e)
+        push!(ghost_edges, (min(u, v), max(u, v)))
+        push!(all_edges, (min(u, v), max(u, v)))
+    end
+    for (i, e) in enumerate(all_edges)
+        u, v = DT.edge_indices(e)
+        all_edges[i] = (min(u, v), max(u, v))
+    end
+    for (i, e) in enumerate(solid_edges)
+        u, v = DT.edge_indices(e)
+        solid_edges[i] = (min(u, v), max(u, v))
+    end
+    for (i, e) in enumerate(ghost_edges)
+        u, v = DT.edge_indices(e)
+        ghost_edges[i] = (min(u, v), max(u, v))
+    end
+    unique!(all_edges)
+    unique!(solid_edges)
+    unique!(ghost_edges)
+    all_vertices = collect(all_vertices)
+    solid_vertices = collect(solid_vertices)
+    ghost_vertices = collect(ghost_vertices)
+    sort!(all_vertices)
+    sort!(solid_vertices)
+    sort!(ghost_vertices)
+
+    ## Build up the individual statistics 
+    areas = Dict{T,Float64}()
+    lengths = Dict{T,NTuple{3,Float64}}()
+    squared_lengths = Dict{T,NTuple{3,Float64}}()
+    circumcenters = Dict{T,NTuple{2,Float64}}()
+    circumradii = Dict{T,Float64}()
+    sine_minimum_angle = Dict{T,Float64}()
+    sine_maximum_angle = Dict{T,Float64}()
+    minimum_angle = Dict{T,Float64}()
+    maximum_angle = Dict{T,Float64}()
+    radius_edge_ratio = Dict{T,Float64}()
+    edge_midpoints = Dict{T,NTuple{3,NTuple{2,Float64}}}()
+    aspect_ratio = Dict{T,Float64}()
+    inradius = Dict{T,Float64}()
+    perimeter = Dict{T,Float64}()
+    centroid = Dict{T,NTuple{2,Float64}}()
+    for T in each_solid_triangle(tri)
+        u, v, w = DT.indices(T)
+        p, q, r = get_point(tri, u, v, w)
+        p = collect(p)
+        q = collect(q)
+        r = collect(r)
+        areas[T] = 0.5 * (p[1] * (q[2] - r[2]) + q[1] * (r[2] - p[2]) + r[1] * (p[2] - q[2]))
+        ℓ1 = norm(q - p)
+        ℓ2 = norm(r - q)
+        ℓ3 = norm(r - p)
+        ℓmin = min(ℓ1, ℓ2, ℓ3)
+        ℓmax = max(ℓ1, ℓ2, ℓ3)
+        ℓmed = ℓ1 + ℓ2 + ℓ3 - ℓmin - ℓmax
+        ℓ1, ℓ2, ℓ3 = ℓmin, ℓmed, ℓmax
+        lengths[T] = (ℓ1, ℓ2, ℓ3)
+        squared_lengths[T] = (ℓ1^2, ℓ2^2, ℓ3^2)
+        r′ = p - r
+        s′ = q - r
+        ox = r[1] + det([norm(r′)^2 r′[2]; norm(s′)^2 s′[2]]) / (4areas[T])
+        oy = r[2] + det([r′[1] norm(r′)^2; s′[1] norm(s′)^2]) / (4areas[T])
+        circumcenters[T] = (ox, oy)
+        circumradii[T] = norm(r - collect(circumcenters[T]))
+        all_angles = [acos(dot(p - q, r - q) / (norm(p - q) * norm(r - q))) for (p, q, r) in ((p, q, r), (q, r, p), (r, p, q))]
+        sine_minimum_angle[T] = minimum(sin.(all_angles))
+        sine_maximum_angle[T] = maximum(sin.(all_angles))
+        minimum_angle[T] = asin(2areas[T] / (ℓ2 * ℓ3))
+        maximum_angle[T] = asin(2areas[T] / (ℓ1 * ℓ2))
+        radius_edge_ratio[T] = circumradii[T] / ℓ1
+        edge_midpoints[T] = ((Tuple(0.5 * (p + q))), Tuple(0.5 * (q + r)), Tuple(0.5 * (r + p)))
+        inradius[T] = 2areas[T] / (ℓ1 + ℓ2 + ℓ3)
+        perimeter[T] = ℓ1 + ℓ2 + ℓ3
+        aspect_ratio[T] = inradius[T] / circumradii[T]
+        centroid[T] = (1 / 3 * (p[1] + q[1] + r[1]), 1 / 3 * (p[2] + q[2] + r[2]))
+        @test radius_edge_ratio[T] ≥ 1 / sqrt(3) - 0.1
+        @test DT.get_radius_edge_ratio(stats, T) ≥ 1 / sqrt(3) - 0.1
+        @test minimum_angle[T] ≤ deg2rad(60) + 0.01
+        @test DT.get_minimum_angle(stats, T) ≤ deg2rad(60) + 0.01
+    end
+
+    ## Now compare the statistics 
+    for T in each_solid_triangle(tri)
+        @test areas[T] ≈ DT.get_area(stats, T)
+        @test collect(lengths[T]) ≈ collect(DT.get_lengths(stats, T))
+        @test collect(squared_lengths[T]) ≈ collect(DT.get_squared_lengths(stats, T))
+        @test collect(circumcenters[T]) ≈ collect(DT.get_circumcenter(stats, T))
+        @test circumradii[T] ≈ DT.get_circumradius(stats, T)
+        @test sine_minimum_angle[T] ≈ DT.get_sine_minimum_angle(stats, T)
+        @test sine_maximum_angle[T] ≈ DT.get_sine_maximum_angle(stats, T)
+        @test minimum_angle[T] ≈ DT.get_minimum_angle(stats, T) rtol = 1e-2
+        @test maximum_angle[T] ≈ DT.get_maximum_angle(stats, T) rtol = 1e-2
+        @test radius_edge_ratio[T] ≈ DT.get_radius_edge_ratio(stats, T)
+        @test collect(collect.(edge_midpoints[T])) ≈ collect(collect.(DT.get_edge_midpoints(stats, T)))
+        @test aspect_ratio[T] ≈ DT.get_aspect_ratio(stats, T)
+        @test inradius[T] ≈ DT.get_inradius(stats, T)
+        @test perimeter[T] ≈ DT.get_perimeter(stats, T)
+        @test (2sin(minimum_angle[T] / 2)^2 - 0.1 ≤ aspect_ratio[T] ≤ 2tan(minimum_angle[T] / 2) + 0.1)
+        @test radius_edge_ratio[T] ≈ 1 / (2sine_minimum_angle[T])
+        @test sine_minimum_angle[T] ≈ sin(minimum_angle[T])
+        @test (2sin(DT.get_minimum_angle(stats, T) / 2)^2 - 0.1 ≤ DT.get_aspect_ratio(stats, T) ≤ 2tan(DT.get_minimum_angle(stats, T) / 2) + 0.1)
+        @test DT.get_radius_edge_ratio(stats, T) ≈ 1 / (2(sin(DT.get_minimum_angle(stats, T))))
+        @test DT.get_sine_minimum_angle(stats, T) ≈ sin(DT.get_minimum_angle(stats, T))
+        @test DT.get_sine_maximum_angle(stats, T) ≈ sin(DT.get_maximum_angle(stats, T))
+        @test areas[T] ≈ inradius[T] * 0.5perimeter[T]
+        @test DT.get_area(stats, T) ≈ DT.get_inradius(stats, T) * 0.5DT.get_perimeter(stats, T)
+        @test collect(centroid[T]) ≈ collect(DT.get_centroid(stats, T))
+    end
+    @test stats.individual_statistics == DT.get_individual_statistics(stats)
+
+    ## Test the number statistics 
+    @test DT.num_vertices(stats) == length(all_vertices) == stats.num_vertices
+    @test DT.num_solid_vertices(stats) == length(solid_vertices) == stats.num_solid_vertices
+    @test DT.num_ghost_vertices(stats) == length(DT.all_boundary_indices(tri)) == length(ghost_vertices) == stats.num_ghost_vertices
+    @test DT.num_triangles(stats) == length(all_triangles) == stats.num_triangles
+    @test DT.num_solid_triangles(stats) == length(solid_triangles) == stats.num_solid_triangles
+    @test DT.num_ghost_triangles(stats) == length(ghost_triangles) == stats.num_ghost_triangles
+    @test DT.num_edges(stats) == length(all_edges) == stats.num_edges
+    @test DT.num_solid_edges(stats) == length(solid_edges) == stats.num_solid_edges
+    @test DT.num_ghost_edges(stats) == length(ghost_edges) == stats.num_ghost_edges
+    @test DT.num_constrained_boundary_edges(stats) == length(keys(get_boundary_edge_map(tri))) == stats.num_constrained_boundary_edges
+    @test DT.num_constrained_interior_edges(stats) == length(get_constrained_edges(tri)) == stats.num_constrained_interior_edges
+    @test DT.num_constrained_edges(stats) == num_edges(get_all_constrained_edges(tri)) == stats.num_constrained_edges
+    @test DT.num_convex_hull_points(stats) == length(get_convex_hull_indices(tri)) - 1 == stats.num_convex_hull_points
+
+    ## Global statistics  
+    smallest_angle = minimum([minimum_angle[T] for T in each_solid_triangle(tri)])
+    largest_angle = maximum([maximum_angle[T] for T in each_solid_triangle(tri)])
+    smallest_area = minimum([areas[T] for T in each_solid_triangle(tri)])
+    largest_area = maximum([areas[T] for T in each_solid_triangle(tri)])
+    smallest_radius_edge_ratio = minimum([radius_edge_ratio[T] for T in each_solid_triangle(tri)])
+    largest_radius_edge_ratio = maximum([radius_edge_ratio[T] for T in each_solid_triangle(tri)])
+    @test DT.get_smallest_angle(stats) ≈ smallest_angle rtol = 1e-2
+    @test DT.get_largest_angle(stats) ≈ largest_angle rtol = 1e-2
+    @test DT.get_smallest_area(stats) ≈ smallest_area rtol = 1e-2
+    @test DT.get_largest_area(stats) ≈ largest_area rtol = 1e-2
+    @test DT.get_smallest_radius_edge_ratio(stats) ≈ smallest_radius_edge_ratio rtol = 1e-2
+    @test DT.get_largest_radius_edge_ratio(stats) ≈ largest_radius_edge_ratio rtol = 1e-2
+    @test DT.get_smallest_radius_edge_ratio(stats) ≥ 1 / sqrt(3) - 0.1
+    @test DT.get_smallest_angle(stats) ≤ deg2rad(60) + 0.01
 end

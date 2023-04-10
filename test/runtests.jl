@@ -70,6 +70,9 @@ using SafeTestsets
         @safetestset "Representative Points" begin
             include("data_structures/representative.jl")
         end
+        @safetestset "Statistics" begin
+            include("data_structures/statistics.jl")
+        end
     end
 
     @testset verbose = true "Operations" begin

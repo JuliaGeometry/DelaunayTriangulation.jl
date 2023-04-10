@@ -78,7 +78,7 @@ from the graph.
 Returns `each_vertex(get_graph(tri))`, an iterator over all vertices present 
 in the triangulation.
 
-!!! note 
+!!! warning
 
     This iterator will include ghost vertices. If you want to exclude these, 
     see [`each_solid_vertex`](@ref). Alternatively, if you only want ghost vertices, 
