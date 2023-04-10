@@ -61,7 +61,6 @@ triangulation `tri`.
 """
 function find_all_points_to_delete(tri::Triangulation)
     points_to_delete = Set{integer_type(tri)}()
-    points_to_fix = Set{integer_type(tri)}() # When we have interiors-within-interiors, it is possible for us to accidentally include points that are inside the triangulation to be deleted. This set stores them, and then deletes them after. We can't delete them during as it breaks the recursive algorithm.
     all_bn = get_all_boundary_nodes(tri)
     if has_multiple_curves(tri)
         find_all_points_to_delete_curve!(points_to_delete, tri, all_bn)
@@ -125,6 +124,13 @@ function find_all_points_to_delete!(points_to_delete, tri::Triangulation, seed, 
     return nothing
 end
 
+"""
+    find_all_triangles_to_delete(tri::Triangulation, points_to_delete)
+
+Given a set of `points_to_delete`, returns all triangles that have it as a vertex.
+If `tri` has interiors within interiors, then point-in-polygon location has to be 
+performed to verify that each triangle should actually be deleted.
+"""
 function find_all_triangles_to_delete(tri::Triangulation, points_to_delete)
     T = triangle_type(tri)
     triangles = Set{T}()
@@ -154,6 +160,11 @@ function find_all_triangles_to_delete(tri::Triangulation, points_to_delete)
     return triangles
 end
 
+"""
+    delete_all_exterior_triangles(tri::Triangulation, triangles)
+
+Given `triangles` in the exterior face of `tri`, deletes them from `tri`.
+"""
 function delete_all_exterior_triangles(tri::Triangulation, triangles)
     for T in each_triangle(triangles)
         delete_triangle!(tri, T; protect_boundary=true)
@@ -161,6 +172,12 @@ function delete_all_exterior_triangles(tri::Triangulation, triangles)
     return nothing
 end
 
+"""
+    clear_deleted_points!(tri::Triangulation, points_to_delete)
+
+Clears the empty neighbours and sets left behind when deleting the points 
+in `points_to_delete`.
+"""
 function clear_deleted_points!(tri::Triangulation, points_to_delete)
     for i in points_to_delete
         delete_adjacent2vertex!(tri, i)
@@ -169,6 +186,17 @@ function clear_deleted_points!(tri::Triangulation, points_to_delete)
     return nothing
 end
 
+"""
+    delete_remaining_triangles_connecting_boundary_edges!(tri::Triangulation)
+
+Deletes triangles from `tri` that have a boundary edge for an edge and lie in the 
+exterior face of `tri`. This covers all triangles that were not found by 
+`find_all_points_to_delete!` as these triangles might not have had any points in the 
+exterior as faces, and these edges could cross over the exteror. Point-in-polygon 
+location may be used for the exterior faces but not the interior faces. If there 
+are interiors within interiors, then point-in-polygon location is used for all
+exterior faces.
+"""
 function delete_remaining_triangles_connecting_boundary_edges!(tri::Triangulation)
     # There is almost certainly a better way to do this. We are looking to delete 
     # any triangles that have edges that join two boundary nodes, since those won't be

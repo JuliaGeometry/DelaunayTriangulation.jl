@@ -123,6 +123,12 @@ using SafeTestsets
     @safetestset "Plotting" begin
         include("plotting.jl")
     end
+    @safetestset "Logo" begin
+        include("logo.jl")
+    end
+    @safetestset "Documentation images" begin
+        include("doc_images.jl")
+    end
 
     @testset verbose = true "Point Location" begin
         @safetestset "Brute Force" begin
