@@ -559,7 +559,7 @@ cons_tri = triangulate(points; boundary_nodes = nodes, check_arguments = false)
 
 ```@raw html
 <figure>
-    <img src='../figs/simple_disjoint.png', alt='Julia logo'><br>
+    <img src='../figs/julia.png', alt='Julia logo'><br>
 </figure>
 ```
 
