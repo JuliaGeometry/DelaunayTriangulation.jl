@@ -40,19 +40,6 @@ function process_collinear_segments!(all_constrained_edges, constrained_edges, e
         extend_segments!(collinear_segments, e)
         split_constrained_edge!(constrained_edges, e, collinear_segments)
         if contains_boundary_edge(tri, e)
-            #=
-            # I initially used the split_boundary_edge_at_collinear_segments! function for this, 
-            # but when we update all of the boundary edge information at once, it breaks the iteration.
-            v = terminal(last(collinear_segments))
-            for (k, η) in pairs(collinear_segments) # Note that collinear_segments is always a vector 
-                @show k, η
-                if k ≠ lastindex(collinear_segments)
-                    rₖ₋₁, rₖ = edge_indices(η)
-                    split_boundary_edge!(tri, rₖ₋₁, v, rₖ)
-                end
-                add_edge!(tri, η; rng)
-            end
-            =#
             split_boundary_edge_at_collinear_segments!(tri, collinear_segments)
         end
         for η in each_edge(collinear_segments)

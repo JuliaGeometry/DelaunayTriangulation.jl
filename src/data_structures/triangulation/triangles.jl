@@ -94,8 +94,9 @@ function Base.iterate(itr::EachSolidTriangle, state...)
     return tri, state
 end
 function Base.iterate(itr::EachGhostTriangle, state...)
+    !has_ghost_triangles(itr.tri) && return nothing
     tri_state = iterate(itr.triangles, state...)
-    tri_state === nothing || !has_ghost_triangles(itr.tri) && return nothing
+    tri_state === nothing && return nothing
     tri, state = tri_state
     while !is_ghost_triangle(tri)
         tri_state = iterate(itr.triangles, state)

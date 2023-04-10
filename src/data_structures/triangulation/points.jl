@@ -95,7 +95,7 @@ function Base.iterate(itr::EachSolidVertex, state...)
     end
     return vertices, state
 end
-Base.iterate(itr::EachGhostVertex, state...) = !has_ghost_triangles(itr.tri) ? nothing : Base.iterate(itr.vertices, state...)
+Base.iterate(itr::EachGhostVertex, state...) = Base.iterate(itr.vertices, state...)
 
 """
     each_solid_vertex(tri::Triangulation)
