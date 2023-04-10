@@ -181,7 +181,7 @@ When we define boundary curves, we typically want to delete any points and trian
 ```@docs 
 delete_holes!
 has_interiors_within_interiors 
-find_all_points_to_delete!
+find_all_points_to_delete
 find_all_triangles_to_delete 
 delete_all_exterior_triangles 
 clear_deleted_points!

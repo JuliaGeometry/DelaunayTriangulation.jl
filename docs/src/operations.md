@@ -13,7 +13,6 @@ delete_point!(::Triangulation, ::Any)
 add_boundary_information!(::Triangulation)
 delete_ghost_triangles!(::Triangulation)
 add_ghost_triangles!(::Triangulation)
-delete_holes!
 add_triangle!(::Ts, ::Integer, ::Integer, ::Integer) where {Ts<:Triangulation}
 delete_triangle!(::Ts, ::Integer, ::Integer, ::Integer) where {Ts<:Triangulation}
 split_edge!
