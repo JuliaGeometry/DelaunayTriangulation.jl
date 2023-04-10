@@ -562,3 +562,12 @@ cons_tri = triangulate(points; boundary_nodes = nodes, check_arguments = false)
     <img src='../figs/simple_disjoint.png', alt='Julia logo'><br>
 </figure>
 ```
+
+These methods are how we build the DelaunayTriangulation.jl logos (see also the logo.jl file in the tests).
+
+```@raw html
+<figure>
+    <img src='../figs/delaunay_triangulation_logo.png', alt='DelaunayTriangulation.jl logo'><br>
+</figure>
+```
+
