@@ -180,6 +180,7 @@ For a given type `S` for some collection (e.g. a `Set`), returns an
 empty instance of that collection. The only method defined is
 
     initialise_triangles(::Type{S}) where {T, S <: Set{T}}
+    initialise_triangles(::Type{V}) where {T,V<:AbstractVector{T}}
 
 which returns a `Set{T}()`. You can extend this function as you need, making sure 
 you extend it for the type rather than for instances of that type.
@@ -189,6 +190,7 @@ function initialise_triangles(::Type{F}) where {F}
     return error("The initialise_triangles function has not been defined for the type $F.")
 end
 initialise_triangles(::Type{S}) where {T,S<:Set{T}} = S()
+initialise_triangles(::Type{V}) where {T,V<:AbstractVector{T}} = V()
 
 """
     triangle_type(::Type{S}) where {S}
@@ -217,6 +219,7 @@ Given a collection of triangles `T`, returns the number of triangles
 in `T`. The only method currently defined is 
 
     num_triangles(T::Set)
+    num_triangles(T::AbstractVector) 
 
 which returns `length(T)`. You can extend this function as you need.
 """
@@ -225,6 +228,7 @@ function num_triangles(::F) where {F}
     return error("The num_triangles function has not been defined for the type $F.")
 end
 num_triangles(T::Set) = length(T)
+num_triangles(T::AbstractVector) = length(T)
 
 """
     contains_triangle(T::F, V::S) where {F, S}
@@ -254,6 +258,11 @@ the triangle with [`construct_triangle`](@ref).
 """
 function contains_triangle end
 function contains_triangle(T::F, V::S) where {F,S}
+    if F ≠ triangle_type(S)
+        i, j, k = indices(T)
+        FF = triangle_type(S)
+        T = construct_triangle(FF, i, j, k)
+    end
     if T ∈ V
         return (T, true)
     end
@@ -308,11 +317,11 @@ function add_to_triangles! end
 function add_to_triangles!(::S, V) where {S}
     return error("The add_to_triangles! function has not been defined for the type $S.")
 end
-function add_to_triangles!(T::Set{F}, V::F) where {F}
+function add_to_triangles!(T::Union{A,Set{F}}, V::F) where {F,A<:AbstractVector{F}}
     push!(T, V)
     return nothing
 end
-function add_to_triangles!(T::Set{F}, V::G) where {F,G}
+function add_to_triangles!(T::Union{A,Set{F}}, V::G) where {F,G,A<:AbstractVector{F}}
     i, j, k = indices(V)
     V = construct_triangle(F, i, j, k)
     add_to_triangles!(T, V)
@@ -408,9 +417,10 @@ defined are
 
     each_triangle(V::Set)
     each_triangle(V::AbstractMatrix)
+    each_triangle(V::AbstractVector)
 
-with the first method simply returning `V`, and the second returning 
-`eachcol(V)`. You can extend this function as you need.
+with the first method simply returning `V`, the second returning 
+`eachcol(V)`, and the third returning `V`. You can extend this function as you need.
 """
 function each_triangle end
 function each_triangle(::F) where {F}
@@ -418,6 +428,7 @@ function each_triangle(::F) where {F}
 end
 each_triangle(V::Set) = V
 each_triangle(V::AbstractMatrix) = eachcol(V)
+each_triangle(V::AbstractVector) = V
 
 """
     compare_triangle_collections(T, V)

@@ -21,15 +21,15 @@ include("./helper_functions.jl")
             index_map["g"],
             index_map["h"],
             index_map["a"]]
-      a, (cx, cy) = polygon_features(pts, boundary_nodes)
-      @inferred polygon_features(pts, boundary_nodes)
+      a, (cx, cy) = DT.polygon_features(pts, boundary_nodes)
+      @inferred DT.polygon_features(pts, boundary_nodes)
       @test a ≈ 400.0 && cx ≈ 10.0 && cy ≈ 10.0
       boundary_nodes = [index_map["j"],
             index_map["k"],
             index_map["ℓ"],
             index_map["i"],
             index_map["j"]]
-      a, (cx, cy) = polygon_features(pts, boundary_nodes)
+      a, (cx, cy) = DT.polygon_features(pts, boundary_nodes)
       @test a ≈ 40.0 && cx ≈ 6.0 && cy ≈ 11.0
       boundary_nodes = [[index_map["a"],
                   index_map["b"],
@@ -42,8 +42,8 @@ include("./helper_functions.jl")
             [index_map["g"],
                   index_map["h"],
                   index_map["a"]]]
-      a, (cx, cy) = polygon_features(pts, boundary_nodes)
-      @inferred polygon_features(pts, boundary_nodes)
+      a, (cx, cy) = DT.polygon_features(pts, boundary_nodes)
+      @inferred DT.polygon_features(pts, boundary_nodes)
       @test a ≈ 400.0 && cx ≈ 10.0 && cy ≈ 10.0
       boundary_nodes = [[index_map["j"],
                   index_map["k"]],
@@ -52,10 +52,10 @@ include("./helper_functions.jl")
                   index_map["i"]],
             [index_map["i"],
                   index_map["j"]]]
-      a, (cx, cy) = polygon_features(pts, boundary_nodes)
+      a, (cx, cy) = DT.polygon_features(pts, boundary_nodes)
       @test a ≈ 40.0 && cx ≈ 6.0 && cy ≈ 11.0
-      a, (cx, cy) = polygon_features(pts, tri.boundary_nodes)
-      @inferred polygon_features(pts, tri.boundary_nodes)
+      a, (cx, cy) = DT.polygon_features(pts, tri.boundary_nodes)
+      @inferred DT.polygon_features(pts, tri.boundary_nodes)
       a1, a2, a3 = 400.0, 32.0, 40.0
       c1, c2, c3 = (10.0, 10.0), (15.58333333333, 7.0), (6.0, 11.0)
       @test a ≈ a1 - a2 - a3
@@ -248,6 +248,62 @@ end
       @inferred DT.polygon_bounds(pts, boundary_nodes)
       @test DT.polygon_bounds(pts, tri.boundary_nodes) == (0.0, 20.0, 0.0, 20.0)
       @inferred DT.polygon_bounds(pts, tri.boundary_nodes)
+
+      # this example used to give ymin = ∞!
+      pts =
+            [
+                  (0.42128834958962136, 0.33007028464908217)
+                  (0.11356454007618466, 0.7448537954874419)
+                  (0.7546603355923669, 0.9543777463196534)
+                  (0.4891168285858787, 0.633382367024488)
+                  (0.6747495735823583, 0.45029401396930835)
+                  (0.4974345692650808, 0.5149317175333161)
+                  (0.5484553916212294, 0.5711900118327666)
+                  (0.11175023541896634, 0.990159314424705)
+                  (0.4879170832093027, 0.08984797306499748)
+                  (0.1335657114656048, 0.35758096957091445)
+                  (0.7400877461824955, 0.8325280694798072)
+                  (0.3299481327824305, 0.3440909795000966)
+                  (0.1962438207259194, 0.6775012296614791)
+                  (0.3403201981957973, 0.012234115125469014)
+                  (0.39090662279892596, 0.6232084829209825)
+                  (0.05180909728733263, 0.008306644625064141)
+                  (0.4469104766158789, 0.5039047194497466)
+                  (0.33193129503638996, 0.1768246437543215)
+                  (0.24763476605581736, 0.9547830758766014)
+                  (0.8626957317918005, 0.8901670309728742)
+                  (0.16962017427458131, 0.8788693051101659)
+                  (0.6974737865767218, 0.3655018057608477)
+                  (0.5781761692908192, 0.49368701064930676)
+                  (0.802284945950765, 0.6391848231098498)
+                  (0.24014031334952324, 0.03642844544263135)
+                  (0.29635836817046646, 0.49234998547822206)
+                  (0.6537526603197776, 0.9534202877086324)
+                  (0.22033649109831877, 0.6097719755673441)
+                  (0.5794841917252405, 0.6525875695433809)
+                  (0.48634161888118377, 0.7185107690604786)
+                  (0.5345141678719951, 0.5951779828559485)
+                  (0.07485448974139897, 0.3652052168490376)
+                  (0.9456233879280223, 0.20388899534798632)
+                  (0.27834285268176084, 0.8083123815440214)
+                  (0.6267933326859505, 0.39246432872096704)
+                  (0.7616653549409313, 0.6567908542485912)
+                  (0.7064053508954178, 0.5295025690789412)
+                  (0.6402160832134494, 0.7577312997966936)
+                  (0.3919353829681529, 0.8457590619098538)
+                  (0.9716293296512977, 0.5682387373301687)
+            ]
+      boundary_nodes = [16, 14, 33, 40, 20, 3, 8, 16]
+      _pts = pts[boundary_nodes]
+      xmin = minimum(getindex.(_pts, 1))
+      xmax = maximum(getindex.(_pts, 1))
+      ymin = minimum(getindex.(_pts, 2))
+      ymax = maximum(getindex.(_pts, 2))
+      _xmin, _xmax, _ymin, _ymax = DT.polygon_bounds(pts, boundary_nodes)
+      @test xmin == _xmin 
+      @test ymin == _ymin 
+      @test xmax == _xmax 
+      @test ymax == _ymax
 end
 
 @testset "Cell data structure" begin
@@ -287,7 +343,7 @@ end
             q = DT.CellQueue{Float64}()
             @test isempty(q)
             @test q.queue.o == Base.Order.Reverse
-            c = DT.Cell(polygon_features(pts, boundary_nodes)[2]..., 10.0, pts, boundary_nodes)
+            c = DT.Cell(DT.polygon_features(pts, boundary_nodes)[2]..., 10.0, pts, boundary_nodes)
             DT.insert_cell!(q, c)
             @test q.queue[c] == c.max_dist
             @inferred DT.get_next_cell!(q)
@@ -500,6 +556,6 @@ end
             198, 207, 216, 215, 214, 213, 212, 211, 210, 209, 208, 199,
             190, 181, 172, 163, 154, 145, 136, 127, 118, 109, 100, 91, 82,
             73, 64, 55, 46, 37, 28, 19, 10, 1]
-      pc = polylabel(PT, BN)
+      pc = DT.polylabel(PT, BN)
       @test collect(pc) ≈ collect(DT.polygon_features(PT, BN)[2])
 end

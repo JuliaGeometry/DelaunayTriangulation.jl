@@ -21,7 +21,7 @@ getxy
 
 ## Collection of Points 
 
-A collection of points simply store many points. It does not need to be mutable (this may change in the future if we support mesh refinement, but it will only be needed in that case). The following methods are used, where we first list the methods that must be defined and then methods that extend these former methods. 
+A collection of points simply store many points. It does not need to be mutable (unless you want to add points into the triangulation not already in `tri.points`, or if you want mesh refinement). The following methods are used, where we first list the methods that must be defined and then methods that extend these former methods. 
 
 ### Necessary Methods 
 
@@ -31,6 +31,7 @@ each_point_index
 each_point
 num_points 
 number_type 
+push_point!
 ```
 
 ### Generic Methods 

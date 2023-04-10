@@ -1,10 +1,8 @@
 """
     Certificate
 
-An `Enum` type that represents results from a geometric 
-predicate. Below we provide a list of available certificates, 
-along with the function that can be used for testing if a given 
-`Certificate` matches that `certificate`.
+An `Enum` type that represents results from a geometric predicate. Below we provide a list of available certificates, 
+along with the function that can be used for testing if a given `Certificate` matches that `certificate`.
 
 - `Inside`: `is_inside`
 - `Degenerate`: `is_degenerate`
@@ -21,6 +19,9 @@ along with the function that can be used for testing if a given
 - `Touching`: `is_touching`
 - `Legal`: `is_legal`
 - `Illegal`: `is_illegal`
+- `Closer`: `is_closer`
+- `Further`: `is_further`
+- `Equidistant`: `is_equidistant`
 """
 EnumX.@enumx Certificate begin
     Inside
@@ -38,6 +39,9 @@ EnumX.@enumx Certificate begin
     Touching
     Legal 
     Illegal
+    Closer 
+    Further 
+    Equidistant
 end
 
 for inst in instances(Certificate.T)
@@ -58,7 +62,7 @@ has_multiple_intersections(cert::Certificate.T) = is_multiple(cert)
     elseif cert == I(1)
         return Cert3
     end
-    throw(ArgumentError("The provided certificate value, $cert, must be one of (-1, 0, 1)."))
+    throw(ArgumentError("The provided certificate value, $cert, must be one of ($(I(-1)), $(I(0)), $(I(1))."))
 end
 
 const Cert = Certificate

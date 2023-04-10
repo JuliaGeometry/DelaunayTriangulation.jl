@@ -1,3 +1,31 @@
+"""
+    Cell{T}
+
+A cell in a grid. The cell is a square with side length `2half_width`. The cell is centered at `(x, y)`. The cell is 
+assumed to live in a polygon.
+
+# Fields 
+- `x::T`
+
+The x-coordinate of the center of the cell.
+- `y::T`
+
+The y-coordinate of the center of the cell.
+- `half_width::T`
+
+The half-width of the cell.
+- `dist::T`
+
+The distance from the center of the cell to the polygon.
+- `max_dist::T`
+
+The maximum distance from the center of the cell to the polygon. This is `dist + half_width * sqrt(2)`.
+
+# Constructors
+    `Cell(x::T, y::T, half_width::T, pts, boundary_nodes)`
+
+Constructs a cell with center `(x, y)` and half-width `half_width`. The cell is assumed to live in the polygon defined by `pts` and `boundary_nodes`.
+"""
 struct Cell{T}
     x::T
     y::T
@@ -14,7 +42,7 @@ getx(c::Cell) = c.x
 gety(c::Cell) = c.y
 Base.:(<)(p::Cell, q::Cell) = p.max_dist < q.max_dist
 Base.:(==)(p::Cell, q::Cell) = p.max_dist == q.max_dist
-function Base.hash(cell::Cell, h::UInt) 
+function Base.hash(cell::Cell, h::UInt)
     #= 
     If you remove this definition and run the test labelled "A previously broken example" 
     in test/polygon_utils.jl, you get an error where two cells that would typically be == 
@@ -25,6 +53,22 @@ function Base.hash(cell::Cell, h::UInt)
     return hash(Cell, h)
 end
 
+"""
+    CellQueue{T}
+
+A struct representing the priority queue of [`Cell`](@ref)s, using for sorting the cells in a grid
+according to their maximum distance.
+
+# Fields
+- `queue::PriorityQueue{Cell{T},T,typeof(Base.Order.Reverse)}`
+
+The priority queue of cells.
+
+# Constructors
+    CellQueue{T}()
+
+Constructs a new `CellQueue` with elements of type `Cell{T}`.
+"""
 struct CellQueue{T} # Could a heap be used for this? Duplicate keys could show up...
     queue::PriorityQueue{Cell{T},T,typeof(Base.Order.Reverse)}
     function CellQueue{T}() where {T}
@@ -40,9 +84,15 @@ end
 """
     polygon_features(pts, boundary_nodes)
 
-Given some points `pts` and a collection of boundary nodes, returns `(a, (cx, cy))`, 
-where `a` is the area of the polygon represented by the nodes and `(cx, cy)` is the centroid. 
-Works with holes, provided `boundary_nodes` represents these as described in [`Interfaces`](@ref).
+Returns features of the polygon represented by the points `pts` with `boundary_nodes` defining the polygon 
+connections. The features returned are `(a, c)`, where `a` is the area of the polygon and 
+`c = (cx, cy)` is the centroid. 
+
+!!! notes 
+
+    - The polygon is assumed to be simple, i.e. no self-intersections.
+    - The function works with holes, provided `boundary_nodes` represents these as described in the documentation.
+    - The polygon is assumed to have a consistent orientation for each boundary. If the orientation is positive, `a > 0`, and `a < 0` otherwise.
 """
 function polygon_features(pts, boundary_nodes)
     if has_multiple_curves(boundary_nodes)
@@ -62,7 +112,7 @@ function polygon_features_single_segment(pts, boundary_nodes; scale=Val(true))
     vᵢ = get_boundary_nodes(boundary_nodes, 1)
     pᵢ = get_point(pts, vᵢ)
     xᵢ, yᵢ = getxy(pᵢ)
-    for j in 2:(n_edge + 1)
+    for j in 2:(n_edge+1)
         vᵢ₊₁ = get_boundary_nodes(boundary_nodes, j)
         pᵢ₊₁ = get_point(pts, vᵢ₊₁)
         xᵢ₊₁, yᵢ₊₁ = getxy(pᵢ₊₁)
@@ -87,7 +137,7 @@ function polygon_features_multiple_segments(pts, boundary_nodes)
     for i in 1:ns
         bn = get_boundary_nodes(boundary_nodes, i)
         sub_a, (sub_cx, sub_cy) = polygon_features_single_segment(pts, bn;
-                                                                  scale=Val(false))
+            scale=Val(false))
         a += sub_a
         cx += sub_cx
         cy += sub_cy
@@ -113,9 +163,8 @@ end
 """
     squared_distance_to_segment(x₁, y₁, x₂, y₂, x, y)
 
-Given a line segment `(x₁, y₁) → (x₂, y₂)` and a query point 
-`(x, y)`, returns the squared distance from `(x, y)` to the 
-line segment.
+Given a line segment `(x₁, y₁) → (x₂, y₂)` and a query point `(x, y)`, returns the 
+squared distance from `(x, y)` to the line segment.
 """
 function squared_distance_to_segment(x₁, y₁, x₂, y₂, x, y)
     qp₁_x = x - x₁
@@ -123,7 +172,7 @@ function squared_distance_to_segment(x₁, y₁, x₂, y₂, x, y)
     p₁p₂_x = x₂ - x₁
     p₁p₂_y = y₂ - y₁
     t = (qp₁_x * p₁p₂_x + qp₁_y * p₁p₂_y) / (p₁p₂_x^2 + p₁p₂_y^2)
-    ts = min(max(t, zero(t)), one(t))
+    ts = min(max(t, zero(t)), one(t)) # https://math.stackexchange.com/a/330329/861404
     intersect_x = x₁ + ts * p₁p₂_x
     intersect_y = y₁ + ts * p₁p₂_y
     dx = x - intersect_x
@@ -131,14 +180,15 @@ function squared_distance_to_segment(x₁, y₁, x₂, y₂, x, y)
     return dx^2 + dy^2
 end
 
+
 """
     distance_to_polygon(q, pts, boundary_nodes)
 
-Given a query point `q`, a collection of points `pts`, and a set of `boundary_nodes`, 
-returns the distance from `q` to the combined polygon. If `q` is outside of the polygon, 
-then the returned distance is negative, and if it is inside then the distance 
-is positive. Works with holes, provided `boundary_nodes` 
-represents these as described in [`Interfaces`](@ref).
+Given a polygon represented by the points `pts` with `boundary_nodes` defining the polygon 
+connections, and a query point `q`, returns the signed distance from `q` to the polygon. If 
+`q` is outside of the polygon, then the returned distance is negative, and if it is inside 
+then the distance is positive. Works with holes, provided `boundary_nodes` matches the 
+specification of a boundary given in the documentation.
 """
 function distance_to_polygon(q, pts, boundary_nodes)
     if has_multiple_curves(boundary_nodes)
@@ -149,8 +199,7 @@ function distance_to_polygon(q, pts, boundary_nodes)
         return distance_to_polygon_single_segment(q, pts, boundary_nodes)
     end
 end
-function distance_to_polygon_single_segment(q, pts, boundary_nodes, is_in_outer=false;
-                                            return_sqrt=Val(true))
+function distance_to_polygon_single_segment(q, pts, boundary_nodes, is_in_outer=false; return_sqrt=Val(true))
     x, y = getxy(q)
     F = number_type(pts)
     dist = typemax(F)
@@ -158,7 +207,7 @@ function distance_to_polygon_single_segment(q, pts, boundary_nodes, is_in_outer=
     vᵢ = get_boundary_nodes(boundary_nodes, 1)
     pᵢ = get_point(pts, vᵢ)
     xᵢ, yᵢ = getxy(pᵢ)
-    for j in 2:(n_edge + 1)
+    for j in 2:(n_edge+1)
         vᵢ₊₁ = get_boundary_nodes(boundary_nodes, j)
         pᵢ₊₁ = get_point(pts, vᵢ₊₁)
         xᵢ₊₁, yᵢ₊₁ = getxy(pᵢ₊₁)
@@ -175,16 +224,13 @@ function distance_to_polygon_single_segment(q, pts, boundary_nodes, is_in_outer=
     dist = is_true(return_sqrt) ? sqrt(dist) : dist
     return is_in_outer ? dist : -dist
 end
-function distance_to_polygon_multiple_segments(q, pts, boundary_nodes,
-                                               is_in_outer=-one(number_type(pts));
-                                               return_sqrt=Val(true))
+function distance_to_polygon_multiple_segments(q, pts, boundary_nodes, is_in_outer=-one(number_type(pts)); return_sqrt=Val(true))
     F = number_type(pts)
     dist = typemax(F)
     ns = num_segments(boundary_nodes)
     for i in 1:ns
         bn = get_boundary_nodes(boundary_nodes, i)
-        new_dist = distance_to_polygon_single_segment(q, pts, bn, is_in_outer == one(F);
-                                                      return_sqrt=Val(false))
+        new_dist = distance_to_polygon_single_segment(q, pts, bn, is_in_outer == one(F); return_sqrt=Val(false))
         is_in_outer = sign(new_dist)
         new_dist = abs(new_dist)
         dist = new_dist < dist ? new_dist : dist
@@ -200,7 +246,7 @@ function distance_to_polygon_multiple_curves(q, pts, boundary_nodes)
     for i in 1:nc
         bn = get_boundary_nodes(boundary_nodes, i)
         new_dist = distance_to_polygon_multiple_segments(q, pts, bn, is_in_outer == one(F);
-                                                         return_sqrt=Val(false))
+            return_sqrt=Val(false))
         is_in_outer = sign(new_dist)
         new_dist = abs(new_dist)
         dist = new_dist < dist ? new_dist : dist
@@ -211,13 +257,13 @@ end
 """
     polygon_bounds(pts, boundary_nodes)
 
-Given a collection of points `pts` and `boundary_nodes`, to be interpreted as a polygon, returns 
-the coordinates for a bounding box of the polygon, in the order `(xmin, xmax, ymin, ymax)`. 
-Works with holes, provided `boundary_nodes` represents these as described in [`Interfaces`](@ref).
+Given a polygon represented by the points `pts` with `boundary_nodes` defining the polygon 
+connections, returns a bounding box of the polygon. The bounding box is returned 
+in the order `(xmin, xmax, ymin, ymax)`.
 """
 function polygon_bounds(pts, boundary_nodes)
     if has_multiple_curves(boundary_nodes)
-        return polygon_bounds_multiple_segments(pts, get_boundary_nodes(boundary_nodes, 1))
+        return polygon_bounds_multiple_segments(pts, get_boundary_nodes(boundary_nodes, 1)) # 1 is the outermost boundary
     elseif has_multiple_segments(boundary_nodes)
         return polygon_bounds_multiple_segments(pts, boundary_nodes)
     else
@@ -232,16 +278,10 @@ function polygon_bounds_single_segment(pts, boundary_nodes)
         vᵢ = get_boundary_nodes(boundary_nodes, i)
         pᵢ = get_point(pts, vᵢ)
         xᵢ, yᵢ = getxy(pᵢ)
-        if xᵢ > xmax
-            xmax = xᵢ
-        elseif xᵢ < xmin
-            xmin = xᵢ
-        end
-        if yᵢ > ymax
-            ymax = yᵢ
-        elseif yᵢ < ymin
-            ymin = yᵢ
-        end
+        xmin = min(xᵢ, xmin)
+        xmax = max(xᵢ, xmax)
+        ymin = min(yᵢ, ymin)
+        ymax = max(yᵢ, ymax)
     end
     return xmin, xmax, ymin, ymax
 end
@@ -263,20 +303,23 @@ end
 """
     pole_of_inaccessibility(pts, boundary_nodes; precision = one(number_type(pts)))
 
-Given a collection of points `pts` and a set of `boundary_nodes` defining 
-a polygon, finds the pole of inaccessibility. Works with holes, provided 
-`boundary_nodes` represents these as described in [`Interfaces`](@ref).
+Given a collection of points `pts` and a set of `boundary_nodes` defining the polygon
+connections, finds the pole of inaccessibility. This works for multiply-connected polygons, 
+provided `boundary_nodes` matches the specification given in the documentation. You can 
+control the tolerance of the returned pole using `precision`.
 
-The pole of inaccessibility is a point within a polygon that is further from an 
-edge. It is useful for our purposes since it is a representative point that is 
-guaranteed to be inside the polygon, in contrast to for example a centroid which 
-is not always inside the polygon.
+This function is also commonly called `polylabel`.
 
-You can control the tolerance of the method using `precision`.
+!!! notes 
 
-See https://blog.mapbox.com/a-new-algorithm-for-finding-a-visual-center-of-a-polygon-7c77e6492fbc
-or https://github.com/mapbox/polylabel for more information. This implementation was partially based 
-on https://github.com/Twista/python-polylabel and https://github.com/asinghvi17/Polylabel.jl.
+    The pole of inaccessibility is a point within a polygon that is furthest from an 
+    edge. It is useful for our purposes since it is a representative point that is 
+    guaranteed to be inside the polygon, in contrast to for example a centroid which 
+    is not always inside the polygon.
+
+    For more information about this, see e.g. [this blog post](https://blog.mapbox.com/a-new-algorithm-for-finding-a-visual-center-of-a-polygon-7c77e6492fbc)
+    or [the original repo](https://github.com/mapbox/polylabel). This implementation was partially based 
+    on [the python implementation](https://github.com/Twista/python-polylabel) and [this other Julia implementation](https://github.com/asinghvi17/Polylabel.jl).
 """
 function pole_of_inaccessibility(pts, boundary_nodes; precision=one(number_type(pts)))
     F = number_type(pts)
@@ -289,15 +332,9 @@ function pole_of_inaccessibility(pts, boundary_nodes; precision=one(number_type(
 
     ## Initialise the priority queue and decide if the polygon centroid of bounding box centroid is the best initial guess
     _, centroid = polygon_features(pts, boundary_nodes)
-    centroid_cell = Cell(getx(centroid), gety(centroid), zero(half_width), pts,
-                         boundary_nodes)
-    bounding_box_cell = Cell(xmin + width / 2, ymin + height / 2, zero(half_width), pts,
-                             boundary_nodes)
-    best_cell = if centroid_cell.dist > bounding_box_cell.dist
-        centroid_cell
-    else
-        bounding_box_cell
-    end
+    centroid_cell = Cell(getx(centroid), gety(centroid), zero(half_width), pts, boundary_nodes)
+    bounding_box_cell = Cell(xmin + width / 2, ymin + height / 2, zero(half_width), pts, boundary_nodes)
+    best_cell = centroid_cell.dist > bounding_box_cell.dist ? centroid_cell : bounding_box_cell
     queue = CellQueue{F}()
     insert_cell!(queue, best_cell)
 
@@ -313,16 +350,16 @@ function pole_of_inaccessibility(pts, boundary_nodes; precision=one(number_type(
         x += min_extent
     end
 
-    ## Now let us process all the current cells. The idea is to try and find the best cell,
-    ## and any bad cells are split into four.
+    ## Now let us process all the current cells. The idea is to try and find the best cell, and any bad cells are split into four.
     while !isempty(queue)
         best_cell = process_cell!(queue, best_cell, pts, boundary_nodes, precision)
     end
+
     ## We are done, and the last best_cell is the solution 
     return best_cell.x, best_cell.y
 end
 function process_cell!(queue::CellQueue{F}, best_cell::Cell{F}, pts, boundary_nodes,
-                       precision) where {F}
+    precision) where {F}
     next_cell = get_next_cell!(queue)
     if next_cell.dist > best_cell.dist
         best_cell = next_cell # This cell will have a large circle, so let's choose it 

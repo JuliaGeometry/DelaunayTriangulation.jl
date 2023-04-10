@@ -7,15 +7,18 @@ CurrentModule = DelaunayTriangulation
 We define some specific operations for acting on `Triangulation`s directly. These are listed below.
 
 ```@docs 
-add_boundary_information!(::Triangulation)
-add_ghost_triangles!(::Triangulation)
 add_point!(::Triangulation, ::Any)
-add_triangle!(::Ts, ::Integer, ::Integer, ::Integer) where {Ts<:Triangulation}
+add_edge!(::Triangulation, ::Any)
+delete_point!(::Triangulation, ::Any)
+add_boundary_information!(::Triangulation)
 delete_ghost_triangles!(::Triangulation)
+add_ghost_triangles!(::Triangulation)
+delete_holes!
+add_triangle!(::Ts, ::Integer, ::Integer, ::Integer) where {Ts<:Triangulation}
 delete_triangle!(::Ts, ::Integer, ::Integer, ::Integer) where {Ts<:Triangulation}
 split_edge!
 split_triangle!
 flip_edge!
 legalise_edge!
-delete_point!
+clear_empty_features!
 ```

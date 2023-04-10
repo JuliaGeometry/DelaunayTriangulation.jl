@@ -1078,11 +1078,11 @@ Physical Surface(1) = {1};
         y = [[y1, y2], [y3]]
         x = [x1..., x2...]
         y = [y1..., y2...]
-        elements, nodes, boundary_nodes = generate_mesh(x, y, 0.5; convert_result=false)
+        elements, nodes, boundary_nodes = generate_mesh(x, y, 0.5; convert_result=false, check_arguments=false)
         g1 = read("meshgeometry.geo", String)
         m1 = read("meshgeometry.msh", String)
         _elements, _nodes, _boundary_nodes = generate_mesh([[x]], [[y]], 0.5;
-            convert_result=false)
+            convert_result=false, check_arguments=false)
         g2 = read("meshgeometry.geo", String)
         m2 = read("meshgeometry.msh", String)
         @test g1 == g2

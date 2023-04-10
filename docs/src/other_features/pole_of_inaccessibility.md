@@ -15,6 +15,8 @@ We needed this method since the point we need to associate ghost vertices with m
 Below we also list some other relevant docstrings.
 
 ```@docs 
+Cell 
+CellQueue 
 polygon_features 
 squared_distance_to_segment 
 distance_to_polygon 

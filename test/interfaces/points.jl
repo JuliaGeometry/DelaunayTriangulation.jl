@@ -91,42 +91,43 @@ global pts3 = [2.0 1.7 -1.0; 3.5 23.3 0.0]
         map1 = DT.construct_boundary_map(bn1)
         map2 = DT.construct_boundary_map(bn2)
         map3 = DT.construct_boundary_map(bn3)
-        DT.RepresentativePointList[1] = DT.RepresentativeCoordinates(0.5, 0.3, 2)
-        DT.RepresentativePointList[2] = DT.RepresentativeCoordinates(2.5, 7.3, 7)
-        DT.RepresentativePointList[3] = DT.RepresentativeCoordinates(6.5, -0.6, 13)
+        rep = DT.get_empty_representative_points()
+        rep[1] = DT.RepresentativeCoordinates(0.5, 0.3, 2)
+        rep[2] = DT.RepresentativeCoordinates(2.5, 7.3, 7)
+        rep[3] = DT.RepresentativeCoordinates(6.5, -0.6, 13)
         pts = rand(2, 500)
-        @test DT.get_point(pts, map1, 2) == Tuple(pts[:, 2])
-        @inferred DT.get_point(pts, map1, 2)
-        @test DT.get_point(pts, map1, 3, 4, 5, -1, -2, -7) ==
+        @test DT.get_point(pts, rep, map1, 2) == Tuple(pts[:, 2])
+        @inferred DT.get_point(pts, rep, map1, 2)
+        @test DT.get_point(pts, rep, map1, 3, 4, 5, -1, -2, -7) ==
               (Tuple(pts[:, 3]), Tuple(pts[:, 4]), Tuple(pts[:, 5]), (0.5, 0.3), (0.5, 0.3),
             (6.5, -0.6))
-        @test DT.get_point(pts, map1, -1) == (0.5, 0.3)
-        @inferred DT.get_point(pts, map1, -1)
-        @test DT.get_point(pts, map1, -2) == (0.5, 0.3)
-        @test DT.get_point(pts, map1, -5) == (2.5, 7.3)
-        @test DT.get_point(pts, map1, -6) == (2.5, 7.3)
-        @test DT.get_point(pts, map1, -7) == (6.5, -0.6)
-        @test DT.get_point(pts, map1, -8) == (6.5, -0.6)
-        @test DT.get_point(pts, map2, 2) == Tuple(pts[:, 2])
-        @test DT.get_point(pts, map2, 3, 4, 5) ==
+        @test DT.get_point(pts, rep, map1, -1) == (0.5, 0.3)
+        @inferred DT.get_point(pts, rep, map1, -1)
+        @test DT.get_point(pts, rep, map1, -2) == (0.5, 0.3)
+        @test DT.get_point(pts, rep, map1, -5) == (2.5, 7.3)
+        @test DT.get_point(pts, rep, map1, -6) == (2.5, 7.3)
+        @test DT.get_point(pts, rep, map1, -7) == (6.5, -0.6)
+        @test DT.get_point(pts, rep, map1, -8) == (6.5, -0.6)
+        @test DT.get_point(pts, rep, map2, 2) == Tuple(pts[:, 2])
+        @test DT.get_point(pts, rep, map2, 3, 4, 5) ==
               (Tuple(pts[:, 3]), Tuple(pts[:, 4]), Tuple(pts[:, 5]))
-        @test DT.get_point(pts, map2, -1) == (0.5, 0.3)
-        @test DT.get_point(pts, map2, -2) == (0.5, 0.3)
-        @test_throws KeyError DT.get_point(pts, map2, -3)
-        @test_throws KeyError DT.get_point(pts, map2, -6)
-        @test_throws KeyError DT.get_point(pts, map2, -7)
-        @test_throws KeyError DT.get_point(pts, map2, -8)
-        @test DT.get_point(pts, map3, 2) == Tuple(pts[:, 2])
-        @test DT.get_point(pts, map3, 3, 4, 5) ==
+        @test DT.get_point(pts, rep, map2, -1) == (0.5, 0.3)
+        @test DT.get_point(pts, rep, map2, -2) == (0.5, 0.3)
+        @test_throws KeyError DT.get_point(pts, rep, map2, -3)
+        @test_throws KeyError DT.get_point(pts, rep, map2, -6)
+        @test_throws KeyError DT.get_point(pts, rep, map2, -7)
+        @test_throws KeyError DT.get_point(pts, rep, map2, -8)
+        @test DT.get_point(pts, rep, map3, 2) == Tuple(pts[:, 2])
+        @test DT.get_point(pts, rep, map3, 3, 4, 5) ==
               (Tuple(pts[:, 3]), Tuple(pts[:, 4]), Tuple(pts[:, 5]))
-        @test DT.get_point(pts, map3, -1) == (0.5, 0.3)
-        @test_throws KeyError DT.get_point(pts, map3, -2)
-        @test_throws KeyError DT.get_point(pts, map3, -3)
-        @test_throws KeyError DT.get_point(pts, map3, -6)
-        @test_throws KeyError DT.get_point(pts, map3, -7)
-        @test_throws KeyError DT.get_point(pts, map3, -8)
-        @test DT.get_point(pts, map3, (2.0, 5.0)) == (2.0, 5.0)
-        @test DT.get_point(pts, map2, (2.0, 5.0), (7.0, 13.3), 5) ==
+        @test DT.get_point(pts, rep, map3, -1) == (0.5, 0.3)
+        @test_throws KeyError DT.get_point(pts, rep, map3, -2)
+        @test_throws KeyError DT.get_point(pts, rep, map3, -3)
+        @test_throws KeyError DT.get_point(pts, rep, map3, -6)
+        @test_throws KeyError DT.get_point(pts, rep, map3, -7)
+        @test_throws KeyError DT.get_point(pts, rep, map3, -8)
+        @test DT.get_point(pts, rep, map3, (2.0, 5.0)) == (2.0, 5.0)
+        @test DT.get_point(pts, rep, map2, (2.0, 5.0), (7.0, 13.3), 5) ==
               ((2.0, 5.0), (7.0, 13.3), (pts[1, 5], pts[2, 5]))
     end
 
@@ -158,4 +159,17 @@ global pts3 = [2.0 1.7 -1.0; 3.5 23.3 0.0]
         idx = DT.lexicographic_order(A)
         @test idx == [3, 1, 2, 8, 7, 4, 5, 6]
     end
+
+    @testset "push_point!" begin
+        p1 = [(1.0, 2.0), (3.0, 4.0)]
+        DT.push_point!(p1, 0.5, 3.0)
+        @test p1 == [(1.0, 2.0), (3.0, 4.0), (0.5, 3.0)]
+        p1 = [[1.0, 2.0], [5.0, 13.7]]
+        DT.push_point!(p1, 13.9, 25.0)
+        @test p1 == [[1.0, 2.0], [5.0, 13.7], [13.9, 25.0]]
+        p1 = [(1.0, 5.0), (17.0, 3.0)]
+        DT.push_point!(p1, (17.9, 15.0))
+        @test p1 == [(1.0, 5.0), (17.0, 3.0), (17.9, 15.0)]
+    end
 end
+

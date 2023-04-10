@@ -18,6 +18,7 @@ terminal
 
 ```@docs 
 edge_indices 
+reverse_edge
 ```
 
 ## Collection of Edges 

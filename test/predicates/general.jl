@@ -28,6 +28,10 @@ end
             @test DT.incircle_predicate(a, b, c, p) == incircle(a, b, c, p)
             @inferred DT.incircle_predicate(a, b, c, p)
 
+            a, b, p, q = eachcol(rand(2, 4))
+            @test DT.parallelorder_predicate(a, b, p, q) == parallelorder(a, b, p, q)
+            @inferred DT.parallelorder_predicate(a, b, p, q)
+
             p, a, b = eachcol(rand(2, 3))
             @test DT.sameside_predicate(a, b, p) == sameside(p, a, b)
             @inferred DT.sameside_predicate(a, b, p)
@@ -621,4 +625,135 @@ end
             @test DT.is_legal(DT.is_legal(tri, i, j))
         end
     end
+end
+
+@testset "triangle_line_segment_intersection" begin
+    p = [0.0, 0.0]
+    q = [5.0, 0.0]
+    r = [3.0, 6.0]
+    a1, b1 = [1.0, 1.0], [3.0, 2.0]
+    a2, b2 = [1.0, 5.0], [3.0, -2.0]
+    a3, b3 = [1.0, 5.0], [3.0, 2.0]
+    a4, b4 = [1.0, 2.0], [2.0, 4.0]
+    a5, b5 = [-1.0, -2.0], [4.0, 8.0]
+    a6, b6 = [0.0, 6.0], [6.0, 6.0]
+    a7, b7 = [7.0, 3.0], [6.0, 6.0]
+    a8, b8 = [2.0, 0.0], [2.0, 4.0]
+    a9, b9 = [3.0, 0.0], [3.0, 6.0]
+    a10, b10 = [3.0, 0.0], [0.0, 0.0]
+    a11, b11 = [3.0, 6.0], [0.0, 0.0]
+    a12, b12 = [4.0, 2.0], [0.0, 0.0]
+    a13, b13 = [0.0, -2.0], [0.0, 0.0]
+    a14, b14 = [3.0, 2.0], [2.0, 4.0]
+    ab = [
+        (a1, b1),
+        (a2, b2),
+        (a3, b3),
+        (a4, b4),
+        (a5, b5),
+        (a6, b6),
+        (a7, b7),
+        (a8, b8),
+        (a9, b9),
+        (a10, b10),
+        (a11, b11),
+        (a12, b12),
+        (a13, b13),
+        (a14, b14)
+    ]
+    flags = [DT.triangle_line_segment_intersection(p, q, r, a, b) for (a, b) in ab]
+    true_flags = [
+        Certificate.Inside,
+        Certificate.Multiple,
+        Certificate.Single,
+        Certificate.Touching,
+        Certificate.Touching,
+        Certificate.Outside,
+        Certificate.Outside,
+        Certificate.Inside,
+        Certificate.Inside,
+        Certificate.Touching,
+        Certificate.Touching,
+        Certificate.Inside,
+        Certificate.Outside,
+        Certificate.Inside
+    ]
+    @test isempty(findall(flags .≠ true_flags))
+    for i in eachindex(flags)
+        a, b = ab[i]
+        @test DT.triangle_line_segment_intersection(p, q, r, a, b) ==
+              DT.triangle_line_segment_intersection(p, q, r, b, a) ==
+              DT.triangle_line_segment_intersection(q, r, p, a, b) ==
+              DT.triangle_line_segment_intersection(q, r, p, b, a) ==
+              DT.triangle_line_segment_intersection(r, p, q, a, b) ==
+              DT.triangle_line_segment_intersection(r, p, q, b, a) ==
+              true_flags[i]
+    end
+end
+
+@testset "point_closest_to_line" begin
+    a = [4.0, 3.0]
+    b = [8.0, 3.0]
+    p = [5.0, 6.0]
+    q = [8.0, 7.0]
+    cert = DT.point_closest_to_line(a, b, p, q)
+    @test DT.is_closer(cert)
+    cert = DT.point_closest_to_line(a, b, q, p)
+    @test DT.is_further(cert)
+    q = [8.0, 6.0]
+    cert = DT.point_closest_to_line(a, b, p, q)
+    @test DT.is_equidistant(cert)
+    cert = DT.point_closest_to_line(a, b, q, p)
+    @test DT.is_equidistant(cert)
+    p = [5.0, 2.0]
+    cert = DT.point_closest_to_line(a, b, p, q)
+    @test DT.is_closer(cert)
+    cert = DT.point_closest_to_line(a, b, q, p)
+    @test DT.is_further(cert)
+    p = [12.0, 2.0]
+    cert = DT.point_closest_to_line(a, b, p, q)
+    @test DT.is_closer(cert)
+    cert = DT.point_closest_to_line(a, b, q, p)
+    @test DT.is_further(cert)
+    p = [7.0, 6.0]
+    q = [5.99, 3.43]
+    cert = DT.point_closest_to_line(a, b, p, q)
+    @test DT.is_further(cert)
+    cert = DT.point_closest_to_line(a, b, q, p)
+    @test DT.is_closer(cert)
+    p = [7.0, 5.0]
+    q = [5.0, 2.0]
+    cert = DT.point_closest_to_line(a, b, p, q)
+    @test DT.is_further(cert)
+    cert = DT.point_closest_to_line(a, b, q, p)
+    @test DT.is_closer(cert)
+
+    b = [4.0, 3.0]
+    a = [8.0, 7.0]
+    p = [12.0, 4.0]
+    q = [5.0, 0.0]
+    cert = DT.point_closest_to_line(a, b, p, q)
+    @test DT.is_further(cert)
+    cert = DT.point_closest_to_line(a, b, q, p)
+    @test DT.is_closer(cert)
+    p = [8.0, 6.0]
+    q = [4.0, 2.0]
+    cert = DT.point_closest_to_line(a, b, p, q)
+    @test DT.is_equidistant(cert)
+    cert = DT.point_closest_to_line(a, b, q, p)
+    @test DT.is_equidistant(cert)
+    p = [8.0, 6.0]
+    q = [9.0, 3.0]
+    cert = DT.point_closest_to_line(a, b, p, q)
+    @test DT.is_closer(cert)
+    cert = DT.point_closest_to_line(a, b, q, p)
+    @test DT.is_further(cert)
+    cert = DT.point_closest_to_line(a, b, a, q)
+    @test DT.is_closer(cert)
+    cert = DT.point_closest_to_line(a, b, q, a)
+    @test DT.is_further(cert)
+    cert = DT.point_closest_to_line(a, b, b, q)
+    @test DT.is_closer(cert)
+    cert = DT.point_closest_to_line(a, b, q, b)
+    @test DT.is_further(cert)
 end

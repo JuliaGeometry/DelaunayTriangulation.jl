@@ -68,11 +68,11 @@ end
         DT.convex_triangulation_post_processing!(tri_ch, S[begin:end-1], false, true, false, false)
         @test get_convex_hull(tri_ch) == get_convex_hull(tri_bw)
         empty!(get_convex_hull_indices(tri_ch))
-        _pt = deepcopy(DT.RepresentativePointList)
+        _pt = deepcopy(tri_bw.representative_point_list)
         DT.convex_triangulation_post_processing!(tri_ch, S[begin:end-1], false, false, true, false)
-        @test DT.RepresentativePointList[1].x ≈ _pt[1].x rtol = 1e-1
-        @test DT.RepresentativePointList[1].y ≈ _pt[1].y rtol = 1e-1
-        @test DT.RepresentativePointList[1].n ≈ _pt[1].n
+        @test tri_ch.representative_point_list[1].x ≈ _pt[1].x rtol = 1e-1
+        @test tri_ch.representative_point_list[1].y ≈ _pt[1].y rtol = 1e-1
+        @test tri_ch.representative_point_list[1].n ≈ _pt[1].n
         @test any(!DT.edge_exists, values(get_adjacent(get_adjacent(tri_ch))))
         DT.convex_triangulation_post_processing!(tri_ch, S[begin:end-1], false, false, false, true)
         @test all(DT.edge_exists, values(get_adjacent(get_adjacent(tri_ch))))
@@ -111,7 +111,7 @@ end
     pts = [p1, p2, p3, p4, p5, p6, p7]
     S = collect(1:7)
     tri = triangulate_convex(pts, S)
-    fig, ax, sc = triplot(tri; plot_convex_hull=false)
+    fig, ax, sc = triplot(tri; show_convex_hull=false)
     SAVE_FIGURE && save("$save_path/convex_triangulation_example.png", fig)
 end
 
@@ -131,7 +131,7 @@ end
     pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12]
     for _ in 1:10000
         tri_ch = triangulate_convex(pts, 1:12)
-        validate_triangulation(tri_ch)
+        @test validate_triangulation(tri_ch)
     end
 end
 

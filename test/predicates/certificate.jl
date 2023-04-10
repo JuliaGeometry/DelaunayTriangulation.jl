@@ -15,7 +15,10 @@ global i = [Certificate.Inside,
     Certificate.Multiple,
     Certificate.Touching,
     Certificate.Legal,
-    Certificate.Illegal]
+    Certificate.Illegal,
+    Certificate.Closer,
+    Certificate.Further,
+    Certificate.Equidistant]
 global j = [DT.is_inside,
     DT.is_degenerate,
     DT.is_outside,
@@ -30,7 +33,10 @@ global j = [DT.is_inside,
     DT.has_multiple_intersections,
     DT.is_touching,
     DT.is_legal,
-    DT.is_illegal]
+    DT.is_illegal,
+    DT.is_closer,
+    DT.is_further,
+    DT.is_equidistant]
 
 @testset "Classifiers" begin
     for a in eachindex(i)

@@ -30,7 +30,7 @@ end
 function Base.show(io::IO, m::MIME"text/plain", ch::ConvexHull)
     println(io, "Convex hull.")
     println(io, "    Indices:")
-    show(io,m,get_indices(ch))
+    show(io, m, get_indices(ch))
 end
 
 """
@@ -42,7 +42,7 @@ Note that if there are a trio of points on the convex hull that are collinear, t
 all be included, instead of only taking the endpoints of the collinear points.
 """
 function convex_hull(points; IntegerType::Type{I}=Int64) where {I}
-    num_points(points) ≤ 2 && throw("Need at least 3 points to compute a convex hull.")
+    @assert num_points(points) ≥ 3 "Need at least 3 points to compute a convex hull."
     ch = ConvexHull(points, I[])
     sizehint!(ch, num_points(points))
     convex_hull!(ch)
@@ -51,24 +51,24 @@ end
 function convex_hull!(ch::ConvexHull)
     indices = get_indices(ch)
     points = get_points(ch)
-    num_points(points) ≤ 2 && throw("Need at least 3 points to compute a convex hull.")
+    @assert num_points(points) ≥ 3 "Need at least 3 points to compute a convex hull."
     empty!(indices)
     sizehint!(indices, num_points(ch))
     point_order = lexicographic_order(points)
     u = point_order[begin]
-    v = point_order[begin + 1]
+    v = point_order[begin+1]
     p, q = get_point(points, u, v)
     upper = [u, v]
     sizehint!(upper, num_points(points) ÷ 2)
-    for i in (firstindex(point_order) + 2):lastindex(point_order)
+    for i in (firstindex(point_order)+2):lastindex(point_order)
         p, q, u, v = _add_to_hull!(upper, i, points, point_order, p, q, u, v)
     end
     u = point_order[end]
-    v = point_order[end - 1]
+    v = point_order[end-1]
     p, q = get_point(points, u, v)
     lower = [u, v]
     sizehint!(lower, num_points(points) ÷ 2)
-    for i in (lastindex(point_order) - 2):-1:firstindex(point_order)
+    for i in (lastindex(point_order)-2):-1:firstindex(point_order)
         p, q, u, v = _add_to_hull!(lower, i, points, point_order, p, q, u, v)
     end
     popfirst!(lower)
@@ -90,7 +90,7 @@ function _add_to_hull!(hull, i, points, point_order, p, q, u, v)
         if n > 2
             v = u
             q = p
-            u = hull[n - 2]
+            u = hull[n-2]
             p = get_point(points, u)
             turn_cert = point_position_relative_to_line(p, q, r)
         end

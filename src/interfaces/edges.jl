@@ -64,6 +64,17 @@ function edge_indices end
 edge_indices(e) = (initial(e), terminal(e))
 
 """
+    reverse_edge(e)
+
+Given an edge `e`, returns `(terminal(e), initial(e))`.
+"""
+function reverse_edge end
+function reverse_edge(e::E) where {E}
+    u, v = edge_indices(e)
+    return construct_edge(E, v, u)
+end
+
+"""
     initialise_edges(::Type{S})
 
 For a given type `S` for some collection (e.g. a `Set`), returns an
@@ -110,6 +121,7 @@ Given a collection of edges `E`, returns the number of edges
 in `E`. The only method currently defined is 
 
     num_edges(E::Set)
+    num_edges(E::AbstractVector) 
 
 which returns `length(E)`. You can extend this function as you need.
 """
@@ -118,6 +130,7 @@ function num_edges(::S) where {S}
     return error("The num_edges function has not been defined for the type $S.")
 end
 num_edges(E::Set) = length(E)
+num_edges(E::AbstractVector) = length(E)
 
 """
     contains_edge(e::E, Es::S) where {E, S}
@@ -159,14 +172,8 @@ function add_to_edges! end
 function add_to_edges!(::S, e) where {S}
     return error("The add_to_edges! function has not been defined for the type $S.")
 end
-function add_to_edges!(E::Set, e)
-    push!(E, e)
-    return nothing
-end
-function add_to_edges!(E::Vector, e)
-    push!(E, e)
-    return nothing 
-end
+add_to_edges!(E::Set, e) = push!(E, e)
+add_to_edges!(E::Vector, e) = push!(E, e)
 
 """
     add_edge!(E, e...)
@@ -206,16 +213,12 @@ function delete_from_edges!(::S, e) where {S}
 end
 function delete_from_edges!(E::Set{F}, e::F) where {F}
     has_e = contains_edge(e, E)
-    if has_e
-        delete!(E, e)
-    end
+    has_e && delete!(E, e)
     return nothing
 end
 function delete_from_edges!(Es::A, e::E) where {E,A<:AbstractVector{E}}
     has_e = contains_edge(e, Es)
-    if has_e
-        filter!(E -> e ≠ E, Es)
-    end
+    has_e && filter!(E -> e ≠ E, Es)
     return nothing
 end
 function delete_from_edges!(Es::E, i::Integer, j::Integer) where {E}
@@ -247,8 +250,9 @@ defined are
 
     each_edge(E::Set)
     each_edge(E::AbstractMatrix)
+    each_edge(E::AbstractVector)
 
-with the first method simply returning `E`, and the second returning 
+with the first and third methods simply returning `E`, and the second returning 
 `eachcol(E)`. You can extend this function as you need.
 """
 function each_edge end
@@ -257,6 +261,7 @@ function each_edge(::F) where {F}
 end
 each_edge(E::Set) = E
 each_edge(E::AbstractMatrix) = eachcol(E)
+each_edge(E::AbstractVector) = E
 
 """
     random_edge(E)

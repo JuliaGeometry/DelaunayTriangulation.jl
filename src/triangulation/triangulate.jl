@@ -1,5 +1,5 @@
 """
-    triangulate(points::P;
+    triangulate(points::P; edges=nothing, boundary_nodes=nothing,
         IntegerType::Type{I}=Int64,
         EdgeType::Type{E}=NTuple{2,IntegerType},
         TriangleType::Type{V}=NTuple{3,IntegerType},
@@ -13,15 +13,21 @@
         num_sample_rule::M=default_num_samples,
         rng::AbstractRNG=Random.default_rng(),
         point_order=get_point_order(points, randomise, skip_points, IntegerType, rng),
-        recompute_representative_point=true
+        recompute_representative_point=true,
+        delete_holes=true,
+        check_arguments=true
     ) where {P,I,E,V,Es,Ts,M}
 
-Computes the unconstrained Delaunay triangulation of a set of `points`.
+Computes the unconstrained Delaunay triangulation of a set of `points`. If `edges` is provided, 
+they will be inserted. If `boundary_nodes` is provided, a boundary will also be made from these 
+nodes, with all triangles inside the boundaries deleted.
 
 # Arguments 
 - `points::P`: The set of points to compute the triangulation of. 
 
 # Keyword Arguments 
+- `edges=nothing`: Any constrained edges to insert. If `nothing`, an unconstrained triangulation is built. The constrained edges should not intersect each other, and they should not cross over boundary edges.
+- `boundary_nodes=nothing`: Any boundaries to define. The specification of these boundary nodes is outlined in the boundary handling section of the documentation. All triangles away from a defined boundary are deleted if `delete_holes`.
 - `IntegerType::Type{I}=Int64`: The integer type to use for indexing. 
 - `EdgeType::Type{E}=NTuple{2,IntegerType}`: The type to use for representing edges. 
 - `TriangleType::Type{V}=NTuple{3,IntegerType}`: The type to use for representing triangles. 
@@ -36,41 +42,58 @@ Computes the unconstrained Delaunay triangulation of a set of `points`.
 - `rng::AbstractRNG=Random.default_rng()`: The RNG to use.
 - `point_order=get_point_order(points, randomise, skip_points, IntegerType, rng)`: The insertion order. 
 - `recompute_representative_point=true`: At the end of the triangulation, will recompute the `RepresentativePointList` if `true`.
+- `delete_holes=true`: Whether to delete the exterior faces of all boundaries.
+- `check_arguments=true`: Whether to check the arguments for validity.
 
 # Outputs 
 Returns a [`Triangulation`](@ref).
 """
-function triangulate(points::P;
-                     IntegerType::Type{I}=Int64,
-                     EdgeType::Type{E}=NTuple{2,IntegerType},
-                     TriangleType::Type{V}=NTuple{3,IntegerType},
-                     EdgesType::Type{Es}=Set{EdgeType},
-                     TrianglesType::Type{Ts}=Set{TriangleType},
-                     randomise=true,
-                     delete_ghosts=true,
-                     delete_empty_features=true,
-                     try_last_inserted_point=true,
-                     skip_points=Set{IntegerType}(),
-                     num_sample_rule::M=default_num_samples,
-                     rng::AbstractRNG=Random.default_rng(),
-                     point_order=get_point_order(points, randomise, skip_points,
-                                                 IntegerType, rng),
-                     recompute_representative_point=true) where {P,I,E,V,Es,Ts,M}
-    points_are_unique(points) || throw("Duplicate points are not allowed.")
+function triangulate(points::P; edges=nothing, boundary_nodes=nothing,
+    IntegerType::Type{I}=Int64,
+    EdgeType::Type{E}=!isnothing(edges) ? edge_type(typeof(edges)) : NTuple{2,IntegerType},
+    TriangleType::Type{V}=NTuple{3,IntegerType},
+    EdgesType::Type{Es}=!isnothing(edges) ? typeof(edges) : Set{EdgeType},
+    TrianglesType::Type{Ts}=Set{TriangleType},
+    randomise=true,
+    delete_ghosts=true,
+    delete_empty_features=true,
+    try_last_inserted_point=true,
+    skip_points=Set{IntegerType}(),
+    num_sample_rule::M=default_num_samples,
+    rng::AbstractRNG=Random.default_rng(),
+    point_order=get_point_order(points, randomise, skip_points,
+        IntegerType, rng),
+    recompute_representative_point=true,
+    delete_holes=true,
+    check_arguments=true) where {P,I,E,V,Es,Ts,M}
+    check_arguments && check_args(points, boundary_nodes)
     tri = triangulate_bowyer_watson(points;
-                                    IntegerType,
-                                    EdgeType,
-                                    TriangleType,
-                                    EdgesType,
-                                    TrianglesType,
-                                    randomise,
-                                    delete_ghosts,
-                                    delete_empty_features,
-                                    try_last_inserted_point,
-                                    skip_points,
-                                    num_sample_rule,
-                                    rng,
-                                    point_order,
-                                    recompute_representative_point)
+        IntegerType,
+        EdgeType,
+        TriangleType,
+        EdgesType,
+        TrianglesType,
+        randomise,
+        delete_ghosts=false,
+        delete_empty_features=false,
+        try_last_inserted_point,
+        skip_points,
+        num_sample_rule,
+        rng,
+        point_order,
+        recompute_representative_point=false)
+    if !isnothing(edges) || !isnothing(boundary_nodes)
+        bn_map, bn_range, tri = remake_triangulation_with_constraints(tri, edges, boundary_nodes)
+        triangulate_constrained!(tri, bn_map; rng)
+        tri = replace_boundary_dict_information(tri, bn_map, bn_range)
+    end
+    if !isnothing(boundary_nodes) && delete_holes
+        delete_holes!(tri)
+        add_boundary_information!(tri)
+        !delete_ghosts && add_ghost_triangles!(tri)
+    end
+    recompute_representative_point && compute_representative_points!(tri)
+    delete_ghosts && delete_ghost_triangles!(tri)
+    delete_empty_features && clear_empty_features!(tri)
     return tri
 end

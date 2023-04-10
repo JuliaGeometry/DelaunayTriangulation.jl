@@ -20,9 +20,3 @@ We also provide a customisable interface for representing boundary nodes, althou
 - `Vector{Vector{Vector{Int64}}}`: In this case, there are multiple fixed boundaries, each of which are assumed to be made up of separate segments. This makes it possible to support multiply-connected domains, e.g. an annulus with each circle split into its lower and upper halves. Here, `BN[m][n]` is the set of nodes for the `n`th segment of the `m`th boundary curve, and `BN[begin]` the outer-most boundary curve and `BN[m]`, `m > 1`, nodes for curves contained within `BN[begin]`. As in the previous case, `BN[m][n][end] == BN[m][n+1][end]` and `BN[m][end][end] == BN[m][begin][begin]` for each `m`. Moreover, `BN[begin]` should be a counter-clockwise list of nodes while `BN[m]` is a clockwise list of nodes for `m > 1`.
 
 For more information about how we handle boundaries, and how they are handled in our data structures, see the boundary handling section in the sidebar. 
-
-The complete docstring that we use to also describe these interfaces is given below. (Accessible via `?Interfaces`). See the next subsections for further detail.
-
-```@docs 
-Interfaces 
-```

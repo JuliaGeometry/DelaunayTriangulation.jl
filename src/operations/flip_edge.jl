@@ -3,8 +3,11 @@
 
 Given a triangulation `tri` and an edge `(i, j)` appearing in the triangulation, 
 flips the edge `(i, j)` so that it becomes `(ℓ, k)`, where `ℓ = get_adjacent(tri, i, j)`
-and `k = get_adjacent(tri, j, i)`. Note that if `(i, j, ℓ, k)` is not a convex 
-quadrilateral, than this edge flip makes the triangulation non-planar.
+and `k = get_adjacent(tri, j, i)`. 
+
+!!! warning 
+
+    If `(i, j, ℓ, k)` is not a convex quadrilateral, than this edge flip makes the triangulation non-planar.
 """
 function flip_edge!(tri::Triangulation, i, j)
     ℓ = get_adjacent(tri, i, j)

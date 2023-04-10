@@ -14,7 +14,7 @@ save_path = basename(pwd()) == "test" ? "figures" : "test/figures"
     for _ in 1:100
         pts = rand(2, 382)
         tri = triangulate(pts)
-        validate_triangulation(tri)
+        @test validate_triangulation(tri)
         _tri = DT.triangulate_bowyer_watson(pts)
         @test DT.compare_triangle_collections(get_triangles(_tri), get_triangles(tri)) &&
               get_adjacent(tri) == get_adjacent(_tri) &&
@@ -26,10 +26,10 @@ end
 
 @testset "Lots of collinearity" begin
     _tri = triangulate_rectangle(-3.0, 2.0, 5.0, 17.3, 23, 57; single_boundary=true)
-    validate_triangulation(_tri)
+    @test validate_triangulation(_tri)
     for _ in 1:100
         @time tri = triangulate(_tri.points)
-        validate_triangulation(tri)
+        @test validate_triangulation(tri)
     end
 end
 
@@ -201,14 +201,14 @@ end
               get_adjacent2vertex(tri) == adj2v &&
               get_graph(tri) == graph &&
               get_convex_hull(tri) == ch
-        validate_triangulation(tri)
+        @test validate_triangulation(tri)
         delete_ghost_triangles!(tri)
         @test DT.compare_triangle_collections(T2, get_triangles(tri)) &&
               get_adjacent(tri) == adj2 &&
               get_adjacent2vertex(tri) == adj2v2 &&
               get_graph(tri) == graph &&
               get_convex_hull(tri) == ch
-        validate_triangulation(tri)
+        @test validate_triangulation(tri)
     end
 end
 
@@ -244,9 +244,14 @@ end
     DT.initialise_edges(::Type{CustomEdges}) = CustomEdges(CustomEdge[])
     DT.add_to_edges!(edges::CustomEdges, e) = push!(edges.edges, e)
     DT.each_edge(edges::CustomEdges) = edges.edges
-    DT.delete_from_edges!(edges::CustomEdges, e) = deleteat!(edges.edges, findfirst(==(e), edges.edges))
+    DT.delete_from_edges!(edges::CustomEdges, e) =
+        let idx = findfirst(==(e), edges.edges)
+            isnothing(idx) || deleteat!(edges.edges, idx)
+        end
     DT.num_edges(edges::CustomEdges) = length(edges.edges)
     DT.is_empty(edges::CustomEdges) = isempty(edges.edges)
+    DT.edge_type(::Type{CustomEdges}) = CustomEdge
+    DT.contains_edge(e::CustomEdge, edges::CustomEdges) = e ∈ edges.edges
 
     struct CustomTriangle
         i::Int32
@@ -281,6 +286,7 @@ end
         EdgesType=CustomEdges,
         TriangleType=CustomTriangle,
         TrianglesType=CustomTriangles)
+    @test validate_triangulation(tri1)
     tri2 = triangulate(pts)
 
     fig = Figure(fontsize=24)

@@ -37,7 +37,7 @@ function delete_point!(tri::Triangulation, point; rng::AbstractRNG=Random.defaul
     delete_vertex!(tri, point)
     ## Cleanup
     push!(S, S[begin])
-    is_outer_bnd &&_replace_representative_coordinates_after_deletion!(cx, cy)
+    is_outer_bnd && _replace_representative_coordinates_after_deletion!(tri, cx, cy)
     fix_edges_after_deletion!(tri, S)
     return nothing
 end
@@ -47,7 +47,7 @@ function _delete_interior_point!(tri, S, rng)
     return nothing
 end
 
-function _delete_boundary_point!(tri::Triangulation{P,Ts,I,E,Es,BN,B,BIR}, S, rng) where {P,Ts,I,E,Es,BN,B,BIR}
+function _delete_boundary_point!(tri::Triangulation{P,Ts,I,E,Es,BN,BNM,B,BIR}, S, rng) where {P,Ts,I,E,Es,BN,BNM,B,BIR}
     local boundary_index
     local boundary_index_in_S
     for (i, s) in pairs(S)
@@ -64,6 +64,7 @@ function _delete_boundary_point!(tri::Triangulation{P,Ts,I,E,Es,BN,B,BIR}, S, rn
         TriangleType=triangle_type(Ts),
         EdgesType=Es,
         TrianglesType=Ts,
+        representative_point_list = get_representative_point_list(tri),
         rng,
         add_ghost_triangles=false,
         add_convex_hull=false,
@@ -96,14 +97,15 @@ function _replace_representative_coordinates_for_deletion!(tri, point)
     scaled_extent = (mc_length + 25pℓpr_length) / mc_length
     ĉx = cx + scaled_extent * (mx - cx)
     ĉy = cy + scaled_extent * (my - cy)
-    representative_coords = RepresentativePointList[1] # the outer boundary also has a curve index of 1 
+    representative_coords = get_representative_point_list(tri)[I(1)] # the outer boundary also has a curve index of 1 
     representative_coords.x = ĉx
     representative_coords.y = ĉy
     return cx, cy
 end
 
-function _replace_representative_coordinates_after_deletion!(cx, cy)
-    representative_coords = RepresentativePointList[1]
+function _replace_representative_coordinates_after_deletion!(tri, cx, cy)
+    I = integer_type(tri)
+    representative_coords = get_representative_point_list(tri)[I(1)]
     representative_coords.x = cx
     representative_coords.y = cy
     return nothing
@@ -132,3 +134,10 @@ function _delete_point_2!(tri::Triangulation, point)
     delete_vertex!(tri, point)
     return nothing
 end
+
+"""
+    get_surronding_polygon(tri, u; skip_boundary_indices=false)
+
+Returns the set of neighbours of `u` in counter-clockwise order. If `skip_boundary_indices` is `true`, then boundary indices are not included in the set.
+"""
+@inline get_surrounding_polygon(tri::Triangulation, u; skip_boundary_indices=false) = get_surrounding_polygon(get_adjacent(tri), get_graph(tri), u, get_boundary_index_ranges(tri), Val(has_multiple_segments(tri)); skip_boundary_indices)

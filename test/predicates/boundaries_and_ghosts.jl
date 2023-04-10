@@ -16,8 +16,8 @@ pts = get_points(tri2)
 adj = get_adjacent(tri2)
 adj2v = get_adjacent2vertex(tri2)
 boundary_map = get_boundary_map(tri2)
-DT.RepresentativePointList[1].x = 10.0
-DT.RepresentativePointList[1].y = 10.0
+tri2.representative_point_list[1].x = 10.0
+tri2.representative_point_list[1].y = 10.0
 graph = get_graph(tri2)
 boundary_nodes = get_boundary_nodes(tri2)
 
@@ -175,8 +175,8 @@ end
     @test !DT.edge_exists((-71, 100), tri.adjacent)
     @test DT.edge_exists((3, 254), tri.adjacent)
     @test DT.edge_exists(tri, -5, 38)
-    @test !DT.edge_exists(tri, -71, 100)
-    @test !DT.edge_exists(tri, (-71, 100))
+    @test !DT.edge_exists(tri, -2, 100)
+    @test !DT.edge_exists(tri, (-2, 100))
     @test DT.edge_exists(tri, (3, 254))
     @test DT.edge_exists(5)
     @test !DT.edge_exists(DT.DefaultAdjacentValue)
@@ -211,7 +211,7 @@ end
     __tri = DT.triangulate_bowyer_watson(_tri.points)
     @test !DT.has_boundary_nodes(__tri)
     @test !DT.is_constrained(__tri)
-    push!(__tri.constrained_edges, (1, 2), (2, 3), (4, 5))
+    push!(__tri.all_constrained_edges, (1, 2), (2, 3), (4, 5))
     @test !DT.has_boundary_nodes(__tri)
     @test DT.is_constrained(__tri)
 end
@@ -257,7 +257,7 @@ end
             @test res1 ∈ get_boundary_index_ranges(tri2)[boundary_index]
         end
     end
-    reduced_bn = reduce(vcat, reduce(vcat, get_boundary_nodes(tri)))
+    reduced_bn = reduce(vcat, reduce(vcat, get_boundary_nodes(tri2)))
     for node in each_vertex(tri2)
         if node ∉ reduced_bn
             flag1, res1 = DT.is_boundary_node(node, get_graph(tri2), get_boundary_index_ranges(tri2))
@@ -273,7 +273,7 @@ end
         @test flag1 && flag2 && res1 == res2
         @test res1 ∈ get_boundary_index_ranges(tri3)[DT.BoundaryIndex]
     end
-    for node in each_vertex(tri)
+    for node in each_vertex(tri3)
         if node ∉ ch
             flag1, res1 = DT.is_boundary_node(node, get_graph(tri3), get_boundary_index_ranges(tri3))
             flag2, res2 = DT.is_boundary_node(tri3, node)

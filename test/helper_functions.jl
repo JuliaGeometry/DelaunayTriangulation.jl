@@ -1,5 +1,6 @@
 using StaticArrays
 using StableRNGs
+using Random
 
 const DT = DelaunayTriangulation
 
@@ -117,132 +118,563 @@ function simple_geometry()
     return Triangulation(pts, T, boundary_nodes), label_map, index_map
 end
 
-function validate_triangulation(tri::Triangulation;
-    ignore_boundary_indices=false)
-    # Tests aren't countered correctly when we use @async, 
-    # so let's build thread-safe counters and then fake a 
-    # testset later. 
-    local passes = Threads.Atomic{Int64}(0)
-    local fails = Threads.Atomic{Int64}(0)
-    _tri = deepcopy(tri)
-    DT.clear_empty_features!(_tri)
-
-    ## Check that all triangles are positively oriented 
-    @sync begin
-        @async for T in each_triangle(_tri)
-            cert = DT.triangle_orientation(_tri, T)
-            DT.is_positively_oriented(cert) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
-            @test DT.is_positively_oriented(cert)
+function test_planarity(tri) # just check's Euler's formula. Doesn't guarantee planarity, though. Remember that Euler's formula includes the exterior face, which is covered by the boundary vertex.
+    if DT.has_multiple_segments(tri)
+        num_exterior_faces = DT.num_curves(tri)
+        flag1 = (length ∘ collect ∘ each_solid_vertex)(tri) - (length ∘ collect ∘ each_solid_edge)(tri) + (length ∘ collect ∘ each_solid_triangle)(tri) + num_exterior_faces == 2
+        if !flag1
+            println("Planarity test failed for the solid graph.")
+            return false
         end
+        nedges = length(keys(get_adjacent(get_adjacent(tri)))) ÷ 2 # when dealing with multiple boundary indices, num_edges(tri) is difficult as not every edge actually appears twice
+        nverts = num_vertices(tri) - length(DT.all_boundary_indices(tri)) + DT.num_curves(tri) # add back in one boundary index for each exterior face 
+        flag2 = nverts - nedges + num_triangles(tri) == 2
+        if !flag2
+            println("Planarity test failed for the combined graph.")
+            return false
+        end
+        flag3 = 2nedges == 3num_triangles(tri)
+        if !flag3
+            println("Planarity test failed as 2num_edges(tri), $nedges, did not equal 3num_triangles(tri), $(num_triangles(tri)).")
+            return false
+        end
+    else
+        flag = num_vertices(tri) - num_edges(tri) + num_triangles(tri) == 2
+        if !flag
+            println("Planarity test failed.")
+            return false
+        end
+    end
+    return true
+end
 
-        ## Test that the triangulation is Delaunay 
-        @async for T in each_triangle(_tri)
-            for r in each_point_index(_tri)
-                if r ∈ get_vertices(tri)
-                    if !(ignore_boundary_indices && DT.is_ghost_triangle(T))
-                        cert = DT.point_position_relative_to_circumcircle(_tri, T, r)
-                        DT.is_inside(cert) && @show T, r
-                        !DT.is_inside(cert) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
-                        @test !DT.is_inside(cert)
+function test_triangle_orientation(tri; check_ghost_triangle_orientation=true)
+    for T in each_triangle(tri)
+        cert = DT.triangle_orientation(tri, T)
+        if DT.is_ghost_triangle(T) && !check_ghost_triangle_orientation
+            continue 
+        end
+        flag = DT.is_positively_oriented(cert)
+        if !flag
+            println("Orientation test failed for the triangle $T.")
+            return false
+        end
+    end
+    return true
+end
+
+function test_delaunay_criterion(tri; check_ghost_triangle_delaunay=true)
+    for T in each_triangle(tri)
+        if DT.is_ghost_triangle(T) && !check_ghost_triangle_delaunay
+            continue 
+        end
+        for r in each_solid_vertex(tri)
+            cert = DT.point_position_relative_to_circumcircle(tri, T, r)
+            if DT.is_inside(cert)
+                ace = get_all_constrained_edges(tri)
+                if DT.is_empty(ace)
+                    flag = !DT.is_inside(cert)
+                    if !flag
+                        println("Delaunay criterion test failed for the triangle-vertex pair ($T, $r).")
+                        return false
+                    end
+                else # This is extremely slow. Should probably get around to cleaning this up sometime.
+                    i, j, k = DT.indices(T)
+                    ## We need to see if a subsegment separates T from r. Let us walk from each vertex of T to r.
+                    i_history = DT.PointLocationHistory{DT.triangle_type(tri),DT.edge_type(tri),DT.integer_type(tri)}()
+                    j_history = DT.PointLocationHistory{DT.triangle_type(tri),DT.edge_type(tri),DT.integer_type(tri)}()
+                    k_history = DT.PointLocationHistory{DT.triangle_type(tri),DT.edge_type(tri),DT.integer_type(tri)}()
+                    DT.is_boundary_index(i) || jump_and_march(tri, get_point(tri, i); point_indices=nothing, m=nothing, try_points=nothing, k=r, store_history=Val(true), history=i_history)
+                    DT.is_boundary_index(j) || jump_and_march(tri, get_point(tri, j); point_indices=nothing, m=nothing, try_points=nothing, k=r, store_history=Val(true), history=j_history)
+                    DT.is_boundary_index(k) || jump_and_march(tri, get_point(tri, k); point_indices=nothing, m=nothing, try_points=nothing, k=r, store_history=Val(true), history=k_history)
+                    i_walk = DT.is_boundary_index(i) ? Set{DT.triangle_type(tri)}() : i_history.triangles
+                    j_walk = DT.is_boundary_index(j) ? Set{DT.triangle_type(tri)}() : j_history.triangles
+                    k_walk = DT.is_boundary_index(k) ? Set{DT.triangle_type(tri)}() : k_history.triangles
+                    all_edges = Set{NTuple{2,DT.integer_type(tri)}}()
+                    E = DT.edge_type(tri)
+                    for T in Iterators.flatten((each_triangle(i_walk), each_triangle(j_walk), each_triangle(k_walk)))
+                        for e in DT.triangle_edges(T)
+                            u, v = DT.edge_indices(e)
+                            ee = DT.construct_edge(E, min(u, v), max(u, v))
+                            push!(all_edges, ee)
+                        end
+                    end
+                    all_constrained_edges = Set{NTuple{2,DT.integer_type(tri)}}()
+                    for e in each_edge(ace)
+                        u, v = DT.edge_indices(e)
+                        ee = DT.construct_edge(E, min(u, v), max(u, v))
+                        push!(all_constrained_edges, ee)
+                    end
+                    intersect!(all_edges, all_constrained_edges)
+                    flags = [DT.line_segment_intersection_type(tri, initial(e), terminal(e), i, r) for e in each_edge(all_edges) for i in filter(!DT.is_boundary_index, (i, j, k))]
+                    flag = !all(DT.is_none, flags)
+                    if !flag
+                        println("Delaunay criterion test failed for the triangle-vertex pair ($T, $r).")
+                        return false
                     end
                 end
             end
         end
+    end
+    return true
+end
 
-        ## Test that every edge is incident to two triangles if it not a boundary edge, and one otherwise 
-        @async for (ij, k) in get_adjacent(_tri)
-            i, j = initial(ij), terminal(ij)
-            vij = get_adjacent(tri, i, j)
-            vji = get_adjacent(tri, j, i)
-            if DT.is_boundary_edge(_tri, i, j)
-                !DT.is_boundary_index(vij) && @show i, j, vij
-                DT.is_boundary_index(vij) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
-                @test DT.is_boundary_index(vij)
-            elseif DT.is_boundary_edge(_tri, j, i)
-                !DT.is_boundary_index(vji) && @show j, i, vji
-                DT.is_boundary_index(vji) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
-                @test DT.is_boundary_index(vji)
-            else
-                !(DT.edge_exists(vij) && DT.edge_exists(vji)) && @show i, j, vij, vji
-                DT.edge_exists(vij) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
-                @test DT.edge_exists(vij) && DT.edge_exists(vji)
+function test_each_edge_has_two_incident_triangles(tri)
+    for e in each_edge(tri)
+        i, j = DT.edge_indices(e)
+        vᵢⱼ = get_adjacent(tri, i, j)
+        vⱼᵢ = get_adjacent(tri, j, i)
+        if DT.is_boundary_edge(tri, i, j)
+            flag = DT.is_boundary_index(vᵢⱼ) && DT.edge_exists(vⱼᵢ)
+            if !flag
+                println("Test that each edge has two incident triangles failed for the edge $e.")
+                return false
             end
-        end
-
-        ## Test the adjacent map 
-        @async for T in each_triangle(_tri)
-            u, v, w = indices(T)
-            if !(ignore_boundary_indices && DT.is_ghost_triangle(T))
-                all((get_adjacent(_tri, u, v) == w, get_adjacent(_tri, u, v) == w, get_adjacent(_tri, w, u) == v)) || @show u, v, w, T
-                get_adjacent(_tri, u, v) == w ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
-                @test get_adjacent(_tri, u, v) == w
-                get_adjacent(_tri, v, w) == u ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
-                @test get_adjacent(_tri, v, w) == u
-                get_adjacent(_tri, w, u) == v ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
-                @test get_adjacent(_tri, w, u) == v
+        elseif DT.is_boundary_edge(tri, j, i)
+            flag = DT.is_boundary_index(vⱼᵢ) && DT.edge_exists(vᵢⱼ)
+            if !flag
+                println("Test that each edge has two incident triangles failed for the edge $e.")
+                return false
             end
-        end
-
-        ## Test the adjacent2vertex map 
-        E = DT.edge_type(_tri)
-        @async for T in each_triangle(_tri)
-            u, v, w = indices(T)
-            if !(ignore_boundary_indices && DT.is_ghost_triangle(T))
-                DT.contains_edge(DT.construct_edge(E, v, w), get_adjacent2vertex(_tri, u)) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
-                @test DT.contains_edge(DT.construct_edge(E, v, w), get_adjacent2vertex(_tri, u))
-                DT.contains_edge(DT.construct_edge(E, w, u), get_adjacent2vertex(_tri, v)) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
-                @test DT.contains_edge(DT.construct_edge(E, w, u), get_adjacent2vertex(_tri, v))
-                DT.contains_edge(DT.construct_edge(E, u, v), get_adjacent2vertex(_tri, w)) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
-                @test DT.contains_edge(DT.construct_edge(E, u, v), get_adjacent2vertex(_tri, w))
-            end
-        end
-
-        ## Check that the adjacent and adjacent2vertex maps are inverses 
-        @async for (k, S) in get_adjacent2vertex(_tri)
-            for ij in DT.each_edge(S)
-                if !(ignore_boundary_indices && (DT.is_boundary_index(k) || DT.is_ghost_edge(ij)))
-                    get_adjacent(_tri, ij) == k || @show i, j, k
-                    get_adjacent(_tri, ij) == k ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
-                    @test get_adjacent(_tri, ij) == k
-                end
-            end
-        end
-        Base.Threads.@spawn for (ij, k) in get_adjacent(_tri)
-            if !(ignore_boundary_indices && (DT.is_boundary_index(k) || DT.is_ghost_edge(ij)))
-                DT.contains_edge(ij, get_adjacent2vertex(_tri, k)) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
-                @test DT.contains_edge(ij, get_adjacent2vertex(_tri, k))
-            end
-        end
-
-        ## Check the graph 
-        @async for (i, j) in get_edges(_tri)
-            if DT.has_ghost_triangles(_tri)
-                ij = DT.construct_edge(E, i, j)
-                ji = DT.construct_edge(E, j, i)
-                ij ∈ keys((get_adjacent ∘ get_adjacent)(_tri)) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
-                @test ij ∈ keys((get_adjacent ∘ get_adjacent)(_tri))
-                ji ∈ keys((get_adjacent ∘ get_adjacent)(_tri)) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
-                @test ji ∈ keys((get_adjacent ∘ get_adjacent)(_tri))
-            else
-                if !DT.is_boundary_index(i) && !DT.is_boundary_index(j)
-                    ij = DT.construct_edge(E, i, j)
-                    ji = DT.construct_edge(E, j, i)
-                    ij ∈ keys((get_adjacent ∘ get_adjacent)(_tri)) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
-                    @test ij ∈ keys((get_adjacent ∘ get_adjacent)(_tri))
-                    ji ∈ keys((get_adjacent ∘ get_adjacent)(_tri)) ? Threads.atomic_add!(passes, 1) : Threads.atomic_add!(fails, 1)
-                    @test ji ∈ keys((get_adjacent ∘ get_adjacent)(_tri))
-                end
+        else
+            flag = DT.edge_exists(vᵢⱼ) && DT.edge_exists(vⱼᵢ)
+            if !flag
+                println("Test that each edge has two incident triangles failed for the edge $e.")
+                return false
             end
         end
     end
-    @testset "Triangulation validation" begin
-        for _ in 1:passes[]
-            @test true
+    DT.clear_empty_features!(tri)
+    return true
+end
+
+function test_adjacent_map_matches_triangles(tri)
+    for T in each_triangle(tri)
+        u, v, w = DT.indices(T)
+        flag1 = get_adjacent(tri, u, v) == w
+        if !flag1
+            println("Test that the adjacent map matches the triangle set failed for the triangle $T and edge ($u, $v).")
+            return false
         end
-        for _ in 1:fails[]
-            @test false
+        flag2 = get_adjacent(tri, v, w) == u
+        if !flag2
+            println("Test that the adjacent map matches the triangle set failed for the triangle $T and edge ($v, $w).")
+            return false
+        end
+        flag3 = get_adjacent(tri, w, u) == v
+        if !flag3
+            println("Test that the adjacent map matches the triangle set failed for the triangle $T and edge ($w, $u).")
+            return false
         end
     end
+    DT.clear_empty_features!(tri)
+    return true
+end
+
+function test_adjacent2vertex_map_matches_triangles(tri)
+    E = DT.edge_type(tri)
+    for T in each_triangle(tri)
+        u, v, w = DT.indices(T)
+        uv = DT.construct_edge(E, u, v)
+        vw = DT.construct_edge(E, v, w)
+        wu = DT.construct_edge(E, w, u)
+        Su = get_adjacent2vertex(tri, u)
+        Sv = get_adjacent2vertex(tri, v)
+        Sw = get_adjacent2vertex(tri, w)
+        flag1 = DT.contains_edge(vw, Su)
+        if !flag1
+            println("Test that the adjacent2vertex map matches the triangle set failed for the triangle $T and edge ($v, $w) for the edge set $Su from $u.")
+            return false
+        end
+        flag2 = DT.contains_edge(wu, Sv)
+        if !flag2
+            println("Test that the adjacent2vertex map matches the triangle set failed for the triangle $T and edge ($w, $u) for the edge set $Sv from $v.")
+            return false
+        end
+        flag3 = DT.contains_edge(uv, Sw)
+        if !flag3
+            println("Test that the adjacent2vertex map matches the triangle set failed for the triangle $T and edge ($u, $v) for the edge set $Sw from $w.")
+            return false
+        end
+    end
+    return true
+end
+
+function test_adjacent_map_matches_adjacent2vertex_map(tri)
+    for (k, S) in get_adjacent2vertex(tri)
+        for e in each_edge(S)
+            flag1 = get_adjacent(tri, e) == k
+            if !flag1
+                println("Test that the adjacent map matches the adjacent2vertex map failed for the vertex $k and edge $e for the corresponding edge set $S, as get_adjacent(tri, $e) == $(get_adjacent(tri, e)) rather than $k.")
+                return false
+            end
+            flag2 = DT.contains_edge(e, S)
+            if !flag2
+                println("Test that the adjacent map matches the adjacent2vertex map failed for the vertex $k and edge $e for the corresponding edge set $S, as the edge edge does not contain $e.")
+                return false
+            end
+        end
+    end
+    DT.clear_empty_features!(tri)
+    return true
+end
+
+function test_adjacent2vertex_map_matches_adjacent_map(tri)
+    for (e, _) in get_adjacent(tri)
+        k = get_adjacent(tri, e)
+        S = get_adjacent2vertex(tri, k)
+        flag = DT.contains_edge(e, S)
+        if !flag
+            println("Test that the adjacent2vertex map matches the adjacent map failed for the edge $e and adjacent vertex $k.")
+            return false
+        end
+    end
+    DT.clear_empty_features!(tri)
+    return true
+end
+
+function test_graph_contains_all_vertices(tri)
+    all_vertices = Set{Int64}()
+    for T in each_triangle(tri)
+        i, j, k = DT.indices(T)
+        push!(all_vertices, i, j, k)
+    end
+    for i in all_vertices
+        flag = i ∈ get_vertices(tri)
+        if !flag
+            println("Test that the graph contains all vertices failed as the vertex $i did not appear in the graph.")
+            return false
+        end
+    end
+    return true
+end
+
+function test_graph_matches_adjacent_map(tri)
+    E = DT.edge_type(tri)
+    adj_dict = get_adjacent(get_adjacent(tri))
+    for e in get_edges(tri)
+        i, j = DT.edge_indices(e)
+        if DT.has_ghost_triangles(tri) || !DT.is_ghost_edge(i, j)
+            eᵢⱼ = DT.construct_edge(E, i, j)
+            eⱼᵢ = DT.construct_edge(E, j, i)
+            flag = if !DT.has_multiple_segments(tri)
+                eᵢⱼ ∈ keys(adj_dict) && eⱼᵢ ∈ keys(adj_dict)
+            else
+                DT.edge_exists(tri, i, j) && DT.edge_exists(tri, j, i)
+            end
+            if !flag
+                println("Test that the graph matches the adjacent map failed for the edge $e.")
+                return false
+            end
+        end
+    end
+    DT.clear_empty_features!(tri)
+    return true
+end
+
+function test_adjacent_map_matches_graph(tri)
+    for (e, k) in get_adjacent(tri)
+        i, j = DT.edge_indices(e)
+        flag1 = all(∈(get_neighbours(tri, i)), (j, k))
+        if !flag1
+            println("Test that the adjacent map matches the graph failed for the vertex $i, which defines the edge $e with adjacent vertex $k, as $j or $k were not in the neighbourhood of $i.")
+        end
+        flag2 = all(∈(get_neighbours(tri, j)), (k, i))
+        if !flag2
+            println("Test that the adjacent map matches the graph failed for the vertex $j, which defines the edge $e with adjacent vertex $k, as $k or $i were not in the neighbourhood of $j.")
+        end
+        flag3 = all(∈(get_neighbours(tri, k)), (i, j))
+        if !flag3
+            println("Test that the adjacent map matches the graph failed for the vertex $k, adjacent to the edge $e, as $i or $j were not in the neighbourhood of $k.")
+        end
+    end
+    return true
+end
+
+function test_graph_matches_triangles(tri)
+    for T in each_triangle(tri)
+        i, j, k = DT.indices(T)
+        flag1 = all(∈(get_neighbours(tri, i)), (j, k))
+        if !flag1
+            println("Test that the graph matches the triangle set failed for the triangle $T as $j or $k were not in the neighbourhood of $i.")
+        end
+        flag2 = all(∈(get_neighbours(tri, j)), (k, i))
+        if !flag2
+            println("Test that the graph matches the triangle set failed for the triangle $T as $k or $i were not in the neighbourhood of $j.")
+        end
+        flag3 = all(∈(get_neighbours(tri, k)), (i, j))
+        if !flag3
+            println("Test that the graph matches the triangle set failed for the triangle $T as $i or $j were not in the neighbourhood of $k.")
+        end
+    end
+    return true
+end
+
+function test_constrained_edges(tri)
+    for e in each_constrained_edge(tri)
+        u, v = DT.edge_indices(e)
+        flag = u ∈ get_neighbours(tri, v)
+        if !flag
+            println("Test that the constrained edge $e is in the triangulation failed.")
+            return false
+        end
+    end
+    return true
+end
+
+function test_boundary_edge_map_matches_boundary_nodes(tri::Triangulation)
+    boundary_edge_map = DT.get_boundary_edge_map(tri)
+    for (edge, pos) in boundary_edge_map
+        flag = DT.get_boundary_nodes(DT.get_boundary_nodes(tri, pos[1]), pos[2]) == DT.initial(edge)
+        if !flag
+            println("Validation of the boundary edge map failed as the edge $edge, mapping to $pos, did not correspond to the correct edge in the boundary nodes.")
+            return false
+        end
+    end
+    return true
+end
+
+function test_boundary_nodes_matches_boundary_edge_map(tri::Triangulation)
+    boundary_nodes = DT.get_boundary_nodes(tri)
+    boundary_edge_map = DT.get_boundary_edge_map(tri)
+    E = DT.edge_type(tri)
+    if DT.has_multiple_curves(tri)
+        nc = DT.num_curves(tri)
+        for i in 1:nc
+            curve_nodes = get_boundary_nodes(tri, i)
+            ns = DT.num_segments(curve_nodes)
+            for j in 1:ns
+                segment_nodes = get_boundary_nodes(curve_nodes, j)
+                ne = DT.num_boundary_edges(segment_nodes)
+                for k in 1:ne
+                    left_node = get_boundary_nodes(segment_nodes, k)
+                    right_node = get_boundary_nodes(segment_nodes, k + 1)
+                    edge = DT.construct_edge(E, left_node, right_node)
+                    pos = DT.get_boundary_edge_map(tri, edge)
+                    flag = pos == ((i, j), k)
+                    if !flag
+                        println("Validation of the boundary nodes failed as the edge $edge, located at $(((i, j), k)), was not correctly mapped to by the boundary edge map, instead giving $pos.")
+                        return false
+                    end
+                end
+            end
+        end
+    elseif DT.has_multiple_segments(tri)
+        ns = DT.num_segments(tri)
+        for i in 1:ns
+            segment_nodes = get_boundary_nodes(tri, i)
+            ne = DT.num_boundary_edges(segment_nodes)
+            for j in 1:ne
+                left_node = get_boundary_nodes(segment_nodes, j)
+                right_node = get_boundary_nodes(segment_nodes, j + 1)
+                edge = DT.construct_edge(E, left_node, right_node)
+                pos = DT.get_boundary_edge_map(tri, edge)
+                flag = pos == (i, j)
+                if !flag
+                    println("Validation of the boundary nodes failed as the edge $edge, located at $((i, j)), was not correctly mapped to by the boundary edge map, instead giving $pos.")
+                    return false
+                end
+            end
+        end
+    else
+        ne = DT.num_boundary_edges(boundary_nodes)
+        for i in 1:ne
+            left_node = get_boundary_nodes(boundary_nodes, i)
+            right_node = get_boundary_nodes(boundary_nodes, i + 1)
+            edge = DT.construct_edge(E, left_node, right_node)
+            pos = DT.get_boundary_edge_map(tri, edge)
+            flag = pos == (get_boundary_nodes(tri), i)
+            if !flag
+                println("Validation of the boundary nodes failed as the edge $edge, located at $((get_boundary_nodes(tri), i)), was not correctly mapped to by the boundary edge map, instead giving $pos.")
+                return false
+            end
+        end
+    end
+    return true
+end
+
+function test_iterators(tri::Triangulation)
+    I = DT.integer_type(tri)
+    T = NTuple{3,I}
+    E = NTuple{2,I}
+    solid_triangles = T[]
+    ghost_triangles = T[]
+    all_triangles = T[]
+    solid_vertices = Set{I}()
+    ghost_vertices = Set{I}()
+    all_vertices = Set{I}()
+    solid_edges = E[]
+    ghost_edges = E[]
+    all_edges = E[]
+    for T in each_triangle(tri)
+        i, j, k = DT.indices(T)
+        push!(all_triangles, (i, j, k))
+        if DT.is_ghost_triangle(i, j, k)
+            push!(ghost_triangles, (i, j, k))
+        else 
+            push!(solid_triangles, (i, j, k))
+        end
+        for (u, v) in DT.triangle_edges(i, j, k)
+            push!(all_edges, (u, v))
+            if DT.is_ghost_edge(u, v)
+                push!(ghost_edges, (u, v))
+            else 
+                push!(solid_edges, (u, v))
+            end
+        end
+        for k in (i, j, k)
+            push!(all_vertices,k)
+            if DT.is_boundary_index(k)
+                push!(ghost_vertices, k)
+            else 
+                push!(solid_vertices, k)
+            end
+        end
+    end
+    flag1 = allunique(all_triangles)
+    flag2 = allunique(all_edges)
+    flag3 = allunique(solid_triangles)
+    flag4 = allunique(solid_edges)
+    flag5 = allunique(ghost_triangles)
+    flag6 = allunique(ghost_edges)
+    if !flag1 
+        println("Validation of the triangle iterator failed as it returned duplicate triangles.")
+        return false
+    elseif !flag2 
+        println("Validation of the edge iterator failed as it returned duplicate edges.")
+        return false
+    elseif !flag3 
+        println("Validation of the solid triangle iterator failed as it returned duplicate triangles.")
+        return false
+    elseif !flag4
+        println("Validation of the solid edge iterator failed as it returned duplicate edges.")
+        return false
+    elseif !flag5
+        println("Validation of the ghost triangle iterator failed as it returned duplicate triangles.")
+        return false
+    elseif !flag6
+        println("Validation of the ghost edge iterator failed as it returned duplicate edges.")
+        return false
+    end
+    for (i, e) in enumerate(all_edges)
+         u, v = DT.edge_indices(e)
+         all_edges[i] = (min(u, v), max(u, v))
+    end
+    for (i, e) in enumerate(solid_edges)
+         u, v = DT.edge_indices(e)
+         solid_edges[i] = (min(u, v), max(u, v))
+    end
+    for (i, e) in enumerate(ghost_edges)
+         u, v = DT.edge_indices(e)
+         ghost_edges[i] = (min(u, v), max(u, v))
+    end
+    unique!(all_edges)
+    unique!(solid_edges)
+    unique!(ghost_edges)
+    flag7 = length(all_triangles) == length(each_triangle(tri))
+    flag8 = length(all_edges) == length(each_edge(tri))
+    flag9 = length(solid_triangles) == length(each_solid_triangle(tri))
+    flag10 = length(solid_edges) == length(each_solid_edge(tri))
+    flag11 = length(ghost_triangles) == length(each_ghost_triangle(tri))
+    flag12 = length(ghost_edges) == length(each_ghost_edge(tri))
+    flag13 = length(all_vertices) == length(each_vertex(tri))
+    flag14 = length(solid_vertices) == length(each_solid_vertex(tri))
+    flag15 = length(ghost_vertices) == length(each_ghost_vertex(tri))
+    if !flag7 
+        println("Validation of the triangle iterator failed as it returned a different number of triangles to the each_triangle iterator.")
+        return false
+    elseif !flag8
+        println("Validation of the edge iterator failed as it returned a different number of edges to the each_edge iterator.")
+        return false
+    elseif !flag9
+        println("Validation of the solid triangle iterator failed as it returned a different number of triangles to the each_solid_triangle iterator.")
+        return false
+    elseif !flag10
+        println("Validation of the solid edge iterator failed as it returned a different number of edges to the each_solid_edge iterator.")
+        return false
+    elseif !flag11
+        println("Validation of the ghost triangle iterator failed as it returned a different number of triangles to the each_ghost_triangle iterator.")
+        return false
+    elseif !flag12
+        println("Validation of the ghost edge iterator failed as it returned a different number of edges to the each_ghost_edge iterator.")
+        return false
+    elseif !flag13
+        println("Validation of the vertex iterator failed as it returned a different number of vertices to the each_vertex iterator.")
+        return false
+    elseif !flag14
+        println("Validation of the solid vertex iterator failed as it returned a different number of vertices to the each_solid_vertex iterator.")
+        return false
+    elseif !flag15
+        println("Validation of the ghost vertex iterator failed as it returned a different number of vertices to the each_ghost_vertex iterator.")
+        return false
+    end
+    all_vertices = collect(all_vertices)
+    solid_vertices = collect(solid_vertices)
+    ghost_vertices = collect(ghost_vertices)
+    sort!(all_vertices)
+    sort!(solid_vertices)
+    sort!(ghost_vertices)
+    flag16 = DT.compare_triangle_collections(all_triangles, collect(each_triangle(tri)))
+    flag17 = DT.compare_triangle_collections(solid_triangles, collect(each_solid_triangle(tri)))
+    flag18 = DT.compare_triangle_collections(ghost_triangles, collect(each_ghost_triangle(tri)))
+    flag19 = compare_edge_vectors(all_edges, each_edge(tri))
+    flag20 = compare_edge_vectors(solid_edges, each_solid_edge(tri))
+    flag21 = compare_edge_vectors(ghost_edges, each_ghost_edge(tri))
+    flag22 = all_vertices == sort(collect(each_vertex(tri)))
+    flag23 = solid_vertices == sort(collect(each_solid_vertex(tri)))
+    flag24 = ghost_vertices == sort(collect(each_ghost_vertex(tri)))
+    if !flag16 
+        println("Validation of the triangle iterator failed as it returned a different set of triangles to the each_triangle iterator.")
+        return false
+    elseif !flag17
+        println("Validation of the solid triangle iterator failed as it returned a different set of triangles to the each_solid_triangle iterator.")
+        return false
+    elseif !flag18
+        println("Validation of the ghost triangle iterator failed as it returned a different set of triangles to the each_ghost_triangle iterator.")
+        return false
+    elseif !flag19
+        println("Validation of the edge iterator failed as it returned a different set of edges to the each_edge iterator.")
+        return false
+    elseif !flag20
+        println("Validation of the solid edge iterator failed as it returned a different set of edges to the each_solid_edge iterator.")
+        return false
+    elseif !flag21
+        println("Validation of the ghost edge iterator failed as it returned a different set of edges to the each_ghost_edge iterator.")
+        return false
+    elseif !flag22
+        println("Validation of the vertex iterator failed as it returned a different set of vertices to the each_vertex iterator.")
+        return false
+    elseif !flag23
+        println("Validation of the solid vertex iterator failed as it returned a different set of vertices to the each_solid_vertex iterator.")
+        return false
+    elseif !flag24
+        println("Validation of the ghost vertex iterator failed as it returned a different set of vertices to the each_ghost_vertex iterator.")
+        return false
+    end
+    return true
+end
+
+function validate_triangulation(_tri::Triangulation; check_ghost_triangle_orientation=true, check_ghost_triangle_delaunay=true) # doesn't work for non-convex. need to find a better way
+    tri = deepcopy(_tri)
+    DT.delete_ghost_triangles!(tri)
+    DT.add_ghost_triangles!(tri)
+    DT.clear_empty_features!(tri)
+    return test_planarity(tri) &&
+           test_triangle_orientation(tri; check_ghost_triangle_orientation) &&
+           test_delaunay_criterion(tri; check_ghost_triangle_delaunay) &&
+           test_each_edge_has_two_incident_triangles(tri) &&
+           test_adjacent2vertex_map_matches_triangles(tri) &&
+           test_adjacent2vertex_map_matches_triangles(tri) &&
+           test_adjacent_map_matches_adjacent2vertex_map(tri) &&
+           test_adjacent2vertex_map_matches_adjacent_map(tri) &&
+           test_graph_contains_all_vertices(tri) &&
+           test_graph_matches_adjacent_map(tri) &&
+           test_graph_matches_triangles(tri) &&
+           test_adjacent_map_matches_graph(tri) &&
+           test_constrained_edges(tri) &&
+           test_boundary_edge_map_matches_boundary_nodes(tri) &&
+           test_boundary_nodes_matches_boundary_edge_map(tri) && 
+           test_iterators(tri)
 end
 
 macro _adj(i, j, k)
@@ -297,12 +729,17 @@ function example_triangulation()
         5 => Set{NTuple{2,Int64}}([(4, 1), (1, 3), (3, 2)]),
         6 => Set{NTuple{2,Int64}}([(1, 4), (3, 1)])
     ))
+    rep = DT.get_empty_representative_points()
+    DT.compute_representative_points!(rep, pts, [2, 6, 4, 5, 2])
     tri = Triangulation(pts, T, adj, adj2v, DG,
         Int64[],
+        DT.construct_boundary_edge_map(Int64[]),
         DT.DataStructures.OrderedDict{Int64,Vector{Int64}}(),
         DT.DataStructures.OrderedDict{Int64,UnitRange{Int64}}(),
         Set{NTuple{2,Int64}}(),
-        ConvexHull(pts, [2, 6, 4, 5, 2]))
+        Set{NTuple{2,Int64}}(),
+        ConvexHull(pts, [2, 6, 4, 5, 2]),
+        rep)
     return tri
 end
 
@@ -316,12 +753,17 @@ function example_empty_triangulation()
     DG = DT.Graph(DT.SimpleGraphs.UndirectedGraph(A))
     adj = DT.Adjacent(DT.DataStructures.DefaultDict(DT.DefaultAdjacentValue, Dict{NTuple{2,Int64},Int64}()))
     adj2v = DT.Adjacent2Vertex(Dict(DT.BoundaryIndex => Set{NTuple{2,Int64}}()))
+    rep = DT.get_empty_representative_points()
+    DT.compute_representative_points!(rep, pts, [1, 2, 3, 1])
     tri = Triangulation(pts, T, adj, adj2v, DG,
         Int64[],
+        DT.construct_boundary_edge_map(Int64[]),
         DT.DataStructures.OrderedDict{Int64,Vector{Int64}}(),
         DT.DataStructures.OrderedDict{Int64,UnitRange{Int64}}(),
         Set{NTuple{2,Int64}}(),
-        ConvexHull(pts, [2, 6, 4, 5, 2]))
+        Set{NTuple{2,Int64}}(),
+        ConvexHull(pts, [1, 2, 3, 1]),
+        rep)
     return tri
 end
 
@@ -348,4 +790,227 @@ function example_with_special_corners()
     rng = StableRNG(29292929292)
     tri = triangulate(pts; rng, delete_ghosts=false, randomise=false)
     return tri
+end
+
+function shewchuk_example_constrained()
+    a = [0.0, 0.0]
+    b = [0.0, 1.0]
+    c = [0.0, 4.0]
+    d = [2.0, 0.0]
+    e = [6.0, 0.0]
+    f = [8.0, 0.0]
+    g = [8.0, 0.5]
+    h = [7.5, 1.0]
+    i = [4.0, 0.5]
+    j = [4.0, 4.0]
+    k = [8.0, 4.0]
+    pts = [a, b, c, d, e, f, g, h, i, j, k]
+    rng = StableRNG(213)
+    tri = triangulate(pts; rng, delete_ghosts=false, randomise=false)
+    return tri
+end
+
+function fixed_shewchuk_example_constrained()
+    a = [0.0, 0.0]
+    b = [0.0, 1.0]
+    c = [0.0, 2.5]
+    d = [2.0, 0.0]
+    e = [6.0, 0.0]
+    f = [8.0, 0.0]
+    g = [8.0, 0.5]
+    h = [7.5, 1.0]
+    i = [4.0, 1.0]
+    j = [4.0, 2.5]
+    k = [8.0, 2.5]
+    pts = [a, b, c, d, e, f, g, h, i, j, k]
+    rng = StableRNG(213)
+    tri = triangulate(pts; rng, delete_ghosts=false, randomise=false)
+    return tri
+end
+
+function test_intersections(tri, e, allT, constrained_edges)
+    for e in ((e[1], e[2]), (e[2], e[1]))
+        intersecting_triangles1, collinear_segments1, left1, right1 = DT.locate_intersecting_triangles(tri, e)
+        intersecting_triangles2, collinear_segments2, left2, right2 = DT.locate_intersecting_triangles(
+            e,
+            get_points(tri),
+            get_adjacent(tri),
+            get_adjacent2vertex(tri),
+            get_graph(tri),
+            get_boundary_index_ranges(tri),
+            DT.get_representative_point_list(tri),
+            get_boundary_map(tri),
+            NTuple{3,Int64},
+        )
+        for (intersecting_triangles, collinear_segments) in zip(
+            (intersecting_triangles1, intersecting_triangles2),
+            (collinear_segments1, collinear_segments2)
+        )
+            @test all(T -> DT.is_positively_oriented(DT.triangle_orientation(tri, T)), intersecting_triangles)
+            @test all(!DT.is_none, [DT.triangle_line_segment_intersection(tri, T, e) for T in intersecting_triangles])
+            @test DT.compare_triangle_collections(allT, intersecting_triangles)
+            @test allunique(intersecting_triangles)
+            if typeof(constrained_edges) <: AbstractVector
+                @test collinear_segments == constrained_edges
+            else # Tuple of possibilities, in case the edge's endpoints have equal degree so that we could start at any point
+                @test any(==(collinear_segments), constrained_edges)
+            end
+        end
+    end
+end
+
+function test_split_edges(tri, edge, current_constrained_edges)
+    constrained_edges = get_constrained_edges(tri)
+    DT.add_edge!(constrained_edges, edge)
+    _, collinear_segments = DT.locate_intersecting_triangles(tri, edge)
+    DT.split_constrained_edge!(tri, edge, collinear_segments)
+    @test any(==(constrained_edges), current_constrained_edges)
+    return nothing
+end
+
+function sort_edge_vector(E)
+    sorted_E = similar(E)
+    for i in eachindex(E)
+        u, v = E[i]
+        e = (min(u, v), max(u, v))
+        sorted_E[i] = e
+    end
+    return sort(sorted_E)
+end
+
+function compare_edge_vectors(E1, E2)
+    E1s = sort_edge_vector(collect(E1))
+    E2s = sort_edge_vector(collect(E2))
+    return E1s == E2s
+end
+
+function test_segment_triangle_intersections(tri, edge, true_triangles, true_collinear_segments, current_constrained_edges)
+    constrained_edges = get_constrained_edges(tri)
+    for edge in ((edge[1], edge[2]), (edge[2], edge[1]))
+        intersecting_triangles1, collinear_segments1, left1, right1 = DT.locate_intersecting_triangles(tri, edge)
+        intersecting_triangles2, collinear_segments2, left2, right2 = DT.locate_intersecting_triangles(
+            edge,
+            get_points(tri),
+            get_adjacent(tri),
+            get_adjacent2vertex(tri),
+            get_graph(tri),
+            get_boundary_index_ranges(tri),
+            DT.get_representative_point_list(tri),
+            get_boundary_map(tri),
+            NTuple{3,Int64},
+        )
+        for (intersecting_triangles, collinear_segments) in zip(
+            (intersecting_triangles1, intersecting_triangles2),
+            (collinear_segments1, collinear_segments2)
+        )
+            @test all(T -> DT.is_positively_oriented(DT.triangle_orientation(tri, T)), intersecting_triangles)
+            @test all(!DT.is_none, [DT.triangle_line_segment_intersection(tri, T, edge) for T in intersecting_triangles])
+            if typeof(true_triangles) <: AbstractVector || typeof(true_triangles) <: AbstractSet
+                @test DT.compare_triangle_collections(true_triangles, intersecting_triangles)
+            else
+                @test any(V -> DT.compare_triangle_collections(intersecting_triangles, V), true_triangles)
+            end
+            @test allunique(intersecting_triangles)
+            if typeof(true_collinear_segments) <: AbstractVector || typeof(true_collinear_segments) <: AbstractSet
+                @test collinear_segments == true_collinear_segments
+            else # Tuple of possibilities, in case the edge's endpoints have equal degree so that we could start at any point
+                @test any(==(collinear_segments), true_collinear_segments)
+            end
+        end
+    end
+    constrained_edges = get_constrained_edges(tri)
+    DT.add_edge!(constrained_edges, edge)
+    _, collinear_segments = DT.locate_intersecting_triangles(tri, edge)
+    DT.split_constrained_edge!(tri, edge, collinear_segments)
+    !isnothing(current_constrained_edges) && @test compare_edge_vectors(constrained_edges, current_constrained_edges)
+end
+
+function get_random_vertices_and_constrained_edges(nverts1, nverts2, nedges, rng=Random.default_rng())
+    ## To generate a random set of constrained edges, we get a random small triangulation, 
+    ## and we just take the edges from that triangulation.
+    points = [Tuple(rand(rng, 2)) for _ in 1:nverts1]
+    tri = triangulate(points; rng)
+    edges = Set{NTuple{2,Int64}}()
+    all_edges = collect(each_solid_edge(tri))
+    iter = 0
+    while length(edges) < nedges && iter < 10000
+        S = DT.random_edge(all_edges, rng)
+        push!(edges, S)
+        iter += 1
+    end
+    ## Now get the rest of the points 
+    append!(points, [Tuple(rand(rng, 2)) for _ in 1:(nverts2-nverts1)])
+    return points, edges, vec(hcat(getindex.(edges, 1), getindex.(edges, 2))')
+end
+
+function second_shewchuk_example_constrained()
+    p1 = [0.0, 0.0]
+    p2 = [0.0, 20.0]
+    p3 = [30.0, 0.0]
+    p4 = [30.0, 20.0]
+    p5 = [2.0, 16.0]
+    p6 = [2.0, 6.0]
+    p7 = [4.0, 12.0]
+    p8 = [4.0, 2.0]
+    p9 = [6.0, 14.0]
+    p10 = [6.0, 18.0]
+    p11 = [8.0, 12.0]
+    p12 = [8.0, 4.0]
+    p13 = [10.0, 18.0]
+    p14 = [10.0, 2.0]
+    p15 = [14.0, 16.0]
+    p16 = [18.0, 16.0]
+    p17 = [18.0, 4.0]
+    p18 = [14.0, 4.0]
+    p19 = [12.0, 16.0]
+    p20 = [12.0, 2.0]
+    p21 = [22.0, 18.0]
+    p22 = [22.0, 12.0]
+    p23 = [22.0, 10.0]
+    p24 = [22.0, 4.0]
+    p25 = [26.0, 0.0]
+    p26 = [26.0, 16.0]
+    p27 = [28.0, 18.0]
+    p28 = [28.0, 4.0]
+    C = [
+        (1, 3),
+        (3, 4),
+        (4, 2),
+        (2, 1),
+        (5, 6),
+        (7, 8),
+        (10, 9),
+        (11, 12),
+        (13, 14),
+        (15, 16),
+        (17, 18),
+        (19, 20),
+        (21, 22),
+        (23, 24),
+        (25, 26),
+        (27, 28)
+    ]
+    pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12,
+        p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24,
+        p25, p26, p27, p28]
+    return pts, Set(C)
+end
+
+function example_for_testing_add_point_on_constrained_triangulation()
+    A = [0; 3]
+    B = [4; 0]
+    C = [7; 6]
+    D = [-4; 8]
+    E = [-2; 5]
+    F = [-3; -2]
+    G = [6; -4]
+    H = [4; 4]
+    I = [3; 7]
+    J = [-3; 3]
+    K = [1; 1]
+    L = [5; 3]
+    M = [2; 2]
+    N = [1.6; 2]
+    P = [A, B, C, D, E, F, G, H, I, J, K, L, M, N]
+    return P, Set([(1, 2)])
 end

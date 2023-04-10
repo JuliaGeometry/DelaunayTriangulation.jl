@@ -83,18 +83,13 @@ calls [`getpoint`](@ref) - you do not need to
 extend this method. 
 """
 function get_point end
-function get_point(pts::P, i) where {P}
-    return getpoint(pts, i)
-end
-#function get_point(pts::P, i1, i2::Vararg{Any, N}) where {P,I,N} # need to split into two args to disambiguate with the method below
-#    return (get_point(pts, i1), ntuple(j -> get_point(pts, i2[j]), Val(N))...)
-#end
+get_point(pts::P, i) where {P} = getpoint(pts, i)
 function get_point(pts::P, i::Vararg{Any,N}) where {P,N}
     return ntuple(j -> get_point(pts, i[j]), Val(N))
 end
 
 """
-    get_point(pts::P, boundary_map, i...)
+    get_point(pts::P, representative_point_list, boundary_map, i...)
 
 Given points `pts`, a boundary map from [`construct_boundary_map`](@ref) that 
 maps boundary indices to their corresponding curve, and some indices `i...`, returns 
@@ -108,23 +103,23 @@ In the single `i` case, if it is not an integer then we simply return
 `(getx(i), gety(i))`, assuming that it is supposed to represent a single point.
 
 If `is_boundary_index(i)`, then instead of returning the `i`th point, 
-the centroid for the boundary curve corresponding to the 
-boundary index `i` is returned. See also [`get_representative_point_coordinates`](@ref).
+the representative point for the boundary curve corresponding to the 
+boundary index `i` is returned, using the `representative_point_list` argument.
+See also [`get_representative_point_coordinates`](@ref).
 """
-function get_point(pts::P, boundary_map::AbstractDict, i::I) where {P,I<:Integer}
+function get_point(pts::P, representative_point_list::AbstractDict, boundary_map::AbstractDict, i::I) where {P,I<:Integer}
     if !is_boundary_index(i)
         return get_point(pts, i)
     elseif i == I(DefaultAdjacentValue)
         throw(BoundsError(pts, I(DefaultAdjacentValue)))
     else
-        F = number_type(pts)
         curve_index = get_curve_index(boundary_map, i)
-        return get_representative_point_coordinates(curve_index, F)
+        return get_representative_point_coordinates(representative_point_list, curve_index)
     end
 end
-get_point(::P, ::AbstractDict, i) where {P} = (getx(i), gety(i))
-function get_point(pts::P, boundary_map::AbstractDict, i::Vararg{Any,N}) where {P,N}
-    return ntuple(j -> get_point(pts, boundary_map, i[j]), Val(N))
+get_point(::P, ::AbstractDict, ::AbstractDict, i) where {P} = (getx(i), gety(i))
+function get_point(pts::P, representative_point_list::AbstractDict, boundary_map::AbstractDict, i::Vararg{Any,N}) where {P,N}
+    return ntuple(j -> get_point(pts, representative_point_list, boundary_map, i[j]), N)
 end
 
 """
@@ -210,3 +205,26 @@ points `pts`.
 """
 function lexicographic_order end
 lexicographic_order(pts) = (sortperm ∘ collect ∘ each_point)(pts)
+
+"""
+    push_point!(pts, x, y)
+
+Pushes the point `(x, y)` into `pts`. The only methods currently 
+defined are  
+
+    push_point!(pts::AbstractVector{T}, x, y) where {F,T<:NTuple{2,F}} = push!(pts, (F(x), F(y)))
+    push_point!(pts::AbstractVector{T}, x, y) where {F<:Number,T<:AbstractVector{F}} = push!(pts, F[x, y])
+
+You can extend this function as needed. We also provide the method 
+
+    push_point!(pts, p) = push_point!(pts, getx(p), gety(p))
+
+which you can extend if you have a point type `p` that has `getx` and `gety`.
+"""
+function push_point! end
+function push_point!(::P, ::Any, ::Any) where {P}
+    return error("The push_point! function has not been defined for the collection type $P.")
+end
+push_point!(pts::AbstractVector{T}, x, y) where {F,T<:NTuple{2,F}} = push!(pts, (F(x), F(y)))
+push_point!(pts::AbstractVector{T}, x, y) where {F<:Number,T<:AbstractVector{F}} = push!(pts, F[x, y])
+push_point!(pts, p) = push_point!(pts, getx(p), gety(p))

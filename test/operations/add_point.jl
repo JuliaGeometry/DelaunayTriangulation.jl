@@ -12,7 +12,7 @@ rng = StableRNG(8888)
     tri = DT.initialise_bowyer_watson(pts)
     for i in setdiff(each_point_index(pts), get_vertices(tri))
         add_point!(tri, i)
-        validate_triangulation(tri)
+        @test validate_triangulation(tri)
     end
     convex_hull!(tri; reconstruct=false)
     delete_ghost_triangles!(tri)
@@ -25,3 +25,4 @@ rng = StableRNG(8888)
     @test get_graph(tri) == get_graph(_tri)
     @test get_convex_hull(tri) == get_convex_hull(_tri)
 end
+

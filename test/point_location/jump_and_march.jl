@@ -10,6 +10,7 @@ include("../helper_functions.jl")
 tri, label_map, index_map = simple_geometry()
 add_ghost_triangles!(tri)
 DT.compute_representative_points!(tri)
+rep = DT.get_representative_point_list(tri)
 pts = get_points(tri)
 adj = get_adjacent(tri)
 adj2v = get_adjacent2vertex(tri)
@@ -61,16 +62,16 @@ boundary_nodes = get_boundary_nodes(tri)
     for _ in 1:36
         for k in each_point_index(pts)
             for i in eachindex(allq)
-                T1 = jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges, boundary_map,
+                T1 = jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges, rep, boundary_map,
                     allq[i]; k)
-                T2 = jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges, boundary_map,
+                T2 = jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges, rep, boundary_map,
                     allq[i])
                 @test DT.is_positively_oriented(DT.triangle_orientation(tri, T1))
                 @test DT.is_positively_oriented(DT.triangle_orientation(tri, T2))
                 @inferred jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges,
-                    boundary_map, allq[i]; k)
+                    rep, boundary_map, allq[i]; k)
                 @inferred jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges,
-                    boundary_map, allq[i])
+                    rep, boundary_map, allq[i])
                 for V in [T1, T2]
                     if length(allV[i]) == 1
                         @test DT.compare_triangles(V, allV[i][1]) &&
@@ -99,14 +100,14 @@ boundary_nodes = get_boundary_nodes(tri)
     end
 end
 
-DT.RepresentativePointList[1].x = 10.0
-DT.RepresentativePointList[1].y = 10.0
+rep[1].x = 10.0
+rep[1].y = 10.0
 _pts = tri.points[[12, 11, 10, 9]]
-DT.RepresentativePointList[2].x = mean([8.0, 8.0, 4.0, 4.0])
-DT.RepresentativePointList[2].y = mean([16.0, 6.0, 6.0, 16.0])
+rep[2].x = mean([8.0, 8.0, 4.0, 4.0])
+rep[2].y = mean([16.0, 6.0, 6.0, 16.0])
 _pts = tri.points[[18, 17, 16, 15, 14, 13]]
-DT.RepresentativePointList[3].x = mean([18.0, 18.0, 14.0, 12.0, 14.0, 14.0])
-DT.RepresentativePointList[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
+rep[3].x = mean([18.0, 18.0, 14.0, 12.0, 14.0, 14.0])
+rep[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
 
 @testset "Tests with different types of triangulations" begin
     x, y = complicated_geometry()
@@ -119,16 +120,17 @@ DT.RepresentativePointList[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
 
     for tri in (tri, tri2, tri3)
         DT.compute_representative_points!(tri)
+        rep = DT.get_representative_point_list(tri)
         if !(tri === tri2 || tri === tri3)
             local _pts
-            DT.RepresentativePointList[1].x = 10.0
-            DT.RepresentativePointList[1].y = 10.0
+            rep[1].x = 10.0
+            rep[1].y = 10.0
             _pts = tri.points[[12, 11, 10, 9]]
-            DT.RepresentativePointList[2].x = mean([8.0, 8.0, 4.0, 4.0])
-            DT.RepresentativePointList[2].y = mean([16.0, 6.0, 6.0, 16.0])
+            rep[2].x = mean([8.0, 8.0, 4.0, 4.0])
+            rep[2].y = mean([16.0, 6.0, 6.0, 16.0])
             _pts = tri.points[[18, 17, 16, 15, 14, 13]]
-            DT.RepresentativePointList[3].x = mean([18.0, 18.0, 14.0, 12.0, 14.0, 14.0])
-            DT.RepresentativePointList[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
+            rep[3].x = mean([18.0, 18.0, 14.0, 12.0, 14.0, 14.0])
+            rep[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
         end
 
         @testset "Test that we can find a point in every triangle" begin
@@ -136,13 +138,13 @@ DT.RepresentativePointList[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
                 for V in each_triangle(tri.triangles)
                     if !DT.is_outer_ghost_triangle(indices(V)..., tri.boundary_map)
                         i, j, k = indices(V)
-                        p, q, r = get_point(tri.points, tri.boundary_map, i, j, k)
+                        p, q, r = get_point(tri.points, tri.representative_point_list, tri.boundary_map, i, j, k)
                         local c
                         c = (p .+ q .+ r) ./ 3
                         for k in each_point_index(tri.points)
                             _V1 = jump_and_march(tri.points, tri.adjacent, tri.adjacent2vertex,
                                 tri.graph, tri.boundary_index_ranges,
-                                tri.boundary_map, c; k)
+                                tri.representative_point_list, tri.boundary_map, c; k)
                             _V2 = jump_and_march(tri, c; k)
                             for _V in [_V1, _V2]
                                 @test DT.is_positively_oriented(DT.triangle_orientation(tri, _V))
@@ -184,7 +186,7 @@ DT.RepresentativePointList[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
                         for j in each_point_index(tri.points)
                             _V1 = jump_and_march(tri, get_point(tri, k); k=j)
                             _V2 = jump_and_march(tri.points, tri.adjacent, tri.adjacent2vertex,
-                                tri.graph, tri.boundary_index_ranges, tri.boundary_map,
+                                tri.graph, tri.boundary_index_ranges, tri.representative_point_list, tri.boundary_map,
                                 get_point(tri.points, k))
                             for _V in [_V1, _V2]
                                 @test k ∈ indices(_V)
@@ -203,7 +205,7 @@ DT.RepresentativePointList[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
                     for k in each_point_index(tri.points)
                         _V1 = jump_and_march(tri, q; k)
                         _V2 = jump_and_march(tri.points, tri.adjacent, tri.adjacent2vertex, tri.graph,
-                            tri.boundary_index_ranges, tri.boundary_map, q)
+                            tri.boundary_index_ranges, tri.representative_point_list, tri.boundary_map, q)
                         @test DT.is_inside(DT.point_position_relative_to_triangle(tri, _V1, q))
                         @test DT.is_inside(DT.point_position_relative_to_triangle(tri, _V2, q))
                     end
@@ -237,3 +239,35 @@ end
         end
     end
 end
+
+@testset "History structure" begin
+    history = DT.PointLocationHistory{NTuple{3,Int64},NTuple{2,Int64},Int64}()
+    @test history.triangles == NTuple{3,Int64}[]
+    @test history.collinear_segments == NTuple{2,Int64}[]
+    @test history.left_vertices == Int64[]
+    @test history.right_vertices == Int64[]
+    @test history.collinear_point_indices == Int64[]
+    DT.add_triangle!(history, 2, 3, 4)
+    DT.add_edge!(history, 7, 14)
+    DT.add_left_vertex!(history, 10)
+    DT.add_right_vertex!(history, 20)
+    @test history.triangles == [(2, 3, 4)]
+    @test history.collinear_segments == [(7, 14)]
+    @test num_edges(history) == 1
+    @test history.left_vertices == [10]
+    @test history.right_vertices == [20]
+    DT.add_left_vertex!(history, 17)
+    DT.add_right_vertex!(history, 12)
+    DT.add_left_vertex!(history, 19)
+    DT.add_right_vertex!(history, 29)
+    @test history.left_vertices == [10, 17, 19]
+    @test history.right_vertices == [20, 12, 29]
+    add_edge!(history, 37, 23)
+    add_edge!(history, 50, 101)
+    @test num_edges(history) == 3
+    DT.add_index!(history, 2)
+    DT.add_index!(history, 7)
+    DT.add_index!(history, 13)
+    @test history.collinear_point_indices == [2, 7, 13]
+end
+

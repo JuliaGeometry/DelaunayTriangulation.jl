@@ -14,12 +14,12 @@ include("./helper_functions.jl")
 end
 
 @testset "number_type" begin
-      @test number_type([1, 2, 3]) == Int64
-      @test number_type([1.0, 2.0, 3.0]) == Float64
-      @test number_type([1.0 2.0; 3.0 3.5; 10.0 17.3]) == Float64
-      @test number_type((1.0, 5.0)) == Float64
-      @test number_type([(1.0f0, 2.0f0), (1.7f0, 2.5f0)]) == Float32
-      @test number_type(2.4) == Float64
+      @test DT.number_type([1, 2, 3]) == Int64
+      @test DT.number_type([1.0, 2.0, 3.0]) == Float64
+      @test DT.number_type([1.0 2.0; 3.0 3.5; 10.0 17.3]) == Float64
+      @test DT.number_type((1.0, 5.0)) == Float64
+      @test DT.number_type([(1.0f0, 2.0f0), (1.7f0, 2.5f0)]) == Float32
+      @test DT.number_type(2.4) == Float64
 end
 
 @testset "get_boundary_index" begin
@@ -209,7 +209,7 @@ end
             @test DT.circular_equality(x, y) && DT.circular_equality(y, x)
       end
       @test DT.circular_equality([3, 2, 1, 13, 12, 11, 5, 4, 3], [1, 13, 12, 11, 5, 4, 3, 2, 1])
-      @test DT.circular_equality([],[])
+      @test DT.circular_equality([], [])
 end
 
 @testset "get_surrounding_polygon" begin
@@ -344,4 +344,324 @@ end
                   @test DT.circular_equality(_S, fnc_polys[k])
             end
       end
+end
+
+@testset "sort_edge_by_degree" begin
+      tri = triangulate(rand(2, 500); delete_ghosts=false)
+      graph = get_graph(tri)
+      for e in DT.get_edges(graph)
+            new_e = DT.sort_edge_by_degree(e, graph)
+            d1 = DT.num_neighbours(graph, e[1])
+            d2 = DT.num_neighbours(graph, e[2])
+            if d1 ≤ d2
+                  @test new_e == e
+            else
+                  @test new_e == (e[2], e[1])
+            end
+      end
+end
+
+@testset "split_constrained_edge!" begin
+      constrained_edges = Set{NTuple{2,Int64}}(((2, 7),))
+      DT.split_constrained_edge!(constrained_edges, (2, 7), [])
+      @test constrained_edges == Set{NTuple{2,Int64}}(((2, 7),))
+      DT.split_constrained_edge!(constrained_edges, (2, 7), [(2, 3), (3, 5), (10, 12)])
+      @test constrained_edges == Set{NTuple{2,Int64}}(((2, 3), (3, 5), (10, 12)))
+      DT.split_constrained_edge!(constrained_edges, (2, 7), [])
+      @test constrained_edges == Set{NTuple{2,Int64}}(((2, 3), (3, 5), (10, 12)))
+      DT.split_constrained_edge!(constrained_edges, (3, 5), [(2, 10), (11, 15), (2, 3)])
+      @test constrained_edges == Set{NTuple{2,Int64}}(((2, 3), (2, 10), (11, 15), (10, 12)))
+      DT.split_constrained_edge!(constrained_edges, (3, 2), [])
+      @test constrained_edges == Set{NTuple{2,Int64}}(((2, 3), (2, 10), (11, 15), (10, 12)))
+      DT.split_constrained_edge!(constrained_edges, (3, 2), [(10, 2), (23, 10)])
+      @test constrained_edges == Set{NTuple{2,Int64}}(((11, 15), (10, 12), (23, 10), (2, 10)))
+end
+
+@testset "connect_segments!" begin
+      C = [(7, 12), (12, 17), (17, 22), (32, 37), (37, 42), (42, 47)]
+      DT.connect_segments!(C)
+      @test C == [(7, 12), (12, 17), (17, 22), (22, 32), (32, 37), (37, 42), (42, 47)]
+      C = [(4, 9), (19, 24), (24, 29), (34, 39), (39, 44), (44, 49)]
+      DT.connect_segments!(C)
+      @test C == [(4, 9), (9, 19), (19, 24), (24, 29), (29, 34), (34, 39), (39, 44), (44, 49)]
+      C = [(4, 9), (9, 5)]
+      DT.connect_segments!(C)
+      @test C == [(4, 9), (9, 5)]
+      C = [(49, 44), (44, 39), (39, 34), (29, 24), (24, 19), (9, 4)]
+      DT.connect_segments!(C)
+      @test C == [(49, 44), (44, 39), (39, 34), (34, 29), (29, 24), (24, 19), (19, 9), (9, 4)]
+end
+
+@testset "extend_segments!" begin
+      segments = [(7, 12), (12, 17), (17, 22), (22, 27)]
+      constrained_edge = (7, 27)
+      DT.extend_segments!(segments, constrained_edge)
+      @test segments == [(7, 12), (12, 17), (17, 22), (22, 27)]
+      constrained_edge = (2, 32)
+      DT.extend_segments!(segments, constrained_edge)
+      @test segments == [(2, 7), (7, 12), (12, 17), (17, 22), (22, 27), (27, 32)]
+      segments = [(33, 29)]
+      constrained_edge = (37, 29)
+      DT.extend_segments!(segments, constrained_edge)
+      @test segments == [(37, 33), (33, 29)]
+      segments = [(29, 33)]
+      constrained_edge = (29, 37)
+      DT.extend_segments!(segments, constrained_edge)
+      @test segments == [(29, 33), (33, 37)]
+      segments = [(3, 25), (25, 1)]
+      DT.extend_segments!(segments, (3, 1))
+      @test segments == [(3, 25), (25, 1)]
+end
+
+@testset "convert_boundary_points_to_indices" begin
+      tri = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5; add_ghost_triangles=false)
+      elements, nodes, bn = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5; convert_result=false)
+      x = [getx(get_point(tri, i)) for i in 1:num_points(tri)]
+      y = [gety(get_point(tri, i)) for i in 1:num_points(tri)]
+      @test_throws AssertionError convert_boundary_points_to_indices(x, y)
+      push!(x, x[begin])
+      push!(y, y[begin])
+      nodes, _pts = convert_boundary_points_to_indices(x, y)
+      @test nodes == [collect(1:30)..., 1]
+      @test _pts == [(x, y) for (x, y) in zip(x[begin:end-1], y[begin:end-1])]
+      existing_points = [(1.0, 3.0), (5.0, 17.3), (13.0, 15.5), (23.0, 25.0)]
+      nodes, _pts = convert_boundary_points_to_indices(x, y; existing_points)
+      @test nodes == [collect(5:34)..., 5]
+      @test existing_points == _pts == append!(
+                  [(1.0, 3.0), (5.0, 17.3), (13.0, 15.5), (23.0, 25.0)],
+                  zip(x[begin:end-1], y[begin:end-1]))
+      nodes, _pts = convert_boundary_points_to_indices([[get_point(tri, i) for i in 1:num_points(tri)]..., get_point(tri, 1)])
+      @test nodes == [collect(1:30)..., 1]
+      @test _pts == [(x, y) for (x, y) in zip(x[begin:end-1], y[begin:end-1])]
+      existing_points = [(1.0, 3.0), (5.0, 17.3), (13.0, 15.5), (23.0, 25.0)]
+      nodes, _pts = convert_boundary_points_to_indices(x, y; existing_points)
+      @test nodes == [collect(5:34)..., 5]
+      @test existing_points == _pts == append!(
+                  [(1.0, 3.0), (5.0, 17.3), (13.0, 15.5), (23.0, 25.0)],
+                  zip(x[begin:end-1], y[begin:end-1]))
+
+      x = [[1.0, 2.0, 3.0, 4.0, 5.0], [5.0, 6.0, 7.0, 8.0], [8.0, 13.0, 15.0, 1.0]]
+      y = [[0.0, 2.5, 3.0, 9.0, 7.0], [7.0, 9.0, 2.0, 1.0], [1.0, 23.0, 25.0, 0.0]]
+      nodes, _pts = convert_boundary_points_to_indices(x, y)
+      @test nodes == [[1, 2, 3, 4, 5], [5, 6, 7, 8], [8, 9, 10, 1]]
+      @test _pts == [(1.0, 0.0), (2.0, 2.5), (3.0, 3.0), (4.0, 9.0), (5.0, 7.0), (6.0, 9.0),
+            (7.0, 2.0), (8.0, 1.0), (13.0, 23.0), (15.0, 25.0)]
+      existing_points = [(1.0, 3.0), (15.0, 17.3), (9.3, 2.5), (11.0, 29.0), (35.0, -5.0)]
+      nodes, _pts = convert_boundary_points_to_indices(x, y; existing_points)
+      @test nodes == [[1, 2, 3, 4, 5] .+ 5, [5, 6, 7, 8] .+ 5, [8, 9, 10, 1] .+ 5]
+      @test _pts == existing_points == append!(
+                  [(1.0, 3.0), (15.0, 17.3), (9.3, 2.5), (11.0, 29.0), (35.0, -5.0)],
+                  [(1.0, 0.0), (2.0, 2.5), (3.0, 3.0), (4.0, 9.0), (5.0, 7.0), (6.0, 9.0),
+                        (7.0, 2.0), (8.0, 1.0), (13.0, 23.0), (15.0, 25.0)]
+            )
+      nodes, _pts = convert_boundary_points_to_indices([[(1.0, 0.0), (2.0, 2.5), (3.0, 3.0), (4.0, 9.0), (5.0, 7.0)],
+            [(5.0, 7.0), (6.0, 9.0), (7.0, 2.0), (8.0, 1.0)], [(8.0, 1.0), (13.0, 23.0), (15.0, 25.0), (1.0, 0.0)]])
+      @test nodes == [[1, 2, 3, 4, 5], [5, 6, 7, 8], [8, 9, 10, 1]]
+      @test _pts == [(1.0, 0.0), (2.0, 2.5), (3.0, 3.0), (4.0, 9.0), (5.0, 7.0), (6.0, 9.0),
+            (7.0, 2.0), (8.0, 1.0), (13.0, 23.0), (15.0, 25.0)]
+      existing_points = [(1.0, 3.0), (15.0, 17.3), (9.3, 2.5), (11.0, 29.0), (35.0, -5.0)]
+      nodes, _pts = convert_boundary_points_to_indices(x, y; existing_points)
+      @test nodes == [[1, 2, 3, 4, 5] .+ 5, [5, 6, 7, 8] .+ 5, [8, 9, 10, 1] .+ 5]
+      @test _pts == existing_points == append!(
+                  [(1.0, 3.0), (15.0, 17.3), (9.3, 2.5), (11.0, 29.0), (35.0, -5.0)],
+                  [(1.0, 0.0), (2.0, 2.5), (3.0, 3.0), (4.0, 9.0), (5.0, 7.0), (6.0, 9.0),
+                        (7.0, 2.0), (8.0, 1.0), (13.0, 23.0), (15.0, 25.0)]
+            )
+
+      x1 = [[1.0, 2.0, 3.0], [3.0, 4.0, 5.5, 6.7], [6.7, 2.0, 1.0]]
+      y1 = [[2.0, 2.5, 3.5], [3.5, 4.5, 7.7, 9.9], [9.9, 1.1, 2.0]]
+      x2 = [[1.0, 1.2, 1.3, 1.4, 1.5, 1.0]]
+      y2 = [[2.5, 2.7, 9.9, 2.0, 3.5, 2.5]]
+      x3 = [[9.5, 13.7, 3.3], [3.3, 5.5, 9.5]]
+      y3 = [[2.5, 11.7, 3.9], [3.9, 1.0, 2.5]]
+      x = [x1, x2, x3]
+      y = [y1, y2, y3]
+      nodes, _pts = convert_boundary_points_to_indices(x, y)
+      node1 = [[1, 2, 3], [3, 4, 5, 6], [6, 7, 1]]
+      node2 = [[8, 9, 10, 11, 12, 8]]
+      node3 = [[13, 14, 15], [15, 16, 13]]
+      @test nodes == [node1, node2, node3]
+      @test _pts == [(1.0, 2.0), (2.0, 2.5), (3.0, 3.5), (4.0, 4.5), (5.5, 7.7),
+            (6.7, 9.9), (2.0, 1.1), (1.0, 2.5), (1.2, 2.7), (1.3, 9.9), (1.4, 2.0), (1.5, 3.5),
+            (9.5, 2.5), (13.7, 11.7), (3.3, 3.9), (5.5, 1.0)]
+      existing_points = [(1.0, 3.0), (3.5, 5.5), (13.7, 25.0), (19.0, 37.3), (100.0, 100.0), (10.3, 5.5)]
+      nodes, _pts = convert_boundary_points_to_indices(x, y; existing_points)
+      node1 = [[1, 2, 3] .+ 6, [3, 4, 5, 6] .+ 6, [6, 7, 1] .+ 6]
+      node2 = [[8, 9, 10, 11, 12, 8] .+ 6]
+      node3 = [[13, 14, 15] .+ 6, [15, 16, 13] .+ 6]
+      @test nodes == [node1, node2, node3]
+      @test _pts == append!(
+            existing_points,
+            [(1.0, 2.0), (2.0, 2.5), (3.0, 3.5), (4.0, 4.5), (5.5, 7.7),
+                  (6.7, 9.9), (2.0, 1.1), (1.0, 2.5), (1.2, 2.7), (1.3, 9.9), (1.4, 2.0), (1.5, 3.5),
+                  (9.5, 2.5), (13.7, 11.7), (3.3, 3.9), (5.5, 1.0)]
+      )
+      xy1 = [[(1.0, 2.0), (2.0, 2.5), (3.0, 3.5)], [(3.0, 3.5), (4.0, 4.5), (5.5, 7.7), (6.7, 9.9)], [(6.7, 9.9), (2.0, 1.1), (1.0, 2.0)]]
+      xy2 = [[(1.0, 2.5), (1.2, 2.7), (1.3, 9.9), (1.4, 2.0), (1.5, 3.5), (1.0, 2.5)]]
+      xy3 = [[(9.5, 2.5), (13.7, 11.7), (3.3, 3.9)], [(3.3, 3.9), (5.5, 1.0), (9.5, 2.5)]]
+      xy = [xy1, xy2, xy3]
+      nodes, _pts = convert_boundary_points_to_indices(xy)
+      node1 = [[1, 2, 3], [3, 4, 5, 6], [6, 7, 1]]
+      node2 = [[8, 9, 10, 11, 12, 8]]
+      node3 = [[13, 14, 15], [15, 16, 13]]
+      @test nodes == [node1, node2, node3]
+      @test _pts == [(1.0, 2.0), (2.0, 2.5), (3.0, 3.5), (4.0, 4.5), (5.5, 7.7),
+            (6.7, 9.9), (2.0, 1.1), (1.0, 2.5), (1.2, 2.7), (1.3, 9.9), (1.4, 2.0), (1.5, 3.5),
+            (9.5, 2.5), (13.7, 11.7), (3.3, 3.9), (5.5, 1.0)]
+      existing_points = [(1.0, 3.0), (3.5, 5.5), (13.7, 25.0), (19.0, 37.3), (100.0, 100.0), (10.3, 5.5)]
+      nodes, _pts = convert_boundary_points_to_indices(xy; existing_points)
+      node1 = [[1, 2, 3] .+ 6, [3, 4, 5, 6] .+ 6, [6, 7, 1] .+ 6]
+      node2 = [[8, 9, 10, 11, 12, 8] .+ 6]
+      node3 = [[13, 14, 15] .+ 6, [15, 16, 13] .+ 6]
+      @test nodes == [node1, node2, node3]
+      @test _pts == append!(
+            existing_points,
+            [(1.0, 2.0), (2.0, 2.5), (3.0, 3.5), (4.0, 4.5), (5.5, 7.7),
+                  (6.7, 9.9), (2.0, 1.1), (1.0, 2.5), (1.2, 2.7), (1.3, 9.9), (1.4, 2.0), (1.5, 3.5),
+                  (9.5, 2.5), (13.7, 11.7), (3.3, 3.9), (5.5, 1.0)]
+      )
+end
+
+@testset "get_ordinal_suffix" begin
+      @test DT.get_ordinal_suffix.(0:115) == [
+            "th"
+            "st"
+            "nd"
+            "rd"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "st"
+            "nd"
+            "rd"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "st"
+            "nd"
+            "rd"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "st"
+            "nd"
+            "rd"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "st"
+            "nd"
+            "rd"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "st"
+            "nd"
+            "rd"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "st"
+            "nd"
+            "rd"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "st"
+            "nd"
+            "rd"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "st"
+            "nd"
+            "rd"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "st"
+            "nd"
+            "rd"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+            "th"
+      ]
+end
+
+@testset "fix_segment!" begin
+      c = [(2, 15), (2, 28), (2, 41), (2, 54)]
+      bad_indices = [1, 2, 3, 4]
+      DT.fix_segments!(c, bad_indices)
+      @test c == [(2, 15), (15, 28), (28, 41), (41, 54)]
+      c = [(2, 15), (15, 28), (28, 41), (2, 54)]
+      bad_indices = [1, 4]
+      DT.fix_segments!(c, bad_indices)
+      @test c == [(2, 15), (15, 28), (28, 41), (41, 54)]
+      c = [(2, 15), (15, 28), (2, 41), (41, 54)]
+      bad_indices = [1, 3]
+      DT.fix_segments!(c, bad_indices)
+      @test c == [(2, 15), (15, 28), (28, 41), (41, 54)]
+      c = [(2, 15), (15, 28), (2, 41), (41, 54)]
+      bad_indices = [3]
+      DT.fix_segments!(c, bad_indices)
+      @test c == [(2, 15), (15, 28), (28, 41), (41, 54)]
+      c = [(2, 7), (2, 12), (12, 17), (2, 22), (2, 27), (2, 32), (32, 37), (2, 42), (42, 47)]
+      bad_indices = [2, 4, 5, 6, 8]
+      DT.fix_segments!(c, bad_indices)
+      @test c == [(2, 7), (7, 12), (12, 17), (17, 22), (22, 27), (27, 32), (32, 37), (37, 42), (42, 47)]
 end

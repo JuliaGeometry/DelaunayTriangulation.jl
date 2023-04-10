@@ -5,8 +5,7 @@ Struct for storing adjacency relationships for mapping edges to vertices that
 together form a positively oriented triangle in an associated triangulation. 
 The type `I` is the integer type used, while `E` is the edge type.
 
-See the docs for a description of how boundary edges 
-are handled.
+See the docs for a description of how boundary edges are handled.
 
 See also [`Adjacent2Vertex`](@ref).
 
@@ -62,6 +61,13 @@ for (edge, vertex) in adj
     get_adjacent(adj, edge) == vertex 
 end
 ```
+
+!!! warning "Multiple boundary segments"
+
+    Note that in the case that you have multiple boundary indices, this iteration 
+    may not be safe the iteration doesn't make use of `get_adjacent`, which 
+    knows how to handle boundary indices properly (if you have just a single 
+    boundary, do not worry).
 """
 struct Adjacent{I,E}
     adjacent::DefaultDict{E,I,I}
@@ -73,9 +79,9 @@ struct Adjacent{I,E}
     Adjacent(adj::DefaultDict{E,I,I}) where {I,E} = new{I,E}(adj)
 end
 Base.:(==)(adj::Adjacent, adj2::Adjacent) = get_adjacent(adj) == get_adjacent(adj2)
-function Base.show(io::IO, m::MIME"text/plain", adj::Adjacent{I, E}) where {I, E}
+function Base.show(io::IO, m::MIME"text/plain", adj::Adjacent{I,E}) where {I,E}
     println(io, "Adjacent{$I, $E}, with map:")
-    show(io,m,get_adjacent(adj))
+    show(io, m, get_adjacent(adj))
 end
 
 """
@@ -89,32 +95,28 @@ get_adjacent(adj::Adjacent) = adj.adjacent
     get_adjacent(adj::Adjacent{I,E}, uv::E; check_existence::V = Val(false), boundary_index_ranges=nothing) where {I,E,V}
     get_adjacent(adj::Adjacent{I,E}, u, v; check_existence::V = Val(false), boundary_index_ranges=nothing) where {I,E,V}
 
-Given the adjacent map `adj` and an edge `(u, v)`, returns the vertex `w`
-such that `(u, v, w)` is a positively oriented triangle in the underlying 
-triangulation.
+Given the adjacent map `adj` and an edge `(u, v)`, returns the vertex `w` 
+such that `(u, v, w)` is a positively oriented triangle in the underlying triangulation.
 
 In the case of a ghost edge, `check_existence = Val(true)` may be useful in case the 
-boundary curve has multiple segments, meaning multiple boundary indices correspond 
-to the same curve. Assuming the boundary index came from a neighbouring triangle, 
-setting `check_existence = Val(true)` will check neighbouring boundary indices 
-in case the found edge does not exist. When `is_true(check_existence)`, you also need
-to provide the range of boundary indices to check via the keyword argument `boundary_index_ranges`. This should be 
-the `Dict` from [`construct_boundary_index_ranges`](@ref).
+boundary curve has multiple segments, meaning multiple boundary indices could correspond 
+to the same same curve. If this is the case, then `boundary_index_ranges` should also be a
+`Dict` from [`construct_boundary_index_ranges`](@ref), so that all possible
+valid boundary indices can be checked.
 """
-function get_adjacent(adj::Adjacent{I,E}, uv::E; check_existence::V=Val(false),
-                      boundary_index_ranges=nothing) where {I,E,V}
-    return (!is_true(check_existence) || !is_ghost_edge(uv)) ? _get_adjacent(adj, uv) :
-           _safe_get_adjacent(adj, uv, boundary_index_ranges)
+function get_adjacent(adj::Adjacent{I,E}, uv::E; check_existence::V=Val(false), boundary_index_ranges=nothing) where {I,E,V}
+    if !is_true(check_existence) || !is_ghost_edge(uv)
+        return _get_adjacent(adj, uv)
+    else
+        return _safe_get_adjacent(adj, uv, boundary_index_ranges)
+    end
 end
-function get_adjacent(adj::Adjacent{I,E}, u, v; check_existence=Val(false),
-                      boundary_index_ranges=nothing) where {I,E}
-    return get_adjacent(adj, construct_edge(E, u, v); check_existence,
-                        boundary_index_ranges)
+function get_adjacent(adj::Adjacent{I,E}, u, v; check_existence=Val(false), boundary_index_ranges=nothing) where {I,E}
+    return get_adjacent(adj, construct_edge(E, u, v); check_existence, boundary_index_ranges)
 end
 
 @inline _get_adjacent(adj::Adjacent{I,E}, uv::E) where {I,E} = get_adjacent(adj)[uv]
-@inline function _safe_get_adjacent(adj::Adjacent{I,E}, uv::E,
-                                    boundary_index_ranges=nothing) where {I,E}
+@inline function _safe_get_adjacent(adj::Adjacent{I,E}, uv::E, boundary_index_ranges=nothing) where {I,E}
     u = initial(uv)
     v = terminal(uv)
     if !edge_exists(u, v, adj)
@@ -177,8 +179,7 @@ adds that triangle into the adjacent map. In particular, adds the edges `(i, j)`
 `(j, k)`, and `(k, i)` into `adj` with corresponding values `k`, `i`, and `j`, 
 respectively.
 """
-function add_triangle!(adj::Ts, i::V, j::V,
-                       k::V) where {I,E,V<:Integer,Ts<:Adjacent{I,E}} # the signature here is just for resolving a method ambiguity
+function add_triangle!(adj::Ts, i::V, j::V, k::V) where {I,E,V<:Integer,Ts<:Adjacent{I,E}} # the signature here is just for resolving a method ambiguity
     for (u, v, w) in ((i, j, k), (j, k, i), (k, i, j))
         add_adjacent!(adj, I(u), I(v), I(w))
     end
@@ -210,8 +211,7 @@ Given an adjacent map `adj` and indices `(i, j, k)` representing some triangle,
 deletes that triangle into the adjacent map. In particular, deletes the edges `(i, j)`,
 `(j, k)`, and `(k, i)` from `adj`.
 """
-function delete_triangle!(adj::Ts, i::V, j::V,
-                          k::V) where {I,E,V<:Integer,Ts<:Adjacent{I,E}}
+function delete_triangle!(adj::Ts, i::V, j::V, k::V) where {I,E,V<:Integer,Ts<:Adjacent{I,E}}
     for (u, v) in triangle_edges(i, j, k)
         delete_adjacent!(adj, u, v)
     end
@@ -238,7 +238,7 @@ end
 
 Base.iterate(adj::Adjacent, state...) = Base.iterate(get_adjacent(adj), state...)
 Base.length(adj::Adjacent) = Base.length(get_adjacent(adj))
-Base.eltype(adj::Type{Adjacent{I,E}}) where {I,E} = Pair{E,I}
+Base.eltype(::Type{Adjacent{I,E}}) where {I,E} = Pair{E,I}
 
 """
     clear_empty_keys!(adj::Adjacent) 

@@ -25,6 +25,7 @@ that define a convex polygon, triangulates it with Chew's algorithm.
 - `TriangleType::Type{V}=NTuple{3,IntegerType}`: The type to use for representing triangles. 
 - `EdgesType::Type{Es}=Set{EdgeType}`: The type to use for representing collections of edges. 
 - `TrianglesType::Type{Ts}=Set{TriangleType}`: The type to use for representing collections of triangles. 
+- `representative_point_list = get_empty_representative_points(IntegerType, number_type(points))`: The representative point list to use.    
 - `rng::AbstractRNG=Random.default_rng()`: The RNG to use.
 - `add_ghost_triangles=true`: Whether to add the ghost triangles at the end of the triangulation. 
 - `add_convex_hull=true`: Whether to populate the convex hull field of `tri` with `S` at the end of the triangulation.
@@ -40,6 +41,7 @@ function triangulate_convex(points, S;
     TriangleType::Type{V}=NTuple{3,IntegerType},
     EdgesType::Type{Es}=Set{EdgeType},
     TrianglesType::Type{Ts}=Set{TriangleType},
+    representative_point_list = get_empty_representative_points(IntegerType, number_type(points)),
     rng::AbstractRNG=Random.default_rng(),
     add_ghost_triangles=true,
     add_convex_hull=true,
@@ -50,7 +52,8 @@ function triangulate_convex(points, S;
         EdgeType,
         TriangleType,
         EdgesType,
-        TrianglesType)
+        TrianglesType,
+        representative_point_list)
     triangulate_convex!(tri, S;
         rng,
         add_ghost_triangles,
