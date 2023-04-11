@@ -174,4 +174,9 @@ export convert_boundary_points_to_indices
 include("polygon_utils.jl")
 
 const polylabel = pole_of_inaccessibility
+
+include("refinement/encroachment.jl")
+include("refinement/quality_assessment.jl")
+include("refinement/refinement_operations.jl")
+
 end

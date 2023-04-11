@@ -5,7 +5,10 @@ add_point!(tri::Triangulation, new_point[, new_point_y];
     try_points=(),
     rng::AbstractRNG=Random.default_rng(),
     initial_search_point=integer_type(tri)(select_initial_point(get_points(tri),new_point;point_indices,m,try_points,rng)),
-    update_representative_point=false)
+    update_representative_point=false,
+    store_event_history = Val(false),
+    event_history = nothing
+    )
 
 Adds the point `new_point` to the triangulation `tri`.
 
@@ -20,19 +23,30 @@ Adds the point `new_point` to the triangulation `tri`.
 - `rng::AbstractRNG=Random.default_rng()`: The random number generator to use.
 - `initial_search_point=integer_type(tri)(select_initial_point(get_points(tri),new_point;point_indices,m,try_points,rng))`: The initial search point to use. If this is not provided, then we use [`select_initial_point`](@ref) to select one.
 - `update_representative_point=false`: Whether to update the representative point list after adding the new point.
+- `store_event_history = Val(false)`: Whether to store the event history. See [`InsertionEventStorage`](@ref).
+- `event_history = nothing`: The event history to store the events in. See [`InsertionEventStorage`](@ref). Only needed if `is_true(store_event_history)`. This object is not returned, instead we just mutate it inplace.
 """
 function add_point!(tri::Triangulation, new_point;
     point_indices=each_solid_vertex(tri),
     m=default_num_samples(length(point_indices)),
     try_points=(),
     rng::AbstractRNG=Random.default_rng(),
-    initial_search_point=integer_type(tri)(select_initial_point(get_points(tri),new_point;point_indices,m,try_points,rng)),
-    update_representative_point=false)
+    initial_search_point=integer_type(tri)(select_initial_point(get_points(tri), new_point; point_indices, m, try_points, rng)),
+    update_representative_point=false,
+    store_event_history=Val(false),
+    event_history=nothing)
     if !(new_point isa Integer)
         push_point!(tri, new_point)
         new_point = num_points(tri)
     end
-    add_point_bowyer_watson!(tri, new_point, initial_search_point, rng, update_representative_point)
+    add_point_bowyer_watson!(
+        tri, 
+        new_point, 
+        initial_search_point, 
+        rng, 
+        update_representative_point, 
+        store_event_history, 
+        event_history)
     return nothing
 end
 
@@ -41,8 +55,20 @@ function add_point!(tri::Triangulation, new_point_x, new_point_y;
     m=default_num_samples(length(point_indices)),
     try_points=(),
     rng::AbstractRNG=Random.default_rng(),
-    initial_search_point=integer_type(tri)(select_initial_point(get_points(tri),(new_point_x, new_point_y); point_indices, m, try_points, rng)),
-    update_representative_point=false)
+    initial_search_point=integer_type(tri)(select_initial_point(get_points(tri), (new_point_x, new_point_y); point_indices, m, try_points, rng)),
+    update_representative_point=false,
+    store_event_history = Val(false),
+    event_history = nothing)
     push_point!(tri, new_point_x, new_point_y)
-    return add_point!(tri, num_points(tri); point_indices=point_indices, m=m, try_points=try_points, rng=rng, initial_search_point=initial_search_point, update_representative_point=update_representative_point)
+    return add_point!(
+        tri, 
+        num_points(tri); 
+        point_indices=point_indices, 
+        m=m, 
+        try_points=try_points, 
+        rng=rng, 
+        initial_search_point=initial_search_point, 
+        update_representative_point=update_representative_point,
+        store_event_history = store_event_history,
+        event_history = event_history)
 end

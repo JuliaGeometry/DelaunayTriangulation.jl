@@ -22,6 +22,9 @@ along with the function that can be used for testing if a given `Certificate` ma
 - `Closer`: `is_closer`
 - `Further`: `is_further`
 - `Equidistant`: `is_equidistant`
+- `Obtuse`: `is_obtuse`
+- `Acute`: `is_acute`
+- `Right`: `is_right`
 """
 EnumX.@enumx Certificate begin
     Inside
@@ -37,11 +40,13 @@ EnumX.@enumx Certificate begin
     Single
     Multiple
     Touching
-    Legal 
+    Legal
     Illegal
-    Closer 
-    Further 
+    Closer
+    Further
     Equidistant
+    Obtuse
+    Acute
 end
 
 for inst in instances(Certificate.T)

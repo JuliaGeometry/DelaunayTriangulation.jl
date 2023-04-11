@@ -645,6 +645,8 @@ end
       tri4 = triangulate_rectangle(0, 1, 0, 1, 50, 50; add_ghost_triangles=true, single_boundary=true)
       all_bn = DT.get_all_boundary_nodes(tri4)
       @test all_bn == Set(reduce(vcat, reduce(vcat, get_boundary_nodes(tri4))))
+      tri = triangulate(rand(2, 50))
+      @test isempty(DT.get_all_boundary_nodes(tri))
 end
 
 @testset "get_boundary_edge_map" begin

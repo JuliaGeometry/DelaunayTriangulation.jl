@@ -197,10 +197,7 @@ for n in fieldnames(IndividualTriangleStatistics)
     end
 end
 
-
 triangle_area(ℓ₁²::Number, ℓ₂²::Number, ℓ₃²::Number) = sqrt(4ℓ₁² * ℓ₂² - (ℓ₁² + ℓ₂² - ℓ₃²)^2) / 4 # Heron's formula
-triangle_sine_minimum_angle(A, ℓmed², ℓmax²) = 2A / sqrt(ℓmed² * ℓmax²)
-triangle_sine_maximum_angle(A, ℓmin², ℓmed²) = 2A / sqrt(ℓmin² * ℓmed²)
 triangle_minimum_angle(sine_minimum_angle) = asin(sine_minimum_angle)
 triangle_maximum_angle(sine_maximum_angle) = asin(sine_maximum_angle)
 triangle_circumradius(A, ℓmin², ℓmed², ℓmax²) = sqrt(ℓmin² * ℓmed² * ℓmax²) / (4A)
@@ -209,6 +206,10 @@ triangle_inradius(A, perimeter) = 2A / perimeter
 triangle_aspect_ratio(inradius::Number, circumradius::Number) = inradius / circumradius
 triangle_radius_edge_ratio(circumradius::Number, ℓmin::Number) = circumradius / ℓmin
 triangle_centroid(p, q, r) = ((getx(p) + getx(q) + getx(r)) / 3, (gety(p) + gety(q) + gety(r)) / 3)
+triangle_sine_minimum_angle_squared(A, ℓmed², ℓmax²) = 4A^2 / (ℓmed² * ℓmax²)
+triangle_sine_maximum_angle_squared(A, ℓmin², ℓmed²) = 4A^2 / (ℓmin² * ℓmed²)
+triangle_sine_minimum_angle(A, ℓmed², ℓmax²) = sqrt(triangle_sine_minimum_angle_squared(A, ℓmed², ℓmax²))
+triangle_sine_maximum_angle(A, ℓmin², ℓmed²) = sqrt(triangle_sine_maximum_angle_squared(A, ℓmin², ℓmed²))
 
 function triangle_area(p, q, r)
     ℓ₁², ℓ₂², ℓ₃² = squared_triangle_lengths(p, q, r)

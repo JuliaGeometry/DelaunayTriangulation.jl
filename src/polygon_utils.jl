@@ -56,7 +56,7 @@ end
 """
     CellQueue{T}
 
-A struct representing the priority queue of [`Cell`](@ref)s, using for sorting the cells in a grid
+A struct representing the priority queue of [`Cell`](@ref)s, used for sorting the cells in a grid
 according to their maximum distance.
 
 # Fields

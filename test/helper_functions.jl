@@ -1199,3 +1199,47 @@ function validate_statistics(tri::Triangulation, stats=statistics(tri))
     @test DT.get_smallest_radius_edge_ratio(stats) ≥ 1 / sqrt(3) - 0.1
     @test DT.get_smallest_angle(stats) ≤ deg2rad(60) + 0.01
 end
+
+function slow_encroachment_test(tri::Triangulation)
+    E = DT.edge_type(tri)
+    I = DT.integer_type(tri)
+    ch = Channel{Pair{E,Tuple{Bool,I}}}(Inf) # https://discourse.julialang.org/t/can-dicts-be-threadsafe/27172/17
+    @sync for i in collect(each_solid_vertex(tri))
+        Base.Threads.@spawn begin
+            @show i
+            for j in each_solid_vertex(tri)
+                if i < j
+                    e = DT.construct_edge(E, i, j)
+                    p, q = get_point(tri, i, j)
+                    r2 = 0.25((getx(p) - getx(q))^2 + (gety(p) - gety(q))^2)
+                    m = (0.5(getx(p) + getx(q)), 0.5(gety(p) + gety(q)))
+                    flag = false
+                    k_flag = 0
+                    for k in each_solid_vertex(tri)
+                        if i == j || i == k || j == k
+                            continue
+                        end
+                        r = get_point(tri, k)
+                        if (getx(r) - getx(m))^2 + (gety(r) - gety(m))^2 ≤ r2
+                            flag = true
+                            k_flag = k
+                            break
+                        end
+                    end
+                    put!(ch, e => (flag, k_flag))
+                end
+            end
+        end
+    end
+    not_in_dt_encroached_edges = Dict{E,Tuple{Bool, I}}()
+    in_dt_encroached_edges = Dict{E,Tuple{Bool,I}}()
+    while !isempty(ch)
+        e, (b, k) = take!(ch)
+        if DT.edge_exists(tri, e) || DT.edge_exists(tri, DT.reverse_edge(e))
+            in_dt_encroached_edges[e] = (b, k)
+        else
+            not_in_dt_encroached_edges[e] = (b, k)
+        end
+    end
+    return in_dt_encroached_edges, not_in_dt_encroached_edges
+end

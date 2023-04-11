@@ -222,12 +222,14 @@ Returns a `Set` of all the boundary nodes in the triangulation `tri`.
 function get_all_boundary_nodes(tri::Triangulation)
     bn_map = get_boundary_map(tri)
     all_nodes = Set{integer_type(tri)}()
-    for segment_index in values(bn_map)
-        bn_nodes = get_boundary_nodes(tri, segment_index)
-        nedges = num_boundary_edges(bn_nodes)
-        for node_idx in 1:(nedges+1)
-            vᵢ = get_boundary_nodes(bn_nodes, node_idx)
-            push!(all_nodes, vᵢ)
+    if has_boundary_nodes(tri)
+        for segment_index in values(bn_map)
+            bn_nodes = get_boundary_nodes(tri, segment_index)
+            nedges = num_boundary_edges(bn_nodes)
+            for node_idx in 1:(nedges+1)
+                vᵢ = get_boundary_nodes(bn_nodes, node_idx)
+                push!(all_nodes, vᵢ)
+            end
         end
     end
     return all_nodes
