@@ -147,7 +147,7 @@ function encroachment_enqueue!(queue::RefinementQueue, e, e_length²)
         end
     elseif reverse_edge(e) ∈ existing_segments
         existing_length² = encroachment_queue[reverse_edge(e)]
-        if e_length² < existing_length²
+        if e_length² > existing_length²
             encroachment_queue[reverse_edge(e)] = e_length²
         end
     else
@@ -165,7 +165,7 @@ function triangle_enqueue!(queue::RefinementQueue, T, ρ)
         enqueue!(triangle_queue, T, ρ)
     else
         existing_ρ = triangle_queue[T]
-        if ρ < existing_ρ
+        if ρ > existing_ρ
             triangle_queue[T] = ρ
         end
     end

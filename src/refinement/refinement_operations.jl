@@ -73,6 +73,13 @@ function Base.empty!(events::InsertionEventHistory)
     return nothing
 end
 
+"""
+    try_circumcenter_insertion!(tri::Triangulation, T, events::InsertionEventHistory, queue::RefinementQueue, rng::AbstractRNG=Random.default_rng())
+
+Attempt to insert a new point into the triangulation at the circumcenter of the triangle `T`. If the insertion causes edges to be encroached, 
+the insertion is undone and the encroached edges are queued for refinement. Otherwise, the insertion is accepted and the new point is added to the 
+triangulation.
+"""
 function try_circumcenter_insertion!(tri::Triangulation, T, events::InsertionEventHistory, queue::RefinementQueue, rng::AbstractRNG=Random.default_rng())
     empty!(events)
     ## Find the circumcenter
@@ -126,7 +133,6 @@ function try_circumcenter_insertion!(tri::Triangulation, T, events::InsertionEve
 
     ## If we found an encroached edge, we need to completely reverse the insertion! Thankfully, our event storage can be used.
     any_encroached && undo_circumcenter_insertion!(tri, events, circumcenter_index)
-
     return any_encroached
 end
 

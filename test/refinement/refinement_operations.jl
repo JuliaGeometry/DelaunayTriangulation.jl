@@ -141,67 +141,66 @@ include("../helper_functions.jl")
     end
 end
 
-curve_1 = [[
-    (0.0, 0.0), (4.0, 0.0), (8.0, 0.0), (12.0, 0.0), (12.0, 4.0),
-    (12.0, 8.0), (14.0, 10.0), (16.0, 12.0), (16.0, 16.0),
-    (14.0, 18.0), (12.0, 20.0), (12.0, 24.0), (12.0, 28.0),
-    (8.0, 28.0), (4.0, 28.0), (0.0, 28.0), (-2.0, 26.0), (0.0, 22.0),
-    (0.0, 18.0), (0.0, 10.0), (0.0, 8.0), (0.0, 4.0), (-4.0, 4.0),
-    (-4.0, 0.0), (0.0, 0.0),
-]]
-curve_2 = [[
-    (4.0, 26.0), (8.0, 26.0), (10.0, 26.0), (10.0, 24.0),
-    (10.0, 22.0), (10.0, 20.0), (8.0, 20.0), (6.0, 20.0),
-    (4.0, 20.0), (4.0, 22.0), (4.0, 24.0), (4.0, 26.0)
-]]
-curve_3 = [[(4.0, 16.0), (12.0, 16.0), (12.0, 14.0), (4.0, 14.0), (4.0, 16.0)]]
-curve_4 = [[(4.0, 8.0), (10.0, 8.0), (8.0, 6.0), (6.0, 6.0), (4.0, 8.0)]]
-curves = [curve_1, curve_2, curve_3, curve_4]
-points = [
-    (2.0, 26.0), (2.0, 24.0), (6.0, 24.0), (6.0, 22.0), (8.0, 24.0), (8.0, 22.0),
-    (2.0, 22.0), (0.0, 26.0), (10.0, 18.0), (8.0, 18.0), (4.0, 18.0), (2.0, 16.0),
-    (2.0, 12.0), (6.0, 12.0), (2.0, 8.0), (2.0, 4.0), (4.0, 2.0),
-    (-2.0, 2.0), (4.0, 6.0), (10.0, 2.0), (10.0, 6.0), (8.0, 10.0), (4.0, 10.0),
-    (10.0, 12.0), (12.0, 12.0), (14.0, 26.0), (16.0, 24.0), (18.0, 28.0),
-    (16.0, 20.0), (18.0, 12.0), (16.0, 8.0), (14.0, 4.0), (14.0, -2.0),
-    (6.0, -2.0), (2.0, -4.0), (-4.0, -2.0), (-2.0, 8.0), (-2.0, 16.0),
-    (-4.0, 22.0), (-4.0, 26.0), (-2.0, 28.0), (6.0, 15.0), (7.0, 15.0),
-    (8.0, 15.0), (9.0, 15.0), (10.0, 15.0), (6.2, 7.8),
-    (5.6, 7.8), (5.6, 7.6), (5.6, 7.4), (6.2, 7.4), (6.0, 7.6),
-    (7.0, 7.8), (7.0, 7.4)]
-boundary_nodes, points = convert_boundary_points_to_indices(curves; existing_points=points)
-uncons_tri = triangulate(points)
-cons_tri = triangulate(points; boundary_nodes=boundary_nodes)
-add_ghost_triangles!(uncons_tri)
-add_ghost_triangles!(cons_tri)
-add_edge!(cons_tri, 16, 1)
-add_edge!(cons_tri, 16, 20)
-add_edge!(uncons_tri, 16, 1)
-add_edge!(uncons_tri, 33, 1)
-tri = cons_tri
-targets = DT.RefinementTargets(; min_angle=30.0)
-queue = DT.initialise_refinement_queue(tri, targets)
-storage = DT.initialise_event_history(tri)
-T = (16, 55, 17)
-stats1 = deepcopy(statistics(tri))
-@test DT.try_circumcenter_insertion!(tri, T, storage, queue)
-stats2 = deepcopy(statistics(tri))
-@test validate_triangulation(tri; check_ghost_triangle_orientation=false, check_ghost_triangle_delaunay=false)
-@test stats1 == stats2
+@testset "Circumcenter insertion" begin
+    curve_1 = [[
+        (0.0, 0.0), (4.0, 0.0), (8.0, 0.0), (12.0, 0.0), (12.0, 4.0),
+        (12.0, 8.0), (14.0, 10.0), (16.0, 12.0), (16.0, 16.0),
+        (14.0, 18.0), (12.0, 20.0), (12.0, 24.0), (12.0, 28.0),
+        (8.0, 28.0), (4.0, 28.0), (0.0, 28.0), (-2.0, 26.0), (0.0, 22.0),
+        (0.0, 18.0), (0.0, 10.0), (0.0, 8.0), (0.0, 4.0), (-4.0, 4.0),
+        (-4.0, 0.0), (0.0, 0.0),
+    ]]
+    curve_2 = [[
+        (4.0, 26.0), (8.0, 26.0), (10.0, 26.0), (10.0, 24.0),
+        (10.0, 22.0), (10.0, 20.0), (8.0, 20.0), (6.0, 20.0),
+        (4.0, 20.0), (4.0, 22.0), (4.0, 24.0), (4.0, 26.0)
+    ]]
+    curve_3 = [[(4.0, 16.0), (12.0, 16.0), (12.0, 14.0), (4.0, 14.0), (4.0, 16.0)]]
+    curve_4 = [[(4.0, 8.0), (10.0, 8.0), (8.0, 6.0), (6.0, 6.0), (4.0, 8.0)]]
+    curves = [curve_1, curve_2, curve_3, curve_4]
+    points = [
+        (2.0, 26.0), (2.0, 24.0), (6.0, 24.0), (6.0, 22.0), (8.0, 24.0), (8.0, 22.0),
+        (2.0, 22.0), (0.0, 26.0), (10.0, 18.0), (8.0, 18.0), (4.0, 18.0), (2.0, 16.0),
+        (2.0, 12.0), (6.0, 12.0), (2.0, 8.0), (2.0, 4.0), (4.0, 2.0),
+        (-2.0, 2.0), (4.0, 6.0), (10.0, 2.0), (10.0, 6.0), (8.0, 10.0), (4.0, 10.0),
+        (10.0, 12.0), (12.0, 12.0), (14.0, 26.0), (16.0, 24.0), (18.0, 28.0),
+        (16.0, 20.0), (18.0, 12.0), (16.0, 8.0), (14.0, 4.0), (14.0, -2.0),
+        (6.0, -2.0), (2.0, -4.0), (-4.0, -2.0), (-2.0, 8.0), (-2.0, 16.0),
+        (-4.0, 22.0), (-4.0, 26.0), (-2.0, 28.0), (6.0, 15.0), (7.0, 15.0),
+        (8.0, 15.0), (9.0, 15.0), (10.0, 15.0), (6.2, 7.8),
+        (5.6, 7.8), (5.6, 7.6), (5.6, 7.4), (6.2, 7.4), (6.0, 7.6),
+        (7.0, 7.8), (7.0, 7.4)]
+    boundary_nodes, points = convert_boundary_points_to_indices(curves; existing_points=points)
+    uncons_tri = triangulate(points)
+    cons_tri = triangulate(points; boundary_nodes=boundary_nodes)
+    add_ghost_triangles!(uncons_tri)
+    add_ghost_triangles!(cons_tri)
+    add_edge!(cons_tri, 16, 1)
+    add_edge!(cons_tri, 16, 20)
+    add_edge!(uncons_tri, 16, 1)
+    add_edge!(uncons_tri, 33, 1)
+    tri = cons_tri
+    targets = DT.RefinementTargets(; min_angle=30.0)
+    queue = DT.initialise_refinement_queue(tri, targets)
+    storage = DT.initialise_event_history(tri)
+    T = (16, 55, 17)
+    stats1 = deepcopy(statistics(tri))
+    @test DT.try_circumcenter_insertion!(tri, T, storage, queue)
+    stats2 = deepcopy(statistics(tri))
+    @test validate_triangulation(tri; check_ghost_triangle_orientation=false, check_ghost_triangle_delaunay=false)
+    @test stats1 == stats2
 
-T = (63, 92, 62)
-stats1 = deepcopy(statistics(tri))
-@test DT.try_circumcenter_insertion!(tri, T, storage, queue)
-stats2 = deepcopy(statistics(tri))
-@test validate_triangulation(tri; check_ghost_triangle_orientation=false, check_ghost_triangle_delaunay=false)
-@test stats1 == stats2
+    T = (63, 92, 62)
+    stats1 = deepcopy(statistics(tri))
+    @test DT.try_circumcenter_insertion!(tri, T, storage, queue)
+    stats2 = deepcopy(statistics(tri))
+    @test validate_triangulation(tri; check_ghost_triangle_orientation=false, check_ghost_triangle_delaunay=false)
+    @test stats1 == stats2
 
-T = (19, 16, 97)
-stats1 = deepcopy(statistics(tri))
-@test DT.try_circumcenter_insertion!(tri, T, storage, queue)
-stats2 = deepcopy(statistics(tri))
-@test validate_triangulation(tri; check_ghost_triangle_orientation=false, check_ghost_triangle_delaunay=false)
-@test stats1 == stats2
-
-empty!(storage)
-add_point!(tri, 5.0, 0.0; store_event_history=Val(true), event_history=storage)
+    T = (19, 16, 97)
+    stats1 = deepcopy(statistics(tri))
+    @test DT.try_circumcenter_insertion!(tri, T, storage, queue)
+    stats2 = deepcopy(statistics(tri))
+    @test validate_triangulation(tri; check_ghost_triangle_orientation=false, check_ghost_triangle_delaunay=false)
+    @test stats1 == stats2
+end
