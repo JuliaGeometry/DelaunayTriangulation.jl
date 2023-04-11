@@ -23,8 +23,8 @@ Adds the point `new_point` to the triangulation `tri`.
 - `rng::AbstractRNG=Random.default_rng()`: The random number generator to use.
 - `initial_search_point=integer_type(tri)(select_initial_point(get_points(tri),new_point;point_indices,m,try_points,rng))`: The initial search point to use. If this is not provided, then we use [`select_initial_point`](@ref) to select one.
 - `update_representative_point=false`: Whether to update the representative point list after adding the new point.
-- `store_event_history = Val(false)`: Whether to store the event history. See [`InsertionEventStorage`](@ref).
-- `event_history = nothing`: The event history to store the events in. See [`InsertionEventStorage`](@ref). Only needed if `is_true(store_event_history)`. This object is not returned, instead we just mutate it inplace.
+- `store_event_history = Val(false)`: Whether to store the event history. See [`InsertionEventHistory`](@ref).
+- `event_history = nothing`: The event history to store the events in. See [`InsertionEventHistory`](@ref). Only needed if `is_true(store_event_history)`. This object is not returned, instead we just mutate it inplace.
 """
 function add_point!(tri::Triangulation, new_point;
     point_indices=each_solid_vertex(tri),

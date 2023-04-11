@@ -228,3 +228,18 @@ end
 push_point!(pts::AbstractVector{T}, x, y) where {F,T<:NTuple{2,F}} = push!(pts, (F(x), F(y)))
 push_point!(pts::AbstractVector{T}, x, y) where {F<:Number,T<:AbstractVector{F}} = push!(pts, F[x, y])
 push_point!(pts, p) = push_point!(pts, getx(p), gety(p))
+
+"""
+    pop_point!(pts)
+
+Pops the last point from `pts`. The only method currently defined is
+
+    pop_point!(pts::AbstractVector) = pop!(pts)
+
+You can extend this function as needed.
+"""
+function pop_point! end 
+function pop_point!(::P) where {P}
+    return error("The pop_point! function has not been defined for the collection type $P.")
+end
+pop_point!(pts::AbstractVector) = pop!(pts)

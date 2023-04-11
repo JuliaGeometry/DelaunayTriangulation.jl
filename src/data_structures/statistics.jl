@@ -118,7 +118,7 @@ function statistics(tri::Triangulation)
     constrained_edges = get_all_constrained_edges(tri)
     nconstrained_edges = num_edges(constrained_edges)
     convex_hull_indices = get_convex_hull_indices(tri)
-    nconvex_hull_points = length(convex_hull_indices) - 1 # -1 because the last index is the same as the first 
+    nconvex_hull_points = max(0, length(convex_hull_indices) - 1) # -1 because the last index is the same as the first 
     individual_statistics = Dict{V,IndividualTriangleStatistics{F}}()
     sizehint!(individual_statistics, nsolid_tris)
     smallest_angle = typemax(F)
@@ -196,6 +196,9 @@ for n in fieldnames(IndividualTriangleStatistics)
             end
     end
 end
+
+## We could simplify some of this even further, e.g. keeping some more things as their square temporarily.
+## Is it really worth the effort, though?
 
 triangle_area(ℓ₁²::Number, ℓ₂²::Number, ℓ₃²::Number) = sqrt(4ℓ₁² * ℓ₂² - (ℓ₁² + ℓ₂² - ℓ₃²)^2) / 4 # Heron's formula
 triangle_minimum_angle(sine_minimum_angle) = asin(sine_minimum_angle)

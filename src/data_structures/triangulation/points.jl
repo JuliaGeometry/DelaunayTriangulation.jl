@@ -55,6 +55,18 @@ Pushes the point `p = (x, y)` into `get_points(tri0`.
 @inline push_point!(tri::Triangulation, p) = push_point!(get_points(tri), p)
 
 """
+    pop_point!(tri::Triangulation)
+
+Pops the last point from `get_points(tri)`.
+
+!!! note
+
+    This does not remove the point from the triangulation itself. See [`delete_point!`](@ref) for this.
+"""
+@inline pop_point!(tri::Triangulation) = pop_point!(get_points(tri))
+
+
+"""
     num_ghost_vertices(tri::Trianngulation)
 
 Returns the number of ghost vertices of `tri`.

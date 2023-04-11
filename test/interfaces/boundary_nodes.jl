@@ -206,3 +206,31 @@ end
               [[13, 14, 500, 15, 16, 17], [17, 18, 87, 19, 20], [20, 671, 13]]
        ]
 end
+
+@testset "delete_boundary_node!" begin
+       bn = [1, 2, 3, 4, 5, 6, 7, 1]
+       DT.delete_boundary_node!(bn, (bn, 5))
+       DT.delete_boundary_node!(bn, (bn, 1))
+       @test bn == [2, 3, 4, 6, 7, 1]
+       bn = [[1, 2, 3, 4], [4, 5, 6, 7, 8], [8, 9, 10, 1]]
+       DT.delete_boundary_node!(bn, (1, 2))
+       DT.delete_boundary_node!(bn, (1, 2))
+       DT.delete_boundary_node!(bn, (2, 4))
+       DT.delete_boundary_node!(bn, (3, 1))
+       @test bn == [[1, 4], [4, 5, 6, 8], [9, 10, 1]]
+       bn = [
+              [[1, 2, 3, 4, 5], [5, 6, 7], [7, 8], [8, 9, 10, 1]],
+              [[13, 14, 15, 16, 17], [17, 18, 19, 20], [20, 13]]
+       ]
+       DT.delete_boundary_node!(bn, ((1, 1), 1))
+       DT.delete_boundary_node!(bn, ((1, 2), 3))
+       DT.delete_boundary_node!(bn, ((1, 3), 2))
+       DT.delete_boundary_node!(bn, ((1, 4), 3))
+       DT.delete_boundary_node!(bn, ((2, 1), 3))
+       DT.delete_boundary_node!(bn, ((2, 2), 3))
+       DT.delete_boundary_node!(bn, ((2, 3), 2))
+       @test bn == [
+              [[2, 3, 4, 5], [5, 6], [7], [8, 9, 1]],
+              [[13, 14,  16, 17], [17, 18, 20], [20]]
+       ]
+end

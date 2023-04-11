@@ -162,4 +162,16 @@ using SafeTestsets
             include("constrained_triangulation/segment_insertion.jl")
         end
     end
+
+    @testset verbose = true "Refinement" begin 
+        @safetestset "Encroachment" begin 
+            include("refinement/encroachment.jl")
+        end
+        @safetestset "Quality Assessment" begin
+            include("refinement/quality_assessment.jl")
+        end
+        @safetestset "Refinement Operations" begin
+            include("refinement/refinement_operations.jl")
+        end
+    end
 end

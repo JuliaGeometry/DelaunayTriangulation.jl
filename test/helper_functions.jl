@@ -1243,3 +1243,76 @@ function slow_encroachment_test(tri::Triangulation)
     end
     return in_dt_encroached_edges, not_in_dt_encroached_edges
 end
+
+
+function poor_triangulation_example()
+    a = [0.0, 0.0] # 1
+    b = [3.0, 0.0] # 2
+    c = [6.0, 0.0] # 3
+    d = [9.0, 0.0] # 4
+    e = [12.0, 0.0] # 5
+    f = [12.0, 4.0] # 6
+    g = [10.0, 7.0] # 7
+    h = [5.0, 6.0] # 8
+    i = [2.0, 8.0] # 9
+    j = [-1.62, 5.45] # 10
+    k = [-3.14, 1.21] # 11
+    ℓ = [-1.0, -3.0] # 12
+    m = [5.0, -4.0] # 13
+    n = [11.0, -3.0] # 14
+    o = [2.0, 4.0] # 15
+    p = [8.0, 4.0] # 16
+    T1 = [10, 11, 1]
+    T2 = [1, 11, 12]
+    T3 = [1, 12, 2]
+    T4 = [2, 12, 13]
+    T5 = [2, 13, 3]
+    T6 = [3, 13, 4]
+    T7 = [4, 13, 14]
+    T8 = [4, 14, 5]
+    T9 = [6, 4, 5]
+    T10 = [6, 3, 4]
+    T11 = [6, 2, 3]
+    T12 = [6, 16, 2]
+    T13 = [16, 15, 2]
+    T14 = [15, 1, 2]
+    T15 = [15, 10, 1]
+    T16 = [9, 10, 15]
+    T17 = [9, 15, 8]
+    T18 = [9, 8, 7]
+    T19 = [7, 8, 16]
+    T20 = [8, 15, 16]
+    T21 = [7, 16, 6]
+    pts = [a, b, c, d, e, f, g, h, i, j, k, ℓ, m, n, o, p]
+    tri = Triangulation(pts)
+    for T in (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21)
+        add_triangle!(tri, T)
+    end
+    return tri
+end 
+
+function Base.:(==)(stats1::DT.TriangulationStatistics, stats2::DT.TriangulationStatistics)
+    for f in fieldnames(DT.TriangulationStatistics)
+        if f ≠ :individual_statistics 
+            if getfield(stats1, f) ≠ getfield(stats2, f)
+                return false
+            end
+        else
+            indiv_dict1 = stats1.individual_statistics 
+            indiv_dict2 = stats2.individual_statistics
+            if length(indiv_dict1) ≠ length(indiv_dict2)
+                return false
+            end
+            for (T, v) in indiv_dict1
+                V, flag = DT.contains_triangle(T, keys(indiv_dict1))
+                if !flag 
+                    return false 
+                end
+                if v ≠ indiv_dict1[V]
+                    return false
+                end
+            end
+        end 
+    end
+    return true
+end  

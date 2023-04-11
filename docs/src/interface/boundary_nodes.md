@@ -30,4 +30,5 @@ get_segment_index
 num_outer_boundary_segments 
 construct_boundary_edge_map
 insert_boundary_node!
+delete_boundary_node!
 ```

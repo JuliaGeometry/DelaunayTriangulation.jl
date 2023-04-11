@@ -38,15 +38,6 @@ include("../helper_functions.jl")
     end
 end
 
-@testset "Converting the minimum angle" begin
-    @test DT.convert_minimum_angle(30.0) ≈ sin(0.5235987755982988)^2
-    @test DT.convert_minimum_angle(60.0) ≈ sin(1.0471975511965976)^2
-    @test DT.convert_minimum_angle(90.0) ≈ sin(1.5707963267948966)^2
-    @test DT.convert_minimum_angle(120.0) ≈ sin(2.0943951023931953)^2
-    @test DT.convert_minimum_angle(150.0) ≈ sin(2.6179938779914944)^2
-    @test DT.convert_minimum_angle(180.0) ≈ sin(3.141592653589793)^2 atol = 1e-16
-end
-
 @testset "Testing if encroached edges are detected" begin
     _x, _y = complicated_geometry()
     x = _x

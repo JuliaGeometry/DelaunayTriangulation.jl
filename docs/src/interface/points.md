@@ -32,6 +32,7 @@ each_point
 num_points 
 number_type 
 push_point!
+pop_point!
 ```
 
 ### Generic Methods 

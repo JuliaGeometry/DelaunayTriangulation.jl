@@ -279,7 +279,7 @@ end
 """
     insert_boundary_node!(bn, pos, node)
 
-Inserts a boundary node `node` into the set of boundary nodes `bn` at the position pos`. The first element of `pos` 
+Inserts a boundary node `node` into the set of boundary nodes `bn` at the position pos. The first element of `pos` 
 finds the set of boundary nodes that lie on the segment corresponding to this first element, and then the 
 second element of `pos` gives the position of the array to insert `node` into. In particular, 
 
@@ -293,6 +293,26 @@ function insert_boundary_node! end
 function insert_boundary_node!(bn, pos, node)
     nodes = get_boundary_nodes(bn, pos[1])
     insert!(nodes, pos[2], node)
+    return nothing
+end
+
+"""
+    delete_boundary_node!(bn, pos)
+
+Deletes a boundary node from the set of boundary nodes `bn` at the position pos. The first element of `pos`
+finds the set of boundary nodes that lie on the segment corresponding to this first element, and then the
+second element of `pos` gives the position of the array to delete. In particular,
+
+    delete_boundary_node!(bn, pos)
+
+is the same as
+
+    deleteat!(get_boundary_nodes(bn, pos[1]), pos[2])
+"""
+function delete_boundary_node! end
+function delete_boundary_node!(bn, pos)
+    nodes = get_boundary_nodes(bn, pos[1])
+    deleteat!(nodes, pos[2])
     return nothing
 end
 

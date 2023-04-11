@@ -1,99 +1,94 @@
 """
-    convert_minimum_angle(θ)
-
-Converts the user-specified minimum angle `θ` to `sin(ψ)^2`, `ψ = rad2deg(θ)`.
-"""
-convert_angle(θ) = sind(θ)^2
-
-"""
-    RefinementTargets{A,B,C,D,E}
+    RefinementTargets{A,R,P}
 
 A struct containing the user-specified refinement targets. 
 
 # Fields
 
-- `min_area=0.0` (not currently used)
+- `max_area::A`
 
-The minimum area of a triangle. This can also be a function of the form `f(p, q, r, A)`, where `A` is a triangle's area with coordinates `p`, `q`, `r`, returning `true` if the triangle should be refined.
-- `max_area=Inf`
+The maximum area of a triangle. This can also be a function of the form `f(T, p, q, r, A)`, where `T` is the triangle` with area and coordinates `p`, `q`, `r`, returning `true` if the triangle should be refined.
 
-The maximum area of a triangle. This can also be a function of the form `f(p, q, r, A)`, where `A` is a triangle's area with coordinates `p`, `q`, `r`, returning `true` if the triangle should be refined.
-- `min_angle=20.0`
+- `max_radius_edge_ratio::R`
 
-The minimum angle of a triangle. While the user should provide this as an angle in degrees between 0 and 60,
-the internal representation is `sin(ψ)^2`, where `ψ = rad2deg(min_angle)`. This can also be a function of the form `f(p, q, r, θ)`, where `θ` is a triangle's minimum angle with coordinates `p`, `q`, `r`, returning `true` if the triangle should be refined.
-- `max_angle=180.0` (not currently used)
+The maximum permitted radius-edge ratio. This can also be a function of the form `f(T, p, q, r, ρ)`, where `T` is the triangle` with ratio `ρ` and coordinates `p`, `q`, `r`, returning `true` if the triangle should be refined. Defaults to 1.0, corresponding to a minimum angle of 30°.
+- `max_points::P`
 
-The maximum angle of a triangle. While the user should provide this as an angle in degrees between 60 and 180,
-the internal representation is `sin(ψ)^2`, where `ψ = rad2deg(max_angle)`. This can also be a function of the form `f(p, q, r, θ)`, where `θ` is a triangle's maximum angle with coordinates `p`, `q`, `r`, returning `true` if the triangle should be refined.
-- `max_points=Inf`
+The maximum number of points in the mesh. Defaults to Inf.
+# Constructors 
 
-The maximum number of points in the mesh.
+The constructor is 
+
+    RefinementTargets(;
+            max_area=typemax(Float64),
+            max_radius_edge_ratio=nothing,
+            max_points=typemax(Int64),
+            min_angle = nothing
+            )
+
+which allows for a user to specify either the maximum radius-edge ratio `ρ` or the minimum angle `min_angle` in degrees, using the relationship `min_angle = asin[1/(2ρ)]`. If both are provided, the minimum angle is ignored. If neither are provided, the default value of `ρ = 1.0` is used, corresponding to a minimum angle of 30°.
+
+Note that you cannot use `min_angle` as a function, unlike `max_radius_edge_ratio`. If you want to use a function, use `max_radius_edge_ratio` instead.
 """
-struct RefinementTargets{A,B,C,D,E}
-    min_area::A
-    max_area::B
-    min_angle::C
-    max_angle::D
-    max_points::E
-    function MeshQualities(;
-        min_area::A=zero(Float64),
-        max_area::B=typemax(Float64),
-        min_angle::C=20.0,
-        max_angle::D=180.0,
-        max_points::E=typemax(Int64)) where {A,B,C,D,E}
-        if min_area isa Number && min_area < 0.0
-            @warn "The provided minimum area constraint, $min_area, is negative. Replacing with zero."
-            min_area = 0.0
+struct RefinementTargets{A,R,P}
+    max_area::A
+    max_radius_edge_ratio::R
+    max_points::P
+    function RefinementTargets(;
+        max_area=typemax(Float64),
+        max_radius_edge_ratio=nothing,
+        max_points=typemax(Int64),
+        min_angle = nothing
+        )
+        if min_angle isa Function 
+            throw(ArgumentError("Cannot provide min_angle as a function."))
         end
-        if max_area isa Number && (max_area < 60.0 || max_area > 180.0)
-            @warn "The provided maximum area constraint, $max_area, is outside the range [60, 180]. Replacing with 180. Note that areas must be provided in degrees."
-            max_area = 180.0
+        if max_radius_edge_ratio isa Number && max_radius_edge_ratio < sqrt(3)/3
+            @warn "The provided maximum radius-edge ratio, $max_radius_edge_ratio, is below the theoretical limit of 1/√3. Replacing it with 1/sqrt(3)."
+            max_radius_edge_ratio = sqrt(3)/3
         end
-        if min_angle isa Number && (min_angle < 0.0 || min_angle > 60.0)
-            @warn "The provided min_angle, $min_angle, is outside the range [0, 60]. Replacing with 20. Note that angles must be provided in degrees."
-            min_angle = 20.0
-            if min_angle > 33.9
-                @warn "The algorithm may fail to halt with a minimum angle constraint of 33.9° or higher. Consider using a smaller minimum angle constraint. Will proceed with the provided minimum angle constraint."
-            end
+        if max_radius_edge_ratio === nothing && min_angle === nothing
+            max_radius_edge_ratio = 1.0
+        elseif max_radius_edge_ratio === nothing && min_angle !== nothing
+            max_radius_edge_ratio = cscd(min_angle) / 2 
+        elseif max_radius_edge_ratio !== nothing && min_angle !== nothing
+            @warn "Both max_radius_edge_ratio and min_angle are provided. Ignoring min_angle."
         end
-        if max_angle isa Number && (max_angle < 60.0 || max_angle > 180.0)
-            @warn "The provided max_angle, $max_angle, is outside the range [60, 180]. Replacing with 180. Note that angles must be provided in degrees."
-            max_angle = 180.0
+        min_angle = max_radius_edge_ratio isa Number ? asind(1/(2max_radius_edge_ratio)) : nothing 
+        if !isnothing(min_angle) && (33.9 < min_angle < 60)
+            @warn "The provided max_radius_edge_ratio, ρ = $max_radius_edge_ratio, corresponds to a minimum angle of $(min_angle)°. The algorithm may fail to halt with a minimum angle constraint exceeding 33.9° (corresponding to ρ <
+             0.9) or higher (meaning lower ρ). Consider using a smaller minimum angle constraint or a larger maximum radius-edge ratio. Will proceed with the provided maximum radius-edge ratio."
+        end
+        if max_area isa Number && max_area < 0.0
+            @warn "The provided maximum area constraint, $max_area, is negative. Replacing with Inf."
+            max_area = typemax(Float64)
+        end
+        if !isnothing(min_angle) && (min_angle < 0.0 || min_angle > 60.00005) # 60.00005 for the =sqrt(3)/3 case
+            @warn "The provided max_radius_edge_ratio, ρ = $max_radius_edge_ratio, corresponds to a minimum angle of $(min_angle)°, which is outside the range [0, 60]. Replacing ρ with 1.0, corresponding to a minimum angle of 30°."
+            max_radius_edge_ratio = 1.0
         end
         if max_points isa Number && max_points < 0
-            throw(ArgumentError("The provided maximum number of points, $max_points, is negative."))
+            @warn "The provided maximum number of points, $max_points, is negative. Replacing with Inf."
+            max_points = typemax(Int64)
         end
-        min_angle = convert_angle(min_angle)
-        max_angle = convert_angle(max_angle)
-        return new{A,B,C,D,E}(min_area, max_area, min_angle, max_angle, max_points)
+        return new{typeof(max_area), typeof(max_radius_edge_ratio), typeof(max_points)}(max_area, max_radius_edge_ratio, max_points)
     end
 end
-function compare_area(targets::RefinementTargets, A, p, q, r)
-    min_flag = if targets.min_area isa Function
-        targets.min_area(p, q, r, A)
-    else
-        A < targets.min_area
-    end
-    max_flag = if targets.max_area isa Function
-        targets.max_area(p, q, r, A)
+function compare_area(targets::RefinementTargets, T, A, p, q, r)
+    flag = if targets.max_area isa Function
+        targets.max_area(T, p, q, r, A)
     else
         A > targets.max_area
     end
-    return (min_flag, max_flag)
+    return flag
 end
-function compare_angle(targets::RefinementTargets, sinθₘᵢₙ², sinθₘₐₓ², p, q, r)
-    min_flag = if targets.min_angle isa Function
-        targets.min_angle(p, q, r, sinθₘᵢₙ²)
+function compare_ratio(targets::RefinementTargets, T, ρ, p, q, r)
+    flag = if targets.max_radius_edge_ratio isa Function
+        targets.max_radius_edge_ratio(T, p, q, r, ρ)
     else
-        sinθₘᵢₙ² < targets.min_angle
+        ρ > targets.max_radius_edge_ratio
     end
-    max_flag = if targets.max_angle isa Function
-        targets.max_angle(p, q, r, sinθₘₐₓ²)
-    else
-        sinθₘₐₓ² > targets.max_angle
-    end
-    return (min_flag, max_flag)
+    return flag
 end
 function compare_points(targets::RefinementTargets, n)
     return n > targets.max_points
@@ -104,18 +99,18 @@ end
 
 Assess the quality of a triangle `T` in a `Triangulation` `tri` with respect to the provided `RefinementTargets`. 
 
-Returns `(sinθₘᵢₙ², flag)`, where `sinθₘᵢₙ²` is the squared sine of the minimum angle of the triangle and `flag` is `true` if the triangle should be refined.
+Returns `(ρ, flag)`, where `ρ` is the radius-edge ratio of the triangle and `flag` is `true` if the triangle should be refined.
 """
 function assess_triangle_quality(tri::Triangulation, T, targets::RefinementTargets)
     u, v, w = indices(T)
     p, q, r = get_point(tri, u, v, w)
     ℓmin², ℓmed², ℓmax² = squared_triangle_lengths(p, q, r)
     A = triangle_area(ℓmin², ℓmed², ℓmax²)
-    sinθₘᵢₙ² = triangle_sine_minimum_angle_squared(A, ℓmin², ℓmed²)
-    sinθₘₐₓ² = triangle_sine_maximum_angle_squared(A, ℓmed², ℓmax²)
-    min_area_flag, max_area_flag = compare_area(targets, A, p, q, r)
-    min_angle_flag, max_angle_flag = compare_angle(targets, sinθₘᵢₙ², sinθₘₐₓ², p, q, r)
-    return sinθₘᵢₙ², (min_area_flag || max_area_flag || min_angle_flag || max_angle_flag)
+    r = triangle_circumradius(A, ℓmin², ℓmed², ℓmax²)
+    ρ = r / sqrt(ℓmin²)
+    area_flag = compare_area(targets, T, A, p, q, r)
+    ratio_flag = compare_ratio(targets, T, ρ, p, q, r)
+    return ρ, (area_flag || ratio_flag)
 end
 
 """
@@ -130,15 +125,15 @@ A queue for storing encroachment and triangle refinement priority queues.
 A priority queue for storing encroached segments to be split. The keys are the squared edge lengths.
 - `triangle_queue::PriorityQueue{T,E,F,Base.Order.ForwardOrdering}`
 
-A priority queue for storing triangles to be refined. The keys are the squared sine of the minimum angle of the triangle.
+A priority queue for storing triangles to be refined. The keys are radius-edge ratio.
 """
 struct RefinementQueue{T,E,F}
-    encroachment_queue::PriorityQueue{T,E,F,Base.Order.ForwardOrdering}
-    triangle_queue::PriorityQueue{T,E,F,Base.Order.ForwardOrdering}
-    function RefinementQueue{T,E,F}() where {T,F}
+    encroachment_queue::PriorityQueue{E,F,Base.Order.ForwardOrdering}
+    triangle_queue::PriorityQueue{T,F,Base.Order.ForwardOrdering}
+    function RefinementQueue{T,E,F}() where {T,E,F}
         return new{T,E,F}(
-            PriorityQueue{T,E,Base.Order.ForwardOrdering}(Base.Order.Forward),
-            PriorityQueue{T,F,Base.Order.ForwardOrdering}(Base.Order.Forward))
+            PriorityQueue{E,F}(),
+            PriorityQueue{T,F}())
     end
 end
 
@@ -162,16 +157,16 @@ function encroachment_enqueue!(queue::RefinementQueue, e, e_length²)
 
 end
 
-function triangle_enqueue!(queue::RefinementQueue, T, sinθₘᵢₙ²)
+function triangle_enqueue!(queue::RefinementQueue, T, ρ)
     triangle_queue = queue.triangle_queue
     existing_triangles = keys(triangle_queue)
     T, flag = contains_triangle(T, existing_triangles)
     if !flag
-        enqueue!(triangle_queue, T, sinθₘᵢₙ²)
+        enqueue!(triangle_queue, T, ρ)
     else
-        existing_sinθₘᵢₙ² = triangle_queue[T]
-        if sinθₘᵢₙ² < existing_sinθₘᵢₙ²
-            triangle_queue[T] = sinθₘᵢₙ²
+        existing_ρ = triangle_queue[T]
+        if ρ < existing_ρ
+            triangle_queue[T] = ρ
         end
     end
     return nothing
@@ -208,8 +203,8 @@ function initialise_refinement_queue(tri::Triangulation, targets::RefinementTarg
     E = edge_type(tri)
     queue = RefinementQueue{T,E,F}()
     for T in each_solid_triangle(tri)
-        sinθₘᵢₙ², refine_flag = assess_triangle_quality(tri, T, targets)
-        refine_flag && triangle_enqueue!(queue, T, sinθₘᵢₙ²)
+        ρ, refine_flag = assess_triangle_quality(tri, T, targets)
+        refine_flag && triangle_enqueue!(queue, T, ρ)
         for e in triangle_edges(T)
             encroachment_flag = is_encroached(tri, e)
             if encroachment_flag

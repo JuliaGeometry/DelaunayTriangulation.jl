@@ -123,13 +123,13 @@ function _triangulate_bowyer_watson!(tri::Triangulation, point_order,
 end
 
 function add_point_bowyer_watson!(
-    tri::Triangulation, 
-    new_point, 
+    tri::Triangulation,
+    new_point,
     initial_search_point::I,
-    rng::AbstractRNG=Random.default_rng(), 
-    update_representative_point=true, 
-    store_event_history = Val(false), 
-    event_history = nothing) where {I}
+    rng::AbstractRNG=Random.default_rng(),
+    update_representative_point=true,
+    store_event_history=Val(false),
+    event_history=nothing) where {I}
     new_point = I(new_point)
     q = get_point(tri, new_point)
     V = jump_and_march(tri, q; m=nothing, point_indices=nothing, try_points=nothing,
@@ -165,30 +165,37 @@ function add_point_bowyer_watson!(
                 delete_edge!(edges, construct_edge(E, v, u))
                 add_edge!(edges, construct_edge(E, u, new_point))
                 add_edge!(edges, construct_edge(E, new_point, v))
-                if is_constrained(tri)
-                    add_edge!(edges, construct_edge(E, u, new_point))
-                    add_edge!(edges, construct_edge(E, new_point, v))
+                if is_true(store_event_history) && edges === constrained_edges # edges === constrained_edges is a hack to avoid storing the same event twice.
+                    delete_edge!(event_history, construct_edge(E, u, v))
+                    add_edge!(event_history, construct_edge(E, u, new_point))
+                    add_edge!(event_history, construct_edge(E, new_point, v))
                 end
             end
         end
         if contains_boundary_edge(tri, u, v)
             split_boundary_edge!(tri, u, v, new_point)
+            if is_true(store_event_history)
+                split_boundary_edge!(event_history, u, v, new_point)
+            end
         elseif contains_boundary_edge(tri, v, u)
             split_boundary_edge!(tri, v, u, new_point)
+            if is_true(store_event_history)
+                split_boundary_edge!(event_history, v, u, new_point)
+            end
         end
     end
     return nothing
 end
 
 function add_point_bowyer_watson!(
-    tri::Triangulation, 
-    new_point::I, 
-    V, 
-    q, 
-    flag, 
+    tri::Triangulation,
+    new_point::I,
+    V,
+    q,
+    flag,
     update_representative_point=true,
-    store_event_history = Val(false),
-    event_history = nothing) where {I}
+    store_event_history=Val(false),
+    event_history=nothing) where {I}
     i, j, k = indices(V)
     ℓ₁ = get_adjacent(tri, j, i)
     ℓ₂ = get_adjacent(tri, k, j)
@@ -197,9 +204,9 @@ function add_point_bowyer_watson!(
     if is_true(store_event_history)
         delete_triangle!(event_history, V)
     end
-    dig_cavity!(tri, new_point, i, j, ℓ₁, flag, V)
-    dig_cavity!(tri, new_point, j, k, ℓ₂, flag, V)
-    dig_cavity!(tri, new_point, k, i, ℓ₃, flag, V)
+    dig_cavity!(tri, new_point, i, j, ℓ₁, flag, V, store_event_history, event_history)
+    dig_cavity!(tri, new_point, j, k, ℓ₂, flag, V, store_event_history, event_history)
+    dig_cavity!(tri, new_point, k, i, ℓ₃, flag, V, store_event_history, event_history)
     if is_on(flag) && (is_boundary_triangle(tri, V) || is_ghost_triangle(V) && !is_boundary_node(tri, new_point)[1])
         # ^ Need to fix the ghost edges if the point is added onto an existing boundary edge. Note that the last 
         #   condition is in case the ghost edges were already correctly added.
@@ -214,17 +221,23 @@ function add_point_bowyer_watson!(
             add_triangle!(tri, new_point, v, g; update_ghost_edges=false)
             add_triangle!(tri, u, new_point, g; update_ghost_edges=false)
             if is_true(store_event_history)
-                delete_triangle!(event_history, v, u, new_point)
-                delete_triangle!(event_history, u, v, g)
-                add_triangle!(event_history, new_point, v, g)
-                add_triangle!(event_history, u, new_point, g)
+                trit = triangle_type(tri)
+                delete_triangle!(event_history, construct_triangle(trit, u, v, g))
+                add_triangle!(event_history, construct_triangle(trit, new_point, v, g))
+                add_triangle!(event_history, construct_triangle(trit, u, new_point, g))
             end
             if is_constrained(tri) && (contains_boundary_edge(tri, u, v) || contains_boundary_edge(tri, v, u)) # If we don't do this here now, then when we try and do it later we will get a KeyError since we've already modified the boundary edge but we wouldn't have updated the constrained fields
                 # We also only do this if contains_boundary_edge since we want to assume that (u, v) does not appear in constrained_edges
                 if contains_boundary_edge(tri, u, v)
                     split_boundary_edge!(tri, u, v, new_point)
+                    if is_true(store_event_history)
+                        split_boundary_edge!(event_history, u, v, new_point)
+                    end
                 elseif contains_boundary_edge(tri, v, u)
                     split_boundary_edge!(tri, v, u, new_point)
+                    if is_true(store_event_history)
+                        split_boundary_edge!(event_history, v, u, new_point)
+                    end
                 end
                 E = edge_type(tri)
                 edges = get_all_constrained_edges(tri)
@@ -233,6 +246,7 @@ function add_point_bowyer_watson!(
                 add_edge!(edges, construct_edge(E, u, new_point))
                 add_edge!(edges, construct_edge(E, new_point, v))
                 if is_true(store_event_history)
+                    delete_edge!(event_history, construct_edge(E, u, v))
                     add_edge!(event_history, construct_edge(E, u, new_point))
                     add_edge!(event_history, construct_edge(E, new_point, v))
                 end
@@ -243,7 +257,7 @@ function add_point_bowyer_watson!(
     return nothing
 end
 
-@inline function dig_cavity!(tri::Triangulation, r::I, i, j, ℓ, flag, V) where {I}
+@inline function dig_cavity!(tri::Triangulation, r::I, i, j, ℓ, flag, V, store_event_history=Val(false), event_history=nothing) where {I}
     if !edge_exists(ℓ)
         # The triangle has already been deleted in this case. 
         return nothing
@@ -254,10 +268,11 @@ end
         ℓ₁ = get_adjacent(tri, ℓ, i)
         ℓ₂ = get_adjacent(tri, j, ℓ)
         delete_triangle!(tri, j, i, ℓ; protect_boundary=true, update_ghost_edges=false)
-        dig_cavity!(tri, r, i, ℓ, ℓ₁, flag, V)
-        dig_cavity!(tri, r, ℓ, j, ℓ₂, flag, V)
+        dig_cavity!(tri, r, i, ℓ, ℓ₁, flag, V, store_event_history, event_history)
+        dig_cavity!(tri, r, ℓ, j, ℓ₂, flag, V, store_event_history, event_history)
         if is_true(store_event_history)
-            delete_triangle!(event_history, j, i, ℓ)
+            trit = triangle_type(tri)
+            delete_triangle!(event_history, construct_triangle(trit, j, i, ℓ))
         end
     else
         # If we are here, then this means that we are on an edge of the polygonal cavity. 
@@ -273,13 +288,15 @@ end
             else
                 add_triangle!(tri, r, i, j; update_ghost_edges=false)
                 if is_true(store_event_history)
-                    add_triangle!(event_history, r, i, j)
+                    trit = triangle_type(tri)
+                add_triangle!(event_history, construct_triangle(trit, r, i, j))
                 end
             end
         else
             add_triangle!(tri, r, i, j; update_ghost_edges=false)
             if is_true(store_event_history)
-                add_triangle!(event_history, r, i, j)
+                trit = triangle_type(tri)
+                add_triangle!(event_history, construct_triangle(trit, r, i, j))
             end
         end
     end
