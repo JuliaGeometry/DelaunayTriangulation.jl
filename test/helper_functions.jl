@@ -419,13 +419,12 @@ function test_constrained_edges(tri)
             println("Test that the constrained edge $e is in the triangulation failed.")
             return false
         end
-    end
-    for e in each_edge(get_constrained_edges(tri))
-        u, v = DT.edge_indices(e)
-        flag = u ∈ get_neighbours(tri, v)
-        if !flag
-            println("Test that the constrained edge $e is in the triangulation failed.")
-            return false
+        if !DT.contains_edge(e, get_constrained_edges(tri)) && !DT.contains_edge(DT.reverse_edge(e), get_constrained_edges(tri))
+            flag = DT.contains_boundary_edge(tri, e) || DT.contains_boundary_edge(tri, DT.reverse_edge(e))
+            if !flag
+                println("Test that the constrained edge $e is in the triangulation passed, but it was not in the constrained_edge field and not in the boundary edges.")
+                return false
+            end
         end
     end
     return true

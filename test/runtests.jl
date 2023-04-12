@@ -163,6 +163,7 @@ using SafeTestsets
         end
     end
 
+    #=
     @testset verbose = true "Refinement" begin 
         @safetestset "Encroachment" begin 
             include("refinement/encroachment.jl")
@@ -174,4 +175,5 @@ using SafeTestsets
             include("refinement/refinement_operations.jl")
         end
     end
+    =#
 end

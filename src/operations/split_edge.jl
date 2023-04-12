@@ -11,20 +11,27 @@ function split_edge!(tri::Triangulation, i, j, r)
         E = edge_type(tri)
         constrained_edges = get_constrained_edges(tri)
         all_constrained_edges = get_all_constrained_edges(tri)
-        for edges in (constrained_edges, all_constrained_edges)
-            delete_edge!(edges, construct_edge(E, i, j))
-            delete_edge!(edges, construct_edge(E, j, i))
-            if !contains_constrained_edge(tri, r, i)
-                add_edge!(edges, construct_edge(E, i, r))
-            end
-            if !contains_constrained_edge(tri, j, r)
-                add_edge!(edges, construct_edge(E, r, j))
-            end
+        delete_edge!(all_constrained_edges, construct_edge(E, i, j))
+        delete_edge!(all_constrained_edges, construct_edge(E, j, i))
+        if !contains_constrained_edge(tri, r, i)
+            add_edge!(all_constrained_edges, construct_edge(E, i, r))
+        end
+        if !contains_constrained_edge(tri, j, r)
+            add_edge!(all_constrained_edges, construct_edge(E, r, j))
         end
         if contains_boundary_edge(tri, i, j)
             split_boundary_edge!(tri, i, j, r)
         elseif contains_boundary_edge(tri, j, i)
             split_boundary_edge!(tri, j, i, r)
+        else # The edge isn't a boundary edge, so let's make sure the edge is removed from constrained_edges 
+            delete_edge!(constrained_edges, construct_edge(E, i, j))
+            delete_edge!(constrained_edges, construct_edge(E, j, i))
+            if !contains_edge(r, i, constrained_edges) 
+                add_edge!(constrained_edges, construct_edge(E, i, r))
+            end
+            if !contains_edge(j, r, constrained_edges)
+                add_edge!(constrained_edges, construct_edge(E, r, j))
+            end
         end
     end
     k = get_adjacent(tri, i, j)

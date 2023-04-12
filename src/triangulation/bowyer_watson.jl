@@ -241,14 +241,12 @@ function add_point_bowyer_watson!(
                     end
                 end
                 E = edge_type(tri)
-                constrained_edges = get_constrained_edges(tri)
+                # constrained_edges = get_constrained_edges(tri) < -- Don't need this actually, we're just looking at boundary edges here, so no need to consider individually constrained edges
                 all_constrained_edges = get_all_constrained_edges(tri)
-                for edges in (constrained_edges, all_constrained_edges)
-                    delete_edge!(edges, construct_edge(E, u, v))
-                    delete_edge!(edges, construct_edge(E, v, u))
-                    add_edge!(edges, construct_edge(E, u, new_point))
-                    add_edge!(edges, construct_edge(E, new_point, v))
-                end
+                delete_edge!(all_constrained_edges, construct_edge(E, u, v))
+                delete_edge!(all_constrained_edges, construct_edge(E, v, u))
+                add_edge!(all_constrained_edges, construct_edge(E, u, new_point))
+                add_edge!(all_constrained_edges, construct_edge(E, new_point, v))
                 if is_true(store_event_history)
                     delete_edge!(event_history, construct_edge(E, u, v))
                     add_edge!(event_history, construct_edge(E, u, new_point))
