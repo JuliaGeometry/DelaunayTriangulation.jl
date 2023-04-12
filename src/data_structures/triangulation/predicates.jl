@@ -153,13 +153,16 @@ Returns `true` if `tri` has boundary nodes, and `false` otherwise.
 """
     is_legal(tri::Triangulation, i, j)
 
-Returns `true` if the edge `(i, j)` is legal in `tri`, and `false` otherwise.
+Returns `true` if the edge `(i, j)` is legal in `tri`, and `false` otherwise. We also define 
+constrained edges to be legal, as are ghost edges.
 """
 function is_legal(tri::Triangulation, i, j)
-    (is_boundary_edge(tri, i, j) ||
+    (contains_constrained_edge(tri, i, j) ||
+     is_boundary_edge(tri, i, j) ||
      is_boundary_edge(tri, j, i) ||
      !edge_exists(tri, i, j) ||
-     !edge_exists(tri, j, i)) && return Cert.Legal
+     !edge_exists(tri, j, i) ||
+     is_ghost_edge(i, j)) && return Cert.Legal
     k = get_adjacent(tri, i, j)
     ℓ = get_adjacent(tri, j, i)
     p, q, r, s = get_point(tri, i, j, k, ℓ)

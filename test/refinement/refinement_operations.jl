@@ -2,9 +2,6 @@ using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using LinearAlgebra
 using StableRNGs
-using StructEquality
-@struct_equal DT.IndividualTriangleStatistics
-@struct_equal DT.TriangulationStatistics
 
 include("../helper_functions.jl")
 
@@ -72,6 +69,9 @@ include("../helper_functions.jl")
         @test storage.added_boundary_segments == Set{DT.edge_type(tri)}([(2, 10), (10, 17), (18, 50), (50, 23)])
         @test storage.deleted_boundary_segments == Set{DT.edge_type(tri)}([(2, 17), (18, 23)])
         @test DT.has_segment_changes(storage)
+        @test DT.each_added_triangle(storage) == each_triangle(storage.added_triangles)
+        @test DT.each_added_segment(storage) == each_edge(storage.added_segments)
+        @test DT.each_added_boundary_segment(storage) == each_edge(storage.added_boundary_segments)
         empty!(storage)
         @test storage.added_triangles == Set{DT.triangle_type(tri)}()
         @test storage.deleted_triangles == Set{DT.triangle_type(tri)}()
@@ -204,3 +204,24 @@ end
     @test validate_triangulation(tri; check_ghost_triangle_orientation=false, check_ghost_triangle_delaunay=false)
     @test stats1 == stats2
 end
+
+using ..DelaunayTriangulation: edge_indices, add_point!
+
+rng = StableRNG(29201)
+tri = triangulate([rand(rng, 2) for _ in 1:50], delete_ghosts=false)
+add_edge!(tri, 27, 30)
+targets = DT.RefinementTargets(; min_angle=30.0)
+queue = DT.initialise_refinement_queue(tri, targets)
+event = DT.initialise_event_history(tri)
+tri1 = deepcopy(tri)
+DT.split_all_encroached_segments!(tri, queue, event, targets)
+
+
+e = (30, 15)
+u, v = edge_indices(e)
+p, q = get_point(tri, u, v)
+px, py = getxy(p)
+qx, qy = getxy(q)
+mx, my = (px + qx) / 2, (py + qy) / 2
+add_point!(tri, mx, my; point_indices=nothing, m=nothing, try_points=nothing, rng, initial_search_point=u, update_representative_point=false, store_event_history=Val(true), event_history=event)
+

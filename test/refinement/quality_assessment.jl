@@ -107,8 +107,8 @@ end
         ρ = DT.get_radius_edge_ratio(stats, T)
         push!(all_triangle, (T, ρ))
     end
-    @test issorted(last.(all_encroachment))
-    @test issorted(last.(all_triangle))
+    @test issorted(last.(all_encroachment), rev=true)
+    @test issorted(last.(all_triangle), rev=true)
     for (e, ℓ²) in all_encroachment
         u, v = DT.edge_indices(e)
         p, q = get_point(tri, u, v)

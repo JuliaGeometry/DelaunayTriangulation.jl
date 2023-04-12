@@ -625,7 +625,24 @@ end
             @test DT.is_legal(DT.is_legal(tri, i, j))
         end
     end
+
+    @testset "Poor edges" begin
+        tri = poor_triangulation_example()
+        @test !DT.is_legal(DT.is_legal(tri, 2, 6))
+    end
+
+    @testset "Constrained triangulations" begin
+        tri = fixed_shewchuk_example_constrained()
+        add_edge!(tri, 2, 7)
+        for e in each_edge(tri)
+            @show e
+            i, j = DT.edge_indices(e)
+            @test DT.is_legal(DT.is_legal(tri, i, j))
+        end
+    end
 end
+
+
 
 @testset "triangle_line_segment_intersection" begin
     p = [0.0, 0.0]

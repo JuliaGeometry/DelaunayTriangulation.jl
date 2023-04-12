@@ -665,3 +665,35 @@ end
       DT.fix_segments!(c, bad_indices)
       @test c == [(2, 7), (7, 12), (12, 17), (17, 22), (22, 27), (27, 32), (32, 37), (37, 42), (42, 47)]
 end
+
+#=
+rng = StableRNG(19992991)
+p = (0.0, 0.0)
+q = (0.0, 1.0)
+r = DT.filtered_parametric_line(p, q, 0.5)
+@test r == (0.0, 0.5)
+p = (rand(rng), rand(rng))
+q = (rand(rng), rand(rng))
+r = DT.filtered_parametric_line(p, q, 0.5)
+@inferred DT.filtered_parametric_line(p, q, 0.5)
+@test DT.is_collinear(DT.point_position_relative_to_line(p, q, r))
+p = (rand(rng), rand(rng))
+q = (rand(rng), rand(rng))
+r = DT.filtered_parametric_line(p, q, 0.2)
+@inferred DT.filtered_parametric_line(p, q, 0.2)
+@test collect(r) ≈ collect(p .+ 0.2 .* (q .- p))
+correct_results_1 = Vector{Bool}(undef, 100_000)
+correct_results_2 = Vector{Bool}(undef, 100_000)
+for i in eachindex(correct_results_1)
+      p = (-4 + 8rand(rng), -4 + 8rand(rng))
+      q = (-4 + 8rand(rng), -4 + 8rand(rng))
+      t = rand(0.0:0.1:1.0)
+      r1 = DT.filtered_parametric_line(p, q, t)
+      correct_results_1[i] = DT.is_collinear(DT.point_position_relative_to_line(p, q, r1))
+      r2 = @. p + (q - p) * t
+      correct_results_2[i] = DT.is_collinear(DT.point_position_relative_to_line(p, q, r2))
+end
+prop_1 = count(correct_results_1) / length(correct_results_1)
+prop_2 = count(correct_results_2) / length(correct_results_2)
+@test prop_1 ≥ prop_2
+=#

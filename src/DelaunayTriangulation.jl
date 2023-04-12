@@ -178,5 +178,6 @@ const polylabel = pole_of_inaccessibility
 include("refinement/encroachment.jl")
 include("refinement/quality_assessment.jl")
 include("refinement/refinement_operations.jl")
+include("refinement/refine.jl")
 
 end

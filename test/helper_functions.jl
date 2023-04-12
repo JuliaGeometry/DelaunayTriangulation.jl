@@ -420,6 +420,14 @@ function test_constrained_edges(tri)
             return false
         end
     end
+    for e in each_edge(get_constrained_edges(tri))
+        u, v = DT.edge_indices(e)
+        flag = u ∈ get_neighbours(tri, v)
+        if !flag
+            println("Test that the constrained edge $e is in the triangulation failed.")
+            return false
+        end
+    end
     return true
 end
 
@@ -1125,8 +1133,8 @@ function validate_statistics(tri::Triangulation, stats=statistics(tri))
         all_angles = [acos(dot(p - q, r - q) / (norm(p - q) * norm(r - q))) for (p, q, r) in ((p, q, r), (q, r, p), (r, p, q))]
         sine_minimum_angle[T] = minimum(sin.(all_angles))
         sine_maximum_angle[T] = maximum(sin.(all_angles))
-        minimum_angle[T] = asin(2areas[T] / (ℓ2 * ℓ3))
-        maximum_angle[T] = asin(2areas[T] / (ℓ1 * ℓ2))
+        minimum_angle[T] = asin(min(2areas[T] / (ℓ2 * ℓ3), 1.0))
+        maximum_angle[T] = asin(min(2areas[T] / (ℓ1 * ℓ2), 1.0))
         radius_edge_ratio[T] = circumradii[T] / ℓ1
         edge_midpoints[T] = ((Tuple(0.5 * (p + q))), Tuple(0.5 * (q + r)), Tuple(0.5 * (r + p)))
         inradius[T] = 2areas[T] / (ℓ1 + ℓ2 + ℓ3)
@@ -1231,7 +1239,7 @@ function slow_encroachment_test(tri::Triangulation)
             end
         end
     end
-    not_in_dt_encroached_edges = Dict{E,Tuple{Bool, I}}()
+    not_in_dt_encroached_edges = Dict{E,Tuple{Bool,I}}()
     in_dt_encroached_edges = Dict{E,Tuple{Bool,I}}()
     while !isempty(ch)
         e, (b, k) = take!(ch)
@@ -1289,30 +1297,30 @@ function poor_triangulation_example()
         add_triangle!(tri, T)
     end
     return tri
-end 
+end
 
 function Base.:(==)(stats1::DT.TriangulationStatistics, stats2::DT.TriangulationStatistics)
     for f in fieldnames(DT.TriangulationStatistics)
-        if f ≠ :individual_statistics 
+        if f ≠ :individual_statistics
             if getfield(stats1, f) ≠ getfield(stats2, f)
                 return false
             end
         else
-            indiv_dict1 = stats1.individual_statistics 
+            indiv_dict1 = stats1.individual_statistics
             indiv_dict2 = stats2.individual_statistics
             if length(indiv_dict1) ≠ length(indiv_dict2)
                 return false
             end
             for (T, v) in indiv_dict1
                 V, flag = DT.contains_triangle(T, keys(indiv_dict1))
-                if !flag 
-                    return false 
+                if !flag
+                    return false
                 end
                 if v ≠ indiv_dict1[V]
                     return false
                 end
             end
-        end 
+        end
     end
     return true
-end  
+end

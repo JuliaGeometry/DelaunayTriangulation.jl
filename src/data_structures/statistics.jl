@@ -95,7 +95,7 @@ function Base.show(io::IO, ::MIME"text/plain", stats::TriangulationStatistics)
     println(io, "   Smallest area: $(get_smallest_area(stats))")
     println(io, "   Largest area: $(get_largest_area(stats))")
     println(io, "   Smallest radius-edge ratio: $(get_smallest_radius_edge_ratio(stats))")
-    print(io,   "   Largest radius-edge ratio: $(get_largest_radius_edge_ratio(stats))")
+    print(io, "   Largest radius-edge ratio: $(get_largest_radius_edge_ratio(stats))")
 end
 
 function statistics(tri::Triangulation)
@@ -200,7 +200,12 @@ end
 ## We could simplify some of this even further, e.g. keeping some more things as their square temporarily.
 ## Is it really worth the effort, though?
 
-triangle_area(ℓ₁²::Number, ℓ₂²::Number, ℓ₃²::Number) = sqrt(4ℓ₁² * ℓ₂² - (ℓ₁² + ℓ₂² - ℓ₃²)^2) / 4 # Heron's formula
+function triangle_area(ℓ₁²::Number, ℓ₂²::Number, ℓ₃²::Number)
+    A² = squared_triangle_area(ℓ₁², ℓ₂², ℓ₃²)
+    A = A² < 0.0 ? zero(A²) : sqrt(A²) # needed e.g. if A² is like -1.084020e-19
+    return A
+end
+squared_triangle_area(ℓ₁²::Number, ℓ₂²::Number, ℓ₃²::Number) = (4ℓ₁² * ℓ₂² - (ℓ₁² + ℓ₂² - ℓ₃²)^2) / 16 # Heron's formula
 triangle_minimum_angle(sine_minimum_angle) = asin(sine_minimum_angle)
 triangle_maximum_angle(sine_maximum_angle) = asin(sine_maximum_angle)
 triangle_circumradius(A, ℓmin², ℓmed², ℓmax²) = sqrt(ℓmin² * ℓmed² * ℓmax²) / (4A)
@@ -214,9 +219,13 @@ triangle_sine_maximum_angle_squared(A, ℓmin², ℓmed²) = 4A^2 / (ℓmin² * 
 triangle_sine_minimum_angle(A, ℓmed², ℓmax²) = sqrt(triangle_sine_minimum_angle_squared(A, ℓmed², ℓmax²))
 triangle_sine_maximum_angle(A, ℓmin², ℓmed²) = sqrt(triangle_sine_maximum_angle_squared(A, ℓmin², ℓmed²))
 
-function triangle_area(p, q, r)
+function squared_triangle_area(p, q, r)
     ℓ₁², ℓ₂², ℓ₃² = squared_triangle_lengths(p, q, r)
-    return triangle_area(ℓ₁², ℓ₂², ℓ₃²)
+    return squared_triangle_area(ℓ₁², ℓ₂², ℓ₃²)
+end
+function triangle_area(p, q, r)
+    A² = squared_triangle_area(p, q, r)
+    return sqrt(A²)
 end
 
 function squared_triangle_lengths(p, q, r)

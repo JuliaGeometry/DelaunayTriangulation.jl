@@ -428,7 +428,7 @@ function convert_boundary_points_to_indices(x::AA, y::AA; existing_points=NTuple
     if check_args
         @assert length(x) == length(y)
         @assert all(i -> length(x[i]) == length(y[i]), eachindex(x, y))
-        @assert x[begin][begin] ≈ x[end][end] 
+        @assert x[begin][begin] ≈ x[end][end]
         @assert y[begin][begin] ≈ y[end][end]
         @assert all(i -> x[i][end] ≈ x[i+1][begin], firstindex(x):(lastindex(x)-1))
         @assert all(i -> y[i][end] ≈ y[i+1][begin], firstindex(y):(lastindex(y)-1))
@@ -463,17 +463,17 @@ function convert_boundary_points_to_indices(x::A, y::A; existing_points=NTuple{2
     adjust && push!(nodes, nodes[begin])
     return nodes, existing_points
 end
-function convert_boundary_points_to_indices(xy::A; existing_points=NTuple{2,Float64}[], check_args=true,adjust=true) where {F,A<:AbstractVector{F}}
+function convert_boundary_points_to_indices(xy::A; existing_points=NTuple{2,Float64}[], check_args=true, adjust=true) where {F,A<:AbstractVector{F}}
     x = [getx(xy[i]) for i in eachindex(xy)]
     y = [gety(xy[i]) for i in eachindex(xy)]
     return convert_boundary_points_to_indices(x, y; existing_points=existing_points, check_args=check_args, adjust=adjust)
 end
-function convert_boundary_points_to_indices(xy::AA; existing_points=NTuple{2,Float64}[], check_args=true,adjust=true) where {F,A<:AbstractVector{F},AA<:AbstractVector{A}}
+function convert_boundary_points_to_indices(xy::AA; existing_points=NTuple{2,Float64}[], check_args=true, adjust=true) where {F,A<:AbstractVector{F},AA<:AbstractVector{A}}
     x = [[getx(xy[i][j]) for j in eachindex(xy[i])] for i in eachindex(xy)]
     y = [[gety(xy[i][j]) for j in eachindex(xy[i])] for i in eachindex(xy)]
     return convert_boundary_points_to_indices(x, y; existing_points=existing_points, check_args=check_args, adjust=adjust)
 end
-function convert_boundary_points_to_indices(xy::AAA; existing_points=NTuple{2,Float64}[], check_args=true,adjust=true) where {F,A<:AbstractVector{F},AA<:AbstractVector{A},AAA<:AbstractVector{AA}}
+function convert_boundary_points_to_indices(xy::AAA; existing_points=NTuple{2,Float64}[], check_args=true, adjust=true) where {F,A<:AbstractVector{F},AA<:AbstractVector{A},AAA<:AbstractVector{AA}}
     x = [[[getx(xy[i][j][k]) for k in eachindex(xy[i][j])] for j in eachindex(xy[i])] for i in eachindex(xy)]
     y = [[[gety(xy[i][j][k]) for k in eachindex(xy[i][j])] for j in eachindex(xy[i])] for i in eachindex(xy)]
     return convert_boundary_points_to_indices(x, y; existing_points=existing_points, check_args=check_args, adjust=adjust)
@@ -573,10 +573,10 @@ end
 Returns `(min(a, b), max(a, b))`.
 """
 function min_max(a, b)
-    if b < a 
-        return b, a 
-    else 
-        return a, b 
+    if b < a
+        return b, a
+    else
+        return a, b
     end
 end
 
@@ -590,5 +590,44 @@ function min_med_max(a, b, c)
     b, c = min_max(b, c)
     a, c = min_max(a, c)
     a, b = min_max(a, b)
-    return a, b, c 
+    return a, b, c
 end
+
+#=
+Doesn't really seem to help? Wonder why.
+"""
+    filtered_parametric_line(p, q, t)
+
+Evaluates the parametric line `p + t(q - p)` with `t ∈ [0, 1]` using a filter to improve 
+the collinearity of the resulting point.
+
+The refinement method is as follows:
+
+    1. First, evaluate `r = p + t(q-p)`.
+    2. Next, evaluate α = 2A/ℓ², where A is the signed area of the triangle pqr and ℓ is the length of the line segment pq. This serves as an appropriate scale for the collinearity, with `ℓ²` to eliminate any unit dependence (note the square to match `A`'s units).
+    3. We then replace `r[1]` with `r[1] + α * (q[2] - p[2])` and `r[2]` with `r[2] + α * (p[1] - q[1])`.
+
+Note that this matches Section 3.6 of https://perso.uclouvain.be/jean-francois.remacle/LMECA2170/robnotes.pdf, treating the new line as the perpendicular 
+bisector of the line segment pq, pushing it back onto `pq`. To help the method more, we use the exact predicate `orient` to check that we need to perform any filtering at all. (`orient` just returns the sign of the determinant 
+rather than its number, unfortunately. If we had it, we could use the fact that `orient` is twice the signed area).
+""" # ass e.g. https://people.eecs.berkeley.edu/~jrs/papers/robustr.pdf and the references therein, and https://perso.uclouvain.be/jean-francois.remacle/LMECA2170/robnotes.pdf
+function filtered_parametric_line(p, q, t)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
+    rx = px + t * (qx - px)
+    ry = py + t * (qy - py)
+    r = (rx, ry)
+    cert = point_position_relative_to_line(p, q, r)
+    filtering_not_needed = is_collinear(cert)
+    filtering_not_needed && return (rx, ry)
+    A² = abs(squared_triangle_area(p, q, r))
+    ℓ² = (px - qx)^2 + (py - qy)^2
+    iszero(A²) || iszero(ℓ²) && return (rx, ry) # A shouldn't be zero due to checking is_collinear already, but it could. Checking ℓ² is in case Ruppert's algorithm splits too many segments, giving indistinguishable segments
+    α² = 4A² / ℓ²^2 
+    α = sqrt(α²)
+    α = is_left(cert) ? α : -α # A should be the signed area
+    rx += α * (qy - py)
+    ry += α * (px - qx)
+    return rx, ry
+end
+=#

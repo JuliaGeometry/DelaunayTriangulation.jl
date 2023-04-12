@@ -165,11 +165,11 @@ function add_point_bowyer_watson!(
                 delete_edge!(edges, construct_edge(E, v, u))
                 add_edge!(edges, construct_edge(E, u, new_point))
                 add_edge!(edges, construct_edge(E, new_point, v))
-                if is_true(store_event_history) && edges === constrained_edges # edges === constrained_edges is a hack to avoid storing the same event twice.
-                    delete_edge!(event_history, construct_edge(E, u, v))
-                    add_edge!(event_history, construct_edge(E, u, new_point))
-                    add_edge!(event_history, construct_edge(E, new_point, v))
-                end
+            end
+            if is_true(store_event_history)
+                delete_edge!(event_history, construct_edge(E, u, v))
+                add_edge!(event_history, construct_edge(E, u, new_point))
+                add_edge!(event_history, construct_edge(E, new_point, v))
             end
         end
         if contains_boundary_edge(tri, u, v)
@@ -210,6 +210,7 @@ function add_point_bowyer_watson!(
     if is_on(flag) && (is_boundary_triangle(tri, V) || is_ghost_triangle(V) && !is_boundary_node(tri, new_point)[1])
         # ^ Need to fix the ghost edges if the point is added onto an existing boundary edge. Note that the last 
         #   condition is in case the ghost edges were already correctly added.
+        # Also: Why isn't some of this just done using the split_edge! operation?
         u, v = find_edge(tri, V, new_point)
         if is_boundary_edge(tri, u, v) || is_boundary_edge(tri, v, u) # If the edge is not itself a boundary edge, no need to worry.
             if !is_boundary_edge(tri, u, v)
@@ -240,11 +241,14 @@ function add_point_bowyer_watson!(
                     end
                 end
                 E = edge_type(tri)
-                edges = get_all_constrained_edges(tri)
-                delete_edge!(edges, construct_edge(E, u, v))
-                delete_edge!(edges, construct_edge(E, v, u))
-                add_edge!(edges, construct_edge(E, u, new_point))
-                add_edge!(edges, construct_edge(E, new_point, v))
+                constrained_edges = get_constrained_edges(tri)
+                all_constrained_edges = get_all_constrained_edges(tri)
+                for edges in (constrained_edges, all_constrained_edges)
+                    delete_edge!(edges, construct_edge(E, u, v))
+                    delete_edge!(edges, construct_edge(E, v, u))
+                    add_edge!(edges, construct_edge(E, u, new_point))
+                    add_edge!(edges, construct_edge(E, new_point, v))
+                end
                 if is_true(store_event_history)
                     delete_edge!(event_history, construct_edge(E, u, v))
                     add_edge!(event_history, construct_edge(E, u, new_point))
@@ -289,7 +293,7 @@ end
                 add_triangle!(tri, r, i, j; update_ghost_edges=false)
                 if is_true(store_event_history)
                     trit = triangle_type(tri)
-                add_triangle!(event_history, construct_triangle(trit, r, i, j))
+                    add_triangle!(event_history, construct_triangle(trit, r, i, j))
                 end
             end
         else

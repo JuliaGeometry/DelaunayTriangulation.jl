@@ -120,20 +120,20 @@ A queue for storing encroachment and triangle refinement priority queues.
 
 # Fields
 
-- `encroachment_queue::PriorityQueue{T,E,F,Base.Order.ForwardOrdering}`
+- `encroachment_queue::PriorityQueue{T,E,F,Base.Order.ReverseOrdering}`
 
 A priority queue for storing encroached segments to be split. The keys are the squared edge lengths.
-- `triangle_queue::PriorityQueue{T,E,F,Base.Order.ForwardOrdering}`
+- `triangle_queue::PriorityQueue{T,E,F,Base.Order.ReverseOrdering}`
 
 A priority queue for storing triangles to be refined. The keys are radius-edge ratio.
 """
 struct RefinementQueue{T,E,F}
-    encroachment_queue::PriorityQueue{E,F,Base.Order.ForwardOrdering}
-    triangle_queue::PriorityQueue{T,F,Base.Order.ForwardOrdering}
+    encroachment_queue::PriorityQueue{E,F,Base.Order.ReverseOrdering}
+    triangle_queue::PriorityQueue{T,F,Base.Order.ReverseOrdering}
     function RefinementQueue{T,E,F}() where {T,E,F}
         return new{T,E,F}(
-            PriorityQueue{E,F}(),
-            PriorityQueue{T,F}())
+            PriorityQueue{E,F,Base.Order.ReverseOrdering}(Base.Order.Reverse),
+            PriorityQueue{T,F,Base.Order.ReverseOrdering}(Base.Order.Reverse))
     end
 end
 
@@ -142,7 +142,7 @@ function encroachment_enqueue!(queue::RefinementQueue, e, e_length²)
     existing_segments = keys(encroachment_queue)
     if e ∈ existing_segments
         existing_length² = encroachment_queue[e]
-        if e_length² < existing_length²
+        if e_length² > existing_length²
             encroachment_queue[e] = e_length²
         end
     elseif reverse_edge(e) ∈ existing_segments
@@ -154,7 +154,6 @@ function encroachment_enqueue!(queue::RefinementQueue, e, e_length²)
         enqueue!(encroachment_queue, e, e_length²)
     end
     return nothing
-
 end
 
 function triangle_enqueue!(queue::RefinementQueue, T, ρ)
@@ -218,4 +217,31 @@ function initialise_refinement_queue(tri::Triangulation, targets::RefinementTarg
         end
     end
     return queue
+end
+
+"""
+    assess_added_triangles!(tri::Triangulation, queue, events, targets)
+
+Assess the quality of the triangles added to the triangulation `tri` after an insertion event,
+as stored in `events` and add them to the `queue` if they should be refined according to the mesh 
+targets defined in `targets`.
+"""
+function assess_added_triangles!(tri::Triangulation, queue, events, targets)
+    for T in each_added_triangle(events)
+        ρ, flag = assess_triangle_quality(tri, T, targets)
+        if flag
+            triangle_enqueue!(queue, T, ρ)
+        end
+        for e in triangle_edges(T)
+            if is_encroached(tri, e)
+                u, v = edge_indices(e)
+                p, q = get_point(tri, u, v)
+                px, py = getxy(p)
+                qx, qy = getxy(q)
+                ℓ² = (qx - px)^2 + (qy - py)^2
+                encroachment_enqueue!(queue, e, ℓ²)
+            end
+        end
+    end 
+    return nothing
 end

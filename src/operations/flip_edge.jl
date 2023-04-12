@@ -16,9 +16,9 @@ function flip_edge!(tri::Triangulation, i, j)
     return nothing
 end
 function flip_edge!(tri::Triangulation, i, j, k, ℓ)
-    delete_triangle!(tri, i, k, j; protect_boundary=true)
-    delete_triangle!(tri, i, j, ℓ; protect_boundary=true)
-    add_triangle!(tri, ℓ, k, j)
-    add_triangle!(tri, ℓ, i, k)
+    delete_triangle!(tri, i, k, j; protect_boundary=true, update_ghost_edges=false)
+    delete_triangle!(tri, i, j, ℓ; protect_boundary=true, update_ghost_edges=false)
+    add_triangle!(tri, ℓ, k, j; protect_boundary=true, update_ghost_edges=false)
+    add_triangle!(tri, ℓ, i, k; protect_boundary=true, update_ghost_edges=false)
     return nothing
 end

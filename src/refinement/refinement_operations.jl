@@ -45,6 +45,9 @@ function has_segment_changes(events::InsertionEventHistory)
     return any(!isempty, (events.added_segments, events.deleted_segments,
         events.added_boundary_segments, events.deleted_boundary_segments))
 end
+each_added_triangle(events::InsertionEventHistory) = each_triangle(events.added_triangles)
+each_added_segment(events::InsertionEventHistory) = each_edge(events.added_segments)
+each_added_boundary_segment(events::InsertionEventHistory) = each_edge(events.added_boundary_segments)
 
 function initialise_event_history(tri::Triangulation)
     T = triangle_type(tri)
@@ -179,5 +182,22 @@ function undo_boundary_segment_changes!(tri::Triangulation, events, circumcenter
     isempty(deleted_boundary_segments) && return nothing
     e = pop!(deleted_boundary_segments)
     merge_boundary_edge!(tri, e, circumcenter_index)
+    return nothing
+end
+
+function split_subsegment!(tri::Triangulation, queue, events, targets, e, rng=Random.default_rng())
+    #=
+    Unfortunately, the midpoint that we compute below might not exactly satisfy orient(p, q, r) == 0.
+    If the edge is constrained, then this doesn't matter as we just add the point and then break 
+    the edge in two. 
+    =#
+    empty!(events)
+    u, v = edge_indices(e)
+    p, q = get_point(tri, u, v)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
+    mx, my = (px + qx) / 2, (py + qy) / 2
+    add_point!(tri, mx, my; point_indices=nothing, m=nothing, try_points=nothing, rng, initial_search_point=u, update_representative_point=false, store_event_history=Val(true), event_history=events)
+    assess_added_triangles!(tri, queue, events, targets)
     return nothing
 end
