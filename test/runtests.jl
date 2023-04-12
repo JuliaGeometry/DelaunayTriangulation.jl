@@ -106,6 +106,9 @@ using SafeTestsets
         @safetestset "delete_point!" begin
             include("operations/delete_point.jl")
         end
+        @safetestset "(un)lock_convex_hull!.jl" begin
+            include("operations/lock_convex_hull.jl")
+        end
     end
 
     @testset verbose = true "Predicates" begin
@@ -163,7 +166,6 @@ using SafeTestsets
         end
     end
 
-    #=
     @testset verbose = true "Refinement" begin 
         @safetestset "Encroachment" begin 
             include("refinement/encroachment.jl")
@@ -174,6 +176,9 @@ using SafeTestsets
         @safetestset "Refinement Operations" begin
             include("refinement/refinement_operations.jl")
         end
+        @safetestset "Refinement" begin
+            include("refinement/refinement.jl")
+        end
     end
-    =#
+    
 end

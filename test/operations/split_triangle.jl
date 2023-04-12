@@ -200,14 +200,14 @@ include("../helper_functions.jl")
     end
 end
 
-@testset "complete_split_and_legalise!, also with constrained edges" begin
+@testset "complete_split_triangle_and_legalise!, also with constrained edges" begin
     for _ in 1:100
         tri = fixed_shewchuk_example_constrained()
         function test_fnc(tri, i, j, k)
             p, q, r = get_point(tri, i, j, k)
             c = DT.triangle_centroid(p, q, r)
             DT.push_point!(tri, c)
-            DT.complete_split_and_legalise!(tri, i, j, k, num_points(tri))
+            DT.complete_split_triangle_and_legalise!(tri, i, j, k, num_points(tri))
             validate_statistics(tri)
             return validate_triangulation(tri)
         end
@@ -230,7 +230,7 @@ end
         p, q, r = get_point(tri, i, j, k)
         c = DT.triangle_centroid(p, q, r)
         DT.push_point!(tri, c)
-        DT.complete_split_and_legalise!(tri, i, j, k, num_points(tri))
+        DT.complete_split_triangle_and_legalise!(tri, i, j, k, num_points(tri))
         validate_statistics(tri)
         @test validate_triangulation(tri)
         @test DT.contains_constrained_edge(tri, 4, 21)
@@ -240,7 +240,7 @@ end
         p, q, r = get_point(tri, i, j, k)
         c = DT.triangle_centroid(p, q, r)
         DT.push_point!(tri, c)
-        DT.complete_split_and_legalise!(tri, i, j, k, num_points(tri))
+        DT.complete_split_triangle_and_legalise!(tri, i, j, k, num_points(tri))
         validate_statistics(tri)
         @test validate_triangulation(tri)
         @test DT.contains_constrained_edge(tri, 1, 11)

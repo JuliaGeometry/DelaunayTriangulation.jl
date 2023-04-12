@@ -185,43 +185,22 @@ end
     storage = DT.initialise_event_history(tri)
     T = (16, 55, 17)
     stats1 = deepcopy(statistics(tri))
-    @test DT.try_circumcenter_insertion!(tri, T, storage, queue)
+    @test !DT.try_circumcenter_insertion!(tri, T, storage, queue)
     stats2 = deepcopy(statistics(tri))
     @test validate_triangulation(tri; check_ghost_triangle_orientation=false, check_ghost_triangle_delaunay=false)
     @test stats1 == stats2
 
     T = (63, 92, 62)
     stats1 = deepcopy(statistics(tri))
-    @test DT.try_circumcenter_insertion!(tri, T, storage, queue)
+    @test !DT.try_circumcenter_insertion!(tri, T, storage, queue)
     stats2 = deepcopy(statistics(tri))
     @test validate_triangulation(tri; check_ghost_triangle_orientation=false, check_ghost_triangle_delaunay=false)
     @test stats1 == stats2
 
     T = (19, 16, 97)
     stats1 = deepcopy(statistics(tri))
-    @test DT.try_circumcenter_insertion!(tri, T, storage, queue)
+    @test !DT.try_circumcenter_insertion!(tri, T, storage, queue)
     stats2 = deepcopy(statistics(tri))
     @test validate_triangulation(tri; check_ghost_triangle_orientation=false, check_ghost_triangle_delaunay=false)
     @test stats1 == stats2
 end
-
-using ..DelaunayTriangulation: edge_indices, add_point!
-
-rng = StableRNG(29201)
-tri = triangulate([rand(rng, 2) for _ in 1:50], delete_ghosts=false)
-add_edge!(tri, 27, 30)
-targets = DT.RefinementTargets(; min_angle=30.0)
-queue = DT.initialise_refinement_queue(tri, targets)
-event = DT.initialise_event_history(tri)
-tri1 = deepcopy(tri)
-DT.split_all_encroached_segments!(tri, queue, event, targets)
-
-
-e = (30, 15)
-u, v = edge_indices(e)
-p, q = get_point(tri, u, v)
-px, py = getxy(p)
-qx, qy = getxy(q)
-mx, my = (px + qx) / 2, (py + qy) / 2
-add_point!(tri, mx, my; point_indices=nothing, m=nothing, try_points=nothing, rng, initial_search_point=u, update_representative_point=false, store_event_history=Val(true), event_history=event)
-

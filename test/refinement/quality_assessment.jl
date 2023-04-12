@@ -84,41 +84,124 @@ end
 end
 
 @testset "Building the priority queues" begin
-    tri = poor_triangulation_example()
-    max_area = 50.0
-    min_angle = 20.0
-    targets = DT.RefinementTargets(;
-        max_area,
-        min_angle
-    )
-    stats = statistics(tri)
-    queue = DT.initialise_refinement_queue(tri, targets)
-    all_encroachment = Any[]
-    all_triangle = Any[]
-    while !DT.encroachment_queue_is_empty(queue)
-        e = DT.encroachment_dequeue!(queue)
-        u, v = DT.edge_indices(e)
-        p, q = get_point(tri, u, v)
-        ℓ² = norm(p .- q)^2
-        push!(all_encroachment, (e, ℓ²))
+    @testset "Unconstrained triangulation" begin
+        tri = poor_triangulation_example()
+        max_area = 50.0
+        min_angle = 20.0
+        targets = DT.RefinementTargets(;
+            max_area,
+            min_angle
+        )
+        stats = statistics(tri)
+        queue = DT.initialise_refinement_queue(tri, targets)
+        @test DT.encroachment_queue_is_empty(queue)
+        all_encroachment = Any[]
+        all_triangle = Any[]
+        while !DT.encroachment_queue_is_empty(queue)
+            e = DT.encroachment_dequeue!(queue)
+            u, v = DT.edge_indices(e)
+            p, q = get_point(tri, u, v)
+            ℓ² = norm(p .- q)^2
+            push!(all_encroachment, (e, ℓ²))
+        end
+        while !DT.triangle_queue_is_empty(queue)
+            T = DT.triangle_dequeue!(queue)
+            ρ = DT.get_radius_edge_ratio(stats, T)
+            push!(all_triangle, (T, ρ))
+        end
+        @test issorted(last.(all_encroachment), rev=true)
+        @test issorted(last.(all_triangle), rev=true)
+        for (e, ℓ²) in all_encroachment
+            u, v = DT.edge_indices(e)
+            p, q = get_point(tri, u, v)
+            ℓ²′ = norm(p .- q)^2
+            @test ℓ² ≈ ℓ²′
+        end
+        for (T, ρ) in all_triangle
+            ρ′ = DT.get_radius_edge_ratio(stats, T)
+            @test ρ ≈ ρ′
+        end
+        @test DT.isempty(queue.encroachment_queue)
+        @test DT.isempty(queue.triangle_queue)
+        @test DT.isempty(queue)
     end
-    while !DT.triangle_queue_is_empty(queue)
-        T = DT.triangle_dequeue!(queue)
-        ρ = DT.get_radius_edge_ratio(stats, T)
-        push!(all_triangle, (T, ρ))
+
+    @testset "Constrained triangulation" begin
+        curve_1 = [[
+            (0.0, 0.0), (4.0, 0.0), (8.0, 0.0), (12.0, 0.0), (12.0, 4.0),
+            (12.0, 8.0), (14.0, 10.0), (16.0, 12.0), (16.0, 16.0),
+            (14.0, 18.0), (12.0, 20.0), (12.0, 24.0), (12.0, 28.0),
+            (8.0, 28.0), (4.0, 28.0), (0.0, 28.0), (-2.0, 26.0), (0.0, 22.0),
+            (0.0, 18.0), (0.0, 10.0), (0.0, 8.0), (0.0, 4.0), (-4.0, 4.0),
+            (-4.0, 0.0), (0.0, 0.0),
+        ]]
+        curve_2 = [[
+            (4.0, 26.0), (8.0, 26.0), (10.0, 26.0), (10.0, 24.0),
+            (10.0, 22.0), (10.0, 20.0), (8.0, 20.0), (6.0, 20.0),
+            (4.0, 20.0), (4.0, 22.0), (4.0, 24.0), (4.0, 26.0)
+        ]]
+        curve_3 = [[(4.0, 16.0), (12.0, 16.0), (12.0, 14.0), (4.0, 14.0), (4.0, 16.0)]]
+        curve_4 = [[(4.0, 8.0), (10.0, 8.0), (8.0, 6.0), (6.0, 6.0), (4.0, 8.0)]]
+        curves = [curve_1, curve_2, curve_3, curve_4]
+        points = [
+            (2.0, 26.0), (2.0, 24.0), (6.0, 24.0), (6.0, 22.0), (8.0, 24.0), (8.0, 22.0),
+            (2.0, 22.0), (0.0, 26.0), (10.0, 18.0), (8.0, 18.0), (4.0, 18.0), (2.0, 16.0),
+            (2.0, 12.0), (6.0, 12.0), (2.0, 8.0), (2.0, 4.0), (4.0, 2.0),
+            (-2.0, 2.0), (4.0, 6.0), (10.0, 2.0), (10.0, 6.0), (8.0, 10.0), (4.0, 10.0),
+            (10.0, 12.0), (12.0, 12.0), (14.0, 26.0), (16.0, 24.0), (18.0, 28.0),
+            (16.0, 20.0), (18.0, 12.0), (16.0, 8.0), (14.0, 4.0), (14.0, -2.0),
+            (6.0, -2.0), (2.0, -4.0), (-4.0, -2.0), (-2.0, 8.0), (-2.0, 16.0),
+            (-4.0, 22.0), (-4.0, 26.0), (-2.0, 28.0), (6.0, 15.0), (7.0, 15.0),
+            (8.0, 15.0), (9.0, 15.0), (10.0, 15.0), (6.2, 7.8),
+            (5.6, 7.8), (5.6, 7.6), (5.6, 7.4), (6.2, 7.4), (6.0, 7.6),
+            (7.0, 7.8), (7.0, 7.4)]
+        boundary_nodes, points = convert_boundary_points_to_indices(curves; existing_points=points)
+        uncons_tri = triangulate(points)
+        cons_tri = triangulate(points; boundary_nodes=boundary_nodes)
+        tri = deepcopy(cons_tri)
+        max_area = 50.0
+        min_angle = 20.0
+        targets = DT.RefinementTargets(;
+            max_area,
+            min_angle
+        )
+        stats = statistics(tri)
+        queue = DT.initialise_refinement_queue(tri, targets)
+        @test !DT.encroachment_queue_is_empty(queue)
+        all_encroachment = Any[]
+        all_triangle = Any[]
+        while !DT.encroachment_queue_is_empty(queue)
+            ℓ² = peek(queue.encroachment_queue)[2]
+            e = DT.encroachment_dequeue!(queue)
+            @test DT.is_encroached(tri, e)
+            push!(all_encroachment, (e, ℓ²))
+        end
+        while !DT.triangle_queue_is_empty(queue)
+            ρ = peek(queue.triangle_queue)[2]
+            T = DT.triangle_dequeue!(queue)
+            push!(all_triangle, (T, ρ))
+        end
+        @test issorted(last.(all_encroachment), rev=true)
+        @test issorted(last.(all_triangle), rev=true)
+        for (e, ℓ²) in all_encroachment
+            u, v = DT.edge_indices(e)
+            p, q = get_point(tri, u, v)
+            ℓ²′ = norm(p .- q)^2
+            @test ℓ² ≈ ℓ²′
+        end
+        for (T, ρ) in all_triangle
+            ρ′ = DT.get_radius_edge_ratio(stats, T)
+            @test ρ ≈ ρ′
+            A = DT.get_area(stats, T)
+            u, v, w = indices(T)
+            p, q, r = get_point(tri, u, v, w)
+            A′ = DT.triangle_area(p, q, r)
+            ρ2 = DT.triangle_radius_edge_ratio(p, q, r)
+            @test A ≈ A′
+            @test ρ ≈ ρ2
+            @test A ≥ targets.max_area || ρ ≥ targets.max_radius_edge_ratio
+        end
+        @test DT.isempty(queue.encroachment_queue)
+        @test DT.isempty(queue.triangle_queue)
     end
-    @test issorted(last.(all_encroachment), rev=true)
-    @test issorted(last.(all_triangle), rev=true)
-    for (e, ℓ²) in all_encroachment
-        u, v = DT.edge_indices(e)
-        p, q = get_point(tri, u, v)
-        ℓ²′ = norm(p .- q)^2
-        @test ℓ² ≈ ℓ²′
-    end
-    for (T, ρ) in all_triangle
-        ρ′ = DT.get_radius_edge_ratio(stats, T)
-        @test ρ ≈ ρ′
-    end
-    @test DT.isempty(queue.encroachment_queue)
-    @test DT.isempty(queue.triangle_queue)
 end

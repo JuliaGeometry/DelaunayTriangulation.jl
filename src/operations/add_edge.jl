@@ -12,10 +12,12 @@ function add_edge!(tri::Triangulation, segment; rng::AbstractRNG=Random.default_
         add_edge!(constrained_edges, e)
     end
     all_constrained_edges = get_all_constrained_edges(tri)
-    if (!contains_edge(e, constrained_edges) || !contains_edge(reverse_edge(e), constrained_edges)) && !contains_boundary_edge(tri, segment) # In case it isn't already in the list, let's make sure we add it
+    if !(contains_edge(e, constrained_edges) || contains_edge(reverse_edge(e), constrained_edges)) && !contains_boundary_edge(tri, segment) # In case it isn't already in the list, let's make sure we add it
         add_edge!(constrained_edges, e)
     end
-    add_edge!(all_constrained_edges, e)
+    if !contains_edge(reverse_edge(e), all_constrained_edges)
+        add_edge!(all_constrained_edges, e)
+    end
     if edge_exists(tri, e) || edge_exists(tri, reverse_edge(e)) # Don't need to add edges that already appear
         return nothing
     end

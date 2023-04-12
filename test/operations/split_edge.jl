@@ -149,40 +149,40 @@ include("../helper_functions.jl")
     end
 end
 
-@testset "complete_split_and_legalise!" begin
+@testset "complete_split_edge_and_legalise!" begin
     @testset "Free edges and constrained segments" begin
         for i in 1:100
             @show i
             tri = fixed_shewchuk_example_constrained()
             DT.push_point!(tri, 4.0, 1.5)
-            DT.complete_split_and_legalise!(tri, 9, 10, num_points(tri))
+            DT.complete_split_edge_and_legalise!(tri, 9, 10, num_points(tri))
             validate_triangulation(tri)
             DT.push_point!(tri, 4.0, 1.3)
-            DT.complete_split_and_legalise!(tri, 12, 9, num_points(tri))
+            DT.complete_split_edge_and_legalise!(tri, 12, 9, num_points(tri))
             validate_triangulation(tri)
             DT.push_point!(tri, 4.0 + 1e-13, 2.2 - 1e-9)
-            DT.complete_split_and_legalise!(tri, 12, 10, num_points(tri))
+            DT.complete_split_edge_and_legalise!(tri, 12, 10, num_points(tri))
             validate_triangulation(tri)
             DT.push_point!(tri, 4.0, 0.0)
-            DT.complete_split_and_legalise!(tri, 4, 5, num_points(tri))
+            DT.complete_split_edge_and_legalise!(tri, 4, 5, num_points(tri))
             @test DT.is_boundary_index(get_adjacent(tri, 15, 4))
             @test DT.is_boundary_index(get_adjacent(tri, 5, 15))
             add_edge!(tri, 2, 9)
             DT.push_point!(tri, 2.0, 1.0)
-            DT.complete_split_and_legalise!(tri, 2, 9, num_points(tri))
+            DT.complete_split_edge_and_legalise!(tri, 2, 9, num_points(tri))
             @test compare_edge_vectors(collect(get_constrained_edges(tri)), [(16, 9), (2, 16)])
             @test compare_edge_vectors(collect(get_all_constrained_edges(tri)), [(16, 9), (2, 16)])
             @test !DT.has_boundary_nodes(tri)
             @test validate_triangulation(tri)
             validate_statistics(tri)
             DT.push_point!(tri, 0.5, 1.000000000000000691982)
-            DT.complete_split_and_legalise!(tri, 2, 16, num_points(tri))
+            DT.complete_split_edge_and_legalise!(tri, 2, 16, num_points(tri))
             @test validate_triangulation(tri)
             validate_statistics(tri)
             @test compare_edge_vectors(collect(get_constrained_edges(tri)), [(16, 9), (2, 17), (17, 16)])
             @test compare_edge_vectors(collect(get_all_constrained_edges(tri)), [(16, 9), (2, 17), (17, 16)])
             DT.push_point!(tri, 0.5, -0.0000000000000000000001293)
-            DT.complete_split_and_legalise!(tri, 1, 4, num_points(tri))
+            DT.complete_split_edge_and_legalise!(tri, 1, 4, num_points(tri))
             @test validate_triangulation(tri; check_ghost_triangle_delaunay=false)
             validate_statistics(tri)
         end
@@ -233,7 +233,7 @@ end
                 qx, qy = getxy(q)
                 mx, my = (px + qx) / 2, (py + qy) / 2
                 DT.push_point!(tri, mx, my)
-                DT.complete_split_and_legalise!(tri, i, j, num_points(tri))
+                DT.complete_split_edge_and_legalise!(tri, i, j, num_points(tri))
                 flag = validate_triangulation(tri; check_ghost_triangle_delaunay=false, check_ghost_triangle_orientation=false)
                 validate_statistics(tri)
                 return flag
@@ -250,7 +250,7 @@ end
             qx, qy = getxy(q)
             mx, my = (px + qx) / 2, (py + qy) / 2
             DT.push_point!(tri, mx, my)
-            DT.complete_split_and_legalise!(tri, i, j, num_points(tri))
+            DT.complete_split_edge_and_legalise!(tri, i, j, num_points(tri))
             @test get_adjacent(tri, 97, 102) == DT.BoundaryIndex - 3
             @test get_adjacent(tri, 102, 96) == DT.BoundaryIndex - 3
             flag = validate_triangulation(tri; check_ghost_triangle_delaunay=false, check_ghost_triangle_orientation=false)

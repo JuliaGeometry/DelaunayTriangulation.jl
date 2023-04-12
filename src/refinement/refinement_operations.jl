@@ -1,82 +1,4 @@
 """
-    InsertionEventHistory{T, E}
-
-A struct to store the events that occur during the insertion of a new point into a triangulation.
-
-# Fields 
-- `added_triangles::Set{T}`
-
-A set of triangles that are added to the triangulation after the insertion.
-- `deleted_triangles::Set{T}`
-
-A set of triangles that are deleted from the triangulation after the insertion.
-- `added_segments::Set{E}`
-
-A set of segments that are added to the triangulation after the insertion.
-- `deleted_segments::Set{E}`
-
-A set of segments that are deleted from the triangulation after the insertion.
-- `added_boundary_segments::Set{E}`
-
-A set of boundary segments that are added to the triangulation after the insertion.
-- `deleted_boundary_segments::Set{E}`
-
-A set of boundary segments that are deleted from the triangulation after the insertion.
-"""
-struct InsertionEventHistory{T,E}
-    added_triangles::Set{T}
-    deleted_triangles::Set{T}
-    added_segments::Set{E}
-    deleted_segments::Set{E}
-    added_boundary_segments::Set{E}
-    deleted_boundary_segments::Set{E}
-end
-add_triangle!(events::InsertionEventHistory, T) = push!(events.added_triangles, T)
-delete_triangle!(events::InsertionEventHistory, T) = push!(events.deleted_triangles, T)
-add_edge!(events::InsertionEventHistory, e) = push!(events.added_segments, e)
-delete_edge!(events::InsertionEventHistory, e) = push!(events.deleted_segments, e)
-function split_boundary_edge!(events::InsertionEventHistory{T,E}, u, v, new_point) where {T,E}
-    push!(events.deleted_boundary_segments, construct_edge(E, u, v))
-    push!(events.added_boundary_segments, construct_edge(E, u, new_point))
-    push!(events.added_boundary_segments, construct_edge(E, new_point, v))
-    return nothing
-end
-function has_segment_changes(events::InsertionEventHistory)
-    return any(!isempty, (events.added_segments, events.deleted_segments,
-        events.added_boundary_segments, events.deleted_boundary_segments))
-end
-each_added_triangle(events::InsertionEventHistory) = each_triangle(events.added_triangles)
-each_added_segment(events::InsertionEventHistory) = each_edge(events.added_segments)
-each_added_boundary_segment(events::InsertionEventHistory) = each_edge(events.added_boundary_segments)
-
-function initialise_event_history(tri::Triangulation)
-    T = triangle_type(tri)
-    E = edge_type(tri)
-    add_set = Set{T}()
-    delete_set = Set{T}()
-    add_edge_set = Set{E}()
-    delete_edge_set = Set{E}()
-    add_bnd_set = Set{E}()
-    delete_bnd_set = Set{E}()
-    sizehint!(add_set, 16)
-    sizehint!(delete_set, 16)
-    sizehint!(add_edge_set, 8)
-    sizehint!(delete_edge_set, 8)
-    sizehint!(add_bnd_set, 8)
-    sizehint!(delete_bnd_set, 8)
-    return InsertionEventHistory{T,E}(Set{T}(), Set{T}(), Set{E}(), Set{E}(), Set{E}(), Set{E}())
-end
-function Base.empty!(events::InsertionEventHistory)
-    empty!(events.added_triangles)
-    empty!(events.deleted_triangles)
-    empty!(events.added_segments)
-    empty!(events.deleted_segments)
-    empty!(events.added_boundary_segments)
-    empty!(events.deleted_boundary_segments)
-    return nothing
-end
-
-"""
     try_circumcenter_insertion!(tri::Triangulation, T, events::InsertionEventHistory, queue::RefinementQueue, rng::AbstractRNG=Random.default_rng())
 
 Attempt to insert a new point into the triangulation at the circumcenter of the triangle `T`. If the insertion causes edges to be encroached, 
@@ -122,7 +44,8 @@ function try_circumcenter_insertion!(tri::Triangulation, T, events::InsertionEve
     any_encroached = false
     circumcenter_index = num_points(tri)
     for edge in get_adjacent2vertex(tri, circumcenter_index)
-        if is_encroached(tri, edge)
+        if contains_constrained_edge(tri, edge) && is_encroached(tri, edge)
+            @show edge
             @show edge
             any_encroached = true
             u, v = edge_indices(edge)
@@ -136,7 +59,8 @@ function try_circumcenter_insertion!(tri::Triangulation, T, events::InsertionEve
 
     ## If we found an encroached edge, we need to completely reverse the insertion! Thankfully, our event storage can be used.
     any_encroached && undo_circumcenter_insertion!(tri, events, circumcenter_index)
-    return any_encroached
+    insertion_success = !any_encroached
+    return insertion_success
 end
 
 function undo_circumcenter_insertion!(tri::Triangulation, events, circumcenter_index)
@@ -185,19 +109,38 @@ function undo_boundary_segment_changes!(tri::Triangulation, events, circumcenter
     return nothing
 end
 
-function split_subsegment!(tri::Triangulation, queue, events, targets, e, rng=Random.default_rng())
-    #=
-    Unfortunately, the midpoint that we compute below might not exactly satisfy orient(p, q, r) == 0.
-    If the edge is constrained, then this doesn't matter as we just add the point and then break 
-    the edge in two. 
-    =#
+function split_subsegment!(tri::Triangulation, queue, events, targets, e)
+    F = number_type(tri)
     empty!(events)
     u, v = edge_indices(e)
     p, q = get_point(tri, u, v)
+    split = F(inv(2))
     px, py = getxy(p)
     qx, qy = getxy(q)
-    mx, my = (px + qx) / 2, (py + qy) / 2
-    add_point!(tri, mx, my; point_indices=nothing, m=nothing, try_points=nothing, rng, initial_search_point=u, update_representative_point=false, store_event_history=Val(true), event_history=events)
+    mx, my = px + split * (qx - px), py + split * (qy - py)
+    push_point!(tri, mx, my)
+    r = num_points(tri)
+    complete_split_edge_and_legalise!(tri, u, v, r, Val(true), events)
     assess_added_triangles!(tri, queue, events, targets)
     return nothing
+end
+
+function split_all_encroached_segments!(tri::Triangulation, queue, events, targets)
+    iters = 0
+    while !encroachment_queue_is_empty(queue) && !compare_points(targets, num_points(tri))
+        iters += 1
+        @show iters
+        e = encroachment_dequeue!(queue)
+        if !edge_exists(tri, e) && !edge_exists(tri, reverse_edge(e))
+            continue
+        end
+        split_subsegment!(tri, queue, events, targets, e)
+    end
+    return nothing
+end
+
+function split_triangle!(tri::Triangulation, queue::RefinementQueue, events::InsertionEventHistory, T, rng::AbstractRNG=Random.default_rng())
+    empty!(events)
+    success = try_circumcenter_insertion!(tri, T, events, queue, rng)
+    return success
 end
