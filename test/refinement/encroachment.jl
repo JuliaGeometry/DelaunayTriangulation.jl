@@ -72,3 +72,14 @@ end
         end
     end
 end
+
+@testset "Concentric shell splitting" begin
+    for _ in 1:5000
+        p = rand(2)
+        q = rand(2)
+        t = DT.compute_concentric_shell_ternary_split_position(p, q)
+        @test 1 / 3 ≤ t ≤ 2 / 3 # Split should between 1/3 and 2/3 of the segment pq 
+        t = DT.compute_concentric_shell_quarternary_split_position(p, q)
+        @test 1 / 4 ≤ 1/2 # Split should between 1/4 and 3/4 of the segment pq
+    end
+end

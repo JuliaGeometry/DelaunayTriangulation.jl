@@ -1,5 +1,5 @@
 """
-    RefinementTargets{A,R,P}
+    RefinementTargets{A,M,R,P}
 
 A struct containing the user-specified refinement targets. 
 
@@ -9,6 +9,9 @@ A struct containing the user-specified refinement targets.
 
 The maximum area of a triangle. This can also be a function of the form `f(T, p, q, r, A)`, where `T` is the triangle` with area and coordinates `p`, `q`, `r`, returning `true` if the triangle should be refined.
 
+- `min_area::M`
+
+The minimum area of a triangle. This is used to test for the presence of small triangles, which can be a sign of poor quality / convergence. For example, if a circumcenter is attempted to be added into a triangle with area below `min_area`, it is prevented. Defaults to 0.0.
 - `max_radius_edge_ratio::R`
 
 The maximum permitted radius-edge ratio. This can also be a function of the form `f(T, p, q, r, ρ)`, where `T` is the triangle` with ratio `ρ` and coordinates `p`, `q`, `r`, returning `true` if the triangle should be refined. Defaults to 1.0, corresponding to a minimum angle of 30°.
@@ -30,16 +33,21 @@ which allows for a user to specify either the maximum radius-edge ratio `ρ` or 
 
 Note that you cannot use `min_angle` as a function, unlike `max_radius_edge_ratio`. If you want to use a function, use `max_radius_edge_ratio` instead.
 """
-struct RefinementTargets{A,R,P}
+struct RefinementTargets{A,M,R,P}
     max_area::A
+    min_area::M
     max_radius_edge_ratio::R
     max_points::P
     function RefinementTargets(;
+        min_area=zero(Float64),
         max_area=typemax(Float64),
         max_radius_edge_ratio=nothing,
         max_points=typemax(Int64),
         min_angle=nothing
     )
+        if min_area isa Number && max_area isa Number && min_area ≥ max_area
+            throw(ArgumentError("Cannot have min_area ($min_area) ≥ max_area ($max_area)."))
+        end
         if min_angle isa Function
             throw(ArgumentError("Cannot provide min_angle as a function."))
         end
@@ -71,6 +79,6 @@ struct RefinementTargets{A,R,P}
             @warn "The provided maximum number of points, $max_points, is negative. Replacing with Inf."
             max_points = typemax(Int64)
         end
-        return new{typeof(max_area),typeof(max_radius_edge_ratio),typeof(max_points)}(max_area, max_radius_edge_ratio, max_points)
+        return new{typeof(max_area),typeof(min_area),typeof(max_radius_edge_ratio),typeof(max_points)}(max_area, min_area, max_radius_edge_ratio, max_points)
     end
 end

@@ -1,15 +1,18 @@
 """
-    try_circumcenter_insertion!(tri::Triangulation, T, events::InsertionEventHistory, queue::RefinementQueue, rng::AbstractRNG=Random.default_rng())
+    try_circumcenter_insertion!(tri::Triangulation, T, events::InsertionEventHistory, queue::RefinementQueue, exterior_curve_index=1, rng::AbstractRNG=Random.default_rng())
 
 Attempt to insert a new point into the triangulation at the circumcenter of the triangle `T`. If the insertion causes edges to be encroached, 
 the insertion is undone and the encroached edges are queued for refinement. Otherwise, the insertion is accepted and the new point is added to the 
 triangulation.
 """
-function try_circumcenter_insertion!(tri::Triangulation, T, events::InsertionEventHistory, queue::RefinementQueue, rng::AbstractRNG=Random.default_rng())
+function try_circumcenter_insertion!(tri::Triangulation, T, events::InsertionEventHistory, queue::RefinementQueue, exterior_curve_index=1, rng::AbstractRNG=Random.default_rng())
     empty!(events)
     ## Find the circumcenter
     i, j, k = indices(T)
     p, q, r = get_point(tri, i, j, k)
+    A² = squared_triangle_area(p, q, r)
+    A² ≤ zero(A²) && return false
+
     cx, cy = triangle_circumcenter(p, q, r)
 
     ## Where should we start the point location?
@@ -37,7 +40,8 @@ function try_circumcenter_insertion!(tri::Triangulation, T, events::InsertionEve
         initial_search_point=point_location_initial_vertex,
         update_representative_point=false,
         store_event_history=Val(true),
-        event_history=events
+        event_history=events,
+        exterior_curve_index=exterior_curve_index,
     )
 
     ## Now we need to search the edges opposite to the circumcenter to see if we have introduced any new encroached edges 
@@ -45,8 +49,6 @@ function try_circumcenter_insertion!(tri::Triangulation, T, events::InsertionEve
     circumcenter_index = num_points(tri)
     for edge in get_adjacent2vertex(tri, circumcenter_index)
         if contains_constrained_edge(tri, edge) && is_encroached(tri, edge)
-            @show edge
-            @show edge
             any_encroached = true
             u, v = edge_indices(edge)
             p, q = get_point(tri, u, v)
@@ -109,23 +111,58 @@ function undo_boundary_segment_changes!(tri::Triangulation, events, circumcenter
     return nothing
 end
 
-function split_subsegment!(tri::Triangulation, queue, events, targets, e)
-    F = number_type(tri)
+function compute_split_position(tri::Triangulation, p, q, e, subsegment_list)
+    if e ∉ subsegment_list
+        # Split at the midpoint 
+        px, py = getxy(p)
+        qx, qy = getxy(q)
+        mx, my = px + (qx - px) / 2, py + (qy - py) / 2
+    else
+        num_adjoin = segment_vertices_adjoin_other_segments(tri, e)
+        if num_adjoin == 2
+            # If both vertices adjoin another segment, then the segments can undergo up to two unbalanced splits 
+            # on each other. To overcome this, we instead split the segment to be between 1/4 and 1/2 of the split subsegment.
+            t = compute_concentric_shell_quarternary_split_position(p, q)
+        elseif num_adjoin == 1
+            # If we just have one other adjoining segment, we can split the segment to be between 1/3 and 2/3 of the split subsegment.
+            t = compute_concentric_shell_ternary_split_position(p, q)
+        else
+            # If there are no other adjoining segments, there's no need to worry about ping-pong encroachment.
+            t = inv(2.0)
+        end
+        # Need to place the split on the side that is closer to the midpoint
+        t′ = 1.0 - t
+        px, py = getxy(p)
+        qx, qy = getxy(q)
+        mx, my = px + (qx - px) / 2, py + (qy - py) / 2
+        ax, ay = px + t * (qx - px), py + t * (qy - py)
+        bx, by = px + t′ * (qx - px), py + t′ * (qy - py)
+        if (ax - mx)^2 + (ay - my)^2 > (bx - mx)^2 + (by - my)^2
+            return bx, by
+        else
+            return ax, ay
+        end
+    end
+end
+
+function split_subsegment!(tri::Triangulation, queue, events, targets, subsegment_list, e)
     empty!(events)
     u, v = edge_indices(e)
     p, q = get_point(tri, u, v)
-    split = F(inv(2))
-    px, py = getxy(p)
-    qx, qy = getxy(q)
-    mx, my = px + split * (qx - px), py + split * (qy - py)
+    mx, my = compute_split_position(tri, p, q, e, subsegment_list)
     push_point!(tri, mx, my)
     r = num_points(tri)
     complete_split_edge_and_legalise!(tri, u, v, r, Val(true), events)
+    E = edge_type(tri)
+    add_edge!(subsegment_list, construct_edge(E, u, r))
+    add_edge!(subsegment_list, construct_edge(E, r, v))
+    add_edge!(subsegment_list, construct_edge(E, r, u))
+    add_edge!(subsegment_list, construct_edge(E, v, r))
     assess_added_triangles!(tri, queue, events, targets)
     return nothing
 end
 
-function split_all_encroached_segments!(tri::Triangulation, queue, events, targets)
+function split_all_encroached_segments!(tri::Triangulation, queue, events, targets, subsegment_list)
     iters = 0
     while !encroachment_queue_is_empty(queue) && !compare_points(targets, num_points(tri))
         iters += 1
@@ -134,13 +171,13 @@ function split_all_encroached_segments!(tri::Triangulation, queue, events, targe
         if !edge_exists(tri, e) && !edge_exists(tri, reverse_edge(e))
             continue
         end
-        split_subsegment!(tri, queue, events, targets, e)
+        split_subsegment!(tri, queue, events, targets, subsegment_list, e)
     end
     return nothing
 end
 
-function split_triangle!(tri::Triangulation, queue::RefinementQueue, events::InsertionEventHistory, T, rng::AbstractRNG=Random.default_rng())
+function split_triangle!(tri::Triangulation, queue::RefinementQueue, events::InsertionEventHistory, T, exterior_curve_index, rng::AbstractRNG=Random.default_rng())
     empty!(events)
-    success = try_circumcenter_insertion!(tri, T, events, queue, rng)
+    success = try_circumcenter_insertion!(tri, T, events, queue, exterior_curve_index, rng)
     return success
 end

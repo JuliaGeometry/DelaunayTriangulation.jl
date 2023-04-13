@@ -8,7 +8,6 @@ struct IndividualTriangleStatistics{T}
     circumcenter::NTuple{2,T}
     circumradius::T
     sine_minimum_angle::T
-    sine_maximum_angle::T
     minimum_angle::T
     maximum_angle::T
     radius_edge_ratio::T
@@ -25,9 +24,8 @@ function IndividualTriangleStatistics(p, q, r)
     circumcenter = triangle_circumcenter(p, q, r, A)
     circumradius = triangle_circumradius(A, ℓmin², ℓmed², ℓmax²)
     sine_minimum_angle = triangle_sine_minimum_angle(A, ℓmed², ℓmax²)
-    sine_maximum_angle = triangle_sine_maximum_angle(A, ℓmin², ℓmed²)
     minimum_angle = triangle_minimum_angle(sine_minimum_angle)
-    maximum_angle = triangle_maximum_angle(sine_maximum_angle)
+    maximum_angle = acos((ℓmin²+ℓmed²-ℓmax²)/(2sqrt(ℓmin²*ℓmed²)))
     radius_edge_ratio = triangle_radius_edge_ratio(circumradius, ℓmin)
     edge_midpoints = triangle_edge_midpoints(p, q, r)
     perimeter = triangle_perimeter(ℓmin, ℓmed, ℓmax)
@@ -41,7 +39,6 @@ function IndividualTriangleStatistics(p, q, r)
         circumcenter,
         circumradius,
         sine_minimum_angle,
-        sine_maximum_angle,
         minimum_angle,
         maximum_angle,
         radius_edge_ratio,
@@ -73,10 +70,12 @@ struct TriangulationStatistics{T,V,I}
     largest_area::V
     smallest_radius_edge_ratio::V
     largest_radius_edge_ratio::V
+    total_area::V
     individual_statistics::Dict{T,IndividualTriangleStatistics{V}}
 end
 function Base.show(io::IO, ::MIME"text/plain", stats::TriangulationStatistics)
     println(io, "Delaunay Triangulation Statistics.")
+    println(io, "   Triangulation area: $(get_total_area(stats))")
     println(io, "   Number of vertices: $(num_vertices(stats))")
     println(io, "   Number of solid vertices: $(num_solid_vertices(stats))")
     println(io, "   Number of ghost vertices: $(num_ghost_vertices(stats))")
@@ -127,6 +126,7 @@ function statistics(tri::Triangulation)
     largest_area = typemin(F)
     smallest_radius_edge_ratio = typemax(F)
     largest_radius_edge_ratio = typemin(F)
+    total_area = zero(F)
     for T in each_solid_triangle(tri)
         u, v, w = indices(T)
         p, q, r = get_point(tri, u, v, w)
@@ -137,6 +137,7 @@ function statistics(tri::Triangulation)
         largest_area = max(largest_area, individual_statistics[T].area)
         smallest_radius_edge_ratio = min(smallest_radius_edge_ratio, individual_statistics[T].radius_edge_ratio)
         largest_radius_edge_ratio = max(largest_radius_edge_ratio, individual_statistics[T].radius_edge_ratio)
+        total_area += individual_statistics[T].area
     end
     return TriangulationStatistics(
         I(nverts),
@@ -158,6 +159,7 @@ function statistics(tri::Triangulation)
         largest_area,
         smallest_radius_edge_ratio,
         largest_radius_edge_ratio,
+        total_area,
         individual_statistics
     )
 end
@@ -229,6 +231,11 @@ function triangle_area(p, q, r)
 end
 
 function squared_triangle_lengths(p, q, r)
+    ℓ₁², ℓ₂², ℓ₃², _ = squared_triangle_lengths_and_smallest_index(p, q, r)
+    return ℓ₁², ℓ₂², ℓ₃²
+end
+
+function squared_triangle_lengths_and_smallest_index(p, q, r)
     px, py = getxy(p)
     qx, qy = getxy(q)
     rx, ry = getxy(r)
@@ -236,8 +243,11 @@ function squared_triangle_lengths(p, q, r)
     ℓ₂² = (rx - qx)^2 + (ry - qy)^2
     ℓ₃² = (px - rx)^2 + (py - ry)^2
     ℓmin², ℓmed², ℓmax² = min_med_max(ℓ₁², ℓ₂², ℓ₃²)
-    return ℓmin², ℓmed², ℓmax²
+    ℓmin² == ℓ₁² && return ℓmin², ℓmed², ℓmax², 1
+    ℓmin² == ℓ₂² && return ℓmin², ℓmed², ℓmax², 2
+    ℓmin² == ℓ₃² && return ℓmin², ℓmed², ℓmax², 3
 end
+
 function triangle_lengths(p, q, r)
     ℓmin², ℓmed², ℓmax² = squared_triangle_lengths(p, q, r)
     return sqrt(ℓmin²), sqrt(ℓmed²), sqrt(ℓmax²)
@@ -308,4 +318,15 @@ function triangle_edge_midpoints(p, q, r)
     ox = (rx + px) / 2
     oy = (ry + py) / 2
     return (mx, my), (nx, ny), (ox, oy)
+end
+
+function get_total_area(tri::Triangulation)
+    F = number_type(tri)
+    A = zero(F)
+    for T in each_solid_triangle(tri)
+        u,v,w=indices(T)
+        p,q,r=get_point(tri,u,v,w)
+        A += triangle_area(p, q, r)
+    end
+    return A
 end

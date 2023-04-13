@@ -7,7 +7,8 @@
         boundary_map, 
         k, 
         q, 
-        check_existence=Val(has_multiple_segments(boundary_map))) 
+        check_existence=Val(has_multiple_segments(boundary_map)),
+        bnd_idx=I(BoundaryIndex)) 
 
 Given a point `q` outside of the triangulation, finds the ghost triangle containing it.
 
@@ -20,6 +21,7 @@ Given a point `q` outside of the triangulation, finds the ghost triangle contain
 - `k`: The vertex to start from.
 - `q`: The point outside of the triangulation.
 - `check_existence=Val(has_multiple_segments(boundary_map)))`: Used to check that the edge exists when using [`get_adjacent`](@ref), in case there are multiple segments.
+- `bnd_idx=I(BoundaryIndex)`: A boundary index corresponding to the boundary that `k` is on.
 
 # Ouptut 
 - The edge `(i, j)` such that the ghost triangle `(i, j, g)` contains `q`, and `g = get_adjacent(adj, i, j)`.
@@ -36,34 +38,35 @@ function exterior_jump_and_march(
     boundary_map,
     k,
     q,
-    check_existence::V=Val(has_multiple_segments(boundary_map))
+    check_existence::V=Val(has_multiple_segments(boundary_map)),
+    bnd_idx=I(BoundaryIndex)
 ) where {I,E,V}
-    pₘ, pᵢ = get_point(pts, representative_point_list, boundary_map, I(BoundaryIndex), k)
+    pₘ, pᵢ = get_point(pts, representative_point_list, boundary_map, bnd_idx, k)
     i = k
     q_position = point_position_relative_to_line(pₘ, pᵢ, q)
     if is_left(q_position) # q is left of the ghost edge through pᵢ, so rotate left 
-        j = get_right_boundary_node(adj, i, I(BoundaryIndex), boundary_index_ranges,
+        j = get_right_boundary_node(adj, i, bnd_idx, boundary_index_ranges,
             check_existence)
         pⱼ = get_point(pts, representative_point_list, boundary_map, j)
         new_q_pos = point_position_relative_to_line(pₘ, pⱼ, q)
         while is_left(new_q_pos)
             i = j
             pᵢ = pⱼ
-            j = get_right_boundary_node(adj, i, I(BoundaryIndex), boundary_index_ranges,
+            j = get_right_boundary_node(adj, i, bnd_idx, boundary_index_ranges,
                 check_existence)
             pⱼ = get_point(pts, representative_point_list, boundary_map, j)
             new_q_pos = point_position_relative_to_line(pₘ, pⱼ, q)
         end
         return j, i # Swap the orientation so that i, j is a boundary edge 
     else # rotate right 
-        j = get_left_boundary_node(adj, i, I(BoundaryIndex), boundary_index_ranges,
+        j = get_left_boundary_node(adj, i, bnd_idx, boundary_index_ranges,
             check_existence)
         pⱼ = get_point(pts, representative_point_list, boundary_map, j)
         new_q_pos = point_position_relative_to_line(pₘ, pⱼ, q)
         while is_right(new_q_pos)
             i = j
             pᵢ = pⱼ
-            j = get_left_boundary_node(adj, i, I(BoundaryIndex), boundary_index_ranges,
+            j = get_left_boundary_node(adj, i, bnd_idx, boundary_index_ranges,
                 check_existence)
             pⱼ = get_point(pts, representative_point_list, boundary_map, j)
             new_q_pos = point_position_relative_to_line(pₘ, pⱼ, q)
@@ -82,7 +85,8 @@ end
         check_existence::C=Val(has_multiple_segments(boundary_map)),
         store_history::F=Val(false),
         history=nothing,
-        rng::AbstractRNG = Random.default_rng()) where {I,V,C,F}
+        rng::AbstractRNG = Random.default_rng(),
+        exterior_curve_index=1) where {I,V,C,F}
 
 Using the jump and march algorithm, finds the triangle in the triangulation containing the 
 query point `q`.
@@ -106,6 +110,7 @@ query point `q`.
 - `store_history::F=Val(false)`: Whether to store visited triangles. Exterior ghost triangles will not be stored.
 - `history=nothing`: The history. This should be a [`PointLocationHistory`](@ref) type if `store_history` is `true`.
 - `rng::AbstractRNG`: The RNG to use.
+- `exterior_curve_index=1`: The curve (or curves) corresponding to the outermost boundary.
 
 # Output 
 Returns the triangle `V` containing the query point `q`.
@@ -127,17 +132,20 @@ function jump_and_march(pts, adj, adj2v, graph::Graph{I}, boundary_index_ranges,
     check_existence::C=Val(has_multiple_segments(boundary_map)),
     store_history::F=Val(false),
     history=nothing,
-    rng::AbstractRNG=Random.default_rng()) where {I,V,C,F}
+    rng::AbstractRNG=Random.default_rng(),
+    exterior_curve_index=1) where {I,V,C,F}
     return _jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges, representative_point_list, boundary_map, q,
-        k, V, check_existence, store_history, history, rng)
+        k, V, check_existence, store_history, history, rng, exterior_curve_index)
 end
 function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, boundary_index_ranges,
     representative_point_list, boundary_map, q, k, TriangleType::Type{V},
     check_existence::C=Val(has_multiple_segments(boundary_map)),
     store_history::F=Val(false),
     history=nothing,
-    rng::AbstractRNG=Random.default_rng()) where {I,E,V,C,F}
-    if !is_outer_boundary_node(k, graph, boundary_index_ranges) || !has_ghost_triangles(adj, adj2v)
+    rng::AbstractRNG=Random.default_rng(),
+    exterior_curve_index=1) where {I,E,V,C,F}
+    is_bnd, bnd_idx = is_boundary_node(k, graph, boundary_index_ranges)
+    if !(is_bnd && get_curve_index(boundary_map, bnd_idx) ∈ exterior_curve_index) || !has_ghost_triangles(adj, adj2v)
         # If k is not a boundary node, then we can rotate around the point k to find an initial triangle 
         # to start the search. Additionally, if there are no ghost triangles, we can only hope that q 
         # is inside the interior, meaning we should only search for the initial triangle here anyway.
@@ -158,7 +166,8 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
                 boundary_map,
                 k,
                 q,
-                check_existence)
+                check_existence,
+                bnd_idx)
         if !is_outside(direction)
             # q is collinear with one of the edges, so let's jump down these edges and try to find q
             q_pos, u, v, w = search_down_adjacent_boundary_edges(pts, adj,
@@ -168,12 +177,13 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
                 next_vertex,
                 check_existence,
                 store_history,
-                history)
+                history,
+                bnd_idx)
             if is_on(q_pos)
                 return construct_triangle(V, u, v, w)
             else
                 u, v = exterior_jump_and_march(pts, adj, boundary_index_ranges,
-                    representative_point_list, boundary_map, u, q, check_existence)
+                    representative_point_list, boundary_map, u, q, check_existence, bnd_idx)
                 return construct_triangle(V, u, v,
                     get_adjacent(adj, u, v; check_existence,
                         boundary_index_ranges)) # Can't just use I(BoundaryIndex) here since there could be multiple - just use get_adjacent
@@ -193,12 +203,13 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
                 left_cert,
                 check_existence,
                 store_history,
-                history)
+                history,
+                bnd_idx)
         if is_inside(triangle_cert)
             return construct_triangle(V, i, j, k)
         elseif is_none(edge_cert)
             u, v = exterior_jump_and_march(pts, adj, boundary_index_ranges, representative_point_list, boundary_map, k,
-                q, check_existence)
+                q, check_existence, bnd_idx)
             return construct_triangle(V, u, v, get_adjacent(adj, u, v))
         else
             p, pᵢ, pⱼ = get_point(pts, representative_point_list, boundary_map, k, i, j)
@@ -234,18 +245,18 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
         # Since a boundary curve may be represented by different boundary indices 
         # at different locations, we need to check for this. The first check 
         # is for an outer boundary index.
-        if is_outer_boundary_index(k, boundary_map)
+        if is_boundary_index(k) && get_curve_index(boundary_map, k) ∈ exterior_curve_index
             # If this happens, it means we have hit an outer boundary edge, and so we need to go into the exterior. If there are no 
             # ghost triangles, though, we just restart the search. Note that interior boundary indices do not matter since the ghost 
             # triangles there have the same orientation, so we can find them as normal.
             if has_ghost_triangles(adj, adj2v)
                 i, j = exterior_jump_and_march(pts, adj, boundary_index_ranges,
                     representative_point_list, boundary_map, last_changed == i ? j : i, q,
-                    check_existence) # use last_changed to ensure we get the boundary point
+                    check_existence, k) # use last_changed to ensure we get the boundary point
                 return construct_triangle(V, i, j, k)
             else
                 return _jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges,
-                    boundary_map, representative_point_list, q, k, V, check_existence, store_history, history, rng)
+                    boundary_map, representative_point_list, q, k, V, check_existence, store_history, history, rng, exterior_curve_index)
             end
         end
         # Now we can finally move forward. We use check_existence to protect against the issue mentioned above.
@@ -334,7 +345,7 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
             return _jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges,
                 representative_point_list, boundary_map, q,
                 last_changed == I(DefaultAdjacentValue) ? i :
-                last_changed, V, check_existence, store_history, history, rng)
+                last_changed, V, check_existence, store_history, history, rng, exterior_curve_index)
         end
     end
     # Swap the orientation to get a positively oriented triangle, remembering that we kept pᵢ on the left of pq and pⱼ on the right 

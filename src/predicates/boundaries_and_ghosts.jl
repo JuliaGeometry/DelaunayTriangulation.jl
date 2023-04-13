@@ -161,7 +161,7 @@ Tests if `i` is a node appearing on the boundary.
 - `boundary_index_ranges`: A dictionary from [`construct_boundary_index_ranges`](@ref).
 
 # Outputs 
-- `is_outer_boundary_node`: A Boolean indicating whether `i` is a node on the boundary.
+- `is_boundary_node`: A Boolean indicating whether `i` is a node on the boundary.
 - `boundary_index`: The boundary index of the boundary to which `i` belongs. If there is no such boundary, `boundary_index = I(DefaultAdjacentValue)`.
 
 See also [`is_outer_boundary_node`](@ref).

@@ -62,6 +62,7 @@ boundary_nodes = get_boundary_nodes(tri)
     for _ in 1:36
         for k in each_point_index(pts)
             for i in eachindex(allq)
+                @show i, k
                 T1 = jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges, rep, boundary_map,
                     allq[i]; k)
                 T2 = jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges, rep, boundary_map,

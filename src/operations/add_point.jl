@@ -7,7 +7,8 @@ add_point!(tri::Triangulation, new_point[, new_point_y];
     initial_search_point=integer_type(tri)(select_initial_point(get_points(tri),new_point;point_indices,m,try_points,rng)),
     update_representative_point=false,
     store_event_history = Val(false),
-    event_history = nothing
+    event_history = nothing,
+    exterior_curve_index=1,
     )
 
 Adds the point `new_point` to the triangulation `tri`.
@@ -25,6 +26,7 @@ Adds the point `new_point` to the triangulation `tri`.
 - `update_representative_point=false`: Whether to update the representative point list after adding the new point.
 - `store_event_history = Val(false)`: Whether to store the event history. See [`InsertionEventHistory`](@ref).
 - `event_history = nothing`: The event history to store the events in. See [`InsertionEventHistory`](@ref). Only needed if `is_true(store_event_history)`. This object is not returned, instead we just mutate it inplace.
+- `exterior_curve_index=1`: The curve (or curves) corresponding to the outermost boundary.
 """
 function add_point!(tri::Triangulation, new_point;
     point_indices=each_solid_vertex(tri),
@@ -34,7 +36,8 @@ function add_point!(tri::Triangulation, new_point;
     initial_search_point=integer_type(tri)(select_initial_point(get_points(tri), new_point; point_indices, m, try_points, rng)),
     update_representative_point=false,
     store_event_history=Val(false),
-    event_history=nothing)
+    event_history=nothing,
+    exterior_curve_index=1)
     if !(new_point isa Integer)
         push_point!(tri, new_point)
         new_point = num_points(tri)
@@ -46,7 +49,8 @@ function add_point!(tri::Triangulation, new_point;
         rng, 
         update_representative_point, 
         store_event_history, 
-        event_history)
+        event_history,
+        exterior_curve_index)
     return nothing
 end
 
@@ -58,7 +62,8 @@ function add_point!(tri::Triangulation, new_point_x, new_point_y;
     initial_search_point=integer_type(tri)(select_initial_point(get_points(tri), (new_point_x, new_point_y); point_indices, m, try_points, rng)),
     update_representative_point=false,
     store_event_history = Val(false),
-    event_history = nothing)
+    event_history = nothing,
+    exterior_curve_index=1)
     push_point!(tri, new_point_x, new_point_y)
     return add_point!(
         tri, 
@@ -70,5 +75,6 @@ function add_point!(tri::Triangulation, new_point_x, new_point_y;
         initial_search_point=initial_search_point, 
         update_representative_point=update_representative_point,
         store_event_history = store_event_history,
-        event_history = event_history)
+        event_history = event_history,
+        exterior_curve_index=exterior_curve_index)
 end

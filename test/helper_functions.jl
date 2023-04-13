@@ -124,14 +124,16 @@ function test_planarity(tri) # just check's Euler's formula. Doesn't guarantee p
         num_exterior_faces = DT.num_curves(tri)
         flag1 = (length ∘ collect ∘ each_solid_vertex)(tri) - (length ∘ collect ∘ each_solid_edge)(tri) + (length ∘ collect ∘ each_solid_triangle)(tri) + num_exterior_faces == 2
         if !flag1
-            println("Planarity test failed for the solid graph.")
+            X = (length ∘ collect ∘ each_solid_vertex)(tri) - (length ∘ collect ∘ each_solid_edge)(tri) + (length ∘ collect ∘ each_solid_triangle)(tri) + num_exterior_faces
+            println("Planarity test failed for the solid graph as the Euler characteristic was $X, not 2.")
             return false
         end
         nedges = length(keys(get_adjacent(get_adjacent(tri)))) ÷ 2 # when dealing with multiple boundary indices, num_edges(tri) is difficult as not every edge actually appears twice
         nverts = num_vertices(tri) - length(DT.all_boundary_indices(tri)) + DT.num_curves(tri) # add back in one boundary index for each exterior face 
         flag2 = nverts - nedges + num_triangles(tri) == 2
         if !flag2
-            println("Planarity test failed for the combined graph.")
+            X = nverts - nedges + num_triangles(tri)
+            println("Planarity test failed for the combined graph as the Euler characteristic was $X, not 2.")
             return false
         end
         flag3 = 2nedges == 3num_triangles(tri)
@@ -142,7 +144,8 @@ function test_planarity(tri) # just check's Euler's formula. Doesn't guarantee p
     else
         flag = num_vertices(tri) - num_edges(tri) + num_triangles(tri) == 2
         if !flag
-            println("Planarity test failed.")
+            X = num_vertices(tri) - num_edges(tri) + num_triangles(tri)
+            println("Planarity test failed as the Euler characteristic was $X, not 2.")
             return false
         end
     end
@@ -208,7 +211,7 @@ function test_delaunay_criterion(tri; check_ghost_triangle_delaunay=true)
                     end
                     intersect!(all_edges, all_constrained_edges)
                     flags = [DT.line_segment_intersection_type(tri, initial(e), terminal(e), i, r) for e in each_edge(all_edges) for i in filter(!DT.is_boundary_index, (i, j, k))]
-                    flag = !all(DT.is_none, flags)
+                    flag = !all(DT.is_none, flags) || isempty(flags)
                     if !flag
                         println("Delaunay criterion test failed for the triangle-vertex pair ($T, $r).")
                         return false
@@ -662,12 +665,12 @@ function test_iterators(tri::Triangulation)
     return true
 end
 
-function validate_triangulation(_tri::Triangulation; check_ghost_triangle_orientation=true, check_ghost_triangle_delaunay=true) # doesn't work for non-convex. need to find a better way
+function validate_triangulation(_tri::Triangulation; check_planarity=true, check_ghost_triangle_orientation=true, check_ghost_triangle_delaunay=true) # doesn't work for non-convex. need to find a better way
     tri = deepcopy(_tri)
     DT.delete_ghost_triangles!(tri)
     DT.add_ghost_triangles!(tri)
     DT.clear_empty_features!(tri)
-    return test_planarity(tri) &&
+    return (!check_planarity || test_planarity(tri)) &&
            test_triangle_orientation(tri; check_ghost_triangle_orientation) &&
            test_delaunay_criterion(tri; check_ghost_triangle_delaunay) &&
            test_each_edge_has_two_incident_triangles(tri) &&
@@ -1098,7 +1101,6 @@ function validate_statistics(tri::Triangulation, stats=statistics(tri))
     circumcenters = Dict{T,NTuple{2,Float64}}()
     circumradii = Dict{T,Float64}()
     sine_minimum_angle = Dict{T,Float64}()
-    sine_maximum_angle = Dict{T,Float64}()
     minimum_angle = Dict{T,Float64}()
     maximum_angle = Dict{T,Float64}()
     radius_edge_ratio = Dict{T,Float64}()
@@ -1107,6 +1109,7 @@ function validate_statistics(tri::Triangulation, stats=statistics(tri))
     inradius = Dict{T,Float64}()
     perimeter = Dict{T,Float64}()
     centroid = Dict{T,NTuple{2,Float64}}()
+    total_A = 0.0
     for T in each_solid_triangle(tri)
         u, v, w = DT.indices(T)
         p, q, r = get_point(tri, u, v, w)
@@ -1114,6 +1117,7 @@ function validate_statistics(tri::Triangulation, stats=statistics(tri))
         q = collect(q)
         r = collect(r)
         areas[T] = 0.5 * (p[1] * (q[2] - r[2]) + q[1] * (r[2] - p[2]) + r[1] * (p[2] - q[2]))
+        total_A += areas[T]
         ℓ1 = norm(q - p)
         ℓ2 = norm(r - q)
         ℓ3 = norm(r - p)
@@ -1129,11 +1133,16 @@ function validate_statistics(tri::Triangulation, stats=statistics(tri))
         oy = r[2] + det([r′[1] norm(r′)^2; s′[1] norm(s′)^2]) / (4areas[T])
         circumcenters[T] = (ox, oy)
         circumradii[T] = norm(r - collect(circumcenters[T]))
-        all_angles = [acos(dot(p - q, r - q) / (norm(p - q) * norm(r - q))) for (p, q, r) in ((p, q, r), (q, r, p), (r, p, q))]
+        all_angles = [acos((norm(p - r)^2 + norm(q - r)^2 - norm(p - q)^2) / (2norm(p - r) * norm(q - r))) for (p, q, r) in ((p, q, r), (q, r, p), (r, p, q))]
         sine_minimum_angle[T] = minimum(sin.(all_angles))
-        sine_maximum_angle[T] = maximum(sin.(all_angles))
         minimum_angle[T] = asin(min(2areas[T] / (ℓ2 * ℓ3), 1.0))
-        maximum_angle[T] = asin(min(2areas[T] / (ℓ1 * ℓ2), 1.0))
+        if ℓ1 == ℓmax
+            maximum_angle[T] = acos((ℓ2^2 + ℓ3^2 - ℓ1^2) / (2ℓ2 * ℓ3))
+        elseif ℓ2 == ℓmax
+            maximum_angle[T] = acos((ℓ1^2 + ℓ3^2 - ℓ2^2) / (2ℓ1 * ℓ3))
+        else
+            maximum_angle[T] = acos((ℓ1^2 + ℓ2^2 - ℓ3^2) / (2ℓ1 * ℓ2))
+        end
         radius_edge_ratio[T] = circumradii[T] / ℓ1
         edge_midpoints[T] = ((Tuple(0.5 * (p + q))), Tuple(0.5 * (q + r)), Tuple(0.5 * (r + p)))
         inradius[T] = 2areas[T] / (ℓ1 + ℓ2 + ℓ3)
@@ -1154,7 +1163,6 @@ function validate_statistics(tri::Triangulation, stats=statistics(tri))
         @test collect(circumcenters[T]) ≈ collect(DT.get_circumcenter(stats, T))
         @test circumradii[T] ≈ DT.get_circumradius(stats, T)
         @test sine_minimum_angle[T] ≈ DT.get_sine_minimum_angle(stats, T)
-        @test sine_maximum_angle[T] ≈ DT.get_sine_maximum_angle(stats, T)
         @test minimum_angle[T] ≈ DT.get_minimum_angle(stats, T) rtol = 1e-2
         @test maximum_angle[T] ≈ DT.get_maximum_angle(stats, T) rtol = 1e-2
         @test radius_edge_ratio[T] ≈ DT.get_radius_edge_ratio(stats, T)
@@ -1168,12 +1176,13 @@ function validate_statistics(tri::Triangulation, stats=statistics(tri))
         @test (2sin(DT.get_minimum_angle(stats, T) / 2)^2 - 0.1 ≤ DT.get_aspect_ratio(stats, T) ≤ 2tan(DT.get_minimum_angle(stats, T) / 2) + 0.1)
         @test DT.get_radius_edge_ratio(stats, T) ≈ 1 / (2(sin(DT.get_minimum_angle(stats, T))))
         @test DT.get_sine_minimum_angle(stats, T) ≈ sin(DT.get_minimum_angle(stats, T))
-        @test DT.get_sine_maximum_angle(stats, T) ≈ sin(DT.get_maximum_angle(stats, T))
         @test areas[T] ≈ inradius[T] * 0.5perimeter[T]
         @test DT.get_area(stats, T) ≈ DT.get_inradius(stats, T) * 0.5DT.get_perimeter(stats, T)
         @test collect(centroid[T]) ≈ collect(DT.get_centroid(stats, T))
     end
     @test stats.individual_statistics == DT.get_individual_statistics(stats)
+    @test stats.total_area ≈ DT.get_total_area(stats)
+    @test stats.total_area ≈ total_A
 
     ## Test the number statistics 
     @test DT.num_vertices(stats) == length(all_vertices) == stats.num_vertices

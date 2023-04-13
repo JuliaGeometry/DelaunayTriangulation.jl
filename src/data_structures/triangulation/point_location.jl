@@ -20,7 +20,8 @@ end
         check_existence::C=Val(has_multiple_segments(tri)),
         store_history::F=Val(false),
         history=nothing,
-        rng::AbstractRNG=Random.default_rng()) where {C,F}
+        rng::AbstractRNG=Random.default_rng(),
+        exterior_curve_index=1) where {C,F}
 
 Returns the triangle containing `q` using the jump-and-march algorithm.
 
@@ -37,6 +38,7 @@ Returns the triangle containing `q` using the jump-and-march algorithm.
 - `store_history::F=Val(false)`: Whether to record the history of the algorithm. See also [`PointLocationHistory`](@ref).
 - `history=nothing`: The object to store the history into, if `is_true(store_history)`.
 - `rng::AbstractRNG=Random.default_rng()`: The random number generator to use.
+- `exterior_curve_index=1`: The curve (or curves) corresponding to the outermost boundary.
 
 # Outputs 
 Returns `V`, the triangle in `tri` containing `q`.
@@ -49,7 +51,8 @@ function jump_and_march(tri::Triangulation, q;
     check_existence::C=Val(has_multiple_segments(tri)),
     store_history::F=Val(false),
     history=nothing,
-    rng::AbstractRNG=Random.default_rng()) where {C,F}
+    rng::AbstractRNG=Random.default_rng(),
+    exterior_curve_index=1) where {C,F}
     points = get_points(tri)
     adjacent = get_adjacent(tri)
     adjacent2vertex = get_adjacent2vertex(tri)
@@ -65,5 +68,6 @@ function jump_and_march(tri::Triangulation, q;
         check_existence,
         store_history,
         history,
-        rng)
+        rng,
+        exterior_curve_index)
 end

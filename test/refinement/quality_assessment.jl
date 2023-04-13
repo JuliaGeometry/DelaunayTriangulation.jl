@@ -205,3 +205,35 @@ end
         @test DT.isempty(queue.triangle_queue)
     end
 end
+
+@testset "Testing if an edge is seditious" begin
+    p1 = (0.0, 0.0)
+    p2 = (4.0, 0.0)
+    p3 = (4.0, 2.0)
+    p4 = (2.0, 1.0)
+    p5 = (2.2360679774998, 0.0)
+    pts = [p1, p2, p3, p4, p5]
+    tri = triangulate(pts)
+    add_edge!(tri, 1, 3)
+    add_edge!(tri, 1, 2)
+    stats = statistics(tri)
+    u, v, w = 1, 5, 4
+    idx = 2
+    ratio_flag = true
+    @test DT.edge_is_seditious(tri, u, v, w, idx, ratio_flag, DT.get_radius_edge_ratio(stats, (u, v, w)))
+    ratio_flag = false
+    @test !DT.edge_is_seditious(tri, u, v, w, idx, ratio_flag, DT.get_radius_edge_ratio(stats, (u, v, w)))
+    ratio_flag = true
+    tri.points[5] = (1.3, 0.0)
+    @test !DT.edge_is_seditious(tri, u, v, w, idx, ratio_flag, DT.get_radius_edge_ratio(stats, (u, v, w)))
+    idx = 3
+    tri.points[5] = (2.2360679774998, 0.0)
+    @test !DT.edge_is_seditious(tri, u, v, w, idx, ratio_flag, DT.get_radius_edge_ratio(stats, (u, v, w)))
+    u, v, w = 4, 2, 3
+    idx = 1
+    @test !DT.edge_is_seditious(tri, u, v, w, idx, ratio_flag, DT.get_radius_edge_ratio(stats, (u, v, w)))
+    idx = 2
+    @test !DT.edge_is_seditious(tri, u, v, w, idx, ratio_flag, DT.get_radius_edge_ratio(stats, (u, v, w)))
+    idx = 3
+    @test !DT.edge_is_seditious(tri, u, v, w, idx, ratio_flag, DT.get_radius_edge_ratio(stats, (u, v, w)))
+end

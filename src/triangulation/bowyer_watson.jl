@@ -129,11 +129,12 @@ function add_point_bowyer_watson!(
     rng::AbstractRNG=Random.default_rng(),
     update_representative_point=true,
     store_event_history=Val(false),
-    event_history=nothing) where {I}
+    event_history=nothing,
+    exterior_curve_index=1) where {I}
     new_point = I(new_point)
     q = get_point(tri, new_point)
     V = jump_and_march(tri, q; m=nothing, point_indices=nothing, try_points=nothing,
-        k=initial_search_point, rng, check_existence=Val(has_multiple_segments(tri)))
+        k=initial_search_point, rng, check_existence=Val(has_multiple_segments(tri)), exterior_curve_index)
     flag = point_position_relative_to_triangle(tri, V, q)
     if is_ghost_triangle(V) && is_constrained(tri)
         # When we have a constrained boundary edge, we don't want to walk into its 

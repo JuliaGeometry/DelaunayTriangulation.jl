@@ -666,34 +666,75 @@ end
       @test c == [(2, 7), (7, 12), (12, 17), (17, 22), (22, 27), (27, 32), (32, 37), (37, 42), (42, 47)]
 end
 
-#=
-rng = StableRNG(19992991)
-p = (0.0, 0.0)
-q = (0.0, 1.0)
-r = DT.filtered_parametric_line(p, q, 0.5)
-@test r == (0.0, 0.5)
-p = (rand(rng), rand(rng))
-q = (rand(rng), rand(rng))
-r = DT.filtered_parametric_line(p, q, 0.5)
-@inferred DT.filtered_parametric_line(p, q, 0.5)
-@test DT.is_collinear(DT.point_position_relative_to_line(p, q, r))
-p = (rand(rng), rand(rng))
-q = (rand(rng), rand(rng))
-r = DT.filtered_parametric_line(p, q, 0.2)
-@inferred DT.filtered_parametric_line(p, q, 0.2)
-@test collect(r) ≈ collect(p .+ 0.2 .* (q .- p))
-correct_results_1 = Vector{Bool}(undef, 100_000)
-correct_results_2 = Vector{Bool}(undef, 100_000)
-for i in eachindex(correct_results_1)
-      p = (-4 + 8rand(rng), -4 + 8rand(rng))
-      q = (-4 + 8rand(rng), -4 + 8rand(rng))
-      t = rand(0.0:0.1:1.0)
-      r1 = DT.filtered_parametric_line(p, q, t)
-      correct_results_1[i] = DT.is_collinear(DT.point_position_relative_to_line(p, q, r1))
-      r2 = @. p + (q - p) * t
-      correct_results_2[i] = DT.is_collinear(DT.point_position_relative_to_line(p, q, r2))
+@testset "nearest_power_of_two" begin
+      x = [0.1992981, 2.9391, 0.0001, 0.891, 7.871,
+            10.59182, 63.0, 252.0, 0.1]
+      all_pow2 = exp2.(-32:32)
+      dist = abs.(x .- all_pow2')
+      nums = all_pow2[[findmin(dist, dims=2)[2][i][2] for i in eachindex(x)]]
+      nums2 = DT.nearest_power_of_two.(x)
+      @test nums == nums2
+
+      nrst = DT.balanced_power_of_two_ternary_split.(x)
+      @test log2.(nrst) ≈ [-3, 0, -14, -1, 2, 2, 5, 7, -4]
+
+      for _ in 1:1000
+            ℓ = 2000rand()^2
+            nrst = DT.balanced_power_of_two_ternary_split(ℓ)
+            balanced_power_of_two_ternary_split = 1.0
+            while ℓ > 3balanced_power_of_two_ternary_split
+                  balanced_power_of_two_ternary_split = 2balanced_power_of_two_ternary_split
+            end
+            while ℓ < 1.5balanced_power_of_two_ternary_split
+                  balanced_power_of_two_ternary_split = 0.5balanced_power_of_two_ternary_split
+            end
+            x = floor(log2(ℓ / 3))
+            y = floor(log2(ℓ / 1.5))
+            if abs(x - log2(ℓ)) < abs(y - log2(ℓ))
+                  @test nrst ≈ exp2(x)
+            else
+                  @test nrst ≈ exp2(y)
+            end
+            @test nrst ≈ balanced_power_of_two_ternary_split
+      end
+
+      @test DT.balanced_power_of_two_quarternary_split(1.2) == 0.5
+      @test DT.balanced_power_of_two_quarternary_split(1.5) == 0.5
+      @test DT.balanced_power_of_two_quarternary_split(1.6) == 0.5
+      @test DT.balanced_power_of_two_quarternary_split(2.0) == 1.0
 end
-prop_1 = count(correct_results_1) / length(correct_results_1)
-prop_2 = count(correct_results_2) / length(correct_results_2)
-@test prop_1 ≥ prop_2
-=#
+
+@testset "Testing if a segment's vertices both adjoin another vertex" begin
+      tri = fixed_shewchuk_example_constrained()
+      add_edge!(tri, 9, 10)
+      add_edge!(tri, 9, 11)
+      @test (DT.segment_vertices_adjoin_other_segments(tri, (9, 10)) == 1) && (DT.segment_vertices_adjoin_other_segments(tri, (10, 9)) == 1)
+      add_edge!(tri, 10, 11)
+      @test (DT.segment_vertices_adjoin_other_segments(tri, (9, 10)) == 2) && (DT.segment_vertices_adjoin_other_segments(tri, (10, 9)) == 2)
+      add_edge!(tri, 4, 3)
+      @test (DT.segment_vertices_adjoin_other_segments(tri, (4, 3)) == 0) && (DT.segment_vertices_adjoin_other_segments(tri, (3, 4)) == 0)
+end
+
+@testset "Testing if an edge lies on two distinct segments" begin
+      p1 = (0.0, 0.0)
+      p2 = (1.0, 0.0)
+      p3 = (0.9, 0.3)
+      p4 = (0.3, 0.0)
+      tri = triangulate([p1, p2, p3, p4])
+      add_edge!(tri, 1, 2)
+      add_edge!(tri, 1, 3)
+      @test DT.edge_lies_on_two_distinct_segments(tri, 1, 4) == (false, 0)
+      @test DT.edge_lies_on_two_distinct_segments(tri, 4, 1) == (false, 0)
+      @test DT.edge_lies_on_two_distinct_segments(tri, 4, 3) == (true, 1)
+      @test DT.edge_lies_on_two_distinct_segments(tri, 3, 4) == (true, 1)
+      add_edge!(tri, 2, 3) # testing that we return the closest vertex
+      @test DT.edge_lies_on_two_distinct_segments(tri, 4, 3) == (true, 1)
+      @test DT.edge_lies_on_two_distinct_segments(tri, 3, 4) == (true, 1)
+      tri.points[4] = (0.9, 0.0) # testing that we return the closest vertex
+      @test DT.edge_lies_on_two_distinct_segments(tri, 4, 3) == (true, 2)
+      @test DT.edge_lies_on_two_distinct_segments(tri, 3, 4) == (true, 2)
+      @test DT.edge_lies_on_two_distinct_segments(tri, 3, 2) == (false, 0)
+      @test DT.edge_lies_on_two_distinct_segments(tri, 2, 3) == (false, 0)
+      @test DT.edge_lies_on_two_distinct_segments(tri, 1, 3) == (false, 0)
+      @test DT.edge_lies_on_two_distinct_segments(tri, 3, 1) == (false, 0)
+end

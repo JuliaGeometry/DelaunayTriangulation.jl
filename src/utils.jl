@@ -593,41 +593,137 @@ function min_med_max(a, b, c)
     return a, b, c
 end
 
-#=
-Doesn't really seem to help? Wonder why.
 """
-    filtered_parametric_line(p, q, t)
+    balanced_power_of_two_ternary_split(ℓ)
 
-Evaluates the parametric line `p + t(q - p)` with `t ∈ [0, 1]` using a filter to improve 
-the collinearity of the resulting point.
-
-The refinement method is as follows:
-
-    1. First, evaluate `r = p + t(q-p)`.
-    2. Next, evaluate α = 2A/ℓ², where A is the signed area of the triangle pqr and ℓ is the length of the line segment pq. This serves as an appropriate scale for the collinearity, with `ℓ²` to eliminate any unit dependence (note the square to match `A`'s units).
-    3. We then replace `r[1]` with `r[1] + α * (q[2] - p[2])` and `r[2]` with `r[2] + α * (p[1] - q[1])`.
-
-Note that this matches Section 3.6 of https://perso.uclouvain.be/jean-francois.remacle/LMECA2170/robnotes.pdf, treating the new line as the perpendicular 
-bisector of the line segment pq, pushing it back onto `pq`. To help the method more, we use the exact predicate `orient` to check that we need to perform any filtering at all. (`orient` just returns the sign of the determinant 
-rather than its number, unfortunately. If we had it, we could use the fact that `orient` is twice the signed area).
-""" # ass e.g. https://people.eecs.berkeley.edu/~jrs/papers/robustr.pdf and the references therein, and https://perso.uclouvain.be/jean-francois.remacle/LMECA2170/robnotes.pdf
-function filtered_parametric_line(p, q, t)
-    px, py = getxy(p)
-    qx, qy = getxy(q)
-    rx = px + t * (qx - px)
-    ry = py + t * (qy - py)
-    r = (rx, ry)
-    cert = point_position_relative_to_line(p, q, r)
-    filtering_not_needed = is_collinear(cert)
-    filtering_not_needed && return (rx, ry)
-    A² = abs(squared_triangle_area(p, q, r))
-    ℓ² = (px - qx)^2 + (py - qy)^2
-    iszero(A²) || iszero(ℓ²) && return (rx, ry) # A shouldn't be zero due to checking is_collinear already, but it could. Checking ℓ² is in case Ruppert's algorithm splits too many segments, giving indistinguishable segments
-    α² = 4A² / ℓ²^2 
-    α = sqrt(α²)
-    α = is_left(cert) ? α : -α # A should be the signed area
-    rx += α * (qy - py)
-    ry += α * (px - qx)
-    return rx, ry
+Compute the the power of two that is closest 
+to `ℓ/3` or to `ℓ/1.5`.
+"""
+function balanced_power_of_two_ternary_split(ℓ)
+    balanced_split = 1.0
+    while ℓ > 3balanced_split
+        balanced_split = 2balanced_split
+    end
+    while ℓ < 1.5balanced_split
+        balanced_split = 0.5balanced_split
+    end
+    return balanced_split
 end
-=#
+
+"""
+    balanced_power_of_two_quarternary_split(ℓ)
+
+Compute the the power of two that is closest
+to `ℓ/4` or to `ℓ/0.5`.
+"""
+function balanced_power_of_two_quarternary_split(ℓ)
+    balanced_split = 1.0
+    while ℓ > 4balanced_split
+        balanced_split = 2balanced_split
+    end
+    while ℓ < 2balanced_split
+        balanced_split = 0.5balanced_split
+    end
+    return balanced_split
+end
+
+function nearest_power_of_two(ℓ)
+    ispow2(ℓ) && return ℓ
+    z = log2(ℓ)
+    z⁺ = ceil(z)
+    z⁻ = floor(z)
+    if abs(ℓ - 2^z⁺) < abs(ℓ - 2^z⁻)
+        return 2^z⁺
+    else
+        return 2^z⁻
+    end
+end
+
+"""
+    segment_vertices_adjoin_other_segments(tri::Triangulation, e)
+
+Test if the segment `e`'s vertices adjoin other segments. Returns:
+
+- `0`: No vertex adjoins another segment.
+- `1`: One vertex adjoins another segment.
+- `2`: Both vertices adjoin another segment.
+"""
+function segment_vertices_adjoin_other_segments(tri::Triangulation, e)
+    u, v = edge_indices(e)
+    count = 0
+    for w in get_neighbours(tri, u)
+        if w ≠ v
+            if contains_constrained_edge(tri, u, w)
+                count += 1
+                break
+            end
+        end
+    end
+    for w in get_neighbours(tri, v)
+        if w ≠ u
+            if contains_constrained_edge(tri, v, w)
+                count += 1
+                break
+            end
+        end
+    end
+    return count
+end
+
+"""
+    edge_lies_on_two_distinct_segments(tri::Triangulation, e)
+
+Tests if the edge `(i, j)` lies on two distinct segments. The returned value is:
+
+- `(true, common_vertex)`: If `e` lies on two distinct segments, and the common vertex is `common_vertex`.
+- `(false, 0)`: Otherwise.
+
+If there are multiple common vertices. In this case, the function returns the vertex that is closest to `e`.
+"""
+function edge_lies_on_two_distinct_segments(tri::Triangulation, i, j)
+    # Need to eventually make this non-allocating by being a bit more 
+    # clever with the geometry
+    I = integer_type(tri)
+    i_segments = Set{I}()
+    for u in get_neighbours(tri, i)
+        if u ≠ j
+            if contains_constrained_edge(tri, i, u)
+                push!(i_segments, u)
+            end
+        end
+    end
+    isempty(i_segments) && return false, I(0)
+    j_segments = Set{I}()
+    for u in get_neighbours(tri, j)
+        if u ≠ i
+            if contains_constrained_edge(tri, j, u)
+                push!(j_segments, u)
+            end
+        end
+    end
+    isempty(j_segments) && return false, I(0)
+    intersect!(i_segments, j_segments)
+    if length(i_segments) == 0 
+        return false, I(0) 
+    elseif length(i_segments) == 1
+        return true, first(i_segments)
+    else 
+        F = number_type(tri)
+        p, q = get_point(tri, i, j)
+        px, py = getxy(p)
+        qx, qy = getxy(q)
+        min_dist = typemax(F)
+        min_idx = I(0)
+        for k in i_segments 
+            r = get_point(tri, k)
+            rx, ry = getxy(r)
+            δ = squared_distance_to_segment(px,py,qx,qy,rx,ry)
+            if δ < min_dist 
+                min_dist = δ
+                min_idx = k
+            end
+        end 
+        return true, min_idx 
+    end
+end
+

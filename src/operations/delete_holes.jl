@@ -1,15 +1,16 @@
 """
-    delete_holes!(tri::Triangulation)
+    delete_holes!(tri::Triangulation, check_ghost_triangles=false)
 
 Deletes all the exterior faces to the boundary nodes specified in the 
 triangulation `tri`.
 """
-function delete_holes!(tri::Triangulation)
+function delete_holes!(tri::Triangulation, check_ghost_triangles=false)
     points_to_delete = find_all_points_to_delete(tri)
     triangles = find_all_triangles_to_delete(tri, points_to_delete)
     delete_all_exterior_triangles(tri, triangles)
     delete_remaining_triangles_connecting_boundary_edges!(tri)
     clear_deleted_points!(tri, points_to_delete)
+    check_ghost_triangles && validate_exterior_ghost_triangles!(tri)
     return nothing
 end
 
@@ -20,12 +21,17 @@ Returns `true` if the triangulation has multiple curves and the first curve has 
 meaning there are some interior curves that are inside other interior curves. Returns `false` otherwise.
 """
 function has_interiors_within_interiors(tri::Triangulation)
-    if has_multiple_curves(tri)
-        nc = num_curves(tri)
+    points = get_points(tri)
+    boundary_nodes = get_boundary_nodes(tri)
+    return has_interiors_within_interiors(points, boundary_nodes)
+end
+function has_interiors_within_interiors(points, boundary_nodes)
+    if has_multiple_curves(boundary_nodes)
+        nc = num_curves(boundary_nodes)
         areas = zeros(nc)
         for curve_index in 1:nc
-            curve_boundary_nodes = get_boundary_nodes(tri, curve_index)
-            areas[curve_index] = polygon_features(get_points(tri), curve_boundary_nodes)[1]
+            curve_boundary_nodes = get_boundary_nodes(boundary_nodes, curve_index)
+            areas[curve_index] = polygon_features(points, curve_boundary_nodes)[1]
         end
         if areas[1] ≥ 0 && all(<(0), @views areas[2:end])
             return Val(false)
@@ -303,5 +309,25 @@ function search_flattened_nodes!(triangles, tri::Triangulation, flattened_nodes,
                 end
             end
         end
+    end
+end
+
+function validate_exterior_ghost_triangles!(tri::Triangulation)
+    ghosts = Set{triangle_type(tri)}()
+    for T in each_triangle(tri)
+        if is_ghost_triangle(T)
+            push!(ghosts, T)
+        end
+    end
+    T = get_triangles(tri)
+    for G in each_triangle(ghosts)
+        delete_triangle!(T, G)
+        G = rotate_ghost_triangle_to_standard_form(G)
+        u, v, w = indices(G)
+        get_adjacent(tri, u, v) == w && delete_adjacent!(tri, u, v)
+        get_adjacent(tri, v, w) == u && delete_adjacent!(tri, v, w)
+        get_adjacent(tri, w, u) == v && delete_adjacent!(tri, w, u)
+        delete_adjacent2vertex!(tri, u, v, w)
+        delete_adjacent2vertex!(tri, v, w, u)
     end
 end

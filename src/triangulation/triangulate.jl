@@ -44,6 +44,7 @@ nodes, with all triangles inside the boundaries deleted.
 - `recompute_representative_point=true`: At the end of the triangulation, will recompute the `RepresentativePointList` if `true`.
 - `delete_holes=true`: Whether to delete the exterior faces of all boundaries.
 - `check_arguments=true`: Whether to check the arguments for validity.
+- `check_ghost_triangles=!isnothing(boundary_nodes) && num_curves(boundary_nodes) > 1 && is_true(has_interiors_within_interiors(points, boundary_nodes))`: When you have disjoint domains, the method for deleting holes doesn't always clean up outermost boundaries with index corresponding to BoundaryIndex ($BoundaryIndex). If this argument is set to `true`, then we iterate over every triangle and check that it is valid.
 
 # Outputs 
 Returns a [`Triangulation`](@ref).
@@ -65,7 +66,8 @@ function triangulate(points::P; edges=nothing, boundary_nodes=nothing,
         IntegerType, rng),
     recompute_representative_point=true,
     delete_holes=true,
-    check_arguments=true) where {P,I,E,V,Es,Ts,M}
+    check_arguments=true,
+    check_ghost_triangles=!isnothing(boundary_nodes) && num_curves(boundary_nodes) > 1 && is_true(has_interiors_within_interiors(points, boundary_nodes))) where {P,I,E,V,Es,Ts,M}
     check_arguments && check_args(points, boundary_nodes)
     tri = triangulate_bowyer_watson(points;
         IntegerType,
@@ -88,7 +90,7 @@ function triangulate(points::P; edges=nothing, boundary_nodes=nothing,
         tri = replace_boundary_dict_information(tri, bn_map, bn_range)
     end
     if !isnothing(boundary_nodes) && delete_holes
-        delete_holes!(tri)
+        delete_holes!(tri, check_ghost_triangles)
         add_boundary_information!(tri)
         !delete_ghosts && add_ghost_triangles!(tri)
     end
