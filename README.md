@@ -21,4 +21,11 @@ This is a package for constructing Delaunay triangulations of planar point sets.
 
 Much of the work in this package is derived from the book *Delaunay Mesh Generation* by Cheng, Dey, and Shewchuk (2013). 
 
-See the docs for plenty of examples.
+See the docs for plenty of examples. 
+
+Just as a nice demonstration of the incremental behaviour of the algorithms in this package, here's an example of how we build a triangulation of the Julia logo.
+
+https://user-images.githubusercontent.com/95613936/232210266-615e08bd-d4f2-4a40-849e-e832778a4b71.mp4
+
+
+
