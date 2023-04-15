@@ -30,7 +30,8 @@ makedocs(;
             "Adjacent2Vertex" => "data_structures/adjacent2vertex.md",
             "Graph" => "data_structures/graph.md",
             "Convex Hull" => "data_structures/convex_hull.md",
-            "Triangulation" => "data_structures/triangulation.md"
+            "Triangulation" => "data_structures/triangulation.md",
+            "Statistics" => "data_structures/statistics.md"
         ],
         "Operations" => "operations.md",
         "Other Features" => [
