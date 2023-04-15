@@ -16,6 +16,8 @@ The returned value is a [`Certificate`](@ref) type, used for distinguishing betw
 We need to have `Cert.PrecisionFailure` be separate to avoid requeueing the triangle later.
 """
 function try_circumcenter_insertion!(tri::Triangulation, T, events::InsertionEventHistory, queue::RefinementQueue, exterior_curve_index=1, insertion_strategy=:off, rng::AbstractRNG=Random.default_rng())
+    #### TODO: Use off-centers.
+    
     empty!(events)
     ε = sqrt(eps(number_type(tri)))
     ## Find the circumcenter
