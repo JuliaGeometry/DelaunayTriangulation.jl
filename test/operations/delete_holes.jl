@@ -16,7 +16,7 @@ include("../helper_functions.jl")
     nodes, points = convert_boundary_points_to_indices([p1, p2, p3, p4, p1], existing_points=existing_pts)
     tri = triangulate(points; boundary_nodes=nodes, delete_holes=false, delete_ghosts=false, rng)
     points_to_process = DT.find_all_points_to_delete(tri)
-    @test points_to_process == Set((17, 1, 19, 12, 3, 8, 16, 15, 5, 11, 18, 9, 4))
+    @test points_to_process == Set((17, 1, DT.BoundaryIndex, 19, 12, 3, 8, 16, 15, 5, 11, 18, 9, 4))
     triangles_to_delete = DT.find_all_triangles_to_delete(tri, points_to_process)
     true_triangles_to_delete = Set((
         (1, 22, 4),
@@ -222,4 +222,17 @@ end
     tri = triangulate(points; boundary_nodes=bn_nodes)
     @test validate_triangulation(tri; check_ghost_triangle_orientation=false, check_ghost_triangle_delaunay=false)
     validate_statistics(tri)
+
+    a = 4 / 5
+    t = LinRange(0, 2π, 100)
+    x = @. a * (2cos(t) + cos(2t))
+    y = @. a * (2sin(t) - sin(2t))
+    tri = generate_mesh(x, y, 15.0)
+    points = get_points(tri)
+    bn_nodes = get_boundary_nodes(tri)
+    _tri = triangulate(points; boundary_nodes=bn_nodes)
+    @test validate_triangulation(_tri; check_planarity=true, check_ghost_triangle_orientation=false, check_ghost_triangle_delaunay=false)
+    validate_statistics(tri)
 end
+
+

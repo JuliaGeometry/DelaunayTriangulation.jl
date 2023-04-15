@@ -60,7 +60,8 @@ end
 
 function find_all_points_to_delete(tri::Triangulation)
     ## Find all points that might qualify for deletion
-    points_to_process = Set{integer_type(tri)}()
+    I = integer_type(tri)
+    points_to_process = Set{I}()
     all_bn = get_all_boundary_nodes(tri)
     # Now spread the seed
     if has_multiple_curves(tri)
@@ -107,6 +108,7 @@ function find_all_points_to_delete(tri::Triangulation)
             find_all_points_to_delete!(points_to_process, tri, seed, all_bn)
         end
     end
+    I(BoundaryIndex) ∉ points_to_process && push!(points_to_process, I(BoundaryIndex)) # need to make sure we include this to get rid of any lingering ghost triangles
     return points_to_process
 end
 
