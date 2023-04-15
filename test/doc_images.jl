@@ -623,65 +623,6 @@ end
     add_edge!(tri, 2, 7)
     fig, ax, sc = triplot(tri)
     @test_reference "../docs/src/tri_algs/figs/segment_example_completed.png" fig
-
-    curve_1 = [[
-        (0.0, 0.0), (4.0, 0.0), (8.0, 0.0), (12.0, 0.0), (12.0, 4.0),
-        (12.0, 8.0), (14.0, 10.0), (16.0, 12.0), (16.0, 16.0),
-        (14.0, 18.0), (12.0, 20.0), (12.0, 24.0), (12.0, 28.0),
-        (8.0, 28.0), (4.0, 28.0), (0.0, 28.0), (-2.0, 26.0), (0.0, 22.0),
-        (0.0, 18.0), (0.0, 10.0), (0.0, 8.0), (0.0, 4.0), (-4.0, 4.0),
-        (-4.0, 0.0), (0.0, 0.0),
-    ]]
-    curve_2 = [[
-        (4.0, 26.0), (8.0, 26.0), (10.0, 26.0), (10.0, 24.0),
-        (10.0, 22.0), (10.0, 20.0), (8.0, 20.0), (6.0, 20.0),
-        (4.0, 20.0), (4.0, 22.0), (4.0, 24.0), (4.0, 26.0)
-    ]]
-    curve_3 = [[(4.0, 16.0), (12.0, 16.0), (12.0, 14.0), (4.0, 14.0), (4.0, 16.0)]]
-    curve_4 = [[(4.0, 8.0), (10.0, 8.0), (8.0, 6.0), (6.0, 6.0), (4.0, 8.0)]]
-    curves = [curve_1, curve_2, curve_3, curve_4]
-    points = [
-        (2.0, 26.0), (2.0, 24.0), (6.0, 24.0), (6.0, 22.0), (8.0, 24.0), (8.0, 22.0),
-        (2.0, 22.0), (0.0, 26.0), (10.0, 18.0), (8.0, 18.0), (4.0, 18.0), (2.0, 16.0),
-        (2.0, 12.0), (6.0, 12.0), (2.0, 8.0), (2.0, 4.0), (4.0, 2.0),
-        (-2.0, 2.0), (4.0, 6.0), (10.0, 2.0), (10.0, 6.0), (8.0, 10.0), (4.0, 10.0),
-        (10.0, 12.0), (12.0, 12.0), (14.0, 26.0), (16.0, 24.0), (18.0, 28.0),
-        (16.0, 20.0), (18.0, 12.0), (16.0, 8.0), (14.0, 4.0), (14.0, -2.0),
-        (6.0, -2.0), (2.0, -4.0), (-4.0, -2.0), (-2.0, 8.0), (-2.0, 16.0),
-        (-4.0, 22.0), (-4.0, 26.0), (-2.0, 28.0), (6.0, 15.0), (7.0, 15.0),
-        (8.0, 15.0), (9.0, 15.0), (10.0, 15.0), (6.2, 7.8),
-        (5.6, 7.8), (5.6, 7.6), (5.6, 7.4), (6.2, 7.4), (6.0, 7.6),
-        (7.0, 7.8), (7.0, 7.4)]
-    boundary_nodes, points = convert_boundary_points_to_indices(curves; existing_points=points)
-    rng = StableRNG(19118181)
-    tri = triangulate(points; boundary_nodes, delete_ghosts=false, delete_holes=false, rng)
-    fig = Figure()
-    ax = Axis(fig[1, 1], xlabel=L"x", ylabel=L"y", width=400, height=300)
-    triplot!(ax, tri)
-    resize_to_layout!(fig)
-    @test_reference "../docs/src/tri_algs/figs/intermediate_triangulation.png" fig
-
-    points_to_delete = DelaunayTriangulation.find_all_points_to_delete(tri)
-    scatter!(ax, [get_point(tri, i) for i in points_to_delete], color=:blue, markersize=10)
-    @test_reference "../docs/src/tri_algs/figs/intermediate_triangulation_highlighted.png" fig
-
-    triangles = DelaunayTriangulation.find_all_triangles_to_delete(tri, points_to_delete)
-    [poly!(ax, [get_point(tri, u, v, w, u)...], color=(:red, 0.2)) for (u, v, w) in triangles if !DelaunayTriangulation.is_ghost_triangle(u, v, w)]
-    @test_reference "../docs/src/tri_algs/figs/intermediate_triangulation_highlighted_2.png" fig
-
-    DelaunayTriangulation.delete_all_exterior_triangles!(tri, triangles)
-    fig = Figure()
-    ax = Axis(fig[1, 1], xlabel=L"x", ylabel=L"y", width=400, height=300)
-    triplot!(ax, tri)
-    resize_to_layout!(fig)
-    @test_reference "../docs/src/tri_algs/figs/intermediate_triangulation_partially_deleted.png" fig
-
-    DelaunayTriangulation.delete_remaining_triangles_connecting_boundary_edges!(tri)
-    fig = Figure()
-    ax = Axis(fig[1, 1], xlabel=L"x", ylabel=L"y", width=400, height=300)
-    triplot!(ax, tri)
-    resize_to_layout!(fig)
-    @test_reference "../docs/src/tri_algs/figs/intermediate_triangulation_fully_deleted.png" fig
 end
 
 @testset "Pole of inaccessibility" begin

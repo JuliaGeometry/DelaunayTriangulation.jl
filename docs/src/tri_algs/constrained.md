@@ -176,109 +176,11 @@ is useful (`triangulate` calls this internally).
 
 ## Excavating Exterior Faces 
 
-When we define boundary curves, we typically want to delete any points and triangles exterior to them. The logic of the method we use for this is simple. Basically, we "plant" a seed in an exterior face, and use it to infect other points in this exterior face, continuing this spread until all exterior faces are found. (The actual implementation is a lot more involved, obviously). The function that performs this is `delete_holes!`, with relevant docstrings below.
+When we define boundary curves, we typically want to delete any points and triangles exterior to them. The logic of the method we use for this is simple. Basically, we "plant" a seed in an exterior face, and use it to infect other points in this exterior face, continuing this spread until all exterior faces are found. The function that performs this is `delete_holes!`, with relevant docstrings below.
 
 ```@docs 
 delete_holes!
 has_interiors_within_interiors 
-find_all_points_to_delete
-find_all_triangles_to_delete 
-delete_all_exterior_triangles! 
-clear_deleted_points!
-delete_remaining_triangles_connecting_boundary_edges!
 ```
 
-Let's show how this all works by example. Let us first build a triangulation.
-
-```julia
-using DelaunayTriangulation, CairoMakie
-curve_1 = [[
-    (0.0, 0.0), (4.0, 0.0), (8.0, 0.0), (12.0, 0.0), (12.0, 4.0),
-    (12.0, 8.0), (14.0, 10.0), (16.0, 12.0), (16.0, 16.0),
-    (14.0, 18.0), (12.0, 20.0), (12.0, 24.0), (12.0, 28.0),
-    (8.0, 28.0), (4.0, 28.0), (0.0, 28.0), (-2.0, 26.0), (0.0, 22.0),
-    (0.0, 18.0), (0.0, 10.0), (0.0, 8.0), (0.0, 4.0), (-4.0, 4.0),
-    (-4.0, 0.0), (0.0, 0.0),
-]]
-curve_2 = [[
-    (4.0, 26.0), (8.0, 26.0), (10.0, 26.0), (10.0, 24.0),
-    (10.0, 22.0), (10.0, 20.0), (8.0, 20.0), (6.0, 20.0),
-    (4.0, 20.0), (4.0, 22.0), (4.0, 24.0), (4.0, 26.0)
-]]
-curve_3 = [[(4.0, 16.0), (12.0, 16.0), (12.0, 14.0), (4.0, 14.0), (4.0, 16.0)]]
-curve_4 = [[(4.0, 8.0), (10.0, 8.0), (8.0, 6.0), (6.0, 6.0), (4.0, 8.0)]]
-curves = [curve_1, curve_2, curve_3, curve_4]
-points = [
-    (2.0, 26.0), (2.0, 24.0), (6.0, 24.0), (6.0, 22.0), (8.0, 24.0), (8.0, 22.0),
-    (2.0, 22.0), (0.0, 26.0), (10.0, 18.0), (8.0, 18.0), (4.0, 18.0), (2.0, 16.0),
-    (2.0, 12.0), (6.0, 12.0), (2.0, 8.0), (2.0, 4.0), (4.0, 2.0),
-    (-2.0, 2.0), (4.0, 6.0), (10.0, 2.0), (10.0, 6.0), (8.0, 10.0), (4.0, 10.0),
-    (10.0, 12.0), (12.0, 12.0), (14.0, 26.0), (16.0, 24.0), (18.0, 28.0),
-    (16.0, 20.0), (18.0, 12.0), (16.0, 8.0), (14.0, 4.0), (14.0, -2.0),
-    (6.0, -2.0), (2.0, -4.0), (-4.0, -2.0), (-2.0, 8.0), (-2.0, 16.0),
-    (-4.0, 22.0), (-4.0, 26.0), (-2.0, 28.0), (6.0, 15.0), (7.0, 15.0),
-    (8.0, 15.0), (9.0, 15.0), (10.0, 15.0), (6.2, 7.8),
-    (5.6, 7.8), (5.6, 7.6), (5.6, 7.4), (6.2, 7.4), (6.0, 7.6),
-    (7.0, 7.8), (7.0, 7.4)]
-boundary_nodes, points = convert_boundary_points_to_indices(curves; existing_points=points)
-tri = triangulate(points; boundary_nodes, delete_ghosts = false, delete_holes = false)
-fig = Figure()
-ax = Axis(fig[1, 1], xlabel=L"x",ylabel=L"y",width=600,height=300)
-triplot!(ax, tri)
-```
-
-```@raw html
-<figure>
-    <img src='../figs/intermediate_triangulation.png', alt='Triangulation prior to excavation'><br>
-</figure>
-```
-
-The aim is to delete all triangles outside of the outermost magenta boundary and inside the interior magenta boundaries. First, let us using the boundaries to find points that are next to boundary edges away from the interior faces, accomplished via `find_all_points_to_delete`.
-
-```julia
-points_to_delete = DelaunayTriangulation.find_all_points_to_delete(tri)
-scatter!(ax, [get_point(tri, i) for i in points_to_delete], color=:blue,markersize=14)
-```
-
-```@raw html
-<figure>
-    <img src='../figs/intermediate_triangulation_highlighted.png', alt='Triangulation prior to excavation with highlighted points for deletion'><br>
-</figure>
-```
-
-Now let us use these points to find the triangles to delete.
-
-```julia
-triangles = DelaunayTriangulation.find_all_triangles_to_delete(tri, points_to_delete)
-[poly!(ax, [get_point(tri, u, v, w, u)...], color = (:red, 0.2)) for (u, v, w) in triangles if !DelaunayTriangulation.is_ghost_triangle(u,v,w)]
-```
-
-```@raw html
-<figure>
-    <img src='../figs/intermediate_triangulation_highlighted_2.png', alt='Triangulation prior to excavation with highlighted points and triangles for deletion'><br>
-</figure>
-```
-
-We see that all of the triangles are correct in this case, but it's missing some triangles in the top-most interior hole. This is clearer once we delete all the highlighted triangles:
-
-```julia
-DelaunayTriangulation.delete_all_exterior_triangles!(tri, triangles)
-```
-
-```@raw html
-<figure>
-    <img src='../figs/intermediate_triangulation_partially_deleted.png', alt='Triangulation partially excavated'><br>
-</figure>
-```
-
-These remaining triangles to be deleted are handled via `delete_remaining_triangles_connecting_boundary_edges!`.
-
-```julia
-DelaunayTriangulation.delete_remaining_triangles_connecting_boundary_edges!(tri)
-```
-
-```@raw html
-<figure>
-    <img src='../figs/intermediate_triangulation_fully_deleted.png', alt='Triangulation fully excavated'><br>
-</figure>
-```
+The points that we find are then processed one at a time, checking all adjoining triangles to see if their centroid is in the interior or exterior. Special case is taken at the boundary nodes.
