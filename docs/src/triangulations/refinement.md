@@ -19,6 +19,7 @@ Although rarely needed, let us start with an unconstrained triangulation example
 First, let us take some point cloud and build its triangulation.
 
 ```julia
+using DelaunayTriangulation, CairoMakie
 pts = [(rand(), rand()) for _ in 1:50]
 tri = triangulate(pts)
 ```
