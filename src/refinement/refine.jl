@@ -8,9 +8,8 @@
         rng::AbstractRNG=Random.default_rng(),
         maxiters=100,
         lock_convex_hull=!has_boundary_nodes(tri),
-        exterior_curve_index=1,
-        insertion_strategy=:off
-    )
+        exterior_curve_index=1
+        )
 
 Refine the triangulation `tri` according to the given refinement targets.
 
@@ -52,7 +51,7 @@ How many points are allowed to be in the triangulation before terminating.
 - `rng::AbstractRNG=Random.default_rng()`
 
 The random number generator to use.
-- `maxiters=100_000`
+- `maxiters=5000`
 
 The maximum number of iterations to perform.
 - `lock_convex_hull=!has_boundary_nodes(tri)`
@@ -68,12 +67,6 @@ is only relevant if the triangulation has no boundary nodes.
 - `exterior_curve_index=1`
 
 The curve (or curves) corresponding to the outermost boundary. 
-
-- `insertion_strategy=:off`
-
-Strategy to use for inserting points to improve the quality of a bad triangle. `:off` corresponds to using 
-off-centres (see [this paper](https://doi.org/10.1016/j.comgeo.2008.06.002)). `:on` corresponds to using circumcentres. 
-`:off` is the default, and is recommended for most cases.
 
 # Outputs 
 
@@ -104,14 +97,10 @@ function refine!(tri::Triangulation;
     rng::AbstractRNG=Random.default_rng(),
     maxiters=100_000,
     lock_convex_hull=!has_boundary_nodes(tri),
-    exterior_curve_index=1,
-    insertion_strategy=:off
+    exterior_curve_index=1
 )
-    if insertion_strategy ∉ (:off, :on)
-        throw(ArgumentError("The provided insertion_strategy, $insertion_strategy, must be :off or :on."))
-    end
     tri, queue, events, targets, has_ghosts, segment_list = initialise_refine(tri; min_area, max_area, max_radius_edge_ratio, max_points, min_angle, lock_convex_hull)
-    _refine_all!(tri, queue, events, targets, segment_list, exterior_curve_index, maxiters, insertion_strategy, rng)
+    _refine_all!(tri, queue, events, targets, segment_list, exterior_curve_index, maxiters, rng)
     finalise_refine(tri, has_ghosts, lock_convex_hull)
     stats = statistics(tri)
     return stats
@@ -150,23 +139,23 @@ function finalise_refine(tri::Triangulation, has_ghosts, lock_convex_hull)
     return nothing
 end
 
-function _refine_all!(tri::Triangulation, queue::RefinementQueue, events::InsertionEventHistory, targets::RefinementTargets, segment_list, exterior_curve_index, maxiters, insertion_strategy, rng::AbstractRNG=Random.default_rng())
+function _refine_all!(tri::Triangulation, queue::RefinementQueue, events::InsertionEventHistory, targets::RefinementTargets, segment_list, exterior_curve_index, maxiters, rng::AbstractRNG=Random.default_rng())
     iters = 1
     split_all_encroached_segments!(tri, queue, events, targets, segment_list)
     while !isempty(queue) && !compare_points(targets, num_points(tri)) && iters ≤ maxiters
         ρ = peek_triangle_ρ(queue)
         T = triangle_dequeue!(queue)
-        iters = _refine_itr!(tri, queue, events, targets, T, ρ, segment_list, exterior_curve_index, iters, insertion_strategy, rng)
+        iters = _refine_itr!(tri, queue, events, targets, T, ρ, segment_list, exterior_curve_index, iters, rng)
     end
     return nothing
 end
 
-function _refine_itr!(tri::Triangulation, queue::RefinementQueue, events::InsertionEventHistory, targets::RefinementTargets, T, ρ, segment_list, exterior_curve_index, iters, insertion_strategy, rng::AbstractRNG=Random.default_rng())
+function _refine_itr!(tri::Triangulation, queue::RefinementQueue, events::InsertionEventHistory, targets::RefinementTargets, T, ρ, segment_list, exterior_curve_index, iters, rng::AbstractRNG=Random.default_rng())
     u, v, w = indices(T)
     if !is_ghost_triangle(T) && get_adjacent(tri, u, v) == w
         iters += 1
         @show iters
-        success = split_triangle!(tri, queue, events, T, exterior_curve_index, insertion_strategy, rng)
+        success = split_triangle!(tri, queue, events, T, exterior_curve_index, rng)
         if is_encroachment_failure(success)
             split_all_encroached_segments!(tri, queue, events, targets, segment_list)
             triangle_enqueue!(queue, T, ρ) # Re-enqueue triangle that the circumcenter came from 
