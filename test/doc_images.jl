@@ -4,6 +4,8 @@ using CairoMakie
 using StableRNGs
 const DT = DelaunayTriangulation
 
+include("./helper_functions.jl")
+
 @testset "Unconstrained Triangulations" begin
     a = [1.5, 4.0]
     b = [0.0, 3.5]
