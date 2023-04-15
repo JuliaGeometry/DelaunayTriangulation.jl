@@ -2,10 +2,6 @@ using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using CairoMakie
 
-include("../test_setup.jl")
-
-save_path = basename(pwd()) == "test" ? "figures" : "test/figures"
-
 @testset "Basic getters" begin
     ch = ConvexHull(rand(2, 500), [1, 2, 4, 5, 6, 10, 29, 45, 71, 1])
     @test DT.get_points(ch) == ch.points
@@ -33,14 +29,4 @@ end
     @test ch == ConvexHull(points, [13, 1, 2, 3, 4, 5, 11, 12, 13])
     @test DT.get_indices(ch) == reverse([3, 2, 1, 13, 12, 11, 5, 4, 3])
     @test get_points(ch) == points
-end
-
-@testset "Image for docs" begin
-    pts = [Tuple(25randn(2)) for _ in 1:500]
-    ch = convex_hull(pts)
-    fig = Figure()
-    ax = Axis(fig[1, 1])
-    scatter!(ax, pts)
-    lines!(ax, pts[ch.indices])
-    SAVE_FIGURE && save("$save_path/convex_hull_1.png", fig)
 end

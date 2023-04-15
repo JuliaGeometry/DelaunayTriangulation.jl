@@ -4,9 +4,7 @@ using LinearAlgebra
 using Random
 using CairoMakie
 
-save_path = basename(pwd()) == "test" ? "figures" : "test/figures"
 
-include("./test_setup.jl")
 include("./helper_functions.jl")
 
 @testset "Getting polygon features" begin
@@ -484,17 +482,6 @@ end
             [[29, 30, 31, 29]]
       ]
       x, y = DT.pole_of_inaccessibility(pts, boundary_nodes)
-
-      fig = Figure()
-      ax = Axis(fig[1, 1], xlabel=L"x", ylabel=L"y")
-      bn1 = pts[:, unique(reduce(vcat, boundary_nodes[1]))] |> x -> hcat(x, x[:, begin])
-      bn2 = pts[:, unique(reduce(vcat, boundary_nodes[2]))] |> x -> hcat(x, x[:, begin])
-      bn3 = pts[:, unique(reduce(vcat, boundary_nodes[3]))] |> x -> hcat(x, x[:, begin])
-      lines!(ax, bn1, color=:red, linewidth=4)
-      lines!(ax, bn2, color=:red, linewidth=4)
-      lines!(ax, bn3, color=:red, linewidth=4)
-      scatter!(ax, [x], [y], color=:blue, markersize=23)
-      SAVE_FIGURE && save("$save_path/pole_of_inaccessibility.png", fig)
 end
 
 @testset "A previously broken example" begin

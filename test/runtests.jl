@@ -285,6 +285,9 @@ end
 @safetestset "(un)lock_convex_hull!.jl" begin
     include("operations/lock_convex_hull.jl")
 end
+@safetestset "delete_holes!" begin 
+    include("operations/delete_holes.jl")
+end
 
 @safetestset "Certificate" begin
     include("predicates/certificate.jl")
@@ -299,9 +302,6 @@ end
     include("predicates/index_and_ghost_handling.jl")
 end
 
-@safetestset "Plotting" begin
-    include("plotting.jl")
-end
 @safetestset "Documentation images" begin
     include("doc_images.jl")
 end

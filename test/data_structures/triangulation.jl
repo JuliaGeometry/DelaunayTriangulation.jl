@@ -29,7 +29,6 @@ global tri = Triangulation(pts; IntegerType=Int32)
             DT.get_empty_representative_points())
 end
 
-include("../helper_functions.jl")
 _x, _y = complicated_geometry()
 global x = _x
 global y = _y

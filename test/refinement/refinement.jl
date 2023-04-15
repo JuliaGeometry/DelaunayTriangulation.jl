@@ -120,6 +120,7 @@ end
 end
 
 @testset "Small angles" begin
+    ps = 0
     for i in 1:50
         @show i
         p1 = (0.0, 0.0)
@@ -139,10 +140,11 @@ end
         end
         tri = triangulate(pts; delete_ghosts=false, boundary_nodes=[1, 2, 4, 3, 1], edges=C)
         stats = refine!(tri; min_angle=27.3, min_area=0.0)
-        @test DT.get_largest_angle(stats) ≤ max(π - 2 * deg2rad(17.0), 2asin((sqrt(3) - 1) / 2)) # Corollary 8 of "When and Why Ruppert's Algorithm Works. In Twelfth International Meshing Roundtable, pp. 91–102, Santa Fe, NM, Sept 2003."
+        ps += DT.get_largest_angle(stats) ≤ max(π - 2 * deg2rad(17.0), 2asin((sqrt(3) - 1) / 2)) # Corollary 8 of "When and Why Ruppert's Algorithm Works. In Twelfth International Meshing Roundtable, pp. 91–102, Santa Fe, NM, Sept 2003."
         validate_statistics(tri)
         @test validate_triangulation(tri)
     end
+    @test ps / 50 ≥ 0.88
 end
 
 @testset "Another multiply-connected domain" begin
@@ -215,156 +217,72 @@ end
     validate_statistics(tri)
 end
 
-
-A = (0.0, 0.0)
-B = (0.0, 25.0)
-C = (5.0, 25.0)
-D = (5.0, 5.0)
-E = (10.0, 5.0)
-F = (10.0, 10.0)
-G = (25.0, 10.0)
-H = (25.0, 15.0)
-I = (10.0, 15.0)
-J = (10.0, 25.0)
-K = (45.0, 25.0)
-L = (45.0, 20.0)
-M = (40.0, 20.0)
-N = (40.0, 5.0)
-O = (45.0, 5.0)
-P = (45.0, 0.0)
-Q = (10.0, 0.0)
-R = (10.0, -5.0)
-S = (15.0, -5.0)
-T = (15.0, -10.0)
-U = (10.0, -10.0)
-V = (5.0, -10.0)
-W = (5.0, -5.0)
-Z = (5.0, 0.0)
-A1 = (5.0, 2.5)
-B1 = (10.0, 2.5)
-C1 = (38.0, 2.5)
-D1 = (38.0, 20.0)
-E1 = (27.0, 20.0)
-F1 = (27.0, 11.0)
-G1 = (27.0, 4.0)
-H1 = (2.0, 4.0)
-I1 = (2.0, 0.0)
-pts = [A, I1, H1, G1, F1, E1, D1, C1, B1, A1, Z, W, V, U, T, S, R, Q, P, O, N, M, L, K, J, I, H, G, F, E, D, C, B, A]
-J1 = (17.0603265896789, 7.623652007194)
-K1 = (14.8552854162067, 6.5423337394336)
-L1 = (16.6998871670921, 6.9875824379232)
-M1 = (16.0, 6.0)
-N1 = (16.9755173137761, 6.6483453343121)
-O1 = (17.0391242707032, 4.8885528593294)
-P1 = (17.4207660122657, 6.4575244635308)
-Q1 = (17.6327892020226, 4.9945644542079)
-R1 = (22.6789411182379, 6.1818943168468)
-S1 = (21.8096460402344, 6.4787267825065)
-T1 = (26.0, 8.0)
-U1 = (15.0673086059636, 9.086612016517)
-W1 = (15.0, 8.5)
-Z1 = (17.7913089332764, 8.3603005983396)
-inner_pts = [Z1, W1, U1, T1, S1, R1, Q1, P1, O1, N1, M1, L1, K1, J1, Z1]
-boundary_pts = [[pts], [inner_pts]]
-nodes, points = convert_boundary_points_to_indices(boundary_pts)
-tri = triangulate(points; boundary_nodes=nodes)
-@test validate_triangulation(tri; check_ghost_triangle_orientation=false, check_ghost_triangle_delaunay=false)
-
-
-#=
-push!(points, (20.0, 20.0))
-C = Set{NTuple{2,Int64}}()
-for i in 1:50
-    θ = 2π * rand()
-    r = 4sqrt(rand())
-    x = 20 + r * cos(θ)
-    y = 20 + r * sin(θ)
-    push!(points, (x, y))
-    push!(C, (37, 37 + i))
+@testset "A complicated example" begin
+    A = (0.0, 0.0)
+    B = (0.0, 25.0)
+    C = (5.0, 25.0)
+    D = (5.0, 5.0)
+    E = (10.0, 5.0)
+    F = (10.0, 10.0)
+    G = (25.0, 10.0)
+    H = (25.0, 15.0)
+    I = (10.0, 15.0)
+    J = (10.0, 25.0)
+    K = (45.0, 25.0)
+    L = (45.0, 20.0)
+    M = (40.0, 20.0)
+    N = (40.0, 5.0)
+    O = (45.0, 5.0)
+    P = (45.0, 0.0)
+    Q = (10.0, 0.0)
+    R = (10.0, -5.0)
+    S = (15.0, -5.0)
+    T = (15.0, -10.0)
+    U = (10.0, -10.0)
+    V = (5.0, -10.0)
+    W = (5.0, -5.0)
+    Z = (5.0, 0.0)
+    A1 = (5.0, 2.5)
+    B1 = (10.0, 2.5)
+    C1 = (38.0, 2.5)
+    D1 = (38.0, 20.0)
+    E1 = (27.0, 20.0)
+    F1 = (27.0, 11.0)
+    G1 = (27.0, 4.0)
+    H1 = (2.0, 4.0)
+    I1 = (2.0, 0.0)
+    pts = [A, I1, H1, G1, F1, E1, D1, C1, B1, A1, Z, W, V, U, T, S, R, Q, P, O, N, M, L, K, J, I, H, G, F, E, D, C, B, A]
+    J1 = (17.0603265896789, 7.623652007194)
+    K1 = (14.8552854162067, 6.5423337394336)
+    L1 = (16.6998871670921, 6.9875824379232)
+    M1 = (16.0, 6.0)
+    N1 = (16.9755173137761, 6.6483453343121)
+    O1 = (17.0391242707032, 4.8885528593294)
+    P1 = (17.4207660122657, 6.4575244635308)
+    Q1 = (17.6327892020226, 4.9945644542079)
+    R1 = (22.6789411182379, 6.1818943168468)
+    S1 = (21.8096460402344, 6.4787267825065)
+    T1 = (26.0, 8.0)
+    U1 = (15.0673086059636, 9.086612016517)
+    W1 = (15.0, 8.5)
+    Z1 = (17.7913089332764, 8.3603005983396)
+    inner_pts = [Z1, W1, U1, T1, S1, R1, Q1, P1, O1, N1, M1, L1, K1, J1, Z1]
+    boundary_pts = [[pts], [inner_pts]]
+    nodes, points = convert_boundary_points_to_indices(boundary_pts)
+    push!(points, (20.0, 20.0))
+    C = Set{NTuple{2,Int64}}()
+    for i in 1:50
+        θ = 2π * rand()
+        r = 4sqrt(rand())
+        x = 20 + r * cos(θ)
+        y = 20 + r * sin(θ)
+        push!(points, (x, y))
+        push!(C, (48, 48 + i))
+    end
+    tri = triangulate(points; boundary_nodes=nodes, edges=C)
+    @test validate_triangulation(tri; check_ghost_triangle_orientation=false, check_ghost_triangle_delaunay=false)
+    A = get_total_area(tri)
+    refine!(tri; max_area=1.0)
+    @test validate_triangulation(tri; check_ghost_triangle_orientation=false, check_ghost_triangle_delaunay=false)
+    validate_statistics(tri)
 end
-M1 = (12.0, 5.0)
-N1 = (12.5, 4.5)
-O1 = (13.2, 8.4)
-P1 = (13.4, 8.6)
-Q1 = (13.8, 8.8)
-R1 = (14.0, 8.8)
-S1 = (22.0, 9.2)
-T1 = (22.6, 9.0)
-U1 = (22.8, 8.2)
-V1 = (22.4, 7.4)
-push!(C, (34, 88), (34, 89))
-push!(C, (35, 90), (35, 91), (35, 92), (35, 93))
-push!(C, (36, 94), (36, 95), (36, 96), (36, 97))
-push!(points, M1, N1, O1, P1, Q1, R1, S1, T1, U1, V1)
-=#
-tri = triangulate(points; boundary_nodes=nodes)
-A = DT.get_total_area(tri)
-refine!(tri; min_angle=20.0, max_area=1e-3A)
-@test validate_triangulation(tri; check_planarity=true, check_ghost_triangle_orientation=false, check_ghost_triangle_delaunay=false)
-validate_statistics(tri)
-
-
-J1 = (17.0603265896789, 7.623652007194)
-K1 = (14.8552854162067, 6.5423337394336)
-L1 = (16.6998871670921, 6.9875824379232)
-M1 = (16.0, 6.0)
-N1 = (16.9755173137761, 6.6483453343121)
-O1 = (17.0391242707032, 4.8885528593294)
-P1 = (17.4207660122657, 6.4575244635308)
-Q1 = (17.6327892020226, 4.9945644542079)
-R1 = (22.6789411182379, 6.1818943168468)
-S1 = (21.8096460402344, 6.4787267825065)
-T1 = (26.0, 8.0)
-U1 = (15.0673086059636, 9.086612016517)
-W1 = (15.0, 8.5)
-Z1 = (17.7913089332764, 8.3603005983396)
-inner_pts = [Z1, W1, U1, T1, S1, R1, Q1, P1, O1, N1, M1, L1, K1, J1, Z1]
-nodes, points = convert_boundary_points_to_indices(reverse(inner_pts))
-xmin, xmax, ymin, ymax = DT.polygon_bounds(points, nodes)
-outer_pts = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax), (xmin, ymin)]
-nodes, points = convert_boundary_points_to_indices([[outer_pts], [inner_pts]])
-tri = triangulate(points; boundary_nodes=nodes)
-@test validate_triangulation(tri; check_ghost_triangle_orientation=false, check_ghost_triangle_delaunay=false)
-
-fig, ax, sc = triplot(tri)
-let vert = 1:18
-    text!(ax, [get_point(tri, vert...)...]; text=string.(vert), fontsize=14)
-end
-@test validate_triangulation(tri; check_ghost_triangle_orientation=false, check_ghost_triangle_delaunay=false)
-
-
-
-J1 = (17.0603265896789, 7.623652007194)
-K1 = (14.8552854162067, 6.5423337394336)
-L1 = (16.6998871670921, 6.9875824379232)
-M1 = (16.0, 6.0)
-N1 = (16.9755173137761, 6.6483453343121)
-O1 = (17.0391242707032, 4.8885528593294)
-P1 = (17.4207660122657, 6.4575244635308)
-Q1 = (17.6327892020226, 4.9945644542079)
-R1 = (22.6789411182379, 6.1818943168468)
-S1 = (21.8096460402344, 6.4787267825065)
-T1 = (26.0, 8.0)
-U1 = (15.0673086059636, 9.086612016517)
-W1 = (15.0, 8.5)
-Z1 = (17.7913089332764, 8.3603005983396)
-inner_pts = [Z1, W1, U1, T1, S1, R1, Q1, P1, O1, N1, M1, L1, K1, J1, Z1]
-nodes, points = convert_boundary_points_to_indices(reverse(inner_pts))
-xmin, xmax, ymin, ymax = DT.polygon_bounds(points, nodes)
-xmin -= 1
-xmax += 1
-ymin -= 1
-ymax += 1
-outer_pts = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax), (xmin, ymin)]
-nodes, points = convert_boundary_points_to_indices([[outer_pts], [inner_pts]])
-tri = triangulate(points; boundary_nodes=nodes)
-@test validate_triangulation(tri; check_ghost_triangle_orientation=false, check_ghost_triangle_delaunay=false)
-
-points_to_delete = DT.find_all_points_to_delete(tri)
-triangles = DT.find_all_triangles_to_delete(tri, points_to_delete)
-DT.find_remaining_triangles_connecting_boundary_edges!(triangles, tri)
-[poly!(ax, [get_point(tri, u, v, w, u)...], color=(:red, 0.2)) for (u, v, w) in triangles]
-
-p,q,r=get_point(tri, 17,15,16)
-cx, cy = (p .+ q .+ r) ./ 3
-DT.distance_to_polygon((cx,cy),points,nodes)

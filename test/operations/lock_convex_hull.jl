@@ -3,9 +3,6 @@ const DT = DelaunayTriangulation
 using CairoMakie
 using DataStructures
 
-include("../test_setup.jl")
-save_path = basename(pwd()) == "test" ? "figures" : "test/figures"
-
 include("../helper_functions.jl")
 
 @testset "lock_convex_hull" begin
