@@ -42,7 +42,7 @@ nodes, with all triangles inside the boundaries deleted.
 - `rng::AbstractRNG=Random.default_rng()`: The RNG to use.
 - `point_order=get_point_order(points, randomise, skip_points, IntegerType, rng)`: The insertion order. 
 - `recompute_representative_point=true`: At the end of the triangulation, will recompute the `RepresentativePointList` if `true`.
-- `delete_holes=true`: Whether to delete the exterior faces of all boundaries. There may be issues if you have boundary nodes but have this set to `false` - this kwarg is msotly for debugging.
+- `delete_holes=true`: Whether to delete the exterior faces of all boundaries. There may be issues if you have boundary nodes but have this set to `false` - this kwarg is mostly for debugging.
 - `check_arguments=true`: Whether to check the arguments for validity.
 
 # Outputs 
