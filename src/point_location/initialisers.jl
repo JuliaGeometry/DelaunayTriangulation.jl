@@ -85,7 +85,7 @@ function prepare_initial_edge(pts, representative_point_list, boundary_map, edge
     return i, j, pᵢ, pⱼ, line_cert_i, line_cert_j
 end
 
-function select_initial_triangle_clockwise(pts, adj::Adjacent{I,E}, representative_point_list, boundary_map, p, q, pᵢ, pⱼ, i, j, k,
+function select_initial_triangle_clockwise(pts, adj::Adjacent{I,E}, graph, representative_point_list, boundary_map, p, q, pᵢ, pⱼ, i, j, k,
     boundary_index_ranges,
     check_existence::V=Val(has_multiple_segments(boundary_map)),
     store_history::F=Val(false),
@@ -94,7 +94,10 @@ function select_initial_triangle_clockwise(pts, adj::Adjacent{I,E}, representati
     if is_true(store_history) && is_collinear(line_cert_i)
         add_edge!(history, k, i)
     end
-    while is_left(line_cert_i)
+    nn = num_neighbours(graph, k)
+    iter = 0 # when we have concave geometries, sometimes we get stuck in an infinite loop
+    while is_left(line_cert_i) && iter ≤ nn + 1
+        iter += 1
         j = i
         pⱼ = pᵢ
         i = get_adjacent(adj, i, k; check_existence=check_existence,
@@ -105,10 +108,14 @@ function select_initial_triangle_clockwise(pts, adj::Adjacent{I,E}, representati
             add_edge!(history, k, i)
         end
     end
-    return i, j, pᵢ, pⱼ
+    if iter > nn + 1
+        return I(DefaultAdjacentValue), I(DefaultAdjacentValue), pᵢ, pⱼ
+    else
+        return i, j, pᵢ, pⱼ
+    end
 end
 
-function select_initial_triangle_counterclockwise(pts, adj::Adjacent{I,E}, representative_point_list, boundary_map, line_cert_j, p, q,
+function select_initial_triangle_counterclockwise(pts, adj::Adjacent{I,E}, graph, representative_point_list, boundary_map, line_cert_j, p, q,
     pᵢ, pⱼ, i, j, k, boundary_index_ranges,
     check_existence::V=Val(has_multiple_segments(boundary_map)),
     store_history::F=Val(false),
@@ -116,7 +123,10 @@ function select_initial_triangle_counterclockwise(pts, adj::Adjacent{I,E}, repre
     if is_true(store_history) && is_collinear(line_cert_j)
         add_edge!(history, k, j)
     end
-    while is_right(line_cert_j)
+    nn = num_neighbours(graph, k)
+    iter = 0 # when we have concave geometries, sometimes we get stuck in an infinite loop
+    while is_right(line_cert_j) && iter ≤ nn + 1
+        iter += 1
         i = j
         pᵢ = pⱼ
         j = get_adjacent(adj, k, j; check_existence=check_existence,
@@ -127,7 +137,11 @@ function select_initial_triangle_counterclockwise(pts, adj::Adjacent{I,E}, repre
             add_edge!(history, k, j)
         end
     end
-    return i, j, pᵢ, pⱼ
+    if iter > nn + 1
+        return I(DefaultAdjacentValue), I(DefaultAdjacentValue), pᵢ, pⱼ
+    else
+        return i, j, pᵢ, pⱼ
+    end
 end
 
 """
@@ -135,6 +149,7 @@ end
         pts, 
         adj, 
         adj2v, 
+        graph,
         representative_point_list, 
         boundary_map, 
         k, 
@@ -153,6 +168,7 @@ that `k` is a point that is not on the boundary.
 - `pts`: The set of points. 
 - `adj`: The [`Adjacent`](@ref) map.
 - `adj2v`: The [`Adjacent2Vertex`](@ref) map.
+- `graph`: The [`Graph`](@ref) of the triangulation.
 - `representative_point_list`: The list of representative points, giving the coordinates of points corresponding to boundary indices.
 - `boundary_map`: The map taking boundary indices to their corresponding segment in the boundary nodes. See [`construct_boundary_map`](@ref).
 - `k`: The index of the point in `pts` that we are starting at.
@@ -172,6 +188,7 @@ function select_initial_triangle_interior_node(
     pts,
     adj::Adjacent{I,E},
     adj2v::Adjacent2Vertex,
+    graph,
     representative_point_list,
     boundary_map,
     k,
@@ -222,13 +239,13 @@ function select_initial_triangle_interior_node(
 
     ## Now rotate around to find a triangle that the line pq intersects through 
     if is_left(line_cert_j)
-        i, j, pᵢ, pⱼ = select_initial_triangle_clockwise(pts, adj, representative_point_list, boundary_map, p, q, pᵢ,
+        i, j, pᵢ, pⱼ = select_initial_triangle_clockwise(pts, adj, graph, representative_point_list, boundary_map, p, q, pᵢ,
             pⱼ, i, j, k, boundary_index_ranges,
             check_existence,
             store_history,
             history)
     else
-        i, j, pᵢ, pⱼ = select_initial_triangle_counterclockwise(pts, adj, representative_point_list, boundary_map,
+        i, j, pᵢ, pⱼ = select_initial_triangle_counterclockwise(pts, adj, graph, representative_point_list, boundary_map,
             line_cert_j, p, q, pᵢ, pⱼ,
             i, j, k,
             boundary_index_ranges,
@@ -299,7 +316,7 @@ function check_for_intersections_with_adjacent_boundary_edges(
     p = get_point(pts, representative_point_list, boundary_map, k)
     right = get_right_boundary_node(adj, k, bnd_idx, boundary_index_ranges,
         check_existence)
-    left = get_left_boundary_node(adj, k,  bnd_idx, boundary_index_ranges,
+    left = get_left_boundary_node(adj, k, bnd_idx, boundary_index_ranges,
         check_existence)
     pright, pleft = get_point(pts, representative_point_list, boundary_map, right, left)
     right_cert = point_position_relative_to_line(p, pright, q)

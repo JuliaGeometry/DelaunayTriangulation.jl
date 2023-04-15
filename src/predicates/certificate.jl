@@ -25,6 +25,10 @@ along with the function that can be used for testing if a given `Certificate` ma
 - `Obtuse`: `is_obtuse`
 - `Acute`: `is_acute`
 - `Right`: `is_right`
+- `SuccessfulInsertion`: `is_successful_insertion`
+- `FailedInsertion`: `is_failed_insertion`
+- `PrecisionFailure`: `is_precision_failure`
+- `EncroachmentFailure`: `is_encroachment_failure`
 """
 EnumX.@enumx Certificate begin
     Inside
@@ -47,6 +51,10 @@ EnumX.@enumx Certificate begin
     Equidistant
     Obtuse
     Acute
+    SuccessfulInsertion
+    FailedInsertion
+    PrecisionFailure
+    EncroachmentFailure
 end
 
 for inst in instances(Certificate.T)
@@ -58,6 +66,10 @@ is_negatively_oriented(cert::Certificate.T) = is_negativelyoriented(cert)
 has_no_intersections(cert::Certificate.T) = is_none(cert)
 has_one_intersection(cert::Certificate.T) = is_single(cert)
 has_multiple_intersections(cert::Certificate.T) = is_multiple(cert)
+is_successful_insertion(cert::Certificate.T) = is_successfulinsertion(cert)
+is_failed_insertion(cert::Certificate.T) = is_failedinsertion(cert)
+is_precision_failure(cert::Certificate.T) = is_precisionfailure(cert)
+is_encroachment_failure(cert::Certificate.T) = is_encroachmentfailure(cert)
 
 @inline function convert_certificate(cert::I, Cert1, Cert2, Cert3)::Certificate.T where {I}
     if cert == I(-1)

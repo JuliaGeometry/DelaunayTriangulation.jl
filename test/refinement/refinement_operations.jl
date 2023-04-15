@@ -185,21 +185,21 @@ end
     storage = DT.initialise_event_history(tri)
     T = (16, 55, 17)
     stats1 = deepcopy(statistics(tri))
-    @test !DT.try_circumcenter_insertion!(tri, T, storage, queue)
+    @test DT.is_encroachment_failure(DT.try_circumcenter_insertion!(tri, T, storage, queue))
     stats2 = deepcopy(statistics(tri))
     @test validate_triangulation(tri; check_ghost_triangle_orientation=false, check_ghost_triangle_delaunay=false)
     @test stats1 == stats2
 
     T = (63, 92, 62)
     stats1 = deepcopy(statistics(tri))
-    @test !DT.try_circumcenter_insertion!(tri, T, storage, queue)
+    @test DT.is_encroachment_failure(DT.try_circumcenter_insertion!(tri, T, storage, queue))
     stats2 = deepcopy(statistics(tri))
     @test validate_triangulation(tri; check_ghost_triangle_orientation=false, check_ghost_triangle_delaunay=false)
     @test stats1 == stats2
 
     T = (19, 16, 97)
     stats1 = deepcopy(statistics(tri))
-    @test !DT.try_circumcenter_insertion!(tri, T, storage, queue)
+    @test DT.is_encroachment_failure(DT.try_circumcenter_insertion!(tri, T, storage, queue))
     stats2 = deepcopy(statistics(tri))
     @test validate_triangulation(tri; check_ghost_triangle_orientation=false, check_ghost_triangle_delaunay=false)
     @test stats1 == stats2

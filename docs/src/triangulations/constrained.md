@@ -85,7 +85,7 @@ add_point!(cons_tri, -3.0, 12.0) # can add points onto segments
 
 ```@raw html
 <figure>
-    <img src='../figs/heart_constrained.png', alt='Constrained triangulation with a boundary and additions'><br>
+    <img src='../figs/heart_add_constrained.png', alt='Constrained triangulation with a boundary and additions'><br>
 </figure>
 ```
 
@@ -258,7 +258,7 @@ A better way could be to use e.g. the `split_edge!` operation. This would be bet
 
 ## Domain with interior holes 
 
-Now let us consider a domani with interior holes. In this case, the outer boundary should be given counter-clockwise, while the interiors should be clockwise. Additionally, each curve should be given as if it were split into segments, even if there is only a single segment.
+Now let us consider a domain with interior holes. In this case, the outer boundary should be given counter-clockwise, while the interiors should be clockwise. Additionally, each curve should be given as if it were split into segments, even if there is only a single segment.
 
 ```julia
 using DelaunayTriangulation, CairoMakie
@@ -562,12 +562,3 @@ cons_tri = triangulate(points; boundary_nodes = nodes, check_arguments = false)
     <img src='../figs/julia.png', alt='Julia logo'><br>
 </figure>
 ```
-
-These methods are how we build the DelaunayTriangulation.jl logos (see also the logo.jl file in the tests).
-
-```@raw html
-<figure>
-    <img src='../figs/delaunay_triangulation_logo.png', alt='DelaunayTriangulation.jl logo'><br>
-</figure>
-```
-

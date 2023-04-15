@@ -122,6 +122,21 @@ function _triangulate_bowyer_watson!(tri::Triangulation, point_order,
     return nothing
 end
 
+function add_point_bowyer_watson_and_process_after_found_triangle!(
+    tri::Triangulation,
+    new_point,
+    V,
+    q,
+    flag,
+    update_representative_point=true,
+    store_event_history=Val(false),
+    event_history=nothing)
+    #add_point_bowyer_watson_and_process_after_found_triangle!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history)
+    add_point_bowyer_watson_after_found_triangle!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history)
+    add_point_bowyer_watson_onto_constrained_segment!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history)
+    return V
+end
+
 function add_point_bowyer_watson!(
     tri::Triangulation,
     new_point,
@@ -136,17 +151,19 @@ function add_point_bowyer_watson!(
     V = jump_and_march(tri, q; m=nothing, point_indices=nothing, try_points=nothing,
         k=initial_search_point, rng, check_existence=Val(has_multiple_segments(tri)), exterior_curve_index)
     flag = point_position_relative_to_triangle(tri, V, q)
-    if is_ghost_triangle(V) && is_constrained(tri)
-        # When we have a constrained boundary edge, we don't want to walk into its 
-        # interior. So let's just check this case now.
-        V = rotate_ghost_triangle_to_standard_form(V)
-        u, v, w = indices(V)
-        if !contains_boundary_edge(tri, v, u)
-            add_point_bowyer_watson!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history)
-        end
-    else
-        add_point_bowyer_watson!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history)
-    end
+    add_point_bowyer_watson_and_process_after_found_triangle!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history)
+    return V
+end
+
+function add_point_bowyer_watson_onto_constrained_segment!(
+    tri,
+    new_point,
+    V,
+    q,
+    flag,
+    update_representative_point=true,
+    store_event_history=Val(false),
+    event_history=nothing)
     if is_on(flag) && is_constrained(tri)
         # If the point we are adding appears on a segment, then we perform the depth-first search 
         # on each side the segment. We also need to update the 
@@ -156,7 +173,7 @@ function add_point_bowyer_watson!(
             w = get_adjacent(tri, v, u)
             T = triangle_type(tri)
             V = construct_triangle(T, v, u, w)
-            add_point_bowyer_watson!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history)
+            add_point_bowyer_watson_dig_cavities!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history)
             # Now, we need to replace the segment by this new segment.
             E = edge_type(tri)
             constrained_edges = get_constrained_edges(tri)
@@ -185,10 +202,32 @@ function add_point_bowyer_watson!(
             end
         end
     end
-    return nothing
 end
 
-function add_point_bowyer_watson!(
+function add_point_bowyer_watson_after_found_triangle!(
+    tri,
+    new_point,
+    V,
+    q,
+    flag,
+    update_representative_point=true,
+    store_event_history=Val(false),
+    event_history=nothing)
+    if is_ghost_triangle(V) && is_constrained(tri)
+        # When we have a constrained boundary edge, we don't want to walk into its 
+        # interior. So let's just check this case now.
+        V = rotate_ghost_triangle_to_standard_form(V)
+        u, v, w = indices(V)
+        if !contains_boundary_edge(tri, v, u)
+            add_point_bowyer_watson_dig_cavities!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history)
+        end
+    else
+        add_point_bowyer_watson_dig_cavities!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history)
+    end
+end
+#            add_point_bowyer_watson!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history)
+
+function add_point_bowyer_watson_dig_cavities!(
     tri::Triangulation,
     new_point::I,
     V,

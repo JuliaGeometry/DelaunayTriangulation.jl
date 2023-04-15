@@ -5,9 +5,6 @@ using Test
 using CairoMakie
 using StableRNGs
 
-save_path = basename(pwd()) == "test" ? "figures" : "test/figures"
-
-include("../test_setup.jl")
 include("../helper_functions.jl")
 
 @testset "Setting up the vectors for a convex triangulation" begin
@@ -100,20 +97,6 @@ end
     end
 end
 
-@testset "A specific convex triangulation example" begin
-    p1 = [10.0, 12.0]
-    p2 = [7.0, 11.0]
-    p3 = [8.0, 6.0]
-    p4 = [10.0, 3.0]
-    p5 = [14.0, 5.0]
-    p6 = [15.0, 10.0]
-    p7 = [13.0, 12.0]
-    pts = [p1, p2, p3, p4, p5, p6, p7]
-    S = collect(1:7)
-    tri = triangulate_convex(pts, S)
-    fig, ax, sc = triplot(tri; show_convex_hull=false)
-    SAVE_FIGURE && save("$save_path/convex_triangulation_example.png", fig)
-end
 
 @testset "Triangulating a small polygon" begin
     p1 = [8.0, 4.0]

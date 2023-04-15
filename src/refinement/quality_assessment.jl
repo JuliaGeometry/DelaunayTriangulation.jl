@@ -18,7 +18,7 @@ function compare_points(targets::RefinementTargets, n)
     return n > targets.max_points
 end
 function compare_min_area(targets::RefinementTargets, A²)
-    A² < zero(A²) && return true
+    A² ≤ zero(A²) && return true
     return sqrt(A²) ≤ targets.min_area
 end
 
@@ -30,7 +30,7 @@ concentric circular shell of the common vertex of the two distinct segments, and
 is small. The shortest edge is given by `smallest_idx`, with `smallest_idx == 1` mapping to `(u, v)`, `smallest_idx == 2`
 mapping to `(v, w)`, and `smallest_idx == 3` mapping to `(w, u)`. 
 
-!!! notes 
+!!! note 
 
     We are not implementing the *precise* definition of seditious. To check that the points lie on the same 
     concentric circular shell, we just check if the points lie the same distance away from the common 
@@ -51,14 +51,18 @@ function edge_is_seditious(tri::Triangulation, u, v, w, smallest_idx, ratio_flag
     end
     shared_flag, common_vertex = edge_lies_on_two_distinct_segments(tri, i, j)
     !shared_flag && return false
-    #ρ ≥ 5.0 && return true
+    # ρ ≥ 5.0 && return true
     p, q, r = get_point(tri, i, j, common_vertex)
     px, py = getxy(p)
     qx, qy = getxy(q)
     rx, ry = getxy(r)
     ℓrp² = (px - rx)^2 + (py - ry)^2
     ℓrq² = (qx - rx)^2 + (qy - ry)^2
-    if 0.999 < ℓrp² / ℓrq² < 1.001
+    # Kept running into precision errors when only checking if ℓrp² == ℓrq² or e.g. (1-ε) < ℓrp² / ℓrq² < (1+ε)
+    ε = sqrt(eps(number_type(tri)))
+    if (!iszero(ℓrp²) && !iszero(ℓrp²) &&  0.99 < ℓrp² / ℓrq² < 1.01) ||
+        (iszero(ℓrp²) || iszero(ℓrq²)) ||
+        (abs(ℓrp² - ℓrq²) ≤ ε)
         return true
     else
         return false
@@ -86,9 +90,6 @@ function assess_triangle_quality(tri::Triangulation, T, targets::RefinementTarge
     area_flag = compare_area(targets, T, A, p, q, r)
     ratio_flag = compare_ratio(targets, T, ρ, p, q, r)
     seditious_flag = edge_is_seditious(tri, u, v, w, idx, ratio_flag, ρ)
-    if seditious_flag
-        Main.REFS[1] += 1 
-    end
     return ρ, (area_flag || (ratio_flag && !seditious_flag))
 end
 

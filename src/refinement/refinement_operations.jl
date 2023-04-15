@@ -4,21 +4,36 @@
 Attempt to insert a new point into the triangulation at the circumcenter of the triangle `T`. If the insertion causes edges to be encroached, 
 the insertion is undone and the encroached edges are queued for refinement. Otherwise, the insertion is accepted and the new point is added to the 
 triangulation.
+
+The returned value is a [`Certificate`](@ref) type, used for distinguishing between three possible results:
+
+- `Cert.PrecisionFailure`: The circumcenter wasn't inserted due to a failure relating to precision (e.g. the circumcenter was another vertex).
+- `Cert.EncroachmentFailure`: The circumcenter wasn't inserted due to encroachment.
+- `Cert.SuccessfulInsertion`: The circumcenter was inserted successfully.
+
+We need to have `Cert.PrecisionFailure` be separate to avoid requeueing the triangle later.
 """
 function try_circumcenter_insertion!(tri::Triangulation, T, events::InsertionEventHistory, queue::RefinementQueue, exterior_curve_index=1, rng::AbstractRNG=Random.default_rng())
     empty!(events)
+    ε = sqrt(eps(number_type(tri)))
     ## Find the circumcenter
     i, j, k = indices(T)
     p, q, r = get_point(tri, i, j, k)
     A² = squared_triangle_area(p, q, r)
-    A² ≤ zero(A²) && return false
+    A² ≤ ε^2 && return Cert.PrecisionFailure
 
     cx, cy = triangle_circumcenter(p, q, r)
-
-    ## Where should we start the point location?
     px, py = getxy(p)
     qx, qy = getxy(q)
     rx, ry = getxy(r)
+    # Just as we need when checking for precision issues when splitting a segment, we need to check that the circumcenter is not one of the vertices.
+    if ((px == cx) && (py == cy)) || ((qx == cx) && (qy == cy)) || ((rx == cx) && (ry == cy)) || # equality is actually valid to check here, sometimes the precison really does push them to be equal. We do it separately as it's faster.
+       (!iszero(cx) && !iszero(cy) && ((abs((px - cx) / cx) ≤ ε) && (abs((py - cy) / cy) ≤ ε)) || ((abs((qx - cx) / cx) ≤ ε) && (abs((qy - cy) / cy) ≤ ε)) || ((abs((rx - cx) / cx) ≤ ε) && (abs((ry - cy) / cy) ≤ ε))) ||
+       ((abs(px - cx) ≤ ε) && (abs(py - cy) ≤ ε)) || ((abs(qx - cx) ≤ ε) && (abs(qy - cy) ≤ ε)) || ((abs(rx - cx) ≤ ε) && (abs(ry - cy) ≤ ε))
+        return Cert.PrecisionFailure
+    end
+
+    ## Where should we start the point location?
     δpc² = (cx - px)^2 + (cy - py)^2
     δqc² = (cx - qx)^2 + (cy - qy)^2
     δrc² = (cx - rx)^2 + (cy - ry)^2
@@ -31,17 +46,54 @@ function try_circumcenter_insertion!(tri::Triangulation, T, events::InsertionEve
         point_location_initial_vertex = k
     end
 
+    ## Find the triangle where the vertex is located 
+    # First, check if it's in the current triangle
+    q = (cx, cy)
+    flag = point_position_relative_to_triangle(tri, T, q)
+    if !is_outside(flag)
+        V = T
+    else
+        # If not, we need to search for it
+        V = jump_and_march(
+            tri,
+            q;
+            m=nothing,
+            point_indices=nothing,
+            try_points=nothing,
+            k=point_location_initial_vertex,
+            rng,
+            check_existence=Val(has_multiple_segments(tri)),
+            exterior_curve_index
+        )
+    end
+
+    # Check if there are any precision issues
+    if is_ghost_triangle(V)
+        return Cert.PrecisionFailure
+    end
+    v1, v2, v3 = indices(V)
+    p1, p2, p3 = get_point(tri, v1, v2, v3)
+    p1x, p1y = getxy(p1)
+    p2x, p2y = getxy(p2)
+    p3x, p3y = getxy(p3)
+    if ((p1x == cx) && (p1y == cy)) || ((p2x == cx) && (p2y == cy)) || ((p3x == cx) && (p3y == cy)) ||
+       (!iszero(cx) && !iszero(cy) && ((abs((p1x - cx) / cx) ≤ ε) && (abs((p1y - cy) / cy) ≤ ε)) || ((abs((p2x - cx) / cx) ≤ ε) && (abs((p2y - cy) / cy) ≤ ε)) || ((abs((p3x - cx) / cx) ≤ ε) && (abs((p3y - cy) / cy) ≤ 1e-14))) ||
+       ((abs(p1x - cx) ≤ ε) && (abs(p1y - cy) ≤ ε)) || ((abs(p2x - cx) ≤ ε) && (abs(p2y - cy) ≤ ε)) || ((abs(p3x - cx) ≤ ε) && (abs(p3y - cy) ≤ ε))
+        return Cert.PrecisionFailure
+    end
+
     ## Now insert the vertex
-    add_point!(tri, cx, cy;
+    V = add_point!(tri, cx, cy;
         point_indices=nothing,
         m=nothing,
         try_points=nothing,
         rng,
-        initial_search_point=point_location_initial_vertex,
+        initial_search_point=nothing,
         update_representative_point=false,
         store_event_history=Val(true),
         event_history=events,
         exterior_curve_index=exterior_curve_index,
+        V=V
     )
 
     ## Now we need to search the edges opposite to the circumcenter to see if we have introduced any new encroached edges 
@@ -61,8 +113,11 @@ function try_circumcenter_insertion!(tri::Triangulation, T, events::InsertionEve
 
     ## If we found an encroached edge, we need to completely reverse the insertion! Thankfully, our event storage can be used.
     any_encroached && undo_circumcenter_insertion!(tri, events, circumcenter_index)
-    insertion_success = !any_encroached
-    return insertion_success
+    if any_encroached
+        return Cert.EncroachmentFailure
+    else
+        return Cert.SuccessfulInsertion
+    end
 end
 
 function undo_circumcenter_insertion!(tri::Triangulation, events, circumcenter_index)
@@ -111,12 +166,13 @@ function undo_boundary_segment_changes!(tri::Triangulation, events, circumcenter
     return nothing
 end
 
-function compute_split_position(tri::Triangulation, p, q, e, subsegment_list)
-    if e ∉ subsegment_list
-        # Split at the midpoint 
+function compute_split_position(tri::Triangulation, p, q, e, segment_list)
+    if e ∈ segment_list
+        # Split at the midpoint when splitting for the first time
         px, py = getxy(p)
         qx, qy = getxy(q)
         mx, my = px + (qx - px) / 2, py + (qy - py) / 2
+        return mx, my
     else
         num_adjoin = segment_vertices_adjoin_other_segments(tri, e)
         if num_adjoin == 2
@@ -131,53 +187,60 @@ function compute_split_position(tri::Triangulation, p, q, e, subsegment_list)
             t = inv(2.0)
         end
         # Need to place the split on the side that is closer to the midpoint
-        t′ = 1.0 - t
         px, py = getxy(p)
         qx, qy = getxy(q)
         mx, my = px + (qx - px) / 2, py + (qy - py) / 2
-        ax, ay = px + t * (qx - px), py + t * (qy - py)
-        bx, by = px + t′ * (qx - px), py + t′ * (qy - py)
-        if (ax - mx)^2 + (ay - my)^2 > (bx - mx)^2 + (by - my)^2
-            return bx, by
+        if abs(t - 1 / 2) < 1e-6 # close enough to the midpoint, so just bisect - every third split on a segment should be a bisection anyway. 
+            return mx, my
         else
-            return ax, ay
+            t′ = 1.0 - t
+            ax, ay = px + t * (qx - px), py + t * (qy - py)
+            bx, by = px + t′ * (qx - px), py + t′ * (qy - py)
+            if (ax - mx)^2 + (ay - my)^2 > (bx - mx)^2 + (by - my)^2
+                return bx, by
+            else
+                return ax, ay
+            end
         end
     end
 end
 
-function split_subsegment!(tri::Triangulation, queue, events, targets, subsegment_list, e)
+function split_subsegment!(tri::Triangulation, queue, events, targets, segment_list, e)
     empty!(events)
+    ε = eps(number_type(tri))
     u, v = edge_indices(e)
     p, q = get_point(tri, u, v)
-    mx, my = compute_split_position(tri, p, q, e, subsegment_list)
+    mx, my = compute_split_position(tri, p, q, e, segment_list)
+    # We can run into precision issues (e.g. I found this was needed when reproducing Figure 6.14 in the Delaunay 
+    # Mesh Generation book). Let's ensure that the computed splitting point isn't just one of p or q.
+    px, py = getxy(p)
+    qx, qy = getxy(q)
+    if ((mx == px) && (my == py)) || ((mx == qx) && (my == qy)) ||
+       (abs(mx - px) ≤ ε) && (abs(my - py) ≤ ε) || (abs(mx - qx) ≤ ε) && (abs(my - qy) ≤ ε)
+        return nothing
+    end
     push_point!(tri, mx, my)
     r = num_points(tri)
     complete_split_edge_and_legalise!(tri, u, v, r, Val(true), events)
-    E = edge_type(tri)
-    add_edge!(subsegment_list, construct_edge(E, u, r))
-    add_edge!(subsegment_list, construct_edge(E, r, v))
-    add_edge!(subsegment_list, construct_edge(E, r, u))
-    add_edge!(subsegment_list, construct_edge(E, v, r))
     assess_added_triangles!(tri, queue, events, targets)
     return nothing
 end
 
-function split_all_encroached_segments!(tri::Triangulation, queue, events, targets, subsegment_list)
+function split_all_encroached_segments!(tri::Triangulation, queue, events, targets, segment_list)
     iters = 0
     while !encroachment_queue_is_empty(queue) && !compare_points(targets, num_points(tri))
         iters += 1
-        @show iters
         e = encroachment_dequeue!(queue)
         if !edge_exists(tri, e) && !edge_exists(tri, reverse_edge(e))
             continue
         end
-        split_subsegment!(tri, queue, events, targets, subsegment_list, e)
+        split_subsegment!(tri, queue, events, targets, segment_list, e)
     end
     return nothing
 end
 
 function split_triangle!(tri::Triangulation, queue::RefinementQueue, events::InsertionEventHistory, T, exterior_curve_index, rng::AbstractRNG=Random.default_rng())
     empty!(events)
-    success = try_circumcenter_insertion!(tri, T, events, queue, exterior_curve_index, rng)
-    return success
+    success_certificate = try_circumcenter_insertion!(tri, T, events, queue, exterior_curve_index, rng)
+    return success_certificate
 end

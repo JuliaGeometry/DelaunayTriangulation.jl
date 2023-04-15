@@ -86,7 +86,8 @@ end
         store_history::F=Val(false),
         history=nothing,
         rng::AbstractRNG = Random.default_rng(),
-        exterior_curve_index=1) where {I,V,C,F}
+        exterior_curve_index=1,
+        maxiters = 2 + length(exterior_curve_index) - num_vertices(graph) + num_edges(graph)) where {I,V,C,F}
 
 Using the jump and march algorithm, finds the triangle in the triangulation containing the 
 query point `q`.
@@ -111,6 +112,16 @@ query point `q`.
 - `history=nothing`: The history. This should be a [`PointLocationHistory`](@ref) type if `store_history` is `true`.
 - `rng::AbstractRNG`: The RNG to use.
 - `exterior_curve_index=1`: The curve (or curves) corresponding to the outermost boundary.
+- `maxiters = 2 + length(exterior_curve_index) - num_vertices(graph) + num_edges(graph)`: Maximum number of iterations to perform before restarting the algorithm at a new initial point. The default comes from Euler's formula, rearranged for the number of triangles.
+
+!!! note 
+
+    You shouldn't ever need `maxiters` if your triangulation is convex everywhere, as Delaunay triangulations 
+    have no problems with jump-and-march, as the sequence of triangles visited is acyclic (H. Edelsbrunner, An acyclicity theorem for cell complexes in d dimensions, Combinatorica 10 (1990) 251–
+    260.) However, if the triangulation is not convex, e.g. if you have a constrained triangulation with boundaries 
+    and excavations, then an infinite loop can be found where we just keep walking in circles. In this case, 
+    you can use the `maxiters` keyword argument to specify the maximum number of iterations to perform before
+    reinitialising the algorithm at a random vertex. When reinitialising, `m` is set to `num_vertices(graph)`.
 
 # Output 
 Returns the triangle `V` containing the query point `q`.
@@ -133,9 +144,10 @@ function jump_and_march(pts, adj, adj2v, graph::Graph{I}, boundary_index_ranges,
     store_history::F=Val(false),
     history=nothing,
     rng::AbstractRNG=Random.default_rng(),
-    exterior_curve_index=1) where {I,V,C,F}
+    exterior_curve_index=1,
+    maxiters=2 + length(exterior_curve_index) - num_vertices(graph) + num_edges(graph)) where {I,V,C,F}
     return _jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges, representative_point_list, boundary_map, q,
-        k, V, check_existence, store_history, history, rng, exterior_curve_index)
+        k, V, check_existence, store_history, history, rng, exterior_curve_index, maxiters, 0, m, point_indices, try_points)
 end
 function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, boundary_index_ranges,
     representative_point_list, boundary_map, q, k, TriangleType::Type{V},
@@ -143,16 +155,29 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
     store_history::F=Val(false),
     history=nothing,
     rng::AbstractRNG=Random.default_rng(),
-    exterior_curve_index=1) where {I,E,V,C,F}
+    exterior_curve_index=1,
+    maxiters=2 + length(exterior_curve_index) - num_vertices(graph) + num_edges(graph),
+    cur_iter=0,
+    m=default_num_samples(num_points(pts)),
+    point_indices=each_point_index(pts),
+    try_points=()) where {I,E,V,C,F}
     is_bnd, bnd_idx = is_boundary_node(k, graph, boundary_index_ranges)
     if !(is_bnd && get_curve_index(boundary_map, bnd_idx) ∈ exterior_curve_index) || !has_ghost_triangles(adj, adj2v)
         # If k is not a boundary node, then we can rotate around the point k to find an initial triangle 
         # to start the search. Additionally, if there are no ghost triangles, we can only hope that q 
         # is inside the interior, meaning we should only search for the initial triangle here anyway.
-        p, i, j, pᵢ, pⱼ = select_initial_triangle_interior_node(pts, adj, adj2v,
+        p, i, j, pᵢ, pⱼ = select_initial_triangle_interior_node(pts, adj, adj2v, graph,
             representative_point_list, boundary_map, k, q,
             boundary_index_ranges,
             check_existence, store_history, history, rng)
+        if !edge_exists(i) && !edge_exists(j) # When we find a possible infinite loop, we use i==j==DefaultAdjacentValue. Let's reinitialise. 
+            m = num_vertices(graph)
+            point_indices = isnothing(point_indices) ? each_vertex(graph) : point_indices
+            try_points = isnothing(try_points) ? () : try_points
+            k = select_initial_point(pts, q; m=2m, point_indices, try_points)
+            return _jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges, representative_point_list, boundary_map, q,
+                k, V, check_existence, store_history, history, rng, exterior_curve_index, maxiters, 0, 2m, point_indices, try_points)
+        end
         if is_true(store_history)
             add_triangle!(history, j, i, k)
         end
@@ -234,6 +259,7 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
         add_right_vertex!(history, j)
     end
     while is_positively_oriented(arrangement)
+        cur_iter += 1
         if is_true(store_history)
             if last_changed == i
                 add_left_vertex!(history, i)
@@ -256,7 +282,8 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
                 return construct_triangle(V, i, j, k)
             else
                 return _jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges,
-                    boundary_map, representative_point_list, q, k, V, check_existence, store_history, history, rng, exterior_curve_index)
+                    boundary_map, representative_point_list, q, k, V, check_existence, store_history, history, rng, exterior_curve_index,
+                    maxiters, cur_iter, m, point_indices, try_points)
             end
         end
         # Now we can finally move forward. We use check_existence to protect against the issue mentioned above.
@@ -329,6 +356,15 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
             end
         end
         arrangement = triangle_orientation(pᵢ, pⱼ, q)
+        if cur_iter ≥ maxiters
+            # Restart
+            m = num_vertices(graph)
+            point_indices = isnothing(point_indices) ? each_vertex(graph) : point_indices
+            try_points = isnothing(try_points) ? () : try_points
+            k = select_initial_point(pts, q; m=2m, point_indices, try_points)
+            return _jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges, representative_point_list, boundary_map, q,
+                k, V, check_existence, store_history, history, rng, exterior_curve_index, maxiters, 0, 2m, point_indices, try_points)
+        end
     end
     # We can finish the above loop even if q is not in the triangle, in which case pᵢpⱼq was a straight line. 
     # To clear this up, let us just restart. 
@@ -345,7 +381,8 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
             return _jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges,
                 representative_point_list, boundary_map, q,
                 last_changed == I(DefaultAdjacentValue) ? i :
-                last_changed, V, check_existence, store_history, history, rng, exterior_curve_index)
+                last_changed, V, check_existence, store_history, history, rng, exterior_curve_index,
+                maxiters, cur_iter, m, point_indices, try_points)
         end
     end
     # Swap the orientation to get a positively oriented triangle, remembering that we kept pᵢ on the left of pq and pⱼ on the right 

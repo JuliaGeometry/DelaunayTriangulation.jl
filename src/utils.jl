@@ -204,7 +204,7 @@ Given a point `u`, returns a vector `S` which gives a counter-clockwise sequence
 # Outputs 
 - `S`: The surrounding polygon.
 
-!!! notes 
+!!! note 
 
     - When `u` is an outer boundary index, the returned polygon is clockwise.
     - When `u` is a boundary vertex and you do not have ghost triangles, then this function may return an invalid polygon.

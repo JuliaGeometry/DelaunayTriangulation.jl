@@ -5,7 +5,7 @@ Returns features of the polygon represented by the points `pts` with `boundary_n
 connections. The features returned are `(a, c)`, where `a` is the area of the polygon and 
 `c = (cx, cy)` is the centroid. 
 
-!!! notes 
+!!! note 
 
     - The polygon is assumed to be simple, i.e. no self-intersections.
     - The function works with holes, provided `boundary_nodes` represents these as described in the documentation.
@@ -172,15 +172,31 @@ function distance_to_polygon_multiple_curves(q, pts, boundary_nodes)
 end
 
 """
-    polygon_bounds(pts, boundary_nodes)
+    polygon_bounds(pts, boundary_nodes, check_all_curves = Val(false))
 
 Given a polygon represented by the points `pts` with `boundary_nodes` defining the polygon 
 connections, returns a bounding box of the polygon. The bounding box is returned 
-in the order `(xmin, xmax, ymin, ymax)`.
+in the order `(xmin, xmax, ymin, ymax)`. If your polygon is not a multiple polygon, 
+`check_all_curves = Val(false)` is sufficient, otherwise you might want to use `Val(true)`.
 """
-function polygon_bounds(pts, boundary_nodes)
+function polygon_bounds(pts, boundary_nodes, check_all_curves=Val(false))
     if has_multiple_curves(boundary_nodes)
-        return polygon_bounds_multiple_segments(pts, get_boundary_nodes(boundary_nodes, 1)) # 1 is the outermost boundary
+        if !is_true(check_all_curves)
+            return polygon_bounds_multiple_segments(pts, get_boundary_nodes(boundary_nodes, 1)) # 1 is the outermost boundary, unless you have a multiple polygon 
+        else
+            F = number_type(number_type(pts))
+            xmin, xmax, ymin, ymax = typemax(F), typemin(F), typemax(F), typemin(F)
+            nc = num_curves(boundary_nodes)
+            for i in 1:nc
+                bn = get_boundary_nodes(boundary_nodes, i)
+                xminᵢ, xmaxᵢ, yminᵢ, ymaxᵢ = polygon_bounds_multiple_segments(pts, bn)
+                xmin = min(xminᵢ, xmin)
+                xmax = max(xmaxᵢ, xmax)
+                ymin = min(yminᵢ, ymin)
+                ymax = max(ymaxᵢ, ymax)
+            end
+            return xmin, xmax, ymin, ymax
+        end
     elseif has_multiple_segments(boundary_nodes)
         return polygon_bounds_multiple_segments(pts, boundary_nodes)
     else
@@ -227,7 +243,7 @@ control the tolerance of the returned pole using `precision`.
 
 This function is also commonly called `polylabel`.
 
-!!! notes 
+!!! note 
 
     The pole of inaccessibility is a point within a polygon that is furthest from an 
     edge. It is useful for our purposes since it is a representative point that is 

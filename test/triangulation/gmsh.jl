@@ -5,11 +5,7 @@ const DT = DelaunayTriangulation
 using CairoMakie
 using DataStructures
 
-include("../test_setup.jl")
-
 include("../helper_functions.jl")
-
-save_path = basename(pwd()) == "test" ? "figures" : "test/figures"
 
 @testset "Working with identifiers" begin
     @testset "Computing segment identifiers" begin
@@ -1092,45 +1088,6 @@ Physical Surface(1) = {1};
         @test nodes == _nodes
     end
 
-    @testset "Meshing a complicated geometry" begin
-        x, y, x1, x2, x3, x4, x5, y1, y2, y3, y4, y5 = complicated_geometry()
-        elements, nodes, boundary_nodes = generate_mesh(x, y, 13.3; convert_result=false)
-
-        fig = Figure()
-        ax = Axis(fig[1, 1])
-        _x1, _y1 = vec(reduce(hcat, x1)), vec(reduce(hcat, y1))
-        _x2, _y2 = vec(reduce(hcat, x2)), vec(reduce(hcat, y2))
-        _x3, _y3 = vec(reduce(hcat, x3)), vec(reduce(hcat, y3))
-        _x4, _y4 = vec(reduce(hcat, x4)), vec(reduce(hcat, y4))
-        _x5, _y5 = vec(reduce(hcat, x5)), vec(reduce(hcat, y5))
-        lines!(ax, _x1, _y1)
-        lines!(ax, _x2, _y2)
-        lines!(ax, _x3, _y3)
-        lines!(ax, _x4, _y4)
-        lines!(ax, _x5, _y5)
-        mesh!(ax, nodes, elements')
-        xlims!(ax, 0, 2)
-        ylims!(ax, 0, 6)
-
-        lines!(ax, nodes[:, boundary_nodes[1][1]]; color=:red, linewidth=6)
-        lines!(ax, nodes[:, boundary_nodes[1][2]]; color=:blue, linewidth=6)
-        lines!(ax, nodes[:, boundary_nodes[1][3]]; color=:magenta, linewidth=6)
-        lines!(ax, nodes[:, boundary_nodes[1][4]]; color=:orange, linewidth=6)
-
-        lines!(ax, nodes[:, boundary_nodes[2][1]]; color=:red, linewidth=6)
-
-        lines!(ax, nodes[:, boundary_nodes[3][1]]; color=:red, linewidth=6)
-
-        lines!(ax, nodes[:, boundary_nodes[4][1]]; color=:red, linewidth=6)
-        lines!(ax, nodes[:, boundary_nodes[4][2]]; color=:blue, linewidth=6)
-        lines!(ax, nodes[:, boundary_nodes[4][3]]; color=:magenta, linewidth=6)
-        lines!(ax, nodes[:, boundary_nodes[4][4]]; color=:orange, linewidth=6)
-
-        lines!(ax, nodes[:, boundary_nodes[5][1]]; color=:red, linewidth=6)
-
-        SAVE_FIGURE && save("$save_path/sparse_example_triangulation.png", fig)
-    end
-
     @testset "Meshing a square" begin
         x = [0.0, 2.0, 2.0, 0.0, 0.0]
         y = [0.0, 0.0, 2.0, 2.0, 0.0]
@@ -1155,8 +1112,6 @@ Physical Surface(1) = {1};
             convert_result=false)
         ax = Axis(fig[2, 2])
         mesh!(ax, nodes4, elements4')
-
-        SAVE_FIGURE && save("$save_path/square_triangulation.png", fig)
 
         @test elements1 == elements3
         @test nodes1 == nodes3
@@ -1667,7 +1622,6 @@ end
             title=L"(b):$ $  Coarse mesh", titlealign=:left)
         triplot!(ax, tri2)
         resize_to_layout!(fig)
-        SAVE_FIGURE && save("$save_path/gmsh_example_1.png", fig)
     end
 
     @testset "Another specific example with multiple segments" begin
@@ -1705,7 +1659,6 @@ end
             lines!(ax, get_points(tri)[:, bn_nodes], color=colors[i], linewidth=4)
         end
         resize_to_layout!(fig)
-        SAVE_FIGURE && save("$save_path/gmsh_example_2.png", fig)
     end
 
     @testset "Complicated example for docs" begin
@@ -1743,6 +1696,5 @@ end
         fig, ax, sc = triplot(tri; recompute_centers=true, show_ghost_edges=true, convex_hull_linestyle=:solid, convex_hull_linewidth=4)
         xlims!(ax, -0.5, 2.5)
         ylims!(ax, -0.5, 6.5)
-        SAVE_FIGURE && save("$save_path/gmsh_example_3.png", fig)
     end
 end

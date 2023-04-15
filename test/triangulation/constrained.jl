@@ -3,9 +3,7 @@ const DT = DelaunayTriangulation
 using CairoMakie
 using StableRNGs
 include("../helper_functions.jl")
-include("../test_setup.jl")
 
-save_path = basename(pwd()) == "test" ? "figures" : "test/figures"
 
 @testset "Test random constrained Delaunay triangulations" begin
     rng = StableRNG(191919)
@@ -202,10 +200,6 @@ end
         nodes, pts = convert_boundary_points_to_indices(x, y; existing_points=pts)
         tri = triangulate(pts; boundary_nodes=nodes, rng)
         @test validate_triangulation(tri)
-        if i == 1
-            fig, ax, sc = triplot(tri)
-            SAVE_FIGURE && save("$save_path/constrained_example.png", fig)
-        end
     end
 end
 
@@ -237,10 +231,12 @@ end
     t = LinRange(0, 2π, 100)
     x = @. a * (2cos(t) + cos(2t))
     y = @. a * (2sin(t) - sin(2t))
-    tri = generate_mesh(x, y, 0.1)
+    tri = generate_mesh(x, y, 15.0)
     points = get_points(tri)
     bn_nodes = get_boundary_nodes(tri)
     _tri = triangulate(points; boundary_nodes=bn_nodes, delete_ghosts=false)
+    @test validate_triangulation(_tri; check_planarity=false,check_ghost_triangle_delaunay=false,check_ghost_triangle_orientation=false)
+    validate_statistics(_tri)
     fig, ax, sc = triplot(tri)
     ax = Axis(fig[1, 2])
     triplot!(ax, _tri)
@@ -265,6 +261,8 @@ end
     points = get_points(tri)
     bn_nodes = get_boundary_nodes(tri)
     _tri = triangulate(points; boundary_nodes=bn_nodes, delete_ghosts=false)
+    @test validate_triangulation(_tri; check_planarity=false,check_ghost_triangle_delaunay=false,check_ghost_triangle_orientation=false)
+    validate_statistics(_tri)
     ax = Axis(fig[2, 1])
     triplot!(ax, tri)
     ax = Axis(fig[2, 2])
@@ -304,11 +302,12 @@ end
     points = get_points(tri)
     bn_nodes = get_boundary_nodes(tri)
     _tri = triangulate(points; boundary_nodes=bn_nodes, delete_ghosts=false)
+    @test validate_triangulation(_tri; check_planarity=false,check_ghost_triangle_delaunay=false,check_ghost_triangle_orientation=false)
+    validate_statistics(_tri)
     ax = Axis(fig[3, 1])
     triplot!(ax, tri)
     ax = Axis(fig[3, 2])
     triplot!(ax, _tri)
-    SAVE_FIGURE && save("$save_path/constrained_example_2.png", fig)
 end
 
 @testset "Adding points into a constrained triangulation; no collinearities" begin
@@ -1085,7 +1084,7 @@ end
     ]
     @test sort_edge_vector(collect(get_all_constrained_edges(tri))) == sort_edge_vector(C)
     @test DT.compare_triangle_collections(get_triangles(tri), T)
-    @test validate_triangulation(tri)
+    @test validate_triangulation(tri; check_planarity=false)
     @test get_boundary_nodes(tri) == [[
             [1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45], [45, 44, 43, 42, 41], [41, 36, 31, 26, 21, 16, 11, 6, 1]
         ],

@@ -110,6 +110,7 @@ export each_solid_vertex
 export each_ghost_vertex
 export each_constrained_edge
 export statistics
+export get_total_area
 
 include("predicates/certificate.jl")
 include("predicates/boundaries_and_ghosts.jl")

@@ -39,6 +39,16 @@ Returns the triangle containing `q` using the jump-and-march algorithm.
 - `history=nothing`: The object to store the history into, if `is_true(store_history)`.
 - `rng::AbstractRNG=Random.default_rng()`: The random number generator to use.
 - `exterior_curve_index=1`: The curve (or curves) corresponding to the outermost boundary.
+- `maxiters = num_triangles(tri)`: Maximum number of iterations to perform before restarting the algorithm at a new initial point. 
+
+!!! note 
+
+    You shouldn't ever need `maxiters` if your triangulation is convex everywhere, as Delaunay triangulations 
+    have no problems with jump-and-march, as the sequence of triangles visited is acyclic (H. Edelsbrunner, An acyclicity theorem for cell complexes in d dimensions, Combinatorica 10 (1990) 251–
+    260.) However, if the triangulation is not convex, e.g. if you have a constrained triangulation with boundaries 
+    and excavations, then an infinite loop can be found where we just keep walking in circles. In this case, 
+    you can use the `maxiters` keyword argument to specify the maximum number of iterations to perform before
+    reinitialising the algorithm at a random vertex. When reinitialising, the value of `m` is doubled each time.
 
 # Outputs 
 Returns `V`, the triangle in `tri` containing `q`.
@@ -52,7 +62,8 @@ function jump_and_march(tri::Triangulation, q;
     store_history::F=Val(false),
     history=nothing,
     rng::AbstractRNG=Random.default_rng(),
-    exterior_curve_index=1) where {C,F}
+    exterior_curve_index=1,
+    maxiters=num_triangles(tri)) where {C,F}
     points = get_points(tri)
     adjacent = get_adjacent(tri)
     adjacent2vertex = get_adjacent2vertex(tri)
@@ -69,5 +80,6 @@ function jump_and_march(tri::Triangulation, q;
         store_history,
         history,
         rng,
-        exterior_curve_index)
+        exterior_curve_index,
+        maxiters)
 end

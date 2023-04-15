@@ -1097,12 +1097,9 @@ function validate_statistics(tri::Triangulation, stats=statistics(tri))
     ## Build up the individual statistics 
     areas = Dict{T,Float64}()
     lengths = Dict{T,NTuple{3,Float64}}()
-    squared_lengths = Dict{T,NTuple{3,Float64}}()
     circumcenters = Dict{T,NTuple{2,Float64}}()
     circumradii = Dict{T,Float64}()
-    sine_minimum_angle = Dict{T,Float64}()
-    minimum_angle = Dict{T,Float64}()
-    maximum_angle = Dict{T,Float64}()
+    angles = Dict{T,NTuple{3,Float64}}()
     radius_edge_ratio = Dict{T,Float64}()
     edge_midpoints = Dict{T,NTuple{3,NTuple{2,Float64}}}()
     aspect_ratio = Dict{T,Float64}()
@@ -1126,7 +1123,6 @@ function validate_statistics(tri::Triangulation, stats=statistics(tri))
         ℓmed = ℓ1 + ℓ2 + ℓ3 - ℓmin - ℓmax
         ℓ1, ℓ2, ℓ3 = ℓmin, ℓmed, ℓmax
         lengths[T] = (ℓ1, ℓ2, ℓ3)
-        squared_lengths[T] = (ℓ1^2, ℓ2^2, ℓ3^2)
         r′ = p - r
         s′ = q - r
         ox = r[1] + det([norm(r′)^2 r′[2]; norm(s′)^2 s′[2]]) / (4areas[T])
@@ -1134,24 +1130,17 @@ function validate_statistics(tri::Triangulation, stats=statistics(tri))
         circumcenters[T] = (ox, oy)
         circumradii[T] = norm(r - collect(circumcenters[T]))
         all_angles = [acos((norm(p - r)^2 + norm(q - r)^2 - norm(p - q)^2) / (2norm(p - r) * norm(q - r))) for (p, q, r) in ((p, q, r), (q, r, p), (r, p, q))]
-        sine_minimum_angle[T] = minimum(sin.(all_angles))
-        minimum_angle[T] = asin(min(2areas[T] / (ℓ2 * ℓ3), 1.0))
-        if ℓ1 == ℓmax
-            maximum_angle[T] = acos((ℓ2^2 + ℓ3^2 - ℓ1^2) / (2ℓ2 * ℓ3))
-        elseif ℓ2 == ℓmax
-            maximum_angle[T] = acos((ℓ1^2 + ℓ3^2 - ℓ2^2) / (2ℓ1 * ℓ3))
-        else
-            maximum_angle[T] = acos((ℓ1^2 + ℓ2^2 - ℓ3^2) / (2ℓ1 * ℓ2))
-        end
+        sort!(all_angles)
         radius_edge_ratio[T] = circumradii[T] / ℓ1
         edge_midpoints[T] = ((Tuple(0.5 * (p + q))), Tuple(0.5 * (q + r)), Tuple(0.5 * (r + p)))
         inradius[T] = 2areas[T] / (ℓ1 + ℓ2 + ℓ3)
         perimeter[T] = ℓ1 + ℓ2 + ℓ3
         aspect_ratio[T] = inradius[T] / circumradii[T]
         centroid[T] = (1 / 3 * (p[1] + q[1] + r[1]), 1 / 3 * (p[2] + q[2] + r[2]))
+        angles[T] = Tuple(all_angles)
         @test radius_edge_ratio[T] ≥ 1 / sqrt(3) - 0.1
         @test DT.get_radius_edge_ratio(stats, T) ≥ 1 / sqrt(3) - 0.1
-        @test minimum_angle[T] ≤ deg2rad(60) + 0.01
+        @test angles[T][1] ≤ deg2rad(60) + 0.01
         @test DT.get_minimum_angle(stats, T) ≤ deg2rad(60) + 0.01
     end
 
@@ -1159,26 +1148,27 @@ function validate_statistics(tri::Triangulation, stats=statistics(tri))
     for T in each_solid_triangle(tri)
         @test areas[T] ≈ DT.get_area(stats, T)
         @test collect(lengths[T]) ≈ collect(DT.get_lengths(stats, T))
-        @test collect(squared_lengths[T]) ≈ collect(DT.get_squared_lengths(stats, T))
         @test collect(circumcenters[T]) ≈ collect(DT.get_circumcenter(stats, T))
         @test circumradii[T] ≈ DT.get_circumradius(stats, T)
-        @test sine_minimum_angle[T] ≈ DT.get_sine_minimum_angle(stats, T)
-        @test minimum_angle[T] ≈ DT.get_minimum_angle(stats, T) rtol = 1e-2
-        @test maximum_angle[T] ≈ DT.get_maximum_angle(stats, T) rtol = 1e-2
         @test radius_edge_ratio[T] ≈ DT.get_radius_edge_ratio(stats, T)
         @test collect(collect.(edge_midpoints[T])) ≈ collect(collect.(DT.get_edge_midpoints(stats, T)))
         @test aspect_ratio[T] ≈ DT.get_aspect_ratio(stats, T)
         @test inradius[T] ≈ DT.get_inradius(stats, T)
         @test perimeter[T] ≈ DT.get_perimeter(stats, T)
-        @test (2sin(minimum_angle[T] / 2)^2 - 0.1 ≤ aspect_ratio[T] ≤ 2tan(minimum_angle[T] / 2) + 0.1)
-        @test radius_edge_ratio[T] ≈ 1 / (2sine_minimum_angle[T])
-        @test sine_minimum_angle[T] ≈ sin(minimum_angle[T])
+        @test radius_edge_ratio[T] ≈ 1 / (2sin(angles[T][1]))
         @test (2sin(DT.get_minimum_angle(stats, T) / 2)^2 - 0.1 ≤ DT.get_aspect_ratio(stats, T) ≤ 2tan(DT.get_minimum_angle(stats, T) / 2) + 0.1)
         @test DT.get_radius_edge_ratio(stats, T) ≈ 1 / (2(sin(DT.get_minimum_angle(stats, T))))
-        @test DT.get_sine_minimum_angle(stats, T) ≈ sin(DT.get_minimum_angle(stats, T))
         @test areas[T] ≈ inradius[T] * 0.5perimeter[T]
         @test DT.get_area(stats, T) ≈ DT.get_inradius(stats, T) * 0.5DT.get_perimeter(stats, T)
         @test collect(centroid[T]) ≈ collect(DT.get_centroid(stats, T))
+        @test DT.get_angles(stats, T)[1] ≈ angles[T][1]
+        @test DT.get_angles(stats, T)[2] ≈ angles[T][2]
+        @test DT.get_angles(stats, T)[3] ≈ angles[T][3]
+        @test sum(DT.get_angles(stats,T)) ≈ π
+        @test DT.get_minimum_angle(stats, T) ≈ angles[T][1]
+        @test DT.get_maximum_angle(stats, T) ≈ angles[T][3]
+        @test DT.get_minimum_angle(stats, T) ≈ DT.get_angles(stats, T)[1]
+        @test DT.get_maximum_angle(stats, T) ≈ DT.get_angles(stats, T)[3]
     end
     @test stats.individual_statistics == DT.get_individual_statistics(stats)
     @test stats.total_area ≈ DT.get_total_area(stats)
@@ -1200,8 +1190,8 @@ function validate_statistics(tri::Triangulation, stats=statistics(tri))
     @test DT.num_convex_hull_points(stats) == length(get_convex_hull_indices(tri)) - 1 == stats.num_convex_hull_points
 
     ## Global statistics  
-    smallest_angle = minimum([minimum_angle[T] for T in each_solid_triangle(tri)])
-    largest_angle = maximum([maximum_angle[T] for T in each_solid_triangle(tri)])
+    smallest_angle = minimum([angles[T][1] for T in each_solid_triangle(tri)])
+    largest_angle = maximum([angles[T][3] for T in each_solid_triangle(tri)])
     smallest_area = minimum([areas[T] for T in each_solid_triangle(tri)])
     largest_area = maximum([areas[T] for T in each_solid_triangle(tri)])
     smallest_radius_edge_ratio = minimum([radius_edge_ratio[T] for T in each_solid_triangle(tri)])

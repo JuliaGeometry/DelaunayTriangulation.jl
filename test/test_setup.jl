@@ -1,1 +1,0 @@
-const SAVE_FIGURE = false

@@ -38,6 +38,7 @@ The minimum allowed angle of a triangle, given in degrees. If `max_radius_edge_r
 we set `max_radius_edge_ratio = 1 / (2sind(min_angle))`.
 
 If `min_angle > 33.9°, a warning is given as convergence of the algorithm may struggle to converge in this case. Additionally, if `min_angle < 0.0` or `min_angle > 60.00005`, then `min_angle` is replaced with `30°` (`max_radius_edge_ratio = 1`).
+You should also be cautious that, for some domains (e.g. ones with many small angles), an even smaller angle might be needed to accommodate floating point arithmetic.
 
 !!! note 
 
@@ -56,20 +57,35 @@ The maximum number of iterations to perform.
 
 Whether to lock the convex hull of the triangulation. If `true`, then the convex hull edges are put into the constrained edges of the triangulation. This 
 is only relevant if the triangulation has no boundary nodes.
-- `exterior_curve_index=1`
-
-The curve (or curves) corresponding to the outermost boundary. 
 
 !!! danger 
 
     Not enabling this option can lead to the triangulation being refined in a way that 
     continually adds points that go out to infinity. Do so at your own peril.
 
+- `exterior_curve_index=1`
+
+The curve (or curves) corresponding to the outermost boundary. 
+
 # Outputs 
 
 The `TriangulationStatistics` of `tri` are returned. The triangulation is refined in-place.
 
 See also [`RefinementTargets`](@ref).
+
+!!! note 
+
+    It is not strictly guaranteed that the refinement targets will be met. For example, precision 
+    issues may cause small angles from near-degenerate triangles. Despite this, the algorithm will
+    still typically give no angle larger than `180° - 2θ°`, where `θ° = asind[1 / (2max_radius_edge_ratio)]`
+    is the minimum angle constraint associated with `max_radius_edge_ratio`. Moreover, domains with 
+    small angles (between constrained segments) will cause issues, forcing small angles to be 
+    introduced into the triangulation to accommodate them, but only between the constrained 
+    segments with small angles. If you are finding issues with small angles, try increasing the
+    `max_radius_edge_ratio` (or reduce `min_angle`). 
+
+    Basically, be aware that arithmetic is not perfected and floating point arithmetic 
+    only has so much precision to offer.
 """
 function refine!(tri::Triangulation;
     min_area=1e-9get_total_area(tri),
@@ -82,8 +98,8 @@ function refine!(tri::Triangulation;
     lock_convex_hull=!has_boundary_nodes(tri),
     exterior_curve_index=1
 )
-    tri, queue, events, targets, has_ghosts, subsegment_list = initialise_refine(tri; min_area, max_area, max_radius_edge_ratio, max_points, min_angle, lock_convex_hull)
-    _refine_all!(tri, queue, events, targets, subsegment_list, exterior_curve_index, maxiters, rng)
+    tri, queue, events, targets, has_ghosts, segment_list = initialise_refine(tri; min_area, max_area, max_radius_edge_ratio, max_points, min_angle, lock_convex_hull)
+    _refine_all!(tri, queue, events, targets, segment_list, exterior_curve_index, maxiters, rng)
     finalise_refine(tri, has_ghosts, lock_convex_hull)
     stats = statistics(tri)
     return stats
@@ -103,8 +119,11 @@ function initialise_refine(tri::Triangulation;
     queue = initialise_refinement_queue(tri, targets)
     events = initialise_event_history(tri)
     E = edge_type(tri)
-    subsegment_list = Set{E}()
-    return tri, queue, events, targets, has_ghosts, subsegment_list
+    segment_list = Set{E}()
+    for e in each_constrained_edge(tri)
+        add_edge!(segment_list, e)
+    end
+    return tri, queue, events, targets, has_ghosts, segment_list
 end
 
 function finalise_refine(tri::Triangulation, has_ghosts, lock_convex_hull)
@@ -119,26 +138,27 @@ function finalise_refine(tri::Triangulation, has_ghosts, lock_convex_hull)
     return nothing
 end
 
-function _refine_all!(tri::Triangulation, queue::RefinementQueue, events::InsertionEventHistory, targets::RefinementTargets, subsegment_list, exterior_curve_index, maxiters, rng::AbstractRNG=Random.default_rng())
+function _refine_all!(tri::Triangulation, queue::RefinementQueue, events::InsertionEventHistory, targets::RefinementTargets, segment_list, exterior_curve_index, maxiters, rng::AbstractRNG=Random.default_rng())
     iters = 1
-    split_all_encroached_segments!(tri, queue, events, targets, subsegment_list)
+    split_all_encroached_segments!(tri, queue, events, targets, segment_list)
     while !isempty(queue) && !compare_points(targets, num_points(tri)) && iters ≤ maxiters
         ρ = peek_triangle_ρ(queue)
         T = triangle_dequeue!(queue)
-        iters = _refine_itr!(tri, queue, events, targets, T, ρ, subsegment_list, exterior_curve_index, iters, rng)
+        iters = _refine_itr!(tri, queue, events, targets, T, ρ, segment_list, exterior_curve_index, iters, rng)
     end
     return nothing
 end
 
-function _refine_itr!(tri::Triangulation, queue::RefinementQueue, events::InsertionEventHistory, targets::RefinementTargets, T, ρ, subsegment_list, exterior_curve_index, iters, rng::AbstractRNG=Random.default_rng())
+function _refine_itr!(tri::Triangulation, queue::RefinementQueue, events::InsertionEventHistory, targets::RefinementTargets, T, ρ, segment_list, exterior_curve_index, iters, rng::AbstractRNG=Random.default_rng())
     u, v, w = indices(T)
     if !is_ghost_triangle(T) && get_adjacent(tri, u, v) == w
         iters += 1
+        @show iters
         success = split_triangle!(tri, queue, events, T, exterior_curve_index, rng)
-        if !success
-            split_all_encroached_segments!(tri, queue, events, targets, subsegment_list)
+        if is_encroachment_failure(success)
+            split_all_encroached_segments!(tri, queue, events, targets, segment_list)
             triangle_enqueue!(queue, T, ρ) # Re-enqueue triangle that the circumcenter came from 
-        else
+        elseif is_successful_insertion(success)
             assess_added_triangles!(tri, queue, events, targets)
         end
     end

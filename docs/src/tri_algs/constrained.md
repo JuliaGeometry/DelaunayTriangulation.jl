@@ -183,7 +183,7 @@ delete_holes!
 has_interiors_within_interiors 
 find_all_points_to_delete
 find_all_triangles_to_delete 
-delete_all_exterior_triangles 
+delete_all_exterior_triangles! 
 clear_deleted_points!
 delete_remaining_triangles_connecting_boundary_edges!
 ```
@@ -255,20 +255,30 @@ triangles = DelaunayTriangulation.find_all_triangles_to_delete(tri, points_to_de
 
 ```@raw html
 <figure>
-    <img src='../figs/intermediate_triangulation_highlighted.png', alt='Triangulation prior to excavation with highlighted points and triangles for deletion'><br>
+    <img src='../figs/intermediate_triangulation_highlighted_2.png', alt='Triangulation prior to excavation with highlighted points and triangles for deletion'><br>
 </figure>
 ```
 
 We see that all of the triangles are correct in this case, but it's missing some triangles in the top-most interior hole. This is clearer once we delete all the highlighted triangles:
 
 ```julia
-DelaunayTriangulation.delete_all_exterior_triangles(tri, triangles)
+DelaunayTriangulation.delete_all_exterior_triangles!(tri, triangles)
 ```
 
 ```@raw html
 <figure>
-    <img src='../figs/intermediate_triangulation_highlighted.png', alt='Triangulation partially excavated'><br>
+    <img src='../figs/intermediate_triangulation_partially_deleted.png', alt='Triangulation partially excavated'><br>
 </figure>
 ```
 
 These remaining triangles to be deleted are handled via `delete_remaining_triangles_connecting_boundary_edges!`.
+
+```julia
+DelaunayTriangulation.delete_remaining_triangles_connecting_boundary_edges!(tri)
+```
+
+```@raw html
+<figure>
+    <img src='../figs/intermediate_triangulation_fully_deleted.png', alt='Triangulation fully excavated'><br>
+</figure>
+```

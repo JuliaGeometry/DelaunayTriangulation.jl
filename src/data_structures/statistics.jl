@@ -1,15 +1,30 @@
 # Some formulas in this file come from https://perso.uclouvain.be/jean-francois.remacle/LMECA2170/robnotes.pdf.
 # Unfortunately, I can't use the robust forms of the formulas because we don't have implementations for them (only the versions that take the sign of the orient predicate).
 
+"""
+    IndividualTriangleStatistics{T}
+
+Statistics for a single triangle.
+
+# Fields
+- `area`: The area of the triangle.
+- `lengths`: The sorted lengths of the edges of the triangle.
+- `circumcenter`: The circumcenter of the triangle.
+- `circumradius`: The circumradius of the triangle.
+- `angles`: The sorted angles of the triangle.
+- `radius_edge_ratio`: The radius-edge ratio of the triangle.
+- `edge_midpoints`: The midpoints of the edges of the triangle.
+- `aspect_ratio`: The aspect ratio of the triangle.
+- `inradius`: The inradius of the triangle.
+- `perimeter`: The perimeter of the triangle.
+- `centroid`: The centroid of the triangle.
+"""
 struct IndividualTriangleStatistics{T}
     area::T
     lengths::NTuple{3,T}
-    squared_lengths::NTuple{3,T}
     circumcenter::NTuple{2,T}
     circumradius::T
-    sine_minimum_angle::T
-    minimum_angle::T
-    maximum_angle::T
+    angles::NTuple{3, T}
     radius_edge_ratio::T
     edge_midpoints::NTuple{3,NTuple{2,T}}
     aspect_ratio::T
@@ -23,24 +38,19 @@ function IndividualTriangleStatistics(p, q, r)
     A = triangle_area(ℓmin², ℓmed², ℓmax²)
     circumcenter = triangle_circumcenter(p, q, r, A)
     circumradius = triangle_circumradius(A, ℓmin², ℓmed², ℓmax²)
-    sine_minimum_angle = triangle_sine_minimum_angle(A, ℓmed², ℓmax²)
-    minimum_angle = triangle_minimum_angle(sine_minimum_angle)
-    maximum_angle = acos((ℓmin²+ℓmed²-ℓmax²)/(2sqrt(ℓmin²*ℓmed²)))
     radius_edge_ratio = triangle_radius_edge_ratio(circumradius, ℓmin)
     edge_midpoints = triangle_edge_midpoints(p, q, r)
     perimeter = triangle_perimeter(ℓmin, ℓmed, ℓmax)
     inradius = triangle_inradius(A, perimeter)
     aspect_ratio = triangle_aspect_ratio(inradius, circumradius)
     centroid = triangle_centroid(p, q, r)
+    angles = triangle_angles(p, q, r)
     return IndividualTriangleStatistics(
         A,
         (ℓmin, ℓmed, ℓmax),
-        (ℓmin², ℓmed², ℓmax²),
         circumcenter,
         circumradius,
-        sine_minimum_angle,
-        minimum_angle,
-        maximum_angle,
+        angles,
         radius_edge_ratio,
         edge_midpoints,
         aspect_ratio,
@@ -50,6 +60,36 @@ function IndividualTriangleStatistics(p, q, r)
     )
 end
 
+"""
+    TriangulationStatistics{T,V,I}
+
+Statistics for a triangulation.
+
+The constructor for this is `statistics(tri::Triangulation)`.
+
+# Fields 
+- `num_vertices`: The number of vertices in the triangulation.
+- `num_solid_vertices`: The number of solid vertices in the triangulation.
+- `num_ghost_vertices`: The number of ghost vertices in the triangulation.
+- `num_edges`: The number of edges in the triangulation.
+- `num_solid_edges`: The number of solid edges in the triangulation.
+- `num_ghost_edges`: The number of ghost edges in the triangulation.
+- `num_triangles`: The number of triangles in the triangulation.
+- `num_solid_triangles`: The number of solid triangles in the triangulation.
+- `num_ghost_triangles`: The number of ghost triangles in the triangulation.
+- `num_constrained_boundary_edges`: The number of constrained boundary edges in the triangulation.
+- `num_constrained_interior_edges`: The number of constrained interior edges in the triangulation.
+- `num_constrained_edges`: The number of constrained edges in the triangulation.
+- `num_convex_hull_points`: The number of points on the convex hull of the triangulation.
+- `smallest_angle`: The smallest angle in the triangulation.
+- `largest_angle`: The largest angle in the triangulation.
+- `smallest_area`: The smallest area in the triangulation.
+- `largest_area`: The largest area in the triangulation.
+- `smallest_radius_edge_ratio`: The smallest radius-edge ratio in the triangulation.
+- `largest_radius_edge_ratio`: The largest radius-edge ratio in the triangulation.
+- `total_area`: The total area of the triangulation.
+- `individual_statistics`: A dictionary mapping triangles to their individual statistics.
+"""
 struct TriangulationStatistics{T,V,I}
     num_vertices::I
     num_solid_vertices::I
@@ -131,8 +171,8 @@ function statistics(tri::Triangulation)
         u, v, w = indices(T)
         p, q, r = get_point(tri, u, v, w)
         individual_statistics[T] = IndividualTriangleStatistics(p, q, r)
-        smallest_angle = min(smallest_angle, individual_statistics[T].minimum_angle)
-        largest_angle = max(largest_angle, individual_statistics[T].maximum_angle)
+        smallest_angle = min(smallest_angle, individual_statistics[T].angles[1])
+        largest_angle = max(largest_angle, individual_statistics[T].angles[3])
         smallest_area = min(smallest_area, individual_statistics[T].area)
         largest_area = max(largest_area, individual_statistics[T].area)
         smallest_radius_edge_ratio = min(smallest_radius_edge_ratio, individual_statistics[T].radius_edge_ratio)
@@ -198,6 +238,24 @@ for n in fieldnames(IndividualTriangleStatistics)
             end
     end
 end
+"""
+    get_minimum_angle(stats::TriangulationStatistics, T)
+
+Returns the smallest angle in the triangle `T`.
+"""
+get_minimum_angle(stats::TriangulationStatistics, T) = get_angles(stats, T)[1]
+"""
+    get_maximum_angle(stats::TriangulationStatistics, T)
+
+Returns the largest angle in the triangle `T`.
+"""
+get_maximum_angle(stats::TriangulationStatistics, T) = get_angles(stats, T)[3]
+"""
+    get_median_angle(stats::TriangulationStatistics, T)
+
+Returns the median angle in the triangle `T`.
+"""
+get_median_angle(stats::TriangulationStatistics, T) = get_angles(stats, T)[2]
 
 ## We could simplify some of this even further, e.g. keeping some more things as their square temporarily.
 ## Is it really worth the effort, though?
@@ -208,18 +266,55 @@ function triangle_area(ℓ₁²::Number, ℓ₂²::Number, ℓ₃²::Number)
     return A
 end
 squared_triangle_area(ℓ₁²::Number, ℓ₂²::Number, ℓ₃²::Number) = (4ℓ₁² * ℓ₂² - (ℓ₁² + ℓ₂² - ℓ₃²)^2) / 16 # Heron's formula
-triangle_minimum_angle(sine_minimum_angle) = asin(sine_minimum_angle)
-triangle_maximum_angle(sine_maximum_angle) = asin(sine_maximum_angle)
 triangle_circumradius(A, ℓmin², ℓmed², ℓmax²) = sqrt(ℓmin² * ℓmed² * ℓmax²) / (4A)
 triangle_perimeter(ℓmin::Number, ℓmed::Number, ℓmax::Number) = ℓmin + ℓmed + ℓmax
 triangle_inradius(A, perimeter) = 2A / perimeter
 triangle_aspect_ratio(inradius::Number, circumradius::Number) = inradius / circumradius
 triangle_radius_edge_ratio(circumradius::Number, ℓmin::Number) = circumradius / ℓmin
 triangle_centroid(p, q, r) = ((getx(p) + getx(q) + getx(r)) / 3, (gety(p) + gety(q) + gety(r)) / 3)
-triangle_sine_minimum_angle_squared(A, ℓmed², ℓmax²) = 4A^2 / (ℓmed² * ℓmax²)
-triangle_sine_maximum_angle_squared(A, ℓmin², ℓmed²) = 4A^2 / (ℓmin² * ℓmed²)
-triangle_sine_minimum_angle(A, ℓmed², ℓmax²) = sqrt(triangle_sine_minimum_angle_squared(A, ℓmed², ℓmax²))
-triangle_sine_maximum_angle(A, ℓmin², ℓmed²) = sqrt(triangle_sine_maximum_angle_squared(A, ℓmin², ℓmed²))
+
+function triangle_angles(p, q, r)
+    ℓ₁², ℓ₂², ℓ₃² = squared_triangle_lengths(p, q, r)
+    A = triangle_area(ℓ₁², ℓ₂², ℓ₃²)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
+    rx, ry = getxy(r)
+    ax, by = px - qx, py - qy
+    bx, ay = px - rx, py - ry
+    dotab = ax * bx + ay * by
+    θ₁ = if iszero(dotab)
+        π / 2 
+    else 
+        atan(2A / dotab) 
+    end
+    if θ₁ < 0
+        θ₁ += π
+    end
+    ax, by = qx - px, qy - py
+    bx, ay = qx - rx, qy - ry
+    dotab = ax * bx + ay * by
+    θ₂ = if iszero(dotab)
+        π / 2 
+    else 
+        atan(2A / dotab)
+    end
+    if θ₂ < 0
+        θ₂ += π
+    end
+    ax, by = rx - px, ry - py
+    bx, ay = rx - qx, ry - qy
+    dotab = ax * bx + ay * by
+    θ₃ = if iszero(dotab)
+        π / 2 
+    else 
+        atan(2A / dotab) 
+    end
+    if θ₃ < 0
+        θ₃ += π
+    end
+    θ₁, θ₂, θ₃ = min_med_max(θ₁, θ₂, θ₃)
+    return θ₁, θ₂, θ₃
+end
 
 function squared_triangle_area(p, q, r)
     ℓ₁², ℓ₂², ℓ₃² = squared_triangle_lengths(p, q, r)
@@ -227,7 +322,7 @@ function squared_triangle_area(p, q, r)
 end
 function triangle_area(p, q, r)
     A² = squared_triangle_area(p, q, r)
-    return sqrt(A²)
+    return A² < zero(A²) ? zero(A²) : sqrt(A²)
 end
 
 function squared_triangle_lengths(p, q, r)

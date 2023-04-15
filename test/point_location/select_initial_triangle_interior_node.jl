@@ -12,6 +12,7 @@ add_ghost_triangles!(tri)
 pts = get_points(tri)
 adj = get_adjacent(tri)
 adj2v = get_adjacent2vertex(tri)
+graph = get_graph(tri)
 boundary_nodes = get_boundary_nodes(tri)
 boundary_index_ranges = get_boundary_index_ranges(tri)
 boundary_map = get_boundary_map(tri)
@@ -45,7 +46,7 @@ end
             k = index_map["m"] # This point is on the boundary of an interior hole
             # Close
             q = (16.4445425, 19.8427)
-            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v,
+            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v, graph,
                   rep, boundary_map, k, q,
                   boundary_index_ranges)
             @test _p == get_point(pts, k) &&
@@ -56,7 +57,7 @@ end
 
             # Further away
             q = (4.008184, 1.077)
-            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v,
+            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v, graph,
                   rep, boundary_map, k, q,
                   boundary_index_ranges)
             @test _p == get_point(pts, k) &&
@@ -67,7 +68,7 @@ end
 
             # How are collinearities handled?
             q = (14.0, 0.0)
-            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v,
+            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v, graph,
                   rep, boundary_map, k, q,
                   boundary_index_ranges)
             @test (_p == get_point(pts, k) &&
@@ -83,7 +84,7 @@ end
 
             # Now do the same test, but put the point above p
             q = (14.0, 19.0)
-            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v,
+            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v, graph,
                   rep, boundary_map, k, q,
                   boundary_index_ranges)
             @test (_p == get_point(pts, k) &&
@@ -99,7 +100,7 @@ end
 
             # What happens if the point is on an edge? 
             q = (14.0, 7.0)
-            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v,
+            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v, graph,
                   rep, boundary_map, k, q,
                   boundary_index_ranges)
             @test (_p == get_point(pts, k) &&
@@ -115,7 +116,7 @@ end
 
             # Now do the same test, but put the point above p 
             q = (14.0, 14.0)
-            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v,
+            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v, graph,
                   rep, boundary_map, k, q,
                   boundary_index_ranges)
             @test (_p == get_point(pts, k) &&
@@ -131,7 +132,7 @@ end
 
             # What if it is an existing triangle?
             q = (12.0, 6.0)
-            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v,
+            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v, graph,
                   rep, boundary_map, k, q,
                   boundary_index_ranges)
             @test _p == get_point(pts, k) &&
@@ -142,7 +143,7 @@ end
 
             # Now do the same test, but put the point above p 
             q = (13.288, 15.01)
-            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v,
+            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v, graph,
                   rep, boundary_map, k, q,
                   boundary_index_ranges)
             @test _p == get_point(pts, k) &&
@@ -151,7 +152,7 @@ end
                   _pᵢ == get_point(pts, rep, boundary_map, index_map["w"]) &&
                   _pⱼ == get_point(pts, index_map["v"])
             q = (16.437, 15.42)
-            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v,
+            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v, graph,
                   rep, boundary_map, k, q,
                   boundary_index_ranges)
             @test _p == get_point(pts, k) &&
@@ -160,7 +161,7 @@ end
                   _pᵢ == get_point(pts, rep, boundary_map, index_map["v"]) &&
                   _pⱼ == get_point(pts, index_map["z"])
             q = (17.46287, 13.111)
-            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v,
+            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v, graph,
                   rep, boundary_map, k, q,
                   boundary_index_ranges)
             @test _p == get_point(pts, k) &&
@@ -171,10 +172,10 @@ end
 
             # Check that everything is fine when the point is outside 
             q = (23.068, 6.92)
-            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v,
+            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v, graph,
                   rep, boundary_map, k, q,
                   boundary_index_ranges)
-            @inferred DT.select_initial_triangle_interior_node(pts, adj, adj2v, rep, boundary_map, k, q,
+            @inferred DT.select_initial_triangle_interior_node(pts, adj, adj2v, graph, rep, boundary_map, k, q,
                   boundary_index_ranges)
             @test _p == get_point(pts, k) &&
                   _i == index_map["r"] &&
@@ -184,7 +185,7 @@ end
 
             # Can interior ghost edges be handled correctly?
             q = (15.5, 9.0)
-            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v,
+            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v, graph,
                   rep, boundary_map, k, q,
                   boundary_index_ranges)
             @test _p == get_point(pts, k) &&
@@ -193,7 +194,7 @@ end
                   _pᵢ == get_point(pts, rep, boundary_map, index_map["r"]) &&
                   _pⱼ == get_point(pts, rep, boundary_map, DT.BoundaryIndex - 3)
             q = (14.87, 4.01)
-            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v,
+            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v, graph,
                   rep, boundary_map, k, q,
                   boundary_index_ranges)
             @test _p == get_point(pts, k) &&
@@ -212,6 +213,7 @@ end
                         p1, i1, j1, pᵢ1, pⱼ1 = DT.select_initial_triangle_interior_node(pts,
                               tri.adjacent,
                               tri.adjacent2vertex,
+                              tri.graph,
                               rep, boundary_map, k,
                               get_point(pts, rep,
                                     boundary_map,
@@ -220,6 +222,7 @@ end
                         p2, i2, j2, pᵢ2, pⱼ2 = DT.select_initial_triangle_interior_node(pts,
                               tri.adjacent,
                               tri.adjacent2vertex,
+                              tri.graph,
                               rep, boundary_map, k,
                               get_point(pts, rep,
                                     boundary_map,
@@ -239,6 +242,7 @@ end
             end
             p, i, j, pᵢ, pⱼ = DT.select_initial_triangle_interior_node(pts, tri.adjacent,
                   tri.adjacent2vertex,
+                  tri.graph,
                   rep, boundary_map, k,
                   get_point(pts, rep, boundary_map,
                         k),
@@ -261,7 +265,7 @@ end
       boundary_map2 = tri2.boundary_map
       q = (1.8333333333333333, 5.0)
       k = 116
-      p, i, j, pᵢ, pⱼ = DT.select_initial_triangle_interior_node(pts2, adj2, adj2v2,
+      p, i, j, pᵢ, pⱼ = DT.select_initial_triangle_interior_node(pts2, adj2, adj2v2, graph2,
             tri2.representative_point_list, boundary_map2, k, q,
             boundary_index_ranges2,
             Val(true))
