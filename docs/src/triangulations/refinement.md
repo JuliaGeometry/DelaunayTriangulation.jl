@@ -4,10 +4,12 @@ CurrentModule = DelaunayTriangulation
 
 # Mesh Refinement 
 
-Here we show how we can use mesh refinement to improve the quality of a triangulation. In this package, the algorithm used is Ruppert's algorithm, and we permit constraints on the minimum angle and maximum area of a triangle in a triangulation. This algorithm works on any type of geometry. The function used for refinement is `refine!`:
+Here we show how we can use mesh refinement to improve the quality of a triangulation. In this package, the algorithm used is Ruppert's algorithm, and we permit constraints on the minimum angle and maximum area of a triangle in a triangulation. This algorithm works on any type of geometry. The function used for refinement is `refine!`. Some of the relevant docstrings are:
 
 ```@docs 
 refine!
+RefinementTargets 
+RefinementQueue 
 ```
 
 ## Unconstrained triangulations 
@@ -113,7 +115,7 @@ resize_to_layout!(fig)
 
 ```@raw html
 <figure>
-    <img src='../figs/square_constrained_refinement.png', alt'Refined rectangle'><br>
+    <img src='../figs/square_constrained_refinement.png', alt='Refined rectangle'><br>
 </figure>
 ```
 
@@ -207,7 +209,7 @@ resize_to_layout!(fig)
 
 ```@raw html
 <figure>
-    <img src='../figs/mc_constrained_refinement.png', alt'Refined rectangle'><br>
+    <img src='../figs/mc_constrained_refinement.png', alt='Refined rectangle'><br>
 </figure>
 ```
 
@@ -398,6 +400,6 @@ resize_to_layout!(fig)
 
 ```@raw html
 <figure>
-    <img src='../figs/julia_constrained_refinement.png', alt'Refined Julia logo'><br>
+    <img src='../figs/julia_constrained_refinement.png', alt='Refined Julia logo'><br>
 </figure>
 ```

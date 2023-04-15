@@ -66,7 +66,10 @@ is only relevant if the triangulation has no boundary nodes.
 
 - `exterior_curve_index=1`
 
-The curve (or curves) corresponding to the outermost boundary. 
+The curve (or curves) corresponding to the outermost boundary. Only seems to be needed 
+in rare cases, even with multiple exterior curves (disjoint domains). If you are having
+issues with the triangulation not being refined correctly, try setting this to be the 
+correct values.
 
 # Outputs 
 

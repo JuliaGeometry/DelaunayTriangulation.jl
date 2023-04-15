@@ -25,4 +25,10 @@ extend_segments!(::AbstractVector{E}, ::Any) where {E}
 convert_boundary_points_to_indices(::AAA, ::AAA) where {F<:Number,A<:AbstractVector{F},AA<:AbstractVector{A},AAA<:AbstractVector{AA}}
 get_ordinal_suffix 
 check_args
+min_max 
+min_med_max 
+balanced_power_of_two_ternary_split
+balanced_power_of_two_quarternary_split 
+segment_vertices_adjoin_other_segments
+edge_lies_on_two_distinct_segments
 ```
