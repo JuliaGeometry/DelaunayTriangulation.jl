@@ -9,7 +9,7 @@ This is a package for constructing Delaunay triangulations of planar point sets.
 
 - [Geometric predicates](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/predicates/) are implemented with [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl), and many predicates have been extended from ExactPredicates.jl.
 - [Unconstrained](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/triangulations/unconstrained/) and [constrained](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/triangulations/constrained/) triangulations. Support is provided for many types of domains, as given in the docs.
-- Mesh refinement, with support for custom angle and area constraints.
+- [Mesh refinement](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/triangulations/refinement/), with support for custom angle and area constraints.
 - Dynamic point insertion, point deletion, and segment insertion, amongst many other [operations](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/operations/).
 - Computation of convex hulls, either [from the triangulation itself](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/data_structures/convex_hull/) or using a [Graham scan](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/other_features/convex_hull/). 
 - [Triangulation of convex polygons](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/tri_algs/convex/).
