@@ -16,8 +16,14 @@ add_ghost_triangles!(::Triangulation)
 add_triangle!(::Ts, ::Integer, ::Integer, ::Integer) where {Ts<:Triangulation}
 delete_triangle!(::Ts, ::Integer, ::Integer, ::Integer) where {Ts<:Triangulation}
 split_edge!
+legalise_split_edge!
+complete_split_edge_and_legalise!
 split_triangle!
+legalise_split_triangle!
+complete_split_triangle_and_legalise!
 flip_edge!
 legalise_edge!
 clear_empty_features!
+lock_convex_hull! 
+unlock_convex_hull!
 ```

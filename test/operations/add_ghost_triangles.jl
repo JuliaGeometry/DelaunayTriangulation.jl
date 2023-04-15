@@ -2,10 +2,7 @@ using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using CairoMakie
 
-include("../test_setup.jl")
 include("../helper_functions.jl")
-
-save_path = basename(pwd()) == "test" ? "figures" : "test/figures"
 
 @testset "Adding ghost triangles" begin
     tri, label_map, index_map = simple_geometry()
@@ -49,10 +46,4 @@ save_path = basename(pwd()) == "test" ? "figures" : "test/figures"
         @test DT.contains_edge(i, k, DT.get_adjacent2vertex(tri, j))
         @test DT.contains_edge(k, j, DT.get_adjacent2vertex(tri, i))
     end
-
-    ax = Axis(fig[1, 2])
-    triplot!(ax, tri; show_ghost_edges=true, recompute_centers=true, ghost_edge_extension_factor=2.0)
-    xlims!(ax, -2, 22)
-    ylims!(ax, -2, 22)
-    SAVE_FIGURE && save("$save_path/test_add_ghost_triangles.png", fig)
 end

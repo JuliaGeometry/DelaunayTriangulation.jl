@@ -109,6 +109,13 @@ Calls `insert_boundary_node!(get_boundary_nodes(tri), pos, node)`, splitting the
 @inline insert_boundary_node!(tri::Triangulation, pos, node) = insert_boundary_node!(get_boundary_nodes(tri), pos, node)
 
 """
+    delete_boundary_node!(tri::Triangulation, pos)
+
+Calls `delete_boundary_node!(get_boundary_nodes(tri), pos)`, deleting the boundary node at `pos`.
+"""
+@inline delete_boundary_node!(tri::Triangulation, pos) = delete_boundary_node!(get_boundary_nodes(tri), pos)
+
+"""
     split_boundary_edge!(tri::Triangulation, edge, node)
     split_boundary_edge!(tri::Triangulation, i, j, node)
 
@@ -140,6 +147,39 @@ end
         bnn[e] = (pos[1], k)
     end
     return nothing
+end
+
+"""
+    merge_boundary_edge!(tri::Triangulation, edge)
+    merge_boundary_edge!(tri::Triangulation, i, j)
+
+This is the inverse of [`split_boundary_edge!`](@ref). Given a triangulation `tri` and an edge `edge = (i, j)`,
+assumed to be a boundary node separated by a single `node` between them, deletes `node` and merges the edge,
+updating `tri.boundary_nodes` and `tri.boundary_edge_map` accordingly.
+"""
+function merge_boundary_edge!(tri::Triangulation, edge, node)
+    i, j = edge_indices(edge)
+    merge_boundary_edge!(tri, i, j, node)
+    return nothing
+end
+function merge_boundary_edge!(tri::Triangulation, i, j, node)
+    pos = get_boundary_edge_map(tri, i, node)
+    node_pos = (pos[1], pos[2] + 1)
+    bnn = get_boundary_edge_map(tri)
+    delete_boundary_node!(tri, node_pos)
+    E = edge_type(tri)
+    delete!(bnn, construct_edge(E, i, node))
+    delete!(bnn, construct_edge(E, node, j))
+    e = construct_edge(E, i, j)
+    bnn[e] = pos
+    nodes = get_boundary_nodes(tri, pos[1])
+    ne = num_boundary_edges(nodes)
+    for k in pos[2]:ne
+        u = get_boundary_nodes(nodes, k)
+        v = get_boundary_nodes(nodes, k + 1)
+        e = construct_edge(E, u, v)
+        bnn[e] = (pos[1], k)
+    end
 end
 
 """
@@ -222,12 +262,14 @@ Returns a `Set` of all the boundary nodes in the triangulation `tri`.
 function get_all_boundary_nodes(tri::Triangulation)
     bn_map = get_boundary_map(tri)
     all_nodes = Set{integer_type(tri)}()
-    for segment_index in values(bn_map)
-        bn_nodes = get_boundary_nodes(tri, segment_index)
-        nedges = num_boundary_edges(bn_nodes)
-        for node_idx in 1:(nedges+1)
-            vᵢ = get_boundary_nodes(bn_nodes, node_idx)
-            push!(all_nodes, vᵢ)
+    if has_boundary_nodes(tri)
+        for segment_index in values(bn_map)
+            bn_nodes = get_boundary_nodes(tri, segment_index)
+            nedges = num_boundary_edges(bn_nodes)
+            for node_idx in 1:(nedges+1)
+                vᵢ = get_boundary_nodes(bn_nodes, node_idx)
+                push!(all_nodes, vᵢ)
+            end
         end
     end
     return all_nodes

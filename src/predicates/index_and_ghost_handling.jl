@@ -11,7 +11,7 @@ using `boundary_map` from [`construct_boundary_map`](@ref) to map boundary indic
 - `Certificate.Degenerate`: The triangle is degenerate, meaning the coordinates are collinear. 
 - `Certificate.NegativelyOriented`: The triangle is negatively oriented.
 
-!!! notes
+!!! note
 
     A test is also made for the case that `is_outer_ghost_triangle(T)`: If  `T` 
     is a ghost triangle, then the index corresponding to a boundary index 
@@ -42,7 +42,7 @@ boundary indices to their corresponding points in `representative_point_list`, r
 - `Certificate.On`: `pₗ` is on the circumcircle.
 - `Certificate.Inside`: `pₗ` is inside the circumcircle.
 
-!!! notes
+!!! note
 
     A test is also made for the case that `is_ghost_triangle(T)`: When `T` is a ghost triangle, one of its indices is a boundary index, say `i`. Since this vertex 
     is treated as being out at infinity, the circumcircle degenerates into the line through the other two vertices and out to infinity in that direction. 
@@ -78,7 +78,7 @@ the `boundary_map` argument from [`construct_boundary_map`](@ref). The returned 
 
 where `p` is the `u`th point of `pts`.
 
-!!! notes
+!!! note
 
     If `is_outer_ghost_edge(i, j, boundary_map)`, the orientation of the line is flipped as the point corresponding to the boundary index will be a
     centroid which swaps the orientation.
@@ -102,7 +102,7 @@ be the oriented line through `a` and `b`. This function tests if `p` is closer t
 - `Certificate:Further`: `q` is closer to `ℓ`.
 - `Certificate.Equidistant`: `p` and `q` are the same distance from `ℓ`.
 
-!!! notes 
+!!! note 
 
     It is assumed that `p` and `q` are to the left of `ℓ`.
 """

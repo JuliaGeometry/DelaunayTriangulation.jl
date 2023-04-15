@@ -132,9 +132,11 @@ It is assumed that the point `ℓ` is on an edge of `T`. If this is not the case
 function find_edge(T, points, ℓ)
     r = get_point(points, ℓ)
     for (u, v) in triangle_edges(T)
-        p, q = get_point(points, u, v)
-        cert = point_position_relative_to_line(p, q, r)
-        is_collinear(cert) && return (u, v)
+        if !is_ghost_edge(u, v)
+            p, q = get_point(points, u, v)
+            cert = point_position_relative_to_line(p, q, r)
+            is_collinear(cert) && return (u, v)
+        end
     end
     throw("The point $(get_point(points, ℓ)) is not on an edge of $T.")
 end
@@ -204,7 +206,7 @@ Given a point `u`, returns a vector `S` which gives a counter-clockwise sequence
 # Outputs 
 - `S`: The surrounding polygon.
 
-!!! notes 
+!!! note 
 
     - When `u` is an outer boundary index, the returned polygon is clockwise.
     - When `u` is a boundary vertex and you do not have ghost triangles, then this function may return an invalid polygon.
@@ -428,7 +430,7 @@ function convert_boundary_points_to_indices(x::AA, y::AA; existing_points=NTuple
     if check_args
         @assert length(x) == length(y)
         @assert all(i -> length(x[i]) == length(y[i]), eachindex(x, y))
-        @assert x[begin][begin] ≈ x[end][end] 
+        @assert x[begin][begin] ≈ x[end][end]
         @assert y[begin][begin] ≈ y[end][end]
         @assert all(i -> x[i][end] ≈ x[i+1][begin], firstindex(x):(lastindex(x)-1))
         @assert all(i -> y[i][end] ≈ y[i+1][begin], firstindex(y):(lastindex(y)-1))
@@ -463,17 +465,17 @@ function convert_boundary_points_to_indices(x::A, y::A; existing_points=NTuple{2
     adjust && push!(nodes, nodes[begin])
     return nodes, existing_points
 end
-function convert_boundary_points_to_indices(xy::A; existing_points=NTuple{2,Float64}[], check_args=true,adjust=true) where {F,A<:AbstractVector{F}}
+function convert_boundary_points_to_indices(xy::A; existing_points=NTuple{2,Float64}[], check_args=true, adjust=true) where {F,A<:AbstractVector{F}}
     x = [getx(xy[i]) for i in eachindex(xy)]
     y = [gety(xy[i]) for i in eachindex(xy)]
     return convert_boundary_points_to_indices(x, y; existing_points=existing_points, check_args=check_args, adjust=adjust)
 end
-function convert_boundary_points_to_indices(xy::AA; existing_points=NTuple{2,Float64}[], check_args=true,adjust=true) where {F,A<:AbstractVector{F},AA<:AbstractVector{A}}
+function convert_boundary_points_to_indices(xy::AA; existing_points=NTuple{2,Float64}[], check_args=true, adjust=true) where {F,A<:AbstractVector{F},AA<:AbstractVector{A}}
     x = [[getx(xy[i][j]) for j in eachindex(xy[i])] for i in eachindex(xy)]
     y = [[gety(xy[i][j]) for j in eachindex(xy[i])] for i in eachindex(xy)]
     return convert_boundary_points_to_indices(x, y; existing_points=existing_points, check_args=check_args, adjust=adjust)
 end
-function convert_boundary_points_to_indices(xy::AAA; existing_points=NTuple{2,Float64}[], check_args=true,adjust=true) where {F,A<:AbstractVector{F},AA<:AbstractVector{A},AAA<:AbstractVector{AA}}
+function convert_boundary_points_to_indices(xy::AAA; existing_points=NTuple{2,Float64}[], check_args=true, adjust=true) where {F,A<:AbstractVector{F},AA<:AbstractVector{A},AAA<:AbstractVector{AA}}
     x = [[[getx(xy[i][j][k]) for k in eachindex(xy[i][j])] for j in eachindex(xy[i])] for i in eachindex(xy)]
     y = [[[gety(xy[i][j][k]) for k in eachindex(xy[i][j])] for j in eachindex(xy[i])] for i in eachindex(xy)]
     return convert_boundary_points_to_indices(x, y; existing_points=existing_points, check_args=check_args, adjust=adjust)
@@ -566,3 +568,164 @@ function check_args(points, boundary_nodes)
         end
     end
 end
+
+"""
+    min_max(a, b)
+
+Returns `(min(a, b), max(a, b))`.
+"""
+function min_max(a, b)
+    if b < a
+        return b, a
+    else
+        return a, b
+    end
+end
+
+"""
+    min_med_max(a, b, c)
+
+Returns `(min(a, b, c), med(a, b, c), max(a, b, c)), where `med(a, b, c)`
+is the value that is neither `min(a, b, c)` or `max(a, b, c)`.
+"""
+function min_med_max(a, b, c)
+    b, c = min_max(b, c)
+    a, c = min_max(a, c)
+    a, b = min_max(a, b)
+    return a, b, c
+end
+
+"""
+    balanced_power_of_two_ternary_split(ℓ)
+
+Compute the the power of two that is closest 
+to `ℓ/3` or to `ℓ/1.5`.
+"""
+function balanced_power_of_two_ternary_split(ℓ)
+    balanced_split = 1.0
+    while ℓ > 3balanced_split
+        balanced_split = 2balanced_split
+    end
+    while ℓ < 1.5balanced_split
+        balanced_split = 0.5balanced_split
+    end
+    return balanced_split
+end
+
+"""
+    balanced_power_of_two_quarternary_split(ℓ)
+
+Compute the the power of two that is closest
+to `ℓ/4` or to `ℓ/0.5`.
+"""
+function balanced_power_of_two_quarternary_split(ℓ)
+    balanced_split = 1.0
+    while ℓ > 4balanced_split
+        balanced_split = 2balanced_split
+    end
+    while ℓ < 2balanced_split
+        balanced_split = 0.5balanced_split
+    end
+    return balanced_split
+end
+
+function nearest_power_of_two(ℓ)
+    ispow2(ℓ) && return ℓ
+    z = log2(ℓ)
+    z⁺ = ceil(z)
+    z⁻ = floor(z)
+    if abs(ℓ - 2^z⁺) < abs(ℓ - 2^z⁻)
+        return 2^z⁺
+    else
+        return 2^z⁻
+    end
+end
+
+"""
+    segment_vertices_adjoin_other_segments(tri::Triangulation, e)
+
+Test if the segment `e`'s vertices adjoin other segments. Returns:
+
+- `0`: No vertex adjoins another segment.
+- `1`: One vertex adjoins another segment.
+- `2`: Both vertices adjoin another segment.
+"""
+function segment_vertices_adjoin_other_segments(tri::Triangulation, e)
+    u, v = edge_indices(e)
+    count = 0
+    for w in get_neighbours(tri, u)
+        if w ≠ v
+            if contains_constrained_edge(tri, u, w)
+                count += 1
+                break
+            end
+        end
+    end
+    for w in get_neighbours(tri, v)
+        if w ≠ u
+            if contains_constrained_edge(tri, v, w)
+                count += 1
+                break
+            end
+        end
+    end
+    return count
+end
+
+"""
+    edge_lies_on_two_distinct_segments(tri::Triangulation, e)
+
+Tests if the edge `(i, j)` lies on two distinct segments. The returned value is:
+
+- `(true, common_vertex)`: If `e` lies on two distinct segments, and the common vertex is `common_vertex`.
+- `(false, 0)`: Otherwise.
+
+If there are multiple common vertices. In this case, the function returns the vertex that is closest to `e`.
+"""
+function edge_lies_on_two_distinct_segments(tri::Triangulation, i, j)
+    # Need to eventually make this non-allocating by being a bit more 
+    # clever with the geometry
+    I = integer_type(tri)
+    i_segments = Set{I}()
+    for u in get_neighbours(tri, i)
+        if u ≠ j
+            if contains_constrained_edge(tri, i, u)
+                push!(i_segments, u)
+            end
+        end
+    end
+    isempty(i_segments) && return false, I(0)
+    j_segments = Set{I}()
+    for u in get_neighbours(tri, j)
+        if u ≠ i
+            if contains_constrained_edge(tri, j, u)
+                push!(j_segments, u)
+            end
+        end
+    end
+    isempty(j_segments) && return false, I(0)
+    intersect!(i_segments, j_segments)
+    if length(i_segments) == 0
+        return false, I(0)
+    elseif length(i_segments) == 1
+        return true, first(i_segments)
+    else
+        F = number_type(tri)
+        p, q = get_point(tri, i, j)
+        px, py = getxy(p)
+        qx, qy = getxy(q)
+        min_dist = typemax(F)
+        min_idx = I(0)
+        for k in i_segments
+            r = get_point(tri, k)
+            rx, ry = getxy(r)
+            δ = squared_distance_to_segment(px, py, qx, qy, rx, ry)
+            if δ < min_dist
+                min_dist = δ
+                min_idx = k
+            end
+        end
+        return true, min_idx
+    end
+end
+

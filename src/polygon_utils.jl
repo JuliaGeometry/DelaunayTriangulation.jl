@@ -1,94 +1,11 @@
 """
-    Cell{T}
-
-A cell in a grid. The cell is a square with side length `2half_width`. The cell is centered at `(x, y)`. The cell is 
-assumed to live in a polygon.
-
-# Fields 
-- `x::T`
-
-The x-coordinate of the center of the cell.
-- `y::T`
-
-The y-coordinate of the center of the cell.
-- `half_width::T`
-
-The half-width of the cell.
-- `dist::T`
-
-The distance from the center of the cell to the polygon.
-- `max_dist::T`
-
-The maximum distance from the center of the cell to the polygon. This is `dist + half_width * sqrt(2)`.
-
-# Constructors
-    `Cell(x::T, y::T, half_width::T, pts, boundary_nodes)`
-
-Constructs a cell with center `(x, y)` and half-width `half_width`. The cell is assumed to live in the polygon defined by `pts` and `boundary_nodes`.
-"""
-struct Cell{T}
-    x::T
-    y::T
-    half_width::T
-    dist::T
-    max_dist::T
-    function Cell(x::T, y::T, half_width::T, pts, boundary_nodes) where {T}
-        dist = distance_to_polygon((x, y), pts, boundary_nodes)
-        max_dist = dist + half_width * sqrt(2)
-        return new{T}(x, y, half_width, dist, max_dist)
-    end
-end
-getx(c::Cell) = c.x
-gety(c::Cell) = c.y
-Base.:(<)(p::Cell, q::Cell) = p.max_dist < q.max_dist
-Base.:(==)(p::Cell, q::Cell) = p.max_dist == q.max_dist
-function Base.hash(cell::Cell, h::UInt)
-    #= 
-    If you remove this definition and run the test labelled "A previously broken example" 
-    in test/polygon_utils.jl, you get an error where two cells that would typically be == 
-    are added into the CellQueue, and so we get a BoundsError since they both map to an index 
-    "9", but you end up with only eight keys. This seems to fix it. 
-    =#
-    h = hash(cell.max_dist, h)
-    return hash(Cell, h)
-end
-
-"""
-    CellQueue{T}
-
-A struct representing the priority queue of [`Cell`](@ref)s, using for sorting the cells in a grid
-according to their maximum distance.
-
-# Fields
-- `queue::PriorityQueue{Cell{T},T,typeof(Base.Order.Reverse)}`
-
-The priority queue of cells.
-
-# Constructors
-    CellQueue{T}()
-
-Constructs a new `CellQueue` with elements of type `Cell{T}`.
-"""
-struct CellQueue{T} # Could a heap be used for this? Duplicate keys could show up...
-    queue::PriorityQueue{Cell{T},T,typeof(Base.Order.Reverse)}
-    function CellQueue{T}() where {T}
-        return new{T}(PriorityQueue{Cell{T},T,typeof(Base.Order.Reverse)}(Base.Order.Reverse))
-    end
-end
-@inline function insert_cell!(queue::CellQueue, cell::Cell)
-    return cell ∉ keys(queue.queue) && enqueue!(queue.queue, cell, cell.max_dist)
-end
-@inline get_next_cell!(queue::CellQueue) = dequeue!(queue.queue)
-@inline Base.isempty(queue::CellQueue) = Base.isempty(queue.queue)
-
-"""
     polygon_features(pts, boundary_nodes)
 
 Returns features of the polygon represented by the points `pts` with `boundary_nodes` defining the polygon 
 connections. The features returned are `(a, c)`, where `a` is the area of the polygon and 
 `c = (cx, cy)` is the centroid. 
 
-!!! notes 
+!!! note 
 
     - The polygon is assumed to be simple, i.e. no self-intersections.
     - The function works with holes, provided `boundary_nodes` represents these as described in the documentation.
@@ -255,15 +172,31 @@ function distance_to_polygon_multiple_curves(q, pts, boundary_nodes)
 end
 
 """
-    polygon_bounds(pts, boundary_nodes)
+    polygon_bounds(pts, boundary_nodes, check_all_curves = Val(false))
 
 Given a polygon represented by the points `pts` with `boundary_nodes` defining the polygon 
 connections, returns a bounding box of the polygon. The bounding box is returned 
-in the order `(xmin, xmax, ymin, ymax)`.
+in the order `(xmin, xmax, ymin, ymax)`. If your polygon is not a multiple polygon, 
+`check_all_curves = Val(false)` is sufficient, otherwise you might want to use `Val(true)`.
 """
-function polygon_bounds(pts, boundary_nodes)
+function polygon_bounds(pts, boundary_nodes, check_all_curves=Val(false))
     if has_multiple_curves(boundary_nodes)
-        return polygon_bounds_multiple_segments(pts, get_boundary_nodes(boundary_nodes, 1)) # 1 is the outermost boundary
+        if !is_true(check_all_curves)
+            return polygon_bounds_multiple_segments(pts, get_boundary_nodes(boundary_nodes, 1)) # 1 is the outermost boundary, unless you have a multiple polygon 
+        else
+            F = number_type(number_type(pts))
+            xmin, xmax, ymin, ymax = typemax(F), typemin(F), typemax(F), typemin(F)
+            nc = num_curves(boundary_nodes)
+            for i in 1:nc
+                bn = get_boundary_nodes(boundary_nodes, i)
+                xminᵢ, xmaxᵢ, yminᵢ, ymaxᵢ = polygon_bounds_multiple_segments(pts, bn)
+                xmin = min(xminᵢ, xmin)
+                xmax = max(xmaxᵢ, xmax)
+                ymin = min(yminᵢ, ymin)
+                ymax = max(ymaxᵢ, ymax)
+            end
+            return xmin, xmax, ymin, ymax
+        end
     elseif has_multiple_segments(boundary_nodes)
         return polygon_bounds_multiple_segments(pts, boundary_nodes)
     else
@@ -310,7 +243,7 @@ control the tolerance of the returned pole using `precision`.
 
 This function is also commonly called `polylabel`.
 
-!!! notes 
+!!! note 
 
     The pole of inaccessibility is a point within a polygon that is furthest from an 
     edge. It is useful for our purposes since it is a representative point that is 

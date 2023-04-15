@@ -29,7 +29,6 @@ global tri = Triangulation(pts; IntegerType=Int32)
             DT.get_empty_representative_points())
 end
 
-include("../helper_functions.jl")
 _x, _y = complicated_geometry()
 global x = _x
 global y = _y
@@ -407,6 +406,10 @@ end
             @test get_point(tri1, 3) == (13.7, 5.0)
             DT.push_point!(tri1, (19.0, 17.05))
             @test get_points(tri1) == [(1.0, 2.0), (3.0, 4.0), (13.7, 5.0), (19.0, 17.05)]
+            DT.pop_point!(tri1)
+            @test get_points(tri1) == [(1.0, 2.0), (3.0, 4.0), (13.7, 5.0)]
+            DT.pop_point!(tri1)
+            @test get_points(tri1) == [(1.0, 2.0), (3.0, 4.0)]
       end
 
       @testset "Miscellaneous" begin
@@ -645,6 +648,8 @@ end
       tri4 = triangulate_rectangle(0, 1, 0, 1, 50, 50; add_ghost_triangles=true, single_boundary=true)
       all_bn = DT.get_all_boundary_nodes(tri4)
       @test all_bn == Set(reduce(vcat, reduce(vcat, get_boundary_nodes(tri4))))
+      tri = triangulate(rand(2, 50))
+      @test isempty(DT.get_all_boundary_nodes(tri))
 end
 
 @testset "get_boundary_edge_map" begin
@@ -700,6 +705,80 @@ end
       @test DT.get_boundary_edge_map(tri_4, 6, 1200) == (1, 6)
       @test DT.get_boundary_edge_map(tri_4, 1200, 7) == (1, 7)
       @test_throws KeyError DT.get_boundary_edge_map(tri_4, 6, 7)
+end
+
+@testset "merge_boundary_edge!" begin
+      x, y = complicated_geometry()
+      tri_1 = generate_mesh(x, y, 0.1; convert_result=true, add_ghost_triangles=true)
+      tri_2 = generate_mesh(x[1], y[1], 0.1; convert_result=true, add_ghost_triangles=true)
+      tri_3 = generate_mesh([0.0, 2.0, 2.0, 0.0, 0.0], [0.0, 0.0, 2.0, 2.0, 0.0], 0.1; convert_result=true, add_ghost_triangles=true)
+      tri_4 = generate_mesh(reverse(reverse.(x[2])), reverse(reverse.(y[2])), 0.1; convert_result=true, add_ghost_triangles=true)
+
+      orig_bn = deepcopy(get_boundary_nodes(tri_1))
+      orig_bnn = deepcopy(get_boundary_edge_map(tri_1))
+      DT.split_boundary_edge!(tri_1, (129, 130), 17)
+      @test get_boundary_nodes(tri_1) ≠ orig_bn
+      @test get_boundary_edge_map(tri_1) ≠ orig_bnn
+      DT.merge_boundary_edge!(tri_1, (129, 130), 17)
+      @test get_boundary_nodes(tri_1) == orig_bn
+      @test get_boundary_edge_map(tri_1) == orig_bnn
+      @test_throws KeyError DT.get_boundary_edge_map(tri_1, 129, 17)
+      @test_throws KeyError DT.get_boundary_edge_map(tri_1, 17, 130)
+
+      orig_bn = deepcopy(get_boundary_nodes(tri_1))
+      orig_bnn = deepcopy(get_boundary_edge_map(tri_1))
+      DT.split_boundary_edge!(tri_1, (266, 267), 50)
+      @test get_boundary_nodes(tri_1) ≠ orig_bn
+      @test get_boundary_edge_map(tri_1) ≠ orig_bnn
+      DT.merge_boundary_edge!(tri_1, (266, 267), 50)
+      @test get_boundary_nodes(tri_1) == orig_bn
+      @test get_boundary_edge_map(tri_1) == orig_bnn
+      @test_throws KeyError DT.get_boundary_edge_map(tri_1, 266, 50)
+      @test_throws KeyError DT.get_boundary_edge_map(tri_1, 50, 267)
+
+      orig_bn = deepcopy(get_boundary_nodes(tri_1))
+      orig_bnn = deepcopy(get_boundary_edge_map(tri_1))
+      DT.split_boundary_edge!(tri_1, (373, 374), 1777)
+      @test get_boundary_nodes(tri_1) ≠ orig_bn
+      @test get_boundary_edge_map(tri_1) ≠ orig_bnn
+      DT.merge_boundary_edge!(tri_1, (373, 374), 1777)
+      @test get_boundary_nodes(tri_1) == orig_bn
+      @test get_boundary_edge_map(tri_1) == orig_bnn
+      @test_throws KeyError DT.get_boundary_edge_map(tri_1, 373, 1777)
+      @test_throws KeyError DT.get_boundary_edge_map(tri_1, 1777, 374)
+
+      orig_bn = deepcopy(get_boundary_nodes(tri_2))
+      orig_bnn = deepcopy(get_boundary_edge_map(tri_2))
+      DT.split_boundary_edge!(tri_2, 87, 7, 8182)
+      @test get_boundary_nodes(tri_2) ≠ orig_bn
+      @test get_boundary_edge_map(tri_2) ≠ orig_bnn
+      DT.merge_boundary_edge!(tri_2, 87, 7, 8182)
+      @test get_boundary_nodes(tri_2) == orig_bn
+      @test get_boundary_edge_map(tri_2) == orig_bnn
+      @test_throws KeyError DT.get_boundary_edge_map(tri_2, 87, 8182)
+      @test_throws KeyError DT.get_boundary_edge_map(tri_2, 8182, 7)
+
+      orig_bn = deepcopy(get_boundary_nodes(tri_3))
+      orig_bnn = deepcopy(get_boundary_edge_map(tri_3))
+      DT.split_boundary_edge!(tri_3, 79, 80, 18289)
+      @test get_boundary_nodes(tri_3) ≠ orig_bn
+      @test get_boundary_edge_map(tri_3) ≠ orig_bnn
+      DT.merge_boundary_edge!(tri_3, 79, 80, 18289)
+      @test get_boundary_nodes(tri_3) == orig_bn
+      @test get_boundary_edge_map(tri_3) == orig_bnn
+      @test_throws KeyError DT.get_boundary_edge_map(tri_3, 79, 18289)
+      @test_throws KeyError DT.get_boundary_edge_map(tri_3, 18289, 80)
+
+      orig_bn = deepcopy(get_boundary_nodes(tri_4))
+      orig_bnn = deepcopy(get_boundary_edge_map(tri_4))
+      DT.split_boundary_edge!(tri_4, 6, 7, 1200)
+      @test get_boundary_nodes(tri_4) ≠ orig_bn
+      @test get_boundary_edge_map(tri_4) ≠ orig_bnn
+      DT.merge_boundary_edge!(tri_4, 6, 7, 1200)
+      @test get_boundary_nodes(tri_4) == orig_bn
+      @test get_boundary_edge_map(tri_4) == orig_bnn
+      @test_throws KeyError DT.get_boundary_edge_map(tri_4, 6, 1200)
+      @test_throws KeyError DT.get_boundary_edge_map(tri_4, 1200, 7)
 end
 
 @testset "Random sampling of vertices" begin

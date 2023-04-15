@@ -199,7 +199,7 @@ end
 Given a graph `G`, deletes the triangle `(i, j, k)` deletes `G`. In particular, the 
 indices `(i, j, k)` will no longer be neighbours of each other.
 
-!!! notes
+!!! note
 
     Be careful with using this function - you could have a triangle `(j, i, ℓ)`, say, 
     which will also be affected since the graph is undirected. Note also 

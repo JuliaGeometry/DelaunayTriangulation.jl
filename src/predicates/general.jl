@@ -7,12 +7,12 @@ Returns `ExactPredicates.orient(p, q, r)`, in particular we return:
 - `0`: `(p, q, r)` is collinear / degenerate. 
 - `-1`: `(p, q, r)` is negatively oriented.
 
-!!! notes 
+!!! note 
 
 The orient predicate is defined by the determinant 
 
 ```math 
-\\text{orient}(p, q, r) = \\text{sgn} \\det \\begin{vmatrix} p_x & p_y & 1 \\\\ q_x & q_y & 1 \\\\ r_x & r_y & 1 \\end{vmatrix} = \\text{sgn} \\det \\begin{vmatrix} p_x-r_x & p_y-r_y \\ q_x-r_x & q_y-r_y \\end{vmatrix}.
+\\text{orient}(p, q, r) = \\text{sgn} \\det \\begin{vmatrix} p_x & p_y & 1 \\\\ q_x & q_y & 1 \\\\ r_x & r_y & 1 \\end{vmatrix} = \\text{sgn} \\det \\begin{vmatrix} p_x-r_x & p_y-r_y \\\\ q_x-r_x & q_y-r_y \\end{vmatrix}.
 ```
 """
 orient_predicate(p, q, r) = orient(getxy(p), getxy(q), getxy(r))
@@ -26,7 +26,7 @@ Returns `ExactPredicates.incircle(a, b, c, p)`, in particular we return:
 - `0`: If `p` is on the circle defined by `(a, b, c)`.
 - `-1`: If `p` is outside the circle defined by `(a, b, c)`.
 
-!!! notes 
+!!! note 
 
     The incircle predicate is defined by the determinant 
 
@@ -45,7 +45,7 @@ Returns `ExactPredicates.parallelorder(a, b, p, q)`, in particular we return:
 - `0`: `p` and `q` are equidistant from the line `(a, b)`.
 - `-1`: `p` is closer to the line `(a, b)` than `q`.
 
-!!! notes
+!!! note
 
     The parallelorder predicate is the same as `orient_predicate(b-a, q-p, 0)`.
 """
@@ -56,7 +56,7 @@ parallelorder_predicate(a, b, p, q) = parallelorder(getxy(a), getxy(b), getxy(p)
 
 Returns `ExactPredicates.sameside(p, a, b)` (but we redefine it here).
 
-!!! notes 
+!!! note 
 
     The difference in the argument order to ExactPredicates.jl is to match the convention that the 
     main point being tested is the last argument.
@@ -306,7 +306,7 @@ by `(a, b)`. The returned values are:
 - `Cert.On`: `p` is on the open line segment `(a, b)`.
 - `Cert.Inside`: `p` is inside of the oriented outer halfplane, meaning to the left of the line `(a, b)`.
 
-!!! notes 
+!!! note 
 
     The oriented outer halfplane is the union of the open halfplane defined by the region to the left of the oriented line `(a, b)`, and the open line segment `(a, b)`. 
 """

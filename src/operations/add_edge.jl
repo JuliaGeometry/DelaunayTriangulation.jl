@@ -12,10 +12,12 @@ function add_edge!(tri::Triangulation, segment; rng::AbstractRNG=Random.default_
         add_edge!(constrained_edges, e)
     end
     all_constrained_edges = get_all_constrained_edges(tri)
-    if !contains_edge(e, constrained_edges) || !contains_edge(reverse_edge(e), constrained_edges) # In case it isn't already in the list, let's make sure we add it
+    if !(contains_edge(e, constrained_edges) || contains_edge(reverse_edge(e), constrained_edges)) && !contains_boundary_edge(tri, segment) # In case it isn't already in the list, let's make sure we add it
         add_edge!(constrained_edges, e)
     end
-    add_edge!(all_constrained_edges, e)
+    if !contains_edge(reverse_edge(e), all_constrained_edges)
+        add_edge!(all_constrained_edges, e)
+    end
     if edge_exists(tri, e) || edge_exists(tri, reverse_edge(e)) # Don't need to add edges that already appear
         return nothing
     end
@@ -40,19 +42,6 @@ function process_collinear_segments!(all_constrained_edges, constrained_edges, e
         extend_segments!(collinear_segments, e)
         split_constrained_edge!(constrained_edges, e, collinear_segments)
         if contains_boundary_edge(tri, e)
-            #=
-            # I initially used the split_boundary_edge_at_collinear_segments! function for this, 
-            # but when we update all of the boundary edge information at once, it breaks the iteration.
-            v = terminal(last(collinear_segments))
-            for (k, η) in pairs(collinear_segments) # Note that collinear_segments is always a vector 
-                @show k, η
-                if k ≠ lastindex(collinear_segments)
-                    rₖ₋₁, rₖ = edge_indices(η)
-                    split_boundary_edge!(tri, rₖ₋₁, v, rₖ)
-                end
-                add_edge!(tri, η; rng)
-            end
-            =#
             split_boundary_edge_at_collinear_segments!(tri, collinear_segments)
         end
         for η in each_edge(collinear_segments)

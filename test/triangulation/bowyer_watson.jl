@@ -5,10 +5,7 @@ using StableRNGs
 using CairoMakie
 using DataStructures
 
-include("../test_setup.jl")
 include("../helper_functions.jl")
-
-save_path = basename(pwd()) == "test" ? "figures" : "test/figures"
 
 @testset "Getting the correct order" begin
     points = rand(2, 50)
@@ -104,12 +101,6 @@ end
     rng = StableRNG(8881)
     tri = DT.triangulate_bowyer_watson(points; rng, delete_ghosts=false)
     @inferred DT.triangulate_bowyer_watson(points; rng, delete_ghosts=false)
-    fig, ax, sc = triplot(tri; show_ghost_edges=true, recompute_centers=true,
-        show_convex_hull=true, convex_hull_color=:red,
-        convex_hull_linewidth=7)
-    xlims!(ax, -6, 12)
-    ylims!(ax, -6, 12)
-    SAVE_FIGURE && save("$save_path/test_bowyer_watson_1.png", fig)
     BI = DT.BoundaryIndex
     @test get_triangles(tri) == Set{NTuple{3,Int64}}(((3, 2, BI),
         (4, BI, 5),
@@ -129,12 +120,6 @@ end
 @testset "A random triangulation with a plot" begin
     pts = randn(2, 500)
     tri = DT.triangulate_bowyer_watson(pts; delete_ghosts=false)
-    fig, ax, sc = triplot(tri; show_ghost_edges=true, recompute_centers=true,
-        show_convex_hull=true, convex_hull_color=:red,
-        convex_hull_linewidth=7, convex_hull_linestyle=:solid)
-    xlims!(ax, -5.0, 5.0)
-    ylims!(ax, -5.0, 5.0)
-    SAVE_FIGURE && save("$save_path/test_bowyer_watson_2.png", fig)
     @test validate_triangulation(tri)
 end
 
@@ -336,6 +321,4 @@ end
     j = [1.5, 3.0]
     pts = [a, b, c, d, e, f, g, h, i, j]
     tri = DT.triangulate_bowyer_watson(pts; delete_ghosts=false)
-    fig, ax, sc, = triplot(tri)
-    SAVE_FIGURE && save("$save_path/small_example.png", fig)
 end

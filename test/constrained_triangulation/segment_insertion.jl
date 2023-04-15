@@ -114,6 +114,7 @@ end
     )
     @test any(T -> DT.compare_triangle_collections(get_triangles(tri), T), true_tri)
     push!(get_all_constrained_edges(tri), e)
+    push!(get_constrained_edges(tri), e)
     @test validate_triangulation(tri)
 
     e = (2, 11)
@@ -147,6 +148,7 @@ end
     ]
     @test DT.compare_triangle_collections(get_triangles(tri), true_tri)
     push!(get_all_constrained_edges(tri), e)
+    push!(get_constrained_edges(tri), e)
     @test validate_triangulation(tri)
 
     e = (1, 7)
@@ -180,6 +182,7 @@ end
     ]
     @test DT.compare_triangle_collections(get_triangles(tri), true_tri)
     push!(get_all_constrained_edges(tri), e)
+    push!(get_constrained_edges(tri), e)
     @test validate_triangulation(tri)
 end
 
@@ -196,6 +199,7 @@ end
             DT.add_new_triangles!(tri, _tri_1, _tri_2)
         end
         push!(get_all_constrained_edges(tri), e)
+        push!(get_constrained_edges(tri), e)
     end
     true_tri = [
         (14, 15, 17)

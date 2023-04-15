@@ -4,20 +4,12 @@ using CairoMakie
 import SimpleGraphs: relabel, UndirectedGraph
 using DataStructures
 
-include("../test_setup.jl")
-save_path = basename(pwd()) == "test" ? "figures" : "test/figures"
-
 include("../helper_functions.jl")
 
 global tri, label_map, index_map = simple_geometry()
 add_ghost_triangles!(tri)
 
 @testset "Deleting a triangle" begin
-    fig = Figure()
-    ax = Axis(fig[1, 1])
-    triplot!(ax, tri; recompute_centers=true, show_ghost_edges=true, ghost_edge_extension_factor=2.0)
-    xlims!(ax, -2, 22)
-    ylims!(ax, -2, 22)
     all_i = Set{NTuple{3,Int64}}()
     for (a, b, c) in [("a1", "f", "g"),
         ("a1", "g", "i"),
@@ -53,13 +45,6 @@ add_ghost_triangles!(tri)
             @test DT.contains_edge(k, i, DT.get_adjacent2vertex(tri, j))
         end
     end
-
-    ax = Axis(fig[1, 2])
-    triplot!(ax, tri; show_ghost_edges=true, ghost_edge_extension_factor=2.0)
-    xlims!(ax, -2, 22)
-    ylims!(ax, -2, 22)
-
-    SAVE_FIGURE && save("$save_path/test_delete_triangles.png", fig)
 end
 
 @testset "Simpler test" begin

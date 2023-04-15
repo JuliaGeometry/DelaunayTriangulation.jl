@@ -5,8 +5,6 @@ const DT = DelaunayTriangulation
 # using DataStructures
 using StableRNGs
 
-include("../test_setup.jl")
-
 include("../helper_functions.jl")
 
 #=

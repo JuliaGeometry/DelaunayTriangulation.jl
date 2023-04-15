@@ -26,3 +26,8 @@ rng = StableRNG(8888)
     @test get_convex_hull(tri) == get_convex_hull(_tri)
 end
 
+@testset "Returning the triangle" begin
+    tri = triangulate([rand(2) for _ in 1:50])
+    V = add_point!(tri, 0.5, 0.3)
+    @test DT.is_inside(DT.point_position_relative_to_triangle(tri, V..., (0.5, 0.3)))
+end

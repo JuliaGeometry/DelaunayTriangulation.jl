@@ -54,6 +54,32 @@ Pushes the point `p = (x, y)` into `get_points(tri0`.
 @inline push_point!(tri::Triangulation, x, y) = push_point!(get_points(tri), x, y)
 @inline push_point!(tri::Triangulation, p) = push_point!(get_points(tri), p)
 
+"""
+    pop_point!(tri::Triangulation)
+
+Pops the last point from `get_points(tri)`.
+
+!!! note
+
+    This does not remove the point from the triangulation itself. See [`delete_point!`](@ref) for this.
+"""
+@inline pop_point!(tri::Triangulation) = pop_point!(get_points(tri))
+
+
+"""
+    num_ghost_vertices(tri::Trianngulation)
+
+Returns the number of ghost vertices of `tri`.
+"""
+num_ghost_vertices(tri::Triangulation) = length(all_boundary_indices(tri))
+
+"""
+    num_solid_vertices(tri::Triangulation)
+
+Returns the number of solid vertices of `tri`.
+"""
+num_solid_vertices(tri::Triangulation) = num_vertices(tri) - num_ghost_vertices(tri)
+
 abstract type AbstractEachVertex{V} end
 Base.IteratorSize(::Type{<:AbstractEachVertex}) = Base.HasLength()
 Base.IteratorEltype(::Type{<:AbstractEachVertex{V}}) where {V} = Base.IteratorEltype(V)
@@ -64,12 +90,12 @@ struct EachSolidVertex{V,T} <: AbstractEachVertex{V}
     vertices::V
     tri::T
 end
-Base.length(verts::EachSolidVertex) = num_vertices(verts.tri) - length(all_boundary_indices(verts.tri)) * (integer_type(verts.tri)(BoundaryIndex) ∈ verts.vertices)
+Base.length(verts::EachSolidVertex) = num_solid_vertices(verts.tri)
 struct EachGhostVertex{V,T} <: AbstractEachVertex{V}
     vertices::V
     tri::T
 end
-Base.length(verts::EachGhostVertex) = length(all_boundary_indices(verts.tri))
+Base.length(verts::EachGhostVertex) = num_ghost_vertices(verts.tri)
 function Base.iterate(itr::EachSolidVertex, state...)
     vertices_state = iterate(itr.vertices, state...)
     vertices_state === nothing && return nothing
@@ -95,12 +121,12 @@ each_solid_vertex(tri) = EachSolidVertex(each_vertex(tri), tri)
     each_ghost_vertex(tri::Triangulation)
 
 Returns an iterator over the ghost vertices in the triangulation `tri`.
-""" 
+"""
 each_ghost_vertex(tri) = EachGhostVertex(all_boundary_indices(tri), tri)
 
 function Random.rand(rng::AbstractRNG, v::Random.SamplerTrivial{<:EachSolidVertex})
     itr = v[]
-    verts = itr.vertices 
+    verts = itr.vertices
     r = rand(rng, verts)
     while is_boundary_index(r)
         r = rand(rng, verts)
@@ -109,7 +135,7 @@ function Random.rand(rng::AbstractRNG, v::Random.SamplerTrivial{<:EachSolidVerte
 end
 function Random.rand(rng::AbstractRNG, v::Random.SamplerTrivial{<:EachGhostVertex})
     itr = v[]
-    verts = itr.vertices 
+    verts = itr.vertices
     r = rand(rng, verts)
     while !is_boundary_index(r)
         r = rand(rng, verts)

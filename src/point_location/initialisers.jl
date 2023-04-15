@@ -85,7 +85,7 @@ function prepare_initial_edge(pts, representative_point_list, boundary_map, edge
     return i, j, pᵢ, pⱼ, line_cert_i, line_cert_j
 end
 
-function select_initial_triangle_clockwise(pts, adj::Adjacent{I,E}, representative_point_list, boundary_map, p, q, pᵢ, pⱼ, i, j, k,
+function select_initial_triangle_clockwise(pts, adj::Adjacent{I,E}, graph, representative_point_list, boundary_map, p, q, pᵢ, pⱼ, i, j, k,
     boundary_index_ranges,
     check_existence::V=Val(has_multiple_segments(boundary_map)),
     store_history::F=Val(false),
@@ -94,7 +94,10 @@ function select_initial_triangle_clockwise(pts, adj::Adjacent{I,E}, representati
     if is_true(store_history) && is_collinear(line_cert_i)
         add_edge!(history, k, i)
     end
-    while is_left(line_cert_i)
+    nn = num_neighbours(graph, k)
+    iter = 0 # when we have concave geometries, sometimes we get stuck in an infinite loop
+    while is_left(line_cert_i) && iter ≤ nn + 1
+        iter += 1
         j = i
         pⱼ = pᵢ
         i = get_adjacent(adj, i, k; check_existence=check_existence,
@@ -105,10 +108,14 @@ function select_initial_triangle_clockwise(pts, adj::Adjacent{I,E}, representati
             add_edge!(history, k, i)
         end
     end
-    return i, j, pᵢ, pⱼ
+    if iter > nn + 1
+        return I(DefaultAdjacentValue), I(DefaultAdjacentValue), pᵢ, pⱼ
+    else
+        return i, j, pᵢ, pⱼ
+    end
 end
 
-function select_initial_triangle_counterclockwise(pts, adj::Adjacent{I,E}, representative_point_list, boundary_map, line_cert_j, p, q,
+function select_initial_triangle_counterclockwise(pts, adj::Adjacent{I,E}, graph, representative_point_list, boundary_map, line_cert_j, p, q,
     pᵢ, pⱼ, i, j, k, boundary_index_ranges,
     check_existence::V=Val(has_multiple_segments(boundary_map)),
     store_history::F=Val(false),
@@ -116,7 +123,10 @@ function select_initial_triangle_counterclockwise(pts, adj::Adjacent{I,E}, repre
     if is_true(store_history) && is_collinear(line_cert_j)
         add_edge!(history, k, j)
     end
-    while is_right(line_cert_j)
+    nn = num_neighbours(graph, k)
+    iter = 0 # when we have concave geometries, sometimes we get stuck in an infinite loop
+    while is_right(line_cert_j) && iter ≤ nn + 1
+        iter += 1
         i = j
         pᵢ = pⱼ
         j = get_adjacent(adj, k, j; check_existence=check_existence,
@@ -127,7 +137,11 @@ function select_initial_triangle_counterclockwise(pts, adj::Adjacent{I,E}, repre
             add_edge!(history, k, j)
         end
     end
-    return i, j, pᵢ, pⱼ
+    if iter > nn + 1
+        return I(DefaultAdjacentValue), I(DefaultAdjacentValue), pᵢ, pⱼ
+    else
+        return i, j, pᵢ, pⱼ
+    end
 end
 
 """
@@ -135,6 +149,7 @@ end
         pts, 
         adj, 
         adj2v, 
+        graph,
         representative_point_list, 
         boundary_map, 
         k, 
@@ -153,6 +168,7 @@ that `k` is a point that is not on the boundary.
 - `pts`: The set of points. 
 - `adj`: The [`Adjacent`](@ref) map.
 - `adj2v`: The [`Adjacent2Vertex`](@ref) map.
+- `graph`: The [`Graph`](@ref) of the triangulation.
 - `representative_point_list`: The list of representative points, giving the coordinates of points corresponding to boundary indices.
 - `boundary_map`: The map taking boundary indices to their corresponding segment in the boundary nodes. See [`construct_boundary_map`](@ref).
 - `k`: The index of the point in `pts` that we are starting at.
@@ -172,6 +188,7 @@ function select_initial_triangle_interior_node(
     pts,
     adj::Adjacent{I,E},
     adj2v::Adjacent2Vertex,
+    graph,
     representative_point_list,
     boundary_map,
     k,
@@ -222,13 +239,13 @@ function select_initial_triangle_interior_node(
 
     ## Now rotate around to find a triangle that the line pq intersects through 
     if is_left(line_cert_j)
-        i, j, pᵢ, pⱼ = select_initial_triangle_clockwise(pts, adj, representative_point_list, boundary_map, p, q, pᵢ,
+        i, j, pᵢ, pⱼ = select_initial_triangle_clockwise(pts, adj, graph, representative_point_list, boundary_map, p, q, pᵢ,
             pⱼ, i, j, k, boundary_index_ranges,
             check_existence,
             store_history,
             history)
     else
-        i, j, pᵢ, pⱼ = select_initial_triangle_counterclockwise(pts, adj, representative_point_list, boundary_map,
+        i, j, pᵢ, pⱼ = select_initial_triangle_counterclockwise(pts, adj, graph, representative_point_list, boundary_map,
             line_cert_j, p, q, pᵢ, pⱼ,
             i, j, k,
             boundary_index_ranges,
@@ -251,7 +268,8 @@ end
         boundary_map, 
         k, 
         q, 
-        check_existence = Val(has_multiple_segments(boundary_map)))
+        check_existence = Val(has_multiple_segments(boundary_map)),
+        bnd_idx=I(BoundaryIndex))
 
 Assuming that `k` is on the outer boundary, this function searches down the boundary edges adjacent to `k` to try and locate a triangle 
 or edge containing `q`.
@@ -267,6 +285,7 @@ straight boundary in case `q` is collinear with it.
 - `k`: The outer boundary point `k` to start searching from.
 - `q`: The query point `q`.
 - `check_existence`: The same keyword argument from [`get_adjacent`](@ref), and is needed when you use multiple segments in your boundary.
+- `bnd_idx=I(BoundaryIndex)`: The boundary index for the boundary that `k` is on.
 
 # Outputs 
 The output is a 5-tuple, with the first three elements having several possible forms:
@@ -292,11 +311,12 @@ function check_for_intersections_with_adjacent_boundary_edges(
     boundary_map,
     k,
     q,
-    check_existence::V=Val(has_multiple_segments(boundary_map))) where {I,E,V}
+    check_existence::V=Val(has_multiple_segments(boundary_map)),
+    bnd_idx=I(BoundaryIndex)) where {I,E,V}
     p = get_point(pts, representative_point_list, boundary_map, k)
-    right = get_right_boundary_node(adj, k, I(BoundaryIndex), boundary_index_ranges,
+    right = get_right_boundary_node(adj, k, bnd_idx, boundary_index_ranges,
         check_existence)
-    left = get_left_boundary_node(adj, k, I(BoundaryIndex), boundary_index_ranges,
+    left = get_left_boundary_node(adj, k, bnd_idx, boundary_index_ranges,
         check_existence)
     pright, pleft = get_point(pts, representative_point_list, boundary_map, right, left)
     right_cert = point_position_relative_to_line(p, pright, q)
@@ -334,7 +354,8 @@ end
         next_vertex,
         check_existence=Val(has_multiple_segments(boundary_map)),
         store_history=Val(false),
-        history=nothing) 
+        history=nothing,
+        bnd_idx=I(BoundaryIndex)) 
 
 Starting at the outer boundary node `k`, walks down the boundary in the direction of `q` until finding `q` or finding that it is outside of the triangulation. 
 
@@ -352,6 +373,7 @@ Starting at the outer boundary node `k`, walks down the boundary in the directio
 - `check_existence=Val(has_multiple_segments(boundary_map))`: The same keyword argument from [`get_adjacent`](@ref), and is needed when you use multiple segments in your boundary.
 - `store_history=Val(false)`: Whether to store the history of the search.
 - `history=nothing`: The history of the search.
+- `bnd_idx=I(BoundaryIndex)`: The boundary index for the boundary that `k` is on.
 
 # Outputs 
 The output takes the form `(cert, u, v, w)`, where: 
@@ -376,7 +398,8 @@ function search_down_adjacent_boundary_edges(
     next_vertex,
     check_existence::V=Val(has_multiple_segments(boundary_map)),
     store_history::F=Val(false),
-    history=nothing) where {I,E,V,F}
+    history=nothing,
+    bnd_idx=I(BoundaryIndex)) where {I,E,V,F}
     i = k
     j = next_vertex
     pⱼ = get_point(pts, representative_point_list, boundary_map, j)
@@ -388,7 +411,7 @@ function search_down_adjacent_boundary_edges(
         end
         while is_right(q_pos)
             i, pᵢ = j, pⱼ
-            j = get_right_boundary_node(adj, i, I(BoundaryIndex), boundary_index_ranges, check_existence)
+            j = get_right_boundary_node(adj, i, bnd_idx, boundary_index_ranges, check_existence)
             if is_true(store_history)
                 k′ = get_adjacent(adj, i, j; check_existence, boundary_index_ranges)
                 add_triangle!(history, i, j, k′)
@@ -412,7 +435,7 @@ function search_down_adjacent_boundary_edges(
         end
         while is_left(q_pos)
             i, pᵢ = j, pⱼ
-            j = get_left_boundary_node(adj, i, I(BoundaryIndex), boundary_index_ranges, check_existence)
+            j = get_left_boundary_node(adj, i, bnd_idx, boundary_index_ranges, check_existence)
             if is_true(store_history)
                 k′ = get_adjacent(adj, j, i; check_existence, boundary_index_ranges)
                 add_triangle!(history, j, i, k′)
@@ -446,7 +469,8 @@ end
         left_cert, 
         check_existence=Val(has_multiple_segments(boundary_map)), 
         store_history=Val(false), 
-        history=nothing)
+        history=nothing,
+        bnd_idx=I(BoundaryIndex))
 
 Checks if the line connecting the `k`th point of `pts` to `q` intersects any of the edges neighbouring the boundary node `k`.
 
@@ -464,6 +488,7 @@ Checks if the line connecting the `k`th point of `pts` to `q` intersects any of 
 - `check_existence=Val(has_multiple_segments(boundary_nodes)))`: Checks for different possible boundary indices when there are multiple segments. See [`get_adjacent`](@ref).
 - `store_history=Val(false)`: Whether to store visited triangles. Exterior ghost triangles will not be stored.
 - `history=nothing`: The history. This should be a [`PointLocationHistory`](@ref) type if `store_history` is `true`.
+- `bnd_idx=I(BoundaryIndex)`: The boundary index for the boundary that `k` is on.
 
 # Outputs 
 There are several possible forms for the returned values. These are listed below, letting `p` be the `k`th point, `pᵢ` the point corresponding to 
@@ -496,18 +521,19 @@ function check_for_intersections_with_interior_edges_adjacent_to_boundary_node(
     boundary_index_ranges,
     representative_point_list,
     boundary_map,
-    k, 
+    k,
     q,
     right_cert,
     left_cert,
     check_existence::V=Val(has_multiple_segments(boundary_map)),
     store_history::F=Val(false),
-    history=nothing) where {I,E,V,F}
+    history=nothing,
+    bnd_idx=I(BoundaryIndex)) where {I,E,V,F}
     p = get_point(pts, representative_point_list, boundary_map, k)
-    other_boundary_node = get_left_boundary_node(adj, k, I(BoundaryIndex),
+    other_boundary_node = get_left_boundary_node(adj, k, bnd_idx,
         boundary_index_ranges, check_existence)
     num_interior_neighbours = num_neighbours(graph, k) - 3 # - 3 = - the two boundary neighbours - BoundaryIndex
-    i = get_right_boundary_node(adj, k, I(BoundaryIndex), boundary_index_ranges,
+    i = get_right_boundary_node(adj, k, bnd_idx, boundary_index_ranges,
         check_existence)
     pᵢ = get_point(pts, representative_point_list, boundary_map, i)
     certᵢ = right_cert # Do not need to check if is_collinear(certᵢ) - this function should only be used after checking check_for_intersections_with_adjacent_boundary_edges anyway

@@ -18,28 +18,25 @@ makedocs(;
         "Triangulations" => [
             "Unconstrained Triangulations" => "triangulations/unconstrained.md",
             "Constrained Triangulations" => "triangulations/constrained.md",
+            "Mesh Refinement" => "triangulations/refinement.md",
             "Lattice" => "triangulations/lattice.md",
             "Gmsh" => "triangulations/gmsh.md",
             "Plotting" => "triangulations/plotting.md",
             "Convex Polygons" => "triangulations/convex.md"
         ],
-        "Triangulation Algorithms" => [
-            "Bowyer-Watson Algorithm" => "tri_algs/bowyer.md",
-            "Chew's Algorithm for Triangulating Convex Polygons" => "tri_algs/convex.md",
-            "Constrained Triangulations" => "tri_algs/constrained.md",
-        ],
-        "Ghost Triangles, Boundary Handling, and Boundary Specification" => "boundary_handling.md",
-        "Other Features" => [
-            "Point Location" => "other_features/point_location.md",
-            "Pole of Inaccessibility and Polygons" => "other_features/pole_of_inaccessibility.md",
-            "Convex Hull" => "other_features/convex_hull.md"
-        ],
+        "Boundary Handling" => "boundary_handling.md",
         "Data Structures" => [
             "Adjacent" => "data_structures/adjacent.md",
             "Adjacent2Vertex" => "data_structures/adjacent2vertex.md",
             "Graph" => "data_structures/graph.md",
             "Convex Hull" => "data_structures/convex_hull.md",
             "Triangulation" => "data_structures/triangulation.md"
+        ],
+        "Operations" => "operations.md",
+        "Other Features" => [
+            "Point Location" => "other_features/point_location.md",
+            "Pole of Inaccessibility and Polygons" => "other_features/pole_of_inaccessibility.md",
+            "Convex Hull" => "other_features/convex_hull.md"
         ],
         "Primitive Interfaces" => [
             "General and Defaults" => "interface/interface.md",
@@ -49,8 +46,12 @@ makedocs(;
             "Boundary Nodes" => "interface/boundary_nodes.md",
             "Example" => "interface/example.md"],
         "Predicates" => "predicates.md",
-        "Operations" => "operations.md",
-        "Other Utilities" => "utils.md"
+        "Other Utilities" => "utils.md",
+        "Triangulation Algorithms" => [
+            "Bowyer-Watson Algorithm" => "tri_algs/bowyer.md",
+            "Chew's Algorithm for Triangulating Convex Polygons" => "tri_algs/convex.md",
+            "Constrained Triangulations" => "tri_algs/constrained.md",
+        ]
     ])
 
 deploydocs(;

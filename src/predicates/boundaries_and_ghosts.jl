@@ -13,7 +13,7 @@ is_boundary_index(i) = false # In case we provide a point instead of an integer
 Tests if the edge `(i, j)` is a boundary edge, meaning `get_adjacent(adj, i, j)` 
 is a boundary index.
 
-!!! notes 
+!!! note 
 
     The orientation of `(i, j)` is important: even if `(i, j)` is an edge 
     on the boundary, if there is a triangle `(i, j, k)` in the triangulation then `(i, j)`
@@ -31,7 +31,7 @@ end
 
 Given a triangle `T = (i, j, k)` and an adjacent map `adj`, returns `true` if `T` is a boundary triangle. 
 
-!!! notes 
+!!! note 
 
     A boundary triangle is still part of the triangulation, but it has at least one edge that
     forms part of the boundary (so that at least one of the edges `(u, v)` satisfies 
@@ -55,7 +55,7 @@ end
 
 Given an edge `(i, j)`, returns `true` if `(i, j)` is a ghost edge. 
 
-!!! notes
+!!! note
 
     A ghost edge is an edge in which either `is_boundary_index(i)` or `is_boundary_index(j)` is true.
 """
@@ -69,7 +69,7 @@ is_ghost_edge(ij) = is_ghost_edge(initial(ij), terminal(ij))
 Given a triangle `T = (i, j, k)`, returns `true` if `T` is a 
 ghost triangle and `false` otherwise. 
 
-!!! notes 
+!!! note 
 
     A ghost triangle is one in which any of the vertices `(i, j, k)`
     are a boundary index, as tested via [`is_boundary_index`](@ref).
@@ -161,7 +161,7 @@ Tests if `i` is a node appearing on the boundary.
 - `boundary_index_ranges`: A dictionary from [`construct_boundary_index_ranges`](@ref).
 
 # Outputs 
-- `is_outer_boundary_node`: A Boolean indicating whether `i` is a node on the boundary.
+- `is_boundary_node`: A Boolean indicating whether `i` is a node on the boundary.
 - `boundary_index`: The boundary index of the boundary to which `i` belongs. If there is no such boundary, `boundary_index = I(DefaultAdjacentValue)`.
 
 See also [`is_outer_boundary_node`](@ref).

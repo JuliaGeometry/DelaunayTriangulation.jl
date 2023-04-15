@@ -15,7 +15,9 @@ Returns the number of triangles in `tri`, including ghost triangles.
 """
     each_triangle(tri::Triangulation)
 
-Returns an iterator over each triangle in `tri`.
+Returns an iterator over each triangle in `tri`. This iterator could include ghost triangles. 
+
+See also [`each_solid_triangle`](@ref) and [`each_ghost_triangle`](@ref).
 """
 @inline each_triangle(tri::Triangulation) = each_triangle(get_triangles(tri))
 
@@ -44,17 +46,17 @@ end
 Returns the number of ghost triangles in `tri`.
 """
 @inline function num_ghost_triangles(tri::Triangulation)
-    if !has_ghost_triangles(tri)
-        return 0
-    else
+    if has_ghost_triangles(tri)
         num_ghosts = 0
         all_bnd_idx = all_boundary_indices(tri)
         for i in all_bnd_idx
             S = get_adjacent2vertex(tri, i)
             num_ghosts += num_edges(S)
         end
-        return num_ghosts
+    else
+        num_ghosts = 0
     end
+    return num_ghosts
 end
 
 """
@@ -92,6 +94,7 @@ function Base.iterate(itr::EachSolidTriangle, state...)
     return tri, state
 end
 function Base.iterate(itr::EachGhostTriangle, state...)
+    !has_ghost_triangles(itr.tri) && return nothing
     tri_state = iterate(itr.triangles, state...)
     tri_state === nothing && return nothing
     tri, state = tri_state

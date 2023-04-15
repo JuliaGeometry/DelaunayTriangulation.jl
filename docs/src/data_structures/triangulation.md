@@ -70,6 +70,8 @@ contains_boundary_edge(::Triangulation, ::Any)
 merge_constrained_edges(::Any, ::Any, ::Es) where {Es}
 get_all_boundary_nodes(::Triangulation)
 all_boundary_indices(::Triangulation)
+delete_boundary_node!(::Triangulation, ::Any)
+merge_boundary_node!(::Triangulation, ::Any, ::Any)
 ```
 
 ## Convex Hull Methods
@@ -122,6 +124,8 @@ num_points(::Triangulation)
 push_point!(::Triangulation, ::Any, ::Any)
 each_solid_vertex 
 each_ghost_vertex
+num_solid_vertices 
+num_ghost_vertices
 ```
 
 ## Triangles Methods

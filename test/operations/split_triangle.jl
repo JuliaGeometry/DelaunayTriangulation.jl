@@ -199,3 +199,51 @@ include("../helper_functions.jl")
         @test (get_graph ∘ get_graph)(tri) == true_DG
     end
 end
+
+@testset "complete_split_triangle_and_legalise!, also with constrained edges" begin
+    for _ in 1:100
+        tri = fixed_shewchuk_example_constrained()
+        function test_fnc(tri, i, j, k)
+            p, q, r = get_point(tri, i, j, k)
+            c = DT.triangle_centroid(p, q, r)
+            DT.push_point!(tri, c)
+            DT.complete_split_triangle_and_legalise!(tri, i, j, k, num_points(tri))
+            validate_statistics(tri)
+            return validate_triangulation(tri)
+        end
+        @test test_fnc(tri, 10, 5, 8)
+        @test test_fnc(tri, 4, 5, 9)
+        @test test_fnc(tri, 9, 13, 12)
+        @test test_fnc(tri, 9, 13, 14)
+        @test test_fnc(tri, 10, 12, 11)
+        @test test_fnc(tri, 3, 4, 10)
+        @test test_fnc(tri, 17, 4, 9)
+        @test test_fnc(tri, 10, 18, 9)
+        @test test_fnc(tri, 10, 19, 9)
+        @test test_fnc(tri, 16, 14, 12)
+        @test test_fnc(tri, 16, 12, 8)
+        @test test_fnc(tri, 10, 17, 19)
+        @test test_fnc(tri, 3, 17, 10)
+        @test test_fnc(tri, 3, 2, 17)
+        add_edge!(tri, 4, 21)
+        i, j, k = 21, 9, 4
+        p, q, r = get_point(tri, i, j, k)
+        c = DT.triangle_centroid(p, q, r)
+        DT.push_point!(tri, c)
+        DT.complete_split_triangle_and_legalise!(tri, i, j, k, num_points(tri))
+        validate_statistics(tri)
+        @test validate_triangulation(tri)
+        @test DT.contains_constrained_edge(tri, 4, 21)
+        @test DT.edge_exists(tri, 4, 21) && DT.edge_exists(tri, 21, 4)
+        add_edge!(tri, 1, 11)
+        i, j, k = 11, 1, 9
+        p, q, r = get_point(tri, i, j, k)
+        c = DT.triangle_centroid(p, q, r)
+        DT.push_point!(tri, c)
+        DT.complete_split_triangle_and_legalise!(tri, i, j, k, num_points(tri))
+        validate_statistics(tri)
+        @test validate_triangulation(tri)
+        @test DT.contains_constrained_edge(tri, 1, 11)
+        @test DT.edge_exists(tri, 1, 11) && DT.edge_exists(tri, 11, 1)
+    end
+end

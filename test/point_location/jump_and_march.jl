@@ -62,6 +62,7 @@ boundary_nodes = get_boundary_nodes(tri)
     for _ in 1:36
         for k in each_point_index(pts)
             for i in eachindex(allq)
+                @show i, k
                 T1 = jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges, rep, boundary_map,
                     allq[i]; k)
                 T2 = jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges, rep, boundary_map,
@@ -271,3 +272,47 @@ end
     @test history.collinear_point_indices == [2, 7, 13]
 end
 
+@testset "Reinitialising non-convex triangulations: Used to run into an infinite loop" begin
+    a = (0.0, 0.0)
+    b = (5.0, 0.0)
+    c = (5.0, 5.0)
+    d = (0.0, 5.0)
+    e = (1.0, 4.0)
+    f = (0.0, 3.0)
+    g = (1.5, 2.0)
+    h = (4.0, 2.0)
+    i = (4.0, 1.0)
+    j = (1.5, 1.0)
+    k = (2.0, 1.5)
+    ℓ = (2.4, 1.0)
+    m = (2.8, 3.6)
+    n = (2.2, 2.8)
+    o = (7.2, 2.4)
+    p = (7.3, 3.9)
+    q = (2.0, 1.4)
+    r = (3.0, 1.6)
+    s = (3.4, 1.4)
+    t = (3.6, 2.2)
+    u = (1.0, 2.8)
+    v = (0.8, 1.8)
+    w = (0.8, 4.0)
+    z = (0.4, 4.4)
+    c1 = (5.0, 4.6)
+    d1 = (4.9, 4.8)
+    a1 = (5.6, 1.8)
+    b1 = (6.0, 0.6)
+    e1 = (5.1, 4.4)
+    f1 = (5.0, 4.3)
+    pts = [[[d, e, f, a, b, f1, e1, c1, d1, c, d]], [[g, h, i, ℓ, k, j, g]]]
+    existing_points = [m, n, o, p, q, r, s, t, u, v, w, z, a1, b1]
+    nodes, points = convert_boundary_points_to_indices(pts; existing_points=existing_points)
+    tri = triangulate(points; boundary_nodes=nodes, delete_ghosts=false)
+    i, j, k = 2, 25, 8
+    T = (i, j, k)
+    r = 5
+    for i in 1:100
+        @show i
+        V = jump_and_march(tri, get_point(tri, k); point_indices=nothing, m=nothing, try_points=nothing, k=r)
+        @test !DT.is_outside(DT.point_position_relative_to_triangle(tri, V, get_point(tri, k)))
+    end
+end

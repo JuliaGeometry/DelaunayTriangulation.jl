@@ -70,6 +70,9 @@ using SafeTestsets
         @safetestset "Representative Points" begin
             include("data_structures/representative.jl")
         end
+        @safetestset "Statistics" begin
+            include("data_structures/statistics.jl")
+        end
     end
 
     @testset verbose = true "Operations" begin
@@ -103,6 +106,12 @@ using SafeTestsets
         @safetestset "delete_point!" begin
             include("operations/delete_point.jl")
         end
+        @safetestset "(un)lock_convex_hull!.jl" begin
+            include("operations/lock_convex_hull.jl")
+        end
+        @safetestset "delete_holes!" begin 
+            include("operations/delete_holes.jl")
+        end
     end
 
     @testset verbose = true "Predicates" begin
@@ -120,12 +129,6 @@ using SafeTestsets
         end
     end
 
-    @safetestset "Plotting" begin
-        include("plotting.jl")
-    end
-    @safetestset "Logo" begin
-        include("logo.jl")
-    end
     @safetestset "Documentation images" begin
         include("doc_images.jl")
     end
@@ -157,6 +160,21 @@ using SafeTestsets
         end
         @safetestset "Segment Insertion" begin
             include("constrained_triangulation/segment_insertion.jl")
+        end
+    end
+
+    @testset verbose = true "Refinement" begin 
+        @safetestset "Encroachment" begin 
+            include("refinement/encroachment.jl")
+        end
+        @safetestset "Quality Assessment" begin
+            include("refinement/quality_assessment.jl")
+        end
+        @safetestset "Refinement Operations" begin
+            include("refinement/refinement_operations.jl")
+        end
+        @safetestset "Refinement" begin
+            include("refinement/refinement.jl")
         end
     end
 end

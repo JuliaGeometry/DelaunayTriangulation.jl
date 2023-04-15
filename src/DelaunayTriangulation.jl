@@ -70,6 +70,13 @@ include("data_structures/triangulation/segment_location.jl")
 include("data_structures/triangulation/predicates.jl")
 include("data_structures/triangulation/representative_points.jl")
 include("data_structures/representative.jl")
+include("data_structures/statistics.jl")
+include("data_structures/refinement/refinement_targets.jl")
+include("data_structures/refinement/refinement_queue.jl")
+include("data_structures/refinement/event_history.jl")
+include("data_structures/point_location_history.jl")
+include("data_structures/polylabel/cell.jl")
+include("data_structures/polylabel/cell_queue.jl")
 
 export get_adjacent
 export get_adjacent2vertex
@@ -102,6 +109,9 @@ export each_ghost_edge
 export each_solid_vertex 
 export each_ghost_vertex
 export each_constrained_edge
+export statistics
+export get_total_area
+export get_all_stat
 
 include("predicates/certificate.jl")
 include("predicates/boundaries_and_ghosts.jl")
@@ -124,6 +134,8 @@ include("operations/delete_point.jl")
 include("operations/add_edge.jl")
 include("operations/delete_holes.jl")
 include("operations/clear_empty_features.jl")
+include("operations/lock_convex_hull.jl")
+include("operations/unlock_convex_hull.jl")
 
 export add_ghost_triangles!
 export delete_ghost_triangles!
@@ -137,6 +149,8 @@ export split_triangle!
 export legalise_edge!
 export delete_point!
 export add_edge!
+export lock_convex_hull!
+export unlock_convex_hull!
 
 include("triangulation/gmsh.jl")
 include("triangulation/rectangle.jl")
@@ -172,4 +186,12 @@ export convert_boundary_points_to_indices
 include("polygon_utils.jl")
 
 const polylabel = pole_of_inaccessibility
+
+include("refinement/encroachment.jl")
+include("refinement/quality_assessment.jl")
+include("refinement/refinement_operations.jl")
+include("refinement/refine.jl")
+
+export refine!
+
 end

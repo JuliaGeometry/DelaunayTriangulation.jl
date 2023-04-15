@@ -7,7 +7,8 @@
         boundary_map, 
         k, 
         q, 
-        check_existence=Val(has_multiple_segments(boundary_map))) 
+        check_existence=Val(has_multiple_segments(boundary_map)),
+        bnd_idx=I(BoundaryIndex)) 
 
 Given a point `q` outside of the triangulation, finds the ghost triangle containing it.
 
@@ -20,6 +21,7 @@ Given a point `q` outside of the triangulation, finds the ghost triangle contain
 - `k`: The vertex to start from.
 - `q`: The point outside of the triangulation.
 - `check_existence=Val(has_multiple_segments(boundary_map)))`: Used to check that the edge exists when using [`get_adjacent`](@ref), in case there are multiple segments.
+- `bnd_idx=I(BoundaryIndex)`: A boundary index corresponding to the boundary that `k` is on.
 
 # Ouptut 
 - The edge `(i, j)` such that the ghost triangle `(i, j, g)` contains `q`, and `g = get_adjacent(adj, i, j)`.
@@ -36,34 +38,35 @@ function exterior_jump_and_march(
     boundary_map,
     k,
     q,
-    check_existence::V=Val(has_multiple_segments(boundary_map))
+    check_existence::V=Val(has_multiple_segments(boundary_map)),
+    bnd_idx=I(BoundaryIndex)
 ) where {I,E,V}
-    pₘ, pᵢ = get_point(pts, representative_point_list, boundary_map, I(BoundaryIndex), k)
+    pₘ, pᵢ = get_point(pts, representative_point_list, boundary_map, bnd_idx, k)
     i = k
     q_position = point_position_relative_to_line(pₘ, pᵢ, q)
     if is_left(q_position) # q is left of the ghost edge through pᵢ, so rotate left 
-        j = get_right_boundary_node(adj, i, I(BoundaryIndex), boundary_index_ranges,
+        j = get_right_boundary_node(adj, i, bnd_idx, boundary_index_ranges,
             check_existence)
         pⱼ = get_point(pts, representative_point_list, boundary_map, j)
         new_q_pos = point_position_relative_to_line(pₘ, pⱼ, q)
         while is_left(new_q_pos)
             i = j
             pᵢ = pⱼ
-            j = get_right_boundary_node(adj, i, I(BoundaryIndex), boundary_index_ranges,
+            j = get_right_boundary_node(adj, i, bnd_idx, boundary_index_ranges,
                 check_existence)
             pⱼ = get_point(pts, representative_point_list, boundary_map, j)
             new_q_pos = point_position_relative_to_line(pₘ, pⱼ, q)
         end
         return j, i # Swap the orientation so that i, j is a boundary edge 
     else # rotate right 
-        j = get_left_boundary_node(adj, i, I(BoundaryIndex), boundary_index_ranges,
+        j = get_left_boundary_node(adj, i, bnd_idx, boundary_index_ranges,
             check_existence)
         pⱼ = get_point(pts, representative_point_list, boundary_map, j)
         new_q_pos = point_position_relative_to_line(pₘ, pⱼ, q)
         while is_right(new_q_pos)
             i = j
             pᵢ = pⱼ
-            j = get_left_boundary_node(adj, i, I(BoundaryIndex), boundary_index_ranges,
+            j = get_left_boundary_node(adj, i, bnd_idx, boundary_index_ranges,
                 check_existence)
             pⱼ = get_point(pts, representative_point_list, boundary_map, j)
             new_q_pos = point_position_relative_to_line(pₘ, pⱼ, q)
@@ -82,7 +85,9 @@ end
         check_existence::C=Val(has_multiple_segments(boundary_map)),
         store_history::F=Val(false),
         history=nothing,
-        rng::AbstractRNG = Random.default_rng()) where {I,V,C,F}
+        rng::AbstractRNG = Random.default_rng(),
+        exterior_curve_index=1,
+        maxiters = 2 + length(exterior_curve_index) - num_vertices(graph) + num_edges(graph)) where {I,V,C,F}
 
 Using the jump and march algorithm, finds the triangle in the triangulation containing the 
 query point `q`.
@@ -106,6 +111,17 @@ query point `q`.
 - `store_history::F=Val(false)`: Whether to store visited triangles. Exterior ghost triangles will not be stored.
 - `history=nothing`: The history. This should be a [`PointLocationHistory`](@ref) type if `store_history` is `true`.
 - `rng::AbstractRNG`: The RNG to use.
+- `exterior_curve_index=1`: The curve (or curves) corresponding to the outermost boundary.
+- `maxiters = 2 + length(exterior_curve_index) - num_vertices(graph) + num_edges(graph)`: Maximum number of iterations to perform before restarting the algorithm at a new initial point. The default comes from Euler's formula, rearranged for the number of triangles.
+
+!!! note 
+
+    You shouldn't ever need `maxiters` if your triangulation is convex everywhere, as Delaunay triangulations 
+    have no problems with jump-and-march, as the sequence of triangles visited is acyclic (H. Edelsbrunner, An acyclicity theorem for cell complexes in d dimensions, Combinatorica 10 (1990) 251–
+    260.) However, if the triangulation is not convex, e.g. if you have a constrained triangulation with boundaries 
+    and excavations, then an infinite loop can be found where we just keep walking in circles. In this case, 
+    you can use the `maxiters` keyword argument to specify the maximum number of iterations to perform before
+    reinitialising the algorithm at a random vertex. When reinitialising, `m` is set to `num_vertices(graph)`.
 
 # Output 
 Returns the triangle `V` containing the query point `q`.
@@ -127,24 +143,41 @@ function jump_and_march(pts, adj, adj2v, graph::Graph{I}, boundary_index_ranges,
     check_existence::C=Val(has_multiple_segments(boundary_map)),
     store_history::F=Val(false),
     history=nothing,
-    rng::AbstractRNG=Random.default_rng()) where {I,V,C,F}
+    rng::AbstractRNG=Random.default_rng(),
+    exterior_curve_index=1,
+    maxiters=2 + length(exterior_curve_index) - num_vertices(graph) + num_edges(graph)) where {I,V,C,F}
     return _jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges, representative_point_list, boundary_map, q,
-        k, V, check_existence, store_history, history, rng)
+        k, V, check_existence, store_history, history, rng, exterior_curve_index, maxiters, 0, m, point_indices, try_points)
 end
 function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, boundary_index_ranges,
     representative_point_list, boundary_map, q, k, TriangleType::Type{V},
     check_existence::C=Val(has_multiple_segments(boundary_map)),
     store_history::F=Val(false),
     history=nothing,
-    rng::AbstractRNG=Random.default_rng()) where {I,E,V,C,F}
-    if !is_outer_boundary_node(k, graph, boundary_index_ranges) || !has_ghost_triangles(adj, adj2v)
+    rng::AbstractRNG=Random.default_rng(),
+    exterior_curve_index=1,
+    maxiters=2 + length(exterior_curve_index) - num_vertices(graph) + num_edges(graph),
+    cur_iter=0,
+    m=default_num_samples(num_points(pts)),
+    point_indices=each_point_index(pts),
+    try_points=()) where {I,E,V,C,F}
+    is_bnd, bnd_idx = is_boundary_node(k, graph, boundary_index_ranges)
+    if !(is_bnd && get_curve_index(boundary_map, bnd_idx) ∈ exterior_curve_index) || !has_ghost_triangles(adj, adj2v)
         # If k is not a boundary node, then we can rotate around the point k to find an initial triangle 
         # to start the search. Additionally, if there are no ghost triangles, we can only hope that q 
         # is inside the interior, meaning we should only search for the initial triangle here anyway.
-        p, i, j, pᵢ, pⱼ = select_initial_triangle_interior_node(pts, adj, adj2v,
+        p, i, j, pᵢ, pⱼ = select_initial_triangle_interior_node(pts, adj, adj2v, graph,
             representative_point_list, boundary_map, k, q,
             boundary_index_ranges,
             check_existence, store_history, history, rng)
+        if !edge_exists(i) && !edge_exists(j) # When we find a possible infinite loop, we use i==j==DefaultAdjacentValue. Let's reinitialise. 
+            m = num_vertices(graph)
+            point_indices = isnothing(point_indices) ? each_vertex(graph) : point_indices
+            try_points = isnothing(try_points) ? () : try_points
+            k = select_initial_point(pts, q; m=2m, point_indices, try_points)
+            return _jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges, representative_point_list, boundary_map, q,
+                k, V, check_existence, store_history, history, rng, exterior_curve_index, maxiters, 0, 2m, point_indices, try_points)
+        end
         if is_true(store_history)
             add_triangle!(history, j, i, k)
         end
@@ -158,7 +191,8 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
                 boundary_map,
                 k,
                 q,
-                check_existence)
+                check_existence,
+                bnd_idx)
         if !is_outside(direction)
             # q is collinear with one of the edges, so let's jump down these edges and try to find q
             q_pos, u, v, w = search_down_adjacent_boundary_edges(pts, adj,
@@ -168,12 +202,13 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
                 next_vertex,
                 check_existence,
                 store_history,
-                history)
+                history,
+                bnd_idx)
             if is_on(q_pos)
                 return construct_triangle(V, u, v, w)
             else
                 u, v = exterior_jump_and_march(pts, adj, boundary_index_ranges,
-                    representative_point_list, boundary_map, u, q, check_existence)
+                    representative_point_list, boundary_map, u, q, check_existence, bnd_idx)
                 return construct_triangle(V, u, v,
                     get_adjacent(adj, u, v; check_existence,
                         boundary_index_ranges)) # Can't just use I(BoundaryIndex) here since there could be multiple - just use get_adjacent
@@ -193,12 +228,13 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
                 left_cert,
                 check_existence,
                 store_history,
-                history)
+                history,
+                bnd_idx)
         if is_inside(triangle_cert)
             return construct_triangle(V, i, j, k)
         elseif is_none(edge_cert)
             u, v = exterior_jump_and_march(pts, adj, boundary_index_ranges, representative_point_list, boundary_map, k,
-                q, check_existence)
+                q, check_existence, bnd_idx)
             return construct_triangle(V, u, v, get_adjacent(adj, u, v))
         else
             p, pᵢ, pⱼ = get_point(pts, representative_point_list, boundary_map, k, i, j)
@@ -223,6 +259,7 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
         add_right_vertex!(history, j)
     end
     while is_positively_oriented(arrangement)
+        cur_iter += 1
         if is_true(store_history)
             if last_changed == i
                 add_left_vertex!(history, i)
@@ -234,18 +271,19 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
         # Since a boundary curve may be represented by different boundary indices 
         # at different locations, we need to check for this. The first check 
         # is for an outer boundary index.
-        if is_outer_boundary_index(k, boundary_map)
+        if is_boundary_index(k) && get_curve_index(boundary_map, k) ∈ exterior_curve_index
             # If this happens, it means we have hit an outer boundary edge, and so we need to go into the exterior. If there are no 
             # ghost triangles, though, we just restart the search. Note that interior boundary indices do not matter since the ghost 
             # triangles there have the same orientation, so we can find them as normal.
             if has_ghost_triangles(adj, adj2v)
                 i, j = exterior_jump_and_march(pts, adj, boundary_index_ranges,
                     representative_point_list, boundary_map, last_changed == i ? j : i, q,
-                    check_existence) # use last_changed to ensure we get the boundary point
+                    check_existence, k) # use last_changed to ensure we get the boundary point
                 return construct_triangle(V, i, j, k)
             else
                 return _jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges,
-                    boundary_map, representative_point_list, q, k, V, check_existence, store_history, history, rng)
+                    boundary_map, representative_point_list, q, k, V, check_existence, store_history, history, rng, exterior_curve_index,
+                    maxiters, cur_iter, m, point_indices, try_points)
             end
         end
         # Now we can finally move forward. We use check_existence to protect against the issue mentioned above.
@@ -318,6 +356,15 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
             end
         end
         arrangement = triangle_orientation(pᵢ, pⱼ, q)
+        if cur_iter ≥ maxiters
+            # Restart
+            m = num_vertices(graph)
+            point_indices = isnothing(point_indices) ? each_vertex(graph) : point_indices
+            try_points = isnothing(try_points) ? () : try_points
+            k = select_initial_point(pts, q; m=2m, point_indices, try_points)
+            return _jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges, representative_point_list, boundary_map, q,
+                k, V, check_existence, store_history, history, rng, exterior_curve_index, maxiters, 0, 2m, point_indices, try_points)
+        end
     end
     # We can finish the above loop even if q is not in the triangle, in which case pᵢpⱼq was a straight line. 
     # To clear this up, let us just restart. 
@@ -334,37 +381,11 @@ function _jump_and_march(pts, adj::Adjacent{I,E}, adj2v, graph::Graph{I}, bounda
             return _jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges,
                 representative_point_list, boundary_map, q,
                 last_changed == I(DefaultAdjacentValue) ? i :
-                last_changed, V, check_existence, store_history, history, rng)
+                last_changed, V, check_existence, store_history, history, rng, exterior_curve_index,
+                maxiters, cur_iter, m, point_indices, try_points)
         end
     end
     # Swap the orientation to get a positively oriented triangle, remembering that we kept pᵢ on the left of pq and pⱼ on the right 
     k = get_adjacent(adj, j, i; check_existence, boundary_index_ranges)
     return construct_triangle(V, j, i, k)
 end
-
-"""
-    PointLocationHistory{T,E,I}
-
-History from using [`jump_and_march`](@ref).
-
-# Fields 
-- `triangles::Vector{T}`: The visited triangles. 
-- `collinear_segments::Vector{E}`: Segments collinear with the original line `pq` using to jump.
-- `collinear_point_indices::Vector{I}`: This field contains indices to segments in `collinear_segments` that refer to points that were on the original segment, but there is no valid segment for them. We use manually fix this after the fact. For example, we could add an edge `(1, 14)`, when really we mean something like `(7, 14)` which isn't a valid edge.
-- `left_vertices::Vector{I}`: Vertices from the visited triangles to the left of `pq`.
-- `right_verices::Vector{I}`: Vertices from the visited triangles to the right of `pq`.
-"""
-struct PointLocationHistory{T,E,I}
-    triangles::Vector{T}
-    collinear_segments::Vector{E}
-    collinear_point_indices::Vector{I}
-    left_vertices::Vector{I}
-    right_vertices::Vector{I}
-    PointLocationHistory{T,E,I}() where {T,E,I} = new{T,E,I}(T[], E[], I[], I[], I[])
-end
-add_triangle!(history::Ts, i::I, j::I, k::I) where {Ts<:PointLocationHistory,I<:Integer} = add_triangle!(history.triangles, i, j, k)
-add_edge!(history::PointLocationHistory{T,E}, i, j) where {T,E} = add_edge!(history.collinear_segments, construct_edge(E, i, j))
-add_left_vertex!(history::PointLocationHistory, i) = push!(history.left_vertices, i)
-add_right_vertex!(history::PointLocationHistory, j) = push!(history.right_vertices, j)
-add_index!(history::PointLocationHistory, i) = push!(history.collinear_point_indices, i)
-num_edges(history::PointLocationHistory) = num_edges(history.collinear_segments)
