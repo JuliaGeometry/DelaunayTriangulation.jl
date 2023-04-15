@@ -132,9 +132,11 @@ It is assumed that the point `ℓ` is on an edge of `T`. If this is not the case
 function find_edge(T, points, ℓ)
     r = get_point(points, ℓ)
     for (u, v) in triangle_edges(T)
-        p, q = get_point(points, u, v)
-        cert = point_position_relative_to_line(p, q, r)
-        is_collinear(cert) && return (u, v)
+        if !is_ghost_edge(u, v)
+            p, q = get_point(points, u, v)
+            cert = point_position_relative_to_line(p, q, r)
+            is_collinear(cert) && return (u, v)
+        end
     end
     throw("The point $(get_point(points, ℓ)) is not on an edge of $T.")
 end
@@ -703,27 +705,27 @@ function edge_lies_on_two_distinct_segments(tri::Triangulation, i, j)
     end
     isempty(j_segments) && return false, I(0)
     intersect!(i_segments, j_segments)
-    if length(i_segments) == 0 
-        return false, I(0) 
+    if length(i_segments) == 0
+        return false, I(0)
     elseif length(i_segments) == 1
         return true, first(i_segments)
-    else 
+    else
         F = number_type(tri)
         p, q = get_point(tri, i, j)
         px, py = getxy(p)
         qx, qy = getxy(q)
         min_dist = typemax(F)
         min_idx = I(0)
-        for k in i_segments 
+        for k in i_segments
             r = get_point(tri, k)
             rx, ry = getxy(r)
-            δ = squared_distance_to_segment(px,py,qx,qy,rx,ry)
-            if δ < min_dist 
+            δ = squared_distance_to_segment(px, py, qx, qy, rx, ry)
+            if δ < min_dist
                 min_dist = δ
                 min_idx = k
             end
-        end 
-        return true, min_idx 
+        end
+        return true, min_idx
     end
 end
 

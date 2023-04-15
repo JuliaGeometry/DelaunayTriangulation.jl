@@ -234,5 +234,3 @@ end
     @test validate_triangulation(_tri; check_planarity=true, check_ghost_triangle_orientation=false, check_ghost_triangle_delaunay=false)
     validate_statistics(tri)
 end
-
-

@@ -1129,7 +1129,10 @@ function validate_statistics(tri::Triangulation, stats=statistics(tri))
         oy = r[2] + det([r′[1] norm(r′)^2; s′[1] norm(s′)^2]) / (4areas[T])
         circumcenters[T] = (ox, oy)
         circumradii[T] = norm(r - collect(circumcenters[T]))
-        all_angles = [acos((norm(p - r)^2 + norm(q - r)^2 - norm(p - q)^2) / (2norm(p - r) * norm(q - r))) for (p, q, r) in ((p, q, r), (q, r, p), (r, p, q))]
+        all_angles = [(norm(p - r)^2 + norm(q - r)^2 - norm(p - q)^2) / (2norm(p - r) * norm(q - r)) for (p, q, r) in ((p, q, r), (q, r, p), (r, p, q))]
+        all_angles[all_angles .< -1.0] .= -1.0 
+        all_angles[all_angles .> 1.0].=1.0 
+        all_angles=acos.(all_angles)
         sort!(all_angles)
         radius_edge_ratio[T] = circumradii[T] / ℓ1
         edge_midpoints[T] = ((Tuple(0.5 * (p + q))), Tuple(0.5 * (q + r)), Tuple(0.5 * (r + p)))

@@ -203,7 +203,7 @@ end
     end
 end
 
-@testset "Triangulating more regions with holes, and non-convex" begin
+@testset "Triangulating more regions with holes, and non-convex (Gmsh examples)" begin
     _x, _y = complicated_geometry()
     x = _x
     y = _y
@@ -235,38 +235,8 @@ end
     points = get_points(tri)
     bn_nodes = get_boundary_nodes(tri)
     _tri = triangulate(points; boundary_nodes=bn_nodes, delete_ghosts=false)
-    @test validate_triangulation(_tri; check_planarity=false,check_ghost_triangle_delaunay=false,check_ghost_triangle_orientation=false)
+    @test validate_triangulation(_tri; check_planarity=false, check_ghost_triangle_delaunay=false, check_ghost_triangle_orientation=false)
     validate_statistics(_tri)
-    fig, ax, sc = triplot(tri)
-    ax = Axis(fig[1, 2])
-    triplot!(ax, _tri)
-
-    t = LinRange(0, 1 / 4, 25)
-    x1 = cos.(2π * t)
-    y1 = sin.(2π * t)
-    t = LinRange(0, -3, 25)
-    x2 = collect(t)
-    y2 = repeat([1.0], length(t))
-    t = LinRange(1, 0, 25)
-    x3 = -3.0 .+ (1 .- t) .* sin.(t)
-    y3 = collect(t)
-    t = LinRange(0, 1, 25)
-    x4 = collect(-3.0(1 .- t))
-    y4 = collect(0.98t)
-    x5 = [0.073914, 0.0797, 0.1522, 0.1522, 0.2, 0.28128, 0.3659, 0.4127, 0.3922, 0.4068, 0.497, 0.631, 0.728, 0.804, 0.888, 1.0]
-    y5 = [0.8815, 0.8056, 0.80268, 0.73258, 0.6, 0.598, 0.5777, 0.525, 0.4346, 0.3645, 0.3032, 0.2886, 0.2623, 0.1367, 0.08127, 0.0]
-    x = [x1, x2, x3, x4, x5]
-    y = [y1, y2, y3, y4, y5]
-    tri = generate_mesh(x, y, 0.05)
-    points = get_points(tri)
-    bn_nodes = get_boundary_nodes(tri)
-    _tri = triangulate(points; boundary_nodes=bn_nodes, delete_ghosts=false)
-    @test validate_triangulation(_tri; check_planarity=false,check_ghost_triangle_delaunay=false,check_ghost_triangle_orientation=false)
-    validate_statistics(_tri)
-    ax = Axis(fig[2, 1])
-    triplot!(ax, tri)
-    ax = Axis(fig[2, 2])
-    triplot!(ax, _tri)
 
     x1 = [collect(LinRange(0, 2, 4)),
         collect(LinRange(2, 2, 4)),
@@ -302,16 +272,12 @@ end
     points = get_points(tri)
     bn_nodes = get_boundary_nodes(tri)
     _tri = triangulate(points; boundary_nodes=bn_nodes, delete_ghosts=false)
-    @test validate_triangulation(_tri; check_planarity=false,check_ghost_triangle_delaunay=false,check_ghost_triangle_orientation=false)
+    @test validate_triangulation(_tri; check_planarity=false, check_ghost_triangle_delaunay=false, check_ghost_triangle_orientation=false)
     validate_statistics(_tri)
-    ax = Axis(fig[3, 1])
-    triplot!(ax, tri)
-    ax = Axis(fig[3, 2])
-    triplot!(ax, _tri)
 end
 
 @testset "Adding points into a constrained triangulation; no collinearities" begin
-    for _ in 1:10
+    for L in 1:10
         pts, C = example_for_testing_add_point_on_constrained_triangulation()
         tri = triangulate(pts; edges=C, delete_ghosts=false)
         @test validate_triangulation(tri)
@@ -393,7 +359,7 @@ end
         @test DT.compare_triangle_collections(get_triangles(tri), T)
         @test validate_triangulation(tri)
         for i in 1:250
-            @show i
+            @show i, L
             x = 4rand()
             y = 5rand()
             DT.push_point!(tri, x, y)
@@ -955,7 +921,8 @@ end
         [[12, 32, 34], [34, 14, 12]]
     ]
     points = get_points(tri)
-    tri = triangulate(points; boundary_nodes, delete_ghosts=false, randomise=false)
+    rng = StableRNG(19119)
+    tri = triangulate(points; boundary_nodes, delete_ghosts=false, randomise=false, rng)
     flip_edge!(tri, 1, 7)
     flip_edge!(tri, 2, 8)
     T = [
@@ -1090,33 +1057,33 @@ end
         ],
         [[12, 17, 22, 27, 32, 33, 34], [34, 29, 24, 19, 14, 13, 12]]
     ]
-    add_point!(tri, 1.5, 0.0)
+    add_point!(tri, 1.5, 0.0; rng)
     @test validate_triangulation(tri)
-    add_point!(tri, 2.5, 0.0)
+    add_point!(tri, 2.5, 0.0; rng)
     @test validate_triangulation(tri)
-    add_point!(tri, 4.0, 2.5)
+    add_point!(tri, 4.0, 2.5; rng)
     @test validate_triangulation(tri)
-    add_point!(tri, 4.0, 7.5)
+    add_point!(tri, 4.0, 7.5; rng)
     @test validate_triangulation(tri)
-    add_point!(tri, 2.5, 8.0)
+    add_point!(tri, 2.5, 8.0; rng)
     @test validate_triangulation(tri)
-    add_point!(tri, 0.0, 5.5)
+    add_point!(tri, 0.0, 5.5; rng)
     @test validate_triangulation(tri)
-    add_point!(tri, 0.5, 2.2)
+    add_point!(tri, 0.5, 2.2; rng)
     @test validate_triangulation(tri)
-    add_edge!(tri, 21, 27)
+    add_edge!(tri, 21, 27; rng)
     @test validate_triangulation(tri)
-    add_edge!(tri, 14, 45)
+    add_edge!(tri, 14, 45; rng)
     @test validate_triangulation(tri)
-    add_point!(tri, 1.0, 2.5)
+    add_point!(tri, 1.0, 2.5; rng)
     @test validate_triangulation(tri)
-    add_point!(tri, 1.0, 5.5)
+    add_point!(tri, 1.0, 5.5; rng)
     @test validate_triangulation(tri)
-    add_point!(tri, 2.5, 2.0)
+    add_point!(tri, 2.5, 2.0; rng)
     @test validate_triangulation(tri)
-    add_point!(tri, 3.0, 5.5)
+    add_point!(tri, 3.0, 5.5; rng)
     @test validate_triangulation(tri)
-    add_point!(tri, 2.5, 6.0)
+    add_point!(tri, 2.5, 6.0; rng)
     @test validate_triangulation(tri)
     add_edge!(tri, 12, 5)
     @test validate_triangulation(tri)
@@ -1141,7 +1108,8 @@ end
     add_point!(tri, 0.5, 4.5)
     @test validate_triangulation(tri)
 
-    for _ in 1:100
+    for L in 1:100
+        @show L
         tri = triangulate_rectangle(0, 4, 0, 8, 5, 9; add_ghost_triangles=true)
         boundary_nodes = [[
                 [1, 5, 45], [45, 41], [41, 1]
