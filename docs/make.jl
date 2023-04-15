@@ -18,6 +18,7 @@ makedocs(;
         "Triangulations" => [
             "Unconstrained Triangulations" => "triangulations/unconstrained.md",
             "Constrained Triangulations" => "triangulations/constrained.md",
+            "Mesh Refinement" => "triangulations/refinement.md",
             "Lattice" => "triangulations/lattice.md",
             "Gmsh" => "triangulations/gmsh.md",
             "Plotting" => "triangulations/plotting.md",

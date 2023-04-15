@@ -257,6 +257,29 @@ Returns the median angle in the triangle `T`.
 """
 get_median_angle(stats::TriangulationStatistics, T) = get_angles(stats, T)[2]
 
+"""
+    get_all_stat(stats::TriangulationStatistics, stat::Symbol)
+
+Returns all of the values of the statistic `stat` for all triangles in the triangulation statistics `stats`. The possible 
+values for `stat` come from [`IndividualTriangleStatistics`](@ref), namely:
+
+- `area`
+- `lengths`
+- `circumcenter`
+- `circumradius`
+- `angles`
+- `radius_edge_ratio`
+- `edge_midpoints`
+- `aspect_ratio`
+- `inradius`
+- `perimeter`
+- `centroid`
+"""
+function get_all_stat(stats::TriangulationStatistics, stat::Symbol)
+    indiv_stats = get_individual_statistics(stats)
+    return [getfield(indiv_stats[T], stat) for T in keys(indiv_stats)]
+end
+
 ## We could simplify some of this even further, e.g. keeping some more things as their square temporarily.
 ## Is it really worth the effort, though?
 

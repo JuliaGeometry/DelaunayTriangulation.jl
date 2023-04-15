@@ -154,7 +154,6 @@ function _refine_itr!(tri::Triangulation, queue::RefinementQueue, events::Insert
     u, v, w = indices(T)
     if !is_ghost_triangle(T) && get_adjacent(tri, u, v) == w
         iters += 1
-        @show iters
         success = split_triangle!(tri, queue, events, T, exterior_curve_index, rng)
         if is_encroachment_failure(success)
             split_all_encroached_segments!(tri, queue, events, targets, segment_list)
