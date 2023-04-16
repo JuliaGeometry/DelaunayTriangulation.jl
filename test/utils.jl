@@ -48,7 +48,7 @@ end
             (5, 3, DT.BoundaryIndex - 10)
 end
 
-if !get(ENV, "CI", false)
+if !(get(ENV, "CI", "false") == "true")
       @testset "get_left/right_boundary_node" begin
             x, y = complicated_geometry()
             tri = generate_mesh(x, y, 2.0; convert_result=true, add_ghost_triangles=true)
@@ -415,7 +415,7 @@ end
       @test segments == [(3, 25), (25, 1)]
 end
 
-if !get(ENV, "CI", false)
+if !(get(ENV, "CI", "false") == "true")
       @testset "convert_boundary_points_to_indices" begin
             tri = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5; add_ghost_triangles=false)
             elements, nodes, bn = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5; convert_result=false)

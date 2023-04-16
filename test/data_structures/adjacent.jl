@@ -102,7 +102,7 @@ global adj_3 = DT.Adjacent(ddict_3)
     end
 end
 
-if !get(ENV, "CI", false)
+if !(get(ENV, "CI", "false") == "true")
     @testset "Testing if edges exist and clearing any empty edges" begin
         include("../helper_functions.jl")
         x, y = complicated_geometry()

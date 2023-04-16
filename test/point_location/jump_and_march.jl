@@ -110,7 +110,7 @@ _pts = tri.points[[18, 17, 16, 15, 14, 13]]
 rep[3].x = mean([18.0, 18.0, 14.0, 12.0, 14.0, 14.0])
 rep[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
 
-if !get(ENV, "CI", false)
+if !(get(ENV, "CI", "false") == "true")
     @testset "Tests with different types of triangulations" begin
         x, y = complicated_geometry()
         tri2 = generate_mesh(x, y, 2.0; convert_result=true, add_ghost_triangles=true)

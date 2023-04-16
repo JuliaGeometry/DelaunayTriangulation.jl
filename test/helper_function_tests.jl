@@ -53,7 +53,7 @@ include("./helper_functions.jl")
     @test !validate_triangulation(tri)
 end
 
-if !get(ENV, "CI", false)
+if !(get(ENV, "CI", "false") == "true")
     @testset "Validating constrained triangulations" begin
         _x, _y = complicated_geometry()
         x = _x

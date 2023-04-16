@@ -6,7 +6,7 @@ const BI = DT.BoundaryIndex
 
 include("../helper_functions.jl")
 
-if !get(ENV, "CI", false)
+if !(get(ENV, "CI", "false") == "true")
     x, y = complicated_geometry()
     tri = generate_mesh(x, y, 2.0; convert_result=true, add_ghost_triangles=true)
 

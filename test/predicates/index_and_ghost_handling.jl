@@ -7,7 +7,7 @@ using ElasticArrays
 
 include("../helper_functions.jl")
 
-if !get(ENV, "CI", false)
+if !(get(ENV, "CI", "false") == "true")
     global x, y = complicated_geometry()
     _tri = generate_mesh(x, y, 2.0; convert_result=true, add_ghost_triangles=true)
     _pts = ElasticMatrix(get_points(_tri))

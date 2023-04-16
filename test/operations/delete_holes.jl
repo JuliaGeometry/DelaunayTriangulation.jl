@@ -197,7 +197,7 @@ end
     validate_statistics(tri)
 end
 
-if !get(ENV, "CI", false)
+if !(get(ENV, "CI", "false") == "true")
     @testset "A previously broken example" begin
         a = 4 / 5
         t = LinRange(0, 2π, 6)

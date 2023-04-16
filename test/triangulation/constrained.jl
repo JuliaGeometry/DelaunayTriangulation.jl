@@ -203,7 +203,7 @@ end
     end
 end
 
-if !get(ENV, "CI", false)
+if !(get(ENV, "CI", "false") == "true")
     @testset "Triangulating more regions with holes, and non-convex (Gmsh examples)" begin
         _x, _y = complicated_geometry()
         x = _x

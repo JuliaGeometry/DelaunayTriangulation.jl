@@ -1029,7 +1029,7 @@ Physical Surface(1) = {1};
         @test boundary_nodes == [[bn1, bn2], [bn3]]
     end
 
-    if !get(ENV, "CI", false)
+    if !(get(ENV, "CI", "false") == "true")
         @testset "Meshing a single curve with multiple segments" begin
             θ1 = LinRange(0, π, 5)
             θ2 = LinRange(π, 2π, 5)
@@ -1124,7 +1124,7 @@ Physical Surface(1) = {1};
     end
 end
 
-if !get(ENV, "CI", false)
+if !(get(ENV, "CI", "false") == "true")
     @testset "Triangulating" begin
         @testset "A square: One boundary with no ghost triangles" begin
             tri = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5; add_ghost_triangles=false)

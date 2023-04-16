@@ -475,7 +475,7 @@ end
     end
 end
 
-if !get(ENV, "CI", false)
+if !(get(ENV, "CI", "false") == "true")
     @testset "Gmsh" begin
         @testset "Contiguous boundary" begin
             a = 4 / 5
@@ -1190,7 +1190,7 @@ end
     end
 end
 
-if !get(ENV, "CI", false)
+if !(get(ENV, "CI", "false") == "true")
     @testset "Tasmania" begin
         tassy = readdlm("tassy.txt")
         ymax = @views maximum(tassy[:, 2])

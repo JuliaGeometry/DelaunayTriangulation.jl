@@ -29,7 +29,7 @@ global tri = Triangulation(pts; IntegerType=Int32)
             DT.get_empty_representative_points())
 end
 
-if !get(ENV, "CI", false)
+if !(get(ENV, "CI", "false") == "true")
       _x, _y = complicated_geometry()
       global x = _x
       global y = _y

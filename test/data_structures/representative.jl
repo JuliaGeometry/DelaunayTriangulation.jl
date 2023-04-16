@@ -105,7 +105,7 @@ end
     @test_throws KeyError rep[3]
 end
 
-if !get(ENV, "CI", false)
+if !(get(ENV, "CI", "false") == "true")
     @testset "Representative points from a triangulation" begin
         tri = generate_mesh(-2.0, 2.0, -2.0, 2.0, 0.05; single_boundary=true,
             convert_result=true)

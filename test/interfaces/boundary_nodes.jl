@@ -106,7 +106,7 @@ end
        @test !DT.has_multiple_segments(map3)
 end
 
-if !get(ENV, "CI", false)
+if !(get(ENV, "CI", "false") == "true")
        @testset "Getting boundary index ranges" begin
               d1 = DT.construct_boundary_index_ranges(bn1)
               d2 = DT.construct_boundary_index_ranges(bn2)

@@ -251,7 +251,7 @@ end
       end
 end
 
-if !get(ENV, "CI", false)
+if !(get(ENV, "CI", "false") == "true")
       @testset "Selecting initial triangle for an interior node" begin
             Random.seed!(19919)
             x, y = complicated_geometry()

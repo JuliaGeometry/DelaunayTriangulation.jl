@@ -3,7 +3,7 @@ const DT = DelaunayTriangulation
 
 include("../helper_functions.jl")
 
-if !get(ENV, "CI", false)
+if !(get(ENV, "CI", "false") == "true")
     @testset "Computing statistics" begin
         _x, _y = complicated_geometry()
         x = _x

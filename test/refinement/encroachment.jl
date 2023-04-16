@@ -38,7 +38,7 @@ include("../helper_functions.jl")
     end
 end
 
-if !get(ENV, "CI", false)
+if !(get(ENV, "CI", "false") == "true")
     @testset "Testing if encroached edges are detected" begin
         _x, _y = complicated_geometry()
         x = _x

@@ -287,7 +287,7 @@ end
     validate_statistics(tri)
 end
 
-if !get(ENV, "CI", false)
+if !(get(ENV, "CI", "false") == "true")
     @testset "Tasmania" begin
         tassy = readdlm("./tassy.txt")
         ymax = @views maximum(tassy[:, 2])

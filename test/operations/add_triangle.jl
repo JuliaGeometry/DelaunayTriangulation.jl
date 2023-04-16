@@ -5,7 +5,7 @@ using DataStructures
 
 include("../helper_functions.jl")
 
-if !get(ENV, "CI", false)
+if !(get(ENV, "CI", "false") == "true")
       _x, _y = complicated_geometry()
       global x = _x
       global y = _y
