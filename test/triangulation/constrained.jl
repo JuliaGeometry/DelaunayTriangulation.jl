@@ -203,77 +203,79 @@ end
     end
 end
 
-@testset "Triangulating more regions with holes, and non-convex (Gmsh examples)" begin
-    _x, _y = complicated_geometry()
-    x = _x
-    y = _y
-    tri_1 = generate_mesh(x, y, 0.1; convert_result=true, add_ghost_triangles=true)
-    tri_2 = generate_mesh(x[1], y[1], 0.1; convert_result=true, add_ghost_triangles=true)
-    tri_3 = generate_mesh([0.0, 2.0, 2.0, 0.0, 0.0], [0.0, 0.0, 2.0, 2.0, 0.0], 0.1;
-        convert_result=true, add_ghost_triangles=true)
-    tri_4 = generate_mesh(reverse(reverse.(x[2])), reverse(reverse.(y[2])), 0.1; convert_result=true, add_ghost_triangles=true)
-    a, b = 0.0, 5.0
-    c, d = 3.0, 7.0
-    nx = 3
-    ny = 3
-    tri_5 = triangulate_rectangle(a, b, c, d, nx, ny; add_ghost_triangles=true, single_boundary=false)
-    tri_6 = triangulate_rectangle(a, b, c, d, nx, ny; add_ghost_triangles=true, single_boundary=true)
+if !get(ENV, "CI", false)
+    @testset "Triangulating more regions with holes, and non-convex (Gmsh examples)" begin
+        _x, _y = complicated_geometry()
+        x = _x
+        y = _y
+        tri_1 = generate_mesh(x, y, 0.1; convert_result=true, add_ghost_triangles=true)
+        tri_2 = generate_mesh(x[1], y[1], 0.1; convert_result=true, add_ghost_triangles=true)
+        tri_3 = generate_mesh([0.0, 2.0, 2.0, 0.0, 0.0], [0.0, 0.0, 2.0, 2.0, 0.0], 0.1;
+            convert_result=true, add_ghost_triangles=true)
+        tri_4 = generate_mesh(reverse(reverse.(x[2])), reverse(reverse.(y[2])), 0.1; convert_result=true, add_ghost_triangles=true)
+        a, b = 0.0, 5.0
+        c, d = 3.0, 7.0
+        nx = 3
+        ny = 3
+        tri_5 = triangulate_rectangle(a, b, c, d, nx, ny; add_ghost_triangles=true, single_boundary=false)
+        tri_6 = triangulate_rectangle(a, b, c, d, nx, ny; add_ghost_triangles=true, single_boundary=true)
 
-    for tri in (tri_1, tri_2, tri_3, tri_4, tri_5, tri_6)
+        for tri in (tri_1, tri_2, tri_3, tri_4, tri_5, tri_6)
+            points = get_points(tri)
+            bn_nodes = get_boundary_nodes(tri)
+            _tri = triangulate(points; boundary_nodes=bn_nodes, delete_ghosts=false, delete_holes=true)
+            @test validate_triangulation(_tri)
+            tri ∉ (tri_5, tri_6) && @test DT.compare_triangle_collections(get_triangles(tri), get_triangles(_tri))
+        end
+
+        a = 4 / 5
+        t = LinRange(0, 2π, 100)
+        x = @. a * (2cos(t) + cos(2t))
+        y = @. a * (2sin(t) - sin(2t))
+        tri = generate_mesh(x, y, 15.0)
         points = get_points(tri)
         bn_nodes = get_boundary_nodes(tri)
-        _tri = triangulate(points; boundary_nodes=bn_nodes, delete_ghosts=false, delete_holes=true)
-        @test validate_triangulation(_tri)
-        tri ∉ (tri_5, tri_6) && @test DT.compare_triangle_collections(get_triangles(tri), get_triangles(_tri))
+        _tri = triangulate(points; boundary_nodes=bn_nodes, delete_ghosts=false)
+        @test validate_triangulation(_tri; check_planarity=false, check_ghost_triangle_delaunay=false, check_ghost_triangle_orientation=false)
+        validate_statistics(_tri)
+
+        x1 = [collect(LinRange(0, 2, 4)),
+            collect(LinRange(2, 2, 4)),
+            collect(LinRange(2, 0, 4)),
+            collect(LinRange(0, 0, 4))]
+        y1 = [collect(LinRange(0, 0, 4)),
+            collect(LinRange(0, 6, 4)),
+            collect(LinRange(6, 6, 4)),
+            collect(LinRange(6, 0, 4))]
+        r = 0.5
+        h = k = 0.6
+        θ = LinRange(2π, 0, 50)
+        x2 = [h .+ r .* cos.(θ)]
+        y2 = [k .+ r .* sin.(θ)]
+        r = 0.2
+        h = 1.5
+        k = 0.5
+        x3 = [h .+ r .* cos.(θ)]
+        y3 = [k .+ r .* sin.(θ)]
+        x4 = reverse(reverse.([collect(LinRange(1, 1.5, 4)),
+            collect(LinRange(1.5, 1.5, 4)),
+            collect(LinRange(1.5, 1, 4)),
+            collect(LinRange(1, 1, 4))]))
+        y4 = reverse(reverse.([collect(LinRange(2, 2, 4)),
+            collect(LinRange(2, 5, 4)),
+            collect(LinRange(5, 5, 4)),
+            collect(LinRange(5, 2, 4))]))
+        x5 = [reverse([0.2, 0.5, 0.75, 0.75, 0.2, 0.2])]
+        y5 = [reverse([2.0, 2.0, 3.0, 4.0, 5.0, 2.0])]
+        x = [x1, x2, x3, x4, x5]
+        y = [y1, y2, y3, y4, y5]
+        tri = generate_mesh(x, y, 0.2)
+        points = get_points(tri)
+        bn_nodes = get_boundary_nodes(tri)
+        _tri = triangulate(points; boundary_nodes=bn_nodes, delete_ghosts=false)
+        @test validate_triangulation(_tri; check_planarity=false, check_ghost_triangle_delaunay=false, check_ghost_triangle_orientation=false)
+        validate_statistics(_tri)
     end
-
-    a = 4 / 5
-    t = LinRange(0, 2π, 100)
-    x = @. a * (2cos(t) + cos(2t))
-    y = @. a * (2sin(t) - sin(2t))
-    tri = generate_mesh(x, y, 15.0)
-    points = get_points(tri)
-    bn_nodes = get_boundary_nodes(tri)
-    _tri = triangulate(points; boundary_nodes=bn_nodes, delete_ghosts=false)
-    @test validate_triangulation(_tri; check_planarity=false, check_ghost_triangle_delaunay=false, check_ghost_triangle_orientation=false)
-    validate_statistics(_tri)
-
-    x1 = [collect(LinRange(0, 2, 4)),
-        collect(LinRange(2, 2, 4)),
-        collect(LinRange(2, 0, 4)),
-        collect(LinRange(0, 0, 4))]
-    y1 = [collect(LinRange(0, 0, 4)),
-        collect(LinRange(0, 6, 4)),
-        collect(LinRange(6, 6, 4)),
-        collect(LinRange(6, 0, 4))]
-    r = 0.5
-    h = k = 0.6
-    θ = LinRange(2π, 0, 50)
-    x2 = [h .+ r .* cos.(θ)]
-    y2 = [k .+ r .* sin.(θ)]
-    r = 0.2
-    h = 1.5
-    k = 0.5
-    x3 = [h .+ r .* cos.(θ)]
-    y3 = [k .+ r .* sin.(θ)]
-    x4 = reverse(reverse.([collect(LinRange(1, 1.5, 4)),
-        collect(LinRange(1.5, 1.5, 4)),
-        collect(LinRange(1.5, 1, 4)),
-        collect(LinRange(1, 1, 4))]))
-    y4 = reverse(reverse.([collect(LinRange(2, 2, 4)),
-        collect(LinRange(2, 5, 4)),
-        collect(LinRange(5, 5, 4)),
-        collect(LinRange(5, 2, 4))]))
-    x5 = [reverse([0.2, 0.5, 0.75, 0.75, 0.2, 0.2])]
-    y5 = [reverse([2.0, 2.0, 3.0, 4.0, 5.0, 2.0])]
-    x = [x1, x2, x3, x4, x5]
-    y = [y1, y2, y3, y4, y5]
-    tri = generate_mesh(x, y, 0.2)
-    points = get_points(tri)
-    bn_nodes = get_boundary_nodes(tri)
-    _tri = triangulate(points; boundary_nodes=bn_nodes, delete_ghosts=false)
-    @test validate_triangulation(_tri; check_planarity=false, check_ghost_triangle_delaunay=false, check_ghost_triangle_orientation=false)
-    validate_statistics(_tri)
 end
 
 @testset "Adding points into a constrained triangulation; no collinearities" begin

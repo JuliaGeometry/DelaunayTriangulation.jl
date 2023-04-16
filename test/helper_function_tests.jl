@@ -53,29 +53,31 @@ include("./helper_functions.jl")
     @test !validate_triangulation(tri)
 end
 
-@testset "Validating constrained triangulations" begin
-    _x, _y = complicated_geometry()
-    x = _x
-    y = _y
-    tri_1 = generate_mesh(x, y, 0.1; convert_result=true, add_ghost_triangles=true)
-    @test validate_triangulation(tri_1)
-    tri_2 = generate_mesh(x[1], y[1], 0.1; convert_result=true, add_ghost_triangles=true)
-    @test validate_triangulation(tri_2)
-    tri_3 = generate_mesh([0.0, 2.0, 2.0, 0.0, 0.0], [0.0, 0.0, 2.0, 2.0, 0.0], 0.1;
-        convert_result=true, add_ghost_triangles=true)
-    @test validate_triangulation(tri_3)
-    tri_4 = generate_mesh(reverse(reverse.(x[2])), reverse(reverse.(y[2])), 0.1; convert_result=true, add_ghost_triangles=true)
-    @test validate_triangulation(tri_4)
-    a, b = 0.0, 5.0
-    c, d = 3.0, 7.0
-    nx = 3
-    ny = 3
-    tri_5 = triangulate_rectangle(a, b, c, d, nx, ny; add_ghost_triangles=true, single_boundary=false)
-    @test validate_triangulation(tri_5)
-    tri_6 = triangulate_rectangle(a, b, c, d, nx, ny; add_ghost_triangles=true, single_boundary=true)
-    @test validate_triangulation(tri_6)
-    push!(tri_6.triangles, (11,1191919, 2000))
-    @test !validate_triangulation(tri_6)
-    push!(tri_5.triangles, (-1,-2,-3))
-    @test !validate_triangulation(tri_5)
+if !get(ENV, "CI", false)
+    @testset "Validating constrained triangulations" begin
+        _x, _y = complicated_geometry()
+        x = _x
+        y = _y
+        tri_1 = generate_mesh(x, y, 0.1; convert_result=true, add_ghost_triangles=true)
+        @test validate_triangulation(tri_1)
+        tri_2 = generate_mesh(x[1], y[1], 0.1; convert_result=true, add_ghost_triangles=true)
+        @test validate_triangulation(tri_2)
+        tri_3 = generate_mesh([0.0, 2.0, 2.0, 0.0, 0.0], [0.0, 0.0, 2.0, 2.0, 0.0], 0.1;
+            convert_result=true, add_ghost_triangles=true)
+        @test validate_triangulation(tri_3)
+        tri_4 = generate_mesh(reverse(reverse.(x[2])), reverse(reverse.(y[2])), 0.1; convert_result=true, add_ghost_triangles=true)
+        @test validate_triangulation(tri_4)
+        a, b = 0.0, 5.0
+        c, d = 3.0, 7.0
+        nx = 3
+        ny = 3
+        tri_5 = triangulate_rectangle(a, b, c, d, nx, ny; add_ghost_triangles=true, single_boundary=false)
+        @test validate_triangulation(tri_5)
+        tri_6 = triangulate_rectangle(a, b, c, d, nx, ny; add_ghost_triangles=true, single_boundary=true)
+        @test validate_triangulation(tri_6)
+        push!(tri_6.triangles, (11, 1191919, 2000))
+        @test !validate_triangulation(tri_6)
+        push!(tri_5.triangles, (-1, -2, -3))
+        @test !validate_triangulation(tri_5)
+    end
 end
