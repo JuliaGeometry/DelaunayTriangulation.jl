@@ -440,6 +440,6 @@ ylims!(ax, 0, 1000)
 
 ```@raw html
 <figure>
-    <img src='../figs/tasmania_constrained_refinement.png', alt='Tasmania'><br>
+    <img src='../figs/tassy_constrained_refinement.png', alt='Tasmania'><br>
 </figure>
 ```
