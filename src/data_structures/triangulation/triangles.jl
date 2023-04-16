@@ -67,6 +67,7 @@ Returns the number of solid triangles in `tri`.
 @inline num_solid_triangles(tri::Triangulation) = num_triangles(tri) - num_ghost_triangles(tri)
 
 abstract type AbstractEachTriangle{T} end
+triangle_type(itr::AbstractEachTriangle) = triangle_type(itr.tri)
 Base.IteratorSize(::Type{<:AbstractEachTriangle}) = Base.HasLength()
 Base.IteratorEltype(::Type{<:AbstractEachTriangle{T}}) where {T} = Base.IteratorEltype(T)
 Base.eltype(::Type{<:AbstractEachTriangle{T}}) where {T} = triangle_type(T)

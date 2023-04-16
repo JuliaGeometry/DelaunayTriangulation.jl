@@ -265,6 +265,8 @@ end
             @test sort(collect(filter(!DT.is_ghost_triangle, each_triangle(___tri)))) == sort(collect(each_solid_triangle(___tri)))
             @test sort(collect(filter(DT.is_ghost_triangle, each_triangle(___tri)))) == sort(collect(each_ghost_triangle(___tri)))
             @test DelaunayTriangulation.sort_triangles(each_solid_triangle(tri)) == DelaunayTriangulation.sort_triangles(get_triangles(___tri))
+            @test DelaunayTriangulation.triangle_type(_ghost_itr) == DelaunayTriangulation.triangle_type(_ghost_itr)
+            @test DelaunayTriangulation.triangle_type(_solid_itr) == DelaunayTriangulation.triangle_type(_solid_itr)
       end
 
       @testset "Edges" begin
@@ -303,6 +305,8 @@ end
             @test length(collect(each_ghost_edge(___tri))) == num_edges(___tri) .- length(sort(collect(filter(!DT.is_ghost_edge, each_edge(___tri)))))
             @test length(collect(each_ghost_edge(___tri))) == DT.num_ghost_edges(___tri)== length(_ghost_itr)
             @test length(collect(each_solid_edge(___tri))) == DT.num_solid_edges(___tri) == length(_solid_itr)
+            @test DelaunayTriangulation.edge_type(_ghost_itr) == DelaunayTriangulation.edge_type(_ghost_itr)
+            @test DelaunayTriangulation.edge_type(_solid_itr) == DelaunayTriangulation.edge_type(_solid_itr)
       end
 
       @testset "Points" begin

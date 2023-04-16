@@ -68,6 +68,7 @@ Returns the number of solid edges in `tri`.
 num_solid_edges(tri::Triangulation) = num_edges(tri) - num_ghost_edges(tri)
 
 abstract type AbstractEachEdge{E} end
+edge_type(itr::AbstractEachEdge) = edge_type(itr.tri)
 Base.IteratorSize(::Type{<:AbstractEachEdge}) = Base.HasLength()
 Base.IteratorEltype(::Type{<:AbstractEachEdge{E}}) where {E} = Base.IteratorEltype(E)
 Base.eltype(::Type{<:AbstractEachEdge{E}}) where {E} = edge_type(E)
