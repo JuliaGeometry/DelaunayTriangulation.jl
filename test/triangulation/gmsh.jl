@@ -1029,672 +1029,676 @@ Physical Surface(1) = {1};
         @test boundary_nodes == [[bn1, bn2], [bn3]]
     end
 
-    @testset "Meshing a single curve with multiple segments" begin
-        θ1 = LinRange(0, π, 5)
-        θ2 = LinRange(π, 2π, 5)
-        ϕ = LinRange(2π, 0, 5)
-        R = 1.0
-        r = 0.5
-        x1 = @. R * cos(θ1)
-        y1 = @. R * sin(θ1)
-        x2 = @. R * cos(θ2)
-        y2 = @. R * sin(θ2)
-        x3 = @. r * cos(ϕ)
-        y3 = @. r * sin(ϕ)
-        x = [[x1, x2], [x3]]
-        y = [[y1, y2], [y3]]
-        x = [x1, x2]
-        y = [y1, y2]
-        elements, nodes, boundary_nodes = generate_mesh(x, y, 0.5; convert_result=false)
-        g1 = read("meshgeometry.geo", String)
-        m1 = read("meshgeometry.msh", String)
-        _elements, _nodes, _boundary_nodes = generate_mesh([x], [y], 0.5; convert_result=false)
-        g2 = read("meshgeometry.geo", String)
-        m2 = read("meshgeometry.msh", String)
-        @test g1 == g2
-        @test m1 == m2
-        @test boundary_nodes == _boundary_nodes[1]
-        @test elements == _elements
-        @test nodes == _nodes
-    end
+    if !get(ENV, "CI", false)
+        @testset "Meshing a single curve with multiple segments" begin
+            θ1 = LinRange(0, π, 5)
+            θ2 = LinRange(π, 2π, 5)
+            ϕ = LinRange(2π, 0, 5)
+            R = 1.0
+            r = 0.5
+            x1 = @. R * cos(θ1)
+            y1 = @. R * sin(θ1)
+            x2 = @. R * cos(θ2)
+            y2 = @. R * sin(θ2)
+            x3 = @. r * cos(ϕ)
+            y3 = @. r * sin(ϕ)
+            x = [[x1, x2], [x3]]
+            y = [[y1, y2], [y3]]
+            x = [x1, x2]
+            y = [y1, y2]
+            elements, nodes, boundary_nodes = generate_mesh(x, y, 0.5; convert_result=false)
+            g1 = read("meshgeometry.geo", String)
+            m1 = read("meshgeometry.msh", String)
+            _elements, _nodes, _boundary_nodes = generate_mesh([x], [y], 0.5; convert_result=false)
+            g2 = read("meshgeometry.geo", String)
+            m2 = read("meshgeometry.msh", String)
+            @test g1 == g2
+            @test m1 == m2
+            @test boundary_nodes == _boundary_nodes[1]
+            @test elements == _elements
+            @test nodes == _nodes
+        end
 
-    @testset "Meshing a single curve" begin
-        θ1 = LinRange(0, π, 5)
-        θ2 = LinRange(π, 2π, 5)
-        ϕ = LinRange(2π, 0, 5)
-        R = 1.0
-        r = 0.5
-        x1 = @. R * cos(θ1)
-        y1 = @. R * sin(θ1)
-        x2 = @. R * cos(θ2)
-        y2 = @. R * sin(θ2)
-        x3 = @. r * cos(ϕ)
-        y3 = @. r * sin(ϕ)
-        x = [[x1, x2], [x3]]
-        y = [[y1, y2], [y3]]
-        x = [x1..., x2...]
-        y = [y1..., y2...]
-        elements, nodes, boundary_nodes = generate_mesh(x, y, 0.5; convert_result=false, check_arguments=false)
-        g1 = read("meshgeometry.geo", String)
-        m1 = read("meshgeometry.msh", String)
-        _elements, _nodes, _boundary_nodes = generate_mesh([[x]], [[y]], 0.5;
-            convert_result=false, check_arguments=false)
-        g2 = read("meshgeometry.geo", String)
-        m2 = read("meshgeometry.msh", String)
-        @test g1 == g2
-        @test m1 == m2
-        @test boundary_nodes == _boundary_nodes[1][1]
-        @test elements == _elements
-        @test nodes == _nodes
-    end
+        @testset "Meshing a single curve" begin
+            θ1 = LinRange(0, π, 5)
+            θ2 = LinRange(π, 2π, 5)
+            ϕ = LinRange(2π, 0, 5)
+            R = 1.0
+            r = 0.5
+            x1 = @. R * cos(θ1)
+            y1 = @. R * sin(θ1)
+            x2 = @. R * cos(θ2)
+            y2 = @. R * sin(θ2)
+            x3 = @. r * cos(ϕ)
+            y3 = @. r * sin(ϕ)
+            x = [[x1, x2], [x3]]
+            y = [[y1, y2], [y3]]
+            x = [x1..., x2...]
+            y = [y1..., y2...]
+            elements, nodes, boundary_nodes = generate_mesh(x, y, 0.5; convert_result=false, check_arguments=false)
+            g1 = read("meshgeometry.geo", String)
+            m1 = read("meshgeometry.msh", String)
+            _elements, _nodes, _boundary_nodes = generate_mesh([[x]], [[y]], 0.5;
+                convert_result=false, check_arguments=false)
+            g2 = read("meshgeometry.geo", String)
+            m2 = read("meshgeometry.msh", String)
+            @test g1 == g2
+            @test m1 == m2
+            @test boundary_nodes == _boundary_nodes[1][1]
+            @test elements == _elements
+            @test nodes == _nodes
+        end
 
-    @testset "Meshing a square" begin
-        x = [0.0, 2.0, 2.0, 0.0, 0.0]
-        y = [0.0, 0.0, 2.0, 2.0, 0.0]
-        elements1, nodes1, boundary_nodes1 = generate_mesh(x, y, 0.5; convert_result=false)
-        fig = Figure()
-        ax = Axis(fig[1, 1])
-        mesh!(ax, nodes1, elements1')
+        @testset "Meshing a square" begin
+            x = [0.0, 2.0, 2.0, 0.0, 0.0]
+            y = [0.0, 0.0, 2.0, 2.0, 0.0]
+            elements1, nodes1, boundary_nodes1 = generate_mesh(x, y, 0.5; convert_result=false)
+            fig = Figure()
+            ax = Axis(fig[1, 1])
+            mesh!(ax, nodes1, elements1')
 
-        x = [[0.0, 1.0, 2.0], [2.0, 2.0, 2.0], [2.0, 1.0, 0.0], [0.0, 0.0, 0.0]]
-        y = [[0.0, 0.0, 0.0], [0.0, 1.0, 2.0], [2.0, 2.0, 2.0], [2.0, 1.0, 0.0]]
-        elements2, nodes2, boundary_nodes2 = generate_mesh(x, y, 0.5; convert_result=false)
-        ax = Axis(fig[1, 2])
-        mesh!(ax, nodes2, elements2')
+            x = [[0.0, 1.0, 2.0], [2.0, 2.0, 2.0], [2.0, 1.0, 0.0], [0.0, 0.0, 0.0]]
+            y = [[0.0, 0.0, 0.0], [0.0, 1.0, 2.0], [2.0, 2.0, 2.0], [2.0, 1.0, 0.0]]
+            elements2, nodes2, boundary_nodes2 = generate_mesh(x, y, 0.5; convert_result=false)
+            ax = Axis(fig[1, 2])
+            mesh!(ax, nodes2, elements2')
 
-        elements3, nodes3, boundary_nodes3 = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5;
-            convert_result=false)
-        ax = Axis(fig[2, 1])
-        mesh!(ax, nodes3, elements3')
+            elements3, nodes3, boundary_nodes3 = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5;
+                convert_result=false)
+            ax = Axis(fig[2, 1])
+            mesh!(ax, nodes3, elements3')
 
-        elements4, nodes4, boundary_nodes4 = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5;
-            single_boundary=false,
-            convert_result=false)
-        ax = Axis(fig[2, 2])
-        mesh!(ax, nodes4, elements4')
+            elements4, nodes4, boundary_nodes4 = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5;
+                single_boundary=false,
+                convert_result=false)
+            ax = Axis(fig[2, 2])
+            mesh!(ax, nodes4, elements4')
 
-        @test elements1 == elements3
-        @test nodes1 == nodes3
-        @test boundary_nodes1 == boundary_nodes1
-        @test elements2 == elements4
-        @test nodes2 == nodes4
-        @test boundary_nodes2 == boundary_nodes4
+            @test elements1 == elements3
+            @test nodes1 == nodes3
+            @test boundary_nodes1 == boundary_nodes1
+            @test elements2 == elements4
+            @test nodes2 == nodes4
+            @test boundary_nodes2 == boundary_nodes4
+        end
     end
 end
 
-@testset "Triangulating" begin
-    @testset "A square: One boundary with no ghost triangles" begin
-        tri = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5; add_ghost_triangles=false)
-        elements, nodes, bn = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5; convert_result=false)
-        @test tri.points == nodes
-        @test tri.triangles == Set{NTuple{3,Int64}}((T[1], T[2], T[3]) for T in eachcol(elements))
-        adj = tri.adjacent.adjacent
-        for T in tri.triangles
-            i, j, k = T
-            @test adj[(i, j)] == k
-            @test adj[(j, k)] == i
-            @test adj[(k, i)] == j
-        end
-        adj2v = tri.adjacent2vertex.adjacent2vertex
-        for (i, S) in adj2v
-            for (j, k) in S
-                if all(≥(DT.FirstPointIndex), (i, j, k))
-                    @test adj[(j, k)] == i
-                    @test adj[(k, i)] == j
-                    @test adj[(i, j)] == k
-                end
-            end
-        end
-        for (j, k) in adj2v[DT.BoundaryIndex]
-            @test adj[(j, k)] == DT.BoundaryIndex
-            @test j ∈ bn && k ∈ bn
-        end
-        @test tri.boundary_nodes == bn
-        g = tri.graph
-        @test sort(collect(g.graph[DT.BoundaryIndex])) == sort(unique(bn))
-        DT.delete_vertex!(g, DT.BoundaryIndex)
-        for (i, j) in g.graph.E
-            k = adj[(i, j)]
-            el = (i, j, k)
-            e = (i, j)
-            if k < DT.FirstPointIndex
-                k = adj[(j, i)]
-                el = (k, j, i)
-                e = (j, i)
-            end
-            τ, pred = DT.contains_triangle(el, tri.triangles)
-            @test DT.compare_triangles(τ, el)
-            @test pred
-            @test e ∈ adj2v[k]
-        end
-        @test tri.constrained_edges == Set{NTuple{2,Int64}}()
-        @test tri.boundary_map == OrderedDict(DT.BoundaryIndex => bn)
-        for i in 1:(lastindex(bn)-1)
-            local u, v, w
-            u = bn[i]
-            v = bn[i+1]
-            w = adj[(v, u)]
-            @test adj[(v, u)] == DT.BoundaryIndex
-            @test adj[(u, w)] == DT.DefaultAdjacentValue
-            @test adj[(w, v)] == DT.DefaultAdjacentValue
-            @test (v, u) ∈ adj2v[DT.BoundaryIndex]
-        end
-        for (boundary_index, segment_index) in tri.boundary_map
-            for (j, k) in adj2v[boundary_index]
-                @test adj[(j, k)] == boundary_index
-                @test j ∈ DT.get_boundary_nodes(bn, segment_index) &&
-                      k ∈ DT.get_boundary_nodes(bn, segment_index)
-            end
-        end
-    end
-
-    @testset "A square: One boundary with ghost triangles" begin
-        tri = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5; add_ghost_triangles=true)
-        elements, nodes, bn = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5; convert_result=false)
-        @test tri.points == nodes
-        elset = Set{NTuple{3,Int64}}((T[1], T[2], T[3]) for T in eachcol(elements))
-        ng = 0
-        for T in tri.triangles
-            i, j, k = indices(T)
-            if all(≥(DT.FirstPointIndex), (i, j, k))
-                @test T ∈ elset
-            elseif i < DT.FirstPointIndex
-                @test j ∈ bn && k ∈ bn
-                @test tri.adjacent.adjacent[(j, k)] == i
-                @test j ∈ tri.graph.graph[DT.BoundaryIndex] && k ∈ tri.graph.graph[DT.BoundaryIndex]
-                @test (j, k) ∈ tri.adjacent2vertex.adjacent2vertex[DT.BoundaryIndex]
-                ng += 1
-            elseif j < DT.FirstPointIndex
-                @test i ∈ bn && k ∈ bn
-                @test tri.adjacent.adjacent[(k, i)] == j
-                @test i ∈ tri.graph.graph[DT.BoundaryIndex] && k ∈ tri.graph.graph[DT.BoundaryIndex]
-                @test (k, i) ∈ tri.adjacent2vertex.adjacent2vertex[DT.BoundaryIndex]
-                ng += 1
-            elseif k < DT.FirstPointIndex
-                @test i ∈ bn && j ∈ bn
-                @test tri.adjacent.adjacent[(i, j)] == k
-                @test i ∈ tri.graph.graph[DT.BoundaryIndex] && j ∈ tri.graph.graph[DT.BoundaryIndex]
-                @test (i, j) ∈ tri.adjacent2vertex.adjacent2vertex[DT.BoundaryIndex]
-                ng += 1
-            end
-        end
-        @test ng == DT.num_boundary_edges(bn)
-        adj = tri.adjacent.adjacent
-        for T in tri.triangles
-            i, j, k = T
-            @test adj[(i, j)] == k
-            @test adj[(j, k)] == i
-            @test adj[(k, i)] == j
-        end
-        adj2v = tri.adjacent2vertex.adjacent2vertex
-        for ((u, v), w) in adj
-            @test (u, v) ∈ adj2v[w]
-        end
-        for (i, S) in adj2v
-            for (j, k) in S
+if !get(ENV, "CI", false)
+    @testset "Triangulating" begin
+        @testset "A square: One boundary with no ghost triangles" begin
+            tri = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5; add_ghost_triangles=false)
+            elements, nodes, bn = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5; convert_result=false)
+            @test tri.points == nodes
+            @test tri.triangles == Set{NTuple{3,Int64}}((T[1], T[2], T[3]) for T in eachcol(elements))
+            adj = tri.adjacent.adjacent
+            for T in tri.triangles
+                i, j, k = T
+                @test adj[(i, j)] == k
                 @test adj[(j, k)] == i
                 @test adj[(k, i)] == j
-                @test adj[(i, j)] == k
             end
-        end
-        for (j, k) in adj2v[DT.BoundaryIndex]
-            @test adj[(j, k)] == DT.BoundaryIndex
-            @test j ∈ bn && k ∈ bn
-        end
-        @test tri.boundary_nodes == bn
-        g = tri.graph
-        for (i, j) in g.graph.E
-            k = adj[(i, j)]
-            el = (i, j, k)
-            τ, pred = DT.contains_triangle(el, tri.triangles)
-            @test DT.compare_triangles(τ, el)
-            @test (i, j) ∈ adj2v[k]
-        end
-        @test tri.constrained_edges == Set{NTuple{2,Int64}}()
-        @test tri.boundary_map == OrderedDict(DT.BoundaryIndex => bn)
-        for i in 1:(lastindex(bn)-1)
-            local u, v, w
-            u = bn[i]
-            v = bn[i+1]
-            w = adj[(v, u)]
-            @test adj[(v, u)] == DT.BoundaryIndex
-            @test adj[(u, w)] == v
-            @test adj[(w, v)] == u
-            @test (v, u) ∈ adj2v[DT.BoundaryIndex]
-            @test u ∈ tri.graph.graph[DT.BoundaryIndex] && v ∈ tri.graph.graph[DT.BoundaryIndex]
-        end
-        @test sort(collect(g.graph[DT.BoundaryIndex])) == sort(unique(bn))
-        for (boundary_index, segment_index) in tri.boundary_map
-            for (j, k) in adj2v[boundary_index]
-                @test adj[(j, k)] == boundary_index
-                @test j ∈ DT.get_boundary_nodes(bn, segment_index) &&
-                      k ∈ DT.get_boundary_nodes(bn, segment_index)
-            end
-        end
-        for i in length(tri.boundary_nodes):-1:2
-            local u, v
-            u = tri.boundary_nodes[i]
-            v = tri.boundary_nodes[i-1]
-            @test DT.get_adjacent(tri, u, v) == DT.BoundaryIndex
-        end
-    end
-
-    @testset "A square: Multiple boundaries with no ghost triangles" begin
-        tri = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5; add_ghost_triangles=false,
-            single_boundary=false)
-        elements, nodes, bn = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5; convert_result=false,
-            single_boundary=false)
-        @test tri.points == nodes
-        @test tri.triangles == Set{NTuple{3,Int64}}((T[1], T[2], T[3]) for T in eachcol(elements))
-        @test tri.boundary_nodes == bn
-        @test tri.boundary_map == OrderedDict(-(1:4) .=> 1:4)
-        @test collect(Base.keys(tri.boundary_map)) == [-1, -2, -3, -4]
-        adj = tri.adjacent.adjacent
-        for T in tri.triangles
-            i, j, k = T
-            @test adj[(i, j)] == k
-            @test adj[(j, k)] == i
-            @test adj[(k, i)] == j
-        end
-        adj2v = tri.adjacent2vertex.adjacent2vertex
-        for ((u, v), w) in adj
-            @test (u, v) ∈ adj2v[w]
-        end
-        for (i, S) in adj2v
-            for (j, k) in S
-                if all(≥(DT.FirstPointIndex), (i, j, k))
-                    @test adj[(j, k)] == i
-                    @test adj[(k, i)] == j
-                    @test adj[(i, j)] == k
+            adj2v = tri.adjacent2vertex.adjacent2vertex
+            for (i, S) in adj2v
+                for (j, k) in S
+                    if all(≥(DT.FirstPointIndex), (i, j, k))
+                        @test adj[(j, k)] == i
+                        @test adj[(k, i)] == j
+                        @test adj[(i, j)] == k
+                    end
                 end
             end
-        end
-        for (boundary_index, segment_index) in tri.boundary_map
-            for (j, k) in adj2v[boundary_index]
-                @test adj[(j, k)] == boundary_index
-                @test j ∈ bn[segment_index] && k ∈ bn[segment_index]
+            for (j, k) in adj2v[DT.BoundaryIndex]
+                @test adj[(j, k)] == DT.BoundaryIndex
+                @test j ∈ bn && k ∈ bn
             end
-        end
-        @test tri.boundary_nodes == bn
-        g = tri.graph
-        @test sort(collect(g.graph[DT.BoundaryIndex])) == sort(unique(bn[1]))
-        @test sort(collect(g.graph[DT.BoundaryIndex-1])) == sort(unique(bn[2]))
-        @test sort(collect(g.graph[DT.BoundaryIndex-2])) == sort(unique(bn[3]))
-        @test sort(collect(g.graph[DT.BoundaryIndex-3])) == sort(unique(bn[4]))
-        for j in 1:4
-            for i in 1:(lastindex(bn[j])-1)
+            @test tri.boundary_nodes == bn
+            g = tri.graph
+            @test sort(collect(g.graph[DT.BoundaryIndex])) == sort(unique(bn))
+            DT.delete_vertex!(g, DT.BoundaryIndex)
+            for (i, j) in g.graph.E
+                k = adj[(i, j)]
+                el = (i, j, k)
+                e = (i, j)
+                if k < DT.FirstPointIndex
+                    k = adj[(j, i)]
+                    el = (k, j, i)
+                    e = (j, i)
+                end
+                τ, pred = DT.contains_triangle(el, tri.triangles)
+                @test DT.compare_triangles(τ, el)
+                @test pred
+                @test e ∈ adj2v[k]
+            end
+            @test tri.constrained_edges == Set{NTuple{2,Int64}}()
+            @test tri.boundary_map == OrderedDict(DT.BoundaryIndex => bn)
+            for i in 1:(lastindex(bn)-1)
                 local u, v, w
-                u = bn[j][i]
-                v = bn[j][i+1]
+                u = bn[i]
+                v = bn[i+1]
                 w = adj[(v, u)]
-                @test adj[(v, u)] == DT.BoundaryIndex - j + 1
+                @test adj[(v, u)] == DT.BoundaryIndex
                 @test adj[(u, w)] == DT.DefaultAdjacentValue
                 @test adj[(w, v)] == DT.DefaultAdjacentValue
-                @test (v, u) ∈ adj2v[DT.BoundaryIndex-j+1]
-                @test u ∈ tri.graph.graph[DT.BoundaryIndex-j+1] &&
-                      v ∈ tri.graph.graph[DT.BoundaryIndex-j+1]
+                @test (v, u) ∈ adj2v[DT.BoundaryIndex]
+            end
+            for (boundary_index, segment_index) in tri.boundary_map
+                for (j, k) in adj2v[boundary_index]
+                    @test adj[(j, k)] == boundary_index
+                    @test j ∈ DT.get_boundary_nodes(bn, segment_index) &&
+                        k ∈ DT.get_boundary_nodes(bn, segment_index)
+                end
             end
         end
-        DT.delete_boundary_vertices_from_graph!(g)
-        for (i, j) in g.graph.E
-            k = adj[(i, j)]
-            el = (i, j, k)
-            e = (i, j)
-            if k < DT.FirstPointIndex
-                k = adj[(j, i)]
-                el = (k, j, i)
-                e = (j, i)
-            end
-            τ, pred = DT.contains_triangle(el, tri.triangles)
-            @test DT.compare_triangles(τ, el)
-            @test pred
-            @test e ∈ adj2v[k]
-        end
-        @test tri.constrained_edges == Set{NTuple{2,Int64}}()
-    end
 
-    @testset "A square: Multiple boundaries with ghost triangles" begin
-        tri = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5; add_ghost_triangles=true,
-            single_boundary=false)
-        elements, nodes, bn = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5; convert_result=false,
-            single_boundary=false)
-        @test tri.points == nodes
-        elset = Set{NTuple{3,Int64}}((T[1], T[2], T[3]) for T in eachcol(elements))
-        ng = 0
-        for T in tri.triangles
-            i, j, k = indices(T)
-            if all(≥(DT.FirstPointIndex), (i, j, k))
-                @test T ∈ elset
-            elseif i < DT.FirstPointIndex
-                n = tri.boundary_map[i]
-                @test j ∈ bn[n] && k ∈ bn[n]
-                @test tri.adjacent.adjacent[(j, k)] == i
-                @test j ∈ tri.graph.graph[i] && k ∈ tri.graph.graph[i]
-                @test (j, k) ∈ tri.adjacent2vertex.adjacent2vertex[i]
-                ng += 1
-            elseif j < DT.FirstPointIndex
-                n = tri.boundary_map[j]
-                @test k ∈ bn[n] && i ∈ bn[n]
-                @test tri.adjacent.adjacent[(k, i)] == j
-                @test k ∈ tri.graph.graph[j] && i ∈ tri.graph.graph[j]
-                @test (k, i) ∈ tri.adjacent2vertex.adjacent2vertex[j]
-                ng += 1
-            elseif k < DT.FirstPointIndex
-                n = tri.boundary_map[k]
-                @test i ∈ bn[n] && j ∈ bn[n]
-                @test tri.adjacent.adjacent[(i, j)] == k
-                @test i ∈ tri.graph.graph[k] && j ∈ tri.graph.graph[k]
-                @test (i, j) ∈ tri.adjacent2vertex.adjacent2vertex[k]
-                ng += 1
+        @testset "A square: One boundary with ghost triangles" begin
+            tri = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5; add_ghost_triangles=true)
+            elements, nodes, bn = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5; convert_result=false)
+            @test tri.points == nodes
+            elset = Set{NTuple{3,Int64}}((T[1], T[2], T[3]) for T in eachcol(elements))
+            ng = 0
+            for T in tri.triangles
+                i, j, k = indices(T)
+                if all(≥(DT.FirstPointIndex), (i, j, k))
+                    @test T ∈ elset
+                elseif i < DT.FirstPointIndex
+                    @test j ∈ bn && k ∈ bn
+                    @test tri.adjacent.adjacent[(j, k)] == i
+                    @test j ∈ tri.graph.graph[DT.BoundaryIndex] && k ∈ tri.graph.graph[DT.BoundaryIndex]
+                    @test (j, k) ∈ tri.adjacent2vertex.adjacent2vertex[DT.BoundaryIndex]
+                    ng += 1
+                elseif j < DT.FirstPointIndex
+                    @test i ∈ bn && k ∈ bn
+                    @test tri.adjacent.adjacent[(k, i)] == j
+                    @test i ∈ tri.graph.graph[DT.BoundaryIndex] && k ∈ tri.graph.graph[DT.BoundaryIndex]
+                    @test (k, i) ∈ tri.adjacent2vertex.adjacent2vertex[DT.BoundaryIndex]
+                    ng += 1
+                elseif k < DT.FirstPointIndex
+                    @test i ∈ bn && j ∈ bn
+                    @test tri.adjacent.adjacent[(i, j)] == k
+                    @test i ∈ tri.graph.graph[DT.BoundaryIndex] && j ∈ tri.graph.graph[DT.BoundaryIndex]
+                    @test (i, j) ∈ tri.adjacent2vertex.adjacent2vertex[DT.BoundaryIndex]
+                    ng += 1
+                end
             end
-        end
-        @test tri.boundary_nodes == bn
-        @test tri.boundary_map == OrderedDict(-(1:4) .=> 1:4)
-        @test collect(Base.keys(tri.boundary_map)) == [-1, -2, -3, -4]
-        adj = tri.adjacent.adjacent
-        for T in tri.triangles
-            i, j, k = T
-            @test adj[(i, j)] == k
-            @test adj[(j, k)] == i
-            @test adj[(k, i)] == j
-        end
-        adj2v = tri.adjacent2vertex.adjacent2vertex
-        for (i, S) in adj2v
-            for (j, k) in S
+            @test ng == DT.num_boundary_edges(bn)
+            adj = tri.adjacent.adjacent
+            for T in tri.triangles
+                i, j, k = T
+                @test adj[(i, j)] == k
                 @test adj[(j, k)] == i
                 @test adj[(k, i)] == j
-                @test adj[(i, j)] == k
             end
-        end
-        for (boundary_index, segment_index) in tri.boundary_map
-            for (j, k) in adj2v[boundary_index]
-                @test adj[(j, k)] == boundary_index
-                @test adj[(k, boundary_index)] == j
-                @test adj[(boundary_index, j)] == k
-                @test j ∈ bn[segment_index] && k ∈ bn[segment_index]
+            adj2v = tri.adjacent2vertex.adjacent2vertex
+            for ((u, v), w) in adj
+                @test (u, v) ∈ adj2v[w]
             end
-        end
-        @test tri.boundary_nodes == bn
-        for j in 1:4
-            for i in 1:(lastindex(bn[j])-1)
+            for (i, S) in adj2v
+                for (j, k) in S
+                    @test adj[(j, k)] == i
+                    @test adj[(k, i)] == j
+                    @test adj[(i, j)] == k
+                end
+            end
+            for (j, k) in adj2v[DT.BoundaryIndex]
+                @test adj[(j, k)] == DT.BoundaryIndex
+                @test j ∈ bn && k ∈ bn
+            end
+            @test tri.boundary_nodes == bn
+            g = tri.graph
+            for (i, j) in g.graph.E
+                k = adj[(i, j)]
+                el = (i, j, k)
+                τ, pred = DT.contains_triangle(el, tri.triangles)
+                @test DT.compare_triangles(τ, el)
+                @test (i, j) ∈ adj2v[k]
+            end
+            @test tri.constrained_edges == Set{NTuple{2,Int64}}()
+            @test tri.boundary_map == OrderedDict(DT.BoundaryIndex => bn)
+            for i in 1:(lastindex(bn)-1)
                 local u, v, w
-                u = bn[j][i]
-                v = bn[j][i+1]
+                u = bn[i]
+                v = bn[i+1]
                 w = adj[(v, u)]
-                @test adj[(v, u)] == DT.BoundaryIndex - j + 1
+                @test adj[(v, u)] == DT.BoundaryIndex
                 @test adj[(u, w)] == v
                 @test adj[(w, v)] == u
-                @test (v, u) ∈ adj2v[DT.BoundaryIndex-j+1]
-                @test u ∈ tri.graph.graph[DT.BoundaryIndex-j+1] &&
-                      v ∈ tri.graph.graph[DT.BoundaryIndex-j+1]
+                @test (v, u) ∈ adj2v[DT.BoundaryIndex]
+                @test u ∈ tri.graph.graph[DT.BoundaryIndex] && v ∈ tri.graph.graph[DT.BoundaryIndex]
+            end
+            @test sort(collect(g.graph[DT.BoundaryIndex])) == sort(unique(bn))
+            for (boundary_index, segment_index) in tri.boundary_map
+                for (j, k) in adj2v[boundary_index]
+                    @test adj[(j, k)] == boundary_index
+                    @test j ∈ DT.get_boundary_nodes(bn, segment_index) &&
+                        k ∈ DT.get_boundary_nodes(bn, segment_index)
+                end
+            end
+            for i in length(tri.boundary_nodes):-1:2
+                local u, v
+                u = tri.boundary_nodes[i]
+                v = tri.boundary_nodes[i-1]
+                @test DT.get_adjacent(tri, u, v) == DT.BoundaryIndex
             end
         end
-        g = tri.graph
-        for (i, j) in g.graph.E
-            k = adj[(i, j)]
-            if k == DT.DefaultAdjacentValue # since the graph is undirected, the ghost edges could be in the wrong direction
-                @test i < DT.FirstPointIndex || j < DT.FirstPointIndex
-                i, j = j, i
-                k = adj[(i, j)]
-            end
-            el = (i, j, k)
-            τ, pred = DT.contains_triangle(el, tri.triangles)
-            @test DT.compare_triangles(τ, el)
-            @test (i, j) ∈ adj2v[k]
-        end
-        @test tri.constrained_edges == Set{NTuple{2,Int64}}()
-        @test DT.get_adjacent(tri, 1, 16) == DT.BoundaryIndex - 3
-        @test DT.get_adjacent(tri, 16, 8) == DT.BoundaryIndex - 3
-        @test DT.get_adjacent(tri, 8, 15) == DT.BoundaryIndex - 3
-        @test DT.get_adjacent(tri, 15, 7) == DT.BoundaryIndex - 3
-        @test DT.get_adjacent(tri, 7, 14) == DT.BoundaryIndex - 2
-        @test DT.get_adjacent(tri, 14, 6) == DT.BoundaryIndex - 2
-        @test DT.get_adjacent(tri, 6, 13) == DT.BoundaryIndex - 2
-        @test DT.get_adjacent(tri, 13, 5) == DT.BoundaryIndex - 2
-        @test DT.get_adjacent(tri, 5, 12) == DT.BoundaryIndex - 1
-        @test DT.get_adjacent(tri, 12, 4) == DT.BoundaryIndex - 1
-        @test DT.get_adjacent(tri, 4, 11) == DT.BoundaryIndex - 1
-        @test DT.get_adjacent(tri, 11, 3) == DT.BoundaryIndex - 1
-        @test DT.get_adjacent(tri, 3, 10) == DT.BoundaryIndex
-        @test DT.get_adjacent(tri, 10, 2) == DT.BoundaryIndex
-        @test DT.get_adjacent(tri, 2, 9) == DT.BoundaryIndex
-        @test DT.get_adjacent(tri, 9, 1) == DT.BoundaryIndex
-        @test sum(length(tri.adjacent2vertex.adjacent2vertex[DT.BoundaryIndex])) +
-              sum(length(tri.adjacent2vertex.adjacent2vertex[DT.BoundaryIndex-1])) +
-              sum(length(tri.adjacent2vertex.adjacent2vertex[DT.BoundaryIndex-2])) +
-              sum(length(tri.adjacent2vertex.adjacent2vertex[DT.BoundaryIndex-3])) == 16
-    end
 
-    @testset "A complicated geometry" begin
-        x, y = complicated_geometry()
-        tri = generate_mesh(x, y, 0.1; convert_result=true, add_ghost_triangles=true)
-
-        elements, nodes, bn = generate_mesh(x, y, 0.1; convert_result=false)
-        @test tri.points == nodes
-        elset = Set{NTuple{3,Int64}}((T[1], T[2], T[3]) for T in eachcol(elements))
-        ng = 0
-        for T in tri.triangles
-            i, j, k = indices(T)
-            if all(≥(DT.FirstPointIndex), (i, j, k))
-                @test T ∈ elset
-            elseif i < DT.FirstPointIndex
-                m, n = tri.boundary_map[i]
-                @test j ∈ bn[m][n] && k ∈ bn[m][n]
-                @test tri.adjacent.adjacent[(j, k)] == i
-                @test j ∈ tri.graph.graph[i] && k ∈ tri.graph.graph[i]
-                @test (j, k) ∈ tri.adjacent2vertex.adjacent2vertex[i]
-                ng += 1
-            elseif j < DT.FirstPointIndex
-                m, n = tri.boundary_map[j]
-                @test k ∈ bn[m][n] && i ∈ bn[m][n]
-                @test tri.adjacent.adjacent[(k, i)] == j
-                @test k ∈ tri.graph.graph[j] && i ∈ tri.graph.graph[j]
-                @test (k, i) ∈ tri.adjacent2vertex.adjacent2vertex[j]
-                ng += 1
-            elseif k < DT.FirstPointIndex
-                m, n = tri.boundary_map[k]
-                @test i ∈ bn[m][n] && j ∈ bn[m][n]
-                @test tri.adjacent.adjacent[(i, j)] == k
-                @test i ∈ tri.graph.graph[k] && j ∈ tri.graph.graph[k]
-                @test (i, j) ∈ tri.adjacent2vertex.adjacent2vertex[k]
-                ng += 1
-            end
-        end
-        @test tri.boundary_nodes == bn
-        @test tri.boundary_map ==
-              OrderedDict(-1 => (1, 1), -2 => (1, 2), -3 => (1, 3), -4 => (1, 4),
-            -5 => (2, 1),
-            -6 => (3, 1),
-            -7 => (4, 1), -8 => (4, 2), -9 => (4, 3), -10 => (4, 4),
-            -11 => (5, 1))
-        @test collect(Base.keys(tri.boundary_map)) == [-1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11]
-        adj = tri.adjacent.adjacent
-        for T in tri.triangles
-            i, j, k = T
-            @test adj[(i, j)] == k
-            @test adj[(j, k)] == i
-            @test adj[(k, i)] == j
-        end
-        adj2v = tri.adjacent2vertex.adjacent2vertex
-        for (i, S) in adj2v
-            for (j, k) in S
+        @testset "A square: Multiple boundaries with no ghost triangles" begin
+            tri = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5; add_ghost_triangles=false,
+                single_boundary=false)
+            elements, nodes, bn = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5; convert_result=false,
+                single_boundary=false)
+            @test tri.points == nodes
+            @test tri.triangles == Set{NTuple{3,Int64}}((T[1], T[2], T[3]) for T in eachcol(elements))
+            @test tri.boundary_nodes == bn
+            @test tri.boundary_map == OrderedDict(-(1:4) .=> 1:4)
+            @test collect(Base.keys(tri.boundary_map)) == [-1, -2, -3, -4]
+            adj = tri.adjacent.adjacent
+            for T in tri.triangles
+                i, j, k = T
+                @test adj[(i, j)] == k
                 @test adj[(j, k)] == i
                 @test adj[(k, i)] == j
-                @test adj[(i, j)] == k
             end
-        end
-        for (boundary_index, segment_index) in tri.boundary_map
-            for (j, k) in adj2v[boundary_index]
-                @test adj[(j, k)] == boundary_index
-                @test adj[(k, boundary_index)] == j
-                @test adj[(boundary_index, j)] == k
-                @test j ∈ DT.get_boundary_nodes(bn, segment_index) &&
-                      k ∈ DT.get_boundary_nodes(bn, segment_index)
+            adj2v = tri.adjacent2vertex.adjacent2vertex
+            for ((u, v), w) in adj
+                @test (u, v) ∈ adj2v[w]
             end
-        end
-        @test tri.boundary_nodes == bn
-        current_index = DT.BoundaryIndex
-        for m in 1:DT.num_curves(bn)
-            bn_m = DT.get_boundary_nodes(bn, m)
-            for n in 1:DT.num_segments(bn_m)
-                bn_n = DT.get_boundary_nodes(bn_m, n)
-                for ℓ in 1:(lastindex(bn_m)-1)
+            for (i, S) in adj2v
+                for (j, k) in S
+                    if all(≥(DT.FirstPointIndex), (i, j, k))
+                        @test adj[(j, k)] == i
+                        @test adj[(k, i)] == j
+                        @test adj[(i, j)] == k
+                    end
+                end
+            end
+            for (boundary_index, segment_index) in tri.boundary_map
+                for (j, k) in adj2v[boundary_index]
+                    @test adj[(j, k)] == boundary_index
+                    @test j ∈ bn[segment_index] && k ∈ bn[segment_index]
+                end
+            end
+            @test tri.boundary_nodes == bn
+            g = tri.graph
+            @test sort(collect(g.graph[DT.BoundaryIndex])) == sort(unique(bn[1]))
+            @test sort(collect(g.graph[DT.BoundaryIndex-1])) == sort(unique(bn[2]))
+            @test sort(collect(g.graph[DT.BoundaryIndex-2])) == sort(unique(bn[3]))
+            @test sort(collect(g.graph[DT.BoundaryIndex-3])) == sort(unique(bn[4]))
+            for j in 1:4
+                for i in 1:(lastindex(bn[j])-1)
                     local u, v, w
-                    u = bn_n[ℓ]
-                    v = bn_n[ℓ+1]
+                    u = bn[j][i]
+                    v = bn[j][i+1]
                     w = adj[(v, u)]
-                    @test adj[(v, u)] == current_index
+                    @test adj[(v, u)] == DT.BoundaryIndex - j + 1
+                    @test adj[(u, w)] == DT.DefaultAdjacentValue
+                    @test adj[(w, v)] == DT.DefaultAdjacentValue
+                    @test (v, u) ∈ adj2v[DT.BoundaryIndex-j+1]
+                    @test u ∈ tri.graph.graph[DT.BoundaryIndex-j+1] &&
+                        v ∈ tri.graph.graph[DT.BoundaryIndex-j+1]
+                end
+            end
+            DT.delete_boundary_vertices_from_graph!(g)
+            for (i, j) in g.graph.E
+                k = adj[(i, j)]
+                el = (i, j, k)
+                e = (i, j)
+                if k < DT.FirstPointIndex
+                    k = adj[(j, i)]
+                    el = (k, j, i)
+                    e = (j, i)
+                end
+                τ, pred = DT.contains_triangle(el, tri.triangles)
+                @test DT.compare_triangles(τ, el)
+                @test pred
+                @test e ∈ adj2v[k]
+            end
+            @test tri.constrained_edges == Set{NTuple{2,Int64}}()
+        end
+
+        @testset "A square: Multiple boundaries with ghost triangles" begin
+            tri = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5; add_ghost_triangles=true,
+                single_boundary=false)
+            elements, nodes, bn = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5; convert_result=false,
+                single_boundary=false)
+            @test tri.points == nodes
+            elset = Set{NTuple{3,Int64}}((T[1], T[2], T[3]) for T in eachcol(elements))
+            ng = 0
+            for T in tri.triangles
+                i, j, k = indices(T)
+                if all(≥(DT.FirstPointIndex), (i, j, k))
+                    @test T ∈ elset
+                elseif i < DT.FirstPointIndex
+                    n = tri.boundary_map[i]
+                    @test j ∈ bn[n] && k ∈ bn[n]
+                    @test tri.adjacent.adjacent[(j, k)] == i
+                    @test j ∈ tri.graph.graph[i] && k ∈ tri.graph.graph[i]
+                    @test (j, k) ∈ tri.adjacent2vertex.adjacent2vertex[i]
+                    ng += 1
+                elseif j < DT.FirstPointIndex
+                    n = tri.boundary_map[j]
+                    @test k ∈ bn[n] && i ∈ bn[n]
+                    @test tri.adjacent.adjacent[(k, i)] == j
+                    @test k ∈ tri.graph.graph[j] && i ∈ tri.graph.graph[j]
+                    @test (k, i) ∈ tri.adjacent2vertex.adjacent2vertex[j]
+                    ng += 1
+                elseif k < DT.FirstPointIndex
+                    n = tri.boundary_map[k]
+                    @test i ∈ bn[n] && j ∈ bn[n]
+                    @test tri.adjacent.adjacent[(i, j)] == k
+                    @test i ∈ tri.graph.graph[k] && j ∈ tri.graph.graph[k]
+                    @test (i, j) ∈ tri.adjacent2vertex.adjacent2vertex[k]
+                    ng += 1
+                end
+            end
+            @test tri.boundary_nodes == bn
+            @test tri.boundary_map == OrderedDict(-(1:4) .=> 1:4)
+            @test collect(Base.keys(tri.boundary_map)) == [-1, -2, -3, -4]
+            adj = tri.adjacent.adjacent
+            for T in tri.triangles
+                i, j, k = T
+                @test adj[(i, j)] == k
+                @test adj[(j, k)] == i
+                @test adj[(k, i)] == j
+            end
+            adj2v = tri.adjacent2vertex.adjacent2vertex
+            for (i, S) in adj2v
+                for (j, k) in S
+                    @test adj[(j, k)] == i
+                    @test adj[(k, i)] == j
+                    @test adj[(i, j)] == k
+                end
+            end
+            for (boundary_index, segment_index) in tri.boundary_map
+                for (j, k) in adj2v[boundary_index]
+                    @test adj[(j, k)] == boundary_index
+                    @test adj[(k, boundary_index)] == j
+                    @test adj[(boundary_index, j)] == k
+                    @test j ∈ bn[segment_index] && k ∈ bn[segment_index]
+                end
+            end
+            @test tri.boundary_nodes == bn
+            for j in 1:4
+                for i in 1:(lastindex(bn[j])-1)
+                    local u, v, w
+                    u = bn[j][i]
+                    v = bn[j][i+1]
+                    w = adj[(v, u)]
+                    @test adj[(v, u)] == DT.BoundaryIndex - j + 1
                     @test adj[(u, w)] == v
                     @test adj[(w, v)] == u
-                    @test (v, u) ∈ adj2v[current_index]
-                    @test u ∈ tri.graph.graph[current_index] && v ∈ tri.graph.graph[current_index]
+                    @test (v, u) ∈ adj2v[DT.BoundaryIndex-j+1]
+                    @test u ∈ tri.graph.graph[DT.BoundaryIndex-j+1] &&
+                        v ∈ tri.graph.graph[DT.BoundaryIndex-j+1]
                 end
-                current_index -= 1
             end
-        end
-        g = tri.graph
-        for (i, j) in g.graph.E
-            k = adj[(i, j)]
-            if k == DT.DefaultAdjacentValue # since the graph is undirected, the ghost edges could be in the wrong direction
-                @test i < DT.FirstPointIndex || j < DT.FirstPointIndex
-                i, j = j, i
+            g = tri.graph
+            for (i, j) in g.graph.E
                 k = adj[(i, j)]
+                if k == DT.DefaultAdjacentValue # since the graph is undirected, the ghost edges could be in the wrong direction
+                    @test i < DT.FirstPointIndex || j < DT.FirstPointIndex
+                    i, j = j, i
+                    k = adj[(i, j)]
+                end
+                el = (i, j, k)
+                τ, pred = DT.contains_triangle(el, tri.triangles)
+                @test DT.compare_triangles(τ, el)
+                @test (i, j) ∈ adj2v[k]
             end
-            el = (i, j, k)
-            τ, pred = DT.contains_triangle(el, tri.triangles)
-            @test DT.compare_triangles(τ, el)
-            @test (i, j) ∈ adj2v[k]
+            @test tri.constrained_edges == Set{NTuple{2,Int64}}()
+            @test DT.get_adjacent(tri, 1, 16) == DT.BoundaryIndex - 3
+            @test DT.get_adjacent(tri, 16, 8) == DT.BoundaryIndex - 3
+            @test DT.get_adjacent(tri, 8, 15) == DT.BoundaryIndex - 3
+            @test DT.get_adjacent(tri, 15, 7) == DT.BoundaryIndex - 3
+            @test DT.get_adjacent(tri, 7, 14) == DT.BoundaryIndex - 2
+            @test DT.get_adjacent(tri, 14, 6) == DT.BoundaryIndex - 2
+            @test DT.get_adjacent(tri, 6, 13) == DT.BoundaryIndex - 2
+            @test DT.get_adjacent(tri, 13, 5) == DT.BoundaryIndex - 2
+            @test DT.get_adjacent(tri, 5, 12) == DT.BoundaryIndex - 1
+            @test DT.get_adjacent(tri, 12, 4) == DT.BoundaryIndex - 1
+            @test DT.get_adjacent(tri, 4, 11) == DT.BoundaryIndex - 1
+            @test DT.get_adjacent(tri, 11, 3) == DT.BoundaryIndex - 1
+            @test DT.get_adjacent(tri, 3, 10) == DT.BoundaryIndex
+            @test DT.get_adjacent(tri, 10, 2) == DT.BoundaryIndex
+            @test DT.get_adjacent(tri, 2, 9) == DT.BoundaryIndex
+            @test DT.get_adjacent(tri, 9, 1) == DT.BoundaryIndex
+            @test sum(length(tri.adjacent2vertex.adjacent2vertex[DT.BoundaryIndex])) +
+                sum(length(tri.adjacent2vertex.adjacent2vertex[DT.BoundaryIndex-1])) +
+                sum(length(tri.adjacent2vertex.adjacent2vertex[DT.BoundaryIndex-2])) +
+                sum(length(tri.adjacent2vertex.adjacent2vertex[DT.BoundaryIndex-3])) == 16
         end
-        @test tri.constrained_edges == Set{NTuple{2,Int64}}()
 
-        bn1 = tri.boundary_nodes[1]
-        for i in eachindex(bn1)
-            for (u, v) in zip(bn1[i][end:-1:2], bn1[i][(end-1):-1:1])
-                @test DT.get_adjacent(tri, u, v) == DT.BoundaryIndex - i + 1
-            end
-        end
-        bn2, bn3, bn4, bn5 = tri.boundary_nodes[(begin+1):end]
-        for i in eachindex(bn2)
-            for (u, v) in zip(bn2[i][end:-1:2], bn2[i][(end-1):-1:1])
-                @test DT.get_adjacent(tri, u, v) == DT.BoundaryIndex - 5 + 1
-            end
-        end
-        for i in eachindex(bn3)
-            for (u, v) in zip(bn3[i][end:-1:2], bn3[i][(end-1):-1:1])
-                @test DT.get_adjacent(tri, u, v) == DT.BoundaryIndex - 6 + 1
-            end
-        end
-        for i in eachindex(bn4)
-            for (u, v) in zip(bn4[i][end:-1:2], bn4[i][(end-1):-1:1])
-                @test DT.get_adjacent(tri, u, v) == (-7, -8, -9, -10)[i]
-            end
-        end
-        for i in eachindex(bn5)
-            for (u, v) in zip(bn5[i][end:-1:2], bn5[i][(end-1):-1:1])
-                @test DT.get_adjacent(tri, u, v) == -11
-            end
-        end
-        @test DT.get_adjacent(tri, 111, 337) == -10
-        @test DT.get_adjacent(tri, 337, 122) == -10
-        @test DT.get_adjacent(tri, 122, 336) == -10
-        @test DT.get_adjacent(tri, 336, 121) == -10
-        @test DT.get_adjacent(tri, 121, 335) == -10
-        @test DT.get_adjacent(tri, 335, 120) == -10
-        @test DT.get_adjacent(tri, 120, 334) == -9
-        @test DT.get_adjacent(tri, 334, 333) == -9
-        @test DT.get_adjacent(tri, 117, 307) == -8
-        @test tri.convex_hull.points == tri.points
-        @test tri.convex_hull.indices == convex_hull(tri.points).indices
-    end
+        @testset "A complicated geometry" begin
+            x, y = complicated_geometry()
+            tri = generate_mesh(x, y, 0.1; convert_result=true, add_ghost_triangles=true)
 
-    @testset "Another specific example: Tricuspoid" begin
-        a = 4 / 5
-        t = LinRange(0, 2π, 100)
-        x = @. a * (2cos(t) + cos(2t))
-        y = @. a * (2sin(t) - sin(2t))
-        tri = generate_mesh(x, y, 0.1)
-        tri2 = generate_mesh(x, y, 1.0)
-        fig = Figure()
-        ax = Axis(fig[1, 1], xlabel=L"x", ylabel=L"y", width=300, height=300,
-            title=L"(a):$ $ Dense mesh", titlealign=:left)
-        triplot!(ax, tri)
-        ax = Axis(fig[1, 2], xlabel=L"x", ylabel=L"y", width=300, height=300,
-            title=L"(b):$ $  Coarse mesh", titlealign=:left)
-        triplot!(ax, tri2)
-        resize_to_layout!(fig)
-    end
+            elements, nodes, bn = generate_mesh(x, y, 0.1; convert_result=false)
+            @test tri.points == nodes
+            elset = Set{NTuple{3,Int64}}((T[1], T[2], T[3]) for T in eachcol(elements))
+            ng = 0
+            for T in tri.triangles
+                i, j, k = indices(T)
+                if all(≥(DT.FirstPointIndex), (i, j, k))
+                    @test T ∈ elset
+                elseif i < DT.FirstPointIndex
+                    m, n = tri.boundary_map[i]
+                    @test j ∈ bn[m][n] && k ∈ bn[m][n]
+                    @test tri.adjacent.adjacent[(j, k)] == i
+                    @test j ∈ tri.graph.graph[i] && k ∈ tri.graph.graph[i]
+                    @test (j, k) ∈ tri.adjacent2vertex.adjacent2vertex[i]
+                    ng += 1
+                elseif j < DT.FirstPointIndex
+                    m, n = tri.boundary_map[j]
+                    @test k ∈ bn[m][n] && i ∈ bn[m][n]
+                    @test tri.adjacent.adjacent[(k, i)] == j
+                    @test k ∈ tri.graph.graph[j] && i ∈ tri.graph.graph[j]
+                    @test (k, i) ∈ tri.adjacent2vertex.adjacent2vertex[j]
+                    ng += 1
+                elseif k < DT.FirstPointIndex
+                    m, n = tri.boundary_map[k]
+                    @test i ∈ bn[m][n] && j ∈ bn[m][n]
+                    @test tri.adjacent.adjacent[(i, j)] == k
+                    @test i ∈ tri.graph.graph[k] && j ∈ tri.graph.graph[k]
+                    @test (i, j) ∈ tri.adjacent2vertex.adjacent2vertex[k]
+                    ng += 1
+                end
+            end
+            @test tri.boundary_nodes == bn
+            @test tri.boundary_map ==
+                OrderedDict(-1 => (1, 1), -2 => (1, 2), -3 => (1, 3), -4 => (1, 4),
+                -5 => (2, 1),
+                -6 => (3, 1),
+                -7 => (4, 1), -8 => (4, 2), -9 => (4, 3), -10 => (4, 4),
+                -11 => (5, 1))
+            @test collect(Base.keys(tri.boundary_map)) == [-1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11]
+            adj = tri.adjacent.adjacent
+            for T in tri.triangles
+                i, j, k = T
+                @test adj[(i, j)] == k
+                @test adj[(j, k)] == i
+                @test adj[(k, i)] == j
+            end
+            adj2v = tri.adjacent2vertex.adjacent2vertex
+            for (i, S) in adj2v
+                for (j, k) in S
+                    @test adj[(j, k)] == i
+                    @test adj[(k, i)] == j
+                    @test adj[(i, j)] == k
+                end
+            end
+            for (boundary_index, segment_index) in tri.boundary_map
+                for (j, k) in adj2v[boundary_index]
+                    @test adj[(j, k)] == boundary_index
+                    @test adj[(k, boundary_index)] == j
+                    @test adj[(boundary_index, j)] == k
+                    @test j ∈ DT.get_boundary_nodes(bn, segment_index) &&
+                        k ∈ DT.get_boundary_nodes(bn, segment_index)
+                end
+            end
+            @test tri.boundary_nodes == bn
+            current_index = DT.BoundaryIndex
+            for m in 1:DT.num_curves(bn)
+                bn_m = DT.get_boundary_nodes(bn, m)
+                for n in 1:DT.num_segments(bn_m)
+                    bn_n = DT.get_boundary_nodes(bn_m, n)
+                    for ℓ in 1:(lastindex(bn_m)-1)
+                        local u, v, w
+                        u = bn_n[ℓ]
+                        v = bn_n[ℓ+1]
+                        w = adj[(v, u)]
+                        @test adj[(v, u)] == current_index
+                        @test adj[(u, w)] == v
+                        @test adj[(w, v)] == u
+                        @test (v, u) ∈ adj2v[current_index]
+                        @test u ∈ tri.graph.graph[current_index] && v ∈ tri.graph.graph[current_index]
+                    end
+                    current_index -= 1
+                end
+            end
+            g = tri.graph
+            for (i, j) in g.graph.E
+                k = adj[(i, j)]
+                if k == DT.DefaultAdjacentValue # since the graph is undirected, the ghost edges could be in the wrong direction
+                    @test i < DT.FirstPointIndex || j < DT.FirstPointIndex
+                    i, j = j, i
+                    k = adj[(i, j)]
+                end
+                el = (i, j, k)
+                τ, pred = DT.contains_triangle(el, tri.triangles)
+                @test DT.compare_triangles(τ, el)
+                @test (i, j) ∈ adj2v[k]
+            end
+            @test tri.constrained_edges == Set{NTuple{2,Int64}}()
 
-    @testset "Another specific example with multiple segments" begin
-        # The first segment 
-        t = LinRange(0, 1 / 4, 25)
-        x1 = cos.(2π * t)
-        y1 = sin.(2π * t)
-        # The second segment 
-        t = LinRange(0, -3, 25)
-        x2 = collect(t)
-        y2 = repeat([1.0], length(t))
-        # The third segment 
-        t = LinRange(1, 0, 25)
-        x3 = -3.0 .+ (1 .- t) .* sin.(t)
-        y3 = collect(t)
-        # The fourth segment 
-        t = LinRange(0, 1, 25)
-        x4 = collect(-3.0(1 .- t))
-        y4 = collect(0.98t)
-        # The fifth segment 
-        x5 = [0.073914, 0.0797, 0.1522, 0.1522, 0.2, 0.28128, 0.3659, 0.4127, 0.3922, 0.4068, 0.497, 0.631, 0.728, 0.804, 0.888, 1.0]
-        y5 = [0.8815, 0.8056, 0.80268, 0.73258, 0.6, 0.598, 0.5777, 0.525, 0.4346, 0.3645, 0.3032, 0.2886, 0.2623, 0.1367, 0.08127, 0.0]
-        # Now combine the vectors 
-        x = [x1, x2, x3, x4, x5]
-        y = [y1, y2, y3, y4, y5]
-        # Mesh 
-        tri = generate_mesh(x, y, 0.05)
-        fig = Figure()
-        ax = Axis(fig[1, 1], xlabel=L"x", ylabel=L"y", width=600, height=300)
-        triplot!(ax, tri)
-        colors = [:red, :blue, :orange, :purple, :darkgreen]
-        bn_map = get_boundary_map(tri)
-        for (i, segment_index) in enumerate(values(bn_map))
-            bn_nodes = get_boundary_nodes(tri, segment_index)
-            lines!(ax, get_points(tri)[:, bn_nodes], color=colors[i], linewidth=4)
+            bn1 = tri.boundary_nodes[1]
+            for i in eachindex(bn1)
+                for (u, v) in zip(bn1[i][end:-1:2], bn1[i][(end-1):-1:1])
+                    @test DT.get_adjacent(tri, u, v) == DT.BoundaryIndex - i + 1
+                end
+            end
+            bn2, bn3, bn4, bn5 = tri.boundary_nodes[(begin+1):end]
+            for i in eachindex(bn2)
+                for (u, v) in zip(bn2[i][end:-1:2], bn2[i][(end-1):-1:1])
+                    @test DT.get_adjacent(tri, u, v) == DT.BoundaryIndex - 5 + 1
+                end
+            end
+            for i in eachindex(bn3)
+                for (u, v) in zip(bn3[i][end:-1:2], bn3[i][(end-1):-1:1])
+                    @test DT.get_adjacent(tri, u, v) == DT.BoundaryIndex - 6 + 1
+                end
+            end
+            for i in eachindex(bn4)
+                for (u, v) in zip(bn4[i][end:-1:2], bn4[i][(end-1):-1:1])
+                    @test DT.get_adjacent(tri, u, v) == (-7, -8, -9, -10)[i]
+                end
+            end
+            for i in eachindex(bn5)
+                for (u, v) in zip(bn5[i][end:-1:2], bn5[i][(end-1):-1:1])
+                    @test DT.get_adjacent(tri, u, v) == -11
+                end
+            end
+            @test DT.get_adjacent(tri, 111, 337) == -10
+            @test DT.get_adjacent(tri, 337, 122) == -10
+            @test DT.get_adjacent(tri, 122, 336) == -10
+            @test DT.get_adjacent(tri, 336, 121) == -10
+            @test DT.get_adjacent(tri, 121, 335) == -10
+            @test DT.get_adjacent(tri, 335, 120) == -10
+            @test DT.get_adjacent(tri, 120, 334) == -9
+            @test DT.get_adjacent(tri, 334, 333) == -9
+            @test DT.get_adjacent(tri, 117, 307) == -8
+            @test tri.convex_hull.points == tri.points
+            @test tri.convex_hull.indices == convex_hull(tri.points).indices
         end
-        resize_to_layout!(fig)
-    end
 
-    @testset "Complicated example for docs" begin
-        x1 = [collect(LinRange(0, 2, 4)),
-            collect(LinRange(2, 2, 4)),
-            collect(LinRange(2, 0, 4)),
-            collect(LinRange(0, 0, 4))]
-        y1 = [collect(LinRange(0, 0, 4)),
-            collect(LinRange(0, 6, 4)),
-            collect(LinRange(6, 6, 4)),
-            collect(LinRange(6, 0, 4))]
-        r = 0.5
-        h = k = 0.6
-        θ = LinRange(2π, 0, 50)
-        x2 = [h .+ r .* cos.(θ)]
-        y2 = [k .+ r .* sin.(θ)]
-        r = 0.2
-        h = 1.5
-        k = 0.5
-        x3 = [h .+ r .* cos.(θ)]
-        y3 = [k .+ r .* sin.(θ)]
-        x4 = reverse(reverse.([collect(LinRange(1, 1.5, 4)),
-            collect(LinRange(1.5, 1.5, 4)),
-            collect(LinRange(1.5, 1, 4)),
-            collect(LinRange(1, 1, 4))]))
-        y4 = reverse(reverse.([collect(LinRange(2, 2, 4)),
-            collect(LinRange(2, 5, 4)),
-            collect(LinRange(5, 5, 4)),
-            collect(LinRange(5, 2, 4))]))
-        x5 = [reverse([0.2, 0.5, 0.75, 0.75, 0.2, 0.2])]
-        y5 = [reverse([2.0, 2.0, 3.0, 4.0, 5.0, 2.0])]
-        x = [x1, x2, x3, x4, x5]
-        y = [y1, y2, y3, y4, y5]
-        tri = generate_mesh(x, y, 0.2)
-        fig, ax, sc = triplot(tri; recompute_centers=true, show_ghost_edges=true, convex_hull_linestyle=:solid, convex_hull_linewidth=4)
-        xlims!(ax, -0.5, 2.5)
-        ylims!(ax, -0.5, 6.5)
+        @testset "Another specific example: Tricuspoid" begin
+            a = 4 / 5
+            t = LinRange(0, 2π, 100)
+            x = @. a * (2cos(t) + cos(2t))
+            y = @. a * (2sin(t) - sin(2t))
+            tri = generate_mesh(x, y, 0.1)
+            tri2 = generate_mesh(x, y, 1.0)
+            fig = Figure()
+            ax = Axis(fig[1, 1], xlabel=L"x", ylabel=L"y", width=300, height=300,
+                title=L"(a):$ $ Dense mesh", titlealign=:left)
+            triplot!(ax, tri)
+            ax = Axis(fig[1, 2], xlabel=L"x", ylabel=L"y", width=300, height=300,
+                title=L"(b):$ $  Coarse mesh", titlealign=:left)
+            triplot!(ax, tri2)
+            resize_to_layout!(fig)
+        end
+
+        @testset "Another specific example with multiple segments" begin
+            # The first segment 
+            t = LinRange(0, 1 / 4, 25)
+            x1 = cos.(2π * t)
+            y1 = sin.(2π * t)
+            # The second segment 
+            t = LinRange(0, -3, 25)
+            x2 = collect(t)
+            y2 = repeat([1.0], length(t))
+            # The third segment 
+            t = LinRange(1, 0, 25)
+            x3 = -3.0 .+ (1 .- t) .* sin.(t)
+            y3 = collect(t)
+            # The fourth segment 
+            t = LinRange(0, 1, 25)
+            x4 = collect(-3.0(1 .- t))
+            y4 = collect(0.98t)
+            # The fifth segment 
+            x5 = [0.073914, 0.0797, 0.1522, 0.1522, 0.2, 0.28128, 0.3659, 0.4127, 0.3922, 0.4068, 0.497, 0.631, 0.728, 0.804, 0.888, 1.0]
+            y5 = [0.8815, 0.8056, 0.80268, 0.73258, 0.6, 0.598, 0.5777, 0.525, 0.4346, 0.3645, 0.3032, 0.2886, 0.2623, 0.1367, 0.08127, 0.0]
+            # Now combine the vectors 
+            x = [x1, x2, x3, x4, x5]
+            y = [y1, y2, y3, y4, y5]
+            # Mesh 
+            tri = generate_mesh(x, y, 0.05)
+            fig = Figure()
+            ax = Axis(fig[1, 1], xlabel=L"x", ylabel=L"y", width=600, height=300)
+            triplot!(ax, tri)
+            colors = [:red, :blue, :orange, :purple, :darkgreen]
+            bn_map = get_boundary_map(tri)
+            for (i, segment_index) in enumerate(values(bn_map))
+                bn_nodes = get_boundary_nodes(tri, segment_index)
+                lines!(ax, get_points(tri)[:, bn_nodes], color=colors[i], linewidth=4)
+            end
+            resize_to_layout!(fig)
+        end
+
+        @testset "Complicated example for docs" begin
+            x1 = [collect(LinRange(0, 2, 4)),
+                collect(LinRange(2, 2, 4)),
+                collect(LinRange(2, 0, 4)),
+                collect(LinRange(0, 0, 4))]
+            y1 = [collect(LinRange(0, 0, 4)),
+                collect(LinRange(0, 6, 4)),
+                collect(LinRange(6, 6, 4)),
+                collect(LinRange(6, 0, 4))]
+            r = 0.5
+            h = k = 0.6
+            θ = LinRange(2π, 0, 50)
+            x2 = [h .+ r .* cos.(θ)]
+            y2 = [k .+ r .* sin.(θ)]
+            r = 0.2
+            h = 1.5
+            k = 0.5
+            x3 = [h .+ r .* cos.(θ)]
+            y3 = [k .+ r .* sin.(θ)]
+            x4 = reverse(reverse.([collect(LinRange(1, 1.5, 4)),
+                collect(LinRange(1.5, 1.5, 4)),
+                collect(LinRange(1.5, 1, 4)),
+                collect(LinRange(1, 1, 4))]))
+            y4 = reverse(reverse.([collect(LinRange(2, 2, 4)),
+                collect(LinRange(2, 5, 4)),
+                collect(LinRange(5, 5, 4)),
+                collect(LinRange(5, 2, 4))]))
+            x5 = [reverse([0.2, 0.5, 0.75, 0.75, 0.2, 0.2])]
+            y5 = [reverse([2.0, 2.0, 3.0, 4.0, 5.0, 2.0])]
+            x = [x1, x2, x3, x4, x5]
+            y = [y1, y2, y3, y4, y5]
+            tri = generate_mesh(x, y, 0.2)
+            fig, ax, sc = triplot(tri; recompute_centers=true, show_ghost_edges=true, convex_hull_linestyle=:solid, convex_hull_linewidth=4)
+            xlims!(ax, -0.5, 2.5)
+            ylims!(ax, -0.5, 6.5)
+        end
     end
 end

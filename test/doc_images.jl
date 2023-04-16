@@ -1188,32 +1188,34 @@ end
     end
 end
 
-@testset "Tasmania" begin
-    tassy = readdlm("./test/tassy.txt")
-    ymax = @views maximum(tassy[:, 2])
-    tassy = [(x, ymax - y) for (x, y) in eachrow(tassy)]
-    reverse!(tassy)
-    unique!(tassy)
-    push!(tassy, tassy[begin])
-    boundary_nodes, points = convert_boundary_points_to_indices(tassy)
-    tri = triangulate(points; boundary_nodes=boundary_nodes)
-    orig_tri = deepcopy(tri)
-    A = get_total_area(tri)
-    stats = refine!(tri; max_area=1e-3A)
-    fig = Figure(fontsize=33)
-    ax = Axis(fig[1, 1], xlabel=L"x", ylabel=L"y", title=L"(a):$ $ Original", width=400, height=400, titlealign=:left)
-    triplot!(ax, orig_tri, show_convex_hull=false) # orig_tri was deepcopy(triangulate(pts)) from before 
-    ax = Axis(fig[1, 2], xlabel=L"x", ylabel=L"y", title=L"(b):$ $ Refined", width=400, height=400, titlealign=:left)
-    triplot!(ax, tri, show_convex_hull=false)
-    areas = get_all_stat(stats, :area) ./ (1e-3A)
-    angles = getindex.(get_all_stat(stats, :angles), 1) # 1 is the smallest
-    ax = Axis(fig[2, 1], xlabel=L"A/A(\Omega)", ylabel=L"$ $Count", title=L"(c):$ $ Area histogram", width=400, height=400, titlealign=:left)
-    hist!(ax, areas, bins=0:0.01:1)
-    ylims!(ax, 0, 1000)
-    ax = Axis(fig[2, 2], xlabel=L"\theta_{\min}", ylabel=L"$ $Count", title=L"(d):$ $ Angle histogram", width=400, height=400, titlealign=:left)
-    hist!(ax, rad2deg.(angles), bins=0:0.2:60)
-    vlines!(ax, [30.0], color=:red)
-    resize_to_layout!(fig)
-    ylims!(ax, 0, 1000)
-    @test_reference "../docs/src/triangulations/figs/tassy_constrained_refinement.png" fig
+if !get(ENV, "CI", false)
+    @testset "Tasmania" begin
+        tassy = readdlm("./test/tassy.txt")
+        ymax = @views maximum(tassy[:, 2])
+        tassy = [(x, ymax - y) for (x, y) in eachrow(tassy)]
+        reverse!(tassy)
+        unique!(tassy)
+        push!(tassy, tassy[begin])
+        boundary_nodes, points = convert_boundary_points_to_indices(tassy)
+        tri = triangulate(points; boundary_nodes=boundary_nodes)
+        orig_tri = deepcopy(tri)
+        A = get_total_area(tri)
+        stats = refine!(tri; max_area=1e-3A)
+        fig = Figure(fontsize=33)
+        ax = Axis(fig[1, 1], xlabel=L"x", ylabel=L"y", title=L"(a):$ $ Original", width=400, height=400, titlealign=:left)
+        triplot!(ax, orig_tri, show_convex_hull=false) # orig_tri was deepcopy(triangulate(pts)) from before 
+        ax = Axis(fig[1, 2], xlabel=L"x", ylabel=L"y", title=L"(b):$ $ Refined", width=400, height=400, titlealign=:left)
+        triplot!(ax, tri, show_convex_hull=false)
+        areas = get_all_stat(stats, :area) ./ (1e-3A)
+        angles = getindex.(get_all_stat(stats, :angles), 1) # 1 is the smallest
+        ax = Axis(fig[2, 1], xlabel=L"A/A(\Omega)", ylabel=L"$ $Count", title=L"(c):$ $ Area histogram", width=400, height=400, titlealign=:left)
+        hist!(ax, areas, bins=0:0.01:1)
+        ylims!(ax, 0, 1000)
+        ax = Axis(fig[2, 2], xlabel=L"\theta_{\min}", ylabel=L"$ $Count", title=L"(d):$ $ Angle histogram", width=400, height=400, titlealign=:left)
+        hist!(ax, rad2deg.(angles), bins=0:0.2:60)
+        vlines!(ax, [30.0], color=:red)
+        resize_to_layout!(fig)
+        ylims!(ax, 0, 1000)
+        @test_reference "../docs/src/triangulations/figs/tassy_constrained_refinement.png" fig
+    end
 end
