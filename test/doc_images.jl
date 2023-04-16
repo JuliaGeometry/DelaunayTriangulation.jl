@@ -1190,17 +1190,18 @@ end
 
 if !get(ENV, "CI", false)
     @testset "Tasmania" begin
-        tassy = readdlm("./test/tassy.txt")
+        tassy = readdlm("tassy.txt")
         ymax = @views maximum(tassy[:, 2])
         tassy = [(x, ymax - y) for (x, y) in eachrow(tassy)]
         reverse!(tassy)
         unique!(tassy)
         push!(tassy, tassy[begin])
         boundary_nodes, points = convert_boundary_points_to_indices(tassy)
-        tri = triangulate(points; boundary_nodes=boundary_nodes)
+        rng = StableRNG(18181)
+        tri = triangulate(points; boundary_nodes=boundary_nodes, rng)
         orig_tri = deepcopy(tri)
         A = get_total_area(tri)
-        stats = refine!(tri; max_area=1e-3A)
+        stats = refine!(tri; max_area=1e-3A, rng)
         fig = Figure(fontsize=33)
         ax = Axis(fig[1, 1], xlabel=L"x", ylabel=L"y", title=L"(a):$ $ Original", width=400, height=400, titlealign=:left)
         triplot!(ax, orig_tri, show_convex_hull=false) # orig_tri was deepcopy(triangulate(pts)) from before 

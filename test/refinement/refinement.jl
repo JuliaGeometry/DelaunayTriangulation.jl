@@ -289,7 +289,7 @@ end
 
 if !get(ENV, "CI", false)
     @testset "Tasmania" begin
-        tassy = readdlm("./test/tassy.txt")
+        tassy = readdlm("./tassy.txt")
         ymax = @views maximum(tassy[:, 2])
         tassy = [(x, ymax - y) for (x, y) in eachrow(tassy)]
         reverse!(tassy)
