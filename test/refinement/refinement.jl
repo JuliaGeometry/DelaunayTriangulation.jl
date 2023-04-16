@@ -286,3 +286,18 @@ end
     @test validate_triangulation(tri; check_ghost_triangle_orientation=false, check_ghost_triangle_delaunay=false)
     validate_statistics(tri)
 end
+
+@testset "Tasmania" begin
+    tassy = readdlm("./test/tassy.txt")
+    ymax = @views maximum(tassy[:, 2])
+    tassy = [(x, ymax - y) for (x, y) in eachrow(tassy)]
+    reverse!(tassy)
+    unique!(tassy)
+    push!(tassy, tassy[begin])
+    boundary_nodes, points = convert_boundary_points_to_indices(tassy)
+    tri = triangulate(points; boundary_nodes=boundary_nodes)
+    A = get_total_area(tri)
+    stats = refine!(tri; max_area=1e-3A)
+    @test validate_triangulation(tri; check_ghost_triangle_orientation=false, check_ghost_triangle_delaunay=false)
+    validate_statistics(tri)
+end
