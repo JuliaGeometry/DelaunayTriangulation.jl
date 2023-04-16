@@ -15,3 +15,4 @@ test/basic.ggb
 docs/src/triangulations/waste.jl
 docs/animation.jl
 test/animation.jl
+test/tassy.txt
