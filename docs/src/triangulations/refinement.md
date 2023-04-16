@@ -407,7 +407,7 @@ resize_to_layout!(fig)
 
 ### Tasmania 
 
-Just to show that we can even triangulate really complicated boundaries with many small angles, here's Tasmania. The file `tassy.txt` is available in the test folder.
+Just to show that we can even triangulate really complicated boundaries with many small angles, here's Tasmania. The file `tassy.txt` came from an image of Tasmania that was then traced using ImageJ.
 
 ```julia
 tassy = readdlm("./test/tassy.txt")
