@@ -48,81 +48,86 @@ end
             (5, 3, DT.BoundaryIndex - 10)
 end
 
-if !(get(ENV, "CI", "false") == "true")
-      @testset "get_left/right_boundary_node" begin
-            x, y = complicated_geometry()
-            tri = generate_mesh(x, y, 2.0; convert_result=true, add_ghost_triangles=true)
-            nodes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-            right = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1]
-            left = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
-            @inferred DT.get_right_boundary_node(tri.adjacent, 1, DT.BoundaryIndex,
-                  tri.boundary_index_ranges, Val(true))
-            @inferred DT.get_left_boundary_node(tri.adjacent, 1, DT.BoundaryIndex,
-                  tri.boundary_index_ranges, Val(true))
-            @inferred DT.get_right_boundary_node(tri, 1, DT.BoundaryIndex)
-            @inferred DT.get_left_boundary_node(tri, 1, DT.BoundaryIndex)
+@testset "get_left/right_boundary_node" begin
+      rng = StableRNG(1234555)
+      _x, _y = complicated_geometry()
+      x = _x
+      y = _y
+      boundary_nodes, points = convert_boundary_points_to_indices(x, y)
+      tri = triangulate(points; boundary_nodes, delete_ghosts=false, rng)
+      A = get_total_area(tri)
+      refine!(tri; max_area=1e-1A, rng)
+      nodes = [1, 200, 301, 144, 248, 148, 2, 317, 147, 239, 143, 287, 370]
+      right = [200, 301, 144, 248, 148, 2, 317, 147, 239, 143, 287, 370, 3]
+      left = [145, 1, 200, 301, 144, 248, 148, 2, 317, 147, 239, 143, 287]
+      @inferred DT.get_right_boundary_node(tri.adjacent, 1, DT.BoundaryIndex,
+            tri.boundary_index_ranges, Val(true))
+      @inferred DT.get_left_boundary_node(tri.adjacent, 1, DT.BoundaryIndex,
+            tri.boundary_index_ranges, Val(true))
+      @inferred DT.get_right_boundary_node(tri, 1, DT.BoundaryIndex)
+      @inferred DT.get_left_boundary_node(tri, 1, DT.BoundaryIndex)
 
-            for (i, r, ℓ) in zip(nodes, right, left)
-                  @test DT.get_right_boundary_node(tri.adjacent, i, DT.BoundaryIndex,
-                              tri.boundary_index_ranges, true) ==
-                        DT.get_right_boundary_node(tri, i, DT.BoundaryIndex) == r
-                  @test DT.get_left_boundary_node(tri.adjacent, i, DT.BoundaryIndex,
-                              tri.boundary_index_ranges, true) ==
-                        DT.get_left_boundary_node(tri, i, DT.BoundaryIndex) == ℓ
-                  @inferred DT.get_right_boundary_node(tri.adjacent, i, DT.BoundaryIndex,
-                        tri.boundary_index_ranges, false)
-                  @inferred DT.get_left_boundary_node(tri, i, DT.BoundaryIndex)
-            end
-            @test !DT.edge_exists(DT.get_left_boundary_node(tri.adjacent, 1, DT.BoundaryIndex,
-                  tri.boundary_index_ranges, Val(false)))
-            @test !DT.edge_exists(DT.get_right_boundary_node(tri.adjacent, 12, DT.BoundaryIndex,
-                  tri.boundary_index_ranges, Val(false)))
-            nodes = [13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61]
-            right = [nodes[2:end]..., nodes[1]]
-            left = [nodes[end]..., nodes[1:(end-1)]...]
-            for (i, r, ℓ) in zip(nodes, right, left)
-                  @test DT.get_right_boundary_node(tri.adjacent, i, DT.BoundaryIndex - 4,
-                              tri.boundary_index_ranges, true) ==
-                        DT.get_right_boundary_node(tri, i, DT.BoundaryIndex - 4) == r
-                  @test DT.get_left_boundary_node(tri.adjacent, i, DT.BoundaryIndex - 4,
-                              tri.boundary_index_ranges, true) ==
-                        DT.get_left_boundary_node(tri, i, DT.BoundaryIndex - 4) == ℓ
-            end
-            nodes = [62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110]
-            right = [nodes[2:end]..., nodes[1]]
-            left = [nodes[end]..., nodes[1:(end-1)]...]
-            for (i, r, ℓ) in zip(nodes, right, left)
-                  @test DT.get_right_boundary_node(tri.adjacent, i, DT.BoundaryIndex - 5,
-                              tri.boundary_index_ranges, true) ==
-                        DT.get_right_boundary_node(tri, i, DT.BoundaryIndex - 5) == r
-                  @test DT.get_left_boundary_node(tri.adjacent, i, DT.BoundaryIndex - 5,
-                              tri.boundary_index_ranges, true) ==
-                        DT.get_left_boundary_node(tri, i, DT.BoundaryIndex - 5) == ℓ
-            end
-            nodes = [111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122]
-            right = [112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 111]
-            left = [122, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121]
-            for (i, r, ℓ) in zip(nodes, right, left)
-                  @test DT.get_right_boundary_node(tri.adjacent, i, DT.BoundaryIndex - 6,
-                              tri.boundary_index_ranges, true) ==
-                        DT.get_right_boundary_node(tri, i, DT.BoundaryIndex - 7) == r
-                  @test DT.get_left_boundary_node(tri.adjacent, i, DT.BoundaryIndex - 7,
-                              tri.boundary_index_ranges, true) ==
-                        DT.get_left_boundary_node(tri, i, DT.BoundaryIndex - 8) == ℓ
-            end
-            nodes = [123, 128, 124, 125, 126, 127]
-            right = [128, 124, 125, 126, 127, 123]
-            left = [127, 123, 128, 124, 125, 126]
-            for (i, r, ℓ) in zip(nodes, right, left)
-                  @test DT.get_right_boundary_node(tri.adjacent, i, DT.BoundaryIndex - 10,
-                              tri.boundary_index_ranges, true) ==
-                        DT.get_right_boundary_node(tri, i, DT.BoundaryIndex - 10) == r
-                  @test DT.get_left_boundary_node(tri.adjacent, i, DT.BoundaryIndex - 10,
-                              tri.boundary_index_ranges, true) ==
-                        DT.get_left_boundary_node(tri, i, DT.BoundaryIndex - 10) == ℓ
-            end
+      for (i, r, ℓ) in zip(nodes, right, left)
+            @test DT.get_right_boundary_node(tri.adjacent, i, DT.BoundaryIndex,
+                        tri.boundary_index_ranges, true) ==
+                  DT.get_right_boundary_node(tri, i, DT.BoundaryIndex) == r
+            @test DT.get_left_boundary_node(tri.adjacent, i, DT.BoundaryIndex,
+                        tri.boundary_index_ranges, true) ==
+                  DT.get_left_boundary_node(tri, i, DT.BoundaryIndex) == ℓ
+            @inferred DT.get_right_boundary_node(tri.adjacent, i, DT.BoundaryIndex,
+                  tri.boundary_index_ranges, false)
+            @inferred DT.get_left_boundary_node(tri, i, DT.BoundaryIndex)
+      end
+      @test !DT.edge_exists(DT.get_left_boundary_node(tri.adjacent, 1, DT.BoundaryIndex,
+            tri.boundary_index_ranges, Val(false)))
+      @test !DT.edge_exists(DT.get_right_boundary_node(tri.adjacent, 12, DT.BoundaryIndex,
+            tri.boundary_index_ranges, Val(false)))
+      nodes = [13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61]
+      right = [nodes[2:end]..., nodes[1]]
+      left = [nodes[end]..., nodes[1:(end-1)]...]
+      for (i, r, ℓ) in zip(nodes, right, left)
+            @test DT.get_right_boundary_node(tri.adjacent, i, DT.BoundaryIndex - 4,
+                        tri.boundary_index_ranges, true) ==
+                  DT.get_right_boundary_node(tri, i, DT.BoundaryIndex - 4) == r
+            @test DT.get_left_boundary_node(tri.adjacent, i, DT.BoundaryIndex - 4,
+                        tri.boundary_index_ranges, true) ==
+                  DT.get_left_boundary_node(tri, i, DT.BoundaryIndex - 4) == ℓ
+      end
+      nodes = [62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110]
+      right = [nodes[2:end]..., nodes[1]]
+      left = [nodes[end]..., nodes[1:(end-1)]...]
+      for (i, r, ℓ) in zip(nodes, right, left)
+            @test DT.get_right_boundary_node(tri.adjacent, i, DT.BoundaryIndex - 5,
+                        tri.boundary_index_ranges, true) ==
+                  DT.get_right_boundary_node(tri, i, DT.BoundaryIndex - 5) == r
+            @test DT.get_left_boundary_node(tri.adjacent, i, DT.BoundaryIndex - 5,
+                        tri.boundary_index_ranges, true) ==
+                  DT.get_left_boundary_node(tri, i, DT.BoundaryIndex - 5) == ℓ
+      end
+      nodes = [111 225 365 112 354 220 366 113 357 223 114 115 116 117 359 118 363 119 361 479 120 121 122]
+      right = [225 365 112 354 220 366 113 357 223 114 115 116 117 359 118 363 119 361 479 120 121 122 111]
+      left = [122 111 225 365 112 354 220 366 113 357 223 114 115 116 117 359 118 363 119 361 479 120 121]
+      for (i, r, ℓ) in zip(nodes, right, left)
+            @test DT.get_right_boundary_node(tri.adjacent, i, DT.BoundaryIndex - 6,
+                        tri.boundary_index_ranges, true) ==
+                  DT.get_right_boundary_node(tri, i, DT.BoundaryIndex - 7) == r
+            @test DT.get_left_boundary_node(tri.adjacent, i, DT.BoundaryIndex - 7,
+                        tri.boundary_index_ranges, true) ==
+                  DT.get_left_boundary_node(tri, i, DT.BoundaryIndex - 8) == ℓ
+      end
+      nodes = [123, 265, 202, 272, 136, 275, 128, 264]
+      right = [265, 202, 272, 136, 275, 128, 264, 137]
+      left = [127, 123, 265, 202, 272, 136, 275, 128]
+      for (i, r, ℓ) in zip(nodes, right, left)
+            @test DT.get_right_boundary_node(tri.adjacent, i, DT.BoundaryIndex - 10,
+                        tri.boundary_index_ranges, true) ==
+                  DT.get_right_boundary_node(tri, i, DT.BoundaryIndex - 10) == r
+            @test DT.get_left_boundary_node(tri.adjacent, i, DT.BoundaryIndex - 10,
+                        tri.boundary_index_ranges, true) ==
+                  DT.get_left_boundary_node(tri, i, DT.BoundaryIndex - 10) == ℓ
       end
 end
+
 
 @testset "find_edge" begin
       points = [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0), (0.5, 0.0), (0.5, 0.5), (0.0, 0.5)]
@@ -415,115 +420,87 @@ end
       @test segments == [(3, 25), (25, 1)]
 end
 
-if !(get(ENV, "CI", "false") == "true")
-      @testset "convert_boundary_points_to_indices" begin
-            tri = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5; add_ghost_triangles=false)
-            elements, nodes, bn = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5; convert_result=false)
-            x = [getx(get_point(tri, i)) for i in 1:num_points(tri)]
-            y = [gety(get_point(tri, i)) for i in 1:num_points(tri)]
-            @test_throws AssertionError convert_boundary_points_to_indices(x, y)
-            push!(x, x[begin])
-            push!(y, y[begin])
-            nodes, _pts = convert_boundary_points_to_indices(x, y)
-            @test nodes == [collect(1:30)..., 1]
-            @test _pts == [(x, y) for (x, y) in zip(x[begin:end-1], y[begin:end-1])]
-            existing_points = [(1.0, 3.0), (5.0, 17.3), (13.0, 15.5), (23.0, 25.0)]
-            nodes, _pts = convert_boundary_points_to_indices(x, y; existing_points)
-            @test nodes == [collect(5:34)..., 5]
-            @test existing_points == _pts == append!(
-                        [(1.0, 3.0), (5.0, 17.3), (13.0, 15.5), (23.0, 25.0)],
-                        zip(x[begin:end-1], y[begin:end-1]))
-            nodes, _pts = convert_boundary_points_to_indices([[get_point(tri, i) for i in 1:num_points(tri)]..., get_point(tri, 1)])
-            @test nodes == [collect(1:30)..., 1]
-            @test _pts == [(x, y) for (x, y) in zip(x[begin:end-1], y[begin:end-1])]
-            existing_points = [(1.0, 3.0), (5.0, 17.3), (13.0, 15.5), (23.0, 25.0)]
-            nodes, _pts = convert_boundary_points_to_indices(x, y; existing_points)
-            @test nodes == [collect(5:34)..., 5]
-            @test existing_points == _pts == append!(
-                        [(1.0, 3.0), (5.0, 17.3), (13.0, 15.5), (23.0, 25.0)],
-                        zip(x[begin:end-1], y[begin:end-1]))
+@testset "convert_boundary_points_to_indices" begin
+      x = [[1.0, 2.0, 3.0, 4.0, 5.0], [5.0, 6.0, 7.0, 8.0], [8.0, 13.0, 15.0, 1.0]]
+      y = [[0.0, 2.5, 3.0, 9.0, 7.0], [7.0, 9.0, 2.0, 1.0], [1.0, 23.0, 25.0, 0.0]]
+      nodes, _pts = convert_boundary_points_to_indices(x, y)
+      @test nodes == [[1, 2, 3, 4, 5], [5, 6, 7, 8], [8, 9, 10, 1]]
+      @test _pts == [(1.0, 0.0), (2.0, 2.5), (3.0, 3.0), (4.0, 9.0), (5.0, 7.0), (6.0, 9.0),
+            (7.0, 2.0), (8.0, 1.0), (13.0, 23.0), (15.0, 25.0)]
+      existing_points = [(1.0, 3.0), (15.0, 17.3), (9.3, 2.5), (11.0, 29.0), (35.0, -5.0)]
+      nodes, _pts = convert_boundary_points_to_indices(x, y; existing_points)
+      @test nodes == [[1, 2, 3, 4, 5] .+ 5, [5, 6, 7, 8] .+ 5, [8, 9, 10, 1] .+ 5]
+      @test _pts == existing_points == append!(
+                  [(1.0, 3.0), (15.0, 17.3), (9.3, 2.5), (11.0, 29.0), (35.0, -5.0)],
+                  [(1.0, 0.0), (2.0, 2.5), (3.0, 3.0), (4.0, 9.0), (5.0, 7.0), (6.0, 9.0),
+                        (7.0, 2.0), (8.0, 1.0), (13.0, 23.0), (15.0, 25.0)]
+            )
+      nodes, _pts = convert_boundary_points_to_indices([[(1.0, 0.0), (2.0, 2.5), (3.0, 3.0), (4.0, 9.0), (5.0, 7.0)],
+            [(5.0, 7.0), (6.0, 9.0), (7.0, 2.0), (8.0, 1.0)], [(8.0, 1.0), (13.0, 23.0), (15.0, 25.0), (1.0, 0.0)]])
+      @test nodes == [[1, 2, 3, 4, 5], [5, 6, 7, 8], [8, 9, 10, 1]]
+      @test _pts == [(1.0, 0.0), (2.0, 2.5), (3.0, 3.0), (4.0, 9.0), (5.0, 7.0), (6.0, 9.0),
+            (7.0, 2.0), (8.0, 1.0), (13.0, 23.0), (15.0, 25.0)]
+      existing_points = [(1.0, 3.0), (15.0, 17.3), (9.3, 2.5), (11.0, 29.0), (35.0, -5.0)]
+      nodes, _pts = convert_boundary_points_to_indices(x, y; existing_points)
+      @test nodes == [[1, 2, 3, 4, 5] .+ 5, [5, 6, 7, 8] .+ 5, [8, 9, 10, 1] .+ 5]
+      @test _pts == existing_points == append!(
+                  [(1.0, 3.0), (15.0, 17.3), (9.3, 2.5), (11.0, 29.0), (35.0, -5.0)],
+                  [(1.0, 0.0), (2.0, 2.5), (3.0, 3.0), (4.0, 9.0), (5.0, 7.0), (6.0, 9.0),
+                        (7.0, 2.0), (8.0, 1.0), (13.0, 23.0), (15.0, 25.0)]
+            )
 
-            x = [[1.0, 2.0, 3.0, 4.0, 5.0], [5.0, 6.0, 7.0, 8.0], [8.0, 13.0, 15.0, 1.0]]
-            y = [[0.0, 2.5, 3.0, 9.0, 7.0], [7.0, 9.0, 2.0, 1.0], [1.0, 23.0, 25.0, 0.0]]
-            nodes, _pts = convert_boundary_points_to_indices(x, y)
-            @test nodes == [[1, 2, 3, 4, 5], [5, 6, 7, 8], [8, 9, 10, 1]]
-            @test _pts == [(1.0, 0.0), (2.0, 2.5), (3.0, 3.0), (4.0, 9.0), (5.0, 7.0), (6.0, 9.0),
-                  (7.0, 2.0), (8.0, 1.0), (13.0, 23.0), (15.0, 25.0)]
-            existing_points = [(1.0, 3.0), (15.0, 17.3), (9.3, 2.5), (11.0, 29.0), (35.0, -5.0)]
-            nodes, _pts = convert_boundary_points_to_indices(x, y; existing_points)
-            @test nodes == [[1, 2, 3, 4, 5] .+ 5, [5, 6, 7, 8] .+ 5, [8, 9, 10, 1] .+ 5]
-            @test _pts == existing_points == append!(
-                        [(1.0, 3.0), (15.0, 17.3), (9.3, 2.5), (11.0, 29.0), (35.0, -5.0)],
-                        [(1.0, 0.0), (2.0, 2.5), (3.0, 3.0), (4.0, 9.0), (5.0, 7.0), (6.0, 9.0),
-                              (7.0, 2.0), (8.0, 1.0), (13.0, 23.0), (15.0, 25.0)]
-                  )
-            nodes, _pts = convert_boundary_points_to_indices([[(1.0, 0.0), (2.0, 2.5), (3.0, 3.0), (4.0, 9.0), (5.0, 7.0)],
-                  [(5.0, 7.0), (6.0, 9.0), (7.0, 2.0), (8.0, 1.0)], [(8.0, 1.0), (13.0, 23.0), (15.0, 25.0), (1.0, 0.0)]])
-            @test nodes == [[1, 2, 3, 4, 5], [5, 6, 7, 8], [8, 9, 10, 1]]
-            @test _pts == [(1.0, 0.0), (2.0, 2.5), (3.0, 3.0), (4.0, 9.0), (5.0, 7.0), (6.0, 9.0),
-                  (7.0, 2.0), (8.0, 1.0), (13.0, 23.0), (15.0, 25.0)]
-            existing_points = [(1.0, 3.0), (15.0, 17.3), (9.3, 2.5), (11.0, 29.0), (35.0, -5.0)]
-            nodes, _pts = convert_boundary_points_to_indices(x, y; existing_points)
-            @test nodes == [[1, 2, 3, 4, 5] .+ 5, [5, 6, 7, 8] .+ 5, [8, 9, 10, 1] .+ 5]
-            @test _pts == existing_points == append!(
-                        [(1.0, 3.0), (15.0, 17.3), (9.3, 2.5), (11.0, 29.0), (35.0, -5.0)],
-                        [(1.0, 0.0), (2.0, 2.5), (3.0, 3.0), (4.0, 9.0), (5.0, 7.0), (6.0, 9.0),
-                              (7.0, 2.0), (8.0, 1.0), (13.0, 23.0), (15.0, 25.0)]
-                  )
-
-            x1 = [[1.0, 2.0, 3.0], [3.0, 4.0, 5.5, 6.7], [6.7, 2.0, 1.0]]
-            y1 = [[2.0, 2.5, 3.5], [3.5, 4.5, 7.7, 9.9], [9.9, 1.1, 2.0]]
-            x2 = [[1.0, 1.2, 1.3, 1.4, 1.5, 1.0]]
-            y2 = [[2.5, 2.7, 9.9, 2.0, 3.5, 2.5]]
-            x3 = [[9.5, 13.7, 3.3], [3.3, 5.5, 9.5]]
-            y3 = [[2.5, 11.7, 3.9], [3.9, 1.0, 2.5]]
-            x = [x1, x2, x3]
-            y = [y1, y2, y3]
-            nodes, _pts = convert_boundary_points_to_indices(x, y)
-            node1 = [[1, 2, 3], [3, 4, 5, 6], [6, 7, 1]]
-            node2 = [[8, 9, 10, 11, 12, 8]]
-            node3 = [[13, 14, 15], [15, 16, 13]]
-            @test nodes == [node1, node2, node3]
-            @test _pts == [(1.0, 2.0), (2.0, 2.5), (3.0, 3.5), (4.0, 4.5), (5.5, 7.7),
+      x1 = [[1.0, 2.0, 3.0], [3.0, 4.0, 5.5, 6.7], [6.7, 2.0, 1.0]]
+      y1 = [[2.0, 2.5, 3.5], [3.5, 4.5, 7.7, 9.9], [9.9, 1.1, 2.0]]
+      x2 = [[1.0, 1.2, 1.3, 1.4, 1.5, 1.0]]
+      y2 = [[2.5, 2.7, 9.9, 2.0, 3.5, 2.5]]
+      x3 = [[9.5, 13.7, 3.3], [3.3, 5.5, 9.5]]
+      y3 = [[2.5, 11.7, 3.9], [3.9, 1.0, 2.5]]
+      x = [x1, x2, x3]
+      y = [y1, y2, y3]
+      nodes, _pts = convert_boundary_points_to_indices(x, y)
+      node1 = [[1, 2, 3], [3, 4, 5, 6], [6, 7, 1]]
+      node2 = [[8, 9, 10, 11, 12, 8]]
+      node3 = [[13, 14, 15], [15, 16, 13]]
+      @test nodes == [node1, node2, node3]
+      @test _pts == [(1.0, 2.0), (2.0, 2.5), (3.0, 3.5), (4.0, 4.5), (5.5, 7.7),
+            (6.7, 9.9), (2.0, 1.1), (1.0, 2.5), (1.2, 2.7), (1.3, 9.9), (1.4, 2.0), (1.5, 3.5),
+            (9.5, 2.5), (13.7, 11.7), (3.3, 3.9), (5.5, 1.0)]
+      existing_points = [(1.0, 3.0), (3.5, 5.5), (13.7, 25.0), (19.0, 37.3), (100.0, 100.0), (10.3, 5.5)]
+      nodes, _pts = convert_boundary_points_to_indices(x, y; existing_points)
+      node1 = [[1, 2, 3] .+ 6, [3, 4, 5, 6] .+ 6, [6, 7, 1] .+ 6]
+      node2 = [[8, 9, 10, 11, 12, 8] .+ 6]
+      node3 = [[13, 14, 15] .+ 6, [15, 16, 13] .+ 6]
+      @test nodes == [node1, node2, node3]
+      @test _pts == append!(
+            existing_points,
+            [(1.0, 2.0), (2.0, 2.5), (3.0, 3.5), (4.0, 4.5), (5.5, 7.7),
                   (6.7, 9.9), (2.0, 1.1), (1.0, 2.5), (1.2, 2.7), (1.3, 9.9), (1.4, 2.0), (1.5, 3.5),
                   (9.5, 2.5), (13.7, 11.7), (3.3, 3.9), (5.5, 1.0)]
-            existing_points = [(1.0, 3.0), (3.5, 5.5), (13.7, 25.0), (19.0, 37.3), (100.0, 100.0), (10.3, 5.5)]
-            nodes, _pts = convert_boundary_points_to_indices(x, y; existing_points)
-            node1 = [[1, 2, 3] .+ 6, [3, 4, 5, 6] .+ 6, [6, 7, 1] .+ 6]
-            node2 = [[8, 9, 10, 11, 12, 8] .+ 6]
-            node3 = [[13, 14, 15] .+ 6, [15, 16, 13] .+ 6]
-            @test nodes == [node1, node2, node3]
-            @test _pts == append!(
-                  existing_points,
-                  [(1.0, 2.0), (2.0, 2.5), (3.0, 3.5), (4.0, 4.5), (5.5, 7.7),
-                        (6.7, 9.9), (2.0, 1.1), (1.0, 2.5), (1.2, 2.7), (1.3, 9.9), (1.4, 2.0), (1.5, 3.5),
-                        (9.5, 2.5), (13.7, 11.7), (3.3, 3.9), (5.5, 1.0)]
-            )
-            xy1 = [[(1.0, 2.0), (2.0, 2.5), (3.0, 3.5)], [(3.0, 3.5), (4.0, 4.5), (5.5, 7.7), (6.7, 9.9)], [(6.7, 9.9), (2.0, 1.1), (1.0, 2.0)]]
-            xy2 = [[(1.0, 2.5), (1.2, 2.7), (1.3, 9.9), (1.4, 2.0), (1.5, 3.5), (1.0, 2.5)]]
-            xy3 = [[(9.5, 2.5), (13.7, 11.7), (3.3, 3.9)], [(3.3, 3.9), (5.5, 1.0), (9.5, 2.5)]]
-            xy = [xy1, xy2, xy3]
-            nodes, _pts = convert_boundary_points_to_indices(xy)
-            node1 = [[1, 2, 3], [3, 4, 5, 6], [6, 7, 1]]
-            node2 = [[8, 9, 10, 11, 12, 8]]
-            node3 = [[13, 14, 15], [15, 16, 13]]
-            @test nodes == [node1, node2, node3]
-            @test _pts == [(1.0, 2.0), (2.0, 2.5), (3.0, 3.5), (4.0, 4.5), (5.5, 7.7),
+      )
+      xy1 = [[(1.0, 2.0), (2.0, 2.5), (3.0, 3.5)], [(3.0, 3.5), (4.0, 4.5), (5.5, 7.7), (6.7, 9.9)], [(6.7, 9.9), (2.0, 1.1), (1.0, 2.0)]]
+      xy2 = [[(1.0, 2.5), (1.2, 2.7), (1.3, 9.9), (1.4, 2.0), (1.5, 3.5), (1.0, 2.5)]]
+      xy3 = [[(9.5, 2.5), (13.7, 11.7), (3.3, 3.9)], [(3.3, 3.9), (5.5, 1.0), (9.5, 2.5)]]
+      xy = [xy1, xy2, xy3]
+      nodes, _pts = convert_boundary_points_to_indices(xy)
+      node1 = [[1, 2, 3], [3, 4, 5, 6], [6, 7, 1]]
+      node2 = [[8, 9, 10, 11, 12, 8]]
+      node3 = [[13, 14, 15], [15, 16, 13]]
+      @test nodes == [node1, node2, node3]
+      @test _pts == [(1.0, 2.0), (2.0, 2.5), (3.0, 3.5), (4.0, 4.5), (5.5, 7.7),
+            (6.7, 9.9), (2.0, 1.1), (1.0, 2.5), (1.2, 2.7), (1.3, 9.9), (1.4, 2.0), (1.5, 3.5),
+            (9.5, 2.5), (13.7, 11.7), (3.3, 3.9), (5.5, 1.0)]
+      existing_points = [(1.0, 3.0), (3.5, 5.5), (13.7, 25.0), (19.0, 37.3), (100.0, 100.0), (10.3, 5.5)]
+      nodes, _pts = convert_boundary_points_to_indices(xy; existing_points)
+      node1 = [[1, 2, 3] .+ 6, [3, 4, 5, 6] .+ 6, [6, 7, 1] .+ 6]
+      node2 = [[8, 9, 10, 11, 12, 8] .+ 6]
+      node3 = [[13, 14, 15] .+ 6, [15, 16, 13] .+ 6]
+      @test nodes == [node1, node2, node3]
+      @test _pts == append!(
+            existing_points,
+            [(1.0, 2.0), (2.0, 2.5), (3.0, 3.5), (4.0, 4.5), (5.5, 7.7),
                   (6.7, 9.9), (2.0, 1.1), (1.0, 2.5), (1.2, 2.7), (1.3, 9.9), (1.4, 2.0), (1.5, 3.5),
                   (9.5, 2.5), (13.7, 11.7), (3.3, 3.9), (5.5, 1.0)]
-            existing_points = [(1.0, 3.0), (3.5, 5.5), (13.7, 25.0), (19.0, 37.3), (100.0, 100.0), (10.3, 5.5)]
-            nodes, _pts = convert_boundary_points_to_indices(xy; existing_points)
-            node1 = [[1, 2, 3] .+ 6, [3, 4, 5, 6] .+ 6, [6, 7, 1] .+ 6]
-            node2 = [[8, 9, 10, 11, 12, 8] .+ 6]
-            node3 = [[13, 14, 15] .+ 6, [15, 16, 13] .+ 6]
-            @test nodes == [node1, node2, node3]
-            @test _pts == append!(
-                  existing_points,
-                  [(1.0, 2.0), (2.0, 2.5), (3.0, 3.5), (4.0, 4.5), (5.5, 7.7),
-                        (6.7, 9.9), (2.0, 1.1), (1.0, 2.5), (1.2, 2.7), (1.3, 9.9), (1.4, 2.0), (1.5, 3.5),
-                        (9.5, 2.5), (13.7, 11.7), (3.3, 3.9), (5.5, 1.0)]
-            )
-      end
+      )
 end
 
 @testset "get_ordinal_suffix" begin

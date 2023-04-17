@@ -110,107 +110,109 @@ _pts = tri.points[[18, 17, 16, 15, 14, 13]]
 rep[3].x = mean([18.0, 18.0, 14.0, 12.0, 14.0, 14.0])
 rep[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
 
-if !(get(ENV, "CI", "false") == "true")
-    @testset "Tests with different types of triangulations" begin
-        x, y = complicated_geometry()
-        tri2 = generate_mesh(x, y, 2.0; convert_result=true, add_ghost_triangles=true)
+@testset "Tests with different types of triangulations" begin
+    x, y = complicated_geometry()
+    rng = StableRNG(919191919)
+    boundary_nodes, points = convert_boundary_points_to_indices(x, y)
+    tri2 = triangulate(points; rng, boundary_nodes, delete_ghosts=false)
+    A = get_total_area(tri2)
+    refine!(tri2; max_area=1e-2A)
 
-        a, b, c, d = 2.0, 10.0, -5.0, 7.5
-        nx = 20
-        ny = 10
-        tri3 = DT.triangulate_rectangle(a, b, c, d, nx, ny)
+    a, b, c, d = 2.0, 10.0, -5.0, 7.5
+    nx = 20
+    ny = 10
+    tri3 = DT.triangulate_rectangle(a, b, c, d, nx, ny)
 
-        for tri in (tri, tri2, tri3)
-            DT.compute_representative_points!(tri)
-            rep = DT.get_representative_point_list(tri)
-            if !(tri === tri2 || tri === tri3)
-                local _pts
-                rep[1].x = 10.0
-                rep[1].y = 10.0
-                _pts = tri.points[[12, 11, 10, 9]]
-                rep[2].x = mean([8.0, 8.0, 4.0, 4.0])
-                rep[2].y = mean([16.0, 6.0, 6.0, 16.0])
-                _pts = tri.points[[18, 17, 16, 15, 14, 13]]
-                rep[3].x = mean([18.0, 18.0, 14.0, 12.0, 14.0, 14.0])
-                rep[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
+    for tri in (tri, tri2, tri3)
+        DT.compute_representative_points!(tri)
+        rep = DT.get_representative_point_list(tri)
+        if !(tri === tri2 || tri === tri3)
+            local _pts
+            rep[1].x = 10.0
+            rep[1].y = 10.0
+            _pts = tri.points[[12, 11, 10, 9]]
+            rep[2].x = mean([8.0, 8.0, 4.0, 4.0])
+            rep[2].y = mean([16.0, 6.0, 6.0, 16.0])
+            _pts = tri.points[[18, 17, 16, 15, 14, 13]]
+            rep[3].x = mean([18.0, 18.0, 14.0, 12.0, 14.0, 14.0])
+            rep[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
+        end
+
+        @testset "Test that we can find a point in every triangle" begin
+            for _ in 1:36
+                for V in each_triangle(tri.triangles)
+                    if !DT.is_outer_ghost_triangle(indices(V)..., tri.boundary_map)
+                        i, j, k = indices(V)
+                        p, q, r = get_point(tri.points, tri.representative_point_list, tri.boundary_map, i, j, k)
+                        local c
+                        c = (p .+ q .+ r) ./ 3
+                        for k in each_point_index(tri.points)
+                            _V1 = jump_and_march(tri.points, tri.adjacent, tri.adjacent2vertex,
+                                tri.graph, tri.boundary_index_ranges,
+                                tri.representative_point_list, tri.boundary_map, c; k)
+                            _V2 = jump_and_march(tri, c; k)
+                            for _V in [_V1, _V2]
+                                @test DT.is_positively_oriented(DT.triangle_orientation(tri, _V))
+                                if !DT.is_ghost_triangle(_V...)
+                                    @test DT.compare_triangles(_V, V) &&
+                                          DT.is_inside(DT.point_position_relative_to_triangle(tri,
+                                        _V,
+                                        c))
+                                else
+                                    local V1, V2
+                                    V1 = DT.rotate_ghost_triangle_to_standard_form(V)
+                                    V2 = DT.rotate_ghost_triangle_to_standard_form(_V)
+                                    i1 = geti(V1)
+                                    i2 = geti(V2)
+                                    if i1 ≠ i2
+                                        i1 = i1 - 1
+                                    end
+                                    if i1 ≠ i2
+                                        i1 = i1 + 1
+                                    end
+                                    if i1 ≠ i2
+                                        @test false
+                                    end
+                                    _V = DT.construct_triangle(typeof(V), i1, getj(V1), getk(V1))
+                                    @test DT.compare_triangles(_V, V) &&
+                                          DT.is_inside(DT.point_position_relative_to_triangle(tri,
+                                        _V,
+                                        c))
+                                end
+                            end
+                        end
+                    end
+                end
             end
 
-            @testset "Test that we can find a point in every triangle" begin
+            @testset "Test that we don't break for points already in the triangulation" begin
                 for _ in 1:36
-                    for V in each_triangle(tri.triangles)
-                        if !DT.is_outer_ghost_triangle(indices(V)..., tri.boundary_map)
-                            i, j, k = indices(V)
-                            p, q, r = get_point(tri.points, tri.representative_point_list, tri.boundary_map, i, j, k)
-                            local c
-                            c = (p .+ q .+ r) ./ 3
-                            for k in each_point_index(tri.points)
-                                _V1 = jump_and_march(tri.points, tri.adjacent, tri.adjacent2vertex,
-                                    tri.graph, tri.boundary_index_ranges,
-                                    tri.representative_point_list, tri.boundary_map, c; k)
-                                _V2 = jump_and_march(tri, c; k)
-                                for _V in [_V1, _V2]
-                                    @test DT.is_positively_oriented(DT.triangle_orientation(tri, _V))
-                                    if !DT.is_ghost_triangle(_V...)
-                                        @test DT.compare_triangles(_V, V) &&
-                                              DT.is_inside(DT.point_position_relative_to_triangle(tri,
-                                            _V,
-                                            c))
-                                    else
-                                        local V1, V2
-                                        V1 = DT.rotate_ghost_triangle_to_standard_form(V)
-                                        V2 = DT.rotate_ghost_triangle_to_standard_form(_V)
-                                        i1 = geti(V1)
-                                        i2 = geti(V2)
-                                        if i1 ≠ i2
-                                            i1 = i1 - 1
-                                        end
-                                        if i1 ≠ i2
-                                            i1 = i1 + 1
-                                        end
-                                        if i1 ≠ i2
-                                            @test false
-                                        end
-                                        _V = DT.construct_triangle(typeof(V), i1, getj(V1), getk(V1))
-                                        @test DT.compare_triangles(_V, V) &&
-                                              DT.is_inside(DT.point_position_relative_to_triangle(tri,
-                                            _V,
-                                            c))
-                                    end
-                                end
+                    for k in each_point_index(tri.points)
+                        for j in each_point_index(tri.points)
+                            _V1 = jump_and_march(tri, get_point(tri, k); k=j)
+                            _V2 = jump_and_march(tri.points, tri.adjacent, tri.adjacent2vertex,
+                                tri.graph, tri.boundary_index_ranges, tri.representative_point_list, tri.boundary_map,
+                                get_point(tri.points, k))
+                            for _V in [_V1, _V2]
+                                @test k ∈ indices(_V)
+                                @test DT.is_positively_oriented(DT.triangle_orientation(tri, _V))
                             end
                         end
                     end
                 end
+            end
 
-                @testset "Test that we don't break for points already in the triangulation" begin
-                    for _ in 1:36
-                        for k in each_point_index(tri.points)
-                            for j in each_point_index(tri.points)
-                                _V1 = jump_and_march(tri, get_point(tri, k); k=j)
-                                _V2 = jump_and_march(tri.points, tri.adjacent, tri.adjacent2vertex,
-                                    tri.graph, tri.boundary_index_ranges, tri.representative_point_list, tri.boundary_map,
-                                    get_point(tri.points, k))
-                                for _V in [_V1, _V2]
-                                    @test k ∈ indices(_V)
-                                    @test DT.is_positively_oriented(DT.triangle_orientation(tri, _V))
-                                end
-                            end
-                        end
-                    end
-                end
-
-                @testset "Finding points in ghost triangles" begin
-                    # Technically this will also find points in solid triangles, but by doing random testing with large random points, 
-                    # we ensure that we primarily find ghost triangles
-                    for _ in 1:36
-                        q = (50randn(), 50rand())
-                        for k in each_point_index(tri.points)
-                            _V1 = jump_and_march(tri, q; k)
-                            _V2 = jump_and_march(tri.points, tri.adjacent, tri.adjacent2vertex, tri.graph,
-                                tri.boundary_index_ranges, tri.representative_point_list, tri.boundary_map, q)
-                            @test DT.is_inside(DT.point_position_relative_to_triangle(tri, _V1, q))
-                            @test DT.is_inside(DT.point_position_relative_to_triangle(tri, _V2, q))
-                        end
+            @testset "Finding points in ghost triangles" begin
+                # Technically this will also find points in solid triangles, but by doing random testing with large random points, 
+                # we ensure that we primarily find ghost triangles
+                for _ in 1:36
+                    q = (50randn(), 50rand())
+                    for k in each_point_index(tri.points)
+                        _V1 = jump_and_march(tri, q; k)
+                        _V2 = jump_and_march(tri.points, tri.adjacent, tri.adjacent2vertex, tri.graph,
+                            tri.boundary_index_ranges, tri.representative_point_list, tri.boundary_map, q)
+                        @test DT.is_inside(DT.point_position_relative_to_triangle(tri, _V1, q))
+                        @test DT.is_inside(DT.point_position_relative_to_triangle(tri, _V2, q))
                     end
                 end
             end

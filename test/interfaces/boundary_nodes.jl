@@ -106,49 +106,48 @@ end
        @test !DT.has_multiple_segments(map3)
 end
 
-if !(get(ENV, "CI", "false") == "true")
-       @testset "Getting boundary index ranges" begin
-              d1 = DT.construct_boundary_index_ranges(bn1)
-              d2 = DT.construct_boundary_index_ranges(bn2)
-              d3 = DT.construct_boundary_index_ranges(bn3)
-              boundary_nodes = [[[1, 2, 3, 4], [4, 5, 6, 1]],
-                     [[18, 19, 20, 25, 26, 30]],
-                     [[50, 51, 52, 53, 54, 55], [55, 56, 57, 58],
-                            [58, 101, 103, 105, 107, 120],
-                            [120, 121, 122, 50]]]
-              d4 = DT.construct_boundary_index_ranges(boundary_nodes)
-              @test d4 == OrderedDict(-1 => -2:-1,
-                     -2 => -2:-1,
-                     -3 => -3:-3,
-                     -4 => -7:-4,
-                     -5 => -7:-4,
-                     -6 => -7:-4,
-                     -7 => -7:-4)
-              @test d1 == OrderedDict(-1 => -4:-1,
-                     -2 => -4:-1,
-                     -3 => -4:-1,
-                     -4 => -4:-1,
-                     -5 => -6:-5,
-                     -6 => -6:-5,
-                     -7 => -8:-7,
-                     -8 => -8:-7)
-              @test d2 == OrderedDict(-1 => -2:-1, -2 => -2:-1)
-              @test d3 == OrderedDict(-1 => -1:-1)
+@testset "Getting boundary index ranges" begin
+       d1 = DT.construct_boundary_index_ranges(bn1)
+       d2 = DT.construct_boundary_index_ranges(bn2)
+       d3 = DT.construct_boundary_index_ranges(bn3)
+       boundary_nodes = [[[1, 2, 3, 4], [4, 5, 6, 1]],
+              [[18, 19, 20, 25, 26, 30]],
+              [[50, 51, 52, 53, 54, 55], [55, 56, 57, 58],
+                     [58, 101, 103, 105, 107, 120],
+                     [120, 121, 122, 50]]]
+       d4 = DT.construct_boundary_index_ranges(boundary_nodes)
+       @test d4 == OrderedDict(-1 => -2:-1,
+              -2 => -2:-1,
+              -3 => -3:-3,
+              -4 => -7:-4,
+              -5 => -7:-4,
+              -6 => -7:-4,
+              -7 => -7:-4)
+       @test d1 == OrderedDict(-1 => -4:-1,
+              -2 => -4:-1,
+              -3 => -4:-1,
+              -4 => -4:-1,
+              -5 => -6:-5,
+              -6 => -6:-5,
+              -7 => -8:-7,
+              -8 => -8:-7)
+       @test d2 == OrderedDict(-1 => -2:-1, -2 => -2:-1)
+       @test d3 == OrderedDict(-1 => -1:-1)
 
-              x, y = complicated_geometry()
-              tri = generate_mesh(x, y, 2.0; convert_result=true, add_ghost_triangles=true)
-              @test tri.boundary_index_ranges == OrderedDict(-1 => -4:-1,
-                     -2 => -4:-1,
-                     -3 => -4:-1,
-                     -4 => -4:-1,
-                     -5 => -5:-5,
-                     -6 => -6:-6,
-                     -7 => -10:-7,
-                     -8 => -10:-7,
-                     -9 => -10:-7,
-                     -10 => -10:-7,
-                     -11 => -11:-11)
-       end
+       x, y = complicated_geometry()
+       boundary_nodes, points = convert_boundary_points_to_indices(x, y)
+       tri = triangulate(points; boundary_nodes)
+       @test tri.boundary_index_ranges == OrderedDict(-1 => -4:-1,
+              -2 => -4:-1,
+              -3 => -4:-1,
+              -4 => -4:-1,
+              -5 => -5:-5,
+              -6 => -6:-6,
+              -7 => -10:-7,
+              -8 => -10:-7,
+              -9 => -10:-7,
+              -10 => -10:-7,
+              -11 => -11:-11)
 end
 
 @testset "construct_boundary_edge_map" begin

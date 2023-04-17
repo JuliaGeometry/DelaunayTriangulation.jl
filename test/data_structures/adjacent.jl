@@ -102,22 +102,18 @@ global adj_3 = DT.Adjacent(ddict_3)
     end
 end
 
-if !(get(ENV, "CI", "false") == "true")
-    @testset "Testing if edges exist and clearing any empty edges" begin
-        include("../helper_functions.jl")
-        x, y = complicated_geometry()
-        tri = generate_mesh(x, y, 2.0; convert_result=true, add_ghost_triangles=true)
-        @test get_adjacent(tri, 122, -10) == 111
-        @test !DT.edge_exists(get_adjacent(tri, 122, -7; check_existence=false))
+@testset "Testing if edges exist and clearing any empty edges" begin
+    include("../helper_functions.jl")
+    tri = triangulate(rand(2, 50))
+    @test !DT.edge_exists(get_adjacent(tri, 122, -7; check_existence=false))
 
-        dict = Dict((1, 2) => 4, (2, 3) => 10, (5, 6) => 15, (20, 5) => 72)
-        ddict = DefaultDict(def_adj, dict)
-        adj = DT.Adjacent(ddict)
-        clean_adj = deepcopy(adj)
-        get_adjacent(adj, 107, 108)
-        get_adjacent(adj, 132, 185)
-        @test adj ≠ clean_adj
-        DT.clear_empty_keys!(adj)
-        @test adj == clean_adj
-    end
+    dict = Dict((1, 2) => 4, (2, 3) => 10, (5, 6) => 15, (20, 5) => 72)
+    ddict = DefaultDict(def_adj, dict)
+    adj = DT.Adjacent(ddict)
+    clean_adj = deepcopy(adj)
+    get_adjacent(adj, 107, 108)
+    get_adjacent(adj, 132, 185)
+    @test adj ≠ clean_adj
+    DT.clear_empty_keys!(adj)
+    @test adj == clean_adj
 end

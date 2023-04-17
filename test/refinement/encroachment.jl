@@ -38,39 +38,40 @@ include("../helper_functions.jl")
     end
 end
 
-if !(get(ENV, "CI", "false") == "true")
-    @testset "Testing if encroached edges are detected" begin
-        _x, _y = complicated_geometry()
-        x = _x
-        y = _y
-        tri_1 = generate_mesh(x, y, 0.1; convert_result=true, add_ghost_triangles=true)
-        tri_2 = generate_mesh(x[1], y[1], 0.1; convert_result=true, add_ghost_triangles=true)
-        tri_3 = generate_mesh([0.0, 2.0, 2.0, 0.0, 0.0], [0.0, 0.0, 2.0, 2.0, 0.0], 0.1;
-            convert_result=true, add_ghost_triangles=true)
-        tri_4 = generate_mesh(reverse(reverse.(x[2])), reverse(reverse.(y[2])), 0.1; convert_result=true, add_ghost_triangles=true)
-        a, b = 0.0, 5.0
-        c, d = 3.0, 7.0
-        nx = 3
-        ny = 3
-        tri_5 = triangulate_rectangle(a, b, c, d, nx, ny; add_ghost_triangles=true, single_boundary=false)
-        tri_6 = triangulate_rectangle(a, b, c, d, nx, ny; add_ghost_triangles=true, single_boundary=true)
-        tri_7 = triangulate(rand(2, 500))
-        tri_8 = triangulate(rand(2, 500), delete_ghosts=false)
-        for tri in (tri_1, tri_2, tri_3, tri_4, tri_5, tri_6, tri_7, tri_8)
-            in_dt_encroached_edges, not_in_dt_encroached_edges = slow_encroachment_test(tri)
-            all_bn = DT.get_all_boundary_nodes(tri)
-            for (e, (b, k)) in not_in_dt_encroached_edges
-                if DT.initial(e) ∈ all_bn && DT.terminal(e) ∈ all_bn && !DT.contains_constrained_edge(tri, e) # e.g. if an edge crosses an interior
-                    continue
-                end
-                @test DT.is_encroached(tri, e) == b
+@testset "Testing if encroached edges are detected" begin
+    _x, _y = complicated_geometry()
+    x = _x
+    y = _y
+    boundary_nodes, points = convert_boundary_points_to_indices(x, y)
+    tri_1 = triangulate(points; boundary_nodes, delete_ghosts=false)
+    boundary_nodes, points = convert_boundary_points_to_indices(x[1], y[1])
+    tri_2 = triangulate(points; boundary_nodes, delete_ghosts=false)
+    boundary_nodes, points = convert_boundary_points_to_indices([0.0, 2.0, 2.0, 0.0, 0.0], [0.0, 0.0, 2.0, 2.0, 0.0])
+    tri_3 = triangulate(points; boundary_nodes, delete_ghosts=false)
+    boundary_nodes, points = convert_boundary_points_to_indices(reverse(reverse.(x[2])), reverse(reverse.(y[2])))
+    tri_4 = triangulate(points; boundary_nodes, delete_ghosts=false)
+    a, b = 0.0, 5.0
+    c, d = 3.0, 7.0
+    nx = 3
+    ny = 3
+    tri_5 = triangulate_rectangle(a, b, c, d, nx, ny; add_ghost_triangles=true, single_boundary=false)
+    tri_6 = triangulate_rectangle(a, b, c, d, nx, ny; add_ghost_triangles=true, single_boundary=true)
+    tri_7 = triangulate(rand(2, 500))
+    tri_8 = triangulate(rand(2, 500), delete_ghosts=false)
+    for tri in (tri_2, tri_3, tri_4, tri_5, tri_6, tri_7, tri_8)
+        in_dt_encroached_edges, not_in_dt_encroached_edges = slow_encroachment_test(tri)
+        all_bn = DT.get_all_boundary_nodes(tri)
+        for (e, (b, k)) in not_in_dt_encroached_edges
+            if DT.initial(e) ∈ all_bn && DT.terminal(e) ∈ all_bn && !DT.contains_constrained_edge(tri, e) # e.g. if an edge crosses an interior
+                continue
             end
-            for (e, (b, k)) in in_dt_encroached_edges
-                if DT.initial(e) ∈ all_bn && DT.terminal(e) ∈ all_bn && !DT.contains_constrained_edge(tri, e)
-                    continue
-                end
-                @test DT.is_encroached(tri, e) == b
+            @test DT.is_encroached(tri, e) == b
+        end
+        for (e, (b, k)) in in_dt_encroached_edges
+            if DT.initial(e) ∈ all_bn && DT.terminal(e) ∈ all_bn && !DT.contains_constrained_edge(tri, e)
+                continue
             end
+            @test DT.is_encroached(tri, e) == b
         end
     end
 end
