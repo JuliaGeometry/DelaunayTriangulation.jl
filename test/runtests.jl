@@ -129,10 +129,6 @@ using SafeTestsets
         end
     end
 
-    @safetestset "Documentation images" begin
-        include("doc_images.jl")
-    end
-
     @testset verbose = true "Point Location" begin
         @safetestset "Brute Force" begin
             include("point_location/brute_force.jl")
@@ -176,5 +172,9 @@ using SafeTestsets
         @safetestset "Refinement" begin
             include("refinement/refinement.jl")
         end
+    end
+
+    @safetestset "Documentation images" begin
+        include("doc_images.jl")
     end
 end
