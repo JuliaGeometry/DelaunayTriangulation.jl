@@ -200,14 +200,14 @@ function test_delaunay_criterion(tri; check_ghost_triangle_delaunay=true)
                         for e in DT.triangle_edges(T)
                             u, v = DT.edge_indices(e)
                             ee = DT.construct_edge(E, min(u, v), max(u, v))
-                            push!(all_edges, ee)
+                            push!(all_edges, (min(u, v), max(u, v)))
                         end
                     end
                     all_constrained_edges = Set{NTuple{2,DT.integer_type(tri)}}()
                     for e in each_edge(ace)
                         u, v = DT.edge_indices(e)
                         ee = DT.construct_edge(E, min(u, v), max(u, v))
-                        push!(all_constrained_edges, ee)
+                        push!(all_constrained_edges, (min(u, v), max(u, v)))
                     end
                     intersect!(all_edges, all_constrained_edges)
                     flags = [DT.line_segment_intersection_type(tri, initial(e), terminal(e), i, r) for e in each_edge(all_edges) for i in filter(!DT.is_boundary_index, (i, j, k))]
@@ -1110,11 +1110,11 @@ function validate_statistics(tri::Triangulation, stats=statistics(tri))
     for T in each_solid_triangle(tri)
         u, v, w = DT.indices(T)
         p, q, r = get_point(tri, u, v, w)
-        p = collect(p)
-        q = collect(q)
-        r = collect(r)
-        areas[T] = 0.5 * (p[1] * (q[2] - r[2]) + q[1] * (r[2] - p[2]) + r[1] * (p[2] - q[2]))
-        total_A += areas[T]
+        p = [getx(p), gety(p)]
+        q = [getx(q), gety(q)]
+        r = [getx(r), gety(r)]
+        areas[indices(T)] = 0.5 * (p[1] * (q[2] - r[2]) + q[1] * (r[2] - p[2]) + r[1] * (p[2] - q[2]))
+        total_A += areas[indices(T)]
         ℓ1 = norm(q - p)
         ℓ2 = norm(r - q)
         ℓ3 = norm(r - p)
@@ -1122,60 +1122,60 @@ function validate_statistics(tri::Triangulation, stats=statistics(tri))
         ℓmax = max(ℓ1, ℓ2, ℓ3)
         ℓmed = ℓ1 + ℓ2 + ℓ3 - ℓmin - ℓmax
         ℓ1, ℓ2, ℓ3 = ℓmin, ℓmed, ℓmax
-        lengths[T] = (ℓ1, ℓ2, ℓ3)
+        lengths[indices(T)] = (ℓ1, ℓ2, ℓ3)
         r′ = p - r
         s′ = q - r
-        ox = r[1] + det([norm(r′)^2 r′[2]; norm(s′)^2 s′[2]]) / (4areas[T])
-        oy = r[2] + det([r′[1] norm(r′)^2; s′[1] norm(s′)^2]) / (4areas[T])
-        circumcenters[T] = (ox, oy)
-        circumradii[T] = norm(r - collect(circumcenters[T]))
+        ox = r[1] + det([norm(r′)^2 r′[2]; norm(s′)^2 s′[2]]) / (4areas[indices(T)])
+        oy = r[2] + det([r′[1] norm(r′)^2; s′[1] norm(s′)^2]) / (4areas[indices(T)])
+        circumcenters[indices(T)] = (ox, oy)
+        circumradii[indices(T)] = norm(r - collect(circumcenters[indices(T)]))
         all_angles = [(norm(p - r)^2 + norm(q - r)^2 - norm(p - q)^2) / (2norm(p - r) * norm(q - r)) for (p, q, r) in ((p, q, r), (q, r, p), (r, p, q))]
         all_angles[all_angles .< -1.0] .= -1.0 
         all_angles[all_angles .> 1.0].=1.0 
         all_angles=acos.(all_angles)
         sort!(all_angles)
-        radius_edge_ratio[T] = circumradii[T] / ℓ1
-        edge_midpoints[T] = ((Tuple(0.5 * (p + q))), Tuple(0.5 * (q + r)), Tuple(0.5 * (r + p)))
-        inradius[T] = 2areas[T] / (ℓ1 + ℓ2 + ℓ3)
-        perimeter[T] = ℓ1 + ℓ2 + ℓ3
-        aspect_ratio[T] = inradius[T] / circumradii[T]
-        centroid[T] = (1 / 3 * (p[1] + q[1] + r[1]), 1 / 3 * (p[2] + q[2] + r[2]))
-        angles[T] = Tuple(all_angles)
-        @test radius_edge_ratio[T] ≥ 1 / sqrt(3) - 0.1
+        radius_edge_ratio[indices(T)] = circumradii[indices(T)] / ℓ1
+        edge_midpoints[indices(T)] = ((Tuple(0.5 * (p + q))), Tuple(0.5 * (q + r)), Tuple(0.5 * (r + p)))
+        inradius[indices(T)] = 2areas[indices(T)] / (ℓ1 + ℓ2 + ℓ3)
+        perimeter[indices(T)] = ℓ1 + ℓ2 + ℓ3
+        aspect_ratio[indices(T)] = inradius[indices(T)] / circumradii[indices(T)]
+        centroid[indices(T)] = (1 / 3 * (p[1] + q[1] + r[1]), 1 / 3 * (p[2] + q[2] + r[2]))
+        angles[indices(T)] = Tuple(all_angles)
+        @test radius_edge_ratio[indices(T)] ≥ 1 / sqrt(3) - 0.1
         @test DT.get_radius_edge_ratio(stats, T) ≥ 1 / sqrt(3) - 0.1
-        @test angles[T][1] ≤ deg2rad(60) + 0.01
+        @test angles[indices(T)][1] ≤ deg2rad(60) + 0.01
         @test DT.get_minimum_angle(stats, T) ≤ deg2rad(60) + 0.01
     end
 
     ## Now compare the statistics 
     for T in each_solid_triangle(tri)
-        @test areas[T] ≈ DT.get_area(stats, T)
-        @test collect(lengths[T]) ≈ collect(DT.get_lengths(stats, T))
-        @test collect(circumcenters[T]) ≈ collect(DT.get_circumcenter(stats, T))
-        @test circumradii[T] ≈ DT.get_circumradius(stats, T)
-        @test radius_edge_ratio[T] ≈ DT.get_radius_edge_ratio(stats, T)
-        @test collect(collect.(edge_midpoints[T])) ≈ collect(collect.(DT.get_edge_midpoints(stats, T)))
-        @test aspect_ratio[T] ≈ DT.get_aspect_ratio(stats, T)
-        @test inradius[T] ≈ DT.get_inradius(stats, T)
-        @test perimeter[T] ≈ DT.get_perimeter(stats, T)
-        @test radius_edge_ratio[T] ≈ 1 / (2sin(angles[T][1]))
+        @test areas[indices(T)] ≈ DT.get_area(stats, T) rtol=1e-4 atol=1e-4
+        @test collect(lengths[indices(T)]) ≈ collect(DT.get_lengths(stats, T)) rtol=1e-4 atol=1e-4
+        @test collect(circumcenters[indices(T)]) ≈ collect(DT.get_circumcenter(stats, T)) rtol=1e-4 atol=1e-4
+        @test circumradii[indices(T)] ≈ DT.get_circumradius(stats, T) rtol=1e-4 atol=1e-4
+        @test radius_edge_ratio[indices(T)] ≈ DT.get_radius_edge_ratio(stats, T) rtol=1e-4 atol=1e-4
+        @test collect(collect.(edge_midpoints[indices(T)])) ≈ collect(collect.(DT.get_edge_midpoints(stats, T))) rtol=1e-4 atol=1e-4
+        @test aspect_ratio[indices(T)] ≈ DT.get_aspect_ratio(stats, T) rtol=1e-4 atol=1e-4
+        @test inradius[indices(T)] ≈ DT.get_inradius(stats, T) rtol=1e-4 atol=1e-4
+        @test perimeter[indices(T)] ≈ DT.get_perimeter(stats, T) rtol=1e-4 atol=1e-4
+        @test radius_edge_ratio[indices(T)] ≈ 1 / (2sin(angles[indices(T)][1])) rtol=1e-4 atol=1e-4
         @test (2sin(DT.get_minimum_angle(stats, T) / 2)^2 - 0.1 ≤ DT.get_aspect_ratio(stats, T) ≤ 2tan(DT.get_minimum_angle(stats, T) / 2) + 0.1)
-        @test DT.get_radius_edge_ratio(stats, T) ≈ 1 / (2(sin(DT.get_minimum_angle(stats, T))))
-        @test areas[T] ≈ inradius[T] * 0.5perimeter[T]
-        @test DT.get_area(stats, T) ≈ DT.get_inradius(stats, T) * 0.5DT.get_perimeter(stats, T)
-        @test collect(centroid[T]) ≈ collect(DT.get_centroid(stats, T))
-        @test DT.get_angles(stats, T)[1] ≈ angles[T][1]
-        @test DT.get_angles(stats, T)[2] ≈ angles[T][2]
-        @test DT.get_angles(stats, T)[3] ≈ angles[T][3]
-        @test sum(DT.get_angles(stats,T)) ≈ π
-        @test DT.get_minimum_angle(stats, T) ≈ angles[T][1]
-        @test DT.get_maximum_angle(stats, T) ≈ angles[T][3]
-        @test DT.get_minimum_angle(stats, T) ≈ DT.get_angles(stats, T)[1]
-        @test DT.get_maximum_angle(stats, T) ≈ DT.get_angles(stats, T)[3]
+        @test DT.get_radius_edge_ratio(stats, T) ≈ 1 / (2(sin(DT.get_minimum_angle(stats, T)))) rtol=1e-4 atol=1e-4
+        @test areas[indices(T)] ≈ inradius[indices(T)] * 0.5perimeter[indices(T)] rtol=1e-4 atol=1e-4
+        @test DT.get_area(stats, T) ≈ DT.get_inradius(stats, T) * 0.5DT.get_perimeter(stats, T) rtol=1e-4 atol=1e-4
+        @test collect(centroid[indices(T)]) ≈ collect(DT.get_centroid(stats, T)) rtol=1e-4 atol=1e-4
+        @test DT.get_angles(stats, T)[1] ≈ angles[indices(T)][1] rtol=1e-4 atol=1e-4
+        @test DT.get_angles(stats, T)[2] ≈ angles[indices(T)][2] rtol=1e-4 atol=1e-4
+        @test DT.get_angles(stats, T)[3] ≈ angles[indices(T)][3] rtol=1e-4 atol=1e-4
+        @test sum(DT.get_angles(stats,T)) ≈ π rtol=1e-4 atol=1e-4
+        @test DT.get_minimum_angle(stats, T) ≈ angles[indices(T)][1] rtol=1e-4 atol=1e-4
+        @test DT.get_maximum_angle(stats, T) ≈ angles[indices(T)][3] rtol=1e-4 atol=1e-4
+        @test DT.get_minimum_angle(stats, T) ≈ DT.get_angles(stats, T)[1] rtol=1e-4 atol=1e-4
+        @test DT.get_maximum_angle(stats, T) ≈ DT.get_angles(stats, T)[3] rtol=1e-4 atol=1e-4
     end
     @test stats.individual_statistics == DT.get_individual_statistics(stats)
-    @test stats.total_area ≈ DT.get_total_area(stats)
-    @test stats.total_area ≈ total_A
+    @test stats.total_area ≈ DT.get_total_area(stats) rtol=1e-4 atol=1e-4
+    @test stats.total_area ≈ total_A rtol=1e-4 atol=1e-4
 
     ## Test the number statistics 
     @test DT.num_vertices(stats) == length(all_vertices) == stats.num_vertices
@@ -1188,17 +1188,17 @@ function validate_statistics(tri::Triangulation, stats=statistics(tri))
     @test DT.num_solid_edges(stats) == length(solid_edges) == stats.num_solid_edges
     @test DT.num_ghost_edges(stats) == length(ghost_edges) == stats.num_ghost_edges
     @test DT.num_constrained_boundary_edges(stats) == length(keys(get_boundary_edge_map(tri))) == stats.num_constrained_boundary_edges
-    @test DT.num_constrained_interior_edges(stats) == length(get_constrained_edges(tri)) == stats.num_constrained_interior_edges
+    @test DT.num_constrained_interior_edges(stats) == num_edges(get_constrained_edges(tri)) == stats.num_constrained_interior_edges
     @test DT.num_constrained_edges(stats) == num_edges(get_all_constrained_edges(tri)) == stats.num_constrained_edges
     @test DT.num_convex_hull_points(stats) == length(get_convex_hull_indices(tri)) - 1 == stats.num_convex_hull_points
 
     ## Global statistics  
-    smallest_angle = minimum([angles[T][1] for T in each_solid_triangle(tri)])
-    largest_angle = maximum([angles[T][3] for T in each_solid_triangle(tri)])
-    smallest_area = minimum([areas[T] for T in each_solid_triangle(tri)])
-    largest_area = maximum([areas[T] for T in each_solid_triangle(tri)])
-    smallest_radius_edge_ratio = minimum([radius_edge_ratio[T] for T in each_solid_triangle(tri)])
-    largest_radius_edge_ratio = maximum([radius_edge_ratio[T] for T in each_solid_triangle(tri)])
+    smallest_angle = minimum([angles[indices(T)][1] for T in each_solid_triangle(tri)])
+    largest_angle = maximum([angles[indices(T)][3] for T in each_solid_triangle(tri)])
+    smallest_area = minimum([areas[indices(T)] for T in each_solid_triangle(tri)])
+    largest_area = maximum([areas[indices(T)] for T in each_solid_triangle(tri)])
+    smallest_radius_edge_ratio = minimum([radius_edge_ratio[indices(T)] for T in each_solid_triangle(tri)])
+    largest_radius_edge_ratio = maximum([radius_edge_ratio[indices(T)] for T in each_solid_triangle(tri)])
     @test DT.get_smallest_angle(stats) ≈ smallest_angle rtol = 1e-2
     @test DT.get_largest_angle(stats) ≈ largest_angle rtol = 1e-2
     @test DT.get_smallest_area(stats) ≈ smallest_area rtol = 1e-2

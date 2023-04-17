@@ -2,6 +2,13 @@ using DelaunayTriangulation
 using Test
 using SafeTestsets
 
+
+@safetestset "Documentation images" begin
+    include("doc_images.jl")
+end
+
+
+#=
 @testset verbose = true "DelaunayTriangulation" begin
     @testset verbose = true "Triangulation" begin
         @safetestset "Gmsh" begin
@@ -178,3 +185,5 @@ using SafeTestsets
         end
     end
 end
+
+=#

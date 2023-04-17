@@ -67,8 +67,7 @@ function try_circumcenter_insertion!(tri::Triangulation, T, events::InsertionEve
             k=point_location_initial_vertex,
             rng,
             check_existence=Val(has_multiple_segments(tri)),
-            exterior_curve_index
-        )
+            exterior_curve_index)
     end
 
     # Check if there are any precision issues
@@ -224,7 +223,8 @@ function split_subsegment!(tri::Triangulation, queue, events, targets, segment_l
         return nothing
     end
     push_point!(tri, mx, my)
-    r = num_points(tri)
+    I = integer_type(tri)
+    r = I(num_points(tri))
     complete_split_edge_and_legalise!(tri, u, v, r, Val(true), events)
     assess_added_triangles!(tri, queue, events, targets)
     return nothing

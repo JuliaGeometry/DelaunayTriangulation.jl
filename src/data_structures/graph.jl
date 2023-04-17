@@ -157,7 +157,7 @@ function add_neighbour!(G::Graph{I}, u::I, v::I) where {I}
 end
 function add_neighbour!(G::Graph{I}, u, v::Vararg{I,N}) where {I,N}
     for i in 1:N
-        add_neighbour!(G, u, v[i])
+        add_neighbour!(G, I(u), v[i])
     end
     return nothing
 end

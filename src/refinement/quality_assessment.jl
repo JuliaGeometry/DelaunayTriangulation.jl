@@ -101,12 +101,15 @@ as stored in `events` and add them to the `queue` if they should be refined acco
 targets defined in `targets`.
 """
 function assess_added_triangles!(tri::Triangulation, queue, events, targets)
+    E = edge_type(tri)
     for T in each_added_triangle(events)
         u, v, w = indices(T)
         if get_adjacent(tri, u, v) == w # It's not guaranteed that each triangle in events.added_triangles _actually_ still exists, edge flipping could have deleted it
             ρ, flag = assess_triangle_quality(tri, T, targets)
             flag && triangle_enqueue!(queue, T, ρ)
             for e in triangle_edges(T)
+                # Need to convert e to the correct edge type since triangle_edge returns Tuples
+                e = construct_edge(E, initial(e), terminal(e))
                 if contains_constrained_edge(tri, e) && is_encroached(tri, e)
                     u, v = edge_indices(e)
                     p, q = get_point(tri, u, v)

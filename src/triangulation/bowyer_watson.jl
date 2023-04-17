@@ -131,7 +131,8 @@ function add_point_bowyer_watson_and_process_after_found_triangle!(
     update_representative_point=true,
     store_event_history=Val(false),
     event_history=nothing)
-    #add_point_bowyer_watson_and_process_after_found_triangle!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history)
+    I = integer_type(tri)
+    new_point = I(new_point)
     add_point_bowyer_watson_after_found_triangle!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history)
     add_point_bowyer_watson_onto_constrained_segment!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history)
     return V

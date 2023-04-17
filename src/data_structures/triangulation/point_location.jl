@@ -79,6 +79,7 @@ function jump_and_march(tri::Triangulation, q;
         check_existence,
         store_history,
         history,
+        TriangleType = triangle_type(tri),
         rng,
         exterior_curve_index,
         maxiters)
