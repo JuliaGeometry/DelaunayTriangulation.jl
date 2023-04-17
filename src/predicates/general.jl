@@ -9,11 +9,11 @@ Returns `ExactPredicates.orient(p, q, r)`, in particular we return:
 
 !!! note 
 
-The orient predicate is defined by the determinant 
+    The orient predicate is defined by the determinant 
 
-```math 
-\\text{orient}(p, q, r) = \\text{sgn} \\det \\begin{vmatrix} p_x & p_y & 1 \\\\ q_x & q_y & 1 \\\\ r_x & r_y & 1 \\end{vmatrix} = \\text{sgn} \\det \\begin{vmatrix} p_x-r_x & p_y-r_y \\\\ q_x-r_x & q_y-r_y \\end{vmatrix}.
-```
+    ```math 
+    \\text{orient}(p, q, r) = \\text{sgn} \\det \\begin{vmatrix} p_x & p_y & 1 \\\\ q_x & q_y & 1 \\\\ r_x & r_y & 1 \\end{vmatrix} = \\text{sgn} \\det \\begin{vmatrix} p_x-r_x & p_y-r_y \\\\ q_x-r_x & q_y-r_y \\end{vmatrix}.
+    ```
 """
 orient_predicate(p, q, r) = orient(getxy(p), getxy(q), getxy(r))
 
