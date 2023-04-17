@@ -502,17 +502,17 @@ end
       bn43 = bn4[3]
       bn44 = bn4[4]
       bn5 = all_bn[5][1]
-      e11 = Set(((bn11[i], bn11[i+1]) for i in 1:21))
-      e12 = Set(((bn12[i], bn12[i+1]) for i in 1:60))
-      e13 = Set(((bn13[i], bn13[i+1]) for i in 1:21))
-      e14 = Set(((bn14[i], bn14[i+1]) for i in 1:60))
+      e11 = Set(((bn11[i], bn11[i+1]) for i in 1:19))
+      e12 = Set(((bn12[i], bn12[i+1]) for i in 1:19))
+      e13 = Set(((bn13[i], bn13[i+1]) for i in 1:4))
+      e14 = Set(((bn14[i], bn14[i+1]) for i in 1:29))
       e2 = Set(((bn2[i], bn2[i+1]) for i in 1:49))
       e3 = Set(((bn3[i], bn3[i+1]) for i in 1:49))
-      e41 = Set(((bn41[i], bn41[i+1]) for i in 1:30))
-      e42 = Set(((bn42[i], bn42[i+1]) for i in 1:6))
-      e43 = Set(((bn43[i], bn43[i+1]) for i in 1:30))
-      e44 = Set(((bn44[i], bn44[i+1]) for i in 1:6))
-      e5 = Set(((bn5[i], bn5[i+1]) for i in 1:66))
+      e41 = Set(((bn41[i], bn41[i+1]) for i in 1:10))
+      e42 = Set(((bn42[i], bn42[i+1]) for i in 1:3))
+      e43 = Set(((bn43[i], bn43[i+1]) for i in 1:7))
+      e44 = Set(((bn44[i], bn44[i+1]) for i in 1:3))
+      e5 = Set(((bn5[i], bn5[i+1]) for i in 1:23))
       ace = Set{NTuple{2,Int64}}()
       for es in (e11, e12, e13, e14, e2, e3, e41, e42, e43, e44, e5)
             for e in es
@@ -533,10 +533,10 @@ end
       bn2 = all_bn[2]
       bn3 = all_bn[3]
       bn4 = all_bn[4]
-      e1 = Set(((bn1[i], bn1[i+1]) for i in 1:21))
-      e2 = Set(((bn2[i], bn2[i+1]) for i in 1:60))
-      e3 = Set(((bn3[i], bn3[i+1]) for i in 1:21))
-      e4 = Set(((bn4[i], bn4[i+1]) for i in 1:60))
+      e1 = Set(((bn1[i], bn1[i+1]) for i in 1:3))
+      e2 = Set(((bn2[i], bn2[i+1]) for i in 1:6))
+      e3 = Set(((bn3[i], bn3[i+1]) for i in 1:3))
+      e4 = Set(((bn4[i], bn4[i+1]) for i in 1:6))
       ace = Set{NTuple{2,Int64}}()
       for es in (e1, e2, e3, e4)
             for e in es
@@ -553,7 +553,7 @@ end
       j = rand(1:100000, 50)
       all_ce = Set(((i, j) for (i, j) in zip(i, j)))
       bn_map = get_boundary_map(tri_3)
-      e = Set(((all_bn[i], all_bn[i+1]) for i in 1:80))
+      e = Set(((all_bn[i], all_bn[i+1]) for i in 1:10))
       ace = Set{NTuple{2,Int64}}()
       for e in e
             push!(ace, e)
