@@ -1,11 +1,9 @@
 """
-    try_circumcenter_insertion!(tri::Triangulation, T, events::InsertionEventHistory, queue::RefinementQueue, exterior_curve_index=1, insertion_strategy=:off, rng::AbstractRNG=Random.default_rng())
+    try_circumcenter_insertion!(tri::Triangulation, T, events::InsertionEventHistory, queue::RefinementQueue, exterior_curve_index=1, rng::AbstractRNG=Random.default_rng())
 
 Attempt to insert a new point into the triangulation at the circumcenter of the triangle `T`. If the insertion causes edges to be encroached, 
 the insertion is undone and the encroached edges are queued for refinement. Otherwise, the insertion is accepted and the new point is added to the 
 triangulation.
-
-If `insertion_strategy` is `:off`, then we insert the off-centre rather than the circumcenter, but if `:on` then we use the circumcenter.
 
 The returned value is a [`Certificate`](@ref) type, used for distinguishing between three possible results:
 
@@ -15,7 +13,7 @@ The returned value is a [`Certificate`](@ref) type, used for distinguishing betw
 
 We need to have `Cert.PrecisionFailure` be separate to avoid requeueing the triangle later.
 """
-function try_circumcenter_insertion!(tri::Triangulation, T, events::InsertionEventHistory, queue::RefinementQueue, exterior_curve_index=1, insertion_strategy=:off, rng::AbstractRNG=Random.default_rng())
+function try_circumcenter_insertion!(tri::Triangulation, T, events::InsertionEventHistory, queue::RefinementQueue, exterior_curve_index=1, rng::AbstractRNG=Random.default_rng())
     #### TODO: Use off-centers.
     
     empty!(events)
@@ -243,8 +241,8 @@ function split_all_encroached_segments!(tri::Triangulation, queue, events, targe
     return nothing
 end
 
-function split_triangle!(tri::Triangulation, queue::RefinementQueue, events::InsertionEventHistory, T, exterior_curve_index, insertion_strategy, rng::AbstractRNG=Random.default_rng())
+function split_triangle!(tri::Triangulation, queue::RefinementQueue, events::InsertionEventHistory, T, exterior_curve_index, rng::AbstractRNG=Random.default_rng())
     empty!(events)
-    success_certificate = try_circumcenter_insertion!(tri, T, events, queue, exterior_curve_index, insertion_strategy, rng)
+    success_certificate = try_circumcenter_insertion!(tri, T, events, queue, exterior_curve_index, rng)
     return success_certificate
 end

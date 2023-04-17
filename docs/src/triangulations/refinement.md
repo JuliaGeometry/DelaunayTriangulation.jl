@@ -381,8 +381,6 @@ tri = triangulate(points; boundary_nodes=nodes, check_arguments=false)
 orig_tri = deepcopy(tri)
 A = get_total_area(tri)
 stats = refine!(tri; min_angle=26.45, max_area=0.005A / 9)
-@test validate_triangulation(tri; check_planarity=false, check_ghost_triangle_orientation=false, check_ghost_triangle_delaunay=false)
-validate_statistics(tri)
 
 fig = Figure(fontsize=33)
 ax = Axis(fig[1, 1], xlabel=L"x", ylabel=L"y", title=L"(a):$ $ Original", width=400, height=400, titlealign=:left)
