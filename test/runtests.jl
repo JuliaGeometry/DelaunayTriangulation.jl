@@ -109,7 +109,7 @@ using SafeTestsets
         @safetestset "(un)lock_convex_hull!.jl" begin
             include("operations/lock_convex_hull.jl")
         end
-        @safetestset "delete_holes!" begin 
+        @safetestset "delete_holes!" begin
             include("operations/delete_holes.jl")
         end
     end
@@ -159,8 +159,8 @@ using SafeTestsets
         end
     end
 
-    @testset verbose = true "Refinement" begin 
-        @safetestset "Encroachment" begin 
+    @testset verbose = true "Refinement" begin
+        @safetestset "Encroachment" begin
             include("refinement/encroachment.jl")
         end
         @safetestset "Quality Assessment" begin
