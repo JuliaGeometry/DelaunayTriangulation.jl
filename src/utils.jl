@@ -60,6 +60,28 @@ function rotate_ghost_triangle_to_standard_form(T::V) where {V}
     return construct_triangle(V, u, v, w)
 end
 
+"""
+    rotate_triangle_to_standard_form(i, j, k)
+    rotate_triangle_to_standard_form(T::V) where {V}
+
+Given a triangle `T = (i, j, k)`, rotates it to a new triangle `T′ = (u, v, w)`
+such that `w` is the minimum index.
+"""
+function rotate_triangle_to_standard_form(i, j, k) # minimum index last 
+    min_ijk = min(i, j, k)
+    if min_ijk == i
+        return (j, k, i)
+    elseif min_ijk == j
+        return (k, i, j)
+    else 
+        return (i, j, k)
+    end
+end
+function rotate_triangle_to_standard_form(T::V) where {V}
+    i, j, k = indices(T)
+    u, v, w = rotate_triangle_to_standard_form(i, j, k)
+    return construct_triangle(V, u, v, w)
+end
 
 """
     get_right_boundary_node(adj::Adjacent{I,E}, k, boundary_index, boundary_index_ranges, check_existence::C) where {I,E,C}
@@ -729,3 +751,41 @@ function edge_lies_on_two_distinct_segments(tri::Triangulation, i, j)
     end
 end
 
+"""
+    nextindex_circular(C, i)
+
+Returns the next index in the collection `C` after `i`, wrapping around to the first index if `i` is the last index.
+"""
+function nextindex_circular(C, i)
+    return i == lastindex(C) ? firstindex(C) : i + 1
+end
+
+"""
+    previndex_circular(C, i)
+
+Returns the previous index in the collection `C` before `i`, wrapping around to the second-last index if `i` is the first 
+index, assuming that `is_circular(C)` so that `C[begin] == C[end]`.
+"""
+function previndex_circular(C, i)
+    return i == firstindex(C) ? lastindex(C) - 1 : i - 1
+end
+
+"""
+    is_first_boundary_index(cell, i)
+
+Returns `true` if the index `cell[i]` is the first boundary index in the cell `cell`, assuming they come as a chain.
+"""
+function is_first_boundary_index(cell, i)
+    prev = previndex_circular(cell, i)
+    return !is_boundary_index(cell[prev])
+end
+
+"""
+    is_last_boundary_index(cell, i)
+
+Returns `true` if the index `cell[i]` is the last boundary index in the cell `cell`, assuming they come as a chain.
+"""
+function is_last_boundary_index(cell, i)
+    prev = previndex_circular(cell, i)
+    return is_boundary_index(cell[prev])
+end

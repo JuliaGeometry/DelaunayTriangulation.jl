@@ -77,6 +77,8 @@ include("data_structures/refinement/event_history.jl")
 include("data_structures/point_location_history.jl")
 include("data_structures/polylabel/cell.jl")
 include("data_structures/polylabel/cell_queue.jl")
+include("data_structures/voronoi/voronoi_cell.jl")
+include("data_structures/voronoi/definition.jl")
 
 export get_adjacent
 export get_adjacent2vertex
@@ -112,6 +114,9 @@ export each_constrained_edge
 export statistics
 export get_total_area
 export get_all_stat
+export VoronoiTessellation
+export num_cells
+export get_cell_colors
 
 include("predicates/certificate.jl")
 include("predicates/boundaries_and_ghosts.jl")
@@ -174,16 +179,13 @@ export jump_and_march
 include("constrained_triangulation/segment_location.jl")
 include("constrained_triangulation/segment_insertion.jl")
 
-include("plotting.jl")
-
-export triplot
-export triplot!
-
 include("utils.jl")
 
 export convert_boundary_points_to_indices
 
-include("polygon_utils.jl")
+include("geometry_utils/polygons.jl")
+include("geometry_utils/polylabel.jl")
+include("geometry_utils/intersections.jl")
 
 const polylabel = pole_of_inaccessibility
 
@@ -193,5 +195,21 @@ include("refinement/refinement_operations.jl")
 include("refinement/refine.jl")
 
 export refine!
+
+include("voronoi/add_cell.jl")
+include("voronoi/initialisation.jl")
+include("voronoi/construction.jl")
+include("voronoi/utils.jl")
+include("voronoi/add_topology.jl")
+
+export voronoi
+
+include("plotting/triplot.jl")
+include("plotting/voronoiplot.jl")
+
+export triplot
+export triplot!
+export voronoiplot 
+export voronoiplot!
 
 end

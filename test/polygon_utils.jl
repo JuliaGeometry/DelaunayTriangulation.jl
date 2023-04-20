@@ -706,3 +706,30 @@ end
       xmin, xmax, ymin, ymax = DelaunayTriangulation.polygon_bounds(points, nodes, Val(true)) # Val(true) => check all parts of the polygon
       @test xmin ≈ 12.5 && xmax ≈ 29.1825559185446 && ymin ≈ 26.4 && ymax ≈ 37.4716894585871
 end
+
+@testset "intersection_of_ray_with_boundary" begin
+      p1 = (0.0, 0.0)
+      p2 = (1.0, 0.0)
+      p3 = (1.0, 1.0)
+      p4 = (0.0, 1.0)
+      points = [p1, p2, p3, p4]
+      boundary_nodes = [1, 2, 3, 4, 1]
+      p = (0.67116551183, 0.42898)
+      q = (2.0, 1.0)
+      r = DT.intersection_of_ray_with_boundary(points, boundary_nodes, p, q)
+      @test collect(r) ≈ [1.0, 0.5702880802903] rtol = 1e-4
+      q = (0.7782903228571, 0.8384621)
+      r = DT.intersection_of_ray_with_boundary(points, boundary_nodes, p, q)
+      @test collect(r) ≈ [0.8205468677133, 1.0] rtol = 1e-4
+      p = (0.6, 0.4)
+      q = (1.4, 0.4)
+      r = DT.intersection_of_ray_with_boundary(points, boundary_nodes, p, q)
+      @test collect(r) ≈ [1.0, 0.4]
+      p = (1.0, 0.4)
+      r = DT.intersection_of_ray_with_boundary(points, boundary_nodes, p, q)
+      @test p == r
+      p = (0.2, 0.4)
+      q = (1.0, 0.4)
+      r = DT.intersection_of_ray_with_boundary(points, boundary_nodes, p, q)
+      @test q == r
+end

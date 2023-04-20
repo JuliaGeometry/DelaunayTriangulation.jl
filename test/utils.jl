@@ -340,6 +340,12 @@ end
             for (k, S) in polys
                   @test DT.circular_equality(S, fnc_polys[k])
             end
+            for i in keys(polys)
+                  fnc_polys[i] = DT.get_surrounding_polygon(tri, i, close=true)
+            end
+            for (k, S) in polys
+                  @test DT.circular_equality(S, fnc_polys[k])
+            end
             fnc_polys = Dict{Int64,Vector{Int64}}()
             for i in keys(polys)
                   fnc_polys[i] = DT.get_surrounding_polygon(tri, i; skip_boundary_indices=true)
@@ -718,4 +724,34 @@ end
       @test DT.edge_lies_on_two_distinct_segments(tri, 2, 3) == (false, 0)
       @test DT.edge_lies_on_two_distinct_segments(tri, 1, 3) == (false, 0)
       @test DT.edge_lies_on_two_distinct_segments(tri, 3, 1) == (false, 0)
+end
+
+@testset "rotate_triangle_to_standard_form" begin
+      @test DT.rotate_triangle_to_standard_form(2, 4, 5) == (4, 5, 2)
+      @test DT.rotate_triangle_to_standard_form(3, 2, 7) == (7, 3, 2)
+      @test DT.rotate_triangle_to_standard_form(3, 2, 1) == (3, 2, 1)
+end
+
+@testset "next/previndex_circular" begin
+      @test DT.nextindex_circular([1, 2, 3, 4, 5, 6], 1) == 2
+      @test DT.nextindex_circular([1, 2, 3, 4, 5, 6], 2) == 3
+      @test DT.nextindex_circular([1, 2, 3, 4, 5, 6], 3) == 4
+      @test DT.nextindex_circular([1, 2, 3, 4, 5, 6], 4) == 5
+      @test DT.nextindex_circular([1, 2, 3, 4, 5, 6], 5) == 6
+      @test DT.nextindex_circular([1, 2, 3, 4, 5, 6], 6) == 1
+
+      @test DT.previndex_circular([1, 2, 3, 4, 5, 6], 1) == 5
+      @test DT.previndex_circular([1, 2, 3, 4, 5, 6], 2) == 1
+      @test DT.previndex_circular([1, 2, 3, 4, 5, 6], 3) == 2
+      @test DT.previndex_circular([1, 2, 3, 4, 5, 6], 4) == 3
+      @test DT.previndex_circular([1, 2, 3, 4, 5, 6], 5) == 4
+      @test DT.previndex_circular([1, 2, 3, 4, 5, 6], 6) == 5
+end
+
+@testset "first/last_boundary_index" begin
+      @test DT.is_first_boundary_index([1, 2, 3, -1, -5], 4)
+      @test !DT.is_first_boundary_index([1, 2, 3, -1, -5], 5)
+      @test DT.is_first_boundary_index([-1, -2, 5, 4], 1)
+      @test DT.is_last_boundary_index([-1, 5, 4, 6, -2, -1], 1)
+      @test DT.is_first_boundary_index([-1, 2, 3, 4, 5, -6, -1], 6)
 end

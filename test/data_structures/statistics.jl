@@ -72,3 +72,7 @@ include("../helper_functions.jl")
     validate_statistics(uncons_tri)
     validate_statistics(cons_tri)
 end
+
+tri = triangulate(rand(2, 50))
+T = rand(get_triangles(tri))
+@test DT.triangle_circumcenter(tri, T) == DT.triangle_circumcenter(get_point(tri, T...)...)
