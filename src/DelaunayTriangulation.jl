@@ -77,8 +77,6 @@ include("data_structures/refinement/event_history.jl")
 include("data_structures/point_location_history.jl")
 include("data_structures/polylabel/cell.jl")
 include("data_structures/polylabel/cell_queue.jl")
-include("data_structures/voronoi/voronoi_cell.jl")
-include("data_structures/voronoi/definition.jl")
 
 export get_adjacent
 export get_adjacent2vertex
@@ -106,17 +104,14 @@ export get_indices
 export get_convex_hull_indices
 export each_vertex
 export num_vertices
-export each_solid_edge 
-export each_ghost_edge 
-export each_solid_vertex 
+export each_solid_edge
+export each_ghost_edge
+export each_solid_vertex
 export each_ghost_vertex
 export each_constrained_edge
 export statistics
 export get_total_area
 export get_all_stat
-export VoronoiTessellation
-export num_cells
-export get_cell_colors
 
 include("predicates/certificate.jl")
 include("predicates/boundaries_and_ghosts.jl")
@@ -145,8 +140,8 @@ include("operations/unlock_convex_hull.jl")
 export add_ghost_triangles!
 export delete_ghost_triangles!
 export add_point!
-export add_triangle! 
-export delete_triangle! 
+export add_triangle!
+export delete_triangle!
 export flip_edge!
 export add_boundary_information!
 export split_edge!
@@ -196,20 +191,27 @@ include("refinement/refine.jl")
 
 export refine!
 
-include("voronoi/add_cell.jl")
-include("voronoi/initialisation.jl")
-include("voronoi/construction.jl")
-include("voronoi/utils.jl")
-include("voronoi/add_topology.jl")
+include("voronoi/voronoi.jl")
 
 export voronoi
+export VoronoiTessellation
+export num_polygons
+export get_polygon_colors
+export get_polygon
+export each_polygon
+export get_polygon_point
+export get_polygon_vertex
+export get_area
+export each_generator
+export get_generator
+export num_polygon_vertices
 
 include("plotting/triplot.jl")
 include("plotting/voronoiplot.jl")
 
 export triplot
 export triplot!
-export voronoiplot 
+export voronoiplot
 export voronoiplot!
 
 end

@@ -1325,3 +1325,136 @@ function Base.:(==)(stats1::DT.TriangulationStatistics, stats2::DT.Triangulation
     end
     return true
 end
+
+#=
+function validate_tessellation(vorn::VoronoiTessellation)
+    # Check generators
+    generators = DT.get_generators(vorn)
+    @test generators == get_points(vorn.triangulation)
+
+    # Check get_adjacent_cell and get_adjacent_vertex
+    for i in each_cell(vorn)
+        C = get_cell(vorn, i)
+        v = get_vertices(C)
+        for j in firstindex(v):(lastindex(v)-1)
+            a = v[j]
+            b = v[j+1]
+            c = DT.nextindex_circular(v, j + 1)
+            @show C, i, j, a, b, c
+            @test DT.get_adjacent_vertex(vorn, a, b) == v[c]
+            @test DT.get_adjacent_cell(vorn, a, b) == i
+        end
+    end
+
+    # Check vertex_to_cells 
+    for i in each_cell(vorn)
+        _cells = Set{Int64}()
+        C = get_cell(vorn, i)
+        v = get_vertices(C)
+        for j in firstindex(v):(lastindex(v)-1)
+            a = v[j]
+            push!(_cells, a)
+        end
+        @test DT.get_vertex_to_cells(vorn, i) == _cells
+    end
+
+    # Check vertex_to_vertices
+    all_neighbours = Dict{Int64,Set{Int64}}()
+    for i in each_cell(vorn)
+        C = get_cell(vorn, i)
+        v = get_vertices(C)
+        for j in firstindex(v):(lastindex(v)-1)
+            a = v[j]
+            b = v[j+1]
+            if haskey(all_neighbours, a)
+                push!(all_neighbours[a], b)
+            else
+                all_neighbours[a] = Set{Int64}(b)
+            end
+            if haskey(all_neighbours, b)
+                push!(all_neighbours[b], a)
+            else
+                all_neighbours[b] = Set{Int64}(a)
+            end
+        end
+    end
+    for i in keys(all_neighbours)
+        @test DT.get_vertex_to_vertices(vorn, i) == all_neighbours[i]
+    end
+
+    # Check cell_to_cells 
+    all_neighbours = Dict{Int64,Set{Int64}}()
+    for i in each_cell(vorn)
+        C = get_cell(vorn, i)
+        v = get_vertices(C)
+        for j in firstindex(v):(lastindex(v)-1)
+            a = v[j]
+            b = v[j+1]
+            if !all(DT.is_boundary_index, (a, b))
+                if haskey(all_neighbours, i)
+                    push!(all_neighbours[i], DT.get_adjacent_cell(vorn, b, a))
+                else
+                    all_neighbours[i] = Set{Int64}(DT.get_adjacent_cell(vorn, b, a))
+                end
+            end
+        end
+    end
+    for i in keys(all_neighbours)
+        @test DT.get_cell_to_cells(vorn, i) == all_neighbours[i]
+    end
+
+    # Check obstacles
+    for e in each_constrained_edge(DT.get_triangulation(vorn))
+        u, v = DT.edge_indices(e)
+        i, j = DT.map_obstacle_index(vorn, u), DT.map_obstacle_index(vorn, v)
+        p, q = get_point(DT.get_triangulation(vorn), u, v)
+        a, b = get_cell_point(vorn, i, j)
+        @test p == a && q == b
+        @test DT.contains_obstacle(vorn, e) &&
+              DT.contains_obstacle(vorn, DT.reverse_edge(e)) &&
+              DT.contains_obstacle(vorn, e...) &&
+              DT.contains_obstacle(vorn, DT.reverse_edge(e)...)
+    end
+    @test DT.num_edges(DT.get_all_constrained_edges(DT.get_triangulation(vorn))) ==
+          DT.num_edges(DT.get_obstacles(vorn))
+
+    # Check boundary/unbounded cells 
+    for i in DT.get_boundary_cells(vorn)
+        @test DT.is_boundary_node(DT.get_triangulation(vorn), i)[1]
+    end
+    for i in DT.get_unbounded_cells(vorn)
+        @test DT.is_boundary_node(DT.get_triangulation(vorn), i)[1]
+    end
+    @test !isempty(DT.get_boundary_cells(vorn))
+    @test !isempty(DT.get_unbounded_cells(vorn))
+
+    # Test circumcenter_to/from_triangle 
+    circumcenter_to_triangle = DT.get_circumcenter_to_triangle(vorn)
+    triangle_to_circumcenter = DT.get_triangle_to_circumcenter(vorn)
+    for (c, V) in circumcenter_to_triangle
+        @test DT.get_circumcenter_to_triangle(vorn, c) == V
+        @test DT.get_triangle_to_circumcenter(vorn, V) == c
+    end
+    for (V, c) in triangle_to_circumcenter
+        @test DT.get_circumcenter_to_triangle(vorn, c) == V
+        @test DT.get_triangle_to_circumcenter(vorn, V) == c
+    end
+
+    # Test the computed circumcenters 
+    for V in DT.each_solid_triangle(DT.get_triangulation(vorn))
+        V = DT.rotate_triangle_to_standard_form(V)
+        c = DT.get_triangle_to_circumcenter(vorn, V)
+        c = get_cell_point(vorn, c)
+        i, j, k = indices(V)
+        p, q, r = get_point(DT.get_triangulation(vorn), i, j, k)
+        cx, cy = DT.triangle_circumcenter(p, q, r)
+        @test cx == c[1] && cy == c[2]
+    end
+
+    # Test the orientation 
+    for i in each_cell(vorn)
+        A = get_area(vorn, i)
+        @test A > 0
+    end
+end
+=#

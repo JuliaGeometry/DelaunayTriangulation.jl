@@ -733,3 +733,15 @@ end
       r = DT.intersection_of_ray_with_boundary(points, boundary_nodes, p, q)
       @test q == r
 end
+
+@testset "segment_intersection_coordinates" begin
+      a, b, c, d = (0.5, 4.0), (1.5, 3.5), (2.0, 4.0), (0.5, 3.0)
+      u, v = DT.segment_intersection_coordinates(a, b, c, d)
+      @test u ≈ 1.3571428571429 && v ≈ 3.57142857
+      a, b, c, d = (0.5, 3.5), (1.5, 3.5), (1.0, 4.0), (1.0, 3.0)
+      u, v = DT.segment_intersection_coordinates(a, b, c, d)
+      @test u ≈ 1.0 && v ≈ 3.5
+      a, b, c, d = (0.5, 4.0), (1.5, 4.0), (1.0, 4.0), (1.0, 3.0)
+      u, v = DT.segment_intersection_coordinates(a, b, c, d)
+      @test u ≈ 1.0 && v ≈ 4.0
+end
