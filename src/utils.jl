@@ -188,24 +188,24 @@ Tests if `A[begin] == A[end]`. Also returns `true` if `A` is empty.
 is_circular(A) = isempty(A) || (A[begin] == A[end])
 
 """
-    circular_equality(A, B)
+    circular_equality(A, B, by = isequal)
 
 Tests if the arrays `A` and `B` are equal up to a circular shift, assuming `A` 
-and `B` are circular.
+and `B` are circular. The function `by` is used to test equality of elements.
 """
-function circular_equality(A, B)
+function circular_equality(A, B, by = isequal)
     @assert is_circular(A) && is_circular(B) "The input arrays must satisfy x[begin] == x[end]."
     length(A) ≠ length(B) && return false
     length(A) == length(B) == 0 && return true
     _A = @views A[begin:(end-1)]
     _B = @views B[begin:(end-1)]
-    same_idx = findfirst(==(_A[begin]), _B)
+    same_idx = findfirst(by(_A[begin]), _B)
     same_idx === nothing && return false
     n = length(_A)
     for (i, a) in pairs(_A)
         j = mod1(i + same_idx - 1, n)
         b = _B[j]
-        a ≠ b && return false
+        !by(a, b) && return false
     end
     return true
 end

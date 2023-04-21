@@ -5,6 +5,8 @@ using ColorSchemes
 using DataStructures
 using LinearAlgebra
 
+include("../helper_functions.jl")
+
 @testset "Unconstrained test" begin
     A = (-1.0, 7.0)
     B = (4.0, 4.0)
@@ -103,19 +105,83 @@ end
     end
 end
 
+@testset "Clipping a simple VoronoiTessellation" begin
+    for _ in 1:1000
+        A = (-1.0, 7.0)
+        B = (4.0, 4.0)
+        C = (-2.0, -1.0)
+        D = (-1.0, 3.0)
+        E = (3.0, -1.0)
+        F = (1.0, 4.0)
+        G = (-3.0, 5.0)
+        pts = [A, B, C, D, E, F, G]
+        tri = triangulate(pts; delete_ghosts=false, randomise=true)
+        triplot(tri)
+        #lock_convex_hull!(tri)
+        vorn = voronoi(tri, true)
+        voronoiplot(vorn)
+        orig_pt = collect.([(0.5, 0.5)
+            (2.5, 7.166666666666667)
+            (1.1666666666666665, 1.1666666666666667)
+            (-4.3, 1.7000000000000002)
+            (-1.0, 5.0)
+            (-0.75, 5.0)
+            (2.5, 1.7000000000000002)
+            (0.5, -1.0)
+            (3.5, 1.5)
+            (3.0, -1.0)
+            (-2.7142857142857144, 3.2857142857142856)
+            (-2.369565217391304, 1.2173913043478262)
+            (2.5000000000000004, 4.8999999999999995)
+            (0.7105263157894739, 5.973684210526315)
+            (-2.0, 6.0)
+            (-3.0, 5.0)
+            (4.0, 4.0)
+            (-2.0, -1.0)
+            (-1.0, 7.0)])
+        @test isempty(DT.get_unbounded_polygons(vorn))
+        @test all([0 ≤ get_area(vorn, i) < Inf for i in each_polygon_index(vorn)])
+        @test DT.circular_equality(collect.(get_polygon_point.(Ref(vorn), get_polygon(vorn, 5))), getindex.(Ref(orig_pt), [8, 10, 9, 7, 3, 1, 8]), ≈)
+        @test DT.circular_equality(collect.(get_polygon_point.(Ref(vorn), get_polygon(vorn, 4))), getindex.(Ref(orig_pt), [12, 1, 3, 6, 5, 11, 12]), ≈)
+        @test DT.circular_equality(collect.(get_polygon_point.(Ref(vorn), get_polygon(vorn, 6))), getindex.(Ref(orig_pt), [3, 7, 13, 14, 6, 3]), ≈)
+        @test DT.circular_equality(collect.(get_polygon_point.(Ref(vorn), get_polygon(vorn, 7))), getindex.(Ref(orig_pt), [11, 5, 15, 16, 11]), ≈)
+        @test DT.circular_equality(collect.(get_polygon_point.(Ref(vorn), get_polygon(vorn, 2))), getindex.(Ref(orig_pt), [7, 9, 17, 13, 7]), ≈)
+        @test DT.circular_equality(collect.(get_polygon_point.(Ref(vorn), get_polygon(vorn, 3))), getindex.(Ref(orig_pt), [18, 8, 1, 12, 18]), ≈)
+        @test DT.circular_equality(collect.(get_polygon_point.(Ref(vorn), get_polygon(vorn, 1))), getindex.(Ref(orig_pt), [5, 6, 14, 19, 15, 5]), ≈)
+        @test allunique(DT.get_polygon_points(vorn))
+        for i in each_polygon_index(vorn)
+            C = get_polygon(vorn, i)
+            for (j, v) in pairs(C)
+                δ = DT.distance_to_polygon(get_polygon_point(vorn, v), get_points(tri), get_convex_hull_indices(tri))
+                @test δ ≥ 0
+            end
+        end
+    end
+end
 
-A = (-1.0, 7.0)
-B = (4.0, 4.0)
-C = (-2.0, -1.0)
-D = (-1.0, 3.0)
-E = (3.0, -1.0)
-F = (1.0, 4.0)
-G = (-3.0, 5.0)
-pts = [A, B, C, D, E, F, G]
-tri = triangulate(pts; delete_ghosts=false, randomise=false)
-lock_convex_hull!(tri)
-vorn = voronoi(tri, true)
-voronoiplot(vorn)
+tri = fixed_shewchuk_example_constrained()
+vorn = voronoi(tri, false)
+@test DT.circular_equality(
+    get_polygon(vorn, 1),
+    DT.get_triangle_to_circumcenter.(Ref(vorn), [
+        (4, 2, 1), (1, 2, -1), (4, 1, -1), (4, 2, 1)
+    ])
+)
+@test DT.circular_equality(
+    get_polygon(vorn, 2),
+    
+)
+
+_vorn = voronoi(tri, true)
+
+fig, ax, sc = voronoiplot(vorn)
+voronoiplot!(ax, _vorn, strokecolor=:red)
+
+
+
+
+
+
 
 tri = DT.get_triangulation(vorn)
 boundary_edges = (keys ∘ get_boundary_edge_map)(tri)

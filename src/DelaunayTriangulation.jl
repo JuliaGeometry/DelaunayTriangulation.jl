@@ -204,6 +204,8 @@ export get_polygon_vertex
 export get_area
 export each_generator
 export get_generator
+export each_polygon_index
+export each_polygon_vertex
 export num_polygon_vertices
 
 include("plotting/triplot.jl")
