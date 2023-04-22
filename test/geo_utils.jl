@@ -61,6 +61,17 @@ include("./helper_functions.jl")
       @test cy ≈ (c1[2] * a1 - c2[2] * a2 - c3[2] * a3) / (a1 - a2 - a3)
 end
 
+@testset "Another test for area" begin
+      tri = triangulate(rand(2, 50))
+      for T in each_solid_triangle(tri)
+            u, v, w = T
+            p, q, r = get_point(tri, u, v, w)
+            a1 = DT.triangle_area(p, q, r)
+            a2 = DT.polygon_features(get_points(tri), [u, v, w, u])[1]
+            @test a1 ≈ a2
+      end
+end
+
 @testset "Distance to a segment" begin
       p1 = [0.0, 0.0]
       p2 = [10.0, 0.0]

@@ -1130,9 +1130,9 @@ function validate_statistics(tri::Triangulation, stats=statistics(tri))
         circumcenters[indices(T)] = (ox, oy)
         circumradii[indices(T)] = norm(r - collect(circumcenters[indices(T)]))
         all_angles = [(norm(p - r)^2 + norm(q - r)^2 - norm(p - q)^2) / (2norm(p - r) * norm(q - r)) for (p, q, r) in ((p, q, r), (q, r, p), (r, p, q))]
-        all_angles[all_angles .< -1.0] .= -1.0 
-        all_angles[all_angles .> 1.0].=1.0 
-        all_angles=acos.(all_angles)
+        all_angles[all_angles.<-1.0] .= -1.0
+        all_angles[all_angles.>1.0] .= 1.0
+        all_angles = acos.(all_angles)
         sort!(all_angles)
         radius_edge_ratio[indices(T)] = circumradii[indices(T)] / ℓ1
         edge_midpoints[indices(T)] = ((Tuple(0.5 * (p + q))), Tuple(0.5 * (q + r)), Tuple(0.5 * (r + p)))
@@ -1149,33 +1149,33 @@ function validate_statistics(tri::Triangulation, stats=statistics(tri))
 
     ## Now compare the statistics 
     for T in each_solid_triangle(tri)
-        @test areas[indices(T)] ≈ DT.get_area(stats, T) rtol=1e-4 atol=1e-4
-        @test collect(lengths[indices(T)]) ≈ collect(DT.get_lengths(stats, T)) rtol=1e-4 atol=1e-4
-        @test collect(circumcenters[indices(T)]) ≈ collect(DT.get_circumcenter(stats, T)) rtol=1e-4 atol=1e-4
-        @test circumradii[indices(T)] ≈ DT.get_circumradius(stats, T) rtol=1e-4 atol=1e-4
-        @test radius_edge_ratio[indices(T)] ≈ DT.get_radius_edge_ratio(stats, T) rtol=1e-4 atol=1e-4
-        @test collect(collect.(edge_midpoints[indices(T)])) ≈ collect(collect.(DT.get_edge_midpoints(stats, T))) rtol=1e-4 atol=1e-4
-        @test aspect_ratio[indices(T)] ≈ DT.get_aspect_ratio(stats, T) rtol=1e-4 atol=1e-4
-        @test inradius[indices(T)] ≈ DT.get_inradius(stats, T) rtol=1e-4 atol=1e-4
-        @test perimeter[indices(T)] ≈ DT.get_perimeter(stats, T) rtol=1e-4 atol=1e-4
-        @test radius_edge_ratio[indices(T)] ≈ 1 / (2sin(angles[indices(T)][1])) rtol=1e-4 atol=1e-4
+        @test areas[indices(T)] ≈ DT.get_area(stats, T) rtol = 1e-4 atol = 1e-4
+        @test collect(lengths[indices(T)]) ≈ collect(DT.get_lengths(stats, T)) rtol = 1e-4 atol = 1e-4
+        @test collect(circumcenters[indices(T)]) ≈ collect(DT.get_circumcenter(stats, T)) rtol = 1e-4 atol = 1e-4
+        @test circumradii[indices(T)] ≈ DT.get_circumradius(stats, T) rtol = 1e-4 atol = 1e-4
+        @test radius_edge_ratio[indices(T)] ≈ DT.get_radius_edge_ratio(stats, T) rtol = 1e-4 atol = 1e-4
+        @test collect(collect.(edge_midpoints[indices(T)])) ≈ collect(collect.(DT.get_edge_midpoints(stats, T))) rtol = 1e-4 atol = 1e-4
+        @test aspect_ratio[indices(T)] ≈ DT.get_aspect_ratio(stats, T) rtol = 1e-4 atol = 1e-4
+        @test inradius[indices(T)] ≈ DT.get_inradius(stats, T) rtol = 1e-4 atol = 1e-4
+        @test perimeter[indices(T)] ≈ DT.get_perimeter(stats, T) rtol = 1e-4 atol = 1e-4
+        @test radius_edge_ratio[indices(T)] ≈ 1 / (2sin(angles[indices(T)][1])) rtol = 1e-4 atol = 1e-4
         @test (2sin(DT.get_minimum_angle(stats, T) / 2)^2 - 0.1 ≤ DT.get_aspect_ratio(stats, T) ≤ 2tan(DT.get_minimum_angle(stats, T) / 2) + 0.1)
-        @test DT.get_radius_edge_ratio(stats, T) ≈ 1 / (2(sin(DT.get_minimum_angle(stats, T)))) rtol=1e-4 atol=1e-4
-        @test areas[indices(T)] ≈ inradius[indices(T)] * 0.5perimeter[indices(T)] rtol=1e-4 atol=1e-4
-        @test DT.get_area(stats, T) ≈ DT.get_inradius(stats, T) * 0.5DT.get_perimeter(stats, T) rtol=1e-4 atol=1e-4
-        @test collect(centroid[indices(T)]) ≈ collect(DT.get_centroid(stats, T)) rtol=1e-4 atol=1e-4
-        @test DT.get_angles(stats, T)[1] ≈ angles[indices(T)][1] rtol=1e-4 atol=1e-4
-        @test DT.get_angles(stats, T)[2] ≈ angles[indices(T)][2] rtol=1e-4 atol=1e-4
-        @test DT.get_angles(stats, T)[3] ≈ angles[indices(T)][3] rtol=1e-4 atol=1e-4
-        @test sum(DT.get_angles(stats,T)) ≈ π rtol=1e-4 atol=1e-4
-        @test DT.get_minimum_angle(stats, T) ≈ angles[indices(T)][1] rtol=1e-4 atol=1e-4
-        @test DT.get_maximum_angle(stats, T) ≈ angles[indices(T)][3] rtol=1e-4 atol=1e-4
-        @test DT.get_minimum_angle(stats, T) ≈ DT.get_angles(stats, T)[1] rtol=1e-4 atol=1e-4
-        @test DT.get_maximum_angle(stats, T) ≈ DT.get_angles(stats, T)[3] rtol=1e-4 atol=1e-4
+        @test DT.get_radius_edge_ratio(stats, T) ≈ 1 / (2(sin(DT.get_minimum_angle(stats, T)))) rtol = 1e-4 atol = 1e-4
+        @test areas[indices(T)] ≈ inradius[indices(T)] * 0.5perimeter[indices(T)] rtol = 1e-4 atol = 1e-4
+        @test DT.get_area(stats, T) ≈ DT.get_inradius(stats, T) * 0.5DT.get_perimeter(stats, T) rtol = 1e-4 atol = 1e-4
+        @test collect(centroid[indices(T)]) ≈ collect(DT.get_centroid(stats, T)) rtol = 1e-4 atol = 1e-4
+        @test DT.get_angles(stats, T)[1] ≈ angles[indices(T)][1] rtol = 1e-4 atol = 1e-4
+        @test DT.get_angles(stats, T)[2] ≈ angles[indices(T)][2] rtol = 1e-4 atol = 1e-4
+        @test DT.get_angles(stats, T)[3] ≈ angles[indices(T)][3] rtol = 1e-4 atol = 1e-4
+        @test sum(DT.get_angles(stats, T)) ≈ π rtol = 1e-4 atol = 1e-4
+        @test DT.get_minimum_angle(stats, T) ≈ angles[indices(T)][1] rtol = 1e-4 atol = 1e-4
+        @test DT.get_maximum_angle(stats, T) ≈ angles[indices(T)][3] rtol = 1e-4 atol = 1e-4
+        @test DT.get_minimum_angle(stats, T) ≈ DT.get_angles(stats, T)[1] rtol = 1e-4 atol = 1e-4
+        @test DT.get_maximum_angle(stats, T) ≈ DT.get_angles(stats, T)[3] rtol = 1e-4 atol = 1e-4
     end
     @test stats.individual_statistics == DT.get_individual_statistics(stats)
-    @test stats.total_area ≈ DT.get_total_area(stats) rtol=1e-4 atol=1e-4
-    @test stats.total_area ≈ total_A rtol=1e-4 atol=1e-4
+    @test stats.total_area ≈ DT.get_total_area(stats) rtol = 1e-4 atol = 1e-4
+    @test stats.total_area ≈ total_A rtol = 1e-4 atol = 1e-4
 
     ## Test the number statistics 
     @test DT.num_vertices(stats) == length(all_vertices) == stats.num_vertices
@@ -1326,135 +1326,103 @@ function Base.:(==)(stats1::DT.TriangulationStatistics, stats2::DT.Triangulation
     return true
 end
 
-#=
+
+## TODO: Implement a brute-force VoronoiTessellation that we can compare with
 function validate_tessellation(vorn::VoronoiTessellation)
-    # Check generators
-    generators = DT.get_generators(vorn)
-    @test generators == get_points(vorn.triangulation)
-
-    # Check get_adjacent_cell and get_adjacent_vertex
-    for i in each_cell(vorn)
-        C = get_cell(vorn, i)
-        v = get_vertices(C)
-        for j in firstindex(v):(lastindex(v)-1)
-            a = v[j]
-            b = v[j+1]
-            c = DT.nextindex_circular(v, j + 1)
-            @show C, i, j, a, b, c
-            @test DT.get_adjacent_vertex(vorn, a, b) == v[c]
-            @test DT.get_adjacent_cell(vorn, a, b) == i
+    tri = DT.get_triangulation(vorn)
+    for (i, p) in DT.get_generators(vorn)
+        flag = get_point(tri, i) == get_generator(vorn, i) == p
+        if !flag 
+            println("Generator $i is not correct, mapped to $p.")
+            return false 
         end
     end
-
-    # Check vertex_to_cells 
-    for i in each_cell(vorn)
-        _cells = Set{Int64}()
-        C = get_cell(vorn, i)
-        v = get_vertices(C)
-        for j in firstindex(v):(lastindex(v)-1)
-            a = v[j]
-            push!(_cells, a)
-        end
-        @test DT.get_vertex_to_cells(vorn, i) == _cells
+    flag = DT.get_triangulation(vorn) == vorn.triangulation
+    if !flag
+        println("Triangulation is not correct.")
+        return false
     end
-
-    # Check vertex_to_vertices
-    all_neighbours = Dict{Int64,Set{Int64}}()
-    for i in each_cell(vorn)
-        C = get_cell(vorn, i)
-        v = get_vertices(C)
-        for j in firstindex(v):(lastindex(v)-1)
-            a = v[j]
-            b = v[j+1]
-            if haskey(all_neighbours, a)
-                push!(all_neighbours[a], b)
-            else
-                all_neighbours[a] = Set{Int64}(b)
-            end
-            if haskey(all_neighbours, b)
-                push!(all_neighbours[b], a)
-            else
-                all_neighbours[b] = Set{Int64}(a)
-            end
-        end
-    end
-    for i in keys(all_neighbours)
-        @test DT.get_vertex_to_vertices(vorn, i) == all_neighbours[i]
-    end
-
-    # Check cell_to_cells 
-    all_neighbours = Dict{Int64,Set{Int64}}()
-    for i in each_cell(vorn)
-        C = get_cell(vorn, i)
-        v = get_vertices(C)
-        for j in firstindex(v):(lastindex(v)-1)
-            a = v[j]
-            b = v[j+1]
-            if !all(DT.is_boundary_index, (a, b))
-                if haskey(all_neighbours, i)
-                    push!(all_neighbours[i], DT.get_adjacent_cell(vorn, b, a))
-                else
-                    all_neighbours[i] = Set{Int64}(DT.get_adjacent_cell(vorn, b, a))
-                end
-            end
-        end
-    end
-    for i in keys(all_neighbours)
-        @test DT.get_cell_to_cells(vorn, i) == all_neighbours[i]
-    end
-
-    # Check obstacles
-    for e in each_constrained_edge(DT.get_triangulation(vorn))
-        u, v = DT.edge_indices(e)
-        i, j = DT.map_obstacle_index(vorn, u), DT.map_obstacle_index(vorn, v)
-        p, q = get_point(DT.get_triangulation(vorn), u, v)
-        a, b = get_cell_point(vorn, i, j)
-        @test p == a && q == b
-        @test DT.contains_obstacle(vorn, e) &&
-              DT.contains_obstacle(vorn, DT.reverse_edge(e)) &&
-              DT.contains_obstacle(vorn, e...) &&
-              DT.contains_obstacle(vorn, DT.reverse_edge(e)...)
-    end
-    @test DT.num_edges(DT.get_all_constrained_edges(DT.get_triangulation(vorn))) ==
-          DT.num_edges(DT.get_obstacles(vorn))
-
-    # Check boundary/unbounded cells 
-    for i in DT.get_boundary_cells(vorn)
-        @test DT.is_boundary_node(DT.get_triangulation(vorn), i)[1]
-    end
-    for i in DT.get_unbounded_cells(vorn)
-        @test DT.is_boundary_node(DT.get_triangulation(vorn), i)[1]
-    end
-    @test !isempty(DT.get_boundary_cells(vorn))
-    @test !isempty(DT.get_unbounded_cells(vorn))
-
-    # Test circumcenter_to/from_triangle 
     circumcenter_to_triangle = DT.get_circumcenter_to_triangle(vorn)
     triangle_to_circumcenter = DT.get_triangle_to_circumcenter(vorn)
-    for (c, V) in circumcenter_to_triangle
-        @test DT.get_circumcenter_to_triangle(vorn, c) == V
-        @test DT.get_triangle_to_circumcenter(vorn, V) == c
-    end
-    for (V, c) in triangle_to_circumcenter
-        @test DT.get_circumcenter_to_triangle(vorn, c) == V
-        @test DT.get_triangle_to_circumcenter(vorn, V) == c
-    end
-
-    # Test the computed circumcenters 
     for V in DT.each_solid_triangle(DT.get_triangulation(vorn))
         V = DT.rotate_triangle_to_standard_form(V)
         c = DT.get_triangle_to_circumcenter(vorn, V)
-        c = get_cell_point(vorn, c)
+        c = get_polygon_point(vorn, c)
         i, j, k = indices(V)
         p, q, r = get_point(DT.get_triangulation(vorn), i, j, k)
         cx, cy = DT.triangle_circumcenter(p, q, r)
-        @test cx == c[1] && cy == c[2]
+        flag = cx == c[1] && cy == c[2]
+        if !flag
+            println("Circumcenter of $V is not correct, mapped to $c.")
+            return false
+        end
     end
-
-    # Test the orientation 
-    for i in each_cell(vorn)
+    for (c, V) in circumcenter_to_triangle
+        flag = DT.get_circumcenter_to_triangle(vorn, c) == V
+        if !flag 
+            println("Circumcenter $c is not correct, mapped to $V.")
+            return false
+        end
+        flag = DT.get_triangle_to_circumcenter(vorn, V) == c
+        if !flag 
+            println("Triangle $V is not correct, mapped to $c.")
+            return false
+        end
+    end
+    for (V, c) in triangle_to_circumcenter
+        flag = DT.get_circumcenter_to_triangle(vorn, c) == V
+        if !flag # cocircular points disrupt these dicts somewhat
+            _flag = c ∈ vorn.cocircular_circumcenters
+            if !_flag
+                println("Circumcenter $c is duplicated from another triangle, but not in cocircular_circumcenters.")
+                return false
+            end
+            i, j, k = indices(V)
+            for i in (i, j, k)
+                for e in each_edge(get_adjacent2vertex(DT.get_triangulation(vorn), i))
+                    v, w = DT.edge_indices(e)
+                    V′ = DT.rotate_triangle_to_standard_form(DT.construct_triangle(DT.triangle_type(DT.get_triangulation(vorn)), i, v, w))
+                    flag = flag || DT.get_triangle_to_circumcenter(vorn, V′) == c
+                end
+            end
+        end
+        if !flag
+            println("Triangle $V is not correct, mapped to $c.")
+            return false
+        end
+        flag = DT.get_triangle_to_circumcenter(vorn, V) == c
+        if !flag 
+            println("Circumcenter $c is not correct, mapped to $V.")
+            return false
+        end
+    end
+    for i in each_polygon_index(vorn)
         A = get_area(vorn, i)
-        @test A > 0
+        flag = A > 0
+        if !flag
+            println("Polygon $i has area $A.")
+            return false
+        end
+        if !isfinite(A)
+            flag = i ∈ DT.get_unbounded_polygons(vorn)
+            if !flag
+                println("Polygon $i has infinite area, but is not in the unbounded polygons.")
+                return false
+            end
+        end
     end
+    for i in each_polygon_index(vorn)
+        C = get_polygon(vorn, i)
+        ne = DT.num_boundary_edges(C)
+        for j in 1:ne 
+            u = get_boundary_nodes(C,j)
+            v = get_boundary_nodes(C,j+1)
+            flag = get_adjacent(vorn, u, v) == get_adjacent(vorn, DT.construct_edge(DT.edge_type(DT.get_triangulation(vorn)), u, v)) == i 
+            if !flag
+                println("Polygon $i is not adjacent to points $u and $v.")
+                return false
+            end
+        end
+    end
+    return true
 end
-=#

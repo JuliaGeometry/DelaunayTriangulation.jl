@@ -1,7 +1,7 @@
 ## Definition
 
 """
-    VoronoiTessellation{Tr<:Triangulation, P, I, T}
+    VoronoiTessellation{Tr<:Triangulation, P, I, T, S, E}
 
 A Voronoi tessellation, dual to a triangulation.
 
@@ -9,7 +9,8 @@ A Voronoi tessellation, dual to a triangulation.
 
     If the triangulation is constrained, it is not guaranteed that 
     the Voronoi tessellation is dual to the triangulation. This duality 
-    is only guaranteed for unconstrained triangulations. 
+    is only guaranteed for unconstrained triangulations, and only for point 
+    sets with no four points that are cocircular.
 
 # Fields
 - `triangulation::Tr`: The triangulation that the Voronoi tessellation is based on.
@@ -19,8 +20,25 @@ A Voronoi tessellation, dual to a triangulation.
 - `circumcenter_to_triangle::Dict{I,T}`: Map that takes a circumcenter to the triangle that it is the circumcenter of.
 - `triangle_to_circumcenter::Dict{T,I}`: Map that takes a triangle to the circumcenter of that triangle.
 - `unbounded_polygons::Set{I}`: The polygons that are unbounded.
+- `cocircular_circumcenters:S`: Indices for the circumcenters that are given by more than just one triangle.
+- `adjacent::Adjacent{I,E}`: The adjacency structure for the Voronoi tessellation, mapping polygonal edges to the cells they belong to.
+
+!!! warning "Degeneracy"
+
+        When there are adjoining triangles that have the same circumcenter, the `triangle_to_circumcenter` and 
+        `circumcenter_to_triangle` dictionaries will only store one of the triangles.
+
+        Moreover, the Voronoi tessellation is only dual to the triangulation if there are no four points that are cocircular.
+        While we do handle cocircular subsets automatically in the construction of the tessellation, we do not 
+        adjust the triangulation accordingly so that triangles arising from adjoining triangles with the 
+        same circumcenter are morphed into a polyhedron (returning a Delaunay subdivision). If we did make 
+        this adjustment, it would indeed be dual in general. However, this would be a significant change to
+        the triangulation code, and would require a lot of additional code to handle the morphing of the
+        triangulation. Moreover, the data structures we use are not adequate for representing a combination of 
+        triangles and polyhedrons. (For more detail, see the discussion around Fig 2.3 in the book by
+        Cheng, Dey, and Shewchuk, and also the discussion on p. 156 right before Section 7.2.)
 """
-struct VoronoiTessellation{Tr<:Triangulation,P,I,T}
+struct VoronoiTessellation{Tr<:Triangulation,P,I,T,S,E}
     triangulation::Tr
     generators::Dict{I,P}
     polygon_points::Vector{P}
@@ -28,6 +46,8 @@ struct VoronoiTessellation{Tr<:Triangulation,P,I,T}
     circumcenter_to_triangle::Dict{I,T}
     triangle_to_circumcenter::Dict{T,I}
     unbounded_polygons::Set{I}
+    cocircular_circumcenters::S
+    adjacent::Adjacent{I,E}
 end
 for n in fieldnames(VoronoiTessellation)
     name = String(n)
@@ -73,11 +93,17 @@ is_encroached(vor::VoronoiTessellation, i, j) =
 push_polygon_point!(vor::VoronoiTessellation, p) = push_point!(get_polygon_points(vor), p)
 push_polygon_point!(vor::VoronoiTessellation, x, y) = push_point!(get_polygon_points(vor), x, y)
 each_polygon_index(vor::VoronoiTessellation) = keys(get_polygons(vor))
+get_adjacent(vor::VoronoiTessellation, e) = get_adjacent(get_adjacent(vor), e)
+get_adjacent(vor::VoronoiTessellation, i, j) = get_adjacent(get_adjacent(vor), i, j)
+add_adjacent!(vor::VoronoiTessellation, e, i) = add_adjacent!(get_adjacent(vor), e, i)
+add_adjacent!(vor::VoronoiTessellation, i, j, k) = add_adjacent!(get_adjacent(vor), i, j, k)
+delete_adjacent!(vor::VoronoiTessellation, e, i) = delete_adjacent!(get_adjacent(vor), e, i)
+delete_adjacent!(vor::VoronoiTessellation, i, j, k) = delete_adjacent!(get_adjacent(vor), i, j, k)
 
 function polygon_features(vor::VoronoiTessellation, i)
     polygon = get_polygon(vor, i)
     if any(is_boundary_index, polygon)
-        F = number_type(vorn)
+        F = number_type(vor)
         return (typemax(F), (typemax(F), typemax(F)))
     end
     return polygon_features(get_polygon_points(vor), polygon)
@@ -97,7 +123,7 @@ end
 # ghost triangles differing from solid triangles. But since we only typically need 
 # this for points inside the domain or right off an edge (due to floating point 
 # arithmetic), this is sufficient. If you do need point location queries for external 
-# points, post an issue.
+# points, post an issue with some ideas.
 function jump_and_march(vor::VoronoiTessellation, q; kwargs...)
     V = jump_and_march(get_triangulation(vor), q; kwargs...)
     qx, qy = getxy(q)
@@ -219,7 +245,16 @@ function get_polygon_coordinates(vorn::VoronoiTessellation, j, bbox=nothing, bbo
             else
                 next_index = nextindex_circular(C, i)
                 r = get_polygon_point(vorn, C[next_index])
-
+            end
+            if r == m # It's possible for the circumcenter to lie on the edge and exactly at the midpoint (e.g. [(0.0,1.0),(-1.0,2.0),(-2.0,-1.0)]). In this case, just rotate 
+                mx, my = getxy(m)
+                dx, dy = qx - mx, qy - my
+                rotated_dx, rotated_dy = -dy, dx
+                r = mx + rotated_dx, my + rotated_dy
+                if is_right(point_position_relative_to_line(p, q, r))
+                    rotated_dx, rotated_dy = dy, -dx
+                    r = mx + rotated_dx, my + rotated_dy
+                end
             end
             r = getxy(r)
             if is_left(point_position_relative_to_line(p, q, r))
@@ -282,13 +317,24 @@ function initialise_voronoi_tessellation(tri::Tr) where {Tr<:Triangulation}
     sizehint!(circumcenter_to_triangle, num_triangles(tri))
     sizehint!(triangle_to_circumcenter, num_triangles(tri))
     cur_ghost_idx = I(0)
+    cocircular_dict = Dict{P,I}()
+    encountered_circumcenters = DefaultDict{P,I,I}(zero(I))
+    cocircular_circumcenters = Set{I}()
     for V in each_triangle(tri)
         V = rotate_triangle_to_standard_form(V)
         if !is_ghost_triangle(V)
             cx, cy = triangle_circumcenter(tri, V)
-            push_point!(polygon_points, cx, cy)
-            circumcenter_to_triangle[num_points(polygon_points)] = V
-            triangle_to_circumcenter[V] = num_points(polygon_points)
+            encountered_circumcenters[(cx, cy)] += 1
+            if encountered_circumcenters[(cx, cy)] > 1 # If we've already encountered this circumcenter, don't push another
+                idx = cocircular_dict[(cx, cy)]
+                triangle_to_circumcenter[V] = idx
+                push!(cocircular_circumcenters, idx)
+            else
+                push_point!(polygon_points, cx, cy)
+                circumcenter_to_triangle[num_points(polygon_points)] = V
+                triangle_to_circumcenter[V] = num_points(polygon_points)
+                cocircular_dict[(cx, cy)] = num_points(polygon_points)
+            end
         else
             circumcenter_to_triangle[I(BoundaryIndex)-cur_ghost_idx] = V
             triangle_to_circumcenter[V] = I(BoundaryIndex) - cur_ghost_idx
@@ -304,7 +350,9 @@ function initialise_voronoi_tessellation(tri::Tr) where {Tr<:Triangulation}
     for i in each_solid_vertex(tri)
         generators[i] = get_point(tri, i)
     end
-    return VoronoiTessellation{Tr,P,I,T}(tri, generators, polygon_points, polygons, circumcenter_to_triangle, triangle_to_circumcenter, unbounded_polygons)
+    E = edge_type(tri)
+    adj = Adjacent{I,E}()
+    return VoronoiTessellation{Tr,P,I,T,typeof(cocircular_circumcenters),E}(tri, generators, polygon_points, polygons, circumcenter_to_triangle, triangle_to_circumcenter, unbounded_polygons, cocircular_circumcenters, adj)
 end
 
 function voronoi(tri::Triangulation, clip=Val(has_boundary_nodes(tri)))
@@ -353,18 +401,28 @@ function add_voronoi_polygon!(vorn::VoronoiTessellation, i)
     S, B, unbounded_polygons = prepare_add_voronoi_polygon(vorn, i)
     m = firstindex(S) + 1
     k = S[begin]
+    encountered_duplicate_circumcenter = false
     ci, j, k = get_next_triangle_for_voronoi_polygon(vorn, i, k, S, m)
-    prev_ci = ci
+    if ci ∈ get_cocircular_circumcenters(vorn)
+        encountered_duplicate_circumcenter = true
+    end
     push!(B, ci)
+    prev_ci = ci
     for m in (firstindex(S)+2):lastindex(S)
         ci, j, k = get_next_triangle_for_voronoi_polygon(vorn, i, k, S, m)
         if is_boundary_index(ci)
             push!(unbounded_polygons, i)
         end
+        if ci ∈ get_cocircular_circumcenters(vorn)
+            encountered_duplicate_circumcenter = true
+        end
         connect_circumcenters!(B, ci)
+        add_adjacent!(vorn, prev_ci, ci, i)
         prev_ci = ci
     end
+    encountered_duplicate_circumcenter && unique!(B)
     push!(B, B[begin])
+    add_adjacent!(vorn, prev_ci, B[begin], i)
     polygons = get_polygons(vorn)
     polygons[i] = B
     return B
@@ -394,11 +452,10 @@ end
 """
     segment_intersection_type(e, intersected_edge_cache)
 
-Given edges intersected, `intersected_edge_cache`, with an edge `e` by some incident polygon, returns:
+Given edges intersected, `intersected_edge_cache`, with an edge `e` by some incident polygon's edge `(u, v)`, returns:
 
 - `flag`: `true` if both of the edges in `intersected_edge_cache` are the same as `e`, and `false` otherwise.
 - `index`: If `flag == true`, then `index == 0`, but otherwise this gives the index of the edge in `intersected_edge_cache` that is different from `e`.
-- `vertex`: If `flag == true`, then `vertex == 0`, but otherwise this gives the other vertex on the other edge shared by `e`. 
 - `shared_vertex`: If `flag == true`, then `shared_vertex == 0`, but otherwise this gives the vertex shared by `e` and the other edge in `intersected_edge_cache`.
 
 For these edges, their orientation is ignored (so `(i, j)` is the same as `(j, i)`).
@@ -413,9 +470,9 @@ function segment_intersection_type(e, intersected_edge_cache)
     if flag_1 && flag_2
         return true, 0, 0, 0
     elseif !flag_1 && flag_2
-        return false, 1, i1 == i ? j1 : i1, i1 == i ? i1 : j1
+        return false, 1, i1 == i ? i1 : j1
     else # flag_1 && !flag_2
-        return false, 2, i2 == i ? j2 : i2, i2 == i ? i2 : j2
+        return false, 2, i2 == i ? i2 : j2
     end
 end
 
@@ -454,6 +511,7 @@ function process_ray_intersection!(vorn, u, v, incident_polygon, num_intersectio
     p, q = get_generator(vorn, a, b)
     r = get_polygon_point(vorn, v)
     cert = point_position_relative_to_line(p, q, r)
+    incident_polygon == 1 && @show cert, incident_polygon
     is_left(cert) && return num_intersections
     px, py = getxy(p)
     qx, qy = getxy(q)
@@ -469,24 +527,34 @@ end
 function process_segment_intersection!(vorn, u, v, e, incident_polygon, num_intersections, intersected_edge_cache, segment_intersections, boundary_site_additions, boundary_site_deletions)
     a, b = edge_indices(e)
     p, q = get_generator(vorn, a, b)
+    tri = get_triangulation(vorn)
     r, s = get_polygon_point(vorn, u, v)
     intersects = line_segment_intersection_type(p, q, r, s)
-    is_none(intersects) && return num_intersections
+    I = integer_type(tri)
+    incident_polygon == 1 && @show intersects, incident_polygon
+    if is_none(intersects) || is_touching(intersects)
+        # Even if there are no intersections, we should still check if r and s 
+        # appear outside of the boundary, since we need to declare these as being outside.
+        #if is_left(point_position_on_line_segment(p, q, r)) && is_left(point_position_on_line_segment(p, q, s))
+        #    # Can't have one be left and one right, since this would mean intersection. 
+        #    bnd_deletions = get!(Set{I}, boundary_site_deletions, incident_polygon)
+        #    push!(bnd_deletions, u, v)
+        #end
+        return num_intersections
+    end
     m = segment_intersection_coordinates(p, q, r, s)
+    if !is_boundary_edge(tri, e)
+        p, q = q, p
+        a, b = b, a
+    end
     add_segment_intersection!(segment_intersections, boundary_site_additions, m, incident_polygon)
     num_intersections += 1
     intersected_edge_cache[num_intersections] = e
-    tri = get_triangulation(vorn)
-    if !is_boundary_edge(tri, e)
-        a, b = b, a
-        p, q = q, p
-    end
+    incident_polygon == 1 && @show point_position_relative_to_line(p, q, r), point_position_relative_to_line(p, q, s), incident_polygon
     if is_left(point_position_relative_to_line(p, q, r))
-        # The finite segment intersects an edge, so we need to determine which 
-        # part of the segment was outside of the boundary.
-        boundary_site_deletions[incident_polygon] = u
+        push!(boundary_site_deletions, u)
     else
-        boundary_site_deletions[incident_polygon] = v
+        push!(boundary_site_deletions, v)
     end
     return num_intersections
 end
@@ -498,66 +566,148 @@ function clip_voronoi_tessellation!(vorn::VoronoiTessellation)
     boundary_sites = Set{I}()
     E = edge_type(tri)
     boundary_sites = Dict{I,E}()
+    all_boundary_sites = Set{I}()
     for e in boundary_edges
         i, j = edge_indices(e)
         p, q = get_point(tri, i, j)
         px, py = getxy(p)
         qx, qy = getxy(q)
+
         m = (px + qx) / 2, (py + qy) / 2
         incident_polygon = jump_and_march(vorn, m; k=i)
         boundary_sites[i] = e
         boundary_sites[j] = e
         boundary_sites[incident_polygon] = e
+        push!(all_boundary_sites, i, j, incident_polygon)
+        # Turns out that just doing the above isn't good enough, since we might have an 
+        # inner incident polygon that intersects the boundary edge at a point that 
+        # is not the midpoint of the edge. So, rather than using jump_and_march(vorn, m; k = i),
+        # let's just get the whole triangle. 
+        #m = (px + qx) / 2, (py + qy) / 2
+        #V = jump_and_march(get_triangulation(vorn), m; k=i)
+        #for v in indices(V)
+        #    if !is_boundary_index(v)
+        #        boundary_sites[i] = e
+        #        boundary_sites[j] = e
+        #        boundary_sites[v] = e
+        #    end
+        #end
     end
     F = number_type(vorn)
     segment_intersections = NTuple{2,F}[]
     intersected_edge_cache = Vector{E}(undef, 2)
     boundary_site_additions = Dict{I,Set{I}}()
-    boundary_site_deletions = Dict{I,I}()
-    for (incident_polygon, e) in boundary_sites
+    boundary_site_deletions = Set{I}()
+    incident_polygon_e_state = iterate(boundary_sites)
+    while !isnothing(incident_polygon_e_state)
+        (incident_polygon, e), state = incident_polygon_e_state
         left_edge, right_edge, left_bnd, right_bnd = get_neighbouring_edges(vorn, e)
         polygon = get_polygon(vorn, incident_polygon)
         nedges = num_boundary_edges(polygon)
         num_intersections = 0
         for ℓ in 1:nedges
-            num_intersections == 2 && break
             u = get_boundary_nodes(polygon, ℓ)
             v = get_boundary_nodes(polygon, ℓ + 1)
-            if is_boundary_index(u) && is_boundary_index(v)
-                continue
-            elseif is_boundary_index(u) && !is_boundary_index(v)
-                num_intersections = process_ray_intersection!(vorn, u, v, incident_polygon, num_intersections, intersected_edge_cache, segment_intersections, boundary_site_additions)
-            elseif !is_boundary_index(u) && is_boundary_index(v)
-                num_intersections = process_ray_intersection!(vorn, v, u, incident_polygon, num_intersections, intersected_edge_cache, segment_intersections, boundary_site_additions)
+            if num_intersections < 2
+                if is_boundary_index(u) && is_boundary_index(v)
+                    continue
+                elseif is_boundary_index(u) && !is_boundary_index(v)
+                    _num_intersections = process_ray_intersection!(vorn, u, v, incident_polygon, num_intersections, intersected_edge_cache, segment_intersections, boundary_site_additions)
+                elseif !is_boundary_index(u) && is_boundary_index(v)
+                    _num_intersections = process_ray_intersection!(vorn, v, u, incident_polygon, num_intersections, intersected_edge_cache, segment_intersections, boundary_site_additions)
+                else
+                    for e in (e, left_edge, right_edge)
+                        _num_intersections = process_segment_intersection!(vorn, u, v, e, incident_polygon, num_intersections, intersected_edge_cache, segment_intersections, boundary_site_additions, boundary_site_deletions)
+                        if _num_intersections > num_intersections
+                            num_intersections = _num_intersections
+                            # break < -- Actually, don't break because a single line could go past multiple parts of the boundary (e.g. the fixed_shewchuk_example_constrained example).
+                            # Need to also check the adjacent incident polygon here, to get the correct form of e. This won't duplicate the same code below, since we won't make it 
+                            # through adjacent_incident_polygon ∉ all_boundary_sites.
+                            adjacent_incident_polygon = get_adjacent(vorn, v, u)
+                            if adjacent_incident_polygon ∉ all_boundary_sites
+                                push!(all_boundary_sites, adjacent_incident_polygon)
+                                boundary_sites[adjacent_incident_polygon] = e
+                            end
+                            num_intersections == 2 && break # This is the correct way to break.
+                        end
+                    end
+                end
+                if _num_intersections > num_intersections
+                    num_intersections = _num_intersections
+                else
+                    adjacent_incident_polygon = get_adjacent(vorn, v, u)
+                    if adjacent_incident_polygon ∉ all_boundary_sites
+                        push!(all_boundary_sites, adjacent_incident_polygon)
+                        boundary_sites[adjacent_incident_polygon] = e
+                    end
+                end
+                for u in (u, v)
+                    if !is_boundary_index(u) && u ∉ boundary_site_deletions
+                        for e in (e, left_edge, right_edge)
+                            ei, ej = edge_indices(e)
+                            if !is_boundary_edge(tri, e)
+                                ei, ej = ej, ei
+                            end
+                            p, q = get_generator(vorn, ei, ej)
+                            incident_polygon == 1 && @show incident_polygon, point_position_relative_to_line(p, q, get_polygon_point(vorn, u))
+                            if is_left(point_position_relative_to_line(p, q, get_polygon_point(vorn, u)))
+                                push!(boundary_site_deletions, u)
+                                break
+                            end
+                        end
+                    end
+                end
             else
-                for e in (e, left_edge, right_edge)
-                    _num_intersections = process_segment_intersection!(vorn, u, v, e, incident_polygon, num_intersections, intersected_edge_cache, segment_intersections, boundary_site_additions, boundary_site_deletions)
-                    if _num_intersections > num_intersections
-                        num_intersections = _num_intersections
-                        break
+                #Even if we have reached two intersections, we still need to clean up any vertices from the 
+                #polygons that might be outside. To avoid doing extra processing in process_segment_intersection,
+                #here we check both u and v (else we need to make sure we don't miss a u when we miss a segment 
+                #intersection).)
+                for u in (u, v)
+                    if !is_boundary_index(u) && u ∉ boundary_site_deletions
+                        for e in (e, left_edge, right_edge)
+                            ei, ej = edge_indices(e)
+                            if !is_boundary_edge(tri, e)
+                                ei, ej = ej, ei
+                            end
+                            p, q = get_generator(vorn, ei, ej)
+                            incident_polygon == 1 && @show incident_polygon, point_position_relative_to_line(p, q, get_polygon_point(vorn, u))
+                            if is_left(point_position_relative_to_line(p, q, get_polygon_point(vorn, u)))
+                                push!(boundary_site_deletions, u)
+                                break
+                            end
+                        end
                     end
                 end
             end
         end
-        interior_intersection, index, adjacent_incident_polygon, shared_vertex = segment_intersection_type(e, intersected_edge_cache)
-        if !interior_intersection
-            other_e = intersected_edge_cache[index]
-            m = get_generator(vorn, shared_vertex)
-            add_segment_intersection!(segment_intersections, boundary_site_additions, m, incident_polygon)
+        if num_intersections == 2
+            interior_intersection, index, shared_vertex = segment_intersection_type(e, intersected_edge_cache)
+            if !interior_intersection
+                other_e = intersected_edge_cache[index]
+                m = get_generator(vorn, shared_vertex)
+                add_segment_intersection!(segment_intersections, boundary_site_additions, m, incident_polygon)
+            end
         end
+        delete!(boundary_sites, incident_polygon)
+        incident_polygon_e_state = iterate(boundary_sites, state)
     end
     n = num_polygon_vertices(vorn)
     for p in each_point(segment_intersections)
         push_polygon_point!(vorn, p)
     end
-    boundary_sites = keys(boundary_sites)
+    boundary_sites = all_boundary_sites
     for polygon in boundary_sites
         polygon_vertices = get_polygon(vorn, polygon)
+        # First, reset the adjacencies
+        ne = num_boundary_edges(polygon_vertices)
+        for ℓ in 1:ne 
+            u = get_boundary_nodes(polygon_vertices, ℓ)
+            v = get_boundary_nodes(polygon_vertices, ℓ + 1)
+            delete_adjacent!(vorn, u, v)
+        end
         pop!(polygon_vertices) # remove the last vertex, which is a duplicate of the first
         filter!(!is_boundary_index, polygon_vertices)
-        if haskey(boundary_site_deletions, polygon)
-            deleteat!(polygon_vertices, findfirst(isequal(boundary_site_deletions[polygon]), polygon_vertices))
-        end
+        filter!(!∈(boundary_site_deletions), polygon_vertices)
         for new_vert in boundary_site_additions[polygon]
             push!(polygon_vertices, n + new_vert)
         end
@@ -571,6 +721,13 @@ function clip_voronoi_tessellation!(vorn::VoronoiTessellation)
         idx = sortperm(θ)
         permute!(polygon_vertices, idx)
         push!(polygon_vertices, polygon_vertices[begin])
+        # Now fix the adjacencies 
+        ne = num_boundary_edges(polygon_vertices)
+        for ℓ in 1:ne 
+            u = get_boundary_nodes(polygon_vertices, ℓ)
+            v = get_boundary_nodes(polygon_vertices, ℓ + 1)
+            add_adjacent!(vorn, u, v, polygon)
+        end
     end
     empty!(get_unbounded_polygons(vorn))
 end

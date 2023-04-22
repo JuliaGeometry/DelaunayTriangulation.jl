@@ -9,6 +9,7 @@ It is assumed that `p` is inside the polygon, but `q` could be outside or inside
 Currently, this function has only been tested on rectangular boundaries.
 """
 function intersection_of_ray_with_boundary(points, boundary_nodes, p, q, tol=1e-9)
+    p == q && throw(ArgumentError("p and q must be distinct."))
     px, py = getxy(p)
     qx, qy = getxy(q)
 
@@ -20,17 +21,21 @@ function intersection_of_ray_with_boundary(points, boundary_nodes, p, q, tol=1e-
     sign(δ1) == -1 && throw(ArgumentError("p must be inside the polygon."))
     sign(δ1) == 0 && return p
     sign(δ2) == 0 && return q
+    iters = 0
     while sign(δ2) == 1
         t2 *= 2
         r = px + t2 * (qx - px), py + t2 * (qy - py)
         δ2 = distance_to_polygon(r, points, boundary_nodes)
+        iters += 1 
+        iters ≥ 1000 && throw(ArgumentError("Something went wrong. Could not find a bracketing interval."))
     end
 
     ## Perform bisection 
     t = (t1 + t2) / 2
     r = px + t * (qx - px), py + t * (qy - py)
     δ = distance_to_polygon(r, points, boundary_nodes)
-    while (t2 - t1) / 2 > tol || abs(δ) > tol
+    iters = 0
+    while (t2 - t1) / 2 > tol && abs(δ) > tol
         if sign(δ) == sign(δ1)
             t1 = t
             δ1 = δ
@@ -41,6 +46,8 @@ function intersection_of_ray_with_boundary(points, boundary_nodes, p, q, tol=1e-
         t = (t1 + t2) / 2
         r = px + t * (qx - px), py + t * (qy - py)
         δ = distance_to_polygon(r, points, boundary_nodes)
+        iters += 1
+        iters ≥ 1000 && throw(ArgumentError("Something went wrong. Could not find the intersection point."))
     end
     return r
 end
