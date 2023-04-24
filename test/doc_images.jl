@@ -1402,3 +1402,82 @@ end
         @test_reference "../docs/src/interface/figs/interface_example.png" fig
     end
 end
+
+@testset "Voronoi Tessellation" begin
+    @testset "Unbounded Diagram" begin
+        rng = StableRNG(999911)
+        pts = rand(rng, 2, 25)
+        tri = triangulate(pts; rng)
+        vorn = voronoi(tri)
+
+        cmap = Makie.cgrad(:jet)
+        colors = get_polygon_colors(vorn, cmap)
+        fig, ax, sc = voronoiplot(vorn, strokecolor=:red, polygon_color=colors)
+        triplot!(ax, tri, strokewidth=0.2, strokecolor=(:black, 0.4))
+        xlims!(ax, -1 / 2, 3 / 2)
+        ylims!(ax, 0, 3 / 2)
+        @test_reference "../docs/src/tessellations/figs/unbounded.png" fig
+    end
+
+    @testset "Clipped Diagram" begin
+        rng = StableRNG(999911)
+        pts = randn(rng, 2, 250)
+        tri = triangulate(pts; rng)
+        vorn = voronoi(tri)
+        vorn_clip = voronoi(tri, true)
+
+        cmap = Makie.cgrad(:jet)
+        colors = get_polygon_colors(vorn, cmap)
+        fig = Figure()
+        ax = Axis(fig[1, 1], aspect=1)
+        voronoiplot!(ax, vorn, strokecolor=:red, strokewidth=0.2, polygon_color=colors, show_generators=false)
+        triplot!(ax, tri, strokewidth=0.0, strokecolor=(:black, 0.4), show_all_points=false)
+        xlims!(ax, -5, 5)
+        ylims!(ax, -5, 5)
+
+        ax = Axis(fig[1, 2], aspect=1)
+        voronoiplot!(ax, vorn_clip, strokecolor=:red, strokewidth=0.2, polygon_color=colors, show_generators=false)
+        triplot!(ax, tri, strokewidth=0.0, strokecolor=(:black, 0.4), show_all_points=false)
+        xlims!(ax, -5, 5)
+        ylims!(ax, -5, 5)
+
+        resize_to_layout!(fig)
+        @test_reference "../docs/src/tessellations/figs/bounded.png" fig
+    end
+
+    @testset "Lloyd's Algorithm" begin
+        rng = StableRNG(999888771)
+        pts = 25randn(rng, 2, 500)
+        tri = triangulate(pts; rng)
+        vorn = voronoi(tri, true)
+        smooth_vorn = centroidal_smooth(vorn; rng)
+
+        cmap = Makie.cgrad(:jet)
+        colors = get_polygon_colors(vorn, cmap)
+        fig = Figure()
+        ax = Axis(fig[1, 1], aspect=1)
+        voronoiplot!(ax, vorn, strokecolor=:red, strokewidth=0.2, polygon_color=colors, markersize=4)
+        xlims!(ax, -100, 100)
+        ylims!(ax, -100, 100)
+
+        ax = Axis(fig[1, 2], aspect=1)
+        voronoiplot!(ax, smooth_vorn, strokecolor=:red, strokewidth=0.2, polygon_color=colors, markersize=4)
+        xlims!(ax, -100, 100)
+        ylims!(ax, -100, 100)
+
+        @test_reference "../docs/src/tessellations/figs/lloyd.png" fig
+
+        fig = Figure()
+        ax = Axis(fig[1, 1], aspect=1)
+        triplot!(ax, vorn.triangulation, strokewidth=0.2, markersize=4)
+        xlims!(ax, -100, 100)
+        ylims!(ax, -100, 100)
+
+        ax = Axis(fig[1, 2], aspect=1)
+        triplot!(ax, smooth_vorn.triangulation, strokewidth=0.2,  markersize=4)
+        xlims!(ax, -100, 100)
+        ylims!(ax, -100, 100)
+
+        @test_reference "../docs/src/tessellations/figs/lloyd_tri.png" fig
+    end
+end

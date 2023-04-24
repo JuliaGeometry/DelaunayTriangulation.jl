@@ -61,7 +61,6 @@ function convex_hull!(ch::ConvexHull{P,A}) where {P,I,A<:AbstractVector{I}}
         push!(indices, point_order[begin], point_order[begin+1], point_order[begin])
         return nothing
     elseif n == 3
-        @show I
         i, j, k = construct_positively_oriented_triangle(NTuple{3,I}, point_order[begin], point_order[begin+1], point_order[begin+2], points)
         push!(indices, i, j, k, i)
         return nothing
@@ -86,6 +85,8 @@ function convex_hull!(ch::ConvexHull{P,A}) where {P,I,A<:AbstractVector{I}}
     append!(upper, lower)
     reverse!(upper) # counter-clockwise
     append!(indices, upper)
+    unique!(indices)
+    push!(indices,indices[begin])
     return nothing
 end
 

@@ -18,6 +18,8 @@ This is a package for constructing Delaunay triangulations of planar point sets.
 - [Fully customisable interface](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/interface/interface/) for defining geometric primitives.
 - [Simple iteration over mesh elements, including points, edges, or triangles](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/data_structures/triangulation/).
 - Computation of [statistics](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/data_structures/statistics/) over individual triangular elements and over a complete triangulation.
+- [Computation of Voronoi tessellations](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/tessellations/voronoi.md), including [clipping of polygons to the convex hull]((https://danielvandh.github.io/DelaunayTriangulation.jl/dev/tessellations/clipped.md)). I hope to get this working for constrained triangulations, but it's difficult.
+- Computation of [centroidal Voronoi tessellations](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/tessellations/lloyd.md) using Lloyd's algorithm.
 
 Much of the work in this package is derived from the book *Delaunay Mesh Generation* by Cheng, Dey, and Shewchuk (2013). 
 
@@ -27,5 +29,4 @@ Just as a nice demonstration of the incremental behaviour of the algorithms in t
 
 https://user-images.githubusercontent.com/95613936/232210266-615e08bd-d4f2-4a40-849e-e832778a4b71.mp4
 
-
-
+Here is also a nice animation showing the computation of a centroidal Voronoi tessellation.

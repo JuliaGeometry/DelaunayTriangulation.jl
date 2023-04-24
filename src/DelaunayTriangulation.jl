@@ -77,6 +77,7 @@ include("data_structures/refinement/event_history.jl")
 include("data_structures/point_location_history.jl")
 include("data_structures/polylabel/cell.jl")
 include("data_structures/polylabel/cell_queue.jl")
+include("data_structures/voronoi/voronoi.jl")
 
 export get_adjacent
 export get_adjacent2vertex
@@ -104,14 +105,27 @@ export get_indices
 export get_convex_hull_indices
 export each_vertex
 export num_vertices
-export each_solid_edge 
-export each_ghost_edge 
-export each_solid_vertex 
+export each_solid_edge
+export each_ghost_edge
+export each_solid_vertex
 export each_ghost_vertex
 export each_constrained_edge
 export statistics
 export get_total_area
 export get_all_stat
+export VoronoiTessellation
+export num_polygons
+export get_polygon_colors
+export get_polygon
+export each_polygon
+export get_polygon_point
+export get_polygon_vertex
+export get_area
+export each_generator
+export get_generator
+export each_polygon_index
+export each_polygon_vertex
+export num_polygon_vertices
 
 include("predicates/certificate.jl")
 include("predicates/boundaries_and_ghosts.jl")
@@ -140,8 +154,8 @@ include("operations/unlock_convex_hull.jl")
 export add_ghost_triangles!
 export delete_ghost_triangles!
 export add_point!
-export add_triangle! 
-export delete_triangle! 
+export add_triangle!
+export delete_triangle!
 export flip_edge!
 export add_boundary_information!
 export split_edge!
@@ -174,16 +188,13 @@ export jump_and_march
 include("constrained_triangulation/segment_location.jl")
 include("constrained_triangulation/segment_insertion.jl")
 
-include("plotting.jl")
-
-export triplot
-export triplot!
-
 include("utils.jl")
 
 export convert_boundary_points_to_indices
 
-include("polygon_utils.jl")
+include("geometry_utils/polygons.jl")
+include("geometry_utils/polylabel.jl")
+include("geometry_utils/intersections.jl")
 
 const polylabel = pole_of_inaccessibility
 
@@ -193,5 +204,21 @@ include("refinement/refinement_operations.jl")
 include("refinement/refine.jl")
 
 export refine!
+
+include("voronoi/main.jl")
+include("voronoi/unbounded_construction.jl")
+include("voronoi/clipped_construction.jl")
+include("voronoi/lloyd.jl")
+
+export voronoi
+export centroidal_smooth
+
+include("plotting/triplot.jl")
+include("plotting/voronoiplot.jl")
+
+export triplot
+export triplot!
+export voronoiplot
+export voronoiplot!
 
 end

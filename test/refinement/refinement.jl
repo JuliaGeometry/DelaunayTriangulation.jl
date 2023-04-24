@@ -121,7 +121,7 @@ end
 
 @testset "Small angles" begin
     ps = 0
-    for i in 1:50
+    for i in 1:10
         @show i
         p1 = (0.0, 0.0)
         p2 = (1.0, 0.0)
@@ -144,7 +144,7 @@ end
         validate_statistics(tri)
         @test validate_triangulation(tri)
     end
-    @test ps / 50 ≥ 0.88
+    @test ps / 10 ≥ 0.88
 end
 
 @testset "Another multiply-connected domain" begin

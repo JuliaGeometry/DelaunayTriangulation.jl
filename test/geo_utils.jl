@@ -61,6 +61,17 @@ include("./helper_functions.jl")
       @test cy ≈ (c1[2] * a1 - c2[2] * a2 - c3[2] * a3) / (a1 - a2 - a3)
 end
 
+@testset "Another test for area" begin
+      tri = triangulate(rand(2, 50))
+      for T in each_solid_triangle(tri)
+            u, v, w = T
+            p, q, r = get_point(tri, u, v, w)
+            a1 = DT.triangle_area(p, q, r)
+            a2 = DT.polygon_features(get_points(tri), [u, v, w, u])[1]
+            @test a1 ≈ a2
+      end
+end
+
 @testset "Distance to a segment" begin
       p1 = [0.0, 0.0]
       p2 = [10.0, 0.0]
@@ -705,4 +716,139 @@ end
       nodes, points = convert_boundary_points_to_indices(curves)
       xmin, xmax, ymin, ymax = DelaunayTriangulation.polygon_bounds(points, nodes, Val(true)) # Val(true) => check all parts of the polygon
       @test xmin ≈ 12.5 && xmax ≈ 29.1825559185446 && ymin ≈ 26.4 && ymax ≈ 37.4716894585871
+end
+
+@testset "intersection_of_ray_with_boundary" begin
+      p1 = (0.0, 0.0)
+      p2 = (1.0, 0.0)
+      p3 = (1.0, 1.0)
+      p4 = (0.0, 1.0)
+      points = [p1, p2, p3, p4]
+      boundary_nodes = [1, 2, 3, 4, 1]
+      p = (0.67116551183, 0.42898)
+      q = (2.0, 1.0)
+      r = DT.intersection_of_ray_with_boundary(points, boundary_nodes, p, q)
+      @test collect(r) ≈ [1.0, 0.5702880802903] rtol = 1e-4
+      q = (0.7782903228571, 0.8384621)
+      r = DT.intersection_of_ray_with_boundary(points, boundary_nodes, p, q)
+      @test collect(r) ≈ [0.8205468677133, 1.0] rtol = 1e-4
+      p = (0.6, 0.4)
+      q = (1.4, 0.4)
+      r = DT.intersection_of_ray_with_boundary(points, boundary_nodes, p, q)
+      @test collect(r) ≈ [1.0, 0.4]
+      p = (1.0, 0.4)
+      r = DT.intersection_of_ray_with_boundary(points, boundary_nodes, p, q)
+      @test p == r
+      p = (0.2, 0.4)
+      q = (1.0, 0.4)
+      r = DT.intersection_of_ray_with_boundary(points, boundary_nodes, p, q)
+      @test q == r
+end
+
+@testset "segment_intersection_coordinates" begin
+      a, b, c, d = (0.5, 4.0), (1.5, 3.5), (2.0, 4.0), (0.5, 3.0)
+      u, v = DT.segment_intersection_coordinates(a, b, c, d)
+      @test u ≈ 1.3571428571429 && v ≈ 3.57142857
+      a, b, c, d = (0.5, 3.5), (1.5, 3.5), (1.0, 4.0), (1.0, 3.0)
+      u, v = DT.segment_intersection_coordinates(a, b, c, d)
+      @test u ≈ 1.0 && v ≈ 3.5
+      a, b, c, d = (0.5, 4.0), (1.5, 4.0), (1.0, 4.0), (1.0, 3.0)
+      u, v = DT.segment_intersection_coordinates(a, b, c, d)
+      @test u ≈ 1.0 && v ≈ 4.0
+end
+
+@testset "intersection_of_edge_and_bisector_ray" begin
+      a = (-7.0, 3.0)
+      b = (-5.0, 7.0)
+      c = (-10.0, 7.0)
+      cert, m = DT.intersection_of_edge_and_bisector_ray(a, b, c)
+      @test all(isnan, m)
+      c = (-4.86, 4.47)
+      cert, m = DT.intersection_of_edge_and_bisector_ray(a, b, c)
+      @test m == (-6.0, 5.0)
+      c = (-4.0, 4.0)
+      cert, m = DT.intersection_of_edge_and_bisector_ray(a, b, c)
+      @test m == (-6.0, 5.0)
+      p = (0.0, 3.0)
+      q = (3.0, 3.0)
+      r = (1.5, 2.9)
+      @test DT.intersection_of_edge_and_bisector_ray(p, q, r)[2] == (1.5, 3.0)
+      a = (-5.0, 3.0)
+      b = (-5.0, 7.0)
+      c = (-5.0, 5.0)
+      @test DT.intersection_of_edge_and_bisector_ray(a, b, c)[2] == (-5.0, 5.0)
+      @test DT.is_collinear(DT.intersection_of_edge_and_bisector_ray(a, b, c)[1])
+      c = (-5.0, 4.5)
+      @test DT.intersection_of_edge_and_bisector_ray(a, b, c)[2] == (-5.0, 5.0)
+end
+
+@testset "classify_and_compute_segment_intersection" begin
+      a = (-2.0, 3.0)
+      b = (-2.0, 5.0)
+      c = (-4.97, 4.82)
+      d = (-4.0, 4.0)
+      cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, b, c, d)
+      @test DT.is_none(cert)
+      @test DT.is_left(cert_c)
+      @test DT.is_left(cert_d)
+      @test all(isnan, p)
+      d = (2.0, -1.0)
+      cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, b, c, d)
+      @test DT.is_none(cert)
+      @test DT.is_left(cert_c)
+      @test DT.is_right(cert_d)
+      c = (-5.0, 4.0)
+      d = (1.0, 4.0)
+      cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, b, c, d)
+      @test DT.has_one_intersection(cert)
+      @test DT.is_left(cert_c)
+      @test DT.is_right(cert_d)
+      @test p == (-2.0, 4.0)
+      a = (0.0, 5.0)
+      b = (0.0, 7.0)
+      c = (-5.0, 4.0)
+      d = (0.0, 6.0)
+      cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, b, c, d)
+      @test DT.is_touching(cert)
+      @test DT.is_left(cert_c)
+      @test DT.is_collinear(cert_d)
+      @test p == (0.0, 6.0)
+      c = (2.0, 6.0)
+      cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, b, c, d)
+      @test DT.is_touching(cert)
+      @test DT.is_right(cert_c)
+      @test DT.is_collinear(cert_d)
+      @test p == (0.0, 6.0)
+      d = (1.0, 5.0)
+      cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, b, c, d)
+      @test DT.is_none(cert)
+      @test DT.is_right(cert_c)
+      @test DT.is_right(cert_d)
+      @test all(isnan, p)
+end
+
+@testset "sort_convex_polygon!" begin
+      for _ in 1:500
+            tri = triangulate(rand(2, 500))
+            ch = get_convex_hull(tri)
+            pts = get_points(ch)
+            verts = get_indices(ch)
+            orig_verts = deepcopy(verts)
+            pop!(verts)
+            shuffle!(verts)
+            DT.sort_convex_polygon!(verts, pts)
+            push!(verts, verts[begin])
+            @test DT.circular_equality(verts, orig_verts)
+            A = DT.polygon_features(pts, verts)[1]
+            @test A ≥ 0.0
+      end
+end
+
+@testset "Degenerate pole_of_inaccessibility" begin
+      points = [(0.0, 0.0), (0.0, 1.0), (0.0, 2.0), (0.0, 3.0)]
+      boundary_nodes = [1, 2, 3, 4, 1]
+      @test DT.pole_of_inaccessibility(points, boundary_nodes) == (0.0, 1.5)
+      points = [(2.0, 0.0), (3.5, 0.0), (5.0, 0.0)]
+      boundary_nodes = [1, 2, 3, 1]
+      @test DT.pole_of_inaccessibility(points, boundary_nodes) == (3.5, 0.0)
 end

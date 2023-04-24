@@ -19,6 +19,7 @@ terminal
 ```@docs 
 edge_indices 
 reverse_edge
+compare_unoriented_edge
 ```
 
 ## Collection of Edges 

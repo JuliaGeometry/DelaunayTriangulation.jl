@@ -60,6 +60,28 @@ function rotate_ghost_triangle_to_standard_form(T::V) where {V}
     return construct_triangle(V, u, v, w)
 end
 
+"""
+    rotate_triangle_to_standard_form(i, j, k)
+    rotate_triangle_to_standard_form(T::V) where {V}
+
+Given a triangle `T = (i, j, k)`, rotates it to a new triangle `T′ = (u, v, w)`
+such that `w` is the minimum index.
+"""
+function rotate_triangle_to_standard_form(i, j, k) # minimum index last 
+    min_ijk = min(i, j, k)
+    if min_ijk == i
+        return (j, k, i)
+    elseif min_ijk == j
+        return (k, i, j)
+    else
+        return (i, j, k)
+    end
+end
+function rotate_triangle_to_standard_form(T::V) where {V}
+    i, j, k = indices(T)
+    u, v, w = rotate_triangle_to_standard_form(i, j, k)
+    return construct_triangle(V, u, v, w)
+end
 
 """
     get_right_boundary_node(adj::Adjacent{I,E}, k, boundary_index, boundary_index_ranges, check_existence::C) where {I,E,C}
@@ -166,24 +188,24 @@ Tests if `A[begin] == A[end]`. Also returns `true` if `A` is empty.
 is_circular(A) = isempty(A) || (A[begin] == A[end])
 
 """
-    circular_equality(A, B)
+    circular_equality(A, B, by = isequal)
 
 Tests if the arrays `A` and `B` are equal up to a circular shift, assuming `A` 
-and `B` are circular.
+and `B` are circular. The function `by` is used to test equality of elements.
 """
-function circular_equality(A, B)
+function circular_equality(A, B, by=isequal)
     @assert is_circular(A) && is_circular(B) "The input arrays must satisfy x[begin] == x[end]."
     length(A) ≠ length(B) && return false
     length(A) == length(B) == 0 && return true
     _A = @views A[begin:(end-1)]
     _B = @views B[begin:(end-1)]
-    same_idx = findfirst(==(_A[begin]), _B)
+    same_idx = findfirst(by(_A[begin]), _B)
     same_idx === nothing && return false
     n = length(_A)
     for (i, a) in pairs(_A)
         j = mod1(i + same_idx - 1, n)
         b = _B[j]
-        a ≠ b && return false
+        !by(a, b) && return false
     end
     return true
 end
@@ -729,3 +751,92 @@ function edge_lies_on_two_distinct_segments(tri::Triangulation, i, j)
     end
 end
 
+"""
+    nextindex_circular(C, i)
+
+Returns the next index in the collection `C` after `i`, wrapping around to the first index if `i` is the last index.
+"""
+function nextindex_circular(C, i)
+    return i == lastindex(C) ? firstindex(C) : i + 1
+end
+
+"""
+    previndex_circular(C, i)
+
+Returns the previous index in the collection `C` before `i`, wrapping around to the second-last index if `i` is the first 
+index, assuming that `is_circular(C)` so that `C[begin] == C[end]`.
+"""
+function previndex_circular(C, i)
+    return i == firstindex(C) ? lastindex(C) - 1 : i - 1
+end
+
+"""
+    is_first_boundary_index(cell, i)
+
+Returns `true` if the index `cell[i]` is the first boundary index in the cell `cell`, assuming they come as a chain.
+"""
+function is_first_boundary_index(cell, i)
+    prev = previndex_circular(cell, i)
+    return !is_boundary_index(cell[prev])
+end
+
+"""
+    is_last_boundary_index(cell, i)
+
+Returns `true` if the index `cell[i]` is the last boundary index in the cell `cell`, assuming they come as a chain.
+"""
+function is_last_boundary_index(cell, i)
+    prev = previndex_circular(cell, i)
+    return is_boundary_index(cell[prev])
+end
+
+"""
+    get_neighbouring_boundary_edges(tri::Triangulation, e)
+
+Given an edge `e` on the boundary, returns the edges to the left 
+and to the right of `e`, oriented so that `get_adjacent(tri, v)` 
+is a boundary index, where `v` are the edges returned.
+"""
+function get_neighbouring_boundary_edges(tri::Triangulation, e)
+    e = convert_to_boundary_edge(tri, e)
+    u, v = edge_indices(e)
+    bnd_idx = get_adjacent(tri, u, v)
+    right_bnd = get_right_boundary_node(tri, u, bnd_idx)
+    left_bnd = get_left_boundary_node(tri, v, bnd_idx)
+    E = edge_type(tri)
+    left_e = construct_edge(E, v, left_bnd)
+    right_e = construct_edge(E, right_bnd, u)
+    return left_e, right_e
+end
+
+"""
+    convert_to_boundary_edge(tri::Triangulation, e)
+
+Given an edge `e`, returns the edge that is on the boundary, oriented so that `get_adjacent(tri, v)`
+is a boundary index, where `v` is the edge returned.
+"""
+function convert_to_boundary_edge(tri::Triangulation, e)
+    if !is_boundary_edge(tri, e)
+        return reverse_edge(e)
+    else 
+        return e 
+    end
+end
+
+"""
+    get_shared_vertex(e, f)
+
+Given two edges `e` and `f`, returns the vertex that they share, or `DefaultAdjacentValue` if they do not share a vertex.
+"""
+function get_shared_vertex(e, f)
+    u, v = edge_indices(e)
+    w, x = edge_indices(f)
+    if u == w || u == x
+        return u
+    elseif v == w || v == x
+        return v
+    else
+        I = typeof(u)
+        return I(DefaultAdjacentValue)
+    end
+end

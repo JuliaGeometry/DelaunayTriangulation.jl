@@ -28,8 +28,8 @@ using SafeTestsets
         @safetestset "Utilities" begin
             include("utils.jl")
         end
-        @safetestset "Polygon Utilities" begin
-            include("polygon_utils.jl")
+        @safetestset "Geometric Utilities" begin
+            include("geo_utils.jl")
         end
         @safetestset "Triangulation Validation" begin
             include("helper_function_tests.jl")
@@ -176,5 +176,9 @@ using SafeTestsets
 
     @safetestset "Documentation images" begin
         include("doc_images.jl")
+    end
+
+    @safetestset "Voronoi" begin
+        include("voronoi/voronoi.jl")
     end
 end

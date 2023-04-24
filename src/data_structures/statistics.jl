@@ -387,6 +387,11 @@ function triangle_circumcenter(p, q, r, A=triangle_area(p, q, r))
     oy = ry + (e11 * e22 - e12 * e21) / (4A)
     return (ox, oy)
 end
+function triangle_circumcenter(tri::Triangulation, T)
+    i, j, k = indices(T)
+    p, q, r = get_point(tri, i, j, k)
+    return triangle_circumcenter(p, q, r)
+end
 
 function triangle_circumradius(p, q, r)
     ℓ₁², ℓ₂², ℓ₃² = squared_triangle_lengths(p, q, r)

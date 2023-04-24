@@ -245,3 +245,46 @@ function pop_point!(::P) where {P}
 end
 pop_point!(pts::AbstractVector) = pop!(pts)
 pop_point!(pts::AbstractMatrix) = resize!(pts, (2, size(pts, 2) - 1)) # ElasticArrays
+
+"""
+    mean_points(points, vertices = each_point_index(points))
+
+Returns the mean of the points in `points` indexed by `vertices`, given as a `Tuple` of the form `(mean_x, mean_y)`.
+"""
+function mean_points(points, vertices = each_point_index(points))
+    F = number_type(points)
+    cx = zero(F)
+    cy = zero(F)
+    n = 0
+    for v in vertices 
+        p = get_point(points, v)
+        px, py = getxy(p)
+        cx += px
+        cy += py
+        n += 1
+    end
+    return (cx / n, cy / n)
+end
+
+"""
+    set_point!(points, i, x, y)
+
+Sets the point at index `i` in `points` to `(x, y)`. The only methods currently
+defined are 
+
+    set_point!(points::AbstractVector{T}, i, x, y) where {F,T<:NTuple{2,F}} = points[i] = (F(x), F(y))
+    set_point!(points::AbstractMatrix{T}, i, x, y) where {T} = (points[1, i] = x; points[2, i] = y)
+
+You can extend this function as needed. We also define 
+
+    set_point!(points, i, p) = set_point!(points, i, getx(p), gety(p))
+"""
+function set_point! end
+function set_point!(points::AbstractVector{T}, i, x, y) where {F,T<:NTuple{2,F}}
+    points[i] = (F(x), F(y))
+end
+function set_point!(points::AbstractMatrix{T}, i, x, y) where {T}
+    points[1, i] = x
+    points[2, i] = y
+end
+set_point!(points, i, p) = set_point!(points, i, getx(p), gety(p))
