@@ -73,7 +73,7 @@ function rotate_triangle_to_standard_form(i, j, k) # minimum index last
         return (j, k, i)
     elseif min_ijk == j
         return (k, i, j)
-    else 
+    else
         return (i, j, k)
     end
 end
@@ -193,7 +193,7 @@ is_circular(A) = isempty(A) || (A[begin] == A[end])
 Tests if the arrays `A` and `B` are equal up to a circular shift, assuming `A` 
 and `B` are circular. The function `by` is used to test equality of elements.
 """
-function circular_equality(A, B, by = isequal)
+function circular_equality(A, B, by=isequal)
     @assert is_circular(A) && is_circular(B) "The input arrays must satisfy x[begin] == x[end]."
     length(A) ≠ length(B) && return false
     length(A) == length(B) == 0 && return true
@@ -788,4 +788,55 @@ Returns `true` if the index `cell[i]` is the last boundary index in the cell `ce
 function is_last_boundary_index(cell, i)
     prev = previndex_circular(cell, i)
     return is_boundary_index(cell[prev])
+end
+
+"""
+    get_neighbouring_boundary_edges(tri::Triangulation, e)
+
+Given an edge `e` on the boundary, returns the edges to the left 
+and to the right of `e`, oriented so that `get_adjacent(tri, v)` 
+is a boundary index, where `v` are the edges returned.
+"""
+function get_neighbouring_boundary_edges(tri::Triangulation, e)
+    e = convert_to_boundary_edge(tri, e)
+    u, v = edge_indices(e)
+    bnd_idx = get_adjacent(tri, u, v)
+    right_bnd = get_right_boundary_node(tri, u, bnd_idx)
+    left_bnd = get_left_boundary_node(tri, v, bnd_idx)
+    E = edge_type(tri)
+    left_e = construct_edge(E, v, left_bnd)
+    right_e = construct_edge(E, right_bnd, u)
+    return left_e, right_e
+end
+
+"""
+    convert_to_boundary_edge(tri::Triangulation, e)
+
+Given an edge `e`, returns the edge that is on the boundary, oriented so that `get_adjacent(tri, v)`
+is a boundary index, where `v` is the edge returned.
+"""
+function convert_to_boundary_edge(tri::Triangulation, e)
+    if !is_boundary_edge(tri, e)
+        return reverse_edge(e)
+    else 
+        return e 
+    end
+end
+
+"""
+    get_shared_vertex(e, f)
+
+Given two edges `e` and `f`, returns the vertex that they share, or `DefaultAdjacentValue` if they do not share a vertex.
+"""
+function get_shared_vertex(e, f)
+    u, v = edge_indices(e)
+    w, x = edge_indices(f)
+    if u == w || u == x
+        return u
+    elseif v == w || v == x
+        return v
+    else
+        I = typeof(u)
+        return I(DefaultAdjacentValue)
+    end
 end

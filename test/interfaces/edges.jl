@@ -37,6 +37,12 @@ global e3 = SVector{2,Int32}((i, j))
             @test DT.reverse_edge(e) == DT.construct_edge(typeof(e), reverse(e)...)
         end
     end
+
+    @testset "Comparing unoriented edges" begin
+        @test DT.compare_unoriented_edge((1, 2), (2, 1))
+        @test !DT.compare_unoriented_edge((1, 5), (7, 3))
+        @test DT.compare_unoriented_edge((1, 7), (1, 7))
+    end
 end
 
 global es1 = Set{typeof(e1)}(((1, 3), (4, 1), (10, 1), (3, 9), (5, 3)))

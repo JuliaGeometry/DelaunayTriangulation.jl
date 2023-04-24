@@ -245,3 +245,23 @@ function pop_point!(::P) where {P}
 end
 pop_point!(pts::AbstractVector) = pop!(pts)
 pop_point!(pts::AbstractMatrix) = resize!(pts, (2, size(pts, 2) - 1)) # ElasticArrays
+
+"""
+    mean_points(points, vertices = each_point_index(points))
+
+Returns the mean of the points in `points` indexed by `vertices`, given as a `Tuple` of the form `(mean_x, mean_y)`.
+"""
+function mean_points(points, vertices = each_point_index(points))
+    F = number_type(points)
+    cx = zero(F)
+    cy = zero(F)
+    n = 0
+    for v in vertices 
+        p = get_point(points, v)
+        px, py = getxy(p)
+        cx += px
+        cy += py
+        n += 1
+    end
+    return (cx / n, cy / n)
+end

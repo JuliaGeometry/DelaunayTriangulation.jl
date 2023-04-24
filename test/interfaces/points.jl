@@ -2,6 +2,7 @@ using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using Test
 using StaticArraysCore
+using StatsBase
 
 global p1 = [1.3, 2.5]
 global p2 = (1.3, 2.5)
@@ -176,5 +177,23 @@ global pts3 = [2.0 1.7 -1.0; 3.5 23.3 0.0]
         p1 = [(1.0, 2.0), (3.0, 4.0), (10.0, 10.0)]
         DT.pop_point!(p1)
         @test p1 == [(1.0, 2.0), (3.0, 4.0)]
+    end
+
+    @testset "mean_points" begin
+        for _ in 1:500
+            points = [(rand(), rand()) for _ in 1:500]
+            px = first.(points)
+            py = last.(points)
+            cx = mean(px)
+            cy = mean(py)
+            _cx, _cy = DT.mean_points(points)
+            @test cx ≈ _cx && cy ≈ _cy
+            verts = rand(1:500, 50)
+            unique!(verts)
+            cx = mean(px[verts])
+            cy = mean(py[verts])
+            _cx, _cy = DT.mean_points(points, verts)
+            @test cx ≈ _cx && cy ≈ _cy
+        end
     end
 end

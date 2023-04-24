@@ -1332,9 +1332,9 @@ function validate_tessellation(vorn::VoronoiTessellation)
     tri = DT.get_triangulation(vorn)
     for (i, p) in DT.get_generators(vorn)
         flag = get_point(tri, i) == get_generator(vorn, i) == p
-        if !flag 
+        if !flag
             println("Generator $i is not correct, mapped to $p.")
-            return false 
+            return false
         end
     end
     flag = DT.get_triangulation(vorn) == vorn.triangulation
@@ -1359,12 +1359,12 @@ function validate_tessellation(vorn::VoronoiTessellation)
     end
     for (c, V) in circumcenter_to_triangle
         flag = DT.get_circumcenter_to_triangle(vorn, c) == V
-        if !flag 
+        if !flag
             println("Circumcenter $c is not correct, mapped to $V.")
             return false
         end
         flag = DT.get_triangle_to_circumcenter(vorn, V) == c
-        if !flag 
+        if !flag
             println("Triangle $V is not correct, mapped to $c.")
             return false
         end
@@ -1391,7 +1391,7 @@ function validate_tessellation(vorn::VoronoiTessellation)
             return false
         end
         flag = DT.get_triangle_to_circumcenter(vorn, V) == c
-        if !flag 
+        if !flag
             println("Circumcenter $c is not correct, mapped to $V.")
             return false
         end
@@ -1414,12 +1414,31 @@ function validate_tessellation(vorn::VoronoiTessellation)
     for i in each_polygon_index(vorn)
         C = get_polygon(vorn, i)
         ne = DT.num_boundary_edges(C)
-        for j in 1:ne 
-            u = get_boundary_nodes(C,j)
-            v = get_boundary_nodes(C,j+1)
-            flag = get_adjacent(vorn, u, v) == get_adjacent(vorn, DT.construct_edge(DT.edge_type(DT.get_triangulation(vorn)), u, v)) == i 
+        for j in 1:ne
+            u = get_boundary_nodes(C, j)
+            v = get_boundary_nodes(C, j + 1)
+            flag = get_adjacent(vorn, u, v) == get_adjacent(vorn, DT.construct_edge(DT.edge_type(DT.get_triangulation(vorn)), u, v)) == i
             if !flag
                 println("Polygon $i is not adjacent to points $u and $v.")
+                return false
+            end
+        end
+    end
+    for i in each_polygon_index(vorn)
+        if i ∉ DT.get_unbounded_polygons(vorn)
+            verts = get_polygon(vorn, i)
+            poly_points = get_polygon_point.(Ref(vorn), verts)
+            flag = @views allunique(poly_points[begin:end-1])
+            if !flag
+                println("Polygon $i has repeated vertices.")
+                return false
+            end
+            _pts = unique(poly_points)
+            ch = convex_hull(_pts)
+            _poly_points = _pts[get_indices(ch)]
+            flag = DT.circular_equality(collect.(poly_points), collect.(_poly_points), ≈)
+            if !flag
+                println("Polygon $i is not convex.")
                 return false
             end
         end

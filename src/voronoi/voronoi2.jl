@@ -3,7 +3,7 @@ struct VoronoiTessellation{Tr<:Triangulation,P,I,T,S,E}
     generators::Dict{I,P}
     polygon_points::Vector{P}
     polygons::Dict{I,Vector{I}}
-    circumcenters_to_triangle::Dict{I,T}
+    circumcenter_to_triangle::Dict{I,T}
     triangle_to_circumcenter::Dict{T,I}
     unbounded_polygons::Set{I}
     cocircular_circumcenters::S
@@ -27,7 +27,7 @@ function Base.show(io::IO, ::MIME"text/plain", vor::VoronoiTessellation)
 end
 
 edge_type(::VoronoiTessellation{Tr,P,I,T,S,E}) where {Tr,P,I,T,S,E} = E
-num_polygons(vor::VoronoiTessellration) = length(get_polygons(vor))
+num_polygons(vor::VoronoiTessellation) = length(get_polygons(vor))
 num_polygon_vertices(vor::VoronoiTessellation) = num_points(get_polygon_points(vor))
 get_generator(vor::VoronoiTessellation, i) = get_generators(vor)[i]
 get_generator(vor::VoronoiTessellation, i::Vararg{I,N}) where {I,N} = ntuple(j -> get_generator(vor, i[j]), Val(N))
@@ -78,6 +78,27 @@ function get_surrounding_polygon(vor::VoronoiTessellation, i)
     return S
 end
 add_unbounded_polygon!(vor::VoronoiTessellation, i) = push!(get_unbounded_polygons(vor), i)
+function delete_polygon_adjacent!(vorn::VoronoiTessellation, polygon)
+    polygon_vertices = get_polygon(vorn, polygon)
+    ne = num_boundary_edges(polygon_vertices)
+    for ℓ in 1:ne
+        u = get_boundary_nodes(polygon_vertices, ℓ)
+        v = get_boundary_nodes(polygon_vertices, ℓ + 1)
+        delete_adjacent!(vorn, u, v)
+    end
+    return nothing
+end
+function add_polygon_adjacent!(vorn::VoronoiTessellation, polygon)
+    polygon_vertices = get_polygon(vorn, polygon)
+    ne = num_boundary_edges(polygon_vertices)
+    for ℓ in 1:ne
+        u = get_boundary_nodes(polygon_vertices, ℓ)
+        v = get_boundary_nodes(polygon_vertices, ℓ + 1)
+        add_adjacent!(vorn, u, v, polygon)
+    end
+    return nothing
+end
+delete_unbounded_polygon!(vor::VoronoiTessellation, i) = delete!(get_unbounded_polygons(vor), i)
 
 function jump_and_march(vor::VoronoiTessellation, q; kwargs...)
     V = jump_and_march(get_triangulation(vor), q; kwargs...)
@@ -312,16 +333,12 @@ function voronoi(tri::Triangulation, clip=Val(has_boundary_nodes(tri)))
     !has_ghost && add_ghost_triangles!(tri)
     vorn = initialise_voronoi_tessellation(tri)
     has_bnds = has_boundary_nodes(tri)
-    if is_true(clip) && !has_bnds
-        lock_convex_hull!(tri)
-    end
+    is_true(clip) && !has_bnds && lock_convex_hull!(tri)
     for i in each_generator(vorn)
         add_voronoi_polygon!(vorn, i)
     end
     is_true(clip) && clip_voronoi_tessellation!(vorn)
-    if is_true(clip) && !has_bnds
-        unlock_convex_hull!(tri)
-    end
+    is_true(clip) && !has_bnds && unlock_convex_hull!(tri)
     !has_ghost && delete_ghost_triangles!(tri)
     return vorn
 end
@@ -348,7 +365,7 @@ function connect_circumcenters!(B, ci)
     return nothing
 end
 
-function add_edge_to_voronoi_polygon!(B, vorn::VoronoITessellation, i, k, S, m, encountered_duplicate_circumcenter)
+function add_edge_to_voronoi_polygon!(B, vorn::VoronoiTessellation, i, k, S, m, encountered_duplicate_circumcenter)
     ci, k = get_next_triangle_for_voronoi_polygon(vorn, i, k, S, m)
     is_boundary_index(ci) && add_unbounded_polygon!(vorn, i)
     (encountered_duplicate_circumcenter || ci ∈ get_cocircular_circumcenters(vorn)) && (encountered_duplicate_circumcenter = true)
@@ -371,8 +388,9 @@ function add_voronoi_polygon!(vorn::VoronoiTessellation, i)
     encountered_duplicate_circumcenter = false
     prev_ci, encountered_duplicate_circumcenter, k = add_edge_to_voronoi_polygon!(B, vorn, i, k, S, m, encountered_duplicate_circumcenter)
     for m in (firstindex(S)+2):lastindex(S)
-        prev_ci, encountered_duplicate_circumcenter, k = add_edge_to_voronoi_polygon!(B, vorn, i, k, S, m, encountered_duplicate_circumcenter)
+        ci, encountered_duplicate_circumcenter, k = add_edge_to_voronoi_polygon!(B, vorn, i, k, S, m, encountered_duplicate_circumcenter)
         add_adjacent!(vorn, prev_ci, ci, i)
+        prev_ci = ci
     end
     close_voronoi_polygon!(vorn, B, i, encountered_duplicate_circumcenter, prev_ci)
     return B
@@ -389,27 +407,32 @@ function add_segment_intersection!(segment_intersections, boundary_sites, inters
     return nothing
 end
 
+function add_to_intersected_edge_cache!(intersected_edge_cache::AbstractVector{V}, u, v, a, b) where {E,V<:Pair{E,E}}
+    uv = construct_edge(E, u, v)
+    ab = construct_edge(E, a, b)
+    push!(intersected_edge_cache, uv => ab)
+    return nothing
+end
+
 function process_ray_intersection!(
     vorn::VoronoiTessellation,
     u,
     v,
     incident_polygon,
-    num_intersections,
     intersected_edge_cache,
     segment_intersections,
-    boundary_site_additions)
+    boundary_sites,
+    exterior_circumcenters)
     u_tri = get_circumcenter_to_triangle(vorn, u)
     a = geti(u_tri)
     b = getj(u_tri)
     p, q = get_generator(vorn, a, b)
     r = get_polygon_point(vorn, v)
     intersection_coordinates = intersection_of_edge_and_bisector_ray(p, q, r)
-    any(isnan, intersection_coordinates) && return num_intersections
-    add_segment_intersection!(segment_intersections, boundary_site_additions, intersection_coordinates, incident_polygon)
-    num_intersections += 1
-    E = edge_type(vorn)
-    push!(intersected_edge_cache, construct_edge(E, a, b))
-    return num_intersections
+    any(isnan, intersection_coordinates) && (push!(exterior_circumcenters, v); return false)
+    add_segment_intersection!(segment_intersections, boundary_sites, intersection_coordinates, incident_polygon)
+    add_to_intersected_edge_cache!(intersected_edge_cache, u, v, a, b)
+    return true
 end
 
 function process_segment_intersection!(
@@ -418,26 +441,24 @@ function process_segment_intersection!(
     v,
     e,
     incident_polygon,
-    num_intersections,
     intersected_edge_cache,
     segment_intersections,
-    boundary_site_additions)
+    boundary_sites,
+    exterior_circumcenters)
+    e = convert_to_boundary_edge(vorn, e)
     a, b = edge_indices(e)
-    tri = get_triangulation(vorn)
-    if !is_boundary_edge(tri, e)
-        a, b = b, a
-    end
     p, q = get_generator(vorn, a, b)
     r, s = get_polygon_point(vorn, u, v)
     intersection_cert, cert_u, cert_v, intersection_coordinates = classify_and_compute_segment_intersection(p, q, r, s)
     if is_none(intersection_cert) || is_touching(intersection_cert)
-        return num_intersections
+        if is_left(cert_u) && is_left(cert_v)
+            push!(exterior_circumcenters, u, v)
+        end
+        return false
     end
-    add_segment_intersection!(segment_intersections, boundary_site_additions, intersection_coordinates, incident_polygon)
-    num_intersections += 1
-    E = edge_type(vorn)
-    push!(intersected_edge_cache, construct_edge(E, a, b))
-    return num_intersections
+    add_segment_intersection!(segment_intersections, boundary_sites, intersection_coordinates, incident_polygon)
+    add_to_intersected_edge_cache!(intersected_edge_cache, u, v, a, b)
+    return true
 end
 
 function initialise_clipping_arrays(vorn::VoronoiTessellation)
@@ -453,15 +474,18 @@ function initialise_clipping_arrays(vorn::VoronoiTessellation)
     boundary_sites = Dict{I,Set{I}}()
     F = number_type(vorn)
     segment_intersections = NTuple{2,F}[]
-    processed_pairs = Set{E}()
-    intersected_edge_cache = Dict{E,E}()
+    processed_pairs = Set{Tuple{E,I}}()
+    intersected_edge_cache = Pair{E,E}[]
     sizehint!(intersected_edge_cache, 2^3)
     exterior_circumcenters = Set{I}()
-    return edges_to_process, polygon_edge_queue, boundary_sites, segment_intersections, processed_pairs, intersected_edge_cache, exterior_circumcenters
+    left_edge_intersectors = Set{E}()
+    right_edge_intersectors = Set{E}()
+    current_edge_intersectors = Set{E}()
+    return edges_to_process, polygon_edge_queue, boundary_sites, segment_intersections, processed_pairs, intersected_edge_cache, exterior_circumcenters,
+    left_edge_intersectors, right_edge_intersectors, current_edge_intersectors
 end
 
-function enqueue_new_edge!(polygon_edge_queue, vorn::VoronoiTessellation, edges_to_process)
-    e = first(edges_to_process)
+function enqueue_new_edge!(polygon_edge_queue, vorn::VoronoiTessellation, e)
     u, v = edge_indices(e)
     p, q = get_generator(vorn, u, v)
     px, py = getxy(p)
@@ -476,9 +500,11 @@ is_segment_between_two_ghosts(u, v) = is_boundary_index(u) && is_boundary_index(
 is_ray_going_in(u, v) = is_boundary_index(u) && !is_boundary_index(v)
 is_ray_going_out(u, v) = !is_boundary_index(u) && is_boundary_index(v)
 is_finite_segment(u, v) = !is_boundary_index(u) && !is_boundary_index(v)
+get_neighbouring_boundary_edges(vorn::VoronoiTessellation, e) = get_neighbouring_boundary_edges(get_triangulation(vorn), e)
+convert_to_boundary_edge(vorn::VoronoiTessellation, e) = convert_to_boundary_edge(get_triangulation(vorn), e)
 
-function process_polygon!(vorn, e, incident_polygon, edges_to_process, polygon_edge_queue, boundary_sites, segment_intersections, processed_pairs, intersected_edge_cache)
-    left_edge, right_edge = get_neighbouring_edges(vorn, e)
+function process_polygon!(vorn, e, incident_polygon, boundary_sites, segment_intersections, intersected_edge_cache, exterior_circumcenters)
+    left_edge, right_edge = get_neighbouring_boundary_edges(vorn, e)
     polygon_vertices = get_polygon(vorn, incident_polygon)
     nedges = num_boundary_edges(polygon_vertices)
     for ℓ in 1:nedges
@@ -487,60 +513,143 @@ function process_polygon!(vorn, e, incident_polygon, edges_to_process, polygon_e
         if is_segment_between_two_ghosts(u, v)
             continue
         elseif is_ray_going_in(u, v)
-            process_ray_intersection!(vorn, u, v, incident_polygon, intersected_edge_cache, segment_intersections, boundary_sites)
+            process_ray_intersection!(vorn, u, v, incident_polygon, intersected_edge_cache, segment_intersections, boundary_sites, exterior_circumcenters)
         elseif is_ray_going_out(u, v)
-            process_ray_intersection!(vorn, v, u, incident_polygon, intersected_edge_cache, segment_intersections, boundary_sites)
+            process_ray_intersection!(vorn, v, u, incident_polygon, intersected_edge_cache, segment_intersections, boundary_sites, exterior_circumcenters)
         elseif is_finite_segment(u, v)
             for _e in (e, left_edge, right_edge)
-                process_segment_intersection!(vorn, u, v, _e, incident_polygon, intersected_edge_cache, segment_intersections, boundary_sites)
+                process_segment_intersection!(vorn, u, v, _e, incident_polygon, intersected_edge_cache, segment_intersections, boundary_sites, exterior_circumcenters)
             end
         end
     end
-    process_intersection_points!(polygon_edge_queue, vorn, intersected_edge_cache, e, incident_polygon)
+    return left_edge, right_edge, e
+end
+
+function classify_intersections!(intersected_edge_cache, left_edge_intersectors, right_edge_intersectors, current_edge_intersectors, left_edge, right_edge, current_edge)
+    for (uv, e) in intersected_edge_cache
+        if compare_unoriented_edge(e, left_edge)
+            push!(left_edge_intersectors, uv)
+        elseif compare_unoriented_edge(e, right_edge)
+            push!(right_edge_intersectors, uv)
+        elseif compare_unoriented_edge(e, current_edge)
+            push!(current_edge_intersectors, uv)
+        end
+    end
     return nothing
 end
 
-function process_intersection_points!(polygon_edge_queue, vorn, intersected_edge_cache, e, incident_polygon)
-    (uv₁, e₁), (uv₂, e₂) = intersected_edge_cache
-    length(intersected_edge_cache) > 2 && throw("...")
-    if compare_unoriented_edge(e₁, e₂)
-        # Intersection points are on the same edge 
-        u₁, v₁ = edge_indices(uv₁)
-        u₂, v₂ = edge_indices(uv₂)
-        adjacent_polygon_1 = get_adjacent(vorn, v₁, u₁)
-        adjacent_polygon_2 = get_adjacent(vorn, v₂, u₂)
-        enqueue!(polygon_edge_queue, (e₁, adjacent_polygon_1))
-        enqueue!(polygon_edge_queue, (e₁, adjacent_polygon_2))
-    else
-        i, j = edge_indices(e)
-        i₁, j₁ = edge_indices(e₁)
-        i₂, j₂ = edge_indices(e₂)
-        if i₁ == i
+function process_intersection_points!(polygon_edge_queue, vorn, current_incident_polygon,
+    left_edge_intersectors, right_edge_intersectors, current_edge_intersectors,
+    left_edge, right_edge, current_edge, processed_pairs, segment_intersections, boundary_sites)
+    all_indices = (initial(left_edge), terminal(left_edge),
+        initial(right_edge), terminal(right_edge),
+        initial(current_edge), terminal(current_edge))
+    for (e, intersectors) in zip((left_edge, right_edge), (left_edge_intersectors, right_edge_intersectors))
+        if (length(intersectors) > 0 && length(current_edge_intersectors) > 0) && ((e, current_incident_polygon) ∉ processed_pairs && (reverse_edge(e), current_incident_polygon) ∉ processed_pairs)
+            i, j = edge_indices(e)
+            enqueue!(polygon_edge_queue, (e, i))
+            enqueue!(polygon_edge_queue, (e, j))
+            if current_incident_polygon ∈ all_indices # only need to consider a corner point if the point we are considering is a point on the boundary
+                u = get_shared_vertex(e, current_edge)
+                p = get_generator(vorn, u)
+                add_segment_intersection!(segment_intersections, boundary_sites, p, current_incident_polygon)
+            end
+        end
+    end
+    for (e, intersectors) in zip((left_edge, right_edge, current_edge), (left_edge_intersectors, right_edge_intersectors, current_edge_intersectors))
+        for uv in intersectors
+            u, v = edge_indices(uv)
+            adjacent_incident_polygon = get_adjacent(vorn, v, u)
+            if adjacent_incident_polygon == current_incident_polygon
+                adjacent_incident_polygon = get_adjacent(vorn, u, v)
+            end
+            if (e, adjacent_incident_polygon) ∉ processed_pairs && (reverse_edge(e), adjacent_incident_polygon) ∉ processed_pairs
+                enqueue!(polygon_edge_queue, (e, adjacent_incident_polygon))
+            end
         end
     end
 end
 
-function clip_voronoi_tessellation!(vorn::VoronoiTessellation)
+function dequeue_and_process!(vorn, polygon_edge_queue, edges_to_process,
+    intersected_edge_cache, left_edge_intersectors, right_edge_intersectors, current_edge_intersectors,
+    processed_pairs, boundary_sites, segment_intersections, exterior_circumcenters)
+    @show 2
+    if isempty(polygon_edge_queue)
+        e = convert_to_boundary_edge(vorn, first(edges_to_process))
+        enqueue_new_edge!(polygon_edge_queue, vorn, e)
+    end
+    e, incident_polygon = dequeue!(polygon_edge_queue)
+    @show e, incident_polygon
+    push!(processed_pairs, (e, incident_polygon))
+    for cache in (intersected_edge_cache, left_edge_intersectors, right_edge_intersectors, current_edge_intersectors)
+        empty!(cache)
+    end
+    left_edge, right_edge, e = process_polygon!(vorn, e, incident_polygon, boundary_sites, segment_intersections, intersected_edge_cache, exterior_circumcenters)
+    classify_intersections!(intersected_edge_cache, left_edge_intersectors, right_edge_intersectors, current_edge_intersectors, left_edge, right_edge, e)
+    process_intersection_points!(polygon_edge_queue, vorn, incident_polygon,
+        left_edge_intersectors, right_edge_intersectors, current_edge_intersectors,
+        left_edge, right_edge, e, processed_pairs, segment_intersections, boundary_sites)
+    if contains_edge(e, edges_to_process)
+        delete!(edges_to_process, e)
+    elseif contains_edge(reverse_edge(e), edges_to_process)
+        delete!(edges_to_process, reverse_edge(e))
+    end
+    return nothing
+end
+
+function find_all_intersections(vorn::VoronoiTessellation)
     edges_to_process,
     polygon_edge_queue,
     boundary_sites,
     segment_intersections,
     processed_pairs,
     intersected_edge_cache,
-    exterior_circumcenters = initialise_clipping_arrays(vorn)
-    enqueue_new_edge!(polygon_edge_queue, vorn, edges_to_process)
+    exterior_circumcenters,
+    left_edge_intersectors,
+    right_edge_intersectors,
+    current_edge_intersectors = initialise_clipping_arrays(vorn)
+    e = convert_to_boundary_edge(vorn, first(edges_to_process))
+    enqueue_new_edge!(polygon_edge_queue, vorn, e)
     while !isempty(edges_to_process)
-        isempty(polygon_edge_queue) && enqueue_new_edge!(polygon_edge_queue, vorn, edges_to_process)
-        empty!(intersected_edge_cache)
-        e, incident_polygon = dequeue!(polygon_edge_queue)
-        if e ∉ processed_pairs && reverse_edge(e) ∉ processed_pairs
-            push!(processed_pairs, e)
-            process_polygon!(vorn, e, incident_polygon, edges_to_process, polygon_edge_queue, boundary_sites, segment_intersections, processed_pairs, intersected_edge_cache)
-            if contains_edge(e, edges_to_process)
-                delete!(edges_to_process, e)
-            elseif contains_edge(reverse_edge(e), edges_to_process)
-                delete!(edges_to_process, reverse_edge(e))
-            end
-        end
+        dequeue_and_process!(vorn, polygon_edge_queue, edges_to_process,
+            intersected_edge_cache, left_edge_intersectors, right_edge_intersectors, current_edge_intersectors,
+            processed_pairs, boundary_sites, segment_intersections, exterior_circumcenters)
     end
+    return boundary_sites, segment_intersections, exterior_circumcenters
+end
+
+function add_intersection_points!(vorn::VoronoiTessellation, segment_intersections)
+    n = num_polygon_vertices(vorn)
+    for p in each_point(segment_intersections)
+        push_polygon_point!(vorn, p)
+    end
+    return n
+end
+
+function clip_polygon!(vorn::VoronoiTessellation, n, points, polygon, new_verts, exterior_circumcenters)
+    delete_polygon_adjacent!(vorn, polygon)
+    vertices = get_polygon(vorn, polygon)
+    pop!(vertices) # vertices[begin] == vertices[end]
+    filter!(v -> !is_boundary_index(v) && v ∉ exterior_circumcenters, vertices)
+    for new_vert in new_verts
+        push!(vertices, n + new_vert)
+    end
+    sort_convex_polygon!(vertices, points)
+    push!(vertices, vertices[begin])
+    add_polygon_adjacent!(vorn, polygon)
+    delete_unbounded_polygon!(vorn, polygon)
+end
+
+function clip_all_polygons!(vorn::VoronoiTessellation, n, boundary_sites, exterior_circumcenters)
+    points = get_polygon_points(vorn)
+    for (polygon, new_verts) in boundary_sites
+        clip_polygon!(vorn, n, points, polygon, new_verts, exterior_circumcenters)
+    end
+end
+
+function clip_voronoi_tessellation!(vorn::VoronoiTessellation)
+    boundary_sites, segment_intersections, exterior_circumcenters = find_all_intersections(vorn)
+    n = add_intersection_points!(vorn, segment_intersections)
+    clip_all_polygons!(vorn, n, boundary_sites, exterior_circumcenters)
+    return nothing
 end

@@ -278,3 +278,15 @@ Tests if the edge set `E` is empty.
 """
 function is_empty end
 is_empty(E) = isempty(E)
+
+"""
+    compare_unoriented_edge(u, v)
+
+Compares two edges `u` and `v` to see if they are the same edge,
+regardless of the orientation. 
+"""
+function compare_unoriented_edge(u, v)
+    i, j = edge_indices(u)
+    k, ℓ = edge_indices(v)
+    return (i, j) == (k, ℓ) || (i, j) == (ℓ, k)
+end

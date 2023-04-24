@@ -191,7 +191,7 @@ include("refinement/refine.jl")
 
 export refine!
 
-include("voronoi/voronoi.jl")
+include("voronoi/voronoi2.jl")
 
 export voronoi
 export VoronoiTessellation

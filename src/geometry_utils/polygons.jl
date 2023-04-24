@@ -97,7 +97,6 @@ function squared_distance_to_segment(x₁, y₁, x₂, y₂, x, y)
     return dx^2 + dy^2
 end
 
-
 """
     distance_to_polygon(q, pts, boundary_nodes)
 
@@ -231,4 +230,19 @@ function polygon_bounds_multiple_segments(pts, boundary_nodes)
         ymax = ymax < _ymax ? _ymax : ymax
     end
     return xmin, xmax, ymin, ymax
+end
+
+"""
+    sort_convex_polygon!(vertices, points)
+
+Sorts the vertices of a convex polygon in counter-clockwise order. The polygon is defined by
+the points `points` and the vertices `vertices`. The vertices are sorted in place. It is 
+assumed that the vertices are not circular, i.e. `vertices[begin] ≠ vertices[end]`.
+"""
+function sort_convex_polygon!(vertices, points)
+    cx, cy = mean_points(points,vertices)
+    to_angle = p -> atan(gety(p) - cy, getx(p) - cx)
+    vert_to_angle = v -> (to_angle ∘ get_point)(points, v)
+    sort!(vertices, by = vert_to_angle)
+    return vertices
 end

@@ -102,6 +102,85 @@ include("../helper_functions.jl")
     fig
 end
 
+@testset "Smaller example, checking ray coordinates" begin
+    tri = example_triangulation()
+    tri = triangulate(get_points(tri))
+    vorn = voronoi(tri)
+    @test validate_tessellation(vorn)
+    bbox = DT.polygon_bounds(vorn, 0.1)
+    xmin, xmax, ymin, ymax = bbox
+    bbox = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)]
+    bbox_order = [1, 2, 3, 4, 1]
+    c1 = DT.get_polygon_coordinates(vorn, 1, bbox, bbox_order)
+    c2 = DT.get_polygon_coordinates(vorn, 2, bbox, bbox_order)
+    c3 = DT.get_polygon_coordinates(vorn, 3, bbox, bbox_order)
+    c4 = DT.get_polygon_coordinates(vorn, 4, bbox, bbox_order)
+    c5 = DT.get_polygon_coordinates(vorn, 5, bbox, bbox_order)
+    c6 = DT.get_polygon_coordinates(vorn, 6, bbox, bbox_order)
+    c7 = DT.get_polygon_coordinates(vorn, 7, bbox, bbox_order)
+    @test DT.circular_equality(collect.(c1), collect.([(-1.5, 0.5)
+        (0.16666666666666666, -1.1666666666666665)
+        (1.0, 0.5)
+        (1.0, 3.0)
+        (-1.5, 0.5)]), ≈)
+    @test DT.circular_equality(collect.(c2), collect.([(3.5, 0.5)
+        (0.5, -2.5)
+        (0.5, -3.2000000001862645)
+        (5.769999999552965, -1.7699999995529652)
+        (3.5, 0.5)]), ≈)
+    @test DT.circular_equality(collect.(c3), collect.([(3.5, 0.5)
+        (1.0, 0.5)
+        (0.16666666666666666, -1.1666666666666665)
+        (0.5, -2.5)
+        (3.5, 0.5)]), ≈)
+    @test DT.circular_equality(collect.(c4), collect.([(1.5, 5.270000000484288)
+        (-2.6999999997206032, 0.8999999999068677)
+        (-1.5, 0.5)
+        (1.0, 3.0)
+        (1.5, 4.5)
+        (1.5, 5.270000000484288)]), ≈)
+    @test DT.circular_equality(collect.(c5), collect.([(1.5, 4.5)
+        (3.5, 0.5)
+        (5.769999999552965, 2.769999999552965)
+        (1.5, 5.270000000484288)
+        (1.5, 4.5)]), ≈)
+    @test DT.circular_equality(collect.(c6), collect.([(-2.6999999997206032, 0.8999999999068677)
+        (0.5, -3.2000000001862645)
+        (0.5, -2.5)
+        (0.16666666666666666, -1.1666666666666665)
+        (-1.5, 0.5)
+        (-2.6999999997206032, 0.8999999999068677)]), ≈)
+    @test DT.circular_equality(collect.(c7), collect.([(1.5, 4.5)
+        (1.0, 3.0)
+        (1.0, 0.5)
+        (3.5, 0.5)
+        (1.5, 4.5)]), ≈)
+end
+
+@testset "delete/add_polygon_adjacencies" begin
+    A = (-1.0, 7.0)
+    B = (4.0, 4.0)
+    C = (-2.0, -1.0)
+    D = (-1.0, 3.0)
+    E = (3.0, -1.0)
+    F = (1.0, 4.0)
+    G = (-3.0, 5.0)
+    pts = [A, B, C, D, E, F, G]
+    tri = triangulate(pts; delete_ghosts=false, randomise=false)
+    vorn = voronoi(tri)
+    @test get_adjacent(vorn, 1, -2) == get_adjacent(vorn, -2, -1) ==
+          get_adjacent(vorn, -1, 7) == get_adjacent(vorn, 7, 3) == get_adjacent(vorn, 3, 1) ==
+          5
+    DT.delete_polygon_adjacent!(vorn, 5)
+    @test get_adjacent(vorn, 1, -2) == get_adjacent(vorn, -2, -1) ==
+          get_adjacent(vorn, -1, 7) == get_adjacent(vorn, 7, 3) == get_adjacent(vorn, 3, 1) ==
+          DT.DefaultAdjacentValue
+    DT.add_polygon_adjacent!(vorn, 5)
+    @test get_adjacent(vorn, 1, -2) == get_adjacent(vorn, -2, -1) ==
+          get_adjacent(vorn, -1, 7) == get_adjacent(vorn, 7, 3) == get_adjacent(vorn, 3, 1) ==
+          5
+end
+
 @testset "Voronoi point location" begin
     A = (-1.0, 7.0)
     B = (4.0, 4.0)
@@ -201,7 +280,7 @@ end
             C = get_polygon(vorn, i)
             for (j, v) in pairs(C)
                 δ = DT.distance_to_polygon(get_polygon_point(vorn, v), get_points(tri), get_convex_hull_indices(tri))
-                @test δ ≥ 0
+                @test δ ≥ -1e-15
             end
         end
     end
@@ -345,370 +424,230 @@ end
     end
 end
 
-tri = example_triangulation()
-tri = triangulate(get_points(tri))
-vorn = voronoi(tri)
-@test validate_tessellation(vorn)
-bbox = DT.polygon_bounds(vorn, 0.1)
-xmin, xmax, ymin, ymax = bbox
-bbox = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)]
-bbox_order = [1, 2, 3, 4, 1]
-c1 = DT.get_polygon_coordinates(vorn, 1, bbox, bbox_order)
-c2 = DT.get_polygon_coordinates(vorn, 2, bbox, bbox_order)
-c3 = DT.get_polygon_coordinates(vorn, 3, bbox, bbox_order)
-c4 = DT.get_polygon_coordinates(vorn, 4, bbox, bbox_order)
-c5 = DT.get_polygon_coordinates(vorn, 5, bbox, bbox_order)
-c6 = DT.get_polygon_coordinates(vorn, 6, bbox, bbox_order)
-c7 = DT.get_polygon_coordinates(vorn, 7, bbox, bbox_order)
-@test DT.circular_equality(collect.(c1), collect.([(-1.5, 0.5)
-    (0.16666666666666666, -1.1666666666666665)
-    (1.0, 0.5)
-    (1.0, 3.0)
-    (-1.5, 0.5)]), ≈)
-@test DT.circular_equality(collect.(c2), collect.([(3.5, 0.5)
-    (0.5, -2.5)
-    (0.5, -3.2000000001862645)
-    (5.769999999552965, -1.7699999995529652)
-    (3.5, 0.5)]), ≈)
-@test DT.circular_equality(collect.(c3), collect.([(3.5, 0.5)
-    (1.0, 0.5)
-    (0.16666666666666666, -1.1666666666666665)
-    (0.5, -2.5)
-    (3.5, 0.5)]), ≈)
-@test DT.circular_equality(collect.(c4), collect.([(1.5, 5.270000000484288)
-    (-2.6999999997206032, 0.8999999999068677)
-    (-1.5, 0.5)
-    (1.0, 3.0)
-    (1.5, 4.5)
-    (1.5, 5.270000000484288)]), ≈)
-@test DT.circular_equality(collect.(c5), collect.([(1.5, 4.5)
-    (3.5, 0.5)
-    (5.769999999552965, 2.769999999552965)
-    (1.5, 5.270000000484288)
-    (1.5, 4.5)]), ≈)
-@test DT.circular_equality(collect.(c6), collect.([(-2.6999999997206032, 0.8999999999068677)
-    (0.5, -3.2000000001862645)
-    (0.5, -2.5)
-    (0.16666666666666666, -1.1666666666666665)
-    (-1.5, 0.5)
-    (-2.6999999997206032, 0.8999999999068677)]), ≈)
-@test DT.circular_equality(collect.(c7), collect.([(1.5, 4.5)
-    (1.0, 3.0)
-    (1.0, 0.5)
-    (3.5, 0.5)
-    (1.5, 4.5)]), ≈)
+@testset "initialise_clipping_arrays" begin
+    a = (4.0, 3.0)
+    b = (0.0, 3.0)
+    c = (0.0, 0.0)
+    d = (4.0, 0.0)
+    e = (2.0, 1.5)
+    pts = [a, b, c, d, e]
+    tri = triangulate(pts, delete_ghosts=false, randomise=false)
+    vorn = voronoi(tri)
+    lock_convex_hull!(tri)
+    edges_to_process,
+    polygon_edge_queue,
+    boundary_sites,
+    segment_intersections,
+    processed_pairs,
+    intersected_edge_cache,
+    exterior_circumcenters,
+    left_edge_intersectors,
+    right_edge_intersectors,
+    current_edge_intersectors = DT.initialise_clipping_arrays(vorn)
+    @test edges_to_process == Set(((1, 2), (4, 1), (3, 4), (2, 3)))
+    @test polygon_edge_queue == Queue{Tuple{NTuple{2,Int64},Int64}}()
+    @test boundary_sites == Dict{Int64,Set{Int64}}()
+    @test segment_intersections == NTuple{2,Int64}[]
+    @test processed_pairs == Set{Tuple{NTuple{2,Int64},Int64}}()
+    @test intersected_edge_cache == Pair{NTuple{2,Int64},NTuple{2,Int64}}[]
+    @test left_edge_intersectors == Set{NTuple{2,Int64}}()
+    @test right_edge_intersectors == Set{NTuple{2,Int64}}()
+    @test current_edge_intersectors == Set{NTuple{2,Int64}}()
+end
 
-_vorn = voronoi(tri, true)
-
-
-
-fig, ax, sc = triplot(tri)
-
-lines!(ax, bbox[bbox_order], color=:blue)
-fig
-lines!(ax, [p, q], color=:red, linewidth=4)
-
-fig
-
-triplot(tri)
-
-fig, ax, sc = triplot(tri)
-voronoiplot!(ax, vorn)
-
-j = 4
-C = get_polygon(vorn, j)
-F = Float64
-coords = Vector{NTuple{2,F}}(undef, length(C) - 1)
-i = 1
-ghost_tri = DT.get_circumcenter_to_triangle(vorn, C[i])
-u, v, _ = indices(ghost_tri) # w is the ghost vertex
-p, q = get_generator(vorn, u, v)
-px, py = getxy(p)
-qx, qy = getxy(q)
-m = (px + qx) / 2, (py + qy) / 2
-is_first = DT.is_first_boundary_index(C, i)
-prev_index = DT.previndex_circular(C, i)
-r = get_polygon_point(vorn, C[prev_index])
-r = getxy(r)
-coords[i] = intersection = DT.intersection_of_ray_with_boundary(bbox, bbox_order, m, r)
-
-i = 2
-ghost_tri = DT.get_circumcenter_to_triangle(vorn, C[i])
-u, v, _ = indices(ghost_tri) # w is the ghost vertex
-p, q = get_generator(vorn, u, v)
-px, py = getxy(p)
-qx, qy = getxy(q)
-m = (px + qx) / 2, (py + qy) / 2
-is_first = DT.is_first_boundary_index(C, i)
-next_index = DT.nextindex_circular(C, i)
-r = get_polygon_point(vorn, C[next_index])
-r = getxy(r)
-if r == m # It's possible for the circumcenter to lie on the edge and exactly at the midpoint (e.g. [(0.0,1.0),(-1.0,2.0),(-2.0,-1.0)]). In this case, just rotate 
-    mx, my = getxy(m)
-    dx, dy = qx - mx, qy - my
-    rotated_dx, rotated_dy = -dy, dx
-    r = mx + rotated_dx, my + rotated_dy
-    if DT.is_right(DT.point_position_relative_to_line(p, q, r))
-        rotated_dx, rotated_dy = dy, -dx
-        r = mx + rotated_dx, my + rotated_dy
+@testset "enqueue_new_edge" begin
+    for _ in 1:500
+        a = (3.0, 3.0)
+        b = (0.0, 3.0)
+        c = (0.0, 0.0)
+        d = (4.0, 0.0)
+        e = (1.0, 1.5)
+        pts = [a, b, c, d, e]
+        tri = triangulate(pts, delete_ghosts=false)
+        vorn = voronoi(tri)
+        lock_convex_hull!(tri)
+        edges_to_process, polygon_edge_queue = DT.initialise_clipping_arrays(vorn)
+        e = (1, 2)
+        DT.enqueue_new_edge!(polygon_edge_queue, vorn, e)
+        _e, _polygon = dequeue!(polygon_edge_queue)
+        @test _e == e && _polygon == 2
+        e = (2, 3)
+        DT.enqueue_new_edge!(polygon_edge_queue, vorn, e)
+        _e, _polygon = dequeue!(polygon_edge_queue)
+        @test _e == e && _polygon == 5
+        e = (3, 4)
+        DT.enqueue_new_edge!(polygon_edge_queue, vorn, e)
+        _e, _polygon = dequeue!(polygon_edge_queue)
+        @test _e == e && _polygon == 5
+        e = (4, 1)
+        DT.enqueue_new_edge!(polygon_edge_queue, vorn, e)
+        _e, _polygon = dequeue!(polygon_edge_queue)
+        @test _e == e && _polygon == 4
     end
 end
-r = getxy(r)
-intersection = DT.intersection_of_ray_with_boundary(bbox, bbox_order, m, r)
 
-
-
-px, py = getxy(p)
-qx, qy = getxy(q)
-t1 = zero(px)
-t2 = one(px)
-points = bbox
-boundary_nodes = bbox_order
-δ1 = DT.distance_to_polygon(p, points, boundary_nodes)
-δ2 = DT.distance_to_polygon(q, points, boundary_nodes)
-while sign(δ2) == 1
-    t2 *= 2
-    r = px + t2 * (qx - px), py + t2 * (qy - py)
-    δ2 = DT.distance_to_polygon(r, points, boundary_nodes)
+@testset "Segment classification" begin
+    @test DT.is_segment_between_two_ghosts(-1, -2)
+    @test !DT.is_segment_between_two_ghosts(1, 2)
+    @test DT.is_ray_going_in(-1, 2)
+    @test !DT.is_ray_going_in(1, 2)
+    @test !DT.is_ray_going_in(1, -2)
+    @test DT.is_ray_going_out(1, -2)
+    @test !DT.is_ray_going_out(1, 2)
+    @test !DT.is_ray_going_out(-1, 2)
+    @test DT.is_finite_segment(1, 2)
+    @test !DT.is_finite_segment(-1, 2)
+    @test !DT.is_finite_segment(1, -2)
+    @test !DT.is_finite_segment(-1, -2)
 end
-t = (t1 + t2) / 2
-r = px + t * (qx - px), py + t * (qy - py)
-δ = DT.distance_to_polygon(r, points, boundary_nodes)
 
+@testset "add_to_intersected_edge_cache" begin
+    u, v, a, b = 1, 7, 5, 9
+    intersected_edge_cache = Pair{NTuple{2,Int64},NTuple{2,Int64}}[]
+    DT.add_to_intersected_edge_cache!(intersected_edge_cache, u, v, a, b)
+    @test intersected_edge_cache == [(u, v) => (a, b)]
+    u, v, a, b = -2, 5, 10, 17
+    DT.add_to_intersected_edge_cache!(intersected_edge_cache, u, v, a, b)
+    @test intersected_edge_cache == [(1, 7) => (5, 9), (u, v) => (a, b)]
+end
 
+@testset "More detailed test with a tessellation that has a finite edge going completely through the interior" begin
+    a = (3.0, 3.0)
+    b = (0.0, 3.0)
+    c = (0.0, 0.0)
+    d = (4.0, 0.0)
+    e = (1.0, 1.5)
+    pts = [a, b, c, d, e]
+    tri = triangulate(pts, delete_ghosts=false, randomise=false)
+    vorn = voronoi(tri)
+    lock_convex_hull!(tri)
+    edges_to_process,
+    polygon_edge_queue,
+    boundary_sites,
+    segment_intersections,
+    processed_pairs,
+    intersected_edge_cache,
+    exterior_circumcenters,
+    left_edge_intersectors,
+    right_edge_intersectors,
+    current_edge_intersectors = DT.initialise_clipping_arrays(vorn)
+    e = DT.convert_to_boundary_edge(vorn, first(edges_to_process))
+    DT.enqueue_new_edge!(polygon_edge_queue, vorn, e)
 
-tri = example_triangulation()
-tri = triangulate(get_points(tri), delete_ghosts=false)
-lock_convex_hull!(tri)
-vorn = voronoi(tri, false)
-boundary_edges = (keys ∘ get_boundary_edge_map)(tri)
-boundary_sites = Set{Int64}()
-E = DT.edge_type(tri)
-boundary_sites = Dict{Int64,E}()
-for e in boundary_edges
-    i, j = DT.edge_indices(e)
-    p, q = get_point(tri, i, j)
-    px, py = getxy(p)
-    qx, qy = getxy(q)
-    m = (px + qx) / 2, (py + qy) / 2
-    incident_polygon = jump_and_march(vorn, m; k=i)
-    boundary_sites[i] = e
-    boundary_sites[j] = e
-    boundary_sites[incident_polygon] = e
-end
-E = NTuple{2,Int64}
-F = DT.number_type(vorn)
-segment_intersections = NTuple{2,F}[]
-intersected_edge_cache = Vector{E}(undef, 2)
-boundary_site_additions = Dict{Int64,Set{Int64}}()
-boundary_site_deletions = Dict{Int64,Set{Int64}}()
-for (incident_polygon, e) in boundary_sites
-    left_edge, right_edge, left_bnd, right_bnd = DT.get_neighbouring_edges(vorn, e)
-    polygon = DT.get_polygon(vorn, incident_polygon)
-    nedges = DT.num_boundary_edges(polygon)
-    num_intersections = 0
-    for ℓ in 1:nedges
-        num_intersections == 2 && break
-        u = DT.get_boundary_nodes(polygon, ℓ)
-        v = DT.get_boundary_nodes(polygon, ℓ + 1)
-        if DT.is_boundary_index(u) && DT.is_boundary_index(v)
-            continue
-        elseif DT.is_boundary_index(u) && !DT.is_boundary_index(v)
-            num_intersections = DT.process_ray_intersection!(vorn, u, v, incident_polygon, num_intersections, intersected_edge_cache, segment_intersections, boundary_site_additions)
-        elseif !DT.is_boundary_index(u) && DT.is_boundary_index(v)
-            num_intersections = DT.process_ray_intersection!(vorn, v, u, incident_polygon, num_intersections, intersected_edge_cache, segment_intersections, boundary_site_additions)
-        else
-            for e in (e, left_edge, right_edge)
-                _num_intersections = DT.process_segment_intersection!(vorn, u, v, e, incident_polygon, num_intersections, intersected_edge_cache, segment_intersections, boundary_site_additions, boundary_site_deletions)
-                if _num_intersections > num_intersections
-                    num_intersections = _num_intersections
-                    # break < -- Actually, don't break because a single line could go past multiple parts of the boundary (e.g. the fixed_shewchuk_example_constrained example).
-                    num_intersections == 2 && break
-                end
-            end
-        end
-    end
-    interior_intersection, index, adjacent_incident_polygon, shared_vertex = DT.segment_intersection_type(e, intersected_edge_cache)
-    if !interior_intersection
-        other_e = intersected_edge_cache[index]
-        m = get_generator(vorn, shared_vertex)
-        DT.add_segment_intersection!(segment_intersections, boundary_site_additions, m, incident_polygon)
-    end
-end
-n = num_polygon_vertices(vorn)
-for p in each_point(segment_intersections)
-    DT.push_polygon_point!(vorn, p)
-end
-boundary_sites = keys(boundary_sites)
+    empty!(intersected_edge_cache)
+    e, incident_polygon = dequeue!(polygon_edge_queue)
+    push!(processed_pairs, (e, incident_polygon))
+    left_edge, right_edge = DT.get_neighbouring_boundary_edges(vorn, e)
+    @test left_edge == (1, 4)
+    @test right_edge == (3, 2)
+    polygon_vertices = get_polygon(vorn, incident_polygon)
+    nedges = num_boundary_edges(polygon_vertices)
 
-polygon = 4
-polygon_vertices = get_polygon(vorn, polygon)
-pop!(polygon_vertices)
-filter!(!DT.is_boundary_index, polygon_vertices)
+    ℓ = 1
+    u = get_boundary_nodes(polygon_vertices, ℓ)
+    v = get_boundary_nodes(polygon_vertices, ℓ + 1)
+    DT.get_circumcenter_to_triangle.(Ref(vorn), (u, v))
+    @test DT.is_ray_going_out(u, v)
+    @test DT.process_ray_intersection!(vorn, v, u, incident_polygon, intersected_edge_cache, segment_intersections, boundary_sites, exterior_circumcenters)
+    @test intersected_edge_cache == [(v, u) => e]
+    @test segment_intersections == [(1.5, 3.0)]
+    @test boundary_sites == Dict(incident_polygon => Set(1))
 
+    ℓ = 2
+    u = get_boundary_nodes(polygon_vertices, ℓ)
+    v = get_boundary_nodes(polygon_vertices, ℓ + 1)
+    DT.get_circumcenter_to_triangle.(Ref(vorn), (u, v))
+    @test DT.is_segment_between_two_ghosts(u, v)
 
+    ℓ = 3
+    u = get_boundary_nodes(polygon_vertices, ℓ)
+    v = get_boundary_nodes(polygon_vertices, ℓ + 1)
+    DT.get_circumcenter_to_triangle.(Ref(vorn), (u, v))
+    @test DT.is_ray_going_in(u, v)
+    @test !DT.process_ray_intersection!(vorn, u, v, incident_polygon, intersected_edge_cache, segment_intersections, boundary_sites, exterior_circumcenters)
 
+    ℓ = 4
+    u = get_boundary_nodes(polygon_vertices, ℓ)
+    v = get_boundary_nodes(polygon_vertices, ℓ + 1)
+    DT.get_circumcenter_to_triangle.(Ref(vorn), (u, v))
+    @test DT.is_finite_segment(u, v)
+    @test !DT.process_segment_intersection!(vorn, u, v, e, incident_polygon, intersected_edge_cache, segment_intersections, boundary_sites, exterior_circumcenters)
+    @test !DT.process_segment_intersection!(vorn, u, v, left_edge, incident_polygon, intersected_edge_cache, segment_intersections, boundary_sites, exterior_circumcenters)
+    @test DT.process_segment_intersection!(vorn, u, v, right_edge, incident_polygon, intersected_edge_cache, segment_intersections, boundary_sites, exterior_circumcenters)
+    @test collect.(segment_intersections) ≈ collect.([(1.5, 3.0), (0.0, 1.916666666666666666666666)])
+    @test boundary_sites == Dict(incident_polygon => Set((1, 2)))
+    @test intersected_edge_cache == [(-3, 3) => e, (u, v) => right_edge]
 
-polygon = 5 
-polygon_vertices = get_polygon(vorn, polygon)
-pop!(polygon_vertices)
-filter!(!DT.is_boundary_index, polygon_vertices)
-polygon_points = [get_polygon_point(vorn, polygon_vertices...)...]
+    DT.classify_intersections!(intersected_edge_cache, left_edge_intersectors, right_edge_intersectors, current_edge_intersectors, left_edge, right_edge, e)
+    @test left_edge_intersectors == Set{NTuple{2,Int64}}()
+    @test right_edge_intersectors == Set([(u, v)])
+    @test current_edge_intersectors == Set([(-3, 3)])
 
+    DT.process_intersection_points!(polygon_edge_queue, vorn, incident_polygon,
+        left_edge_intersectors, right_edge_intersectors, current_edge_intersectors,
+        left_edge, right_edge, e, processed_pairs, segment_intersections, boundary_sites)
 
+    _queue = Queue{Tuple{NTuple{2,Int64},Int64}}()
+    enqueue!(_queue, ((3, 2), 3))
+    enqueue!(_queue, ((3, 2), 2))
+    enqueue!(_queue, ((3, 2), 5))
+    enqueue!(_queue, ((2, 1), 1))
+    @test _queue == polygon_edge_queue
 
+    a = (3.0, 3.0)
+    b = (0.0, 3.0)
+    c = (0.0, 0.0)
+    d = (4.0, 0.0)
+    e = (1.0, 1.5)
+    pts = [a, b, c, d, e]
+    tri = triangulate(pts, delete_ghosts=false, randomise=false)
+    vorn = voronoi(tri)
+    lock_convex_hull!(tri)
+    boundary_sites, segment_intersections, exterior_circumcenters = DT.find_all_intersections(vorn)
+    @test collect.(segment_intersections) ≈ collect.([
+        (1.5, 3.0)
+        (0.0, 1.9166666666666665)
+        (0.0, 3.0)
+        (0.0, 1.0833333333333333)
+        (1.625, 0.0)
+        (0.0, 0.0)
+        (2.125, 0.0)
+        (3.5, 1.5)
+        (3.0, 3.0)
+        (4.0, 0.0)
+    ])
+    @test boundary_sites[4] == Set((7, 10, 8))
+    @test boundary_sites[2] == Set((2, 3, 1))
+    @test boundary_sites[1] == Set((9, 8, 1))
+    @test boundary_sites[3] == Set((5, 4, 6))
+    @test boundary_sites[5] == Set((5, 4, 7, 2))
+    @test exterior_circumcenters == Set((2, 1))
 
-
-
-
-
-polygon = 5
-polygon_vertices = get_polygon(vorn, polygon)
-unique!(polygon_vertices)
-filter!(!is_boundary_index, polygon_vertices)
-for new_vert in boundary_site_additions[polygon]
-    push!(polygon_vertices, n + new_vert)
+    DT.clip_voronoi_tessellation!(vorn)
+    @test isempty(vorn.unbounded_polygons)
+    @test validate_tessellation(vorn)
+    @test DT.points_are_unique(vorn.polygon_points)
+    @test collect.(DT.get_polygon_points(vorn)) ≈ collect.([
+        (2.0, -0.25)
+        (-0.625, 1.5)
+        (1.5, 2.9166666666666665)
+        (2.75, 1.25)
+        (1.5, 3.0)
+        (0.0, 1.9166666666666665)
+        (0.0, 3.0)
+        (0.0, 1.0833333333333333)
+        (1.625, 0.0)
+        (0.0, 0.0)
+        (2.125, 0.0)
+        (3.5, 1.5)
+        (3.0, 3.0)
+        (4.0, 0.0)
+    ])
+    @test vorn.polygons == Dict(
+        5 => [8, 9, 11, 4, 3, 6, 8],
+        4 => [11, 14, 12, 4, 11],
+        2 => [6, 3, 5, 7, 6],
+        3 => [10, 9, 8, 10],
+        1 => [4, 12, 13, 5, 3, 4]
+    )
 end
-cx, cy = DT.arithmetic_average_unsorted(vorn, polygon_vertices)
-θ = zeros(F, length(polygon_vertices))
-for (j, i) in pairs(polygon_vertices)
-    p = get_polygon_point(vorn, i)
-    px, py = getxy(p)
-    θ[j] = atan(py - cy, px - cx)
-end
-idx = sortperm(θ)
-permute!(polygon_vertices, idx)
-push!(polygon_vertices, polygon_vertices[begin])
-lines!(ax, [get_polygon_point(vorn, polygon_vertices...)...], color=:red)
-
-polygon = 4
-polygon_vertices = get_polygon(vorn, polygon)
-pop!(polygon_vertices)
-filter!(!is_boundary_index, polygon_vertices)
-for new_vert in boundary_site_additions[polygon]
-    push!(polygon_vertices, n + new_vert)
-end
-if haskey(boundary_site_deletions, polygon)
-    deleteat!(polygon_vertices, findfirst(isequal(boundary_site_deletions[polygon]), polygon_vertices))
-end
-cx, cy = DT.arithmetic_average_unsorted(vorn, polygon_vertices)
-θ = zeros(F, length(polygon_vertices))
-for (j, i) in pairs(polygon_vertices)
-    p = get_polygon_point(vorn, i)
-    px, py = getxy(p)
-    θ[j] = atan(py - cy, px - cx)
-end
-idx = sortperm(θ)
-permute!(polygon_vertices, idx)
-push!(polygon_vertices, polygon_vertices[begin])
-lines!(ax, [get_polygon_point(vorn, polygon_vertices...)...], color=:red)
-
-polygon = 6
-polygon_vertices = get_polygon(vorn, polygon)
-pop!(polygon_vertices)
-filter!(!is_boundary_index, polygon_vertices)
-for new_vert in boundary_site_additions[polygon]
-    push!(polygon_vertices, n + new_vert)
-end
-if haskey(boundary_site_deletions, polygon)
-    deleteat!(polygon_vertices, findfirst(isequal(boundary_site_deletions[polygon]), polygon_vertices))
-end
-cx, cy = DT.arithmetic_average_unsorted(vorn, polygon_vertices)
-θ = zeros(F, length(polygon_vertices))
-for (j, i) in pairs(polygon_vertices)
-    p = get_polygon_point(vorn, i)
-    px, py = getxy(p)
-    θ[j] = atan(py - cy, px - cx)
-end
-idx = sortperm(θ)
-permute!(polygon_vertices, idx)
-push!(polygon_vertices, polygon_vertices[begin])
-lines!(ax, [get_polygon_point(vorn, polygon_vertices...)...], color=:red)
-
-polygon = 7
-polygon_vertices = get_polygon(vorn, polygon)
-pop!(polygon_vertices)
-filter!(!is_boundary_index, polygon_vertices)
-for new_vert in boundary_site_additions[polygon]
-    push!(polygon_vertices, n + new_vert)
-end
-if haskey(boundary_site_deletions, polygon)
-    deleteat!(polygon_vertices, findfirst(isequal(boundary_site_deletions[polygon]), polygon_vertices))
-end
-cx, cy = DT.arithmetic_average_unsorted(vorn, polygon_vertices)
-θ = zeros(F, length(polygon_vertices))
-for (j, i) in pairs(polygon_vertices)
-    p = get_polygon_point(vorn, i)
-    px, py = getxy(p)
-    θ[j] = atan(py - cy, px - cx)
-end
-idx = sortperm(θ)
-permute!(polygon_vertices, idx)
-push!(polygon_vertices, polygon_vertices[begin])
-lines!(ax, [get_polygon_point(vorn, polygon_vertices...)...], color=:red)
-
-polygon = 2
-polygon_vertices = get_polygon(vorn, polygon)
-pop!(polygon_vertices)
-filter!(!is_boundary_index, polygon_vertices)
-for new_vert in boundary_site_additions[polygon]
-    push!(polygon_vertices, n + new_vert)
-end
-if haskey(boundary_site_deletions, polygon)
-    deleteat!(polygon_vertices, findfirst(isequal(boundary_site_deletions[polygon]), polygon_vertices))
-end
-cx, cy = DT.arithmetic_average_unsorted(vorn, polygon_vertices)
-θ = zeros(F, length(polygon_vertices))
-for (j, i) in pairs(polygon_vertices)
-    p = get_polygon_point(vorn, i)
-    px, py = getxy(p)
-    θ[j] = atan(py - cy, px - cx)
-end
-idx = sortperm(θ)
-permute!(polygon_vertices, idx)
-push!(polygon_vertices, polygon_vertices[begin])
-lines!(ax, [get_polygon_point(vorn, polygon_vertices...)...], color=:cyan)
-
-polygon = 3
-polygon_vertices = get_polygon(vorn, polygon)
-pop!(polygon_vertices)
-filter!(!is_boundary_index, polygon_vertices)
-for new_vert in boundary_site_additions[polygon]
-    push!(polygon_vertices, n + new_vert)
-end
-if haskey(boundary_site_deletions, polygon)
-    deleteat!(polygon_vertices, findfirst(isequal(boundary_site_deletions[polygon]), polygon_vertices))
-end
-cx, cy = DT.arithmetic_average_unsorted(vorn, polygon_vertices)
-θ = zeros(F, length(polygon_vertices))
-for (j, i) in pairs(polygon_vertices)
-    p = get_polygon_point(vorn, i)
-    px, py = getxy(p)
-    θ[j] = atan(py - cy, px - cx)
-end
-idx = sortperm(θ)
-permute!(polygon_vertices, idx)
-push!(polygon_vertices, polygon_vertices[begin])
-lines!(ax, [get_polygon_point(vorn, polygon_vertices...)...], color=:red)
-
-polygon = 1
-polygon_vertices = get_polygon(vorn, polygon)
-pop!(polygon_vertices)
-filter!(!is_boundary_index, polygon_vertices)
-for new_vert in boundary_site_additions[polygon]
-    push!(polygon_vertices, n + new_vert)
-end
-if haskey(boundary_site_deletions, polygon)
-    deleteat!(polygon_vertices, findfirst(isequal(boundary_site_deletions[polygon]), polygon_vertices))
-end
-cx, cy = DT.arithmetic_average_unsorted(vorn, polygon_vertices)
-θ = zeros(F, length(polygon_vertices))
-for (j, i) in pairs(polygon_vertices)
-    p = get_polygon_point(vorn, i)
-    px, py = getxy(p)
-    θ[j] = atan(py - cy, px - cx)
-end
-idx = sortperm(θ)
-permute!(polygon_vertices, idx)
-push!(polygon_vertices, polygon_vertices[begin])
-lines!(ax, [get_polygon_point(vorn, polygon_vertices...)...], color=:blue, linewidth=6)

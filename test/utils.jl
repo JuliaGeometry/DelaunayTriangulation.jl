@@ -755,3 +755,68 @@ end
       @test DT.is_last_boundary_index([-1, 5, 4, 6, -2, -1], 1)
       @test DT.is_first_boundary_index([-1, 2, 3, 4, 5, -6, -1], 6)
 end
+
+@testset "get_neighbouring_boundary_edges" begin
+      tri = fixed_shewchuk_example_constrained()
+      left_e, right_e = DT.get_neighbouring_boundary_edges(tri, (10, 11))
+      @test left_e == (11, 7) && right_e == (3, 10)
+      left_e, right_e = DT.get_neighbouring_boundary_edges(tri, (11, 7))
+      @test left_e == (7, 6) && right_e == (10, 11)
+      left_e, right_e = DT.get_neighbouring_boundary_edges(tri, (7, 6))
+      @test left_e == (6, 5) && right_e == (11, 7)
+      left_e, right_e = DT.get_neighbouring_boundary_edges(tri, (6, 5))
+      @test left_e == (5, 4) && right_e == (7, 6)
+      left_e, right_e = DT.get_neighbouring_boundary_edges(tri, (5, 4))
+      @test left_e == (4, 1) && right_e == (6, 5)
+      left_e, right_e = DT.get_neighbouring_boundary_edges(tri, (4, 1))
+      @test left_e == (1, 2) && right_e == (5, 4)
+      left_e, right_e = DT.get_neighbouring_boundary_edges(tri, (1, 2))
+      @test left_e == (2, 3) && right_e == (4, 1)
+      left_e, right_e = DT.get_neighbouring_boundary_edges(tri, (2, 3))
+      @test left_e == (3, 10) && right_e == (1, 2)
+      @test DT.get_neighbouring_boundary_edges(tri, (10, 11)) == DT.get_neighbouring_boundary_edges(tri, (11, 10))
+      @test DT.get_neighbouring_boundary_edges(tri, (11, 7)) == DT.get_neighbouring_boundary_edges(tri, (7, 11))
+      @test DT.get_neighbouring_boundary_edges(tri, (7, 6)) == DT.get_neighbouring_boundary_edges(tri, (6, 7))
+      @test DT.get_neighbouring_boundary_edges(tri, (6, 5)) == DT.get_neighbouring_boundary_edges(tri, (5, 6))
+      @test DT.get_neighbouring_boundary_edges(tri, (5, 4)) == DT.get_neighbouring_boundary_edges(tri, (4, 5))
+      @test DT.get_neighbouring_boundary_edges(tri, (4, 1)) == DT.get_neighbouring_boundary_edges(tri, (1, 4))
+      @test DT.get_neighbouring_boundary_edges(tri, (1, 2)) == DT.get_neighbouring_boundary_edges(tri, (2, 1))
+      @test DT.get_neighbouring_boundary_edges(tri, (2, 3)) == DT.get_neighbouring_boundary_edges(tri, (3, 2))
+
+      tri, _, _ = simple_geometry()
+      add_ghost_triangles!(tri)
+      left_e, right_e = DT.get_neighbouring_boundary_edges(tri, (18, 13))
+      @test left_e == (13, 14) && right_e == (17, 18)
+      left_e, right_e = DT.get_neighbouring_boundary_edges(tri, (13, 14))
+      @test left_e == (14, 15) && right_e == (18, 13)
+      left_e, right_e = DT.get_neighbouring_boundary_edges(tri, (12, 9))
+      @test left_e == (9, 10) && right_e == (11, 12)
+      left_e, right_e = DT.get_neighbouring_boundary_edges(tri, (5, 4))
+      @test left_e == (4, 3) && right_e == (6, 5)
+end
+
+@testset "convert_to_boundary_edge" begin
+      a = (3.0, 3.0)
+      b = (0.0, 3.0)
+      c = (0.0, 0.0)
+      d = (4.0, 0.0)
+      e = (1.0, 1.5)
+      pts = [a, b, c, d, e]
+      tri = triangulate(pts, delete_ghosts=false, randomise=false)
+      @test DT.convert_to_boundary_edge(tri, (1, 2)) == (2, 1)
+      @test DT.convert_to_boundary_edge(tri, (2, 1)) == (2, 1)
+end
+
+@testset "get_shared_vertex" begin
+      e = (1, 3)
+      f = (7, 5)
+      @test DT.get_shared_vertex(e, f) == DT.DefaultAdjacentValue
+      @test DT.get_shared_vertex(f, e) == DT.DefaultAdjacentValue
+      e = (7, 3)
+      f = (3, 8)
+      @test DT.get_shared_vertex(e, f) == 3
+      @test DT.get_shared_vertex(f, e) == 3
+      f = (9, 7)
+      @test DT.get_shared_vertex(e, f) == 7
+      @test DT.get_shared_vertex(f, e) == 7
+end

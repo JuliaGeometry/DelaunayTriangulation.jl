@@ -52,6 +52,12 @@ function intersection_of_ray_with_boundary(points, boundary_nodes, p, q, tol=1e-
     return r
 end
 
+"""
+    segment_intersection_coordinates(a, b, c, d)
+
+Finds the coordinates of the intersection of the line segment from `a` to `b` 
+with the line segment from `c` to `d`.
+"""
 function segment_intersection_coordinates(a, b, c, d)
     ax, ay = getxy(a)
     bx, by = getxy(b)
@@ -62,3 +68,55 @@ function segment_intersection_coordinates(a, b, c, d)
     α = num / den
     return ax + α * (bx - ax), ay + α * (by - ay)
 end
+
+"""
+    intersection_of_edge_and_bisector_ray(a, b, c)
+
+Given an edge `(a, b)` and a ray emanating from `c` perpendicular  
+with the edge and collinear with its midpoint, tests if `c` intersects 
+the edge, and if so, returns the intersection point which is the midpoint.
+If there is no intersection, `(NaN, NaN)` is returned. The ray should be directed
+to the left of the edge.
+"""
+function intersection_of_edge_and_bisector_ray(a, b, c)
+    cert = point_position_relative_to_line(a, b, c)
+    if !is_left(cert)
+        ax, ay = getxy(a)
+        bx, by = getxy(b)
+        m = (ax + bx) / 2, (ay + by) / 2
+        return m 
+    else
+        F = number_type(a) 
+        return F(NaN), F(NaN)
+    end
+end
+
+"""
+    classify_and_compute_segment_intersection(a, b, c, d)
+
+Given two line segments `(a, b)` and `(c, d)`, classifies the intersection
+of the two segments, returning `(cert, cert_c, cert_d, p)`, where `p` is the intersection point
+or `(NaN, NaN)` if there is no intersection. The certificate `cert` determines the intersection 
+type, giving 
+
+- `Cert.None`: No intersections.
+- `Cert.Single`: There is an intersection point.
+- `Cert.Touching`: There is an intersection point, and one of `c` and `d` is the intersection point.
+- `Cert.Multiple`: The closed segments meet in one or several points.
+
+The certificates `cert_c` and `cert_d` similarly return the positions of `c` and `d` relative to `(a, b)`,
+respectively.
+"""
+function classify_and_compute_segment_intersection(a, b, c, d)
+    cert = line_segment_intersection_type(a, b, c, d)
+    cert_c = point_position_relative_to_line(a, b, c)
+    cert_d = point_position_relative_to_line(a, b, d)
+    if !is_none(cert)
+        p = segment_intersection_coordinates(a, b, c, d)
+        return cert, cert_c, cert_d, p
+    else
+        F = number_type(a)
+        return cert, cert_c, cert_d, (F(NaN), F(NaN))
+    end
+end
+
