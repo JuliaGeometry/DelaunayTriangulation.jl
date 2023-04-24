@@ -30,3 +30,6 @@ Just as a nice demonstration of the incremental behaviour of the algorithms in t
 https://user-images.githubusercontent.com/95613936/232210266-615e08bd-d4f2-4a40-849e-e832778a4b71.mp4
 
 Here is also a nice animation showing the computation of a centroidal Voronoi tessellation.
+
+https://user-images.githubusercontent.com/95613936/234076094-41489505-8fe2-431e-a1a2-e8b25ecfdb8c.mp4
+
