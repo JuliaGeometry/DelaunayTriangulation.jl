@@ -240,9 +240,9 @@ the points `points` and the vertices `vertices`. The vertices are sorted in plac
 assumed that the vertices are not circular, i.e. `vertices[begin] ≠ vertices[end]`.
 """
 function sort_convex_polygon!(vertices, points)
-    cx, cy = mean_points(points,vertices)
+    cx, cy = mean_points(points, vertices)
     to_angle = p -> atan(gety(p) - cy, getx(p) - cx)
     vert_to_angle = v -> (to_angle ∘ get_point)(points, v)
-    sort!(vertices, by = vert_to_angle)
+    sort!(vertices, by=vert_to_angle)
     return vertices
 end

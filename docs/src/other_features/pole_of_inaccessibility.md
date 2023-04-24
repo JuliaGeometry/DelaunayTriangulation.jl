@@ -17,10 +17,10 @@ Below we also list some other relevant docstrings.
 ```@docs 
 Cell 
 CellQueue 
-polygon_features 
+polygon_features(::Any, ::Any)
 squared_distance_to_segment 
 distance_to_polygon 
-polygon_bounds 
+polygon_bounds(::Any, ::Any)
 ```
 
 `distance_to_polygon` is also useful for point location, as shown in the examples below.

@@ -1328,7 +1328,7 @@ end
 
 
 ## TODO: Implement a brute-force VoronoiTessellation that we can compare with
-function validate_tessellation(vorn::VoronoiTessellation)
+function validate_tessellation(vorn::VoronoiTessellation; check_convex=true, check_adjacent=true)
     tri = DT.get_triangulation(vorn)
     for (i, p) in DT.get_generators(vorn)
         flag = get_point(tri, i) == get_generator(vorn, i) == p
@@ -1411,16 +1411,18 @@ function validate_tessellation(vorn::VoronoiTessellation)
             end
         end
     end
-    for i in each_polygon_index(vorn)
-        C = get_polygon(vorn, i)
-        ne = DT.num_boundary_edges(C)
-        for j in 1:ne
-            u = get_boundary_nodes(C, j)
-            v = get_boundary_nodes(C, j + 1)
-            flag = get_adjacent(vorn, u, v) == get_adjacent(vorn, DT.construct_edge(DT.edge_type(DT.get_triangulation(vorn)), u, v)) == i
-            if !flag
-                println("Polygon $i is not adjacent to points $u and $v.")
-                return false
+    if check_adjacent
+        for i in each_polygon_index(vorn)
+            C = get_polygon(vorn, i)
+            ne = DT.num_boundary_edges(C)
+            for j in 1:ne
+                u = get_boundary_nodes(C, j)
+                v = get_boundary_nodes(C, j + 1)
+                flag = get_adjacent(vorn, u, v) == get_adjacent(vorn, DT.construct_edge(DT.edge_type(DT.get_triangulation(vorn)), u, v)) == i
+                if !flag
+                    println("Polygon $i is not adjacent to points $u and $v.")
+                    return false
+                end
             end
         end
     end
@@ -1433,13 +1435,15 @@ function validate_tessellation(vorn::VoronoiTessellation)
                 println("Polygon $i has repeated vertices.")
                 return false
             end
-            _pts = unique(poly_points)
-            ch = convex_hull(_pts)
-            _poly_points = _pts[get_indices(ch)]
-            flag = DT.circular_equality(collect.(poly_points), collect.(_poly_points), ≈)
-            if !flag
-                println("Polygon $i is not convex.")
-                return false
+            if check_convex
+                _pts = unique(poly_points)
+                ch = convex_hull(_pts)
+                _poly_points = _pts[get_indices(ch)]
+                flag = DT.circular_equality(collect.(poly_points), collect.(_poly_points), ≈)
+                if !flag
+                    println("Polygon $i is not convex.")
+                    return false
+                end
             end
         end
     end

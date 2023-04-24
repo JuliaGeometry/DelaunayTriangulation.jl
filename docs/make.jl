@@ -24,6 +24,12 @@ makedocs(;
             "Plotting" => "triangulations/plotting.md",
             "Convex Polygons" => "triangulations/convex.md"
         ],
+        "Voronoi Tessellations" => [
+            "Voronoi Tessellations" => "tessellations/voronoi.md",
+            "Clipped Voronoi Tessellations" => "tessellations/clipped.md",
+            "Centroidal Voronoi Tessellation" => "tessellations/lloyd.md",
+            "Plotting" => "tessellations/plotting.md"
+        ],
         "Boundary Handling" => "boundary_handling.md",
         "Data Structures" => [
             "Adjacent" => "data_structures/adjacent.md",
@@ -31,7 +37,8 @@ makedocs(;
             "Graph" => "data_structures/graph.md",
             "Convex Hull" => "data_structures/convex_hull.md",
             "Triangulation" => "data_structures/triangulation.md",
-            "Statistics" => "data_structures/statistics.md"
+            "Statistics" => "data_structures/statistics.md",
+            "Voronoi Tessellation" => "data_structures/voronoi.md"
         ],
         "Operations" => "operations.md",
         "Other Features" => [

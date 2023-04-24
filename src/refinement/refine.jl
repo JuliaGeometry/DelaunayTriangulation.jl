@@ -104,7 +104,7 @@ function refine!(tri::Triangulation;
 )
     tri, queue, events, targets, has_ghosts, segment_list = initialise_refine(tri; min_area, max_area, max_radius_edge_ratio, max_points, min_angle, lock_convex_hull)
     _refine_all!(tri, queue, events, targets, segment_list, exterior_curve_index, maxiters, rng)
-    finalise_refine(tri, has_ghosts, lock_convex_hull)
+    finalise_refine!(tri, has_ghosts, lock_convex_hull)
     stats = statistics(tri)
     return stats
 end
@@ -130,7 +130,7 @@ function initialise_refine(tri::Triangulation;
     return tri, queue, events, targets, has_ghosts, segment_list
 end
 
-function finalise_refine(tri::Triangulation, has_ghosts, lock_convex_hull)
+function finalise_refine!(tri::Triangulation, has_ghosts, lock_convex_hull)
     !has_ghosts && delete_ghost_triangles!(tri)
     if lock_convex_hull
         idx = get_convex_hull_indices(tri) # these indices could have changed after refinement, so let's update the convex hull, which is now get_boundary_nodes(tri)

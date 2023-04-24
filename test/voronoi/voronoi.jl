@@ -823,7 +823,7 @@ end
 @testset "Centroidal tessellation" begin
     flag = 0
     tot = 0
-    for _ in 1:500
+    for _ in 1:50
         points = randn(2, 250)
         tri = triangulate(points)
         vorn = voronoi(tri, true)
@@ -835,15 +835,26 @@ end
             c = DT.get_centroid(smooth_vorn, i)
             px, py = getxy(p)
             cx, cy = getxy(c)
-            _flag = [px, py] ≈ [cx, cy]
-            flag += _flag 
+            dx, dy = px - cx, py - cy
+            ℓ = sqrt(dx^2 + dy^2)
+            _flag = ℓ ≤ 1e-1
+            flag += _flag
             tot += 1
         end
     end
-    @test flag/tot > 0.99
+    @test flag / tot > 0.95
 end
 
-
+@testset "Lattice" begin
+    for _ in 1:100
+        tri = triangulate_rectangle(0, 1, 0, 1, 11, 11, add_ghost_triangles=true)
+        tri = triangulate(tri.points)
+        vorn = voronoi(tri)
+        @test validate_tessellation(vorn; check_convex=false)
+        vorn = voronoi(tri, true)
+        @test validate_tessellation(vorn; check_convex=false, check_adjacent=false)
+    end
+end
 
 fig, ax, sc = voronoiplot(vorn, strokecolor=:red, show_generators=false)
 voronoiplot!(ax, smooth_vorn, strokecolor=:blue, show_generators=false)

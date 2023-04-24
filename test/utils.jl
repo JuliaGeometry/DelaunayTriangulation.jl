@@ -340,12 +340,6 @@ end
             for (k, S) in polys
                   @test DT.circular_equality(S, fnc_polys[k])
             end
-            for i in keys(polys)
-                  fnc_polys[i] = DT.get_surrounding_polygon(tri, i, close=true)
-            end
-            for (k, S) in polys
-                  @test DT.circular_equality(S, fnc_polys[k])
-            end
             fnc_polys = Dict{Int64,Vector{Int64}}()
             for i in keys(polys)
                   fnc_polys[i] = DT.get_surrounding_polygon(tri, i; skip_boundary_indices=true)

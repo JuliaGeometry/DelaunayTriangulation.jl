@@ -85,6 +85,8 @@ function convex_hull!(ch::ConvexHull{P,A}) where {P,I,A<:AbstractVector{I}}
     append!(upper, lower)
     reverse!(upper) # counter-clockwise
     append!(indices, upper)
+    unique!(indices)
+    push!(indices,indices[begin])
     return nothing
 end
 

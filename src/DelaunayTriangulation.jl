@@ -77,6 +77,7 @@ include("data_structures/refinement/event_history.jl")
 include("data_structures/point_location_history.jl")
 include("data_structures/polylabel/cell.jl")
 include("data_structures/polylabel/cell_queue.jl")
+include("data_structures/voronoi/voronoi.jl")
 
 export get_adjacent
 export get_adjacent2vertex
@@ -112,6 +113,19 @@ export each_constrained_edge
 export statistics
 export get_total_area
 export get_all_stat
+export VoronoiTessellation
+export num_polygons
+export get_polygon_colors
+export get_polygon
+export each_polygon
+export get_polygon_point
+export get_polygon_vertex
+export get_area
+export each_generator
+export get_generator
+export each_polygon_index
+export each_polygon_vertex
+export num_polygon_vertices
 
 include("predicates/certificate.jl")
 include("predicates/boundaries_and_ghosts.jl")
@@ -191,22 +205,12 @@ include("refinement/refine.jl")
 
 export refine!
 
-include("voronoi/voronoi.jl")
+include("voronoi/main.jl")
+include("voronoi/unbounded_construction.jl")
+include("voronoi/clipped_construction.jl")
+include("voronoi/lloyd.jl")
 
 export voronoi
-export VoronoiTessellation
-export num_polygons
-export get_polygon_colors
-export get_polygon
-export each_polygon
-export get_polygon_point
-export get_polygon_vertex
-export get_area
-export each_generator
-export get_generator
-export each_polygon_index
-export each_polygon_vertex
-export num_polygon_vertices
 export centroidal_smooth
 
 include("plotting/triplot.jl")

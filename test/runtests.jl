@@ -178,9 +178,7 @@ using SafeTestsets
         include("doc_images.jl")
     end
 
-    #=
     @safetestset "Voronoi" begin
         include("voronoi/voronoi.jl")
     end
-    =#
 end
