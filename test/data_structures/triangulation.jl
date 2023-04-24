@@ -446,6 +446,10 @@ end
             @test get_points(tri1) == [(1.0, 2.0), (3.0, 4.0), (13.7, 5.0)]
             DT.pop_point!(tri1)
             @test get_points(tri1) == [(1.0, 2.0), (3.0, 4.0)]
+            DT.set_point!(tri1, 2, 13.7, 5.0)
+            @test get_points(tri1) == [(1.0, 2.0), (13.7, 5.0)]
+            DT.set_point!(tri1, 2, (19.0, 17.05))
+            @test get_points(tri1) == [(1.0, 2.0), (19.0, 17.05)]
       end
 
       @testset "Miscellaneous" begin

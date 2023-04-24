@@ -191,7 +191,7 @@ include("refinement/refine.jl")
 
 export refine!
 
-include("voronoi/voronoi2.jl")
+include("voronoi/voronoi.jl")
 
 export voronoi
 export VoronoiTessellation
@@ -207,6 +207,7 @@ export get_generator
 export each_polygon_index
 export each_polygon_vertex
 export num_polygon_vertices
+export centroidal_smooth
 
 include("plotting/triplot.jl")
 include("plotting/voronoiplot.jl")

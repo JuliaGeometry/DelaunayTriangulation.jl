@@ -1398,7 +1398,7 @@ function validate_tessellation(vorn::VoronoiTessellation)
     end
     for i in each_polygon_index(vorn)
         A = get_area(vorn, i)
-        flag = A > 0
+        flag = A ≥ 0
         if !flag
             println("Polygon $i has area $A.")
             return false
@@ -1442,6 +1442,13 @@ function validate_tessellation(vorn::VoronoiTessellation)
                 return false
             end
         end
+    end
+    if isempty(DT.get_unbounded_polygons(vorn))
+        A = 0.0
+        for i in each_polygon_index(vorn)
+            A += get_area(vorn, i)
+        end
+        @test isapprox(A, get_total_area(vorn.triangulation), rtol=1e-4)
     end
     return true
 end

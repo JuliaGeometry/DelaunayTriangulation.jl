@@ -109,6 +109,9 @@ The certificates `cert_c` and `cert_d` similarly return the positions of `c` and
 respectively.
 """
 function classify_and_compute_segment_intersection(a, b, c, d)
+    if any(isinf, a) || any(isinf, b) || any(isinf, c) || any(isinf, d)
+        return Cert.None, Cert.None, Cert.None, (NaN, NaN)
+    end
     cert = line_segment_intersection_type(a, b, c, d)
     cert_c = point_position_relative_to_line(a, b, c)
     cert_d = point_position_relative_to_line(a, b, d)
@@ -120,4 +123,3 @@ function classify_and_compute_segment_intersection(a, b, c, d)
         return cert, cert_c, cert_d, (F(NaN), F(NaN))
     end
 end
-

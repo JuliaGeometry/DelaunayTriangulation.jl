@@ -65,6 +65,18 @@ Pops the last point from `get_points(tri)`.
 """
 @inline pop_point!(tri::Triangulation) = pop_point!(get_points(tri))
 
+"""
+    set_point!(tri::Triangulation, i, x, y) = set_point!(get_points(tri), i, x, y)
+    set_point!(tri::Triangulation, i, p) = set_point!(get_points(tri), i, p)
+
+Sets the `i`th point of `tri` to `p = (x, y)`. 
+
+!!! note
+
+    This does not update the triangulation itself.
+"""
+@inline set_point!(tri::Triangulation, i, x, y) = set_point!(get_points(tri), i, x, y)
+@inline set_point!(tri::Triangulation, i, p) = set_point!(get_points(tri), i, p)
 
 """
     num_ghost_vertices(tri::Trianngulation)
