@@ -21,11 +21,10 @@ The algorithm for computing the tessellation is very simple, making use of Lloyd
 Let's now give an example.
 
 ```julia
-rng = StableRNG(999888771)
-pts = 25randn(rng, 2, 500)
-tri = triangulate(pts; rng)
+pts = 25randn(2, 500)
+tri = triangulate(pts)
 vorn = voronoi(tri, true)
-smooth_vorn = centroidal_smooth(vorn; rng)
+smooth_vorn = centroidal_smooth(vorn)
 
 cmap = Makie.cgrad(:jet)
 colors = get_polygon_colors(vorn, cmap)
