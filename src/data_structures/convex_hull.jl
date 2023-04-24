@@ -68,6 +68,8 @@ function convex_hull!(ch::ConvexHull{P,A}) where {P,I,A<:AbstractVector{I}}
     end
     lower = I[]
     upper = I[]
+    sizehint!(lower, num_points(points) ÷ 2)
+    sizehint!(upper, num_points(points) ÷ 2)
     for i in eachindex(point_order)
         while length(upper) ≥ 2 && is_left(point_position_relative_to_line(get_point(points, upper[end-1]), get_point(points, upper[end]), get_point(points, point_order[i])))
             pop!(upper)
