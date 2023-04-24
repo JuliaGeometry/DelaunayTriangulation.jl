@@ -245,4 +245,4 @@ function sort_convex_polygon!(vertices, points)
     vert_to_angle = v -> (to_angle ∘ get_point)(points, v)
     sort!(vertices, by=vert_to_angle)
     return vertices
-end
+end 
