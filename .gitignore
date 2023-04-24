@@ -16,3 +16,4 @@ docs/src/triangulations/waste.jl
 docs/animation.jl
 test/animation.jl
 test/tassy.txt
+lloyd_animation.mp4
