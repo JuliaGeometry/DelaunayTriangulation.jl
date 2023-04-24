@@ -30,3 +30,38 @@ end
     @test DT.get_indices(ch) == reverse([3, 2, 1, 13, 12, 11, 5, 4, 3])
     @test get_points(ch) == points
 end
+
+@testset "Broken example" begin
+    points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (1.0, 2.0), (1.0, 3.0), (1.0, 4.0), (1.0, 5.0), (1.0, 6.0)]
+    ch = convex_hull(points)
+    @test DT.circular_equality(ch.indices, [1, 2, 3, 4, 5, 6, 7, 8, 1])
+end
+
+@testset "Corner cases" begin
+    ch = convex_hull([(0.0, 0.0)])
+    @test ch.points == [(0.0, 0.0)] && ch.indices == [1]
+
+    ch = convex_hull([(0.0, 0.0), (1.0, 0.0)])
+    @test ch.points == [(0.0, 0.0), (1.0, 0.0)] && ch.indices == [1, 2, 1]
+
+    ch = convex_hull([(0.0, 0.0), (1.0, 0.0), (1.0, 1.0)])
+    @test ch.points == [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0)] && ch.indices == [1, 2, 3, 1]
+    ch = convex_hull([(0.0, 0.0), (1.0, 1.0), (1.0, 0.0)])
+    @test ch.points == [(0.0, 0.0), (1.0, 1.0), (1.0, 0.0)] && ch.indices == [1, 3, 2, 1]
+end
+
+@testset "Random tests" begin
+    for _ in 1:5000
+        pts = rand(2, 6)
+        tri = triangulate(pts)
+        ch = convex_hull(pts)
+        @test ch == get_convex_hull(tri)
+
+        tri = triangulate_rectangle(0, 1, 0, 1, 11, 11)
+        ch = convex_hull(tri.points)
+        @test ch == get_convex_hull(tri)
+
+        A = DT.polygon_features(ch.points, ch.indices)[1]
+        @test A ≥ 0
+    end
+end
