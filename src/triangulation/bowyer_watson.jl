@@ -14,14 +14,16 @@ end
     i, j, k = indices(initial_triangle)
     p, q, r = get_point(points, i, j, k)
     degenerate_cert = triangle_orientation(p, q, r)
+    itr = 0 
     if length(point_order) > 3 # Do not get stuck in an infinite loop if there are just three points, the three of them being collinear
-        while is_degenerate(degenerate_cert)
+        while is_degenerate(degenerate_cert) && itr ≤ length(point_order) # If all points are collinear, this loop could go forever
             circshift!(point_order, -1)
             i, j, k = point_order[begin], point_order[begin+1], point_order[begin+2]
             initial_triangle = construct_positively_oriented_triangle(V, i, j, k, points)
             i, j, k = indices(initial_triangle)
             p, q, r = get_point(points, i, j, k)
             degenerate_cert = triangle_orientation(p, q, r)
+            itr += 1 
         end
     end
     return initial_triangle

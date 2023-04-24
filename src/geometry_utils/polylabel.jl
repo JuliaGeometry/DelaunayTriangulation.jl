@@ -26,6 +26,13 @@ function pole_of_inaccessibility(pts, boundary_nodes; precision=one(number_type(
     width = xmax - xmin
     height = ymax - ymin
     min_extent = min(width, height)
+    if iszero(min_extent)
+        if xmin == xmax 
+            return xmin, (ymin + ymax)/2 
+        else 
+            return (xmin + xmax)/2, ymin
+        end
+    end
     half_width = min_extent / 2
 
     ## Initialise the priority queue and decide if the polygon centroid of bounding box centroid is the best initial guess

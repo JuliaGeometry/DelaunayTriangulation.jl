@@ -74,8 +74,9 @@ end
 
 Given an edge `(a, b)` and a ray emanating from `c` perpendicular  
 with the edge and collinear with its midpoint, tests if `c` intersects 
-the edge, and if so, returns the intersection point which is the midpoint.
-If there is no intersection, `(NaN, NaN)` is returned. The ray should be directed
+the edge, and if so, returns the `(cert, p)`, where `p` is the intersection point (which is the midpoint)
+and `c` is the position of `c` relative to `(a, b)`.
+If there is no intersection, `p = (NaN, NaN)` is returned (together with `cert`). The ray should be directed
 to the left of the edge.
 """
 function intersection_of_edge_and_bisector_ray(a, b, c)
@@ -84,10 +85,10 @@ function intersection_of_edge_and_bisector_ray(a, b, c)
         ax, ay = getxy(a)
         bx, by = getxy(b)
         m = (ax + bx) / 2, (ay + by) / 2
-        return m 
+        return cert, m 
     else
         F = number_type(a) 
-        return F(NaN), F(NaN)
+        return cert, (F(NaN), F(NaN))
     end
 end
 

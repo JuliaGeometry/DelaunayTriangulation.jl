@@ -761,24 +761,25 @@ end
       a = (-7.0, 3.0)
       b = (-5.0, 7.0)
       c = (-10.0, 7.0)
-      m = DT.intersection_of_edge_and_bisector_ray(a, b, c)
+      cert, m = DT.intersection_of_edge_and_bisector_ray(a, b, c)
       @test all(isnan, m)
       c = (-4.86, 4.47)
-      m = DT.intersection_of_edge_and_bisector_ray(a, b, c)
+      cert, m = DT.intersection_of_edge_and_bisector_ray(a, b, c)
       @test m == (-6.0, 5.0)
       c = (-4.0, 4.0)
-      m = DT.intersection_of_edge_and_bisector_ray(a, b, c)
+      cert, m = DT.intersection_of_edge_and_bisector_ray(a, b, c)
       @test m == (-6.0, 5.0)
       p = (0.0, 3.0)
       q = (3.0, 3.0)
       r = (1.5, 2.9)
-      @test DT.intersection_of_edge_and_bisector_ray(p, q, r) == (1.5, 3.0)
-      a = (-5.0,3.0)
-      b=(-5.0,7.0)
-      c=(-5.0,5.0)
-      @test DT.intersection_of_edge_and_bisector_ray(a, b, c) == (-5.0, 5.0)
-      c = (-5.0,4.5)
-      @test DT.intersection_of_edge_and_bisector_ray(a, b, c) == (-5.0, 5.0)      
+      @test DT.intersection_of_edge_and_bisector_ray(p, q, r)[2] == (1.5, 3.0)
+      a = (-5.0, 3.0)
+      b = (-5.0, 7.0)
+      c = (-5.0, 5.0)
+      @test DT.intersection_of_edge_and_bisector_ray(a, b, c)[2] == (-5.0, 5.0)
+      @test DT.is_collinear(DT.intersection_of_edge_and_bisector_ray(a, b, c)[1])
+      c = (-5.0, 4.5)
+      @test DT.intersection_of_edge_and_bisector_ray(a, b, c)[2] == (-5.0, 5.0)
 end
 
 @testset "classify_and_compute_segment_intersection" begin
@@ -841,4 +842,13 @@ end
             A = DT.polygon_features(pts, verts)[1]
             @test A ≥ 0.0
       end
+end
+
+@testset "Degenerate pole_of_inaccessibility" begin
+      points = [(0.0, 0.0), (0.0, 1.0), (0.0, 2.0), (0.0, 3.0)]
+      boundary_nodes = [1, 2, 3, 4, 1]
+      @test DT.pole_of_inaccessibility(points, boundary_nodes) == (0.0, 1.5)
+      points = [(2.0, 0.0), (3.5, 0.0), (5.0, 0.0)]
+      boundary_nodes = [1, 2, 3, 1]
+      @test DT.pole_of_inaccessibility(points, boundary_nodes) == (3.5, 0.0)
 end
