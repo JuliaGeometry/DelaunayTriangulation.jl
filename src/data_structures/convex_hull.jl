@@ -42,64 +42,51 @@ Note that if there are a trio of points on the convex hull that are collinear, t
 all be included, instead of only taking the endpoints of the collinear points.
 """
 function convex_hull(points; IntegerType::Type{I}=Int64) where {I}
-    @assert num_points(points) ≥ 3 "Need at least 3 points to compute a convex hull."
     ch = ConvexHull(points, I[])
     sizehint!(ch, num_points(points))
     convex_hull!(ch)
     return ch
 end
-function convex_hull!(ch::ConvexHull)
+function convex_hull!(ch::ConvexHull{P,A}) where {P,I,A<:AbstractVector{I}}
     indices = get_indices(ch)
     points = get_points(ch)
-    @assert num_points(points) ≥ 3 "Need at least 3 points to compute a convex hull."
     empty!(indices)
     sizehint!(indices, num_points(ch))
     point_order = lexicographic_order(points)
-    u = point_order[begin]
-    v = point_order[begin+1]
-    p, q = get_point(points, u, v)
-    upper = [u, v]
-    sizehint!(upper, num_points(points) ÷ 2)
-    for i in (firstindex(point_order)+2):lastindex(point_order)
-        p, q, u, v = _add_to_hull!(upper, i, points, point_order, p, q, u, v)
+    n = num_points(ch)
+    if n == 1
+        push!(indices, point_order[begin])
+        return nothing
+    elseif n == 2
+        push!(indices, point_order[begin], point_order[begin+1], point_order[begin])
+        return nothing
+    elseif n == 3
+        @show I
+        i, j, k = construct_positively_oriented_triangle(NTuple{3,I}, point_order[begin], point_order[begin+1], point_order[begin+2], points)
+        push!(indices, i, j, k, i)
+        return nothing
     end
-    u = point_order[end]
-    v = point_order[end-1]
-    p, q = get_point(points, u, v)
-    lower = [u, v]
+    lower = I[]
+    upper = I[]
     sizehint!(lower, num_points(points) ÷ 2)
-    for i in (lastindex(point_order)-2):-1:firstindex(point_order)
-        p, q, u, v = _add_to_hull!(lower, i, points, point_order, p, q, u, v)
+    sizehint!(upper, num_points(points) ÷ 2)
+    for i in eachindex(point_order)
+        while length(upper) ≥ 2 && is_left(point_position_relative_to_line(get_point(points, upper[end-1]), get_point(points, upper[end]), get_point(points, point_order[i])))
+            pop!(upper)
+        end
+        push!(upper, point_order[i])
+    end
+    for i in lastindex(point_order):-1:firstindex(point_order)
+        while length(lower) ≥ 2 && is_left(point_position_relative_to_line(get_point(points, lower[end-1]), get_point(points, lower[end]), get_point(points, point_order[i])))
+            pop!(lower)
+        end
+        push!(lower, point_order[i])
     end
     popfirst!(lower)
     append!(upper, lower)
     reverse!(upper) # counter-clockwise
     append!(indices, upper)
     return nothing
-end
-
-function _add_to_hull!(hull, i, points, point_order, p, q, u, v)
-    w = point_order[i]
-    r = get_point(points, w)
-    push!(hull, w)
-    turn_cert = point_position_relative_to_line(p, q, r)
-    n = length(hull)
-    while n > 2 && is_left(turn_cert)
-        popat!(hull, n - 1)
-        n -= 1
-        if n > 2
-            v = u
-            q = p
-            u = hull[n-2]
-            p = get_point(points, u)
-            turn_cert = point_position_relative_to_line(p, q, r)
-        end
-    end
-    u = v
-    p = q
-    v = w
-    q = r
-    return p, q, u, v
 end
 
 Base.sizehint!(ch::ConvexHull, n) = Base.sizehint!(get_indices(ch), n)
