@@ -77,6 +77,7 @@ Delaunay Triangulation Statistics.
 All the relevant docstrings for working with these structs are below.
 
 ```@docs 
+get_all_stat
 num_vertices(::TriangulationStatistics)
 num_solid_vertices(::TriangulationStatistics)
 num_ghost_vertices(::TriangulationStatistics)

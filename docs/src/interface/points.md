@@ -33,6 +33,7 @@ num_points
 number_type 
 push_point!
 pop_point!
+set_point!
 ```
 
 ### Generic Methods 
@@ -40,5 +41,6 @@ pop_point!
 ```@docs 
 get_point 
 points_are_unique 
-lexicographic_order 
+lexicographic_order
+mean_points 
 ```

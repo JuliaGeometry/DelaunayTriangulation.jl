@@ -21,6 +21,7 @@ polygon_features(::Any, ::Any)
 squared_distance_to_segment 
 distance_to_polygon 
 polygon_bounds(::Any, ::Any)
+sort_convex_polygon!
 ```
 
 `distance_to_polygon` is also useful for point location, as shown in the examples below.

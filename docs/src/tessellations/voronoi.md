@@ -50,11 +50,9 @@ ylims!(ax, 0, 3 / 2)`
 </figure>
 ```
 
-(See also `polygon_bounds` to get appropriate bounds programatically.) The functions that handle the polygon coordinates and chopping to a box are shown below, as well as `get_polygon_colors`.
+(See also `polygon_bounds` to get appropriate bounds programatically.) The function that handles chopping to a box is `get_polygon_coordinates`, which primarily relies on `intersection_of_ray_with_boundary`:
 
 ```@docs 
-get_polygon_coordinates
-get_polygon_colors 
 intersection_of_ray_with_boundary 
 ```
 
@@ -255,3 +253,16 @@ Set{Int64} with 9 elements:
   1
 ```
 
+## Relevant Docstrings 
+
+Here are some relevant docstrings for the construction of the tessellation.
+
+```@docs 
+initialise_voronoi_tessellation 
+prepare_add_voronoi_polygon 
+get_next_triangle_for_voronoi_polygon
+connect_circumcenters!
+add_edge_to_voronoi_polygon!
+close_voronoi_polygon!
+add_voronoi_polygon!
+```

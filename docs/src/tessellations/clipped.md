@@ -148,7 +148,7 @@ We do all the above steps until we run out of edges to process and the queue is 
 add_intersection_points!
 ```
 
-## Clipping the polygons
+### Clipping the polygons
 
 The next step is to clip the polygons to the boundary using the computed intersections. This is handled via `clip_all_polygons!`:
 

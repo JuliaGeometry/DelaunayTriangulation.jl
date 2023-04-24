@@ -33,7 +33,7 @@ There are several useful methods available for working with this data structure.
 edge_type(::VoronoiTessellation{Tr,P,I,T,S,E}) where {Tr,P,I,T,S,E}
 number_type(::VoronoiTessellation{Tr,P}) where {Tr,P}
 integer_type(::VoronoiTessellation{Tr,P,I}) where {Tr,P,I}
-triangle_type(::VoronoiTessellation{Tr,P,I,T})
+triangle_type(::VoronoiTessellation{Tr,P,I,T}) where {Tr,P,I,T}
 ```
 
 ## Getters 

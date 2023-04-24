@@ -31,4 +31,11 @@ balanced_power_of_two_ternary_split
 balanced_power_of_two_quarternary_split 
 segment_vertices_adjoin_other_segments
 edge_lies_on_two_distinct_segments
+get_shared_vertex
+convert_to_boundary_index 
+get_neighbouring_boundary_edges 
+is_last_boundary_index 
+is_first_boundary_index 
+previndex_circular
+nextindex_circular
 ```
