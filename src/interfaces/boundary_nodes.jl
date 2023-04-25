@@ -202,7 +202,7 @@ end
 
 The above will work for any form of `bn` also.
 """
-Base.@constprop :aggressive function construct_boundary_map(bn; IntegerType::Type{I}=Int64) where {I}
+function construct_boundary_map(bn; IntegerType::Type{I}=Int64) where {I}
     if has_multiple_curves(bn)
         dict = OrderedDict{I,NTuple{2,I}}()
         nc = num_curves(bn)

@@ -1474,7 +1474,7 @@ end
         ylims!(ax, -100, 100)
 
         ax = Axis(fig[1, 2], aspect=1)
-        triplot!(ax, smooth_vorn.triangulation, strokewidth=0.2,  markersize=4)
+        triplot!(ax, smooth_vorn.triangulation, strokewidth=0.2, markersize=4)
         xlims!(ax, -100, 100)
         ylims!(ax, -100, 100)
 
