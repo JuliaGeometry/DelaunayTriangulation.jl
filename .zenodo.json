@@ -6,11 +6,15 @@
 			"orcid": "0000-0001-6462-0135"
 		}
 	],
-	"description": "DelaunayTriangulation.jl: Delaunay triangulation of planar point sets.",
+	"description": "DelaunayTriangulation.jl: Delaunay triangulation and Voronoi tessellations of planar point sets.",
 	"keywords": [
 		"triangulation",
 		"tessellation",
-		"delaunay-triangulation"
+		"delaunay-triangulation",
+		"geometry",
+		"voronoi-diagram",
+		"voronoi",
+		"computational-geometry"
 	],
 	"license": "MIT",
 	"title": "DelaunayTriangulation.jl",
