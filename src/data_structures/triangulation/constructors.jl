@@ -63,11 +63,11 @@ function remake_triangulation_with_constraints(tri::Triangulation{P,Ts,I,E,Es,BN
     adjacent = get_adjacent(tri)
     adjacent2vertex = get_adjacent2vertex(tri)
     graph = get_graph(tri)
-    boundary_nodes = @something boundary_nodes get_boundary_nodes(tri)
+    boundary_nodes = isnothing(boundary_nodes) ? get_boundary_nodes(tri) : boundary_nodes
     boundary_edge_map = construct_boundary_edge_map(boundary_nodes; IntegerType=I, EdgeType=E)
     bn_map = construct_boundary_map(boundary_nodes; IntegerType=I)
     bn_range = construct_boundary_index_ranges(boundary_nodes; IntegerType=I)
-    constrained_edges = @something edges get_constrained_edges(tri)
+    constrained_edges = isnothing(edges) ? get_constrained_edges(tri) : edges
     all_constrained_edges = get_all_constrained_edges(tri)
     convex_hull = get_convex_hull(tri)
     representative_point_list = get_representative_point_list(tri)
