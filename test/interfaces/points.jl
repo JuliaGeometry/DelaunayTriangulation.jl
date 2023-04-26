@@ -8,15 +8,21 @@ global p1 = [1.3, 2.5]
 global p2 = (1.3, 2.5)
 global p3 = SVector{2,Float32}((1.3, 2.5))
 
+throw_f = expr -> @static if VERSION < v"1.8"
+    ErrorException(expr)
+else
+    expr
+end
+
 @testset "Individual points" begin
     @testset "Getting coordinates" begin
-        @test_throws "The" getx(String)
+        @test_throws throw_f("The getx function has not been defined for the type DataType.") getx(String)
         for p in (p1, p2, p3)
             @test getx(p) == 1.3 || getx(p) == 1.3f0
             @inferred getx(p)
         end
 
-        @test_throws "The" gety(String)
+        @test_throws throw_f("The gety function has not been defined for the type DataType.") gety(String)
         for p in (p1, p2, p3)
             @test gety(p) == 2.5 || gety(p) == 2.5f0
             @inferred gety(p)
@@ -35,7 +41,7 @@ global pts3 = [2.0 1.7 -1.0; 3.5 23.3 0.0]
 
 @testset "Collection of points" begin
     @testset "Getting points" begin
-        @test_throws "The" DT.getpoint(String, 5)
+        @test_throws  throw_f("The getpoint function has not been defined for the type DataType.") DT.getpoint(String, 5)
         for pts in (pts1, pts2, pts3)
             @test DT.getpoint(pts, 1) == (2.0, 3.5)
             @test DT.getpoint(pts, 2) == (1.7, 23.3)
@@ -60,7 +66,7 @@ global pts3 = [2.0 1.7 -1.0; 3.5 23.3 0.0]
     end
 
     @testset "Each point index" begin
-        @test_throws "The" each_point_index(String)
+        @test_throws throw_f("The each_point_index function has not been defined for the type DataType.") each_point_index(String)
         for pts in (pts1, pts2, pts3)
             @test each_point_index(pts) == 1:3
             @inferred each_point_index(pts)
@@ -68,7 +74,7 @@ global pts3 = [2.0 1.7 -1.0; 3.5 23.3 0.0]
     end
 
     @testset "Each point" begin
-        @test_throws "The" each_point(String)
+        @test_throws throw_f("The each_point function has not been defined for the type DataType.") each_point(String)
         @test each_point(pts1) == pts1
         @test each_point(pts2) == pts2
         @test each_point(pts3) == eachcol(pts3)
@@ -76,7 +82,7 @@ global pts3 = [2.0 1.7 -1.0; 3.5 23.3 0.0]
     end
 
     @testset "Number of points" begin
-        @test_throws "The" num_points(String)
+        @test_throws throw_f("The num_points function has not been defined for the type DataType.") num_points(String)
         for pts in (pts1, pts2, pts3)
             @test num_points(pts) == 3
             @inferred num_points(pts)

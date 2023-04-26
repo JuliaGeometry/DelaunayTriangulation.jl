@@ -10,26 +10,32 @@ global T1 = (i, j, k)
 global T2 = [i, j, k]
 global T3 = SVector{3,Int32}((i, j, k))
 
+throw_f = expr -> @static if VERSION < v"1.8"
+    ErrorException(expr)
+else
+    expr
+end
+
 @testset "Individual triangles" begin
     @testset "Constructing a triangle" begin
-        @test_throws "The" DT.construct_triangle(String, i, j, k)
+        @test_throws throw_f("The construct_triangle function has not been defined for the type String.") DT.construct_triangle(String, i, j, k)
         @test DT.construct_triangle(NTuple{3,Int64}, i, j, k) == T1
         @test DT.construct_triangle(Vector{Int64}, i, j, k) == T2
         @test DT.construct_triangle(SVector{3,Int32}, i, j, k) == T3
     end
 
     @testset "Getting indices" begin
-        @test_throws "The" DT.geti(String)
+        @test_throws throw_f("The geti function has not been defined for the type DataType.") DT.geti(String)
         @test DT.geti(T1) == DT.geti(T2) == DT.geti(T3) == i
-        @test_throws "The" DT.getj(String)
+        @test_throws throw_f("The getj function has not been defined for the type DataType.") DT.getj(String)
         @test DT.getj(T1) == DT.getj(T2) == DT.getj(T3) == j
-        @test_throws "The" DT.getk(String)
+        @test_throws throw_f("The getk function has not been defined for the type DataType.") DT.getk(String)
         @test DT.getk(T1) == DT.getk(T2) == DT.getk(T3) == k
         @test indices(T1) == indices(T2) == indices(T3) == (i, j, k)
     end
 
     @testset "Extracting the integer type" begin
-        @test_throws "The" DT.integer_type(String)
+        @test_throws throw_f("The integer_type function has not been defined for the type String.") DT.integer_type(String)
         @test DT.integer_type(typeof(T1)) == DT.integer_type(typeof(T2)) == Int64
         @test DT.integer_type(typeof(T3)) == typeof(T3[1]) == Int32
     end
@@ -83,7 +89,7 @@ global Ts3 = Set{typeof(T3)}((SVector{3,Int32}((1, 2, 3)),
 
 @testset "Collection of triangles" begin
     @testset "Initialising a collection of triangles" begin
-        @test_throws "The" DT.initialise_triangles(String)
+        @test_throws throw_f("The initialise_triangles function has not been defined for the type String.") DT.initialise_triangles(String)
         for T in (T1, T2, T3)
             V = typeof(T)
             @test DT.initialise_triangles(Set{V}) == Set{V}()
@@ -93,7 +99,7 @@ global Ts3 = Set{typeof(T3)}((SVector{3,Int32}((1, 2, 3)),
     end
 
     @testset "Getting the eltype of a collection of triangles" begin
-        @test_throws "The" DT.triangle_type(String)
+        @test_throws throw_f("The triangle_type function has not been defined for the type String.") DT.triangle_type(String)
         for (T, Ts) in zip((T1, T2, T3), (Ts1, Ts2, Ts3))
             @test DT.triangle_type(typeof(Ts)) == typeof(T)
         end
@@ -101,7 +107,7 @@ global Ts3 = Set{typeof(T3)}((SVector{3,Int32}((1, 2, 3)),
     end
 
     @testset "Number of triangles" begin
-        @test_throws "The" num_triangles(String)
+        @test_throws throw_f("The num_triangles function has not been defined for the type DataType.") num_triangles(String)
         for Ts in (Ts1, Ts2, Ts3)
             @test num_triangles(Ts) == length(Ts) == 5
         end
@@ -138,7 +144,7 @@ global Ts3 = Set{typeof(T3)}((SVector{3,Int32}((1, 2, 3)),
     end
 
     @testset "Adding to a collection of triangles" begin
-        @test_throws "The" DT.add_to_triangles!(String, (1, 2, 3))
+        @test_throws throw_f("The add_to_triangles! function has not been defined for the type DataType.") DT.add_to_triangles!(String, (1, 2, 3))
         for Ts in (Ts1, Ts2, Ts3)
             V = eltype(Ts)
             V1 = DT.construct_triangle(V, 10, 12, 5)
@@ -171,7 +177,7 @@ global Ts3 = Set{typeof(T3)}((SVector{3,Int32}((1, 2, 3)),
     end
 
     @testset "Deleting from a collection of triangles" begin
-        @test_throws "The" DT.delete_from_triangles!(String, (1, 2, 3))
+        @test_throws throw_f("The delete_from_triangles! function has not been defined for the type DataType.") DT.delete_from_triangles!(String, (1, 2, 3))
         for Ts in (Ts1, Ts2, Ts3)
             V = eltype(Ts)
             V1 = DT.construct_triangle(V, 10, 12, 5)
@@ -195,13 +201,13 @@ global Ts3 = Set{typeof(T3)}((SVector{3,Int32}((1, 2, 3)),
     end
 
     @testset "Iterating over each triangle" begin
-        @test_throws "The" DT.each_triangle(String)
+        @test_throws  throw_f("The each_triangle function has not been defined for the type DataType.") DT.each_triangle(String)
         for Ts in (Ts1, Ts2, Ts3)
             @test each_triangle(Ts) == Ts
         end
         T = [1 2 3; 4 5 6; 7 8 9]'
         @test each_triangle(T) == eachcol(T)
-        V = [(1,2,3),(4,5,6),(10,11,12),(30,31,32),(7,10,11)]
+        V = [(1, 2, 3), (4, 5, 6), (10, 11, 12), (30, 31, 32), (7, 10, 11)]
         @test each_triangle(V) == V
     end
 

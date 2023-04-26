@@ -13,6 +13,12 @@ include("../helper_functions.jl")
 global pts = rand(2, 500)
 global tri = Triangulation(pts; IntegerType=Int32)
 
+throw_f = expr -> @static if VERSION < v"1.8"
+      ErrorException(expr)
+  else
+      expr
+  end
+
 @testset "Initialising a triangulation" begin
       @test tri == Triangulation(pts,
             Set{NTuple{3,Int32}}(),
@@ -157,13 +163,13 @@ end
             unique!(__indices)
             unique!(ch.indices)
             shift = findfirst(ch.indices .== first(__indices))
-            circshift!(ch.indices, 1 - shift)
+            ch.indices .= circshift(ch.indices, 1 - shift)
             @test __indices == ch.indices
             convex_hull!(_tri)
             @test length(__indices) == length(_indices)
             unique!(__indices)
             shift = findfirst(ch.indices .== first(__indices))
-            circshift!(ch.indices, 1 - shift)
+            ch.indices .= circshift(ch.indices, 1 - shift)
             @test __indices == ch.indices
             delete_ghost_triangles!(_tri)
             convex_hull!(_tri; reconstruct=false)
@@ -171,13 +177,13 @@ end
             unique!(__indices)
             unique!(ch.indices)
             shift = findfirst(ch.indices .== first(__indices))
-            circshift!(ch.indices, 1 - shift)
+            ch.indices .= circshift(ch.indices, 1 - shift)
             @test __indices == ch.indices
             convex_hull!(_tri)
             @test length(__indices) == length(_indices)
             unique!(__indices)
             shift = findfirst(ch.indices .== first(__indices))
-            circshift!(ch.indices, 1 - shift)
+            ch.indices .= circshift(ch.indices, 1 - shift)
             @test __indices == ch.indices
             @test !DT.has_ghost_triangles(_tri)
       end
@@ -197,7 +203,7 @@ end
             nx = 12
             ny = 15
             @test DT.num_curves(triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 10, 10; add_ghost_triangles=true, single_boundary=false)) == 1
-            @test_throws "The" DT.num_segments(tri)
+            @test_throws throw_f("The num_segments function has not been defined for the type Vector{Vector{Vector{Int64}}}.") DT.num_segments(tri)
             @test DT.num_segments(tri_2) == 4
             @inferred DT.num_segments(tri_2)
             @test DT.get_boundary_nodes(tri, 1) == tri.boundary_nodes[1]

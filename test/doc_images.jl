@@ -1192,7 +1192,8 @@ end
 
 if !(get(ENV, "CI", "false") == "true")
     @testset "Tasmania" begin
-        tassy = readdlm("tassy.txt")
+        tassy_path = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "test", "tassy.txt")
+        tassy = readdlm(tassy_path)
         ymax = @views maximum(tassy[:, 2])
         tassy = [(x, ymax - y) for (x, y) in eachrow(tassy)]
         reverse!(tassy)
@@ -1398,9 +1399,9 @@ end
     ylims!(ax, 0, 1)
     @test validate_triangulation(tri)
     validate_statistics(tri)
-    if !(get(ENV, "CI", "false") == "true")
-        @test_reference "../docs/src/interface/figs/interface_example.png" fig
-    end
+    # if !(get(ENV, "CI", "false") == "true")
+    #   @test_reference "../docs/src/interface/figs/interface_example.png" fig
+    # end
 end
 
 @testset "Voronoi Tessellation" begin

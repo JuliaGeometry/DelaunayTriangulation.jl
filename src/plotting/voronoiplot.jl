@@ -35,7 +35,7 @@ Range of the colormap.
 
 Cycle of the colormap.
 """
-MakieCore.@recipe(Voronoiplot, vorn) do scene
+@recipe(Voronoiplot, vorn) do scene
     th = MakieCore.default_theme(scene, Mesh)
     return MakieCore.Attributes(;
         markersize=11,
