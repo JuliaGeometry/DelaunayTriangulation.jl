@@ -5,7 +5,7 @@
 [![Coverage](https://codecov.io/gh/DanielVandH/DelaunayTriangulation.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/DanielVandH/DelaunayTriangulation.jl)
 [![DOI](https://zenodo.org/badge/540660309.svg)](https://zenodo.org/badge/latestdoi/540660309)
 
-This is a package for constructing Delaunay triangulations of planar point sets. with support for both unconstrained and constrained triangulations, and for mesh refinement. All geometric predicates are computed via [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl). Many features are available, some of these being:
+This is a package for constructing Delaunay triangulations and Voronoi tessellations of planar point sets, with support for both unconstrained and constrained triangulations, and for mesh refinement. All geometric predicates are computed via [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl). Many features are available, some of these being:
 
 - [Geometric predicates](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/predicates/) are implemented with [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl), and many predicates have been extended from ExactPredicates.jl.
 - [Unconstrained](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/triangulations/unconstrained/) and [constrained](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/triangulations/constrained/) triangulations. Support is provided for many types of domains, as given in the docs.
