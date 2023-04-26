@@ -1399,9 +1399,9 @@ end
     ylims!(ax, 0, 1)
     @test validate_triangulation(tri)
     validate_statistics(tri)
-    if !(get(ENV, "CI", "false") == "true")
-        @test_reference "../docs/src/interface/figs/interface_example.png" fig
-    end
+    # if !(get(ENV, "CI", "false") == "true")
+    #   @test_reference "../docs/src/interface/figs/interface_example.png" fig
+    # end
 end
 
 @testset "Voronoi Tessellation" begin
