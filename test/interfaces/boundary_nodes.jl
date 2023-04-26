@@ -16,28 +16,34 @@ global map2 = DT.construct_boundary_map(bn2)
 global map3 = DT.construct_boundary_map(bn3)
 global idx = DT.BoundaryIndex
 
+throw_f = expr -> @static if VERSION < v"1.8"
+       ErrorException(expr)
+   else
+       expr
+   end
+
 @testset "Testing number of segments/curves" begin
-       @test_throws "The" DT.has_multiple_curves(String)
+       @test_throws throw_f("The has_multiple_curves function has not been defined for the type DataType.") DT.has_multiple_curves(String)
        @test DT.has_multiple_curves(bn1)
        @test !DT.has_multiple_curves(bn2)
        @test !DT.has_multiple_curves(bn3)
-       @test_throws "The" DT.has_multiple_segments(String)
+       @test_throws throw_f("The has_multiple_segments function has not been defined for the type DataType.") DT.has_multiple_segments(String)
        @test DT.has_multiple_segments(bn1)
        @test DT.has_multiple_segments(bn2)
        @test !DT.has_multiple_segments(bn3)
 end
 
 @testset "Getting number of segments/curves" begin
-       @test_throws "The" DT.num_curves(String)
+       @test_throws throw_f("The num_curves function has not been defined for the type DataType.") DT.num_curves(String)
        @test DT.num_curves(bn1) == 3
        @test DT.num_curves(bn2) == 1
        @test DT.num_curves(bn3) == 1
-       @test_throws "The" DT.num_segments(String)
+       @test_throws throw_f("The num_segments function has not been defined for the type DataType.") DT.num_segments(String)
        @test DT.num_segments(bn2) == 2
 end
 
 @testset "Number of boundary edges" begin
-       @test_throws "The" DT.num_boundary_edges(String)
+       @test_throws throw_f("The num_boundary_edges function has not been defined for the type DataType.") DT.num_boundary_edges(String)
        @test DT.num_boundary_edges(bn3) == 4
        @test DT.num_boundary_edges(bn1[1][1]) == 1
        @test DT.num_boundary_edges(bn2[2]) == 3
@@ -45,7 +51,7 @@ end
 end
 
 @testset "Getting boundary nodes" begin
-       @test_throws "The" DT.getboundarynodes(String, [1, 2])
+       @test_throws throw_f("The getboundarynodes function has not been defined for the type DataType.") DT.getboundarynodes(String, [1, 2])
        @test get_boundary_nodes(bn1, 1) == bn1[1]
        @test get_boundary_nodes(bn1, 2) == bn1[2]
        @test get_boundary_nodes(bn2, 2) == bn2[2]
@@ -55,7 +61,7 @@ end
 end
 
 @testset "Getting each boundary node" begin
-       @test_throws "The" DT.each_boundary_node(String)
+       @test_throws throw_f("The each_boundary_node function has not been defined for the type DataType.") DT.each_boundary_node(String)
        @test DT.each_boundary_node(bn3) == bn3
 end
 

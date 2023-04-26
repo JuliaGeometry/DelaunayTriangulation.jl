@@ -39,7 +39,7 @@ end
                 qx, qy)
         end
     end
-    cd, ci = findmin([norm(p .- (qx, qy))^2 + (p == pts[5]) * Inf] for p in pts)
+    cd, ci = findmin([[norm(p .- (qx, qy))^2 + (p == pts[5]) * Inf] for p in pts])
     @test cd[1] ≈ current_dist
     @test ci == current_idx
 end

@@ -60,7 +60,7 @@ Colour of the constrained edges.
 
 Width of the constrained edges.
 """
-MakieCore.@recipe(Triplot, points, triangles, boundary_nodes, convex_hull, constrained_edges, representative_point_list) do scene
+@recipe(Triplot, points, triangles, boundary_nodes, convex_hull, constrained_edges, representative_point_list) do scene
     return MakieCore.Attributes(;
         markersize=11,
         show_ghost_edges=false,

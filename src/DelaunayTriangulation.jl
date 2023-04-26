@@ -20,6 +20,7 @@ using ExactPredicates
 using EnumX
 using MakieCore
 using Random
+import MakieCore: @recipe
 
 ####################################################
 ##
