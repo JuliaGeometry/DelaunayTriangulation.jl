@@ -4,7 +4,7 @@ CurrentModule = DelaunayTriangulation
 
 # Gmsh 
 
-We provide Gmsh support, making it possible to represent more complicated meshes. The discussion that follows assume you have installed Gmsh, and defined a corresponding `GMSH_PATH`. I have used the default,
+We provide Gmsh support, making it possible to represent more complicated meshes. (This is less relevant now that we have constrained triangulations and mesh refinement without needing Gmsh.) The discussion that follows assume you have installed Gmsh, and defined a corresponding `GMSH_PATH`. I have used the default,
 
 ```julia-repl
 julia> GMSH_PATH = "./gmsh-4.11.1-Windows64/gmsh.exe"
