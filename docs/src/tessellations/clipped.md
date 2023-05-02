@@ -4,7 +4,7 @@ CurrentModule = DelaunayTriangulation
 
 # Clipped Voronoi Tessellations
 
-Often, it is useful to chop off the unbounded polygons in a tessellation, truncating them to some boundary. Usually this is just a box, but that's not so useful in general. We currently provide support for chopping to a convex hull, but the aim is to eventually support chopping to any boundary (the same algorithm we use should apply here, but there are some special cases that are really quite difficult). 
+Often, it is useful to chop off the unbounded polygons in a tessellation, truncating them to some boundary. Usually this is just a box. We currently provide support for chopping to a convex hull, but the aim is to eventually support chopping to any boundary (the same algorithm we use should apply here, but there are some special cases that are really quite difficult). 
 
 The same function `voronoi` is used for this, just setting the second argument to be `true`. The algorithm is described at the end of this section.
 
