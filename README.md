@@ -48,7 +48,7 @@ tri = triangulate(points; boundary_nodes, edges, rng)
 ax = Axis(fig[1, 2], title = "(b): Constrained, pre-refinement", titlealign = :left, width=400,height=400)
 triplot!(ax, tri)
 
-## Dynamic updating (Warning: Less supported on non-convex geometries)
+## Dynamic updating 
 n = num_points(tri)
 add_point!(tri, (0.2, 0.2); rng)
 add_point!(tri, (0.8, 0.8); rng)
@@ -91,18 +91,24 @@ vorn = voronoi(tri, true)
 cmap = cgrad(:jet)
 colors = get_polygon_colors(vorn, cmap)
 ax = Axis(fig[2, 3], title = "(g): Clipped Voronoi tessellation", titlealign = :left, width=400,height=400)
-voronoiplot!(ax, vorn, show_generators = false, strokecolor = :red, strokewidth = 0.2, polygon_color = colors)
+voronoiplot!(ax, vorn, show_generators = false, polygon_color = colors)
 
 ## Centroidal Voronoi tessellation (CVT)
+points = [(0.0,0.0),(1.0,0.0),(1.0,1.0),(0.0,1.0)]
+tri = triangulate(points; boundary_nodes = [1,2,3,4,1], rng)
+refine!(tri; max_area=1e-3, min_angle = 29.871, rng)
+vorn = voronoi(tri)
 smooth_vorn = centroidal_smooth(vorn; maxiters = 2500)
+cmap = cgrad(:matter)
+colors = get_polygon_colors(smooth_vorn, cmap)
 ax = Axis(fig[2, 4], title = "(h): Centroidal Voronoi tessellation", titlealign = :left, width=400,height=400)
-voronoiplot!(ax, smooth_vorn, show_generators = false, strokecolor = :red, strokewidth = 0.2, polygon_color = colors)
+voronoiplot!(ax, smooth_vorn, show_generators = true, markersize=4, polygon_color = colors)
 
 resize_to_layout!(fig)
 fig
 ```
 
-![example_triangulations](https://user-images.githubusercontent.com/95613936/235439717-6e0258e4-c071-4578-b7bc-7f33b9ad401d.png)
+![Example triangulations](https://user-images.githubusercontent.com/95613936/235636673-c33fde09-ff54-4200-a781-e0224cf39ddb.png)
 
 ## Animations
 
