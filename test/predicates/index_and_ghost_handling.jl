@@ -129,9 +129,9 @@ end
         @test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 9, 10, DT.BoundaryIndex, 14))
         @test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 10, DT.BoundaryIndex, 9, 14))
         @test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, DT.BoundaryIndex, 9, 10, 14))
-        @test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 9, 10, DT.BoundaryIndex, 9))
-        @test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 10, DT.BoundaryIndex, 9, 9))
-        @test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, DT.BoundaryIndex, 9, 10, 9))
+        @test DT.is_on(DT.point_position_relative_to_circumcircle(tri, 9, 10, DT.BoundaryIndex, 9))
+        @test DT.is_on(DT.point_position_relative_to_circumcircle(tri, 10, DT.BoundaryIndex, 9, 9))
+        @test DT.is_on(DT.point_position_relative_to_circumcircle(tri, DT.BoundaryIndex, 9, 10, 9))
         @test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 10, 9, 8, 14))
         p15 = @SVector[1.57, 2.514]
         push!(pts, p15)
@@ -183,12 +183,12 @@ end
         @test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 4, 3, DT.BoundaryIndex, 24))
         @test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 3, DT.BoundaryIndex, 4, 24))
         @test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, DT.BoundaryIndex, 4, 3, 24))
-        @test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 4, 3, DT.BoundaryIndex, 4))
-        @test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 3, DT.BoundaryIndex, 4, 4))
-        @test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, DT.BoundaryIndex, 4, 3, 4))
-        @test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 4, 3, DT.BoundaryIndex, 3))
-        @test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 3, DT.BoundaryIndex, 4, 3))
-        @test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, DT.BoundaryIndex, 4, 3, 3))
+        @test DT.is_on(DT.point_position_relative_to_circumcircle(tri, 4, 3, DT.BoundaryIndex, 4))
+        @test DT.is_on(DT.point_position_relative_to_circumcircle(tri, 3, DT.BoundaryIndex, 4, 4))
+        @test DT.is_on(DT.point_position_relative_to_circumcircle(tri, DT.BoundaryIndex, 4, 3, 4))
+        @test DT.is_on(DT.point_position_relative_to_circumcircle(tri, 4, 3, DT.BoundaryIndex, 3))
+        @test DT.is_on(DT.point_position_relative_to_circumcircle(tri, 3, DT.BoundaryIndex, 4, 3))
+        @test DT.is_on(DT.point_position_relative_to_circumcircle(tri, DT.BoundaryIndex, 4, 3, 3))
         p25 = @SVector[-6.3327007, -1.7257]
         push!(pts, p25)
         @test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 4, 3, DT.BoundaryIndex, 25))
@@ -228,6 +228,7 @@ end
         @test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 1, 2, DT.BoundaryIndex, 6))
         push!(pts, (34.0, -6.0))
         @test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 1, 2, DT.BoundaryIndex, 7))
+        @test DT.is_on(DT.point_position_relative_to_circumcircle(tri, 1, 2, DT.BoundaryIndex, 1))
     end
 end
 
