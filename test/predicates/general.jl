@@ -572,8 +572,8 @@ end
     @test DT.is_outside(DT.point_position_relative_to_oriented_outer_halfplane(p, q, j))
     @test DT.is_outside(DT.point_position_relative_to_oriented_outer_halfplane(p, q, k))
     @test DT.is_outside(DT.point_position_relative_to_oriented_outer_halfplane(p, q, ℓ))
-    @test DT.is_outside(DT.point_position_relative_to_oriented_outer_halfplane(p, q, p))
-    @test DT.is_outside(DT.point_position_relative_to_oriented_outer_halfplane(p, q, q))
+    @test DT.is_on(DT.point_position_relative_to_oriented_outer_halfplane(p, q, p))
+    @test DT.is_on(DT.point_position_relative_to_oriented_outer_halfplane(p, q, q))
     @inferred DT.is_outside(DT.point_position_relative_to_oriented_outer_halfplane(p, q, ℓ))
     p, q = (3.0, 4.0), (6.0, 7.0)
     c, d, e, f, g, h, i, j, k, ℓ = (3.0, 5.0), (3.0, 7.0), (4.0, 8.0),
@@ -593,9 +593,10 @@ end
     @test DT.is_on(DT.point_position_relative_to_oriented_outer_halfplane(p, q, j))
     @test DT.is_on(DT.point_position_relative_to_oriented_outer_halfplane(p, q, k))
     @test DT.is_inside(DT.point_position_relative_to_oriented_outer_halfplane(p, q, ℓ))
-    @test DT.is_outside(DT.point_position_relative_to_oriented_outer_halfplane(p, q, p))
-    @test DT.is_outside(DT.point_position_relative_to_oriented_outer_halfplane(p, q, q))
+    @test DT.is_on(DT.point_position_relative_to_oriented_outer_halfplane(p, q, p))
+    @test DT.is_on(DT.point_position_relative_to_oriented_outer_halfplane(p, q, q))
     @inferred DT.is_outside(DT.point_position_relative_to_oriented_outer_halfplane(p, q, ℓ))
+    @test DT.is_on(DT.point_position_relative_to_oriented_outer_halfplane((0.9, 1.0), (1.0, 1.0), (1.0, 1.0)))
 end
 
 @testset "is_legal" begin
