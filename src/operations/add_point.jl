@@ -77,7 +77,7 @@ function add_point!(tri::Triangulation, new_point;
     V = add_point_bowyer_watson_and_process_after_found_triangle!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history, peek)
     if !int_flag && is_true(peek)
         pop_point!(tri)
-    end 
+    end
     return V
 end
 
