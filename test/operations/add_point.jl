@@ -62,7 +62,11 @@ end
             [(0.0, rand()) for _ in 1:50]..., [(rand(), 0.0) for _ in 1:50]..., [(rand(), 1.0) for _ in 1:50]..., [(1.0, rand()) for _ in 1:50]...,
             [(rand(), rand()) for _ in 1:500]...]
             empty!(history)
+            if rand() < 1/2
             add_point!(tri, x, y, store_event_history=Val(true), event_history=history, peek=Val(true))
+            else 
+                add_point!(tri, (x, y), store_event_history=Val(true), event_history=history, peek=Val(true))
+            end
             clear_empty_features!(tri)
             @test DT.compare_triangle_collections(get_triangles(_tri), get_triangles(tri))
             @test get_adjacent(tri) == get_adjacent(_tri)
