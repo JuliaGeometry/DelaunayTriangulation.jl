@@ -67,13 +67,18 @@ function add_point!(tri::Triangulation, new_point;
         exterior_curve_index
     ),
     peek=Val(false))
-    if !(new_point isa Integer)
+    int_flag = new_point isa Integer
+    if !int_flag
         push_point!(tri, new_point)
         new_point = num_points(tri)
     end
     q = get_point(tri, new_point)
     flag = point_position_relative_to_triangle(tri, V, q)
-    return add_point_bowyer_watson_and_process_after_found_triangle!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history, peek)
+    V = add_point_bowyer_watson_and_process_after_found_triangle!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history, peek)
+    if !int_flag && is_true(peek)
+        pop_point!(tri)
+    end 
+    return V
 end
 
 function add_point!(tri::Triangulation, new_point_x, new_point_y;
