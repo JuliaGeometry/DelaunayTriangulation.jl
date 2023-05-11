@@ -303,7 +303,7 @@ tests the position of `p` relative to the oriented outer halfplane defined
 by `(a, b)`. The returned values are:
 
 - `Cert.Outside`: `p` is outside of the oriented outer halfplane, meaning to the right of the line `(a, b)` or collinear with `a` and `b` but not on the line segment `(a, b)`.
-- `Cert.On`: `p` is on the open line segment `(a, b)`.
+- `Cert.On`: `p` is on the line segment `[a, b]`.
 - `Cert.Inside`: `p` is inside of the oriented outer halfplane, meaning to the left of the line `(a, b)`.
 
 !!! note 
@@ -314,7 +314,7 @@ function point_position_relative_to_oriented_outer_halfplane(a, b, p)
     in_open_halfplane = point_position_relative_to_line(a, b, p)
     if is_collinear(in_open_halfplane)
         is_on_boundary_edge = point_position_on_line_segment(a, b, p)
-        if is_on(is_on_boundary_edge)
+        if is_on(is_on_boundary_edge) || is_degenerate(is_on_boundary_edge)
             return Cert.On
         else
             return Cert.Outside

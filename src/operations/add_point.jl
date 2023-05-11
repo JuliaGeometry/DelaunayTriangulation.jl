@@ -19,7 +19,8 @@
             rng,
             check_existence=Val(has_multiple_segments(tri)),
             exterior_curve_index
-        )
+        ),
+        peek = Val(false),
         )
 
 Adds the point `new_point` to the triangulation `tri`.
@@ -39,6 +40,7 @@ Adds the point `new_point` to the triangulation `tri`.
 - `event_history = nothing`: The event history to store the events in. See [`InsertionEventHistory`](@ref). Only needed if `is_true(store_event_history)`. This object is not returned, instead we just mutate it inplace.
 - `exterior_curve_index=1`: The curve (or curves) corresponding to the outermost boundary.
 - `V=jump_and_march(tri, new_point isa Integer ? get_point(tri, new_point) : new_point; m=nothing, point_indices=nothing, try_points=nothing, k=initial_search_point, rng, check_existence=Val(has_multiple_segments(tri)), exterior_curve_index=exterior_curve_index)`: The triangle that `q` is in.
+- `peek=Val(false)`: If `is_true(peek)`, then we don't actually add the point, but all operations that update the history will be run. (So you should only really want this if you are using `event_history`.)
 
 # Outputs 
 The triangulation is updated in-place with the new point, but we also return the triangle `V` containing `new_point`.
@@ -63,25 +65,15 @@ function add_point!(tri::Triangulation, new_point;
         rng,
         check_existence=Val(has_multiple_segments(tri)),
         exterior_curve_index
-    ))
+    ),
+    peek=Val(false))
     if !(new_point isa Integer)
         push_point!(tri, new_point)
         new_point = num_points(tri)
     end
-    #=
-    return add_point_bowyer_watson!(
-        tri,
-        new_point,
-        initial_search_point,
-        rng,
-        update_representative_point,
-        store_event_history,
-        event_history,
-        exterior_curve_index)
-    =#
     q = get_point(tri, new_point)
     flag = point_position_relative_to_triangle(tri, V, q)
-    return add_point_bowyer_watson_and_process_after_found_triangle!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history)
+    return add_point_bowyer_watson_and_process_after_found_triangle!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history, peek)
 end
 
 function add_point!(tri::Triangulation, new_point_x, new_point_y;
@@ -104,9 +96,10 @@ function add_point!(tri::Triangulation, new_point_x, new_point_y;
         rng,
         check_existence=Val(has_multiple_segments(tri)),
         exterior_curve_index
-    ))
+    ),
+    peek=Val(false))
     push_point!(tri, new_point_x, new_point_y)
-    return add_point!(
+    VV = add_point!(
         tri,
         num_points(tri);
         point_indices=point_indices,
@@ -118,5 +111,8 @@ function add_point!(tri::Triangulation, new_point_x, new_point_y;
         store_event_history=store_event_history,
         event_history=event_history,
         exterior_curve_index=exterior_curve_index,
-        V)
+        V,
+        peek)
+    is_true(peek) && pop_point!(tri)
+    return VV
 end
