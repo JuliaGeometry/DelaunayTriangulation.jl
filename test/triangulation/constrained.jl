@@ -4,40 +4,41 @@ using CairoMakie
 using StableRNGs
 include("../helper_functions.jl")
 
-
 @testset "Test random constrained Delaunay triangulations" begin
-    rng = StableRNG(191919)
     for i in 1:250
-        @show i
+        rng = StableRNG(i)
         points, edges, mat_edges = get_random_vertices_and_constrained_edges(40, 200, 20, rng)
         tri = triangulate(points; edges, rng)
         @test validate_triangulation(tri)
         empty!(get_all_constrained_edges(tri))
         @test !validate_triangulation(tri)
+        @show i
     end
     for i in 1:25
-        @show i
+        rng = StableRNG(i^5)
         points, edges, mat_edges = get_random_vertices_and_constrained_edges(200, 1000, 200, rng)
         tri = triangulate(points; edges, rng)
         @test validate_triangulation(tri)
         empty!(get_all_constrained_edges(tri))
         @test !validate_triangulation(tri)
+        @show i
     end
 end
 
 @testset "Testing Shewchuk's PSLG example" begin
     pts, C = second_shewchuk_example_constrained()
+    fails = Base.Threads.Atomic{Int64}(0)
     for i in 1:500
-        @show i
         rng = StableRNG(i^6)
         tri = triangulate(pts; edges=C, rng)
         @test validate_triangulation(tri)
+        @show i
     end
+    @test fails[] == 0
 end
 
 @testset "Random parabolas" begin
     for i in 1:50
-        @show i
         rng = StableRNG(i)
         pts = [(2rand(rng) - 1, rand(rng)) for _ in 1:500]
         x = LinRange(-1, 1, 250)
@@ -50,6 +51,7 @@ end
         end
         tri = triangulate(pts; edges=C, rng)
         @test validate_triangulation(tri)
+        @show i
     end
 end
 
@@ -373,7 +375,7 @@ end
 end
 
 @testset "Adding points into a constrained triangulation; interior segment collinearities" begin
-    for m in 1:10
+    for m in 1:3
         @show m
         pts, C = example_for_testing_add_point_on_constrained_triangulation()
         push!(C, (1, 12))

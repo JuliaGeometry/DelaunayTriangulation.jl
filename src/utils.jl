@@ -589,6 +589,7 @@ function check_args(points, boundary_nodes)
             end
         end
     end
+    return true
 end
 
 """

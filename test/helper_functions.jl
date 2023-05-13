@@ -168,19 +168,24 @@ function test_triangle_orientation(tri; check_ghost_triangle_orientation=true)
 end
 
 function test_delaunay_criterion(tri; check_ghost_triangle_delaunay=true)
-    for T in each_triangle(tri)
+    lk = ReentrantLock()
+    failures = Tuple{DT.triangle_type(tri),DT.integer_type(tri)}[]
+    Base.Threads.@threads for T in collect(each_triangle(tri))
         if DT.is_ghost_triangle(T) && !check_ghost_triangle_delaunay
             continue
         end
-        for r in each_solid_vertex(tri)
+        for r in collect(each_solid_vertex(tri))
+            !isempty(failures) && break
             cert = DT.point_position_relative_to_circumcircle(tri, T, r)
             if DT.is_inside(cert)
                 ace = get_all_constrained_edges(tri)
                 if DT.is_empty(ace)
-                    flag = !DT.is_inside(cert)
+                    flag = !DT.is_inside(cert) || !isempty(failures)
                     if !flag
-                        println("Delaunay criterion test failed for the triangle-vertex pair ($T, $r).")
-                        return false
+                        lock(lk) do
+                            isempty(failures) && push!(failures, (T, r))
+                        end
+                        break
                     end
                 else # This is extremely slow. Should probably get around to cleaning this up sometime.
                     i, j, k = DT.indices(T)
@@ -206,21 +211,27 @@ function test_delaunay_criterion(tri; check_ghost_triangle_delaunay=true)
                     all_constrained_edges = Set{NTuple{2,DT.integer_type(tri)}}()
                     for e in each_edge(ace)
                         u, v = DT.edge_indices(e)
-                        ee = DT.construct_edge(E, min(u, v), max(u, v))
                         push!(all_constrained_edges, (min(u, v), max(u, v)))
                     end
                     intersect!(all_edges, all_constrained_edges)
                     flags = [DT.line_segment_intersection_type(tri, initial(e), terminal(e), i, r) for e in each_edge(all_edges) for i in filter(!DT.is_boundary_index, (i, j, k))]
-                    flag = !all(DT.is_none, flags) || isempty(flags)
+                    flag = !all(DT.is_none, flags) || isempty(flags) || !isempty(failures)
                     if !flag
-                        println("Delaunay criterion test failed for the triangle-vertex pair ($T, $r).")
-                        return false
+                        lock(lk) do
+                            isempty(failures) && push!(failures, (T, r))
+                        end
+                        break
                     end
                 end
             end
         end
     end
-    return true
+    if isempty(failures)
+        return true
+    else
+        println("Delaunay criterion test failed for the following triangle-vertex pair (others may be missing): ", failures[1])
+        return false
+    end
 end
 
 function test_each_edge_has_two_incident_triangles(tri)

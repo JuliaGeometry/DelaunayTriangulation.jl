@@ -64,7 +64,6 @@ function try_circumcenter_insertion!(tri::Triangulation, T, events::InsertionEve
             try_points=nothing,
             k=point_location_initial_vertex,
             rng,
-            check_existence=Val(has_multiple_segments(tri)),
             exterior_curve_index)
     end
 

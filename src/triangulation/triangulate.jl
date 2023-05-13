@@ -68,11 +68,11 @@ function triangulate(points::P; edges=nothing, boundary_nodes=nothing,
     check_arguments=true) where {P,I,E,V,Es,Ts,M}
     check_arguments && check_args(points, boundary_nodes)
     tri = triangulate_bowyer_watson(points;
-        IntegerType,
-        EdgeType,
-        TriangleType,
-        EdgesType,
-        TrianglesType,
+        IntegerType=I,
+        EdgeType=E,
+        TriangleType=V,
+        EdgesType=Es,
+        TrianglesType=Ts,
         randomise,
         delete_ghosts=false,
         delete_empty_features=false,

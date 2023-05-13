@@ -21,7 +21,7 @@ function add_edge!(tri::Triangulation, segment; rng::AbstractRNG=Random.default_
     if edge_exists(tri, e) || edge_exists(tri, reverse_edge(e)) # Don't need to add edges that already appear
         return nothing
     end
-    intersecting_triangles, collinear_segments, left_cavity, right_cavity = locate_intersecting_triangles(tri, e, !contains_boundary_edge(tri, segment); rng)
+    intersecting_triangles, collinear_segments, left_cavity, right_cavity = locate_intersecting_triangles(tri, e, !contains_boundary_edge(tri, segment), rng)
     flag = process_collinear_segments!(all_constrained_edges, constrained_edges, e, collinear_segments, tri; rng)
     flag && return nothing
     delete_intersected_triangles!(tri, intersecting_triangles)

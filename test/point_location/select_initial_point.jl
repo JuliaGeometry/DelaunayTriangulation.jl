@@ -35,8 +35,12 @@ end
     current_idx = 1
     for i in each_point_index(pts)
         if i ≠ 5
-            current_dist, current_idx = DT.compare_distance(current_dist, current_idx, pts, i,
+            current_dist, current_idx = DT.compare_distance(current_dist, current_idx, tri, i,
                 qx, qy)
+            @inferred DT.compare_distance(current_dist, current_idx, tri, i,
+            qx, qy)
+            @inferred DT.compare_distance(current_dist, current_idx, pts, i,
+            qx, qy)
         end
     end
     cd, ci = findmin([[norm(p .- (qx, qy))^2 + (p == pts[5]) * Inf] for p in pts])
@@ -47,12 +51,12 @@ end
 @testset "Selecting random initial points" begin
     @testset "Specific example" begin
         rng = StableRNG(92884881)
-        m = DT.default_num_samples(length(pts))
-        tried_idx = [rand(rng, eachindex(pts)) for _ in 1:m]
+        m = DT.default_num_samples(length(each_solid_vertex(tri)))
+        tried_idx = [rand(rng, each_solid_vertex(tri)) for _ in 1:m]
         q = (0.59183, -6.2731)
         ci = tried_idx[argmin([norm(pts[i] .- q) for i in tried_idx])]
         rng = StableRNG(92884881)
-        ci2 = DT.select_initial_point(pts, q; rng)
+        ci2 = DT.select_initial_point(tri, q; rng)
         @test ci == ci2
     end
 
@@ -62,12 +66,12 @@ end
             local m, tried_idx, q, ci, ci2
             rng = StableRNG(s)
             m = 9
-            tried_idx = [rand(rng, eachindex(pts)) for _ in 1:m]
+            tried_idx = [rand(rng, each_solid_vertex(tri)) for _ in 1:m]
             q = (20rand(rng), 20rand(rng))
             ci = tried_idx[argmin([norm(pts[i] .- q) for i in tried_idx])]
             rng = StableRNG(s)
-            ci2 = DT.select_initial_point(pts, q; rng, m)
-            @inferred DT.select_initial_point(pts, q; rng, m)
+            ci2 = DT.select_initial_point(tri, q; rng, m)
+            @inferred DT.select_initial_point(tri, q; rng, m)
             @test ci == ci2
         end
 
@@ -79,14 +83,14 @@ end
             q = (20rand(rng), 20rand(rng))
             ci = tried_idx[argmin([norm(pts[i] .- q) for i in tried_idx])]
             rng = StableRNG(s)
-            ci2 = DT.select_initial_point(pts, q; m, rng, point_indices=(1, 5, 8, 19, 20))
-            @inferred DT.select_initial_point(pts, q; m, rng, point_indices=(1, 5, 8, 19, 20))
+            ci2 = DT.select_initial_point(tri, q; m, rng, point_indices=(1, 5, 8, 19, 20))
+            @inferred DT.select_initial_point(tri, q; m, rng, point_indices=(1, 5, 8, 19, 20))
             @test ci == ci2
             @test ci2 ∈ (1, 5, 8, 19, 20)
         end
 
         for k in each_point_index(pts)
-            @test DT.select_initial_point(pts, k; try_points=k) == k
+            @test DT.select_initial_point(tri, k; try_points=k) == k
         end
     end
 end

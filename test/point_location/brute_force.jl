@@ -32,25 +32,19 @@ global tri, label_map, index_map = simple_geometry()
     e1_i = length(pts) - 3
     d1_i = length(pts) - 4
     c1_i = length(pts) - 5
-    @test DT.compare_triangles(DT.brute_force_search(tri.triangles, c1_i, pts, rep,
-            tri.boundary_map),
+    @test DT.compare_triangles(DT.brute_force_search(tri, c1_i),
         (index_map["g"], index_map["f"], DT.BoundaryIndex))
-    @test DT.compare_triangles(DT.brute_force_search(tri.triangles, d1_i, pts, rep,
-            tri.boundary_map),
+    @test DT.compare_triangles(DT.brute_force_search(tri, d1_i),
         (index_map["f"], index_map["e"], DT.BoundaryIndex))
-    @test DT.compare_triangles(DT.brute_force_search(tri.triangles, e1_i, pts, rep,
-            tri.boundary_map),
+    @test DT.compare_triangles(DT.brute_force_search(tri, e1_i),
         (index_map["k"], index_map["ℓ"], DT.BoundaryIndex - 1))
-    @test DT.compare_triangles(DT.brute_force_search(tri.triangles, f1_i, pts, rep,
-            tri.boundary_map),
+    @test DT.compare_triangles(DT.brute_force_search(tri, f1_i),
         (index_map["ℓ"], index_map["k"], index_map["w"]))
-    @test DT.compare_triangles(DT.brute_force_search(tri.triangles, g1_i, pts, rep,
-            tri.boundary_map),
+    @test DT.compare_triangles(DT.brute_force_search(tri, g1_i),
         (index_map["b"], index_map["c"], index_map["p"]))
-    @test DT.compare_triangles(DT.brute_force_search(tri.triangles, h1_i, pts, rep,
-            tri.boundary_map),
+    @test DT.compare_triangles(DT.brute_force_search(tri, h1_i),
         (index_map["m"], index_map["n"], DT.BoundaryIndex - 3))
-    @inferred DT.brute_force_search(tri.triangles, c1_i, pts, rep, tri.boundary_map)
+    @inferred DT.brute_force_search(tri, c1_i)
 end
 
 @testset "Finding points in each triangle" begin
@@ -73,8 +67,8 @@ end
         for i in indices(T)
             if i ≠ DT.BoundaryIndex
                 p = get_point(pts, rep, tri.boundary_map, i)
-                V = DT.brute_force_search(tri.triangles, p, pts, rep, tri.boundary_map)
-                @inferred DT.brute_force_search(tri.triangles, p, pts, rep, tri.boundary_map)
+                V = DT.brute_force_search(tri, p)
+                @inferred DT.brute_force_search(tri, p)
                 if !DT.is_ghost_triangle(T)
                     @test i ∈ V
                 else

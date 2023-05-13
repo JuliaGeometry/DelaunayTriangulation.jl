@@ -63,36 +63,20 @@ boundary_nodes = get_boundary_nodes(tri)
         for k in each_point_index(pts)
             for i in eachindex(allq)
                 @show i, k
-                T1 = jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges, rep, boundary_map,
-                    allq[i]; k)
-                T2 = jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges, rep, boundary_map,
-                    allq[i])
+                T1 = jump_and_march(tri, allq[i]; k)
+                T2 = jump_and_march(tri, allq[i])
                 @test DT.is_positively_oriented(DT.triangle_orientation(tri, T1))
                 @test DT.is_positively_oriented(DT.triangle_orientation(tri, T2))
-                @inferred jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges,
-                    rep, boundary_map, allq[i]; k)
-                @inferred jump_and_march(pts, adj, adj2v, graph, boundary_index_ranges,
-                    rep, boundary_map, allq[i])
+                @inferred jump_and_march(tri, allq[i]; k)
+                @inferred jump_and_march(tri, allq[i])
                 for V in [T1, T2]
                     if length(allV[i]) == 1
-                        @test DT.compare_triangles(V, allV[i][1]) &&
-                              DT.is_inside(DT.point_position_relative_to_triangle(tri, V,
-                            allq[i]))
+                        @test DT.compare_triangles(V, allV[i][1]) && DT.is_inside(DT.point_position_relative_to_triangle(tri, V, allq[i]))
                     elseif length(allV[i]) == 2
-                        @test (DT.compare_triangles(V, allV[i][1]) ||
-                               DT.compare_triangles(V, allV[i][2])) &&
-                              (DT.is_on(DT.point_position_relative_to_triangle(tri, V, allq[i])) ||
-                               (DT.is_ghost_triangle(V) &&
-                                DT.is_inside(DT.point_position_relative_to_triangle(tri, V,
-                            allq[i]))))
+                        @test (DT.compare_triangles(V, allV[i][1]) || DT.compare_triangles(V, allV[i][2])) && (DT.is_on(DT.point_position_relative_to_triangle(tri, V, allq[i])) || (DT.is_ghost_triangle(V) && DT.is_inside(DT.point_position_relative_to_triangle(tri, V, allq[i]))))
                     else
-                        bool1 = any(j -> DT.compare_triangles(V, allV[i][j]),
-                            eachindex(allV[i]))
-                        bool2 = (DT.is_on(DT.point_position_relative_to_triangle(tri, V,
-                            allq[i])) ||
-                                 (DT.is_ghost_triangle(V) &&
-                                  DT.is_inside(DT.point_position_relative_to_triangle(tri, V,
-                            allq[i]))))
+                        bool1 = any(j -> DT.compare_triangles(V, allV[i][j]), eachindex(allV[i]))
+                        bool2 = (DT.is_on(DT.point_position_relative_to_triangle(tri, V, allq[i])) || (DT.is_ghost_triangle(V) && DT.is_inside(DT.point_position_relative_to_triangle(tri, V, allq[i]))))
                         @test bool1 && bool2
                     end
                 end
@@ -147,38 +131,33 @@ rep[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
                         local c
                         c = (p .+ q .+ r) ./ 3
                         for k in each_point_index(tri.points)
-                            _V1 = jump_and_march(tri.points, tri.adjacent, tri.adjacent2vertex,
-                                tri.graph, tri.boundary_index_ranges,
-                                tri.representative_point_list, tri.boundary_map, c; k)
-                            _V2 = jump_and_march(tri, c; k)
-                            for _V in [_V1, _V2]
-                                @test DT.is_positively_oriented(DT.triangle_orientation(tri, _V))
-                                if !DT.is_ghost_triangle(_V...)
-                                    @test DT.compare_triangles(_V, V) &&
-                                          DT.is_inside(DT.point_position_relative_to_triangle(tri,
-                                        _V,
-                                        c))
-                                else
-                                    local V1, V2
-                                    V1 = DT.rotate_ghost_triangle_to_standard_form(V)
-                                    V2 = DT.rotate_ghost_triangle_to_standard_form(_V)
-                                    i1 = geti(V1)
-                                    i2 = geti(V2)
-                                    if i1 ≠ i2
-                                        i1 = i1 - 1
-                                    end
-                                    if i1 ≠ i2
-                                        i1 = i1 + 1
-                                    end
-                                    if i1 ≠ i2
-                                        @test false
-                                    end
-                                    _V = DT.construct_triangle(typeof(V), i1, getj(V1), getk(V1))
-                                    @test DT.compare_triangles(_V, V) &&
-                                          DT.is_inside(DT.point_position_relative_to_triangle(tri,
-                                        _V,
-                                        c))
+                            _V = jump_and_march(tri, c; k)
+                            @test DT.is_positively_oriented(DT.triangle_orientation(tri, _V))
+                            if !DT.is_ghost_triangle(_V...)
+                                @test DT.compare_triangles(_V, V) &&
+                                      DT.is_inside(DT.point_position_relative_to_triangle(tri,
+                                    _V,
+                                    c))
+                            else
+                                local V1, V2
+                                V1 = DT.rotate_ghost_triangle_to_standard_form(V)
+                                V2 = DT.rotate_ghost_triangle_to_standard_form(_V)
+                                i1 = geti(V1)
+                                i2 = geti(V2)
+                                if i1 ≠ i2
+                                    i1 = i1 - 1
                                 end
+                                if i1 ≠ i2
+                                    i1 = i1 + 1
+                                end
+                                if i1 ≠ i2
+                                    @test false
+                                end
+                                _V = DT.construct_triangle(typeof(V), i1, getj(V1), getk(V1))
+                                @test DT.compare_triangles(_V, V) &&
+                                      DT.is_inside(DT.point_position_relative_to_triangle(tri,
+                                    _V,
+                                    c))
                             end
                         end
                     end
@@ -189,14 +168,9 @@ rep[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
                 for _ in 1:36
                     for k in each_point_index(tri.points)
                         for j in each_point_index(tri.points)
-                            _V1 = jump_and_march(tri, get_point(tri, k); k=j)
-                            _V2 = jump_and_march(tri.points, tri.adjacent, tri.adjacent2vertex,
-                                tri.graph, tri.boundary_index_ranges, tri.representative_point_list, tri.boundary_map,
-                                get_point(tri.points, k))
-                            for _V in [_V1, _V2]
-                                @test k ∈ indices(_V)
-                                @test DT.is_positively_oriented(DT.triangle_orientation(tri, _V))
-                            end
+                            _V = jump_and_march(tri, get_point(tri, k); k=j)
+                            @test k ∈ indices(_V)
+                            @test DT.is_positively_oriented(DT.triangle_orientation(tri, _V))
                         end
                     end
                 end
@@ -209,10 +183,7 @@ rep[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
                     q = (50randn(), 50rand())
                     for k in each_point_index(tri.points)
                         _V1 = jump_and_march(tri, q; k)
-                        _V2 = jump_and_march(tri.points, tri.adjacent, tri.adjacent2vertex, tri.graph,
-                            tri.boundary_index_ranges, tri.representative_point_list, tri.boundary_map, q)
                         @test DT.is_inside(DT.point_position_relative_to_triangle(tri, _V1, q))
-                        @test DT.is_inside(DT.point_position_relative_to_triangle(tri, _V2, q))
                     end
                 end
             end

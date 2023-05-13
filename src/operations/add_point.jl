@@ -34,7 +34,7 @@ Adds the point `new_point` to the triangulation `tri`.
 - `m=default_num_samples(length(point_indices))`: The number of points to sample from `point_indices` to use as the initial search point.
 - `try_points=()`: A list of points to try as the initial search point in addition to those sampled.
 - `rng::AbstractRNG=Random.default_rng()`: The random number generator to use.
-- `initial_search_point=integer_type(tri)(select_initial_point(get_points(tri),new_point;point_indices,m,try_points,rng))`: The initial search point to use. If this is not provided, then we use [`select_initial_point`](@ref) to select one.
+- `initial_search_point=integer_type(tri)(select_initial_point(tri,new_point;point_indices,m,try_points,rng))`: The initial search point to use. If this is not provided, then we use [`select_initial_point`](@ref) to select one.
 - `update_representative_point=false`: Whether to update the representative point list after adding the new point.
 - `store_event_history = Val(false)`: Whether to store the event history. See [`InsertionEventHistory`](@ref).
 - `event_history = nothing`: The event history to store the events in. See [`InsertionEventHistory`](@ref). Only needed if `is_true(store_event_history)`. This object is not returned, instead we just mutate it inplace.
@@ -50,7 +50,7 @@ function add_point!(tri::Triangulation, new_point;
     m=default_num_samples(length(point_indices)),
     try_points=(),
     rng::AbstractRNG=Random.default_rng(),
-    initial_search_point=integer_type(tri)(select_initial_point(get_points(tri), new_point; point_indices, m, try_points, rng)),
+    initial_search_point=integer_type(tri)(select_initial_point(tri, new_point; point_indices, m, try_points, rng)),
     update_representative_point=false,
     store_event_history=Val(false),
     event_history=nothing,
@@ -63,7 +63,6 @@ function add_point!(tri::Triangulation, new_point;
         try_points=nothing,
         k=initial_search_point,
         rng,
-        check_existence=Val(has_multiple_segments(tri)),
         exterior_curve_index
     ),
     peek=Val(false))
@@ -86,7 +85,7 @@ function add_point!(tri::Triangulation, new_point_x, new_point_y;
     m=default_num_samples(length(point_indices)),
     try_points=(),
     rng::AbstractRNG=Random.default_rng(),
-    initial_search_point=integer_type(tri)(select_initial_point(get_points(tri), (new_point_x, new_point_y); point_indices, m, try_points, rng)),
+    initial_search_point=integer_type(tri)(select_initial_point(tri, (new_point_x, new_point_y); point_indices, m, try_points, rng)),
     update_representative_point=false,
     store_event_history=Val(false),
     event_history=nothing,
@@ -99,7 +98,6 @@ function add_point!(tri::Triangulation, new_point_x, new_point_y;
         try_points=nothing,
         k=initial_search_point,
         rng,
-        check_existence=Val(has_multiple_segments(tri)),
         exterior_curve_index
     ),
     peek=Val(false))

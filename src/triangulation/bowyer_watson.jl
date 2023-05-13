@@ -6,8 +6,7 @@
     return point_indices
 end
 
-@inline function get_initial_triangle(::Type{V}, ::Type{I}, point_order,
-    points) where {V,I}
+@inline function get_initial_triangle(::Type{V}, ::Type{I}, point_order, points) where {V,I}
     local initial_triangle
     i, j, k = point_order[begin], point_order[begin+1], point_order[begin+2]
     initial_triangle = construct_positively_oriented_triangle(V, i, j, k, points)
@@ -18,7 +17,7 @@ end
     if length(point_order) > 3 # Do not get stuck in an infinite loop if there are just three points, the three of them being collinear
         while is_degenerate(degenerate_cert) && itr ≤ length(point_order) # If all points are collinear, this loop could go forever
             @static if VERSION ≥ v"1.8.1"
-                circshift!(point_order, -1)
+                circshift!(point_order, -1)::Vector{I}
             else
                 _point_order = circshift(point_order, -1)
                 copyto!(point_order, _point_order)
@@ -47,15 +46,11 @@ function initialise_bowyer_watson(points::P;
     EdgesType::Type{Es}=Set{EdgeType},
     TrianglesType::Type{Ts}=Set{TriangleType},
     randomise=true,
-    skip_points=Set{IntegerType}(),
+    skip_points=(),
     rng::AbstractRNG=Random.default_rng(),
-    point_order=get_point_order(points, randomise,
-        skip_points, IntegerType,
-        rng)) where {P,I,E,V,Es,
-    Ts}
-    tri = Triangulation(points; IntegerType, EdgeType, TriangleType, EdgesType,
-        TrianglesType)
-    initial_triangle = get_initial_triangle(tri, point_order) # point_order could get mutated here
+    point_order=get_point_order(points, randomise, skip_points, IntegerType, rng)) where {P,I,E,V,Es,Ts}
+    tri = Triangulation(points; IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType)
+    initial_triangle = get_initial_triangle(V, I, point_order, points) # point_order could get mutated here
     add_triangle!(tri, initial_triangle; update_ghost_edges=true)
     new_representative_point!(tri, I(1))
     u, v, w = indices(initial_triangle)
@@ -77,19 +72,25 @@ function triangulate_bowyer_watson(points::P;
     delete_ghosts=true,
     delete_empty_features=true,
     try_last_inserted_point=true,
-    skip_points=Set{IntegerType}(),
+    skip_points=(),
     num_sample_rule::M=default_num_samples,
     rng::AbstractRNG=Random.default_rng(),
-    point_order=get_point_order(points, randomise,
-        skip_points, IntegerType,
-        rng),
+    point_order=get_point_order(points, randomise, skip_points, IntegerType, rng),
     recompute_representative_point=true) where {P,I,E,V,
     Es,Ts,M}
-    tri = initialise_bowyer_watson(points; IntegerType, EdgeType, TriangleType, EdgesType,
-        TrianglesType, randomise, skip_points, rng,
-        point_order)::Triangulation{P,Ts,I,E,Es,Vector{I},Dict{E,Tuple{Vector{I},I}},
-        OrderedDict{I,Vector{I}},
-        OrderedDict{I,UnitRange{I}},Dict{I,RepresentativeCoordinates{I,number_type(P)}}}
+    tri = initialise_bowyer_watson(points;
+        IntegerType=I,
+        EdgeType=E,
+        TriangleType=V,
+        EdgesType=Es,
+        TrianglesType=Ts,
+        randomise,
+        skip_points,
+        rng,
+        point_order)::Triangulation{
+        P,Ts,I,E,Es,Vector{I},Dict{E,Tuple{Vector{I},I}},
+        OrderedDict{I,Vector{I}},OrderedDict{I,UnitRange{I}},Dict{I,RepresentativeCoordinates{I,number_type(P)}}
+    }
     _triangulate_bowyer_watson!(tri, point_order, num_sample_rule, delete_ghosts,
         delete_empty_features, try_last_inserted_point, rng,
         recompute_representative_point)
@@ -103,21 +104,28 @@ function _triangulate_bowyer_watson!(tri::Triangulation, point_order,
     rng::AbstractRNG=Random.default_rng(),
     recompute_representative_point=true) where {M}
     remaining_points = @view point_order[(begin+3):end]
-    I = integer_type(tri)
     for (num_points, new_point) in enumerate(remaining_points)
         num_currently_inserted = num_points + 3 - 1     # + 3 for the points already inserted
         last_inserted_point_index = point_order[num_currently_inserted]
         currently_inserted_points = @view point_order[begin:num_currently_inserted]
         m = num_sample_rule(num_currently_inserted)
         if try_last_inserted_point
-            initial_search_point = I(select_initial_point(get_points(tri), new_point; m,
+            initial_search_point = select_initial_point(
+                tri,
+                new_point;
+                m,
                 point_indices=currently_inserted_points,
                 try_points=last_inserted_point_index,
-                rng))
+                rng
+            )
         else
-            initial_search_point = I(select_initial_point(get_points(tri), new_point; m,
+            initial_search_point = select_initial_point(
+                tri,
+                new_point;
+                m,
                 point_indices=currently_inserted_points,
-                rng))
+                rng
+            )
         end
         add_point_bowyer_watson!(tri, new_point, initial_search_point, rng)
     end
@@ -158,8 +166,7 @@ function add_point_bowyer_watson!(
     peek=Val(false)) where {I}
     new_point = I(new_point)
     q = get_point(tri, new_point)
-    V = jump_and_march(tri, q; m=nothing, point_indices=nothing, try_points=nothing,
-        k=initial_search_point, rng, check_existence=Val(has_multiple_segments(tri)), exterior_curve_index)
+    V = jump_and_march(tri, q; m=nothing, point_indices=nothing, try_points=nothing, k=initial_search_point, rng, exterior_curve_index)
     flag = point_position_relative_to_triangle(tri, V, q)
     add_point_bowyer_watson_and_process_after_found_triangle!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history, peek)
     return V
