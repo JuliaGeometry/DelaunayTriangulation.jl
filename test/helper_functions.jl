@@ -719,7 +719,7 @@ function example_triangulation()
         1 1 0 1 1 0 0
     ]
     DG = DT.Graph(DT.SimpleGraphs.relabel(DT.SimpleGraphs.UndirectedGraph(A), Dict(1:7 .=> [-1, (1:6)...])))
-    adj = DT.Adjacent(DT.DataStructures.DefaultDict(DT.DefaultAdjacentValue,
+    adj = DT.Adjacent(
         Dict(
             (6, 3) => 1, (3, 1) => 6, (1, 6) => 3,
             (3, 2) => 5, (2, 5) => 3, (5, 3) => 2,
@@ -730,7 +730,7 @@ function example_triangulation()
             (2, 3) => DT.BoundaryIndex, (3, 6) => DT.BoundaryIndex,
             (6, 4) => DT.BoundaryIndex
         )
-    ))
+    )
     adj2v = DT.Adjacent2Vertex(Dict(
         DT.BoundaryIndex => Set{NTuple{2,Int64}}([(4, 5), (5, 2), (2, 3), (3, 6), (6, 4)]),
         1 => Set{NTuple{2,Int64}}([(5, 4), (3, 5), (6, 3), (4, 6)]),
@@ -762,7 +762,7 @@ function example_empty_triangulation()
     T = Set{NTuple{3,Int64}}([])
     A = zeros(Int64, 0, 0)
     DG = DT.Graph(DT.SimpleGraphs.UndirectedGraph(A))
-    adj = DT.Adjacent(DT.DataStructures.DefaultDict(DT.DefaultAdjacentValue, Dict{NTuple{2,Int64},Int64}()))
+    adj = DT.Adjacent(Dict{NTuple{2,Int64},Int64}())
     adj2v = DT.Adjacent2Vertex(Dict(DT.BoundaryIndex => Set{NTuple{2,Int64}}()))
     rep = DT.get_empty_representative_points()
     DT.compute_representative_points!(rep, pts, [1, 2, 3, 1])

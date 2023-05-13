@@ -65,22 +65,19 @@ end
             (5, 2, 8),
             (6, 2, 3)
         ])
-        true_adj = DefaultDict(DT.DefaultAdjacentValue,
+        true_adj =
             Dict(
                 (3, 2) => 5, (2, 5) => 3, (5, 3) => 2,
                 (4, 1) => 5, (1, 5) => 4, (5, 4) => 1,
                 (6, 3) => 1, (3, 1) => 6, (1, 6) => 3,
                 (4, 6) => 1, (6, 1) => 4, (1, 4) => 6,
                 (5, 1) => 3, (3, 5) => 1,
-                (1, 7) => DT.DefaultAdjacentValue,
-                (7, 3) => DT.DefaultAdjacentValue,
                 (5, 2) => 8, (2, 8) => 5, (8, 5) => 2,
                 (2, 3) => 6, (3, 6) => 2, (6, 2) => 3,
                 (4, 5) => DT.BoundaryIndex, (5, 8) => DT.BoundaryIndex,
                 (8, 2) => DT.BoundaryIndex, (2, 6) => DT.BoundaryIndex,
                 (6, 4) => DT.BoundaryIndex
             )
-        )
         true_adj2v = Dict(
             DT.BoundaryIndex => Set{NTuple{2,Int64}}([(4, 5), (5, 8), (8, 2), (2, 6), (6, 4)]),
             1 => Set{NTuple{2,Int64}}([(3, 5), (6, 3), (5, 4), (4, 6)]),
@@ -124,7 +121,7 @@ end
                 (5, 1, 3),
                 (6, 2, 3)
             ])
-            true_adj = DefaultDict(DT.DefaultAdjacentValue,
+            true_adj = 
                 Dict(
                     (3, 2) => 5, (2, 5) => 3, (5, 3) => 2,
                     (4, 1) => 5, (1, 5) => 4, (5, 4) => 1,
@@ -136,7 +133,6 @@ end
                     (5, 2) => DT.BoundaryIndex, (2, 6) => DT.BoundaryIndex,
                     (6, 4) => DT.BoundaryIndex
                 )
-            )
             true_adj2v = Dict(
                 DT.BoundaryIndex => Set{NTuple{2,Int64}}([(4, 5), (5, 2), (2, 6), (6, 4)]),
                 1 => Set{NTuple{2,Int64}}([(3, 5), (6, 3), (5, 4), (4, 6)]),
@@ -179,7 +175,7 @@ end
                 (4, 6, 1),
                 (5, 1, 3),
             ])
-            true_adj = DefaultDict(DT.DefaultAdjacentValue,
+            true_adj =
                 Dict(
                     (3, 2) => 5, (2, 5) => 3, (5, 3) => 2,
                     (4, 1) => 5, (1, 5) => 4, (5, 4) => 1,
@@ -191,7 +187,6 @@ end
                     (6, 4) => DT.BoundaryIndex,
                     (2, 3) => DT.BoundaryIndex, (3, 6) => DT.BoundaryIndex,
                 )
-            )
             true_adj2v = Dict(
                 DT.BoundaryIndex => Set{NTuple{2,Int64}}([(4, 5), (5, 2), (2, 3), (3, 6), (6, 4)]),
                 1 => Set{NTuple{2,Int64}}([(3, 5), (6, 3), (5, 4), (4, 6)]),
@@ -269,7 +264,7 @@ end
         (4, 6, DT.BoundaryIndex),
         (6, 2, DT.BoundaryIndex)
     ])
-    true_adj = DT.Adjacent(DefaultDict(DT.DefaultAdjacentValue,
+    true_adj = DT.Adjacent(
         Dict(
             (1, 2) => 3, (2, 3) => 1, (3, 1) => 2,
             (3, 2) => 4, (2, 4) => 3, (4, 3) => 2,
@@ -281,7 +276,7 @@ end
             (5, 4) => DT.BoundaryIndex, (4, DT.BoundaryIndex) => 5, (DT.BoundaryIndex, 5) => 4,
             (4, 6) => DT.BoundaryIndex, (6, DT.BoundaryIndex) => 4, (DT.BoundaryIndex, 4) => 6,
             (6, 2) => DT.BoundaryIndex, (2, DT.BoundaryIndex) => 6, (DT.BoundaryIndex, 6) => 2
-        )))
+        ))
     true_adj2v = DT.Adjacent2Vertex(
         Dict(
             DT.BoundaryIndex => Set{NTuple{2,Int64}}([(1, 3), (3, 5), (5, 4), (4, 6), (6, 2), (2, 1)]),
@@ -313,7 +308,7 @@ end
         (3, 4, DT.BoundaryIndex),
         (4, 2, DT.BoundaryIndex),
         (3, 2, 4)])
-    true_adj = DT.Adjacent(DefaultDict(DT.DefaultAdjacentValue,
+    true_adj = DT.Adjacent(
         Dict(
             (1, 2) => 3, (2, 3) => 1, (3, 1) => 2,
             (2, 1) => DT.BoundaryIndex, (1, DT.BoundaryIndex) => 2, (DT.BoundaryIndex, 2) => 1,
@@ -321,7 +316,7 @@ end
             (3, 4) => DT.BoundaryIndex, (4, DT.BoundaryIndex) => 3, (DT.BoundaryIndex, 3) => 4,
             (4, 2) => DT.BoundaryIndex, (2, DT.BoundaryIndex) => 4, (DT.BoundaryIndex, 4) => 2,
             (3, 2) => 4, (2, 4) => 3, (4, 3) => 2
-        )))
+        ))
     true_adj2v = DT.Adjacent2Vertex(
         Dict(
             DT.BoundaryIndex => Set{NTuple{2,Int64}}([(2, 1), (1, 3), (3, 4), (4, 2)]),
@@ -347,13 +342,13 @@ end
         (2, 1, DT.BoundaryIndex),
         (1, 3, DT.BoundaryIndex),
         (3, 2, DT.BoundaryIndex)])
-    true_adj = DT.Adjacent(DefaultDict(DT.DefaultAdjacentValue,
+    true_adj = DT.Adjacent(
         Dict(
             (1, 2) => 3, (2, 3) => 1, (3, 1) => 2,
             (2, 1) => DT.BoundaryIndex, (1, DT.BoundaryIndex) => 2, (DT.BoundaryIndex, 2) => 1,
             (1, 3) => DT.BoundaryIndex, (3, DT.BoundaryIndex) => 1, (DT.BoundaryIndex, 1) => 3,
             (3, 2) => DT.BoundaryIndex, (2, DT.BoundaryIndex) => 3, (DT.BoundaryIndex, 3) => 2
-        )))
+        ))
     true_adj2v = DT.Adjacent2Vertex(
         Dict(
             DT.BoundaryIndex => Set{NTuple{2,Int64}}([(2, 1), (1, 3), (3, 2)]),
@@ -435,7 +430,6 @@ end
         (6, 1, DT.BoundaryIndex)
     ])
     true_adj = DT.Adjacent(
-        DefaultDict(DT.DefaultAdjacentValue,
             Dict(
                 (1, 6) => 8, (6, 8) => 1, (8, 1) => 6,
                 (6, 7) => 8, (7, 8) => 6, (8, 6) => 7,
@@ -451,7 +445,7 @@ end
                 (7, 4) => DT.BoundaryIndex, (4, DT.BoundaryIndex) => 7, (DT.BoundaryIndex, 7) => 4,
                 (4, 6) => DT.BoundaryIndex, (6, DT.BoundaryIndex) => 4, (DT.BoundaryIndex, 4) => 6,
                 (6, 1) => DT.BoundaryIndex, (1, DT.BoundaryIndex) => 6, (DT.BoundaryIndex, 6) => 1
-            ))
+            )
     )
     true_adj2v = DT.Adjacent2Vertex{Int64,Set{NTuple{2,Int64}},NTuple{2,Int64}}()
     for (ij, k) in true_adj

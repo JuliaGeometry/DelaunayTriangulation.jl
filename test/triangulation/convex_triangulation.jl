@@ -70,7 +70,6 @@ end
         @test tri_ch.representative_point_list[1].x ≈ _pt[1].x rtol = 1e-1
         @test tri_ch.representative_point_list[1].y ≈ _pt[1].y rtol = 1e-1
         @test tri_ch.representative_point_list[1].n ≈ _pt[1].n
-        @test any(!DT.edge_exists, values(get_adjacent(get_adjacent(tri_ch))))
         DT.convex_triangulation_post_processing!(tri_ch, S[begin:end-1], false, false, false, true)
         @test all(DT.edge_exists, values(get_adjacent(get_adjacent(tri_ch))))
         DT.convex_triangulation_post_processing!(tri_ch, S[begin:end-1], true, false, false, false)

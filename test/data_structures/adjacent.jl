@@ -4,9 +4,9 @@ using DataStructures
 using StaticArrays
 
 global def_adj = DT.DefaultAdjacentValue
-global default_1 = DefaultDict{NTuple{2,Int64},Int64,Int64}(def_adj)
-global default_2 = DefaultDict{NTuple{2,Int32},Int32,Int32}(Int32(def_adj))
-global default_3 = DefaultDict{Vector{Int64},Int64,Int64}(def_adj)
+global default_1 = Dict{NTuple{2,Int64},Int64}()
+global default_2 = Dict{NTuple{2,Int32},Int32}()
+global default_3 = Dict{Vector{Int64},Int64}()
 global adj_1 = DT.Adjacent{Int64,NTuple{2,Int64}}()
 global adj_2 = DT.Adjacent{Int32,NTuple{2,Int32}}()
 global adj_3 = DT.Adjacent{Int64,Vector{Int64}}()
@@ -28,9 +28,9 @@ global dict_2 = Dict(@SVector[1, 2] => 4, @SVector[2, 3] => 10, @SVector[5, 6] =
     @SVector[20, 5] => 72)
 global dict_3 = Dict{NTuple{2,Int32},Int32}((1, 2) => 4, (2, 3) => 10, (5, 6) => 15,
     (20, 5) => 72)
-global ddict_1 = DefaultDict(def_adj, dict_1)
-global ddict_2 = DefaultDict(def_adj, dict_2)
-global ddict_3 = DefaultDict(Int32(def_adj), dict_3)
+global ddict_1 = Dict(dict_1)
+global ddict_2 = Dict(dict_2)
+global ddict_3 = Dict(dict_3)
 global adj_1 = DT.Adjacent(ddict_1)
 global adj_2 = DT.Adjacent(ddict_2)
 global adj_3 = DT.Adjacent(ddict_3)
@@ -78,6 +78,7 @@ global adj_3 = DT.Adjacent(ddict_3)
 
         DT.delete_triangle!(adj, 60, 61, 62)
         @test get_adjacent(adj, 60, 61) == def_adj
+        @inferred get_adjacent(adj, 60, 61)
         @test get_adjacent(adj, 61, 62) == def_adj
         @test get_adjacent(adj, 62, 60) == def_adj
 
@@ -102,18 +103,8 @@ global adj_3 = DT.Adjacent(ddict_3)
     end
 end
 
-@testset "Testing if edges exist and clearing any empty edges" begin
+@testset "Testing if edges exist" begin
     include("../helper_functions.jl")
     tri = triangulate(rand(2, 50))
     @test !DT.edge_exists(get_adjacent(tri, 122, -7; check_existence=false))
-
-    dict = Dict((1, 2) => 4, (2, 3) => 10, (5, 6) => 15, (20, 5) => 72)
-    ddict = DefaultDict(def_adj, dict)
-    adj = DT.Adjacent(ddict)
-    clean_adj = deepcopy(adj)
-    get_adjacent(adj, 107, 108)
-    get_adjacent(adj, 132, 185)
-    @test adj ≠ clean_adj
-    DT.clear_empty_keys!(adj)
-    @test adj == clean_adj
 end
