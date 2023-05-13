@@ -186,6 +186,7 @@ function add_point_bowyer_watson_onto_constrained_segment!(
     store_event_history=Val(false),
     event_history=nothing,
     peek::P=Val(false)) where {P}
+    _new_point = is_true(peek) ? num_points(tri) + 1 : new_point # If we are peeking, then we need to use the number of points in the triangulation as the index for the new point since we don't actually insert the point
     if is_on(flag) && is_constrained(tri)
         # If the point we are adding appears on a segment, then we perform the depth-first search 
         # on each side the segment. We also need to update the 
@@ -210,16 +211,16 @@ function add_point_bowyer_watson_onto_constrained_segment!(
             end
             if is_true(store_event_history)
                 delete_edge!(event_history, construct_edge(E, u, v))
-                add_edge!(event_history, construct_edge(E, u, new_point))
-                add_edge!(event_history, construct_edge(E, new_point, v))
+                add_edge!(event_history, construct_edge(E, u, _new_point))
+                add_edge!(event_history, construct_edge(E, _new_point, v))
             end
         end
         if contains_boundary_edge(tri, u, v)
             !is_true(peek) && split_boundary_edge!(tri, u, v, new_point)
-            is_true(store_event_history) && split_boundary_edge!(event_history, u, v, new_point)
+            is_true(store_event_history) && split_boundary_edge!(event_history, u, v, _new_point)
         elseif contains_boundary_edge(tri, v, u)
             !is_true(peek) && split_boundary_edge!(tri, v, u, new_point)
-            is_true(store_event_history) && split_boundary_edge!(event_history, v, u, new_point)
+            is_true(store_event_history) && split_boundary_edge!(event_history, v, u, _new_point)
         end
     end
 end
@@ -248,15 +249,16 @@ function add_point_bowyer_watson_after_found_triangle!(
 end
 
 function add_point_bowyer_watson_dig_cavities!(
-    tri::Triangulation,
-    new_point::I,
+    tri::Triangulation{P,Ts,I},
+    new_point::N,
     V,
     q,
     flag,
     update_representative_point=true,
     store_event_history=Val(false),
     event_history=nothing,
-    peek::P=Val(false)) where {I,P}
+    peek::F=Val(false)) where {P,Ts,I,N,F}
+    _new_point = is_true(peek) ? num_points(tri) + 1 : new_point # If we are peeking, then we need to use the number of points in the triangulation as the index for the new point since we don't actually insert the point
     i, j, k = indices(V)
     ℓ₁ = get_adjacent(tri, j, i)
     ℓ₂ = get_adjacent(tri, k, j)
@@ -285,17 +287,17 @@ function add_point_bowyer_watson_dig_cavities!(
             if is_true(store_event_history)
                 trit = triangle_type(tri)
                 delete_triangle!(event_history, construct_triangle(trit, u, v, g))
-                add_triangle!(event_history, construct_triangle(trit, new_point, v, g))
-                add_triangle!(event_history, construct_triangle(trit, u, new_point, g))
+                add_triangle!(event_history, construct_triangle(trit, _new_point, v, g))
+                add_triangle!(event_history, construct_triangle(trit, u, _new_point, g))
             end
             if is_constrained(tri) && (contains_boundary_edge(tri, u, v) || contains_boundary_edge(tri, v, u)) # If we don't do this here now, then when we try and do it later we will get a KeyError since we've already modified the boundary edge but we wouldn't have updated the constrained fields
                 # We also only do this if contains_boundary_edge since we want to assume that (u, v) does not appear in constrained_edges
                 if contains_boundary_edge(tri, u, v)
                     !is_true(peek) && split_boundary_edge!(tri, u, v, new_point)
-                    is_true(store_event_history) && split_boundary_edge!(event_history, u, v, new_point)
+                    is_true(store_event_history) && split_boundary_edge!(event_history, u, v, _new_point)
                 elseif contains_boundary_edge(tri, v, u)
                     !is_true(peek) && split_boundary_edge!(tri, v, u, new_point)
-                    is_true(store_event_history) && split_boundary_edge!(event_history, v, u, new_point)
+                    is_true(store_event_history) && split_boundary_edge!(event_history, v, u, _new_point)
                 end
                 E = edge_type(tri)
                 # constrained_edges = get_constrained_edges(tri) < -- Don't need this actually, we're just looking at boundary edges here, so no need to consider individually constrained edges
@@ -308,8 +310,8 @@ function add_point_bowyer_watson_dig_cavities!(
                 end
                 if is_true(store_event_history)
                     delete_edge!(event_history, construct_edge(E, u, v))
-                    add_edge!(event_history, construct_edge(E, u, new_point))
-                    add_edge!(event_history, construct_edge(E, new_point, v))
+                    add_edge!(event_history, construct_edge(E, u, _new_point))
+                    add_edge!(event_history, construct_edge(E, _new_point, v))
                 end
             end
         end
@@ -323,6 +325,7 @@ end
         # The triangle has already been deleted in this case. 
         return nothing
     end
+    _r = is_true(peek) ? num_points(tri) + 1 : r # If we are peeking, then we need to use the number of points in the triangulation as the index for the new point since we don't actually insert the point
     if !contains_constrained_edge(tri, i, j) &&
        is_inside(point_position_relative_to_circumcircle(tri, r, i, j, ℓ)) &&
        !is_boundary_index(ℓ)
@@ -350,14 +353,14 @@ end
                 !is_true(peek) && add_triangle!(tri, r, i, j; update_ghost_edges=false)
                 if is_true(store_event_history)
                     trit = triangle_type(tri)
-                    add_triangle!(event_history, construct_triangle(trit, r, i, j))
+                    add_triangle!(event_history, construct_triangle(trit, _r, i, j))
                 end
             end
         else
             !is_true(peek) && add_triangle!(tri, r, i, j; update_ghost_edges=false)
             if is_true(store_event_history)
                 trit = triangle_type(tri)
-                add_triangle!(event_history, construct_triangle(trit, r, i, j))
+                add_triangle!(event_history, construct_triangle(trit, _r, i, j))
             end
         end
     end
