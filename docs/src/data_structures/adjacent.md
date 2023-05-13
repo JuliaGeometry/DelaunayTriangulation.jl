@@ -30,5 +30,4 @@ add_triangle!(::Ts, ::V, ::V, ::V) where {I,E,V<:Integer,Ts<:Adjacent{I,E}}
 add_triangle!(::Adjacent, ::Any)
 delete_triangle!(::Ts, ::V, ::V, ::V) where {I,E,V<:Integer,Ts<:Adjacent{I,E}}
 delete_triangle!(::Adjacent, ::Any)
-clear_empty_keys!(::Adjacent)
 ```

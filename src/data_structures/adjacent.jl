@@ -50,7 +50,6 @@ default value is `Val(false)`, meaning this isn't checked.
 - `add_triangle!(adj, T...)`
 - `delete_triangle!(adj, i, j, k)` or `delete_triangle!(adj, T)`
 - `delete_triangle!(adj, T...)`
-- `clear_empty_keys!(adj)`
 
 ## Iteration 
 You can also iterate over `Adjacent` maps the same way as you would 
@@ -239,18 +238,5 @@ end
 Base.iterate(adj::Adjacent, state...) = Base.iterate(get_adjacent(adj), state...)
 Base.length(adj::Adjacent) = Base.length(get_adjacent(adj))
 Base.eltype(::Type{Adjacent{I,E}}) where {I,E} = Pair{E,I}
-
-"""
-    clear_empty_keys!(adj::Adjacent) 
-
-Given an [`Adjacent`](@ref) map `adj`, removes any edges that 
-map to $DefaultAdjacentValue`.
-"""
-function clear_empty_keys!(adj::Adjacent)
-    for (uv, w) in adj
-        !edge_exists(w) && delete_adjacent!(adj, uv)
-    end
-    return nothing
-end
 
 Base.sizehint!(adj::Adjacent, n) = Base.sizehint!(get_adjacent(adj), n)
