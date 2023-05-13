@@ -146,9 +146,11 @@ function add_point_bowyer_watson_and_process_after_found_triangle!(
     update_representative_point=true,
     store_event_history=Val(false),
     event_history=nothing,
-    peek=Val(false))
+    peek::P=Val(false)) where {P}
     I = integer_type(tri)
-    new_point = I(new_point)
+    if !is_true(peek)
+        new_point = I(new_point)
+    end
     add_point_bowyer_watson_after_found_triangle!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history, peek)
     add_point_bowyer_watson_onto_constrained_segment!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history, peek)
     return V
@@ -163,8 +165,10 @@ function add_point_bowyer_watson!(
     store_event_history=Val(false),
     event_history=nothing,
     exterior_curve_index=1,
-    peek=Val(false)) where {I}
-    new_point = I(new_point)
+    peek::P=Val(false)) where {I,P}
+    if !is_true(peek)
+        new_point = I(new_point)
+    end
     q = get_point(tri, new_point)
     V = jump_and_march(tri, q; m=nothing, point_indices=nothing, try_points=nothing, k=initial_search_point, rng, exterior_curve_index)
     flag = point_position_relative_to_triangle(tri, V, q)
@@ -181,7 +185,7 @@ function add_point_bowyer_watson_onto_constrained_segment!(
     update_representative_point=true,
     store_event_history=Val(false),
     event_history=nothing,
-    peek=Val(false))
+    peek::P=Val(false)) where {P}
     if is_on(flag) && is_constrained(tri)
         # If the point we are adding appears on a segment, then we perform the depth-first search 
         # on each side the segment. We also need to update the 
@@ -229,7 +233,7 @@ function add_point_bowyer_watson_after_found_triangle!(
     update_representative_point=true,
     store_event_history=Val(false),
     event_history=nothing,
-    peek=Val(false))
+    peek::P=Val(false)) where {P}
     if is_ghost_triangle(V) && is_constrained(tri)
         # When we have a constrained boundary edge, we don't want to walk into its 
         # interior. So let's just check this case now.
@@ -252,7 +256,7 @@ function add_point_bowyer_watson_dig_cavities!(
     update_representative_point=true,
     store_event_history=Val(false),
     event_history=nothing,
-    peek=Val(false)) where {I}
+    peek::P=Val(false)) where {I,P}
     i, j, k = indices(V)
     ℓ₁ = get_adjacent(tri, j, i)
     ℓ₂ = get_adjacent(tri, k, j)
@@ -314,7 +318,7 @@ function add_point_bowyer_watson_dig_cavities!(
     return nothing
 end
 
-@inline function dig_cavity!(tri::Triangulation, r::I, i, j, ℓ, flag, V, store_event_history=Val(false), event_history=nothing, peek=Val(false)) where {I}
+@inline function dig_cavity!(tri::Triangulation{P,Ts,I}, r, i, j, ℓ, flag, V, store_event_history=Val(false), event_history=nothing, peek::F=Val(false)) where {P,Ts,I,F}
     if !edge_exists(ℓ)
         # The triangle has already been deleted in this case. 
         return nothing
