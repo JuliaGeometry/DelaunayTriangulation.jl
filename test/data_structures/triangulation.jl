@@ -89,7 +89,7 @@ end
                   tri.adjacent.adjacent[(92, -6)]
             @test DT.get_adjacent(tri, (723, 1356)) ==
                   DT.get_adjacent(tri, (723, 1356); check_existence=Val(true)) ==
-                  tri.adjacent.adjacent[(723, 1356)]
+                  get(tri.adjacent.adjacent, (723, 1356), DT.DefaultAdjacentValue)
             @inferred DT.get_adjacent(tri, (723, 1356))
             @inferred DT.get_adjacent(tri, (723, 1356); check_existence=Val(true))
             DT.add_adjacent!(tri, 101117, 20311, 5)
@@ -472,8 +472,6 @@ end
             @test clean_tri ≠ tri
             DT.delete_adjacent2vertex!(tri, 3, 58, 60)
             DT.delete_neighbour!(tri, 5, 171)
-            @test clean_tri ≠ tri
-            DT.clear_empty_features!(tri)
             @test clean_tri == tri
             _tri = triangulate_rectangle(0.0, 10.0, 0.0, 20.0, 11, 21)
             T = (51, 41, 52)

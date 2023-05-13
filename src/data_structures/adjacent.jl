@@ -10,10 +10,10 @@ See the docs for a description of how boundary edges are handled.
 See also [`Adjacent2Vertex`](@ref).
 
 # Fields 
-- `adjacent::DefaultDict{E,I,I}`
+- `adjacent::Dict{E,I}`
 
 The `Dict` used for storing the edges (the keys) and the associated vertices 
-(the values). If `(u, v)` is not a valid edge, then `w = adjacent[(u, v)]`
+(the values). If `(u, v)` is not a valid edge, then `w = get_adjacent(adjacent, u, v)`
 returns `$DefaultAdjacentValue` (this value is defined in `DefaultAdjacentValue`).
 Otherwise, `(u, v, w)` is a positively oriented triangle.
 
@@ -23,9 +23,9 @@ The adjacent map can be constructed in two ways:
 - `Adjacent{I, E}() where {I, E}`
 
 Creates an empty map.
-- `Adjacent(adj::DefaultDict{E,I,I}) where {E,I,I}`
+- `Adjacent(adj::Dict{E,I,I}) where {E,I,I}`
 
-Creates an adjacent map from an existing `DefaultDict`.
+Creates an adjacent map from an existing `Dict`.
 
 # Extended help 
 You should not work with the `adjacent` field directly. We provide the following 
@@ -50,7 +50,6 @@ default value is `Val(false)`, meaning this isn't checked.
 - `add_triangle!(adj, T...)`
 - `delete_triangle!(adj, i, j, k)` or `delete_triangle!(adj, T)`
 - `delete_triangle!(adj, T...)`
-- `clear_empty_keys!(adj)`
 
 ## Iteration 
 You can also iterate over `Adjacent` maps the same way as you would 
@@ -70,13 +69,13 @@ end
     boundary, do not worry).
 """
 struct Adjacent{I,E}
-    adjacent::DefaultDict{E,I,I}
+    adjacent::Dict{E,I}
     function Adjacent{I,E}() where {I,E}
-        A = DefaultDict{E,I,I}(I(DefaultAdjacentValue))
+        A = Dict{E,I}()
         adj = new{I,E}(A)
         return adj
     end
-    Adjacent(adj::DefaultDict{E,I,I}) where {I,E} = new{I,E}(adj)
+    Adjacent(adj::Dict{E,I}) where {I,E} = new{I,E}(adj)
 end
 Base.:(==)(adj::Adjacent, adj2::Adjacent) = get_adjacent(adj) == get_adjacent(adj2)
 function Base.show(io::IO, m::MIME"text/plain", adj::Adjacent{I,E}) where {I,E}
@@ -115,7 +114,7 @@ function get_adjacent(adj::Adjacent{I,E}, u, v; check_existence=Val(false), boun
     return get_adjacent(adj, construct_edge(E, u, v); check_existence, boundary_index_ranges)
 end
 
-@inline _get_adjacent(adj::Adjacent{I,E}, uv::E) where {I,E} = get_adjacent(adj)[uv]
+@inline _get_adjacent(adj::Adjacent{I,E}, uv::E) where {I,E} = get(get_adjacent(adj), uv, I(DefaultAdjacentValue))
 @inline function _safe_get_adjacent(adj::Adjacent{I,E}, uv::E, boundary_index_ranges=nothing) where {I,E}
     u = initial(uv)
     v = terminal(uv)
@@ -239,18 +238,5 @@ end
 Base.iterate(adj::Adjacent, state...) = Base.iterate(get_adjacent(adj), state...)
 Base.length(adj::Adjacent) = Base.length(get_adjacent(adj))
 Base.eltype(::Type{Adjacent{I,E}}) where {I,E} = Pair{E,I}
-
-"""
-    clear_empty_keys!(adj::Adjacent) 
-
-Given an [`Adjacent`](@ref) map `adj`, removes any edges that 
-map to $DefaultAdjacentValue`.
-"""
-function clear_empty_keys!(adj::Adjacent)
-    for (uv, w) in adj
-        !edge_exists(w) && delete_adjacent!(adj, uv)
-    end
-    return nothing
-end
 
 Base.sizehint!(adj::Adjacent, n) = Base.sizehint!(get_adjacent(adj), n)
