@@ -306,9 +306,8 @@ end
         tri = triangulate(get_points(tri))
         e = (23, 71)
         history = DT.PointLocationHistory{NTuple{3,Int64},NTuple{2,Int64},Int64}()
-        jump_and_march(tri.points, tri.adjacent, tri.adjacent2vertex, tri.graph,
-            tri.boundary_index_ranges, DT.get_representative_point_list(tri), tri.boundary_map, get_point(tri, 71);
-            m=nothing, k=23, TriangleType=NTuple{3,Int64}, store_history=true, history=history)
+        jump_and_march(tri, get_point(tri, 71);
+            m=nothing, k=23,  store_history=true, history=history)
         collinear_segments = history.collinear_segments
         DT.connect_segments!(collinear_segments)
         DT.extend_segments!(collinear_segments, e)
@@ -320,9 +319,8 @@ end
     tri = triangulate_rectangle(0, 5, 0, 10, 6, 11; add_ghost_triangles=true)
     e = (14, 40)
     history = DT.PointLocationHistory{NTuple{3,Int64},NTuple{2,Int64},Int64}()
-    jump_and_march(tri.points, tri.adjacent, tri.adjacent2vertex, tri.graph,
-        tri.boundary_index_ranges, DT.get_representative_point_list(tri), tri.boundary_map, get_point(tri, 40);
-        m=nothing, k=14, TriangleType=NTuple{3,Int64}, store_history=true, history=history)
+    jump_and_march(tri, get_point(tri, 40);
+        m=nothing, k=14, store_history=true, history=history)
     collinear_segments = history.collinear_segments
     DT.fix_segments!(collinear_segments, history.collinear_point_indices)
     DT.connect_segments!(collinear_segments)
@@ -331,9 +329,8 @@ end
 
     e = (2, 54)
     history = DT.PointLocationHistory{NTuple{3,Int64},NTuple{2,Int64},Int64}()
-    jump_and_march(tri.points, tri.adjacent, tri.adjacent2vertex, tri.graph,
-        tri.boundary_index_ranges, DT.get_representative_point_list(tri), tri.boundary_map, get_point(tri, 54);
-        m=nothing, k=2, TriangleType=NTuple{3,Int64}, store_history=true, history=history)
+    jump_and_march(tri, get_point(tri, 54);
+        m=nothing, k=2, store_history=true, history=history)
     collinear_segments = history.collinear_segments
     bad_indices = history.collinear_point_indices
     DT.fix_segments!(collinear_segments, bad_indices)
