@@ -15,9 +15,9 @@ global tri = Triangulation(pts; IntegerType=Int32)
 
 throw_f = expr -> @static if VERSION < v"1.8"
       ErrorException(expr)
-  else
+else
       expr
-  end
+end
 
 @testset "Initialising a triangulation" begin
       @test tri == Triangulation(pts,
@@ -855,4 +855,11 @@ end
       end
       @test all(!DT.is_boundary_index, solid)
       @test all(DT.is_boundary_index, ghost)
+end
+
+@testset "get_adjacent concurrency" begin # Shouldn't be an issue anymore since we removed DefaultDict, but let's keep this here anyway. The test here is simply that it doesn't error.
+      tri = triangulate(rand(2, 50), delete_ghosts=false)
+      Base.Threads.@threads for _ in 1:5000
+            get_adjacent(tri, -5, rand(1:1000))
+      end
 end

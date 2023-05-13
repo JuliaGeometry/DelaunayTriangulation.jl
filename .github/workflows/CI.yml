@@ -42,7 +42,10 @@ jobs:
 
       - name: Run the tests
         uses: julia-actions/julia-runtest@v1
-
+        with:
+          annotate: true 
+          julia_args: "--threads=auto"
+  
       - name: Process the coverage
         if: always()
         uses: julia-actions/julia-processcoverage@v1
