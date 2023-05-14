@@ -814,3 +814,16 @@ end
       @test DT.get_shared_vertex(e, f) == 7
       @test DT.get_shared_vertex(f, e) == 7
 end
+
+@testset "replace_boundary_triangle_with_ghost_triangle" begin
+      tri = triangulate(rand(2, 5000), delete_ghosts=false)
+      _tri = triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 25, 25, add_ghost_triangles=true)
+      for tri in (tri, _tri)
+            for T in each_ghost_triangle(tri)
+                  T = DT.rotate_ghost_triangle_to_standard_form(T)
+                  i, j, k = indices(T)
+                  V = (j, i, get_adjacent(tri, j, i))
+                  @test DT.replace_boundary_triangle_with_ghost_triangle(tri, V) == T
+            end
+      end
+end

@@ -841,3 +841,16 @@ function get_shared_vertex(e, f)
         return I(DefaultAdjacentValue)
     end
 end
+
+"""
+    replace_boundary_triangle_with_ghost_triangle(tri, V)
+
+Given a triangulation `tri` and a boundary triangle `V`, returns the ghost triangle associated with the boundary edge.
+"""
+function replace_boundary_triangle_with_ghost_triangle(tri, V)
+    u, v, w = indices(V)
+    T = triangle_type(tri)
+    is_boundary_edge(tri, v, u) && return construct_triangle(T, v, u, get_adjacent(tri, v, u))
+    is_boundary_edge(tri, w, v) && return construct_triangle(T, w, v, get_adjacent(tri, w, v))
+    return construct_triangle(T, u, w, get_adjacent(tri, u, w))
+end
