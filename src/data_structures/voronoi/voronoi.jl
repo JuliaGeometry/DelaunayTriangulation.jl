@@ -470,13 +470,13 @@ function jump_to_voronoi_polygon(tri::Triangulation, q; kwargs...)
     qx, qy = getxy(q)
     V = rotate_triangle_to_standard_form(V)
     i, j, k = V
-    a, b = get_point(vor, i, j)
+    a, b = get_point(tri, i, j)
     ax, ay = getxy(a)
     bx, by = getxy(b)
     daq = (qx - ax)^2 + (qy - ay)^2
     dbq = (qx - bx)^2 + (qy - by)^2
     if !is_boundary_index(k)
-        c = get_point(vor, k)
+        c = get_point(tri, k)
         cx, cy = getxy(c)
         dcq = (qx - cx)^2 + (qy - cy)^2
     else
