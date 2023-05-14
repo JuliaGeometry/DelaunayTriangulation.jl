@@ -436,32 +436,6 @@ end
 Finds the polygon containing the point `q` in the Voronoi tessellation `vor`. The keyword arguments are passed to `jump_and_march`.
 """
 function jump_and_march(vor::VoronoiTessellation, q; kwargs...)
-    #=
-    V = jump_and_march(get_triangulation(vor), q; kwargs...)
-    qx, qy = getxy(q)
-    V = rotate_triangle_to_standard_form(V)
-    i, j, k = V
-    a, b = get_generator(vor, i, j)
-    ax, ay = getxy(a)
-    bx, by = getxy(b)
-    daq = (qx - ax)^2 + (qy - ay)^2
-    dbq = (qx - bx)^2 + (qy - by)^2
-    if !is_boundary_index(k)
-        c = get_generator(vor, k)
-        cx, cy = getxy(c)
-        dcq = (qx - cx)^2 + (qy - cy)^2
-    else
-        dcq = typemax(number_type(vor))
-    end
-    min_dist = min(daq, dbq, dcq)
-    if min_dist == daq
-        return i
-    elseif min_dist == dbq
-        return j
-    else
-        return k
-    end
-    =#
     return jump_to_voronoi_polygon(get_triangulation(vor), q; kwargs...)
 end
 
