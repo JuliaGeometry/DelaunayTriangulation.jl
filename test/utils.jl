@@ -872,12 +872,12 @@ end
             21, 12, 3,
             31, 22, 13, 4
       ))
-      neighbours = DT.iterated_neighbourhood(tri, 1, 2)
+      neighbours = DT.iterated_neighbourhood!(neighbours, tri, 1, 2)
       @test neighbours == Set((
             2, 11,
             21, 12, 3
       ))
-      neighbours = DT.iterated_neighbourhood(tri, 1, 6)
+      neighbours = DT.iterated_neighbourhood!(neighbours, tri, 1, 6)
       @test neighbours == Set((
             2, 11,
             21, 12, 3,
