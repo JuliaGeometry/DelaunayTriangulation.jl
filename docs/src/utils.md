@@ -38,4 +38,11 @@ is_last_boundary_index
 is_first_boundary_index 
 previndex_circular
 nextindex_circular
+is_first_boundary_index
+is_last_boundary_index 
+get_neighbouring_boundary_edges
+convert_to_boundary_edge
+get_shared_vertex
+replace_boundary_triangle_with_ghost_triangle
+iterated_neighbourhood
 ```

@@ -819,8 +819,8 @@ is a boundary index, where `v` is the edge returned.
 function convert_to_boundary_edge(tri::Triangulation, e)
     if !is_boundary_edge(tri, e)
         return reverse_edge(e)
-    else 
-        return e 
+    else
+        return e
     end
 end
 
@@ -853,4 +853,29 @@ function replace_boundary_triangle_with_ghost_triangle(tri, V)
     is_boundary_edge(tri, v, u) && return construct_triangle(T, v, u, get_adjacent(tri, v, u))
     is_boundary_edge(tri, w, v) && return construct_triangle(T, w, v, get_adjacent(tri, w, v))
     return construct_triangle(T, u, w, get_adjacent(tri, u, w))
+end
+
+"""
+    iterated_neighbourhood(tri, i, d)
+
+Computes the `d`-times iterated neighbourhood of `i` in the triangulation `tri`. In particular,
+this returns all indices that are within `d` edges of `i`, excluding `i` itself.
+"""
+function iterated_neighbourhood(tri, i, d)
+    neighbours = Set(get_neighbours(tri, i))
+    I = integer_type(tri)
+    sizehint!(neighbours, ceil(I, 6^(d/2)))
+    filter!(!is_boundary_index, neighbours)
+    for _ in 2:d
+        new_neighbours = Set{I}() # don't want to mutate the iterator while iterating
+        for j in neighbours
+            for k in get_neighbours(tri, j)
+                if k ≠ i && !is_boundary_index(k)
+                    push!(new_neighbours, k)
+                end
+            end
+        end
+        union!(neighbours, new_neighbours)
+    end
+    return neighbours
 end
