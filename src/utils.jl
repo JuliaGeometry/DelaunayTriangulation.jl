@@ -862,10 +862,20 @@ Computes the `d`-times iterated neighbourhood of `i` in the triangulation `tri`.
 this returns all indices that are within `d` edges of `i`, excluding `i` itself.
 """
 function iterated_neighbourhood(tri, i, d)
-    neighbours = Set(get_neighbours(tri, i))
     I = integer_type(tri)
-    sizehint!(neighbours, ceil(I, 6^(d/2)))
-    filter!(!is_boundary_index, neighbours)
+    neighbours = Set{I}()
+    sizehint!(neighbours, ceil(I, 6^(d / 2)))
+    return iterated_neighbourhood!(neighbours, tri, i, d)
+end
+function iterated_neighbourhood!(neighbours, tri, i, d)
+    empty!(neighbours)
+    i_neighbours = get_neighbours(tri, i)
+    I = integer_type(tri)
+    for j in i_neighbours
+        if !is_boundary_index(j)
+            push!(neighbours, j)
+        end
+    end
     for _ in 2:d
         new_neighbours = Set{I}() # don't want to mutate the iterator while iterating
         for j in neighbours

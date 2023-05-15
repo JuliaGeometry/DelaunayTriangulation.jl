@@ -866,45 +866,45 @@ end
       @test S1 == neighbours
 
       tri = triangulate_rectangle(0, 1, 0, 1, 10, 10)
-neighbours = DT.iterated_neighbourhood(tri, 1, 3)
-@test neighbours == Set((
-      2, 11,
-      21, 12, 3,
-      31, 22, 13, 4
-))
-neighbours = DT.iterated_neighbourhood(tri, 1, 2)
-@test neighbours == Set((
-      2, 11,
-      21, 12, 3
-))
-neighbours = DT.iterated_neighbourhood(tri, 1, 6)
-@test neighbours == Set((
-      2, 11,
-      21, 12, 3,
-      31, 22, 13, 4,
-      41, 32, 23, 14, 5,
-      51, 42, 33, 24, 15, 6,
-      61, 52, 43, 34, 25, 16, 7
-))
-add_ghost_triangles!(tri)
-neighbours = DT.iterated_neighbourhood(tri, 1, 3)
-@test neighbours == Set((
-      2, 11,
-      21, 12, 3,
-      31, 22, 13, 4
-))
-neighbours = DT.iterated_neighbourhood(tri, 1, 2)
-@test neighbours == Set((
-      2, 11,
-      21, 12, 3
-))
-neighbours = DT.iterated_neighbourhood(tri, 1, 6)
-@test neighbours == Set((
-      2, 11,
-      21, 12, 3,
-      31, 22, 13, 4,
-      41, 32, 23, 14, 5,
-      51, 42, 33, 24, 15, 6,
-      61, 52, 43, 34, 25, 16, 7
-))
+      neighbours = DT.iterated_neighbourhood(tri, 1, 3)
+      @test neighbours == Set((
+            2, 11,
+            21, 12, 3,
+            31, 22, 13, 4
+      ))
+      neighbours = DT.iterated_neighbourhood(tri, 1, 2)
+      @test neighbours == Set((
+            2, 11,
+            21, 12, 3
+      ))
+      neighbours = DT.iterated_neighbourhood(tri, 1, 6)
+      @test neighbours == Set((
+            2, 11,
+            21, 12, 3,
+            31, 22, 13, 4,
+            41, 32, 23, 14, 5,
+            51, 42, 33, 24, 15, 6,
+            61, 52, 43, 34, 25, 16, 7
+      ))
+      add_ghost_triangles!(tri)
+      neighbours = DT.iterated_neighbourhood(tri, 1, 3)
+      @test neighbours == Set((
+            2, 11,
+            21, 12, 3,
+            31, 22, 13, 4
+      ))
+      neighbours = DT.iterated_neighbourhood(tri, 1, 2)
+      @test neighbours == Set((
+            2, 11,
+            21, 12, 3
+      ))
+      neighbours = DT.iterated_neighbourhood(tri, 1, 6)
+      @test neighbours == Set((
+            2, 11,
+            21, 12, 3,
+            31, 22, 13, 4,
+            41, 32, 23, 14, 5,
+            51, 42, 33, 24, 15, 6,
+            61, 52, 43, 34, 25, 16, 7
+      ))
 end
