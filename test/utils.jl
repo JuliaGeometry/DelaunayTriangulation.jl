@@ -872,13 +872,11 @@ end
             21, 12, 3,
             31, 22, 13, 4
       ))
-      empty!(neighbours)
       neighbours = DT.iterated_neighbourhood!(neighbours, tri, 1, 2)
       @test neighbours == Set((
             2, 11,
             21, 12, 3
       ))
-      empty!(neighbours)
       neighbours = DT.iterated_neighbourhood!(neighbours, tri, 1, 6)
       @test neighbours == Set((
             2, 11,
@@ -888,7 +886,6 @@ end
             51, 42, 33, 24, 15, 6,
             61, 52, 43, 34, 25, 16, 7
       ))
-      empty!(neighbours)
       add_ghost_triangles!(tri)
       neighbours = DT.iterated_neighbourhood(tri, 1, 3)
       @test neighbours == Set((
@@ -896,13 +893,11 @@ end
             21, 12, 3,
             31, 22, 13, 4
       ))
-      empty!(neighbours)
       neighbours = DT.iterated_neighbourhood(tri, 1, 2)
       @test neighbours == Set((
             2, 11,
             21, 12, 3
       ))
-      empty!(neighbours)
       neighbours = DT.iterated_neighbourhood(tri, 1, 6)
       @test neighbours == Set((
             2, 11,
@@ -912,5 +907,4 @@ end
             51, 42, 33, 24, 15, 6,
             61, 52, 43, 34, 25, 16, 7
       ))
-      empty!(neighbours)
 end

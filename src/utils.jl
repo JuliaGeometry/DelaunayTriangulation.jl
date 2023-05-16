@@ -868,6 +868,7 @@ function iterated_neighbourhood(tri, i, d)
     return iterated_neighbourhood!(neighbours, tri, i, d)
 end
 function iterated_neighbourhood!(neighbours, tri, i, d)
+    empty!(neighbours)
     i_neighbours = get_neighbours(tri, i)
     I = integer_type(tri)
     for j in i_neighbours
