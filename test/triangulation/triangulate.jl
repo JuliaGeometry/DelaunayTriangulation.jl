@@ -62,7 +62,7 @@ end
             (8, 9, 3),
             (9, 7, 3),
             (3, 7, 4)))
-        adj = DT.Adjacent(DefaultDict(DT.DefaultAdjacentValue,
+        adj = DT.Adjacent(
             Dict(@_adj(2, 9, 8)...,
                 @_adj(2, 8, 6)...,
                 @_adj(2, 6, 1)...,
@@ -80,8 +80,8 @@ end
                 @_adj(4, 7, DT.BoundaryIndex)...,
                 @_adj(7, 9, DT.BoundaryIndex)...,
                 @_adj(9, 2, DT.BoundaryIndex)...,
-                @_adj(2, 1, DT.BoundaryIndex)...)))
-        adj2 = DT.Adjacent(DefaultDict(DT.DefaultAdjacentValue,
+                @_adj(2, 1, DT.BoundaryIndex)...))
+        adj2 = DT.Adjacent(
             Dict(@_adj(2, 9, 8)...,
                 @_adj(2, 8, 6)...,
                 @_adj(2, 6, 1)...,
@@ -99,7 +99,7 @@ end
                 (4, 7) => DT.BoundaryIndex,
                 (7, 9) => DT.BoundaryIndex,
                 (9, 2) => DT.BoundaryIndex,
-                (2, 1) => DT.BoundaryIndex)))
+                (2, 1) => DT.BoundaryIndex))
         adj2v = DT.Adjacent2Vertex(Dict(DT.BoundaryIndex => Set{NTuple{2,Int64}}(((1, 5),
                 (5, 4),
                 (4, 7),

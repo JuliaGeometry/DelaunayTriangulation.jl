@@ -814,3 +814,97 @@ end
       @test DT.get_shared_vertex(e, f) == 7
       @test DT.get_shared_vertex(f, e) == 7
 end
+
+@testset "replace_boundary_triangle_with_ghost_triangle" begin
+      tri = triangulate(rand(2, 5000), delete_ghosts=false)
+      _tri = triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 25, 25, add_ghost_triangles=true)
+      for tri in (tri, _tri)
+            for T in each_ghost_triangle(tri)
+                  T = DT.rotate_ghost_triangle_to_standard_form(T)
+                  i, j, k = indices(T)
+                  V = (j, i, get_adjacent(tri, j, i))
+                  @test DT.replace_boundary_triangle_with_ghost_triangle(tri, V) == T
+            end
+      end
+end
+
+@testset "iterated_neighbourhood" begin
+      points = NTuple{2,Float64}[]
+      for i in 1:5
+            t = [0.0, π / 2, π, 3π / 2]
+            push!(points, [(i^2 * cos(t), i^2 * sin(t)) for t in t]...)
+      end
+      push!(points, (0.0, 0.0))
+      n = num_points(points)
+      tri = triangulate(points, delete_ghosts=false)
+
+      neighbours = DT.iterated_neighbourhood(tri, n, 1)
+      @test neighbours == filter(!DT.is_boundary_index, get_neighbours(tri, n))
+      neighbours = DT.iterated_neighbourhood(tri, n, 2)
+      S1 = get_neighbours(tri, n)
+      S2 = [get_neighbours(tri, i) for i in S1]
+      [union!(S1, S) for S in S2]
+      filter!(s -> !(s == n || DT.is_boundary_index(s)), S1)
+      @test S1 == neighbours
+      neighbours = DT.iterated_neighbourhood(tri, n, 3)
+      S1 = get_neighbours(tri, n)
+      S2 = [get_neighbours(tri, i) for i in S1]
+      S3 = [get_neighbours(tri, i) for i in reduce(union, S2)]
+      [union!(S1, S) for S in S2]
+      [union!(S1, S) for S in S3]
+      filter!(s -> !(s == n || DT.is_boundary_index(s)), S1)
+      @test S1 == neighbours
+      neighbours = DT.iterated_neighbourhood(tri, n, 4)
+      S1 = get_neighbours(tri, n)
+      S2 = [get_neighbours(tri, i) for i in S1]
+      S3 = [get_neighbours(tri, i) for i in reduce(union, S2)]
+      S4 = [get_neighbours(tri, i) for i in reduce(union, S3)]
+      [union!(S1, S) for S in S2]
+      [union!(S1, S) for S in S3]
+      [union!(S1, S) for S in S4]
+      filter!(s -> !(s == n || DT.is_boundary_index(s)), S1)
+      @test S1 == neighbours
+
+      tri = triangulate_rectangle(0, 1, 0, 1, 10, 10)
+      neighbours = DT.iterated_neighbourhood(tri, 1, 3)
+      @test neighbours == Set((
+            2, 11,
+            21, 12, 3,
+            31, 22, 13, 4
+      ))
+      neighbours = DT.iterated_neighbourhood!(neighbours, tri, 1, 2)
+      @test neighbours == Set((
+            2, 11,
+            21, 12, 3
+      ))
+      neighbours = DT.iterated_neighbourhood!(neighbours, tri, 1, 6)
+      @test neighbours == Set((
+            2, 11,
+            21, 12, 3,
+            31, 22, 13, 4,
+            41, 32, 23, 14, 5,
+            51, 42, 33, 24, 15, 6,
+            61, 52, 43, 34, 25, 16, 7
+      ))
+      add_ghost_triangles!(tri)
+      neighbours = DT.iterated_neighbourhood(tri, 1, 3)
+      @test neighbours == Set((
+            2, 11,
+            21, 12, 3,
+            31, 22, 13, 4
+      ))
+      neighbours = DT.iterated_neighbourhood(tri, 1, 2)
+      @test neighbours == Set((
+            2, 11,
+            21, 12, 3
+      ))
+      neighbours = DT.iterated_neighbourhood(tri, 1, 6)
+      @test neighbours == Set((
+            2, 11,
+            21, 12, 3,
+            31, 22, 13, 4,
+            41, 32, 23, 14, 5,
+            51, 42, 33, 24, 15, 6,
+            61, 52, 43, 34, 25, 16, 7
+      ))
+end

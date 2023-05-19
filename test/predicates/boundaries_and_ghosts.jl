@@ -33,14 +33,14 @@ boundary_nodes = get_boundary_nodes(tri2)
 end
 
 @testset "is_boundary_edge" begin
-    adj = DT.Adjacent(DefaultDict(DT.DefaultAdjacentValue,
+    adj = DT.Adjacent(
         Dict((1, 2) => 5,
             (2, 7) => 1,
             (5, 3) => BI,
             (3, 5) => 7,
             (5, 7) => BI - 1,
             (7, 5) => 13,
-            (13, 3) => BI - 2)))
+            (13, 3) => BI - 2))
     results = [false, false, true, false, true, false, true, false, false]
     edges = [(1, 2), (2, 7), (5, 3), (3, 5), (5, 7), (7, 5), (13, 3), (23, 5), (36, 3)]
     for (ij, result) in zip(edges, results)

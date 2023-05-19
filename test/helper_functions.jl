@@ -168,19 +168,24 @@ function test_triangle_orientation(tri; check_ghost_triangle_orientation=true)
 end
 
 function test_delaunay_criterion(tri; check_ghost_triangle_delaunay=true)
-    for T in each_triangle(tri)
+    lk = ReentrantLock()
+    failures = Tuple{DT.triangle_type(tri),DT.integer_type(tri)}[]
+    Base.Threads.@threads for T in collect(each_triangle(tri))
         if DT.is_ghost_triangle(T) && !check_ghost_triangle_delaunay
             continue
         end
-        for r in each_solid_vertex(tri)
+        for r in collect(each_solid_vertex(tri))
+            !isempty(failures) && break
             cert = DT.point_position_relative_to_circumcircle(tri, T, r)
             if DT.is_inside(cert)
                 ace = get_all_constrained_edges(tri)
                 if DT.is_empty(ace)
-                    flag = !DT.is_inside(cert)
+                    flag = !DT.is_inside(cert) || !isempty(failures)
                     if !flag
-                        println("Delaunay criterion test failed for the triangle-vertex pair ($T, $r).")
-                        return false
+                        lock(lk) do
+                            isempty(failures) && push!(failures, (T, r))
+                        end
+                        break
                     end
                 else # This is extremely slow. Should probably get around to cleaning this up sometime.
                     i, j, k = DT.indices(T)
@@ -206,21 +211,27 @@ function test_delaunay_criterion(tri; check_ghost_triangle_delaunay=true)
                     all_constrained_edges = Set{NTuple{2,DT.integer_type(tri)}}()
                     for e in each_edge(ace)
                         u, v = DT.edge_indices(e)
-                        ee = DT.construct_edge(E, min(u, v), max(u, v))
                         push!(all_constrained_edges, (min(u, v), max(u, v)))
                     end
                     intersect!(all_edges, all_constrained_edges)
                     flags = [DT.line_segment_intersection_type(tri, initial(e), terminal(e), i, r) for e in each_edge(all_edges) for i in filter(!DT.is_boundary_index, (i, j, k))]
-                    flag = !all(DT.is_none, flags) || isempty(flags)
+                    flag = !all(DT.is_none, flags) || isempty(flags) || !isempty(failures)
                     if !flag
-                        println("Delaunay criterion test failed for the triangle-vertex pair ($T, $r).")
-                        return false
+                        lock(lk) do
+                            isempty(failures) && push!(failures, (T, r))
+                        end
+                        break
                     end
                 end
             end
         end
     end
-    return true
+    if isempty(failures)
+        return true
+    else
+        println("Delaunay criterion test failed for the following triangle-vertex pair (others may be missing): ", failures[1])
+        return false
+    end
 end
 
 function test_each_edge_has_two_incident_triangles(tri)
@@ -719,7 +730,7 @@ function example_triangulation()
         1 1 0 1 1 0 0
     ]
     DG = DT.Graph(DT.SimpleGraphs.relabel(DT.SimpleGraphs.UndirectedGraph(A), Dict(1:7 .=> [-1, (1:6)...])))
-    adj = DT.Adjacent(DT.DataStructures.DefaultDict(DT.DefaultAdjacentValue,
+    adj = DT.Adjacent(
         Dict(
             (6, 3) => 1, (3, 1) => 6, (1, 6) => 3,
             (3, 2) => 5, (2, 5) => 3, (5, 3) => 2,
@@ -730,7 +741,7 @@ function example_triangulation()
             (2, 3) => DT.BoundaryIndex, (3, 6) => DT.BoundaryIndex,
             (6, 4) => DT.BoundaryIndex
         )
-    ))
+    )
     adj2v = DT.Adjacent2Vertex(Dict(
         DT.BoundaryIndex => Set{NTuple{2,Int64}}([(4, 5), (5, 2), (2, 3), (3, 6), (6, 4)]),
         1 => Set{NTuple{2,Int64}}([(5, 4), (3, 5), (6, 3), (4, 6)]),
@@ -762,7 +773,7 @@ function example_empty_triangulation()
     T = Set{NTuple{3,Int64}}([])
     A = zeros(Int64, 0, 0)
     DG = DT.Graph(DT.SimpleGraphs.UndirectedGraph(A))
-    adj = DT.Adjacent(DT.DataStructures.DefaultDict(DT.DefaultAdjacentValue, Dict{NTuple{2,Int64},Int64}()))
+    adj = DT.Adjacent(Dict{NTuple{2,Int64},Int64}())
     adj2v = DT.Adjacent2Vertex(Dict(DT.BoundaryIndex => Set{NTuple{2,Int64}}()))
     rep = DT.get_empty_representative_points()
     DT.compute_representative_points!(rep, pts, [1, 2, 3, 1])
@@ -841,31 +852,15 @@ end
 
 function test_intersections(tri, e, allT, constrained_edges)
     for e in ((e[1], e[2]), (e[2], e[1]))
-        intersecting_triangles1, collinear_segments1, left1, right1 = DT.locate_intersecting_triangles(tri, e)
-        intersecting_triangles2, collinear_segments2, left2, right2 = DT.locate_intersecting_triangles(
-            e,
-            get_points(tri),
-            get_adjacent(tri),
-            get_adjacent2vertex(tri),
-            get_graph(tri),
-            get_boundary_index_ranges(tri),
-            DT.get_representative_point_list(tri),
-            get_boundary_map(tri),
-            NTuple{3,Int64},
-        )
-        for (intersecting_triangles, collinear_segments) in zip(
-            (intersecting_triangles1, intersecting_triangles2),
-            (collinear_segments1, collinear_segments2)
-        )
-            @test all(T -> DT.is_positively_oriented(DT.triangle_orientation(tri, T)), intersecting_triangles)
-            @test all(!DT.is_none, [DT.triangle_line_segment_intersection(tri, T, e) for T in intersecting_triangles])
-            @test DT.compare_triangle_collections(allT, intersecting_triangles)
-            @test allunique(intersecting_triangles)
-            if typeof(constrained_edges) <: AbstractVector
-                @test collinear_segments == constrained_edges
-            else # Tuple of possibilities, in case the edge's endpoints have equal degree so that we could start at any point
-                @test any(==(collinear_segments), constrained_edges)
-            end
+        intersecting_triangles, collinear_segments, left, right = DT.locate_intersecting_triangles(tri, e)
+        @test all(T -> DT.is_positively_oriented(DT.triangle_orientation(tri, T)), intersecting_triangles)
+        @test all(!DT.is_none, [DT.triangle_line_segment_intersection(tri, T, e) for T in intersecting_triangles])
+        @test DT.compare_triangle_collections(allT, intersecting_triangles)
+        @test allunique(intersecting_triangles)
+        if typeof(constrained_edges) <: AbstractVector
+            @test collinear_segments == constrained_edges
+        else # Tuple of possibilities, in case the edge's endpoints have equal degree so that we could start at any point
+            @test any(==(collinear_segments), constrained_edges)
         end
     end
 end
@@ -898,35 +893,19 @@ end
 function test_segment_triangle_intersections(tri, edge, true_triangles, true_collinear_segments, current_constrained_edges)
     constrained_edges = get_constrained_edges(tri)
     for edge in ((edge[1], edge[2]), (edge[2], edge[1]))
-        intersecting_triangles1, collinear_segments1, left1, right1 = DT.locate_intersecting_triangles(tri, edge)
-        intersecting_triangles2, collinear_segments2, left2, right2 = DT.locate_intersecting_triangles(
-            edge,
-            get_points(tri),
-            get_adjacent(tri),
-            get_adjacent2vertex(tri),
-            get_graph(tri),
-            get_boundary_index_ranges(tri),
-            DT.get_representative_point_list(tri),
-            get_boundary_map(tri),
-            NTuple{3,Int64},
-        )
-        for (intersecting_triangles, collinear_segments) in zip(
-            (intersecting_triangles1, intersecting_triangles2),
-            (collinear_segments1, collinear_segments2)
-        )
-            @test all(T -> DT.is_positively_oriented(DT.triangle_orientation(tri, T)), intersecting_triangles)
-            @test all(!DT.is_none, [DT.triangle_line_segment_intersection(tri, T, edge) for T in intersecting_triangles])
-            if typeof(true_triangles) <: AbstractVector || typeof(true_triangles) <: AbstractSet
-                @test DT.compare_triangle_collections(true_triangles, intersecting_triangles)
-            else
-                @test any(V -> DT.compare_triangle_collections(intersecting_triangles, V), true_triangles)
-            end
-            @test allunique(intersecting_triangles)
-            if typeof(true_collinear_segments) <: AbstractVector || typeof(true_collinear_segments) <: AbstractSet
-                @test collinear_segments == true_collinear_segments
-            else # Tuple of possibilities, in case the edge's endpoints have equal degree so that we could start at any point
-                @test any(==(collinear_segments), true_collinear_segments)
-            end
+        intersecting_triangles, collinear_segments, left, right = DT.locate_intersecting_triangles(tri, edge)
+        @test all(T -> DT.is_positively_oriented(DT.triangle_orientation(tri, T)), intersecting_triangles)
+        @test all(!DT.is_none, [DT.triangle_line_segment_intersection(tri, T, edge) for T in intersecting_triangles])
+        if typeof(true_triangles) <: AbstractVector || typeof(true_triangles) <: AbstractSet
+            @test DT.compare_triangle_collections(true_triangles, intersecting_triangles)
+        else
+            @test any(V -> DT.compare_triangle_collections(intersecting_triangles, V), true_triangles)
+        end
+        @test allunique(intersecting_triangles)
+        if typeof(true_collinear_segments) <: AbstractVector || typeof(true_collinear_segments) <: AbstractSet
+            @test collinear_segments == true_collinear_segments
+        else # Tuple of possibilities, in case the edge's endpoints have equal degree so that we could start at any point
+            @test any(==(collinear_segments), true_collinear_segments)
         end
     end
     constrained_edges = get_constrained_edges(tri)

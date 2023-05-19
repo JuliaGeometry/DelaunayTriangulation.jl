@@ -589,6 +589,7 @@ function check_args(points, boundary_nodes)
             end
         end
     end
+    return true
 end
 
 """
@@ -818,8 +819,8 @@ is a boundary index, where `v` is the edge returned.
 function convert_to_boundary_edge(tri::Triangulation, e)
     if !is_boundary_edge(tri, e)
         return reverse_edge(e)
-    else 
-        return e 
+    else
+        return e
     end
 end
 
@@ -839,4 +840,52 @@ function get_shared_vertex(e, f)
         I = typeof(u)
         return I(DefaultAdjacentValue)
     end
+end
+
+"""
+    replace_boundary_triangle_with_ghost_triangle(tri, V)
+
+Given a triangulation `tri` and a boundary triangle `V`, returns the ghost triangle associated with the boundary edge.
+"""
+function replace_boundary_triangle_with_ghost_triangle(tri, V)
+    u, v, w = indices(V)
+    T = triangle_type(tri)
+    is_boundary_edge(tri, v, u) && return construct_triangle(T, v, u, get_adjacent(tri, v, u))
+    is_boundary_edge(tri, w, v) && return construct_triangle(T, w, v, get_adjacent(tri, w, v))
+    return construct_triangle(T, u, w, get_adjacent(tri, u, w))
+end
+
+"""
+    iterated_neighbourhood(tri, i, d)
+
+Computes the `d`-times iterated neighbourhood of `i` in the triangulation `tri`. In particular,
+this returns all indices that are within `d` edges of `i`, excluding `i` itself.
+"""
+function iterated_neighbourhood(tri, i, d)
+    I = integer_type(tri)
+    neighbours = Set{I}()
+    sizehint!(neighbours, ceil(I, 6^(d / 2)))
+    return iterated_neighbourhood!(neighbours, tri, i, d)
+end
+function iterated_neighbourhood!(neighbours, tri, i, d)
+    empty!(neighbours)
+    i_neighbours = get_neighbours(tri, i)
+    I = integer_type(tri)
+    for j in i_neighbours
+        if !is_boundary_index(j)
+            push!(neighbours, j)
+        end
+    end
+    for _ in 2:d
+        new_neighbours = Set{I}() # don't want to mutate the iterator while iterating
+        for j in neighbours
+            for k in get_neighbours(tri, j)
+                if k ≠ i && !is_boundary_index(k)
+                    push!(new_neighbours, k)
+                end
+            end
+        end
+        union!(neighbours, new_neighbours)
+    end
+    return neighbours
 end

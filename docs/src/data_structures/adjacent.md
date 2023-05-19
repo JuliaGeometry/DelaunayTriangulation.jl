@@ -18,7 +18,7 @@ struct Adjacent{I,E}
 end
 ```
 
-We use a `DefaultDict` from DataStructures.jl for storing these relationships. We need to use a `DefaultDict` rather than a `Dict` so that we more efficiently check if an edge exists, simply seeing if `get_adjacent(adj, u, v)` returns a `DefaultAdjacentValue` (see the `edge_exists` function). We list the complete docstring for `Adjacent` below, along with individual docstrings for methods for working with `Adjacent`.
+We list the complete docstring for `Adjacent` below, along with individual docstrings for methods for working with `Adjacent`.
 
 ```@docs 
 Adjacent
@@ -30,5 +30,4 @@ add_triangle!(::Ts, ::V, ::V, ::V) where {I,E,V<:Integer,Ts<:Adjacent{I,E}}
 add_triangle!(::Adjacent, ::Any)
 delete_triangle!(::Ts, ::V, ::V, ::V) where {I,E,V<:Integer,Ts<:Adjacent{I,E}}
 delete_triangle!(::Adjacent, ::Any)
-clear_empty_keys!(::Adjacent)
 ```

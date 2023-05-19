@@ -10,6 +10,7 @@ instead represents them using the indices of the convex hull.
     else
         compute_representative_points!(get_representative_point_list(tri), get_points(tri), get_convex_hull_indices(tri))
     end
+    return nothing
 end
 
 """

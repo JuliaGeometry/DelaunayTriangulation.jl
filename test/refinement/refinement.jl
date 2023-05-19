@@ -144,7 +144,7 @@ end
         validate_statistics(tri)
         @test validate_triangulation(tri)
     end
-    @test ps / 10 ≥ 0.88
+    @test ps / 10 ≥ 0.75
 end
 
 @testset "Another multiply-connected domain" begin

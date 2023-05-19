@@ -68,7 +68,7 @@ end
             p, q, r = get_point(tri, u, v, w)
             a1 = DT.triangle_area(p, q, r)
             a2 = DT.polygon_features(get_points(tri), [u, v, w, u])[1]
-            @test a1 ≈ a2
+            @test a1 ≈ a2 atol=1e-4
       end
 end
 

@@ -15,9 +15,9 @@ global tri = Triangulation(pts; IntegerType=Int32)
 
 throw_f = expr -> @static if VERSION < v"1.8"
       ErrorException(expr)
-  else
+else
       expr
-  end
+end
 
 @testset "Initialising a triangulation" begin
       @test tri == Triangulation(pts,
@@ -89,7 +89,7 @@ end
                   tri.adjacent.adjacent[(92, -6)]
             @test DT.get_adjacent(tri, (723, 1356)) ==
                   DT.get_adjacent(tri, (723, 1356); check_existence=Val(true)) ==
-                  tri.adjacent.adjacent[(723, 1356)]
+                  get(tri.adjacent.adjacent, (723, 1356), DT.DefaultAdjacentValue)
             @inferred DT.get_adjacent(tri, (723, 1356))
             @inferred DT.get_adjacent(tri, (723, 1356); check_existence=Val(true))
             DT.add_adjacent!(tri, 101117, 20311, 5)
@@ -472,8 +472,6 @@ end
             @test clean_tri ≠ tri
             DT.delete_adjacent2vertex!(tri, 3, 58, 60)
             DT.delete_neighbour!(tri, 5, 171)
-            @test clean_tri ≠ tri
-            DT.clear_empty_features!(tri)
             @test clean_tri == tri
             _tri = triangulate_rectangle(0.0, 10.0, 0.0, 20.0, 11, 21)
             T = (51, 41, 52)
@@ -857,4 +855,11 @@ end
       end
       @test all(!DT.is_boundary_index, solid)
       @test all(DT.is_boundary_index, ghost)
+end
+
+@testset "get_adjacent concurrency" begin # Shouldn't be an issue anymore since we removed DefaultDict, but let's keep this here anyway. The test here is simply that it doesn't error.
+      tri = triangulate(rand(2, 50), delete_ghosts=false)
+      Base.Threads.@threads for _ in 1:5000
+            get_adjacent(tri, -5, rand(1:1000))
+      end
 end

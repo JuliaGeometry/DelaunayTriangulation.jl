@@ -35,9 +35,9 @@ rep[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
       i, j = rand(rng, edges)
       pᵢ, pⱼ = pts[i], pts[j]
       rng = StableRNG(2992881)
-      u, v, qᵢ, qⱼ = DT.select_random_edge(pts, rep, boundary_map, edges, rng)
+      u, v, qᵢ, qⱼ = DT.select_random_edge(tri, edges, rng)
       @test u == i && v == j && qᵢ == pᵢ && pⱼ == qⱼ
-      @inferred DT.select_random_edge(pts, rep, boundary_map, edges, rng)
+      @inferred DT.select_random_edge(tri, edges, rng)
 end
 
 @testset "Testing for a non-exterior-boundary node" begin
@@ -46,9 +46,7 @@ end
             k = index_map["m"] # This point is on the boundary of an interior hole
             # Close
             q = (16.4445425, 19.8427)
-            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v, graph,
-                  rep, boundary_map, k, q,
-                  boundary_index_ranges)
+            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(tri, k, q)
             @test _p == get_point(pts, k) &&
                   _i == index_map["v"] &&
                   _j == index_map["z"] &&
@@ -57,9 +55,7 @@ end
 
             # Further away
             q = (4.008184, 1.077)
-            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v, graph,
-                  rep, boundary_map, k, q,
-                  boundary_index_ranges)
+            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(tri, k, q)
             @test _p == get_point(pts, k) &&
                   _j == index_map["w"] &&
                   _i == index_map["u"] &&
@@ -68,9 +64,7 @@ end
 
             # How are collinearities handled?
             q = (14.0, 0.0)
-            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v, graph,
-                  rep, boundary_map, k, q,
-                  boundary_index_ranges)
+            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(tri, k, q)
             @test (_p == get_point(pts, k) &&
                    (_i == DT.BoundaryIndex - 2 || _i == DT.BoundaryIndex - 3) &&
                    _j == index_map["n"] &&
@@ -84,9 +78,7 @@ end
 
             # Now do the same test, but put the point above p
             q = (14.0, 19.0)
-            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v, graph,
-                  rep, boundary_map, k, q,
-                  boundary_index_ranges)
+            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(tri, k, q)
             @test (_p == get_point(pts, k) &&
                    _i == index_map["w"] &&
                    _j == index_map["v"] &&
@@ -100,9 +92,7 @@ end
 
             # What happens if the point is on an edge? 
             q = (14.0, 7.0)
-            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v, graph,
-                  rep, boundary_map, k, q,
-                  boundary_index_ranges)
+            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(tri, k, q)
             @test (_p == get_point(pts, k) &&
                    (_i == DT.BoundaryIndex - 2 || _i == DT.BoundaryIndex - 3) &&
                    _j == index_map["n"] &&
@@ -116,9 +106,7 @@ end
 
             # Now do the same test, but put the point above p 
             q = (14.0, 14.0)
-            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v, graph,
-                  rep, boundary_map, k, q,
-                  boundary_index_ranges)
+            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(tri, k, q)
             @test (_p == get_point(pts, k) &&
                    _i == index_map["w"] &&
                    _j == index_map["v"] &&
@@ -132,9 +120,7 @@ end
 
             # What if it is an existing triangle?
             q = (12.0, 6.0)
-            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v, graph,
-                  rep, boundary_map, k, q,
-                  boundary_index_ranges)
+            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(tri, k, q)
             @test _p == get_point(pts, k) &&
                   _i == index_map["n"] &&
                   _j == index_map["u"] &&
@@ -143,27 +129,21 @@ end
 
             # Now do the same test, but put the point above p 
             q = (13.288, 15.01)
-            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v, graph,
-                  rep, boundary_map, k, q,
-                  boundary_index_ranges)
+            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(tri, k, q)
             @test _p == get_point(pts, k) &&
                   _i == index_map["w"] &&
                   _j == index_map["v"] &&
                   _pᵢ == get_point(pts, rep, boundary_map, index_map["w"]) &&
                   _pⱼ == get_point(pts, index_map["v"])
             q = (16.437, 15.42)
-            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v, graph,
-                  rep, boundary_map, k, q,
-                  boundary_index_ranges)
+            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(tri, k, q)
             @test _p == get_point(pts, k) &&
                   _i == index_map["v"] &&
                   _j == index_map["z"] &&
                   _pᵢ == get_point(pts, rep, boundary_map, index_map["v"]) &&
                   _pⱼ == get_point(pts, index_map["z"])
             q = (17.46287, 13.111)
-            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v, graph,
-                  rep, boundary_map, k, q,
-                  boundary_index_ranges)
+            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(tri, k, q)
             @test _p == get_point(pts, k) &&
                   _i == index_map["z"] &&
                   _j == index_map["r"] &&
@@ -172,11 +152,8 @@ end
 
             # Check that everything is fine when the point is outside 
             q = (23.068, 6.92)
-            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v, graph,
-                  rep, boundary_map, k, q,
-                  boundary_index_ranges)
-            @inferred DT.select_initial_triangle_interior_node(pts, adj, adj2v, graph, rep, boundary_map, k, q,
-                  boundary_index_ranges)
+            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(tri, k, q)
+            @inferred DT.select_initial_triangle_interior_node(tri, k, q)
             @test _p == get_point(pts, k) &&
                   _i == index_map["r"] &&
                   (_j == DT.BoundaryIndex - 2 || _j == DT.BoundaryIndex - 3) &&
@@ -185,18 +162,14 @@ end
 
             # Can interior ghost edges be handled correctly?
             q = (15.5, 9.0)
-            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v, graph,
-                  rep, boundary_map, k, q,
-                  boundary_index_ranges)
+            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(tri, k, q)
             @test _p == get_point(pts, k) &&
                   _i == index_map["r"] &&
                   (_j == DT.BoundaryIndex - 2 || _j == DT.BoundaryIndex - 3) &&
                   _pᵢ == get_point(pts, rep, boundary_map, index_map["r"]) &&
                   _pⱼ == get_point(pts, rep, boundary_map, DT.BoundaryIndex - 3)
             q = (14.87, 4.01)
-            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(pts, adj, adj2v, graph,
-                  rep, boundary_map, k, q,
-                  boundary_index_ranges)
+            _p, _i, _j, _pᵢ, _pⱼ = DT.select_initial_triangle_interior_node(tri, k, q)
             @test _p == get_point(pts, k) &&
                   _j == index_map["n"] &&
                   (_i == DT.BoundaryIndex - 2 || _i == DT.BoundaryIndex - 3) &&
@@ -210,24 +183,8 @@ end
             local i, j, pᵢ, pⱼ
             if !DT.is_outer_boundary_node(tri, k)
                   for (i, j) in get_adjacent2vertex(tri, k)
-                        p1, i1, j1, pᵢ1, pⱼ1 = DT.select_initial_triangle_interior_node(pts,
-                              tri.adjacent,
-                              tri.adjacent2vertex,
-                              tri.graph,
-                              rep, boundary_map, k,
-                              get_point(pts, rep,
-                                    boundary_map,
-                                    i),
-                              boundary_index_ranges)
-                        p2, i2, j2, pᵢ2, pⱼ2 = DT.select_initial_triangle_interior_node(pts,
-                              tri.adjacent,
-                              tri.adjacent2vertex,
-                              tri.graph,
-                              rep, boundary_map, k,
-                              get_point(pts, rep,
-                                    boundary_map,
-                                    j),
-                              boundary_index_ranges)
+                        p1, i1, j1, pᵢ1, pⱼ1 = DT.select_initial_triangle_interior_node(tri, k, get_point(pts, rep, boundary_map, i))
+                        p2, i2, j2, pᵢ2, pⱼ2 = DT.select_initial_triangle_interior_node(tri, k, get_point(pts, rep, boundary_map, j))
                         if DT.is_boundary_index(i)
                               @test i ∈ (i1, j1) || i - 1 ∈ (i1, j1) || i + 1 ∈ (i1, j1)
                         else
@@ -240,13 +197,7 @@ end
                         end
                   end
             end
-            p, i, j, pᵢ, pⱼ = DT.select_initial_triangle_interior_node(pts, tri.adjacent,
-                  tri.adjacent2vertex,
-                  tri.graph,
-                  rep, boundary_map, k,
-                  get_point(pts, rep, boundary_map,
-                        k),
-                  boundary_index_ranges)
+            p, i, j, pᵢ, pⱼ = DT.select_initial_triangle_interior_node(tri, k, get_point(pts, rep, boundary_map, k))
             @test get_adjacent(tri.adjacent, j, i) == k
       end
 end
@@ -268,9 +219,6 @@ end
       boundary_map2 = tri2.boundary_map
       q = (1.8333333333333333, 5.0)
       k = 116
-      p, i, j, pᵢ, pⱼ = DT.select_initial_triangle_interior_node(pts2, adj2, adj2v2, graph2,
-            tri2.representative_point_list, boundary_map2, k, q,
-            boundary_index_ranges2,
-            Val(true))
+      p, i, j, pᵢ, pⱼ = DT.select_initial_triangle_interior_node(tri2, k, q)
       @test (i == 117 && j == -8) || (i == 331 && j == 117)
 end

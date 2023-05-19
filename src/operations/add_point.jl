@@ -34,7 +34,7 @@ Adds the point `new_point` to the triangulation `tri`.
 - `m=default_num_samples(length(point_indices))`: The number of points to sample from `point_indices` to use as the initial search point.
 - `try_points=()`: A list of points to try as the initial search point in addition to those sampled.
 - `rng::AbstractRNG=Random.default_rng()`: The random number generator to use.
-- `initial_search_point=integer_type(tri)(select_initial_point(get_points(tri),new_point;point_indices,m,try_points,rng))`: The initial search point to use. If this is not provided, then we use [`select_initial_point`](@ref) to select one.
+- `initial_search_point=integer_type(tri)(select_initial_point(tri,new_point;point_indices,m,try_points,rng))`: The initial search point to use. If this is not provided, then we use [`select_initial_point`](@ref) to select one.
 - `update_representative_point=false`: Whether to update the representative point list after adding the new point.
 - `store_event_history = Val(false)`: Whether to store the event history. See [`InsertionEventHistory`](@ref).
 - `event_history = nothing`: The event history to store the events in. See [`InsertionEventHistory`](@ref). Only needed if `is_true(store_event_history)`. This object is not returned, instead we just mutate it inplace.
@@ -50,34 +50,30 @@ function add_point!(tri::Triangulation, new_point;
     m=default_num_samples(length(point_indices)),
     try_points=(),
     rng::AbstractRNG=Random.default_rng(),
-    initial_search_point=integer_type(tri)(select_initial_point(get_points(tri), new_point; point_indices, m, try_points, rng)),
+    initial_search_point=integer_type(tri)(select_initial_point(tri, new_point; point_indices, m, try_points, rng)),
     update_representative_point=false,
     store_event_history=Val(false),
     event_history=nothing,
     exterior_curve_index=1,
     V=jump_and_march(
         tri,
-        new_point isa Integer ? get_point(tri, new_point) : new_point;
+        get_point(tri, new_point);
         m=nothing,
         point_indices=nothing,
         try_points=nothing,
         k=initial_search_point,
         rng,
-        check_existence=Val(has_multiple_segments(tri)),
         exterior_curve_index
     ),
-    peek=Val(false))
+    peek::P=Val(false)) where {P}
     int_flag = new_point isa Integer
-    if !int_flag
+    if !int_flag && !is_true(peek)
         push_point!(tri, new_point)
         new_point = num_points(tri)
     end
     q = get_point(tri, new_point)
     flag = point_position_relative_to_triangle(tri, V, q)
     V = add_point_bowyer_watson_and_process_after_found_triangle!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history, peek)
-    if !int_flag && is_true(peek)
-        pop_point!(tri)
-    end
     return V
 end
 
@@ -86,7 +82,7 @@ function add_point!(tri::Triangulation, new_point_x, new_point_y;
     m=default_num_samples(length(point_indices)),
     try_points=(),
     rng::AbstractRNG=Random.default_rng(),
-    initial_search_point=integer_type(tri)(select_initial_point(get_points(tri), (new_point_x, new_point_y); point_indices, m, try_points, rng)),
+    initial_search_point=integer_type(tri)(select_initial_point(tri, (new_point_x, new_point_y); point_indices, m, try_points, rng)),
     update_representative_point=false,
     store_event_history=Val(false),
     event_history=nothing,
@@ -99,14 +95,13 @@ function add_point!(tri::Triangulation, new_point_x, new_point_y;
         try_points=nothing,
         k=initial_search_point,
         rng,
-        check_existence=Val(has_multiple_segments(tri)),
         exterior_curve_index
     ),
-    peek=Val(false))
-    push_point!(tri, new_point_x, new_point_y)
+    peek::P=Val(false)) where {P}
+    !is_true(peek) && push_point!(tri, new_point_x, new_point_y)
     VV = add_point!(
         tri,
-        num_points(tri);
+        is_true(peek) ? (new_point_x, new_point_y) : num_points(tri);
         point_indices=point_indices,
         m=m,
         try_points=try_points,
@@ -118,6 +113,5 @@ function add_point!(tri::Triangulation, new_point_x, new_point_y;
         exterior_curve_index=exterior_curve_index,
         V,
         peek)
-    is_true(peek) && pop_point!(tri)
     return VV
 end

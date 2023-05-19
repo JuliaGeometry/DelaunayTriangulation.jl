@@ -142,14 +142,6 @@ each_solid_triangle
 each_ghost_triangle
 ```
 
-
-## Point Location Methods
-
-```@docs 
-brute_force_search(::Triangulation, ::Any)
-jump_and_march(::Triangulation, ::Any)
-```
-
 ## Predicates Methods
 
 ```@docs 
@@ -183,10 +175,4 @@ reset_representative_points!(::Triangulation)
 update_centroid_after_addition!(::Triangulation, ::Any, ::Any)
 update_centroid_after_deletion!(::Triangulation, ::Any, ::Any)
 new_representative_point!(::Triangulation, ::Any)
-```
-
-## Segment Location Methods
-
-```@docs 
-locate_intersecting_triangles(::Triangulation, ::Any, ::Any)
 ```

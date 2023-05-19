@@ -65,6 +65,7 @@ function add_boundary_edges_single!(u, v, w, uv_bnd, vw_bnd, wu_bnd, triangles, 
         add_triangle!(triangles, w, v, g)
         delete_triangle!(triangles, u, v, g)
     end
+    return nothing
 end
 
 function add_boundary_edges_double!(u, v, w, uv_bnd, vw_bnd, wu_bnd, triangles, adj::Adjacent{I,E}, adj2v, graph, update_ghost_edges) where {I,E}
@@ -94,6 +95,7 @@ function add_boundary_edges_double!(u, v, w, uv_bnd, vw_bnd, wu_bnd, triangles, 
         delete_triangle!(triangles, v, w, g)
         delete_triangle!(triangles, w, u, g)
     end
+    return nothing
 end
 
 function add_boundary_edges_triple!(u, v, w, triangles, adj::Adjacent{I,E}, adj2v, graph, update_ghost_edges) where {I,E}
@@ -124,4 +126,5 @@ function add_boundary_edges_triple!(u, v, w, triangles, adj::Adjacent{I,E}, adj2
         add_triangle!(triangles, u, w, g)
         add_triangle!(triangles, w, v, g)
     end
+    return nothing
 end

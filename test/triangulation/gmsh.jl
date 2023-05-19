@@ -1126,6 +1126,7 @@ if !(get(ENV, "CI", "false") == "true")
             @test tri.points == nodes
             @test tri.triangles == Set{NTuple{3,Int64}}((T[1], T[2], T[3]) for T in eachcol(elements))
             adj = tri.adjacent.adjacent
+            adj = DefaultDict(DT.DefaultAdjacentValue, adj)
             for T in tri.triangles
                 i, j, k = T
                 @test adj[(i, j)] == k
@@ -1197,19 +1198,19 @@ if !(get(ENV, "CI", "false") == "true")
                     @test T ∈ elset
                 elseif i < DT.FirstPointIndex
                     @test j ∈ bn && k ∈ bn
-                    @test tri.adjacent.adjacent[(j, k)] == i
+                    @test DefaultDict(DT.DefaultAdjacentValue, tri.adjacent.adjacent)[(j, k)] == i
                     @test j ∈ tri.graph.graph[DT.BoundaryIndex] && k ∈ tri.graph.graph[DT.BoundaryIndex]
                     @test (j, k) ∈ tri.adjacent2vertex.adjacent2vertex[DT.BoundaryIndex]
                     ng += 1
                 elseif j < DT.FirstPointIndex
                     @test i ∈ bn && k ∈ bn
-                    @test tri.adjacent.adjacent[(k, i)] == j
+                    @test DefaultDict(DT.DefaultAdjacentValue, tri.adjacent.adjacent)[(k, i)] == j
                     @test i ∈ tri.graph.graph[DT.BoundaryIndex] && k ∈ tri.graph.graph[DT.BoundaryIndex]
                     @test (k, i) ∈ tri.adjacent2vertex.adjacent2vertex[DT.BoundaryIndex]
                     ng += 1
                 elseif k < DT.FirstPointIndex
                     @test i ∈ bn && j ∈ bn
-                    @test tri.adjacent.adjacent[(i, j)] == k
+                    @test DefaultDict(DT.DefaultAdjacentValue, tri.adjacent.adjacent)[(i, j)] == k
                     @test i ∈ tri.graph.graph[DT.BoundaryIndex] && j ∈ tri.graph.graph[DT.BoundaryIndex]
                     @test (i, j) ∈ tri.adjacent2vertex.adjacent2vertex[DT.BoundaryIndex]
                     ng += 1
@@ -1217,6 +1218,7 @@ if !(get(ENV, "CI", "false") == "true")
             end
             @test ng == DT.num_boundary_edges(bn)
             adj = tri.adjacent.adjacent
+            adj = DefaultDict(DT.DefaultAdjacentValue, adj)
             for T in tri.triangles
                 i, j, k = T
                 @test adj[(i, j)] == k
@@ -1287,6 +1289,7 @@ if !(get(ENV, "CI", "false") == "true")
             @test tri.boundary_map == OrderedDict(-(1:4) .=> 1:4)
             @test collect(Base.keys(tri.boundary_map)) == [-1, -2, -3, -4]
             adj = tri.adjacent.adjacent
+            adj = DefaultDict(DT.DefaultAdjacentValue, adj)
             for T in tri.triangles
                 i, j, k = T
                 @test adj[(i, j)] == k
@@ -1365,21 +1368,21 @@ if !(get(ENV, "CI", "false") == "true")
                 elseif i < DT.FirstPointIndex
                     n = tri.boundary_map[i]
                     @test j ∈ bn[n] && k ∈ bn[n]
-                    @test tri.adjacent.adjacent[(j, k)] == i
+                    @test DefaultDict(DT.DefaultAdjacentValue, tri.adjacent.adjacent)[(j, k)] == i
                     @test j ∈ tri.graph.graph[i] && k ∈ tri.graph.graph[i]
                     @test (j, k) ∈ tri.adjacent2vertex.adjacent2vertex[i]
                     ng += 1
                 elseif j < DT.FirstPointIndex
                     n = tri.boundary_map[j]
                     @test k ∈ bn[n] && i ∈ bn[n]
-                    @test tri.adjacent.adjacent[(k, i)] == j
+                    @test DefaultDict(DT.DefaultAdjacentValue, tri.adjacent.adjacent)[(k, i)] == j
                     @test k ∈ tri.graph.graph[j] && i ∈ tri.graph.graph[j]
                     @test (k, i) ∈ tri.adjacent2vertex.adjacent2vertex[j]
                     ng += 1
                 elseif k < DT.FirstPointIndex
                     n = tri.boundary_map[k]
                     @test i ∈ bn[n] && j ∈ bn[n]
-                    @test tri.adjacent.adjacent[(i, j)] == k
+                    @test DefaultDict(DT.DefaultAdjacentValue, tri.adjacent.adjacent)[(i, j)] == k
                     @test i ∈ tri.graph.graph[k] && j ∈ tri.graph.graph[k]
                     @test (i, j) ∈ tri.adjacent2vertex.adjacent2vertex[k]
                     ng += 1
@@ -1389,6 +1392,7 @@ if !(get(ENV, "CI", "false") == "true")
             @test tri.boundary_map == OrderedDict(-(1:4) .=> 1:4)
             @test collect(Base.keys(tri.boundary_map)) == [-1, -2, -3, -4]
             adj = tri.adjacent.adjacent
+            adj = DefaultDict(DT.DefaultAdjacentValue, adj)
             for T in tri.triangles
                 i, j, k = T
                 @test adj[(i, j)] == k
@@ -1477,21 +1481,21 @@ if !(get(ENV, "CI", "false") == "true")
                 elseif i < DT.FirstPointIndex
                     m, n = tri.boundary_map[i]
                     @test j ∈ bn[m][n] && k ∈ bn[m][n]
-                    @test tri.adjacent.adjacent[(j, k)] == i
+                    @test DefaultDict(DT.DefaultAdjacentValue, tri.adjacent.adjacent)[(j, k)] == i
                     @test j ∈ tri.graph.graph[i] && k ∈ tri.graph.graph[i]
                     @test (j, k) ∈ tri.adjacent2vertex.adjacent2vertex[i]
                     ng += 1
                 elseif j < DT.FirstPointIndex
                     m, n = tri.boundary_map[j]
                     @test k ∈ bn[m][n] && i ∈ bn[m][n]
-                    @test tri.adjacent.adjacent[(k, i)] == j
+                    @test DefaultDict(DT.DefaultAdjacentValue, tri.adjacent.adjacent)[(k, i)] == j
                     @test k ∈ tri.graph.graph[j] && i ∈ tri.graph.graph[j]
                     @test (k, i) ∈ tri.adjacent2vertex.adjacent2vertex[j]
                     ng += 1
                 elseif k < DT.FirstPointIndex
                     m, n = tri.boundary_map[k]
                     @test i ∈ bn[m][n] && j ∈ bn[m][n]
-                    @test tri.adjacent.adjacent[(i, j)] == k
+                    @test DefaultDict(DT.DefaultAdjacentValue, tri.adjacent.adjacent)[(i, j)] == k
                     @test i ∈ tri.graph.graph[k] && j ∈ tri.graph.graph[k]
                     @test (i, j) ∈ tri.adjacent2vertex.adjacent2vertex[k]
                     ng += 1
@@ -1506,6 +1510,7 @@ if !(get(ENV, "CI", "false") == "true")
                 -11 => (5, 1))
             @test collect(Base.keys(tri.boundary_map)) == [-1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11]
             adj = tri.adjacent.adjacent
+            adj = DefaultDict(DT.DefaultAdjacentValue, adj)
             for T in tri.triangles
                 i, j, k = T
                 @test adj[(i, j)] == k
