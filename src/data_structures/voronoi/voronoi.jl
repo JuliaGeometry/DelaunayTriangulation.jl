@@ -458,12 +458,34 @@ function jump_to_voronoi_polygon(tri::Triangulation, q; kwargs...)
     end
     min_dist = min(daq, dbq, dcq)
     if min_dist == daq
-        return i
+        u = i
     elseif min_dist == dbq
-        return j
+        u = j
     else
-        return k
+        u = k
     end
+    current_idx = u
+    current_dist = min_dist
+    # The code below checks the polygon surrounding u. It's essentially 
+    # just the get_surrounding_polygon code, but we don't store S.
+    neighbouring_vertices = get_neighbours(tri, u)
+    points = get_points(tri)
+    v = first(neighbouring_vertices)
+    if !is_boundary_index(v)
+        current_dist, current_idx = compare_distance(current_dist, current_idx, points, v, qx, qy)
+    end
+    k = num_neighbours(tri, u)
+    nbnd = count(is_boundary_index, neighbouring_vertices)
+    if nbnd > 0
+        k = k - nbnd + 1
+    end
+    for i in 2:k
+        v = get_adjacent(tri, u, v)
+        if !is_boundary_index(v)
+            current_dist, current_idx = compare_distance(current_dist, current_idx, points, v, qx, qy)
+        end
+    end
+    return current_idx
 end
 
 ## Utils
