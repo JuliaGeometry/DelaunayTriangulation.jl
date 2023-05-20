@@ -237,7 +237,6 @@ end
             @test u == k
         end
     end
-
 end
 
 @testset "Clipping a simple VoronoiTessellation" begin
