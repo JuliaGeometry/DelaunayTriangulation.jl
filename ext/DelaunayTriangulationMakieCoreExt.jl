@@ -138,7 +138,7 @@ function MakieCore.plot!(p::_Triplot)
         boundary_map = DelaunayTriangulation.construct_boundary_map(boundary_nodes)
         if recompute_centers[]
             if !DelaunayTriangulation.has_multiple_segments(boundary_nodes) && DelaunayTriangulation.num_boundary_edges(boundary_nodes) == 0
-                DelaunayTriangulation.compute_representative_points!(representative_point_list, points, get_indices(convex_hull))
+                DelaunayTriangulation.compute_representative_points!(representative_point_list, points, DelaunayTriangulation.get_indices(convex_hull))
             else
                 DelaunayTriangulation.compute_representative_points!(representative_point_list, points, boundary_nodes)
             end
@@ -160,7 +160,7 @@ function MakieCore.plot!(p::_Triplot)
         ## Fill out the triangles 
         for T in DelaunayTriangulation.each_triangle(triangles)
             if !DelaunayTriangulation.is_ghost_triangle(T)
-                i, j, k = indices(T)
+                i, j, k = DelaunayTriangulation.indices(T)
                 push!(triangle_mat[], (i, j, k))
             end
         end
@@ -180,7 +180,7 @@ function MakieCore.plot!(p::_Triplot)
                 for i in 1:n_edge
                     u = DelaunayTriangulation.get_boundary_nodes(bn, i)
                     q = DelaunayTriangulation.get_point(points, u)
-                    qx, qy = getxy(q)
+                    qx, qy = DelaunayTriangulation.getxy(q)
                     if !DelaunayTriangulation.is_interior_curve(curve_index)
                         end_edge_x = cx * (1 - ghost_edge_extension_factor[]) +
                                      ghost_edge_extension_factor[] * qx
@@ -200,17 +200,17 @@ function MakieCore.plot!(p::_Triplot)
         if show_convex_hull[]
             idx = DelaunayTriangulation.get_indices(convex_hull)
             for i in idx
-                pt = get_point(points, i)
-                x, y = getxy(pt)
+                pt = DelaunayTriangulation.get_point(points, i)
+                x, y = DelaunayTriangulation.getxy(pt)
                 push!(convex_hull_points[], (x, y))
             end
         end
 
         ## Get the constrained edges if needed 
         if show_constrained_edges[]
-            for e in each_edge(constrained_edges)
-                p1 = get_point(points, DelaunayTriangulation.initial(e))
-                p2 = get_point(points, DelaunayTriangulation.terminal(e))
+            for e in DelaunayTriangulation.each_edge(constrained_edges)
+                p1 = DelaunayTriangulation.get_point(points, DelaunayTriangulation.initial(e))
+                p2 = DelaunayTriangulation.get_point(points, DelaunayTriangulation.terminal(e))
                 push!(constrained_edge_points[], DelaunayTriangulation.getxy(p1), DelaunayTriangulation.getxy(p2))
             end
         end
@@ -223,11 +223,11 @@ function MakieCore.plot!(p::_Triplot)
     update_plot(points[], triangles[], boundary_nodes[], convex_hull[], constrained_edges[], representative_point_list[])
 
     ## Now plot 
-    poly!(p, points_2f, triangle_mat_2; strokewidth=strokewidth[], strokecolor=strokecolor[], color=triangle_color[])
-    show_all_points[] && scatter!(p, points_2f; markersize=markersize[], color=point_color[])
-    show_ghost_edges[] && linesegments!(p, ghost_edges; color=ghost_edge_color[], linewidth=ghost_edge_linewidth[])
-    show_convex_hull[] && lines!(p, convex_hull_points; color=convex_hull_color[], linewidth=convex_hull_linewidth[], linestyle=convex_hull_linestyle[])
-    show_constrained_edges[] && linesegments!(p, constrained_edge_points; color=constrained_edge_color[], linewidth=constrained_edge_linewidth[])
+    MakieCore.poly!(p, points_2f, triangle_mat_2; strokewidth=strokewidth[], strokecolor=strokecolor[], color=triangle_color[])
+    show_all_points[] && MakieCore.scatter!(p, points_2f; markersize=markersize[], color=point_color[])
+    show_ghost_edges[] && MakieCore.linesegments!(p, ghost_edges; color=ghost_edge_color[], linewidth=ghost_edge_linewidth[])
+    show_convex_hull[] && MakieCore.lines!(p, convex_hull_points; color=convex_hull_color[], linewidth=convex_hull_linewidth[], linestyle=convex_hull_linestyle[])
+    show_constrained_edges[] && MakieCore.linesegments!(p, constrained_edge_points; color=constrained_edge_color[], linewidth=constrained_edge_linewidth[])
     return p
 end
 
@@ -331,12 +331,12 @@ function MakieCore.plot!(p::_Voronoiplot)
 
     ## Now plot 
     for i in eachindex(polygons[])
-        poly!(p, polygons[][i], color=polygon_color[][i], strokecolor=strokecolor[],
+        MakieCore.poly!(p, polygons[][i], color=polygon_color[][i], strokecolor=strokecolor[],
             strokewidth=strokewidth[], colormap=colormap[],
             colorrange=colorrange[], cycle=cycle[])
     end
     if show_generators[]
-        scatter!(p, generators_2f[], markersize=markersize[], color=generator_color[])
+        MakieCore.scatter!(p, generators_2f[], markersize=markersize[], color=generator_color[])
     end
     return p
 end
