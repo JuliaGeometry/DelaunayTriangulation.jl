@@ -18,9 +18,7 @@ using DataStructures
 using SimpleGraphs
 using ExactPredicates
 using EnumX
-using MakieCore
 using Random
-import MakieCore: @recipe
 
 ####################################################
 ##
@@ -212,8 +210,15 @@ include("voronoi/lloyd.jl")
 export voronoi
 export centroidal_smooth
 
-include("plotting/triplot.jl")
-include("plotting/voronoiplot.jl")
+function triplot end
+function triplot! end
+function voronoiplot end
+function voronoiplot! end
+function get_polygon_colors end
+
+@static if !isdefined(Base, :get_extension)
+    include("../ext/DelaunayTriangulationMakieCoreExt.jl")
+end
 
 export triplot
 export triplot!

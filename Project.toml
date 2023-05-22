@@ -1,7 +1,7 @@
 name = "DelaunayTriangulation"
 uuid = "927a84f5-c5f4-47a5-9785-b46e178433df"
 authors = ["Daniel VandenHeuvel <danj.vandenheuvel@gmail.com>"]
-version = "0.7.1"
+version = "0.7.2"
 
 [deps]
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
@@ -19,8 +19,15 @@ MakieCore = "0.6"
 SimpleGraphs = "0.8"
 julia = "1"
 
+[extensions]
+DelaunayTriangulationMakieCoreExt = "MakieCore"
+
 [extras]
+MakieCore = "20f20a25-4f0e-4fdf-b5d1-57303727442b"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["Test"]
+
+[weakdeps]
+MakieCore = "20f20a25-4f0e-4fdf-b5d1-57303727442b"
