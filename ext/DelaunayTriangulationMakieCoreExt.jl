@@ -65,7 +65,7 @@ Colour of the constrained edges.
 
 Width of the constrained edges.
 """
-@recipe(_Triplot, points, triangles, boundary_nodes, convex_hull, constrained_edges, representative_point_list) do scene
+MakieCore.@recipe(_Triplot, points, triangles, boundary_nodes, convex_hull, constrained_edges, representative_point_list) do scene
     return MakieCore.Attributes(;
         markersize=11,
         show_ghost_edges=false,
@@ -269,7 +269,7 @@ Range of the colormap.
 Cycle of the colormap.
 """
 @recipe(_Voronoiplot, vorn) do scene
-    th = MakieCore.default_theme(scene, Mesh)
+    th = MakieCore.default_theme(scene, MakieCore.Mesh)
     return MakieCore.Attributes(;
         markersize=11,
         show_generators=true,
