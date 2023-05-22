@@ -222,8 +222,8 @@ simulation_results_structured_cdt, simulation_summaries_structured_cdt = simulat
 fig_random_cdt = plot_fnc(ne, simulation_results_random_cdt, simulation_summaries_random_cdt, false)
 fig_structured_cdt = plot_fnc(ne, simulation_results_structured_cdt, simulation_summaries_structured_cdt, false)
 
-@test_reference "./docs/src/interface/figs/random.png" fig_random by=psnr_equality(19)
-@test_reference "./docs/src/interface/figs/structured.png" fig_structured by=psnr_equality(19)
-@test_reference "./docs/src/interface/figs/random_cdt.png" fig_random_cdt by=psnr_equality(19)
-@test_reference "./docs/src/interface/figs/structured_cdt.png" fig_structured_cdt by=psnr_equality(19)
+@test_reference "../../docs/src/interface/figs/random.png" fig_random by=psnr_equality(19)
+@test_reference "../../docs/src/interface/figs/structured.png" fig_structured by=psnr_equality(19)
+@test_reference "../../docs/src/interface/figs/random_cdt.png" fig_random_cdt by=psnr_equality(19)
+@test_reference "../../docs/src/interface/figs/structured_cdt.png" fig_structured_cdt by=psnr_equality(19)
 
