@@ -52,7 +52,8 @@ makedocs(;
             "Edges" => "interface/edges.md",
             "Points" => "interface/points.md",
             "Boundary Nodes" => "interface/boundary_nodes.md",
-            "Example" => "interface/example.md"],
+            "Example" => "interface/example.md",
+            "Application: Counting Function Calls" => "interface/counting.md"],
         "Predicates" => "predicates.md",
         "Other Utilities" => "utils.md",
         "Triangulation Algorithms" => [
