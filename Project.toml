@@ -14,6 +14,9 @@ SimpleGraphs = "55797a34-41de-5266-9ec1-32ac4eb504d3"
 [weakdeps]
 MakieCore = "20f20a25-4f0e-4fdf-b5d1-57303727442b"
 
+[extensions]
+DelaunayTriangulationMakieCoreExt = "MakieCore"
+
 [compat]
 DataStructures = "0.18"
 EnumX = "1.0"
