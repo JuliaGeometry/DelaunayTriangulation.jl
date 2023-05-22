@@ -1,13 +1,7 @@
 module DelaunayTriangulationMakieCoreExt
 
-if isdefined(Base, :get_extension)
-    using DelaunayTriangulation
-    using MakieCore
-else
-    using ..DelaunayTriangulation
-    using ..MakieCore
-end
-import MakieCore: @recipe
+using DelaunayTriangulation
+import MakieCore: MakieCore, @recipe
 
 """
     triplot(!)(points, triangles, boundary_nodes, convex_hull, constrained_edges, representative_point_list; kwargs...)
@@ -95,13 +89,13 @@ Width of the constrained edges.
 end
 function MakieCore.convert_arguments(plot::Type{<:_Triplot}, tri::DelaunayTriangulation.Triangulation)
     return (
-        DelaunayTriangulation.get_points(tri), 
-        DelaunayTriangulation.get_triangles(tri), 
+        DelaunayTriangulation.get_points(tri),
+        DelaunayTriangulation.get_triangles(tri),
         DelaunayTriangulation.get_boundary_nodes(tri),
-        DelaunayTriangulation.get_convex_hull(tri), 
-        DelaunayTriangulation.get_all_constrained_edges(tri), 
+        DelaunayTriangulation.get_convex_hull(tri),
+        DelaunayTriangulation.get_all_constrained_edges(tri),
         DelaunayTriangulation.get_representative_point_list(tri)
-        )
+    )
 end
 
 function MakieCore.plot!(p::_Triplot)
@@ -159,7 +153,7 @@ function MakieCore.plot!(p::_Triplot)
 
         ## Fill out the points 
         for pt in DelaunayTriangulation.each_point(points)
-            x, y =DelaunayTriangulation. getxy(pt)
+            x, y = DelaunayTriangulation.getxy(pt)
             push!(points_2f[], (x, y))
         end
 
@@ -179,7 +173,7 @@ function MakieCore.plot!(p::_Triplot)
                 representative_coordinates = DelaunayTriangulation.get_representative_point_coordinates(representative_point_list, curve_index)
                 cx, cy = DelaunayTriangulation.getxy(representative_coordinates)
                 bn = !isempty(index) ? DelaunayTriangulation.get_boundary_nodes(boundary_nodes, index) :
-                DelaunayTriangulation.get_indices(convex_hull) # If index is empty, there are no constrained boundaries, meaning we want to get the convex hull
+                     DelaunayTriangulation.get_indices(convex_hull) # If index is empty, there are no constrained boundaries, meaning we want to get the convex hull
                 ## TODO: This needs to get fixed when we use delete_point!, since that will give a convex hull that could end up not 
                 ## being right for the ghost edges in the case where we delete a boundary point.
                 n_edge = DelaunayTriangulation.num_boundary_edges(bn)

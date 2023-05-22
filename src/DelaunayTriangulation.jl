@@ -216,7 +216,7 @@ function voronoiplot end
 function voronoiplot! end
 function get_polygon_colors end
 
-if !isdefined(Base, :get_extension)
+@static if !isdefined(Base, :get_extension)
     include("../ext/DelaunayTriangulationMakieCoreExt.jl")
 end
 
