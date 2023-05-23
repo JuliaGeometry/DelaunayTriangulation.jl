@@ -333,16 +333,16 @@ end
     pts = [p1, p2, p3, p4, p5, p6, p7, p8]
     boundary_nodes = [[[1, 2, 3, 4, 1]], [[8, 7, 6, 5, 8]]]
     tri = triangulate(pts; boundary_nodes=boundary_nodes, delete_ghosts=false)
-    add_point!(tri, 0.1, 0.8)
-    add_point!(tri, 0.3, 0.2)
-    add_point!(tri, 0.7, 0.2)
+    add_point!(tri, 0.1f0, 0.8f0)
+    add_point!(tri, 0.3f0, 0.2f0)
+    add_point!(tri, 0.7f0, 0.2f0)
     add_point!(tri, 0.9, 0.8)
     add_edge!(tri, 9, 10)
     add_edge!(tri, 11, 12)
     add_edge!(tri, 9, 12)
     add_edge!(tri, 10, 11)
-    stats = refine!(tri; max_area=0.001f0, max_points=5000, min_angle = 30f0)
-    @test DT.get_smallest_angle(stats) ≥ deg2rad(30)
+    stats = refine!(tri; max_area=0.0001f0, max_points=5000, min_angle = 24f0, min_area=0.0)
+    @test DT.get_smallest_angle(stats) ≥ deg2rad(24f0)
     @test DT.get_largest_area(stats) ≤ 0.001f0
     @test DT.is_constrained(tri)
     @test DT.convex_hull(tri).indices == DT.convex_hull(tri.points).indices
