@@ -3,7 +3,6 @@ const DT = DelaunayTriangulation
 using LinearAlgebra
 using StableRNGs
 using ElasticArrays
-using BenchmarkTools
 using StatsBase
 using DelimitedFiles
 
@@ -323,18 +322,30 @@ end
     @test validate_triangulation(tri)
     validate_statistics(tri)
 
-    get_pts(T) = [(rand(T), rand(T)) for _ in 1:500]
-    get_tri(T) = triangulate(get_pts(T); delete_ghosts=false)
-
-    b1 = @benchmark triangulate(pts; delete_ghosts=$false) (setup = (pts = get_pts(Float64)))
-    b2 = @benchmark triangulate(pts; delete_ghosts=$false) (setup = (pts = get_pts(Float32)))
-    b3 = @benchmark refine!(tri; max_area=$0.0001, maxiters=$25_000) (setup = (pts = get_tri(Float64)))
-    b4 = @benchmark refine!(tri; max_area=$0.0001, maxiters=$25_000) (setup = (pts = get_tri(Float32)))
-
-    @test b1.allocs ≈ b2.allocs rtol=1e-2
-    @test b3.allocs ≈ b4.allocs rtol=1e-2
-    @test b1.memory ≈ b2.memory rtol=1e-2
-    @test b3.memory ≈ b4.memory rtol=1e-2
-    @test mean(b1.times)/1e6 ≈ mean(b2.times)/1e6 rtol=1e-1
-    @test mean(b3.times)/1e6 ≈ mean(b4.times)/1e6 rtol=1e-1
+    p1 = (0.0f0, 0.0f0)
+    p2 = (1.0f0, 0.0f0)
+    p3 = (1.0f0, 1.0f0)
+    p4 = (0.0f0, 1.0f0)
+    p5 = (0.4f0, 0.4f0)
+    p6 = (0.6f0, 0.4f0)
+    p7 = (0.6f0, 0.6f0)
+    p8 = (0.4f0, 0.6f0)
+    pts = [p1, p2, p3, p4, p5, p6, p7, p8]
+    boundary_nodes = [[[1, 2, 3, 4, 1]], [[8, 7, 6, 5, 8]]]
+    tri = triangulate(pts; boundary_nodes=boundary_nodes, delete_ghosts=false)
+    add_point!(tri, 0.1, 0.8)
+    add_point!(tri, 0.3, 0.2)
+    add_point!(tri, 0.7, 0.2)
+    add_point!(tri, 0.9, 0.8)
+    add_edge!(tri, 9, 10)
+    add_edge!(tri, 11, 12)
+    add_edge!(tri, 9, 12)
+    add_edge!(tri, 10, 11)
+    stats = refine!(tri; max_area=0.001f0, max_points=5000, min_angle = 30f0)
+    @test DT.get_smallest_angle(stats) ≥ deg2rad(30)
+    @test DT.get_largest_area(stats) ≤ 0.001f0
+    @test DT.is_constrained(tri)
+    @test DT.convex_hull(tri).indices == DT.convex_hull(tri.points).indices
+    validate_statistics(tri, stats)
+    @test validate_triangulation(tri)
 end

@@ -203,7 +203,7 @@ end
             nx = 12
             ny = 15
             @test DT.num_curves(triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 10, 10; add_ghost_triangles=true, single_boundary=false)) == 1
-            @test_throws throw_f("The num_segments function has not been defined for the type Vector{Vector{Vector{Int}}}.") DT.num_segments(tri)
+            @test_throws throw_f("The num_segments function has not been defined for the type Vector{Vector{Vector{Int64}}}.") DT.num_segments(tri)
             @test DT.num_segments(tri_2) == 4
             @inferred DT.num_segments(tri_2)
             @test DT.get_boundary_nodes(tri, 1) == tri.boundary_nodes[1]

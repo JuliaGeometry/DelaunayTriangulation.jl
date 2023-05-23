@@ -87,7 +87,7 @@ global es3 = Set{typeof(e3)}((SVector{2,Int32}((1, 3)),
     end
 
     @testset "Seeing if a collection contains an edge" begin
-        @test_throws throw_f("The contains_edge function has not been defined for the type Tuple{Int, Int}.") DT.contains_edge(String, (1, 2))
+        @test_throws throw_f("The contains_edge function has not been defined for the type Tuple{Int64, Int64}.") DT.contains_edge(String, (1, 2))
         for es in (es1, es2, es3)
             for e in es
                 @test DT.contains_edge(e, es)
