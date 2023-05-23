@@ -2,7 +2,7 @@
     triangulate_rectangle(a, b, c, d, nx, ny;
         single_boundary=false,
         add_ghost_triangles=true,
-        IntegerType::Type{I}=Int64,
+        IntegerType::Type{I}=Int,
         EdgeType::Type{E}=NTuple{2,IntegerType},
         TriangleType::Type{V}=NTuple{3,IntegerType},
         EdgesType::Type{Es}=Set{EdgeType},
@@ -18,7 +18,7 @@ Returns a [`Triangulation`](@ref) representing the triangulation.
 function triangulate_rectangle(a, b, c, d, nx, ny;
     single_boundary=false,
     add_ghost_triangles=true,
-    IntegerType::Type{I}=Int64,
+    IntegerType::Type{I}=Int,
     EdgeType::Type{E}=NTuple{2,IntegerType},
     TriangleType::Type{V}=NTuple{3,IntegerType},
     EdgesType::Type{Es}=Set{EdgeType},

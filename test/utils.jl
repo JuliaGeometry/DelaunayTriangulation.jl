@@ -14,7 +14,7 @@ include("./helper_functions.jl")
 end
 
 @testset "number_type" begin
-      @test DT.number_type([1, 2, 3]) == Int64
+      @test DT.number_type([1, 2, 3]) == Int
       @test DT.number_type([1.0, 2.0, 3.0]) == Float64
       @test DT.number_type([1.0 2.0; 3.0 3.5; 10.0 17.3]) == Float64
       @test DT.number_type((1.0, 5.0)) == Float64
@@ -151,7 +151,7 @@ end
       p3 = [3.0, 0.0]
       p4 = [17.2, -2.5]
       p5 = [0.0, 3.0]
-      T = DT.construct_triangle(NTuple{3,Int64}, 2, 3, 5)
+      T = DT.construct_triangle(NTuple{3,Int}, 2, 3, 5)
       pts = [p1, p2, p3, p4, p5]
       push!(pts, [1.0, 0.0])
       @test DT.find_edge(T, pts, length(pts)) == (2, 3)
@@ -188,7 +188,7 @@ end
 end
 
 @testset "choose_uvw" begin
-      i, j, k = rand(Int64, 3)
+      i, j, k = rand(Int, 3)
       @test DT.choose_uvw(true, false, false, i, j, k) == (i, j, k)
       @test DT.choose_uvw(false, true, false, i, j, k) == (j, k, i)
       @test DT.choose_uvw(false, false, true, i, j, k) == (k, i, j)
@@ -234,7 +234,7 @@ end
             8 => [5, 7, 3, 2, DT.BoundaryIndex, 5],
             DT.BoundaryIndex => [5, 8, 2, 6, 4, 5]
       )
-      fnc_polys = Dict{Int64,Vector{Int64}}()
+      fnc_polys = Dict{Int,Vector{Int}}()
       for i in keys(polys)
             fnc_polys[i] = DT.get_surrounding_polygon(tri, i)
             push!(fnc_polys[i], fnc_polys[i][begin])
@@ -242,7 +242,7 @@ end
       for (poly_true, poly_f) in zip(values(polys), values(fnc_polys))
             @test DT.circular_equality(poly_true, poly_f)
       end
-      fnc_polys = Dict{Int64,Vector{Int64}}()
+      fnc_polys = Dict{Int,Vector{Int}}()
       for i in keys(polys)
             fnc_polys[i] = DT.get_surrounding_polygon(tri, i; skip_boundary_indices=true)
             push!(fnc_polys[i], fnc_polys[i][begin])
@@ -291,7 +291,7 @@ end
             DT.BoundaryIndex - 2 => [[14, 15, 16, 17, 18, 13, 14]],
             DT.BoundaryIndex - 3 => [[14, 15, 16, 17, 18, 13, 14]]
       )
-      fnc_polys = Dict{Int64,Vector{Int64}}()
+      fnc_polys = Dict{Int,Vector{Int}}()
       for i in keys(polys)
             fnc_polys[i] = DT.get_surrounding_polygon(tri, i)
             push!(fnc_polys[i], fnc_polys[i][begin])
@@ -299,7 +299,7 @@ end
       for (poly_true, poly_f) in zip(values(polys), values(fnc_polys))
             @test any(DT.circular_equality(S, poly_f) for S in poly_true)
       end
-      fnc_polys = Dict{Int64,Vector{Int64}}()
+      fnc_polys = Dict{Int,Vector{Int}}()
       for i in keys(polys)
             fnc_polys[i] = DT.get_surrounding_polygon(tri, i; skip_boundary_indices=true)
             push!(fnc_polys[i], fnc_polys[i][begin])
@@ -332,7 +332,7 @@ end
                   18 => [5, 13, 12, 14, 17, 16, 5]
             )
             tri = triangulate(get_points(tri); delete_ghosts=false)
-            fnc_polys = Dict{Int64,Vector{Int64}}()
+            fnc_polys = Dict{Int,Vector{Int}}()
             for i in keys(polys)
                   fnc_polys[i] = DT.get_surrounding_polygon(tri, i)
                   push!(fnc_polys[i], fnc_polys[i][begin])
@@ -340,7 +340,7 @@ end
             for (k, S) in polys
                   @test DT.circular_equality(S, fnc_polys[k])
             end
-            fnc_polys = Dict{Int64,Vector{Int64}}()
+            fnc_polys = Dict{Int,Vector{Int}}()
             for i in keys(polys)
                   fnc_polys[i] = DT.get_surrounding_polygon(tri, i; skip_boundary_indices=true)
                   push!(fnc_polys[i], fnc_polys[i][begin])
@@ -369,19 +369,19 @@ end
 end
 
 @testset "split_constrained_edge!" begin
-      constrained_edges = Set{NTuple{2,Int64}}(((2, 7),))
+      constrained_edges = Set{NTuple{2,Int}}(((2, 7),))
       DT.split_constrained_edge!(constrained_edges, (2, 7), [])
-      @test constrained_edges == Set{NTuple{2,Int64}}(((2, 7),))
+      @test constrained_edges == Set{NTuple{2,Int}}(((2, 7),))
       DT.split_constrained_edge!(constrained_edges, (2, 7), [(2, 3), (3, 5), (10, 12)])
-      @test constrained_edges == Set{NTuple{2,Int64}}(((2, 3), (3, 5), (10, 12)))
+      @test constrained_edges == Set{NTuple{2,Int}}(((2, 3), (3, 5), (10, 12)))
       DT.split_constrained_edge!(constrained_edges, (2, 7), [])
-      @test constrained_edges == Set{NTuple{2,Int64}}(((2, 3), (3, 5), (10, 12)))
+      @test constrained_edges == Set{NTuple{2,Int}}(((2, 3), (3, 5), (10, 12)))
       DT.split_constrained_edge!(constrained_edges, (3, 5), [(2, 10), (11, 15), (2, 3)])
-      @test constrained_edges == Set{NTuple{2,Int64}}(((2, 3), (2, 10), (11, 15), (10, 12)))
+      @test constrained_edges == Set{NTuple{2,Int}}(((2, 3), (2, 10), (11, 15), (10, 12)))
       DT.split_constrained_edge!(constrained_edges, (3, 2), [])
-      @test constrained_edges == Set{NTuple{2,Int64}}(((2, 3), (2, 10), (11, 15), (10, 12)))
+      @test constrained_edges == Set{NTuple{2,Int}}(((2, 3), (2, 10), (11, 15), (10, 12)))
       DT.split_constrained_edge!(constrained_edges, (3, 2), [(10, 2), (23, 10)])
-      @test constrained_edges == Set{NTuple{2,Int64}}(((11, 15), (10, 12), (23, 10), (2, 10)))
+      @test constrained_edges == Set{NTuple{2,Int}}(((11, 15), (10, 12), (23, 10), (2, 10)))
 end
 
 @testset "connect_segments!" begin
@@ -907,4 +907,9 @@ end
             51, 42, 33, 24, 15, 6,
             61, 52, 43, 34, 25, 16, 7
       ))
+end
+
+@testset "f64_getxy" begin 
+      @test DT.f64_getxy((0.3,0.5)) == (0.3,0.5)
+      @test DT.f64_getxy((0.3f0, 0.7f0)) == (Float64(0.3f0), Float64(0.7f0))
 end

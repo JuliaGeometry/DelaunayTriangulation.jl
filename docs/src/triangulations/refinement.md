@@ -179,7 +179,7 @@ inner_pts = [Z1, W1, U1, T1, S1, R1, Q1, P1, O1, N1, M1, L1, K1, J1, Z1]
 boundary_pts = [[pts], [inner_pts]]
 nodes, points = convert_boundary_points_to_indices(boundary_pts)
 push!(points, (20.0, 20.0))
-C = Set{NTuple{2,Int64}}()
+C = Set{NTuple{2,Int}}()
 for i in 1:50
     θ = 2π * rand()
     r = 4sqrt(rand())

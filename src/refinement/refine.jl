@@ -3,7 +3,7 @@
         min_area=1e-9get_total_area(tri),
         max_area=typemax(number_type(tri)),
         max_radius_edge_ratio=nothing,
-        max_points=typemax(Int64),
+        max_points=typemax(Int),
         min_angle=nothing,
         rng::AbstractRNG=Random.default_rng(),
         maxiters=100,
@@ -45,7 +45,7 @@ You should also be cautious that, for some domains (e.g. ones with many small an
 
     A minimum angle constraint of `θₘᵢₙ°` corresponds to a maximum angle constraint of `180° - 2θₘᵢₙ`, e.g. `θₘᵢₙ° = 30°` gives `θₘₐₓ° = 120°`.
 
-- `max_points=typemax(Int64)`
+- `max_points=typemax(Int)`
 
 How many points are allowed to be in the triangulation before terminating.
 - `rng::AbstractRNG=Random.default_rng()`
@@ -95,7 +95,7 @@ function refine!(tri::Triangulation;
     min_area=1e-9get_total_area(tri),
     max_area=typemax(number_type(tri)),
     max_radius_edge_ratio=nothing,
-    max_points=typemax(Int64),
+    max_points=typemax(Int),
     min_angle=nothing,
     rng::AbstractRNG=Random.default_rng(),
     maxiters=100_000,
@@ -113,7 +113,7 @@ function initialise_refine(tri::Triangulation;
     min_area=zero(number_type(tri)),
     max_area=typemax(number_type(tri)),
     max_radius_edge_ratio=nothing,
-    max_points=typemax(Int64),
+    max_points=typemax(Int),
     min_angle=nothing,
     lock_convex_hull=!has_boundary_nodes(tri))
     has_ghosts = has_ghost_triangles(tri)

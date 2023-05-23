@@ -40,7 +40,7 @@ end
 end
 
 function initialise_bowyer_watson(points::P;
-    IntegerType::Type{I}=Int64,
+    IntegerType::Type{I}=Int,
     EdgeType::Type{E}=NTuple{2,IntegerType},
     TriangleType::Type{V}=NTuple{3,IntegerType},
     EdgesType::Type{Es}=Set{EdgeType},
@@ -63,7 +63,7 @@ function initialise_bowyer_watson(points::P;
 end
 
 function triangulate_bowyer_watson(points::P;
-    IntegerType::Type{I}=Int64,
+    IntegerType::Type{I}=Int,
     EdgeType::Type{E}=NTuple{2,IntegerType},
     TriangleType::Type{V}=NTuple{3,IntegerType},
     EdgesType::Type{Es}=Set{EdgeType},

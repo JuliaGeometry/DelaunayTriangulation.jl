@@ -326,17 +326,17 @@ end
     p8 = Float64[4, -1]
     p9 = Float64[-1, 4]
     pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9]
-    T1 = DT.construct_triangle(NTuple{3,Int64}, 4, 1, 6)
-    T2 = DT.construct_triangle(NTuple{3,Int64}, 4, 2, 1)
-    T3 = DT.construct_triangle(NTuple{3,Int64}, 3, 2, 4)
-    T4 = DT.construct_triangle(NTuple{3,Int64}, 8, 1, 2)
-    T5 = DT.construct_triangle(NTuple{3,Int64}, 8, 2, 3)
-    T6 = DT.construct_triangle(NTuple{3,Int64}, 8, 3, 5)
-    T7 = DT.construct_triangle(NTuple{3,Int64}, 5, 3, 7)
-    T8 = DT.construct_triangle(NTuple{3,Int64}, 3, 4, 7)
-    T9 = DT.construct_triangle(NTuple{3,Int64}, 5, 7, 9)
-    T10 = DT.construct_triangle(NTuple{3,Int64}, 7, 6, 9)
-    T11 = DT.construct_triangle(NTuple{3,Int64}, 7, 4, 6)
+    T1 = DT.construct_triangle(NTuple{3,Int}, 4, 1, 6)
+    T2 = DT.construct_triangle(NTuple{3,Int}, 4, 2, 1)
+    T3 = DT.construct_triangle(NTuple{3,Int}, 3, 2, 4)
+    T4 = DT.construct_triangle(NTuple{3,Int}, 8, 1, 2)
+    T5 = DT.construct_triangle(NTuple{3,Int}, 8, 2, 3)
+    T6 = DT.construct_triangle(NTuple{3,Int}, 8, 3, 5)
+    T7 = DT.construct_triangle(NTuple{3,Int}, 5, 3, 7)
+    T8 = DT.construct_triangle(NTuple{3,Int}, 3, 4, 7)
+    T9 = DT.construct_triangle(NTuple{3,Int}, 5, 7, 9)
+    T10 = DT.construct_triangle(NTuple{3,Int}, 7, 6, 9)
+    T11 = DT.construct_triangle(NTuple{3,Int}, 7, 4, 6)
     T = [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11]
     pt1 = (
         A=(3.9551298987095, 4.7489988803935),
@@ -472,9 +472,9 @@ end
     @test DT.is_outside(DT.point_position_relative_to_triangle(get_point(pts, i, j, k, ℓ)...))
     p1, p2, p3 = ([2.858866215272096, -2.220975375945989], [0.25559192484080395, -0.37340906332046214], [1.3855904656897817, -2.47947044705479])
     pts = [p1, p2, p3]
-    τ1 = DT.construct_triangle(NTuple{3,Int64}, 1, 2, 3)
-    τ2 = DT.construct_triangle(NTuple{3,Int64}, 2, 3, 1)
-    τ3 = DT.construct_triangle(NTuple{3,Int64}, 3, 1, 2)
+    τ1 = DT.construct_triangle(NTuple{3,Int}, 1, 2, 3)
+    τ2 = DT.construct_triangle(NTuple{3,Int}, 2, 3, 1)
+    τ3 = DT.construct_triangle(NTuple{3,Int}, 3, 1, 2)
     e = Vector{Any}(undef, 9)
     e[1] = DT.point_position_relative_to_triangle(get_point(pts, τ1..., 1)...)
     e[2] = DT.point_position_relative_to_triangle(get_point(pts, τ2..., 2)...)
@@ -495,11 +495,11 @@ end
             i, j, k = rand(1:n, 3)
         end
         local τ1, τ2, τ3, e
-        τ = DT.construct_positively_oriented_triangle(NTuple{3,Int64}, i, j, k, pts)
+        τ = DT.construct_positively_oriented_triangle(NTuple{3,Int}, i, j, k, pts)
         i, j, k = indices(τ)
-        τ1 = DT.construct_triangle(NTuple{3,Int64}, i, j, k)
-        τ2 = DT.construct_triangle(NTuple{3,Int64}, j, k, i)
-        τ3 = DT.construct_triangle(NTuple{3,Int64}, k, i, j)
+        τ1 = DT.construct_triangle(NTuple{3,Int}, i, j, k)
+        τ2 = DT.construct_triangle(NTuple{3,Int}, j, k, i)
+        τ3 = DT.construct_triangle(NTuple{3,Int}, k, i, j)
         e = Vector{Any}(undef, 9)
         e[1] = DT.point_position_relative_to_triangle(get_point(pts, τ1..., i)...)
         e[2] = DT.point_position_relative_to_triangle(get_point(pts, τ2..., i)...)
@@ -524,11 +524,11 @@ end
             while length(unique((i, j, k))) < 3
                 i, j, k = rand(1:n, 3)
             end
-            τ = DT.construct_positively_oriented_triangle(NTuple{3,Int64}, i, j, k, pts)
+            τ = DT.construct_positively_oriented_triangle(NTuple{3,Int}, i, j, k, pts)
             i, j, k = indices(τ)
-            τ1 = DT.construct_triangle(NTuple{3,Int64}, i, j, k)
-            τ2 = DT.construct_triangle(NTuple{3,Int64}, j, k, i)
-            τ3 = DT.construct_triangle(NTuple{3,Int64}, k, i, j)
+            τ1 = DT.construct_triangle(NTuple{3,Int}, i, j, k)
+            τ2 = DT.construct_triangle(NTuple{3,Int}, j, k, i)
+            τ3 = DT.construct_triangle(NTuple{3,Int}, k, i, j)
             e = Vector{Any}(undef, 9)
             e[1] = DT.point_position_relative_to_triangle(get_point(pts, τ1..., i)...)
             e[2] = DT.point_position_relative_to_triangle(get_point(pts, τ2..., i)...)

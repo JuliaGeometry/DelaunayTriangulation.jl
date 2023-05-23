@@ -1,6 +1,6 @@
 """
     triangulate(points::P; edges=nothing, boundary_nodes=nothing,
-        IntegerType::Type{I}=Int64,
+        IntegerType::Type{I}=Int,
         EdgeType::Type{E}=NTuple{2,IntegerType},
         TriangleType::Type{V}=NTuple{3,IntegerType},
         EdgesType::Type{Es}=Set{EdgeType},
@@ -28,7 +28,7 @@ nodes, with all triangles inside the boundaries deleted.
 # Keyword Arguments 
 - `edges=nothing`: Any constrained edges to insert. If `nothing`, an unconstrained triangulation is built. The constrained edges should not intersect each other, and they should not cross over boundary edges.
 - `boundary_nodes=nothing`: Any boundaries to define. The specification of these boundary nodes is outlined in the boundary handling section of the documentation. All triangles away from a defined boundary are deleted if `delete_holes`.
-- `IntegerType::Type{I}=Int64`: The integer type to use for indexing. 
+- `IntegerType::Type{I}=Int`: The integer type to use for indexing. 
 - `EdgeType::Type{E}=NTuple{2,IntegerType}`: The type to use for representing edges. 
 - `TriangleType::Type{V}=NTuple{3,IntegerType}`: The type to use for representing triangles. 
 - `EdgesType::Type{Es}=Set{EdgeType}`: The type to use for representing collections of edges. 
@@ -49,7 +49,7 @@ nodes, with all triangles inside the boundaries deleted.
 Returns a [`Triangulation`](@ref).
 """
 function triangulate(points::P; edges=nothing, boundary_nodes=nothing,
-    IntegerType::Type{I}=Int64,
+    IntegerType::Type{I}=Int,
     EdgeType::Type{E}=!isnothing(edges) ? edge_type(typeof(edges)) : NTuple{2,IntegerType},
     TriangleType::Type{V}=NTuple{3,IntegerType},
     EdgesType::Type{Es}=!isnothing(edges) ? typeof(edges) : Set{EdgeType},

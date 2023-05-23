@@ -1,5 +1,5 @@
 function Triangulation(points::P;
-    IntegerType::Type{I}=Int64,
+    IntegerType::Type{I}=Int,
     EdgeType::Type{E}=NTuple{2,IntegerType},
     TriangleType::Type{V}=NTuple{3,IntegerType},
     EdgesType::Type{Es}=Set{EdgeType},
@@ -28,7 +28,7 @@ function Triangulation(points::P;
 end
 
 function Triangulation(points::P, triangles::T, boundary_nodes::BN;
-    IntegerType::Type{I}=Int64,
+    IntegerType::Type{I}=Int,
     EdgeType::Type{E}=NTuple{2,IntegerType},
     TriangleType::Type{V}=NTuple{3,IntegerType},
     EdgesType::Type{Es}=Set{EdgeType},

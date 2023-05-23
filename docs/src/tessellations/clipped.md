@@ -43,10 +43,10 @@ As we can see, all the polygons have now been chopped so that the entire tessell
 
 ```julia-repl
 julia> DelaunayTriangulation.get_unbounded_polygons(vorn_clip)
-Set{Int64}()
+Set{Int}()
 
 julia> DelaunayTriangulation.get_boundary_polygons(vorn_clip)
-Set{Int64} with 31 elements:
+Set{Int} with 31 elements:
   169
   56
   200

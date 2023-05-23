@@ -48,7 +48,7 @@ global pts = DT.get_points(tri)
     p7 = Float64[4, -1]
     p8 = Float64[-1, 4]
     pts = [p0, p1, p2, p3, p4, p5, p6, p7, p8]
-    bn_map = DT.construct_boundary_map(Int64[])
+    bn_map = DT.construct_boundary_map(Int[])
     @test DT.is_positively_oriented(DT.triangle_orientation((4, 6, 7), pts, rep, bn_map))
     @test DT.is_negatively_oriented(DT.triangle_orientation((4, 7, 6), pts, rep, bn_map))
     @test DT.is_negatively_oriented(DT.triangle_orientation((4, 2, 3), pts, rep, bn_map))

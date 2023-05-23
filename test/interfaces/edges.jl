@@ -66,7 +66,7 @@ global es3 = Set{typeof(e3)}((SVector{2,Int32}((1, 3)),
             F = eltype(es)
             @test DT.initialise_edges(Set{F}) == Set{F}()
         end
-        @test DT.initialise_edges(Vector{NTuple{2,Int64}}) == Vector{NTuple{2,Int64}}()
+        @test DT.initialise_edges(Vector{NTuple{2,Int}}) == Vector{NTuple{2,Int}}()
     end
 
     @testset "Getting the type of edges in a collection" begin
@@ -75,7 +75,7 @@ global es3 = Set{typeof(e3)}((SVector{2,Int32}((1, 3)),
             F = eltype(es)
             @test DT.edge_type(typeof(es)) == F
         end
-        @test DT.edge_type(Vector{NTuple{2,Int64}}) == NTuple{2,Int64}
+        @test DT.edge_type(Vector{NTuple{2,Int}}) == NTuple{2,Int}
     end
 
     @testset "Number of edges" begin
@@ -87,7 +87,7 @@ global es3 = Set{typeof(e3)}((SVector{2,Int32}((1, 3)),
     end
 
     @testset "Seeing if a collection contains an edge" begin
-        @test_throws throw_f("The contains_edge function has not been defined for the type Tuple{Int64, Int64}.") DT.contains_edge(String, (1, 2))
+        @test_throws throw_f("The contains_edge function has not been defined for the type Tuple{Int, Int}.") DT.contains_edge(String, (1, 2))
         for es in (es1, es2, es3)
             for e in es
                 @test DT.contains_edge(e, es)
@@ -166,7 +166,7 @@ global es3 = Set{typeof(e3)}((SVector{2,Int32}((1, 3)),
     @testset "Seeing if a collection of edges is empty" begin
         @test DT.is_empty([])
         @test !DT.is_empty([1, 2, 3])
-        @test DT.is_empty(Set{NTuple{2,Int64}}())
+        @test DT.is_empty(Set{NTuple{2,Int}}())
         @test !DT.is_empty(Set(((1, 2), (3, 4))))
     end
 end

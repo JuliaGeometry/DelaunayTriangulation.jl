@@ -217,12 +217,12 @@ end
 end
 
 @testset "History structure" begin
-    history = DT.PointLocationHistory{NTuple{3,Int64},NTuple{2,Int64},Int64}()
-    @test history.triangles == NTuple{3,Int64}[]
-    @test history.collinear_segments == NTuple{2,Int64}[]
-    @test history.left_vertices == Int64[]
-    @test history.right_vertices == Int64[]
-    @test history.collinear_point_indices == Int64[]
+    history = DT.PointLocationHistory{NTuple{3,Int},NTuple{2,Int},Int}()
+    @test history.triangles == NTuple{3,Int}[]
+    @test history.collinear_segments == NTuple{2,Int}[]
+    @test history.left_vertices == Int[]
+    @test history.right_vertices == Int[]
+    @test history.collinear_point_indices == Int[]
     DT.add_triangle!(history, 2, 3, 4)
     DT.add_edge!(history, 7, 14)
     DT.add_left_vertex!(history, 10)

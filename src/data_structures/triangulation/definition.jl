@@ -87,7 +87,7 @@ The default constructor is available, i.e.
 An empty triangulation can be initalised with the following method, 
 
     Triangulation(points;
-        IntegerType=Int64,
+        IntegerType=Int,
         EdgeType=NTuple{2,IntegerType},
         TriangleType=NTuple{3,IntegerType},
         EdgesType=Set{EdgeType},
@@ -103,7 +103,7 @@ A method is available from constructing a mesh from an existing set of points,
 triangles, and boundary nodes, mainly existing for the purpose of [`generate_mesh`](@ref):
 
     Triangulation(points, triangles, boundary_nodes;
-        IntegerType=Int64,
+        IntegerType=Int,
         EdgeType=NTuple{2,IntegerType},
         TriangleType=NTuple{3,IntegerType},
         EdgesType=Set{EdgeType},

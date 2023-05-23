@@ -47,7 +47,7 @@ end
        @test DT.num_boundary_edges(bn3) == 4
        @test DT.num_boundary_edges(bn1[1][1]) == 1
        @test DT.num_boundary_edges(bn2[2]) == 3
-       @test DT.num_boundary_edges(Int64[]) == 0
+       @test DT.num_boundary_edges(Int[]) == 0
 end
 
 @testset "Getting boundary nodes" begin
@@ -181,9 +181,9 @@ end
               @test get_boundary_nodes(S, k) == ij[1]
               @test get_boundary_nodes(S, k + 1) == ij[2]
        end
-       bn = Int64[]
+       bn = Int[]
        bn_map = DT.construct_boundary_edge_map(bn)
-       @test bn_map == Dict{Tuple{Int32,Int32},Tuple{Vector{Int64},Int64}}()
+       @test bn_map == Dict{Tuple{Int32,Int32},Tuple{Vector{Int},Int}}()
 end
 
 @testset "insert_boundary_node!" begin

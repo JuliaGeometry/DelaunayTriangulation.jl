@@ -52,7 +52,7 @@ julia> e = (2, 7)
 julia> intersecting_triangles, collinear_segments, left_vertices, right_vertices = DelaunayTriangulation.locate_intersecting_triangles(tri, e);
 
 julia> intersecting_triangles
-8-element Vector{Tuple{Int64, Int64, Int64}}:
+8-element Vector{Tuple{Int, Int, Int}}:
  (4, 3, 2)
  (3, 4, 10)
  (10, 4, 9)
@@ -63,10 +63,10 @@ julia> intersecting_triangles
  (8, 6, 7)
 
 julia> collinear_segments
-Tuple{Int64, Int64}[]
+Tuple{Int, Int}[]
 
 julia> left_vertices
-7-element Vector{Int64}:
+7-element Vector{Int}:
   7
   8
  10
@@ -76,7 +76,7 @@ julia> left_vertices
   2
 
 julia> right_vertices
-5-element Vector{Int64}:
+5-element Vector{Int}:
  2
  4
  5

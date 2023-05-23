@@ -3,6 +3,8 @@ const DT = DelaunayTriangulation
 using LinearAlgebra
 using StableRNGs
 using ElasticArrays
+using BenchmarkTools
+using StatsBase
 using DelimitedFiles
 
 include("../helper_functions.jl")
@@ -129,7 +131,7 @@ end
         p4 = (1.0, 1.0)
         p5 = (0.5, 0.5)
         pts = [p1, p2, p3, p4, p5]
-        C = Set{NTuple{2,Int64}}()
+        C = Set{NTuple{2,Int}}()
         for i in 1:20
             θ = 2π * rand()
             r = 0.5sqrt(rand())
@@ -270,7 +272,7 @@ end
     boundary_pts = [[pts], [inner_pts]]
     nodes, points = convert_boundary_points_to_indices(boundary_pts)
     push!(points, (20.0, 20.0))
-    C = Set{NTuple{2,Int64}}()
+    C = Set{NTuple{2,Int}}()
     for i in 1:50
         θ = 2π * rand()
         r = 4sqrt(rand())
@@ -303,4 +305,36 @@ if !(get(ENV, "CI", "false") == "true")
         @test validate_triangulation(tri; check_ghost_triangle_orientation=false, check_ghost_triangle_delaunay=false)
         validate_statistics(tri)
     end
+end
+
+@testset "Test that nothing is breaking for Float32 inputs" begin
+    p1 = (0.0f0, 0.0f0)
+    p2 = (1.0f0, 0.0f0)
+    p3 = (0.0f0, 1.0f0)
+    p4 = (1.0f0, 1.0f0)
+    pts = [p1, p2, p3, p4]
+    tri = triangulate(pts; delete_ghosts=false)
+    refine!(tri; max_area=0.001, maxiters=25_000)
+    stats = statistics(tri)
+    @test DT.get_smallest_angle(stats) ≥ deg2rad(30.0)
+    @test DT.get_largest_area(stats) ≤ 0.001f0
+    @test !DT.is_constrained(tri)
+    @test DT.convex_hull(tri).indices == DT.convex_hull(tri.points).indices
+    @test validate_triangulation(tri)
+    validate_statistics(tri)
+
+    get_pts(T) = [(rand(T), rand(T)) for _ in 1:500]
+    get_tri(T) = triangulate(get_pts(T); delete_ghosts=false)
+
+    b1 = @benchmark triangulate(pts; delete_ghosts=$false) (setup = (pts = get_pts(Float64)))
+    b2 = @benchmark triangulate(pts; delete_ghosts=$false) (setup = (pts = get_pts(Float32)))
+    b3 = @benchmark refine!(tri; max_area=$0.0001, maxiters=$25_000) (setup = (pts = get_tri(Float64)))
+    b4 = @benchmark refine!(tri; max_area=$0.0001, maxiters=$25_000) (setup = (pts = get_tri(Float32)))
+
+    @test b1.allocs ≈ b2.allocs rtol=1e-2
+    @test b3.allocs ≈ b4.allocs rtol=1e-2
+    @test b1.memory ≈ b2.memory rtol=1e-2
+    @test b3.memory ≈ b4.memory rtol=1e-2
+    @test mean(b1.times)/1e6 ≈ mean(b2.times)/1e6 rtol=1e-1
+    @test mean(b3.times)/1e6 ≈ mean(b4.times)/1e6 rtol=1e-1
 end

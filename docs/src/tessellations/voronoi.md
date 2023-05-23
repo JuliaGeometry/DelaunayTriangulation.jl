@@ -70,7 +70,7 @@ The `adjacent` field is similar to the one we deal with for triangulations, exce
 
 ```julia-repl
 julia> get_polygon(vorn, 1)
-7-element Vector{Int64}:
+7-element Vector{Int}:
  23
  17
  -8
@@ -96,7 +96,7 @@ The `generators` field is a repackaged version of `tri.points`:
 
 ```julia-repl
 julia> DelaunayTriangulation.get_generators(vorn)
-Dict{Int64, Tuple{Float64, Float64}} with 25 entries:
+Dict{Int, Tuple{Float64, Float64}} with 25 entries:
   5  => (0.684537, 0.618674)
   16 => (0.585988, 0.554157)
   20 => (0.43467, 0.161223)
@@ -134,7 +134,7 @@ The `polygons` field is a `Dict` that maps the indices of the generators to thei
 
 ```julia-repl
 julia> DelaunayTriangulation.get_polygons(vorn)
-Dict{Int64, Vector{Int64}} with 25 entries:
+Dict{Int, Vector{Int}} with 25 entries:
   5  => [24, 29, 15, 8, 24]
   16 => [24, 37, 26, 20, 16, 29, 24]
   20 => [30, 38, 14, 6, 30]
@@ -162,7 +162,7 @@ So, if we wanted the polygon for the fifth generator, we would use:
 
 ```julia-repl
 julia> get_polygon(vorn, 5)
-5-element Vector{Int64}:
+5-element Vector{Int}:
  24
  29
  15
@@ -213,7 +213,7 @@ The `triangle_to_circumcenter` field is similar to `circumcenter_to_triangle`, e
 
 ```julia-repl
 julia> DelaunayTriangulation.get_triangle_to_circumcenter(vorn)
-Dict{Tuple{Int64, Int64, Int64}, Int64} with 48 entries:
+Dict{Tuple{Int, Int, Int}, Int} with 48 entries:
   (22, 14, 11) => 1
   (8, 13, 7)   => 35
   (22, 19, 16) => 16
@@ -241,7 +241,7 @@ Lastly, the `unbounded_polygons` field stores the indices of all generators whos
 
 ```julia-repl
 julia> DelaunayTriangulation.get_unbounded_polygons(vorn)
-Set{Int64} with 9 elements:
+Set{Int} with 9 elements:
   6
   15
   25

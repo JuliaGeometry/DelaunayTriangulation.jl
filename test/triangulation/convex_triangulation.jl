@@ -16,8 +16,8 @@ include("../helper_functions.jl")
     rng2 = StableRNG(92871)
 
     next, prev, k, S, shuffled_indices = DT.prepare_convex_triangulation_vectors(_S)
-    @test next == zeros(Int64, length(_S) - 1)
-    @test prev == zeros(Int64, length(_S) - 1)
+    @test next == zeros(Int, length(_S) - 1)
+    @test prev == zeros(Int, length(_S) - 1)
     @test k == length(_S) - 1
     @test shuffled_indices == collect(1:(length(_S)-1))
     @test S == _S[begin:(end-1)]

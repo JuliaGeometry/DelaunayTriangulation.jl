@@ -169,7 +169,7 @@ end
 each_boundary_node(bn::A) where {F<:Number,A<:AV{F}} = bn
 
 """
-    construct_boundary_map(bn; IntegerType::Type{I} = Int64) where {I}
+    construct_boundary_map(bn; IntegerType::Type{I} = Int) where {I}
 
 Given a set of boundary nodes `bn`, returns a `OrderedDict` that maps boundary indices 
 to their position in `bn`. In particular:
@@ -202,7 +202,7 @@ end
 
 The above will work for any form of `bn` also.
 """
-function construct_boundary_map(bn; IntegerType::Type{I}=Int64) where {I}
+function construct_boundary_map(bn; IntegerType::Type{I}=Int) where {I}
     if has_multiple_curves(bn)
         dict = OrderedDict{I,NTuple{2,I}}()
         nc = num_curves(bn)
@@ -230,12 +230,12 @@ function construct_boundary_map(bn; IntegerType::Type{I}=Int64) where {I}
 end
 
 """
-    construct_boundary_edge_map(bn::A; IntegerType::Type{I}=Int64, EdgeType::Type{E}=NTuple{2,IntegerType}) where {A,I,E}
+    construct_boundary_edge_map(bn::A; IntegerType::Type{I}=Int, EdgeType::Type{E}=NTuple{2,IntegerType}) where {A,I,E}
 
 Constructs a map that takes boundary edges `(i,j)` to a `Tuple` giving the edge's position in the corresponding 
 set of boundary nodes.
 """
-function construct_boundary_edge_map(bn::A; IntegerType::Type{I}=Int64, EdgeType::Type{E}=NTuple{2,IntegerType}) where {A,I,E}
+function construct_boundary_edge_map(bn::A; IntegerType::Type{I}=Int, EdgeType::Type{E}=NTuple{2,IntegerType}) where {A,I,E}
     if has_multiple_curves(bn)
         dict = Dict{E,Tuple{NTuple{2,I},I}}()
         nc = num_curves(bn)
@@ -384,7 +384,7 @@ function num_outer_boundary_segments(boundary_nodes)
 end
 
 """
-    construct_boundary_index_ranges(boundary_nodes; IntegerType::Type{I}=Int64) where {I}
+    construct_boundary_index_ranges(boundary_nodes; IntegerType::Type{I}=Int) where {I}
 
 Given a set of `boundary_nodes`, creates an `OrderedDict` that maps boundary indices 
 to the range of all boundary indices that the corresponding boundary curve could 
@@ -409,7 +409,7 @@ so the range would be `$(BoundaryIndex-1):$BoundaryIndex`. The full `Dict` we ob
 
 ```julia-repl
 julia> construct_boundary_index_ranges(boundary_nodes)
-OrderedDict{Int64, UnitRange{Int64}} with 7 entries:
+OrderedDict{Int, UnitRange{Int}} with 7 entries:
   -1 => -2:-1
   -2 => -2:-1
   -3 => -3:-3
@@ -419,7 +419,7 @@ OrderedDict{Int64, UnitRange{Int64}} with 7 entries:
   -7 => -7:-4
 ```
 """
-function construct_boundary_index_ranges(boundary_nodes; IntegerType::Type{I}=Int64) where {I}
+function construct_boundary_index_ranges(boundary_nodes; IntegerType::Type{I}=Int) where {I}
     start = I(BoundaryIndex)
     current_boundary_index = I(BoundaryIndex)
     dict = OrderedDict{I,UnitRange{I}}()

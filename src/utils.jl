@@ -331,7 +331,7 @@ to give
 julia> bad_indices = [1, 2, 3]
 julia> fix_segments!(c, bad_indices)
 julia> c
-3-element Vector{Tuple{Int64, Int64}}:
+3-element Vector{Tuple{Int, Int}}:
  (2, 15)
  (15, 28)
  (28, 41)
@@ -363,7 +363,7 @@ julia> C = [(7, 12), (12, 17), (17, 22), (32, 37), (37, 42), (42, 47)];
 julia> DelaunayTriangulation.connect_segments!(C);
 
 julia> C
-7-element Vector{Tuple{Int64, Int64}}:
+7-element Vector{Tuple{Int, Int}}:
  (7, 12)
  (12, 17)
  (17, 22)
@@ -377,7 +377,7 @@ function connect_segments!(segments::AbstractVector{E}) where {E}
     f = firstindex(segments)
     ℓ = lastindex(segments)
     I = integer_type(E)
-    insert_idxs = Tuple{Int64,I,I}[]
+    insert_idxs = Tuple{Int,I,I}[]
     shift_idx = 0
     for i in f:(ℓ-1)
         eᵢ = segments[i]
@@ -406,7 +406,7 @@ julia> segments = [(2, 7), (7, 12), (12, 49)];
 julia> constrained_edge = (1, 68);
 julia> extend_segments!(segments, constrained_edge);
 julia> segments
-5-element Vector{Tuple{Int64, Int64}}:
+5-element Vector{Tuple{Int, Int}}:
  (1, 2)
  (2, 7)
  (7, 12)
@@ -441,7 +441,7 @@ The returned value is `(nodes, points)`, with `nodes` the indices and `points` t
 """
 function convert_boundary_points_to_indices(x::AAA, y::AAA; existing_points=NTuple{2,Float64}[], check_args=true, adjust=true) where {F<:Number,A<:AbstractVector{F},AA<:AbstractVector{A},AAA<:AbstractVector{AA}}
     check_args && @assert length(x) == length(y)
-    nodes = [[Int64[] for _ in eachindex(x[i])] for i in eachindex(x)]
+    nodes = [[Int[] for _ in eachindex(x[i])] for i in eachindex(x)]
     for i in eachindex(x)
         _nodes, _ = convert_boundary_points_to_indices(x[i], y[i]; existing_points=existing_points, check_args=true)
         copyto!(nodes[i], _nodes)
@@ -457,7 +457,7 @@ function convert_boundary_points_to_indices(x::AA, y::AA; existing_points=NTuple
         @assert all(i -> x[i][end] ≈ x[i+1][begin], firstindex(x):(lastindex(x)-1))
         @assert all(i -> y[i][end] ≈ y[i+1][begin], firstindex(y):(lastindex(y)-1))
     end
-    nodes = [Int64[] for _ in eachindex(x)]
+    nodes = [Int[] for _ in eachindex(x)]
     for i in eachindex(x)
         _nodes, _ = convert_boundary_points_to_indices(x[i], y[i]; existing_points=existing_points, check_args=false, adjust=false)
         resize!(nodes[i], length(_nodes))
@@ -477,7 +477,7 @@ function convert_boundary_points_to_indices(x::A, y::A; existing_points=NTuple{2
         @assert x[begin] ≈ x[end]
         @assert y[begin] ≈ y[end]
     end
-    nodes = Int64[]
+    nodes = Int[]
     init = num_points(existing_points) + 1
     for i in firstindex(x):(lastindex(x)-1)
         push!(nodes, init)
@@ -888,4 +888,14 @@ function iterated_neighbourhood!(neighbours, tri, i, d)
         union!(neighbours, new_neighbours)
     end
     return neighbours
+end
+
+"""
+    f64_getxy(p)
+
+Returns the coordinates of the point `p` as `Float64`s.
+"""
+function f64_getxy(p)
+    x, y = getxy(p)
+    return Float64(x), Float64(y)
 end

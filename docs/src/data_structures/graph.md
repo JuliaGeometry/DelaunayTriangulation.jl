@@ -13,7 +13,7 @@ struct Graph{I}
         G = UndirectedGraph{I}()
         return new{I}(G)
     end
-    Graph() = Graph{Int64}()
+    Graph() = Graph{Int}()
     Graph(G::UndirectedGraph{I}) where {I} = new{I}(G)
 end
 ```

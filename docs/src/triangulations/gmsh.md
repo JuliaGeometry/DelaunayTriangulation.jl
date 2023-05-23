@@ -50,7 +50,7 @@ In the figure, the red curve shows the convex hull. We note that we now have inf
 
 ```julia-repl
 julia> get_boundary_nodes(tri)
-178-element Vector{Int64}:
+178-element Vector{Int}:
   1
   2
   3
@@ -66,7 +66,7 @@ Similarly, `tri.boundary_map` is now populated:
 
 ```julia-repl
 julia> get_boundary_map(tri)
-OrderedDict{Int64, Vector{Int64}} with 1 entry:
+OrderedDict{Int, Vector{Int}} with 1 entry:
   -1 => [1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1]
 ```
 
@@ -74,7 +74,7 @@ We now also have `tri.boundary_edge_map`:
 
 ```julia-repl
 julia> tri.boundary_edge_map
-Dict{Tuple{Int64, Int64}, Tuple{Vector{Int64}, Int64}} with 177 entries:
+Dict{Tuple{Int, Int}, Tuple{Vector{Int}, Int}} with 177 entries:
   (116, 20)  => ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 36)
   (78, 158)  => ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 136)
   (11, 105)  => ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 16)
@@ -163,7 +163,7 @@ An important feature to note for this case is that the index now used to refer t
 
 ```julia-repl
 julia> get_boundary_map(tri)
-OrderedDict{Int64, Int64} with 5 entries:
+OrderedDict{Int, Int} with 5 entries:
   -1 => 1
   -2 => 2
   -3 => 3
@@ -175,7 +175,7 @@ This map makes it simple to iterate over all parts of a boundary, as we show in 
 
 ```julia-repl
 julia> get_boundary_edge_map(tri)
-Dict{Tuple{Int64, Int64}, Tuple{Int64, Int64}} with 262 entries:
+Dict{Tuple{Int, Int}, Tuple{Int, Int}} with 262 entries:
   (118, 8)   => (1, 14)
   (55, 56)   => (3, 10)
   (34, 154)  => (2, 28)
@@ -266,12 +266,12 @@ or, alternatively,
 
 ```julia-repl 
 julia> DelaunayTriangulation.get_representative_point_list(tri)
-Dict{Int64, DelaunayTriangulation.RepresentativeCoordinates{Int64, Float64}} with 5 entries:
-  5 => RepresentativeCoordinates{Int64, Float64}(0.475, 3.5, 0)
-  4 => RepresentativeCoordinates{Int64, Float64}(1.25, 3.5, 0)
-  2 => RepresentativeCoordinates{Int64, Float64}(0.6, 0.6, 0)
-  3 => RepresentativeCoordinates{Int64, Float64}(1.5, 0.5, 0)
-  1 => RepresentativeCoordinates{Int64, Float64}(1.5, 1.5, 0)
+Dict{Int, DelaunayTriangulation.RepresentativeCoordinates{Int, Float64}} with 5 entries:
+  5 => RepresentativeCoordinates{Int, Float64}(0.475, 3.5, 0)
+  4 => RepresentativeCoordinates{Int, Float64}(1.25, 3.5, 0)
+  2 => RepresentativeCoordinates{Int, Float64}(0.6, 0.6, 0)
+  3 => RepresentativeCoordinates{Int, Float64}(1.5, 0.5, 0)
+  1 => RepresentativeCoordinates{Int, Float64}(1.5, 1.5, 0)
 ```
 
 The keys are the indices for the boundary curve. These coordinates are visual centers, obtained via the pole of inaccessibility function; see the sidebar. For the inner boundaries, the ghost edges are no longer infinite and so they connect directly with these representative coordinates.
@@ -280,7 +280,7 @@ To access more of the boundary information, we could first consider `boundary_no
 
 ```julia-repl
 julia> get_boundary_nodes(tri)
-5-element Vector{Vector{Vector{Int64}}}:
+5-element Vector{Vector{Vector{Int}}}:
  [[1, 128, 129, 130, 2, 131, 132, 133, 3, 134, 135, 136, 4], [4, 137, 138, 139, 140, 141, 142, 143, 144, 145  …  155, 156, 157, 158, 159, 160, 161, 162, 163, 7], [7, 164, 165, 166, 8, 167, 168, 169, 9, 170, 171, 172, 10], [10, 173, 174, 175, 176, 177, 178, 179, 180, 181  …  191, 192, 193, 194, 195, 196, 197, 198, 199, 1]]
  [[13, 14, 15, 16, 17, 18, 19, 20, 21, 22  …  53, 54, 55, 56, 57, 58, 59, 60, 61, 13]]
  [[62, 63, 64, 65, 66, 67, 68, 69, 70, 71  …  102, 103, 104, 105, 106, 107, 108, 109, 110, 62]]
@@ -292,7 +292,7 @@ This is simply a vector of curves, with each curve storing its segments. This ve
 
 ```julia-repl
 julia> get_boundary_map(tri)
-OrderedDict{Int64, Tuple{Int64, Int64}} with 11 entries:
+OrderedDict{Int, Tuple{Int, Int}} with 11 entries:
   -1  => (1, 1)
   -2  => (1, 2)
   -3  => (1, 3)
@@ -339,7 +339,7 @@ Another feature to note is `tri.boundary_index_ranges`, which will tell us what 
 
 ```julia-repl
 julia> get_boundary_index_ranges(tri)
-OrderedDict{Int64, UnitRange{Int64}} with 11 entries:
+OrderedDict{Int, UnitRange{Int}} with 11 entries:
   -1  => -4:-1
   -2  => -4:-1
   -3  => -4:-1
@@ -364,7 +364,7 @@ The last feature to show is the new `tri.boundary_edge_map` for this case, given
 
 ```julia-repl
 julia> get_boundary_edge_map(tri)
-Dict{Tuple{Int64, Int64}, Tuple{Tuple{Int64, Int64}, Int64}} with 252 entries:
+Dict{Tuple{Int, Int}, Tuple{Tuple{Int, Int}, Int}} with 252 entries:
   (55, 56)   => ((2, 1), 43)
   (130, 2)   => ((1, 1), 4)
   (92, 93)   => ((3, 1), 31)

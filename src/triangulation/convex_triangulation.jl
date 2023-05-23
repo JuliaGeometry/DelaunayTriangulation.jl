@@ -1,6 +1,6 @@
 """
     triangulate_convex(points, S;
-        IntegerType::Type{I}=Int64,
+        IntegerType::Type{I}=Int,
         EdgeType::Type{E}=NTuple{2,IntegerType},
         TriangleType::Type{V}=NTuple{3,IntegerType},
         EdgesType::Type{Es}=Set{EdgeType},
@@ -20,7 +20,7 @@ that define a convex polygon, triangulates it with Chew's algorithm.
 - `S`: A counter-clockwise list of vertices defining a convex polygon from the corresponding points in `points`.
 
 # Keyword Arguments 
-- `IntegerType::Type{I}=Int64`: The integer type to use for indexing. 
+- `IntegerType::Type{I}=Int`: The integer type to use for indexing. 
 - `EdgeType::Type{E}=NTuple{2,IntegerType}`: The type to use for representing edges. 
 - `TriangleType::Type{V}=NTuple{3,IntegerType}`: The type to use for representing triangles. 
 - `EdgesType::Type{Es}=Set{EdgeType}`: The type to use for representing collections of edges. 
@@ -36,7 +36,7 @@ that define a convex polygon, triangulates it with Chew's algorithm.
 Returns a [`Triangulation`](@ref) of the convex polygon.
 """
 function triangulate_convex(points, S;
-    IntegerType::Type{I}=Int64,
+    IntegerType::Type{I}=Int,
     EdgeType::Type{E}=NTuple{2,IntegerType},
     TriangleType::Type{V}=NTuple{3,IntegerType},
     EdgesType::Type{Es}=Set{EdgeType},

@@ -29,9 +29,9 @@ end
 
 @testset "Initialising the boundary node vectors" begin
     bn = DT.get_boundary_node_init([[1, 2], [3], [4, 5, 6]])
-    @test bn == [[Int64[], Int64[]],
-        [Int64[]],
-        [Int64[], Int64[], Int64[]]]
+    @test bn == [[Int[], Int[]],
+        [Int[]],
+        [Int[], Int[], Int[]]]
 end
 
 @testset "Defining mesh settings" begin
@@ -1124,7 +1124,7 @@ if !(get(ENV, "CI", "false") == "true")
             tri = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5; add_ghost_triangles=false)
             elements, nodes, bn = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5; convert_result=false)
             @test tri.points == nodes
-            @test tri.triangles == Set{NTuple{3,Int64}}((T[1], T[2], T[3]) for T in eachcol(elements))
+            @test tri.triangles == Set{NTuple{3,Int}}((T[1], T[2], T[3]) for T in eachcol(elements))
             adj = tri.adjacent.adjacent
             adj = DefaultDict(DT.DefaultAdjacentValue, adj)
             for T in tri.triangles
@@ -1165,7 +1165,7 @@ if !(get(ENV, "CI", "false") == "true")
                 @test pred
                 @test e ∈ adj2v[k]
             end
-            @test tri.constrained_edges == Set{NTuple{2,Int64}}()
+            @test tri.constrained_edges == Set{NTuple{2,Int}}()
             @test tri.boundary_map == OrderedDict(DT.BoundaryIndex => bn)
             for i in 1:(lastindex(bn)-1)
                 local u, v, w
@@ -1190,7 +1190,7 @@ if !(get(ENV, "CI", "false") == "true")
             tri = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5; add_ghost_triangles=true)
             elements, nodes, bn = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5; convert_result=false)
             @test tri.points == nodes
-            elset = Set{NTuple{3,Int64}}((T[1], T[2], T[3]) for T in eachcol(elements))
+            elset = Set{NTuple{3,Int}}((T[1], T[2], T[3]) for T in eachcol(elements))
             ng = 0
             for T in tri.triangles
                 i, j, k = indices(T)
@@ -1249,7 +1249,7 @@ if !(get(ENV, "CI", "false") == "true")
                 @test DT.compare_triangles(τ, el)
                 @test (i, j) ∈ adj2v[k]
             end
-            @test tri.constrained_edges == Set{NTuple{2,Int64}}()
+            @test tri.constrained_edges == Set{NTuple{2,Int}}()
             @test tri.boundary_map == OrderedDict(DT.BoundaryIndex => bn)
             for i in 1:(lastindex(bn)-1)
                 local u, v, w
@@ -1284,7 +1284,7 @@ if !(get(ENV, "CI", "false") == "true")
             elements, nodes, bn = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5; convert_result=false,
                 single_boundary=false)
             @test tri.points == nodes
-            @test tri.triangles == Set{NTuple{3,Int64}}((T[1], T[2], T[3]) for T in eachcol(elements))
+            @test tri.triangles == Set{NTuple{3,Int}}((T[1], T[2], T[3]) for T in eachcol(elements))
             @test tri.boundary_nodes == bn
             @test tri.boundary_map == OrderedDict(-(1:4) .=> 1:4)
             @test collect(Base.keys(tri.boundary_map)) == [-1, -2, -3, -4]
@@ -1350,7 +1350,7 @@ if !(get(ENV, "CI", "false") == "true")
                 @test pred
                 @test e ∈ adj2v[k]
             end
-            @test tri.constrained_edges == Set{NTuple{2,Int64}}()
+            @test tri.constrained_edges == Set{NTuple{2,Int}}()
         end
 
         @testset "A square: Multiple boundaries with ghost triangles" begin
@@ -1359,7 +1359,7 @@ if !(get(ENV, "CI", "false") == "true")
             elements, nodes, bn = generate_mesh(0.0, 2.0, 0.0, 2.0, 0.5; convert_result=false,
                 single_boundary=false)
             @test tri.points == nodes
-            elset = Set{NTuple{3,Int64}}((T[1], T[2], T[3]) for T in eachcol(elements))
+            elset = Set{NTuple{3,Int}}((T[1], T[2], T[3]) for T in eachcol(elements))
             ng = 0
             for T in tri.triangles
                 i, j, k = indices(T)
@@ -1443,7 +1443,7 @@ if !(get(ENV, "CI", "false") == "true")
                 @test DT.compare_triangles(τ, el)
                 @test (i, j) ∈ adj2v[k]
             end
-            @test tri.constrained_edges == Set{NTuple{2,Int64}}()
+            @test tri.constrained_edges == Set{NTuple{2,Int}}()
             @test DT.get_adjacent(tri, 1, 16) == DT.BoundaryIndex - 3
             @test DT.get_adjacent(tri, 16, 8) == DT.BoundaryIndex - 3
             @test DT.get_adjacent(tri, 8, 15) == DT.BoundaryIndex - 3
@@ -1472,7 +1472,7 @@ if !(get(ENV, "CI", "false") == "true")
 
             elements, nodes, bn = generate_mesh(x, y, 0.1; convert_result=false)
             @test tri.points == nodes
-            elset = Set{NTuple{3,Int64}}((T[1], T[2], T[3]) for T in eachcol(elements))
+            elset = Set{NTuple{3,Int}}((T[1], T[2], T[3]) for T in eachcol(elements))
             ng = 0
             for T in tri.triangles
                 i, j, k = indices(T)
@@ -1567,7 +1567,7 @@ if !(get(ENV, "CI", "false") == "true")
                 @test DT.compare_triangles(τ, el)
                 @test (i, j) ∈ adj2v[k]
             end
-            @test tri.constrained_edges == Set{NTuple{2,Int64}}()
+            @test tri.constrained_edges == Set{NTuple{2,Int}}()
 
             bn1 = tri.boundary_nodes[1]
             for i in eachindex(bn1)

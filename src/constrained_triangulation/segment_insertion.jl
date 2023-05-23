@@ -100,7 +100,7 @@ end
 
 """
     triangulate_cavity_cdt(points, V;
-        IntegerType::Type{I}=Int64,
+        IntegerType::Type{I}=Int,
         EdgeType::Type{E}=NTuple{2,IntegerType},
         TriangleType::Type{Vs}=NTuple{3,IntegerType},
         EdgesType::Type{Es}=Set{EdgeType},
@@ -114,7 +114,7 @@ left behind when deleting triangles intersected in a triangulation by an edge.
 If a triangulation is provided, the points are used from that.
 """
 function triangulate_cavity_cdt(points, V;
-    IntegerType::Type{I}=Int64,
+    IntegerType::Type{I}=Int,
     EdgeType::Type{E}=NTuple{2,IntegerType},
     TriangleType::Type{Vs}=NTuple{3,IntegerType},
     EdgesType::Type{Es}=Set{EdgeType},

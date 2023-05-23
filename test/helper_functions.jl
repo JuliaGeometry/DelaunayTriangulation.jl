@@ -105,7 +105,7 @@ function simple_geometry()
         d q c
         r q d]
     T = indexin(T, pts)
-    T = Set{NTuple{3,Int64}}((Tuple(T) for T in eachrow(T)))
+    T = Set{NTuple{3,Int}}((Tuple(T) for T in eachrow(T)))
     outer = [[indexin([a, b, c, d, e, f, g, h, a], pts)...]]
     inner1 = [[indexin([ℓ, k, j, i, ℓ], pts)...]]
     inner2 = [[indexin([r, q, p], pts)...], [indexin([p, o, n, m, r], pts)...]]
@@ -349,7 +349,7 @@ function test_adjacent2vertex_map_matches_adjacent_map(tri)
 end
 
 function test_graph_contains_all_vertices(tri)
-    all_vertices = Set{Int64}()
+    all_vertices = Set{Int}()
     for T in each_triangle(tri)
         i, j, k = DT.indices(T)
         push!(all_vertices, i, j, k)
@@ -713,7 +713,7 @@ function example_triangulation()
     p7 = @SVector[2.0, 1.0]
     p8 = @SVector[5.0, 1.0]
     pts = [p1, p2, p3, p4, p5, p6, p7, p8]
-    T = Set{NTuple{3,Int64}}([
+    T = Set{NTuple{3,Int}}([
         (6, 3, 1),
         (3, 2, 5),
         (4, 1, 5),
@@ -743,23 +743,23 @@ function example_triangulation()
         )
     )
     adj2v = DT.Adjacent2Vertex(Dict(
-        DT.BoundaryIndex => Set{NTuple{2,Int64}}([(4, 5), (5, 2), (2, 3), (3, 6), (6, 4)]),
-        1 => Set{NTuple{2,Int64}}([(5, 4), (3, 5), (6, 3), (4, 6)]),
-        2 => Set{NTuple{2,Int64}}([(5, 3)]),
-        3 => Set{NTuple{2,Int64}}([(1, 6), (5, 1), (2, 5)]),
-        4 => Set{NTuple{2,Int64}}([(1, 5), (6, 1)]),
-        5 => Set{NTuple{2,Int64}}([(4, 1), (1, 3), (3, 2)]),
-        6 => Set{NTuple{2,Int64}}([(1, 4), (3, 1)])
+        DT.BoundaryIndex => Set{NTuple{2,Int}}([(4, 5), (5, 2), (2, 3), (3, 6), (6, 4)]),
+        1 => Set{NTuple{2,Int}}([(5, 4), (3, 5), (6, 3), (4, 6)]),
+        2 => Set{NTuple{2,Int}}([(5, 3)]),
+        3 => Set{NTuple{2,Int}}([(1, 6), (5, 1), (2, 5)]),
+        4 => Set{NTuple{2,Int}}([(1, 5), (6, 1)]),
+        5 => Set{NTuple{2,Int}}([(4, 1), (1, 3), (3, 2)]),
+        6 => Set{NTuple{2,Int}}([(1, 4), (3, 1)])
     ))
     rep = DT.get_empty_representative_points()
     DT.compute_representative_points!(rep, pts, [2, 6, 4, 5, 2])
     tri = Triangulation(pts, T, adj, adj2v, DG,
-        Int64[],
-        DT.construct_boundary_edge_map(Int64[]),
-        DT.DataStructures.OrderedDict{Int64,Vector{Int64}}(),
-        DT.DataStructures.OrderedDict{Int64,UnitRange{Int64}}(),
-        Set{NTuple{2,Int64}}(),
-        Set{NTuple{2,Int64}}(),
+        Int[],
+        DT.construct_boundary_edge_map(Int[]),
+        DT.DataStructures.OrderedDict{Int,Vector{Int}}(),
+        DT.DataStructures.OrderedDict{Int,UnitRange{Int}}(),
+        Set{NTuple{2,Int}}(),
+        Set{NTuple{2,Int}}(),
         ConvexHull(pts, [2, 6, 4, 5, 2]),
         rep)
     return tri
@@ -770,20 +770,20 @@ function example_empty_triangulation()
     p2 = @SVector[3.0, -1.0]
     p3 = @SVector[2.0, 0.0]
     pts = [p1, p2, p3]
-    T = Set{NTuple{3,Int64}}([])
-    A = zeros(Int64, 0, 0)
+    T = Set{NTuple{3,Int}}([])
+    A = zeros(Int, 0, 0)
     DG = DT.Graph(DT.SimpleGraphs.UndirectedGraph(A))
-    adj = DT.Adjacent(Dict{NTuple{2,Int64},Int64}())
-    adj2v = DT.Adjacent2Vertex(Dict(DT.BoundaryIndex => Set{NTuple{2,Int64}}()))
+    adj = DT.Adjacent(Dict{NTuple{2,Int},Int}())
+    adj2v = DT.Adjacent2Vertex(Dict(DT.BoundaryIndex => Set{NTuple{2,Int}}()))
     rep = DT.get_empty_representative_points()
     DT.compute_representative_points!(rep, pts, [1, 2, 3, 1])
     tri = Triangulation(pts, T, adj, adj2v, DG,
-        Int64[],
-        DT.construct_boundary_edge_map(Int64[]),
-        DT.DataStructures.OrderedDict{Int64,Vector{Int64}}(),
-        DT.DataStructures.OrderedDict{Int64,UnitRange{Int64}}(),
-        Set{NTuple{2,Int64}}(),
-        Set{NTuple{2,Int64}}(),
+        Int[],
+        DT.construct_boundary_edge_map(Int[]),
+        DT.DataStructures.OrderedDict{Int,Vector{Int}}(),
+        DT.DataStructures.OrderedDict{Int,UnitRange{Int}}(),
+        Set{NTuple{2,Int}}(),
+        Set{NTuple{2,Int}}(),
         ConvexHull(pts, [1, 2, 3, 1]),
         rep)
     return tri
@@ -920,7 +920,7 @@ function get_random_vertices_and_constrained_edges(nverts1, nverts2, nedges, rng
     ## and we just take the edges from that triangulation.
     points = [Tuple(rand(rng, 2)) for _ in 1:nverts1]
     tri = triangulate(points; rng)
-    edges = Set{NTuple{2,Int64}}()
+    edges = Set{NTuple{2,Int}}()
     all_edges = collect(each_solid_edge(tri))
     iter = 0
     while length(edges) < nedges && iter < 10000

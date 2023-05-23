@@ -306,7 +306,7 @@ function triangle_angles(p, q, r)
     bx, ay = px - rx, py - ry
     dotab = ax * bx + ay * by
     θ₁ = if iszero(dotab)
-        π / 2 
+        one(dotab) * π / 2 
     else 
         atan(2A / dotab) 
     end
@@ -317,7 +317,7 @@ function triangle_angles(p, q, r)
     bx, ay = qx - rx, qy - ry
     dotab = ax * bx + ay * by
     θ₂ = if iszero(dotab)
-        π / 2 
+        one(dotab) * π / 2 
     else 
         atan(2A / dotab)
     end
@@ -328,7 +328,7 @@ function triangle_angles(p, q, r)
     bx, ay = rx - qx, ry - qy
     dotab = ax * bx + ay * by
     θ₃ = if iszero(dotab)
-        π / 2 
+        one(dotab) * π / 2 
     else 
         atan(2A / dotab) 
     end

@@ -91,7 +91,7 @@ function empty_representative_points!(rep)
     empty!(rep)
 end
 
-function get_empty_representative_points(::Type{I}=Int64, ::Type{F}=Float64) where {I,F}
+function get_empty_representative_points(::Type{I}=Int, ::Type{F}=Float64) where {I,F}
     return Dict{I,RepresentativeCoordinates{I,F}}()
 end
 

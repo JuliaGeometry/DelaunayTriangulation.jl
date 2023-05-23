@@ -23,7 +23,7 @@ fig
             n = rand(rng1, 50:1000)
             points = 20randn(rng1, 2, n)
             tri = triangulate(points; delete_ghosts=false, rng=rng1)
-            deleted_pts = Int64[]
+            deleted_pts = Int[]
             for k in 1:(n÷10)
                 rng2 = StableRNG(j + k * n)
                 @show j, k, n
@@ -106,7 +106,7 @@ end
             bnd_points = [(x, y) for (x, y) in zip(bnd_x, bnd_y)]
             append!(points, bnd_points)
             tri = triangulate(points; delete_ghosts=false, rng=rng1)
-            deleted_pts = Int64[]
+            deleted_pts = Int[]
             total_bnd_nodes = DT.num_neighbours(tri, DT.BoundaryIndex)
             for k in 1:(max(1, total_bnd_nodes ÷ 5))
                 rng2 = StableRNG(j + k * n)
