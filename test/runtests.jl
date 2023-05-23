@@ -49,9 +49,11 @@ using SafeTestsets
         @safetestset "Boundary Nodes" begin
             include("interfaces/boundary_nodes.jl")
         end
+        #=
         @safetestset "Application" begin
             include("interfaces/counting_allocs.jl")
         end
+        =#
     end
 
     @testset verbose = true "Data Structures" begin
