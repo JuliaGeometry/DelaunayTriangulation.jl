@@ -254,13 +254,13 @@ fig_structured = plot_fnc(npts, simulation_results_structured, simulation_summar
 
 ```@raw html
 <figure>
-    <img src='../figs/fig_random.png', alt='Counting random unconstrained triangulation function calls'><br>
+    <img src='../figs/random.png', alt='Counting random unconstrained triangulation function calls'><br>
 </figure>
 ```
 
 ```@raw html
 <figure>
-    <img src='../figs/fig_structured.png', alt='Counting structured unconstrained triangulation function calls'><br>
+    <img src='../figs/structured.png', alt='Counting structured unconstrained triangulation function calls'><br>
 </figure>
 ```
 
@@ -279,13 +279,13 @@ fig_structured_cdt = plot_fnc(ne, simulation_results_structured_cdt, simulation_
 
 ```@raw html
 <figure>
-    <img src='../figs/fig_random_cdt.png', alt='Counting random constrained triangulation function calls'><br>
+    <img src='../figs/random_cdt.png', alt='Counting random constrained triangulation function calls'><br>
 </figure>
 ```
 
 ```@raw html
 <figure>
-    <img src='../figs/fig_structured_cdt.png', alt='Counting structured constrained triangulation function calls'><br>
+    <img src='../figs/structured_cdt.png', alt='Counting structured constrained triangulation function calls'><br>
 </figure>
 ```
 
