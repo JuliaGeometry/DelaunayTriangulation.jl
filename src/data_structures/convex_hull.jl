@@ -34,14 +34,14 @@ function Base.show(io::IO, m::MIME"text/plain", ch::ConvexHull)
 end
 
 """
-    convex_hull(points; IntegerType::Type{I}=Int64) where {I}
+    convex_hull(points; IntegerType::Type{I}=Int) where {I}
 
 Computes the convex hull of `points` using Graham's scan. Returns a [`ConvexHull`](@ref) object.
 
 Note that if there are a trio of points on the convex hull that are collinear, they will 
 all be included, instead of only taking the endpoints of the collinear points.
 """
-function convex_hull(points; IntegerType::Type{I}=Int64) where {I}
+function convex_hull(points; IntegerType::Type{I}=Int) where {I}
     ch = ConvexHull(points, I[])
     sizehint!(ch, num_points(points))
     convex_hull!(ch)

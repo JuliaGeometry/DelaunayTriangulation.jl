@@ -5,7 +5,7 @@ using StatsBase
 include("../helper_functions.jl")
 
 @testset "Initialise" begin
-    c = DT.RepresentativeCoordinates{Int64,Float64}()
+    c = DT.RepresentativeCoordinates{Int,Float64}()
     @test c == DT.RepresentativeCoordinates(0.0, 0.0, 0)
 end
 
@@ -34,7 +34,7 @@ end
 end
 
 @testset "Adding and deleting points to representative coordinates" begin
-    c = DT.RepresentativeCoordinates{Int64,Float64}()
+    c = DT.RepresentativeCoordinates{Int,Float64}()
     pts = [15randn(2) for _ in 1:200]
     foreach(p -> DT.add_point!(c, p), pts)
     mx, my = mean(pts)
@@ -76,7 +76,7 @@ end
     DT.new_representative_point!(rep, 3)
     DT.update_centroid_after_addition!(rep, 2, [2.0, 5.0])
     DT.update_centroid_after_addition!(rep, 3, [-17.0, 0.0])
-    centroid = get!(DT.RepresentativeCoordinates{Int64,Float64}, rep,
+    centroid = get!(DT.RepresentativeCoordinates{Int,Float64}, rep,
         13)
     centroid.x = 0.292
     centroid.y = 0.991
@@ -92,7 +92,7 @@ end
     DT.new_representative_point!(rep, 3)
     DT.update_centroid_after_addition!(rep, 2, [2.0, 5.0])
     DT.update_centroid_after_addition!(rep, 3, [-17.0, 0.0])
-    centroid = get!(DT.RepresentativeCoordinates{Int64,Float64}, rep,
+    centroid = get!(DT.RepresentativeCoordinates{Int,Float64}, rep,
         13)
     centroid.x = 0.292
     centroid.y = 0.991

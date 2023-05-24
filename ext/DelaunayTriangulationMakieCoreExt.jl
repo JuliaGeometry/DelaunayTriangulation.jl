@@ -127,8 +127,8 @@ function MakieCore.plot!(p::_Triplot)
 
     ## Define all the necessary observables
     points_2f = MakieCore.Observable(NTuple{2,Float64}[])
-    triangle_mat = MakieCore.Observable(NTuple{3,Int64}[])
-    triangle_mat_2 = MakieCore.Observable{Matrix{Int64}}()
+    triangle_mat = MakieCore.Observable(NTuple{3,Int}[])
+    triangle_mat_2 = MakieCore.Observable{Matrix{Int}}()
     ghost_edges = MakieCore.Observable(NTuple{2,Float64}[])
     convex_hull_points = MakieCore.Observable(NTuple{2,Float64}[])
     constrained_edge_points = MakieCore.Observable(NTuple{2,Float64}[])
@@ -164,7 +164,7 @@ function MakieCore.plot!(p::_Triplot)
                 push!(triangle_mat[], (i, j, k))
             end
         end
-        triangle_mat_2[] = Matrix(reinterpret(reshape, Int64, triangle_mat[])')
+        triangle_mat_2[] = Matrix(reinterpret(reshape, Int, triangle_mat[])')
 
         ## Now get the ghost edges if needed 
         if show_ghost_edges[]

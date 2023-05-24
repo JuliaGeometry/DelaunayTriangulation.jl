@@ -60,7 +60,7 @@ We explain each field below.
 
 ```julia-repl
 julia> get_triangles(tri)
-Set{Tuple{Int64, Int64, Int64}} with 12 elements:
+Set{Tuple{Int, Int, Int}} with 12 elements:
   (10, 5, 1)
   (9, 7, 3)
   (2, 6, 1)
@@ -90,8 +90,8 @@ end
 
 ```julia-repl
 julia> get_adjacent(tri)
-Adjacent{Int64, Tuple{Int64, Int64}}, with map:
-DataStructures.DefaultDict{Tuple{Int64, Int64}, Int64, Int64} with 43 entries:
+Adjacent{Int, Tuple{Int, Int}}, with map:
+DataStructures.DefaultDict{Tuple{Int, Int}, Int, Int} with 43 entries:
   (9, 3)  => 8
   (8, 9)  => 3
   (4, 7)  => -1
@@ -120,8 +120,8 @@ end
 
 ```julia-repl
 julia> get_adjacent2vertex(tri)
-Adjacent{Int64, Set{Tuple{Int64, Int64}}, Tuple{Int64, Int64}}, with map:
-Dict{Int64, Set{Tuple{Int64, Int64}}} with 11 entries:
+Adjacent{Int, Set{Tuple{Int, Int}}, Tuple{Int, Int}}, with map:
+Dict{Int, Set{Tuple{Int, Int}}} with 11 entries:
   5  => Set([(10, 4), (1, 10)])
   8  => Set([(9, 3), (2, 9), (6, 2), (3, 10), (10, 6)])
   1  => Set([(6, 10), (10, 5), (2, 6)])
@@ -154,7 +154,7 @@ Graph
     Number of vertices: 11
 
 julia> get_edges(tri)
-Set{Tuple{Int64, Int64}} with 27 elements:
+Set{Tuple{Int, Int}} with 27 elements:
   (2, 9)
   (4, 5)
   (1, 2)
@@ -175,7 +175,7 @@ Set{Tuple{Int64, Int64}} with 27 elements:
   ⋮
 
 julia> get_neighbours(tri)
-Dict{Int64, Set{Int64}} with 11 entries:
+Dict{Int, Set{Int}} with 11 entries:
   5  => Set([4, -1, 10, 1])
   8  => Set([6, 2, 10, 9, 3])
   1  => Set([5, 6, 2, 10, -1])
@@ -199,7 +199,7 @@ Dict{Int64, Set{Int64}} with 11 entries:
 
 ```julia-repl 
 julia> get_boundary_index_ranges(tri)
-OrderedCollections.OrderedDict{Int64, UnitRange{Int64}} with 1 entry:
+OrderedCollections.OrderedDict{Int, UnitRange{Int}} with 1 entry:
   -1 => -1:-1
 ```
 
@@ -215,7 +215,7 @@ This tells us that whenever we see a `-1` as a vertex, we have a ghost vertex co
 julia> get_convex_hull(tri)
 Convex hull.
     Indices:
-7-element Vector{Int64}:
+7-element Vector{Int}:
  7
  4
  5
@@ -229,6 +229,6 @@ Convex hull.
 
 ```julia-repl
 julia> tri.representative_point_list
-Dict{Int64, DelaunayTriangulation.RepresentativeCoordinates{Int64, Float64}} with 1 entry:
-  1 => RepresentativeCoordinates{Int64, Float64}(1.51155, 1.43234, 0)
+Dict{Int, DelaunayTriangulation.RepresentativeCoordinates{Int, Float64}} with 1 entry:
+  1 => RepresentativeCoordinates{Int, Float64}(1.51155, 1.43234, 0)
 ```

@@ -66,7 +66,7 @@ global es3 = Set{typeof(e3)}((SVector{2,Int32}((1, 3)),
             F = eltype(es)
             @test DT.initialise_edges(Set{F}) == Set{F}()
         end
-        @test DT.initialise_edges(Vector{NTuple{2,Int64}}) == Vector{NTuple{2,Int64}}()
+        @test DT.initialise_edges(Vector{NTuple{2,Int}}) == Vector{NTuple{2,Int}}()
     end
 
     @testset "Getting the type of edges in a collection" begin
@@ -75,7 +75,7 @@ global es3 = Set{typeof(e3)}((SVector{2,Int32}((1, 3)),
             F = eltype(es)
             @test DT.edge_type(typeof(es)) == F
         end
-        @test DT.edge_type(Vector{NTuple{2,Int64}}) == NTuple{2,Int64}
+        @test DT.edge_type(Vector{NTuple{2,Int}}) == NTuple{2,Int}
     end
 
     @testset "Number of edges" begin
@@ -166,7 +166,7 @@ global es3 = Set{typeof(e3)}((SVector{2,Int32}((1, 3)),
     @testset "Seeing if a collection of edges is empty" begin
         @test DT.is_empty([])
         @test !DT.is_empty([1, 2, 3])
-        @test DT.is_empty(Set{NTuple{2,Int64}}())
+        @test DT.is_empty(Set{NTuple{2,Int}}())
         @test !DT.is_empty(Set(((1, 2), (3, 4))))
     end
 end

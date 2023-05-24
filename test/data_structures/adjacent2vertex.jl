@@ -3,11 +3,11 @@ const DT = DelaunayTriangulation
 using DataStructures
 using StaticArrays
 
-global dict_1 = Dict{Int64,Set{NTuple{2,Int64}}}()
-global dict_2 = Dict{Int64,Vector{NTuple{2,Int64}}}()
+global dict_1 = Dict{Int,Set{NTuple{2,Int}}}()
+global dict_2 = Dict{Int,Vector{NTuple{2,Int}}}()
 global dict_3 = Dict{Int32,Set{SVector{2,Int32}}}()
-global adj2v_1 = DT.Adjacent2Vertex{Int64,Set{NTuple{2,Int64}},Set{SVector{2,Int32}}}()
-global adj2v_2 = DT.Adjacent2Vertex{Int64,Vector{NTuple{2,Int64}},NTuple{2,Int64}}()
+global adj2v_1 = DT.Adjacent2Vertex{Int,Set{NTuple{2,Int}},Set{SVector{2,Int32}}}()
+global adj2v_2 = DT.Adjacent2Vertex{Int,Vector{NTuple{2,Int}},NTuple{2,Int}}()
 global adj2v_3 = DT.Adjacent2Vertex{Int32,Set{SVector{2,Int32}},SVector{2,Int32}}()
 
 @testset "Constructors and getters" begin
@@ -24,9 +24,9 @@ end
 
 @testset "Using get! on Adjacent2Vertex" begin
     w = get!(adj2v_1, 10)
-    @test w == Set{NTuple{2,Int64}}()
+    @test w == Set{NTuple{2,Int}}()
     w = get!(adj2v_2, 10)
-    @test w == Vector{NTuple{2,Int64}}()
+    @test w == Vector{NTuple{2,Int}}()
     w = get!(adj2v_3, 10)
     @test w == Set{SVector{2,Int32}}()
 end
@@ -179,7 +179,7 @@ global adj2v_3 = DT.Adjacent2Vertex(dict_3)
 end
 
 @testset "Seeing if Adjacent2Vertex is empty and clearing empty sets" begin
-    adj2v = DT.Adjacent2Vertex{Int64,Vector{NTuple{2,Int64}},NTuple{2,Int64}}()
+    adj2v = DT.Adjacent2Vertex{Int,Vector{NTuple{2,Int}},NTuple{2,Int}}()
     DT.add_adjacent2vertex!(adj2v, 2, 5, 7)
     DT.add_adjacent2vertex!(adj2v, 2, 7, 13)
     DT.add_adjacent2vertex!(adj2v, 13, 5, 23)

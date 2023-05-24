@@ -10,7 +10,7 @@ global tri, label_map, index_map = simple_geometry()
 add_ghost_triangles!(tri)
 
 @testset "Deleting a triangle" begin
-    all_i = Set{NTuple{3,Int64}}()
+    all_i = Set{NTuple{3,Int}}()
     for (a, b, c) in [("a1", "f", "g"),
         ("a1", "g", "i"),
         ("a1", "i", "f"),
@@ -56,7 +56,7 @@ end
     @testset "Deleting an interior triangle" begin
         i, j, k = 1, 3, 7
         DT.delete_triangle!(tri, i, j, k)
-        true_T = Set{NTuple{3,Int64}}([
+        true_T = Set{NTuple{3,Int}}([
             (3, 2, 5),
             (4, 1, 5),
             (6, 3, 1),
@@ -79,15 +79,15 @@ end
                 (6, 4) => DT.BoundaryIndex
             )
         true_adj2v = Dict(
-            DT.BoundaryIndex => Set{NTuple{2,Int64}}([(4, 5), (5, 8), (8, 2), (2, 6), (6, 4)]),
-            1 => Set{NTuple{2,Int64}}([(3, 5), (6, 3), (5, 4), (4, 6)]),
-            2 => Set{NTuple{2,Int64}}([(5, 3), (8, 5), (3, 6)]),
-            3 => Set{NTuple{2,Int64}}([(2, 5), (5, 1), (1, 6), (6, 2)]),
-            4 => Set{NTuple{2,Int64}}([(1, 5), (6, 1)]),
-            5 => Set{NTuple{2,Int64}}([(4, 1), (1, 3), (3, 2), (2, 8)]),
-            6 => Set{NTuple{2,Int64}}([(3, 1), (1, 4), (2, 3)]),
-            7 => Set{NTuple{2,Int64}}([]),
-            8 => Set{NTuple{2,Int64}}([(5, 2)])
+            DT.BoundaryIndex => Set{NTuple{2,Int}}([(4, 5), (5, 8), (8, 2), (2, 6), (6, 4)]),
+            1 => Set{NTuple{2,Int}}([(3, 5), (6, 3), (5, 4), (4, 6)]),
+            2 => Set{NTuple{2,Int}}([(5, 3), (8, 5), (3, 6)]),
+            3 => Set{NTuple{2,Int}}([(2, 5), (5, 1), (1, 6), (6, 2)]),
+            4 => Set{NTuple{2,Int}}([(1, 5), (6, 1)]),
+            5 => Set{NTuple{2,Int}}([(4, 1), (1, 3), (3, 2), (2, 8)]),
+            6 => Set{NTuple{2,Int}}([(3, 1), (1, 4), (2, 3)]),
+            7 => Set{NTuple{2,Int}}([]),
+            8 => Set{NTuple{2,Int}}([(5, 2)])
         )
         true_DG = relabel(UndirectedGraph(
                 [
@@ -113,7 +113,7 @@ end
             local true_T, true_adj, true_adj2v, true_DG
             _tri = deepcopy(tri)
             DT.delete_triangle!(_tri, i, j, k)
-            true_T = Set{NTuple{3,Int64}}([
+            true_T = Set{NTuple{3,Int}}([
                 (3, 2, 5),
                 (4, 1, 5),
                 (6, 3, 1),
@@ -134,13 +134,13 @@ end
                     (6, 4) => DT.BoundaryIndex
                 )
             true_adj2v = Dict(
-                DT.BoundaryIndex => Set{NTuple{2,Int64}}([(4, 5), (5, 2), (2, 6), (6, 4)]),
-                1 => Set{NTuple{2,Int64}}([(3, 5), (6, 3), (5, 4), (4, 6)]),
-                2 => Set{NTuple{2,Int64}}([(5, 3), (3, 6)]),
-                3 => Set{NTuple{2,Int64}}([(2, 5), (5, 1), (1, 6), (6, 2)]),
-                4 => Set{NTuple{2,Int64}}([(1, 5), (6, 1)]),
-                5 => Set{NTuple{2,Int64}}([(4, 1), (1, 3), (3, 2)]),
-                6 => Set{NTuple{2,Int64}}([(3, 1), (1, 4), (2, 3)]),
+                DT.BoundaryIndex => Set{NTuple{2,Int}}([(4, 5), (5, 2), (2, 6), (6, 4)]),
+                1 => Set{NTuple{2,Int}}([(3, 5), (6, 3), (5, 4), (4, 6)]),
+                2 => Set{NTuple{2,Int}}([(5, 3), (3, 6)]),
+                3 => Set{NTuple{2,Int}}([(2, 5), (5, 1), (1, 6), (6, 2)]),
+                4 => Set{NTuple{2,Int}}([(1, 5), (6, 1)]),
+                5 => Set{NTuple{2,Int}}([(4, 1), (1, 3), (3, 2)]),
+                6 => Set{NTuple{2,Int}}([(3, 1), (1, 4), (2, 3)]),
             )
             true_DG = relabel(UndirectedGraph(
                     [
@@ -168,7 +168,7 @@ end
             local true_T, true_adj, true_adj2v, true_DG
             _tri = deepcopy(tri)
             DT.delete_triangle!(_tri, i, j, k)
-            true_T = Set{NTuple{3,Int64}}([
+            true_T = Set{NTuple{3,Int}}([
                 (3, 2, 5),
                 (4, 1, 5),
                 (6, 3, 1),
@@ -188,13 +188,13 @@ end
                     (2, 3) => DT.BoundaryIndex, (3, 6) => DT.BoundaryIndex,
                 )
             true_adj2v = Dict(
-                DT.BoundaryIndex => Set{NTuple{2,Int64}}([(4, 5), (5, 2), (2, 3), (3, 6), (6, 4)]),
-                1 => Set{NTuple{2,Int64}}([(3, 5), (6, 3), (5, 4), (4, 6)]),
-                2 => Set{NTuple{2,Int64}}([(5, 3)]),
-                3 => Set{NTuple{2,Int64}}([(2, 5), (5, 1), (1, 6)]),
-                4 => Set{NTuple{2,Int64}}([(1, 5), (6, 1)]),
-                5 => Set{NTuple{2,Int64}}([(4, 1), (1, 3), (3, 2)]),
-                6 => Set{NTuple{2,Int64}}([(3, 1), (1, 4)]),
+                DT.BoundaryIndex => Set{NTuple{2,Int}}([(4, 5), (5, 2), (2, 3), (3, 6), (6, 4)]),
+                1 => Set{NTuple{2,Int}}([(3, 5), (6, 3), (5, 4), (4, 6)]),
+                2 => Set{NTuple{2,Int}}([(5, 3)]),
+                3 => Set{NTuple{2,Int}}([(2, 5), (5, 1), (1, 6)]),
+                4 => Set{NTuple{2,Int}}([(1, 5), (6, 1)]),
+                5 => Set{NTuple{2,Int}}([(4, 1), (1, 3), (3, 2)]),
+                6 => Set{NTuple{2,Int}}([(3, 1), (1, 4)]),
             )
             true_DG = relabel(UndirectedGraph(
                     [
@@ -219,13 +219,13 @@ end
 @testset "Deleting the only triangle of a triangulation" begin
     tri = example_empty_triangulation()
     DT.add_triangle!(tri, 1, 2, 3)
-    true_T = Set{NTuple{3,Int64}}([])
+    true_T = Set{NTuple{3,Int}}([])
     true_adj = DefaultDict(DT.DefaultAdjacentValue, Dict())
     true_adj2v = Dict(
-        DT.BoundaryIndex => Set{NTuple{2,Int64}}(),
-        1 => Set{NTuple{2,Int64}}(),
-        2 => Set{NTuple{2,Int64}}(),
-        3 => Set{NTuple{2,Int64}}()
+        DT.BoundaryIndex => Set{NTuple{2,Int}}(),
+        1 => Set{NTuple{2,Int}}(),
+        2 => Set{NTuple{2,Int}}(),
+        3 => Set{NTuple{2,Int}}()
     )
     true_DG = relabel(UndirectedGraph([0 0 0 0; 0 0 0 0; 0 0 0 0; 0 0 0 0]), Dict(1:4 .=> [-1, 1, 2, 3]))
     DT.delete_triangle!(tri, 1, 2, 3)
@@ -252,7 +252,7 @@ end
     DT.add_triangle!(tri, 4, 2, 6; update_ghost_edges=true)
     DT.add_triangle!(tri, 5, 4, 6; update_ghost_edges=true)
     DT.delete_triangle!(tri, 5, 4, 6; update_ghost_edges=true)
-    true_T = Set{NTuple{3,Int64}}([
+    true_T = Set{NTuple{3,Int}}([
         (1, 2, 3),
         (3, 2, 4),
         (3, 4, 5),
@@ -279,16 +279,16 @@ end
         ))
     true_adj2v = DT.Adjacent2Vertex(
         Dict(
-            DT.BoundaryIndex => Set{NTuple{2,Int64}}([(1, 3), (3, 5), (5, 4), (4, 6), (6, 2), (2, 1)]),
-            1 => Set{NTuple{2,Int64}}([(2, 3), (3, DT.BoundaryIndex), (DT.BoundaryIndex, 2)]),
-            2 => Set{NTuple{2,Int64}}([(3, 1), (4, 3), (6, 4), (1, DT.BoundaryIndex), (DT.BoundaryIndex, 6)]),
-            3 => Set{NTuple{2,Int64}}([(1, 2), (2, 4), (4, 5), (DT.BoundaryIndex, 1), (5, DT.BoundaryIndex)]),
-            4 => Set{NTuple{2,Int64}}([(3, 2), (5, 3), (2, 6), (DT.BoundaryIndex, 5), (6, DT.BoundaryIndex)]),
-            5 => Set{NTuple{2,Int64}}([(3, 4), (DT.BoundaryIndex, 3), (4, DT.BoundaryIndex)]),
-            6 => Set{NTuple{2,Int64}}([(4, 2), (DT.BoundaryIndex, 4), (2, DT.BoundaryIndex)])
+            DT.BoundaryIndex => Set{NTuple{2,Int}}([(1, 3), (3, 5), (5, 4), (4, 6), (6, 2), (2, 1)]),
+            1 => Set{NTuple{2,Int}}([(2, 3), (3, DT.BoundaryIndex), (DT.BoundaryIndex, 2)]),
+            2 => Set{NTuple{2,Int}}([(3, 1), (4, 3), (6, 4), (1, DT.BoundaryIndex), (DT.BoundaryIndex, 6)]),
+            3 => Set{NTuple{2,Int}}([(1, 2), (2, 4), (4, 5), (DT.BoundaryIndex, 1), (5, DT.BoundaryIndex)]),
+            4 => Set{NTuple{2,Int}}([(3, 2), (5, 3), (2, 6), (DT.BoundaryIndex, 5), (6, DT.BoundaryIndex)]),
+            5 => Set{NTuple{2,Int}}([(3, 4), (DT.BoundaryIndex, 3), (4, DT.BoundaryIndex)]),
+            6 => Set{NTuple{2,Int}}([(4, 2), (DT.BoundaryIndex, 4), (2, DT.BoundaryIndex)])
         )
     )
-    true_DG = DT.Graph{Int64}()
+    true_DG = DT.Graph{Int}()
     DT.add_neighbour!(true_DG, DT.BoundaryIndex, [1, 3, 5, 4, 6, 2]...)
     DT.add_neighbour!(true_DG, 1, [2, 3]...)
     DT.add_neighbour!(true_DG, 2, [1, 3, 4, 6]...)
@@ -302,7 +302,7 @@ end
     @test (get_graph ∘ get_graph)(tri) == true_DG.graph
     DT.delete_triangle!(tri, 4, 2, 6; update_ghost_edges=true)
     DT.delete_triangle!(tri, 3, 4, 5; update_ghost_edges=true)
-    true_T = Set{NTuple{3,Int64}}([(1, 2, 3),
+    true_T = Set{NTuple{3,Int}}([(1, 2, 3),
         (2, 1, DT.BoundaryIndex),
         (1, 3, DT.BoundaryIndex),
         (3, 4, DT.BoundaryIndex),
@@ -319,14 +319,14 @@ end
         ))
     true_adj2v = DT.Adjacent2Vertex(
         Dict(
-            DT.BoundaryIndex => Set{NTuple{2,Int64}}([(2, 1), (1, 3), (3, 4), (4, 2)]),
-            1 => Set{NTuple{2,Int64}}([(2, 3), (DT.BoundaryIndex, 2), (3, DT.BoundaryIndex)]),
-            2 => Set{NTuple{2,Int64}}([(3, 1), (1, DT.BoundaryIndex), (DT.BoundaryIndex, 4), (4, 3)]),
-            3 => Set{NTuple{2,Int64}}([(1, 2), (DT.BoundaryIndex, 1), (4, DT.BoundaryIndex), (2, 4)]),
-            4 => Set{NTuple{2,Int64}}([(DT.BoundaryIndex, 3), (2, DT.BoundaryIndex), (3, 2)])
+            DT.BoundaryIndex => Set{NTuple{2,Int}}([(2, 1), (1, 3), (3, 4), (4, 2)]),
+            1 => Set{NTuple{2,Int}}([(2, 3), (DT.BoundaryIndex, 2), (3, DT.BoundaryIndex)]),
+            2 => Set{NTuple{2,Int}}([(3, 1), (1, DT.BoundaryIndex), (DT.BoundaryIndex, 4), (4, 3)]),
+            3 => Set{NTuple{2,Int}}([(1, 2), (DT.BoundaryIndex, 1), (4, DT.BoundaryIndex), (2, 4)]),
+            4 => Set{NTuple{2,Int}}([(DT.BoundaryIndex, 3), (2, DT.BoundaryIndex), (3, 2)])
         )
     )
-    true_DG = DT.Graph{Int64}()
+    true_DG = DT.Graph{Int}()
     DT.add_neighbour!(true_DG, DT.BoundaryIndex, [1, 3, 4, 2]...)
     DT.add_neighbour!(true_DG, 1, [2, 3]...)
     DT.add_neighbour!(true_DG, 2, [1, 3, 4]...)
@@ -338,7 +338,7 @@ end
     @test (get_adjacent2vertex ∘ get_adjacent2vertex)(tri) == true_adj2v.adjacent2vertex
     @test (get_graph ∘ get_graph)(tri) == true_DG.graph
     DT.delete_triangle!(tri, 3, 2, 4; update_ghost_edges=true)
-    true_T = Set{NTuple{3,Int64}}([(1, 2, 3),
+    true_T = Set{NTuple{3,Int}}([(1, 2, 3),
         (2, 1, DT.BoundaryIndex),
         (1, 3, DT.BoundaryIndex),
         (3, 2, DT.BoundaryIndex)])
@@ -351,13 +351,13 @@ end
         ))
     true_adj2v = DT.Adjacent2Vertex(
         Dict(
-            DT.BoundaryIndex => Set{NTuple{2,Int64}}([(2, 1), (1, 3), (3, 2)]),
-            1 => Set{NTuple{2,Int64}}([(2, 3), (DT.BoundaryIndex, 2), (3, DT.BoundaryIndex)]),
-            2 => Set{NTuple{2,Int64}}([(3, 1), (1, DT.BoundaryIndex), (DT.BoundaryIndex, 3)]),
-            3 => Set{NTuple{2,Int64}}([(1, 2), (DT.BoundaryIndex, 1), (2, DT.BoundaryIndex)])
+            DT.BoundaryIndex => Set{NTuple{2,Int}}([(2, 1), (1, 3), (3, 2)]),
+            1 => Set{NTuple{2,Int}}([(2, 3), (DT.BoundaryIndex, 2), (3, DT.BoundaryIndex)]),
+            2 => Set{NTuple{2,Int}}([(3, 1), (1, DT.BoundaryIndex), (DT.BoundaryIndex, 3)]),
+            3 => Set{NTuple{2,Int}}([(1, 2), (DT.BoundaryIndex, 1), (2, DT.BoundaryIndex)])
         )
     )
-    true_DG = DT.Graph{Int64}()
+    true_DG = DT.Graph{Int}()
     DT.add_neighbour!(true_DG, DT.BoundaryIndex, [1, 2, 3]...)
     DT.add_neighbour!(true_DG, 1, [2, 3]...)
     DT.add_neighbour!(true_DG, 2, [1, 3]...)
@@ -368,10 +368,10 @@ end
     @test (get_adjacent2vertex ∘ get_adjacent2vertex)(tri) == true_adj2v.adjacent2vertex
     @test (get_graph ∘ get_graph)(tri) == true_DG.graph
     DT.delete_triangle!(tri, 1, 2, 3; update_ghost_edges=true)
-    true_T = Set{NTuple{3,Int64}}()
-    true_adj = DT.Adjacent{Int64,NTuple{2,Int64}}()
-    true_adj2v = DT.Adjacent2Vertex{Int64,Set{NTuple{2,Int64}},NTuple{2,Int64}}()
-    true_DG = DT.Graph{Int64}()
+    true_T = Set{NTuple{3,Int}}()
+    true_adj = DT.Adjacent{Int,NTuple{2,Int}}()
+    true_adj2v = DT.Adjacent2Vertex{Int,Set{NTuple{2,Int}},NTuple{2,Int}}()
+    true_DG = DT.Graph{Int}()
     DT.clear_empty_features!(tri)
     @test DT.compare_triangle_collections(get_triangles(tri), true_T)
     @test (get_adjacent ∘ get_adjacent)(tri) == true_adj.adjacent
@@ -413,7 +413,7 @@ end
     [DT.delete_triangle!(tri, i, j, k; update_ghost_edges=true) for (i, j, k) in (
         (1, 8, 9), (9, 8, 10), (10, 11, 5), (5, 7, 4), (4, 6, 3), (3, 6, 2), (2, 6, 1)
     )]
-    true_T = Set{NTuple{3,Int64}}([
+    true_T = Set{NTuple{3,Int}}([
         (1, 6, 8),
         (6, 7, 8),
         (6, 4, 7),
@@ -447,11 +447,11 @@ end
                 (6, 1) => DT.BoundaryIndex, (1, DT.BoundaryIndex) => 6, (DT.BoundaryIndex, 6) => 1
             )
     )
-    true_adj2v = DT.Adjacent2Vertex{Int64,Set{NTuple{2,Int64}},NTuple{2,Int64}}()
+    true_adj2v = DT.Adjacent2Vertex{Int,Set{NTuple{2,Int}},NTuple{2,Int}}()
     for (ij, k) in true_adj
         DT.add_adjacent2vertex!(true_adj2v, k, ij)
     end
-    true_DG = DT.Graph{Int64}()
+    true_DG = DT.Graph{Int}()
     DT.add_neighbour!(true_DG, DT.BoundaryIndex, 1, 8, 10, 11, 5, 7, 4, 6, 1)
     DT.add_neighbour!(true_DG, 1, 6, 8)
     DT.add_neighbour!(true_DG, 4, 6, 7)

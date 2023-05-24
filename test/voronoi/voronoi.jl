@@ -511,15 +511,15 @@ end
     current_edge_intersectors,
     equal_circumcenter_mapping = DT.initialise_clipping_arrays(vorn)
     @test edges_to_process == Set(((1, 2), (4, 1), (3, 4), (2, 3)))
-    @test polygon_edge_queue == Queue{Tuple{NTuple{2,Int64},Int64}}()
-    @test boundary_sites == Dict{Int64,Set{Int64}}()
-    @test segment_intersections == NTuple{2,Int64}[]
-    @test processed_pairs == Set{Tuple{NTuple{2,Int64},Int64}}()
-    @test intersected_edge_cache == Pair{NTuple{2,Int64},NTuple{2,Int64}}[]
-    @test left_edge_intersectors == Set{NTuple{2,Int64}}()
-    @test right_edge_intersectors == Set{NTuple{2,Int64}}()
-    @test current_edge_intersectors == Set{NTuple{2,Int64}}()
-    @test equal_circumcenter_mapping == Dict{Int64,Int64}()
+    @test polygon_edge_queue == Queue{Tuple{NTuple{2,Int},Int}}()
+    @test boundary_sites == Dict{Int,Set{Int}}()
+    @test segment_intersections == NTuple{2,Int}[]
+    @test processed_pairs == Set{Tuple{NTuple{2,Int},Int}}()
+    @test intersected_edge_cache == Pair{NTuple{2,Int},NTuple{2,Int}}[]
+    @test left_edge_intersectors == Set{NTuple{2,Int}}()
+    @test right_edge_intersectors == Set{NTuple{2,Int}}()
+    @test current_edge_intersectors == Set{NTuple{2,Int}}()
+    @test equal_circumcenter_mapping == Dict{Int,Int}()
 end
 
 @testset "enqueue_new_edge" begin
@@ -570,7 +570,7 @@ end
 
 @testset "add_to_intersected_edge_cache" begin
     u, v, a, b = 1, 7, 5, 9
-    intersected_edge_cache = Pair{NTuple{2,Int64},NTuple{2,Int64}}[]
+    intersected_edge_cache = Pair{NTuple{2,Int},NTuple{2,Int}}[]
     DT.add_to_intersected_edge_cache!(intersected_edge_cache, u, v, a, b)
     @test intersected_edge_cache == [(u, v) => (a, b)]
     u, v, a, b = -2, 5, 10, 17
@@ -647,7 +647,7 @@ end
     @test intersected_edge_cache == [(-3, 3) => e, (u, v) => right_edge]
 
     DT.classify_intersections!(intersected_edge_cache, left_edge_intersectors, right_edge_intersectors, current_edge_intersectors, left_edge, right_edge, e)
-    @test left_edge_intersectors == Set{NTuple{2,Int64}}()
+    @test left_edge_intersectors == Set{NTuple{2,Int}}()
     @test right_edge_intersectors == Set([(u, v)])
     @test current_edge_intersectors == Set([(-3, 3)])
 
@@ -655,7 +655,7 @@ end
         left_edge_intersectors, right_edge_intersectors, current_edge_intersectors,
         left_edge, right_edge, e, processed_pairs, segment_intersections, boundary_sites)
 
-    _queue = Queue{Tuple{NTuple{2,Int64},Int64}}()
+    _queue = Queue{Tuple{NTuple{2,Int},Int}}()
     enqueue!(_queue, ((3, 2), 3))
     enqueue!(_queue, ((3, 2), 2))
     enqueue!(_queue, ((3, 2), 5))

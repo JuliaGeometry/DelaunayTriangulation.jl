@@ -19,8 +19,8 @@ end
 @testset "Individual triangles" begin
     @testset "Constructing a triangle" begin
         @test_throws throw_f("The construct_triangle function has not been defined for the type String.") DT.construct_triangle(String, i, j, k)
-        @test DT.construct_triangle(NTuple{3,Int64}, i, j, k) == T1
-        @test DT.construct_triangle(Vector{Int64}, i, j, k) == T2
+        @test DT.construct_triangle(NTuple{3,Int}, i, j, k) == T1
+        @test DT.construct_triangle(Vector{Int}, i, j, k) == T2
         @test DT.construct_triangle(SVector{3,Int32}, i, j, k) == T3
     end
 
@@ -36,7 +36,7 @@ end
 
     @testset "Extracting the integer type" begin
         @test_throws throw_f("The integer_type function has not been defined for the type String.") DT.integer_type(String)
-        @test DT.integer_type(typeof(T1)) == DT.integer_type(typeof(T2)) == Int64
+        @test DT.integer_type(typeof(T1)) == DT.integer_type(typeof(T2)) == Int
         @test DT.integer_type(typeof(T3)) == typeof(T3[1]) == Int32
     end
 
@@ -95,7 +95,7 @@ global Ts3 = Set{typeof(T3)}((SVector{3,Int32}((1, 2, 3)),
             @test DT.initialise_triangles(Set{V}) == Set{V}()
         end
 
-        @test DT.initialise_triangles(Vector{NTuple{3,Int64}}) == Vector{NTuple{3,Int64}}()
+        @test DT.initialise_triangles(Vector{NTuple{3,Int}}) == Vector{NTuple{3,Int}}()
     end
 
     @testset "Getting the eltype of a collection of triangles" begin
@@ -103,7 +103,7 @@ global Ts3 = Set{typeof(T3)}((SVector{3,Int32}((1, 2, 3)),
         for (T, Ts) in zip((T1, T2, T3), (Ts1, Ts2, Ts3))
             @test DT.triangle_type(typeof(Ts)) == typeof(T)
         end
-        @test DT.triangle_type(Vector{NTuple{3,Int64}}) == NTuple{3,Int64}
+        @test DT.triangle_type(Vector{NTuple{3,Int}}) == NTuple{3,Int}
     end
 
     @testset "Number of triangles" begin
@@ -169,7 +169,7 @@ global Ts3 = Set{typeof(T3)}((SVector{3,Int32}((1, 2, 3)),
             end
             @test length(Ts) == 13
         end
-        T = Vector{NTuple{3,Int64}}()
+        T = Vector{NTuple{3,Int}}()
         DT.add_triangle!(T, (1, 2, 3))
         DT.add_triangle!(T, (5, 6, 8), (9, 10, 12))
         DT.add_triangle!(T, [13, 14, 15])
@@ -213,32 +213,32 @@ global Ts3 = Set{typeof(T3)}((SVector{3,Int32}((1, 2, 3)),
 
     @testset "Getting a positively oriented triangle" begin
         points = [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]
-        @test DT.construct_positively_oriented_triangle(NTuple{3,Int64}, 1, 2, 3, points) ==
+        @test DT.construct_positively_oriented_triangle(NTuple{3,Int}, 1, 2, 3, points) ==
               (1, 2, 3)
-        @test DT.construct_positively_oriented_triangle(NTuple{3,Int64}, 2, 1, 3, points) ==
+        @test DT.construct_positively_oriented_triangle(NTuple{3,Int}, 2, 1, 3, points) ==
               (1, 2, 3)
     end
 
     @testset "Comparing collections of triangles" begin
-        T = Set{NTuple{3,Int64}}(((1, 2, 3),
+        T = Set{NTuple{3,Int}}(((1, 2, 3),
             (2, 3, 4),
             (4, 5, 6),
             (6, 9, 11)))
-        V = Set{NTuple{3,Int64}}(((1, 2, 3),
+        V = Set{NTuple{3,Int}}(((1, 2, 3),
             (2, 3, 4),
             (4, 5, 6),
             (6, 9, 11)))
         @test DT.compare_triangle_collections(T, V)
-        V = Set{NTuple{3,Int64}}(((1, 2, 3),
+        V = Set{NTuple{3,Int}}(((1, 2, 3),
             (2, 3, 4),
             (4, 5, 6)))
         @test !DT.compare_triangle_collections(T, V)
-        V = Set{NTuple{3,Int64}}(((3, 1, 2),
+        V = Set{NTuple{3,Int}}(((3, 1, 2),
             (3, 4, 2),
             (6, 4, 5),
             (6, 9, 11)))
         @test DT.compare_triangle_collections(T, V)
-        V = Set{NTuple{3,Int64}}(((3, 1, 2),
+        V = Set{NTuple{3,Int}}(((3, 1, 2),
             (3, 4, 2),
             (6, 4, 5),
             (6, 11, 9)))
@@ -246,7 +246,7 @@ global Ts3 = Set{typeof(T3)}((SVector{3,Int32}((1, 2, 3)),
     end
 
     @testset "Sorting a collection of triangles" begin
-        T = Set{NTuple{3,Int64}}([
+        T = Set{NTuple{3,Int}}([
             (1, 2, 3),
             (10, 9, 3),
             (11, 5, 1),
@@ -259,7 +259,7 @@ global Ts3 = Set{typeof(T3)}((SVector{3,Int32}((1, 2, 3)),
             (20, 13, 37)
         ])
         V = DT.sort_triangles(T)
-        @test V == Set{NTuple{3,Int64}}([
+        @test V == Set{NTuple{3,Int}}([
             (1, 2, 3),
             (3, 10, 9),
             (1, 11, 5),
@@ -275,7 +275,7 @@ global Ts3 = Set{typeof(T3)}((SVector{3,Int32}((1, 2, 3)),
     end
 
     @testset "Removing duplicate triangles" begin
-        T = Set{NTuple{3,Int64}}([
+        T = Set{NTuple{3,Int}}([
             (1, 2, 3),
             (2, 3, 1),
             (3, 1, 2),
@@ -285,18 +285,18 @@ global Ts3 = Set{typeof(T3)}((SVector{3,Int32}((1, 2, 3)),
             (18, 13, 1)
         ])
         V = DT.remove_duplicate_triangles(T)
-        @test V == Set{NTuple{3,Int64}}([
+        @test V == Set{NTuple{3,Int}}([
             (1, 2, 3),
             (4, 5, 6),
             (1, 18, 13),
             (3, 11, 8),
         ])
-        T = Set{NTuple{3,Int64}}([
+        T = Set{NTuple{3,Int}}([
             (11, 9, 1),
             (1, 11, 9)
         ])
         V = DT.remove_duplicate_triangles(T)
-        @test V == Set{NTuple{3,Int64}}([
+        @test V == Set{NTuple{3,Int}}([
             (1, 11, 9)
         ])
     end

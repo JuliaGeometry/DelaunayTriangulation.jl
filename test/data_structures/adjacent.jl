@@ -4,12 +4,12 @@ using DataStructures
 using StaticArrays
 
 global def_adj = DT.DefaultAdjacentValue
-global default_1 = Dict{NTuple{2,Int64},Int64}()
+global default_1 = Dict{NTuple{2,Int},Int}()
 global default_2 = Dict{NTuple{2,Int32},Int32}()
-global default_3 = Dict{Vector{Int64},Int64}()
-global adj_1 = DT.Adjacent{Int64,NTuple{2,Int64}}()
+global default_3 = Dict{Vector{Int},Int}()
+global adj_1 = DT.Adjacent{Int,NTuple{2,Int}}()
 global adj_2 = DT.Adjacent{Int32,NTuple{2,Int32}}()
-global adj_3 = DT.Adjacent{Int64,Vector{Int64}}()
+global adj_3 = DT.Adjacent{Int,Vector{Int}}()
 
 @testset "Constructors and getters" begin
     @test adj_1.adjacent == default_1

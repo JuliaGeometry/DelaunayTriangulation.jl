@@ -98,8 +98,8 @@ initialise_edges(::Type{A}) where {E,A<:AbstractVector{E}} = A()
     edge_type(::Type{S}) where {S}
 
 For a given type `S` representing a collection of edges, 
-returns the type of triangle used inside `S`, e.g. `NTuple{2, Int64}`
-if `S = Set{NTuple{2, Int64}}`. The only methods defined are 
+returns the type of triangle used inside `S`, e.g. `NTuple{2, Int}`
+if `S = Set{NTuple{2, Int}}`. The only methods defined are 
 
     edge_type(::Type{S}) where {E,S<:Set{E}}
     edge_type(::Type{A}) where {E,A<:AbstractVector{E}} 

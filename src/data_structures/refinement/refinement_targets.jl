@@ -25,7 +25,7 @@ The constructor is
     RefinementTargets(;
             max_area=typemax(Float64),
             max_radius_edge_ratio=nothing,
-            max_points=typemax(Int64),
+            max_points=typemax(Int),
             min_angle = nothing
             )
 
@@ -42,7 +42,7 @@ struct RefinementTargets{A,M,R,P}
         min_area=zero(Float64),
         max_area=typemax(Float64),
         max_radius_edge_ratio=nothing,
-        max_points=typemax(Int64),
+        max_points=typemax(Int),
         min_angle=nothing
     )
         if min_area isa Number && max_area isa Number && min_area ≥ max_area
@@ -77,7 +77,7 @@ struct RefinementTargets{A,M,R,P}
         end
         if max_points isa Number && max_points < 0
             @warn "The provided maximum number of points, $max_points, is negative. Replacing with Inf."
-            max_points = typemax(Int64)
+            max_points = typemax(Int)
         end
         return new{typeof(max_area),typeof(min_area),typeof(max_radius_edge_ratio),typeof(max_points)}(max_area, min_area, max_radius_edge_ratio, max_points)
     end

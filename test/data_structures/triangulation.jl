@@ -26,7 +26,7 @@ end
             DT.Adjacent2Vertex{Int32,Set{NTuple{2,Int32}},NTuple{2,Int32}}(),
             DT.Graph{Int32}(),
             Int32[],
-            Dict{Tuple{Int32,Int32},Tuple{Vector{Int64},Int64}}(),
+            Dict{Tuple{Int32,Int32},Tuple{Vector{Int},Int}}(),
             OrderedDict{Int32,Vector{Int32}}(Int32(DT.BoundaryIndex) => Int32[]),
             OrderedDict{Int32,UnitRange{Int32}}(-1 => -1:-1),
             Set{NTuple{2,Int32}}(),
@@ -239,7 +239,7 @@ end
             tri = triangulate(points; rng, boundary_nodes, delete_ghosts=false)
             A = get_total_area(tri)
             refine!(tri; max_area=1e-1A, rng)
-            @test DT.triangle_type(tri) == NTuple{3,Int64}
+            @test DT.triangle_type(tri) == NTuple{3,Int}
             @inferred DT.triangle_type(tri)
             @test DT.num_triangles(tri) == length(tri.triangles)
             @test DT.each_triangle(tri) == tri.triangles
@@ -256,19 +256,19 @@ end
             @inferred DT.construct_positively_oriented_triangle(tri, 188, 394, 426)
             _solid_itr = each_solid_triangle(tri)
             @test DelaunayTriangulation.each_triangle(_solid_itr) == _solid_itr
-            @test DT.initialise_triangles(typeof(_solid_itr)) == Set{NTuple{3,Int64}}() && eltype(DT.initialise_triangles(typeof(_solid_itr))) == NTuple{3,Int64}
+            @test DT.initialise_triangles(typeof(_solid_itr)) == Set{NTuple{3,Int}}() && eltype(DT.initialise_triangles(typeof(_solid_itr))) == NTuple{3,Int}
             @test Base.IteratorSize(_solid_itr) == Base.HasLength()
             @test Base.IteratorEltype(_solid_itr) == Base.HasEltype()
-            @test Base.eltype(_solid_itr) == NTuple{3,Int64}
+            @test Base.eltype(_solid_itr) == NTuple{3,Int}
             @test each_solid_triangle(tri) isa DT.EachSolidTriangle
             _solid_tri = collect(_solid_itr)
             @inferred collect(_solid_itr)
             @test all(!DT.is_ghost_triangle, _solid_tri)
             _ghost_itr = each_ghost_triangle(tri)
-            @test DT.initialise_triangles(typeof(_ghost_itr)) == Set{NTuple{3,Int64}}() && eltype(DT.initialise_triangles(typeof(_ghost_itr))) == NTuple{3,Int64}
+            @test DT.initialise_triangles(typeof(_ghost_itr)) == Set{NTuple{3,Int}}() && eltype(DT.initialise_triangles(typeof(_ghost_itr))) == NTuple{3,Int}
             @test Base.IteratorSize(_ghost_itr) == Base.HasLength()
             @test Base.IteratorEltype(_ghost_itr) == Base.HasEltype()
-            @test Base.eltype(_ghost_itr) == NTuple{3,Int64}
+            @test Base.eltype(_ghost_itr) == NTuple{3,Int}
             @test each_ghost_triangle(tri) isa DT.EachGhostTriangle
             _ghost_tri = collect(_ghost_itr)
             @inferred collect(_ghost_itr)
@@ -298,7 +298,7 @@ end
             tri = triangulate(points; rng, boundary_nodes, delete_ghosts=false)
             A = get_total_area(tri)
             refine!(tri; max_area=1e-1A, rng)
-            @test DT.edge_type(tri) == NTuple{2,Int64}
+            @test DT.edge_type(tri) == NTuple{2,Int}
             @inferred DT.edge_type(tri)
             @test DT.num_edges(tri) == length(tri.graph.graph.E)
             @inferred DT.num_edges(tri)
@@ -306,19 +306,19 @@ end
             @inferred DT.each_edge(tri)
             _solid_itr = each_solid_edge(tri)
             @test DelaunayTriangulation.each_edge(_solid_itr) == _solid_itr
-            @test DT.initialise_edges(typeof(_solid_itr)) == Set{NTuple{2,Int64}}() && eltype(DT.initialise_edges(typeof(_solid_itr))) == NTuple{2,Int64}
+            @test DT.initialise_edges(typeof(_solid_itr)) == Set{NTuple{2,Int}}() && eltype(DT.initialise_edges(typeof(_solid_itr))) == NTuple{2,Int}
             @test Base.IteratorSize(_solid_itr) == Base.HasLength()
             @test Base.IteratorEltype(_solid_itr) == Base.HasEltype()
-            @test Base.eltype(_solid_itr) == NTuple{2,Int64}
+            @test Base.eltype(_solid_itr) == NTuple{2,Int}
             @test each_solid_edge(tri) isa DT.EachSolidEdge
             _solid_tri = collect(_solid_itr)
             @inferred collect(_solid_itr)
             @test all(!DT.is_ghost_edge, _solid_tri)
             _ghost_itr = each_ghost_edge(tri)
-            @test DT.initialise_edges(typeof(_ghost_itr)) == Set{NTuple{2,Int64}}() && eltype(DT.initialise_edges(typeof(_ghost_itr))) == NTuple{2,Int64}
+            @test DT.initialise_edges(typeof(_ghost_itr)) == Set{NTuple{2,Int}}() && eltype(DT.initialise_edges(typeof(_ghost_itr))) == NTuple{2,Int}
             @test Base.IteratorSize(_ghost_itr) == Base.HasLength()
             @test Base.IteratorEltype(_ghost_itr) == Base.HasEltype()
-            @test Base.eltype(_ghost_itr) == NTuple{2,Int64}
+            @test Base.eltype(_ghost_itr) == NTuple{2,Int}
             @test each_ghost_edge(tri) isa DT.EachGhostEdge
             _ghost_tri = collect(_ghost_itr)
             @inferred collect(_ghost_itr)
@@ -402,7 +402,7 @@ end
             @test DelaunayTriangulation.each_vertex(_solid_itr) == _solid_itr
             @test Base.IteratorSize(_solid_itr) == Base.HasLength()
             @test Base.IteratorEltype(_solid_itr) == Base.HasEltype()
-            @test Base.eltype(_solid_itr) == Int64
+            @test Base.eltype(_solid_itr) == Int
             @test each_solid_vertex(_triq) isa DT.EachSolidVertex
             _solid_tri = collect(_solid_itr)
             @inferred collect(_solid_itr)
@@ -411,7 +411,7 @@ end
             _ghost_itr = each_ghost_vertex(_triq)
             @test Base.IteratorSize(_ghost_itr) == Base.HasLength()
             @test Base.IteratorEltype(_ghost_itr) == Base.HasEltype()
-            @test Base.eltype(_ghost_itr) == Int64
+            @test Base.eltype(_ghost_itr) == Int
             @test each_ghost_vertex(_triq) isa DT.EachGhostVertex
             _ghost_tri = collect(_ghost_itr)
             @inferred collect(_ghost_itr)
@@ -459,7 +459,7 @@ end
       end
 
       @testset "Miscellaneous" begin
-            @test DT.integer_type(tri) == Int64
+            @test DT.integer_type(tri) == Int
             @test DT.number_type(tri) == Float64
             @inferred DT.integer_type(tri)
             @inferred DT.number_type(tri)
@@ -521,7 +521,7 @@ end
       e43 = Set(((bn43[i], bn43[i+1]) for i in 1:(length(bn43)-1)))
       e44 = Set(((bn44[i], bn44[i+1]) for i in 1:(length(bn44)-1)))
       e5 = Set(((bn5[i], bn5[i+1]) for i in 1:(length(bn5)-1)))
-      ace = Set{NTuple{2,Int64}}()
+      ace = Set{NTuple{2,Int}}()
       for es in (e11, e12, e13, e14, e2, e3, e41, e42, e43, e44, e5)
             for e in es
                   push!(ace, e)
@@ -545,7 +545,7 @@ end
       e2 = Set(((bn2[i], bn2[i+1]) for i in 1:(length(bn2)-1)))
       e3 = Set(((bn3[i], bn3[i+1]) for i in 1:(length(bn3)-1)))
       e4 = Set(((bn4[i], bn4[i+1]) for i in 1:(length(bn4)-1)))
-      ace = Set{NTuple{2,Int64}}()
+      ace = Set{NTuple{2,Int}}()
       for es in (e1, e2, e3, e4)
             for e in es
                   push!(ace, e)
@@ -562,7 +562,7 @@ end
       all_ce = Set(((i, j) for (i, j) in zip(i, j)))
       bn_map = get_boundary_map(tri_3)
       e = Set(((all_bn[i], all_bn[i+1]) for i in 1:(length(all_bn)-1)))
-      ace = Set{NTuple{2,Int64}}()
+      ace = Set{NTuple{2,Int}}()
       for e in e
             push!(ace, e)
       end
@@ -577,7 +577,7 @@ end
       all_ce = Set(((i, j) for (i, j) in zip(i, j)))
       bn_map = get_boundary_map(tri_4)
       e = Set(((all_bn[i], all_bn[i+1]) for i in 1:(length(all_bn)-1)))
-      ace = Set{NTuple{2,Int64}}()
+      ace = Set{NTuple{2,Int}}()
       for e in e
             push!(ace, e)
       end
@@ -609,7 +609,7 @@ end
             for qi in each_solid_vertex(tri)
                   for k in each_solid_vertex(tri)
                         q = get_point(tri, qi)
-                        history = DT.PointLocationHistory{NTuple{3,Int64},NTuple{2,Int64},Int64}()
+                        history = DT.PointLocationHistory{NTuple{3,Int},NTuple{2,Int},Int}()
                         jump_and_march(tri, q;
                               k,
                               store_history=true,
@@ -845,8 +845,8 @@ end
 
 @testset "Random sampling of vertices" begin
       tri = triangulate(rand(2, 500); delete_ghosts=false)
-      solid = Int64[]
-      ghost = Int64[]
+      solid = Int[]
+      ghost = Int[]
       solid_itr = each_solid_vertex(tri)
       ghost_itr = each_ghost_vertex(tri)
       for _ in 1:100_000

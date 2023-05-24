@@ -979,7 +979,7 @@ end
         nodes, points = convert_boundary_points_to_indices(boundary_pts)
         push!(points, (20.0, 20.0))
         rng = StableRNG(19191919)
-        C = Set{NTuple{2,Int64}}()
+        C = Set{NTuple{2,Int}}()
         for i in 1:50
             θ = 2π * rand(rng)
             r = 4sqrt(rand(rng))

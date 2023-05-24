@@ -17,13 +17,13 @@ include("../helper_functions.jl")
         max_area=10.0)
     @test targets2.max_area == 10.0
     @test targets2.max_radius_edge_ratio == 1.0
-    @test targets2.max_points == typemax(Int64)
+    @test targets2.max_points == typemax(Int)
 
     targets3 = DT.RefinementTargets(;
         max_radius_edge_ratio=0.5)
     @test targets3.max_area == typemax(Float64)
     @test targets3.max_radius_edge_ratio == sqrt(3) / 3
-    @test targets3.max_points == typemax(Int64)
+    @test targets3.max_points == typemax(Int)
 
     targets4 = DT.RefinementTargets(;
         max_points=10_000,

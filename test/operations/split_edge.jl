@@ -18,7 +18,7 @@ include("../helper_functions.jl")
         i, j, r = 1, 7, 8
         DT.split_edge!(tri, i, j, r)
         DT.split_edge!(tri, j, i, r)
-        true_T = Set{NTuple{3,Int64}}([
+        true_T = Set{NTuple{3,Int}}([
             (3, 2, 5),
             (1, 8, 4),
             (7, 8, 3),
@@ -48,15 +48,15 @@ include("../helper_functions.jl")
                 (6, 4) => DT.BoundaryIndex,
             ))
         true_adj2v = Dict(
-            DT.BoundaryIndex => Set{NTuple{2,Int64}}([(4, 5), (5, 2), (2, 6), (6, 4)]),
-            1 => Set{NTuple{2,Int64}}([(4, 6), (6, 3), (3, 8), (8, 4)]),
-            2 => Set{NTuple{2,Int64}}([(5, 3), (3, 6)]),
-            3 => Set{NTuple{2,Int64}}([(6, 2), (2, 5), (5, 7), (7, 8), (8, 1), (1, 6)]),
-            4 => Set{NTuple{2,Int64}}([(6, 1), (1, 8), (8, 7), (7, 5)]),
-            5 => Set{NTuple{2,Int64}}([(4, 7), (7, 3), (3, 2)]),
-            6 => Set{NTuple{2,Int64}}([(2, 3), (3, 1), (1, 4)]),
-            7 => Set{NTuple{2,Int64}}([(3, 5), (5, 4), (4, 8), (8, 3)]),
-            8 => Set{NTuple{2,Int64}}([(1, 3), (3, 7), (7, 4), (4, 1)])
+            DT.BoundaryIndex => Set{NTuple{2,Int}}([(4, 5), (5, 2), (2, 6), (6, 4)]),
+            1 => Set{NTuple{2,Int}}([(4, 6), (6, 3), (3, 8), (8, 4)]),
+            2 => Set{NTuple{2,Int}}([(5, 3), (3, 6)]),
+            3 => Set{NTuple{2,Int}}([(6, 2), (2, 5), (5, 7), (7, 8), (8, 1), (1, 6)]),
+            4 => Set{NTuple{2,Int}}([(6, 1), (1, 8), (8, 7), (7, 5)]),
+            5 => Set{NTuple{2,Int}}([(4, 7), (7, 3), (3, 2)]),
+            6 => Set{NTuple{2,Int}}([(2, 3), (3, 1), (1, 4)]),
+            7 => Set{NTuple{2,Int}}([(3, 5), (5, 4), (4, 8), (8, 3)]),
+            8 => Set{NTuple{2,Int}}([(1, 3), (3, 7), (7, 4), (4, 1)])
         )
         true_DG = relabel(UndirectedGraph(
                 [
@@ -81,7 +81,7 @@ include("../helper_functions.jl")
             i, j, r = 5, 3, 9
             DT.split_edge!(tri, i, j, r)
             DT.split_edge!(tri, j, i, r)
-            true_T = Set{NTuple{3,Int64}}([
+            true_T = Set{NTuple{3,Int}}([
                 (1, 8, 4),
                 (7, 8, 3),
                 (6, 3, 1),
@@ -115,16 +115,16 @@ include("../helper_functions.jl")
                     (6, 4) => DT.BoundaryIndex,
                 ))
             true_adj2v = Dict(
-                DT.BoundaryIndex => Set{NTuple{2,Int64}}([(4, 5), (5, 2), (2, 6), (6, 4)]),
-                1 => Set{NTuple{2,Int64}}([(4, 6), (6, 3), (3, 8), (8, 4)]),
-                2 => Set{NTuple{2,Int64}}([(5, 9), (9, 3), (3, 6)]),
-                3 => Set{NTuple{2,Int64}}([(2, 9), (9, 7), (7, 8), (8, 1), (1, 6), (6, 2)]),
-                4 => Set{NTuple{2,Int64}}([(6, 1), (1, 8), (8, 7), (7, 5)]),
-                5 => Set{NTuple{2,Int64}}([(4, 7), (7, 9), (9, 2)]),
-                6 => Set{NTuple{2,Int64}}([(2, 3), (3, 1), (1, 4)]),
-                7 => Set{NTuple{2,Int64}}([(9, 5), (5, 4), (4, 8), (8, 3), (3, 9)]),
-                8 => Set{NTuple{2,Int64}}([(1, 3), (3, 7), (7, 4), (4, 1)]),
-                9 => Set{NTuple{2,Int64}}([(2, 5), (5, 7), (7, 3), (3, 2)])
+                DT.BoundaryIndex => Set{NTuple{2,Int}}([(4, 5), (5, 2), (2, 6), (6, 4)]),
+                1 => Set{NTuple{2,Int}}([(4, 6), (6, 3), (3, 8), (8, 4)]),
+                2 => Set{NTuple{2,Int}}([(5, 9), (9, 3), (3, 6)]),
+                3 => Set{NTuple{2,Int}}([(2, 9), (9, 7), (7, 8), (8, 1), (1, 6), (6, 2)]),
+                4 => Set{NTuple{2,Int}}([(6, 1), (1, 8), (8, 7), (7, 5)]),
+                5 => Set{NTuple{2,Int}}([(4, 7), (7, 9), (9, 2)]),
+                6 => Set{NTuple{2,Int}}([(2, 3), (3, 1), (1, 4)]),
+                7 => Set{NTuple{2,Int}}([(9, 5), (5, 4), (4, 8), (8, 3), (3, 9)]),
+                8 => Set{NTuple{2,Int}}([(1, 3), (3, 7), (7, 4), (4, 1)]),
+                9 => Set{NTuple{2,Int}}([(2, 5), (5, 7), (7, 3), (3, 2)])
             )
             true_DG = relabel(UndirectedGraph(
                     [

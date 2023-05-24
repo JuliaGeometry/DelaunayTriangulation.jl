@@ -32,7 +32,7 @@ end
 
 @testset "A detailed example" begin
     @time for _ in 1:500
-        T = Set{NTuple{3,Int64}}(((2, 9, 8),
+        T = Set{NTuple{3,Int}}(((2, 9, 8),
             (2, 8, 6),
             (2, 6, 1),
             (1, 6, 10),
@@ -50,7 +50,7 @@ end
             (7, 9, DT.BoundaryIndex),
             (9, 2, DT.BoundaryIndex),
             (2, 1, DT.BoundaryIndex)))
-        T2 = Set{NTuple{3,Int64}}(((2, 9, 8),
+        T2 = Set{NTuple{3,Int}}(((2, 9, 8),
             (2, 8, 6),
             (2, 6, 1),
             (1, 6, 10),
@@ -100,69 +100,69 @@ end
                 (7, 9) => DT.BoundaryIndex,
                 (9, 2) => DT.BoundaryIndex,
                 (2, 1) => DT.BoundaryIndex))
-        adj2v = DT.Adjacent2Vertex(Dict(DT.BoundaryIndex => Set{NTuple{2,Int64}}(((1, 5),
+        adj2v = DT.Adjacent2Vertex(Dict(DT.BoundaryIndex => Set{NTuple{2,Int}}(((1, 5),
                 (5, 4),
                 (4, 7),
                 (7, 9),
                 (9, 2),
                 (2, 1))),
-            1 => Set{NTuple{2,Int64}}(((2, 6), (6, 10),
+            1 => Set{NTuple{2,Int}}(((2, 6), (6, 10),
                 (10, 5),
                 (5, DT.BoundaryIndex),
                 (DT.BoundaryIndex, 2))),
-            2 => Set{NTuple{2,Int64}}(((9, 8), (8, 6), (6, 1),
+            2 => Set{NTuple{2,Int}}(((9, 8), (8, 6), (6, 1),
                 (1, DT.BoundaryIndex),
                 (DT.BoundaryIndex, 9))),
-            3 => Set{NTuple{2,Int64}}(((9, 7), (7, 4), (4, 10),
+            3 => Set{NTuple{2,Int}}(((9, 7), (7, 4), (4, 10),
                 (10, 8), (8, 9))),
-            4 => Set{NTuple{2,Int64}}(((5, 10), (10, 3),
+            4 => Set{NTuple{2,Int}}(((5, 10), (10, 3),
                 (3, 7),
                 (7, DT.BoundaryIndex),
                 (DT.BoundaryIndex, 5))),
-            5 => Set{NTuple{2,Int64}}(((1, 10), (10, 4),
+            5 => Set{NTuple{2,Int}}(((1, 10), (10, 4),
                 (4, DT.BoundaryIndex),
                 (DT.BoundaryIndex, 1))),
-            6 => Set{NTuple{2,Int64}}(((2, 8), (8, 10),
+            6 => Set{NTuple{2,Int}}(((2, 8), (8, 10),
                 (10, 1), (1, 2))),
-            7 => Set{NTuple{2,Int64}}(((4, 3), (3, 9),
+            7 => Set{NTuple{2,Int}}(((4, 3), (3, 9),
                 (9, DT.BoundaryIndex),
                 (DT.BoundaryIndex, 4))),
-            8 => Set{NTuple{2,Int64}}(((3, 10), (10, 6),
+            8 => Set{NTuple{2,Int}}(((3, 10), (10, 6),
                 (6, 2), (2, 9), (9, 3))),
-            9 => Set{NTuple{2,Int64}}(((7, 3), (3, 8), (8, 2),
+            9 => Set{NTuple{2,Int}}(((7, 3), (3, 8), (8, 2),
                 (2, DT.BoundaryIndex),
                 (DT.BoundaryIndex, 7))),
-            10 => Set{NTuple{2,Int64}}(((8, 3), (3, 4), (4, 5),
+            10 => Set{NTuple{2,Int}}(((8, 3), (3, 4), (4, 5),
                 (5, 1), (1, 6),
                 (6, 8)))))
-        adj2v2 = DT.Adjacent2Vertex(Dict(DT.BoundaryIndex => Set{NTuple{2,Int64}}(((1, 5),
+        adj2v2 = DT.Adjacent2Vertex(Dict(DT.BoundaryIndex => Set{NTuple{2,Int}}(((1, 5),
                 (5, 4),
                 (4, 7),
                 (7, 9),
                 (9, 2),
                 (2, 1))),
-            1 => Set{NTuple{2,Int64}}(((2, 6), (6, 10),
+            1 => Set{NTuple{2,Int}}(((2, 6), (6, 10),
                 (10, 5))),
-            2 => Set{NTuple{2,Int64}}(((9, 8), (8, 6),
+            2 => Set{NTuple{2,Int}}(((9, 8), (8, 6),
                 (6, 1))),
-            3 => Set{NTuple{2,Int64}}(((9, 7), (7, 4),
+            3 => Set{NTuple{2,Int}}(((9, 7), (7, 4),
                 (4, 10), (10, 8),
                 (8, 9))),
-            4 => Set{NTuple{2,Int64}}(((5, 10), (10, 3),
+            4 => Set{NTuple{2,Int}}(((5, 10), (10, 3),
                 (3, 7))),
-            5 => Set{NTuple{2,Int64}}(((1, 10), (10, 4))),
-            6 => Set{NTuple{2,Int64}}(((2, 8), (8, 10),
+            5 => Set{NTuple{2,Int}}(((1, 10), (10, 4))),
+            6 => Set{NTuple{2,Int}}(((2, 8), (8, 10),
                 (10, 1), (1, 2))),
-            7 => Set{NTuple{2,Int64}}(((4, 3), (3, 9))),
-            8 => Set{NTuple{2,Int64}}(((3, 10), (10, 6),
+            7 => Set{NTuple{2,Int}}(((4, 3), (3, 9))),
+            8 => Set{NTuple{2,Int}}(((3, 10), (10, 6),
                 (6, 2), (2, 9),
                 (9, 3))),
-            9 => Set{NTuple{2,Int64}}(((7, 3), (3, 8),
+            9 => Set{NTuple{2,Int}}(((7, 3), (3, 8),
                 (8, 2))),
-            10 => Set{NTuple{2,Int64}}(((8, 3), (3, 4),
+            10 => Set{NTuple{2,Int}}(((8, 3), (3, 4),
                 (4, 5), (5, 1),
                 (1, 6), (6, 8)))))
-        A = zeros(Int64, 10, 10)
+        A = zeros(Int, 10, 10)
         A[1, [2, 6, 10, 5]] .= 1
         A[2, [1, 6, 8, 9]] .= 1
         A[3, [8, 9, 7, 4, 10]] .= 1
@@ -173,7 +173,7 @@ end
         A[8, [6, 2, 9, 3, 10]] .= 1
         A[9, [2, 8, 3, 7]] .= 1
         A[10, [1, 6, 8, 3, 4, 5]] .= 1
-        B = zeros(Int64, 11, 11)
+        B = zeros(Int, 11, 11)
         B[2:end, 2:end] .= A
         B[1, [1, 5, 4, 7, 9, 2].+1] .= 1
         B[[1, 5, 4, 7, 9, 2].+1, 1] .= 1

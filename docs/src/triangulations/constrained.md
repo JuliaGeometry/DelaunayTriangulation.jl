@@ -95,11 +95,11 @@ Since we have used just a single boundary, there is just a single boundary index
 
 ```julia-repl
 julia> DelaunayTriangulation.all_boundary_indices(cons_tri)
-KeySet for a OrderedCollections.OrderedDict{Int64, UnitRange{Int64}} with 1 entry. Keys:
+KeySet for a OrderedCollections.OrderedDict{Int, UnitRange{Int}} with 1 entry. Keys:
   -1
 
 julia> get_adjacent2vertex(cons_tri, -1)
-Set{Tuple{Int64, Int64}} with 21 elements:
+Set{Tuple{Int, Int}} with 21 elements:
   (37, 36)
   (44, 35)
   (35, 34)
@@ -115,7 +115,7 @@ Set{Tuple{Int64, Int64}} with 21 elements:
   ⋮
 
 julia> get_neighbours(cons_tri, -1)
-Set{Int64} with 21 elements:
+Set{Int} with 21 elements:
   35
   30
   28
@@ -135,7 +135,7 @@ If needed, you can get all the constrained edges using the `all_constrained_edge
 
 ```julia-repl 
 julia> each_constrained_edge(cons_tri)
-Set{Tuple{Int64, Int64}} with 25 elements:
+Set{Tuple{Int, Int}} with 25 elements:
   (23, 24)
   (40, 43)
   (40, 41)
@@ -155,7 +155,7 @@ which includes all constrained edges, i.e. the boundary edges and the constraine
 
 ```julia-repl
 julia> get_boundary_edge_map(cons_tri)
-Dict{Tuple{Int64, Int64}, Tuple{Vector{Int64}, Int64}} with 21 entries:
+Dict{Tuple{Int, Int}, Tuple{Vector{Int}, Int}} with 21 entries:
   (23, 24) => ([23, 24, 25, 26, 27, 28, 29, 30, 31, 32  …  35, 44, 36, 37, 38, 39, 40, 41, 42, 23], 1)
   (40, 41) => ([23, 24, 25, 26, 27, 28, 29, 30, 31, 32  …  35, 44, 36, 37, 38, 39, 40, 41, 42, 23], 19)
   (25, 26) => ([23, 24, 25, 26, 27, 28, 29, 30, 31, 32  …  35, 44, 36, 37, 38, 39, 40, 41, 42, 23], 3)
@@ -200,18 +200,18 @@ In this case, we can now identify the bottom, diagonal, and left sides:
 
 ```julia-repl
 julia> get_adjacent2vertex(cons_tri, -1) # bottom
-Set{Tuple{Int64, Int64}} with 1 element:
+Set{Tuple{Int, Int}} with 1 element:
   (7, 6)
 
 julia> get_adjacent2vertex(cons_tri, -2) # diagonal
-Set{Tuple{Int64, Int64}} with 4 elements:
+Set{Tuple{Int, Int}} with 4 elements:
   (10, 9)
   (8, 7)
   (11, 10)
   (9, 8)
 
 julia> get_adjacent2vertex(cons_tri, -3) # left
-Set{Tuple{Int64, Int64}} with 1 element:
+Set{Tuple{Int, Int}} with 1 element:
   (6, 11)
 ```
 
@@ -344,9 +344,9 @@ When we try and triangulate this, we get an error:
 cons_tri = triangulate(points; boundary_nodes=boundary_nodes)
 ERROR: AssertionError: The 3rd boundary curve is counter-clockwise when it should be clockwise. If this is a mistake, e.g. if this curve is inside of another one in which case it should be counter-clockwise, recall triangulate with check_arguments = false.
 Stacktrace:
- [1] check_args(points::Vector{Tuple{Float64, Float64}}, boundary_nodes::Vector{Vector{Vector{Int64}}})
+ [1] check_args(points::Vector{Tuple{Float64, Float64}}, boundary_nodes::Vector{Vector{Vector{Int}}})
    @ DelaunayTriangulation c:\Users\User\.julia\dev\DelaunayTriangulation\src\utils.jl:515
- [2] triangulate(points::Vector{Tuple{Float64, Float64}}; edges::Nothing, boundary_nodes::Vector{Vector{Vector{Int64}}}, IntegerType::Type{Int64}, EdgeType::Type{Tuple{Int64, Int64}}, TriangleType::Type{Tuple{Int64, Int64, Int64}}, EdgesType::Type{Set{Tuple{Int64, Int64}}}, TrianglesType::Type{Set{Tuple{Int64, Int64, Int64}}}, randomise::Bool, delete_ghosts::Bool, delete_empty_features::Bool, try_last_inserted_point::Bool, skip_points::Set{Int64}, num_sample_rule::typeof(DelaunayTriangulation.default_num_samples), rng::TaskLocalRNG, point_order::Vector{Int64}, recompute_representative_point::Bool, delete_holes::Bool, check_arguments::Bool)
+ [2] triangulate(points::Vector{Tuple{Float64, Float64}}; edges::Nothing, boundary_nodes::Vector{Vector{Vector{Int}}}, IntegerType::Type{Int}, EdgeType::Type{Tuple{Int, Int}}, TriangleType::Type{Tuple{Int, Int, Int}}, EdgesType::Type{Set{Tuple{Int, Int}}}, TrianglesType::Type{Set{Tuple{Int, Int, Int}}}, randomise::Bool, delete_ghosts::Bool, delete_empty_features::Bool, try_last_inserted_point::Bool, skip_points::Set{Int}, num_sample_rule::typeof(DelaunayTriangulation.default_num_samples), rng::TaskLocalRNG, point_order::Vector{Int}, recompute_representative_point::Bool, delete_holes::Bool, check_arguments::Bool)
    @ DelaunayTriangulation c:\Users\User\.julia\dev\DelaunayTriangulation\src\triangulation\triangulate.jl:69
  [3] top-level scope
    @ Untitled-1:198

@@ -62,7 +62,7 @@ T7 = (BI - 2, 5, 9)
 global T = (T1, T2, T3, T4, T5, T6, T7)
 
 @testset "is_boundary_triangle" begin
-    adj = DT.Adjacent{Int64,NTuple{2,Int64}}()
+    adj = DT.Adjacent{Int,NTuple{2,Int}}()
     [DT.add_triangle!(adj, T) for T in T]
     results = [true, false, false, true, false, true, false]
     for (T, result) in zip(T, results)

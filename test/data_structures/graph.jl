@@ -4,9 +4,9 @@ using DataStructures
 using SimpleGraphs
 
 @testset "Constructing empty graphs" begin
-    sg1 = UndirectedGraph{Int64}()
+    sg1 = UndirectedGraph{Int}()
     sg2 = UndirectedGraph{Int32}()
-    g1 = DT.Graph{Int64}()
+    g1 = DT.Graph{Int}()
     g2 = DT.Graph{Int32}()
     @test g1.graph == sg1
     @test g2.graph == sg2
@@ -29,7 +29,7 @@ global g = DT.Graph(sg)
     @test DT.get_neighbours(g) == sg.N
     @test DT.get_vertices(g) == sg.V
     @test DT.get_neighbours(g, 1) == sg.N[1]
-    @test DT.get_neighbours(g, 3) == Set{Int64}((2, 4, 6))
+    @test DT.get_neighbours(g, 3) == Set{Int}((2, 4, 6))
     @test DT.num_neighbours(g, 5) == 1
     @test DT.num_neighbours(g, 2) == 2
     @test DT.num_neighbours(g, 4) == 5

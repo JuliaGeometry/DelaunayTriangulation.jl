@@ -230,12 +230,12 @@ end
 
 function read_gmsh(identifiers, identifier_dict)
     boundary_nodes = get_boundary_node_init(identifiers)
-    elements = NTuple{3,Int64}[]
+    elements = NTuple{3,Int}[]
     nodes = NTuple{2,Float64}[]
     open("meshgeometry.msh", "r") do fid
         return read_mesh!(fid, elements, nodes, boundary_nodes, identifier_dict)
     end
-    elements = Matrix(reinterpret(reshape, Int64, elements))
+    elements = Matrix(reinterpret(reshape, Int, elements))
     nodes = Matrix(reinterpret(reshape, Float64, nodes))
     return elements, nodes, boundary_nodes
 end
@@ -243,7 +243,7 @@ end
 function get_segment_identifiers(x)
     num_segments = length.(x)
     key = 1
-    keys = [zeros(Int64, i) for i in num_segments]
+    keys = [zeros(Int, i) for i in num_segments]
     for m in eachindex(x)
         for n in eachindex(x[m])
             keys[m][n] = key
@@ -254,7 +254,7 @@ function get_segment_identifiers(x)
 end
 
 function get_segment_identifiers_dict(identifiers, shifted_identifiers)
-    dict = Dict{Int64,NTuple{2,Int64}}()
+    dict = Dict{Int,NTuple{2,Int}}()
     current_idx = firstindex(shifted_identifiers)
     for m in eachindex(identifiers)
         for n in eachindex(identifiers[m])
@@ -266,7 +266,7 @@ function get_segment_identifiers_dict(identifiers, shifted_identifiers)
 end
 
 function get_boundary_node_init(identifiers)
-    bn = [[Int64[] for _ in eachindex(identifiers[i])] for i in eachindex(identifiers)]
+    bn = [[Int[] for _ in eachindex(identifiers[i])] for i in eachindex(identifiers)]
     for m in eachindex(identifiers)
         for n in eachindex(identifiers[m])
             sizehint!(bn[m][n], length(identifiers[m][n]))
@@ -317,7 +317,7 @@ function write_lines!(fout, x, y, init_point=1, init_line=1)
 end
 
 function write_segments!(fout, x, y, init_point=1, init_line=1)
-    segment_line_idx = Vector{UnitRange{Int64}}(undef, length(x)) # This will store the range of line indices corresponding to each segment
+    segment_line_idx = Vector{UnitRange{Int}}(undef, length(x)) # This will store the range of line indices corresponding to each segment
     if length(x) == 1 # Only one segment
         orig_init_line = init_line
         orig_init_point = init_point
@@ -381,8 +381,8 @@ function write_segments!(fout, x, y, init_point=1, init_line=1)
 end
 
 function write_curves!(fout, x, y, init_point=1, init_line=1)
-    curve_line_idx = Vector{UnitRange{Int64}}(undef, length(x))
-    segment_line_idx = Vector{Vector{UnitRange{Int64}}}(undef, length(x))
+    curve_line_idx = Vector{UnitRange{Int}}(undef, length(x))
+    segment_line_idx = Vector{Vector{UnitRange{Int}}}(undef, length(x))
     for (j, i) in enumerate(eachindex(x))
         orig_init_line = init_line
         init_point, init_line, segment_line_idx[j] = write_segments!(fout, x[i], y[i],
@@ -428,14 +428,14 @@ function write_physical_curve!(fout, id, segment_range)
     return nothing
 end
 
-function write_physical_curves!(fout, segment_ranges::Vector{UnitRange{Int64}}, init=1)
+function write_physical_curves!(fout, segment_ranges::Vector{UnitRange{Int}}, init=1)
     for segment_range in segment_ranges
         write_physical_curve!(fout, init, segment_range)
         init += 1
     end
     return init
 end
-function write_physical_curves!(fout, segment_ranges::Vector{Vector{UnitRange{Int64}}},
+function write_physical_curves!(fout, segment_ranges::Vector{Vector{UnitRange{Int}}},
     init=1)
     for ranges in segment_ranges
         init = write_physical_curves!(fout, ranges, init)
@@ -476,8 +476,8 @@ is_not_string(tline) = true
 function read_mesh_format(tline)
     all_vals = split(tline, ' ')
     v1 = parse(Float64, all_vals[1])
-    v2 = parse(Int64, all_vals[2])
-    v3 = parse(Int64, all_vals[3])
+    v2 = parse(Int, all_vals[2])
+    v3 = parse(Int, all_vals[3])
     return v1, v2, v3
 end
 
@@ -503,7 +503,7 @@ function read_node_line(tline) # A node line looks like "<node idx> <x> <y> <z> 
 end
 
 function read_num_objects(tline)
-    return parse(Int64, tline)
+    return parse(Int, tline)
 end
 
 function read_nodes!(nodes, fid)
@@ -524,16 +524,16 @@ end
 
 function read_element_line(tline) # An element line (for a triangle, basic modification for a point, just see the code) looks like <elm idx> <elm type> <num tags> <physical> <node1> <node2> <node3>
     all_vals = split(tline, ' ')
-    elm_type = parse(Int64, all_vals[2])
-    physical_id = parse(Int64, all_vals[4])
+    elm_type = parse(Int, all_vals[2])
+    physical_id = parse(Int, all_vals[4])
     if elm_type == 1
-        u = parse(Int64, all_vals[5])
-        v = parse(Int64, all_vals[6])
-        w = parse(Int64, all_vals[7])
+        u = parse(Int, all_vals[5])
+        v = parse(Int, all_vals[6])
+        w = parse(Int, all_vals[7])
     elseif elm_type == 2
-        u = parse(Int64, all_vals[6])
-        v = parse(Int64, all_vals[7])
-        w = parse(Int64, all_vals[8])
+        u = parse(Int, all_vals[6])
+        v = parse(Int, all_vals[7])
+        w = parse(Int, all_vals[8])
     else
         throw("Invalid element type, $elm_type.")
     end

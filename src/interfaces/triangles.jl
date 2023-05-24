@@ -196,8 +196,8 @@ initialise_triangles(::Type{V}) where {T,V<:AbstractVector{T}} = V()
     triangle_type(::Type{S}) where {S}
 
 For a given type `S` representing a collection of triangles, 
-returns the type of triangle used inside `S`, e.g. `NTuple{3, Int64}`
-if `S = AbstractSet{NTuple{3, Int64}}`. The only methods defined are
+returns the type of triangle used inside `S`, e.g. `NTuple{3, Int}`
+if `S = AbstractSet{NTuple{3, Int}}`. The only methods defined are
 
     triangle_type(::Type{S}) where {T, S <: AbstractSet{T}}
     triangle_type(::Type{A}) where {T, A <: AbstractVector{E}}

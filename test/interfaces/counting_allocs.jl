@@ -170,7 +170,7 @@ function plot_fnc(npts, simulation_results, simulation_summaries, loga = true)
     dolog = (loga, false, false, false, false, false, false)
     for (k, (f, dolog)) in enumerate(zip(fieldnames(AlgorithmStats), dolog))
         title = L"(%$(alp[k])):$ $ %$(f)"
-        i, j = ceil(Int64, k / 4), mod1(k, 4)
+        i, j = ceil(Int, k / 4), mod1(k, 4)
         plot_fnc!(fig, i, j, f, title, simulation_results, simulation_summaries, npts, dolog)
     end
     resize_to_layout!(fig)
@@ -183,7 +183,7 @@ function get_random_vertices_and_constrained_edges(nverts1, nverts2, nedges, f)
     ## and we just take the edges from that triangulation.
     points = f(nverts1)
     tri = triangulate(points)
-    edges = Set{NTuple{2,Int64}}()
+    edges = Set{NTuple{2,Int}}()
     all_edges = collect(each_solid_edge(tri))
     iter = 0
     while length(edges) < nedges && iter < 10000
@@ -207,7 +207,7 @@ function simulate_cdt(ne::AbstractVector{Int}, nsims; f=generate_random_points)
 end
 
 ## Analysis
-npts = [ceil(Int64, 10^x) for x in LinRange(1, 4, 250)] |> unique
+npts = [ceil(Int, 10^x) for x in LinRange(1, 4, 250)] |> unique
 nsims = 10
 simulation_results_random, simulation_summaries_random = simulate(npts, nsims; f=generate_random_points)
 simulation_results_structured, simulation_summaries_structured = simulate(npts, nsims; f=generate_structured_points)
@@ -215,7 +215,7 @@ simulation_results_structured, simulation_summaries_structured = simulate(npts, 
 fig_random = plot_fnc(npts, simulation_results_random, simulation_summaries_random)
 fig_structured = plot_fnc(npts, simulation_results_structured, simulation_summaries_structured)
 
-ne = [ceil(Int64, 10^x) for x in LinRange(0.3, 3, 270)] |> unique
+ne = [ceil(Int, 10^x) for x in LinRange(0.3, 3, 270)] |> unique
 simulation_results_random_cdt, simulation_summaries_random_cdt = simulate_cdt(ne, nsims; f=generate_random_points)
 simulation_results_structured_cdt, simulation_summaries_structured_cdt = simulate_cdt(ne, nsims; f=generate_structured_points)
 
