@@ -23,6 +23,8 @@ This is a package for constructing Delaunay triangulations and Voronoi tessellat
 
 Much of the work in this package is derived from the book *Delaunay Mesh Generation* by Cheng, Dey, and Shewchuk (2013). Feel free to use the issues tab for any suggestions, feedback, or if you have any questions about using the package, internals, etc.
 
+Some examples are below (and in the docs), but if you would also like to see how DelaunayTriangulation.jl is used in other packages, see [FiniteVolumeMethod.jl](https://github.com/DanielVandH/FiniteVolumeMethod.jl) (solving 2D PDEs) and [NaturalNeighbours.jl](https://github.com/DanielVandH/NaturalNeighbours.jl) (scattered data interpolation).
+
 ## Quick Example 
 
 See the docs for plenty of examples. For now, here are some small examples.
