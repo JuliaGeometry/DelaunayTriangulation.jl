@@ -210,10 +210,108 @@ include("voronoi/lloyd.jl")
 export voronoi
 export centroidal_smooth
 
+@doc """
+    triplot(!)(tri::Triangulation; kwargs...)
+
+Plots a triangulation. 
+
+# Attributes 
+- `markersize=11`
+
+Size of the points.
+- `show_ghost_edges=false`
+
+Whether to show ghost edges.
+- `recompute_centers=false`
+
+Whether to recompute `tri.representative_point_list`.
+- `show_all_points=false`
+
+Whether to show all points, regardless of whether they appear in the triangulation.
+- `point_color=:red`
+
+Colour of the points.
+- `strokecolor=:black`
+
+Colours of the triangle edges.
+- `triangle_color=(:white, 0.0)`
+
+Colours of the triangles.
+- `ghost_edge_color=:blue`
+
+Colours of the ghost edges.
+- `ghost_edge_linewidth=1`
+
+Width of the ghost edges.
+- `strokewidth=1`
+
+Width of the triangle edges.
+- `ghost_edge_extension_factor=10.0`
+
+Factor that scales the length of the ghost edges.
+- `show_convex_hull=true`
+
+Whether to show the convex hull.
+- `convex_hull_color=:red`
+
+Colour of the convex hull.
+- `convex_hull_linestyle=:dash`
+
+Linestyle for the convex hull edges.
+- `convex_hull_linewidth=2`
+
+Width of the convex hull.
+- `show_constrained_edges=true`
+
+Whether to show the constrained edges.
+- `constrained_edge_color=:magenta`
+
+Colour of the constrained edges.
+- `constrained_edge_linewidth=2`
+
+Width of the constrained edges.
+"""
 function triplot end
-function triplot! end
+@doc (@doc triplot) function triplot! end
+@doc """
+    voronoiplot(!)(vor::VoronoiTessellation)
+
+Plot a Voronoi tessellation.
+
+# Attributes 
+- `markersize=11`
+
+Size of the generators.
+- `show_generators=true`
+
+Whether to show the generators.
+- `generator_color=:black`
+
+Colour of the generators.
+- `strokecolor=:black`
+
+Colour of the edges.
+- `polygon_color=(:white, 0)`
+
+Colour of the polygons.
+- `strokewidth=1`
+
+Width of the edges.
+- `unbounded_edge_extension_factor=2.0`
+
+Factor that scales the bounding box for clipping unbounded edges.
+- `colormap=th.colormap`
+
+Colormap for the polygons.
+- `colorrange=get(th.attributes, :colorrange, MakieCore.automatic)`
+
+Range of the colormap.
+- `cycle=[:color]`
+
+Cycle of the colormap.
+"""
 function voronoiplot end
-function voronoiplot! end
+@doc (@doc voronoiplot) function voronoiplot! end
 function get_polygon_colors end
 
 @static if !isdefined(Base, :get_extension)
