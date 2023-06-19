@@ -251,4 +251,9 @@ function DelaunayTriangulation.get_polygon_colors(vorn::DelaunayTriangulation.Vo
     return [(a + b) / 2 for (a, b) in eachcol(colors)]
 end
 
+DelaunayTriangulation.triplot(args...; kwargs...) = _triplot(args...; kwargs...)
+DelaunayTriangulation.triplot!(args...; kwargs...) = _triplot!(args...; kwargs...)
+DelaunayTriangulation.voronoiplot(args...; kwargs...) = _voronoiplot(args...; kwargs...)
+DelaunayTriangulation.voronoiplot!(args...; kwargs...) = _voronoiplot!(args...; kwargs...)
+
 end # DelaunayTriangulationMakieCoreExt
