@@ -348,7 +348,7 @@ care is taken to not miss any corner points.
 The rules are based on the paper "Efficient Computation of Clipped Voronoi Diagram for Mesh Generation" by Yan, Wang, Levy, and Liu. Namely, 
 an edge that intersects a boundary edge and one to it has its shared vertex added to the queue together with the current polygon (`current_incident_polygon`) being 
 considered, and any intersections have the adjacent polygon added to the queue together with the intersecting edge. These are not strictly 
-the rules in the paper, but they are the rules that I was able to implement. -- Why can't people just provide their code?!
+the rules in the paper, but they are the rules that I was able to implement since they do not share their code.
 
 # Arguments 
 - `polygon_edge_queue`: The queue of edges that need to be processed.
