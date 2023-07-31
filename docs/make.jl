@@ -15,12 +15,7 @@ makedocs(;
         edit_link="main",
         assets=String[]),
     pages=[
-        "Introduction" => [
-            "Introduction" => "introduction.md",
-            "Installation" => "installation.md",
-            "Referencing" => "referencing.md",
-            "Similar Packages" => "similar.md",
-        ],
+        "Introduction" => "introduction/introduction.md",
         "Tutorials" => [
             "Installation and Overview" => "tutorials/installation.md", # Introduction and installation
             "Unconstrained Triangulations" => "tutorials/unconstrained.md",
@@ -56,7 +51,7 @@ makedocs(;
             "Mesh Refinement" => "api/refinement.md",
             "Voronoi Tessellations" => "api/voronoi.md",
         ],
-        "Extended Manual" => [
+        "Extended Reference" => [
             "Section Overview" => "extended/overview.md",
             "All Data Structures" => "extended/data_structures.md",
             "Utility Functions" => "extended/utils.md",
