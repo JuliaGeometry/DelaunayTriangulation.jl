@@ -4,7 +4,7 @@ CurrentModule = DelaunayTriangulation
 
 # Introduction 
 
-This is the documentation for DelaunayTriangulation.jl. [Click here to go back to the GitHub repository](DanielVandH/DelaunayTriangulation.jl).
+This is the documentation for DelaunayTriangulation.jl. [Click here to go back to the GitHub repository](https://github.com/DanielVandH/DelaunayTriangulation.jl).
 
 This is a package for computing Delaunay triangulations and Voronoi tessellations of points in two dimensions, amongst many other features:
 
@@ -67,3 +67,8 @@ This is not the only package available in Julia for working with Delaunay triang
 - [TriangleMesh.jl](https://github.com/konsim83/TriangleMesh.jl), [Triangulate.jl](https://github.com/JuliaGeometry/Triangulate.jl), [Triangle.jl](https://github.com/cvdlab/Triangle.jl): Interfaces to [Shewchuk's Triangle library](https://www.cs.cmu.edu/~quake/triangle.html).
 - [TetGen.jl](https://github.com/JuliaGeometry/TetGen.jl): This is for Delaunay tetrahedralisation, wrapping [TetGen](https://wias-berlin.de/software/index.jsp?id=TetGen).
 
+
+
+```@autodocs
+Modules = [DelaunayTriangulation]
+```
