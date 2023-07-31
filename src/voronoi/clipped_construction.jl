@@ -46,7 +46,7 @@ end
         equal_circumcenter_mapping)
 
 Process the intersection of the Voronoi polygon of the site `u` with the ray emanating from the circumcenter of the site `v`,
-returning the coordinates of the intersection and updating via [`add_segment_intersection`](@ef).
+returning the coordinates of the intersection and updating via `add_segment_intersection`.
 
 # Arguments
 - `vorn`: The Voronoi tessellation.
@@ -98,7 +98,7 @@ end
         exterior_circumcenters,
         equal_circumcenter_mapping)
 
-Process the intersection of the Voronoi polygon's edge `(u, v)` with the edge `e` of the boundary, returning the coordinates of the intersection and updating via [`add_segment_intersection`](@ef).
+Process the intersection of the Voronoi polygon's edge `(u, v)` with the edge `e` of the boundary, returning the coordinates of the intersection and updating via `add_segment_intersection`.
 
 # Arguments
 - `vorn`: The Voronoi tessellation.

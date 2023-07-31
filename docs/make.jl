@@ -23,9 +23,10 @@ function update_edit_url(content)
     return content
 end
 
+# Now process all the literate files
 for folder in ("tutorials", "applications")
     dir = joinpath(@__DIR__, "src", folder)
-    outputdir = joinpath(dir, "generated")
+    outputdir = dir
     files = readdir(dir)
     filter!(file -> endswith(file, ".jl"), files)
     for file in files
@@ -43,18 +44,10 @@ for folder in ("tutorials", "applications")
     end
 end
 
-function relink_literate_files(name_path)
-    section_name, path = name_path
-    folder, filename = splitpath(path)
-    if filename ∉ ("gmsh.md", "overview.md")
-        return section_name => joinpath(folder, "generated", filename)
-    end
-    return name_path
-end
-
+# All the pages to be included
 const _PAGES = [
     "Introduction" => "index.md",
-    "Tutorials" => relink_literate_files.([
+    "Tutorials" => [
         "Section Overview" => "tutorials/overview.md", # Introduction and installation
         "Unconstrained Triangulations" => "tutorials/unconstrained.md",
         "Constrained Triangulations" => "tutorials/constrained.md",
@@ -70,7 +63,7 @@ const _PAGES = [
         "Nearest Neighbour Queries" => "tutorials/nearest.md",
         "Computing Convex Hulls" => "tutorials/convex_hull.md",
         "Computing the Pole of Inaccessibility" => "tutorials/pole_of_inaccessibility.md"
-    ]),
+    ],
     "Manual" => [
         "Section Overview" => "manual/overview.md",
         "Representing Primitives" => "manual/primitives.md",
@@ -109,7 +102,7 @@ const _PAGES = [
         "Pole of Inaccessibility" => "math/pole_of_inaccessibility.md",
         "Triangulation Operations" => "math/operations.md",
     ],
-    "Example Applications" => relink_literate_files.([
+    "Example Applications" => [
         "Section Overview" => "applications/overview.md",
         "Path-finding with Constrained Delaunay Triangulations" => "applications/pathfinding.md",
         "Interpolation" => "applications/interpolation.md", # also naturalneighbours.jl 
@@ -118,9 +111,33 @@ const _PAGES = [
         "Image Compression" => "applications/image_compression.md", # see also https://d1wqtxts1xzle7.cloudfront.net/31255259/dfg99sirv-libre.pdf?1392197228=&response-content-disposition=inline%3B+filename%3DCentroidal_Voronoi_Tessellations_Applica.pdf&Expires=1690783507&Signature=d8s8javyhR743LoatXwziK84hklGFr77DE4Ns4DYcfm0ar19ZWZYlqRdZrUxzocNYZOa4oT4mrhh8WZ571BCa6-WDWQM4pNG0Zk0A9oZl4vuAzXBbKHLMt2cTXVms25Y7-bVBPYyQ8-YFNdTGg~5YibXW2kOxeoWcZo1JaBWYrOFezeg7DqZIY9smT0HtecVTHW1PjLUoJsnXbnTOF3My9NqXfY2ByXFWHcGb6U-KWvGntcHgnE8sxBdhAj9xPgehlbkygfIPY8mAmCbh7DIxcZ8HWKYaJfVvqTJOemFVx39dwi~Cwf-59eGBvFpnB2jUOVDsegPR40gz~Rqt3HCnA__&Key-Pair-Id=APKAJLOHF5GGSLRBV4ZA
         "Root Finding" => "applications/root_finding.md", # see also https://github.com/PioKow/GRPF and RootsAndPoles.jl
         "Counting Function Calls" => "applications/counting.md",
-    ])
+    ]
 ]
 
+# Make sure we haven't forgotten any files
+set = Set{String}()
+for page in _PAGES
+    if page[2] isa String
+        push!(set, normpath(page[2]))
+    else
+        for _page in page[2]
+            push!(set, normpath(_page[2]))
+        end
+    end
+end
+missing_set = String[]
+doc_dir = joinpath(@__DIR__, "src", "")
+for (root, dir, files) in walkdir(doc_dir)
+    for file in files
+        filename = normpath(replace(joinpath(root, file), doc_dir => ""))
+        if endswith(filename, ".md") && filename ∉ set
+            push!(missing_set, filename)
+        end
+    end
+end
+!isempty(missing_set) && error("Missing files: $missing_set")
+
+# Make and deploy
 makedocs(;
     modules=[DelaunayTriangulation],
     authors="Daniel VandenHeuvel <danj.vandenheuvel@gmail.com>",
@@ -133,10 +150,23 @@ makedocs(;
         collapselevel=1,
         assets=String[]),
     linkcheck=false,
-    strict=false,
+    strict=true,
     pages=_PAGES
 )
 
 deploydocs(;
     repo="github.com/DanielVandH/DelaunayTriangulation.jl",
-    devbranch="main")
+    devbranch="new-docs")
+
+# Now that we are done, delete the literate files 
+for folder in ("tutorials", "applications")
+    dir = joinpath(@__DIR__, "src", folder)
+    outputdir = dir
+    files = readdir(dir)
+    filter!(file -> endswith(file, ".md"), files)
+    filter!(file -> file ∉ ("overview.md", "gmsh.md"), files)
+    for file in files
+        file_path = joinpath(dir, file)
+        rm(file_path)
+    end
+end

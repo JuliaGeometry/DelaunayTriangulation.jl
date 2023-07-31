@@ -70,5 +70,5 @@ This is not the only package available in Julia for working with Delaunay triang
 
 
 ```@autodocs
-Modules = [DelaunayTriangulation]
+Modules = [DelaunayTriangulation, DelaunayTriangulation.Certificate]
 ```
