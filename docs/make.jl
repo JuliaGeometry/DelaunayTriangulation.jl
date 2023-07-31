@@ -6,6 +6,8 @@ using Test
 DocMeta.setdocmeta!(DelaunayTriangulation, :DocTestSetup, :(using DelaunayTriangulation, Test);
     recursive=true)
 
+const IS_LIVESERVER = false
+IS_LIVESERVER && using Revise
 const IS_GITHUB_ACTIONS = get(ENV, "GITHUB_ACTIONS", "false") == "true"
 const IS_CI = get(ENV, "CI", "false") == "true"
 function safe_include(filename)
@@ -30,15 +32,27 @@ for folder in ("tutorials", "applications")
     files = readdir(dir)
     filter!(file -> endswith(file, ".jl"), files)
     for file in files
+        # See also https://github.com/Ferrite-FEM/Ferrite.jl/blob/d474caf357c696cdb80d7c5e1edcbc7b4c91af6b/docs/generate.jl for some of this
         file_path = joinpath(dir, file)
-        @testset "$(file)" begin
-            safe_include(file_path)
+        if !IS_LIVESERVER
+            @testset "$(file)" begin
+                safe_include(file_path)
+            end
+            script = Literate.script(file_path, joinpath(outputdir, "generated"))
+            code = strip(read(script, String))
+        else
+            code = "Script outputs are not produced when producing draft documentation."
         end
+        line_ending_symbol = occursin(code, "\r\n") ? "\r\n" : "\n"
+        code_clean = join(filter(x -> !endswith(x, "#hide"), split(code, r"\n|\r\n")), line_ending_symbol)
+        code_clean = replace(code_clean, r"^# This file was generated .*$"m => "")
+        code_clean = strip(code_clean)
+        post_strip(content) = replace(content, "@__CODE__" => code_clean)
         Literate.markdown(
             file_path,
             outputdir;
             documenter=true,
-            postprocess=update_edit_url,
+            postprocess=update_edit_url ∘ post_strip,
             credit=true
         )
     end
@@ -61,8 +75,8 @@ const _PAGES = [
         "Centroidal Voronoi Tessellations" => "tutorials/centroidal.md",
         "Point Location" => "tutorials/point_location.md",
         "Nearest Neighbour Queries" => "tutorials/nearest.md",
-        "Computing Convex Hulls" => "tutorials/convex_hull.md",
-        "Computing the Pole of Inaccessibility" => "tutorials/pole_of_inaccessibility.md"
+        "Convex Hulls" => "tutorials/convex_hull.md",
+        "Pole of Inaccessibility" => "tutorials/pole_of_inaccessibility.md"
     ],
     "Manual" => [
         "Section Overview" => "manual/overview.md",
@@ -150,13 +164,14 @@ makedocs(;
         collapselevel=1,
         assets=String[]),
     linkcheck=false,
-    strict=true,
+    strict=false,
+    draft=IS_LIVESERVER,
     pages=_PAGES
 )
 
 deploydocs(;
     repo="github.com/DanielVandH/DelaunayTriangulation.jl",
-    devbranch="new-docs")
+    devbranch="main")
 
 # Now that we are done, delete the literate files 
 for folder in ("tutorials", "applications")
@@ -168,5 +183,9 @@ for folder in ("tutorials", "applications")
     for file in files
         file_path = joinpath(dir, file)
         rm(file_path)
+        if !IS_LIVESERVER # draft documentation doesn't generate these files 
+            generated_script_path = joinpath(dir, "generated", splitext(file)[1] * ".jl")
+            rm(generated_script_path)
+        end
     end
 end

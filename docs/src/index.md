@@ -67,8 +67,6 @@ This is not the only package available in Julia for working with Delaunay triang
 - [TriangleMesh.jl](https://github.com/konsim83/TriangleMesh.jl), [Triangulate.jl](https://github.com/JuliaGeometry/Triangulate.jl), [Triangle.jl](https://github.com/cvdlab/Triangle.jl): Interfaces to [Shewchuk's Triangle library](https://www.cs.cmu.edu/~quake/triangle.html).
 - [TetGen.jl](https://github.com/JuliaGeometry/TetGen.jl): This is for Delaunay tetrahedralisation, wrapping [TetGen](https://wias-berlin.de/software/index.jsp?id=TetGen).
 
-
-
 ```@autodocs
-Modules = [DelaunayTriangulation, DelaunayTriangulation.Certificate]
+Modules = [DelaunayTriangulation]
 ```

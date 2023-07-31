@@ -31,6 +31,7 @@ include("interfaces/edges.jl")
 include("interfaces/boundary_nodes.jl")
 
 export indices
+export edge_indices
 export num_triangles
 export each_triangle
 export geti
@@ -96,14 +97,20 @@ export convex_hull
 export convex_hull!
 export each_solid_triangle
 export each_ghost_triangle
+export num_solid_triangles 
+export num_ghost_triangles
 export get_vertices
 export clear_empty_features!
 export get_indices
 export get_convex_hull_indices
 export each_vertex
 export num_vertices
+export num_solid_vertices 
+export num_ghost_vertices
 export each_solid_edge
 export each_ghost_edge
+export num_solid_edges
+export num_ghost_edges
 export each_solid_vertex
 export each_ghost_vertex
 export each_constrained_edge

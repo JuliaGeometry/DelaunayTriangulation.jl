@@ -1,7 +1,13 @@
 [deps]
+CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 DelaunayTriangulation = "927a84f5-c5f4-47a5-9785-b46e178433df"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 DocumenterTools = "35a29f4d-8980-5a13-9543-d66fff28ecb8"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Literate = "98b081ad-f1c9-55d3-8b20-4c87d4299306"
 LiveServer = "16fef848-5104-11e9-1b77-fb7a48bbb589"
+ReferenceTests = "324d217c-45ce-50fc-942e-d289b448e8cf"
+Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
+StableRNGs = "860ef19b-820b-49d6-a774-d7a799459cd3"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
