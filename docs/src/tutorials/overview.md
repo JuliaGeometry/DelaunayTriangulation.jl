@@ -16,8 +16,8 @@ The first option is fine for most applications where the points sets are in gene
 The tutorials that we consider are as follows:
 
 - [Unconstrained Triangulations](unconstrained.md): How Delaunay triangulations can be computed and accessed. We also give examples here of how we iterate over the triangulation's vertices, edges, and triangles, some warnings about having to be careful about ghost objects defined in the [manual](../manual/ghost_triangles.md), and how to query neighbour information.
-- [Constrained Triangulations](constrained.md): How constrained Delaunay triangulations can be computed, and how different types of boundaries can be represented for triangulating.
-- [Dynamic Triangulation](dynamic.md): How certain operations such as vertex insertion and deletion can be applied to an existing triangulation.
+- Constrained Triangulations: How constrained Delaunay triangulations can be computed, and how different types of boundaries can be represented for triangulating. This tutorial is broken into multiple sub-tutorials, starting with considering [constrained segments](constrained_edges.md) and ending with considering [multipolygons](constrained_multipolygon.md).
+- Triangulation Operations: How certain operations such as vertex insertion and deletion can be applied to an existing triangulation. This tutorial is broken into multiple sub-tutorials, demonstrating the multiple operations available for use, starting with [vertex insertion and deletion](operations_vertex_insertion_deletion.md).
 - [Mesh Refinement](refinement.md): How triangulations can be refined to meet certain quality constraints.
 - [Triangulating Rectangular Regions](lattice.md): A simple example of how rectangular regions in the plane can be triangulated quickly.
 - [Gmsh Integration](gmsh.md): How triangulations can be computed using Gmsh. (This is not so relevant with the latest versions of DelaunayTriangulation.jl now that we have native support for constrained triangulations, but this might be useful if, for example, you want to try [different mesh algorithms from Gmsh](https://gmsh.info/doc/texinfo/gmsh.html#Choosing-the-right-unstructured-algorithm).)

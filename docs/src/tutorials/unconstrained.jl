@@ -11,7 +11,7 @@ using LinearAlgebra # used for computing norms later
 using StatsBase #src
 using ReferenceTests #src
 using Test #src
-fig_path = joinpath(@__DIR__, "figures") #src
+fig_path = joinpath(@__DIR__, "../figures") #src
 
 # We consider just triangulating a random set of points. First, generating
 # the points:
@@ -171,11 +171,3 @@ get_adjacent(tri, 398, 258)
 # You can test for this case using `is_boundary_edge`:
 DelaunayTriangulation.is_boundary_edge(tri, 398, 258)
 @test DelaunayTriangulation.is_boundary_edge(tri, 398, 258) #src
-
-# ## Just the code 
-# An uncommented version of this tutorial is given below. 
-# You can view the source code for this [here](<unknown>/docs/src/tutorials/@__NAME__.jl).
-
-# ```julia
-# @__CODE__
-# ```

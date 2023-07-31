@@ -25,6 +25,25 @@ function update_edit_url(content)
     return content
 end
 
+# We can add the code to the end of each file in its uncommented form programatically 
+function add_just_the_code_section(dir, file)
+    file_path = joinpath(dir, file)
+    new_file_path = joinpath(dir, "temp", file)
+    cp(file_path, new_file_path)
+    folder = splitpath(dir)[end] # tutorials or applications
+    open(new_file_path, "a") do io
+        write(io, "\n")
+        write(io, "# ## Just the code\n")
+        write(io, "# An uncommented version of this tutorial is given below.\n")
+        write(io, "# You can view the source code for this [here](<unknown>/docs/src/$folder/@__NAME__.jl).\n")
+        write(io, "\n")
+        write(io, "# ```julia\n")
+        write(io, "# @__CODE__\n")
+        write(io, "# ```\n")
+    end
+    return new_file_path
+end
+
 # Now process all the literate files
 for folder in ("tutorials", "applications")
     dir = joinpath(@__DIR__, "src", folder)
@@ -34,6 +53,7 @@ for folder in ("tutorials", "applications")
     for file in files
         # See also https://github.com/Ferrite-FEM/Ferrite.jl/blob/d474caf357c696cdb80d7c5e1edcbc7b4c91af6b/docs/generate.jl for some of this
         file_path = joinpath(dir, file)
+        file_path = add_just_the_code_section(dir, file)
         if !IS_LIVESERVER
             @testset "$(file)" begin
                 safe_include(file_path)
@@ -64,8 +84,25 @@ const _PAGES = [
     "Tutorials" => [
         "Section Overview" => "tutorials/overview.md", # Introduction and installation
         "Unconstrained Triangulations" => "tutorials/unconstrained.md",
-        "Constrained Triangulations" => "tutorials/constrained.md",
-        "Dynamic Triangulations" => "tutorials/dynamic.md",
+        "Constrained Triangulations" => [
+            "Constrained Edges" => "tutorials/constrained_edges.md",
+            "Outer Boundary" => "tutorials/constrained_outer_boundary.md",
+            "Segmented Outer Boundary" => "tutorials/constrained_outer_boundary_segmented.md",
+            "Domain with Interior Holes" => "tutorials/constrained_multiply_connected.md",
+            "Domain with Interior Holes inside Interior Holes" => "tutorials/constrained_interior_within_interiors.md",
+            "Multipolygons" => "tutorials/constrained_multipolygon.md",
+        ],
+        "Triangulation Operations" => [
+            "Vertex Insertion and Deletion" => "tutorials/operations_vertex_insertion_deletion.md",
+            "Segment Insertion" => "tutorials/operations_segment_insertion.md",
+            "Adding or Clearing Ghost Triangles" => "tutorials/operations_ghost_triangles.md",
+            "Edge Splitting" => "tutorials/operations_split_edge.md",
+            "Triangle Splitting" => "tutorials/operations_split_triangle.md",
+            "Edge Flipping" => "tutorials/operations_flip_edge.md",
+            "Legalising an Edge" => "tutorials/operations_legalise_edge.md",
+            "Locking and Unlocking the Convex Hull" => "tutorials/operations_convex_hull_locking.md",
+            "Clearing Empty Features" => "tutorials/operations_feature_clearing.md",
+        ],
         "Mesh Refinement" => "tutorials/refinement.md",
         "Triangulating Rectangular Regions" => "tutorials/lattice.md",
         "Gmsh Integration" => "tutorials/gmsh.md",
@@ -129,13 +166,18 @@ const _PAGES = [
 ]
 
 # Make sure we haven't forgotten any files
-set = Set{String}()
 for page in _PAGES
     if page[2] isa String
         push!(set, normpath(page[2]))
     else
         for _page in page[2]
-            push!(set, normpath(_page[2]))
+            if _page[2] isa String
+                push!(set, normpath(_page[2]))
+            else
+                for __page in _page[2]
+                    push!(set, normpath(__page[2]))
+                end
+            end
         end
     end
 end
@@ -186,6 +228,8 @@ for folder in ("tutorials", "applications")
         if !IS_LIVESERVER # draft documentation doesn't generate these files 
             generated_script_path = joinpath(dir, "generated", splitext(file)[1] * ".jl")
             rm(generated_script_path)
+            temp_script_path = joinpath(dir, "temp", splitext(file)[1] * ".jl")
+            rm(temp_script_path)
         end
     end
 end
