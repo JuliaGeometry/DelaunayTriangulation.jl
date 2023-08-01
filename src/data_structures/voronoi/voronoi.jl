@@ -199,8 +199,8 @@ function get_polygon_coordinates(vorn::VoronoiTessellation, j, bbox=nothing)
                 intersection = intersection_of_ray_with_bounding_box(r, m, bbox[1], bbox[2], bbox[3], bbox[4])
             end
             coords[i] = intersection
-            if unbounded_indices[1] == 0
-                unbounded_indices = (i, 0)
+            if is_first
+                unbounded_indices = (i, unbounded_indices[2])
             else
                 unbounded_indices = (unbounded_indices[1], i)
             end
@@ -212,9 +212,68 @@ function get_polygon_coordinates(vorn::VoronoiTessellation, j, bbox=nothing)
         c2 = coords[unbounded_indices[2]]
         side1 = identify_side(c1, xmin, xmax, ymin, ymax)
         side2 = identify_side(c2, xmin, xmax, ymin, ymax)
-        if side1 ≠ side2 # different corner 
-            corner = identify_corner_coordinates(side1, side2, xmin, xmax, ymin, ymax)
-            insert!(coords, unbounded_indices[1] + 1, corner)
+        if side1 ≠ side2 # There is a better way to do this if we treat sides as numbers 0, 1, 2, 3 rather than symbols, but it doesn't really matter.
+            if side1 == :bottom && side2 == :right 
+                corner = xmax, ymin
+                insert!(coords, unbounded_indices[1] + 1, corner)
+            elseif side1 == :bottom && side2 == :top 
+                corner1 = xmax, ymin 
+                corner2 = xmax, ymax 
+                insert!(coords, unbounded_indices[1] + 1, corner1)
+                insert!(coords, unbounded_indices[1] + 2, corner2)
+            elseif side1 == :bottom && side2 == :left
+                corner1 = xmax, ymin 
+                corner2 = xmax, ymax 
+                corner3 = xmin, ymax
+                insert!(coords, unbounded_indices[1] + 1, corner1)
+                insert!(coords, unbounded_indices[1] + 2, corner2)
+                insert!(coords, unbounded_indices[1] + 3, corner3)
+            elseif side1 == :right && side2 == :top
+                corner = xmax, ymax
+                insert!(coords, unbounded_indices[1] + 1, corner)
+            elseif side1 == :right && side2 == :left
+                corner1 = xmax, ymax
+                corner2 = xmin, ymax
+                insert!(coords, unbounded_indices[1] + 1, corner1)
+                insert!(coords, unbounded_indices[1] + 2, corner2)
+            elseif side1 == :right && side2 == :bottom
+                corner1 = xmax, ymax
+                corner2 = xmin, ymax
+                corner3 = xmin, ymin
+                insert!(coords, unbounded_indices[1] + 1, corner1)
+                insert!(coords, unbounded_indices[1] + 2, corner2)
+                insert!(coords, unbounded_indices[1] + 3, corner3)
+            elseif side1 == :top && side2 == :left
+                corner = xmin, ymax
+                insert!(coords, unbounded_indices[1] + 1, corner)
+            elseif side1 == :top && side2 == :bottom
+                corner1 = xmin, ymax
+                corner2 = xmin, ymin
+                insert!(coords, unbounded_indices[1] + 1, corner1)
+                insert!(coords, unbounded_indices[1] + 2, corner2)
+            elseif side1 == :top && side2 == :right
+                corner1 = xmin, ymax
+                corner2 = xmin, ymin
+                corner3 = xmax, ymin
+                insert!(coords, unbounded_indices[1] + 1, corner1)
+                insert!(coords, unbounded_indices[1] + 2, corner2)
+                insert!(coords, unbounded_indices[1] + 3, corner3)
+            elseif side1 == :left && side2 == :bottom
+                corner = xmin, ymin
+                insert!(coords, unbounded_indices[1] + 1, corner)
+            elseif side1 == :left && side2 == :right
+                corner1 = xmin, ymin
+                corner2 = xmax, ymin
+                insert!(coords, unbounded_indices[1] + 1, corner1)
+                insert!(coords, unbounded_indices[1] + 2, corner2)
+            elseif side1 == :left && side2 == :top
+                corner1 = xmin, ymin
+                corner2 = xmax, ymin
+                corner3 = xmax, ymax
+                insert!(coords, unbounded_indices[1] + 1, corner1)
+                insert!(coords, unbounded_indices[1] + 2, corner2)
+                insert!(coords, unbounded_indices[1] + 3, corner3)
+            end
         end
     end
     push!(coords, coords[begin])

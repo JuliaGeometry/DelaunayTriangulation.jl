@@ -274,13 +274,4 @@ if NEEDS_PLOT_DEFS
     function Makie.needs_tight_limits(p::Voronoiplot)
         return !isempty(DelTri.get_unbounded_polygons(p[1][]))
     end
-    function get_all_triangulation_points!(points, tri)
-        empty!(points)
-        sizehint!(points, DelTri.num_points(tri))
-        for p in DelTri.each_point(tri)
-            x, y = DelTri.getxy(p)
-            push!(points, Point2f(x, y))
-        end
-        return points
-    end
 end

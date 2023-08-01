@@ -82,27 +82,6 @@ function identify_side(r, a, b, c, d)
 end
 
 """
-    identify_corner_coordinates(side1, side2, a, b, c, d)
-
-Given two neighbouring sides `side1` and `side2` of a rectangle `[a, b] × [c, d]` 
-from [`identify_side`](@ref), returns the coordinates of the defined corner. This 
-function will not work if `side1` and `side2` are not neighbouring sides.
-"""
-function identify_corner_coordinates(side1, side2, a, b, c, d)
-    if side1 == :left && side2 == :bottom
-        return a, c
-    elseif side1 == :left && side2 == :top
-        return a, d
-    elseif side1 == :right && side2 == :bottom
-        return b, c
-    elseif side1 == :right && side2 == :top
-        return b, d
-    else 
-        return identify_corner_coordinates(side2, side1, a, b, c, d)
-    end
-end
-
-"""
     intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
 
 Given a ray starting at `p` and in the direction of `q`, finds the intersection 

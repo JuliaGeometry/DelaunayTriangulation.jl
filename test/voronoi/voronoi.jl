@@ -877,3 +877,36 @@ end
         @test validate_tessellation(vorn; check_convex=false, check_adjacent=false)
     end
 end
+
+@testset "Example that used to previously break: Plotting a Voronoi tile with unbounded edges intersecting over non-neighbouring sides" begin
+    pts = [0.508812 0.656662 0.785124 0.63427 0.444969 0.609253 0.0826304 0.265388 0.830807 0.658346
+        0.647732 0.482994 0.809909 0.482046 0.0170022 0.821742 0.835057 0.591724 0.881006 0.97652]
+    tri = triangulate(pts)
+    vorn = voronoi(tri)
+    clip = DT.get_polygon_coordinates(vorn, 9, DT.polygon_bounds(vorn, 0.1))
+    @test DT.circular_equality(collect.(clip), collect.([
+        [2.0316769079740804, 0.11847746641647516],
+        [2.0316769079740804, 1.107189193410733],
+        [0.8433942004507264, 1.107189193410733],
+        [0.7271857522962732, 0.8973620981454822],
+        [1.7423743304675243, 0.24505806539308744],
+        [2.0316769079740804, 0.11847746641647516]
+    ]), ≈)
+end
+
+@testset "Example that used to previously break: Plotting a Voronoi tile with unbounded edges intersecting over non-neighbouring sides, needing THREE corners" begin
+    pts = [0.279402 0.874842 0.163028
+        0.274178 0.831658 0.223709]
+    tri = triangulate(pts)
+    vorn = voronoi(tri)
+    clip = DT.get_polygon_coordinates(vorn, 2, DT.polygon_bounds(vorn, 2.0))
+    @test DT.circular_equality(collect.(clip), collect.([
+        (-2.7441549307938113, 4.348255778263596)
+        (-0.3314903102646037, 1.5233996567840244)
+        (3.319011238223682, -2.375672313568049)
+        (8.112835861587623, -2.375672313568049)
+        (8.112835861587623, 9.321543597488171)
+        (-2.7441549307938113, 9.321543597488171)
+        (-2.7441549307938113, 4.348255778263596)
+    ]), ≈)
+end
