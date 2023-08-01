@@ -454,8 +454,6 @@ end
         ny = 10
         tri = DT.triangulate_rectangle(a, b, c, d, nx, ny)
         fig, ax, sc = triplot(tri; show_ghost_edges=true)
-        xlims!(ax, a - 0.5, b + 0.5)
-        ylims!(ax, c - 0.5, d + 0.5)
         lines!(ax, tri.points[get_boundary_nodes(tri, 1)]; linewidth=4)
         lines!(ax, tri.points[get_boundary_nodes(tri, 2)]; linewidth=4)
         lines!(ax, tri.points[get_boundary_nodes(tri, 3)]; linewidth=4)
@@ -469,8 +467,6 @@ end
         ny = 10
         tri = DT.triangulate_rectangle(a, b, c, d, nx, ny; single_boundary=true)
         fig, ax, sc = triplot(tri; show_ghost_edges=true)
-        xlims!(ax, a - 0.5, b + 0.5)
-        ylims!(ax, c - 0.5, d + 0.5)
         @test_reference "../docs/src/triangulations/figs/rectangular_triangulation_2.png" fig
     end
 end
@@ -487,10 +483,10 @@ if !(get(ENV, "CI", "false") == "true")
             fig = Figure()
             ax = Axis(fig[1, 1], xlabel=L"x", ylabel=L"y", width=300, height=300,
                 title=L"(a):$ $ Dense mesh", titlealign=:left)
-            triplot!(ax, tri)
+            triplot!(ax, tri, show_convex_hull=true, show_constrained_edges=true)
             ax = Axis(fig[1, 2], xlabel=L"x", ylabel=L"y", width=300, height=300,
                 title=L"(b):$ $  Coarse mesh", titlealign=:left)
-            triplot!(ax, tri2)
+            triplot!(ax, tri2, show_convex_hull=true, show_constrained_edges=true)
             resize_to_layout!(fig)
             @test_reference "../docs/src/triangulations/figs/gmsh_example_1.png" fig
         end
@@ -522,7 +518,7 @@ if !(get(ENV, "CI", "false") == "true")
             tri = generate_mesh(x, y, 0.05)
             fig = Figure()
             ax = Axis(fig[1, 1], xlabel=L"x", ylabel=L"y", width=600, height=300)
-            triplot!(ax, tri)
+            triplot!(ax, tri, show_convex_hull=true)
             colors = [:red, :blue, :orange, :purple, :darkgreen]
             bn_map = get_boundary_map(tri)
             for (i, segment_index) in enumerate(values(bn_map))
@@ -565,9 +561,7 @@ if !(get(ENV, "CI", "false") == "true")
             x = [x1, x2, x3, x4, x5]
             y = [y1, y2, y3, y4, y5]
             tri = generate_mesh(x, y, 0.2)
-            fig, ax, sc = triplot(tri; show_ghost_edges=true, convex_hull_linestyle=:solid, convex_hull_linewidth=4)
-            xlims!(ax, -0.5, 2.5)
-            ylims!(ax, -0.5, 6.5)
+            fig, ax, sc = triplot(tri; show_convex_hull=true, show_ghost_edges=true, show_constrained_edges=true, convex_hull_linestyle=:solid, convex_hull_linewidth=4)
             @test_reference "../docs/src/triangulations/figs/gmsh_example_3.png" fig
         end
     end
@@ -1411,12 +1405,8 @@ end
         tri = triangulate(pts; rng)
         vorn = voronoi(tri)
 
-        cmap = Makie.cgrad(:jet)
-        colors = get_polygon_colors(vorn, cmap)
-        fig, ax, sc = voronoiplot(vorn, strokecolor=:red, polygon_color=colors)
-        triplot!(ax, tri, strokewidth=0.2, strokecolor=(:black, 0.4))
-        xlims!(ax, -1 / 2, 3 / 2)
-        ylims!(ax, 0, 3 / 2)
+        fig, ax, sc = voronoiplot(vorn, strokecolor=:red, markersize=9)
+        triplot!(ax, tri, strokewidth=1, strokecolor=(:black, 0.4))
         @test_reference "../docs/src/tessellations/figs/unbounded.png" fig
     end
 
@@ -1427,18 +1417,16 @@ end
         vorn = voronoi(tri)
         vorn_clip = voronoi(tri, true)
 
-        cmap = Makie.cgrad(:jet)
-        colors = get_polygon_colors(vorn, cmap)
         fig = Figure()
         ax = Axis(fig[1, 1], aspect=1)
-        voronoiplot!(ax, vorn, strokecolor=:red, strokewidth=0.2, polygon_color=colors, show_generators=false)
-        triplot!(ax, tri, strokewidth=0.0, strokecolor=(:black, 0.4), show_all_points=false)
+        voronoiplot!(ax, vorn, strokecolor=:red, strokewidth=0.2, show_generators=false)
+        triplot!(ax, tri, strokewidth=0.0, strokecolor=(:black, 0.4), show_convex_hull=true)
         xlims!(ax, -5, 5)
         ylims!(ax, -5, 5)
 
         ax = Axis(fig[1, 2], aspect=1)
-        voronoiplot!(ax, vorn_clip, strokecolor=:red, strokewidth=0.2, polygon_color=colors, show_generators=false)
-        triplot!(ax, tri, strokewidth=0.0, strokecolor=(:black, 0.4), show_all_points=false)
+        voronoiplot!(ax, vorn_clip, strokecolor=:red, strokewidth=0.2, show_generators=false)
+        triplot!(ax, tri, strokewidth=0.0, strokecolor=(:black, 0.4), show_convex_hull=true)
         xlims!(ax, -5, 5)
         ylims!(ax, -5, 5)
 
@@ -1453,16 +1441,14 @@ end
         vorn = voronoi(tri, true)
         smooth_vorn = centroidal_smooth(vorn; rng)
 
-        cmap = Makie.cgrad(:jet)
-        colors = get_polygon_colors(vorn, cmap)
         fig = Figure()
         ax = Axis(fig[1, 1], aspect=1)
-        voronoiplot!(ax, vorn, strokecolor=:red, strokewidth=0.2, polygon_color=colors, markersize=4)
+        voronoiplot!(ax, vorn, strokecolor=:red, strokewidth=0.2, markersize=4, colormap=:jet)
         xlims!(ax, -100, 100)
         ylims!(ax, -100, 100)
 
         ax = Axis(fig[1, 2], aspect=1)
-        voronoiplot!(ax, smooth_vorn, strokecolor=:red, strokewidth=0.2, polygon_color=colors, markersize=4)
+        voronoiplot!(ax, smooth_vorn, strokecolor=:red, strokewidth=0.2, markersize=4, colormap=:jet)
         xlims!(ax, -100, 100)
         ylims!(ax, -100, 100)
 
@@ -1481,4 +1467,82 @@ end
 
         @test_reference "../docs/src/tessellations/figs/lloyd_tri.png" fig
     end
+end
+
+@testset "README Examples" begin
+    fig = Figure(fontsize=24)
+
+    ## Unconstrained example: Just some random points 
+    rng = StableRNG(2)
+    pts = randn(rng, 2, 500)
+    tri = triangulate(pts; rng)
+    ax = Axis(fig[1, 1], title="(a): Unconstrained", titlealign=:left, width=400, height=400)
+    triplot!(ax, tri, show_convex_hull=true, show_ghost_edges=true)
+
+    ## Constrained example: Generate some points, convert to indices, triangulate 
+    points = [(0.0, 0.0), (1.0, 0.0), (1.0, 0.3), (0.8, 0.3),
+        (0.8, 0.5), (1.0, 0.5), (1.0, 1.0), (0.0, 1.0), (0.0, 0.0)]
+    boundary_nodes, points = convert_boundary_points_to_indices(points)
+    edges = Set(((2, 8), (5, 7)))
+    tri = triangulate(points; boundary_nodes, edges)
+    ax = Axis(fig[1, 2], title="(b): Constrained, pre-refinement", titlealign=:left, width=400, height=400)
+    triplot!(ax, tri, show_points=true, show_constrained_edges=true)
+
+    ## Dynamic updating 
+    n = num_points(tri)
+    add_point!(tri, (0.2, 0.2); rng)
+    add_point!(tri, (0.8, 0.8); rng)
+    add_point!(tri, (0.3, 0.2); rng)
+    add_point!(tri, (0.6, 0.2); rng)
+    add_point!(tri, (0.3, 0.3); rng)
+    add_edge!(tri, (n + 1, n + 4); rng)
+    delete_point!(tri, n + 2; rng)
+    ax = Axis(fig[1, 3], title="(c): Updated constrained, pre-refinement", titlealign=:left, width=400, height=400)
+    triplot!(ax, tri, show_constrained_edges=true)
+
+    ## Refinement example
+    A = get_total_area(tri)
+    refine!(tri; max_area=1e-2A, min_angle=28.7, rng)
+    ax = Axis(fig[1, 4], title="(d): Constrained, post-refinement", titlealign=:left, width=400, height=400)
+    triplot!(ax, tri)
+
+    ## Constrained example with holes
+    outer_boundary = [[(0.0, 0.0), (1.0, 0.0), (1.0, 0.3), (0.8, 0.3),
+        (0.8, 0.5), (1.0, 0.5), (1.0, 1.0), (0.0, 1.0), (0.0, 0.0)]]
+    inner_boundary = [[(0.2, 0.2), (0.2, 0.6), (0.4, 0.6), (0.4, 0.2), (0.2, 0.2)]]
+    boundary_nodes, points = convert_boundary_points_to_indices([outer_boundary, inner_boundary])
+    edges = Set(((2, 8), (5, 7)))
+    tri = triangulate(points; boundary_nodes, edges, rng)
+    A = get_total_area(tri)
+    refine!(tri; max_area=1e-3A, min_angle=31.5, rng)
+    ax = Axis(fig[2, 1], title="(e): Multiply-connected", titlealign=:left, width=400, height=400)
+    triplot!(ax, tri)
+
+    ## Voronoi tessellation: Make tessellations from their dual triangulation
+    pts = 25randn(rng, 2, 500)
+    tri = triangulate(pts; rng)
+    vorn = voronoi(tri)
+    ax = Axis(fig[2, 2], title="(f): Voronoi tessellation", titlealign=:left, width=400, height=400)
+    voronoiplot!(ax, vorn, show_generators=false)
+    xlims!(ax, -120, 120)
+    ylims!(ax, -120, 120)
+
+    ## Clipped Voronoi tessellation 
+    vorn = voronoi(tri, true)
+    ax = Axis(fig[2, 3], title="(g): Clipped Voronoi tessellation", titlealign=:left, width=400, height=400)
+    voronoiplot!(ax, vorn, show_generators=false, polygon_color=:white)
+
+    ## Centroidal Voronoi tessellation (CVT)
+    points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
+    tri = triangulate(points; boundary_nodes=[1, 2, 3, 4, 1], rng)
+    refine!(tri; max_area=1e-3, min_angle=29.871, rng)
+    vorn = voronoi(tri)
+    smooth_vorn = centroidal_smooth(vorn; maxiters=2500, rng)
+    ax = Axis(fig[2, 4], title="(h): Centroidal Voronoi tessellation", titlealign=:left, width=400, height=400)
+    voronoiplot!(ax, smooth_vorn, show_generators=true, markersize=4, colormap=:jet)
+
+    resize_to_layout!(fig)
+    fig
+
+    @test_reference "../examples.png" fig
 end

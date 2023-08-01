@@ -5,6 +5,7 @@ using SafeTestsets
 @testset verbose = true "DelaunayTriangulation" begin
     @testset verbose = true "Triangulation" begin
         @safetestset "Gmsh" begin
+            include("temp_makie.jl") # REMOVE AFTER MAKIE RELEASE
             include("triangulation/gmsh.jl")
         end
         @safetestset "Rectangular Triangulation" begin
@@ -88,6 +89,7 @@ using SafeTestsets
             include("operations/delete_triangle.jl")
         end
         @safetestset "add_ghost_triangles!" begin
+            include("temp_makie.jl") # REMOVE AFTER MAKIE RELEASE
             include("operations/add_ghost_triangles.jl")
         end
         @safetestset "delete_ghost_triangles!" begin
@@ -109,6 +111,7 @@ using SafeTestsets
             include("operations/legalise_edge.jl")
         end
         @safetestset "delete_point!" begin
+            include("temp_makie.jl") # REMOVE AFTER MAKIE RELEASE
             include("operations/delete_point.jl")
         end
         @safetestset "(un)lock_convex_hull!.jl" begin
@@ -157,6 +160,7 @@ using SafeTestsets
 
     @testset verbose = true "Constrained Triangulation" begin
         @safetestset "Segment Location" begin
+            include("temp_makie.jl") # REMOVE AFTER MAKIE RELEASE
             include("constrained_triangulation/segment_location.jl")
         end
         @safetestset "Segment Insertion" begin
@@ -180,10 +184,12 @@ using SafeTestsets
     end
 
     @safetestset "Documentation images" begin
+        include("temp_makie.jl") # REMOVE AFTER MAKIE RELEASE
         include("doc_images.jl")
     end
 
     @safetestset "Voronoi" begin
+        include("temp_makie.jl") # REMOVE AFTER MAKIE RELEASE
         include("voronoi/voronoi.jl")
     end
 end

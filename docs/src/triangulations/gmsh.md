@@ -33,10 +33,10 @@ tri2 = generate_mesh(x, y, 1.0)
 fig = Figure()
 ax = Axis(fig[1, 1], xlabel=L"x", ylabel=L"y", width=300, height=300,
     title=L"(a):$ $ Dense mesh", titlealign=:left)
-triplot!(ax, tri)
+triplot!(ax, tri, show_convex_hull=true, show_constrained_edges=true)
 ax = Axis(fig[1, 2], xlabel=L"x", ylabel=L"y", width=300, height=300,
     title=L"(b):$ $  Coarse mesh", titlealign=:left)
-triplot!(ax, tri2)
+triplot!(ax, tri2, show_convex_hull=true, show_constrained_edges=true)
 resize_to_layout!(fig)
 ```
 
@@ -143,7 +143,7 @@ y = [y1, y2, y3, y4, y5]
 tri = generate_mesh(x, y, 0.05)
 fig = Figure()
 ax = Axis(fig[1, 1], xlabel=L"x", ylabel=L"y", width=600, height=300)
-triplot!(ax, tri)
+triplot!(ax, tri, show_convex_hull=true)
 colors = [:red, :blue, :orange, :purple, :darkgreen]
 bn_map = get_boundary_map(tri)
 for (i, segment_index) in enumerate(values(bn_map))
@@ -245,9 +245,7 @@ y5 = [reverse([2.0, 2.0, 3.0, 4.0, 5.0, 2.0])]
 x = [x1, x2, x3, x4, x5]
 y = [y1, y2, y3, y4, y5]
 tri = generate_mesh(x, y, 0.2)
-fig, ax, sc = triplot(tri; show_ghost_edges=true, convex_hull_linestyle=:solid, convex_hull_linewidth=4)
-xlims!(ax, -0.5, 2.5)
-ylims!(ax, -0.5, 6.5)
+fig, ax, sc = triplot(tri; show_convex_hull=true, show_ghost_edges=true, show_constrained_edges=true, convex_hull_linestyle=:solid, convex_hull_linewidth=4)
 ```
 
 ```@raw html
