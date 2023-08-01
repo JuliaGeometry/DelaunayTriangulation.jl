@@ -26,16 +26,13 @@ tri = triangulate(pts)
 vorn = voronoi(tri, true)
 smooth_vorn = centroidal_smooth(vorn)
 
-cmap = Makie.cgrad(:jet)
-colors = get_polygon_colors(vorn, cmap)
 fig = Figure()
 ax = Axis(fig[1, 1], aspect=1)
-voronoiplot!(ax, vorn, strokecolor=:red, strokewidth=0.2, polygon_color=colorsmarkersize=4)
+voronoiplot!(ax, vorn, strokecolor=:red, strokewidth=0.2, markersize=4, colormap=:jet)
 xlims!(ax, -100, 100)
 ylims!(ax, -100, 100)
-
 ax = Axis(fig[1, 2], aspect=1)
-voronoiplot!(ax, smooth_vorn, strokecolor=:red, strokewidth=0.2polygon_color=colors, markersize=4)
+voronoiplot!(ax, smooth_vorn, strokecolor=:red, strokewidth=0.2, markersize=4, colormap=:jet)
 xlims!(ax, -100, 100)
 ylims!(ax, -100, 100)
 ```

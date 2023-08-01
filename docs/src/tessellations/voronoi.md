@@ -33,15 +33,11 @@ To now construct the tessellation, use `voronoi`.
 vorn = voronoi(tri)
 ```
 
-We can visualise the diagram using `voronoiplot`. This function uses `get_polygon_coordinates` to get a finite representation of the unbounded edges, so we need to use `xlims` and `ylims` to get a reasonable visualisation of the unbounded edges; a better way would be to somehow use observables to track the axis so that the edges truly are infinite, like in `hlines` and `vlines`, but I don't know how to do that / haven't got around to figuring out the details yet (without depending on Makie.jl). We also use `get_polygon_colors` to get a nice spread of colours to use.
+We can visualise the diagram using `voronoiplot`. This function uses `get_polygon_coordinates` to get a finite representation of the unbounded edges, clipping the polygons to some bounding box determined by `DelaunayTriangulation.polygon_bounds`.
 
 ```julia
-cmap = Makie.cgrad(:jet)
-colors = get_polygon_colors(vorn, cmap)
-fig, ax, sc = voronoiplot(vorn, strokecolor=:red, polygon_color=colors)
-triplot!(ax, tri, strokewidth=0.2, strokecolor=(:black, 0.4))
-xlims!(ax, -1 / 2, 3 / 2)
-ylims!(ax, 0, 3 / 2)`
+fig, ax, sc = voronoiplot(vorn, strokecolor=:red, markersize=9)
+triplot!(ax, tri, strokewidth=1, strokecolor=(:black, 0.4))
 ```
 
 ```@raw html
@@ -50,10 +46,10 @@ ylims!(ax, 0, 3 / 2)`
 </figure>
 ```
 
-(See also `polygon_bounds` to get appropriate bounds programatically.) The function that handles chopping to a box is `get_polygon_coordinates`, which primarily relies on `intersection_of_ray_with_boundary`:
+You can set the bounding box using the `bounding_box` keyword if you want it determined manually rather than programatically. The function that handles chopping to a box is `get_polygon_coordinates`, which primarily relies on `intersection_of_ray_with_bounding_box`:
 
 ```@docs 
-intersection_of_ray_with_boundary 
+intersection_of_ray_with_bounding_box
 ```
 
 We will see later how to clip these polygons to the convex hull show in the red dashed line.

@@ -112,7 +112,6 @@ export get_total_area
 export get_all_stat
 export VoronoiTessellation
 export num_polygons
-export get_polygon_colors
 export get_polygon
 export each_polygon
 export get_polygon_point

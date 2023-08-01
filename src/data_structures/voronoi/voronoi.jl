@@ -151,17 +151,18 @@ function get_triangle_to_circumcenter(vor::VoronoiTessellation, T)
 end
 
 """
-    get_polygon_coordinates(vor::VoronoiTessellation, j, bbox=nothing, bbox_order=nothing)
+    get_polygon_coordinates(vor::VoronoiTessellation, j, bbox=nothing)
 
-Gets the coordinates of the `j`th polygon of `vor`. If `bbox` is given, then the coordinates are clipped to the bounding box `bbox`, with the coordinates in `bbox`
-given in counter-clockwise order according to `bbox_order`.
+Gets the coordinates of the `j`th polygon of `vor`. If `bbox` is given, then the coordinates are clipped to the bounding box `bbox`, with 
+`bbox` a `Tuple` of the form `(xmin, xmax, ymin, ymax)` so that the bounding box is `[xmin, xmax] × [ymin, ymax]`.
 
 See also [`polygon_bounds`](@ref) for `bbox`.
 """
-function get_polygon_coordinates(vorn::VoronoiTessellation, j, bbox=nothing, bbox_order=nothing)
+function get_polygon_coordinates(vorn::VoronoiTessellation, j, bbox=nothing)
     C = get_polygon(vorn, j)
     F = number_type(vorn)
     coords = Vector{NTuple{2,F}}(undef, length(C) - 1)
+    unbounded_indices = (0, 0)
     for i in firstindex(C):(lastindex(C)-1)
         if !is_boundary_index(C[i])
             coords[i] = get_polygon_point(vorn, C[i])
@@ -171,6 +172,7 @@ function get_polygon_coordinates(vorn::VoronoiTessellation, j, bbox=nothing, bbo
             p, q = get_generator(vorn, u, v)
             px, py = getxy(p)
             qx, qy = getxy(q)
+            @assert bbox[1] ≤ px ≤ bbox[2] && bbox[1] ≤ qx ≤ bbox[2] && bbox[3] ≤ py ≤ bbox[4] && bbox[3] ≤ qy ≤ bbox[4] "The bounding box is not large enough to contain the circumcenter."
             m = (px + qx) / 2, (py + qy) / 2
             is_first = is_first_boundary_index(C, i)
             if is_first
@@ -192,11 +194,27 @@ function get_polygon_coordinates(vorn::VoronoiTessellation, j, bbox=nothing, bbo
             end
             r = getxy(r)
             if is_left(point_position_relative_to_line(p, q, r))
-                intersection = intersection_of_ray_with_boundary(bbox, bbox_order, m, r)
+                intersection = intersection_of_ray_with_bounding_box(m, r, bbox[1], bbox[2], bbox[3], bbox[4])
             else
-                intersection = intersection_of_ray_with_boundary(bbox, bbox_order, r, m)
+                intersection = intersection_of_ray_with_bounding_box(r, m, bbox[1], bbox[2], bbox[3], bbox[4])
             end
             coords[i] = intersection
+            if unbounded_indices[1] == 0
+                unbounded_indices = (i, 0)
+            else
+                unbounded_indices = (unbounded_indices[1], i)
+            end
+        end
+    end
+    if all(≠(0), unbounded_indices) # Need to check if we need to insert the corner point of the polygon 
+        xmin, xmax, ymin, ymax = bbox
+        c1 = coords[unbounded_indices[1]]
+        c2 = coords[unbounded_indices[2]]
+        side1 = identify_side(c1, xmin, xmax, ymin, ymax)
+        side2 = identify_side(c2, xmin, xmax, ymin, ymax)
+        if side1 ≠ side2 # different corner 
+            corner = identify_corner_coordinates(side1, side2, xmin, xmax, ymin, ymax)
+            insert!(coords, unbounded_indices[1] + 1, corner)
         end
     end
     push!(coords, coords[begin])

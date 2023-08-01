@@ -25,7 +25,8 @@ if NEEDS_PLOT_DEFS
             ghost_edge_color=:blue,
             ghost_edge_linestyle=theme(scene, :linestyle),
             ghost_edge_linewidth=theme(scene, :linewidth),
-            ghost_edge_extension_factor=2.0,
+            ghost_edge_extension_factor=0.1,
+            bounding_box=Makie.automatic,
             constrained_edge_color=:magenta,
             constrained_edge_linestyle=theme(scene, :linestyle),
             constrained_edge_linewidth=theme(scene, :linewidth))
@@ -58,21 +59,23 @@ if NEEDS_PLOT_DEFS
         end
         return triangles
     end
-    function get_triangulation_ghost_edges!(ghost_edges, extent, tri)
+    function get_triangulation_ghost_edges!(ghost_edges, extent, tri, bounding_box)
         @assert extent > 0.0 "The ghost_edge_extension_factor must be positive."
         empty!(ghost_edges)
         sizehint!(ghost_edges, 2DelTri.num_ghost_edges(tri))
-        if DelTri.has_boundary_nodes(tri)
-            xmin, xmax, ymin, ymax = DelTri.polygon_bounds(DelTri.get_points(tri), DelTri.get_boundary_nodes(tri))
+        if bounding_box === Makie.automatic
+            if DelTri.has_boundary_nodes(tri)
+                xmin, xmax, ymin, ymax = DelTri.polygon_bounds(DelTri.get_points(tri), DelTri.get_boundary_nodes(tri))
+            else
+                xmin, xmax, ymin, ymax = DelTri.polygon_bounds(DelTri.get_points(tri),
+                    DelTri.get_convex_hull_indices(tri))
+            end
+            Δx = xmax - xmin
+            Δy = ymax - ymin
+            a, b, c, d = (xmin - extent * Δx, xmax + extent * Δx, ymin - extent * Δy, ymax + extent * Δy)
         else
-            xmin, xmax, ymin, ymax = DelTri.polygon_bounds(DelTri.get_points(tri),
-                DelTri.get_convex_hull_indices(tri))
+            a, b, c, d = bounding_box
         end
-        Δx = xmax - xmin
-        Δy = ymax - ymin
-        a, b, c, d = (xmin - extent * Δx, xmax + extent * Δx, ymin - extent * Δy, ymax + extent * Δy)
-        bbox = [(a, c), (b, c), (b, d), (a, d)]
-        bbox_order = [1, 2, 3, 4, 1]
         for e in DelTri.each_ghost_edge(tri)
             u, v = DelTri.edge_indices(e)
             if DelTri.is_boundary_index(v)
@@ -81,12 +84,13 @@ if NEEDS_PLOT_DEFS
             curve_index = DelTri.get_curve_index(tri, u)
             representative_coordinates = DelTri.get_representative_point_coordinates(tri, curve_index)
             rx, ry = DelTri.getxy(representative_coordinates)
+            @assert a ≤ rx ≤ b && c ≤ ry ≤ d "The representative point is not in the bounding box."
             p = DelTri.get_point(tri, v)
             px, py = DelTri.getxy(p)
             if DelTri.is_interior_curve(curve_index)
                 ex, ey = rx, ry
             else
-                e = DelTri.intersection_of_ray_with_boundary(bbox, bbox_order, representative_coordinates, p)
+                e = DelTri.intersection_of_ray_with_bounding_box(representative_coordinates, p, a, b, c, d)
                 ex, ey = DelTri.getxy(e)
             end
             push!(ghost_edges, Point2f(px, py), Point2f(ex, ey))
@@ -137,8 +141,8 @@ if NEEDS_PLOT_DEFS
             map(triangles_3f) do tris
                 return get_triangulation_triangles!(tris, tri)
             end
-            map(p.show_ghost_edges, p.ghost_edge_extension_factor, ghost_edges_2f) do sge, extent, ge
-                return sge && get_triangulation_ghost_edges!(ge, extent, tri)
+            map(p.show_ghost_edges, p.ghost_edge_extension_factor, ghost_edges_2f, p.bounding_box) do sge, extent, ge, bbox
+                return sge && get_triangulation_ghost_edges!(ge, extent, tri, bbox)
             end
             map(p.show_convex_hull, convex_hull_2f) do sch, ch
                 return sch && get_triangulation_convex_hull!(ch, tri)
@@ -179,20 +183,14 @@ if NEEDS_PLOT_DEFS
             point_color=sc.color,
             strokecolor=theme(scene, :patchstrokecolor),
             strokewidth=1.0,
-            polygon_color=automatic,
-            unbounded_edge_extension_factor=2.0,
+            polygon_color=Makie.automatic,
+            unbounded_edge_extension_factor=0.1,
+            bounding_box=Makie.automatic,
             colormap=th.colormap,
             colorrange=th.colorrange,
-            colorscale=th.colorscale,
             cycle=th.cycle)
     end
-    function get_voronoi_bbox(vorn, extent)
-        bbox = DelTri.polygon_bounds(vorn, extent)
-        xmin, xmax, ymin, ymax = bbox
-        bbox = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)]
-        return bbox
-    end
-    function get_voronoi_tiles!(generators, polygons, vorn, bbox, bbox_order)
+    function get_voronoi_tiles!(generators, polygons, vorn, bbox)
         empty!(generators)
         empty!(polygons)
         sizehint!(generators, DelTri.num_generators(vorn))
@@ -201,12 +199,12 @@ if NEEDS_PLOT_DEFS
             g = DelTri.get_generator(vorn, i)
             x, y = DelTri.getxy(g)
             push!(generators, Point2f(x, y))
-            polygon_coords = DelTri.get_polygon_coordinates(vorn, i, bbox, bbox_order)
+            polygon_coords = DelTri.get_polygon_coordinates(vorn, i, bbox)
             polygon_coords_2f = map(polygon_coords) do coords
                 x, y = DelTri.getxy(coords)
                 return Point2f(x, y)
             end
-            push!(polygons, Polygon(polygon_coords_2f))
+            push!(polygons, Makie.Polygon(polygon_coords_2f))
         end
         return generators, polygons
     end
@@ -226,25 +224,28 @@ if NEEDS_PLOT_DEFS
     end
     function Makie.plot!(p::Voronoiplot)
         generators_2f = Observable(Point2f[])
-        PolyType = typeof(Polygon(Point2f[], [Point2f[]]))
+        PolyType = typeof(Makie.Polygon(Point2f[], [Point2f[]]))
         polygons = Observable(PolyType[])
-        bbox_order = [1, 2, 3, 4, 1]
         colors = map(p.polygon_color) do polycol
-            if polycol == automatic
-                RGBA{Float64}[]
+            if polycol == Makie.automatic
+                Makie.RGBA{Float64}[]
             else
                 polycol
             end
         end
         function update_plot(vorn)
-            bbox = map(p.unbounded_edge_extension_factor) do extent
-                return get_voronoi_bbox(vorn, extent)
+            bbox = map(p.unbounded_edge_extension_factor, p.bounding_box) do extent, bnd
+                if bnd === Makie.automatic
+                    return DelTri.polygon_bounds(vorn, extent)
+                else
+                    return p.bounding_box
+                end
             end
             map(generators_2f, polygons, bbox) do gens, polys, box
-                return get_voronoi_tiles!(gens, polys, vorn, box, bbox_order)
+                return get_voronoi_tiles!(gens, polys, vorn, box)
             end
             map(colors, p.polygon_color, p.colormap) do cols, polycol, cmap
-                return polycol == automatic && get_voronoi_colors!(cols, vorn, cmap)
+                return polycol == Makie.automatic && get_voronoi_colors!(cols, vorn, cmap)
             end
             for obs in (generators_2f, polygons, colors)
                 notify(obs)
@@ -257,7 +258,6 @@ if NEEDS_PLOT_DEFS
             strokecolor=p.strokecolor,
             strokewidth=p.strokewidth,
             colormap=p.colormap,
-            colorscale=p.colorscale,
             colorrange=p.colorrange,
             cycle=p.cycle)
         map(p.show_generators) do sg
