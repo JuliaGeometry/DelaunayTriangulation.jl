@@ -19,12 +19,6 @@ include("../helper_functions.jl")
     pts = [A, B, C, D, E, F, G]
     tri = triangulate(pts; delete_ghosts=false, randomise=false)
 
-    #fig, ax, sc = triplot(tri)
-    #let vert = each_solid_vertex(tri)
-    #    text!(ax, collect(get_point(tri, vert...)); text=string.(vert))
-    #end
-    #fig
-
     vorn = voronoi(tri)
     for (i, p) in DT.get_generators(vorn)
         @test get_point(tri, i) == get_generator(vorn, i) == p
@@ -95,9 +89,7 @@ include("../helper_functions.jl")
     )
 
     xmin, xmax, ymin, ymax = DT.polygon_bounds(vorn, 0.5)
-    cmap = Makie.cgrad(:jet)
-    colors = get_polygon_colors(vorn, cmap)
-    fig, ax, sc = voronoiplot(vorn, polygon_color=colors)
+    fig, ax, sc = voronoiplot(vorn)
     triplot!(ax, tri)
     xlims!(ax, xmin, xmax)
     ylims!(ax, ymin, ymax)
@@ -111,15 +103,13 @@ end
     @test validate_tessellation(vorn)
     bbox = DT.polygon_bounds(vorn, 0.1)
     xmin, xmax, ymin, ymax = bbox
-    bbox = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)]
-    bbox_order = [1, 2, 3, 4, 1]
-    c1 = DT.get_polygon_coordinates(vorn, 1, bbox, bbox_order)
-    c2 = DT.get_polygon_coordinates(vorn, 2, bbox, bbox_order)
-    c3 = DT.get_polygon_coordinates(vorn, 3, bbox, bbox_order)
-    c4 = DT.get_polygon_coordinates(vorn, 4, bbox, bbox_order)
-    c5 = DT.get_polygon_coordinates(vorn, 5, bbox, bbox_order)
-    c6 = DT.get_polygon_coordinates(vorn, 6, bbox, bbox_order)
-    c7 = DT.get_polygon_coordinates(vorn, 7, bbox, bbox_order)
+    c1 = DT.get_polygon_coordinates(vorn, 1, bbox)
+    c2 = DT.get_polygon_coordinates(vorn, 2, bbox)
+    c3 = DT.get_polygon_coordinates(vorn, 3, bbox)
+    c4 = DT.get_polygon_coordinates(vorn, 4, bbox)
+    c5 = DT.get_polygon_coordinates(vorn, 5, bbox)
+    c6 = DT.get_polygon_coordinates(vorn, 6, bbox)
+    c7 = DT.get_polygon_coordinates(vorn, 7, bbox)
     @test DT.circular_equality(collect.(c1), collect.([(-1.5, 0.5)
         (0.16666666666666666, -1.1666666666666665)
         (1.0, 0.5)
@@ -128,6 +118,7 @@ end
     @test DT.circular_equality(collect.(c2), collect.([(3.5, 0.5)
         (0.5, -2.5)
         (0.5, -3.2000000001862645)
+        (xmax, ymin)
         (5.769999999552965, -1.7699999995529652)
         (3.5, 0.5)]), ≈)
     @test DT.circular_equality(collect.(c3), collect.([(3.5, 0.5)
@@ -136,6 +127,7 @@ end
         (0.5, -2.5)
         (3.5, 0.5)]), ≈)
     @test DT.circular_equality(collect.(c4), collect.([(1.5, 5.270000000484288)
+        (xmin, ymax)
         (-2.6999999997206032, 0.8999999999068677)
         (-1.5, 0.5)
         (1.0, 3.0)
@@ -144,9 +136,11 @@ end
     @test DT.circular_equality(collect.(c5), collect.([(1.5, 4.5)
         (3.5, 0.5)
         (5.769999999552965, 2.769999999552965)
+        (xmax, ymax)
         (1.5, 5.270000000484288)
         (1.5, 4.5)]), ≈)
     @test DT.circular_equality(collect.(c6), collect.([(-2.6999999997206032, 0.8999999999068677)
+        (xmin, ymin)
         (0.5, -3.2000000001862645)
         (0.5, -2.5)
         (0.16666666666666666, -1.1666666666666665)
@@ -882,4 +876,37 @@ end
         vorn = voronoi(tri, true)
         @test validate_tessellation(vorn; check_convex=false, check_adjacent=false)
     end
+end
+
+@testset "Example that used to previously break: Plotting a Voronoi tile with unbounded edges intersecting over non-neighbouring sides" begin
+    pts = [0.508812 0.656662 0.785124 0.63427 0.444969 0.609253 0.0826304 0.265388 0.830807 0.658346
+        0.647732 0.482994 0.809909 0.482046 0.0170022 0.821742 0.835057 0.591724 0.881006 0.97652]
+    tri = triangulate(pts)
+    vorn = voronoi(tri)
+    clip = DT.get_polygon_coordinates(vorn, 9, DT.polygon_bounds(vorn, 0.1))
+    @test DT.circular_equality(collect.(clip), collect.([
+        [2.0316769079740804, 0.11847746641647516],
+        [2.0316769079740804, 1.107189193410733],
+        [0.8433942004507264, 1.107189193410733],
+        [0.7271857522962732, 0.8973620981454822],
+        [1.7423743304675243, 0.24505806539308744],
+        [2.0316769079740804, 0.11847746641647516]
+    ]), ≈)
+end
+
+@testset "Example that used to previously break: Plotting a Voronoi tile with unbounded edges intersecting over non-neighbouring sides, needing THREE corners" begin
+    pts = [0.279402 0.874842 0.163028
+        0.274178 0.831658 0.223709]
+    tri = triangulate(pts)
+    vorn = voronoi(tri)
+    clip = DT.get_polygon_coordinates(vorn, 2, DT.polygon_bounds(vorn, 2.0))
+    @test DT.circular_equality(collect.(clip), collect.([
+        (-2.7441549307938113, 4.348255778263596)
+        (-0.3314903102646037, 1.5233996567840244)
+        (3.319011238223682, -2.375672313568049)
+        (8.112835861587623, -2.375672313568049)
+        (8.112835861587623, 9.321543597488171)
+        (-2.7441549307938113, 9.321543597488171)
+        (-2.7441549307938113, 4.348255778263596)
+    ]), ≈)
 end

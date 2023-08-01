@@ -68,7 +68,7 @@ end
             p, q, r = get_point(tri, u, v, w)
             a1 = DT.triangle_area(p, q, r)
             a2 = DT.polygon_features(get_points(tri), [u, v, w, u])[1]
-            @test a1 ≈ a2 atol=1e-4
+            @test a1 ≈ a2 atol = 1e-4
       end
 end
 
@@ -851,4 +851,106 @@ end
       points = [(2.0, 0.0), (3.5, 0.0), (5.0, 0.0)]
       boundary_nodes = [1, 2, 3, 1]
       @test DT.pole_of_inaccessibility(points, boundary_nodes) == (3.5, 0.0)
+end
+
+@testset "identify_side and intersection_of_ray_with_bounding_box" begin
+      a, b, c, d = 0.5, 1.3, 2.7, 5.8
+      p = (0.7378963231985, 4.6758264584035)
+      q = (2.17804800057, 3.5917562397227)
+      r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
+      rtrue = (1.3, 4.252704459932)
+      @test collect(r) ≈ collect(rtrue)
+      @test DT.identify_side(r, a, b, c, d) == :right
+      p = (1.0, 4.5)
+      q = (2.0, 4.5)
+      r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
+      rtrue = (1.3, 4.5)
+      @test collect(r) ≈ collect(rtrue)
+      @test DT.identify_side(r, a, b, c, d) == :right
+
+      a, b, c, d = 0.0, 1.0, 0.0, 1.0
+      p = (0.5, 0.5)
+      q = (2.5, 0.5)
+      r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
+      rtrue = (1.0, 0.5)
+      @test collect(r) ≈ collect(rtrue)
+      @test DT.identify_side(r, a, b, c, d) == :right
+      q = (0.5, 1.5)
+      r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
+      rtrue = (0.5, 1.0)
+      @test collect(r) ≈ collect(rtrue)
+      @test DT.identify_side(r, a, b, c, d) == :top
+      q = (0.202587350495, 1.5151867707735)
+      r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
+      rtrue = (0.353517464218, 1.0)
+      @test collect(r) ≈ collect(rtrue) rtol = 1e-6
+      @test DT.identify_side(r, a, b, c, d) == :top
+      q = (-0.5, 1.5)
+      r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
+      rtrue = (0.0, 1.0)
+      @test collect(r) ≈ collect(rtrue)
+      @test DT.identify_side(r, a, b, c, d) == :top
+      q = (-1.0, 0.5)
+      r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
+      rtrue = (0.0, 0.5)
+      @test collect(r) ≈ collect(rtrue)
+      @test DT.identify_side(r, a, b, c, d) == :left
+      q = (-1.5, 0.0)
+      r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
+      rtrue = (0.0, 0.375)
+      @test collect(r) ≈ collect(rtrue)
+      @test DT.identify_side(r, a, b, c, d) == :left
+      q = (-1.0, -1.0)
+      r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
+      rtrue = (0.0, 0.0)
+      @test collect(r) ≈ collect(rtrue) atol = 1e-6
+      @test DT.identify_side(r, a, b, c, d) == :bottom
+      q = (0.0, -1.0)
+      r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
+      rtrue = (1 / 3, 0.0)
+      @test collect(r) ≈ collect(rtrue)
+      @test DT.identify_side(r, a, b, c, d) == :bottom
+      q = (0.5, -1.0)
+      r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
+      rtrue = (0.5, 0.0)
+      @test collect(r) ≈ collect(rtrue)
+      @test DT.identify_side(r, a, b, c, d) == :bottom
+      q = (2.0, -1.0)
+      r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
+      rtrue = (1.0, 0.0)
+      @test collect(r) ≈ collect(rtrue)
+      @test DT.identify_side(r, a, b, c, d) == :bottom
+      q = (0.4026485332004, 0.7749544176151)
+      r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
+      rtrue = (0.3229679893052, 1.0)
+      @test collect(r) ≈ collect(rtrue)
+      @test DT.identify_side(r, a, b, c, d) == :top
+      u, v = (a, d), (b, d)
+      newr = DT.segment_intersection_coordinates(p, r, u, v)
+      @test collect(newr) ≈ collect(r)
+      cert = DT.line_segment_intersection_type(p, r, u, v)
+      @test DT.is_touching(cert)
+
+      for _ in 1:10000
+            for q in (5randn(2), rand(), 10rand(), 17randn(2))
+                  q = 5randn(2)
+                  r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
+                  side = DT.identify_side(r, a, b, c, d)
+                  if side == :top
+                        @test r[2] ≈ d
+                        u, v = (a, d), (b, d)
+                  elseif side == :left
+                        @test r[1] ≈ a
+                        u, v = (a, d), (a, c)
+                  elseif side == :right
+                        @test r[1] ≈ b
+                        u, v = (b, d), (b, c)
+                  else #side == :bottom
+                        @test r[2] ≈ c
+                        u, v = (a, c), (b, c)
+                  end
+                  rtrue = DT.segment_intersection_coordinates(p, q, u, v)
+                  @test collect(r) ≈ collect(rtrue)
+            end
+      end
 end

@@ -38,17 +38,17 @@ fig = Figure(fontsize=24)
 rng = StableRNG(2)
 pts = randn(rng, 2, 500)
 tri = triangulate(pts; rng)
-ax = Axis(fig[1, 1], title = "(a): Unconstrained", titlealign = :left, width=400,height=400)
-triplot!(ax, tri) 
+ax = Axis(fig[1, 1], title="(a): Unconstrained", titlealign=:left, width=400, height=400)
+triplot!(ax, tri, show_convex_hull=true, show_ghost_edges=true)
 
 ## Constrained example: Generate some points, convert to indices, triangulate 
-points = [(0.0, 0.0), (1.0, 0.0), (1.0, 0.3), (0.8, 0.3), 
-(0.8, 0.5), (1.0, 0.5), (1.0, 1.0), (0.0, 1.0), (0.0, 0.0)]
+points = [(0.0, 0.0), (1.0, 0.0), (1.0, 0.3), (0.8, 0.3),
+    (0.8, 0.5), (1.0, 0.5), (1.0, 1.0), (0.0, 1.0), (0.0, 0.0)]
 boundary_nodes, points = convert_boundary_points_to_indices(points)
 edges = Set(((2, 8), (5, 7)))
-tri = triangulate(points; boundary_nodes, edges, rng)
-ax = Axis(fig[1, 2], title = "(b): Constrained, pre-refinement", titlealign = :left, width=400,height=400)
-triplot!(ax, tri)
+tri = triangulate(points; boundary_nodes, edges)
+ax = Axis(fig[1, 2], title="(b): Constrained, pre-refinement", titlealign=:left, width=400, height=400)
+triplot!(ax, tri, show_points=true, show_constrained_edges=true)
 
 ## Dynamic updating 
 n = num_points(tri)
@@ -57,60 +57,57 @@ add_point!(tri, (0.8, 0.8); rng)
 add_point!(tri, (0.3, 0.2); rng)
 add_point!(tri, (0.6, 0.2); rng)
 add_point!(tri, (0.3, 0.3); rng)
-add_edge!(tri, (n+1, n+4); rng)
-delete_point!(tri, n+2; rng)
-ax = Axis(fig[1, 3], title = "(c): Updated constrained, pre-refinement", titlealign = :left, width=400,height=400)
-triplot!(ax, tri)
+add_edge!(tri, (n + 1, n + 4); rng)
+delete_point!(tri, n + 2; rng)
+ax = Axis(fig[1, 3], title="(c): Updated constrained, pre-refinement", titlealign=:left, width=400, height=400)
+triplot!(ax, tri, show_constrained_edges=true)
 
 ## Refinement example
 A = get_total_area(tri)
-refine!(tri; max_area = 1e-2A, min_angle = 28.7, rng)
-ax = Axis(fig[1, 4], title = "(d): Constrained, post-refinement", titlealign = :left, width=400,height=400)
-triplot!(ax, tri, show_convex_hull = false)
+refine!(tri; max_area=1e-2A, min_angle=28.7, rng)
+ax = Axis(fig[1, 4], title="(d): Constrained, post-refinement", titlealign=:left, width=400, height=400)
+triplot!(ax, tri)
 
 ## Constrained example with holes
-outer_boundary = [[(0.0, 0.0), (1.0, 0.0), (1.0, 0.3), (0.8, 0.3), 
-(0.8, 0.5), (1.0, 0.5), (1.0, 1.0), (0.0, 1.0), (0.0, 0.0)]]
+outer_boundary = [[(0.0, 0.0), (1.0, 0.0), (1.0, 0.3), (0.8, 0.3),
+    (0.8, 0.5), (1.0, 0.5), (1.0, 1.0), (0.0, 1.0), (0.0, 0.0)]]
 inner_boundary = [[(0.2, 0.2), (0.2, 0.6), (0.4, 0.6), (0.4, 0.2), (0.2, 0.2)]]
 boundary_nodes, points = convert_boundary_points_to_indices([outer_boundary, inner_boundary])
 edges = Set(((2, 8), (5, 7)))
 tri = triangulate(points; boundary_nodes, edges, rng)
 A = get_total_area(tri)
-refine!(tri; max_area = 1e-3A, min_angle = 31.5, rng)
-ax = Axis(fig[2, 1], title = "(e): Multiply-connected", titlealign = :left, width=400,height=400)
-triplot!(ax, tri, show_convex_hull = false)
+refine!(tri; max_area=1e-3A, min_angle=31.5, rng)
+ax = Axis(fig[2, 1], title="(e): Multiply-connected", titlealign=:left, width=400, height=400)
+triplot!(ax, tri)
 
 ## Voronoi tessellation: Make tessellations from their dual triangulation
 pts = 25randn(rng, 2, 500)
 tri = triangulate(pts; rng)
 vorn = voronoi(tri)
-ax = Axis(fig[2, 2], title = "(f): Voronoi tessellation", titlealign = :left, width=400,height=400)
-voronoiplot!(ax, vorn, show_generators = false) 
-xlims!(ax, -120, 120); ylims!(ax, -120, 120)
+ax = Axis(fig[2, 2], title="(f): Voronoi tessellation", titlealign=:left, width=400, height=400)
+voronoiplot!(ax, vorn, show_generators=false)
+xlims!(ax, -120, 120)
+ylims!(ax, -120, 120)
 
 ## Clipped Voronoi tessellation 
 vorn = voronoi(tri, true)
-cmap = cgrad(:jet)
-colors = get_polygon_colors(vorn, cmap)
-ax = Axis(fig[2, 3], title = "(g): Clipped Voronoi tessellation", titlealign = :left, width=400,height=400)
-voronoiplot!(ax, vorn, show_generators = false, polygon_color = colors)
+ax = Axis(fig[2, 3], title="(g): Clipped Voronoi tessellation", titlealign=:left, width=400, height=400)
+voronoiplot!(ax, vorn, show_generators=false, polygon_color=:white)
 
 ## Centroidal Voronoi tessellation (CVT)
-points = [(0.0,0.0),(1.0,0.0),(1.0,1.0),(0.0,1.0)]
-tri = triangulate(points; boundary_nodes = [1,2,3,4,1], rng)
-refine!(tri; max_area=1e-3, min_angle = 29.871, rng)
+points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
+tri = triangulate(points; boundary_nodes=[1, 2, 3, 4, 1], rng)
+refine!(tri; max_area=1e-3, min_angle=29.871, rng)
 vorn = voronoi(tri)
-smooth_vorn = centroidal_smooth(vorn; maxiters = 2500)
-cmap = cgrad(:matter)
-colors = get_polygon_colors(smooth_vorn, cmap)
-ax = Axis(fig[2, 4], title = "(h): Centroidal Voronoi tessellation", titlealign = :left, width=400,height=400)
-voronoiplot!(ax, smooth_vorn, show_generators = true, markersize=4, polygon_color = colors)
+smooth_vorn = centroidal_smooth(vorn; maxiters=2500, rng)
+ax = Axis(fig[2, 4], title="(h): Centroidal Voronoi tessellation", titlealign=:left, width=400, height=400)
+voronoiplot!(ax, smooth_vorn, show_generators=true, markersize=4, colormap=:jet)
 
 resize_to_layout!(fig)
 fig
 ```
 
-![Example triangulations](https://user-images.githubusercontent.com/95613936/235636673-c33fde09-ff54-4200-a781-e0224cf39ddb.png)
+![Examples](examples.png)
 
 ## Animations
 

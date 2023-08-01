@@ -9,6 +9,8 @@ It is assumed that `p` is inside the polygon, but `q` could be outside or inside
 Currently, this function has only been tested on rectangular boundaries.
 """
 function intersection_of_ray_with_boundary(points, boundary_nodes, p, q, tol=1e-9)
+    # TODO: Write this in terms of an angle θ rather than q, computing θ from pq. 
+    # Probably don't need bisection if we do that.
     p == q && throw(ArgumentError("p and q must be distinct."))
     px, py = getxy(p)
     qx, qy = getxy(q)
@@ -26,7 +28,7 @@ function intersection_of_ray_with_boundary(points, boundary_nodes, p, q, tol=1e-
         t2 *= 2
         r = px + t2 * (qx - px), py + t2 * (qy - py)
         δ2 = distance_to_polygon(r, points, boundary_nodes)
-        iters += 1 
+        iters += 1
         iters ≥ 1000 && throw(ArgumentError("Something went wrong. Could not find a bracketing interval."))
     end
 
@@ -50,6 +52,79 @@ function intersection_of_ray_with_boundary(points, boundary_nodes, p, q, tol=1e-
         iters ≥ 1000 && throw(ArgumentError("Something went wrong. Could not find the intersection point."))
     end
     return r
+end
+
+"""
+    identify_side(r, a, b, c, d)
+
+Given a rectangle `[a, b] × [c, d]` and a point `r` 
+on the rectangle, returns a symbol denoting the side 
+of the rectangle that the point is on:
+
+- `:left`: `r` is on the left side of the rectangle.
+- `:right`: `r` is on the right side of the rectangle.
+- `:bottom`: `r` is on the bottom side of the rectangle.
+- `:top`: `r` is on the top side of the rectangle.
+"""
+function identify_side(r, a, b, c, d)
+    rx, ry = getxy(r)
+    if rx == a
+        return :left
+    elseif rx == b
+        return :right
+    elseif ry == c
+        return :bottom
+    elseif ry == d
+        return :top
+    else
+        throw(ArgumentError("Something went wrong."))
+    end
+end
+
+"""
+    intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
+
+Given a ray starting at `p` and in the direction of `q`, finds the intersection 
+of the ray with the bounding box `[a, b] × [c, d]`. It is assumed that `p` is inside 
+the bounding box, but `q` can be inside or outside.
+"""
+function intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
+    pℓbx, pℓby = a, c
+    pℓtx, pℓty = a, d
+    prtx, prty = b, d
+    prbx, prby = b, c
+    θ = mod(atan(qy - py, qx - px), 2π)
+    θlb = mod(atan(pℓby - py, pℓbx - px), 2π)
+    θlt = mod(atan(pℓty - py, pℓtx - px), 2π)
+    θrt = mod(atan(prty - py, prtx - px), 2π)
+    θrb = mod(atan(prby - py, prbx - px), 2π)
+    if θ == 0.0
+        return b, py
+    elseif θ == π / 2
+        return px, d
+    elseif θ == π
+        return a, py
+    elseif θ == 3π / 2
+        return px, c
+    elseif θlb ≤ θ ≤ θrb # y = c, a ≤ x ≤ b
+        # y = py + Rsinθ = c ⟹ R = (c - py) / sinθ 
+        # x = px + Rcosθ = px + (c - py)cotθ
+        return px + (c - py) * cot(θ), c
+    elseif θrt ≤ θ ≤ θlt # y = d, a ≤ x ≤ b 
+        # y = py + Rsinθ = d ⟹ R = (d - py) / sinθ
+        # x = px + Rcosθ = px + (d - py)cotθ
+        return px + (d - py) * cot(θ), d
+    elseif θlt ≤ θ ≤ θlb # x = a, c ≤ y ≤ d
+        # x = px + Rcosθ = a ⟹ R = (a - px) / cosθ
+        # y = py + Rsinθ = py + (a - px)tanθ
+        return a, py + (a - px) * tan(θ)
+    else # x = b, c ≤ y ≤ d
+        # x = px + Rcosθ = b ⟹ R = (b - px) / cosθ
+        # y = py + Rsinθ = py + (b - px)tanθ
+        return b, py + (b - px) * tan(θ)
+    end
 end
 
 """
@@ -85,9 +160,9 @@ function intersection_of_edge_and_bisector_ray(a, b, c)
         ax, ay = getxy(a)
         bx, by = getxy(b)
         m = (ax + bx) / 2, (ay + by) / 2
-        return cert, m 
+        return cert, m
     else
-        F = number_type(a) 
+        F = number_type(a)
         return cert, (F(NaN), F(NaN))
     end
 end
