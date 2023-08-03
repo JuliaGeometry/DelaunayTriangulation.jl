@@ -13,6 +13,9 @@ In the tutorials, we make consistent use of the package [`StableRNGs.jl`](https:
 
 The first option is fine for most applications where the points sets are in general position (meaning no four points are collinear), and the second result is fine and easier to apply more generally.
 
+Lastly, in all but one of the tutorials we consider only a basic interface for defining the geometric primitives, e.g. matrices or vectors for points and sets for edges. This interface is customisable, as described in [Representing Primitives](../manual/primitives.md) and [Representing Boundaries](../manual/boundaries.md) (with the API defined in [Primitive Interfaces](../api/primitive_interfaces.md)). The last tutorial will demonstrate how to use custom structs for 
+representing these primitives.
+
 The tutorials that we consider are as follows:
 
 - [Unconstrained Triangulations](unconstrained.md): How Delaunay triangulations can be computed and accessed. We also give examples here of how we iterate over the triangulation's vertices, edges, and triangles, some warnings about having to be careful about ghost objects defined in the [manual](../manual/ghost_triangles.md), and how to query neighbour information.
@@ -29,3 +32,4 @@ The tutorials that we consider are as follows:
 - [Nearest Neighbour Queries](nearest.md): How to use a Voronoi tessellation to find a point's nearest neighbour.
 - [Convex Hulls](convex_hull.md): How to compute a convex hull of a point set, using either an existing triangulation or from scratch.
 - [Pole of Inaccessibility](pole_of_inaccessibility.md): How to compute the [pole of inaccessibility](https://blog.mapbox.com/a-new-algorithm-for-finding-a-visual-center-of-a-polygon-7c77e6492fbc) of a polygon, also considering cases of multipolygons (polygons composed of multiple disjoint polygons) and multiply-connected polygons.
+- [Using Custom Structs for Primitives and Boundaries](custom_primitive.md): How to use custom structs for defining the geometric primitives.

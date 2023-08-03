@@ -7,7 +7,6 @@ DocMeta.setdocmeta!(DelaunayTriangulation, :DocTestSetup, :(using DelaunayTriang
     recursive=true)
 
 const IS_LIVESERVER = false
-IS_LIVESERVER && using Revise
 const IS_GITHUB_ACTIONS = get(ENV, "GITHUB_ACTIONS", "false") == "true"
 const IS_CI = get(ENV, "CI", "false") == "true"
 function safe_include(filename)
@@ -113,7 +112,8 @@ const _PAGES = [
         "Point Location" => "tutorials/point_location.md",
         "Nearest Neighbour Queries" => "tutorials/nearest.md",
         "Convex Hulls" => "tutorials/convex_hull.md",
-        "Pole of Inaccessibility" => "tutorials/pole_of_inaccessibility.md"
+        "Pole of Inaccessibility" => "tutorials/pole_of_inaccessibility.md",
+        "Using Custom Structs for Primitives and Boundaries" => "tutorials/custom_primitive.md"
     ],
     "Manual" => [
         "Section Overview" => "manual/overview.md",
@@ -166,6 +166,7 @@ const _PAGES = [
 ]
 
 # Make sure we haven't forgotten any files
+set = Set{String}()
 for page in _PAGES
     if page[2] isa String
         push!(set, normpath(page[2]))
@@ -225,11 +226,15 @@ for folder in ("tutorials", "applications")
     for file in files
         file_path = joinpath(dir, file)
         rm(file_path)
-        if !IS_LIVESERVER # draft documentation doesn't generate these files 
-            generated_script_path = joinpath(dir, "generated", splitext(file)[1] * ".jl")
-            rm(generated_script_path)
-            temp_script_path = joinpath(dir, "temp", splitext(file)[1] * ".jl")
-            rm(temp_script_path)
+    end
+    if !IS_LIVESERVER # draft documentation doesn't generate these files 
+        generated_script_path = joinpath(dir, "generated")
+        temp_script_path = joinpath(dir, "temp")
+        for file in readdir(generated_script_path)
+            rm(joinpath(generated_script_path, file))
+        end
+        for file in readdir(temp_script_path)
+            rm(joinpath(temp_script_path, file))
         end
     end
 end
