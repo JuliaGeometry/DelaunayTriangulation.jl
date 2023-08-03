@@ -9,7 +9,6 @@
 # for a differential equation problem. To start, let us load in the packages we will need.
 using DelaunayTriangulation
 using CairoMakie
-import LinearAlgebra: norm #src
 using ReferenceTests #src
 using Test #src
 fig_path = joinpath(@__DIR__, "../figures") #src
@@ -43,6 +42,7 @@ lines!(ax, segment_1, color=:red, linewidth=6)
 lines!(ax, segment_2, color=:green, linewidth=6)
 lines!(ax, segment_3, color=:blue, linewidth=6)
 fig
+@test_reference joinpath(fig_path, "constrained_ex_4.png") fig #src
 
 # The first segment is in red, the second segment is in green, and the third segment 
 # is in blue. We use boundary indices to identify the segments, where the first segment is identified 

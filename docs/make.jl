@@ -14,6 +14,30 @@ function safe_include(filename)
     return Base.include(mod, filename)
 end
 
+function clean_dir()
+    for folder in ("tutorials", "applications")
+        dir = joinpath(@__DIR__, "src", folder)
+        files = readdir(dir)
+        filter!(file -> endswith(file, ".md"), files)
+        filter!(file -> file ∉ ("overview.md", "gmsh.md"), files)
+        for file in files
+            file_path = joinpath(dir, file)
+            rm(file_path)
+        end
+        if !IS_LIVESERVER # draft documentation doesn't generate these files 
+            generated_script_path = joinpath(dir, "generated")
+            temp_script_path = joinpath(dir, "temp")
+            for file in readdir(generated_script_path)
+                rm(joinpath(generated_script_path, file))
+            end
+            for file in readdir(temp_script_path)
+                rm(joinpath(temp_script_path, file))
+            end
+        end
+    end
+end
+clean_dir()
+
 # When running docs locally, the EditURL is incorrect. For example, we might get 
 #   ```@meta
 #   EditURL = "<unknown>/docs/src/tutorials/constrained.jl"
@@ -89,7 +113,7 @@ const _PAGES = [
             "Segmented Outer Boundary" => "tutorials/constrained_outer_boundary_segmented.md",
             "Domain with Interior Holes" => "tutorials/constrained_multiply_connected.md",
             "Domain with Interior Holes inside Interior Holes" => "tutorials/constrained_interior_within_interiors.md",
-            "Multipolygons" => "tutorials/constrained_multipolygon.md",
+            "Disjoint Domains" => "tutorials/constrained_multipolygon.md",
         ],
         "Triangulation Operations" => [
             "Vertex Insertion and Deletion" => "tutorials/operations_vertex_insertion_deletion.md",
@@ -217,24 +241,4 @@ deploydocs(;
     devbranch="main")
 
 # Now that we are done, delete the literate files 
-for folder in ("tutorials", "applications")
-    dir = joinpath(@__DIR__, "src", folder)
-    outputdir = dir
-    files = readdir(dir)
-    filter!(file -> endswith(file, ".md"), files)
-    filter!(file -> file ∉ ("overview.md", "gmsh.md"), files)
-    for file in files
-        file_path = joinpath(dir, file)
-        rm(file_path)
-    end
-    if !IS_LIVESERVER # draft documentation doesn't generate these files 
-        generated_script_path = joinpath(dir, "generated")
-        temp_script_path = joinpath(dir, "temp")
-        for file in readdir(generated_script_path)
-            rm(joinpath(generated_script_path, file))
-        end
-        for file in readdir(temp_script_path)
-            rm(joinpath(temp_script_path, file))
-        end
-    end
-end
+clean_dir()
