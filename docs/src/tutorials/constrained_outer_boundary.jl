@@ -12,7 +12,7 @@ using ReferenceTests #src
 using Test #src
 fig_path = joinpath(@__DIR__, "../figures") #src
 
-# To start, we define the points we will be triangulating. 
+# Now, we define some of the points we will be triangulating. 
 pts = [
     (-7.36, 12.55), (-9.32, 8.59), (-9.0, 3.0), (-6.32, -0.27),
     (-4.78, -1.53), (2.78, -1.41), (-5.42, 1.45), (7.86, 0.67),
