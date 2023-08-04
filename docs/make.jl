@@ -117,7 +117,7 @@ const _PAGES = [
         ],
         "Triangulation Operations" => [
             "Vertex Insertion and Deletion" => "tutorials/operations_vertex_insertion_deletion.md",
-            "Segment Insertion" => "tutorials/operations_segment_insertion.md",
+            "Edge Insertion" => "tutorials/operations_segment_insertion.md",
             "Adding or Clearing Ghost Triangles" => "tutorials/operations_ghost_triangles.md",
             "Edge Flipping" => "tutorials/operations_flip_edge.md",
             "Legalising an Edge" => "tutorials/operations_legalise_edge.md",

@@ -1,7 +1,7 @@
 # # Triangulation Operations 
 # ## Vertex Insertion and Deletion 
 
-# This tutorials demonstrates how to insert and delete vertices from a 
+# This tutorial demonstrates how to insert and delete vertices from a 
 # triangulation while maintaining the Delaunay property of the 
 # triangulation. First, load the packages we need:
 using DelaunayTriangulation
@@ -15,6 +15,7 @@ fig_path = joinpath(@__DIR__, "../figures") #src
 points = [(0.0, 0.0), (2.0, 0.0), (1.0, 2.0)]
 tri = triangulate(points)
 fig, ax, sc = triplot(tri)
+fig
 @test_reference joinpath(fig_path, "triangulation_operations_1.png") fig #src
 
 # Note that we use a structure for `points` that is mutable so that 
