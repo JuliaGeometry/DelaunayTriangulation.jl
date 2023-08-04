@@ -45,6 +45,8 @@ is omitted.)
 - `num_edges(G)`
 - `num_neighbours(G, u)`
 - `num_vertices(G)`
+- `has_vertex(G, u)`
+- `has_boundary_vertices(G)`
 """
 struct Graph{I}
     graph::UndirectedGraph{I}
@@ -128,6 +130,14 @@ num_edges(G::Graph) = length(get_graph(G).E)
 Returns the number of vertices in the graph `G`.
 """
 num_vertices(G::Graph) = length(get_vertices(G))
+
+"""
+    has_vertex(G::Graph, u)
+
+Returns `true` if the vertex `u` is in the graph `G`,
+and `false` otherwise.
+"""
+has_vertex(G::Graph, u) = has(get_graph(G), u)
 
 """
     add_vertex!(G::Graph, u...)
@@ -274,6 +284,15 @@ function delete_boundary_vertices_from_graph!(G::Graph{I}) where {I}
         delete_vertex!(G, i)
     end
     return nothing
+end
+
+"""
+    has_boundary_vertices(G::Graph{I}) where {I}
+
+Returns `true` if the graph `G` has any boundary vertices, and `false` otherwise.
+"""
+function has_boundary_vertices(G::Graph{I}) where {I}
+    return any(≤(I(BoundaryIndex)), get_vertices(G))
 end
 
 """
