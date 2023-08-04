@@ -83,7 +83,7 @@ Sets the `i`th point of `tri` to `p = (x, y)`.
 
 Returns the number of ghost vertices of `tri`.
 """
-num_ghost_vertices(tri::Triangulation) = length(all_boundary_indices(tri))
+num_ghost_vertices(tri::Triangulation) = length(all_boundary_indices(tri)) * has_boundary_vertices(tri)
 
 """
     num_solid_vertices(tri::Triangulation)
@@ -102,7 +102,7 @@ struct EachSolidVertex{V,T} <: AbstractEachVertex{V}
     vertices::V
     tri::T
 end
-Base.length(verts::EachSolidVertex) = num_solid_vertices(verts.tri)
+Base.length(verts::EachSolidVertex) = num_solid_vertices(verts.tri) 
 struct EachGhostVertex{V,T} <: AbstractEachVertex{V}
     vertices::V
     tri::T
@@ -119,7 +119,7 @@ function Base.iterate(itr::EachSolidVertex, state...)
     end
     return vertices, state
 end
-Base.iterate(itr::EachGhostVertex, state...) = Base.iterate(itr.vertices, state...)
+Base.iterate(itr::EachGhostVertex, state...) = has_boundary_vertices(itr.tri) ? Base.iterate(itr.vertices, state...) : nothing
 
 """
     each_solid_vertex(tri::Triangulation)

@@ -92,3 +92,18 @@ in the triangulation.
 Returns `num_vertices(get_graph(tri))`, the number of vertices in the triangulation.
 """
 @inline num_vertices(tri::Triangulation) = num_vertices(get_graph(tri))
+
+"""
+    has_vertex(tri::Triangulation, u)
+
+Returns `true` if the vertex `u` is in the triangulation,
+and `false` otherwise.
+"""
+@inline has_vertex(tri::Triangulation, u) = has_vertex(get_graph(tri), u)
+
+"""
+    has_boundary_vertices(tri::Triangulation)
+
+Returns `true` if the triangulation has any ghost vertices, and `false` otherwise.
+"""
+@inline has_boundary_vertices(tri::Triangulation) = has_boundary_vertices(get_graph(tri))
