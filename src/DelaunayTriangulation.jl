@@ -31,7 +31,6 @@ include("interfaces/edges.jl")
 include("interfaces/boundary_nodes.jl")
 
 export indices
-export edge_indices
 export num_triangles
 export each_triangle
 export geti
@@ -215,5 +214,7 @@ include("voronoi/lloyd.jl")
 
 export voronoi
 export centroidal_smooth
+
+export edge_indices
 
 end
