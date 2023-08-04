@@ -119,7 +119,7 @@ function Base.iterate(itr::EachSolidVertex, state...)
     end
     return vertices, state
 end
-Base.iterate(itr::EachGhostVertex, state...) = Base.iterate(itr.vertices, state...)
+Base.iterate(itr::EachGhostVertex, state...) = has_boundary_vertices(itr.tri) ? Base.iterate(itr.vertices, state...) : nothing
 
 """
     each_solid_vertex(tri::Triangulation)
