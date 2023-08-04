@@ -863,3 +863,26 @@ end
             get_adjacent(tri, -5, rand(1:1000))
       end
 end
+
+@testset "has_vertex and has_boundary_vertices" begin
+      tri = triangulate(rand(2, 50), delete_ghosts=false)
+      @test DT.has_vertex(tri, 1)
+      @test !DT.has_vertex(tri, 57)
+      @test DT.has_boundary_vertices(tri)
+      @test DT.has_vertex(tri, -1)
+      DT.delete_boundary_vertices_from_graph!(tri)
+      @test !DT.has_vertex(tri, -1)
+      @test !DT.has_boundary_vertices(tri)
+end
+
+@testset "Issue #70" begin
+      points = [(-1.0, -1.0), (1.0, -1.0), (0.0, 1.0)]
+      tri = triangulate(points)
+      delete_ghost_triangles!(tri)
+      DelaunayTriangulation.delete_boundary_vertices_from_graph!(tri)
+      @test collect(each_solid_vertex(tri)) == collect(each_vertex(tri))
+      @test !DelaunayTriangulation.has_boundary_vertices(tri)
+      @test DelaunayTriangulation.num_ghost_vertices(tri) == 0
+      @test DelaunayTriangulation.num_solid_vertices(tri) == 3 
+      @test isempty(collect(each_ghost_vertex(tri)))
+end

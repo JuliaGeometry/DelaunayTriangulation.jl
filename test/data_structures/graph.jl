@@ -124,3 +124,14 @@ end
     @test num_vertices(g) == 6
     @test each_vertex(g) == get_vertices(g)
 end
+
+@testset "has_vertex and has_boundary_vertices" begin
+    bidx = DT.BoundaryIndex
+    DT.add_vertex!(g, bidx, bidx - 1, bidx - 2, bidx - 3, bidx - 4)
+    @test DT.has_vertex(g, bidx)
+    @test DT.has_vertex(g, bidx - 4)
+    @test DT.has_vertex(g, 5)
+    @test DT.has_boundary_vertices(g)
+    DT.delete_boundary_vertices_from_graph!(g)
+    @test !DT.has_boundary_vertices(g)
+end
