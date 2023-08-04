@@ -7,6 +7,7 @@ DocMeta.setdocmeta!(DelaunayTriangulation, :DocTestSetup, :(using DelaunayTriang
     recursive=true)
 
 const IS_LIVESERVER = false
+const CLEANUP_FIGURES = true
 const IS_GITHUB_ACTIONS = get(ENV, "GITHUB_ACTIONS", "false") == "true"
 const IS_CI = get(ENV, "CI", "false") == "true"
 function safe_include(filename)
@@ -34,6 +35,12 @@ function clean_dir()
                 rm(joinpath(temp_script_path, file))
             end
         end
+        if CLEANUP_FIGURES
+            fig_path = joinpath(@__DIR__, "src", folder, "figures")
+            for file in readdir(fig_path)
+                rm(joinpath(fig_path, file))
+            end
+        end
     end
 end
 clean_dir()
@@ -45,6 +52,7 @@ clean_dir()
 # We need to replace this EditURL if we are running the docs locally.
 function update_edit_url(content)
     content = replace(content, "<unknown>" => "https://github.com/DanielVandH/DelaunayTriangulation.jl/tree/new-docs")
+    content = replace(content, "temp/" => "") # as of Literate 2.14.1
     return content
 end
 
