@@ -3,6 +3,7 @@ const DT = DelaunayTriangulation
 using Test
 using StaticArraysCore
 using StatsBase
+import GeometryBasics: Point2f
 
 global p1 = [1.3, 2.5]
 global p2 = (1.3, 2.5)
@@ -214,5 +215,21 @@ global pts3 = [2.0 1.7 -1.0; 3.5 23.3 0.0]
         @test points == [1.0 3.0; 7.8 4.0]
         DT.set_point!(points, 1, (6.0, 7.7))
         @test points == [6.0 3.0; 7.7 4.0]
+        
+        points = [[1.0, 5.0], [6.5, 2.3]]
+        DT.set_point!(points, 2, 3.4, 6.7)
+        @test points == [[1.0, 5.0], [3.4, 6.7]]
+
+        points = [SVector{2,Float64}(1.0, 5.4), SVector{2,Float64}(6.5, 2.3)]
+        DT.set_point!(points, 2, 3.4, 6.7)
+        @test points == [SVector{2,Float64}(1.0, 5.4), SVector{2,Float64}(3.4, 6.7)]
+
+        points = [Float32[1.0, 5.0], Float32[2.3, -6.7]]
+        DT.set_point!(points, 1, 2.3, 6.9)
+        @test points == [Float32[2.3, 6.9], Float32[2.3, -6.7]]
+
+        points = [Point2f(2.0, 10.0), Point2f(3.0, 4.0)]
+        DT.set_point!(points, 2, 3.0, 4.0)
+        @test points == [Point2f(2.0, 10.0), Point2f(3.0, 4.0)]
     end
 end

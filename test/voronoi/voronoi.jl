@@ -4,6 +4,8 @@ using CairoMakie
 using ColorSchemes
 using DataStructures
 using StableRNGs
+import GeometryBasics: Point2f
+using StaticArrays
 using LinearAlgebra
 
 include("../helper_functions.jl")
@@ -845,23 +847,35 @@ end
 @testset "Centroidal tessellation" begin
     flag = 0
     tot = 0
-    for _ in 1:50
-        points = randn(2, 250)
-        tri = triangulate(points)
-        vorn = voronoi(tri, true)
-        @test validate_tessellation(vorn)
-        smooth_vorn = centroidal_smooth(vorn, maxiters=5000)
-        @test validate_tessellation(smooth_vorn)
-        for i in each_polygon_index(smooth_vorn)
-            p = get_generator(smooth_vorn, i)
-            c = DT.get_centroid(smooth_vorn, i)
-            px, py = getxy(p)
-            cx, cy = getxy(c)
-            dx, dy = px - cx, py - cy
-            ℓ = sqrt(dx^2 + dy^2)
-            _flag = ℓ ≤ 1e-1
-            flag += _flag
-            tot += 1
+    for i in 1:50
+        p1 = randn(2, 50)
+        p2 = rand(SVector{2,Float64}, 30)
+        p3 = rand(Point2f, 250)
+        p4 = randn(Float32, 2, 70)
+        p5 = randn(2, 4)
+        p6 = rand(SVector{2,Float64}, 7)
+        p7 = rand(Point2f, 5)
+        p8 = randn(Float32, 2, 15)
+        _pts = (p1, p2, p3, p4, p5, p6, p7, p8)
+        for jj in [3]
+            points = _pts[jj]
+            println("Starting centroidal test at $((i, jj)).")
+            tri = triangulate(points)
+            vorn = voronoi(tri, true)
+            @test validate_tessellation(vorn)
+            smooth_vorn = centroidal_smooth(vorn, maxiters=5000)
+            @test validate_tessellation(smooth_vorn)
+            for i in each_polygon_index(smooth_vorn)
+                p = get_generator(smooth_vorn, i)
+                c = DT.get_centroid(smooth_vorn, i)
+                px, py = getxy(p)
+                cx, cy = getxy(c)
+                dx, dy = px - cx, py - cy
+                ℓ = sqrt(dx^2 + dy^2)
+                _flag = ℓ ≤ 1e-1
+                flag += _flag
+                tot += 1
+            end
         end
     end
     @test flag / tot > 0.95
