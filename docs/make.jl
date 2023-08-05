@@ -195,7 +195,7 @@ const _PAGES = [
         "Root Finding" => "applications/root_finding.md", # see also https://github.com/PioKow/GRPF and RootsAndPoles.jl
         "Counting Function Calls" => "applications/counting.md",
         "Edge Flipping Algorithm" => "applications/edge_flipping.md",
-        "de Berg's Algorithm" => "applications/de_berg.md",
+        "Guibas et al.'s Algorithm" => "applications/guibas.md",
     ]
 ]
 

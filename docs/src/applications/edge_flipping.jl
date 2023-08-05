@@ -2,21 +2,26 @@
 # ## Edge Flipping 
 
 # In this application, we implement the edge flipping algorithm for computing an 
-# (unconstrained) Delaunay triangulation. This algorithm, 
+# (unconstrained) Delaunay triangulation; constrained triangulations are possible,
+# but we do not consider this here. (This is not the algorithm used in this package, 
+# since it is extremely slow.) This algorithm, 
 # as described by de Berg et al. in the book *Computational Geometry: Algorithms and Applications* (3 ed., 2008),
 # is as follows: For a given point set $P$ and some initial triangulation $\mathcal T$ 
 # of the point set:
 #
-# * while $\mathcal T$ contains an illegal edge $e_{ij}$
-#   * do
-#       * find the triangle $T_{ijk}$ that contains $e_{ij}$* Let $T_{ijk}$ and $T_{ji\ell}$ be the two triangles adjacent to $e_{ij}$.
-#       * Remove $e_{ij}$ from $\mathcal T$, and add $e_{k\ell}$ instead. That is, flip the edge $e_{ij}$.
-# * return $\mathcal T$
+# ```julia
+# while contains_an_illegal_edge(𝒯)
+#   eᵢⱼ = an_illegal_edge(𝒯)
+#   Tᵢⱼₖ, Tⱼᵢᵣ = triangles_adjacent_to_edge(𝒯, eᵢⱼ)
+#   flip_edge!(𝒯, eᵢⱼ)
+#   ## flip_edge!(𝒯, eᵢⱼ) means to delete Tᵢⱼₖ and Tⱼᵢᵣ, and add Tᵢₖᵣ and Tⱼᵣₖ
+# end 
+# ```
 #
-# Here, $e_{ij}$ denotes the edge $\overline{p_ip_j}$, where $p_i$ is the $i$th point, and $T_{ijk}$ is the triangle $\triangle p_ip_jp_k$. 
+# Here, `eᵢⱼ` denotes the edge $e_{ij} = \overline{p_ip_j}$, where $p_i$ is the $i$th point, and `Tᵢⱼₖ` is the triangle $T_{ijk} = \triangle p_ip_jp_k$. 
 # The edge $e_{ij}$ is *illegal* if the circle through
-# $p_i$, $p_j$, and $p_k$ contains $p_\ell$ in its interior, where 
-# $p_k$ and $p_\ell$ are the other points on the triangles adjoining $e_{ij}$.
+# $p_i$, $p_j$, and $p_k$ contains $p_r$ in its interior, where 
+# $p_k$ and $p_r$ are the other points on the triangles adjoining $e_{ij}$.
 # The idea behind the algorithm is that flipping illegal edges _increases_ the minimum angle 
 # of the triangulation, and thus, since the Delaunay triangulation is the triangulation with the
 # largest minimum angle, the algorithm converges to the Delaunay triangulation and does 
@@ -73,8 +78,8 @@ fig
 # track of what edges are illegal, we initialise by assuming that all 
 # edges are illegal, and we repeatedly check the first edge in the set. 
 # When an edge is illegal, we flip it. When an edge $e_{ij}$, with adjacent 
-# triangles $T_{ijk}$ and $T_{ji\ell}$, is flipped, the new triangles are 
-# $T_{ik\ell}$ and $T_{j\ell k}$, and the edges that need to be checked
+# triangles $T_{ijk}$ and $T_{jir}$, is flipped, the new triangles are 
+# $T_{ikr}$ and $T_{jr k}$, and the edges that need to be checked
 # are $e_{ik}$ and $e_{kj}$. With this in mind, here is the implementation.
 function edge_flipping_step!(tri, illegal_edges)
     e = first(illegal_edges)
