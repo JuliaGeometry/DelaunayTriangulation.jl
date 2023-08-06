@@ -77,6 +77,7 @@ end
       q = (0.0044495463f0, 0.97074896f0)
       r = (0.015137732f0, 0.31555605f0)
       a1 = DT.triangle_area(p, q, r)
+      @test a1 isa Float32
       a2 = DT.polygon_features([p, q, r], [1, 2, 3, 1])[1]
       @test a1 ≈ a2 atol = 1e-4
 end
