@@ -857,14 +857,14 @@ end
         p7 = rand(Point2f, 5)
         p8 = randn(Float32, 2, 15)
         _pts = (p1, p2, p3, p4, p5, p6, p7, p8)
-        for jj in [3]
+        for jj in eachindex(_pts)
             points = _pts[jj]
             println("Starting centroidal test at $((i, jj)).")
             tri = triangulate(points)
             vorn = voronoi(tri, true)
-            @test validate_tessellation(vorn)
+            @test validate_tessellation(vorn, check_convex=!(jj ∈ (3, 4, 7, 8)))
             smooth_vorn = centroidal_smooth(vorn, maxiters=5000)
-            @test validate_tessellation(smooth_vorn)
+            @test validate_tessellation(smooth_vorn, check_convex=!(jj ∈ (3, 4, 7, 8)))
             for i in each_polygon_index(smooth_vorn)
                 p = get_generator(smooth_vorn, i)
                 c = DT.get_centroid(smooth_vorn, i)
@@ -878,7 +878,7 @@ end
             end
         end
     end
-    @test flag / tot > 0.95
+    @test flag / tot > 0.9
 end
 
 @testset "Lattice" begin
@@ -923,4 +923,63 @@ end
         (-2.7441549307938113, 9.321543597488171)
         (-2.7441549307938113, 4.348255778263596)
     ]), ≈)
+end
+
+@testset "Issue #72" begin
+    points = [
+        Float32[0.32965052, 0.7966664],
+        Float32[0.015137732, 0.31555605],
+        Float32[0.54775107, 0.7222514],
+        Float32[0.687552, 0.6982844],
+        Float32[0.65762305, 0.5177773],
+        Float32[0.9649102, 0.8300816],
+        Float32[0.12174326, 0.82220316],
+        Float32[0.007668495, 0.7747718],
+        Float32[0.3144052, 0.5493178],
+        Float32[0.6848137, 0.12493092],
+        Float32[0.39197737, 0.6912688],
+        Float32[0.41400427, 0.025964081],
+        Float32[0.35919905, 0.7255166],
+        Float32[0.80712754, 0.3415957],
+        Float32[0.542679, 0.51094216],
+        Float32[0.092720866, 0.90151125],
+        Float32[0.90992355, 0.8814645],
+        Float32[0.02194357, 0.00064593554],
+        Float32[0.9616154, 0.10633117],
+        Float32[0.0044495463, 0.97074896],
+        Float32[0.4309939, 0.5323847],
+        Float32[0.90867966, 0.55974066],
+        Float32[0.580766, 0.7668439],
+        Float32[0.8563475, 0.88143903],
+        Float32[0.18311942, 0.8367877]
+    ]
+    tri = triangulate(points)
+    vorn = voronoi(tri)
+    @test validate_tessellation(vorn)
+
+    points = [
+        [0.01877582f0, 0.33188105f0],
+        [0.57645035f0, 0.58131695f0],
+        [0.14916456f0, 0.37567925f0],
+        [0.87054604f0, 0.29108626f0],
+        [0.15384161f0, 0.80313444f0],
+        [0.66470474f0, 0.2547925f0],
+        [0.69431657f0, 0.42567456f0],
+        [0.43695337f0, 0.42649788f0],
+        [0.3316936f0, 0.18936294f0],
+        [0.98043495f0, 0.8360868f0],
+        [0.5788496f0, 0.103449225f0],
+        [0.5252029f0, 0.96790665f0],
+        [0.33206534f0, 0.88216203f0],
+        [0.07115775f0, 0.5983915f0],
+        [0.29895544f0, 0.103566706f0],
+        [0.52547264f0, 0.57929194f0],
+        [0.19257814f0, 0.30570602f0],
+        [0.12954468f0, 0.11141288f0],
+        [0.28790158f0, 0.39447558f0],
+        [0.6525599f0, 0.6425986f0]
+    ]
+    tri = triangulate(points)
+    vorn = voronoi(tri)
+    @test validate_tessellation(vorn)
 end

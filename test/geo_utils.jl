@@ -72,6 +72,14 @@ end
       end
 end
 
+@testset "Degenerate area calculation" begin #72
+      p = (0.007668495f0, 0.7747718f0)
+      q = (0.0044495463f0, 0.97074896f0)
+      r = (0.015137732f0, 0.31555605f0)
+      a1 = DT.triangle_area(p, q, r)
+      @test a1 ≈ 2.0964168f-5 rtol=1e-1
+end
+
 @testset "Distance to a segment" begin
       p1 = [0.0, 0.0]
       p2 = [10.0, 0.0]
