@@ -348,7 +348,7 @@ function squared_triangle_area(p, q, r)
     if A² ≤ zero(A²)
         A² = squared_triangle_area_v2(ℓ₁², ℓ₂², ℓ₃²)
     end
-    return F(A²)
+    return number_type(p)(A²)
 end
 function triangle_area(p, q, r)
     A² = squared_triangle_area(p, q, r)
