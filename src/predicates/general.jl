@@ -15,7 +15,7 @@ Returns `ExactPredicates.orient(p, q, r)`, in particular we return:
     \\text{orient}(p, q, r) = \\text{sgn} \\det \\begin{vmatrix} p_x & p_y & 1 \\\\ q_x & q_y & 1 \\\\ r_x & r_y & 1 \\end{vmatrix} = \\text{sgn} \\det \\begin{vmatrix} p_x-r_x & p_y-r_y \\\\ q_x-r_x & q_y-r_y \\end{vmatrix}.
     ```
 """
-orient_predicate(p, q, r) = orient(_y(p), _y(q), _y(r))
+orient_predicate(p, q, r) = orient(_getxy(p), _getxy(q), _getxy(r))
 
 """
     incircle_predicate(a, b, c, p)
@@ -34,7 +34,7 @@ Returns `ExactPredicates.incircle(a, b, c, p)`, in particular we return:
     \\text{incircle}(a, b, c, d) = \\text{sgn} \\det \\begin{vmatrix} a_x & a_y & a_x^2 + a_y^2 & 1 \\\\ b_x & b_y & b_x62 + b_y^2 & 1 \\\\ c_x & c_y & c_x^2 + c_y^2 & 1 \\\\ d_x & d_y & d_x^2 + d_y^2 & 1 \\end{vmatrix} = \\text{sgn} \\det \\begin{vmatrix} a_x - d_x & a_y - d_y & (a_x - d_x)^2 + (a_y - d_y)^2 \\\\ b_x - d_x & b_y - d_y & (b_x - d_x)^2 + (b_y - d_y)^2 \\\\ c_x - d_x & c_y - d_y & (c_x - d_x)^2 + (c_y - d_y)^2 \\end{vmatrix}.
     ```
 """
-incircle_predicate(a, b, c, p) = incircle(_y(a), _y(b), _y(c), _y(p))
+incircle_predicate(a, b, c, p) = incircle(_getxy(a), _getxy(b), _getxy(c), _getxy(p))
 
 """
     parallelorder_predicate(a, b, p, q)
@@ -49,7 +49,7 @@ Returns `ExactPredicates.parallelorder(a, b, p, q)`, in particular we return:
 
     The parallelorder predicate is the same as `orient_predicate(b-a, q-p, 0)`.
 """
-parallelorder_predicate(a, b, p, q) = parallelorder(_y(a), _y(b), _y(p), _y(q))
+parallelorder_predicate(a, b, p, q) = parallelorder(_getxy(a), _getxy(b), _getxy(p), _getxy(q))
 
 """
     sameside_predicate(a, b, p)
@@ -62,9 +62,9 @@ Returns `ExactPredicates.sameside(p, a, b)` (but we redefine it here).
     main point being tested is the last argument.
 """
 function sameside_predicate(a, b, p)
-    _p = _y(p)
-    _a = _y(a)
-    _b = _y(b)
+    _p = _getxy(p)
+    _a = _getxy(a)
+    _b = _getxy(b)
     if _a < _p && _b < _p || _a > _p && _b > _p
         return 1
     elseif _a < _p && _b > _p || _a > _p && _b < _p
