@@ -343,10 +343,6 @@ function triangle_angles(p, q, r)
 end
 
 function squared_triangle_area(p, q, r)
-    F = number_type(p)
-    p = f64_getxy(p)
-    q = f64_getxy(q)
-    r = f64_getxy(r) # Issue 72: Float32 is just a terrible choice for computing tessellations ...
     ℓ₁², ℓ₂², ℓ₃² = squared_triangle_lengths(p, q, r)
     A² = squared_triangle_area(ℓ₁², ℓ₂², ℓ₃²)
     if A² ≤ zero(A²)
