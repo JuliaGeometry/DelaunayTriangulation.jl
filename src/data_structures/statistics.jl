@@ -289,6 +289,9 @@ function triangle_area(ℓ₁²::Number, ℓ₂²::Number, ℓ₃²::Number)
     return A
 end
 squared_triangle_area(ℓ₁²::Number, ℓ₂²::Number, ℓ₃²::Number) = (4ℓ₁² * ℓ₂² - (ℓ₁² + ℓ₂² - ℓ₃²)^2) / 16 # Heron's formula
+squared_triangle_area_v2(ℓ₁²::Number, ℓ₂²::Number, ℓ₃²::Number) = let a = sqrt(ℓ₃²), b = sqrt(ℓ₂²), c = sqrt(ℓ₁²)
+    return (a + (b + c)) * (c - (a - b)) * (c + (a - b)) * (a + (b - c)) / 16 # https://people.eecs.berkeley.edu/~wkahan/Triangle.pdf
+end
 triangle_circumradius(A, ℓmin², ℓmed², ℓmax²) = sqrt(ℓmin² * ℓmed² * ℓmax²) / (4A)
 triangle_perimeter(ℓmin::Number, ℓmed::Number, ℓmax::Number) = ℓmin + ℓmed + ℓmax
 triangle_inradius(A, perimeter) = 2A / perimeter
@@ -340,8 +343,16 @@ function triangle_angles(p, q, r)
 end
 
 function squared_triangle_area(p, q, r)
+    F = number_type(p)
+    p = f64_getxy(p)
+    q = f64_getxy(q)
+    r = f64_getxy(r) # Issue 72: Float32 is just a terrible choice for computing tessellations ...
     ℓ₁², ℓ₂², ℓ₃² = squared_triangle_lengths(p, q, r)
-    return squared_triangle_area(ℓ₁², ℓ₂², ℓ₃²)
+    A² = squared_triangle_area(ℓ₁², ℓ₂², ℓ₃²)
+    if A² ≤ zero(A²)
+        A² = squared_triangle_area_v2(ℓ₁², ℓ₂², ℓ₃²)
+    end
+    return F(A²)
 end
 function triangle_area(p, q, r)
     A² = squared_triangle_area(p, q, r)

@@ -276,7 +276,7 @@ end
 Sets the point at index `i` in `points` to `(x, y)`. The only methods currently
 defined are 
 
-    set_point!(points::AbstractVector{T}, i, x, y) where {F,T<:NTuple{2,F}} = points[i] = (F(x), F(y))
+    set_point!(points::AbstractVector{T}, i, x, y) = (points[i] = (x, y))
     set_point!(points::AbstractMatrix{T}, i, x, y) where {T} = (points[1, i] = x; points[2, i] = y)
 
 You can extend this function as needed. We also define 
@@ -284,8 +284,11 @@ You can extend this function as needed. We also define
     set_point!(points, i, p) = set_point!(points, i, getx(p), gety(p))
 """
 function set_point! end
-function set_point!(points::AbstractVector{T}, i, x, y) where {F,T<:NTuple{2,F}}
-    points[i] = (F(x), F(y))
+function set_point!(points::AbstractVector, i, x, y)
+    points[i] = (x, y) # also works for eltype(points) <: Tuple, StaticArrays, etc.
+end
+function set_point!(points::AbstractVector{T}, i, x, y) where {T<:Vector}
+    points[i] = [x, y]
 end
 function set_point!(points::AbstractMatrix{T}, i, x, y) where {T}
     points[1, i] = x
