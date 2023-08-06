@@ -909,7 +909,7 @@ end
       ))
 end
 
-@testset "f64_getxy" begin 
-      @test DT.f64_getxy((0.3,0.5)) == (0.3,0.5)
-      @test DT.f64_getxy((0.3f0, 0.7f0)) == (Float64(0.3f0), Float64(0.7f0))
+@testset "_getxy" begin 
+      @test DT._getxy((0.3,0.5)) == (0.3,0.5)
+      @test DT._getxy((0.3f0, 0.7f0)) == (Float64(0.3f0), Float64(0.7f0))
 end

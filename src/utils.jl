@@ -735,13 +735,13 @@ function edge_lies_on_two_distinct_segments(tri::Triangulation, i, j)
     else
         F = number_type(tri)
         p, q = get_point(tri, i, j)
-        px, py = getxy(p)
-        qx, qy = getxy(q)
+        px, py = _getxy(p)
+        qx, qy = _getxy(q)
         min_dist = typemax(F)
         min_idx = I(0)
         for k in i_segments
             r = get_point(tri, k)
-            rx, ry = getxy(r)
+            rx, ry = _getxy(r)
             δ = squared_distance_to_segment(px, py, qx, qy, rx, ry)
             if δ < min_dist
                 min_dist = δ
@@ -888,14 +888,4 @@ function iterated_neighbourhood!(neighbours, tri, i, d)
         union!(neighbours, new_neighbours)
     end
     return neighbours
-end
-
-"""
-    f64_getxy(p)
-
-Returns the coordinates of the point `p` as `Float64`s.
-"""
-function f64_getxy(p)
-    x, y = getxy(p)
-    return Float64(x), Float64(y)
 end

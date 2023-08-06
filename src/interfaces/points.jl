@@ -41,6 +41,10 @@ Given a point `p`, returns `(getx(p), gety(p))`.
 """
 getxy(p) = (getx(p), gety(p))
 
+@inline _getx(p) = Float64(getx(p))
+@inline _gety(p) = Float64(gety(p))
+@inline _getxy(p) = (_getx(p), _gety(p))
+
 """
     getpoint(pts::P, i)
 

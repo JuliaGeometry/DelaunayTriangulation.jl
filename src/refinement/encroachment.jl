@@ -13,9 +13,9 @@ The test is done by checking if `dot(p - r, q - r) ≤ 0`, where `< 0` means obt
     we do not employ this here.
 """
 function opposite_angle_is_obtuse(p, q, r) # https://math.stackexchange.com/a/701682/861404 
-    px, py = getxy(p)
-    qx, qy = getxy(q)
-    rx, ry = getxy(r)
+    px, py = _getxy(p)
+    qx, qy = _getxy(q)
+    rx, ry = _getxy(r)
     d = (px - rx) * (qx - rx) + (py - ry) * (qy - ry)
     if d < zero(d)
         return Certificate.Obtuse
@@ -115,8 +115,8 @@ Ruppert's original paper [here](https://www.nas.nasa.gov/assets/pdf/techreports/
 and the book by Cheng, Dey, and Shewchuk.
 """
 function compute_concentric_shell_ternary_split_position(p, q)
-    px, py = getxy(p)
-    qx, qy = getxy(q)
+    px, py = _getxy(p)
+    qx, qy = _getxy(q)
     ℓ² = (px - qx)^2 + (py - qy)^2
     ℓ = sqrt(ℓ²)
     #=
@@ -145,8 +145,8 @@ function compute_concentric_shell_ternary_split_position(p, q)
     return t
 end
 function compute_concentric_shell_quarternary_split_position(p, q)
-    px, py = getxy(p)
-    qx, qy = getxy(q)
+    px, py = _getxy(p)
+    qx, qy = _getxy(q)
     ℓ² = (px - qx)^2 + (py - qy)^2
     ℓ = sqrt(ℓ²)
     s = balanced_power_of_two_ternary_split(ℓ)

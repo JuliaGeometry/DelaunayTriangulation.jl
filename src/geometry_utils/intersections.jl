@@ -12,8 +12,8 @@ function intersection_of_ray_with_boundary(points, boundary_nodes, p, q, tol=1e-
     # TODO: Write this in terms of an angle θ rather than q, computing θ from pq. 
     # Probably don't need bisection if we do that.
     p == q && throw(ArgumentError("p and q must be distinct."))
-    px, py = getxy(p)
-    qx, qy = getxy(q)
+    px, py = _getxy(p)
+    qx, qy = _getxy(q)
 
     ## Start by finding a bracketing for the intersection point 
     t1 = zero(px)
@@ -67,7 +67,7 @@ of the rectangle that the point is on:
 - `:top`: `r` is on the top side of the rectangle.
 """
 function identify_side(r, a, b, c, d)
-    rx, ry = getxy(r)
+    rx, ry = _getxy(r)
     if rx == a
         return :left
     elseif rx == b
@@ -89,8 +89,8 @@ of the ray with the bounding box `[a, b] × [c, d]`. It is assumed that `p` is i
 the bounding box, but `q` can be inside or outside.
 """
 function intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
-    px, py = getxy(p)
-    qx, qy = getxy(q)
+    px, py = _getxy(p)
+    qx, qy = _getxy(q)
     pℓbx, pℓby = a, c
     pℓtx, pℓty = a, d
     prtx, prty = b, d
@@ -134,10 +134,10 @@ Finds the coordinates of the intersection of the line segment from `a` to `b`
 with the line segment from `c` to `d`.
 """
 function segment_intersection_coordinates(a, b, c, d)
-    ax, ay = getxy(a)
-    bx, by = getxy(b)
-    cx, cy = getxy(c)
-    dx, dy = getxy(d)
+    ax, ay = _getxy(a)
+    bx, by = _getxy(b)
+    cx, cy = _getxy(c)
+    dx, dy = _getxy(d)
     num = (cx - ax) * (dy - ay) - (cy - ay) * (dx - ax)
     den = (bx - ax) * (dy - cy) - (by - ay) * (dx - cx)
     α = num / den
@@ -157,8 +157,8 @@ to the left of the edge.
 function intersection_of_edge_and_bisector_ray(a, b, c)
     cert = point_position_relative_to_line(a, b, c)
     if !is_left(cert)
-        ax, ay = getxy(a)
-        bx, by = getxy(b)
+        ax, ay = _getxy(a)
+        bx, by = _getxy(b)
         m = (ax + bx) / 2, (ay + by) / 2
         return cert, m
     else

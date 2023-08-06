@@ -196,8 +196,8 @@ Enqueue the edge `e` of the boundary to be processed.
 function enqueue_new_edge!(polygon_edge_queue, vorn::VoronoiTessellation, e)
     u, v = edge_indices(e)
     p, q = get_generator(vorn, u, v)
-    px, py = getxy(p)
-    qx, qy = getxy(q)
+    px, py = _getxy(p)
+    qx, qy = _getxy(q)
     m = (px + qx) / 2, (py + qy) / 2
     incident_polygon = jump_and_march(vorn, m; k=u)
     enqueue!(polygon_edge_queue, (e, incident_polygon))

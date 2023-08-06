@@ -170,8 +170,8 @@ function get_polygon_coordinates(vorn::VoronoiTessellation, j, bbox=nothing)
             ghost_tri = get_circumcenter_to_triangle(vorn, C[i])
             u, v, _ = indices(ghost_tri) # w is the ghost vertex
             p, q = get_generator(vorn, u, v)
-            px, py = getxy(p)
-            qx, qy = getxy(q)
+            px, py = _getxy(p)
+            qx, qy = _getxy(q)
             @assert bbox[1] ≤ px ≤ bbox[2] && bbox[1] ≤ qx ≤ bbox[2] && bbox[3] ≤ py ≤ bbox[4] && bbox[3] ≤ qy ≤ bbox[4] "The bounding box is not large enough to contain the circumcenter."
             m = (px + qx) / 2, (py + qy) / 2
             is_first = is_first_boundary_index(C, i)
@@ -183,7 +183,7 @@ function get_polygon_coordinates(vorn::VoronoiTessellation, j, bbox=nothing)
                 r = get_polygon_point(vorn, C[next_index])
             end
             if r == m # It's possible for the circumcenter to lie on the edge and exactly at the midpoint (e.g. [(0.0,1.0),(-1.0,2.0),(-2.0,-1.0)]). In this case, just rotate 
-                mx, my = getxy(m)
+                mx, my = _getxy(m)
                 dx, dy = qx - mx, qy - my
                 rotated_dx, rotated_dy = -dy, dx
                 r = mx + rotated_dx, my + rotated_dy
@@ -192,7 +192,7 @@ function get_polygon_coordinates(vorn::VoronoiTessellation, j, bbox=nothing)
                     r = mx + rotated_dx, my + rotated_dy
                 end
             end
-            r = getxy(r)
+            r = _getxy(r)
             if is_left(point_position_relative_to_line(p, q, r))
                 intersection = intersection_of_ray_with_bounding_box(m, r, bbox[1], bbox[2], bbox[3], bbox[4])
             else
@@ -487,14 +487,14 @@ function polygon_bounds(vorn::VoronoiTessellation, unbounded_extension_factor=0.
     ymin = typemax(F)
     ymax = typemin(F)
     for i in each_polygon_vertex(vorn)
-        x, y = getxy(get_polygon_point(vorn, i))
+        x, y = _getxy(get_polygon_point(vorn, i))
         xmin = min(xmin, x)
         xmax = max(xmax, x)
         ymin = min(ymin, y)
         ymax = max(ymax, y)
     end
     for i in each_generator(vorn)
-        x, y = getxy(get_generator(vorn, i))
+        x, y = _getxy(get_generator(vorn, i))
         xmin = min(xmin, x)
         xmax = max(xmax, x)
         ymin = min(ymin, y)
@@ -518,17 +518,17 @@ end
 
 function jump_to_voronoi_polygon(tri::Triangulation, q; kwargs...)
     V = jump_and_march(tri, q; kwargs...)
-    qx, qy = getxy(q)
+    qx, qy = _getxy(q)
     V = rotate_triangle_to_standard_form(V)
     i, j, k = V
     a, b = get_point(tri, i, j)
-    ax, ay = getxy(a)
-    bx, by = getxy(b)
+    ax, ay = _getxy(a)
+    bx, by = _getxy(b)
     daq = (qx - ax)^2 + (qy - ay)^2
     dbq = (qx - bx)^2 + (qy - by)^2
     if !is_boundary_index(k)
         c = get_point(tri, k)
-        cx, cy = getxy(c)
+        cx, cy = _getxy(c)
         dcq = (qx - cx)^2 + (qy - cy)^2
     else
         dcq = typemax(number_type(tri))
