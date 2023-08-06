@@ -53,9 +53,9 @@ function edge_is_seditious(tri::Triangulation, u, v, w, smallest_idx, ratio_flag
     !shared_flag && return false
     # ρ ≥ 5.0 && return true
     p, q, r = get_point(tri, i, j, common_vertex)
-    px, py = getxy(p)
-    qx, qy = getxy(q)
-    rx, ry = getxy(r)
+    px, py = _getxy(p)
+    qx, qy = _getxy(q)
+    rx, ry = _getxy(r)
     ℓrp² = (px - rx)^2 + (py - ry)^2
     ℓrq² = (qx - rx)^2 + (qy - ry)^2
     # Kept running into precision errors when only checking if ℓrp² == ℓrq² or e.g. (1-ε) < ℓrp² / ℓrq² < (1+ε)
@@ -113,8 +113,8 @@ function assess_added_triangles!(tri::Triangulation, queue, events, targets)
                 if contains_constrained_edge(tri, e) && is_encroached(tri, e)
                     u, v = edge_indices(e)
                     p, q = get_point(tri, u, v)
-                    px, py = getxy(p)
-                    qx, qy = getxy(q)
+                    px, py = _getxy(p)
+                    qx, qy = _getxy(q)
                     ℓ² = (qx - px)^2 + (qy - py)^2
                     encroachment_enqueue!(queue, e, ℓ²)
                 end

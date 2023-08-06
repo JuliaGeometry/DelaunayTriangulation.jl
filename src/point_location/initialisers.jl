@@ -8,7 +8,7 @@ default_num_samples(num_points::I) where {I} = ceil(I, cbrt(num_points))
 
 function compare_distance(current_dist, current_idx::I, pts, i, qx, qy) where {I}
     p = get_point(pts, i)
-    px, py = getxy(p)
+    px, py = _getxy(p)
     sq_dist = (px - qx)^2 + (py - qy)^2
     if sq_dist < current_dist
         current_dist = sq_dist
@@ -48,7 +48,7 @@ function select_initial_point(tri::Triangulation{P,Ts,I}, q;
     F = number_type(tri)
     current_dist = typemax(F)
     current_idx = I(first(point_indices))
-    qx, qy = getxy(q)
+    qx, qy = _getxy(q)
     for _ in 1:m # Not using replacement, but probability of duplicates is approximately 0.5num_solid_vertices(tri)^(-1/3)
         i = I(rand(rng, point_indices))
         is_boundary_index(i) && continue

@@ -294,14 +294,14 @@ triangle_perimeter(ℓmin::Number, ℓmed::Number, ℓmax::Number) = ℓmin + �
 triangle_inradius(A, perimeter) = 2A / perimeter
 triangle_aspect_ratio(inradius::Number, circumradius::Number) = inradius / circumradius
 triangle_radius_edge_ratio(circumradius::Number, ℓmin::Number) = circumradius / ℓmin
-triangle_centroid(p, q, r) = ((getx(p) + getx(q) + getx(r)) / 3, (gety(p) + gety(q) + gety(r)) / 3)
+triangle_centroid(p, q, r) = ((_getx(p) + _getx(q) + _getx(r)) / 3, (_gety(p) + _gety(q) + _gety(r)) / 3)
 
 function triangle_angles(p, q, r)
     ℓ₁², ℓ₂², ℓ₃² = squared_triangle_lengths(p, q, r)
     A = triangle_area(ℓ₁², ℓ₂², ℓ₃²)
-    px, py = getxy(p)
-    qx, qy = getxy(q)
-    rx, ry = getxy(r)
+    px, py = _getxy(p)
+    qx, qy = _getxy(q)
+    rx, ry = _getxy(r)
     ax, by = px - qx, py - qy
     bx, ay = px - rx, py - ry
     dotab = ax * bx + ay * by
@@ -354,9 +354,9 @@ function squared_triangle_lengths(p, q, r)
 end
 
 function squared_triangle_lengths_and_smallest_index(p, q, r)
-    px, py = getxy(p)
-    qx, qy = getxy(q)
-    rx, ry = getxy(r)
+    px, py = _getxy(p)
+    qx, qy = _getxy(q)
+    rx, ry = _getxy(r)
     ℓ₁² = (qx - px)^2 + (qy - py)^2
     ℓ₂² = (rx - qx)^2 + (ry - qy)^2
     ℓ₃² = (px - rx)^2 + (py - ry)^2
@@ -372,9 +372,9 @@ function triangle_lengths(p, q, r)
 end
 
 function triangle_circumcenter(p, q, r, A=triangle_area(p, q, r))
-    px, py = getxy(p)
-    qx, qy = getxy(q)
-    rx, ry = getxy(r)
+    px, py = _getxy(p)
+    qx, qy = _getxy(q)
+    rx, ry = _getxy(r)
     d11 = (px - rx)^2 + (py - ry)^2
     d12 = py - ry
     d21 = (qx - rx)^2 + (qy - ry)^2
@@ -431,9 +431,9 @@ function triangle_radius_edge_ratio(p, q, r)
 end
 
 function triangle_edge_midpoints(p, q, r)
-    px, py = getxy(p)
-    qx, qy = getxy(q)
-    rx, ry = getxy(r)
+    px, py = _getxy(p)
+    qx, qy = _getxy(q)
+    rx, ry = _getxy(r)
     mx = (px + qx) / 2
     my = (py + qy) / 2
     nx = (qx + rx) / 2

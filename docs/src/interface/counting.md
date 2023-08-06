@@ -75,27 +75,27 @@ function DT.delete_from_triangles!(tri::Set{CustomTriangle}, triangle::CustomTri
     return nothing
 end
 function DT.orient_predicate(p::CustomPoint, q::CustomPoint, r::CustomPoint)
-    o = DT.orient_predicate(getxy(p), getxy(q), getxy(r))
+    o = DT.orient_predicate(DT._getxy(p), DT._getxy(q), DT._getxy(r))
     opstats[Base.Threads.threadid()].orient_calls += 1
     return o
 end
 function DT.incircle_predicate(p::CustomPoint, q::CustomPoint, r::CustomPoint, s::CustomPoint)
-    o = DT.incircle_predicate(getxy(p), getxy(q), getxy(r), getxy(s))
+    o = DT.incircle_predicate(DT._getxy(p), DT._getxy(q), DT._getxy(r), DT._getxy(s))
     opstats[Base.Threads.threadid()].incircle_calls += 1
     return o
 end
 function DT.parallelorder_predicate(p::CustomPoint, q::CustomPoint, r::CustomPoint, s::CustomPoint)
-    o = DT.parallelorder_predicate(getxy(p), getxy(q), getxy(r), getxy(s))
+    o = DT.parallelorder_predicate(DT._getxy(p), DT._getxy(q), DT._getxy(r), DT._getxy(s))
     opstats[Base.Threads.threadid()].parallelorder_calls += 1
     return o
 end
 function DT.sameside_predicate(p::CustomPoint, q::CustomPoint, r::CustomPoint)
-    o = DT.sameside_predicate(getxy(p), getxy(q), getxy(r))
+    o = DT.sameside_predicate(DT._getxy(p), DT._getxy(q), DT._getxy(r))
     opstats[Base.Threads.threadid()].sameside_calls += 1
     return o
 end
 function DT.meet_predicate(p::CustomPoint, q::CustomPoint, r::CustomPoint, s::CustomPoint)
-    o = DT.meet_predicate(getxy(p), getxy(q), getxy(r), getxy(s))
+    o = DT.meet_predicate(DT._getxy(p), DT._getxy(q), DT._getxy(r), DT._getxy(s))
     opstats[Base.Threads.threadid()].meet_calls += 1
     return o
 end
