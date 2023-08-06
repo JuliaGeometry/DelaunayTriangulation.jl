@@ -158,7 +158,7 @@ function statistics(tri::Triangulation)
     nconstrained_edges = num_edges(constrained_edges)
     convex_hull_indices = get_convex_hull_indices(tri)
     nconvex_hull_points = max(0, length(convex_hull_indices) - 1) # -1 because the last index is the same as the first 
-    individual_statistics = Dict{V,IndividualTriangleStatistics{F}}()
+    individual_statistics = Dict{V,IndividualTriangleStatistics{Float64}}()
     sizehint!(individual_statistics, nsolid_tris)
     smallest_angle = typemax(F)
     largest_angle = typemin(F)

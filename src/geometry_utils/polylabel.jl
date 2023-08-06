@@ -38,9 +38,9 @@ function pole_of_inaccessibility(pts, boundary_nodes; precision=one(number_type(
     ## Initialise the priority queue and decide if the polygon centroid of bounding box centroid is the best initial guess
     _, centroid = polygon_features(pts, boundary_nodes)
     centroid_cell = Cell(_getx(centroid), _gety(centroid), zero(half_width), pts, boundary_nodes)
-    bounding_box_cell = Cell(xmin + width / 2, ymin + height / 2, zero(half_width), pts, boundary_nodes)
+    bounding_box_cell = Cell(Float64(xmin + width / 2), Float64(ymin + height / 2), zero(half_width), pts, boundary_nodes)
     best_cell = centroid_cell.dist > bounding_box_cell.dist ? centroid_cell : bounding_box_cell
-    queue = CellQueue{F}()
+    queue = CellQueue{Float64}()
     insert_cell!(queue, best_cell)
 
     ## Now fill the bounding box with more cells
