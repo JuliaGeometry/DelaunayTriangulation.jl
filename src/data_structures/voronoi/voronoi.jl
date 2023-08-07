@@ -213,17 +213,17 @@ function get_polygon_coordinates(vorn::VoronoiTessellation, j, bbox=nothing)
         side1 = identify_side(c1, xmin, xmax, ymin, ymax)
         side2 = identify_side(c2, xmin, xmax, ymin, ymax)
         if side1 ≠ side2 # There is a better way to do this if we treat sides as numbers 0, 1, 2, 3 rather than symbols, but it doesn't really matter.
-            if side1 == :bottom && side2 == :right 
+            if side1 == :bottom && side2 == :right
                 corner = xmax, ymin
                 insert!(coords, unbounded_indices[1] + 1, corner)
-            elseif side1 == :bottom && side2 == :top 
-                corner1 = xmax, ymin 
-                corner2 = xmax, ymax 
+            elseif side1 == :bottom && side2 == :top
+                corner1 = xmax, ymin
+                corner2 = xmax, ymax
                 insert!(coords, unbounded_indices[1] + 1, corner1)
                 insert!(coords, unbounded_indices[1] + 2, corner2)
             elseif side1 == :bottom && side2 == :left
-                corner1 = xmax, ymin 
-                corner2 = xmax, ymax 
+                corner1 = xmax, ymin
+                corner2 = xmax, ymax
                 corner3 = xmin, ymax
                 insert!(coords, unbounded_indices[1] + 1, corner1)
                 insert!(coords, unbounded_indices[1] + 2, corner2)
@@ -475,23 +475,28 @@ Gets the centroid of the polygon with index `i` in `vor`.
 get_centroid(vor::VoronoiTessellation, i) = polygon_features(vor, i)[2]
 
 """
-    polygon_bounds(vorn::VoronoiTessellation, unbounded_extension_factor=0.0)
+    polygon_bounds(vorn::VoronoiTessellation, unbounded_extension_factor=0.0; include_polygon_vertices=true)
 
 Gets the bounding box of the polygons in `vorn`. If `unbounded_extension_factor` is positive, the bounding box is extended by this factor in each direction,
 proportional to the width of each axis.
+
+If `include_polygon_vertices=true`, then the bounds both the generators and the polygons. Otherwise, only the generators 
+will be considered.
 """
-function polygon_bounds(vorn::VoronoiTessellation, unbounded_extension_factor=0.0)
+function polygon_bounds(vorn::VoronoiTessellation, unbounded_extension_factor=0.0; include_polygon_vertices=true)
     F = number_type(vorn)
     xmin = typemax(F)
     xmax = typemin(F)
     ymin = typemax(F)
     ymax = typemin(F)
-    for i in each_polygon_vertex(vorn)
-        x, y = _getxy(get_polygon_point(vorn, i))
-        xmin = min(xmin, x)
-        xmax = max(xmax, x)
-        ymin = min(ymin, y)
-        ymax = max(ymax, y)
+    if include_polygon_vertices
+        for i in each_polygon_vertex(vorn)
+            x, y = _getxy(get_polygon_point(vorn, i))
+            xmin = min(xmin, x)
+            xmax = max(xmax, x)
+            ymin = min(ymin, y)
+            ymax = max(ymax, y)
+        end
     end
     for i in each_generator(vorn)
         x, y = _getxy(get_generator(vorn, i))
@@ -500,11 +505,11 @@ function polygon_bounds(vorn::VoronoiTessellation, unbounded_extension_factor=0.
         ymin = min(ymin, y)
         ymax = max(ymax, y)
     end
-    xmin -= unbounded_extension_factor * (xmax - xmin)
-    xmax += unbounded_extension_factor * (xmax - xmin)
-    ymin -= unbounded_extension_factor * (ymax - ymin)
-    ymax += unbounded_extension_factor * (ymax - ymin)
-    return xmin, xmax, ymin, ymax
+    _xmin = xmin - unbounded_extension_factor * (xmax - xmin)
+    _xmax = xmax + unbounded_extension_factor * (xmax - xmin)
+    _ymin = ymin - unbounded_extension_factor * (ymax - ymin)
+    _ymax = ymax + unbounded_extension_factor * (ymax - ymin)
+    return _xmin, _xmax, _ymin, _ymax
 end
 
 """

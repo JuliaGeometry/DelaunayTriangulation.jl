@@ -112,47 +112,61 @@ end
     c5 = DT.get_polygon_coordinates(vorn, 5, bbox)
     c6 = DT.get_polygon_coordinates(vorn, 6, bbox)
     c7 = DT.get_polygon_coordinates(vorn, 7, bbox)
-    @test DT.circular_equality(collect.(c1), collect.([(-1.5, 0.5)
-        (0.16666666666666666, -1.1666666666666665)
+    @test DT.circular_equality(collect.(c1), collect.([
+        (-1.5, 0.5)
+        (0.166666666666, -1.1666666666666665)
         (1.0, 0.5)
         (1.0, 3.0)
-        (-1.5, 0.5)]), ≈)
-    @test DT.circular_equality(collect.(c2), collect.([(3.5, 0.5)
+        (-1.5, 0.5)
+    ]), ≈)
+    @test DT.circular_equality(collect.(c2), collect.([
+        (0.5, -3.2)
+        (5.7, -3.2)
+        (5.7, -1.700000000000001)
+        (3.5, 0.5)
         (0.5, -2.5)
-        (0.5, -3.2000000001862645)
-        (xmax, ymin)
-        (5.769999999552965, -1.7699999995529652)
-        (3.5, 0.5)]), ≈)
-    @test DT.circular_equality(collect.(c3), collect.([(3.5, 0.5)
+        (0.5, -3.2)
+    ]), ≈)
+    @test DT.circular_equality(collect.(c3), collect.([
+        (3.5, 0.5)
         (1.0, 0.5)
         (0.16666666666666666, -1.1666666666666665)
         (0.5, -2.5)
-        (3.5, 0.5)]), ≈)
-    @test DT.circular_equality(collect.(c4), collect.([(1.5, 5.270000000484288)
-        (xmin, ymax)
-        (-2.6999999997206032, 0.8999999999068677)
+        (3.5, 0.5)
+    ]), ≈)
+    @test DT.circular_equality(collect.(c4), collect.([
+        (1.5, 5.2)
+        (-2.7, 5.2)
+        (-2.7, 0.9000000000000001)
         (-1.5, 0.5)
         (1.0, 3.0)
         (1.5, 4.5)
-        (1.5, 5.270000000484288)]), ≈)
-    @test DT.circular_equality(collect.(c5), collect.([(1.5, 4.5)
+        (1.5, 5.2)
+    ]), ≈)
+    @test DT.circular_equality(collect.(c5), collect.([
+        (1.5, 4.5)
         (3.5, 0.5)
-        (5.769999999552965, 2.769999999552965)
-        (xmax, ymax)
-        (1.5, 5.270000000484288)
-        (1.5, 4.5)]), ≈)
-    @test DT.circular_equality(collect.(c6), collect.([(-2.6999999997206032, 0.8999999999068677)
-        (xmin, ymin)
-        (0.5, -3.2000000001862645)
+        (5.7, 2.6999999999999997)
+        (5.7, 5.2)
+        (1.5, 5.2)
+        (1.5, 4.5)
+    ]), ≈)
+    @test DT.circular_equality(collect.(c6), collect.([
+        (-2.7, 0.9000000000000001)
+        (-2.7, -3.2)
+        (0.5, -3.2)
         (0.5, -2.5)
         (0.16666666666666666, -1.1666666666666665)
         (-1.5, 0.5)
-        (-2.6999999997206032, 0.8999999999068677)]), ≈)
-    @test DT.circular_equality(collect.(c7), collect.([(1.5, 4.5)
+        (-2.7, 0.9000000000000001)
+    ]), ≈)
+    @test DT.circular_equality(collect.(c7), collect.([
+        (1.5, 4.5)
         (1.0, 3.0)
         (1.0, 0.5)
         (3.5, 0.5)
-        (1.5, 4.5)]), ≈)
+        (1.5, 4.5)
+    ]), ≈)
 end
 
 @testset "delete/add_polygon_adjacencies" begin
@@ -899,12 +913,12 @@ end
     vorn = voronoi(tri)
     clip = DT.get_polygon_coordinates(vorn, 9, DT.polygon_bounds(vorn, 0.1))
     @test DT.circular_equality(collect.(clip), collect.([
-        [2.0316769079740804, 0.11847746641647516],
-        [2.0316769079740804, 1.107189193410733],
-        [0.8433942004507264, 1.107189193410733],
-        [0.7271857522962732, 0.8973620981454822],
-        [1.7423743304675243, 0.24505806539308744],
-        [2.0316769079740804, 0.11847746641647516]
+        (0.8374509236290323, 1.0964579554357115)
+        (0.7271857522962732, 0.8973620981454822)
+        (1.7423743304675243, 0.24505806539308744)
+        (2.0053766736553027, 0.1299847935961671)
+        (2.0053766736553027, 1.0964579554357115)
+        (0.8374509236290323, 1.0964579554357115)
     ]), ≈)
 end
 
@@ -915,13 +929,11 @@ end
     vorn = voronoi(tri)
     clip = DT.get_polygon_coordinates(vorn, 2, DT.polygon_bounds(vorn, 2.0))
     @test DT.circular_equality(collect.(clip), collect.([
-        (-2.7441549307938113, 4.348255778263596)
+        (-2.551580488601045, 4.122780970352073)
         (-0.3314903102646037, 1.5233996567840244)
-        (3.319011238223682, -2.375672313568049)
-        (8.112835861587623, -2.375672313568049)
-        (8.112835861587623, 9.321543597488171)
-        (-2.7441549307938113, 9.321543597488171)
-        (-2.7441549307938113, 4.348255778263596)
+        (3.2875066205292076, -2.3420224793856605)
+        (3.2875066205292076, 4.122780970352073)
+        (-2.551580488601045, 4.122780970352073)
     ]), ≈)
 end
 
@@ -982,4 +994,17 @@ end
     tri = triangulate(points)
     vorn = voronoi(tri)
     @test validate_tessellation(vorn)
+end
+
+@testset "Polygon bounds with generators only" begin
+    points = rand(2, 50)
+    tri = triangulate(points)
+    vorn = voronoi(tri)
+    xmin, xmax, ymin, ymax = DT.polygon_bounds(vorn, 0.1; include_polygon_vertices=false)
+    _xmin, _xmax = extrema(points[1, :])
+    _ymin, _ymax = extrema(points[2, :])
+    @test xmin == _xmin - 0.1(_xmax - _xmin)
+    @test xmax == _xmax + 0.1(_xmax - _xmin)
+    @test ymin == _ymin - 0.1(_ymax - _ymin)
+    @test ymax == _ymax + 0.1(_ymax - _ymin)
 end
