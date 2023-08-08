@@ -167,6 +167,26 @@ function intersection_of_edge_and_bisector_ray(a, b, c)
     end
 end
 
+function finite_voronoi_polygon_intersection(vorn::VoronoiTessellation, j::I, bbox) where {I}
+    C = get_polygon(vorn, j)
+    F = number_type(vorn)
+    coords = NTuple{2, F}[]
+    sizehint!(coords, length(C) - 1)
+    intersection_indices = I[]
+    for i in firstindex(C):(lastindex(C)-1)
+        if isnothing(bbox)
+            push!(coords, get_polygon_point(vorn, C[i]))
+        else 
+            j = i + 1 
+            u, v = C[i], C[j] 
+            p = get_polygon_point(vorn, u)
+            q = get_polygon_point(vorn, v)
+        end
+    end
+    push!(coords, coords[begin])
+    return coords
+end
+
 """
     classify_and_compute_segment_intersection(a, b, c, d)
 
