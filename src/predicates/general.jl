@@ -490,3 +490,69 @@ function triangle_line_segment_intersection(p, q, r, a, b)
         end
     end
 end
+
+"""
+    point_position_relative_to_box(a, b, c, d, p)
+
+Tests if the point `p` is inside the box `[a, b] × [c, d]`. Returns:
+
+- `Cert.Inside`: Inside the box.
+- `Cert.On`: On the boundary of the box.
+- `Cert.Outside`: Outside the box.
+"""
+function point_position_relative_to_box(a, b, c, d, p)
+    x, y = _getxy(p)
+    if (x < a) || (x > b) || (y < c) || (y > d)
+        return Cert.Outside
+    elseif (x == a) || (x == b) || (y == c) || (y == d)
+        return Cert.On
+    else
+        return Cert.Inside
+    end
+end
+
+"""
+    polygon_position_relative_to_box(a, b, c, d, vertices, points)
+
+Tests the position of the polygon defined by `(vertices, points)` relative to the box `[a, b] × [c, d]`. The 
+polygon is defined so that the indices in `vertices` correspond to points in `points`, and is defined so that 
+`vertex[begin] == vertex[end]`.
+
+- `Cert.Inside`: The polygon is contained entirely within the box.
+- `Cert.Outside`: The polygon is entirely outside the box.
+- `Cert.Touching`: The polygon is contained entirely within the box, but touches the boundary of the box. Note that if a polygon touches the boundary of the box but is entirely outside otherwise, `Cert.Outside` will be returned instead. 
+- `Cert.Multiple`: The polygon intersects the box in multiple places.
+
+Boundary indices are treated as being outside.
+"""
+function polygon_position_relative_to_box(a, b, c, d, vertices, points)
+    @assert vertices[begin] == vertices[end]
+    num_on = 0
+    num_in = 0
+    num_out = 0
+    nv = length(vertices) - 1
+    for i in @views vertices[begin:(end-1)]
+        if is_boundary_index(i)
+            num_out += 1 
+            continue
+        end
+        p = get_point(points, i)
+        cert = point_position_relative_to_box(a, b, c, d, p)
+        if is_on(cert)
+            num_on += 1
+        elseif is_inside(cert)
+            num_in += 1
+        else
+            num_out += 1
+        end
+    end
+    if (num_out == nv) || (num_on ≥ 1 && num_out ≥ 1)
+        return Cert.Outside
+    elseif (num_in == nv) && num_on == 0
+        return Cert.Inside
+    elseif (num_out == 0) && (num_on ≥ 1)
+        return Cert.Touching
+    else
+        return Cert.Multiple
+    end
+end
