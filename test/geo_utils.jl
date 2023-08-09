@@ -964,3 +964,17 @@ end
             end
       end
 end
+
+@testset "point_position_relative_to_box" begin
+      p = (4.0, 5.0)
+      a, b, c, d = 3.0, 7.0, 1.0, 8.0
+      @test DT.is_inside(DT.point_position_relative_to_box(a, b, c, d, p))
+      p = (2.0, 4.0)
+      @test DT.is_outside(DT.point_position_relative_to_box(a, b, c, d, p))
+      p = (a, (c + d)/2)
+      @test DT.is_on(DT.point_position_relative_to_box(a, b, c, d, p))
+      p = (b, (c + d)/2)
+      @test DT.is_on(DT.point_position_relative_to_box(a, b, c, d, p))
+      p = ((a + b)/2, c)
+      @test DT.is_on(DT.point_position_relative_to_box(a, b, c, d, p))
+end
