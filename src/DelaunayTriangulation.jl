@@ -205,8 +205,10 @@ include("voronoi/main.jl")
 include("voronoi/unbounded_construction.jl")
 include("voronoi/clipped_construction.jl")
 include("voronoi/lloyd.jl")
+include("voronoi/coordinates.jl")
 
 export voronoi
 export centroidal_smooth
+export get_polygon_coordinates
 
 end

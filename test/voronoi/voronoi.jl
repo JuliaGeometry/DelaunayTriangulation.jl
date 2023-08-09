@@ -1008,3 +1008,32 @@ end
     @test ymin == _ymin - 0.1(_ymax - _ymin)
     @test ymax == _ymax + 0.1(_ymax - _ymin)
 end
+
+a = (-3.0, 7.0)
+b = (1.0, 6.0)
+c = (-1.0, 3.0)
+d = (-2.0, 4.0)
+e = (3.0, -2.0)
+f = (5.0, 5.0)
+g = (-4.0, -3.0)
+h = (3.0, 8.0)
+points = [a, b, c, d, e, f, g, h]
+tri = triangulate(points)
+vorn = voronoi(tri)
+a, b, c, d = -8.0, 6.0, -2.0, 10.0
+bounding_box = (a, b, c, d)
+results = Dict(
+    1 => DT.has_multiple_intersections,
+    2 => DT.is_inside, 
+    3 => DT.is_inside, 
+    4 => DT.has_multiple_intersections,
+    5 => DT.has_multiple_intersections,
+    6 => DT.has_multiple_intersections,
+    7 => DT.has_multiple_intersections,
+    8 => DT.has_multiple_intersections,
+)
+for (i, cert_f) in results 
+    @show i, cert_f
+    @test cert_f(DT.polygon_position_relative_to_box(vorn, bounding_box, i))
+end
+
