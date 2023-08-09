@@ -8,6 +8,12 @@ the form `(xmin, xmax, ymin, ymax)`. Some specific cases:
 - If the polygon is unbounded but `bounding_box` is `nothing`, then an error will be thrown. 
 - If the polygon is bounded and `bounding_box` is `nothing`, then the polygon coordinates will be returned as if without any clipping.
 - If the polygon is outside of the bounding box entirely, then an empty vector will be returned.
+
+If you do need to consider clipping your polygon to an arbitrary polygon, see the 
+[`polygon_clip`](@ref) function; this function (`get_polygon_coordinates`) uses 
+`polygon_clip` for rectangular clipping when `bounding_box` is considered.
+
+See also [`polygon_bounds`](@ref) for a good default for `bounding_box`.
 """
 function get_polygon_coordinates(vorn::VoronoiTessellation, i; bounding_box=nothing)
     if !isnothing(bounding_box)
@@ -39,4 +45,13 @@ function polygon_position_relative_to_box(vorn::VoronoiTessellation, bounding_bo
     points = get_polygon_points(vorn)
     flag = polygon_position_relative_to_box(a, b, c, d, vertices, points)
     return flag
+end
+
+function clip_to_bounding_box(vorn::VoronoiTessellation, i, bounding_box)
+    vertices = get_polygon(vorn, i)
+    points = get_polygon_points(vorn)
+    clip_vertices = (1, 2, 3, 4)
+    a, b, c, d = bounding_box
+    clip_points = ((a, c), (b, c), (b, d), (a, d))
+    return clip_polygon(vertices, points, clip_vertices, clip_points)
 end

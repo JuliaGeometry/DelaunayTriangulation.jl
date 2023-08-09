@@ -9,11 +9,12 @@ Voronoi tessellation will be clipped to the convex hull of the points in `tri`.
     If you are interested instead in clipping the tessellation to a rectangular bounding box, see 
     [`get_polygon_coordinates`](@ref) which allows for a bounding box to be applied to an 
     unclipped tessellation, returning a vector of the coordinates of polygons, clipping 
-    to the bounding box where applicable. Note that if you are not worried about this clipping, 
+    to the bounding box where applicable. [`polygon_bounds`](@ref) can be used to obtain good 
+    default bounding boxes. Note that if you are not worried about this clipping, 
     and you know that your polygon is not unbounded (which would mean it is not in the 
     `unbounded_polygons` field of the `VoronoiTessellation` output), then you should instead use 
     `get_polygon(vorn, i)` to get the indices of the points in `vorn` that define the polygon, 
-    and then use `get_polygon_point` to get the coordinates.
+    and then use `get_polygon_point` to get the coordinates. 
 
 !!! warning 
 

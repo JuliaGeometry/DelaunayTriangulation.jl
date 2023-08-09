@@ -191,6 +191,7 @@ export convert_boundary_points_to_indices
 include("geometry_utils/polygons.jl")
 include("geometry_utils/polylabel.jl")
 include("geometry_utils/intersections.jl")
+include("geometry_utils/sutherland_hodgman.jl")
 
 const polylabel = pole_of_inaccessibility
 
