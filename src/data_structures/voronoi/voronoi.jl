@@ -16,6 +16,9 @@ while the values are the coordinates; we need to use a `Dict` in case the triang
 
 The points defining the vertices of the polygons. The points are not guaranteed to be unique if a circumcenter 
 appears on the boundary and you are considering a clipped tessellation.
+
+See also [`get_polygon_coordinates`](@ref).
+
 - `polygons::Dict{I, Vector{I}}`
 
 A `Dict` mapping a polygon index (same as a generator index) to the vertices of the polygon. The polygons are given in counter-clockwise order,
