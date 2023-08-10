@@ -1069,8 +1069,8 @@ vertices, clip_vertices, clip_points = poly.vertices, clip_poly.vertices, clip_p
 new_vertices, new_point_list = DT.get_new_polygon_indices(vorn, vertices)
 output_vertices = new_vertices
 output_points = deepcopy(new_point_list)
-q = clip_points[end]
-p = clip_points[1]
+q = clip_points[1]
+p = clip_points[2]
 input_vertices = output_vertices
 T = typeof(q)
 I = eltype(input_vertices)
@@ -1078,3 +1078,40 @@ output_vertices = I[]
 output_points = T[]
 s_vertex = input_vertices[end]
 vertex = input_vertices[1]
+DT._clip_unbounded_polygon_edge_to_ray_going_in!(vorn, i, s_vertex, vertex, new_point_list, q, p, output_vertices, output_points)
+s_vertex = vertex
+vertex = input_vertices[2]
+DT._clip_unbounded_polygon_edge_to_finite_segment!(s_vertex, vertex, new_point_list, q, p, output_vertices, output_points)
+s_vertex = vertex
+vertex = input_vertices[3]
+DT._clip_unbounded_polygon_edge_to_finite_segment!(s_vertex, vertex, new_point_list, q, p, output_vertices, output_points)
+s_vertex = vertex
+vertex = input_vertices[4]
+DT._clip_unbounded_polygon_edge_to_ray_going_out!(vorn, i, s_vertex, vertex, new_point_list, q, p, output_vertices, output_points)
+
+
+i = 7
+poly, clip_poly = DT.get_clipping_poly_structs(vorn, i, bounding_box)
+vertices, clip_vertices, clip_points = poly.vertices, clip_poly.vertices, clip_poly.points
+new_vertices, new_point_list = DT.get_new_polygon_indices(vorn, vertices)
+output_vertices = new_vertices
+output_points = deepcopy(new_point_list)
+q = clip_points[end] 
+p = clip_points[1] 
+input_vertices = output_vertices
+T = typeof(q)
+I = eltype(input_vertices)
+output_vertices = I[]
+output_points = T[]
+s_vertex = input_vertices[end]
+vertex = input_vertices[1]
+DT._clip_unbounded_polygon_edge_to_ray_going_in!(vorn, i, s_vertex, vertex, new_point_list, q, p, output_vertices, output_points)
+s_vertex = vertex
+vertex = input_vertices[2]
+DT._clip_unbounded_polygon_edge_to_finite_segment!(s_vertex, vertex, new_point_list, q, p, output_vertices, output_points)
+s_vertex = vertex
+vertex = input_vertices[3]
+DT._clip_unbounded_polygon_edge_to_finite_segment!(s_vertex, vertex, new_point_list, q, p, output_vertices, output_points)
+s_vertex = vertex
+vertex = input_vertices[4]
+DT._clip_unbounded_polygon_edge_to_ray_going_out!(vorn, i, s_vertex, vertex, new_point_list, q, p, output_vertices, output_points)

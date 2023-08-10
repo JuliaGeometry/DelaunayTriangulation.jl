@@ -175,33 +175,47 @@ function _clip_unbounded_polygon_edge_to_ray_going_in!(vorn::VoronoiTessellation
     point = new_point_list[vertex]
     # Here, we have a ray that's coming from infinity into vertex. 
     # The intersection in this case requires that vertex is 
-    # is to the right of the edge. So, first we check if vertex
-    # is to the left.
-    if (is_left ∘ point_position_relative_to_line)(q, p, point)
-        # Now, vertex is to the left of the line, so there is nothing to be done. 
+    # is to the left of the edge. So, first we check if vertex
+    # is to the right.
+    r = intersection_of_ray_with_edge(q, p, m, r)
+    if all(isnan, r) 
         push!(output_vertices, vertex)
-        push!(output_points, point)
     else
-        # We know that vert is to the right of the edge, so we have an intersection. 
+        push!(new_point_list, r)
+        push!(output_vertices, length(new_point_list))
+    end
+    #=
+    if (is_right ∘ point_position_relative_to_line)(q, p, point)
+        # Now, vertex is to the right of the line, so there is nothing to be done. 
+        push!(output_vertices, vertex)
+    else
+        # We know that vert is to the left of the edge, so we have an intersection. 
         r = intersection_of_ray_with_edge(q, p, m, r)
         push!(new_point_list, r)
         push!(output_vertices, length(new_point_list))
-        push!(output_points, r)
     end
+    =#
 end
 function _clip_unbounded_polygon_edge_to_ray_going_out!(vorn::VoronoiTessellation, i, s_vertex, vertex, new_point_list, q, p, output_vertices, output_points)
-    m, r = _get_ray(vorn, i, s_vertex)
+    m, r = _get_ray(vorn, i, vertex)
     point = new_point_list[s_vertex]
     # Here, we have a ray that's going from s_vertex to infinity. An intersection 
-    # in this case requires that vertex is to the right of the edge.
-    if (is_left ∘ point_position_relative_to_line)(q, p, point)
+    # in this case requires that vertex is to the left of the edge.
+    #=
+    if (is_right ∘ point_position_relative_to_line)(q, p, point)
         push!(output_vertices, vertex)
-        push!(output_points, point)
     else
         r = intersection_of_ray_with_edge(q, p, m, r)
         push!(new_point_list, r)
         push!(output_vertices, length(new_point_list))
-        push!(output_points, r)
+    end
+    =#
+    ri = intersection_of_ray_with_edge(q, p, m, r)
+    if all(isnan, ri) 
+       # push!(output_vertices, vertex)
+    else
+        push!(new_point_list, ri)
+        push!(output_vertices, length(new_point_list))
     end
 end
 function _clip_unbounded_polygon_edge_to_finite_segment!(s_vertex, vertex, new_point_list, q, p, output_vertices, output_points)
@@ -213,15 +227,12 @@ function _clip_unbounded_polygon_edge_to_finite_segment!(s_vertex, vertex, new_p
             r = segment_intersection_coordinates(q, p, s_point, point)
             push!(new_point_list, r)
             push!(output_vertices, length(new_point_list))
-            push!(output_points, r)
         end
         push!(output_vertices, vertex)
-        push!(output_points, point)
     elseif (is_left ∘ point_position_relative_to_line)(q, p, s_point)
         r = segment_intersection_coordinates(q, p, s_point, point)
         push!(new_point_list, r)
         push!(output_vertices, length(new_point_list))
-        push!(output_points, r)
     end
 end
 
@@ -261,24 +272,3 @@ function get_unbounded_polygon_coordinates(vorn::VoronoiTessellation, i, boundin
         return clip_unbounded_polygon_to_bounding_box(vorn, i, bounding_box)
     end
 end
-
-#=
-"""
-    polygon_position_relative_to_box(vorn::VoronoiTessellation, bounding_box, i)
-
-Tests the position of the `i`th polygon of `vorn` relative to the bounding box`, ignoring 
-boundary indices. Returns:
-
-- `Cert.Inside`: The polygon is contained entirely within the box.
-- `Cert.Outside`: The polygon is entirely outside the box.
-- `Cert.Touching`: The polygon is contained entirely within the box, but touches the boundary of the box. Note that if a polygon touches the boundary of the box but is entirely outside otherwise, `Cert.Outside` will be returned instead. 
-- `Cert.Multiple`: The polygon intersects the box in multiple places.
-"""
-function polygon_position_relative_to_box(vorn::VoronoiTessellation, bounding_box, i)
-    a, b, c, d = bounding_box
-    vertices = get_polygon(vorn, i)
-    points = get_polygon_points(vorn)
-    flag = polygon_position_relative_to_box(a, b, c, d, vertices, points)
-    return flag
-end
-=#
