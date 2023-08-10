@@ -4,6 +4,18 @@
 Construct the Voronoi tessellation of the points in `tri`. If `clip` is `true` then the
 Voronoi tessellation will be clipped to the convex hull of the points in `tri`. 
 
+!!! note "Accessing polygon coordinates and rectangle clipping" 
+
+    If you are interested instead in clipping the tessellation to a rectangular bounding box, see 
+    [`get_polygon_coordinates`](@ref) which allows for a bounding box to be applied to an 
+    unclipped tessellation, returning a vector of the coordinates of polygons, clipping 
+    to the bounding box where applicable. [`polygon_bounds`](@ref) can be used to obtain good 
+    default bounding boxes. Note that if you are not worried about this clipping, 
+    and you know that your polygon is not unbounded (which would mean it is not in the 
+    `unbounded_polygons` field of the `VoronoiTessellation` output), then you should instead use 
+    `get_polygon(vorn, i)` to get the indices of the points in `vorn` that define the polygon, 
+    and then use `get_polygon_point` to get the coordinates. 
+
 !!! warning 
 
     Exact predicates are used only for classifying intersections, but no special methods 
@@ -11,11 +23,7 @@ Voronoi tessellation will be clipped to the convex hull of the points in `tri`.
 
 !!! warning 
 
-    Clipping is not yet guaranteed to work for constrained triangulations. Unfortunate,
-    because that's really what I actually care about. If you have any thoughts for that, 
-    or just any thoughts on the reference clipping paper (by Yan, Wang, Levy, and Liu: 
-    "Efficient Computation of Clipped Voronoi Diagram for Mesh Generation), please let me know via 
-    an issue. There is certainly a lot of room for improvement in the clipping code too.
+    Clipping is not yet guaranteed to work for constrained triangulations. 
 """
 function voronoi(tri::Triangulation, clip=has_boundary_nodes(tri))
     has_ghost = has_ghost_triangles(tri)

@@ -39,11 +39,12 @@ end
 global pts1 = [[2.0, 3.5], [1.7, 23.3], [-1.0, 0.0]]
 global pts2 = [(2.0, 3.5), (1.7, 23.3), (-1.0, 0.0)]
 global pts3 = [2.0 1.7 -1.0; 3.5 23.3 0.0]
+global pts4 = ((2.0, 3.5), (1.7, 23.3), (-1.0, 0.0))
 
 @testset "Collection of points" begin
     @testset "Getting points" begin
         @test_throws  throw_f("The getpoint function has not been defined for the type DataType.") DT.getpoint(String, 5)
-        for pts in (pts1, pts2, pts3)
+        for pts in (pts1, pts2, pts3, pts4)
             @test DT.getpoint(pts, 1) == (2.0, 3.5)
             @test DT.getpoint(pts, 2) == (1.7, 23.3)
             @test DT.getpoint(pts, 3) == (-1.0, 0.0)
@@ -68,7 +69,7 @@ global pts3 = [2.0 1.7 -1.0; 3.5 23.3 0.0]
 
     @testset "Each point index" begin
         @test_throws throw_f("The each_point_index function has not been defined for the type DataType.") each_point_index(String)
-        for pts in (pts1, pts2, pts3)
+        for pts in (pts1, pts2, pts3, pts4)
             @test each_point_index(pts) == 1:3
             @inferred each_point_index(pts)
         end
@@ -79,12 +80,14 @@ global pts3 = [2.0 1.7 -1.0; 3.5 23.3 0.0]
         @test each_point(pts1) == pts1
         @test each_point(pts2) == pts2
         @test each_point(pts3) == eachcol(pts3)
+        @test each_point(pts4) == pts4
+        @inferred each_point(pts4)
         @inferred each_point(pts3)
     end
 
     @testset "Number of points" begin
         @test_throws throw_f("The num_points function has not been defined for the type DataType.") num_points(String)
-        for pts in (pts1, pts2, pts3)
+        for pts in (pts1, pts2, pts3, pts4)
             @test num_points(pts) == 3
             @inferred num_points(pts)
         end

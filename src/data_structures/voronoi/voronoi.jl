@@ -16,6 +16,9 @@ while the values are the coordinates; we need to use a `Dict` in case the triang
 
 The points defining the vertices of the polygons. The points are not guaranteed to be unique if a circumcenter 
 appears on the boundary and you are considering a clipped tessellation.
+
+See also [`get_polygon_coordinates`](@ref).
+
 - `polygons::Dict{I, Vector{I}}`
 
 A `Dict` mapping a polygon index (same as a generator index) to the vertices of the polygon. The polygons are given in counter-clockwise order,
@@ -148,136 +151,6 @@ function get_triangle_to_circumcenter(vor::VoronoiTessellation, T)
         end
         throw(KeyError(T))
     end
-end
-
-"""
-    get_polygon_coordinates(vor::VoronoiTessellation, j, bbox=nothing)
-
-Gets the coordinates of the `j`th polygon of `vor`. If `bbox` is given, then the coordinates are clipped to the bounding box `bbox`, with 
-`bbox` a `Tuple` of the form `(xmin, xmax, ymin, ymax)` so that the bounding box is `[xmin, xmax] × [ymin, ymax]`.
-
-See also [`polygon_bounds`](@ref) for `bbox`.
-"""
-function get_polygon_coordinates(vorn::VoronoiTessellation, j, bbox=nothing)
-    C = get_polygon(vorn, j)
-    F = number_type(vorn)
-    coords = Vector{NTuple{2,F}}(undef, length(C) - 1)
-    unbounded_indices = (0, 0)
-    for i in firstindex(C):(lastindex(C)-1)
-        if !is_boundary_index(C[i])
-            coords[i] = get_polygon_point(vorn, C[i])
-        else
-            ghost_tri = get_circumcenter_to_triangle(vorn, C[i])
-            u, v, _ = indices(ghost_tri) # w is the ghost vertex
-            p, q = get_generator(vorn, u, v)
-            px, py = _getxy(p)
-            qx, qy = _getxy(q)
-            @assert bbox[1] ≤ px ≤ bbox[2] && bbox[1] ≤ qx ≤ bbox[2] && bbox[3] ≤ py ≤ bbox[4] && bbox[3] ≤ qy ≤ bbox[4] "The bounding box is not large enough to contain the circumcenter."
-            m = (px + qx) / 2, (py + qy) / 2
-            is_first = is_first_boundary_index(C, i)
-            if is_first
-                prev_index = previndex_circular(C, i)
-                r = get_polygon_point(vorn, C[prev_index])
-            else
-                next_index = nextindex_circular(C, i)
-                r = get_polygon_point(vorn, C[next_index])
-            end
-            if r == m # It's possible for the circumcenter to lie on the edge and exactly at the midpoint (e.g. [(0.0,1.0),(-1.0,2.0),(-2.0,-1.0)]). In this case, just rotate 
-                mx, my = _getxy(m)
-                dx, dy = qx - mx, qy - my
-                rotated_dx, rotated_dy = -dy, dx
-                r = mx + rotated_dx, my + rotated_dy
-                if is_right(point_position_relative_to_line(p, q, r))
-                    rotated_dx, rotated_dy = dy, -dx
-                    r = mx + rotated_dx, my + rotated_dy
-                end
-            end
-            r = _getxy(r)
-            if is_left(point_position_relative_to_line(p, q, r))
-                intersection = intersection_of_ray_with_bounding_box(m, r, bbox[1], bbox[2], bbox[3], bbox[4])
-            else
-                intersection = intersection_of_ray_with_bounding_box(r, m, bbox[1], bbox[2], bbox[3], bbox[4])
-            end
-            coords[i] = intersection
-            if is_first
-                unbounded_indices = (i, unbounded_indices[2])
-            else
-                unbounded_indices = (unbounded_indices[1], i)
-            end
-        end
-    end
-    if all(≠(0), unbounded_indices) # Need to check if we need to insert the corner point of the polygon 
-        xmin, xmax, ymin, ymax = bbox
-        c1 = coords[unbounded_indices[1]]
-        c2 = coords[unbounded_indices[2]]
-        side1 = identify_side(c1, xmin, xmax, ymin, ymax)
-        side2 = identify_side(c2, xmin, xmax, ymin, ymax)
-        if side1 ≠ side2 # There is a better way to do this if we treat sides as numbers 0, 1, 2, 3 rather than symbols, but it doesn't really matter.
-            if side1 == :bottom && side2 == :right 
-                corner = xmax, ymin
-                insert!(coords, unbounded_indices[1] + 1, corner)
-            elseif side1 == :bottom && side2 == :top 
-                corner1 = xmax, ymin 
-                corner2 = xmax, ymax 
-                insert!(coords, unbounded_indices[1] + 1, corner1)
-                insert!(coords, unbounded_indices[1] + 2, corner2)
-            elseif side1 == :bottom && side2 == :left
-                corner1 = xmax, ymin 
-                corner2 = xmax, ymax 
-                corner3 = xmin, ymax
-                insert!(coords, unbounded_indices[1] + 1, corner1)
-                insert!(coords, unbounded_indices[1] + 2, corner2)
-                insert!(coords, unbounded_indices[1] + 3, corner3)
-            elseif side1 == :right && side2 == :top
-                corner = xmax, ymax
-                insert!(coords, unbounded_indices[1] + 1, corner)
-            elseif side1 == :right && side2 == :left
-                corner1 = xmax, ymax
-                corner2 = xmin, ymax
-                insert!(coords, unbounded_indices[1] + 1, corner1)
-                insert!(coords, unbounded_indices[1] + 2, corner2)
-            elseif side1 == :right && side2 == :bottom
-                corner1 = xmax, ymax
-                corner2 = xmin, ymax
-                corner3 = xmin, ymin
-                insert!(coords, unbounded_indices[1] + 1, corner1)
-                insert!(coords, unbounded_indices[1] + 2, corner2)
-                insert!(coords, unbounded_indices[1] + 3, corner3)
-            elseif side1 == :top && side2 == :left
-                corner = xmin, ymax
-                insert!(coords, unbounded_indices[1] + 1, corner)
-            elseif side1 == :top && side2 == :bottom
-                corner1 = xmin, ymax
-                corner2 = xmin, ymin
-                insert!(coords, unbounded_indices[1] + 1, corner1)
-                insert!(coords, unbounded_indices[1] + 2, corner2)
-            elseif side1 == :top && side2 == :right
-                corner1 = xmin, ymax
-                corner2 = xmin, ymin
-                corner3 = xmax, ymin
-                insert!(coords, unbounded_indices[1] + 1, corner1)
-                insert!(coords, unbounded_indices[1] + 2, corner2)
-                insert!(coords, unbounded_indices[1] + 3, corner3)
-            elseif side1 == :left && side2 == :bottom
-                corner = xmin, ymin
-                insert!(coords, unbounded_indices[1] + 1, corner)
-            elseif side1 == :left && side2 == :right
-                corner1 = xmin, ymin
-                corner2 = xmax, ymin
-                insert!(coords, unbounded_indices[1] + 1, corner1)
-                insert!(coords, unbounded_indices[1] + 2, corner2)
-            elseif side1 == :left && side2 == :top
-                corner1 = xmin, ymin
-                corner2 = xmax, ymin
-                corner3 = xmax, ymax
-                insert!(coords, unbounded_indices[1] + 1, corner1)
-                insert!(coords, unbounded_indices[1] + 2, corner2)
-                insert!(coords, unbounded_indices[1] + 3, corner3)
-            end
-        end
-    end
-    push!(coords, coords[begin])
-    return coords
 end
 
 """
@@ -475,23 +348,28 @@ Gets the centroid of the polygon with index `i` in `vor`.
 get_centroid(vor::VoronoiTessellation, i) = polygon_features(vor, i)[2]
 
 """
-    polygon_bounds(vorn::VoronoiTessellation, unbounded_extension_factor=0.0)
+    polygon_bounds(vorn::VoronoiTessellation, unbounded_extension_factor=0.0; include_polygon_vertices=true)
 
 Gets the bounding box of the polygons in `vorn`. If `unbounded_extension_factor` is positive, the bounding box is extended by this factor in each direction,
 proportional to the width of each axis.
+
+If `include_polygon_vertices=true`, then the bounds both the generators and the polygons. Otherwise, only the generators 
+will be considered.
 """
-function polygon_bounds(vorn::VoronoiTessellation, unbounded_extension_factor=0.0)
+function polygon_bounds(vorn::VoronoiTessellation, unbounded_extension_factor=0.0; include_polygon_vertices=true)
     F = number_type(vorn)
     xmin = typemax(F)
     xmax = typemin(F)
     ymin = typemax(F)
     ymax = typemin(F)
-    for i in each_polygon_vertex(vorn)
-        x, y = _getxy(get_polygon_point(vorn, i))
-        xmin = min(xmin, x)
-        xmax = max(xmax, x)
-        ymin = min(ymin, y)
-        ymax = max(ymax, y)
+    if include_polygon_vertices
+        for i in each_polygon_vertex(vorn)
+            x, y = _getxy(get_polygon_point(vorn, i))
+            xmin = min(xmin, x)
+            xmax = max(xmax, x)
+            ymin = min(ymin, y)
+            ymax = max(ymax, y)
+        end
     end
     for i in each_generator(vorn)
         x, y = _getxy(get_generator(vorn, i))
@@ -500,11 +378,11 @@ function polygon_bounds(vorn::VoronoiTessellation, unbounded_extension_factor=0.
         ymin = min(ymin, y)
         ymax = max(ymax, y)
     end
-    xmin -= unbounded_extension_factor * (xmax - xmin)
-    xmax += unbounded_extension_factor * (xmax - xmin)
-    ymin -= unbounded_extension_factor * (ymax - ymin)
-    ymax += unbounded_extension_factor * (ymax - ymin)
-    return xmin, xmax, ymin, ymax
+    _xmin = xmin - unbounded_extension_factor * (xmax - xmin)
+    _xmax = xmax + unbounded_extension_factor * (xmax - xmin)
+    _ymin = ymin - unbounded_extension_factor * (ymax - ymin)
+    _ymax = ymax + unbounded_extension_factor * (ymax - ymin)
+    return _xmin, _xmax, _ymin, _ymax
 end
 
 """

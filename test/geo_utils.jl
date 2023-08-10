@@ -4,8 +4,13 @@ using LinearAlgebra
 using Random
 using CairoMakie
 
-
 include("./helper_functions.jl")
+
+throw_f = expr -> @static if VERSION < v"1.8"
+      ErrorException(expr)
+else
+      expr
+end
 
 @testset "Getting polygon features" begin
       tri, label_map, index_map = simple_geometry()
@@ -964,3 +969,167 @@ end
             end
       end
 end
+
+@testset "point_position_relative_to_box" begin
+      p = (4.0, 5.0)
+      a, b, c, d = 3.0, 7.0, 1.0, 8.0
+      @test DT.is_inside(DT.point_position_relative_to_box(a, b, c, d, p))
+      p = (2.0, 4.0)
+      @test DT.is_outside(DT.point_position_relative_to_box(a, b, c, d, p))
+      p = (a, (c + d) / 2)
+      @test DT.is_on(DT.point_position_relative_to_box(a, b, c, d, p))
+      p = (b, (c + d) / 2)
+      @test DT.is_on(DT.point_position_relative_to_box(a, b, c, d, p))
+      p = ((a + b) / 2, c)
+      @test DT.is_on(DT.point_position_relative_to_box(a, b, c, d, p))
+end
+
+@testset "Polygon" begin
+      verts = [1, 11, 18, 26, 32, 72]
+      _verts = [verts; 1]
+      points = [rand(2) for _ in 1:maximum(verts)]
+      for verts in (verts, _verts)
+            poly = DT.Polygon(verts, points)
+            @test length(poly) == 6
+            @test size(poly) == (6,)
+            @test poly[1] == Tuple(points[1])
+            @test poly[2] == Tuple(points[11])
+            @test poly[3] == Tuple(points[18])
+            @test poly[4] == Tuple(points[26])
+            @test poly[5] == Tuple(points[32])
+            @test poly[6] == Tuple(points[72])
+            @test eachindex(poly) == 1:6
+            @test collect(poly) == Tuple.(getindex.(Ref(points), [1, 11, 18, 26, 32, 72]))
+            @test poly[begin:end] == [poly[i] for i in 1:6]
+            @inferred poly[1]
+            @inferred poly[5]
+      end
+end
+
+@testset "Sutherland-Hodgman algorithm" begin
+      # rectangular
+      verts = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+      points = [(50.0, 150.0), (200.0, 50.0), (350.0, 150.0), (350.0, 300.0),
+            (250.0, 300.0), (200.0, 250.0), (150.0, 350.0), (100.0, 250.0), (100.0, 200.0)]
+      clip_verts = [1, 2, 3, 4]
+      clip_points = [(100.0, 100.0), (300.0, 100.0), (300.0, 300.0), (100.0, 300.0)]
+      spoly = DT.Polygon(verts, points)
+      cpoly = DT.Polygon(clip_verts, clip_points)
+      result = DT.clip_polygon(spoly, cpoly)
+      @inferred DT.clip_polygon(spoly, cpoly)
+      @test collect.(result) ≈ [
+            [100.0, 116 + 2 / 3],
+            [125, 100],
+            [275, 100],
+            [300, 116 + 2 / 3],
+            [300, 300],
+            [250, 300],
+            [200, 250],
+            [175, 300],
+            [125, 300],
+            [100, 250],
+            [100.0, 116 + 2 / 3]
+      ]
+      @test DT.clip_polygon(verts, points, clip_verts, clip_points) == result
+      @test DT.polygon_features(result, eachindex(result))[1] > 0
+
+      # bigger example 
+      function to_rand_point_verts(___points)
+            _points = [Tuple(rand(2)) for _ in 1:500]
+            _points = [_points; ___points]
+            shuffle!(_points)
+            vertices = identity.(indexin(___points, _points)) # identity to convert eltype from Union{Nothing, Int}
+            return _points, vertices
+      end
+      a = (-4.0, 4.0)
+      b = (-1.0, 6.0)
+      c = (3.0, 6.0)
+      d = (4.0, 4.0)
+      e = (4.0, -1.0)
+      f = (2.0, -3.0)
+      g = (-2.94, -1.32)
+      points = [g, f, e, d, c, b, a] # ccw
+      npoints, nvertices = to_rand_point_verts(deepcopy(points))
+      h = (-2.0, 7.0)
+      i = (-5.0, 6.0)
+      j = (-5.0, 2.0)
+      k = (-4.0, -2.0)
+      ℓ = (-1.0, -3.0)
+      m = (2.0, 2.0)
+      n = (1.0, 5.0)
+      clip_points = [h, i, j, k, ℓ, m, n]
+      nclip_points, nclip_vertices = to_rand_point_verts(deepcopy(clip_points))
+      result = DT.clip_polygon(nvertices, npoints, nclip_vertices, nclip_points)
+      @test DT.circular_equality(collect.(result), collect.([
+            g,
+            (-0.4915938130464, -2.1526563550773),
+            m,
+            n,
+            (-0.5, 6.0),
+            b,
+            a,
+            g
+      ]), ≈)
+end
+
+@testset "intersection_of_ray_with_edge" begin
+      p, q, a, b = (0.0, 0.0), (5.0, 5.0), (-2.0, 5.0), (0.0, 5.0)
+      r = DT.intersection_of_ray_with_edge(p, q, a, b)
+      @test all(isnan, r)
+      b = (2.0, -1.0)
+      r = DT.intersection_of_ray_with_edge(p, q, a, b)
+      @test collect(r) ≈ [0.8, 0.8]
+      b = (0.0, -1.0)
+      r = DT.intersection_of_ray_with_edge(p, q, a, b)
+      @test all(isnan, r)
+      a, b = (-2.0, -2.0), (-4.0, -4.0)
+      r = DT.intersection_of_ray_with_edge(p, q, a, b)
+      @test all(isnan, r)
+      a, b = (4.0, 2.0), (2.0, 2.0)
+      r = DT.intersection_of_ray_with_edge(p, q, a, b)
+      @test collect(r) ≈ [2.0, 2.0]
+      p, q, a, b = (0.0, 0.0), (0.0, 6.0), (4.0, 0.0), (2.0, -2.0)
+      r = DT.intersection_of_ray_with_edge(p, q, a, b)
+      @test all(isnan, r)
+      b = (-2.0, 0.0)
+      r = DT.intersection_of_ray_with_edge(p, q, a, b)
+      @test collect(r) ≈ [0.0, 0.0]
+end
+
+@testset "Liang-Barsky algorithm" begin
+      p, q = (-7.0, 5.0), (1.0, 8.0)
+      a, b, c, d = 0.0, 8.0, 0.0, 4.0
+      u, v = DT.liang_barsky(a, b, c, d, p, q)
+      @test all(isnan, u) && all(isnan, v)
+      p, q = (-3.0, 1.0), (10.0, 5.0)
+      u, v = DT.liang_barsky(a, b, c, d, p, q)
+      @test collect(u) ≈ [0, 1.9230769230769]
+      @test collect(v) ≈ [6.75, 4.0]
+      p, q = (0.0, -2.0), (0.0, 6.0)
+      u, v = DT.liang_barsky(a, b, c, d, p, q)
+      @test collect(u) ≈ [0, 0]
+      @test collect(v) ≈ [0, 4]
+      p, q = (2.0, 6.0), (-2.0, 2.0)
+      u, v = DT.liang_barsky(a, b, c, d, p, q)
+      @test u == v && (collect(u) ≈ [0, 4])
+      p, q = (10.0, 6.0), (-2.0, 6.0)
+      u, v = DT.liang_barsky(a, b, c, d, p, q)
+      @test all(isnan, u) && all(isnan, v)
+      p, q = (4.0, 6.0), (4.0, -2.0)
+      u, v = DT.liang_barsky(a, b, c, d, p, q)
+      @test collect(u) ≈ [4.0, 4.0]
+      @test collect(v) ≈ [4.0, 0.0]
+      p, q = (2.0, 6.0), (10.0, -2.0)
+      u, v = DT.liang_barsky(a, b, c, d, p, q)
+      @test collect(u) ≈ [4.0, 4.0]
+      @test collect(v) ≈ [8.0, 0.0]
+      a, b, c, d = 4, 10, 2, 8
+      u, v = DT.liang_barsky(a, b, c, d, p, q)
+      @test collect(u) ≈ [4.0, 4.0]
+      @test collect(v) ≈ [6.0, 2.0]
+      p, q = (2.0, 6.0), (14.0, 8.0)
+      u, v = DT.liang_barsky(a, b, c, d, p, q)
+      @test collect(u) ≈ [4, 6 + 1 / 3]
+      @test collect(v) ≈ [10, 7 + 1 / 3]
+end
+
