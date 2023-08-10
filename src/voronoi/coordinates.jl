@@ -1,5 +1,5 @@
 """
-    get_polygon_coordinates(vorn::VoronoiTessellation, i; bounding_box = nothing)
+    get_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box = nothing)
 
 Returns a vector for the coordinates of the `i`th polygon in `vorn`. If `bounding_box` 
 is provided, the polygon will be clipped to the bounding box, assuming that it takes 
@@ -15,7 +15,7 @@ If you do need to consider clipping your polygon to an arbitrary polygon, see th
 
 See also [`polygon_bounds`](@ref) for a good default for `bounding_box`.
 """
-function get_polygon_coordinates(vorn::VoronoiTessellation, i; bounding_box=nothing)
+function get_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box=nothing)
     if !isnothing(bounding_box)
         a, b, c, d = bounding_box
         @assert a < b && c < d "The bounding box must be of the form (xmin, xmax, ymin, ymax) with xmin < xmax and ymin < ymax."
