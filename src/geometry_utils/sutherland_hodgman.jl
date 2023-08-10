@@ -1,7 +1,7 @@
 struct Polygon{T,V,P} <: AbstractVector{T}
     vertices::V
     points::P
-    function Polygon(vertices::V, points::P) where {V,P}
+    @inline function Polygon(vertices::V, points::P) where {V,P}
         p = get_point(points, vertices[begin])
         T = typeof(p)
         if vertices[begin] ≠ vertices[end]

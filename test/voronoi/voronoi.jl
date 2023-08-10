@@ -1038,80 +1038,102 @@ end
     end
 end
 
-A = (-3.0, 7.0)
-B = (1.0, 6.0)
-C = (-1.0, 3.0)
-D = (-2.0, 4.0)
-E = (3.0, -2.0)
-F = (5.0, 5.0)
-G = (-4.0, -3.0)
-H = (3.0, 8.0)
-points = [A, B, C, D, E, F, G, H]
-tri = triangulate(points)
-vorn = voronoi(tri)
-a, b, c, d = -4.0, 6.0, -2.0, 4.0
-bounding_box = (a, b, c, d)
-pa = NTuple{2,Float64}[]
-pb = [(0.75, 4.0), (2.357142857142857, 2.9285714285714284), (2.625, 4.0), (0.75, 4.0)]
-pc = [(2.710526315789474, 1.868421052631579), (2.357142857142857, 2.9285714285714284), (0.75, 4.0), (-1.0, 4.0), (-4.0, 1.0), (-4.0, 0.75), (-0.7307692307692308, -0.8846153846153846), (2.710526315789474, 1.868421052631579)]
-pd = [(-4.0, 4.0), (-4.0, 1.0), (-1.0, 4.0), (-4.0, 4.0)]
-collect.(pd) ≈ collect.(pa)
-pe = get_polygon_coordinates(vorn, 7; bounding_box)
+@testset "grow_polygon_outside_of_box" begin
+    A = (-3.0, 7.0)
+    B = (1.0, 6.0)
+    C = (-1.0, 3.0)
+    D = (-2.0, 4.0)
+    E = (3.0, -2.0)
+    F = (5.0, 5.0)
+    G = (-4.0, -3.0)
+    H = (3.0, 8.0)
+    points = [A, B, C, D, E, F, G, H]
+    tri = triangulate(points)
+    vorn = voronoi(tri)
+    a, b, c, d = -4.0, 6.0, -2.0, 4.0
+    bounding_box = (a, b, c, d)
+    new_vertices, new_points = DT.grow_polygon_outside_of_box(vorn, 1, bounding_box)
+    @test collect.(new_points) ≈ collect.([
+        (-1.1363636363636365, 5.954545454545455)
+        (-0.2999999999999998, 9.3)
+        (-0.5999999999999996, 11.100000000000001)
+        (-18.115384615384613, 3.4615384615384617)
+        (-10.807692307692307, 2.730769230769231)
+    ])
+    @test new_vertices == [1, 2, 3, 4, 5]
+    new_vertices, new_points = DT.grow_polygon_outside_of_box(vorn, 5, bounding_box)
+    @test collect.(new_points) ≈ collect.([
+        (2.710526315789474, 1.868421052631579)
+        (-0.7307692307692308, -0.8846153846153846)
+        (1.1153846153846159, -13.807692307692308)
+        (13.026315789473683, -1.0789473684210529)
+    ])
+    @test new_vertices == [1, 2, 3, 4]
+    new_vertices, new_points = DT.grow_polygon_outside_of_box(vorn, 6, bounding_box)
+    @test collect.(new_points) ≈ collect.([
+        (7.868421052631579, 0.39473684210526305)
+        (6.699999999999999, 8.299999999999999)
+        (3.1, 5.9)
+        (2.357142857142857, 2.9285714285714284)
+        (2.710526315789474, 1.868421052631579)
+    ])
+    @test new_vertices == [1, 2, 3, 4, 5]
+    new_vertices, new_points = DT.grow_polygon_outside_of_box(vorn, 7, bounding_box)
+    @test collect.(new_points) ≈ collect.([
+        (-0.7307692307692308, -0.8846153846153846)
+        (-4.166666666666666, 0.8333333333333335)
+        (-10.807692307692307, 2.730769230769231)
+        (-18.115384615384613, 3.4615384615384617)
+        (-0.26923076923076916, -4.115384615384615)
+    ])
+    @test new_vertices == [1, 2, 3, 4, 5]
+    new_vertices, new_points = DT.grow_polygon_outside_of_box(vorn, 8, bounding_box)
+    @test collect.(new_points) ≈ collect.([
+        (4.9, 7.1)
+        (-0.5999999999999996, 11.100000000000001)
+        (-0.2999999999999998, 9.3)
+        (3.1, 5.9)
+    ])
+    @test new_vertices == [1, 2, 3, 4]
+    @inferred DT.grow_polygon_outside_of_box(vorn, 8, bounding_box)
+end
 
-fig, ax, sc = voronoiplot(vorn)
-lines!(ax, [(a, c), (b, c), (b, d), (a, d), (a, c)], color=:red, linewidth=6)
-lines!(ax, pd, color=:white, linewidth=4)
-fig
-
-i = 7
-poly, clip_poly = DT.get_clipping_poly_structs(vorn, i, bounding_box)
-vertices, clip_vertices, clip_points = poly.vertices, clip_poly.vertices, clip_poly.points
-new_vertices, new_point_list = DT.get_new_polygon_indices(vorn, vertices)
-output_vertices = new_vertices
-output_points = deepcopy(new_point_list)
-q = clip_points[1]
-p = clip_points[2]
-input_vertices = output_vertices
-T = typeof(q)
-I = eltype(input_vertices)
-output_vertices = I[]
-output_points = T[]
-s_vertex = input_vertices[end]
-vertex = input_vertices[1]
-DT._clip_unbounded_polygon_edge_to_ray_going_in!(vorn, i, s_vertex, vertex, new_point_list, q, p, output_vertices, output_points)
-s_vertex = vertex
-vertex = input_vertices[2]
-DT._clip_unbounded_polygon_edge_to_finite_segment!(s_vertex, vertex, new_point_list, q, p, output_vertices, output_points)
-s_vertex = vertex
-vertex = input_vertices[3]
-DT._clip_unbounded_polygon_edge_to_finite_segment!(s_vertex, vertex, new_point_list, q, p, output_vertices, output_points)
-s_vertex = vertex
-vertex = input_vertices[4]
-DT._clip_unbounded_polygon_edge_to_ray_going_out!(vorn, i, s_vertex, vertex, new_point_list, q, p, output_vertices, output_points)
-
-
-i = 7
-poly, clip_poly = DT.get_clipping_poly_structs(vorn, i, bounding_box)
-vertices, clip_vertices, clip_points = poly.vertices, clip_poly.vertices, clip_poly.points
-new_vertices, new_point_list = DT.get_new_polygon_indices(vorn, vertices)
-output_vertices = new_vertices
-output_points = deepcopy(new_point_list)
-q = clip_points[end] 
-p = clip_points[1] 
-input_vertices = output_vertices
-T = typeof(q)
-I = eltype(input_vertices)
-output_vertices = I[]
-output_points = T[]
-s_vertex = input_vertices[end]
-vertex = input_vertices[1]
-DT._clip_unbounded_polygon_edge_to_ray_going_in!(vorn, i, s_vertex, vertex, new_point_list, q, p, output_vertices, output_points)
-s_vertex = vertex
-vertex = input_vertices[2]
-DT._clip_unbounded_polygon_edge_to_finite_segment!(s_vertex, vertex, new_point_list, q, p, output_vertices, output_points)
-s_vertex = vertex
-vertex = input_vertices[3]
-DT._clip_unbounded_polygon_edge_to_finite_segment!(s_vertex, vertex, new_point_list, q, p, output_vertices, output_points)
-s_vertex = vertex
-vertex = input_vertices[4]
-DT._clip_unbounded_polygon_edge_to_ray_going_out!(vorn, i, s_vertex, vertex, new_point_list, q, p, output_vertices, output_points)
+@testset "Clipping polygons to arbitrary bounding box" begin
+    A = (-3.0, 7.0)
+    B = (1.0, 6.0)
+    C = (-1.0, 3.0)
+    D = (-2.0, 4.0)
+    E = (3.0, -2.0)
+    F = (5.0, 5.0)
+    G = (-4.0, -3.0)
+    H = (3.0, 8.0)
+    points = [A, B, C, D, E, F, G, H]
+    tri = triangulate(points)
+    vorn = voronoi(tri)
+    a, b, c, d = -4.0, 6.0, -2.0, 4.0
+    bounding_box = (a, b, c, d)
+    _pa = get_polygon_coordinates(vorn, 1; bounding_box)
+    _pb = get_polygon_coordinates(vorn, 2; bounding_box)
+    _pc = get_polygon_coordinates(vorn, 3; bounding_box)
+    _pd = get_polygon_coordinates(vorn, 4; bounding_box)
+    _pe = get_polygon_coordinates(vorn, 5; bounding_box)
+    _pf = get_polygon_coordinates(vorn, 6; bounding_box)
+    _pg = get_polygon_coordinates(vorn, 7; bounding_box)
+    _ph = get_polygon_coordinates(vorn, 8; bounding_box)
+    pa = NTuple{2,Float64}[]
+    pb = [(0.75, 4.0), (2.357142857142857, 2.9285714285714284), (2.625, 4.0), (0.75, 4.0)]
+    pc = [(2.710526315789474, 1.868421052631579), (2.357142857142857, 2.9285714285714284), (0.75, 4.0), (-1.0, 4.0), (-4.0, 1.0), (-4.0, 0.75), (-0.7307692307692308, -0.8846153846153846), (2.710526315789474, 1.868421052631579)]
+    pd = [(-4.0, 4.0), (-4.0, 1.0), (-1.0, 4.0), (-4.0, 4.0)]
+    pe = [(6.0, 0.9285714285714279), (2.710526315789474, 1.868421052631579), (-0.7307692307692308, -0.8846153846153846), (-0.5714285714285712, -2.0), (6.0, -2.0), (6.0, 0.9285714285714279)]
+    pf = [(6.0, 0.9285714285714284), (6.0, 4.0), (2.625, 4.0), (2.357142857142857, 2.9285714285714284), (2.710526315789474, 1.868421052631579), (6.0, 0.9285714285714284)]
+    pg = [(-0.5714285714285721, -2.0), (-0.7307692307692308, -0.8846153846153846), (-4.0, 0.75), (-4.0, -2.0), (-0.5714285714285721, -2.0)]
+    ph = NTuple{2,Float64}[]
+    @test DT.circular_equality(collect.(pa), collect.(_pa), ≈)
+    @test DT.circular_equality(collect.(pb), collect.(_pb), ≈)
+    @test DT.circular_equality(collect.(pc), collect.(_pc), ≈)
+    @test DT.circular_equality(collect.(pd), collect.(_pd), ≈)
+    @test DT.circular_equality(collect.(pe), collect.(_pe), ≈)
+    @test DT.circular_equality(collect.(pf), collect.(_pf), ≈)
+    @test DT.circular_equality(collect.(pg), collect.(_pg), ≈)
+    @test DT.circular_equality(collect.(ph), collect.(_ph), ≈)
+end

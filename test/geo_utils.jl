@@ -1095,3 +1095,41 @@ end
       r = DT.intersection_of_ray_with_edge(p, q, a, b)
       @test collect(r) ≈ [0.0, 0.0]
 end
+
+@testset "Liang-Barsky algorithm" begin
+      p, q = (-7.0, 5.0), (1.0, 8.0)
+      a, b, c, d = 0.0, 8.0, 0.0, 4.0
+      u, v = DT.liang_barsky(a, b, c, d, p, q)
+      @test all(isnan, u) && all(isnan, v)
+      p, q = (-3.0, 1.0), (10.0, 5.0)
+      u, v = DT.liang_barsky(a, b, c, d, p, q)
+      @test collect(u) ≈ [0, 1.9230769230769]
+      @test collect(v) ≈ [6.75, 4.0]
+      p, q = (0.0, -2.0), (0.0, 6.0)
+      u, v = DT.liang_barsky(a, b, c, d, p, q)
+      @test collect(u) ≈ [0, 0]
+      @test collect(v) ≈ [0, 4]
+      p, q = (2.0, 6.0), (-2.0, 2.0)
+      u, v = DT.liang_barsky(a, b, c, d, p, q)
+      @test u == v && (collect(u) ≈ [0, 4])
+      p, q = (10.0, 6.0), (-2.0, 6.0)
+      u, v = DT.liang_barsky(a, b, c, d, p, q)
+      @test all(isnan, u) && all(isnan, v)
+      p, q = (4.0, 6.0), (4.0, -2.0)
+      u, v = DT.liang_barsky(a, b, c, d, p, q)
+      @test collect(u) ≈ [4.0, 4.0]
+      @test collect(v) ≈ [4.0, 0.0]
+      p, q = (2.0, 6.0), (10.0, -2.0)
+      u, v = DT.liang_barsky(a, b, c, d, p, q)
+      @test collect(u) ≈ [4.0, 4.0]
+      @test collect(v) ≈ [8.0, 0.0]
+      a, b, c, d = 4, 10, 2, 8
+      u, v = DT.liang_barsky(a, b, c, d, p, q)
+      @test collect(u) ≈ [4.0, 4.0]
+      @test collect(v) ≈ [6.0, 2.0]
+      p, q = (2.0, 6.0), (14.0, 8.0)
+      u, v = DT.liang_barsky(a, b, c, d, p, q)
+      @test collect(u) ≈ [4, 6 + 1 / 3]
+      @test collect(v) ≈ [10, 7 + 1 / 3]
+end
+
