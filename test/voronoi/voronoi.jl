@@ -1009,31 +1009,72 @@ end
     @test ymax == _ymax + 0.1(_ymax - _ymin)
 end
 
-a = (-3.0, 7.0)
-b = (1.0, 6.0)
-c = (-1.0, 3.0)
-d = (-2.0, 4.0)
-e = (3.0, -2.0)
-f = (5.0, 5.0)
-g = (-4.0, -3.0)
-h = (3.0, 8.0)
-points = [a, b, c, d, e, f, g, h]
-tri = triangulate(points)
-vorn = voronoi(tri)
-a, b, c, d = -8.0, 6.0, -2.0, 10.0
-bounding_box = (a, b, c, d)
-results = Dict(
-    1 => DT.has_multiple_intersections,
-    2 => DT.is_inside, 
-    3 => DT.is_inside, 
-    4 => DT.has_multiple_intersections,
-    5 => DT.has_multiple_intersections,
-    6 => DT.has_multiple_intersections,
-    7 => DT.has_multiple_intersections,
-    8 => DT.has_multiple_intersections,
-)
-for (i, cert_f) in results 
-    @show i, cert_f
-    @test cert_f(DT.polygon_position_relative_to_box(vorn, bounding_box, i))
+@testset "Position of Voronoi polygons relative to box" begin
+    a = (-3.0, 7.0)
+    b = (1.0, 6.0)
+    c = (-1.0, 3.0)
+    d = (-2.0, 4.0)
+    e = (3.0, -2.0)
+    f = (5.0, 5.0)
+    g = (-4.0, -3.0)
+    h = (3.0, 8.0)
+    points = [a, b, c, d, e, f, g, h]
+    tri = triangulate(points)
+    vorn = voronoi(tri)
+    a, b, c, d = -8.0, 6.0, -2.0, 10.0
+    bounding_box = (a, b, c, d)
+    results = Dict(
+        1 => DT.has_multiple_intersections,
+        2 => DT.is_inside,
+        3 => DT.is_inside,
+        4 => DT.has_multiple_intersections,
+        5 => DT.has_multiple_intersections,
+        6 => DT.has_multiple_intersections,
+        7 => DT.has_multiple_intersections,
+        8 => DT.has_multiple_intersections,
+    )
+    for (i, cert_f) in results
+        @test cert_f(DT.polygon_position_relative_to_box(vorn, bounding_box, i))
+    end
 end
 
+A = (-3.0, 7.0)
+B = (1.0, 6.0)
+C = (-1.0, 3.0)
+D = (-2.0, 4.0)
+E = (3.0, -2.0)
+F = (5.0, 5.0)
+G = (-4.0, -3.0)
+H = (3.0, 8.0)
+points = [A, B, C, D, E, F, G, H]
+tri = triangulate(points)
+vorn = voronoi(tri)
+a, b, c, d = -4.0, 6.0, -2.0, 4.0
+bounding_box = (a, b, c, d)
+pa = NTuple{2,Float64}[]
+pb = [(0.75, 4.0), (2.357142857142857, 2.9285714285714284), (2.625, 4.0), (0.75, 4.0)]
+pc = [(2.710526315789474, 1.868421052631579), (2.357142857142857, 2.9285714285714284), (0.75, 4.0), (-1.0, 4.0), (-4.0, 1.0), (-4.0, 0.75), (-0.7307692307692308, -0.8846153846153846), (2.710526315789474, 1.868421052631579)]
+pd = [(-4.0, 4.0), (-4.0, 1.0), (-1.0, 4.0), (-4.0, 4.0)]
+collect.(pd) ≈ collect.(pa)
+pe = get_polygon_coordinates(vorn, 7; bounding_box)
+
+fig, ax, sc = voronoiplot(vorn)
+lines!(ax, [(a, c), (b, c), (b, d), (a, d), (a, c)], color=:red, linewidth=6)
+lines!(ax, pd, color=:white, linewidth=4)
+fig
+
+i = 7
+poly, clip_poly = DT.get_clipping_poly_structs(vorn, i, bounding_box)
+vertices, clip_vertices, clip_points = poly.vertices, clip_poly.vertices, clip_poly.points
+new_vertices, new_point_list = DT.get_new_polygon_indices(vorn, vertices)
+output_vertices = new_vertices
+output_points = deepcopy(new_point_list)
+q = clip_points[end]
+p = clip_points[1]
+input_vertices = output_vertices
+T = typeof(q)
+I = eltype(input_vertices)
+output_vertices = I[]
+output_points = T[]
+s_vertex = input_vertices[end]
+vertex = input_vertices[1]

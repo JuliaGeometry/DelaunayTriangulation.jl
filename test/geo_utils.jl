@@ -1006,66 +1006,92 @@ end
       end
 end
 
-# rectangular
-verts = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-points = [(50.0, 150.0), (200.0, 50.0), (350.0, 150.0), (350.0, 300.0),
-      (250.0, 300.0), (200.0, 250.0), (150.0, 350.0), (100.0, 250.0), (100.0, 200.0)]
-clip_verts = [1, 2, 3, 4]
-clip_points = [(100.0, 100.0), (300.0, 100.0), (300.0, 300.0), (100.0, 300.0)]
-spoly = DT.Polygon(verts, points)
-cpoly = DT.Polygon(clip_verts, clip_points)
-result = DT.clip_polygon(spoly, cpoly)
-@inferred DT.clip_polygon(spoly, cpoly)
-@test collect.(result) ≈ [
-      [100.0, 116 + 2 / 3],
-      [125, 100],
-      [275, 100],
-      [300, 116 + 2 / 3],
-      [300, 300],
-      [250, 300],
-      [200, 250],
-      [175, 300],
-      [125, 300],
-      [100, 250],
-      [100.0, 116 + 2 / 3]
-]
-@test DT.clip_polygon(verts, points, clip_verts, clip_points) == result
-@test DT.polygon_features(result, eachindex(result))[1] > 0
+@testset "Sutherland-Hodgman algorithm" begin
+      # rectangular
+      verts = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+      points = [(50.0, 150.0), (200.0, 50.0), (350.0, 150.0), (350.0, 300.0),
+            (250.0, 300.0), (200.0, 250.0), (150.0, 350.0), (100.0, 250.0), (100.0, 200.0)]
+      clip_verts = [1, 2, 3, 4]
+      clip_points = [(100.0, 100.0), (300.0, 100.0), (300.0, 300.0), (100.0, 300.0)]
+      spoly = DT.Polygon(verts, points)
+      cpoly = DT.Polygon(clip_verts, clip_points)
+      result = DT.clip_polygon(spoly, cpoly)
+      @inferred DT.clip_polygon(spoly, cpoly)
+      @test collect.(result) ≈ [
+            [100.0, 116 + 2 / 3],
+            [125, 100],
+            [275, 100],
+            [300, 116 + 2 / 3],
+            [300, 300],
+            [250, 300],
+            [200, 250],
+            [175, 300],
+            [125, 300],
+            [100, 250],
+            [100.0, 116 + 2 / 3]
+      ]
+      @test DT.clip_polygon(verts, points, clip_verts, clip_points) == result
+      @test DT.polygon_features(result, eachindex(result))[1] > 0
 
-# bigger example 
-function to_rand_point_verts(points)
-      _points = [Tuple(rand(2)) for _ in 1:500]
-      _points = [_points; points]
-      shuffle!(_points)
-      vertices = identity.(indexin(points, _points)) # identity to convert eltype from Union{Nothing, Int}
-      return _points, vertices
+      # bigger example 
+      function to_rand_point_verts(___points)
+            _points = [Tuple(rand(2)) for _ in 1:500]
+            _points = [_points; ___points]
+            shuffle!(_points)
+            vertices = identity.(indexin(___points, _points)) # identity to convert eltype from Union{Nothing, Int}
+            return _points, vertices
+      end
+      a = (-4.0, 4.0)
+      b = (-1.0, 6.0)
+      c = (3.0, 6.0)
+      d = (4.0, 4.0)
+      e = (4.0, -1.0)
+      f = (2.0, -3.0)
+      g = (-2.94, -1.32)
+      points = [g, f, e, d, c, b, a] # ccw
+      npoints, nvertices = to_rand_point_verts(deepcopy(points))
+      h = (-2.0, 7.0)
+      i = (-5.0, 6.0)
+      j = (-5.0, 2.0)
+      k = (-4.0, -2.0)
+      ℓ = (-1.0, -3.0)
+      m = (2.0, 2.0)
+      n = (1.0, 5.0)
+      clip_points = [h, i, j, k, ℓ, m, n]
+      nclip_points, nclip_vertices = to_rand_point_verts(deepcopy(clip_points))
+      result = DT.clip_polygon(nvertices, npoints, nclip_vertices, nclip_points)
+      @test DT.circular_equality(collect.(result), collect.([
+            g,
+            (-0.4915938130464, -2.1526563550773),
+            m,
+            n,
+            (-0.5, 6.0),
+            b,
+            a,
+            g
+      ]), ≈)
 end
-a = (-4.0, 4.0)
-b = (-1.0, 6.0)
-c = (3.0, 6.0)
-d = (4.0, 4.0)
-e = (4.0, -1.0)
-f = (2.0, -3.0)
-g = (-2.94, -1.32)
-points = [g, f, e, d, c, b, a] # ccw
-points, vertices = to_rand_point_verts(points)
-h = (-2.0, 7.0)
-i = (-5.0, 6.0)
-j = (-5.0, 2.0)
-k = (-4.0, -2.0)
-ℓ = (-1.0, -3.0)
-m = (2.0, 2.0)
-n = (1.0, 5.0)
-clip_points = [h, i, j, k, ℓ, m, n]
-clip_points, clip_vertices = to_rand_point_verts(clip_points)
-result = DT.clip_polygon(vertices, points, clip_vertices, clip_points)
-@test collect.(result) ≈ collect.([
-      g,
-      (-0.4915938130464, -2.1526563550773),
-      m,
-      n,
-      (-0.5, 6.0),
-      b,
-      a,
-      g
-])
+
+@testset "intersection_of_ray_with_edge" begin
+      p, q, a, b = (0.0, 0.0), (5.0, 5.0), (-2.0, 5.0), (0.0, 5.0)
+      r = DT.intersection_of_ray_with_edge(p, q, a, b)
+      @test all(isnan, r)
+      b = (2.0, -1.0)
+      r = DT.intersection_of_ray_with_edge(p, q, a, b)
+      @test collect(r) ≈ [0.8, 0.8]
+      b = (0.0, -1.0)
+      r = DT.intersection_of_ray_with_edge(p, q, a, b)
+      @test all(isnan, r)
+      a, b = (-2.0, -2.0), (-4.0, -4.0)
+      r = DT.intersection_of_ray_with_edge(p, q, a, b)
+      @test all(isnan, r)
+      a, b = (4.0, 2.0), (2.0, 2.0)
+      r = DT.intersection_of_ray_with_edge(p, q, a, b)
+      @test collect(r) ≈ [2.0, 2.0]
+      p, q, a, b = (0.0, 0.0), (0.0, 6.0), (4.0, 0.0), (2.0, -2.0)
+      r = DT.intersection_of_ray_with_edge(p, q, a, b)
+      @test all(isnan, r)
+      b = (-2.0, 0.0)
+      r = DT.intersection_of_ray_with_edge(p, q, a, b)
+      @test collect(r) ≈ [0.0, 0.0]
+end

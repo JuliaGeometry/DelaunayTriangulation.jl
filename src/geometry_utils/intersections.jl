@@ -198,3 +198,26 @@ function classify_and_compute_segment_intersection(a, b, c, d)
         return cert, cert_c, cert_d, (F(NaN), F(NaN))
     end
 end
+
+"""
+    intersection_of_ray_with_edge(p, q, a, b)
+
+Given a ray starting at `p` and in the direction of `q` out to 
+infinity, finds the intersection of the ray with the edge from `a` to `b`.
+If no such intersection exists, then the coordinates of the intersection are returned 
+as `(NaN, NaN)`.
+"""
+function intersection_of_ray_with_edge(p, q, a, b)
+    p1, p2 = _getxy(p)
+    q1, q2 = _getxy(q)
+    a1, a2 = _getxy(a)
+    b1, b2 = _getxy(b)
+    den = a2 * q1 - a2 * p1 - b1 * p2 + b2 * p1 + b1 * q2 - b2 * q1 + a1 * (p2 - q2)
+    t = -(a1 * b2 - a2 * b1 - a1 * p2 + a2 * p1 + b1 * p2 - b2 * p1) / den
+    u = (a2 * q1 - a2 * p1 + p1 * q2 - p2 * q1 + a1 * (p2 - q2)) / den
+    if t < 0 || u < 0 || u > 1
+        return (NaN, NaN)
+    else
+        return (p1 + t * (q1 - p1), p2 + t * (q2 - p2))
+    end
+end

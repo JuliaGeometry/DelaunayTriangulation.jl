@@ -161,7 +161,7 @@ Gets the coordinates of the `j`th polygon of `vor`. If `bbox` is given, then the
 
 See also [`polygon_bounds`](@ref) for `bbox`.
 """
-function get_polygon_coordinates(vorn::VoronoiTessellation, j, bbox=nothing)
+function ___get_polygon_coordinates(vorn::VoronoiTessellation, j, bbox=nothing)
     C = get_polygon(vorn, j)
     F = number_type(vorn)
     coords = Vector{NTuple{2,F}}(undef, length(C) - 1)
