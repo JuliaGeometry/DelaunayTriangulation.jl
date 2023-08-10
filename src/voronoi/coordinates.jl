@@ -21,13 +21,14 @@ function get_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box=noth
         @assert a < b && c < d "The bounding box must be of the form (xmin, xmax, ymin, ymax) with xmin < xmax and ymin < ymax."
     end
     if i ∈ get_unbounded_polygons(vorn)
-        isnothing(bounding_box) && throw(ArgumentError("The polygon is unbounded, so a bounding box must be provided."))
+        isnothing(bounding_box) && throw(ArgumentError("The polygon is unbounded, so a bounding box must be provided. See DelaunayTriangulation.polygon_bounds for a reasonable default."))
         return get_unbounded_polygon_coordinates(vorn, i, bounding_box)
     else
         return get_bounded_polygon_coordinates(vorn, i, bounding_box)
     end
 end
 
+#=
 """
     polygon_position_relative_to_box(vorn::VoronoiTessellation, bounding_box, i)
 
@@ -46,6 +47,7 @@ function polygon_position_relative_to_box(vorn::VoronoiTessellation, bounding_bo
     flag = polygon_position_relative_to_box(a, b, c, d, vertices, points)
     return flag
 end
+=#
 
 function get_clipping_poly_structs(vorn::VoronoiTessellation, i, bounding_box)
     vertices = get_polygon(vorn, i)
@@ -209,12 +211,7 @@ Returns the coordinates of the `i`th polygon of `vorn`, assuming it is unbounded
 the polygon to the bounding box.
 """
 function get_unbounded_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box)
-    F = number_type(vorn)
-    if (is_outside ∘ polygon_position_relative_to_box)(vorn, bounding_box, i)
-        return NTuple{2,F}[]
-    else
-        return clip_unbounded_polygon_to_bounding_box(vorn, i, bounding_box)
-    end
+    return clip_unbounded_polygon_to_bounding_box(vorn, i, bounding_box)
 end
 
 """

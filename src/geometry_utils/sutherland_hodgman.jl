@@ -28,6 +28,8 @@ Sutherland-Hodgman algorithm is used. It is assumed that
 `vertices[begin] == vertices[end]` and `clip_vertices[begin] == clip_vertices[end]`.
 
 The returned result is another counter-clockwise polygon `P` that also satisfies `P[begin] == P[end]`.
+
+Note that this algorithm may potentially return overlapping edges, but this is fine for rendering.
 """
 function clip_polygon(vertices, points, clip_vertices, clip_points)
     return clip_polygon(Polygon(vertices, points), Polygon(clip_vertices, clip_points))
@@ -82,6 +84,6 @@ function clip_polygon(poly::Polygon, clip_poly::Polygon{T}) where {T}
         output_list = clip_polygon_to_edge(input_list, q, p)
         q = p
     end
-    push!(output_list, output_list[begin])
+    !isempty(output_list) && push!(output_list, output_list[begin])
     return output_list::Vector{T}
 end

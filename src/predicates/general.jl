@@ -511,6 +511,8 @@ function point_position_relative_to_box(a, b, c, d, p)
     end
 end
 
+#= 
+THIS IS WRONG FOR [(0.0, 1.0), (-1.0, 2.0), (-2.0, -1.0)] and A, B, C, D = -1.0, 0.0, -1.0, 2.0
 """
     polygon_position_relative_to_box(a, b, c, d, vertices, points)
 
@@ -556,3 +558,4 @@ function polygon_position_relative_to_box(a, b, c, d, vertices, points)
         return Cert.Multiple
     end
 end
+=#
