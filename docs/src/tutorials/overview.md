@@ -26,7 +26,7 @@ The tutorials that we consider are as follows:
 - [Gmsh Integration](gmsh.md): How triangulations can be computed using Gmsh. (This is not so relevant with the latest versions of DelaunayTriangulation.jl now that we have native support for constrained triangulations, but this might be useful if, for example, you want to try [different mesh algorithms from Gmsh](https://gmsh.info/doc/texinfo/gmsh.html#Choosing-the-right-unstructured-algorithm).)
 - [Triangulating Convex Polygons](convex.md): How triangulations of convex polygons can be computed.
 - [Voronoi Tessellations](voronoi.md): How Voronoi tessellations can be computed.
-- [Clipped Voronoi Tessellations](clipped.md): How to compute a Voronoi tessellation of a point set such that the polygons are clipped to the point set's convex hull.
+- [Clipped Voronoi Tessellations](clipped.md): How to compute a Voronoi tessellation of a point set such that the polygons are [clipped to the point set's convex hull](clipped.md), or [to an arbitrary rectangle](clipped_rectangle.md).
 - [Centroidal Voronoi Tessellation](centroidal.md): How to compute centroidal Voronoi tessellations, in particular how to shift a given set of points so that each point's associated Voronoi tile is that tile's centroid.
 - [Point Location](point_location.md): How to use a triangulation to perform point location.
 - [Nearest Neighbour Queries](nearest.md): How to use a Voronoi tessellation to find a point's nearest neighbour.

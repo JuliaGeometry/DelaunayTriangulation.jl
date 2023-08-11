@@ -139,7 +139,10 @@ const _PAGES = [
         "Gmsh Integration" => "tutorials/gmsh.md",
         "Triangulating Convex Polygons" => "tutorials/convex.md",
         "Voronoi Tessellations" => "tutorials/voronoi.md",
-        "Clipped Voronoi Tessellations" => "tutorials/clipped.md",
+        "Clipped Voronoi Tessellations" => [
+            "Clipping to the Convex Hull" => "tutorials/clipped.md",
+            "Clipping to a Rectangle" => "tutorials/clipped_rectangle.md"
+        ],
         "Centroidal Voronoi Tessellations" => "tutorials/centroidal.md",
         "Point Location" => "tutorials/point_location.md",
         "Nearest Neighbour Queries" => "tutorials/nearest.md",

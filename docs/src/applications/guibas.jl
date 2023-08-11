@@ -36,3 +36,10 @@
 # ```
 # 
 # Of course, these lines of pseudocode hide a lot of details.
+#
+# ### Point Location 
+#
+# Let us start by describing how point location is performed. Since each triangulation is on 
+# top of the other, the idea is to somehow create a representation of the triangulation's 
+# _history_, which can be used to find the triangle containing a point starting from 
+# the initial triangle. 
