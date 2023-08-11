@@ -111,6 +111,25 @@ function _get_ray(vorn, i, boundary_index)
 end
 
 """
+    maximum_distance_to_box(a, b, c, d, p)
+
+Given a bounding box `[a, b] × [c, d]`, returns the maximum distance 
+between `p` and the boundary of the box. The returned distance is squared.
+"""
+function maximum_distance_to_box(a, b, c, d, p)
+    p1x, p1y = a, c 
+    p2x, p2y = b, c
+    p3x, p3y = b, d
+    p4x, p4y = a, d
+    px, py = _getxy(p)
+    d1 = (p1x - px)^2 + (p1y - py)^2
+    d2 = (p2x - px)^2 + (p2y - py)^2
+    d3 = (p3x - px)^2 + (p3y - py)^2
+    d4 = (p4x - px)^2 + (p4y - py)^2
+    return max(d1, d2, d3, d4)
+end
+
+"""
     grow_polygon_outside_of_box(vorn::VoronoiTessellation, i, bounding_box)
 
 Truncates unbounded edges of the `i`th polygon of `vorn`, assumed to be unbounded,
@@ -134,12 +153,25 @@ function grow_polygon_outside_of_box(vorn::VoronoiTessellation, i, bounding_box)
     v_rx, v_ry = _getxy(v_r)
     p = (0.0, 0.0)
     q = (0.0, 0.0)
+    dist_to_box = maximum_distance_to_box(a, b, c, d, u_m)
+    dist_to_box = max(dist_to_box, maximum_distance_to_box(a, b, c, d, v_m))
     while inside
         t *= 2.0
         p = (u_mx + t * (u_rx - u_mx), u_my + t * (u_ry - u_my))
         q = (v_mx + t * (v_rx - v_mx), v_my + t * (v_ry - v_my))
         int1, int2 = liang_barsky(a, b, c, d, p, q)
         outside = all(isnan, int1) && all(isnan, int2)
+        # We need to be careful of the case where the generator is outside of the bounding box. In this case, 
+        # the unbounded edge might start initially outside of the box but then find it's way inside. 
+        # So, to avoid this, we also apply a conservative check that the length of each ray is greater than 
+        # the maximum distance from the generators to the bounding box.
+        # See the example with [(-3,7),(1,6),(-1,3),(-2,4),(3,-2),(5,5),(-4,-3),(3,8)] and bb = (0,5,-15,15) with the 7th polygon.
+        px, py = _getxy(p)
+        qx, qy = _getxy(q)
+        p_length = (px - u_mx)^2 + (py - u_my)^2
+        q_length = (qx - v_mx)^2 + (qy - v_my)^2
+        might_be_inside = min(p_length, q_length) < dist_to_box
+        outside = outside && !might_be_inside
         inside = !outside
     end
     new_points[u] = p

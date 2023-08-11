@@ -81,6 +81,7 @@ function clip_polygon(poly::Polygon, clip_poly::Polygon{T}) where {T}
     q = clip_poly[end]
     for p in clip_poly
         input_list = output_list 
+        isempty(output_list) && break
         output_list = clip_polygon_to_edge(input_list, q, p)
         q = p
     end

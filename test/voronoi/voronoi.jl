@@ -1153,4 +1153,62 @@ end
     @test DT.circular_equality(collect.(coord1), collect.(_coord1), ≈)
     @test DT.circular_equality(collect.(coord2), collect.(_coord2), ≈)
     @test DT.circular_equality(collect.(coord3), collect.(_coord3), ≈)
+
+    # example that used to break for G because its unbounded edge 
+    # didn't initially start inside the bounding box
+    A = (-3.0, 7.0)
+    B = (1.0, 6.0)
+    C = (-1.0, 3.0)
+    D = (-2.0, 4.0)
+    E = (3.0, -2.0)
+    F = (5.0, 5.0)
+    G = (-4.0, -3.0)
+    H = (3.0, 8.0)
+    points = [A, B, C, D, E, F, G, H]
+    tri = triangulate(points)
+    vorn = voronoi(tri)
+    bounding_box = (0.0, 5.0, -15.0, 15.0)
+    _pa = get_polygon_coordinates(vorn, 1, bounding_box)
+    _pb = get_polygon_coordinates(vorn, 2, bounding_box)
+    _pc = get_polygon_coordinates(vorn, 3, bounding_box)
+    _pd = get_polygon_coordinates(vorn, 4, bounding_box)
+    _pe = get_polygon_coordinates(vorn, 5, bounding_box)
+    _pf = get_polygon_coordinates(vorn, 6, bounding_box)
+    _pg = get_polygon_coordinates(vorn, 7, bounding_box)
+    # For _pg: This case used to be broken because the initial unbounded ray did not touch the bounding box, 
+    # but then later it does! So just using the Liang-Barsky algorithm by itself is not sufficient.
+    # To fix this, I added the stuff about maximum_distance_to_box inside grow_polygon_outside_of_box
+    _ph = get_polygon_coordinates(vorn, 8, bounding_box)
+    pa = NTuple{2,Float64}[]
+    pb = [(0.0, 4.499999999999998), (2.357142857142857, 2.9285714285714284), (3.1, 5.9), (0.0, 9.000000000000002), (0.0, 4.499999999999998)]
+    pc = [(0.0, -0.3000000000000007), (2.710526315789474, 1.868421052631579), (2.357142857142857, 2.9285714285714284), (0.0, 4.499999999999998), (0.0, -0.3000000000000007)]
+    pd = NTuple{2,Float64}[]
+    pe = [(5.0, 1.2142857142857117), (2.710526315789474, 1.868421052631579), (0.0, -0.3000000000000007), (0.0, -6.0), (1.2857142857142865, -15.0), (5.0, -15.0), (5.0, 1.2142857142857117)]
+    pf = [(5.0, 1.2142857142857153), (5.0, 7.166666666666664), (3.1, 5.9), (2.357142857142857, 2.9285714285714284), (2.710526315789474, 1.868421052631579), (5.0, 1.2142857142857153)]
+    pg = [(1.2857142857142865, -15.0), (0.0, -6.0), (0.0, -15.0), (1.2857142857142865, -15.0)]
+    ph = [(5.0, 7.166666666666664), (5.0, 15.0), (0.0, 15.0), (0.0, 9.000000000000002), (3.1, 5.9), (5.0, 7.166666666666664)]
+    @test DT.circular_equality(collect.(pa), collect.(_pa), ≈)
+    @test DT.circular_equality(collect.(pb), collect.(_pb), ≈)
+    @test DT.circular_equality(collect.(pc), collect.(_pc), ≈)
+    @test DT.circular_equality(collect.(pd), collect.(_pd), ≈)
+    @test DT.circular_equality(collect.(pe), collect.(_pe), ≈)
+    @test DT.circular_equality(collect.(pf), collect.(_pf), ≈)
+    @test DT.circular_equality(collect.(pg), collect.(_pg), ≈)
+    @test DT.circular_equality(collect.(ph), collect.(_ph), ≈)
 end
+
+@testset "maximum_distance_to_box" begin
+    a, b, c, d = -8.0, -2.0, 0.0, 7.0
+    A = (-5.34, 4.51)
+    δ = DT.maximum_distance_to_box(a, b, c, d, A)
+    @test sqrt(δ) ≈ 5.6121029926401
+    A = (-8.0, 5.0)
+    δ = DT.maximum_distance_to_box(a, b, c, d, A)
+    @test sqrt(δ) ≈ 7.8102496759067
+    A = (-12.0, 10.0)
+    δ = DT.maximum_distance_to_box(a, b, c, d, A)
+    @test sqrt(δ) ≈ 14.142135623731
+end
+
+
+
