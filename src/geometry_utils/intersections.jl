@@ -12,8 +12,8 @@ function intersection_of_ray_with_boundary(points, boundary_nodes, p, q, tol=1e-
     # TODO: Write this in terms of an angle θ rather than q, computing θ from pq. 
     # Probably don't need bisection if we do that.
     p == q && throw(ArgumentError("p and q must be distinct."))
-    px, py = getxy(p)
-    qx, qy = getxy(q)
+    px, py = _getxy(p)
+    qx, qy = _getxy(q)
 
     ## Start by finding a bracketing for the intersection point 
     t1 = zero(px)
@@ -67,7 +67,7 @@ of the rectangle that the point is on:
 - `:top`: `r` is on the top side of the rectangle.
 """
 function identify_side(r, a, b, c, d)
-    rx, ry = getxy(r)
+    rx, ry = _getxy(r)
     if rx == a
         return :left
     elseif rx == b
@@ -89,8 +89,8 @@ of the ray with the bounding box `[a, b] × [c, d]`. It is assumed that `p` is i
 the bounding box, but `q` can be inside or outside.
 """
 function intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
-    px, py = getxy(p)
-    qx, qy = getxy(q)
+    px, py = _getxy(p)
+    qx, qy = _getxy(q)
     pℓbx, pℓby = a, c
     pℓtx, pℓty = a, d
     prtx, prty = b, d
@@ -134,10 +134,10 @@ Finds the coordinates of the intersection of the line segment from `a` to `b`
 with the line segment from `c` to `d`.
 """
 function segment_intersection_coordinates(a, b, c, d)
-    ax, ay = getxy(a)
-    bx, by = getxy(b)
-    cx, cy = getxy(c)
-    dx, dy = getxy(d)
+    ax, ay = _getxy(a)
+    bx, by = _getxy(b)
+    cx, cy = _getxy(c)
+    dx, dy = _getxy(d)
     num = (cx - ax) * (dy - ay) - (cy - ay) * (dx - ax)
     den = (bx - ax) * (dy - cy) - (by - ay) * (dx - cx)
     α = num / den
@@ -157,8 +157,8 @@ to the left of the edge.
 function intersection_of_edge_and_bisector_ray(a, b, c)
     cert = point_position_relative_to_line(a, b, c)
     if !is_left(cert)
-        ax, ay = getxy(a)
-        bx, by = getxy(b)
+        ax, ay = _getxy(a)
+        bx, by = _getxy(b)
         m = (ax + bx) / 2, (ay + by) / 2
         return cert, m
     else
@@ -197,4 +197,91 @@ function classify_and_compute_segment_intersection(a, b, c, d)
         F = number_type(a)
         return cert, cert_c, cert_d, (F(NaN), F(NaN))
     end
+end
+
+"""
+    intersection_of_ray_with_edge(p, q, a, b)
+
+Given a ray starting at `p` and in the direction of `q` out to 
+infinity, finds the intersection of the ray with the edge from `a` to `b`.
+If no such intersection exists, then the coordinates of the intersection are returned 
+as `(NaN, NaN)`.
+"""
+function intersection_of_ray_with_edge(p, q, a, b)
+    p1, p2 = _getxy(p)
+    q1, q2 = _getxy(q)
+    a1, a2 = _getxy(a)
+    b1, b2 = _getxy(b)
+    den = a2 * q1 - a2 * p1 - b1 * p2 + b2 * p1 + b1 * q2 - b2 * q1 + a1 * (p2 - q2)
+    t = -(a1 * b2 - a2 * b1 - a1 * p2 + a2 * p1 + b1 * p2 - b2 * p1) / den
+    u = (a2 * q1 - a2 * p1 + p1 * q2 - p2 * q1 + a1 * (p2 - q2)) / den
+    if t < 0 || u < 0 || u > 1
+        return (NaN, NaN)
+    else
+        return (p1 + t * (q1 - p1), p2 + t * (q2 - p2))
+    end
+end
+
+"""
+    liang_barsky(a, b, c, d, p, q)
+
+Applies the Liang-Barsky algorithm to find the intersection of the line segment from `p` to `q`
+with the rectangle from `[a, b] × [c, d]`. Returns `(u, v)`, where:
+
+- If there is an intersection, then `u` and `v` are the coordinates of the two intersections. 
+- If there is no intersection, then `u = v = (NaN, NaN)`.
+"""
+function liang_barsky(a, b, c, d, p, q)
+    t1 = 0.0
+    t2 = 1.0
+    px, py = _getxy(p)
+    qx, qy = _getxy(q)
+    Δx = qx - px
+    t1, t2, inside = liang_barsky_clipper(-Δx, px - a, t1, t2)
+    if inside
+        t1, t2, inside = liang_barsky_clipper(Δx, b - px, t1, t2)
+        if inside
+            Δy = qy - py
+            t1, t2, inside = liang_barsky_clipper(-Δy, py - c, t1, t2)
+            if inside
+                t1, t2, inside = liang_barsky_clipper(Δy, d - py, t1, t2)
+                if inside
+                    if t2 < 1
+                        qx = px + t2 * Δx
+                        qy = py + t2 * Δy
+                    end
+                    if t1 > 0
+                        px = px + t1 * Δx
+                        py = py + t1 * Δy
+                    end
+                end
+            end
+        end
+    end
+    if inside
+        return (px, py), (qx, qy)
+    else
+        return (NaN, NaN), (NaN, NaN)
+    end
+end
+function liang_barsky_clipper(p, q, t1, t2)
+    inside = true
+    if p < 0
+        r = q / p
+        if r > t2
+            inside = false
+        elseif r > t1
+            t1 = r
+        end
+    elseif p > 0
+        r = q / p
+        if r < t1
+            inside = false
+        elseif r < t2
+            t2 = r
+        end
+    elseif q < 0
+        inside = false
+    end
+    return t1, t2, inside
 end

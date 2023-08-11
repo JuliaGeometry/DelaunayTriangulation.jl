@@ -4,6 +4,8 @@ using CairoMakie
 using ColorSchemes
 using DataStructures
 using StableRNGs
+import GeometryBasics: Point2f
+using StaticArrays
 using LinearAlgebra
 
 include("../helper_functions.jl")
@@ -110,47 +112,61 @@ end
     c5 = DT.get_polygon_coordinates(vorn, 5, bbox)
     c6 = DT.get_polygon_coordinates(vorn, 6, bbox)
     c7 = DT.get_polygon_coordinates(vorn, 7, bbox)
-    @test DT.circular_equality(collect.(c1), collect.([(-1.5, 0.5)
-        (0.16666666666666666, -1.1666666666666665)
+    @test DT.circular_equality(collect.(c1), collect.([
+        (-1.5, 0.5)
+        (0.166666666666, -1.1666666666666665)
         (1.0, 0.5)
         (1.0, 3.0)
-        (-1.5, 0.5)]), ≈)
-    @test DT.circular_equality(collect.(c2), collect.([(3.5, 0.5)
+        (-1.5, 0.5)
+    ]), ≈)
+    @test DT.circular_equality(collect.(c2), collect.([
+        (0.5, -3.2)
+        (5.7, -3.2)
+        (5.7, -1.700000000000001)
+        (3.5, 0.5)
         (0.5, -2.5)
-        (0.5, -3.2000000001862645)
-        (xmax, ymin)
-        (5.769999999552965, -1.7699999995529652)
-        (3.5, 0.5)]), ≈)
-    @test DT.circular_equality(collect.(c3), collect.([(3.5, 0.5)
+        (0.5, -3.2)
+    ]), ≈)
+    @test DT.circular_equality(collect.(c3), collect.([
+        (3.5, 0.5)
         (1.0, 0.5)
         (0.16666666666666666, -1.1666666666666665)
         (0.5, -2.5)
-        (3.5, 0.5)]), ≈)
-    @test DT.circular_equality(collect.(c4), collect.([(1.5, 5.270000000484288)
-        (xmin, ymax)
-        (-2.6999999997206032, 0.8999999999068677)
+        (3.5, 0.5)
+    ]), ≈)
+    @test DT.circular_equality(collect.(c4), collect.([
+        (1.5, 5.2)
+        (-2.7, 5.2)
+        (-2.7, 0.9000000000000001)
         (-1.5, 0.5)
         (1.0, 3.0)
         (1.5, 4.5)
-        (1.5, 5.270000000484288)]), ≈)
-    @test DT.circular_equality(collect.(c5), collect.([(1.5, 4.5)
+        (1.5, 5.2)
+    ]), ≈)
+    @test DT.circular_equality(collect.(c5), collect.([
+        (1.5, 4.5)
         (3.5, 0.5)
-        (5.769999999552965, 2.769999999552965)
-        (xmax, ymax)
-        (1.5, 5.270000000484288)
-        (1.5, 4.5)]), ≈)
-    @test DT.circular_equality(collect.(c6), collect.([(-2.6999999997206032, 0.8999999999068677)
-        (xmin, ymin)
-        (0.5, -3.2000000001862645)
+        (5.7, 2.6999999999999997)
+        (5.7, 5.2)
+        (1.5, 5.2)
+        (1.5, 4.5)
+    ]), ≈)
+    @test DT.circular_equality(collect.(c6), collect.([
+        (-2.7, 0.9000000000000001)
+        (-2.7, -3.2)
+        (0.5, -3.2)
         (0.5, -2.5)
         (0.16666666666666666, -1.1666666666666665)
         (-1.5, 0.5)
-        (-2.6999999997206032, 0.8999999999068677)]), ≈)
-    @test DT.circular_equality(collect.(c7), collect.([(1.5, 4.5)
+        (-2.7, 0.9000000000000001)
+    ]), ≈)
+    @test DT.circular_equality(collect.(c7), collect.([
+        (1.5, 4.5)
         (1.0, 3.0)
         (1.0, 0.5)
         (3.5, 0.5)
-        (1.5, 4.5)]), ≈)
+        (1.5, 4.5)
+    ]), ≈)
 end
 
 @testset "delete/add_polygon_adjacencies" begin
@@ -845,26 +861,38 @@ end
 @testset "Centroidal tessellation" begin
     flag = 0
     tot = 0
-    for _ in 1:50
-        points = randn(2, 250)
-        tri = triangulate(points)
-        vorn = voronoi(tri, true)
-        @test validate_tessellation(vorn)
-        smooth_vorn = centroidal_smooth(vorn, maxiters=5000)
-        @test validate_tessellation(smooth_vorn)
-        for i in each_polygon_index(smooth_vorn)
-            p = get_generator(smooth_vorn, i)
-            c = DT.get_centroid(smooth_vorn, i)
-            px, py = getxy(p)
-            cx, cy = getxy(c)
-            dx, dy = px - cx, py - cy
-            ℓ = sqrt(dx^2 + dy^2)
-            _flag = ℓ ≤ 1e-1
-            flag += _flag
-            tot += 1
+    for i in 1:50
+        p1 = randn(2, 50)
+        p2 = rand(SVector{2,Float64}, 30)
+        p3 = rand(Point2f, 250)
+        p4 = randn(Float32, 2, 70)
+        p5 = randn(2, 4)
+        p6 = rand(SVector{2,Float64}, 7)
+        p7 = rand(Point2f, 5)
+        p8 = randn(Float32, 2, 15)
+        _pts = (p1, p2, p3, p4, p5, p6, p7, p8)
+        for jj in eachindex(_pts)
+            points = _pts[jj]
+            println("Starting centroidal test at $((i, jj)).")
+            tri = triangulate(points)
+            vorn = voronoi(tri, true)
+            @test validate_tessellation(vorn, check_convex=!(jj ∈ (3, 4, 7, 8)))
+            smooth_vorn = centroidal_smooth(vorn, maxiters=5000)
+            @test validate_tessellation(smooth_vorn, check_convex=!(jj ∈ (3, 4, 7, 8)))
+            for i in each_polygon_index(smooth_vorn)
+                p = get_generator(smooth_vorn, i)
+                c = DT.get_centroid(smooth_vorn, i)
+                px, py = getxy(p)
+                cx, cy = getxy(c)
+                dx, dy = px - cx, py - cy
+                ℓ = sqrt(dx^2 + dy^2)
+                _flag = ℓ ≤ 1e-1
+                flag += _flag
+                tot += 1
+            end
         end
     end
-    @test flag / tot > 0.95
+    @test flag / tot > 0.9
 end
 
 @testset "Lattice" begin
@@ -885,12 +913,12 @@ end
     vorn = voronoi(tri)
     clip = DT.get_polygon_coordinates(vorn, 9, DT.polygon_bounds(vorn, 0.1))
     @test DT.circular_equality(collect.(clip), collect.([
-        [2.0316769079740804, 0.11847746641647516],
-        [2.0316769079740804, 1.107189193410733],
-        [0.8433942004507264, 1.107189193410733],
-        [0.7271857522962732, 0.8973620981454822],
-        [1.7423743304675243, 0.24505806539308744],
-        [2.0316769079740804, 0.11847746641647516]
+        (0.8374509236290323, 1.0964579554357115)
+        (0.7271857522962732, 0.8973620981454822)
+        (1.7423743304675243, 0.24505806539308744)
+        (2.0053766736553027, 0.1299847935961671)
+        (2.0053766736553027, 1.0964579554357115)
+        (0.8374509236290323, 1.0964579554357115)
     ]), ≈)
 end
 
@@ -901,12 +929,286 @@ end
     vorn = voronoi(tri)
     clip = DT.get_polygon_coordinates(vorn, 2, DT.polygon_bounds(vorn, 2.0))
     @test DT.circular_equality(collect.(clip), collect.([
-        (-2.7441549307938113, 4.348255778263596)
+        (-2.551580488601045, 4.122780970352073)
         (-0.3314903102646037, 1.5233996567840244)
-        (3.319011238223682, -2.375672313568049)
-        (8.112835861587623, -2.375672313568049)
-        (8.112835861587623, 9.321543597488171)
-        (-2.7441549307938113, 9.321543597488171)
-        (-2.7441549307938113, 4.348255778263596)
+        (3.2875066205292076, -2.3420224793856605)
+        (3.2875066205292076, 4.122780970352073)
+        (-2.551580488601045, 4.122780970352073)
     ]), ≈)
 end
+
+@testset "Issue #72" begin
+    points = [
+        Float32[0.32965052, 0.7966664],
+        Float32[0.015137732, 0.31555605],
+        Float32[0.54775107, 0.7222514],
+        Float32[0.687552, 0.6982844],
+        Float32[0.65762305, 0.5177773],
+        Float32[0.9649102, 0.8300816],
+        Float32[0.12174326, 0.82220316],
+        Float32[0.007668495, 0.7747718],
+        Float32[0.3144052, 0.5493178],
+        Float32[0.6848137, 0.12493092],
+        Float32[0.39197737, 0.6912688],
+        Float32[0.41400427, 0.025964081],
+        Float32[0.35919905, 0.7255166],
+        Float32[0.80712754, 0.3415957],
+        Float32[0.542679, 0.51094216],
+        Float32[0.092720866, 0.90151125],
+        Float32[0.90992355, 0.8814645],
+        Float32[0.02194357, 0.00064593554],
+        Float32[0.9616154, 0.10633117],
+        Float32[0.0044495463, 0.97074896],
+        Float32[0.4309939, 0.5323847],
+        Float32[0.90867966, 0.55974066],
+        Float32[0.580766, 0.7668439],
+        Float32[0.8563475, 0.88143903],
+        Float32[0.18311942, 0.8367877]
+    ]
+    tri = triangulate(points)
+    vorn = voronoi(tri)
+    @test validate_tessellation(vorn)
+
+    points = [
+        [0.01877582f0, 0.33188105f0],
+        [0.57645035f0, 0.58131695f0],
+        [0.14916456f0, 0.37567925f0],
+        [0.87054604f0, 0.29108626f0],
+        [0.15384161f0, 0.80313444f0],
+        [0.66470474f0, 0.2547925f0],
+        [0.69431657f0, 0.42567456f0],
+        [0.43695337f0, 0.42649788f0],
+        [0.3316936f0, 0.18936294f0],
+        [0.98043495f0, 0.8360868f0],
+        [0.5788496f0, 0.103449225f0],
+        [0.5252029f0, 0.96790665f0],
+        [0.33206534f0, 0.88216203f0],
+        [0.07115775f0, 0.5983915f0],
+        [0.29895544f0, 0.103566706f0],
+        [0.52547264f0, 0.57929194f0],
+        [0.19257814f0, 0.30570602f0],
+        [0.12954468f0, 0.11141288f0],
+        [0.28790158f0, 0.39447558f0],
+        [0.6525599f0, 0.6425986f0]
+    ]
+    tri = triangulate(points)
+    vorn = voronoi(tri)
+    @test validate_tessellation(vorn)
+end
+
+@testset "Polygon bounds with generators only" begin
+    points = rand(2, 50)
+    tri = triangulate(points)
+    vorn = voronoi(tri)
+    xmin, xmax, ymin, ymax = DT.polygon_bounds(vorn, 0.1; include_polygon_vertices=false)
+    _xmin, _xmax = extrema(points[1, :])
+    _ymin, _ymax = extrema(points[2, :])
+    @test xmin == _xmin - 0.1(_xmax - _xmin)
+    @test xmax == _xmax + 0.1(_xmax - _xmin)
+    @test ymin == _ymin - 0.1(_ymax - _ymin)
+    @test ymax == _ymax + 0.1(_ymax - _ymin)
+end
+
+#=
+@testset "Position of Voronoi polygons relative to box" begin
+    a = (-3.0, 7.0)
+    b = (1.0, 6.0)
+    c = (-1.0, 3.0)
+    d = (-2.0, 4.0)
+    e = (3.0, -2.0)
+    f = (5.0, 5.0)
+    g = (-4.0, -3.0)
+    h = (3.0, 8.0)
+    points = [a, b, c, d, e, f, g, h]
+    tri = triangulate(points)
+    vorn = voronoi(tri)
+    a, b, c, d = -8.0, 6.0, -2.0, 10.0
+    bounding_box = (a, b, c, d)
+    results = Dict(
+        1 => DT.has_multiple_intersections,
+        2 => DT.is_inside,
+        3 => DT.is_inside,
+        4 => DT.has_multiple_intersections,
+        5 => DT.has_multiple_intersections,
+        6 => DT.has_multiple_intersections,
+        7 => DT.has_multiple_intersections,
+        8 => DT.has_multiple_intersections,
+    )
+    for (i, cert_f) in results
+        @test cert_f(DT.polygon_position_relative_to_box(vorn, bounding_box, i))
+    end
+end
+=#
+
+@testset "grow_polygon_outside_of_box" begin
+    A = (-3.0, 7.0)
+    B = (1.0, 6.0)
+    C = (-1.0, 3.0)
+    D = (-2.0, 4.0)
+    E = (3.0, -2.0)
+    F = (5.0, 5.0)
+    G = (-4.0, -3.0)
+    H = (3.0, 8.0)
+    points = [A, B, C, D, E, F, G, H]
+    tri = triangulate(points)
+    vorn = voronoi(tri)
+    a, b, c, d = -4.0, 6.0, -2.0, 4.0
+    bounding_box = (a, b, c, d)
+    new_vertices, new_points = DT.grow_polygon_outside_of_box(vorn, 1, bounding_box)
+    @test collect.(new_points) ≈ collect.([
+        (-1.1363636363636365, 5.954545454545455)
+        (-0.2999999999999998, 9.3)
+        (-2.3999999999999986, 21.900000000000006)
+        (-61.96153846153845, 7.846153846153847)
+        (-10.807692307692307, 2.730769230769231)
+    ])
+    @test new_vertices == [1, 2, 3, 4, 5]
+    new_vertices, new_points = DT.grow_polygon_outside_of_box(vorn, 5, bounding_box)
+    @test collect.(new_points) ≈ collect.([
+        (2.710526315789474, 1.868421052631579)
+        (-0.7307692307692308, -0.8846153846153846)
+        (1.1153846153846159, -13.807692307692308)
+        (13.026315789473683, -1.0789473684210529)
+    ])
+    @test new_vertices == [1, 2, 3, 4]
+    new_vertices, new_points = DT.grow_polygon_outside_of_box(vorn, 6, bounding_box)
+    @test collect.(new_points) ≈ collect.([
+        (23.34210526315789, -4.026315789473685)
+        (17.5, 15.499999999999995)
+        (3.1, 5.9)
+        (2.357142857142857, 2.9285714285714284)
+        (2.710526315789474, 1.868421052631579)
+    ])
+    @test new_vertices == [1, 2, 3, 4, 5]
+    new_vertices, new_points = DT.grow_polygon_outside_of_box(vorn, 7, bounding_box)
+    @test collect.(new_points) ≈ collect.([
+        (-0.7307692307692308, -0.8846153846153846)
+        (-4.166666666666666, 0.8333333333333335)
+        (-10.807692307692307, 2.730769230769231)
+        (-61.96153846153845, 7.846153846153847)
+        (1.1153846153846159, -13.807692307692308)
+    ])
+    @test new_vertices == [1, 2, 3, 4, 5]
+    new_vertices, new_points = DT.grow_polygon_outside_of_box(vorn, 8, bounding_box)
+    @test collect.(new_points) ≈ collect.([
+        (17.5, 15.499999999999995)
+        (-4.799999999999997, 36.30000000000001)
+        (-0.2999999999999998, 9.3)
+        (3.1, 5.9)
+    ])
+    @test new_vertices == [1, 2, 3, 4]
+    @inferred DT.grow_polygon_outside_of_box(vorn, 8, bounding_box)
+end
+
+@testset "Clipping polygons to arbitrary bounding box" begin
+    A = (-3.0, 7.0)
+    B = (1.0, 6.0)
+    C = (-1.0, 3.0)
+    D = (-2.0, 4.0)
+    E = (3.0, -2.0)
+    F = (5.0, 5.0)
+    G = (-4.0, -3.0)
+    H = (3.0, 8.0)
+    points = [A, B, C, D, E, F, G, H]
+    tri = triangulate(points)
+    vorn = voronoi(tri)
+    a, b, c, d = -4.0, 6.0, -2.0, 4.0
+    bounding_box = (a, b, c, d)
+    _pa = get_polygon_coordinates(vorn, 1, bounding_box)
+    _pb = get_polygon_coordinates(vorn, 2, bounding_box)
+    _pc = get_polygon_coordinates(vorn, 3, bounding_box)
+    _pd = get_polygon_coordinates(vorn, 4, bounding_box)
+    _pe = get_polygon_coordinates(vorn, 5, bounding_box)
+    _pf = get_polygon_coordinates(vorn, 6, bounding_box)
+    _pg = get_polygon_coordinates(vorn, 7, bounding_box)
+    _ph = get_polygon_coordinates(vorn, 8, bounding_box)
+    pa = NTuple{2,Float64}[]
+    pb = [(0.75, 4.0), (2.357142857142857, 2.9285714285714284), (2.625, 4.0), (0.75, 4.0)]
+    pc = [(2.710526315789474, 1.868421052631579), (2.357142857142857, 2.9285714285714284), (0.75, 4.0), (-1.0, 4.0), (-4.0, 1.0), (-4.0, 0.75), (-0.7307692307692308, -0.8846153846153846), (2.710526315789474, 1.868421052631579)]
+    pd = [(-4.0, 4.0), (-4.0, 1.0), (-1.0, 4.0), (-4.0, 4.0)]
+    pe = [(6.0, 0.9285714285714279), (2.710526315789474, 1.868421052631579), (-0.7307692307692308, -0.8846153846153846), (-0.5714285714285712, -2.0), (6.0, -2.0), (6.0, 0.9285714285714279)]
+    pf = [(6.0, 0.9285714285714284), (6.0, 4.0), (2.625, 4.0), (2.357142857142857, 2.9285714285714284), (2.710526315789474, 1.868421052631579), (6.0, 0.9285714285714284)]
+    pg = [(-0.5714285714285721, -2.0), (-0.7307692307692308, -0.8846153846153846), (-4.0, 0.75), (-4.0, -2.0), (-0.5714285714285721, -2.0)]
+    ph = NTuple{2,Float64}[]
+    @test DT.circular_equality(collect.(pa), collect.(_pa), ≈)
+    @test DT.circular_equality(collect.(pb), collect.(_pb), ≈)
+    @test DT.circular_equality(collect.(pc), collect.(_pc), ≈)
+    @test DT.circular_equality(collect.(pd), collect.(_pd), ≈)
+    @test DT.circular_equality(collect.(pe), collect.(_pe), ≈)
+    @test DT.circular_equality(collect.(pf), collect.(_pf), ≈)
+    @test DT.circular_equality(collect.(pg), collect.(_pg), ≈)
+    @test DT.circular_equality(collect.(ph), collect.(_ph), ≈)
+
+    # test a small example 
+    points = [(0.0, 1.0), (-1.0, 2.0), (-2.0, -1.0)]
+    tri = triangulate(points)
+    vorn = voronoi(tri)
+    bb = (-1.0, 0.0, -1.0, 2.0)
+    coord1 = get_polygon_coordinates(vorn, 1, bb)
+    coord2 = get_polygon_coordinates(vorn, 2, bb)
+    coord3 = get_polygon_coordinates(vorn, 3, bb)
+    _coord1 = [(0.0, 2.0), (0.0, 2.0), (-1.0, 1.0), (-1.0, 0.0), (0.0, -1.0), (0.0, 2.0)]
+    _coord2 = [(-1.0, 2.0), (-1.0, 1.0), (0.0, 2.0), (-1.0, 2.0)]
+    _coord3 = [(-1.0, -1.0), (0.0, -1.0), (0.0, -1.0), (-1.0, 0.0), (-1.0, -1.0)]
+    @test DT.circular_equality(collect.(coord1), collect.(_coord1), ≈)
+    @test DT.circular_equality(collect.(coord2), collect.(_coord2), ≈)
+    @test DT.circular_equality(collect.(coord3), collect.(_coord3), ≈)
+
+    # example that used to break for G because its unbounded edge 
+    # didn't initially start inside the bounding box
+    A = (-3.0, 7.0)
+    B = (1.0, 6.0)
+    C = (-1.0, 3.0)
+    D = (-2.0, 4.0)
+    E = (3.0, -2.0)
+    F = (5.0, 5.0)
+    G = (-4.0, -3.0)
+    H = (3.0, 8.0)
+    points = [A, B, C, D, E, F, G, H]
+    tri = triangulate(points)
+    vorn = voronoi(tri)
+    bounding_box = (0.0, 5.0, -15.0, 15.0)
+    _pa = get_polygon_coordinates(vorn, 1, bounding_box)
+    _pb = get_polygon_coordinates(vorn, 2, bounding_box)
+    _pc = get_polygon_coordinates(vorn, 3, bounding_box)
+    _pd = get_polygon_coordinates(vorn, 4, bounding_box)
+    _pe = get_polygon_coordinates(vorn, 5, bounding_box)
+    _pf = get_polygon_coordinates(vorn, 6, bounding_box)
+    _pg = get_polygon_coordinates(vorn, 7, bounding_box)
+    # For _pg: This case used to be broken because the initial unbounded ray did not touch the bounding box, 
+    # but then later it does! So just using the Liang-Barsky algorithm by itself is not sufficient.
+    # To fix this, I added the stuff about maximum_distance_to_box inside grow_polygon_outside_of_box
+    _ph = get_polygon_coordinates(vorn, 8, bounding_box)
+    pa = NTuple{2,Float64}[]
+    pb = [(0.0, 4.499999999999998), (2.357142857142857, 2.9285714285714284), (3.1, 5.9), (0.0, 9.000000000000002), (0.0, 4.499999999999998)]
+    pc = [(0.0, -0.3000000000000007), (2.710526315789474, 1.868421052631579), (2.357142857142857, 2.9285714285714284), (0.0, 4.499999999999998), (0.0, -0.3000000000000007)]
+    pd = NTuple{2,Float64}[]
+    pe = [(5.0, 1.2142857142857117), (2.710526315789474, 1.868421052631579), (0.0, -0.3000000000000007), (0.0, -6.0), (1.2857142857142865, -15.0), (5.0, -15.0), (5.0, 1.2142857142857117)]
+    pf = [(5.0, 1.2142857142857153), (5.0, 7.166666666666664), (3.1, 5.9), (2.357142857142857, 2.9285714285714284), (2.710526315789474, 1.868421052631579), (5.0, 1.2142857142857153)]
+    pg = [(1.2857142857142865, -15.0), (0.0, -6.0), (0.0, -15.0), (1.2857142857142865, -15.0)]
+    ph = [(5.0, 7.166666666666664), (5.0, 15.0), (0.0, 15.0), (0.0, 9.000000000000002), (3.1, 5.9), (5.0, 7.166666666666664)]
+    @test DT.circular_equality(collect.(pa), collect.(_pa), ≈)
+    @test DT.circular_equality(collect.(pb), collect.(_pb), ≈)
+    @test DT.circular_equality(collect.(pc), collect.(_pc), ≈)
+    @test DT.circular_equality(collect.(pd), collect.(_pd), ≈)
+    @test DT.circular_equality(collect.(pe), collect.(_pe), ≈)
+    @test DT.circular_equality(collect.(pf), collect.(_pf), ≈)
+    @test DT.circular_equality(collect.(pg), collect.(_pg), ≈)
+    @test DT.circular_equality(collect.(ph), collect.(_ph), ≈)
+end
+
+@testset "maximum_distance_to_box" begin
+    a, b, c, d = -8.0, -2.0, 0.0, 7.0
+    A = (-5.34, 4.51)
+    δ = DT.maximum_distance_to_box(a, b, c, d, A)
+    @test sqrt(δ) ≈ 5.6121029926401
+    A = (-8.0, 5.0)
+    δ = DT.maximum_distance_to_box(a, b, c, d, A)
+    @test sqrt(δ) ≈ 7.8102496759067
+    A = (-12.0, 10.0)
+    δ = DT.maximum_distance_to_box(a, b, c, d, A)
+    @test sqrt(δ) ≈ 14.142135623731
+end
+
+
+

@@ -15,7 +15,7 @@ Returns `ExactPredicates.orient(p, q, r)`, in particular we return:
     \\text{orient}(p, q, r) = \\text{sgn} \\det \\begin{vmatrix} p_x & p_y & 1 \\\\ q_x & q_y & 1 \\\\ r_x & r_y & 1 \\end{vmatrix} = \\text{sgn} \\det \\begin{vmatrix} p_x-r_x & p_y-r_y \\\\ q_x-r_x & q_y-r_y \\end{vmatrix}.
     ```
 """
-orient_predicate(p, q, r) = orient(f64_getxy(p), f64_getxy(q), f64_getxy(r))
+orient_predicate(p, q, r) = orient(_getxy(p), _getxy(q), _getxy(r))
 
 """
     incircle_predicate(a, b, c, p)
@@ -34,7 +34,7 @@ Returns `ExactPredicates.incircle(a, b, c, p)`, in particular we return:
     \\text{incircle}(a, b, c, d) = \\text{sgn} \\det \\begin{vmatrix} a_x & a_y & a_x^2 + a_y^2 & 1 \\\\ b_x & b_y & b_x62 + b_y^2 & 1 \\\\ c_x & c_y & c_x^2 + c_y^2 & 1 \\\\ d_x & d_y & d_x^2 + d_y^2 & 1 \\end{vmatrix} = \\text{sgn} \\det \\begin{vmatrix} a_x - d_x & a_y - d_y & (a_x - d_x)^2 + (a_y - d_y)^2 \\\\ b_x - d_x & b_y - d_y & (b_x - d_x)^2 + (b_y - d_y)^2 \\\\ c_x - d_x & c_y - d_y & (c_x - d_x)^2 + (c_y - d_y)^2 \\end{vmatrix}.
     ```
 """
-incircle_predicate(a, b, c, p) = incircle(f64_getxy(a), f64_getxy(b), f64_getxy(c), f64_getxy(p))
+incircle_predicate(a, b, c, p) = incircle(_getxy(a), _getxy(b), _getxy(c), _getxy(p))
 
 """
     parallelorder_predicate(a, b, p, q)
@@ -49,7 +49,7 @@ Returns `ExactPredicates.parallelorder(a, b, p, q)`, in particular we return:
 
     The parallelorder predicate is the same as `orient_predicate(b-a, q-p, 0)`.
 """
-parallelorder_predicate(a, b, p, q) = parallelorder(f64_getxy(a), f64_getxy(b), f64_getxy(p), f64_getxy(q))
+parallelorder_predicate(a, b, p, q) = parallelorder(_getxy(a), _getxy(b), _getxy(p), _getxy(q))
 
 """
     sameside_predicate(a, b, p)
@@ -62,9 +62,9 @@ Returns `ExactPredicates.sameside(p, a, b)` (but we redefine it here).
     main point being tested is the last argument.
 """
 function sameside_predicate(a, b, p)
-    _p = f64_getxy(p)
-    _a = f64_getxy(a)
-    _b = f64_getxy(b)
+    _p = _getxy(p)
+    _a = _getxy(a)
+    _b = _getxy(b)
     if _a < _p && _b < _p || _a > _p && _b > _p
         return 1
     elseif _a < _p && _b > _p || _a > _p && _b < _p
@@ -490,3 +490,72 @@ function triangle_line_segment_intersection(p, q, r, a, b)
         end
     end
 end
+
+"""
+    point_position_relative_to_box(a, b, c, d, p)
+
+Tests if the point `p` is inside the box `[a, b] × [c, d]`. Returns:
+
+- `Cert.Inside`: Inside the box.
+- `Cert.On`: On the boundary of the box.
+- `Cert.Outside`: Outside the box.
+"""
+function point_position_relative_to_box(a, b, c, d, p)
+    x, y = _getxy(p)
+    if (x < a) || (x > b) || (y < c) || (y > d)
+        return Cert.Outside
+    elseif (x == a) || (x == b) || (y == c) || (y == d)
+        return Cert.On
+    else
+        return Cert.Inside
+    end
+end
+
+#= 
+THIS IS WRONG FOR [(0.0, 1.0), (-1.0, 2.0), (-2.0, -1.0)] and A, B, C, D = -1.0, 0.0, -1.0, 2.0
+"""
+    polygon_position_relative_to_box(a, b, c, d, vertices, points)
+
+Tests the position of the polygon defined by `(vertices, points)` relative to the box `[a, b] × [c, d]`. The 
+polygon is defined so that the indices in `vertices` correspond to points in `points`, and is defined so that 
+`vertex[begin] == vertex[end]`.
+
+- `Cert.Inside`: The polygon is contained entirely within the box.
+- `Cert.Outside`: The polygon is entirely outside the box.
+- `Cert.Touching`: The polygon is contained entirely within the box, but touches the boundary of the box. Note that if a polygon touches the boundary of the box but is entirely outside otherwise, `Cert.Outside` will be returned instead. 
+- `Cert.Multiple`: The polygon intersects the box in multiple places.
+
+Boundary indices are treated as being outside.
+"""
+function polygon_position_relative_to_box(a, b, c, d, vertices, points)
+    @assert vertices[begin] == vertices[end]
+    num_on = 0
+    num_in = 0
+    num_out = 0
+    nv = length(vertices) - 1
+    for i in @views vertices[begin:(end-1)]
+        if is_boundary_index(i)
+            num_out += 1 
+            continue
+        end
+        p = get_point(points, i)
+        cert = point_position_relative_to_box(a, b, c, d, p)
+        if is_on(cert)
+            num_on += 1
+        elseif is_inside(cert)
+            num_in += 1
+        else
+            num_out += 1
+        end
+    end
+    if (num_out == nv) || (num_on ≥ 1 && num_out ≥ 1)
+        return Cert.Outside
+    elseif (num_in == nv) && num_on == 0
+        return Cert.Inside
+    elseif (num_out == 0) && (num_on ≥ 1)
+        return Cert.Touching
+    else
+        return Cert.Multiple
+    end
+end
+=#

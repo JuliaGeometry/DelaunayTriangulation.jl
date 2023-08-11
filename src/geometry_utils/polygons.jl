@@ -28,11 +28,11 @@ function polygon_features_single_segment(pts, boundary_nodes; scale=Val(true))
     n_edge = num_boundary_edges(boundary_nodes)
     vᵢ = get_boundary_nodes(boundary_nodes, 1)
     pᵢ = get_point(pts, vᵢ)
-    xᵢ, yᵢ = getxy(pᵢ)
+    xᵢ, yᵢ = _getxy(pᵢ)
     for j in 2:(n_edge+1)
         vᵢ₊₁ = get_boundary_nodes(boundary_nodes, j)
         pᵢ₊₁ = get_point(pts, vᵢ₊₁)
-        xᵢ₊₁, yᵢ₊₁ = getxy(pᵢ₊₁)
+        xᵢ₊₁, yᵢ₊₁ = _getxy(pᵢ₊₁)
         area_contribution = xᵢ * yᵢ₊₁ - xᵢ₊₁ * yᵢ
         cx += (xᵢ + xᵢ₊₁) * area_contribution
         cy += (yᵢ + yᵢ₊₁) * area_contribution
@@ -116,17 +116,17 @@ function distance_to_polygon(q, pts, boundary_nodes)
     end
 end
 function distance_to_polygon_single_segment(q, pts, boundary_nodes, is_in_outer=false; return_sqrt=Val(true))
-    x, y = getxy(q)
+    x, y = _getxy(q)
     F = number_type(pts)
     dist = typemax(F)
     n_edge = num_boundary_edges(boundary_nodes)
     vᵢ = get_boundary_nodes(boundary_nodes, 1)
     pᵢ = get_point(pts, vᵢ)
-    xᵢ, yᵢ = getxy(pᵢ)
+    xᵢ, yᵢ = _getxy(pᵢ)
     for j in 2:(n_edge+1)
         vᵢ₊₁ = get_boundary_nodes(boundary_nodes, j)
         pᵢ₊₁ = get_point(pts, vᵢ₊₁)
-        xᵢ₊₁, yᵢ₊₁ = getxy(pᵢ₊₁)
+        xᵢ₊₁, yᵢ₊₁ = _getxy(pᵢ₊₁)
         if (yᵢ₊₁ > y) ≠ (yᵢ > y)
             intersect_x = (xᵢ - xᵢ₊₁) * (y - yᵢ₊₁) / (yᵢ - yᵢ₊₁) + xᵢ₊₁
             if x < intersect_x
@@ -209,7 +209,7 @@ function polygon_bounds_single_segment(pts, boundary_nodes)
     for i in 1:n_edge
         vᵢ = get_boundary_nodes(boundary_nodes, i)
         pᵢ = get_point(pts, vᵢ)
-        xᵢ, yᵢ = getxy(pᵢ)
+        xᵢ, yᵢ = _getxy(pᵢ)
         xmin = min(xᵢ, xmin)
         xmax = max(xᵢ, xmax)
         ymin = min(yᵢ, ymin)
@@ -241,8 +241,9 @@ assumed that the vertices are not circular, i.e. `vertices[begin] ≠ vertices[e
 """
 function sort_convex_polygon!(vertices, points)
     cx, cy = mean_points(points, vertices)
-    to_angle = p -> atan(gety(p) - cy, getx(p) - cx)
+    to_angle = p -> atan(gety(p) - cy, _getx(p) - cx)
     vert_to_angle = v -> (to_angle ∘ get_point)(points, v)
     sort!(vertices, by=vert_to_angle)
     return vertices
 end 
+

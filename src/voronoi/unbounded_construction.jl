@@ -7,7 +7,7 @@ function initialise_voronoi_tessellation(tri::Tr) where {Tr<:Triangulation}
     I = integer_type(tri)
     T = triangle_type(tri)
     F = number_type(tri)
-    P = NTuple{2,F}
+    P = NTuple{2,Float64}
     polygon_points = Vector{P}()
     circumcenter_to_triangle = Dict{I,T}()
     triangle_to_circumcenter = Dict{T,I}()

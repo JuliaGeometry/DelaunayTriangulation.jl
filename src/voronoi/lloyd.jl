@@ -1,8 +1,8 @@
 function move_generator_to_centroid!(points, vorn::VoronoiTessellation, generator)
     c = get_centroid(vorn, generator)
-    cx, cy = getxy(c)
+    cx, cy = _getxy(c)
     p = get_generator(vorn, generator)
-    px, py = getxy(p)
+    px, py = _getxy(p)
     dist = sqrt((cx - px)^2 + (cy - py)^2)
     set_point!(points, generator, cx, cy)
     return dist

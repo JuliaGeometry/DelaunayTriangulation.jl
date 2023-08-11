@@ -25,9 +25,9 @@ function try_circumcenter_insertion!(tri::Triangulation, T, events::InsertionEve
     A² ≤ ε^2 && return Cert.PrecisionFailure
 
     cx, cy = triangle_circumcenter(p, q, r)
-    px, py = getxy(p)
-    qx, qy = getxy(q)
-    rx, ry = getxy(r)
+    px, py = _getxy(p)
+    qx, qy = _getxy(q)
+    rx, ry = _getxy(r)
     # Just as we need when checking for precision issues when splitting a segment, we need to check that the circumcenter is not one of the vertices.
     if ((px == cx) && (py == cy)) || ((qx == cx) && (qy == cy)) || ((rx == cx) && (ry == cy)) || # equality is actually valid to check here, sometimes the precison really does push them to be equal. We do it separately as it's faster.
        (!iszero(cx) && !iszero(cy) && ((abs((px - cx) / cx) ≤ ε) && (abs((py - cy) / cy) ≤ ε)) || ((abs((qx - cx) / cx) ≤ ε) && (abs((qy - cy) / cy) ≤ ε)) || ((abs((rx - cx) / cx) ≤ ε) && (abs((ry - cy) / cy) ≤ ε))) ||
@@ -73,9 +73,9 @@ function try_circumcenter_insertion!(tri::Triangulation, T, events::InsertionEve
     end
     v1, v2, v3 = indices(V)
     p1, p2, p3 = get_point(tri, v1, v2, v3)
-    p1x, p1y = getxy(p1)
-    p2x, p2y = getxy(p2)
-    p3x, p3y = getxy(p3)
+    p1x, p1y = _getxy(p1)
+    p2x, p2y = _getxy(p2)
+    p3x, p3y = _getxy(p3)
     if ((p1x == cx) && (p1y == cy)) || ((p2x == cx) && (p2y == cy)) || ((p3x == cx) && (p3y == cy)) ||
        (!iszero(cx) && !iszero(cy) && ((abs((p1x - cx) / cx) ≤ ε) && (abs((p1y - cy) / cy) ≤ ε)) || ((abs((p2x - cx) / cx) ≤ ε) && (abs((p2y - cy) / cy) ≤ ε)) || ((abs((p3x - cx) / cx) ≤ ε) && (abs((p3y - cy) / cy) ≤ 1e-14))) ||
        ((abs(p1x - cx) ≤ ε) && (abs(p1y - cy) ≤ ε)) || ((abs(p2x - cx) ≤ ε) && (abs(p2y - cy) ≤ ε)) || ((abs(p3x - cx) ≤ ε) && (abs(p3y - cy) ≤ ε))
@@ -104,8 +104,8 @@ function try_circumcenter_insertion!(tri::Triangulation, T, events::InsertionEve
             any_encroached = true
             u, v = edge_indices(edge)
             p, q = get_point(tri, u, v)
-            px, py = getxy(p)
-            qx, qy = getxy(q)
+            px, py = _getxy(p)
+            qx, qy = _getxy(q)
             ℓ² = (qx - px)^2 + (qy - py)^2
             encroachment_enqueue!(queue, edge, ℓ²)
         end
@@ -169,8 +169,8 @@ end
 function compute_split_position(tri::Triangulation, p, q, e, segment_list)
     if e ∈ segment_list
         # Split at the midpoint when splitting for the first time
-        px, py = getxy(p)
-        qx, qy = getxy(q)
+        px, py = _getxy(p)
+        qx, qy = _getxy(q)
         mx, my = px + (qx - px) / 2, py + (qy - py) / 2
         return mx, my
     else
@@ -187,8 +187,8 @@ function compute_split_position(tri::Triangulation, p, q, e, segment_list)
             t = inv(2.0)
         end
         # Need to place the split on the side that is closer to the midpoint
-        px, py = getxy(p)
-        qx, qy = getxy(q)
+        px, py = _getxy(p)
+        qx, qy = _getxy(q)
         mx, my = px + (qx - px) / 2, py + (qy - py) / 2
         if abs(t - 1 / 2) < 1e-6 # close enough to the midpoint, so just bisect - every third split on a segment should be a bisection anyway. 
             return mx, my
@@ -213,8 +213,8 @@ function split_subsegment!(tri::Triangulation, queue, events, targets, segment_l
     mx, my = compute_split_position(tri, p, q, e, segment_list)
     # We can run into precision issues (e.g. I found this was needed when reproducing Figure 6.14 in the Delaunay 
     # Mesh Generation book). Let's ensure that the computed splitting point isn't just one of p or q.
-    px, py = getxy(p)
-    qx, qy = getxy(q)
+    px, py = _getxy(p)
+    qx, qy = _getxy(q)
     if ((mx == px) && (my == py)) || ((mx == qx) && (my == qy)) ||
        (abs(mx - px) ≤ ε) && (abs(my - py) ≤ ε) || (abs(mx - qx) ≤ ε) && (abs(my - qy) ≤ ε)
         return nothing

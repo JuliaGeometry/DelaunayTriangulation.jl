@@ -101,8 +101,8 @@ function initialise_refinement_queue(tri::Triangulation, targets::RefinementTarg
         if encroachment_flag
             u, v = edge_indices(e)
             p, q = get_point(tri, u, v)
-            px, py = getxy(p)
-            qx, qy = getxy(q)
+            px, py = _getxy(p)
+            qx, qy = _getxy(q)
             e_length² = (px - qx)^2 + (py - qy)^2
             encroachment_enqueue!(queue, e, e_length²)
         end

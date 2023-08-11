@@ -238,9 +238,10 @@ if NEEDS_PLOT_DEFS
                 if bnd === Makie.automatic
                     return DelTri.polygon_bounds(vorn, extent)
                 else
-                    return p.bounding_box
+                    return bnd
                 end
             end
+            @show bbox
             map(generators_2f, polygons, bbox) do gens, polys, box
                 return get_voronoi_tiles!(gens, polys, vorn, box)
             end

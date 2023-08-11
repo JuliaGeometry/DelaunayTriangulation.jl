@@ -197,6 +197,7 @@ export convert_boundary_points_to_indices
 include("geometry_utils/polygons.jl")
 include("geometry_utils/polylabel.jl")
 include("geometry_utils/intersections.jl")
+include("geometry_utils/sutherland_hodgman.jl")
 
 const polylabel = pole_of_inaccessibility
 
@@ -211,9 +212,11 @@ include("voronoi/main.jl")
 include("voronoi/unbounded_construction.jl")
 include("voronoi/clipped_construction.jl")
 include("voronoi/lloyd.jl")
+include("voronoi/coordinates.jl")
 
 export voronoi
 export centroidal_smooth
+export get_polygon_coordinates
 
 export edge_indices
 

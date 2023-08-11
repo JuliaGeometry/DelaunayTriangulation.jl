@@ -41,6 +41,10 @@ Given a point `p`, returns `(getx(p), gety(p))`.
 """
 getxy(p) = (getx(p), gety(p))
 
+@inline _getx(p) = Float64(getx(p))
+@inline _gety(p) = Float64(gety(p))
+@inline _getxy(p) = (_getx(p), _gety(p))
+
 """
     getpoint(pts::P, i)
 
@@ -48,7 +52,7 @@ Given a collection of points `pts`, returns a `Tuple`
 of the `x` and `y` coordinates of the `i`th point in 
 the collection. The methods currently defined are 
 
-    getpoint(pts::AbstractVector, i)
+    getpoint(pts::AbstractVecOrTuple, i)
     getpoint(pts::AbstractMatrix, i)
 
 You can extend this function as you need. 
@@ -62,7 +66,7 @@ function getpoint end
 function getpoint(::P, ::Integer) where {P}
     return error("The getpoint function has not been defined for the type $P.")
 end
-function getpoint(pts::AbstractVector, i::Integer)
+function getpoint(pts::Union{AbstractVector,Tuple}, i::Integer)
     pt = pts[i]
     x, y = getx(pt), gety(pt)
     return (x, y)
@@ -72,7 +76,7 @@ function getpoint(pts::AbstractMatrix, i::Integer)
     x, y = getx(pt), gety(pt)
     return (x, y)
 end
-getpoint(pts, p) = (getx(p), gety(p))
+getpoint(pts, p) = (getx(p), gety(p)) # so that we can mix points and vertices
 
 """
     get_point(pts::P, i...)
@@ -129,7 +133,7 @@ Given a collection of points `pts`, returns an iterator
 over the indices of the collection. The methods currently 
 defined are 
 
-    each_point_index(pts::AbstractVector)
+    each_point_index(pts::AbstractVecOrTuple)
     each_point_index(pts::AbstractMatrix) 
 
 with the first returning `eachindex(pts)` and the second 
@@ -140,7 +144,7 @@ function each_point_index end
 function each_point_index(::P) where {P}
     return error("The each_point_index function has not been defined for the type $P.")
 end
-each_point_index(pts::AbstractVector) = eachindex(pts)
+each_point_index(pts::Union{AbstractVector,Tuple}) = eachindex(pts)
 each_point_index(pts::AbstractMatrix) = axes(pts, 2)
 
 """
@@ -150,7 +154,7 @@ For a given collection of points `p`, returns an iterator that
 goes over each point in the collection. The methods currently 
 defined are 
 
-    each_point(pts::AbstractVector)
+    each_point(pts::AbstractVecOrTuple)
     each_point(pts::AbstractMatrix)
 
 with the first method simply returning `pts`, and the second returning 
@@ -160,19 +164,25 @@ function each_point end
 function each_point(::P) where {P}
     return error("The each_point function has not been defined for the type $P.")
 end
-each_point(pts::AbstractVector) = pts
+each_point(pts::Union{AbstractVector,Tuple}) = pts
 each_point(pts::AbstractMatrix) = eachcol(pts)
 
 """
     num_points(pts)
 
-Returns the number of points in `pts`.
+Returns the number of points in `pts`. The methods currently defined are 
+
+    num_points(pts::AbstractVecOrTuple)
+    num_points(pts::AbstractMatrix)
+
+with the first returning `length(pts)` and the second returning
+`size(pts, 2)`. You can extend this function as you need.
 """
 function num_points end
 function num_points(::P) where {P}
     return error("The num_points function has not been defined for the type $P.")
 end
-num_points(pts::AbstractVector) = length(pts)
+num_points(pts::Union{AbstractVector,Tuple}) = length(pts)
 num_points(pts::AbstractMatrix) = size(pts, 2)
 
 """
@@ -272,7 +282,7 @@ end
 Sets the point at index `i` in `points` to `(x, y)`. The only methods currently
 defined are 
 
-    set_point!(points::AbstractVector{T}, i, x, y) where {F,T<:NTuple{2,F}} = points[i] = (F(x), F(y))
+    set_point!(points::AbstractVector{T}, i, x, y) = (points[i] = (x, y))
     set_point!(points::AbstractMatrix{T}, i, x, y) where {T} = (points[1, i] = x; points[2, i] = y)
 
 You can extend this function as needed. We also define 
@@ -280,8 +290,11 @@ You can extend this function as needed. We also define
     set_point!(points, i, p) = set_point!(points, i, getx(p), gety(p))
 """
 function set_point! end
-function set_point!(points::AbstractVector{T}, i, x, y) where {F,T<:NTuple{2,F}}
-    points[i] = (F(x), F(y))
+function set_point!(points::AbstractVector, i, x, y)
+    points[i] = (x, y) # also works for eltype(points) <: Tuple, StaticArrays, etc.
+end
+function set_point!(points::AbstractVector{T}, i, x, y) where {T<:Vector}
+    points[i] = [x, y]
 end
 function set_point!(points::AbstractMatrix{T}, i, x, y) where {T}
     points[1, i] = x
