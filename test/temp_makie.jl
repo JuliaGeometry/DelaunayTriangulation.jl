@@ -241,7 +241,6 @@ if NEEDS_PLOT_DEFS
                     return bnd
                 end
             end
-            @show bbox
             map(generators_2f, polygons, bbox) do gens, polys, box
                 return get_voronoi_tiles!(gens, polys, vorn, box)
             end
