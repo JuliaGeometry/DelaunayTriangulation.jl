@@ -341,11 +341,89 @@ end
     add_edge!(tri, 11, 12)
     add_edge!(tri, 9, 12)
     add_edge!(tri, 10, 11)
-    stats = refine!(tri; max_area=0.0001f0, max_points=5000, min_angle = 24f0, min_area=0.0)
-    @test DT.get_smallest_angle(stats) ≥ deg2rad(24f0)
+    stats = refine!(tri; max_area=0.0001f0, max_points=5000, min_angle=24.0f0, min_area=0.0)
+    @test DT.get_smallest_angle(stats) ≥ deg2rad(24.0f0)
     @test DT.get_largest_area(stats) ≤ 0.001f0
     @test DT.is_constrained(tri)
     @test DT.convex_hull(tri).indices == DT.convex_hull(tri.points).indices
     validate_statistics(tri, stats)
     @test validate_triangulation(tri)
+end
+
+@testset "Custom refinement" begin
+    rng = StableRNG(123)
+    points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
+    tri = triangulate(points; rng)
+    function get_quadrant(p)
+        px, py = p
+        if px < 0.5 && py < 0.5
+            return 1
+        elseif px ≥ 0.5 && py < 0.5
+            return 2
+        elseif px ≥ 0.5 && py ≥ 0.5
+            return 3
+        else
+            return 4
+        end
+    end
+    function area_constraint(T, p, q, r, A)
+        c = (p .+ q .+ r) ./ 3
+        quad = get_quadrant(c)
+        if quad == 1
+            return A ≥ 0.01
+        elseif quad == 2
+            return A ≥ 0.1
+        elseif quad == 3
+            return A ≥ 0.05
+        else
+            return A ≥ 0.08
+        end
+    end
+    function angle_constraint(T, p, q, r, ρ)
+        θ = asind(inv(2ρ))
+        if DT.compare_triangles(T, (1, 2, 3)) || DT.compare_triangles(T, (4, 1, 3)) # refine initially 
+            return true
+        elseif norm(p .- q) > 0.3 || norm(p .- r) > 0.3 || norm(q .- r) > 0.3
+            return true
+        end
+        c = (p .+ q .+ r) ./ 3
+        quad = get_quadrant(c)
+        if quad == 1
+            return θ ≤ 15
+        elseif quad == 2
+            return θ ≤ 25
+        elseif quad == 3
+            return θ ≤ 7
+        else
+            return θ ≤ 33.9
+        end
+    end
+    tri1 = deepcopy(tri)
+    refine!(tri1; max_area=area_constraint, min_angle=0.0, rng)
+    tri2 = deepcopy(tri)
+    refine!(tri2; max_area=Inf, max_radius_edge_ratio=angle_constraint, rng)
+    tri3 = deepcopy(tri)
+    refine!(tri3; max_area=area_constraint, max_radius_edge_ratio=angle_constraint, rng)
+    stat1 = Bool[]
+    stat2 = Bool[]
+    stat3 = Bool[]
+    for T in each_triangle(tri1)
+        p, q, r = get_point(tri1, T...)
+        A = DT.triangle_area(p, q, r)
+        push!(stat1, area_constraint(T, p, q, r, A))
+    end
+    for T in each_triangle(tri2)
+        p, q, r = get_point(tri2, T...)
+        ρ = DT.triangle_radius_edge_ratio(p, q, r)
+        push!(stat2, angle_constraint(T, p, q, r, ρ))
+    end
+    for T in each_triangle(tri3)
+        p, q, r = get_point(tri3, T...)
+        A = DT.triangle_area(p, q, r)
+        ρ = DT.triangle_radius_edge_ratio(p, q, r)
+        push!(stat3, area_constraint(T, p, q, r, A) && angle_constraint(T, p, q, r, ρ))
+    end
+    @test !any(stat1)
+    @test !any(stat2)
+    @test !any(stat3)
 end
