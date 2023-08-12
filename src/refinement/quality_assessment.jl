@@ -85,8 +85,8 @@ function assess_triangle_quality(tri::Triangulation, T, targets::RefinementTarge
         return typemax(number_type(tri)), false
     end
     A = sqrt(A²)
-    r = triangle_circumradius(A, ℓmin², ℓmed², ℓmax²)
-    ρ = r / sqrt(ℓmin²)
+    cr = triangle_circumradius(A, ℓmin², ℓmed², ℓmax²)
+    ρ = cr / sqrt(ℓmin²)
     area_flag = compare_area(targets, T, A, p, q, r)
     ratio_flag = compare_ratio(targets, T, ρ, p, q, r)
     seditious_flag = edge_is_seditious(tri, u, v, w, idx, ratio_flag, ρ)

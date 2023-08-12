@@ -7,7 +7,7 @@ A struct containing the user-specified refinement targets.
 
 - `max_area::A`
 
-The maximum area of a triangle. This can also be a function of the form `f(T, p, q, r, A)`, where `T` is the triangle` with area and coordinates `p`, `q`, `r`, returning `true` if the triangle should be refined.
+The maximum area of a triangle. This can also be a function of the form `f(T, p, q, r, A)`, where `T` is the triangle` with area `A` and coordinates `p`, `q`, `r`, returning `true` if the triangle should be refined.
 
 - `min_area::M`
 
