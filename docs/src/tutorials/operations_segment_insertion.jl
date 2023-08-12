@@ -47,6 +47,6 @@ fig, ax, sc = triplot(tri)
 fig 
 @test_reference joinpath(fig_path, "triangulation_operations_11.png") fig #src
 
-# The other constrained edge was not removed. Eventually, we would like to 
+# The other constrained edge was partially removed. Eventually, we would like to 
 # make it so that the intersection is automatically detected and a point 
 # is added at the intersection to break up the inserted edge.

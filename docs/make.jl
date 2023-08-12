@@ -132,7 +132,6 @@ const _PAGES = [
             "Edge Splitting" => "tutorials/operations_split_edge.md",
             "Triangle Splitting" => "tutorials/operations_split_triangle.md",
             "Locking and Unlocking the Convex Hull" => "tutorials/operations_convex_hull_locking.md",
-            "Clearing Empty Features" => "tutorials/operations_feature_clearing.md",
         ],
         "Mesh Refinement" => "tutorials/refinement.md",
         "Triangulating Rectangular Regions" => "tutorials/lattice.md",
