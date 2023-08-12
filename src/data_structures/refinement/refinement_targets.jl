@@ -7,7 +7,7 @@ A struct containing the user-specified refinement targets.
 
 - `max_area::A`
 
-The maximum area of a triangle. This can also be a function of the form `f(T, p, q, r, A)`, where `T` is the triangle` with area and coordinates `p`, `q`, `r`, returning `true` if the triangle should be refined.
+The maximum area of a triangle. This can also be a function of the form `f(T, p, q, r, A)`, where `T` is the triangle with area `A` and coordinates `p`, `q`, `r`, returning `true` if the triangle should be refined.
 
 - `min_area::M`
 
@@ -49,7 +49,7 @@ struct RefinementTargets{A,M,R,P}
             throw(ArgumentError("Cannot have min_area ($min_area) ≥ max_area ($max_area)."))
         end
         if min_angle isa Function
-            throw(ArgumentError("Cannot provide min_angle as a function."))
+            throw(ArgumentError("Cannot provide min_angle as a function. To use such a constraint, you need to provide a max_radius_edge_ratio constraint function."))
         end
         if max_radius_edge_ratio isa Number && max_radius_edge_ratio < sqrt(3) / 3
             @warn "The provided maximum radius-edge ratio, $max_radius_edge_ratio, is below the theoretical limit of 1/√3. Replacing it with 1/sqrt(3)."
