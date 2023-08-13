@@ -20,7 +20,7 @@ function clean_dir()
         dir = joinpath(@__DIR__, "src", folder)
         files = readdir(dir)
         filter!(file -> endswith(file, ".md"), files)
-        filter!(file -> file ∉ ("overview.md", "gmsh.md"), files)
+        filter!(file -> file ∉ ("overview.md",), files)
         for file in files
             file_path = joinpath(dir, file)
             rm(file_path)
@@ -135,7 +135,6 @@ const _PAGES = [
         ],
         "Mesh Refinement" => "tutorials/refinement.md",
         "Triangulating Rectangular Regions" => "tutorials/lattice.md",
-        "Gmsh Integration" => "tutorials/gmsh.md",
         "Triangulating Convex Polygons" => "tutorials/convex.md",
         "Voronoi Tessellations" => "tutorials/voronoi.md",
         "Clipped Voronoi Tessellations" => [
