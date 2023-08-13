@@ -168,14 +168,12 @@ export add_edge!
 export lock_convex_hull!
 export unlock_convex_hull!
 
-include("triangulation/gmsh.jl")
 include("triangulation/rectangle.jl")
 include("triangulation/bowyer_watson.jl")
 include("triangulation/triangulate.jl")
 include("triangulation/convex_triangulation.jl")
 include("triangulation/triangulate_constrained.jl")
 
-export generate_mesh
 export triangulate_rectangle
 export triangulate
 export triangulate_convex
