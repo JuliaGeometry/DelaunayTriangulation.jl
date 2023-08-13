@@ -5,7 +5,7 @@
         verbosity = 0, 
         convert_result = true, 
         add_ghost_triangles = false, 
-        check_args = true)
+        check_args = true) 
 
 Using Gmsh, generates a mesh of the domain defined by `(x, y)`.
 
