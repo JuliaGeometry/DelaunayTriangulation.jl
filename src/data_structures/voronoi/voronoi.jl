@@ -160,7 +160,6 @@ Gets the boundary edges that are adjacent to the boundary edge `e` in `vor`.
 """
 get_neighbouring_boundary_edges(vorn::VoronoiTessellation, e) = get_neighbouring_boundary_edges(get_triangulation(vorn), e)
 
-
 ## Nums 
 """
     num_polygons(vor::VoronoiTessellation)
@@ -326,7 +325,7 @@ Gets the area and centroid of the polygon with index `i` in `vor`.
 """
 function polygon_features(vor::VoronoiTessellation, i)
     polygon = get_polygon(vor, i)
-    if any(is_boundary_index, polygon)
+    if i ∈ get_unbounded_polygons(vor)
         F = number_type(vor)
         return (typemax(F), (typemax(F), typemax(F)))
     end

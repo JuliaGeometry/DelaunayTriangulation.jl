@@ -121,7 +121,6 @@ export num_polygons
 export get_polygon
 export each_polygon
 export get_polygon_point
-export get_polygon_vertex
 export get_area
 export each_generator
 export get_generator

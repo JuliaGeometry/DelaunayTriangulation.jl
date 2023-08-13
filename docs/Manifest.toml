@@ -281,7 +281,7 @@ version = "1.2.0"
 deps = ["DataStructures", "EnumX", "ExactPredicates", "Random", "SimpleGraphs"]
 path = "C:\\Users\\User\\.julia\\dev\\DelaunayTriangulation"
 uuid = "927a84f5-c5f4-47a5-9785-b46e178433df"
-version = "0.8.5"
+version = "0.8.6"
 
 [[deps.DiffResults]]
 deps = ["StaticArraysCore"]

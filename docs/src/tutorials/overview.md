@@ -23,9 +23,8 @@ The tutorials that we consider are as follows:
 - Triangulation Operations: How certain operations such as vertex insertion and deletion can be applied to an existing triangulation. This tutorial is broken into multiple sub-tutorials, demonstrating the multiple operations available for use, starting with [vertex insertion and deletion](operations_vertex_insertion_deletion.md).
 - [Mesh Refinement](refinement.md): How triangulations can be refined to meet certain quality constraints.
 - [Triangulating Rectangular Regions](lattice.md): A simple example of how rectangular regions in the plane can be triangulated quickly.
-- [Gmsh Integration](gmsh.md): How triangulations can be computed using Gmsh. (This is not so relevant with the latest versions of DelaunayTriangulation.jl now that we have native support for constrained triangulations, but this might be useful if, for example, you want to try [different mesh algorithms from Gmsh](https://gmsh.info/doc/texinfo/gmsh.html#Choosing-the-right-unstructured-algorithm).)
 - [Triangulating Convex Polygons](convex.md): How triangulations of convex polygons can be computed.
-- [Voronoi Tessellations](voronoi.md): How Voronoi tessellations can be computed.
+- [Voronoi Tessellations](voronoi.md): How Voronoi tessellations can be computed. We also give examples of how you can iterate over the edges and generators in the tessellation, and other features.
 - [Clipped Voronoi Tessellations](clipped.md): How to compute a Voronoi tessellation of a point set such that the polygons are [clipped to the point set's convex hull](clipped.md), or [to an arbitrary rectangle](clipped_rectangle.md).
 - [Centroidal Voronoi Tessellation](centroidal.md): How to compute centroidal Voronoi tessellations, in particular how to shift a given set of points so that each point's associated Voronoi tile is that tile's centroid.
 - [Point Location](point_location.md): How to use a triangulation to perform point location.
