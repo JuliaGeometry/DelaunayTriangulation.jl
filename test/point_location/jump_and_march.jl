@@ -291,3 +291,58 @@ end
         @test !DT.is_outside(DT.point_position_relative_to_triangle(tri, V, get_point(tri, k)))
     end
 end
+
+@testset "Finding points in a triangulation with concave boundaries" begin
+    a, b, c = (0.0, 8.0), (0.0, 6.0), (0.0, 4.0)
+    d, e, f = (0.0, 2.0), (0.0, 0.0), (2.0, 0.0)
+    g, h, i = (4.0, 0.0), (6.0, 0.0), (8.0, 0.0)
+    j, k, ℓ = (8.0, 1.0), (7.0, 2.0), (5.0, 2.0)
+    m, n, o = (3.0, 2.0), (2.0, 3.0), (2.0, 5.0)
+    p, q, r = (2.0, 7.0), (1.0, 8.0), (1.0, 2.2)
+    s, t, u = (0.4, 1.4), (1.2, 1.8), (2.8, 0.6)
+    v, w, z = (3.4, 1.2), (1.6, 1.4), (1.6, 2.2)
+    outer = [[a, b, c, d, e], [e, f, g, h, i, j, k, ℓ], [ℓ, m, n, o, p, q, a]]
+    inner = [[r, z, v, u, w, t, s, r]]
+    boundary_nodes, points = convert_boundary_points_to_indices([outer, inner])
+    rng = StableRNG(123)
+    tri = triangulate(points; rng, boundary_nodes, delete_ghosts=false)
+    refine!(tri; max_area=0.01get_total_area(tri), rng)
+    qs = [
+        (4.0, 5.0), (1.0, 5.6), (0.2, 5.0),
+        (0.0, -1.0), (0.5, 3.5), (2.5, 1.5),
+        (1.0, 2.0), (4.5, 1.0), (6.0, 1.5),
+        (0.5, 8.5), (1.0, 7.5), (1.2, 1.6)
+    ]
+    δs = [DelaunayTriangulation.distance_to_polygon(q, get_points(tri), get_boundary_nodes(tri)) for q in qs]
+    for i in 1:1000
+        @show i
+        Vs = [jump_and_march(tri, q, concavity_protection=true, rng=StableRNG(i + j)) for (j, q) in enumerate(qs)]
+        for (q, δ, V) in zip(qs, δs, Vs)
+            cert = DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)
+            if δ ≥ 0.0
+                @test !DelaunayTriangulation.is_outside(cert)
+                @test !DelaunayTriangulation.is_ghost_triangle(V)
+            else
+                @test !DelaunayTriangulation.is_outside(cert)
+                @test DelaunayTriangulation.is_ghost_triangle(V)
+            end
+        end
+    end
+    a, b, c, d = -1, 10, -1, 10
+    for i in 1:1000
+        rng = StableRNG(i)
+        qs = [((b - a) * rand(rng) + a, (d - c) * rand(rng) + c) for _ in 1:1000]
+        δs = [DelaunayTriangulation.distance_to_polygon(q, get_points(tri), get_boundary_nodes(tri)) for q in qs]
+        Vs = [jump_and_march(tri, q, concavity_protection=true, rng=StableRNG(i + j)) for (j, q) in enumerate(qs)]
+        for (q, δ, V) in zip(qs, δs, Vs)
+            cert = DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)
+            if δ ≥ 0.0
+                @test !DelaunayTriangulation.is_outside(cert)
+                @test !DelaunayTriangulation.is_ghost_triangle(V)
+            else
+                @test !DelaunayTriangulation.is_outside(cert)
+                @test DelaunayTriangulation.is_ghost_triangle(V)
+            end
+        end
+    end
+end
