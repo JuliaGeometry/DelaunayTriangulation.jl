@@ -381,15 +381,15 @@ function restart_jump_and_march(tri, q, store_history, history, rng, exterior_cu
         k = select_initial_point(tri, q; m=(m ÷ 2) + 1, point_indices, rng) # don't want to try all points, still want to give the algorithm a chance
         return _jump_and_march(tri, q, k, store_history, history, rng, exterior_curve_index, maxiters, zero(cur_iter), concavity_protection, num_restarts)
     else
-        V₁ = brute_force_search(tri, q)
-        V₁_is_bad = _concavity_protection_check(concavity_protection, tri, V₁, q)
-        if V₁_is_bad
-            if is_ghost_triangle(V₁)
-                V₁ = brute_force_search(tri, q; itr=each_solid_triangle(tri))
+        V = brute_force_search(tri, q)
+        V_is_bad = _concavity_protection_check(concavity_protection, tri, V, q)
+        if V_is_bad
+            if is_ghost_triangle(V)
+                V = brute_force_search(tri, q; itr=each_solid_triangle(tri))
             else
-                V₁ = brute_force_search(tri, q; itr=each_ghost_triangle(tri))
+                V = brute_force_search(tri, q; itr=each_ghost_triangle(tri))
             end
         end
-        return V₁
+        return V
     end
 end

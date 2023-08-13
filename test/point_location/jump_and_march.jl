@@ -285,9 +285,8 @@ end
     i, j, k = 2, 25, 8
     T = (i, j, k)
     r = 5
-    for i in 1:100
-        @show i
-        V = jump_and_march(tri, get_point(tri, k); point_indices=nothing, m=nothing, try_points=nothing, k=r)
+    for i in 1:10000
+        V = jump_and_march(tri, get_point(tri, k); point_indices=nothing, m=nothing, try_points=nothing, k=r, concavity_protection=true)
         @test !DT.is_outside(DT.point_position_relative_to_triangle(tri, V, get_point(tri, k)))
     end
 end
