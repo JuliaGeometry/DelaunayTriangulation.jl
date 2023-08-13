@@ -326,7 +326,7 @@ Gets the area and centroid of the polygon with index `i` in `vor`.
 """
 function polygon_features(vor::VoronoiTessellation, i)
     polygon = get_polygon(vor, i)
-    if any(is_boundary_index, polygon)
+    if i ∈ get_unbounded_polygons(vor)
         F = number_type(vor)
         return (typemax(F), (typemax(F), typemax(F)))
     end
