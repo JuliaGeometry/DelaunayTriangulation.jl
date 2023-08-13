@@ -132,7 +132,8 @@ function jump_and_march(tri::Triangulation{P,Ts,I}, q;
         exterior_curve_index,
         maxiters,
         zero(maxiters),
-        concavity_protection
+        concavity_protection,
+        zero(maxiters)
     )
 end
 
@@ -146,7 +147,8 @@ function _jump_and_march(
     exterior_curve_index=1,
     maxiters=2 + length(exterior_curve_index) - num_vertices(graph) + num_edges(graph),
     cur_iter=0,
-    concavity_protection=false) where {P,Ts,I,E,F}
+    concavity_protection=false,
+    num_restarts=0) where {P,Ts,I,E,F}
     is_bnd, bnd_idx = is_boundary_node(tri, k)
     if !(is_bnd && get_curve_index(tri, bnd_idx) ∈ exterior_curve_index) || !has_ghost_triangles(tri)
         # If k is not a boundary node, then we can rotate around the point k to find an initial triangle 
@@ -154,7 +156,7 @@ function _jump_and_march(
         # is inside the interior, meaning we should only search for the initial triangle here anyway.
         p, i, j, pᵢ, pⱼ = select_initial_triangle_interior_node(tri, k, q, store_history, history, rng)
         if !edge_exists(i) && !edge_exists(j) # When we find a possible infinite loop, we use i==j==DefaultAdjacentValue. Let's reinitialise. 
-            return restart_jump_and_march(tri, q, store_history, history, rng, exterior_curve_index, maxiters, cur_iter, concavity_protection)
+            return restart_jump_and_march(tri, q, store_history, history, rng, exterior_curve_index, maxiters, cur_iter, concavity_protection, num_restarts + 1)
         end
         if is_true(store_history)
             add_triangle!(history, j, i, k)
@@ -172,7 +174,7 @@ function _jump_and_march(
                 u, v = exterior_jump_and_march(tri, u, q, bnd_idx)
                 V = construct_triangle(triangle_type(Ts), u, v, get_adjacent(tri, u, v)) # Can't just use I(BoundaryIndex) here since there could be multiple - just use get_adjacent
                 if _concavity_protection_check(concavity_protection, tri, V, q)
-                    return restart_jump_and_march(tri, q, store_history, history, rng, exterior_curve_index, maxiters, cur_iter, concavity_protection)
+                    return restart_jump_and_march(tri, q, store_history, history, rng, exterior_curve_index, maxiters, cur_iter, concavity_protection, num_restarts + 1)
                 else
                     return V
                 end
@@ -187,7 +189,7 @@ function _jump_and_march(
             u, v = exterior_jump_and_march(tri, k, q, bnd_idx)
             V = construct_triangle(triangle_type(Ts), u, v, get_adjacent(tri, u, v))
             if _concavity_protection_check(concavity_protection, tri, V, q)
-                return restart_jump_and_march(tri, q, store_history, history, rng, exterior_curve_index, maxiters, cur_iter, concavity_protection)
+                return restart_jump_and_march(tri, q, store_history, history, rng, exterior_curve_index, maxiters, cur_iter, concavity_protection, num_restarts + 1)
             else
                 return V
             end
@@ -196,11 +198,23 @@ function _jump_and_march(
         end
     end
     if q == p || q == pᵢ || q == pⱼ
-        orientation = triangle_orientation(pᵢ, pⱼ, p)
-        if is_positively_oriented(orientation)
-            return construct_triangle(triangle_type(Ts), i, j, k)
+        # Just return where we currently are. We do need to be careful, though: 
+        # If k was a boundary index, then one of pᵢ or pⱼ could come from the 
+        # representative point list, which could mean that q is equal to one of the 
+        # vertices, but without meaning that it is actually in that triangle. So, 
+        # we need to also check for the type of indices we have. 
+        safety_check = (q == p && !is_boundary_index(k)) ||
+                       (q == pᵢ && !is_boundary_index(i)) ||
+                       (q == pⱼ && !is_boundary_index(j))
+        if safety_check
+            orientation = triangle_orientation(pᵢ, pⱼ, p)
+            if is_positively_oriented(orientation)
+                return construct_triangle(triangle_type(Ts), i, j, k)
+            else
+                return construct_triangle(triangle_type(Ts), j, i, k)
+            end
         else
-            return construct_triangle(triangle_type(Ts), j, i, k)
+            return restart_jump_and_march(tri, q, store_history, history, rng, exterior_curve_index, maxiters, cur_iter, concavity_protection, num_restarts + 1)
         end
     end
     original_k = k
@@ -234,12 +248,12 @@ function _jump_and_march(
                 i, j = exterior_jump_and_march(tri, last_changed == i ? j : i, q, k) # use last_changed to ensure we get the boundary point
                 V = construct_triangle(triangle_type(Ts), i, j, get_adjacent(tri, i, j))
                 if _concavity_protection_check(concavity_protection, tri, V, q)
-                    return restart_jump_and_march(tri, q, store_history, history, rng, exterior_curve_index, maxiters, cur_iter, concavity_protection)
+                    return restart_jump_and_march(tri, q, store_history, history, rng, exterior_curve_index, maxiters, cur_iter, concavity_protection, num_restarts + 1)
                 else
                     return V
                 end
             else
-                return _jump_and_march(tri, q, k, store_history, history, rng, exterior_curve_index, maxiters, cur_iter, concavity_protection)
+                return _jump_and_march(tri, q, k, store_history, history, rng, exterior_curve_index, maxiters, cur_iter, concavity_protection, num_restarts + 1)
             end
         end
         # Now we can finally move forward. We use check_existence to protect against the issue mentioned above.
@@ -298,7 +312,12 @@ function _jump_and_march(
                 add_triangle!(history, i, j, k)
             end
             if !is_outside(in_cert)
-                return construct_triangle(triangle_type(Ts), i, j, k)
+                V = construct_triangle(triangle_type(Ts), i, j, k)
+                if _concavity_protection_check(concavity_protection, tri, V, q)
+                    return restart_jump_and_march(tri, q, store_history, history, rng, exterior_curve_index, maxiters, cur_iter, concavity_protection, num_restarts + 1)
+                else
+                    return V
+                end
             end
             # To decide which direction this collinear point is away from the line, we can just use the last changed variable:
             # If last_changed = i, this means that the left direction was what caused the collinear point, so make k go on the left. 
@@ -313,7 +332,7 @@ function _jump_and_march(
         end
         arrangement = triangle_orientation(pᵢ, pⱼ, q)
         if cur_iter ≥ maxiters
-            return restart_jump_and_march(tri, q, store_history, history, rng, exterior_curve_index, maxiters, cur_iter, concavity_protection)
+            return restart_jump_and_march(tri, q, store_history, history, rng, exterior_curve_index, maxiters, cur_iter, concavity_protection, num_restarts + 1)
         end
     end
     # We can finish the above loop even if q is not in the triangle, in which case pᵢpⱼq was a straight line. 
@@ -328,14 +347,14 @@ function _jump_and_march(
             add_right_vertex!(history, j)
         end
         if is_outside(in_cert)
-            return _jump_and_march(tri, q, last_changed == I(DefaultAdjacentValue) ? i : last_changed, store_history, history, rng, exterior_curve_index, maxiters, cur_iter, concavity_protection)
+            return _jump_and_march(tri, q, last_changed == I(DefaultAdjacentValue) ? i : last_changed, store_history, history, rng, exterior_curve_index, maxiters, cur_iter, concavity_protection, num_restarts + 1)
         end
     end
     # Swap the orientation to get a positively oriented triangle, remembering that we kept pᵢ on the left of pq and pⱼ on the right 
     k = get_adjacent(tri, j, i)
     V = construct_triangle(triangle_type(Ts), j, i, k)
     if _concavity_protection_check(concavity_protection, tri, V, q)
-        return restart_jump_and_march(tri, q, store_history, history, rng, exterior_curve_index, maxiters, cur_iter, concavity_protection)
+        return restart_jump_and_march(tri, q, store_history, history, rng, exterior_curve_index, maxiters, cur_iter, concavity_protection, num_restarts + 1)
     end
     return V
 end
@@ -354,9 +373,23 @@ function _concavity_protection_check(concavity_protection, tri, V, q)
     return need_to_restart
 end
 
-function restart_jump_and_march(tri, q, store_history, history, rng, exterior_curve_index, maxiters, cur_iter, concavity_protection)
-    m = num_solid_vertices(tri)
-    point_indices = each_solid_vertex(tri)
-    k = select_initial_point(tri, q; m=(m÷2)+1, point_indices, rng) # don't want to try all points, still want to give the algorithm a chance
-    return _jump_and_march(tri, q, k, store_history, history, rng, exterior_curve_index, maxiters, zero(cur_iter), concavity_protection)
+const RESTART_LIMIT = 25
+function restart_jump_and_march(tri, q, store_history, history, rng, exterior_curve_index, maxiters, cur_iter, concavity_protection, num_restarts)
+    if num_restarts < RESTART_LIMIT
+        m = num_solid_vertices(tri)
+        point_indices = each_solid_vertex(tri)
+        k = select_initial_point(tri, q; m=(m ÷ 2) + 1, point_indices, rng) # don't want to try all points, still want to give the algorithm a chance
+        return _jump_and_march(tri, q, k, store_history, history, rng, exterior_curve_index, maxiters, zero(cur_iter), concavity_protection, num_restarts)
+    else
+        V₁ = brute_force_search(tri, q)
+        V₁_is_bad = _concavity_protection_check(concavity_protection, tri, V₁, q)
+        if V₁_is_bad
+            if is_ghost_triangle(V₁)
+                V₁ = brute_force_search(tri, q; itr=each_solid_triangle(tri))
+            else
+                V₁ = brute_force_search(tri, q; itr=each_ghost_triangle(tri))
+            end
+        end
+        return V₁
+    end
 end
