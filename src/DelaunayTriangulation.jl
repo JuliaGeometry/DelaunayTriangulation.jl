@@ -215,6 +215,7 @@ include("voronoi/coordinates.jl")
 export voronoi
 export centroidal_smooth
 export get_polygon_coordinates
+export get_nearest_neighbour
 
 export edge_indices
 

@@ -215,7 +215,7 @@ end
         end
     end
     for p in p
-        u = jump_and_march(vor, p)
+        u = get_nearest_neighbour(vor, p)
         all_dists = [norm(p .- get_generator(vor, i)) for i in sort(collect(each_generator(vor)))]
         @test findmin(all_dists)[2] == u
     end
@@ -237,13 +237,13 @@ end
     y = vec([y for _ in xg, y in yg])
     for (ξ, η) in zip(x, y)
         p = (ξ, η)
-        u = jump_and_march(vorn, p)
-        @inferred jump_and_march(vorn, p)
+        u = get_nearest_neighbour(vorn, p)
+        @inferred get_nearest_neighbour(vorn, p)
         all_dists = [norm(p .- get_generator(vorn, i)) for i in sort(collect(each_generator(vorn)))]
         k = findmin(all_dists)[2]
         @test k == u
         for m in each_point_index(tri)
-            u = jump_and_march(vorn, p, try_points=m)
+            u = get_nearest_neighbour(vorn, p, try_points=m)
             @test u == k
         end
     end
