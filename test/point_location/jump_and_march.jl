@@ -285,9 +285,8 @@ end
     i, j, k = 2, 25, 8
     T = (i, j, k)
     r = 5
-    for i in 1:100
-        @show i
-        V = jump_and_march(tri, get_point(tri, k); point_indices=nothing, m=nothing, try_points=nothing, k=r)
+    for i in 1:10000
+        V = jump_and_march(tri, get_point(tri, k); point_indices=nothing, m=nothing, try_points=nothing, k=r, concavity_protection=true)
         @test !DT.is_outside(DT.point_position_relative_to_triangle(tri, V, get_point(tri, k)))
     end
 end
@@ -332,6 +331,72 @@ end
     for i in 1:1000
         rng = StableRNG(i)
         qs = [((b - a) * rand(rng) + a, (d - c) * rand(rng) + c) for _ in 1:1000]
+        δs = [DelaunayTriangulation.distance_to_polygon(q, get_points(tri), get_boundary_nodes(tri)) for q in qs]
+        Vs = [jump_and_march(tri, q, concavity_protection=true, rng=StableRNG(i + j)) for (j, q) in enumerate(qs)]
+        for (q, δ, V) in zip(qs, δs, Vs)
+            cert = DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)
+            if δ ≥ 0.0
+                @test !DelaunayTriangulation.is_outside(cert)
+                @test !DelaunayTriangulation.is_ghost_triangle(V)
+            else
+                @test !DelaunayTriangulation.is_outside(cert)
+                @test DelaunayTriangulation.is_ghost_triangle(V)
+            end
+        end
+    end
+end
+
+@testset "Finding points in a triangulation with concave boundaries and disjoint domains" begin
+    a, b, c = (0.0, 8.0), (0.0, 6.0), (0.0, 4.0)
+    d, e, f = (0.0, 2.0), (0.0, 0.0), (2.0, 0.0)
+    g, h, i = (4.0, 0.0), (6.0, 0.0), (8.0, 0.0)
+    j, k, ℓ = (8.0, 1.0), (7.0, 2.0), (5.0, 2.0)
+    m, n, o = (3.0, 2.0), (2.0, 3.0), (2.0, 5.0)
+    p, q, r = (2.0, 7.0), (1.0, 8.0), (1.0, 2.2)
+    s, t, u = (0.4, 1.4), (1.2, 1.8), (2.8, 0.6)
+    v, w, z = (3.4, 1.2), (1.6, 1.4), (1.6, 2.2)
+    outer = [[a, b, c, d, e], [e, f, g, h, i, j, k, ℓ], [ℓ, m, n, o, p, q, a]]
+    inner = [[r, z, v, u, w, t, s, r]]
+    m₁, n₁, o₁ = (6.0, 8.0), (8.0, 8.0), (8.0, 4.0)
+    p₁, q₁, r₁ = (10.0, 4.0), (6.0, 6.0), (8.0, 6.0)
+    s₁, t₁, u₁ = (9.0, 7.0), (4.0, 4.0), (5.0, 4.0)
+    v₁, w₁ = (5.0, 3.0), (4.0, 3.0)
+    new_domain₁ = [[m₁, q₁, o₁, p₁, r₁, s₁, n₁, m₁]]
+    new_domain₂ = [[t₁, w₁, v₁, u₁, t₁]]
+    boundary_nodes, points = convert_boundary_points_to_indices([outer, inner, new_domain₁, new_domain₂])
+    rng = StableRNG(125123)
+    tri = triangulate(points; rng, boundary_nodes, check_arguments=false, delete_ghosts=false)
+    refine!(tri; max_area=0.001get_total_area(tri), rng)
+    qs = [
+        (0.6, 6.4), (1.4, 0.8), (3.1, 2.9),
+        (6.3, 4.9), (4.6, 3.5), (7.0, 7.0),
+        (8.9, 5.1), (5.8, 0.8), (1.0, 1.5),
+        (1.5, 2.0), (8.15, 6.0)
+    ]
+    q = (7.0, 7.0) # When you have a point that is exactly the same as a representative point, you need to be careful of (1) the point being exactly collinear with a ghost edge, and (2) the algorithm mistakenly regarding q as if it were equal to a triangle's vertices (since this is where the ghost vertices map). This is now fixed, but we need this isolated to avoid regressions.
+    V = jump_and_march(tri, q, rng=StableRNG(268), concavity_protection=true)
+    @test DelaunayTriangulation.compare_triangles(V, (377, 378, 68))
+    δs = [DelaunayTriangulation.distance_to_polygon(q, get_points(tri), get_boundary_nodes(tri)) for q in qs]
+    for i in 1:1000
+        @show i
+        Vs = [jump_and_march(tri, q; concavity_protection=true, rng=StableRNG(i)) for q in qs]
+        for (q, δ, V) in zip(qs, δs, Vs)
+            cert = DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)
+            if δ > 0.0
+                @test !DelaunayTriangulation.is_outside(cert)
+                @test !DelaunayTriangulation.is_ghost_triangle(V)
+            elseif δ < 0.0
+                @test !DelaunayTriangulation.is_outside(cert)
+                @test DelaunayTriangulation.is_ghost_triangle(V)
+            else
+                @test !DelaunayTriangulation.is_outside(cert)
+            end
+        end
+    end
+    a, b, c, d = -1, 10, -1, 10
+    for i in 1:100
+        rng = StableRNG(i)
+        qs = [((b - a) * rand(rng) + a, (d - c) * rand(rng) + c) for _ in 1:100]
         δs = [DelaunayTriangulation.distance_to_polygon(q, get_points(tri), get_boundary_nodes(tri)) for q in qs]
         Vs = [jump_and_march(tri, q, concavity_protection=true, rng=StableRNG(i + j)) for (j, q) in enumerate(qs)]
         for (q, δ, V) in zip(qs, δs, Vs)
