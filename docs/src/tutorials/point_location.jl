@@ -43,7 +43,7 @@ DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)
 @test DelaunayTriangulation.is_inside(DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)) #src
 
 # When we provide no keyword arguments, the default behaviour of `jump_and_march` is to first 
-# sample some number of points (defaults to $\lceil \sqrt[3]{n}$, where $n$ is the number of points),
+# sample some number of points (defaults to $\lceil \sqrt[3]{n}\rceil$, where $n$ is the number of points),
 # and then start at the point that is closest to `q` out of those sampled, then marching along the triangulation
 # until `q` is found. This number of samples can be changed using the `m` keyword argument. For example,
 V = jump_and_march(tri, q, m=10)
@@ -70,9 +70,9 @@ fig
 
 # If we just try and use the `jump_and_march` function, it will error:
 try #hide
-    V = jump_and_march(tri, q)
+jump_and_march(tri, q)
 catch e #hide 
-    println(e) #hide 
+println(e) #hide 
 end #hide
 
 # This is because we need to include ghost triangles if we want to step into the boundary. 
@@ -109,7 +109,7 @@ inner = [[r, z, v, u, w, t, s, r]]
 boundary_nodes, points = convert_boundary_points_to_indices([outer, inner])
 rng = StableRNG(125123)
 tri = triangulate(points; rng, boundary_nodes, delete_ghosts=false)
-refine!(tri; max_area=0.01get_total_area(tri), rng)
+refine!(tri; max_area=0.01get_total_area(tri), rng);
 
 # The issue with concavity is that the ghost triangles can no longer be sensibly defined. 
 # To demonstrate this, see the following plot:
@@ -152,14 +152,17 @@ Vs = [jump_and_march(tri, q; rng, concavity_protection=true) for q in qs]
 # know that the ghost triangles are invalid. Instead, we find the distance of each point to the 
 # triangulation's boundary so that we can classify it as being inside or outside of the triangulation, 
 # and then check the type of the found triangle.
-δs = [DelaunayTriangulation.distance_to_polygon(q, get_points(tri), get_boundary_nodes(tri)) for q in qs]
+δs = [DelaunayTriangulation.distance_to_polygon(q,
+    get_points(tri), get_boundary_nodes(tri)) for q in qs]
 results = Vector{Bool}(undef, length(qs))
 for (j, (q, δ, V)) in (enumerate ∘ zip)(qs, δs, Vs)
     cert = DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)
+    is_ghost = DelaunayTriangulation.is_ghost_triangle(V)
+    is_outside = DelaunayTriangulation.is_outside(cert)
     if δ ≥ 0.0
-        results[j] = !DelaunayTriangulation.is_outside(cert) && !DelaunayTriangulation.is_ghost_triangle(V)
+        results[j] = !is_outside && !is_ghost
     else # δ < 0.0 ⟹ outside
-        results[j] = !DelaunayTriangulation.is_outside(cert) && DelaunayTriangulation.is_ghost_triangle(V)
+        results[j] = !is_outside && is_ghost
     end
 end
 results
@@ -179,7 +182,9 @@ s₁, t₁, u₁ = (9.0, 7.0), (4.0, 4.0), (5.0, 4.0)
 v₁, w₁ = (5.0, 3.0), (4.0, 3.0)
 new_domain₁ = [[m₁, q₁, o₁, p₁, r₁, s₁, n₁, m₁]]
 new_domain₂ = [[t₁, w₁, v₁, u₁, t₁]]
-boundary_nodes, points = convert_boundary_points_to_indices([outer, inner, new_domain₁, new_domain₂])
+boundary_nodes, points = convert_boundary_points_to_indices(
+    [outer, inner, new_domain₁, new_domain₂]
+)
 rng = StableRNG(125123)
 tri = triangulate(points; rng, boundary_nodes, check_arguments=false, delete_ghosts=false)
 refine!(tri; max_area=0.001get_total_area(tri), rng)
@@ -190,9 +195,27 @@ qs = [
     (1.5, 2.0), (8.15, 6.0)
 ]
 fig, ax, sc = triplot(tri)
-scatter!(ax, qs, color = :blue, markersize =16)
+scatter!(ax, qs, color=:blue, markersize=16)
 fig
 @test_reference joinpath(fig_path, "point_location_ex_4.png") fig #src
 
 # Here are the `jump_and_march` results. 
 Vs = [jump_and_march(tri, q; rng, concavity_protection=true) for q in qs]
+
+# Again, we can verify that these are all correct as follows. Without `concavity_protection=true`, 
+# these would not be all correct.
+δs = [DelaunayTriangulation.distance_to_polygon(q,
+    get_points(tri), get_boundary_nodes(tri)) for q in qs]
+results = Vector{Bool}(undef, length(qs))
+for (j, (q, δ, V)) in (enumerate ∘ zip)(qs, δs, Vs)
+    cert = DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)
+    is_ghost = DelaunayTriangulation.is_ghost_triangle(V)
+    is_outside = DelaunayTriangulation.is_outside(cert)
+    if δ ≥ 0.0
+        results[j] = !is_outside && !is_ghost
+    else # δ < 0.0 ⟹ outside
+        results[j] = !is_outside && is_ghost
+    end
+end
+results
+@test all(results) #src
