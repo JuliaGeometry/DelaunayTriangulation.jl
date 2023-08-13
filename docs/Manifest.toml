@@ -281,7 +281,7 @@ version = "1.2.0"
 deps = ["DataStructures", "EnumX", "ExactPredicates", "Random", "SimpleGraphs"]
 path = "C:\\Users\\User\\.julia\\dev\\DelaunayTriangulation"
 uuid = "927a84f5-c5f4-47a5-9785-b46e178433df"
-version = "0.8.4"
+version = "0.8.5"
 
 [[deps.DiffResults]]
 deps = ["StaticArraysCore"]
@@ -899,7 +899,7 @@ version = "0.5.10"
 
 [[deps.Makie]]
 deps = ["Animations", "Base64", "ColorBrewer", "ColorSchemes", "ColorTypes", "Colors", "Contour", "DelaunayTriangulation", "Distributions", "DocStringExtensions", "Downloads", "FFMPEG", "FileIO", "FixedPointNumbers", "Formatting", "FreeType", "FreeTypeAbstraction", "GeometryBasics", "GridLayoutBase", "ImageIO", "InteractiveUtils", "IntervalSets", "Isoband", "KernelDensity", "LaTeXStrings", "LinearAlgebra", "MacroTools", "MakieCore", "Markdown", "Match", "MathTeXEngine", "Observables", "OffsetArrays", "Packing", "PlotUtils", "PolygonOps", "PrecompileTools", "Printf", "REPL", "Random", "RelocatableFolders", "Setfield", "ShaderAbstractions", "Showoff", "SignedDistanceFields", "SparseArrays", "StableHashTraits", "Statistics", "StatsBase", "StatsFuns", "StructArrays", "TriplotBase", "UnicodeFun"]
-git-tree-sha1 = "193c5bf6908ac6030c87a8fe86bc0e82d8f58dcb"
+git-tree-sha1 = "37ee592006c048d6c942f9ebd35ac977de173432"
 repo-rev = "delaunay_recipes"
 repo-url = "https://github.com/DanielVandH/Makie.jl"
 uuid = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
