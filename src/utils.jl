@@ -20,11 +20,9 @@ number_type(::Type{NTuple{N,T}}) where {N,T} = T
 number_type(::Type{T}) where {T<:Number} = T
 
 """
-    get_boundary_index(i, j, k)
-    get_boundary_index(i, j)
+    get_boundary_index(i, j[, k])
 
-Given three indices `i`, `j`, and `k`, returns the index corresponding to a boundary index. If no boundary index is provided, an `ArgumentError` is thrown.
-Similarly for the second method, which takes two indices.
+Given indices `i`, `j` (and `k`), returns the index corresponding to a boundary index. An error is thrown if none of the indices are boundary indices.
 """
 function get_boundary_index(i, j, k)
     is_boundary_index(i) && return i
@@ -40,9 +38,9 @@ end
 
 """
     rotate_ghost_triangle_to_standard_form(i, j, k)
-    rotate_ghost_triangle_to_standard_form(T::V) where {V}
+    rotate_ghost_triangle_to_standard_form(T)
 
-Given a triangle `T = (i, j, k)`, rotates it to a new triangle `T′ = (u, v, w)`
+Given a ghost triangle `T = (i, j, k)`, rotates it to a new triangle `T′ = (u, v, w)`
 such that `w` is a boundary index.
 """
 function rotate_ghost_triangle_to_standard_form(i, j, k) # ghost index last
@@ -62,7 +60,7 @@ end
 
 """
     rotate_triangle_to_standard_form(i, j, k)
-    rotate_triangle_to_standard_form(T::V) where {V}
+    rotate_triangle_to_standard_form(T)
 
 Given a triangle `T = (i, j, k)`, rotates it to a new triangle `T′ = (u, v, w)`
 such that `w` is the minimum index.
