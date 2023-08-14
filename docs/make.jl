@@ -7,6 +7,10 @@ DocMeta.setdocmeta!(DelaunayTriangulation, :DocTestSetup, :(using DelaunayTriang
     recursive=true)
 
 const IS_LIVESERVER = get(ENV, "LIVESERVER_ACTIVE", "false") == "true"
+if IS_LIVESERVER 
+    using Revise 
+    Revise.revise()
+end
 const CLEANUP_FIGURES = IS_LIVESERVER
 const IS_GITHUB_ACTIONS = get(ENV, "GITHUB_ACTIONS", "false") == "true"
 const IS_CI = get(ENV, "CI", "false") == "true"
@@ -84,11 +88,11 @@ for folder in ("tutorials", "applications")
     for file in files
         # See also https://github.com/Ferrite-FEM/Ferrite.jl/blob/d474caf357c696cdb80d7c5e1edcbc7b4c91af6b/docs/generate.jl for some of this
         file_path = joinpath(dir, file)
-        file_path = add_just_the_code_section(dir, file)
         if !IS_LIVESERVER
             @testset "$(file)" begin
                 safe_include(file_path)
             end
+            file_path = add_just_the_code_section(dir, file)
             script = Literate.script(file_path, joinpath(outputdir, "generated"))
             code = strip(read(script, String))
         else
