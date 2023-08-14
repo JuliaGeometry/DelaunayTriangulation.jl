@@ -14,12 +14,10 @@ function unlock_convex_hull!(tri::Triangulation)
     end
     I = integer_type(tri)
     bn = get_boundary_nodes(tri)
-    ne = num_boundary_edges(bn)
     bn_map = get_boundary_map(tri)
     bnn_map = get_boundary_edge_map(tri)    
     empty!(bn)
     bn_map[I(BoundaryIndex)] = bn 
-    E = edge_type(tri)
     edges = get_constrained_edges(tri)
     all_edges  = get_all_constrained_edges(tri)
     for e in keys(bnn_map)
