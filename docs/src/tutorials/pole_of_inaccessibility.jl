@@ -69,7 +69,7 @@ fig
 
 # To now find the pole of inaccessibility, use `pole_of_inaccessibility`:
 pole = DelaunayTriangulation.pole_of_inaccessibility(points, boundary_nodes)
-@test pole[1] ≈ -1.078522500000003 #src 
+@test pole[1] ≈ -1.078522500000003 #src
 @test pole[2] ≈ 5.372597499999995 #src
 
 #-

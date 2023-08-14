@@ -31,4 +31,5 @@ The tutorials that we consider are as follows:
 - [Nearest Neighbour Queries](nearest.md): How to use a Voronoi tessellation to find a point's nearest neighbour.
 - [Convex Hulls](convex_hull.md): How to compute a convex hull of a point set, using either an existing triangulation or from scratch.
 - [Pole of Inaccessibility](pole_of_inaccessibility.md): How to compute the [pole of inaccessibility](https://blog.mapbox.com/a-new-algorithm-for-finding-a-visual-center-of-a-polygon-7c77e6492fbc) of a polygon, also considering cases of multipolygons (polygons composed of multiple disjoint polygons) and multiply-connected polygons.
+- [Point-in-Polygon Testing](point_in_polygon.md): How to perform point-in-polygon testing. The method we give is obviously not going to be the fastest out of all available methods, but the algorithms in this package naturally provide a nice reasonably fast way to do this testing.
 - [Using Custom Structs for Primitives and Boundaries](custom_primitive.md): How to use custom structs for defining the geometric primitives.
