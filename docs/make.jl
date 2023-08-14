@@ -146,6 +146,7 @@ const _PAGES = [
         "Nearest Neighbour Queries" => "tutorials/nearest.md",
         "Convex Hulls" => "tutorials/convex_hull.md",
         "Pole of Inaccessibility" => "tutorials/pole_of_inaccessibility.md",
+        "Point-in-Polygon Testing" => "tutorials/point_in_polygon.md",
         "Using Custom Structs for Primitives and Boundaries" => "tutorials/custom_primitive.md"
     ],
     "Manual" => [

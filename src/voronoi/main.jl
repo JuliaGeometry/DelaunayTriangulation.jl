@@ -88,7 +88,5 @@ function centroidal_smooth(vorn::VoronoiTessellation{Tr}; maxiters=1000, tol=def
     end
     !has_bnds && unlock_convex_hull!(tri)
     !has_ghost && delete_ghost_triangles!(tri)
-    !has_bnds && empty!(get_all_constrained_edges(get_triangulation(vorn)))
-    !has_ghost && delete_ghost_triangles!(get_triangulation(vorn))
     return vorn
 end

@@ -401,7 +401,7 @@ function jump_to_voronoi_polygon(tri::Triangulation, q; kwargs...)
     V = jump_and_march(tri, q; kwargs...)
     qx, qy = _getxy(q)
     V = rotate_triangle_to_standard_form(V)
-    i, j, k = V
+    i, j, k = indices(V)
     a, b = get_point(tri, i, j)
     ax, ay = _getxy(a)
     bx, by = _getxy(b)
