@@ -6,8 +6,8 @@ using Test
 DocMeta.setdocmeta!(DelaunayTriangulation, :DocTestSetup, :(using DelaunayTriangulation, Test);
     recursive=true)
 
-const IS_LIVESERVER = false
-const CLEANUP_FIGURES = true
+const IS_LIVESERVER = get(ENV, "LIVESERVER_ACTIVE", "false") == "true"
+const CLEANUP_FIGURES = IS_LIVESERVER
 const IS_GITHUB_ACTIONS = get(ENV, "GITHUB_ACTIONS", "false") == "true"
 const IS_CI = get(ENV, "CI", "false") == "true"
 function safe_include(filename)
