@@ -87,7 +87,7 @@ calls [`getpoint`](@ref) - you do not need to
 extend this method. 
 """
 function get_point end
-get_point(pts::P, i) where {P} = getpoint(pts, i)
+get_point(pts::P, i) where {P} = (getxy ∘ getpoint)(pts, i)
 function get_point(pts::P, i::Vararg{Any,N}) where {P,N}
     return ntuple(j -> get_point(pts, i[j]), Val(N))
 end
