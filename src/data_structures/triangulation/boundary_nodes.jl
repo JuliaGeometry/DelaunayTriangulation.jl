@@ -1,23 +1,21 @@
 """
     has_multiple_curves(tri::Triangulation)
 
-Returns `has_multiple_curves(get_boundary_nodes(tri))`, testing if `tri`'s boundary is 
-comprised of multiple curves.
+Tests if `tri` has multiple boundary curves.
 """
 @inline has_multiple_curves(tri::Triangulation) = has_multiple_curves(get_boundary_nodes(tri))
 
 """
     has_multiple_segments(tri::Triangulation)
 
-Returns `has_multiple_segments(get_boundary_nodes(tri))`, testing if `tri`'s boundary is 
-comprised of multiple segments.
+Tests if `tri` has a boundary that is split into multiple segments.
 """
 @inline has_multiple_segments(tri::Triangulation) = has_multiple_segments(get_boundary_nodes(tri))
 
 """
     num_curves(tri::Triangulation)
 
-Returns `num_curves(get_boundary_nodes(tri))`, the number of curves in `tri`'s boundary.
+Returns the number of boundary curves in `tri`.
 """
 @inline num_curves(tri::Triangulation) = num_curves(get_boundary_nodes(tri))
 
@@ -281,3 +279,21 @@ end
 Returns all the boundary indices in the triangulation `tri`.
 """
 all_boundary_indices(tri::Triangulation) = keys(get_boundary_index_ranges(tri))
+
+"""
+    is_interior_curve(tri::Triangulation, curve_index)
+
+Tests if the curve with index `curve_index` in the triangulation `tri` is an interior curve. Specifically, 
+tests if curve is clockwise.
+"""
+function is_interior_curve(tri::Triangulation, curve_index)
+    points = get_points(tri)
+    if has_boundary_nodes(tri)
+        boundary_nodes = get_boundary_nodes(tri)
+        curve_boundary_nodes = get_boundary_nodes(boundary_nodes, curve_index)
+    else
+        curve_boundary_nodes = get_convex_hull_indices(tri)
+    end
+    area = polygon_features(points, curve_boundary_nodes)[1]
+    return area < 0.0
+end
