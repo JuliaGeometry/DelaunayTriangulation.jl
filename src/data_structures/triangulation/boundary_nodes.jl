@@ -281,3 +281,24 @@ end
 Returns all the boundary indices in the triangulation `tri`.
 """
 all_boundary_indices(tri::Triangulation) = keys(get_boundary_index_ranges(tri))
+
+"""
+    is_positively_oriented(tri::Triangulation, curve_index)
+
+Tests if the curve with index `curve_index` in the triangulation `tri` is positively oriented.
+"""
+function is_positively_oriented(tri::Triangulation, curve_index)
+    points = get_points(tri)
+    if has_boundary_nodes(tri)
+        boundary_nodes = get_boundary_nodes(tri)
+        if has_multiple_curves(boundary_nodes)
+            curve_boundary_nodes = get_boundary_nodes(boundary_nodes, curve_index)
+        else
+            curve_boundary_nodes = boundary_nodes
+        end
+    else
+        curve_boundary_nodes = get_convex_hull_indices(tri)
+    end
+    area = polygon_features(points, curve_boundary_nodes)[1]
+    return area > 0.0
+end
