@@ -12,7 +12,7 @@ withenv("LIVESERVER_ACTIVE" => "true") do
             # Watch the src folder so docstrings can be Revise'd
             joinpath(repo_root, "src"),
         ],
-        doc_env=true,
+        doc_env=false,
         launch_browser=true
     )
 end
