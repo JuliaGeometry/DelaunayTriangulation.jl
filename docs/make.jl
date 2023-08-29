@@ -2,75 +2,57 @@ using DelaunayTriangulation
 using Documenter
 using Literate
 using Test
+using Dates
 
 DocMeta.setdocmeta!(DelaunayTriangulation, :DocTestSetup, :(using DelaunayTriangulation, Test);
     recursive=true)
 
-const IS_LIVESERVER = get(ENV, "LIVESERVER_ACTIVE", "false") == "true"
-if IS_LIVESERVER 
-    using Revise 
+const IS_LIVESERVER = false # get(ENV, "LIVESERVER_ACTIVE", "false") == "true"
+if IS_LIVESERVER
+    using Revise
     Revise.revise()
 end
-const CLEANUP_FIGURES = IS_LIVESERVER
 const IS_GITHUB_ACTIONS = get(ENV, "GITHUB_ACTIONS", "false") == "true"
 const IS_CI = get(ENV, "CI", "false") == "true"
 function safe_include(filename)
     mod = @eval module $(gensym()) end
     return Base.include(mod, filename)
 end
-
-function clean_dir()
-    for folder in ("tutorials", "applications")
-        dir = joinpath(@__DIR__, "src", folder)
-        files = readdir(dir)
-        filter!(file -> endswith(file, ".md"), files)
-        filter!(file -> file ∉ ("overview.md",), files)
-        for file in files
-            file_path = joinpath(dir, file)
-            rm(file_path)
-        end
-        if !IS_LIVESERVER # draft documentation doesn't generate these files 
-            generated_script_path = joinpath(dir, "generated")
-            temp_script_path = joinpath(dir, "temp")
-            for file in readdir(generated_script_path)
-                rm(joinpath(generated_script_path, file))
-            end
-            for file in readdir(temp_script_path)
-                rm(joinpath(temp_script_path, file))
-            end
-        end
-        if CLEANUP_FIGURES
-            fig_path = joinpath(@__DIR__, "src", folder, "figures")
-            for file in readdir(fig_path)
-                rm(joinpath(fig_path, file))
-            end
-        end
-    end
-end
-clean_dir()
+const session_tmp = mktempdir()
 
 # When running docs locally, the EditURL is incorrect. For example, we might get 
 #   ```@meta
 #   EditURL = "<unknown>/docs/src/tutorials/constrained.jl"
 #   ```
-# We need to replace this EditURL if we are running the docs locally.
+# We need to replace this EditURL if we are running the docs locally. The last case is more complicated because, 
+# after changing to use temporary directories, it can now look like...
+#   ```@meta
+#   EditURL = "../../../../../../../AppData/Local/Temp/jl_8nsMGu/cs1_just_the_code.jl"
+#   ```
 function update_edit_url(content)
     content = replace(content, "<unknown>" => "https://github.com/DanielVandH/DelaunayTriangulation.jl/tree/new-docs")
     content = replace(content, "temp/" => "") # as of Literate 2.14.1
     return content
 end
+function update_edit_url(content, file, folder)
+    content = replace(content, "<unknown>" => "https://github.com/DanielVandH/DelaunayTriangulation.jl/tree/new-docs")
+    content = replace(content, "temp/" => "") # as of Literate 2.14.1
+    content = replace(content, r"EditURL\s*=\s*\"[^\"]*\"" => "EditURL = \"https://github.com/DanielVandH/DelaunayTriangulation.jl/tree/main/docs/src/literate_$(folder)/$file\"")
+    return content
+end
 
-# We can add the code to the end of each file in its uncommented form programatically 
+# We can add the code to the end of each file in its uncommented form programatically.
 function add_just_the_code_section(dir, file)
+    file_name, file_ext = splitext(file)
     file_path = joinpath(dir, file)
-    new_file_path = joinpath(dir, "temp", file)
-    cp(file_path, new_file_path)
-    folder = splitpath(dir)[end] # tutorials or applications
+    new_file_path = joinpath(session_tmp, file_name * "_just_the_code" * file_ext)
+    cp(file_path, new_file_path, force=true)
+    folder = splitpath(dir)[end] # literate_tutorials or literate_applications
     open(new_file_path, "a") do io
         write(io, "\n")
         write(io, "# ## Just the code\n")
-        write(io, "# An uncommented version of this tutorial is given below.\n")
-        write(io, "# You can view the source code for this tutorial [here](<unknown>/docs/src/$folder/@__NAME__.jl).\n")
+        write(io, "# An uncommented version of this example is given below.\n")
+        write(io, "# You can view the source code for this file [here](<unknown>/docs/src/$folder/@__NAME__.jl).\n")
         write(io, "\n")
         write(io, "# ```julia\n")
         write(io, "# @__CODE__\n")
@@ -80,35 +62,39 @@ function add_just_the_code_section(dir, file)
 end
 
 # Now process all the literate files
+ct() = Dates.format(now(), "HH:MM:SS")
 for folder in ("tutorials", "applications")
-    dir = joinpath(@__DIR__, "src", folder)
-    outputdir = dir
+    dir = joinpath(@__DIR__, "src", "literate_" * folder)
+    outputdir = joinpath(@__DIR__, "src", folder)
+    !isdir(outputdir) && mkpath(outputdir)
     files = readdir(dir)
-    filter!(file -> endswith(file, ".jl"), files)
+    filter!(file -> endswith(file, ".jl") && !occursin("just_the_code", file), files)
     for file in files
         # See also https://github.com/Ferrite-FEM/Ferrite.jl/blob/d474caf357c696cdb80d7c5e1edcbc7b4c91af6b/docs/generate.jl for some of this
         file_path = joinpath(dir, file)
         if !IS_LIVESERVER
+            @info "[$(ct())] Processing $file: Testing"
             @testset "$(file)" begin
                 safe_include(file_path)
             end
-            file_path = add_just_the_code_section(dir, file)
-            script = Literate.script(file_path, joinpath(outputdir, "generated"))
-            code = strip(read(script, String))
-        else
-            code = "Script outputs are not produced when producing draft documentation."
         end
+        new_file_path = add_just_the_code_section(dir, file)
+        script = Literate.script(file_path, session_tmp, name=splitext(file)[1] * "_just_the_code_cleaned")
+        code = strip(read(script, String))
+        @info "[$(ct())] Processing $file: Converting markdown script"
         line_ending_symbol = occursin(code, "\r\n") ? "\r\n" : "\n"
         code_clean = join(filter(x -> !endswith(x, "#hide"), split(code, r"\n|\r\n")), line_ending_symbol)
         code_clean = replace(code_clean, r"^# This file was generated .*$"m => "")
         code_clean = strip(code_clean)
-        post_strip(content) = replace(content, "@__CODE__" => code_clean)
+        post_strip = content -> replace(content, "@__CODE__" => code_clean)
+        editurl_update = content -> update_edit_url(content, file, folder)
         Literate.markdown(
-            file_path,
+            new_file_path,
             outputdir;
             documenter=true,
-            postprocess=update_edit_url ∘ post_strip,
-            credit=true
+            postprocess=editurl_update ∘ post_strip,
+            credit=true,
+            name=splitext(file)[1]
         )
     end
 end
@@ -254,6 +240,3 @@ makedocs(;
 deploydocs(;
     repo="github.com/DanielVandH/DelaunayTriangulation.jl",
     devbranch="main")
-
-# Now that we are done, delete the literate files 
-clean_dir()

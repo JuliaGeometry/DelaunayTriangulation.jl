@@ -1,8 +1,8 @@
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.9.2"
+julia_version = "1.9.3"
 manifest_format = "2.0"
-project_hash = "a2397cbe6b849559c1190a93b3b9fe1cea2c6c31"
+project_hash = "e17faa5ee9d8657a1b447d5c5a34b2fb3cf52ee0"
 
 [[deps.ANSIColoredPrinters]]
 git-tree-sha1 = "574baf8110975760d391c710b6341da1afa48d8c"
@@ -281,7 +281,7 @@ version = "1.2.0"
 deps = ["DataStructures", "EnumX", "ExactPredicates", "Random", "SimpleGraphs"]
 path = "C:\\Users\\User\\.julia\\dev\\DelaunayTriangulation"
 uuid = "927a84f5-c5f4-47a5-9785-b46e178433df"
-version = "0.8.6"
+version = "0.8.7"
 
 [[deps.DiffResults]]
 deps = ["StaticArraysCore"]
