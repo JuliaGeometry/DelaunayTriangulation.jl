@@ -128,7 +128,7 @@ DelaunayTriangulation.get_all_boundary_nodes(tri)
 
 To give an example of how we can work with this boundary, let us compute the area
 of the triangulation (a more efficient approach is with `get_total_area(tri)`, but this is just
-for demonstraton). For this, the order of the boundary edges is appropriate, so we must iterate
+for demonstraton). For this, the order of the boundary edges is important, so we must iterate
 in a way that respects the ordering.
 
 ````@example constrained_multiply_connected
