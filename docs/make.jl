@@ -22,18 +22,13 @@ const session_tmp = mktempdir()
 
 # When running docs locally, the EditURL is incorrect. For example, we might get 
 #   ```@meta
-#   EditURL = "<unknown>/docs/src/tutorials/constrained.jl"
+#   EditURL = "<unknown>/docs/src/literate_tutorials/constrained.jl"
 #   ```
 # We need to replace this EditURL if we are running the docs locally. The last case is more complicated because, 
 # after changing to use temporary directories, it can now look like...
 #   ```@meta
 #   EditURL = "../../../../../../../AppData/Local/Temp/jl_8nsMGu/cs1_just_the_code.jl"
 #   ```
-function update_edit_url(content)
-    content = replace(content, "<unknown>" => "https://github.com/DanielVandH/DelaunayTriangulation.jl/tree/new-docs")
-    content = replace(content, "temp/" => "") # as of Literate 2.14.1
-    return content
-end
 function update_edit_url(content, file, folder)
     content = replace(content, "<unknown>" => "https://github.com/DanielVandH/DelaunayTriangulation.jl/tree/new-docs")
     content = replace(content, "temp/" => "") # as of Literate 2.14.1
