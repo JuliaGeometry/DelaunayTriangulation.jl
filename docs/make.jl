@@ -98,7 +98,7 @@ end
 const _PAGES = [
     "Introduction" => "index.md",
     "Tutorials" => [
-        "Section Overview" => "tutorials/overview.md", # Introduction and installation
+        "Section Overview" => "tutorials/overview.md",
         "Unconstrained Triangulations" => "tutorials/unconstrained.md",
         "Constrained Triangulations" => [
             "Constrained Edges" => "tutorials/constrained_edges.md",
