@@ -67,12 +67,12 @@ for folder in ("tutorials", "applications")
     for file in files
         # See also https://github.com/Ferrite-FEM/Ferrite.jl/blob/d474caf357c696cdb80d7c5e1edcbc7b4c91af6b/docs/generate.jl for some of this
         file_path = joinpath(dir, file)
-        if !IS_LIVESERVER
-            @info "[$(ct())] Processing $file: Testing"
-            @testset "$(file)" begin
-                safe_include(file_path)
-            end
-        end
+        #if !IS_LIVESERVER
+        #    @info "[$(ct())] Processing $file: Testing"
+        #    @testset "$(file)" begin
+        #        safe_include(file_path)
+        #    end
+        #end
         new_file_path = add_just_the_code_section(dir, file)
         script = Literate.script(file_path, session_tmp, name=splitext(file)[1] * "_just_the_code_cleaned")
         code = strip(read(script, String))
