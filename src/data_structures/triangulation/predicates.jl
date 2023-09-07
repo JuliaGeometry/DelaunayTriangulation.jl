@@ -3,7 +3,7 @@
     is_boundary_edge(tri::Triangulation, i, j)
 
 Returns `is_boundary_edge(ij, get_adjacent(tri))` or `is_boundary_edge(i, j, get_adjacent(tri))`, respectively,
-testing if `ij = (i, j)` belongs to the boundary of the triangulation `tri`, i.e. `(j, i)` adjoins a ghost vertex.
+testing if `ij = (i, j)` belongs to the boundary of the triangulation `tri`, i.e. `(i, j)` adjoins a ghost vertex.
 """
 @inline is_boundary_edge(tri::Triangulation, ij) = is_boundary_edge(ij, get_adjacent(tri))
 @inline is_boundary_edge(tri::Triangulation, i, j) = is_boundary_edge(i, j, get_adjacent(tri))

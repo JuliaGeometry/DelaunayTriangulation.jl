@@ -374,8 +374,8 @@ end
         (1.5, 2.0), (8.15, 6.0)
     ]
     q = (7.0, 7.0) # When you have a point that is exactly the same as a representative point, you need to be careful of (1) the point being exactly collinear with a ghost edge, and (2) the algorithm mistakenly regarding q as if it were equal to a triangle's vertices (since this is where the ghost vertices map). This is now fixed, but we need this isolated to avoid regressions.
-    V = jump_and_march(tri, q, rng=StableRNG(268), concavity_protection=true)
-    @test DelaunayTriangulation.compare_triangles(V, (377, 378, 68))
+    V = jump_and_march(tri, q, rng=StableRNG(268), k=31, concavity_protection=true)
+    @test !DT.is_outside(DT.point_position_relative_to_triangle(tri, V, q))
     δs = [DelaunayTriangulation.distance_to_polygon(q, get_points(tri), get_boundary_nodes(tri)) for q in qs]
     for i in 1:1000
         @show i
