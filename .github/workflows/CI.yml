@@ -31,7 +31,7 @@ jobs:
           - x64
     steps:
       - name: Checkout repository for access
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Julia
         uses: julia-actions/setup-julia@v1
@@ -64,7 +64,7 @@ jobs:
       contents: write
       statuses: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@v1
         with:
           version: '1'
