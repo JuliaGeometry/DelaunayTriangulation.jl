@@ -63,4 +63,5 @@ makedocs(;
 
 deploydocs(;
     repo="github.com/DanielVandH/DelaunayTriangulation.jl",
-    devbranch="main")
+    devbranch="main",
+    push_preview=true)
