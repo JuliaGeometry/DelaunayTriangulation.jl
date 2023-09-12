@@ -8,5 +8,5 @@ function brute_force_search(tri::Triangulation, q; itr = each_triangle(tri))
         cert = point_position_relative_to_triangle(tri, V, q)
         !is_outside(cert) && return V 
     end
-    throw("Failed to find the point $(get_point(tri, r)).")
+    throw("Failed to find the point $(get_point(tri, q)).")
 end
