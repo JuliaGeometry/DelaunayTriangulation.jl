@@ -1458,7 +1458,7 @@ end
 end
 
 @testset "README Examples" begin
-    fig = Figure(fontsize=24)
+    fig = Figure(fontsize=24, resolution=(1881, 1000))
 
     ## Unconstrained example: Just some random points 
     rng = StableRNG(2)
@@ -1527,7 +1527,6 @@ end
     ax = Axis(fig[2, 4], title="(h): Centroidal Voronoi tessellation", titlealign=:left, width=400, height=400)
     voronoiplot!(ax, smooth_vorn, show_generators=true, markersize=4, colormap=:jet)
 
-    resize_to_layout!(fig)
     fig
 
     @test_reference "../examples.png" fig
