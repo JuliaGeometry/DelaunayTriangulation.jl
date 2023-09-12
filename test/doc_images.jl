@@ -1525,7 +1525,7 @@ end
     vorn = voronoi(tri)
     smooth_vorn = centroidal_smooth(vorn; maxiters=2500, rng)
     ax = Axis(fig[2, 4], title="(h): Centroidal Voronoi tessellation", titlealign=:left, width=400, height=400)
-    voronoiplot!(ax, smooth_vorn, show_generators=true, markersize=4, colormap=:jet)
+    voronoiplot!(ax, smooth_vorn, show_generators=true, markersize=4, color=:white)
 
     fig
 
