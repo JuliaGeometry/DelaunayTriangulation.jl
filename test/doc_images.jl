@@ -1524,13 +1524,11 @@ end
     vorn = voronoi(tri)
     ax = Axis(fig[2, 2], title="(f): Voronoi tessellation", titlealign=:left, width=400, height=400)
     voronoiplot!(ax, vorn, show_generators=false)
-    xlims!(ax, -120, 120)
-    ylims!(ax, -120, 120)
-
+    
     ## Clipped Voronoi tessellation 
     vorn = voronoi(tri, true)
     ax = Axis(fig[2, 3], title="(g): Clipped Voronoi tessellation", titlealign=:left, width=400, height=400)
-    voronoiplot!(ax, vorn, show_generators=false, polygon_color=:white)
+    voronoiplot!(ax, vorn, show_generators=false, color=:white)
 
     ## Centroidal Voronoi tessellation (CVT)
     points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
