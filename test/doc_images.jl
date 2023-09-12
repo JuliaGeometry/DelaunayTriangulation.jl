@@ -1421,14 +1421,10 @@ end
         ax = Axis(fig[1, 1], aspect=1)
         voronoiplot!(ax, vorn, strokecolor=:red, strokewidth=0.2, show_generators=false)
         triplot!(ax, tri, strokewidth=0.0, strokecolor=(:black, 0.4), show_convex_hull=true)
-        xlims!(ax, -5, 5)
-        ylims!(ax, -5, 5)
 
         ax = Axis(fig[1, 2], aspect=1)
         voronoiplot!(ax, vorn_clip, strokecolor=:red, strokewidth=0.2, show_generators=false)
         triplot!(ax, tri, strokewidth=0.0, strokecolor=(:black, 0.4), show_convex_hull=true)
-        xlims!(ax, -5, 5)
-        ylims!(ax, -5, 5)
 
         resize_to_layout!(fig)
         @test_reference "../docs/src/tessellations/figs/bounded.png" fig
@@ -1444,26 +1440,18 @@ end
         fig = Figure()
         ax = Axis(fig[1, 1], aspect=1)
         voronoiplot!(ax, vorn, strokecolor=:red, strokewidth=0.2, markersize=4, colormap=:jet)
-        xlims!(ax, -100, 100)
-        ylims!(ax, -100, 100)
 
         ax = Axis(fig[1, 2], aspect=1)
         voronoiplot!(ax, smooth_vorn, strokecolor=:red, strokewidth=0.2, markersize=4, colormap=:jet)
-        xlims!(ax, -100, 100)
-        ylims!(ax, -100, 100)
 
         @test_reference "../docs/src/tessellations/figs/lloyd.png" fig
 
         fig = Figure()
         ax = Axis(fig[1, 1], aspect=1)
         triplot!(ax, vorn.triangulation, strokewidth=0.2, markersize=4)
-        xlims!(ax, -100, 100)
-        ylims!(ax, -100, 100)
 
         ax = Axis(fig[1, 2], aspect=1)
         triplot!(ax, smooth_vorn.triangulation, strokewidth=0.2, markersize=4)
-        xlims!(ax, -100, 100)
-        ylims!(ax, -100, 100)
 
         @test_reference "../docs/src/tessellations/figs/lloyd_tri.png" fig
     end
@@ -1524,7 +1512,7 @@ end
     vorn = voronoi(tri)
     ax = Axis(fig[2, 2], title="(f): Voronoi tessellation", titlealign=:left, width=400, height=400)
     voronoiplot!(ax, vorn, show_generators=false)
-    
+
     ## Clipped Voronoi tessellation 
     vorn = voronoi(tri, true)
     ax = Axis(fig[2, 3], title="(g): Clipped Voronoi tessellation", titlealign=:left, width=400, height=400)
