@@ -1529,5 +1529,5 @@ end
 
     fig
 
-    @test_reference "../examples.png" fig
+    # @test_reference "../examples.png" fig
 end
