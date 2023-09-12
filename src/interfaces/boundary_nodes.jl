@@ -262,7 +262,7 @@ function construct_boundary_edge_map(bn::A; IntegerType::Type{I}=Int, EdgeType::
             for ℓ in 1:ne
                 u = get_boundary_nodes(bn_n, ℓ)
                 v = get_boundary_nodes(bn_n, ℓ + 1)
-                dict[(u, v)] = (n, ℓ)
+                dict[construct_edge(E, u, v)] = (n, ℓ)
             end
         end
     else
@@ -271,7 +271,7 @@ function construct_boundary_edge_map(bn::A; IntegerType::Type{I}=Int, EdgeType::
         for ℓ in 1:ne
             u = get_boundary_nodes(bn, ℓ)
             v = get_boundary_nodes(bn, ℓ + 1)
-            dict[(u, v)] = (bn, ℓ)
+            dict[construct_edge(E, u, v)] = (bn, ℓ)
         end
     end
     return dict

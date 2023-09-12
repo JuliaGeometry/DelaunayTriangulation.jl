@@ -5,7 +5,13 @@
 [![Coverage](https://codecov.io/gh/DanielVandH/DelaunayTriangulation.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/DanielVandH/DelaunayTriangulation.jl)
 [![DOI](https://zenodo.org/badge/540660309.svg)](https://zenodo.org/badge/latestdoi/540660309)
 
-This is a package for constructing Delaunay triangulations and Voronoi tessellations of planar point sets. Supports unconstrained and constrained triangulations, mesh refinement, Voronoi tessellations, and clipped and centroidal Voronoi tessellations. All geometric predicates are computed via [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl). Many features are available, some of these being:
+This is a package for constructing Delaunay triangulations and Voronoi tessellations of planar point sets. Supports unconstrained and constrained triangulations, mesh refinement, Voronoi tessellations, and clipped and centroidal Voronoi tessellations. All geometric predicates are computed via [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl). To install the package, do
+
+```julia
+julia>] add DelaunayTriangulation
+```
+
+Many features are available, some of these being:
 
 - [Unconstrained](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/triangulations/unconstrained/) and [constrained](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/triangulations/constrained/) triangulations. Support is provided for many types of domains, as given in the docs.
 - [Computation of Voronoi tessellations](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/tessellations/voronoi/), including [clipping of polygons to the convex hull](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/tessellations/clipped/). I hope to get this working for constrained triangulations, but it's difficult.
@@ -27,17 +33,16 @@ Some examples are below (and in the docs), but if you would also like to see how
 
 ## Quick Example 
 
-See the docs for plenty of examples. For now, here are some small examples.
+See the docs for plenty of examples. For now, here are some small examples. Note that, for computing the triangulations and tessellations, all you need is `DelaunayTriangulation`, but for visualising you need `CairoMakie`.
 
 ```julia
-using DelaunayTriangulation, CairoMakie, StableRNGs
+using DelaunayTriangulation, CairoMakie
 
 fig = Figure(fontsize=24)
 
 ## Unconstrained example: Just some random points 
-rng = StableRNG(2)
-pts = randn(rng, 2, 500)
-tri = triangulate(pts; rng)
+pts = randn(2, 500)
+tri = triangulate(pts)
 ax = Axis(fig[1, 1], title="(a): Unconstrained", titlealign=:left, width=400, height=400)
 triplot!(ax, tri, show_convex_hull=true, show_ghost_edges=true)
 
@@ -52,19 +57,19 @@ triplot!(ax, tri, show_points=true, show_constrained_edges=true)
 
 ## Dynamic updating 
 n = num_points(tri)
-add_point!(tri, (0.2, 0.2); rng)
-add_point!(tri, (0.8, 0.8); rng)
-add_point!(tri, (0.3, 0.2); rng)
-add_point!(tri, (0.6, 0.2); rng)
-add_point!(tri, (0.3, 0.3); rng)
-add_edge!(tri, (n + 1, n + 4); rng)
-delete_point!(tri, n + 2; rng)
+add_point!(tri, (0.2, 0.2))
+add_point!(tri, (0.8, 0.8))
+add_point!(tri, (0.3, 0.2))
+add_point!(tri, (0.6, 0.2))
+add_point!(tri, (0.3, 0.3))
+add_edge!(tri, (n + 1, n + 4))
+delete_point!(tri, n + 2)
 ax = Axis(fig[1, 3], title="(c): Updated constrained, pre-refinement", titlealign=:left, width=400, height=400)
 triplot!(ax, tri, show_constrained_edges=true)
 
 ## Refinement example
 A = get_total_area(tri)
-refine!(tri; max_area=1e-2A, min_angle=28.7, rng)
+refine!(tri; max_area=1e-2A, min_angle=28.7)
 ax = Axis(fig[1, 4], title="(d): Constrained, post-refinement", titlealign=:left, width=400, height=400)
 triplot!(ax, tri)
 
@@ -74,32 +79,29 @@ outer_boundary = [[(0.0, 0.0), (1.0, 0.0), (1.0, 0.3), (0.8, 0.3),
 inner_boundary = [[(0.2, 0.2), (0.2, 0.6), (0.4, 0.6), (0.4, 0.2), (0.2, 0.2)]]
 boundary_nodes, points = convert_boundary_points_to_indices([outer_boundary, inner_boundary])
 edges = Set(((2, 8), (5, 7)))
-tri = triangulate(points; boundary_nodes, edges, rng)
+tri = triangulate(points; boundary_nodes, edges)
 A = get_total_area(tri)
-refine!(tri; max_area=1e-3A, min_angle=31.5, rng)
+refine!(tri; max_area=1e-3A, min_angle=31.5)
 ax = Axis(fig[2, 1], title="(e): Multiply-connected", titlealign=:left, width=400, height=400)
 triplot!(ax, tri)
 
 ## Voronoi tessellation: Make tessellations from their dual triangulation
-pts = 25randn(rng, 2, 500)
-tri = triangulate(pts; rng)
+pts = 25randn(2, 500)
+tri = triangulate(pts)
 vorn = voronoi(tri)
 ax = Axis(fig[2, 2], title="(f): Voronoi tessellation", titlealign=:left, width=400, height=400)
 voronoiplot!(ax, vorn, show_generators=false)
-xlims!(ax, -120, 120)
-ylims!(ax, -120, 120)
-
 ## Clipped Voronoi tessellation 
 vorn = voronoi(tri, true)
 ax = Axis(fig[2, 3], title="(g): Clipped Voronoi tessellation", titlealign=:left, width=400, height=400)
-voronoiplot!(ax, vorn, show_generators=false, polygon_color=:white)
+voronoiplot!(ax, vorn, show_generators=false, color=:white)
 
 ## Centroidal Voronoi tessellation (CVT)
 points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
-tri = triangulate(points; boundary_nodes=[1, 2, 3, 4, 1], rng)
-refine!(tri; max_area=1e-3, min_angle=29.871, rng)
+tri = triangulate(points; boundary_nodes=[1, 2, 3, 4, 1])
+refine!(tri; max_area=1e-3, min_angle=29.871)
 vorn = voronoi(tri)
-smooth_vorn = centroidal_smooth(vorn; maxiters=2500, rng)
+smooth_vorn = centroidal_smooth(vorn; maxiters=2500)
 ax = Axis(fig[2, 4], title="(h): Centroidal Voronoi tessellation", titlealign=:left, width=400, height=400)
 voronoiplot!(ax, smooth_vorn, show_generators=true, markersize=4, colormap=:jet)
 
@@ -131,5 +133,5 @@ This is not the only Delaunay triangulation package available. Some others are:
 - [Delaunator.jl](https://github.com/JuliaGeometry/Delaunator.jl): A pure Julia library modelled after the [JavaScript Delaunator library](https://github.com/mapbox/delaunator). This package can construct unconstrained triangulations of planar point sets. No support is available for constrained triangulations or mesh refinement, although support exists for computing the dual Voronoi tessellation. Centroidal tessellations are not implemented, although the Voronoi cells can be clipped to a bounding box. 
 - [TriangleMesh.jl](https://github.com/konsim83/TriangleMesh.jl), [Triangulate.jl](https://github.com/JuliaGeometry/Triangulate.jl), [Triangle.jl](https://github.com/cvdlab/Triangle.jl): Interfaces to [Shewchuk's Triangle library](https://www.cs.cmu.edu/~quake/triangle.html).
 - [TetGen.jl](https://github.com/JuliaGeometry/TetGen.jl): This is for Delaunay tetrahedralisation, wrapping [TetGen](https://wias-berlin.de/software/index.jsp?id=TetGen).
-
+- [GMT.jl](https://github.com/GenericMappingTools/GMT.jl): A wrapper of [GMT](https://github.com/GenericMappingTools/gmt), allowing for [unconstrained Delaunay triangulations in two dimensions](https://www.generic-mapping-tools.org/GMTjl_doc/documentation/modules/triangulate/index.html#triangulate), and for [spherical triangulation, i.e. triangulation of points lying on a sphere](https://www.generic-mapping-tools.org/GMTjl_doc/documentation/modules/sphtriangulate/index.html#sphtriangulate).
 

@@ -1,5 +1,5 @@
 """
-    voronoi(tri::Triangulation, clip=has_boundary_nodes(tri)) -> VoronoiTessellation
+    voronoi(tri::Triangulation, clip=false) -> VoronoiTessellation
 
 Construct the Voronoi tessellation of the points in `tri`. If `clip` is `true` then the
 Voronoi tessellation will be clipped to the convex hull of the points in `tri`. 
@@ -25,7 +25,7 @@ Voronoi tessellation will be clipped to the convex hull of the points in `tri`.
 
     Clipping is not yet guaranteed to work for constrained triangulations. 
 """
-function voronoi(tri::Triangulation, clip=has_boundary_nodes(tri))
+function voronoi(tri::Triangulation, clip=false)
     has_ghost = has_ghost_triangles(tri)
     !has_ghost && add_ghost_triangles!(tri)
     vorn = initialise_voronoi_tessellation(tri)
@@ -88,7 +88,5 @@ function centroidal_smooth(vorn::VoronoiTessellation{Tr}; maxiters=1000, tol=def
     end
     !has_bnds && unlock_convex_hull!(tri)
     !has_ghost && delete_ghost_triangles!(tri)
-    !has_bnds && empty!(get_all_constrained_edges(get_triangulation(vorn)))
-    !has_ghost && delete_ghost_triangles!(get_triangulation(vorn))
     return vorn
 end

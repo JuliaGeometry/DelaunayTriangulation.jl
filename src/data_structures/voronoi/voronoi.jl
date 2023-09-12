@@ -326,7 +326,7 @@ Gets the area and centroid of the polygon with index `i` in `vor`.
 """
 function polygon_features(vor::VoronoiTessellation, i)
     polygon = get_polygon(vor, i)
-    if any(is_boundary_index, polygon)
+    if i ∈ get_unbounded_polygons(vor)
         F = number_type(vor)
         return (typemax(F), (typemax(F), typemax(F)))
     end
@@ -386,10 +386,14 @@ function polygon_bounds(vorn::VoronoiTessellation, unbounded_extension_factor=0.
 end
 
 """
-    jump_and_march(vor::VoronoiTessellation, q; kwargs...)
+    get_nearest_neighbour(vor::VoronoiTessellation, q; kwargs...)
 
-Finds the polygon containing the point `q` in the Voronoi tessellation `vor`. The keyword arguments are passed to `jump_and_march`.
+Finds the polygon containing the point `q` in the Voronoi tessellation `vor`. Equivalently, 
+finds the generator nearest to the point `q`. The keyword arguments are passed to `jump_and_march`.
 """
+get_nearest_neighbour(vor::VoronoiTessellation, q; kwargs...) = jump_and_march(vor, q; kwargs...)
+get_nearest_neighbour(tri::Triangulation, q; kwargs...) = jump_to_voronoi_polygon(tri, q; kwargs...)
+
 function jump_and_march(vor::VoronoiTessellation, q; kwargs...)
     return jump_to_voronoi_polygon(get_triangulation(vor), q; kwargs...)
 end
@@ -398,7 +402,7 @@ function jump_to_voronoi_polygon(tri::Triangulation, q; kwargs...)
     V = jump_and_march(tri, q; kwargs...)
     qx, qy = _getxy(q)
     V = rotate_triangle_to_standard_form(V)
-    i, j, k = V
+    i, j, k = indices(V)
     a, b = get_point(tri, i, j)
     ax, ay = _getxy(a)
     bx, by = _getxy(b)
