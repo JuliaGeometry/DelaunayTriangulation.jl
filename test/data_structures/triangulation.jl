@@ -605,23 +605,26 @@ end
       n = 60
       for _ in 1:10
             n += rand(1:125)
-            tri = triangulate(12randn(2, n))
-            for qi in each_solid_vertex(tri)
-                  for k in each_solid_vertex(tri)
-                        q = get_point(tri, qi)
-                        history = DT.PointLocationHistory{NTuple{3,Int},NTuple{2,Int},Int}()
-                        jump_and_march(tri, q;
-                              k,
-                              store_history=true,
-                              history)
-                        visited_triangles = history.triangles
-                        collinear_segments = history.collinear_segments
-                        @test all(T -> DT.is_positively_oriented(DT.triangle_orientation(tri, T)), visited_triangles)
-                        @test all(!DT.is_none, [DT.triangle_line_segment_intersection(tri, T, (qi, k)) for T in visited_triangles])
-                        @test allunique(visited_triangles)
-                        if !isempty(collinear_segments)
-                              @test all(E -> DT.is_collinear(DT.point_position_relative_to_line(tri, qi, k, E[1])), collinear_segments)
-                              @test all(E -> DT.is_collinear(DT.point_position_relative_to_line(tri, qi, k, E[2])), collinear_segments)
+            tri1 = triangulate(12randn(2, n), delete_ghosts=false)
+            tri2 = triangulate(12randn(2, n), delete_ghosts=true)
+            for tri in (tri1, tri2)
+                  for qi in each_solid_vertex(tri)
+                        for k in each_solid_vertex(tri)
+                              q = get_point(tri, qi)
+                              history = DT.PointLocationHistory{NTuple{3,Int},NTuple{2,Int},Int}()
+                              jump_and_march(tri, q;
+                                    k,
+                                    store_history=true,
+                                    history)
+                              visited_triangles = history.triangles
+                              collinear_segments = history.collinear_segments
+                              @test all(T -> DT.is_positively_oriented(DT.triangle_orientation(tri, T)), visited_triangles)
+                              @test all(!DT.is_none, [DT.triangle_line_segment_intersection(tri, T, (qi, k)) for T in visited_triangles])
+                              @test allunique(visited_triangles)
+                              if !isempty(collinear_segments)
+                                    @test all(E -> DT.is_collinear(DT.point_position_relative_to_line(tri, qi, k, E[1])), collinear_segments)
+                                    @test all(E -> DT.is_collinear(DT.point_position_relative_to_line(tri, qi, k, E[2])), collinear_segments)
+                              end
                         end
                   end
             end
