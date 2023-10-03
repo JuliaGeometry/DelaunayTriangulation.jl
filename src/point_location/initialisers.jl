@@ -477,14 +477,14 @@ function check_for_intersections_with_interior_edges_adjacent_to_boundary_node(
                 # Here, q is on the edge, so we consider it as being inside the triangle.
                 if is_true(store_history)
                     add_triangle!(history, i, j, k)
-                    add_edge!(history, i, j)
+                    pᵢ ≠ q && pⱼ ≠ q && add_edge!(history, i, j) # be careful not to add a collinear edge that is just starting at q
                 end
                 return i, j, Cert.On, Cert.Inside
             elseif is_right(q_cert)
                 # Here, q is to the right of ppⱼ, which just means that it is inside the triangulation. 
                 if is_true(store_history)
                     add_triangle!(history, i, j, k)
-                    add_edge!(history, k, j)
+                    p ≠ q && pⱼ ≠ q && add_edge!(history, k, j) # be careful not to add a collinear edge that is just starting at q
                 end
                 return j, i, Cert.Right, Cert.Outside # flip i and j to get the correct orientation
             elseif is_left(q_cert)
