@@ -15,7 +15,7 @@ end
     degenerate_cert = triangle_orientation(p, q, r)
     itr = 0
     if length(point_order) > 3 # Do not get stuck in an infinite loop if there are just three points, the three of them being collinear
-        while is_degenerate(degenerate_cert) && itr ≤ length(point_order) # If all points are collinear, this loop could go forever
+        while (is_degenerate(degenerate_cert) || squared_triangle_area(p, q, r) ≤ eps(number_type(points)))  && itr ≤ length(point_order) # If all points are collinear, this loop could go forever
             @static if VERSION ≥ v"1.8.1"
                 circshift!(point_order, -1)::Vector{I}
             else
