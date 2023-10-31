@@ -322,3 +322,11 @@ end
     pts = [a, b, c, d, e, f, g, h, i, j]
     tri = DT.triangulate_bowyer_watson(pts; delete_ghosts=false)
 end
+
+@testset "Issue #94" begin
+    i = 265
+    rng = StableRNG(i)
+    points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.5, 0.5), (0.2, 0.8), (0.1, 0.785)]
+    tri = triangulate(points; rng)
+    @test validate_triangulation(tri)
+end
