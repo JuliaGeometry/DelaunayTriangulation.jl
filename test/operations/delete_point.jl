@@ -269,3 +269,17 @@ end
         end
     end
 end
+
+@testset "Issue #96" begin
+    j = 96
+    rng = StableRNG(j)
+    points = rand(rng, 2, 500)
+    tri = triangulate(points; rng)
+    k = 19
+    rng = StableRNG(k)
+    i = 183
+    delete_point!(tri, i, rng=rng)
+    @test validate_triangulation(tri)
+    add_point!(tri, i, rng=rng)
+    @test validate_triangulation(tri)
+end
