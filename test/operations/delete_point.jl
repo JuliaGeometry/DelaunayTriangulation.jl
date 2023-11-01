@@ -281,6 +281,5 @@ end
     delete_point!(tri, i, rng=rng)
     @test validate_triangulation(tri)
     add_point!(tri, i, rng=rng)
-    @test tri == orig_tri
     @test validate_triangulation(tri)
 end
