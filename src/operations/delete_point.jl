@@ -42,9 +42,23 @@ function delete_point!(tri::Triangulation, point; rng::AbstractRNG=Random.defaul
     return nothing
 end
 
-function _delete_interior_point!(tri, S, rng)
-    triangulate_convex!(tri, S; rng, update_ghost_edges=false) # Works even for boundary nodes, due to the replacement we make above
-    return nothing
+function _delete_interior_point!(tri::Triangulation{P,Ts,I,E,Es,BN,BNM,B,BIR}, S, rng) where {P,Ts,I,E,Es,BN,BNM,B,BIR}
+	temp_tri = triangulate_convex(get_points(tri), S; # issue #96
+        IntegerType=I,
+        EdgeType=E,
+        TriangleType=triangle_type(Ts),
+        EdgesType=Es,
+        TrianglesType=Ts,
+        representative_point_list = get_representative_point_list(tri),
+        rng,
+        add_ghost_triangles=false,
+        add_convex_hull=false,
+        compute_centers=false,
+        delete_empty_features=false)
+	for T in each_triangle(temp_tri)
+        add_triangle!(tri, T; protect_boundary=true)
+    end
+	return nothing
 end
 
 function _delete_boundary_point!(tri::Triangulation{P,Ts,I,E,Es,BN,BNM,B,BIR}, S, rng) where {P,Ts,I,E,Es,BN,BNM,B,BIR}
