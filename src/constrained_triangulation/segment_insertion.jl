@@ -172,6 +172,7 @@ end
 
 function add_point_cavity_cdt!(tri::Triangulation, marked_vertices, u, v, w)
     x = get_adjacent(tri, w, v)
+    (u == v || v == w || u == w) && return tri
     if !edge_exists(x)
         insert_flag = true
     else

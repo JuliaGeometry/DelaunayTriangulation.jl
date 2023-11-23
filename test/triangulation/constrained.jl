@@ -5,10 +5,10 @@ using StableRNGs
 include("../helper_functions.jl")
 
 @testset "Test random constrained Delaunay triangulations" begin
-    for i in 1:250
+    for i in 1:25000
         rng = StableRNG(i)
         points, edges, mat_edges = get_random_vertices_and_constrained_edges(40, 200, 20, rng)
-        tri = triangulate(points; edges, rng)
+        tri = triangulate(points; edges, rng=StableRNG(i))
         @test validate_triangulation(tri)
         empty!(get_all_constrained_edges(tri))
         @test !validate_triangulation(tri)
