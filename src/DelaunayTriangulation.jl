@@ -96,14 +96,20 @@ export convex_hull
 export convex_hull!
 export each_solid_triangle
 export each_ghost_triangle
+export num_solid_triangles 
+export num_ghost_triangles
 export get_vertices
 export clear_empty_features!
 export get_indices
 export get_convex_hull_indices
 export each_vertex
 export num_vertices
+export num_solid_vertices 
+export num_ghost_vertices
 export each_solid_edge
 export each_ghost_edge
+export num_solid_edges
+export num_ghost_edges
 export each_solid_vertex
 export each_ghost_vertex
 export each_constrained_edge
@@ -161,14 +167,12 @@ export add_edge!
 export lock_convex_hull!
 export unlock_convex_hull!
 
-include("triangulation/gmsh.jl")
 include("triangulation/rectangle.jl")
 include("triangulation/bowyer_watson.jl")
 include("triangulation/triangulate.jl")
 include("triangulation/convex_triangulation.jl")
 include("triangulation/triangulate_constrained.jl")
 
-export generate_mesh
 export triangulate_rectangle
 export triangulate
 export triangulate_convex
@@ -211,5 +215,7 @@ export voronoi
 export centroidal_smooth
 export get_polygon_coordinates
 export get_nearest_neighbour
+
+export edge_indices
 
 end

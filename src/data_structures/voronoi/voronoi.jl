@@ -160,7 +160,6 @@ Gets the boundary edges that are adjacent to the boundary edge `e` in `vor`.
 """
 get_neighbouring_boundary_edges(vorn::VoronoiTessellation, e) = get_neighbouring_boundary_edges(get_triangulation(vorn), e)
 
-
 ## Nums 
 """
     num_polygons(vor::VoronoiTessellation)

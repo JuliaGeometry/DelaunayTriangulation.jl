@@ -19,7 +19,7 @@ end
 
 Given a triangulation `tri`, a triangle `(i, j, k)` that has 
 already been split by [`split_triangle!`](@ref) at the point `r`,
-legalises the new edges using [`legalise_edge`](@ref).
+legalises the new edges using [`legalise_edge!`](@ref).
 """
 function legalise_split_triangle!(tri::Triangulation, i, j, k, r)
     legalise_edge!(tri, i, j, r)

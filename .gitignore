@@ -3,13 +3,8 @@
 *.jl.mem
 /Manifest.toml
 test/Manifest.toml
+docs/Manifest.toml 
 /docs/build/
-gmsh-4.9.4-Windows64/
-test/gmsh-4.9.4-Windows64/
-meshgeometry.geo
-gmsh-4.11.1-Windows64/
-test/gmsh-4.11.1-Windows64/
-meshgeometry.msh
 test/simple.ggb
 test/basic.ggb
 docs/src/triangulations/waste.jl
@@ -18,4 +13,8 @@ test/animation.jl
 test/tassy.txt
 lloyd_animation.mp4
 docs/old
+docs/src/tutorials/generated 
+docs/src/applications/generated
+docs/src/tutorials/temp 
+docs/src/applications/temp
 flipping_anim.mp4

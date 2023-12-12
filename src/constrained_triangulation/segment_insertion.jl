@@ -2,22 +2,32 @@
     vertex_is_closer_than_neighbours(tri::Triangulation, u, v, jᵢ, jᵢ₋₁, jᵢ₊₁)
     vertex_is_closer_than_neighbours(tri::Triangulation, V, u, v, j, shuffled_indices, prev, next)
 
-Given a triangulation `tri` and a line through points with indices `u` and `v`,
-tests if the point with index `jᵢ` is closer to the line than those with index 
-`jᵢ₋₁` and `jᵢ₊₁`, assuming all these points are to the left of the line. The second 
-method extracts these latter two indices using the linked list `(prev, next)` of vertices 
-and a shuffled set of indices `shuffled_indices` together with the original vertex list `V`.
+Tests if `jᵢ` is closest to the line through `u` and `v` than its neighbours `jᵢ₋₁`, `jᵢ₊₁`.
 
-!!! note 
+# Arguments
+- `tri`: The [`Triangulation`](@ref).
+- `u, v`: Defines the indices of the points defining the line.
+- `jᵢ, jᵢ₋₁, jᵢ₊₁`: Indices of the points to test, assumed to be neighbours on some polygon. 
 
-    This function is useful for constrained triangulations since the algorithm 
-    used will not work if a point being inserted on the cavity has interior angle 
-    of 360° or greater. This is possible only if a vertex is closer to the line than 
-    its neighbours on the polygon.
+In the second method, the arguments `(V, j, shuffled_indices, prev, next)` are used in 
+[`index_shuffled_linked_list`](@ref) to extract `jᵢ, jᵢ₋₁, jᵢ₊₁` from the linked list `(prev, next)`:
+- `j`: The index to use in `shuffled_indices` to get the vertex position. 
+- `V`: The original vertex list.
+- `(prev, next)`: Defines the linked list for the polygon's vertices.
+
+# Output 
+Returns `true` if the vertex corresponding to `jᵢ` (or `V[shuffled_indices[j]]`) is closer 
+to the line `(u, v)` than both of its neighbours `jᵢ₋₁`, `jᵢ₊₁` (or `V[next[jᵢ]]` and `V[prev[jᵢ]]`).
+
+# Extended help 
+This function is useful for constrained triangulations since the algorithm 
+used will not work if a point being inserted on the cavity has interior angle 
+of 360° or greater. This is possible only if a vertex is closer to the line than 
+its neighbours on the polygon.
 """
 function vertex_is_closer_than_neighbours(tri::Triangulation, u, v, jᵢ, jᵢ₋₁, jᵢ₊₁)
     prev_comp = point_closest_to_line(tri, u, v, jᵢ, jᵢ₋₁)
-    is_further(prev_comp) && return false # If we just do is_further, then we can run into an infinite loop when all neighbours are equidistant
+    is_further(prev_comp) && return false # If we just do is_closer, then we can run into an infinite loop when all neighbours are equidistant
     next_comp = point_closest_to_line(tri, u, v, jᵢ, jᵢ₊₁)
     is_further(next_comp) && return false
     return true
@@ -145,12 +155,6 @@ function setup_cavity_cdt(tri::Triangulation, V; rng::AbstractRNG=Random.default
     prev, next, shuffled_indices = prepare_vertex_linked_list(V)
     delete_polygon_vertices_in_random_order!(tri, V, shuffled_indices, prev, next, u, v, rng)
     m = length(V)
-    
-    #=
-    I = integer_type(tri)
-    marked_vertices = I[]
-    =#
-
     marked_vertices = nothing
     return prev, next, shuffled_indices, m, marked_vertices
 end
@@ -161,11 +165,6 @@ function triangulate_cavity_cdt!(tri::Triangulation, V; rng::AbstractRNG=Random.
     for i in 3:(m-1)
         a, b, c = index_shuffled_linked_list(V, next, prev, shuffled_indices, i)
         add_point_cavity_cdt!(tri, marked_vertices, a, b, c)
-        #=
-        if a ∈ marked_vertices
-
-        end
-        =#
     end
     return nothing
 end
@@ -187,13 +186,6 @@ function add_point_cavity_cdt!(tri::Triangulation, marked_vertices, u, v, w)
         delete_triangle!(tri, w, v, x; protect_boundary=true, update_ghost_edges=false)
         add_point_cavity_cdt!(tri, marked_vertices, u, v, x)
         add_point_cavity_cdt!(tri, marked_vertices, u, x, w)
-        
-        #=
-        if !is_inside(incircle_test)
-            push!(marked_vertices, u, v, w, x)
-        end
-        =#
-        
     end
     return nothing
 end

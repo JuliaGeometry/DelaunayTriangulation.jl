@@ -1,7 +1,7 @@
 """
     get_point(tri::Triangulation, i...)
 
-Returns the `i`th point of `tri. Boundary indices are automatically handled.
+Returns the `i`th point of `tri`. Boundary indices are automatically handled.
 """
 @inline function get_point(tri::Triangulation, i)
     return get_point(get_points(tri), get_representative_point_list(tri), get_boundary_map(tri), i)
@@ -15,7 +15,7 @@ end
 
 Returns an iterator over the indices of the points of `tri`.
 
-See also [`each_vertex`](@ref), [`each_solid_vertex](@ref) and [`each_ghost_vertex`](@ref).
+See also [`each_vertex`](@ref), [`each_solid_vertex`](@ref) and [`each_ghost_vertex`](@ref).
 """
 @inline each_point_index(tri::Triangulation) = each_point_index(get_points(tri))
 
@@ -24,7 +24,7 @@ See also [`each_vertex`](@ref), [`each_solid_vertex](@ref) and [`each_ghost_vert
 
 Returns an iterator over the points of `tri`. 
 
-See also [`each_vertex`](@ref), [`each_solid_vertex](@ref) and [`each_ghost_vertex`](@ref).
+See also [`each_vertex`](@ref), [`each_solid_vertex`](@ref) and [`each_ghost_vertex`](@ref).
 """
 @inline each_point(tri::Triangulation) = each_point(get_points(tri))
 

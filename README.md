@@ -13,23 +13,19 @@ julia>] add DelaunayTriangulation
 
 Many features are available, some of these being:
 
-- [Unconstrained](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/triangulations/unconstrained/) and [constrained](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/triangulations/constrained/) triangulations. Support is provided for many types of domains, as given in the docs.
-- [Computation of Voronoi tessellations](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/tessellations/voronoi/), including [clipping of polygons to the convex hull](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/tessellations/clipped/). I hope to get this working for constrained triangulations, but it's difficult.
-- Computation of [centroidal Voronoi tessellations](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/tessellations/lloyd/) using Lloyd's algorithm.
-- [Mesh refinement](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/triangulations/refinement/), with support for custom angle and area constraints.
-- [Geometric predicates](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/predicates/) are implemented with [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl), and many predicates have been extended from ExactPredicates.jl.
-- Dynamic point insertion, point deletion, and segment insertion, amongst many other [operations](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/operations/).
-- Computation of convex hulls, either [from the triangulation itself](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/data_structures/convex_hull/) or using [the monotone chain algorithm](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/other_features/convex_hull/). 
-- [Triangulation of convex polygons](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/tri_algs/convex/).
-- [Efficient point location](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/other_features/point_location/) on convex geometries, even with interior holes. Partial support exists for non-convex geometries, although it is much slower and not perfect.
-- [Computation of the pole of inaccessibility](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/other_features/pole_of_inaccessibility/), i.e. the point in a polygon that is furthest from a boundary (see e.g. [this blogpost](https://blog.mapbox.com/a-new-algorithm-for-finding-a-visual-center-of-a-polygon-7c77e6492fbc)).
-- [Fully customisable interface](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/interface/interface/) for defining geometric primitives.
-- [Simple iteration over mesh elements, including points, edges, or triangles](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/data_structures/triangulation/).
-- Computation of [statistics](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/data_structures/statistics/) over individual triangular elements and over a complete triangulation.
+- Unconstrained and constrained Delaunay triangulations, supporting many types of domains.
+- Computation of Voronoi tessellations, clipped Voronoi tessellations where the Voronoi tiles get clipped to the convex hull, and centroidal Voronoi tessellations where each Voronoi tile's generator is the tile's centroid.
+- Mesh refinement, with support for custom angle and area constraints.
+- Dynamic point insertion, point deletion, and segment insertion, amongst many other operations.
+- Computation of convex hulls.
+- Triangulation of convex polygons.
+- Point location.
+- Computation of the pole of inaccessibility.
+- The interface for defining geometric primitives is fully customisable.
 
-Much of the work in this package is derived from the book *Delaunay Mesh Generation* by Cheng, Dey, and Shewchuk (2013). Feel free to use the issues tab for any suggestions, feedback, or if you have any questions about using the package, internals, etc.
+To ensure that the algorithms are robust, we use [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl) to define all geometric predicates in this package. Much of the work in this package is derived from the book *Delaunay Mesh Generation* by Cheng, Dey, and Shewchuk (2013). Please see the documentation for much more information.
 
-Some examples are below (and in the docs), but if you would also like to see how DelaunayTriangulation.jl is used in other packages, see [FiniteVolumeMethod.jl](https://github.com/DanielVandH/FiniteVolumeMethod.jl) (solving 2D PDEs) and [NaturalNeighbours.jl](https://github.com/DanielVandH/NaturalNeighbours.jl) (scattered data interpolation).
+Some examples are below (and in the documentation), but if you would also like to see how DelaunayTriangulation.jl is used in other packages, see [FiniteVolumeMethod.jl](https://github.com/DanielVandH/FiniteVolumeMethod.jl) (solving 2D PDEs) and [NaturalNeighbours.jl](https://github.com/DanielVandH/NaturalNeighbours.jl) (scattered data interpolation).
 
 ## Quick Example 
 

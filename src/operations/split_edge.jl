@@ -81,7 +81,7 @@ end
 
 Given a triangulation `tri`, an edge `(i, j)` that has already 
 been split by [`split_edge!`](@ref) at the point `r`, 
-legalises the new edges using [`legalise_edge`](@ref), letting 
+legalises the new edges using [`legalise_edge!`](@ref), letting 
 `k` be the vertex that was originally adjacent to `(i, j)`.
 
 If `store_event_history` is `Val(true)`, then the event history is stored in 

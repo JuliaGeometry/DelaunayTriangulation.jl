@@ -1,7 +1,7 @@
 """
     Triangulation{P,Ts,I,E,Es,BN,BNM,B,BIR,BPL}
 
-Struct representing a Delaunay triangulation, as constructed via e.g. [`triangulate`](@ref) or [`generate_mesh`](@ref).
+Struct representing a Delaunay triangulation, as constructed via [`triangulate`](@ref).
 
 # Fields 
 - `points::P`
@@ -60,7 +60,7 @@ ghost vertices.
 # Constructors 
 
 There are several ways to construct this struct directly, although in most cases 
-you should be using [`triangulate`](@ref) or [`generate_mesh`](@ref).
+you should be using [`triangulate`](@ref).
 
 ## Default Constructor 
 
@@ -100,7 +100,7 @@ An empty triangulation can be initalised with the following method,
 ## Triangulation From an Existing Mesh 
 
 A method is available from constructing a mesh from an existing set of points, 
-triangles, and boundary nodes, mainly existing for the purpose of [`generate_mesh`](@ref):
+triangles, and boundary nodes.
 
     Triangulation(points, triangles, boundary_nodes;
         IntegerType=Int,
