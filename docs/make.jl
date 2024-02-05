@@ -7,11 +7,11 @@ DocMeta.setdocmeta!(DelaunayTriangulation, :DocTestSetup, :(using DelaunayTriang
 makedocs(;
     modules=[DelaunayTriangulation],
     authors="Daniel VandenHeuvel <danj.vandenheuvel@gmail.com>",
-    repo="https://github.com/DanielVandH/DelaunayTriangulation.jl/blob/{commit}{path}#{line}",
+    repo="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/{commit}{path}#{line}",
     sitename="DelaunayTriangulation.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://DanielVandH.github.io/DelaunayTriangulation.jl",
+        canonical="https://JuliaGeometry.github.io/DelaunayTriangulation.jl",
         edit_link="main",
         assets=String[]),
     pages=["Home" => "index.md",
@@ -62,6 +62,6 @@ makedocs(;
     ])
 
 deploydocs(;
-    repo="github.com/DanielVandH/DelaunayTriangulation.jl",
+    repo="github.com/JuliaGeometry/DelaunayTriangulation.jl",
     devbranch="main",
     push_preview=true)

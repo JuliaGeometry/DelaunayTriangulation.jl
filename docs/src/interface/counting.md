@@ -238,7 +238,7 @@ end
 
 ### The Analysis 
 
-Now let's do the actual analysis and show the actual figures. For this analysis, we compare the results when using randomly distributed points, and when using point sets with many collinearities. It would be interesting to revisit these results when we later have methods for spatial sorting ([#34](https://github.com/DanielVandH/DelaunayTriangulation.jl/issues/34)).
+Now let's do the actual analysis and show the actual figures. For this analysis, we compare the results when using randomly distributed points, and when using point sets with many collinearities. It would be interesting to revisit these results when we later have methods for spatial sorting ([#34](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/issues/34)).
 
 First, let's look at the unconstrained triangulations.
 

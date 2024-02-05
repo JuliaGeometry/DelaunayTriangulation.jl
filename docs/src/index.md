@@ -4,7 +4,7 @@ CurrentModule = DelaunayTriangulation
 
 # DelaunayTriangulation
 
-Documentation for [DelaunayTriangulation](https://github.com/DanielVandH/DelaunayTriangulation.jl).
+Documentation for [DelaunayTriangulation](https://github.com/JuliaGeometry/DelaunayTriangulation.jl).
 
 This is a package for computing Delaunay triangulations of planar point sets. We support both unconstrained and constrained Delaunay triangulations, as well as mesh refinement with Rupper's algorithm. We also support Voronoi tessellations, clipped Voronoi tessellations, and central Voronoi tessellations; for these latter two cases, the triangulation is treated as constrained with the convex hull edges, but we do not support general boundary constraints for tessellations - if you do know about this, get in touch!
 
