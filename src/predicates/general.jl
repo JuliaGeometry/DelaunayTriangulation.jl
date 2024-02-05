@@ -34,7 +34,7 @@ Returns `ExactPredicates.incircle(a, b, c, p)`, in particular we return:
     \\text{incircle}(a, b, c, d) = \\text{sgn} \\det \\begin{vmatrix} a_x & a_y & a_x^2 + a_y^2 & 1 \\\\ b_x & b_y & b_x62 + b_y^2 & 1 \\\\ c_x & c_y & c_x^2 + c_y^2 & 1 \\\\ d_x & d_y & d_x^2 + d_y^2 & 1 \\end{vmatrix} = \\text{sgn} \\det \\begin{vmatrix} a_x - d_x & a_y - d_y & (a_x - d_x)^2 + (a_y - d_y)^2 \\\\ b_x - d_x & b_y - d_y & (b_x - d_x)^2 + (b_y - d_y)^2 \\\\ c_x - d_x & c_y - d_y & (c_x - d_x)^2 + (c_y - d_y)^2 \\end{vmatrix}.
     ```
 """
-incircle_predicate(a, b, c, p) = (@show a, b, c, p; incircle(_getxy(a), _getxy(b), _getxy(c), _getxy(p)))
+incircle_predicate(a, b, c, p) = incircle(_getxy(a), _getxy(b), _getxy(c), _getxy(p))
 
 """
     parallelorder_predicate(a, b, p, q)
