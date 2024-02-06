@@ -4,12 +4,6 @@
 /Manifest.toml
 test/Manifest.toml
 /docs/build/
-gmsh-4.9.4-Windows64/
-test/gmsh-4.9.4-Windows64/
-meshgeometry.geo
-gmsh-4.11.1-Windows64/
-test/gmsh-4.11.1-Windows64/
-meshgeometry.msh
 test/simple.ggb
 test/basic.ggb
 docs/src/triangulations/waste.jl

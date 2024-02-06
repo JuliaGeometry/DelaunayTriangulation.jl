@@ -20,7 +20,6 @@ makedocs(;
             "Constrained Triangulations" => "triangulations/constrained.md",
             "Mesh Refinement" => "triangulations/refinement.md",
             "Lattice" => "triangulations/lattice.md",
-            "Gmsh" => "triangulations/gmsh.md",
             "Convex Polygons" => "triangulations/convex.md"
         ],
         "Voronoi Tessellations" => [

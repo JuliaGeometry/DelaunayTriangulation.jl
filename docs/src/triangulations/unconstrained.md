@@ -189,11 +189,11 @@ Dict{Int, Set{Int}} with 11 entries:
   10 => Set([5, 4, 6, 8, 3, 1])
 ```
 
-- `tri.boundary_nodes`: This is a list of all fixed boundary nodes in the triangulation. In our case, we have none. See the Gmsh section for an example. The actual nodes on the boundary in this case can be obtained via `tri.convex_hull`.
+- `tri.boundary_nodes`: This is a list of all fixed boundary nodes in the triangulation. In our case, we have none. The actual nodes on the boundary in this case can be obtained via `tri.convex_hull`.
 
-- `tri.boundary_edge_map`: This is a `Dict` that maps all boundary edges to their position in `tri.boundary_nodes`. See the Gmsh section for an example.
+- `tri.boundary_edge_map`: This is a `Dict` that maps all boundary edges to their position in `tri.boundary_nodes`. 
 
-- `tri.boundary_map`: This would be a list mapping boundary indices to all the fixed boundary nodes in `tri.boundary_nodes` corresponding to that index. This map is empty in this case as we have no fixed boundary nodes,, but see the Gmsh section for an example.
+- `tri.boundary_map`: This would be a list mapping boundary indices to all the fixed boundary nodes in `tri.boundary_nodes` corresponding to that index. This map is empty in this case as we have no fixed boundary nodes.
 
 - `tri.boundary_index_ranges`: This is be a list mapping indices of boundary curves to all boundary indices belonging to that curve. In this case, we have 
 
@@ -203,7 +203,7 @@ OrderedCollections.OrderedDict{Int, UnitRange{Int}} with 1 entry:
   -1 => -1:-1
 ```
 
-This tells us that whenever we see a `-1` as a vertex, we have a ghost vertex corresponding to the outer curve, so e.g. if `get_adjacent(tri, u, v) == -1`, then `(u, v)` is an edge on the boundary. A better example is in the Gmsh section.
+This tells us that whenever we see a `-1` as a vertex, we have a ghost vertex corresponding to the outer curve, so e.g. if `get_adjacent(tri, u, v) == -1`, then `(u, v)` is an edge on the boundary. 
 
 - `tri.constrained_edges`: This would be the collection of constrained edges if we had any. See the constrained trangulation section.
 

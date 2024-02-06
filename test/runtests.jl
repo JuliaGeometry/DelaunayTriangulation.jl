@@ -4,9 +4,6 @@ using SafeTestsets
 
 @testset verbose = true "DelaunayTriangulation" begin
     @testset verbose = true "Triangulation" begin
-        @safetestset "Gmsh" begin
-            include("triangulation/gmsh.jl")
-        end
         @safetestset "Rectangular Triangulation" begin
             include("triangulation/rectangle.jl")
         end
