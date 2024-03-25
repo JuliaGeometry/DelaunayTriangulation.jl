@@ -582,7 +582,7 @@ function check_args(points, boundary_nodes)
                 segment_nodes_first = get_boundary_nodes(boundary_nodes, 1)
                 segment_nodes_last = get_boundary_nodes(boundary_nodes, ns)
                 nnodes_last = num_boundary_edges(segment_nodes_last) + 1
-                @assert get_boundary_nodes(segment_nodes_first, 1) == get_boundary_nodes(segment_nodes_last, nnodes_last) "The first segment of the $(i)$(get_ordinal_suffix(i)) curve does not connect with the end of the last segment."
+                @assert get_boundary_nodes(segment_nodes_first, 1) == get_boundary_nodes(segment_nodes_last, nnodes_last) "The first segment of the curve does not connect with the end of the last segment."
             else
                 nnodes = num_boundary_edges(boundary_nodes) + 1
                 @assert get_boundary_nodes(boundary_nodes, 1) == get_boundary_nodes(boundary_nodes, nnodes) "The first boundary node does not equal the last boundary node."
