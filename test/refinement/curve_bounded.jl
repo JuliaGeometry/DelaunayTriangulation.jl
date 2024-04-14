@@ -1490,15 +1490,6 @@ end
     end
 end
 
-(idx1, idx2, idx3, idx4, idx5, curve_idx, point_idx) = (2, 3, 1, 1, 2, 8, 2)
-use_lens, min_angle, min_area, max_area, seditious_angle = (false, true)[idx1], (20.0, 27.5, 30.0)[idx2], (1e-12,)[idx3], (1e-1, 1e-2)[idx4], (10.0, 20.0)[idx5]
-points, curve = deepcopy(point_sets[point_idx][curve_idx]), deepcopy(curve_sets[curve_idx])
-rng = StableRNG(abs(_rng_num(idx1, idx2, idx3, idx4, idx5, curve_idx, point_idx)))
-tri = triangulate(points; boundary_nodes=curve, enrich=curve_idx ≤ 3, rng)
-refine!(tri; min_angle, min_area, max_area, seditious_angle, use_circumcenter=true, use_lens, rng)
-@test tri.boundary_enricher.boundary_edge_map == tri.boundary_edge_map
-
-
 @testset "refine_curve_bounded with circumcenters" begin
     point_sets_no_extra = deepcopy.([points_I, points_II, points_III, points_IV, points_V, points_VI, points_VII, points_VIII, points_IX, points_X, points_XI, points_XII])
     point_sets_extra_points = deepcopy.([points_I_extra, points_II_extra, points_III_extra, points_IV_extra, points_V_extra, points_VI_extra, points_VII_extra, points_VIII_extra, points_IX_extra, points_X_extra, points_XI_extra, points_XII_extra])

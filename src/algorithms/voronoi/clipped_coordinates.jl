@@ -86,7 +86,6 @@ function get_clipping_poly_structs(vorn::VoronoiTessellation, i, bounding_box)
     clip_vertices = (1, 2, 3, 4)
     a, b, c, d = bounding_box
     clip_points = ((a, c), (b, c), (b, d), (a, d))
-    @show vertices
     return Polygon(vertices, points), Polygon(clip_vertices, clip_points)
 end
 
