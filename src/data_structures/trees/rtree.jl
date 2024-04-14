@@ -495,7 +495,7 @@ Type for representing a leaf node in an R-tree.
 mutable struct Leaf{Branch} <: AbstractNode
     parent::Union{Branch,Nothing}
     bounding_box::BoundingBox
-    const children::Vector{DiametralBoundingBox}
+    children::Vector{DiametralBoundingBox} # would do const, but for compat reasons I don't
 end
 function Base.:(==)(leaf1::Leaf, leaf2::Leaf)
     xor(isnothing(leaf1), isnothing(leaf2)) && return false # if we test get_parent(leaf1) ≠ get_parent(leaf2), then we get a StackOverflowError
@@ -522,7 +522,7 @@ Type for representing a branch node in an R-tree.
 mutable struct Branch <: AbstractNode
     parent::Union{Branch,Nothing}
     bounding_box::BoundingBox
-    const children::Union{Vector{Branch},Vector{Leaf{Branch}}} # if we do e.g. Branch{C}, it makes resolving some of the other types a bit difficult, especially Leaf{Branch}.
+    children::Union{Vector{Branch},Vector{Leaf{Branch}}} # if we do e.g. Branch{C}, it makes resolving some of the other types a bit difficult, especially Leaf{Branch}. (Also: would do const, but for compat reasons I don't)
     level::Int
 end
 Branch(parent::Union{Branch,Nothing}=nothing, ::Type{C}=Branch) where {C<:AbstractNode} = Branch(parent, InvalidBoundingBox, C[], 1)
@@ -750,13 +750,13 @@ The `size_limit` is the node capacity. All node types have the same capacity.
 mutable struct RTree # linear
     root::Union{Branch,Leaf{Branch}}
     num_elements::Int
-    const branch_cache::BranchCache
-    const twig_cache::TwigCache
-    const leaf_cache::LeafCache
-    const fill_factor::Float64
-    const free_cache::BitVector
-    const detached_cache::Vector{Union{Branch,Leaf{Branch}}}
-    const intersection_cache::NTuple{2,RTreeIntersectionCache}
+    branch_cache::BranchCache # would do const, but for compat reasons I don't
+    twig_cache::TwigCache # would do const, but for compat reasons I don't
+    leaf_cache::LeafCache # would do const, but for compat reasons I don't
+    fill_factor::Float64 # would do const, but for compat reasons I don't
+    free_cache::BitVector # would do const, but for compat reasons I don't
+    detached_cache::Vector{Union{Branch,Leaf{Branch}}} # would do const, but for compat reasons I don't
+    intersection_cache::NTuple{2,RTreeIntersectionCache} # would do const, but for compat reasons I don't
     function RTree(; size_limit=100, fill_factor=0.7) # https://en.wikipedia.org/wiki/R-tree: "however best performance has been experienced with a minimum fill of 30%–40%)
         branch_cache = BranchCache(size_limit)
         twig_cache = TwigCache(size_limit)
