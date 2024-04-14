@@ -10,34 +10,34 @@ global T1 = (i, j, k)
 global T2 = [i, j, k]
 global T3 = SVector{3,Int32}((i, j, k))
 
-throw_f = expr -> @static if VERSION < v"1.8"
-    ErrorException(expr)
-else
-    expr
-end
-
 @testset "Individual triangles" begin
     @testset "Constructing a triangle" begin
-        @test_throws throw_f("The construct_triangle function has not been defined for the type String.") DT.construct_triangle(String, i, j, k)
+        @test_throws MethodError DT.construct_triangle(String, i, j, k)
         @test DT.construct_triangle(NTuple{3,Int}, i, j, k) == T1
         @test DT.construct_triangle(Vector{Int}, i, j, k) == T2
         @test DT.construct_triangle(SVector{3,Int32}, i, j, k) == T3
+        @inferred DT.construct_triangle(NTuple{3,Int}, i, j, k)
     end
 
     @testset "Getting indices" begin
-        @test_throws throw_f("The geti function has not been defined for the type DataType.") DT.geti(String)
+        @test_throws MethodError DT.geti(String)
         @test DT.geti(T1) == DT.geti(T2) == DT.geti(T3) == i
-        @test_throws throw_f("The getj function has not been defined for the type DataType.") DT.getj(String)
+        @test_throws MethodError DT.getj(String)
         @test DT.getj(T1) == DT.getj(T2) == DT.getj(T3) == j
-        @test_throws throw_f("The getk function has not been defined for the type DataType.") DT.getk(String)
+        @test_throws MethodError DT.getk(String)
         @test DT.getk(T1) == DT.getk(T2) == DT.getk(T3) == k
-        @test indices(T1) == indices(T2) == indices(T3) == (i, j, k)
+        @inferred DT.geti(T1)
+        @inferred DT.getj(T1)
+        @inferred DT.getk(T1)
+        @test triangle_vertices(T1) == triangle_vertices(T2) == triangle_vertices(T3) == (i, j, k)
+        @inferred triangle_vertices(T1)
     end
 
     @testset "Extracting the integer type" begin
-        @test_throws throw_f("The integer_type function has not been defined for the type String.") DT.integer_type(String)
-        @test DT.integer_type(typeof(T1)) == DT.integer_type(typeof(T2)) == Int
-        @test DT.integer_type(typeof(T3)) == typeof(T3[1]) == Int32
+        @test_throws MethodError DT.integer_type(String)
+        @test DT.number_type(typeof(T1)) == DT.number_type(typeof(T2)) == Int
+        @test DT.number_type(typeof(T3)) == typeof(T3[1]) == Int32
+        @inferred DT.number_type(typeof(T1))
     end
 
     @testset "Edges of a triangle" begin
@@ -46,6 +46,7 @@ end
               DT.triangle_edges(T3) ==
               DT.triangle_edges(i, j, k) ==
               ((i, j), (j, k), (k, i))
+        @inferred DT.triangle_edges(T1)
     end
 
     @testset "Rotating a triangle" begin
@@ -53,6 +54,7 @@ end
             for r in 0:2
                 @test DT.rotate_triangle(T, r) ==
                       DT.construct_triangle(typeof(T), ((i, j, k), (j, k, i), (k, i, j))[r+1]...)
+                @inferred DT.rotate_triangle(T, r)
             end
         end
     end
@@ -65,17 +67,39 @@ end
             @test DT.compare_triangles(T, [i, j, k])
             @test !DT.compare_triangles(T, (k, j, i))
             @test !DT.compare_triangles(T, (1, 50, 323))
+            @inferred DT.compare_triangles(T, (i, j, k))
         end
     end
 
     @testset "Sorting a triangle" begin
         T = (1, 7, 5)
-        sortT = (1, 7, 5)
-        @test DT.sort_triangle(T) == sortT
+        sortT = (7, 5, 1)
+        @test DT.sort_triangle(T) == DT.sort_triangle(T...) == sortT
         T = [3, 1, 5]
-        @test DT.sort_triangle(T) == [1, 5, 3]
+        @test DT.sort_triangle(T) == [5, 3, 1]
         T = (5, 7, 1)
-        @test DT.sort_triangle(T) == (1, 5, 7)
+        @test DT.sort_triangle(T) == DT.sort_triangle(T...) == (5, 7, 1)
+        @inferred DT.sort_triangle(T)
+        @inferred DT.sort_triangle(T...)
+        i = 1
+        j = (0.3, 0.5)
+        k = 5
+        P = NTuple{2,Float64}
+        I = Int
+        types = Union{Tuple{I,I,P},Tuple{I,P,I},Tuple{P,I,I}}
+        types2 = Union{Tuple{P,P,I},Tuple{P,I,P},Tuple{P,P,I}}
+        @test DT.sort_triangle(i, j, k) == (i, j, k)
+        @inferred types DT.sort_triangle(i, j, k)
+        @test DT.sort_triangle(5, 7, (0.9, 0.2)) == (5, 7, (0.9, 0.2))
+        @test DT.sort_triangle(-3, (0.9, 0.2), (0.5, 0.5)) == ((0.9, 0.2), (0.5, 0.5), -3)
+        @test DT.sort_triangle((0.5, 0.2), -3, 1) == (1, (0.5, 0.2), -3)
+        @test DT.sort_triangle(1, (-0.2, 0.5), -2) == (1, (-0.2, 0.5), -2)
+        @test DT.sort_triangle((0.2, 0.5), (1.3, 1.3), -2) == ((0.2, 0.5), (1.3, 1.3), -2)
+        @inferred types DT.sort_triangle(5, 7, (0.9, 0.2))
+        @inferred types2 DT.sort_triangle(-3, (0.9, 0.2), (0.5, 0.5))
+        @inferred types DT.sort_triangle((0.5, 0.2), -3, 1)
+        @inferred types DT.sort_triangle(1, (-0.2, 0.5), -2)
+        @inferred types2 DT.sort_triangle((0.2, 0.5), (1.3, 1.3), -2)
     end
 end
 
@@ -88,30 +112,20 @@ global Ts3 = Set{typeof(T3)}((SVector{3,Int32}((1, 2, 3)),
     SVector{3,Int32}((5, 10, 3))))
 
 @testset "Collection of triangles" begin
-    @testset "Initialising a collection of triangles" begin
-        @test_throws throw_f("The initialise_triangles function has not been defined for the type String.") DT.initialise_triangles(String)
-        for T in (T1, T2, T3)
-            V = typeof(T)
-            @test DT.initialise_triangles(Set{V}) == Set{V}()
-        end
-
-        @test DT.initialise_triangles(Vector{NTuple{3,Int}}) == Vector{NTuple{3,Int}}()
-    end
-
     @testset "Getting the eltype of a collection of triangles" begin
-        @test_throws throw_f("The triangle_type function has not been defined for the type String.") DT.triangle_type(String)
         for (T, Ts) in zip((T1, T2, T3), (Ts1, Ts2, Ts3))
             @test DT.triangle_type(typeof(Ts)) == typeof(T)
         end
         @test DT.triangle_type(Vector{NTuple{3,Int}}) == NTuple{3,Int}
+        @inferred DT.triangle_type(Vector{NTuple{3,Int}})
     end
 
     @testset "Number of triangles" begin
-        @test_throws throw_f("The num_triangles function has not been defined for the type DataType.") num_triangles(String)
         for Ts in (Ts1, Ts2, Ts3)
             @test num_triangles(Ts) == length(Ts) == 5
         end
         @test num_triangles([(1, 2, 3), (4, 5, 6), (10, 11, 12)]) == 3
+        @inferred num_triangles([(1, 2, 3), (4, 5, 6), (10, 11, 12)])
     end
 
     @testset "Seeing if a collection contains a triangle" begin
@@ -131,6 +145,8 @@ global Ts3 = Set{typeof(T3)}((SVector{3,Int32}((1, 2, 3)),
             e5, p5 = DT.contains_triangle(V5..., Ts)
             e6, p6 = DT.contains_triangle(V6, Ts)
             e7, p7 = DT.contains_triangle(V7..., Ts)
+            @inferred DT.contains_triangle(V1, Ts)
+            @inferred DT.contains_triangle(V2..., Ts)
             @test all((p1, p2, p3, p4, p5))
             @test all((!p6, !p7))
             @test e1 == V1
@@ -144,7 +160,6 @@ global Ts3 = Set{typeof(T3)}((SVector{3,Int32}((1, 2, 3)),
     end
 
     @testset "Adding to a collection of triangles" begin
-        @test_throws throw_f("The add_to_triangles! function has not been defined for the type DataType.") DT.add_to_triangles!(String, (1, 2, 3))
         for Ts in (Ts1, Ts2, Ts3)
             V = eltype(Ts)
             V1 = DT.construct_triangle(V, 10, 12, 5)
@@ -159,6 +174,7 @@ global Ts3 = Set{typeof(T3)}((SVector{3,Int32}((1, 2, 3)),
             G7 = DT.construct_triangle(V, V7...)
             G8 = DT.construct_triangle(V, V8...)
             DT.add_to_triangles!(Ts, V1)
+            @inferred DT.add_to_triangles!(Ts, V1)
             DT.add_triangle!(Ts, V2)
             DT.add_triangle!(Ts, V3, V4, V5)
             DT.add_triangle!(Ts, V6)
@@ -177,7 +193,6 @@ global Ts3 = Set{typeof(T3)}((SVector{3,Int32}((1, 2, 3)),
     end
 
     @testset "Deleting from a collection of triangles" begin
-        @test_throws throw_f("The delete_from_triangles! function has not been defined for the type DataType.") DT.delete_from_triangles!(String, (1, 2, 3))
         for Ts in (Ts1, Ts2, Ts3)
             V = eltype(Ts)
             V1 = DT.construct_triangle(V, 10, 12, 5)
@@ -190,6 +205,7 @@ global Ts3 = Set{typeof(T3)}((SVector{3,Int32}((1, 2, 3)),
             G5 = DT.construct_triangle(V, 20, 25, 50)
             DT.delete_triangle!(Ts, G1)
             DT.delete_triangle!(Ts, V2)
+            @inferred DT.delete_triangle!(Ts, V2)
             DT.delete_triangle!(Ts, V3)
             DT.delete_triangle!(Ts, V4...)
             DT.delete_triangle!(Ts, V5)
@@ -201,14 +217,15 @@ global Ts3 = Set{typeof(T3)}((SVector{3,Int32}((1, 2, 3)),
     end
 
     @testset "Iterating over each triangle" begin
-        @test_throws  throw_f("The each_triangle function has not been defined for the type DataType.") DT.each_triangle(String)
         for Ts in (Ts1, Ts2, Ts3)
             @test each_triangle(Ts) == Ts
         end
         T = [1 2 3; 4 5 6; 7 8 9]'
         @test each_triangle(T) == eachcol(T)
+        @inferred each_triangle(T)
         V = [(1, 2, 3), (4, 5, 6), (10, 11, 12), (30, 31, 32), (7, 10, 11)]
         @test each_triangle(V) == V
+        @inferred each_triangle(V)
     end
 
     @testset "Getting a positively oriented triangle" begin
@@ -217,6 +234,7 @@ global Ts3 = Set{typeof(T3)}((SVector{3,Int32}((1, 2, 3)),
               (1, 2, 3)
         @test DT.construct_positively_oriented_triangle(NTuple{3,Int}, 2, 1, 3, points) ==
               (1, 2, 3)
+        @inferred DT.construct_positively_oriented_triangle(NTuple{3,Int}, 2, 1, 3, points)
     end
 
     @testset "Comparing collections of triangles" begin
@@ -243,6 +261,7 @@ global Ts3 = Set{typeof(T3)}((SVector{3,Int32}((1, 2, 3)),
             (6, 4, 5),
             (6, 11, 9)))
         @test !DT.compare_triangle_collections(T, V)
+        @inferred DT.compare_triangle_collections(T, V)
     end
 
     @testset "Sorting a collection of triangles" begin
@@ -259,45 +278,19 @@ global Ts3 = Set{typeof(T3)}((SVector{3,Int32}((1, 2, 3)),
             (20, 13, 37)
         ])
         V = DT.sort_triangles(T)
+        @inferred DT.sort_triangles(T)
         @test V == Set{NTuple{3,Int}}([
-            (1, 2, 3),
-            (3, 10, 9),
-            (1, 11, 5),
-            (10, 193, 12),
-            (1, 5, 3),
-            (17, 19, 18),
-            (5, 23, 17),
-            (20, 50, 72),
-            (30, 31, 32),
-            (13, 37, 20)
+            (2, 3, 1),
+            (10, 9, 3),
+            (11, 5, 1),
+            (193, 12, 10),
+            (5, 3, 1),
+            (19, 18, 17),
+            (23, 17, 5),
+            (50, 72, 20),
+            (31, 32, 30),
+            (37, 20, 13)
         ])
         @test DT.compare_triangle_collections(T, V)
-    end
-
-    @testset "Removing duplicate triangles" begin
-        T = Set{NTuple{3,Int}}([
-            (1, 2, 3),
-            (2, 3, 1),
-            (3, 1, 2),
-            (4, 5, 6),
-            (11, 8, 3),
-            (3, 11, 8),
-            (18, 13, 1)
-        ])
-        V = DT.remove_duplicate_triangles(T)
-        @test V == Set{NTuple{3,Int}}([
-            (1, 2, 3),
-            (4, 5, 6),
-            (1, 18, 13),
-            (3, 11, 8),
-        ])
-        T = Set{NTuple{3,Int}}([
-            (11, 9, 1),
-            (1, 11, 9)
-        ])
-        V = DT.remove_duplicate_triangles(T)
-        @test V == Set{NTuple{3,Int}}([
-            (1, 11, 9)
-        ])
     end
 end

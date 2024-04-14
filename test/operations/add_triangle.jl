@@ -1,7 +1,7 @@
 using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
-import SimpleGraphs: relabel, UndirectedGraph
 using DataStructures
+using ..DelaunayTriangulation: Triangulation
 using StableRNGs
 
 include("../helper_functions.jl")
@@ -12,13 +12,13 @@ global y = _y
 boundary_nodes, points = convert_boundary_points_to_indices(x, y)
 rng = StableRNG(9881)
 global tri = triangulate(points; boundary_nodes, rng, delete_ghosts=false)
-A = get_total_area(tri)
-refine!(tri; max_area=1e-3A, rng)
+A = get_area(tri)
+refine!(tri; max_area=1e-3A, rng, use_circumcenter=true)
 boundary_nodes, points = convert_boundary_points_to_indices(x[1], y[1])
 rng = StableRNG(9881)
 global tri_2 = triangulate(points; boundary_nodes, rng, delete_ghosts=false)
-A = get_total_area(tri_2)
-refine!(tri_2; max_area=1e-3A, rng)
+A = get_area(tri_2)
+refine!(tri_2; max_area=1e-3A, rng, use_circumcenter=true)
 global i, j, k = 451, 307, 227
 global u, v, w = 420, 417, 418
 global T = (u, v, w)
@@ -48,7 +48,7 @@ end
       pts[:, w] .= [0.0, 1.0]
       tri = Triangulation(pts)
       DT.add_triangle!(tri, (u, v, w); update_ghost_edges=true)
-      BI = DT.BoundaryIndex
+      BI = DT.𝒢
       @test get_triangles(tri) == Set(((u, v, w), (w, v, BI), (v, u, BI), (u, w, BI)))
       @test get_adjacent(get_adjacent(tri)) == Dict((u, v) => w,
             (v, w) => u,
@@ -67,9 +67,9 @@ end
             u => Set{NTuple{2,Int}}([(v, w), (BI, v), (w, BI)]),
             v => Set{NTuple{2,Int}}([(w, u), (BI, w), (u, BI)]),
             w => Set{NTuple{2,Int}}([(u, v), (v, BI), (BI, u)]))
-      @test get_graph(get_graph(tri)).E ==
+      @test get_graph(tri).edges ==
             Set([(BI, v), (u, w), (u, v), (BI, w), (BI, u), (v, w)])
-      @test get_graph(get_graph(tri)).V == Set([u, v, w, BI])
+      @test get_graph(tri).vertices == Set([u, v, w, BI])
 end
 
 @testset "Smaller example" begin
@@ -86,7 +86,7 @@ end
                   (4, 6, 1),
                   (5, 1, 3)
             ])
-            true_adj = 
+            true_adj =
                   Dict(
                         (3, 2) => 5, (2, 5) => 3, (5, 3) => 2,
                         (1, 3) => 7, (3, 7) => 1, (7, 1) => 3,
@@ -94,12 +94,12 @@ end
                         (6, 3) => 1, (3, 1) => 6, (1, 6) => 3,
                         (4, 6) => 1, (6, 1) => 4, (1, 4) => 6,
                         (5, 1) => 3, (3, 5) => 1,
-                        (4, 5) => DT.BoundaryIndex, (5, 2) => DT.BoundaryIndex,
-                        (2, 3) => DT.BoundaryIndex, (3, 6) => DT.BoundaryIndex,
-                        (6, 4) => DT.BoundaryIndex
+                        (4, 5) => DT.𝒢, (5, 2) => DT.𝒢,
+                        (2, 3) => DT.𝒢, (3, 6) => DT.𝒢,
+                        (6, 4) => DT.𝒢
                   )
             true_adj2v = Dict(
-                  DT.BoundaryIndex => Set{NTuple{2,Int}}([(4, 5), (5, 2), (2, 3), (3, 6), (6, 4)]),
+                  DT.𝒢 => Set{NTuple{2,Int}}([(4, 5), (5, 2), (2, 3), (3, 6), (6, 4)]),
                   1 => Set{NTuple{2,Int}}([(3, 7), (3, 5), (6, 3), (5, 4), (4, 6)]),
                   2 => Set{NTuple{2,Int}}([(5, 3)]),
                   3 => Set{NTuple{2,Int}}([(2, 5), (5, 1), (7, 1), (1, 6)]),
@@ -108,23 +108,19 @@ end
                   6 => Set{NTuple{2,Int}}([(3, 1), (1, 4)]),
                   7 => Set{NTuple{2,Int}}([(1, 3)])
             )
-            true_DG = UndirectedGraph(
-                  [
-                        0 0 1 1 1 1 1 0
-                        0 0 0 1 1 1 1 1
-                        1 0 0 1 0 1 0 0
-                        1 1 1 0 0 1 1 1
-                        1 1 0 0 0 1 1 0
-                        1 1 1 1 1 0 0 0
-                        1 1 0 1 1 0 0 0
-                        0 1 0 1 0 0 0 0
-                  ]
-            )
-            true_DG = relabel(true_DG, Dict(1:8 .=> [-1, (1:7)...]))
+            true_DG = [0 0 1 1 1 1 1 0
+                  0 0 0 1 1 1 1 1
+                  1 0 0 1 0 1 0 0
+                  1 1 1 0 0 1 1 1
+                  1 1 0 0 0 1 1 0
+                  1 1 1 1 1 0 0 0
+                  1 1 0 1 1 0 0 0
+                  0 1 0 1 0 0 0 0]
+            true_DG = _make_graph_from_adjacency(true_DG, Dict(1:8 .=> [-1, (1:7)...]))
             @test get_triangles(tri) == true_T
             @test (get_adjacent ∘ get_adjacent)(tri) == true_adj
             @test (get_adjacent2vertex ∘ get_adjacent2vertex)(tri) == true_adj2v
-            @test (get_graph ∘ get_graph)(tri) == true_DG
+            @test get_graph(tri) == true_DG
       end
 
       @testset "Adding a boundary triangle with one boundary edge" begin
@@ -141,7 +137,7 @@ end
                         (5, 1, 3),
                         (i, j, k)
                   ])
-                  true_adj = 
+                  true_adj =
                         Dict(
                               (3, 2) => 5, (2, 5) => 3, (5, 3) => 2,
                               (1, 3) => 7, (3, 7) => 1, (7, 1) => 3,
@@ -150,12 +146,12 @@ end
                               (4, 6) => 1, (6, 1) => 4, (1, 4) => 6,
                               (5, 1) => 3, (3, 5) => 1,
                               (5, 2) => 8, (2, 8) => 5, (8, 5) => 2,
-                              (4, 5) => DT.BoundaryIndex, (5, 8) => DT.BoundaryIndex,
-                              (8, 2) => DT.BoundaryIndex, (2, 3) => DT.BoundaryIndex,
-                              (3, 6) => DT.BoundaryIndex, (6, 4) => DT.BoundaryIndex
+                              (4, 5) => DT.𝒢, (5, 8) => DT.𝒢,
+                              (8, 2) => DT.𝒢, (2, 3) => DT.𝒢,
+                              (3, 6) => DT.𝒢, (6, 4) => DT.𝒢
                         )
                   true_adj2v = Dict(
-                        DT.BoundaryIndex => Set{NTuple{2,Int}}([(4, 5), (5, 8), (8, 2), (2, 3), (3, 6), (6, 4)]),
+                        DT.𝒢 => Set{NTuple{2,Int}}([(4, 5), (5, 8), (8, 2), (2, 3), (3, 6), (6, 4)]),
                         1 => Set{NTuple{2,Int}}([(3, 7), (3, 5), (6, 3), (5, 4), (4, 6)]),
                         2 => Set{NTuple{2,Int}}([(5, 3), (8, 5)]),
                         3 => Set{NTuple{2,Int}}([(2, 5), (5, 1), (7, 1), (1, 6)]),
@@ -165,24 +161,22 @@ end
                         7 => Set{NTuple{2,Int}}([(1, 3)]),
                         8 => Set{NTuple{2,Int}}([(5, 2)])
                   )
-                  true_DG = relabel(UndirectedGraph(
-                              [
-                                    0 0 1 1 1 1 1 0 1
-                                    0 0 0 1 1 1 1 1 0
-                                    1 0 0 1 0 1 0 0 1
-                                    1 1 1 0 0 1 1 1 0
-                                    1 1 0 0 0 1 1 0 0
-                                    1 1 1 1 1 0 0 0 1
-                                    1 1 0 1 1 0 0 0 0
-                                    0 1 0 1 0 0 0 0 0
-                                    1 0 1 0 0 1 0 0 0
-                              ]
-                        ), Dict(1:9 .=> [-1, (1:8)...]))
+                  true_DG = _make_graph_from_adjacency([
+                              0 0 1 1 1 1 1 0 1
+                              0 0 0 1 1 1 1 1 0
+                              1 0 0 1 0 1 0 0 1
+                              1 1 1 0 0 1 1 1 0
+                              1 1 0 0 0 1 1 0 0
+                              1 1 1 1 1 0 0 0 1
+                              1 1 0 1 1 0 0 0 0
+                              0 1 0 1 0 0 0 0 0
+                              1 0 1 0 0 1 0 0 0
+                        ], Dict(1:9 .=> [-1, (1:8)...]))
                   DT.clear_empty_features!(_tri)
                   @test get_triangles(_tri) == true_T
                   @test (get_adjacent ∘ get_adjacent)(_tri) == true_adj
                   @test (get_adjacent2vertex ∘ get_adjacent2vertex)(_tri) == true_adj2v
-                  @test (get_graph ∘ get_graph)(_tri) == true_DG
+                  @test get_graph(_tri) == true_DG
             end
             DT.add_triangle!(tri, 5, 2, 8) # Get an actual copy for later, test is above
       end
@@ -212,12 +206,12 @@ end
                               (5, 1) => 3, (3, 5) => 1,
                               (5, 2) => 8, (2, 8) => 5, (8, 5) => 2,
                               (2, 3) => 6, (3, 6) => 2, (6, 2) => 3,
-                              (4, 5) => DT.BoundaryIndex, (5, 8) => DT.BoundaryIndex,
-                              (8, 2) => DT.BoundaryIndex, (2, 6) => DT.BoundaryIndex,
-                              (6, 4) => DT.BoundaryIndex
+                              (4, 5) => DT.𝒢, (5, 8) => DT.𝒢,
+                              (8, 2) => DT.𝒢, (2, 6) => DT.𝒢,
+                              (6, 4) => DT.𝒢
                         )
                   true_adj2v = Dict(
-                        DT.BoundaryIndex => Set{NTuple{2,Int}}([(4, 5), (5, 8), (8, 2), (2, 6), (6, 4)]),
+                        DT.𝒢 => Set{NTuple{2,Int}}([(4, 5), (5, 8), (8, 2), (2, 6), (6, 4)]),
                         1 => Set{NTuple{2,Int}}([(3, 7), (3, 5), (6, 3), (5, 4), (4, 6)]),
                         2 => Set{NTuple{2,Int}}([(5, 3), (8, 5), (3, 6)]),
                         3 => Set{NTuple{2,Int}}([(2, 5), (5, 1), (7, 1), (1, 6), (6, 2)]),
@@ -227,24 +221,22 @@ end
                         7 => Set{NTuple{2,Int}}([(1, 3)]),
                         8 => Set{NTuple{2,Int}}([(5, 2)])
                   )
-                  true_DG = relabel(UndirectedGraph(
-                              [
-                                    0 0 1 0 1 1 1 0 1
-                                    0 0 0 1 1 1 1 1 0
-                                    1 0 0 1 0 1 1 0 1
-                                    0 1 1 0 0 1 1 1 0
-                                    1 1 0 0 0 1 1 0 0
-                                    1 1 1 1 1 0 0 0 1
-                                    1 1 1 1 1 0 0 0 0
-                                    0 1 0 1 0 0 0 0 0
-                                    1 0 1 0 0 1 0 0 0
-                              ]
-                        ), Dict(1:9 .=> [-1, (1:8)...]))
+                  true_DG = _make_graph_from_adjacency([
+                              0 0 1 0 1 1 1 0 1
+                              0 0 0 1 1 1 1 1 0
+                              1 0 0 1 0 1 1 0 1
+                              0 1 1 0 0 1 1 1 0
+                              1 1 0 0 0 1 1 0 0
+                              1 1 1 1 1 0 0 0 1
+                              1 1 1 1 1 0 0 0 0
+                              0 1 0 1 0 0 0 0 0
+                              1 0 1 0 0 1 0 0 0
+                        ], Dict(1:9 .=> [-1, (1:8)...]))
                   DT.clear_empty_features!(_tri)
                   @test get_triangles(_tri) == true_T
                   @test (get_adjacent ∘ get_adjacent)(_tri) == true_adj
                   @test (get_adjacent2vertex ∘ get_adjacent2vertex)(_tri) == true_adj2v
-                  @test (get_graph ∘ get_graph)(_tri) == true_DG
+                  @test get_graph(_tri) == true_DG
             end
       end
 end
@@ -252,26 +244,26 @@ end
 @testset "Empty triangulation" begin
       tri = example_empty_triangulation()
       true_T = Set{NTuple{3,Int}}([(1, 2, 3)])
-      true_adj = 
+      true_adj =
             Dict((1, 2) => 3, (2, 3) => 1, (3, 1) => 2,
-                  (3, 2) => DT.BoundaryIndex, (2, 1) => DT.BoundaryIndex, (1, 3) => DT.BoundaryIndex)
+                  (3, 2) => DT.𝒢, (2, 1) => DT.𝒢, (1, 3) => DT.𝒢)
       true_adj2v = Dict(
-            DT.BoundaryIndex => Set{NTuple{2,Int}}([(3, 2), (2, 1), (1, 3)]),
+            DT.𝒢 => Set{NTuple{2,Int}}([(3, 2), (2, 1), (1, 3)]),
             1 => Set{NTuple{2,Int}}([(2, 3)]),
             2 => Set{NTuple{2,Int}}([(3, 1)]),
             3 => Set{NTuple{2,Int}}([(1, 2)])
       )
-      true_DG = relabel(UndirectedGraph([
+      true_DG = _make_graph_from_adjacency([
                   0 1 1 1
                   1 0 1 1
                   1 1 0 1
                   1 1 1 0
-            ]), Dict(1:4 .=> [-1, 1, 2, 3]))
+            ], Dict(1:4 .=> [-1, 1, 2, 3]))
       DT.add_triangle!(tri, 1, 2, 3)
       @test get_triangles(tri) == true_T
       @test (get_adjacent ∘ get_adjacent)(tri) == true_adj
       @test (get_adjacent2vertex ∘ get_adjacent2vertex)(tri) == true_adj2v
-      @test (get_graph ∘ get_graph)(tri) == true_DG
+      @test get_graph(tri) == true_DG
 end
 
 @testset "Testing the boundary addition cases for updating ghost edges" begin
@@ -282,62 +274,62 @@ end
       tri = Triangulation(pts)
       DT.add_triangle!(tri, 1, 2, 3; update_ghost_edges=true)
       true_T = Set{NTuple{3,Int}}([(1, 2, 3),
-            (2, 1, DT.BoundaryIndex),
-            (1, 3, DT.BoundaryIndex),
-            (3, 2, DT.BoundaryIndex)])
+            (2, 1, DT.𝒢),
+            (1, 3, DT.𝒢),
+            (3, 2, DT.𝒢)])
       true_adj = DT.Adjacent(
             Dict(
                   (1, 2) => 3, (2, 3) => 1, (3, 1) => 2,
-                  (2, 1) => DT.BoundaryIndex, (1, DT.BoundaryIndex) => 2, (DT.BoundaryIndex, 2) => 1,
-                  (1, 3) => DT.BoundaryIndex, (3, DT.BoundaryIndex) => 1, (DT.BoundaryIndex, 1) => 3,
-                  (3, 2) => DT.BoundaryIndex, (2, DT.BoundaryIndex) => 3, (DT.BoundaryIndex, 3) => 2
+                  (2, 1) => DT.𝒢, (1, DT.𝒢) => 2, (DT.𝒢, 2) => 1,
+                  (1, 3) => DT.𝒢, (3, DT.𝒢) => 1, (DT.𝒢, 1) => 3,
+                  (3, 2) => DT.𝒢, (2, DT.𝒢) => 3, (DT.𝒢, 3) => 2
             ))
       true_adj2v = DT.Adjacent2Vertex(
             Dict(
-                  DT.BoundaryIndex => Set{NTuple{2,Int}}([(2, 1), (1, 3), (3, 2)]),
-                  1 => Set{NTuple{2,Int}}([(2, 3), (DT.BoundaryIndex, 2), (3, DT.BoundaryIndex)]),
-                  2 => Set{NTuple{2,Int}}([(3, 1), (1, DT.BoundaryIndex), (DT.BoundaryIndex, 3)]),
-                  3 => Set{NTuple{2,Int}}([(1, 2), (DT.BoundaryIndex, 1), (2, DT.BoundaryIndex)])
+                  DT.𝒢 => Set{NTuple{2,Int}}([(2, 1), (1, 3), (3, 2)]),
+                  1 => Set{NTuple{2,Int}}([(2, 3), (DT.𝒢, 2), (3, DT.𝒢)]),
+                  2 => Set{NTuple{2,Int}}([(3, 1), (1, DT.𝒢), (DT.𝒢, 3)]),
+                  3 => Set{NTuple{2,Int}}([(1, 2), (DT.𝒢, 1), (2, DT.𝒢)])
             )
       )
       true_DG = DT.Graph{Int}()
-      DT.add_neighbour!(true_DG, DT.BoundaryIndex, [1, 2, 3]...)
+      DT.add_neighbour!(true_DG, DT.𝒢, [1, 2, 3]...)
       DT.add_neighbour!(true_DG, 1, [2, 3]...)
       DT.add_neighbour!(true_DG, 2, [1, 3]...)
       DT.add_neighbour!(true_DG, 3, [1, 2]...)
       @test get_triangles(tri) == true_T
       @test (get_adjacent ∘ get_adjacent)(tri) == true_adj.adjacent
       @test (get_adjacent2vertex ∘ get_adjacent2vertex)(tri) == true_adj2v.adjacent2vertex
-      @test (get_graph ∘ get_graph)(tri) == true_DG.graph
+      @test get_graph(tri) == true_DG
       p4 = @SVector[1.7, 1.7]
       push!(pts, p4)
       DT.add_triangle!(tri, 3, 2, 4; update_ghost_edges=true)
       true_T = Set{NTuple{3,Int}}([(1, 2, 3),
-            (2, 1, DT.BoundaryIndex),
-            (1, 3, DT.BoundaryIndex),
-            (3, 4, DT.BoundaryIndex),
-            (4, 2, DT.BoundaryIndex),
+            (2, 1, DT.𝒢),
+            (1, 3, DT.𝒢),
+            (3, 4, DT.𝒢),
+            (4, 2, DT.𝒢),
             (3, 2, 4)])
       true_adj = DT.Adjacent(
             Dict(
                   (1, 2) => 3, (2, 3) => 1, (3, 1) => 2,
-                  (2, 1) => DT.BoundaryIndex, (1, DT.BoundaryIndex) => 2, (DT.BoundaryIndex, 2) => 1,
-                  (1, 3) => DT.BoundaryIndex, (3, DT.BoundaryIndex) => 1, (DT.BoundaryIndex, 1) => 3,
-                  (3, 4) => DT.BoundaryIndex, (4, DT.BoundaryIndex) => 3, (DT.BoundaryIndex, 3) => 4,
-                  (4, 2) => DT.BoundaryIndex, (2, DT.BoundaryIndex) => 4, (DT.BoundaryIndex, 4) => 2,
+                  (2, 1) => DT.𝒢, (1, DT.𝒢) => 2, (DT.𝒢, 2) => 1,
+                  (1, 3) => DT.𝒢, (3, DT.𝒢) => 1, (DT.𝒢, 1) => 3,
+                  (3, 4) => DT.𝒢, (4, DT.𝒢) => 3, (DT.𝒢, 3) => 4,
+                  (4, 2) => DT.𝒢, (2, DT.𝒢) => 4, (DT.𝒢, 4) => 2,
                   (3, 2) => 4, (2, 4) => 3, (4, 3) => 2
             ))
       true_adj2v = DT.Adjacent2Vertex(
             Dict(
-                  DT.BoundaryIndex => Set{NTuple{2,Int}}([(2, 1), (1, 3), (3, 4), (4, 2)]),
-                  1 => Set{NTuple{2,Int}}([(2, 3), (DT.BoundaryIndex, 2), (3, DT.BoundaryIndex)]),
-                  2 => Set{NTuple{2,Int}}([(3, 1), (1, DT.BoundaryIndex), (DT.BoundaryIndex, 4), (4, 3)]),
-                  3 => Set{NTuple{2,Int}}([(1, 2), (DT.BoundaryIndex, 1), (4, DT.BoundaryIndex), (2, 4)]),
-                  4 => Set{NTuple{2,Int}}([(DT.BoundaryIndex, 3), (2, DT.BoundaryIndex), (3, 2)])
+                  DT.𝒢 => Set{NTuple{2,Int}}([(2, 1), (1, 3), (3, 4), (4, 2)]),
+                  1 => Set{NTuple{2,Int}}([(2, 3), (DT.𝒢, 2), (3, DT.𝒢)]),
+                  2 => Set{NTuple{2,Int}}([(3, 1), (1, DT.𝒢), (DT.𝒢, 4), (4, 3)]),
+                  3 => Set{NTuple{2,Int}}([(1, 2), (DT.𝒢, 1), (4, DT.𝒢), (2, 4)]),
+                  4 => Set{NTuple{2,Int}}([(DT.𝒢, 3), (2, DT.𝒢), (3, 2)])
             )
       )
       true_DG = DT.Graph{Int}()
-      DT.add_neighbour!(true_DG, DT.BoundaryIndex, [1, 3, 4, 2]...)
+      DT.add_neighbour!(true_DG, DT.𝒢, [1, 3, 4, 2]...)
       DT.add_neighbour!(true_DG, 1, [2, 3]...)
       DT.add_neighbour!(true_DG, 2, [1, 3, 4]...)
       DT.add_neighbour!(true_DG, 3, [1, 2, 4]...)
@@ -345,7 +337,7 @@ end
       @test get_triangles(tri) == true_T
       @test (get_adjacent ∘ get_adjacent)(tri) == true_adj.adjacent
       @test (get_adjacent2vertex ∘ get_adjacent2vertex)(tri) == true_adj2v.adjacent2vertex
-      @test (get_graph ∘ get_graph)(tri) == true_DG.graph
+      @test get_graph(tri) == true_DG
       p5 = @SVector[1.0, 3.0]
       p6 = @SVector[3.0, 1.0]
       push!(pts, p5, p6)
@@ -356,12 +348,12 @@ end
             (3, 2, 4),
             (3, 4, 5),
             (4, 2, 6),
-            (2, 1, DT.BoundaryIndex),
-            (1, 3, DT.BoundaryIndex),
-            (3, 5, DT.BoundaryIndex),
-            (5, 4, DT.BoundaryIndex),
-            (4, 6, DT.BoundaryIndex),
-            (6, 2, DT.BoundaryIndex)
+            (2, 1, DT.𝒢),
+            (1, 3, DT.𝒢),
+            (3, 5, DT.𝒢),
+            (5, 4, DT.𝒢),
+            (4, 6, DT.𝒢),
+            (6, 2, DT.𝒢)
       ])
       true_adj = DT.Adjacent(
             Dict(
@@ -369,26 +361,26 @@ end
                   (3, 2) => 4, (2, 4) => 3, (4, 3) => 2,
                   (3, 4) => 5, (4, 5) => 3, (5, 3) => 4,
                   (4, 2) => 6, (2, 6) => 4, (6, 4) => 2,
-                  (2, 1) => DT.BoundaryIndex, (1, DT.BoundaryIndex) => 2, (DT.BoundaryIndex, 2) => 1,
-                  (1, 3) => DT.BoundaryIndex, (3, DT.BoundaryIndex) => 1, (DT.BoundaryIndex, 1) => 3,
-                  (3, 5) => DT.BoundaryIndex, (5, DT.BoundaryIndex) => 3, (DT.BoundaryIndex, 3) => 5,
-                  (5, 4) => DT.BoundaryIndex, (4, DT.BoundaryIndex) => 5, (DT.BoundaryIndex, 5) => 4,
-                  (4, 6) => DT.BoundaryIndex, (6, DT.BoundaryIndex) => 4, (DT.BoundaryIndex, 4) => 6,
-                  (6, 2) => DT.BoundaryIndex, (2, DT.BoundaryIndex) => 6, (DT.BoundaryIndex, 6) => 2
+                  (2, 1) => DT.𝒢, (1, DT.𝒢) => 2, (DT.𝒢, 2) => 1,
+                  (1, 3) => DT.𝒢, (3, DT.𝒢) => 1, (DT.𝒢, 1) => 3,
+                  (3, 5) => DT.𝒢, (5, DT.𝒢) => 3, (DT.𝒢, 3) => 5,
+                  (5, 4) => DT.𝒢, (4, DT.𝒢) => 5, (DT.𝒢, 5) => 4,
+                  (4, 6) => DT.𝒢, (6, DT.𝒢) => 4, (DT.𝒢, 4) => 6,
+                  (6, 2) => DT.𝒢, (2, DT.𝒢) => 6, (DT.𝒢, 6) => 2
             ))
       true_adj2v = DT.Adjacent2Vertex(
             Dict(
-                  DT.BoundaryIndex => Set{NTuple{2,Int}}([(1, 3), (3, 5), (5, 4), (4, 6), (6, 2), (2, 1)]),
-                  1 => Set{NTuple{2,Int}}([(2, 3), (3, DT.BoundaryIndex), (DT.BoundaryIndex, 2)]),
-                  2 => Set{NTuple{2,Int}}([(3, 1), (4, 3), (6, 4), (1, DT.BoundaryIndex), (DT.BoundaryIndex, 6)]),
-                  3 => Set{NTuple{2,Int}}([(1, 2), (2, 4), (4, 5), (DT.BoundaryIndex, 1), (5, DT.BoundaryIndex)]),
-                  4 => Set{NTuple{2,Int}}([(3, 2), (5, 3), (2, 6), (DT.BoundaryIndex, 5), (6, DT.BoundaryIndex)]),
-                  5 => Set{NTuple{2,Int}}([(3, 4), (DT.BoundaryIndex, 3), (4, DT.BoundaryIndex)]),
-                  6 => Set{NTuple{2,Int}}([(4, 2), (DT.BoundaryIndex, 4), (2, DT.BoundaryIndex)])
+                  DT.𝒢 => Set{NTuple{2,Int}}([(1, 3), (3, 5), (5, 4), (4, 6), (6, 2), (2, 1)]),
+                  1 => Set{NTuple{2,Int}}([(2, 3), (3, DT.𝒢), (DT.𝒢, 2)]),
+                  2 => Set{NTuple{2,Int}}([(3, 1), (4, 3), (6, 4), (1, DT.𝒢), (DT.𝒢, 6)]),
+                  3 => Set{NTuple{2,Int}}([(1, 2), (2, 4), (4, 5), (DT.𝒢, 1), (5, DT.𝒢)]),
+                  4 => Set{NTuple{2,Int}}([(3, 2), (5, 3), (2, 6), (DT.𝒢, 5), (6, DT.𝒢)]),
+                  5 => Set{NTuple{2,Int}}([(3, 4), (DT.𝒢, 3), (4, DT.𝒢)]),
+                  6 => Set{NTuple{2,Int}}([(4, 2), (DT.𝒢, 4), (2, DT.𝒢)])
             )
       )
       true_DG = DT.Graph{Int}()
-      DT.add_neighbour!(true_DG, DT.BoundaryIndex, [1, 3, 5, 4, 6, 2]...)
+      DT.add_neighbour!(true_DG, DT.𝒢, [1, 3, 5, 4, 6, 2]...)
       DT.add_neighbour!(true_DG, 1, [2, 3]...)
       DT.add_neighbour!(true_DG, 2, [1, 3, 4, 6]...)
       DT.add_neighbour!(true_DG, 3, [1, 2, 4, 5]...)
@@ -398,7 +390,7 @@ end
       @test get_triangles(tri) == true_T
       @test (get_adjacent ∘ get_adjacent)(tri) == true_adj.adjacent
       @test (get_adjacent2vertex ∘ get_adjacent2vertex)(tri) == true_adj2v.adjacent2vertex
-      @test (get_graph ∘ get_graph)(tri) == true_DG.graph
+      @test get_graph(tri) == true_DG
       DT.add_triangle!(tri, 5, 4, 6; update_ghost_edges=true)
       true_T = Set{NTuple{3,Int}}([
             (1, 2, 3),
@@ -406,11 +398,11 @@ end
             (3, 4, 5),
             (4, 2, 6),
             (5, 4, 6),
-            (2, 1, DT.BoundaryIndex),
-            (1, 3, DT.BoundaryIndex),
-            (3, 5, DT.BoundaryIndex),
-            (5, 6, DT.BoundaryIndex),
-            (6, 2, DT.BoundaryIndex)
+            (2, 1, DT.𝒢),
+            (1, 3, DT.𝒢),
+            (3, 5, DT.𝒢),
+            (5, 6, DT.𝒢),
+            (6, 2, DT.𝒢)
       ])
       true_adj = DT.Adjacent(
             Dict(
@@ -419,25 +411,25 @@ end
                   (3, 4) => 5, (4, 5) => 3, (5, 3) => 4,
                   (4, 2) => 6, (2, 6) => 4, (6, 4) => 2,
                   (5, 4) => 6, (4, 6) => 5, (6, 5) => 4,
-                  (2, 1) => DT.BoundaryIndex, (1, DT.BoundaryIndex) => 2, (DT.BoundaryIndex, 2) => 1,
-                  (1, 3) => DT.BoundaryIndex, (3, DT.BoundaryIndex) => 1, (DT.BoundaryIndex, 1) => 3,
-                  (3, 5) => DT.BoundaryIndex, (5, DT.BoundaryIndex) => 3, (DT.BoundaryIndex, 3) => 5,
-                  (5, 6) => DT.BoundaryIndex, (6, DT.BoundaryIndex) => 5, (DT.BoundaryIndex, 5) => 6,
-                  (6, 2) => DT.BoundaryIndex, (2, DT.BoundaryIndex) => 6, (DT.BoundaryIndex, 6) => 2
+                  (2, 1) => DT.𝒢, (1, DT.𝒢) => 2, (DT.𝒢, 2) => 1,
+                  (1, 3) => DT.𝒢, (3, DT.𝒢) => 1, (DT.𝒢, 1) => 3,
+                  (3, 5) => DT.𝒢, (5, DT.𝒢) => 3, (DT.𝒢, 3) => 5,
+                  (5, 6) => DT.𝒢, (6, DT.𝒢) => 5, (DT.𝒢, 5) => 6,
+                  (6, 2) => DT.𝒢, (2, DT.𝒢) => 6, (DT.𝒢, 6) => 2
             ))
       true_adj2v = DT.Adjacent2Vertex(
             Dict(
-                  DT.BoundaryIndex => Set{NTuple{2,Int}}([(1, 3), (3, 5), (5, 6), (6, 2), (2, 1)]),
-                  1 => Set{NTuple{2,Int}}([(2, 3), (3, DT.BoundaryIndex), (DT.BoundaryIndex, 2)]),
-                  2 => Set{NTuple{2,Int}}([(3, 1), (4, 3), (6, 4), (1, DT.BoundaryIndex), (DT.BoundaryIndex, 6)]),
-                  3 => Set{NTuple{2,Int}}([(1, 2), (2, 4), (4, 5), (DT.BoundaryIndex, 1), (5, DT.BoundaryIndex)]),
+                  DT.𝒢 => Set{NTuple{2,Int}}([(1, 3), (3, 5), (5, 6), (6, 2), (2, 1)]),
+                  1 => Set{NTuple{2,Int}}([(2, 3), (3, DT.𝒢), (DT.𝒢, 2)]),
+                  2 => Set{NTuple{2,Int}}([(3, 1), (4, 3), (6, 4), (1, DT.𝒢), (DT.𝒢, 6)]),
+                  3 => Set{NTuple{2,Int}}([(1, 2), (2, 4), (4, 5), (DT.𝒢, 1), (5, DT.𝒢)]),
                   4 => Set{NTuple{2,Int}}([(3, 2), (2, 6), (6, 5), (5, 3)]),
-                  5 => Set{NTuple{2,Int}}([(3, 4), (4, 6), (6, DT.BoundaryIndex), (DT.BoundaryIndex, 3)]),
-                  6 => Set{NTuple{2,Int}}([(4, 2), (5, 4), (DT.BoundaryIndex, 5), (2, DT.BoundaryIndex)])
+                  5 => Set{NTuple{2,Int}}([(3, 4), (4, 6), (6, DT.𝒢), (DT.𝒢, 3)]),
+                  6 => Set{NTuple{2,Int}}([(4, 2), (5, 4), (DT.𝒢, 5), (2, DT.𝒢)])
             )
       )
       true_DG = DT.Graph{Int}()
-      DT.add_neighbour!(true_DG, DT.BoundaryIndex, [1, 3, 5, 6, 2]...)
+      DT.add_neighbour!(true_DG, DT.𝒢, [1, 3, 5, 6, 2]...)
       DT.add_neighbour!(true_DG, 1, [2, 3]...)
       DT.add_neighbour!(true_DG, 2, [1, 3, 4, 6]...)
       DT.add_neighbour!(true_DG, 3, [1, 2, 4, 5]...)
@@ -447,8 +439,8 @@ end
       @test get_triangles(tri) == true_T
       @test (get_adjacent ∘ get_adjacent)(tri) == true_adj.adjacent
       @test (get_adjacent2vertex ∘ get_adjacent2vertex)(tri) == true_adj2v.adjacent2vertex
-      @test (get_graph ∘ get_graph)(tri) == true_DG.graph
-      convex_hull!(tri; reconstruct=false)
+      @test get_graph(tri) == true_DG
+      DT.convex_hull!(tri; reconstruct=false)
       DT.compute_representative_points!(tri)
       @test validate_triangulation(tri)
 end
@@ -498,44 +490,44 @@ end
             (1, 2, 6),
             (8, 6, 7),
             (8, 7, 11),
-            (2, 1, DT.BoundaryIndex),
-            (1, 9, DT.BoundaryIndex),
-            (9, 10, DT.BoundaryIndex),
-            (10, 5, DT.BoundaryIndex),
-            (5, 4, DT.BoundaryIndex),
-            (4, 3, DT.BoundaryIndex),
-            (3, 2, DT.BoundaryIndex)
+            (2, 1, DT.𝒢),
+            (1, 9, DT.𝒢),
+            (9, 10, DT.𝒢),
+            (10, 5, DT.𝒢),
+            (5, 4, DT.𝒢),
+            (4, 3, DT.𝒢),
+            (3, 2, DT.𝒢)
       ])
       true_adj = DT.Adjacent(
-                  Dict(
-                        (1, 6) => 8, (6, 8) => 1, (8, 1) => 6,
-                        (1, 8) => 9, (8, 9) => 1, (9, 1) => 8,
-                        (9, 8) => 10, (8, 10) => 9, (10, 9) => 8,
-                        (10, 8) => 11, (8, 11) => 10, (11, 10) => 8,
-                        (10, 11) => 5, (11, 5) => 10, (5, 10) => 11,
-                        (11, 7) => 5, (7, 5) => 11, (5, 11) => 7,
-                        (7, 4) => 5, (4, 5) => 7, (5, 7) => 4,
-                        (7, 6) => 4, (6, 4) => 7, (4, 7) => 6,
-                        (6, 3) => 4, (3, 4) => 6, (4, 6) => 3,
-                        (6, 2) => 3, (2, 3) => 6, (3, 6) => 2,
-                        (1, 2) => 6, (2, 6) => 1, (6, 1) => 2,
-                        (8, 6) => 7, (6, 7) => 8, (7, 8) => 6,
-                        (8, 7) => 11, (7, 11) => 8, (11, 8) => 7,
-                        (2, 1) => DT.BoundaryIndex, (1, DT.BoundaryIndex) => 2, (DT.BoundaryIndex, 2) => 1,
-                        (1, 9) => DT.BoundaryIndex, (9, DT.BoundaryIndex) => 1, (DT.BoundaryIndex, 1) => 9,
-                        (9, 10) => DT.BoundaryIndex, (10, DT.BoundaryIndex) => 9, (DT.BoundaryIndex, 9) => 10,
-                        (10, 5) => DT.BoundaryIndex, (5, DT.BoundaryIndex) => 10, (DT.BoundaryIndex, 10) => 5,
-                        (5, 4) => DT.BoundaryIndex, (4, DT.BoundaryIndex) => 5, (DT.BoundaryIndex, 5) => 4,
-                        (4, 3) => DT.BoundaryIndex, (3, DT.BoundaryIndex) => 4, (DT.BoundaryIndex, 4) => 3,
-                        (3, 2) => DT.BoundaryIndex, (2, DT.BoundaryIndex) => 3, (DT.BoundaryIndex, 3) => 2
-                  )
+            Dict(
+                  (1, 6) => 8, (6, 8) => 1, (8, 1) => 6,
+                  (1, 8) => 9, (8, 9) => 1, (9, 1) => 8,
+                  (9, 8) => 10, (8, 10) => 9, (10, 9) => 8,
+                  (10, 8) => 11, (8, 11) => 10, (11, 10) => 8,
+                  (10, 11) => 5, (11, 5) => 10, (5, 10) => 11,
+                  (11, 7) => 5, (7, 5) => 11, (5, 11) => 7,
+                  (7, 4) => 5, (4, 5) => 7, (5, 7) => 4,
+                  (7, 6) => 4, (6, 4) => 7, (4, 7) => 6,
+                  (6, 3) => 4, (3, 4) => 6, (4, 6) => 3,
+                  (6, 2) => 3, (2, 3) => 6, (3, 6) => 2,
+                  (1, 2) => 6, (2, 6) => 1, (6, 1) => 2,
+                  (8, 6) => 7, (6, 7) => 8, (7, 8) => 6,
+                  (8, 7) => 11, (7, 11) => 8, (11, 8) => 7,
+                  (2, 1) => DT.𝒢, (1, DT.𝒢) => 2, (DT.𝒢, 2) => 1,
+                  (1, 9) => DT.𝒢, (9, DT.𝒢) => 1, (DT.𝒢, 1) => 9,
+                  (9, 10) => DT.𝒢, (10, DT.𝒢) => 9, (DT.𝒢, 9) => 10,
+                  (10, 5) => DT.𝒢, (5, DT.𝒢) => 10, (DT.𝒢, 10) => 5,
+                  (5, 4) => DT.𝒢, (4, DT.𝒢) => 5, (DT.𝒢, 5) => 4,
+                  (4, 3) => DT.𝒢, (3, DT.𝒢) => 4, (DT.𝒢, 4) => 3,
+                  (3, 2) => DT.𝒢, (2, DT.𝒢) => 3, (DT.𝒢, 3) => 2
+            )
       )
-      true_adj2v = DT.Adjacent2Vertex{Int,Set{NTuple{2,Int}},NTuple{2,Int}}()
-      for (ij, k) in true_adj
+      true_adj2v = DT.Adjacent2Vertex{Int,Set{NTuple{2,Int}}}()
+      for (ij, k) in true_adj.adjacent
             DT.add_adjacent2vertex!(true_adj2v, k, ij)
       end
       true_DG = DT.Graph{Int}()
-      DT.add_neighbour!(true_DG, DT.BoundaryIndex, 1, 9, 10, 5, 4, 3, 2)
+      DT.add_neighbour!(true_DG, DT.𝒢, 1, 9, 10, 5, 4, 3, 2)
       DT.add_neighbour!(true_DG, 1, 2, 6, 8, 9)
       DT.add_neighbour!(true_DG, 2, 1, 6, 3)
       DT.add_neighbour!(true_DG, 3, 2, 6, 4)
@@ -550,8 +542,8 @@ end
       @test DT.compare_triangle_collections(get_triangles(tri), true_T)
       @test (get_adjacent ∘ get_adjacent)(tri) == true_adj.adjacent
       @test (get_adjacent2vertex ∘ get_adjacent2vertex)(tri) == true_adj2v.adjacent2vertex
-      @test (get_graph ∘ get_graph)(tri) == true_DG.graph
-      convex_hull!(tri; reconstruct=false)
+      @test get_graph(tri) == true_DG
+      DT.convex_hull!(tri; reconstruct=false)
       DT.compute_representative_points!(tri)
       @test validate_triangulation(tri)
 end

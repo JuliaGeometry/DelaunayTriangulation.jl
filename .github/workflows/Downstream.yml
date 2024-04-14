@@ -18,7 +18,7 @@ jobs:
         os: [ubuntu-latest]
         package:
           - {user: DanielVandH, repo: NaturalNeighbours.jl, group: Downstream}
-          - {user: DanielVandH, repo: FiniteVolumeMethod.jl, group: Downstream}
+          - {user: SciML, repo: FiniteVolumeMethod.jl, group: Downstream}
 
     steps:
       - uses: actions/checkout@v4

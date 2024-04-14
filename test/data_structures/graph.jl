@@ -1,34 +1,33 @@
 using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using DataStructures
-using SimpleGraphs
+
+include("../helper_functions.jl")
 
 @testset "Constructing empty graphs" begin
-    sg1 = UndirectedGraph{Int}()
-    sg2 = UndirectedGraph{Int32}()
-    g1 = DT.Graph{Int}()
+    g1 = DT.Graph{Int64}()
     g2 = DT.Graph{Int32}()
-    @test g1.graph == sg1
-    @test g2.graph == sg2
-    @test g1 == DT.Graph()
-    @test g1 == DT.Graph(sg1)
-    @test g2 == DT.Graph(sg2)
+    @test g1.vertices == Set{Int64}()
+    @test g1.edges == Set{NTuple{2,Int64}}()
+    @test g1.neighbours == Dict{Int64,Set{Int64}}()
+    @test g2.vertices == Set{Int32}()
+    @test g2.edges == Set{NTuple{2,Int32}}()
+    @test g2.neighbours == Dict{Int32,Set{Int32}}()
 end
 
-global sg = UndirectedGraph([0 0 0 1 0 1
+global sg = [0 0 0 1 0 1
     0 0 1 1 0 0
     0 1 0 1 0 1
     1 1 1 0 1 1
     0 0 0 1 0 0
-    1 0 1 1 0 0])
-global g = DT.Graph(sg)
+    1 0 1 1 0 0]
+global g = _make_graph_from_adjacency(sg)
 
 @testset "Getting graph and getting statistics" begin
-    @test DT.get_graph(g) == sg
-    @test DT.get_edges(g) == sg.E
-    @test DT.get_neighbours(g) == sg.N
-    @test DT.get_vertices(g) == sg.V
-    @test DT.get_neighbours(g, 1) == sg.N[1]
+    @test DT.get_edges(g) == g.edges
+    @test DT.get_neighbours(g) == g.neighbours
+    @test DT.get_vertices(g) == g.vertices
+    @test DT.get_neighbours(g, 1) == g.neighbours[1]
     @test DT.get_neighbours(g, 3) == Set{Int}((2, 4, 6))
     @test DT.num_neighbours(g, 5) == 1
     @test DT.num_neighbours(g, 2) == 2
@@ -38,17 +37,18 @@ end
 
 @testset "Adding vertices" begin
     DT.add_vertex!(g, 7)
-    @test 7 ∈ sg.V
+    @test 7 ∈ g.vertices
     DT.add_vertex!(g, 13, 20)
-    @test 13 ∈ sg.V && 20 ∈ sg.V
+    @test 13 ∈ g.vertices && 20 ∈ g.vertices
 end
 
 @testset "Adding neighbours" begin
     DT.add_neighbour!(g, 3, 1)
-    @test 1 ∈ sg.N[3] && 3 ∈ sg.N[1]
+    @test 1 ∈ g.neighbours[3] && 3 ∈ g.neighbours[1]
     DT.add_neighbour!(g, 10, 15, 21)
-    @test 10 ∈ sg.V && 15 ∈ sg.V && 21 ∈ sg.V
-    @test 15 ∈ sg.N[10] && 21 ∈ sg.N[10]
+    @test 10 ∈ g.vertices && 15 ∈ g.vertices && 21 ∈ g.vertices
+    @test 15 ∈ g.neighbours[10] && 21 ∈ g.neighbours[10]
+    @test (3, 1) ∈ g.edges
 end
 
 global T1 = (25, 26, 27)
@@ -60,11 +60,11 @@ global T5 = (-1, 7, 5)
 @testset "Adding triangles" begin
     DT.add_triangle!(g, T1...)
     DT.add_triangle!(g, T2)
-    DT.add_triangle!(g, T3, T4, T5)
+    DT.add_triangle!.(Ref(g), (T3, T4, T5))
     for ((i, j, k)) in (T1, T2, T3, T4, T5)
-        @test i ∈ sg.V && j ∈ sg.V && k ∈ sg.V
-        @test i ∈ sg.N[j] && i ∈ sg.N[k]
-        @test j ∈ sg.N[i] && j ∈ sg.N[k]
+        @test i ∈ g.vertices && j ∈ g.vertices && k ∈ g.vertices
+        @test i ∈ g.neighbours[j] && i ∈ g.neighbours[k]
+        @test j ∈ g.neighbours[i] && j ∈ g.neighbours[k]
         @test k ∈ get_neighbours(g, i) && k ∈ get_neighbours(g, j)
     end
 end
@@ -72,10 +72,10 @@ end
 @testset "Deleting triangles" begin
     DT.delete_triangle!(g, T1...)
     DT.delete_triangle!(g, T2)
-    DT.delete_triangle!(g, T3, T4, T5)
+    DT.delete_triangle!.(Ref(g), (T3, T4, T5))
     for ((i, j, k)) in (T1, T2, T3, T4, T5)
-        @test !(i ∈ sg.N[j] && i ∈ sg.N[k])
-        @test !(j ∈ sg.N[i] && j ∈ sg.N[k])
+        @test !(i ∈ g.neighbours[j] && i ∈ g.neighbours[k])
+        @test !(j ∈ g.neighbours[i] && j ∈ g.neighbours[k])
         @test !(k ∈ get_neighbours(g, i) && k ∈ get_neighbours(g, j))
     end
 end
@@ -89,26 +89,28 @@ end
 
 @testset "Deleting vertices" begin
     DT.delete_vertex!(g, 3)
-    @test 3 ∉ sg.V
+    @test 3 ∉ g.vertices
     DT.delete_vertex!(g, 60, 65, 0)
-    @test 60 ∉ sg.V && 65 ∉ sg.V && 0 ∉ sg.V
+    @test 60 ∉ g.vertices && 65 ∉ g.vertices && 0 ∉ g.vertices
+    @test 60 ∉ keys(g.neighbours) && 65 ∉ keys(g.neighbours) && 0 ∉ keys(g.neighbours)
+    @test 3 ∉ keys(g.neighbours)
 end
 
-@testset "Deleting boundary indices" begin
-    bidx = DT.BoundaryIndex
+@testset "Deleting ghost vertices" begin
+    bidx = DT.𝒢
     DT.add_vertex!(g, bidx, bidx - 1, bidx - 2, bidx - 3, bidx - 4)
-    DT.delete_boundary_vertices_from_graph!(g)
-    @test bidx ∉ sg.V && bidx - 1 ∉ sg.V && bidx - 2 ∉ sg.V && bidx - 3 ∉ sg.V &&
-          bidx - 4 ∉ sg.V
+    DT.delete_ghost_vertices_from_graph!(g)
+    @test bidx ∉ g.vertices && bidx - 1 ∉ g.vertices && bidx - 2 ∉ g.vertices && bidx - 3 ∉ g.vertices &&
+          bidx - 4 ∉ g.vertices
 end
 
-global sg = UndirectedGraph([0 0 0 1 0 1
+global sg = [0 0 0 1 0 1
     0 0 1 1 0 0
     0 1 0 1 0 1
     1 1 1 0 1 1
     0 0 0 1 0 0
-    1 0 1 1 0 0])
-global g = DT.Graph(sg)
+    1 0 1 1 0 0]
+global g = _make_graph_from_adjacency(sg)
 
 @testset "Removing empty parts" begin
     clean_dg = deepcopy(g)
@@ -116,22 +118,33 @@ global g = DT.Graph(sg)
     @test g ≠ clean_dg
     DT.delete_neighbour!(g, 13, 5)
     @test g ≠ clean_dg
-    DT.clear_empty_points!(g)
+    DT.clear_empty_vertices!(g)
     @test g == clean_dg
 end
 
-@testset "Number of vertices and each_vertex" begin
+@testset "Number of vertices" begin
     @test num_vertices(g) == 6
-    @test each_vertex(g) == get_vertices(g)
 end
 
-@testset "has_vertex and has_boundary_vertices" begin
-    bidx = DT.BoundaryIndex
+@testset "has_vertex and has_ghost_vertices" begin
+    bidx = DT.𝒢
     DT.add_vertex!(g, bidx, bidx - 1, bidx - 2, bidx - 3, bidx - 4)
     @test DT.has_vertex(g, bidx)
     @test DT.has_vertex(g, bidx - 4)
     @test DT.has_vertex(g, 5)
-    @test DT.has_boundary_vertices(g)
-    DT.delete_boundary_vertices_from_graph!(g)
-    @test !DT.has_boundary_vertices(g)
+    @test DT.has_ghost_vertices(g)
+    DT.delete_ghost_vertices_from_graph!(g)
+    @test !DT.has_ghost_vertices(g)
+end
+
+@testset "empty!" begin
+    tri = triangulate(rand(2, 50))
+    graph = get_graph(tri)
+    @test !isempty(get_neighbours(graph))
+    @test !isempty(DT.get_edges(graph))
+    @test !isempty(DT.get_vertices(graph))
+    empty!(graph)
+    @test isempty(get_neighbours(graph))
+    @test isempty(DT.get_edges(graph))
+    @test isempty(DT.get_vertices(graph))
 end

@@ -1,215 +1,227 @@
 module DelaunayTriangulation
 
-####################################################
-##
-## CONSTANTS 
-##
-####################################################
 const DefaultAdjacentValue = 0
-const BoundaryIndex = -1
-const FirstPointIndex = DefaultAdjacentValue + 1
+const ∅ = DefaultAdjacentValue
+const GhostVertex = -1
+const 𝒢 = GhostVertex
+const ε = sqrt(eps(Float64))
 
-####################################################
-##
-## DEPENDENCIES
-##
-####################################################
-using DataStructures
-using SimpleGraphs
+const INF_WARN = Ref(true)
+"""
+    toggle_inf_warn!()
+
+Toggle the warning for infinite circumcenters in the Voronoi tessellation.
+By default, this warning is enabled.
+"""
+toggle_inf_warn!() = (INF_WARN[] = !INF_WARN[])
+
 using ExactPredicates
 using EnumX
 using Random
 
-####################################################
-##
-## FILES AND EXPORTS
-##
-####################################################
-include("interfaces/points.jl")
-include("interfaces/triangles.jl")
-include("interfaces/edges.jl")
-include("interfaces/boundary_nodes.jl")
-
-export indices
-export num_triangles
-export each_triangle
-export geti
-export getj
-export getk
-export initial
-export terminal
-export num_edges
-export each_edge
-export getx
-export gety
-export getxy
-export each_point
-export each_point_index
-export get_point
-export num_points
-export get_boundary_nodes
-export num_boundary_edges
-
-include("data_structures/adjacent.jl")
-include("data_structures/adjacent2vertex.jl")
-include("data_structures/graph.jl")
-include("data_structures/convex_hull.jl")
-include("data_structures/triangulation/definition.jl")
-include("data_structures/triangulation/constructors.jl")
+include("data_structures/queue/max_priority_queue.jl")
+include("data_structures/queue/queue.jl")
+include("data_structures/trees/bst.jl")
+include("data_structures/trees/rtree.jl")
+include("data_structures/trees/polygon_hierarchy.jl")
 include("data_structures/triangulation/adjacent.jl")
 include("data_structures/triangulation/adjacent2vertex.jl")
 include("data_structures/triangulation/graph.jl")
-include("data_structures/triangulation/convex_hull.jl")
-include("data_structures/triangulation/points.jl")
-include("data_structures/triangulation/triangles.jl")
-include("data_structures/triangulation/edges.jl")
-include("data_structures/triangulation/boundary_nodes.jl")
-include("data_structures/triangulation/predicates.jl")
-include("data_structures/triangulation/representative_points.jl")
-include("data_structures/representative.jl")
-include("data_structures/statistics.jl")
-include("data_structures/refinement/refinement_targets.jl")
-include("data_structures/refinement/refinement_queue.jl")
-include("data_structures/refinement/event_history.jl")
+include("data_structures/mesh_refinement/curves.jl")
+include("data_structures/representative_coordinates/representative_coordinates.jl")
+include("data_structures/representative_coordinates/cell.jl")
+include("data_structures/representative_coordinates/cell_queue.jl")
+include("data_structures/convex_hull.jl")
+include("data_structures/triangulation/triangulation.jl")
+include("data_structures/triangulation/triangulation_cache.jl")
+include("data_structures/mesh_refinement/boundary_enricher.jl")
+include("data_structures/triangulation/methods/adjacent.jl")
+include("data_structures/triangulation/methods/adjacent2vertex.jl")
+include("data_structures/triangulation/methods/boundary_curves.jl")
+include("data_structures/triangulation/methods/boundary_edge_map.jl")
+include("data_structures/triangulation/methods/boundary_nodes.jl")
+include("data_structures/triangulation/methods/convex_hull.jl")
+include("data_structures/triangulation/methods/exterior_curve_indices.jl")
+include("data_structures/triangulation/methods/ghost_vertex_map.jl")
+include("data_structures/triangulation/methods/ghost_vertex_ranges.jl")
+include("data_structures/triangulation/methods/graph.jl")
+include("data_structures/triangulation/methods/iterators.jl")
+include("data_structures/triangulation/methods/points.jl")
+include("data_structures/triangulation/methods/representative_point_list.jl")
+include("data_structures/triangulation/methods/segments.jl")
+include("data_structures/triangulation/methods/triangles.jl")
+include("data_structures/triangulation/methods/weights.jl")
+include("data_structures/triangulation/methods/checks.jl")
 include("data_structures/point_location_history.jl")
-include("data_structures/polylabel/cell.jl")
-include("data_structures/polylabel/cell_queue.jl")
-include("data_structures/voronoi/voronoi.jl")
+include("data_structures/statistics/individual_triangle_statistics.jl")
+include("data_structures/statistics/triangulation_statistics.jl")
+include("data_structures/mesh_refinement/insertion_event_history.jl")
+include("data_structures/mesh_refinement/refinement_constraints.jl")
+include("data_structures/mesh_refinement/refinement_queue.jl")
+include("data_structures/mesh_refinement/refinement_arguments.jl")
+include("data_structures/voronoi.jl")
+include("data_structures/polygon.jl")
+include("data_structures/shuffled_polygon_linked_list.jl")
 
-export get_adjacent
-export get_adjacent2vertex
-export get_graph
-export get_edges
-export get_neighbours
-export get_points
-export get_triangles
-export get_boundary_map
-export get_constrained_edges
-export get_boundary_nodes
-export get_all_constrained_edges
-export get_convex_hull
-export get_boundary_edge_map
-export get_boundary_index_ranges
-export Triangulation
-export ConvexHull
-export convex_hull
-export convex_hull!
-export each_solid_triangle
-export each_ghost_triangle
-export get_vertices
-export clear_empty_features!
-export get_indices
-export get_convex_hull_indices
-export each_vertex
-export num_vertices
-export each_solid_edge
-export each_ghost_edge
-export each_solid_vertex
-export each_ghost_vertex
-export each_constrained_edge
-export statistics
-export get_total_area
-export get_all_stat
-export VoronoiTessellation
-export num_polygons
-export get_polygon
-export each_polygon
-export get_polygon_point
-export get_area
-export each_generator
-export get_generator
-export each_polygon_index
-export each_polygon_vertex
-export num_polygon_vertices
+include("geometric_primitives/boundary_nodes.jl")
+include("geometric_primitives/edges.jl")
+include("geometric_primitives/points.jl")
+include("geometric_primitives/triangles.jl")
 
 include("predicates/certificate.jl")
+include("predicates/exactpredicates_definitions.jl")
+include("predicates/predicates.jl")
 include("predicates/boundaries_and_ghosts.jl")
-include("predicates/general.jl")
-include("predicates/index_and_ghost_handling.jl")
 
-export Certificate
+include("utils/geometry_utils.jl")
+include("utils/utils.jl")
 
-include("operations/add_triangle.jl")
-include("operations/add_boundary_information.jl")
-include("operations/add_ghost_triangles.jl")
-include("operations/delete_triangle.jl")
-include("operations/delete_ghost_triangles.jl")
-include("operations/add_point.jl")
-include("operations/flip_edge.jl")
-include("operations/split_edge.jl")
-include("operations/split_triangle.jl")
-include("operations/legalise_edge.jl")
-include("operations/delete_point.jl")
-include("operations/add_edge.jl")
-include("operations/delete_holes.jl")
-include("operations/clear_empty_features.jl")
-include("operations/lock_convex_hull.jl")
-include("operations/unlock_convex_hull.jl")
+include("algorithms/intersections/rtree.jl")
+include("algorithms/convex_hull.jl")
+include("algorithms/point_location/brute_force.jl")
+include("algorithms/point_location/jump_and_march.jl")
+include("algorithms/point_location/nearest_neighbour.jl")
+include("algorithms/point_location/find_polygon.jl")
+include("algorithms/polygon_clipping/liang_barsky.jl")
+include("algorithms/polygon_clipping/sutherland_hodgman.jl")
+include("algorithms/pole_of_inaccessibility.jl")
+include("algorithms/triangulation/constrained_triangulation.jl")
+include("algorithms/triangulation/check_args.jl")
+include("algorithms/triangulation/main.jl")
+include("algorithms/triangulation/triangulate_curve_bounded.jl")
+include("algorithms/triangulation/mesh_refinement.jl")
+include("algorithms/triangulation/triangulate_convex.jl")
+include("algorithms/triangulation/triangulate_rectangle.jl")
+include("algorithms/triangulation/unconstrained_triangulation.jl")
+include("algorithms/triangulation/basic_operations/add_boundary_information.jl")
+include("algorithms/triangulation/basic_operations/add_ghost_triangles.jl")
+include("algorithms/triangulation/basic_operations/add_point.jl")
+include("algorithms/triangulation/basic_operations/add_segment.jl")
+include("algorithms/triangulation/basic_operations/add_triangle.jl")
+include("algorithms/triangulation/basic_operations/clear_empty_features.jl")
+include("algorithms/triangulation/basic_operations/delete_ghost_triangles.jl")
+include("algorithms/triangulation/basic_operations/delete_holes.jl")
+include("algorithms/triangulation/basic_operations/delete_point.jl")
+include("algorithms/triangulation/basic_operations/delete_triangle.jl")
+include("algorithms/triangulation/basic_operations/flip_edge.jl")
+include("algorithms/triangulation/basic_operations/legalise_edge.jl")
+include("algorithms/triangulation/basic_operations/lock_convex_hull.jl")
+include("algorithms/triangulation/basic_operations/split_edge.jl")
+include("algorithms/triangulation/basic_operations/split_triangle.jl")
+include("algorithms/triangulation/basic_operations/unlock_convex_hull.jl")
+include("algorithms/voronoi/centroidal.jl")
+include("algorithms/voronoi/clipped_coordinates.jl")
+include("algorithms/voronoi/clipped.jl")
+include("algorithms/voronoi/main.jl")
+include("algorithms/voronoi/unbounded.jl")
 
-export add_ghost_triangles!
-export delete_ghost_triangles!
-export add_point!
-export add_triangle!
-export delete_triangle!
-export flip_edge!
-export add_boundary_information!
-export split_edge!
-export split_triangle!
-export legalise_edge!
-export delete_point!
-export add_edge!
-export lock_convex_hull!
-export unlock_convex_hull!
+# TODO: Remove these after updating their use inside Makie.jl.
+indices(args...) = triangle_vertices(args...)
+edge_indices(args...) = edge_vertices(args...)
+get_all_constrained_edges(tri) = get_all_segments(tri)
+each_constrained_edge(tri) = each_segment(tri)
+get_convex_hull_indices(tri) = get_convex_hull_vertices(tri)
+is_boundary_index(g) = is_ghost_vertex(g)
 
-include("triangulation/gmsh.jl")
-include("triangulation/rectangle.jl")
-include("triangulation/bowyer_watson.jl")
-include("triangulation/triangulate.jl")
-include("triangulation/convex_triangulation.jl")
-include("triangulation/triangulate_constrained.jl")
-
-export generate_mesh
-export triangulate_rectangle
-export triangulate
-export triangulate_convex
-
-include("point_location/brute_force.jl")
-include("point_location/initialisers.jl")
-include("point_location/jump_and_march.jl")
-
-export brute_force_search
-export jump_and_march
-
-include("constrained_triangulation/segment_location.jl")
-include("constrained_triangulation/segment_insertion.jl")
-
-include("utils.jl")
-
-export convert_boundary_points_to_indices
-
-include("geometry_utils/polygons.jl")
-include("geometry_utils/polylabel.jl")
-include("geometry_utils/intersections.jl")
-include("geometry_utils/sutherland_hodgman.jl")
-
-const polylabel = pole_of_inaccessibility
-
-include("refinement/encroachment.jl")
-include("refinement/quality_assessment.jl")
-include("refinement/refinement_operations.jl")
-include("refinement/refine.jl")
-
-export refine!
-
-include("voronoi/main.jl")
-include("voronoi/unbounded_construction.jl")
-include("voronoi/clipped_construction.jl")
-include("voronoi/lloyd.jl")
-include("voronoi/coordinates.jl")
-
-export voronoi
-export centroidal_smooth
-export get_polygon_coordinates
-export get_nearest_neighbour
+export
+    each_triangle,
+    each_solid_triangle,
+    each_ghost_triangle,
+    each_edge,
+    each_solid_edge,
+    each_ghost_edge,
+    each_vertex,
+    each_solid_vertex,
+    each_ghost_vertex,
+    num_triangles,
+    num_solid_triangles,
+    num_ghost_triangles,
+    num_edges,
+    num_solid_edges,
+    num_ghost_edges,
+    num_vertices,
+    num_solid_vertices,
+    num_ghost_vertices,
+    get_points,
+    get_boundary_nodes,
+    get_interior_segments,
+    get_all_segments,
+    get_adjacent,
+    get_adjacent2vertex,
+    get_ghost_vertex_map,
+    get_ghost_vertex_ranges,
+    get_ghost_vertex_range,
+    get_triangles,
+    get_boundary_edge_map,
+    statistics,
+    each_segment,
+    get_area,
+    get_all_stat,
+    num_polygons,
+    get_polygon,
+    each_polygon,
+    get_polygon_point,
+    each_generator,
+    get_generator,
+    each_polygon_index,
+    each_polygon_vertex,
+    num_polygon_vertices,
+    get_neighbours,
+    get_convex_hull,
+    get_convex_hull_vertices,
+    triangle_vertices,
+    edge_vertices,
+    getx,
+    gety,
+    getxy,
+    get_point,
+    num_boundary_edges,
+    add_ghost_triangles!,
+    delete_ghost_triangles!,
+    add_point!,
+    add_triangle!,
+    delete_triangle!,
+    flip_edge!,
+    split_edge!,
+    split_triangle!,
+    legalise_edge!,
+    delete_point!,
+    add_segment!,
+    lock_convex_hull!,
+    unlock_convex_hull!,
+    triangulate,
+    triangulate_rectangle,
+    triangulate_convex,
+    brute_force_search,
+    jump_and_march,
+    convert_boundary_points_to_indices,
+    refine!,
+    centroidal_smooth,
+    get_polygon_coordinates,
+    get_nearest_neighbour,
+    convex_hull,
+    get_convex_hull,
+    get_graph,
+    voronoi,
+    retriangulate,
+    Triangulation,
+    VoronoiTessellation,
+    ConvexHull,
+    TriangulationStatistics,
+    convex_hull!,
+    add_weight!,
+    get_weight,
+    get_weights,
+    CircularArc,
+    LineSegment,
+    EllipticalArc,
+    BezierCurve,
+    BSpline,
+    CatmullRomSpline,
+    find_polygon,
+    get_boundary_curves,
+    map_ghost_vertex,
+    polygon_bounds,
+    num_neighbours
 
 end

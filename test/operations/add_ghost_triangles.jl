@@ -1,37 +1,30 @@
 using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
-using CairoMakie
 
 include("../helper_functions.jl")
 
 @testset "Adding ghost triangles" begin
     tri, label_map, index_map = simple_geometry()
 
-    fig = Figure()
-    ax = Axis(fig[1, 1])
-    xlims!(ax, -2, 22)
-    ylims!(ax, -2, 22)
-    triplot!(ax, tri)
-
     DT.add_ghost_triangles!(tri)
-    outer_edges = [("a", "b") => DT.BoundaryIndex,
-        ("b", "c") => DT.BoundaryIndex,
-        ("c", "d") => DT.BoundaryIndex,
-        ("d", "e") => DT.BoundaryIndex,
-        ("e", "f") => DT.BoundaryIndex,
-        ("f", "g") => DT.BoundaryIndex,
-        ("g", "h") => DT.BoundaryIndex,
-        ("h", "a") => DT.BoundaryIndex]
-    inner_edges_1 = [("k", "j") => DT.BoundaryIndex - 1,
-        ("j", "i") => DT.BoundaryIndex - 1,
-        ("i", "ℓ") => DT.BoundaryIndex - 1,
-        ("ℓ", "k") => DT.BoundaryIndex - 1]
-    inner_edges_2 = [("r", "q") => DT.BoundaryIndex - 2,
-        ("q", "p") => DT.BoundaryIndex - 2,
-        ("p", "o") => DT.BoundaryIndex - 3,
-        ("o", "n") => DT.BoundaryIndex - 3,
-        ("n", "m") => DT.BoundaryIndex - 3,
-        ("m", "r") => DT.BoundaryIndex - 3]
+    outer_edges = [("a", "b") => DT.𝒢,
+        ("b", "c") => DT.𝒢,
+        ("c", "d") => DT.𝒢,
+        ("d", "e") => DT.𝒢,
+        ("e", "f") => DT.𝒢,
+        ("f", "g") => DT.𝒢,
+        ("g", "h") => DT.𝒢,
+        ("h", "a") => DT.𝒢]
+    inner_edges_1 = [("k", "j") => DT.𝒢 - 1,
+        ("j", "i") => DT.𝒢 - 1,
+        ("i", "ℓ") => DT.𝒢 - 1,
+        ("ℓ", "k") => DT.𝒢 - 1]
+    inner_edges_2 = [("r", "q") => DT.𝒢 - 2,
+        ("q", "p") => DT.𝒢 - 2,
+        ("p", "o") => DT.𝒢 - 3,
+        ("o", "n") => DT.𝒢 - 3,
+        ("n", "m") => DT.𝒢 - 3,
+        ("m", "r") => DT.𝒢 - 3]
 
     for ((a, b), k) in outer_edges
         i = index_map[a]
