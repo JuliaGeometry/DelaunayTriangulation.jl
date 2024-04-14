@@ -73,7 +73,9 @@ end
     points = [a, b, c, d, e, f, g]
     rng = StableRNG(8881)
     tri = DT.triangulate(points; rng, delete_ghosts=false)
-    @inferred DT.triangulate(points; rng, delete_ghosts=false)
+    @static if VERSION ≥ v"1.9"
+        @inferred DT.triangulate(points; rng, delete_ghosts=false)
+    end
     BI = DT.𝒢
     @test get_triangles(tri) == Set{NTuple{3,Int}}(((3, 2, BI),
         (4, BI, 5),
