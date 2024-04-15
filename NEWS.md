@@ -19,7 +19,8 @@ In addition to the changes below, note that many bugs have been fixed. Feel free
 ### Breaking
 Please note that a lot of these changes that follow are only _technically_ breaking, because I failed to properly specify what the public API was for this package (this has now been corrected in v1.0 and onwards).
 
-- All references to constrained edges are now referred to as _segments_. For example, the field `constrained_edges` is now `interior_segments`, and `all_constrained_edges` is now `all_segments`. The same goes for the associated getters. 
+- All references to constrained edges are now referred to as _segments_. For example, the field `constrained_edges` is now `interior_segments`, and `all_constrained_edges` is now `all_segments`. The same goes for the associated getters.
+- The keyword `edges` in `triangulate` is now `segments`.
 - `lock_convex_hull!` will now delete from `interior_segments` field any edges it encounters along the convex hull during locking.
 - `add_edge!` is now `add_segment!`.
 - `triangulate_convex` no longer accepts the `recompute_centers` keyword.
