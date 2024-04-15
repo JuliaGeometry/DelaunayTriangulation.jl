@@ -84,6 +84,7 @@ end
 end
 
 @testset "Getting ghost vertex ranges" begin
+       for _ in 1:10000 # this example used to StackOverflow randomly, so let's just be sure it doesn't come back
        d1 = DT.construct_ghost_vertex_ranges(bn1)
        d2 = DT.construct_ghost_vertex_ranges(bn2)
        d3 = DT.construct_ghost_vertex_ranges(bn3)
@@ -125,6 +126,7 @@ end
               -9 => -10:-7,
               -10 => -10:-7,
               -11 => -11:-11)
+       end
 end
 
 @testset "construct_boundary_edge_map" begin

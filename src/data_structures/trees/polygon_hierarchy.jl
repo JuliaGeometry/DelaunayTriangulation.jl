@@ -17,38 +17,67 @@ Constructs a [`PolygonTree`](@ref) with `parent`, `index`, and `height`, and no 
 """
 mutable struct PolygonTree{I}
     parent::Union{Nothing,PolygonTree{I}}
-    children::Set{PolygonTree{I}} # would do const, but for compat reasons I don't
+    children::Set{PolygonTree{I}} # would do const, but for compat reasons I don't. don't know how to fix this with @static either
     index::I # would do const, but for compat reasons I don't
     height::Int
 end
 PolygonTree{I}(parent::Union{Nothing,PolygonTree{I}}, index, height) where {I} = PolygonTree{I}(parent, Set{PolygonTree{I}}(), index, height)
-function Base.:(==)(tree1::PolygonTree, tree2::PolygonTree)
-    parent1 = get_parent(tree1)
-    parent2 = get_parent(tree2)
-    parent1 ≠ parent2 && return false
-    children1 = get_children(tree1)
-    children2 = get_children(tree2)
-    length(children1) ≠ length(children2) && return false
-    for child1 in children2
-        (child1 ∉ children2) && return false
+@static if VERSION ≥ 1.10
+    function Base.:(==)(tree1::PolygonTree, tree2::PolygonTree)
+        parent1 = get_parent(tree1)
+        parent2 = get_parent(tree2)
+        parent1 ≠ parent2 && return false
+        children1 = get_children(tree1)
+        children2 = get_children(tree2)
+        length(children1) ≠ length(children2) && return false
+        for child1 in children1
+            (child1 ∉ children2) && return false
+        end
+        index1 = get_index(tree1)
+        index2 = get_index(tree2)
+        index1 ≠ index2 && return false
+        height1 = get_height(tree1)
+        height2 = get_height(tree2)
+        height1 ≠ height2 && return false
+        return true
     end
-    index1 = get_index(tree1)
-    index2 = get_index(tree2)
-    index1 ≠ index2 && return false
-    height1 = get_height(tree1)
-    height2 = get_height(tree2)
-    height1 ≠ height2 && return false
-    return true
+else
+    function hash_tree(tree::PolygonTree)
+        height = get_height(tree)
+        index = get_index(tree)
+        parent_index = has_parent(tree) ? get_index(get_parent(tree)) : 0
+        h = hash((parent_index, index, height))
+        children = collect(get_children(tree))
+        sort!(children, by=get_index)
+        for child in children
+            h = hash((h, hash_tree(child)))
+        end
+        return h
+    end
+    function Base.:(==)(tree1::PolygonTree, tree2::PolygonTree)
+        children1 = get_children(tree1)
+        children2 = get_children(tree2)
+        length(children1) ≠ length(children2) && return false
+        index1 = get_index(tree1)
+        index2 = get_index(tree2)
+        index1 ≠ index2 && return false
+        height1 = get_height(tree1)
+        height2 = get_height(tree2)
+        height1 ≠ height2 && return false
+        return hash_tree(tree1) == hash_tree(tree2)
+    end
 end
-function Base.deepcopy(tree::PolygonTree) # without this definition, deepcopy would occassionally segfault 
-    parent = get_parent(tree)
-    children = get_children(tree)
-    index = get_index(tree)
-    height = get_height(tree)
-    new_parent = isnothing(parent) ? nothing : deepcopy(parent)
-    new_children = deepcopy(children)
-    new_index = deepcopy(index)
-    return PolygonTree(new_parent, new_children, new_index, height)
+@static if VERSION ≥ 1.10
+    function Base.deepcopy(tree::PolygonTree) # without this definition, deepcopy would occassionally segfault 
+        parent = get_parent(tree)
+        children = get_children(tree)
+        index = get_index(tree)
+        height = get_height(tree)
+        new_parent = isnothing(parent) ? nothing : deepcopy(parent)
+        new_children = deepcopy(children)
+        new_index = deepcopy(index)
+        return PolygonTree(new_parent, new_children, new_index, height)
+    end
 end
 function Base.show(io::IO, ::MIME"text/plain", tree::PolygonTree)
     print(io, "PolygonTree at height $(get_height(tree)) with index $(get_index(tree)) and $(length(get_children(tree))) children")
@@ -165,22 +194,24 @@ struct PolygonHierarchy{I}
     reorder_cache::Vector{PolygonTree{I}}
 end
 PolygonHierarchy{I}() where {I} = PolygonHierarchy{I}(BitVector(), BoundingBox[], Dict{I,PolygonTree{I}}(), PolygonTree{I}[])
-function Base.deepcopy(hierarchy::PolygonHierarchy{I}) where {I} # without this definition, deepcopy would occassionally segfault 
-    polygon_orientations = get_polygon_orientations(hierarchy)
-    bounding_boxes = get_bounding_boxes(hierarchy)
-    trees = get_trees(hierarchy)
-    reorder_cache = get_reorder_cache(hierarchy)
-    new_polygon_orientations = copy(polygon_orientations)
-    new_bounding_boxes = copy(bounding_boxes)
-    new_trees = Dict{I,PolygonTree{I}}()
-    for (index, tree) in trees
-        new_trees[index] = deepcopy(tree)
+@static if VERSION ≥ 1.10
+    function Base.deepcopy(hierarchy::PolygonHierarchy{I}) where {I} # without this definition, deepcopy would occassionally segfault 
+        polygon_orientations = get_polygon_orientations(hierarchy)
+        bounding_boxes = get_bounding_boxes(hierarchy)
+        trees = get_trees(hierarchy)
+        reorder_cache = get_reorder_cache(hierarchy)
+        new_polygon_orientations = copy(polygon_orientations)
+        new_bounding_boxes = copy(bounding_boxes)
+        new_trees = Dict{I,PolygonTree{I}}()
+        for (index, tree) in trees
+            new_trees[index] = deepcopy(tree)
+        end
+        new_reorder_cache = similar(reorder_cache)
+        for (index, tree) in enumerate(reorder_cache)
+            new_reorder_cache[index] = deepcopy(tree)
+        end
+        return PolygonHierarchy{I}(new_polygon_orientations, new_bounding_boxes, new_trees, new_reorder_cache)
     end
-    new_reorder_cache = similar(reorder_cache)
-    for (index, tree) in enumerate(reorder_cache)
-        new_reorder_cache[index] = deepcopy(tree)
-    end
-    return PolygonHierarchy{I}(new_polygon_orientations, new_bounding_boxes, new_trees, new_reorder_cache)
 end
 function Base.empty!(hierarchy::PolygonHierarchy)
     polygon_orientations = get_polygon_orientations(hierarchy)
