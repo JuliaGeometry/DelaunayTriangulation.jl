@@ -32,7 +32,7 @@ boundary_nodes = get_boundary_nodes(tri)
     q5 = (13.0, 0.0)
     V5 = [(index_map["b"], index_map["c"], index_map["p"]),
         (index_map["c"], index_map["b"], DT.𝒢)]
-    q6 = [6.0819947177817, 8.90410894457]
+    q6 = (6.0819947177817, 8.90410894457)
     V6 = [(index_map["j"], index_map["k"], DT.𝒢 - 1)]
     q7 = (15.8, 9.2)
     V7 = [(index_map["m"], DT.𝒢 - 2, index_map["r"]),
@@ -417,10 +417,10 @@ end
             tri = triangulate(points; boundary_nodes=[1, 2, 3, 4, 1], randomise=false)
             V, invisible_flag = jump_and_march(tri, (1 / 2, -1), use_barriers=Val(true), k=4)
             @test invisible_flag && DT.is_invisible(DT.test_visibility(tri, (1 / 2, -1), 4))
-            @inferred jump_and_march(tri, (1 / 2, -1), use_barriers=Val(true), k=4)
+            @inferred jump_and_march(tri, (1 / 2, -1.0), use_barriers=Val(true), k=4)
             @test V == (1, 2, 3)
             @test DT.is_positively_oriented(DT.triangle_orientation(tri, V))
-            V, invisible_flag = jump_and_march(tri, (1 / 2, -1), use_barriers=Val(true), k=3)
+            V, invisible_flag = jump_and_march(tri, (1 / 2, -1.0), use_barriers=Val(true), k=3)
             @test invisible_flag && DT.is_invisible(DT.test_visibility(tri, (1 / 2, -1), 3))
             @test V == (1, 2, 3)
             @test DT.is_positively_oriented(DT.triangle_orientation(tri, V))

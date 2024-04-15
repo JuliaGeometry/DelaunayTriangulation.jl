@@ -1031,10 +1031,17 @@ end
 end
 
 @testset "get_plane_through_three_points" begin
+      @static if VERSION ≥ v"1.10"
       _plane_mat(p, q, r) =
             let c = (p .+ q .+ r) ./ 3
                   [c... 1; p... 1; q... 1; r... 1]
             end
+      else 
+            _plane_mat(p, q, r) = 
+            let c = (p .+ q .+ r) ./ 3 
+                  vcat([c... 1], [p... 1], [q... 1], [r... 1])
+            end
+      end
       _plane_norm(p, q, r) = begin
             x = q .- p
             y = r .- p

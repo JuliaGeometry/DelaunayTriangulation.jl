@@ -817,14 +817,16 @@ There are multiple stages to this initialisation, starting from [`check_for_inte
 function initialise_jump_and_march_boundary_vertex(tri::Triangulation, q, k, store_history::F, history, ghost_vertex, concavity_protection) where {F}
     direction, q_pos, next_vertex, right_cert, left_cert =
         check_for_intersections_with_adjacent_boundary_edges(tri, k, q, ghost_vertex)
+    Ttype = triangle_type(tri)
     if !is_outside(direction)
         # q is collinear with one of the edges, so let's jump down these edges and try to find q
         q_pos, u, v, w = search_down_adjacent_boundary_edges(tri, k, q, direction, q_pos, next_vertex, store_history, history, ghost_vertex)
         if is_on(q_pos)
-            return false, true, construct_triangle(triangle_type(tri), u, v, w), q, k, k, q, q # false is the restart_flag, true is the return_flag. We return q, q, q just to get type stability with all returns
+            return false, true, construct_triangle(Ttype, u, v, w), q, k, k, q, q # false is the restart_flag, true is the return_flag. We return q, q, q just to get type stability with all returns
         else
             u, v = exterior_jump_and_march(tri, u, q, ghost_vertex)
-            V = construct_triangle(triangle_type(tri), u, v, get_adjacent(tri, u, v)) # Can't just use I(𝒢) here since there could be multiple - just use get_adjacent
+            w = get_adjacent(tri, u, v)
+            V = construct_triangle(Ttype, u, v, w) # Can't just use I(𝒢) here since there could be multiple - just use get_adjacent
             if concavity_protection_check(tri, concavity_protection, V, q)
                 return true, false, V, q, k, k, q, q # the extra returns are just for type stability
             else
@@ -836,10 +838,11 @@ function initialise_jump_and_march_boundary_vertex(tri::Triangulation, q, k, sto
     i, j, edge_cert, triangle_cert =
         check_for_intersections_with_interior_edges_adjacent_to_boundary_vertex(tri, k, q, right_cert, left_cert, store_history, history, ghost_vertex)
     if is_inside(triangle_cert)
-        return false, true, construct_triangle(triangle_type(tri), i, j, k), q, i, j, q, q
+        return false, true, construct_triangle(Ttype, i, j, k), q, i, j, q, q
     elseif is_none(edge_cert)
         u, v = exterior_jump_and_march(tri, k, q, ghost_vertex)
-        V = construct_triangle(triangle_type(tri), u, v, get_adjacent(tri, u, v))
+        w = get_adjacent(tri, u, v)
+        V = construct_triangle(Ttype, u, v, w)
         if concavity_protection_check(tri, concavity_protection, V, q)
             return true, false, V, q, i, j, q, q
         else
@@ -847,7 +850,7 @@ function initialise_jump_and_march_boundary_vertex(tri::Triangulation, q, k, sto
         end
     else
         p, pᵢ, pⱼ = get_point(tri, k, i, j)
-        return false, false, construct_triangle(triangle_type(tri), i, j, k), p, i, j, pᵢ, pⱼ # the triangle is just for type stability
+        return false, false, construct_triangle(Ttype, i, j, k), p, i, j, pᵢ, pⱼ # the triangle is just for type stability
     end
 end
 
