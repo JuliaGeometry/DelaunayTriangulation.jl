@@ -22,50 +22,29 @@ mutable struct PolygonTree{I}
     height::Int
 end
 PolygonTree{I}(parent::Union{Nothing,PolygonTree{I}}, index, height) where {I} = PolygonTree{I}(parent, Set{PolygonTree{I}}(), index, height)
-@static if VERSION ≥ v"1.10"
-    function Base.:(==)(tree1::PolygonTree, tree2::PolygonTree)
-        parent1 = get_parent(tree1)
-        parent2 = get_parent(tree2)
-        parent1 ≠ parent2 && return false
-        children1 = get_children(tree1)
-        children2 = get_children(tree2)
-        length(children1) ≠ length(children2) && return false
-        for child1 in children1
-            (child1 ∉ children2) && return false
-        end
-        index1 = get_index(tree1)
-        index2 = get_index(tree2)
-        index1 ≠ index2 && return false
-        height1 = get_height(tree1)
-        height2 = get_height(tree2)
-        height1 ≠ height2 && return false
-        return true
+function hash_tree(tree::PolygonTree)
+    height = get_height(tree)
+    index = get_index(tree)
+    parent_index = has_parent(tree) ? get_index(get_parent(tree)) : 0
+    h = hash((parent_index, index, height))
+    children = collect(get_children(tree))
+    sort!(children, by=get_index)
+    for child in children
+        h = hash((h, hash_tree(child)))
     end
-else
-    function hash_tree(tree::PolygonTree)
-        height = get_height(tree)
-        index = get_index(tree)
-        parent_index = has_parent(tree) ? get_index(get_parent(tree)) : 0
-        h = hash((parent_index, index, height))
-        children = collect(get_children(tree))
-        sort!(children, by=get_index)
-        for child in children
-            h = hash((h, hash_tree(child)))
-        end
-        return h
-    end
-    function Base.:(==)(tree1::PolygonTree, tree2::PolygonTree)
-        children1 = get_children(tree1)
-        children2 = get_children(tree2)
-        length(children1) ≠ length(children2) && return false
-        index1 = get_index(tree1)
-        index2 = get_index(tree2)
-        index1 ≠ index2 && return false
-        height1 = get_height(tree1)
-        height2 = get_height(tree2)
-        height1 ≠ height2 && return false
-        return hash_tree(tree1) == hash_tree(tree2)
-    end
+    return h
+end
+function Base.:(==)(tree1::PolygonTree, tree2::PolygonTree)
+    children1 = get_children(tree1)
+    children2 = get_children(tree2)
+    length(children1) ≠ length(children2) && return false
+    index1 = get_index(tree1)
+    index2 = get_index(tree2)
+    index1 ≠ index2 && return false
+    height1 = get_height(tree1)
+    height2 = get_height(tree2)
+    height1 ≠ height2 && return false
+    return hash_tree(tree1) == hash_tree(tree2)
 end
 @static if VERSION ≥ v"1.10"
     function Base.deepcopy(tree::PolygonTree) # without this definition, deepcopy would occassionally segfault 
