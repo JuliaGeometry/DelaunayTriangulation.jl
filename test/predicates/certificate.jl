@@ -1,5 +1,6 @@
 using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
+using ..DelaunayTriangulation: Certificate
 
 global i = [Certificate.Inside,
     Certificate.Degenerate,
@@ -18,7 +19,16 @@ global i = [Certificate.Inside,
     Certificate.Illegal,
     Certificate.Closer,
     Certificate.Further,
-    Certificate.Equidistant]
+    Certificate.Equidistant,
+    Certificate.Above, 
+    Certificate.Below,
+    Certificate.EncroachmentFailure,
+    Certificate.PrecisionFailure,
+    Certificate.Obtuse,
+    Certificate.Acute,
+    Certificate.FailedInsertion,
+    Certificate.Visible,
+    Certificate.Invisible]
 global j = [DT.is_inside,
     DT.is_degenerate,
     DT.is_outside,
@@ -36,7 +46,16 @@ global j = [DT.is_inside,
     DT.is_illegal,
     DT.is_closer,
     DT.is_further,
-    DT.is_equidistant]
+    DT.is_equidistant,
+    DT.is_above, 
+    DT.is_below,
+    DT.is_encroachment_failure,
+    DT.is_precision_failure,
+    DT.is_obtuse,
+    DT.is_acute,
+    DT.is_failed_insertion,
+    DT.is_visible,
+    DT.is_invisible]
 
 @testset "Classifiers" begin
     for a in eachindex(i)

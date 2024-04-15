@@ -3,15 +3,6 @@ const DT = DelaunayTriangulation
 using CairoMakie
 include("../helper_functions.jl")
 
-#=
-fig, ax, sc = triplot(tri)
-let vert = each_solid_vertex(tri)
-    text!(ax, collect(get_point(tri, vert...)); text=string.(vert))
-end
-lines!(ax, [get_point(tri, 2, 7)...], color=:blue, linestyle=:dash)
-fig
-=#
-
 @testset "Shewchuk Example: A small example with some collinearities" begin
     tri = shewchuk_example_constrained()
     @testset "locate_intersecting_triangles" begin
@@ -51,7 +42,7 @@ fig
         ]
         for _ in 1:250
             tri = shewchuk_example_constrained()
-            constrained_edges = get_constrained_edges(tri)
+            constrained_edges = get_interior_segments(tri)
             for (edge, current_constrained_edges) in zip(e, constrained_edge_progression)
                 test_split_edges(tri, edge, current_constrained_edges)
             end
@@ -290,19 +281,18 @@ end
 
 @testset "A previously broken example" begin
     for m in 1:100
-        @show m
         a = -0.1
         b = 0.1
         c = -0.01
         d = 0.01
         nx = 25
         ny = 25
-        tri = triangulate_rectangle(a, b, c, d, nx, ny; add_ghost_triangles=true, single_boundary=true)
+        tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true)
         tri = triangulate(get_points(tri))
         for i in 2:24
-            add_edge!(tri, i, 600 + i)
+            add_segment!(tri, i, 600 + i)
         end
-        tri = triangulate_rectangle(a, b, c, d, nx, ny; add_ghost_triangles=true, single_boundary=true)
+        tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true)
         tri = triangulate(get_points(tri))
         e = (23, 71)
         history = DT.PointLocationHistory{NTuple{3,Int},NTuple{2,Int},Int}()
@@ -316,7 +306,7 @@ end
 end
 
 @testset "Some other previously broken examples, dealing with segments going through points without passing through segments" begin
-    tri = triangulate_rectangle(0, 5, 0, 10, 6, 11; add_ghost_triangles=true)
+    tri = triangulate_rectangle(0, 5, 0, 10, 6, 11; delete_ghosts=false)
     e = (14, 40)
     history = DT.PointLocationHistory{NTuple{3,Int},NTuple{2,Int},Int}()
     jump_and_march(tri, get_point(tri, 40);

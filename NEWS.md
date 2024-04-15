@@ -1,0 +1,94 @@
+# Changelog
+
+## v1.0.0
+
+In addition to the changes below, note that many bugs have been fixed. Feel free to make any issues or PRs if you encounter any problems.
+
+### Added
+- Triangulation and refinement of curve-bounded domains has now been added.
+- The `Triangulation` struct has some more fields. One of these is `weights`, although this is not to be used just yet; it is possible to computed weighted Delaunay triangulations of convex polygons, but not for general domains currently.
+- Where reasonable, default methods for the geometric primitive interfaces have now been added. For example, `getx` now has the default definition `getx(p) = p[1]`. 
+- You can now use `each_boundary_edge` to iterate over the boundary edges (in no specific order), rather than having to use `keys(get_boundary_edge_map(tri))` as you had to before 1.0.
+- The documentation has had a complete overhaul.
+- The `retriangulate` function has now been added, allowing for the retriangulation of a given `Triangulation`.
+- The function `dist` can now be used for computing the distance between a point and the triangulation, rather than having to use `distance_to_polygon`.
+- You can now use `find_polygon` to find what polygon in a provided boundary of a `Triangulation` contains a given point.
+- Mesh refinement now, by default, defaults to the diametral lens definition of encroachment rather than the diametral circle definition. You can toggle this behaviour using the `use_lens` keyword in `refine!`.
+- Now whenever encroached edges are split during mesh refinement, all free vertices inside that edge's diametral circle will be deleted prior to splitting.
+
+### Breaking
+Please note that a lot of these changes that follow are only _technically_ breaking, because I failed to properly specify what the public API was for this package (this has now been corrected in v1.0 and onwards).
+
+- All references to constrained edges are now referred to as _segments_. For example, the field `constrained_edges` is now `interior_segments`, and `all_constrained_edges` is now `all_segments`. The same goes for the associated getters. 
+- `lock_convex_hull!` will now delete from `interior_segments` field any edges it encounters along the convex hull during locking.
+- `add_edge!` is now `add_segment!`.
+- `triangulate_convex` no longer accepts the `recompute_centers` keyword.
+- `RefinementTargets` is now `RefinementConstraints`.
+- `maxiters` is no longer a valid keyword argument of `refine!`. Instead, you should just pass `max_points` appropriately. With this change, the default for `max_points` is no longer `typemax(Int)` but is instead `max(1000, num_solid_vertices(tri))^2`.
+- `refine!` no longer returns `statistics(tri)`. It now only returns `tri`. If you want the statistics, just use `statistics(tri)` afterwards.
+- `refine!` no longer accepts `max_radius_edge_ratio`. Instead, you must provide `min_angle`. (Internally, it is still `max_radius_edge_ratio` that gets primarily used, but `min_angle` is more interpretable for a user.)
+- `lock_convex_hull` is no longer a keyword of argument of `refine!` - if it has to be locked, it will be automatically.
+- `edge_indices` has been removed and is now `edge_vertices`.
+- `indices` has been removed and is now `triangle_vertices`.
+- `initialise_edges` and `initialise_triangles` have been removed. Just use the types instead, e.g. `initialise_edges(::Type{S})` is now just `S()`.
+- `is_empty` has been removed. Just use `isempty`.
+- `compare_unoriented_edge` is now `compare_unoriented_edges`.
+- `initial` and `terminal` are no longer exported. `edge_vertices` is more appropriate for this.
+- `geti`, `getj`, `getk` are no longer exported. `triangle_vertices` is more appropriate for this.
+- `each_point` and `each_point_index` are no longer exported. You are encougared to rely on `each_solid_vertex` instead. Just note that `each_solid_vertex` is not an ordered iterator.
+- `num_points` is no longer exported. You are encouraged to instead use `num_solid_vertices`.
+- `remove_duplicate_triangles` has been removed. Just use `sort_triangles` and `unique!`.
+- I used to refer to distinct parts of a boundary as `segments`. This is misleading, since it's the first name that I use for constrained edges. So, I now use the term `sections`. For example, `has_multiple_segments` is now `has_multiple_sections`.
+- `has_multiple_sections` can no longer be used on the ghost vertex map.
+- `getboundarynodes` has been removed. Just use and extend `get_boundary_nodes` instead.
+- `BoundaryIndex` is now `GhostVertex`. Similar references to `boundary_index` have been changed to `ghost_vertex`.
+- `boundary_map` is now `ghost_vertex_map`.
+- `boundary_index_ranges` is now `ghost_vertex_ranges`.
+- `integer_type` is removed (exceptfor `Triangulation`s). `number_type` should be used for this.
+- Previously, `get_boundary_index` (now called `get_ghost_vertex`) errored if neither of the three arguments was a ghost vertex. Now, if none of the arguments is a ghost vertex, the function returns `k`. Similarly for the two-argument version.
+- `rotate_ghost_triangle_to_standard_form` and `rotate_triangle_to_standard_form` are removed. Use `sort_triangle` instead.
+- `num_outer_boundary_segments` has been removed.
+- Iteration over `Adjacent` and `Adjacent2Vertex` has been removed.
+- `Adjacent2Vertex` is now defined by `Adjacent2Vertex{IntType,EdgesType}` rather than `Adjacent2Vertex{IntType,EdgesType,EdgeType}`.
+- `clear_empty_points!` is now `clear_empty_vertices!`.
+- The fields of `ConvexHull` are now `points` and `vertices` rather than `points` and `indices`. Additionally, the type is now `ConvexHull{PointsType, IntegerType}` instead of `ConvexHull{PointsType, Vector{IntegerType}}`.
+- `num_points` is no longer defined on `ConvexHull`s.
+- The `boundary_map` (now `ghost_vertex_map`) and `boundary_index_ranges` (now `ghost_vertex_ranges`) are now `Dict`s instead of `OrderedDict`s.
+- The constructor `Triangulation(points, triangles, boundary_nodes; kwargs...)` now uses the keyword argument `delete_ghosts` instead of `add_ghost_triangles`, with default `delete_ghosts=false` which is opposite to the previous default `add_ghost_triagnles=false`.
+- The function `get_empty_representative_points` has been deleted.
+- `get_convex_hull_indices` is now `get_convex_hull_vertices`.
+- `min_max` is removed - just use `Base.minmax`.
+- `nearest_power_of_two` has been removed.
+- `intersection_of_ray_with_boundary` has been removed.
+- `identify_side` has been removed.
+- `intersection_of_ray_with_edge` has been removed.
+- The field names of `TriangulationStatistics` have been renamed to match the new segment terminology, and the field `num_convex_hull_points` is now `num_convex_hull_vertices`.
+- `get_total_area` is now `get_area`. The field name `total_area` in `TriangulationStatistics` is now `area`.
+- `point_position_relative_to_box` has been removed.
+- `is_boundary_edge` has had its definition changed: `is_boundary_edge(tri, i, j)` is now `is_boundary_edge(tri, j, i)`, so that we have consistency with `is_boundary_triangle`.
+- `is_outer_boundary_index` is now `is_exterior_ghost_vertex`.
+- `is_outer_ghost_triangle` is now `is_exterior_ghost_triangle`.
+- `is_outer_ghost_edge` is now `is_exterior_ghost_edge`.
+- `is_outer_boundary_node` is now `is_exterior_ghost_vertex`.
+- The keyword arguments in `add_ghost_triangles!` and `delete_ghost_triangles!` have been removed.
+- The keyword argument `exterior_curve_index` in `triangulate` has been removed. The exterior curves will be automatically computed.
+- `peek_triangle_ρ` has been removed, and `triangle_dequeue!` now does a `dequeue_pair!`.
+- The keyword `recompute_representative_point` is now `recompute_representative_points` in `triangulate`.
+- The keyword `add_ghost_triangles` in `triangulate_rectangle` (and `triangulate_convex`) is now `delete_ghosts` to be consistent with `triangulate`. The default is `delete_ghosts=false`, consistent with the previous default of `add_ghost_triangles=true`.
+- `voronoi` now has the signature `voronoi(tri; clip=false, smooth=false, kwargs...)` instead of `voronoi(tri, clip=false)` (note the difference in `clip` as a positional argument to a keyword argument). `centroidal_smooth` is still exported (the `kwargs...` are passed to it), but this can be a good alternative.
+- Gmsh support has been removed.
+- `get!` is no longer defined on `adjacent2vertex`.
+- `Certificate` is no longer exported.
+- The arguments to `construct_ghost_vertex_map` (previously `construct_boundary_map`), `construct_boundary_edge_map`, and `construct_ghost_vertex_ranges` (previously `construct_boundary_index_ranges`) are now positional.
+- `get_vertices` is no longer exported.
+- `map_boundary_index` is now `map_ghost_vertex`.
+- `polylabel` is no longer an alias for `pole_of_inaccessibility`.
+- `convert_to_boundary_edge` is now `convert_to_edge_adjoining_ghost_vertex`.
+- References to a `point_order` are now an `insertion_order`.
+- `add_boundary_information!` is no longer exported.
+- `balanced_power_of_two_quarternary_split` has been removed.
+- To provide a custom constraint for triangulation, you now need to provide a constraint of the form `(tri::Triangulation, T::Triangle) -> Bool` with the keyword argument `custom_constraint`, where the returned result is `true` if the triangle `T` should be refined and `false` otherwise.
+- `is_triangle_seditious` no longer has the unused argument `ρ` at the end of its signature.
+- It is no longer possible to use `delete_point!` on points that are on the boundary or adjoin segments. It is too finicky, and for constrained triangulations you shouldn't be doing those operations anyway. For unconstrained triangulations, deleting a point on the boundary might be reasonable but it is difficult and `delete_point!` will not update the convex hull field of the triangulation for you either. The previous implementation did work sometimes, but it required playing around with how ghost triangles are interpreted and was unfortunately not reliable. PRs to address this are welcome, but it would need some careful thought and highly extensive testing (e.g. thousands of random tests for random triangulations, especially triangulations with very skinny or very large triangles on the boundary; triangulations with many collinearities such as from `triangulate_rectangle`; triangulations with holes; and triangulations with disjoint domains).
+- `is_positively_oriented` now only accepts integers for the second argument, to avoid issues with misleading results when testing triangles.
+- Some methods like `get_right_boundary_node` have now been defined only for `Triangulation`s, instead of lowering to a more complicated method that uses the `adjacent` field and other fields like we used to.

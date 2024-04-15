@@ -9,21 +9,13 @@ global p1 = [1.3, 2.5]
 global p2 = (1.3, 2.5)
 global p3 = SVector{2,Float32}((1.3, 2.5))
 
-throw_f = expr -> @static if VERSION < v"1.8"
-    ErrorException(expr)
-else
-    expr
-end
-
 @testset "Individual points" begin
     @testset "Getting coordinates" begin
-        @test_throws throw_f("The getx function has not been defined for the type DataType.") getx(String)
         for p in (p1, p2, p3)
             @test getx(p) == 1.3 || getx(p) == 1.3f0
             @inferred getx(p)
         end
 
-        @test_throws throw_f("The gety function has not been defined for the type DataType.") gety(String)
         for p in (p1, p2, p3)
             @test gety(p) == 2.5 || gety(p) == 2.5f0
             @inferred gety(p)
@@ -43,7 +35,6 @@ global pts4 = ((2.0, 3.5), (1.7, 23.3), (-1.0, 0.0))
 
 @testset "Collection of points" begin
     @testset "Getting points" begin
-        @test_throws  throw_f("The getpoint function has not been defined for the type DataType.") DT.getpoint(String, 5)
         for pts in (pts1, pts2, pts3, pts4)
             @test DT.getpoint(pts, 1) == (2.0, 3.5)
             @test DT.getpoint(pts, 2) == (1.7, 23.3)
@@ -68,78 +59,26 @@ global pts4 = ((2.0, 3.5), (1.7, 23.3), (-1.0, 0.0))
     end
 
     @testset "Each point index" begin
-        @test_throws throw_f("The each_point_index function has not been defined for the type DataType.") each_point_index(String)
         for pts in (pts1, pts2, pts3, pts4)
-            @test each_point_index(pts) == 1:3
-            @inferred each_point_index(pts)
+            @test DT.each_point_index(pts) == 1:3
+            @inferred DT.each_point_index(pts)
         end
     end
 
     @testset "Each point" begin
-        @test_throws throw_f("The each_point function has not been defined for the type DataType.") each_point(String)
-        @test each_point(pts1) == pts1
-        @test each_point(pts2) == pts2
-        @test each_point(pts3) == eachcol(pts3)
-        @test each_point(pts4) == pts4
-        @inferred each_point(pts4)
-        @inferred each_point(pts3)
+        @test DT.each_point(pts1) == pts1
+        @test DT.each_point(pts2) == pts2
+        @test DT.each_point(pts3) == eachcol(pts3)
+        @test DT.each_point(pts4) == pts4
+        @inferred DT.each_point(pts4)
+        @inferred DT.each_point(pts3)
     end
 
     @testset "Number of points" begin
-        @test_throws throw_f("The num_points function has not been defined for the type DataType.") num_points(String)
         for pts in (pts1, pts2, pts3, pts4)
-            @test num_points(pts) == 3
-            @inferred num_points(pts)
+            @test DT.num_points(pts) == 3
+            @inferred DT.num_points(pts)
         end
-    end
-
-    @testset "Getting points corresponding to ghost vertices" begin
-        bn1 = [[[1, 2], [3, 4], [5, 6], [10, 12]],
-            [[13, 25, 50], [75, 17, 5, 10]],
-            [[17, 293, 101], [29, 23]]]
-        bn2 = [[13, 25, 50], [75, 17, 5, 10]]
-        bn3 = [17, 293, 101, 29, 23]
-        map1 = DT.construct_boundary_map(bn1)
-        map2 = DT.construct_boundary_map(bn2)
-        map3 = DT.construct_boundary_map(bn3)
-        rep = DT.get_empty_representative_points()
-        rep[1] = DT.RepresentativeCoordinates(0.5, 0.3, 2)
-        rep[2] = DT.RepresentativeCoordinates(2.5, 7.3, 7)
-        rep[3] = DT.RepresentativeCoordinates(6.5, -0.6, 13)
-        pts = rand(2, 500)
-        @test DT.get_point(pts, rep, map1, 2) == Tuple(pts[:, 2])
-        @inferred DT.get_point(pts, rep, map1, 2)
-        @test DT.get_point(pts, rep, map1, 3, 4, 5, -1, -2, -7) ==
-              (Tuple(pts[:, 3]), Tuple(pts[:, 4]), Tuple(pts[:, 5]), (0.5, 0.3), (0.5, 0.3),
-            (6.5, -0.6))
-        @test DT.get_point(pts, rep, map1, -1) == (0.5, 0.3)
-        @inferred DT.get_point(pts, rep, map1, -1)
-        @test DT.get_point(pts, rep, map1, -2) == (0.5, 0.3)
-        @test DT.get_point(pts, rep, map1, -5) == (2.5, 7.3)
-        @test DT.get_point(pts, rep, map1, -6) == (2.5, 7.3)
-        @test DT.get_point(pts, rep, map1, -7) == (6.5, -0.6)
-        @test DT.get_point(pts, rep, map1, -8) == (6.5, -0.6)
-        @test DT.get_point(pts, rep, map2, 2) == Tuple(pts[:, 2])
-        @test DT.get_point(pts, rep, map2, 3, 4, 5) ==
-              (Tuple(pts[:, 3]), Tuple(pts[:, 4]), Tuple(pts[:, 5]))
-        @test DT.get_point(pts, rep, map2, -1) == (0.5, 0.3)
-        @test DT.get_point(pts, rep, map2, -2) == (0.5, 0.3)
-        @test_throws KeyError DT.get_point(pts, rep, map2, -3)
-        @test_throws KeyError DT.get_point(pts, rep, map2, -6)
-        @test_throws KeyError DT.get_point(pts, rep, map2, -7)
-        @test_throws KeyError DT.get_point(pts, rep, map2, -8)
-        @test DT.get_point(pts, rep, map3, 2) == Tuple(pts[:, 2])
-        @test DT.get_point(pts, rep, map3, 3, 4, 5) ==
-              (Tuple(pts[:, 3]), Tuple(pts[:, 4]), Tuple(pts[:, 5]))
-        @test DT.get_point(pts, rep, map3, -1) == (0.5, 0.3)
-        @test_throws KeyError DT.get_point(pts, rep, map3, -2)
-        @test_throws KeyError DT.get_point(pts, rep, map3, -3)
-        @test_throws KeyError DT.get_point(pts, rep, map3, -6)
-        @test_throws KeyError DT.get_point(pts, rep, map3, -7)
-        @test_throws KeyError DT.get_point(pts, rep, map3, -8)
-        @test DT.get_point(pts, rep, map3, (2.0, 5.0)) == (2.0, 5.0)
-        @test DT.get_point(pts, rep, map2, (2.0, 5.0), (7.0, 13.3), 5) ==
-              ((2.0, 5.0), (7.0, 13.3), (pts[1, 5], pts[2, 5]))
     end
 
     @testset "Testing if a set of points contains no duplicates" begin
@@ -218,7 +157,7 @@ global pts4 = ((2.0, 3.5), (1.7, 23.3), (-1.0, 0.0))
         @test points == [1.0 3.0; 7.8 4.0]
         DT.set_point!(points, 1, (6.0, 7.7))
         @test points == [6.0 3.0; 7.7 4.0]
-        
+
         points = [[1.0, 5.0], [6.5, 2.3]]
         DT.set_point!(points, 2, 3.4, 6.7)
         @test points == [[1.0, 5.0], [3.4, 6.7]]
@@ -236,3 +175,63 @@ global pts4 = ((2.0, 3.5), (1.7, 23.3), (-1.0, 0.0))
         @test points == [Point2f(2.0, 10.0), Point2f(3.0, 4.0)]
     end
 end
+
+@testset "find_point_index" begin
+    points1 = [(1.0, 2.0), (5.0, 9.0), (3.0, 4.0)]
+    points2 = [1.0 5.0 3.0; 2.0 9.0 4.0]
+    points3 = rand(2, 75)
+    points4 = [SVector{2,Float32}((1.0, 2.0)), SVector{2,Float32}((5.0, 9.0)), SVector{2,Float32}((3.0, 4.0))]
+    points5 = [Point2f(1.0, 2.0), Point2f(5.0, 9.0), Point2f(3.0, 4.0)]
+    points6 = [Float32[1.0, 2.0], Float32[5.0, 9.0], Float32[3.0, 4.0]]
+    @test DT.find_point_index(points1, 1.0, 2.0) == 1
+    @test DT.find_point_index(points1, 5.0, 9.0) == 2
+    @test DT.find_point_index(points1, 3.0, 4.0) == 3
+    @test DT.find_point_index(points2, 1.0, 2.0) == 1
+    @test DT.find_point_index(points2, 5.0, 9.0) == 2
+    @test DT.find_point_index(points2, 3.0, 4.0) == 3
+    for i in 1:75
+        @test DT.find_point_index(points3, points3[1, i], points3[2, i]) == i
+    end
+    @test DT.find_point_index(points4, 1.0, 2.0) == 1
+    @test DT.find_point_index(points4, 5.0, 9.0) == 2
+    @test DT.find_point_index(points4, 3.0, 4.0) == DT.find_point_index(points4, (3.0, 4.0)) == 3
+    @test DT.find_point_index(points5, 1.0, 2.0) == 1
+    @test DT.find_point_index(points5, 5.0, 9.0) == 2
+    @test DT.find_point_index(points5, 3.0, 4.0) == 3
+    @test DT.find_point_index(points6, 1.0, 2.0) == 1
+    @test DT.find_point_index(points6, 5.0, 9.0) == 2
+    @test DT.find_point_index(points6, 3.0, 4.0) == 3
+    for _ in 1:1000
+        @test DT.find_point_index(points1, rand(2)...) == DT.∅
+        @test DT.find_point_index(points2, rand(2)...) == DT.∅
+        @test DT.find_point_index(points3, rand(2)...) == DT.∅
+        @test DT.find_point_index(points4, rand(2)...) == DT.∅
+        @test DT.find_point_index(points5, rand(2)...) == DT.∅
+        @test DT.find_point_index(points6, rand(2)...) == DT.∅
+        @test DT.find_point_index(points1, rand(2)) == DT.∅
+    end
+end
+
+@testset "find_duplicate_points" begin
+    points = rand(2, 50)
+    dict = DT.find_duplicate_points(points)
+    @test isempty(dict)
+    points = [
+        (1.0, 2.0),
+        (2.5, 2.5),
+        (17.5, 17.5),
+        (1.0, 2.0),
+        (17.5, 2.0),
+        (17.5, 17.5),
+        (0.0, 0.0),
+        (0.0, 0.0),
+        (20.0, 20.0)
+    ]
+    dict = DT.find_duplicate_points(points)
+    @test dict == Dict(
+        (1.0, 2.0) => [1, 4],
+        (17.5, 17.5) => [3, 6],
+        (0.0, 0.0) => [7, 8]
+    )
+end
+

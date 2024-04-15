@@ -3,10 +3,9 @@ const DT = DelaunayTriangulation
 using CairoMakie
 
 @testset "Basic getters" begin
-    ch = ConvexHull(rand(2, 500), [1, 2, 4, 5, 6, 10, 29, 45, 71, 1])
+    ch = DT.ConvexHull(rand(2, 500), [1, 2, 4, 5, 6, 10, 29, 45, 71, 1])
     @test DT.get_points(ch) == ch.points
-    @test DT.get_indices(ch) == ch.indices == [1, 2, 4, 5, 6, 10, 29, 45, 71, 1]
-    @test num_points(ch) == 500
+    @test DT.get_vertices(ch) == ch.vertices == [1, 2, 4, 5, 6, 10, 29, 45, 71, 1]
 end
 
 @testset "Specific example" begin
@@ -26,28 +25,28 @@ end
     points = [a, b, c, d, e, f, g, h, i, j, k, ℓ, m]
     ch = convex_hull(points)
     @test ch == ch
-    @test ch == ConvexHull(points, [13, 1, 2, 3, 4, 5, 11, 12, 13])
-    @test DT.get_indices(ch) == reverse([3, 2, 1, 13, 12, 11, 5, 4, 3])
+    @test ch == DelaunayTriangulation.ConvexHull(points, [13, 1, 2, 3, 4, 5, 11, 12, 13])
+    @test DT.get_vertices(ch) == reverse([3, 2, 1, 13, 12, 11, 5, 4, 3])
     @test get_points(ch) == points
 end
 
 @testset "Broken example" begin
     points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (1.0, 2.0), (1.0, 3.0), (1.0, 4.0), (1.0, 5.0), (1.0, 6.0)]
     ch = convex_hull(points)
-    @test DT.circular_equality(ch.indices, [1, 2, 3, 4, 5, 6, 7, 8, 1])
+    @test DT.circular_equality(ch.vertices, [1, 2, 3, 4, 5, 6, 7, 8, 1])
 end
 
 @testset "Corner cases" begin
     ch = convex_hull([(0.0, 0.0)])
-    @test ch.points == [(0.0, 0.0)] && ch.indices == [1]
+    @test ch.points == [(0.0, 0.0)] && ch.vertices == [1]
 
     ch = convex_hull([(0.0, 0.0), (1.0, 0.0)])
-    @test ch.points == [(0.0, 0.0), (1.0, 0.0)] && ch.indices == [1, 2, 1]
+    @test ch.points == [(0.0, 0.0), (1.0, 0.0)] && ch.vertices == [1, 2, 1]
 
     ch = convex_hull([(0.0, 0.0), (1.0, 0.0), (1.0, 1.0)])
-    @test ch.points == [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0)] && ch.indices == [1, 2, 3, 1]
+    @test ch.points == [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0)] && ch.vertices == [1, 2, 3, 1]
     ch = convex_hull([(0.0, 0.0), (1.0, 1.0), (1.0, 0.0)])
-    @test ch.points == [(0.0, 0.0), (1.0, 1.0), (1.0, 0.0)] && ch.indices == [1, 3, 2, 1]
+    @test ch.points == [(0.0, 0.0), (1.0, 1.0), (1.0, 0.0)] && ch.vertices == [1, 3, 2, 1]
 end
 
 @testset "Random tests" begin
@@ -61,7 +60,15 @@ end
         ch = convex_hull(tri.points)
         @test ch == get_convex_hull(tri)
 
-        A = DT.polygon_features(ch.points, ch.indices)[1]
+        A = DT.polygon_features(ch.points, ch.vertices)[1]
         @test A ≥ 0
     end
+end
+
+@testset "empty!" begin
+    tri = triangulate(rand(2,50))
+    ch = get_convex_hull(tri)
+    @test !isempty(DT.get_vertices(ch))
+    empty!(ch)
+    @test isempty(DT.get_vertices(ch))
 end

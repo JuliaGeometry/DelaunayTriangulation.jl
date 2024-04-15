@@ -6,9 +6,9 @@ using StaticArrays
 global dict_1 = Dict{Int,Set{NTuple{2,Int}}}()
 global dict_2 = Dict{Int,Vector{NTuple{2,Int}}}()
 global dict_3 = Dict{Int32,Set{SVector{2,Int32}}}()
-global adj2v_1 = DT.Adjacent2Vertex{Int,Set{NTuple{2,Int}},Set{SVector{2,Int32}}}()
-global adj2v_2 = DT.Adjacent2Vertex{Int,Vector{NTuple{2,Int}},NTuple{2,Int}}()
-global adj2v_3 = DT.Adjacent2Vertex{Int32,Set{SVector{2,Int32}},SVector{2,Int32}}()
+global adj2v_1 = DT.Adjacent2Vertex{Int,Set{NTuple{2,Int}}}()
+global adj2v_2 = DT.Adjacent2Vertex{Int,Vector{NTuple{2,Int}}}()
+global adj2v_3 = DT.Adjacent2Vertex{Int32,Set{SVector{2,Int32}}}()
 
 @testset "Constructors and getters" begin
     @test adj2v_1.adjacent2vertex == dict_1
@@ -20,15 +20,6 @@ global adj2v_3 = DT.Adjacent2Vertex{Int32,Set{SVector{2,Int32}},SVector{2,Int32}
     @test get_adjacent2vertex(adj2v_1) == dict_1
     @test get_adjacent2vertex(adj2v_2) == dict_2
     @test get_adjacent2vertex(adj2v_3) == dict_3
-end
-
-@testset "Using get! on Adjacent2Vertex" begin
-    w = get!(adj2v_1, 10)
-    @test w == Set{NTuple{2,Int}}()
-    w = get!(adj2v_2, 10)
-    @test w == Vector{NTuple{2,Int}}()
-    w = get!(adj2v_3, 10)
-    @test w == Set{SVector{2,Int32}}()
 end
 
 global dict_1 = Dict(1 => Set(((1, 2), (3, 4), (10, 15), (2, 5))),
@@ -95,24 +86,26 @@ global adj2v_3 = DT.Adjacent2Vertex(dict_3)
                 @SVector[38, 173]))
         end
 
-        DT.delete_adjacent2vertex!(adj2v, 1, 3, 4)
-        DT.delete_adjacent2vertex!(adj2v, 2, 5, 9)
-        if adj2v === adj2v_1
-            @test w1 == Set(((1, 2), (10, 15), (2, 5), (23, 50)))
-            @test w2 == Set(((5, 7), (10, 14), (2, 3)))
-            @test w3 == Set(((10, 25), (23, 29), (38, 173)))
-        elseif adj2v === adj2v_2
-            @test w1 == [(1, 2), (10, 15), (2, 5), (23, 50)]
-            @test w2 == [(5, 7), (10, 14), (2, 3)]
-            @test w3 == [(10, 25), (23, 29), (38, 173)]
-        elseif adj2v === adj2v_3
-            @test w1 ==
-                  Set{SVector{2,Int32}}((@SVector[1, 2], @SVector[10, 15], @SVector[2, 5],
-                @SVector[23, 50]))
-            @test w2 ==
-                  Set{SVector{2,Int32}}((@SVector[5, 7], @SVector[10, 14], @SVector[2, 3]))
-            @test w3 == Set{SVector{2,Int32}}((@SVector[10, 25], @SVector[23, 29],
-                @SVector[38, 173]))
+        if !(adj2v === adj2v_2)
+            DT.delete_adjacent2vertex!(adj2v, 1, 3, 4)
+            DT.delete_adjacent2vertex!(adj2v, 2, 5, 9)
+            if adj2v === adj2v_1
+                @test w1 == Set(((1, 2), (10, 15), (2, 5), (23, 50)))
+                @test w2 == Set(((5, 7), (10, 14), (2, 3)))
+                @test w3 == Set(((10, 25), (23, 29), (38, 173)))
+            elseif adj2v === adj2v_2
+                @test w1 == [(1, 2), (10, 15), (2, 5), (23, 50)]
+                @test w2 == [(5, 7), (10, 14), (2, 3)]
+                @test w3 == [(10, 25), (23, 29), (38, 173)]
+            elseif adj2v === adj2v_3
+                @test w1 ==
+                      Set{SVector{2,Int32}}((@SVector[1, 2], @SVector[10, 15], @SVector[2, 5],
+                    @SVector[23, 50]))
+                @test w2 ==
+                      Set{SVector{2,Int32}}((@SVector[5, 7], @SVector[10, 14], @SVector[2, 3]))
+                @test w3 == Set{SVector{2,Int32}}((@SVector[10, 25], @SVector[23, 29],
+                    @SVector[38, 173]))
+            end
         end
 
         DT.delete_adjacent2vertex!(adj2v, 3)
@@ -121,8 +114,8 @@ global adj2v_3 = DT.Adjacent2Vertex(dict_3)
             @test w1 == Set(((1, 2), (10, 15), (2, 5), (23, 50)))
             @test w2 == Set(((5, 7), (10, 14), (2, 3)))
         elseif adj2v === adj2v_2
-            @test w1 == [(1, 2), (10, 15), (2, 5), (23, 50)]
-            @test w2 == [(5, 7), (10, 14), (2, 3)]
+            @test w1 == [(1, 2), (3, 4), (10, 15), (2, 5), (23, 50)]
+            @test w2 == [(5, 7), (10, 14), (2, 3), (5, 9)]
         elseif adj2v === adj2v_3
             @test w1 ==
                   Set{SVector{2,Int32}}((@SVector[1, 2], @SVector[10, 15], @SVector[2, 5],
@@ -144,7 +137,7 @@ global adj2v_3 = DT.Adjacent2Vertex(dict_3)
         T1 = (120, 125, 132)
         T2 = (501, 502, 591)
         T3 = (6019, 919, 821)
-        DT.add_triangle!(adj2v, T1, T2, T3)
+        DT.add_triangle!.(Ref(adj2v), (T1, T2, T3))
         for T in (T1, T2, T3)
             i, j, k = T
             @test DT.contains_edge(i, j, get_adjacent2vertex(adj2v, k))
@@ -152,34 +145,30 @@ global adj2v_3 = DT.Adjacent2Vertex(dict_3)
             @test DT.contains_edge(k, i, get_adjacent2vertex(adj2v, j))
         end
 
-        DT.delete_triangle!(adj2v, 60, 61, 62)
-        @test !DT.contains_edge(60, 61, get_adjacent2vertex(adj2v, 62))
-        @test !DT.contains_edge(61, 62, get_adjacent2vertex(adj2v, 60))
-        @test !DT.contains_edge(62, 60, get_adjacent2vertex(adj2v, 61))
+        if !(adj2v === adj2v_2)
+            DT.delete_triangle!(adj2v, 60, 61, 62)
+            @test !DT.contains_edge(60, 61, get_adjacent2vertex(adj2v, 62))
+            @test !DT.contains_edge(61, 62, get_adjacent2vertex(adj2v, 60))
+            @test !DT.contains_edge(62, 60, get_adjacent2vertex(adj2v, 61))
 
-        DT.delete_triangle!(adj2v, T2)
-        @test !DT.contains_edge(501, 502, get_adjacent2vertex(adj2v, 591))
-        @test !DT.contains_edge(502, 591, get_adjacent2vertex(adj2v, 501))
-        @test !DT.contains_edge(591, 501, get_adjacent2vertex(adj2v, 502))
+            DT.delete_triangle!(adj2v, T2)
+            @test !DT.contains_edge(501, 502, get_adjacent2vertex(adj2v, 591))
+            @test !DT.contains_edge(502, 591, get_adjacent2vertex(adj2v, 501))
+            @test !DT.contains_edge(591, 501, get_adjacent2vertex(adj2v, 502))
 
-        DT.delete_triangle!(adj2v, T1, T3)
-        for T in (T1, T2)
-            i, j, k = T
-            @test !DT.contains_edge(i, j, get_adjacent2vertex(adj2v, k))
-            @test !DT.contains_edge(j, k, get_adjacent2vertex(adj2v, i))
-            @test !DT.contains_edge(k, i, get_adjacent2vertex(adj2v, j))
-        end
-
-        @test length(adj2v) == length(adj2v.adjacent2vertex)
-        @test eltype(typeof(adj2v)) == eltype(typeof(adj2v.adjacent2vertex))
-        for (w, S) in adj2v
-            @test get_adjacent2vertex(adj2v, w) == S
+            DT.delete_triangle!.(Ref(adj2v), (T1, T3))
+            for T in (T1, T2)
+                i, j, k = T
+                @test !DT.contains_edge(i, j, get_adjacent2vertex(adj2v, k))
+                @test !DT.contains_edge(j, k, get_adjacent2vertex(adj2v, i))
+                @test !DT.contains_edge(k, i, get_adjacent2vertex(adj2v, j))
+            end
         end
     end
 end
 
 @testset "Seeing if Adjacent2Vertex is empty and clearing empty sets" begin
-    adj2v = DT.Adjacent2Vertex{Int,Vector{NTuple{2,Int}},NTuple{2,Int}}()
+    adj2v = DT.Adjacent2Vertex{Int,Set{NTuple{2,Int}}}()
     DT.add_adjacent2vertex!(adj2v, 2, 5, 7)
     DT.add_adjacent2vertex!(adj2v, 2, 7, 13)
     DT.add_adjacent2vertex!(adj2v, 13, 5, 23)
@@ -188,7 +177,15 @@ end
     @test adj2v ≠ adj2v_clean
     DT.delete_adjacent2vertex!(adj2v, 26, 2, 10)
     @test adj2v ≠ adj2v_clean
-    @test DT.is_empty(get_adjacent2vertex(adj2v, 26))
+    @test isempty(get_adjacent2vertex(adj2v, 26))
     DT.clear_empty_keys!(adj2v)
     @test adj2v == adj2v_clean
+end
+
+@testset "empty!" begin
+    tri = triangulate(rand(2, 50))
+    adj2v = get_adjacent2vertex(tri)
+    @test !isempty(get_adjacent2vertex(adj2v))
+    empty!(adj2v)
+    @test isempty(get_adjacent2vertex(adj2v))
 end

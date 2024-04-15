@@ -3,7 +3,7 @@ const DT = DelaunayTriangulation
 using DataStructures
 using StaticArrays
 
-global def_adj = DT.DefaultAdjacentValue
+global def_adj = DT.∅
 global default_1 = Dict{NTuple{2,Int},Int}()
 global default_2 = Dict{NTuple{2,Int32},Int32}()
 global default_3 = Dict{Vector{Int},Int}()
@@ -42,7 +42,6 @@ global adj_3 = DT.Adjacent(ddict_3)
         @test get_adjacent(adj, 2, 3) == 10
         @test get_adjacent(adj, 5, 6) == 15
         @test get_adjacent(adj, 20, 5) == 72
-        @test get_adjacent(adj, 20, 5; check_existence=Val(true)) == 72
         @test get_adjacent(adj, 20, 27) == def_adj
 
         DT.add_adjacent!(adj, 17, 23, 50)
@@ -68,7 +67,7 @@ global adj_3 = DT.Adjacent(ddict_3)
         T1 = (120, 125, 132)
         T2 = (501, 502, 591)
         T3 = (6019, 919, 821)
-        DT.add_triangle!(adj, T1, T2, T3)
+        DT.add_triangle!.(Ref(adj), (T1, T2, T3))
         for T in (T1, T2, T3)
             i, j, k = T
             @test get_adjacent(adj, i, j) == k
@@ -87,24 +86,25 @@ global adj_3 = DT.Adjacent(ddict_3)
         @test get_adjacent(adj, 502, 591) == def_adj
         @test get_adjacent(adj, 591, 501) == def_adj
 
-        DT.delete_triangle!(adj, T1, T3)
+        DT.delete_triangle!.(Ref(adj), (T1, T3))
         for T in (T1, T2)
             i, j, k = T
             @test get_adjacent(adj, i, j) == def_adj
             @test get_adjacent(adj, j, k) == def_adj
             @test get_adjacent(adj, k, i) == def_adj
         end
-
-        @test length(adj) == length(adj.adjacent)
-        @test eltype(typeof(adj)) == eltype(typeof(adj.adjacent))
-        for ((u, v), w) in adj
-            @test get_adjacent(adj, u, v) == w
-        end
     end
 end
 
 @testset "Testing if edges exist" begin
-    include("../helper_functions.jl")
     tri = triangulate(rand(2, 50))
-    @test !DT.edge_exists(get_adjacent(tri, 122, -7; check_existence=false))
+    @test !DT.edge_exists(get_adjacent(tri, 122, -7))
+end
+
+@testset "empty!" begin
+    tri = triangulate(rand(2, 50))
+    adj = get_adjacent(tri)
+    @test !isempty(get_adjacent(adj))
+    empty!(adj)
+    @test isempty(get_adjacent(adj))
 end

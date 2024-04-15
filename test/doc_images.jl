@@ -235,7 +235,7 @@ end
         rng = StableRNG(123)
         boundary_nodes, points = convert_boundary_points_to_indices(curves; existing_points=points)
         uncons_tri = triangulate(points; rng)
-        cons_tri = triangulate(points; boundary_nodes=boundary_nodes, rng, check_arguments=false)
+        cons_tri = triangulate(points; boundary_nodes=boundary_nodes, rng)
 
         fig = Figure()
         ax = Axis(fig[1, 1], xlabel=L"x", ylabel=L"y", width=300, height=300,
@@ -262,7 +262,7 @@ end
         end
         boundary_nodes, points = convert_boundary_points_to_indices(xy)
         uncons_tri = triangulate(points)
-        cons_tri = triangulate(points; boundary_nodes=boundary_nodes, check_arguments=false)
+        cons_tri = triangulate(points; boundary_nodes=boundary_nodes)
 
         fig = Figure()
         ax = Axis(fig[1, 1], xlabel=L"x", ylabel=L"y", width=300, height=300,
@@ -433,7 +433,7 @@ end
         curves = [J_curve, U_curve, L_curve, I_curve, A_curve_outline, A_curve_hole, dot_1, dot_2, dot_3, dot_4]
         nodes, points = convert_boundary_points_to_indices(curves)
         uncons_tri = triangulate(points)
-        cons_tri = triangulate(points; boundary_nodes=nodes, check_arguments=false)
+        cons_tri = triangulate(points; boundary_nodes=nodes)
 
         fig = Figure()
         ax = Axis(fig[1, 1], xlabel=L"x", ylabel=L"y", width=300, height=300,
@@ -468,102 +468,6 @@ end
         tri = DT.triangulate_rectangle(a, b, c, d, nx, ny; single_boundary=true)
         fig, ax, sc = triplot(tri; show_ghost_edges=true)
         @test_reference "../docs/src/triangulations/figs/rectangular_triangulation_2.png" fig
-    end
-end
-
-if !(get(ENV, "CI", "false") == "true")
-    @testset "Gmsh" begin
-        @testset "Contiguous boundary" begin
-            a = 4 / 5
-            t = LinRange(0, 2π, 100)
-            x = @. a * (2cos(t) + cos(2t))
-            y = @. a * (2sin(t) - sin(2t))
-            tri = generate_mesh(x, y, 0.1)
-            tri2 = generate_mesh(x, y, 1.0)
-            fig = Figure()
-            ax = Axis(fig[1, 1], xlabel=L"x", ylabel=L"y", width=300, height=300,
-                title=L"(a):$ $ Dense mesh", titlealign=:left)
-            triplot!(ax, tri, show_convex_hull=true, show_constrained_edges=true)
-            ax = Axis(fig[1, 2], xlabel=L"x", ylabel=L"y", width=300, height=300,
-                title=L"(b):$ $  Coarse mesh", titlealign=:left)
-            triplot!(ax, tri2, show_convex_hull=true, show_constrained_edges=true)
-            resize_to_layout!(fig)
-            @test_reference "../docs/src/triangulations/figs/gmsh_example_1.png" fig
-        end
-
-        @testset "Single boundary curve with multiple segments" begin
-            # The first segment 
-            t = LinRange(0, 1 / 4, 25)
-            x1 = cos.(2π * t)
-            y1 = sin.(2π * t)
-            # The second segment 
-            t = LinRange(0, -3, 25)
-            x2 = collect(t)
-            y2 = repeat([1.0], length(t))
-            # The third segment 
-            t = LinRange(1, 0, 25)
-            x3 = -3.0 .+ (1 .- t) .* sin.(t)
-            y3 = collect(t)
-            # The fourth segment 
-            t = LinRange(0, 1, 25)
-            x4 = collect(-3.0(1 .- t))
-            y4 = collect(0.98t)
-            # The fifth segment 
-            x5 = [0.073914, 0.0797, 0.1522, 0.1522, 0.2, 0.28128, 0.3659, 0.4127, 0.3922, 0.4068, 0.497, 0.631, 0.728, 0.804, 0.888, 1.0]
-            y5 = [0.8815, 0.8056, 0.80268, 0.73258, 0.6, 0.598, 0.5777, 0.525, 0.4346, 0.3645, 0.3032, 0.2886, 0.2623, 0.1367, 0.08127, 0.0]
-            # Now combine the vectors 
-            x = [x1, x2, x3, x4, x5]
-            y = [y1, y2, y3, y4, y5]
-            # Mesh 
-            tri = generate_mesh(x, y, 0.05)
-            fig = Figure()
-            ax = Axis(fig[1, 1], xlabel=L"x", ylabel=L"y", width=600, height=300)
-            triplot!(ax, tri, show_convex_hull=true)
-            colors = [:red, :blue, :orange, :purple, :darkgreen]
-            bn_map = get_boundary_map(tri)
-            for (i, segment_index) in enumerate(values(bn_map))
-                bn_nodes = get_boundary_nodes(tri, segment_index)
-                lines!(ax, get_points(tri)[:, bn_nodes], color=colors[i], linewidth=4)
-            end
-            resize_to_layout!(fig)
-            @test_reference "../docs/src/triangulations/figs/gmsh_example_2.png" fig
-        end
-
-        @testset "Multiple boundaries" begin
-            x1 = [collect(LinRange(0, 2, 4)),
-                collect(LinRange(2, 2, 4)),
-                collect(LinRange(2, 0, 4)),
-                collect(LinRange(0, 0, 4))]
-            y1 = [collect(LinRange(0, 0, 4)),
-                collect(LinRange(0, 6, 4)),
-                collect(LinRange(6, 6, 4)),
-                collect(LinRange(6, 0, 4))]
-            r = 0.5
-            h = k = 0.6
-            θ = LinRange(2π, 0, 50)
-            x2 = [h .+ r .* cos.(θ)]
-            y2 = [k .+ r .* sin.(θ)]
-            r = 0.2
-            h = 1.5
-            k = 0.5
-            x3 = [h .+ r .* cos.(θ)]
-            y3 = [k .+ r .* sin.(θ)]
-            x4 = reverse(reverse.([collect(LinRange(1, 1.5, 4)),
-                collect(LinRange(1.5, 1.5, 4)),
-                collect(LinRange(1.5, 1, 4)),
-                collect(LinRange(1, 1, 4))]))
-            y4 = reverse(reverse.([collect(LinRange(2, 2, 4)),
-                collect(LinRange(2, 5, 4)),
-                collect(LinRange(5, 5, 4)),
-                collect(LinRange(5, 2, 4))]))
-            x5 = [reverse([0.2, 0.5, 0.75, 0.75, 0.2, 0.2])]
-            y5 = [reverse([2.0, 2.0, 3.0, 4.0, 5.0, 2.0])]
-            x = [x1, x2, x3, x4, x5]
-            y = [y1, y2, y3, y4, y5]
-            tri = generate_mesh(x, y, 0.2)
-            fig, ax, sc = triplot(tri; show_convex_hull=true, show_ghost_edges=true, show_constrained_edges=true, convex_hull_linestyle=:solid, convex_hull_linewidth=4)
-            @test_reference "../docs/src/triangulations/figs/gmsh_example_3.png" fig
-        end
     end
 end
 
@@ -868,7 +772,7 @@ end
         pts = [(rand(rng), rand(rng)) for _ in 1:50]
         tri = triangulate(pts; rng)
         orig_tri = deepcopy(tri)
-        A = get_total_area(tri)
+        A = get_area(tri)
         stats = refine!(tri; rng, min_angle=30.0, max_area=0.01A)
         fig = Figure(fontsize=33)
         ax = Axis(fig[1, 1], xlabel=L"x", ylabel=L"y", title=L"(a):$ $ Original", width=400, height=400, titlealign=:left)
@@ -884,7 +788,7 @@ end
         vlines!(ax, [30.0], color=:red)
         resize_to_layout!(fig)
         @test_reference "../docs/src/triangulations/figs/unconstrained_refinement.png" fig
-        @test validate_triangulation(tri; check_ghost_triangle_delaunay=false)
+        @test validate_triangulation(tri)
         validate_statistics(tri)
     end
 
@@ -899,7 +803,7 @@ end
         rng = StableRNG(19281)
         tri = triangulate(points; boundary_nodes, edges=C, rng)
         orig_tri = deepcopy(tri)
-        A = get_total_area(tri)
+        A = get_area(tri)
         stats = refine!(tri; rng, min_angle=33.0, max_area=0.001A)
         fig = Figure(fontsize=33)
         ax = Axis(fig[1, 1], xlabel=L"x", ylabel=L"y", title=L"(a):$ $ Original", width=400, height=400, titlealign=:left)
@@ -915,7 +819,7 @@ end
         vlines!(ax, [33.0], color=:red)
         resize_to_layout!(fig)
         @test_reference "../docs/src/triangulations/figs/square_constrained_refinement.png" fig
-        @test validate_triangulation(tri; check_ghost_triangle_delaunay=false)
+        @test validate_triangulation(tri)
         validate_statistics(tri)
     end
 
@@ -984,7 +888,7 @@ end
         end
         tri = triangulate(points; boundary_nodes=nodes, edges=C, rng)
         orig_tri = deepcopy(tri)
-        A = get_total_area(tri)
+        A = get_area(tri)
         stats = refine!(tri; max_area=0.001A, min_angle=27.3, rng)
 
         fig = Figure(fontsize=33)
@@ -1160,11 +1064,11 @@ end
         dot_4 = [[K3, L3, M3, N3, O3, P3, Q3, R3, S3, T3, U3, V3, K3]]
         curves = [J_curve, U_curve, L_curve, I_curve, A_curve_outline, A_curve_hole, dot_1, dot_2, dot_3, dot_4]
         nodes, points = convert_boundary_points_to_indices(curves)
-        tri = triangulate(points; boundary_nodes=nodes, check_arguments=false)
+        tri = triangulate(points; boundary_nodes=nodes)
         orig_tri = deepcopy(tri)
-        A = get_total_area(tri)
+        A = get_area(tri)
         stats = refine!(tri; min_angle=26.45, max_area=0.005A / 9)
-        @test validate_triangulation(tri; check_planarity=false, check_ghost_triangle_orientation=false, check_ghost_triangle_delaunay=false)
+        @test validate_triangulation(tri)
         validate_statistics(tri)
 
         fig = Figure(fontsize=33)
@@ -1197,7 +1101,7 @@ if !(get(ENV, "CI", "false") == "true")
         rng = StableRNG(18181)
         tri = triangulate(points; boundary_nodes=boundary_nodes, rng)
         orig_tri = deepcopy(tri)
-        A = get_total_area(tri)
+        A = get_area(tri)
         stats = refine!(tri; max_area=1e-3A, rng)
         fig = Figure(fontsize=33)
         ax = Axis(fig[1, 1], xlabel=L"x", ylabel=L"y", title=L"(a):$ $ Original", width=400, height=400, titlealign=:left)
@@ -1386,7 +1290,7 @@ end
     )
 
     ## Refine 
-    A = get_total_area(tri)
+    A = get_area(tri)
     stats = refine!(tri; max_area=1e-3A, min_angle=27.3, rng)
     fig, ax, sc = triplot(tri; show_convex_hull=false)
     xlims!(ax, 0, 1)
@@ -1421,10 +1325,14 @@ end
         ax = Axis(fig[1, 1], aspect=1)
         voronoiplot!(ax, vorn, strokecolor=:red, strokewidth=0.2, show_generators=false)
         triplot!(ax, tri, strokewidth=0.0, strokecolor=(:black, 0.4), show_convex_hull=true)
+        xlims!(ax, -5, 5)
+        ylims!(ax, -5, 5)
 
         ax = Axis(fig[1, 2], aspect=1)
         voronoiplot!(ax, vorn_clip, strokecolor=:red, strokewidth=0.2, show_generators=false)
         triplot!(ax, tri, strokewidth=0.0, strokecolor=(:black, 0.4), show_convex_hull=true)
+        xlims!(ax, -5, 5)
+        ylims!(ax, -5, 5)
 
         resize_to_layout!(fig)
         @test_reference "../docs/src/tessellations/figs/bounded.png" fig
@@ -1440,25 +1348,33 @@ end
         fig = Figure()
         ax = Axis(fig[1, 1], aspect=1)
         voronoiplot!(ax, vorn, strokecolor=:red, strokewidth=0.2, markersize=4, colormap=:jet)
+        xlims!(ax, -100, 100)
+        ylims!(ax, -100, 100)
 
         ax = Axis(fig[1, 2], aspect=1)
         voronoiplot!(ax, smooth_vorn, strokecolor=:red, strokewidth=0.2, markersize=4, colormap=:jet)
+        xlims!(ax, -100, 100)
+        ylims!(ax, -100, 100)
 
         @test_reference "../docs/src/tessellations/figs/lloyd.png" fig
 
         fig = Figure()
         ax = Axis(fig[1, 1], aspect=1)
         triplot!(ax, vorn.triangulation, strokewidth=0.2, markersize=4)
+        xlims!(ax, -100, 100)
+        ylims!(ax, -100, 100)
 
         ax = Axis(fig[1, 2], aspect=1)
         triplot!(ax, smooth_vorn.triangulation, strokewidth=0.2, markersize=4)
+        xlims!(ax, -100, 100)
+        ylims!(ax, -100, 100)
 
         @test_reference "../docs/src/tessellations/figs/lloyd_tri.png" fig
     end
 end
 
 @testset "README Examples" begin
-    fig = Figure(fontsize=24, resolution=(1881, 1000))
+    fig = Figure(fontsize=24)
 
     ## Unconstrained example: Just some random points 
     rng = StableRNG(2)
@@ -1489,7 +1405,7 @@ end
     triplot!(ax, tri, show_constrained_edges=true)
 
     ## Refinement example
-    A = get_total_area(tri)
+    A = get_area(tri)
     refine!(tri; max_area=1e-2A, min_angle=28.7, rng)
     ax = Axis(fig[1, 4], title="(d): Constrained, post-refinement", titlealign=:left, width=400, height=400)
     triplot!(ax, tri)
@@ -1501,7 +1417,7 @@ end
     boundary_nodes, points = convert_boundary_points_to_indices([outer_boundary, inner_boundary])
     edges = Set(((2, 8), (5, 7)))
     tri = triangulate(points; boundary_nodes, edges, rng)
-    A = get_total_area(tri)
+    A = get_area(tri)
     refine!(tri; max_area=1e-3A, min_angle=31.5, rng)
     ax = Axis(fig[2, 1], title="(e): Multiply-connected", titlealign=:left, width=400, height=400)
     triplot!(ax, tri)
@@ -1512,11 +1428,13 @@ end
     vorn = voronoi(tri)
     ax = Axis(fig[2, 2], title="(f): Voronoi tessellation", titlealign=:left, width=400, height=400)
     voronoiplot!(ax, vorn, show_generators=false)
+    xlims!(ax, -120, 120)
+    ylims!(ax, -120, 120)
 
     ## Clipped Voronoi tessellation 
     vorn = voronoi(tri, true)
     ax = Axis(fig[2, 3], title="(g): Clipped Voronoi tessellation", titlealign=:left, width=400, height=400)
-    voronoiplot!(ax, vorn, show_generators=false, color=:white)
+    voronoiplot!(ax, vorn, show_generators=false, polygon_color=:white)
 
     ## Centroidal Voronoi tessellation (CVT)
     points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
@@ -1525,9 +1443,10 @@ end
     vorn = voronoi(tri)
     smooth_vorn = centroidal_smooth(vorn; maxiters=2500, rng)
     ax = Axis(fig[2, 4], title="(h): Centroidal Voronoi tessellation", titlealign=:left, width=400, height=400)
-    voronoiplot!(ax, smooth_vorn, show_generators=true, markersize=4, color=:white)
+    voronoiplot!(ax, smooth_vorn, show_generators=true, markersize=4, colormap=:jet)
 
+    resize_to_layout!(fig)
     fig
 
-    # @test_reference "../examples.png" fig
+    @test_reference "../examples.png" fig
 end

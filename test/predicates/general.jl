@@ -2,6 +2,7 @@ using ExactPredicates
 using ..DelaunayTriangulation
 using StaticArrays
 const DT = DelaunayTriangulation
+using ..DelaunayTriangulation: Certificate
 
 include("../helper_functions.jl")
 
@@ -24,6 +25,10 @@ end
             @test DT.orient_predicate(p, q, r) == orient(p, q, r)
             @inferred DT.orient_predicate(p, q, r)
 
+            p, q, r, s = eachcol(rand(3, 4))
+            @test DT.orient_predicate(p, q, r, s) == orient(p, q, r, s)
+            @inferred DT.orient_predicate(p, q, r, s)
+
             a, b, c, p = eachcol(rand(2, 4))
             @test DT.incircle_predicate(a, b, c, p) == incircle(a, b, c, p)
             @inferred DT.incircle_predicate(a, b, c, p)
@@ -43,8 +48,9 @@ end
     end
 
     @testset "Collinearity" begin
-        x = [float(i) for i in 0:5, _ in 0:5]
-        y = [float(j) for _ in 0:5, j in 0:5]
+        x = [float(i) for i in 0:5, _ in 0:5, _ in 0:5]
+        y = [float(j) for _ in 0:5, j in 0:5, _ in 0:5]
+        z = [float(k) for _ in 0:5, _ in 0:5, k in 0:5]
         for _ in 1:15000
             p = (rand(x), rand(y))
             q = (rand(x), rand(y))
@@ -57,6 +63,11 @@ end
             @test DT.incircle_predicate(a, b, c, p) == incircle(a, b, c, p)
             @test DT.sameside_predicate(a, b, p) == sameside(p, a, b)
             @test DT.meet_predicate(p, q, a, b) == meet(p, q, a, b)
+            p = (rand(x), rand(y), rand(z))
+            q = (rand(x), rand(y), rand(z))
+            r = (rand(x), rand(y), rand(z))
+            s = (rand(x), rand(y), rand(z))
+            @test DT.orient_predicate(p, q, r, s) == orient(p, q, r, s)
         end
     end
 
@@ -71,6 +82,9 @@ end
         @test DT.orient_predicate(p₁, p₂, [5.0, 5.0]) == 0
         @test DT.orient_predicate(p₁, p₂, [5.0, 2.0]) == 0
         @test DT.orient_predicate(p₂, p₁, [5.0, 2.0]) == 0
+        p, q, r, s = (-4.16, -2.84, 0.0), (-4.65, -5.83, 0.0), (-1.12, -5.61, 0.0), (-7.83, 0.27, 4.6)
+        @test DT.orient_predicate(p, q, r, s) == -1
+        @test DT.orient_predicate(p, r, q, s) == 1
     end
 end
 
@@ -455,7 +469,7 @@ end
         end
     end
     for i in eachindex(T)
-        u, v, w = indices(T[i])
+        u, v, w = triangle_vertices(T[i])
         pu, pv, pw = get_point(pts, u, v, w)
         for r in eachindex(test_pts[i])
             pr = test_pts[i][r]
@@ -496,7 +510,7 @@ end
         end
         local τ1, τ2, τ3, e
         τ = DT.construct_positively_oriented_triangle(NTuple{3,Int}, i, j, k, pts)
-        i, j, k = indices(τ)
+        i, j, k = triangle_vertices(τ)
         τ1 = DT.construct_triangle(NTuple{3,Int}, i, j, k)
         τ2 = DT.construct_triangle(NTuple{3,Int}, j, k, i)
         τ3 = DT.construct_triangle(NTuple{3,Int}, k, i, j)
@@ -525,7 +539,7 @@ end
                 i, j, k = rand(1:n, 3)
             end
             τ = DT.construct_positively_oriented_triangle(NTuple{3,Int}, i, j, k, pts)
-            i, j, k = indices(τ)
+            i, j, k = triangle_vertices(τ)
             τ1 = DT.construct_triangle(NTuple{3,Int}, i, j, k)
             τ2 = DT.construct_triangle(NTuple{3,Int}, j, k, i)
             τ3 = DT.construct_triangle(NTuple{3,Int}, k, i, j)
@@ -622,7 +636,7 @@ end
         DT.add_triangle!(tri, 6, 2, 3)
         DT.split_triangle!(tri, 1, 3, 5, 7)
         DT.flip_edge!(tri, 5, 1, 4, 7)
-        for ((i, j), v) in get_adjacent(tri)
+        for ((i, j), v) in (get_adjacent ∘ get_adjacent)(tri)
             @test DT.is_legal(DT.is_legal(tri, i, j))
         end
     end
@@ -634,16 +648,13 @@ end
 
     @testset "Constrained triangulations" begin
         tri = fixed_shewchuk_example_constrained()
-        add_edge!(tri, 2, 7)
+        add_segment!(tri, 2, 7)
         for e in each_edge(tri)
-            @show e
-            i, j = DT.edge_indices(e)
+            i, j = DT.edge_vertices(e)
             @test DT.is_legal(DT.is_legal(tri, i, j))
         end
     end
 end
-
-
 
 @testset "triangle_line_segment_intersection" begin
     p = [0.0, 0.0]
@@ -774,4 +785,139 @@ end
     @test DT.is_closer(cert)
     cert = DT.point_closest_to_line(a, b, q, b)
     @test DT.is_further(cert)
+end
+
+@testset "opposite_angle" begin
+    p, q, r = (0.0, 0.0), (1.0, 0.0), (0.0, 1.0)
+    cert = DT.opposite_angle(q, r, p)
+    @inferred DT.opposite_angle(q, r, p)
+    @test DT.is_right(cert)
+    cert = DT.opposite_angle(r, p, q)
+    @test DT.is_acute(cert)
+    cert = DT.opposite_angle(p, q, r)
+    @test DT.is_acute(cert)
+    p, q, r = (-1.0, 0.0), (0.0, -0.1), (1.0, 0.0)
+    cert = DT.opposite_angle(p, r, q)
+    @test DT.is_obtuse(cert)
+    @inferred DT.opposite_angle(p, r, q)
+    cert = DT.opposite_angle(p, q, r)
+    @test DT.is_acute(cert)
+end
+
+@testset "point_position_relative_to_witness_plane" begin
+    a, b, c, d = (-1.26, 1.0), (0.0, -1.0), (3.24, 3.34), (-0.58, 2.25)
+    points = [a, b, c, d]
+    weights = [0.1, 2.2, -1.5, -4.9]
+    tri = Triangulation(points; weights)
+    cert = DT.point_position_relative_to_witness_plane(tri, 1, 2, 3, 4)
+    @test DT.is_above(cert)
+    @test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 1, 2, 3, 4))
+    weights[4] = -2.5
+    cert = DT.point_position_relative_to_witness_plane(tri, 1, 2, 3, 4)
+    @test DT.is_below(cert)
+    @test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 1, 2, 3, 4))
+    weights[3] = 4.3
+    cert = DT.point_position_relative_to_witness_plane(tri, 1, 2, 3, 4)
+    @test DT.is_above(cert)
+    @test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 1, 2, 3, 4))
+
+    points = [(2.0, 0.0), (1.0, 1.0), (0.0, 0.0), (-1.55, 2.02)]
+    tri = Triangulation(points)
+    cert = DT.point_position_relative_to_witness_plane(tri, 1, 2, 3, 4)
+    @test DT.is_above(cert)
+    @test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 1, 2, 3, 4))
+    tri = Triangulation(points; weights=zeros(4))
+    cert = DT.point_position_relative_to_witness_plane(tri, 1, 2, 3, 4)
+    @test DT.is_above(cert)
+    @test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 1, 2, 3, 4))
+    points[4] = (1.0, 0.0)
+    cert = DT.point_position_relative_to_witness_plane(tri, 1, 2, 3, 4)
+    @test DT.is_below(cert)
+    @test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 1, 2, 3, 4))
+
+    points = [(2.0, 0.0), (1.0, 1.0), (0.0, 0.0), (1.0, 0.0)]
+    weights = [2.0, -1.0, -1.0, -1 / 2]
+    tri = Triangulation(points; weights=weights)
+    cert = DT.point_position_relative_to_witness_plane(tri, 1, 2, 3, 4)
+    @test DT.is_on(cert)
+    @test DT.is_on(DT.point_position_relative_to_circumcircle(tri, 1, 2, 3, 4))
+
+    # some exterior points
+    a, b, c = (0.0, -6.0), (6.0, 2.0), (-7.0, 7.0)
+    points = [a, b, c]
+    weights = DT.ZeroWeight()
+    tri = triangulate(points; weights)
+    d = (3.18, 7.62)
+    push!(points, d)
+    cert = DT.point_position_relative_to_circumcircle(tri, 3, 1, 2, 4)
+    @test DT.is_outside(cert)
+    points[4] = (6.36, -3.58)
+    cert = DT.point_position_relative_to_circumcircle(tri, 3, 1, 2, 4)
+    @test DT.is_outside(cert)
+    points[4] = (-9.08, -3.82)
+    cert = DT.point_position_relative_to_circumcircle(tri, 3, 1, 2, 4)
+    @test DT.is_outside(cert)
+    points[4] = (-6.7, -2.62)
+    cert = DT.point_position_relative_to_circumcircle(tri, 3, 1, 2, 4)
+    @test DT.is_inside(cert)
+
+    # ghost triangles
+    points[4] = (7.21, 0.5)
+    cert = DT.point_position_relative_to_circumcircle(tri, 3, 1, 2, 4)
+    @test DT.is_outside(cert)
+    cert = DT.point_position_relative_to_circumcircle(tri, 2, 1, -1, 4)
+    @test DT.is_inside(cert)
+    points[1] = (0.0, -4.0)
+    points[2] = (6.0, 3.0)
+    points[3] = (-7.0, 3.0)
+    points[4] = (6.19, -1.52)
+    cert = DT.point_position_relative_to_circumcircle(tri, 2, 1, -1, 4)
+    @test DT.is_inside(cert)
+    cert = DT.point_position_relative_to_circumcircle(tri, 1, 3, -1, 4)
+    @test DT.is_outside(cert)
+    cert = DT.point_position_relative_to_circumcircle(tri, 3, 2, -1, 4)
+    @test DT.is_outside(cert)
+    points[4] = (-6.0, 0.0)
+    cert = DT.point_position_relative_to_circumcircle(tri, 2, 1, -1, 4)
+    @test DT.is_outside(cert)
+    cert = DT.point_position_relative_to_circumcircle(tri, 1, 3, -1, 4)
+    @test DT.is_inside(cert)
+    cert = DT.point_position_relative_to_circumcircle(tri, 3, 2, -1, 4)
+    @test DT.is_outside(cert)
+    points[4] = (0.0, 6.0)
+    cert = DT.point_position_relative_to_circumcircle(tri, 2, 1, -1, 4)
+    @test DT.is_outside(cert)
+    cert = DT.point_position_relative_to_circumcircle(tri, 1, 3, -1, 4)
+    @test DT.is_outside(cert)
+    cert = DT.point_position_relative_to_circumcircle(tri, 3, 2, -1, 4)
+    @test DT.is_inside(cert)
+
+    # on unweighted ghost triangle's solid edge
+    points[4] = (0.0, 3.0)
+    cert = DT.point_position_relative_to_circumcircle(tri, 3, 1, 2, 4)
+    @test DT.is_inside(cert)
+    cert = DT.point_position_relative_to_circumcircle(tri, 3, 2, -1, 4)
+    @test DT.is_on(cert)
+    points[1] = (2.0, -4.0)
+    points[2] = (2.0, 3.0)
+    points[3] = (-5.0, 5.0)
+    points[4] = (2.0, 0.0)
+    cert = DT.point_position_relative_to_circumcircle(tri, 2, 1, -1, 4)
+    @test DT.is_on(cert)
+
+    # on weighted ghost triangle's solid edge 
+    points[3] = (-2.0, 0.0)
+    points[4] = (0.0, -2.0)
+    cert = DT.point_position_relative_to_circumcircle(tri, 1, 3, -1, 4)
+    @test DT.is_on(cert)
+    weights = [2.9, 3.7, -4.4, 0.0]
+    @test_broken begin
+        tri = triangulate(points; weights)
+        cert = DT.point_position_relative_to_circumcircle(tri, 1, 3, -1, 4)
+        flag1 = DT.is_on(cert)
+        weights[4] = -16.0
+        cert = DT.point_position_relative_to_circumcircle(tri, 1, 3, -1, 4)
+        flag2 = DT.is_outside(cert)
+        flag1 && flag2
+    end
 end

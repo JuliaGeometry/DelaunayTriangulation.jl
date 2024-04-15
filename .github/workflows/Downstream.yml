@@ -18,11 +18,11 @@ jobs:
         os: [ubuntu-latest]
         package:
           - {user: DanielVandH, repo: NaturalNeighbours.jl, group: Downstream}
-          - {user: DanielVandH, repo: FiniteVolumeMethod.jl, group: Downstream}
+          - {user: SciML, repo: FiniteVolumeMethod.jl, group: Downstream}
 
     steps:
       - uses: actions/checkout@v4
-      - uses: julia-actions/setup-julia@v1
+      - uses: julia-actions/setup-julia@v2
         with:
           version: ${{ matrix.julia-version }}
           arch: x64

@@ -1,11 +1,7 @@
 using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using StructEquality
-
-@struct_equal Triangulation
-@struct_equal DT.Graph
-@struct_equal DT.Adjacent2Vertex
-@struct_equal DT.Adjacent
+using ..DelaunayTriangulation: Triangulation
 
 include("../helper_functions.jl")
 
@@ -29,7 +25,7 @@ end
         cx += 3.0
     end
     boundary_nodes, points = convert_boundary_points_to_indices(xy)
-    tri = triangulate(points; boundary_nodes=boundary_nodes, check_arguments=false)
-    @test validate_triangulation(tri; check_planarity=false, check_ghost_triangle_orientation=false, check_ghost_triangle_delaunay=false)
+    tri = triangulate(points; boundary_nodes=boundary_nodes)
+    @test validate_triangulation(tri)
     validate_statistics(tri)
 end

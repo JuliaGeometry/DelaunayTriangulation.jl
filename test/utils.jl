@@ -1,5 +1,7 @@
 using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
+using LinearAlgebra
+using BenchmarkTools
 using StableRNGs
 
 include("./helper_functions.jl")
@@ -9,8 +11,6 @@ include("./helper_functions.jl")
       @test DT.is_true(Val(true))
       @test !DT.is_true(false)
       @test !DT.is_true(Val(false))
-      @test DT.is_true(Val{true})
-      @test !DT.is_true(Val{false})
 end
 
 @testset "number_type" begin
@@ -22,30 +22,24 @@ end
       @test DT.number_type(2.4) == Float64
 end
 
-@testset "get_boundary_index" begin
-      @test DT.get_boundary_index(1, 2, -3) == -3
-      @test DT.get_boundary_index(1, 2, -1) == -1
-      @test DT.get_boundary_index(1, -5, 2) == -5
-      @test DT.get_boundary_index(-1, 2, 3) == -1
-      @test_throws ArgumentError DT.get_boundary_index(2, 5, 7)
-      @test DT.get_boundary_index(1, -2) == -2
-      @test DT.get_boundary_index(-5, 1) == -5
-      @test_throws ArgumentError DT.get_boundary_index(2, 5)
+@testset "get_ghost_vertex" begin
+      @test DT.get_ghost_vertex(1, 2, -3) == -3
+      @test DT.get_ghost_vertex(1, 2, -1) == -1
+      @test DT.get_ghost_vertex(1, -5, 2) == -5
+      @test DT.get_ghost_vertex(-1, 2, 3) == -1
+      @test DT.get_ghost_vertex(2, 5, 7) == 7
+      @test DT.get_ghost_vertex(1, -2) == -2
+      @test DT.get_ghost_vertex(-5, 1) == -5
+      @test DT.get_ghost_vertex(2, 5) == 5
 end
 
-@testset "rotate_ghost_triangle_to_standard_form" begin
-      @test DT.rotate_ghost_triangle_to_standard_form(1, 2, DT.BoundaryIndex) ==
-            (1, 2, DT.BoundaryIndex)
-      @test DT.rotate_ghost_triangle_to_standard_form(DT.BoundaryIndex - 2, 2, 3) ==
-            (2, 3, DT.BoundaryIndex - 2)
-      @test DT.rotate_ghost_triangle_to_standard_form(5, DT.BoundaryIndex - 1, 3) ==
-            (3, 5, DT.BoundaryIndex - 1)
-      @test DT.rotate_ghost_triangle_to_standard_form((1, 5, DT.BoundaryIndex)) ==
-            (1, 5, DT.BoundaryIndex)
-      @test DT.rotate_ghost_triangle_to_standard_form([1, DT.BoundaryIndex - 2, 7]) ==
-            [7, 1, DT.BoundaryIndex - 2]
-      @test DT.rotate_ghost_triangle_to_standard_form((DT.BoundaryIndex - 10, 5, 3)) ==
-            (5, 3, DT.BoundaryIndex - 10)
+@testset "sort_triangle" begin
+      @test DT.sort_triangle(1, 2, DT.𝒢) == (1, 2, DT.𝒢)
+      @test DT.sort_triangle(DT.𝒢 - 2, 2, 3) == (2, 3, DT.𝒢 - 2)
+      @test DT.sort_triangle(5, DT.𝒢 - 1, 3) == (3, 5, DT.𝒢 - 1)
+      @test DT.sort_triangle((1, 5, DT.𝒢)) == (1, 5, DT.𝒢)
+      @test DT.sort_triangle([1, DT.𝒢 - 2, 7]) == [7, 1, DT.𝒢 - 2]
+      @test DT.sort_triangle((DT.𝒢 - 10, 5, 3)) == (5, 3, DT.𝒢 - 10)
 end
 
 const _POINTS = [ # Don't know why the points on 1.10 get slightly changed, e.g. with 357 replacing 363 and 363 replacing 357, so this is needed to make the next set of tests more robust. This is NOT some hack to force the test to pass when it shouldn't, it just makes sure the point order matches the hard-coded node numbers below.
@@ -576,7 +570,7 @@ const __BOUNDARY_NODES = [
       y = _y
       boundary_nodes, points = convert_boundary_points_to_indices(x, y)
       tri = triangulate(points; boundary_nodes, delete_ghosts=false, rng)
-      A = get_total_area(tri)
+      A = get_area(tri)
       refine!(tri; max_area=1e-1A, rng)
       =#
       points = tuple.(_POINTS[:, 1], _POINTS[:, 2])
@@ -584,130 +578,102 @@ const __BOUNDARY_NODES = [
       nodes = [1, 200, 301, 144, 248, 148, 2, 317, 147, 239, 143, 287, 370]
       right = [200, 301, 144, 248, 148, 2, 317, 147, 239, 143, 287, 370, 3]
       left = [145, 1, 200, 301, 144, 248, 148, 2, 317, 147, 239, 143, 287]
-      @inferred DT.get_right_boundary_node(tri.adjacent, 1, DT.BoundaryIndex,
-            tri.boundary_index_ranges, Val(true))
-      @inferred DT.get_left_boundary_node(tri.adjacent, 1, DT.BoundaryIndex,
-            tri.boundary_index_ranges, Val(true))
-      @inferred DT.get_right_boundary_node(tri, 1, DT.BoundaryIndex)
-      @inferred DT.get_left_boundary_node(tri, 1, DT.BoundaryIndex)
+      @inferred DT.get_right_boundary_node(tri, 1, DT.𝒢)
+      @inferred DT.get_left_boundary_node(tri, 1, DT.𝒢)
 
       for (i, r, ℓ) in zip(nodes, right, left)
-            @test DT.get_right_boundary_node(tri.adjacent, i, DT.BoundaryIndex,
-                        tri.boundary_index_ranges, true) ==
-                  DT.get_right_boundary_node(tri, i, DT.BoundaryIndex) == r
-            @test DT.get_left_boundary_node(tri.adjacent, i, DT.BoundaryIndex,
-                        tri.boundary_index_ranges, true) ==
-                  DT.get_left_boundary_node(tri, i, DT.BoundaryIndex) == ℓ
-            @inferred DT.get_right_boundary_node(tri.adjacent, i, DT.BoundaryIndex,
-                  tri.boundary_index_ranges, false)
-            @inferred DT.get_left_boundary_node(tri, i, DT.BoundaryIndex)
+            DT.get_right_boundary_node(tri, i, DT.𝒢) == r
+            DT.get_left_boundary_node(tri, i, DT.𝒢) == ℓ
+            @inferred DT.get_left_boundary_node(tri, i, DT.𝒢)
       end
-      @test !DT.edge_exists(DT.get_left_boundary_node(tri.adjacent, 1, DT.BoundaryIndex,
-            tri.boundary_index_ranges, Val(false)))
-      @test !DT.edge_exists(DT.get_right_boundary_node(tri.adjacent, 12, DT.BoundaryIndex,
-            tri.boundary_index_ranges, Val(false)))
       nodes = [13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61]
       right = [nodes[2:end]..., nodes[1]]
       left = [nodes[end]..., nodes[1:(end-1)]...]
       for (i, r, ℓ) in zip(nodes, right, left)
-            @test DT.get_right_boundary_node(tri.adjacent, i, DT.BoundaryIndex - 4,
-                        tri.boundary_index_ranges, true) ==
-                  DT.get_right_boundary_node(tri, i, DT.BoundaryIndex - 4) == r
-            @test DT.get_left_boundary_node(tri.adjacent, i, DT.BoundaryIndex - 4,
-                        tri.boundary_index_ranges, true) ==
-                  DT.get_left_boundary_node(tri, i, DT.BoundaryIndex - 4) == ℓ
+            @test DT.get_right_boundary_node(tri, i, DT.𝒢 - 4) == r
+            @test DT.get_left_boundary_node(tri, i, DT.𝒢 - 4) == ℓ
       end
       nodes = [62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110]
       right = [nodes[2:end]..., nodes[1]]
       left = [nodes[end]..., nodes[1:(end-1)]...]
       for (i, r, ℓ) in zip(nodes, right, left)
-            @test DT.get_right_boundary_node(tri.adjacent, i, DT.BoundaryIndex - 5,
-                        tri.boundary_index_ranges, true) ==
-                  DT.get_right_boundary_node(tri, i, DT.BoundaryIndex - 5) == r
-            @test DT.get_left_boundary_node(tri.adjacent, i, DT.BoundaryIndex - 5,
-                        tri.boundary_index_ranges, true) ==
-                  DT.get_left_boundary_node(tri, i, DT.BoundaryIndex - 5) == ℓ
+            @test DT.get_right_boundary_node(tri, i, DT.𝒢 - 5) == r
+            @test DT.get_left_boundary_node(tri, i, DT.𝒢 - 5) == ℓ
       end
       nodes = [111 225 365 112 354 220 366 113 357 223 114 115 116 117 359 118 363 119 361 479 120 121 122]
       right = [225 365 112 354 220 366 113 357 223 114 115 116 117 359 118 363 119 361 479 120 121 122 111]
       left = [122 111 225 365 112 354 220 366 113 357 223 114 115 116 117 359 118 363 119 361 479 120 121]
       for (i, r, ℓ) in zip(nodes, right, left)
-            @test DT.get_right_boundary_node(tri.adjacent, i, DT.BoundaryIndex - 6,
-                        tri.boundary_index_ranges, true) ==
-                  DT.get_right_boundary_node(tri, i, DT.BoundaryIndex - 7) == r
-            @test DT.get_left_boundary_node(tri.adjacent, i, DT.BoundaryIndex - 7,
-                        tri.boundary_index_ranges, true) ==
-                  DT.get_left_boundary_node(tri, i, DT.BoundaryIndex - 8) == ℓ
+            @test DT.get_right_boundary_node(tri, i, DT.𝒢 - 7) == r
+            @test DT.get_left_boundary_node(tri, i, DT.𝒢 - 8) == ℓ
       end
       nodes = [123, 265, 202, 272, 136, 275, 128, 264]
       right = [265, 202, 272, 136, 275, 128, 264, 137]
       left = [127, 123, 265, 202, 272, 136, 275, 128]
       for (i, r, ℓ) in zip(nodes, right, left)
-            @test DT.get_right_boundary_node(tri.adjacent, i, DT.BoundaryIndex - 10,
-                        tri.boundary_index_ranges, true) ==
-                  DT.get_right_boundary_node(tri, i, DT.BoundaryIndex - 10) == r
-            @test DT.get_left_boundary_node(tri.adjacent, i, DT.BoundaryIndex - 10,
-                        tri.boundary_index_ranges, true) ==
-                  DT.get_left_boundary_node(tri, i, DT.BoundaryIndex - 10) == ℓ
+            @test DT.get_right_boundary_node(tri, i, DT.𝒢 - 10) == r
+            @test DT.get_left_boundary_node(tri, i, DT.𝒢 - 10) == ℓ
       end
 end
 
 @testset "find_edge" begin
       points = [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0), (0.5, 0.0), (0.5, 0.5), (0.0, 0.5)]
+      tri = triangulate(points, randomise=false)
       T = (1, 2, 3)
       ℓ = 4
-      @test DT.find_edge(T, points, ℓ) == (1, 2)
+      @test DT.find_edge(tri, T, ℓ) == (1, 2)
       T = (2, 3, 1)
-      @test DT.find_edge(T, points, ℓ) == (1, 2)
+      @test DT.find_edge(tri, T, ℓ) == (1, 2)
       T = (1, 2, 3)
       ℓ = 5
-      @test DT.find_edge(T, points, ℓ) == (2, 3)
+      @test DT.find_edge(tri, T, ℓ) == (2, 3)
       T = (2, 3, 1)
-      @test DT.find_edge(T, points, ℓ) == (2, 3)
+      @test DT.find_edge(tri, T, ℓ) == (2, 3)
       T = (1, 2, 3)
       ℓ = 6
-      @test DT.find_edge(T, points, ℓ) == (3, 1)
+      @test DT.find_edge(tri, T, ℓ) == (3, 1)
       T = (2, 3, 1)
-      @test DT.find_edge(T, points, ℓ) == (3, 1)
+      @test DT.find_edge(tri, T, ℓ) == (3, 1)
       p1 = [2.0, 3.5]
       p2 = [0.0, 0.0]
       p3 = [3.0, 0.0]
       p4 = [17.2, -2.5]
       p5 = [0.0, 3.0]
-      T = DT.construct_triangle(NTuple{3,Int}, 2, 3, 5)
-      pts = [p1, p2, p3, p4, p5]
-      push!(pts, [1.0, 0.0])
-      @test DT.find_edge(T, pts, length(pts)) == (2, 3)
-      push!(pts, [2.0, 0.0])
-      @test DT.find_edge(T, pts, length(pts)) == (2, 3)
-      push!(pts, [1.5, 0.0])
-      @test DT.find_edge(T, pts, length(pts)) == (2, 3)
-      push!(pts, [1.0, 0.0])
-      @test DT.find_edge(T, pts, length(pts)) == (2, 3)
-      push!(pts, [0.5, 0.0])
-      @test DT.find_edge(T, pts, length(pts)) == (2, 3)
-      push!(pts, [2.5, 0.5])
-      @test DT.find_edge(T, pts, length(pts)) == (3, 5)
-      push!(pts, [2.0, 1.0])
-      @test DT.find_edge(T, pts, length(pts)) == (3, 5)
-      push!(pts, [1.5, 1.5])
-      @test DT.find_edge(T, pts, length(pts)) == (3, 5)
-      push!(pts, [1.0, 2.0])
-      @test DT.find_edge(T, pts, length(pts)) == (3, 5)
-      push!(pts, [0.5, 2.5])
-      @test DT.find_edge(T, pts, length(pts)) == (3, 5)
-      push!(pts, [0.0, 2.5])
-      @test DT.find_edge(T, pts, length(pts)) == (5, 2)
-      push!(pts, [0.0, 2.2])
-      @test DT.find_edge(T, pts, length(pts)) == (5, 2)
-      push!(pts, [0.0, 2.0])
-      @test DT.find_edge(T, pts, length(pts)) == (5, 2)
-      push!(pts, [0.0, 1.5])
-      @test DT.find_edge(T, pts, length(pts)) == (5, 2)
-      push!(pts, [0.0, 0.8])
-      @test DT.find_edge(T, pts, length(pts)) == (5, 2)
-      push!(pts, [0.0, 0.2])
-      @test DT.find_edge(T, pts, length(pts)) == (5, 2)
+      points = [p1, p2, p3, p4, p5]
+      tri = triangulate(points, randomise=false)
+      T = (2, 3, 5)
+      push!(points, [1.0, 0.0])
+      @test DT.find_edge(tri, T, length(points)) == (2, 3)
+      push!(points, [2.0, 0.0])
+      @test DT.find_edge(tri, T, length(points)) == (2, 3)
+      push!(points, [1.5, 0.0])
+      @test DT.find_edge(tri, T, length(points)) == (2, 3)
+      push!(points, [1.0, 0.0])
+      @test DT.find_edge(tri, T, length(points)) == (2, 3)
+      push!(points, [0.5, 0.0])
+      @test DT.find_edge(tri, T, length(points)) == (2, 3)
+      push!(points, [2.5, 0.5])
+      @test DT.find_edge(tri, T, length(points)) == (3, 5)
+      push!(points, [2.0, 1.0])
+      @test DT.find_edge(tri, T, length(points)) == (3, 5)
+      push!(points, [1.5, 1.5])
+      @test DT.find_edge(tri, T, length(points)) == (3, 5)
+      push!(points, [1.0, 2.0])
+      @test DT.find_edge(tri, T, length(points)) == (3, 5)
+      push!(points, [0.5, 2.5])
+      @test DT.find_edge(tri, T, length(points)) == (3, 5)
+      push!(points, [0.0, 2.5])
+      @test DT.find_edge(tri, T, length(points)) == (5, 2)
+      push!(points, [0.0, 2.2])
+      @test DT.find_edge(tri, T, length(points)) == (5, 2)
+      push!(points, [0.0, 2.0])
+      @test DT.find_edge(tri, T, length(points)) == (5, 2)
+      push!(points, [0.0, 1.5])
+      @test DT.find_edge(tri, T, length(points)) == (5, 2)
+      push!(points, [0.0, 0.8])
+      @test DT.find_edge(tri, T, length(points)) == (5, 2)
+      push!(points, [0.0, 0.2])
+      @test DT.find_edge(tri, T, length(points)) == (5, 2)
 end
 
 @testset "choose_uvw" begin
@@ -748,14 +714,14 @@ end
       tri = triangulate(get_points(tri); delete_ghosts=false, rng)
       polys = Dict(
             1 => [6, 3, 7, 4, 6],
-            2 => [8, 3, 6, DT.BoundaryIndex, 8],
+            2 => [8, 3, 6, DT.𝒢, 8],
             3 => [8, 7, 1, 6, 2, 8],
-            4 => [6, 1, 7, 5, DT.BoundaryIndex, 6],
-            5 => [4, 7, 8, DT.BoundaryIndex, 4],
-            6 => [2, 3, 1, 4, DT.BoundaryIndex, 2],
+            4 => [6, 1, 7, 5, DT.𝒢, 6],
+            5 => [4, 7, 8, DT.𝒢, 4],
+            6 => [2, 3, 1, 4, DT.𝒢, 2],
             7 => [8, 5, 4, 1, 3, 8],
-            8 => [5, 7, 3, 2, DT.BoundaryIndex, 5],
-            DT.BoundaryIndex => [5, 8, 2, 6, 4, 5]
+            8 => [5, 7, 3, 2, DT.𝒢, 5],
+            DT.𝒢 => [5, 8, 2, 6, 4, 5]
       )
       fnc_polys = Dict{Int,Vector{Int}}()
       for i in keys(polys)
@@ -767,40 +733,40 @@ end
       end
       fnc_polys = Dict{Int,Vector{Int}}()
       for i in keys(polys)
-            fnc_polys[i] = DT.get_surrounding_polygon(tri, i; skip_boundary_indices=true)
+            fnc_polys[i] = DT.get_surrounding_polygon(tri, i; skip_ghost_vertices=true)
             push!(fnc_polys[i], fnc_polys[i][begin])
       end
       for (poly_true, poly_f) in zip(values(polys), values(fnc_polys))
-            @test DT.circular_equality(filter(!DT.is_boundary_index, poly_true), poly_f)
+            @test DT.circular_equality(filter(!DT.is_ghost_vertex, poly_true), poly_f)
       end
       tri, label_map, index_map = simple_geometry()
       DT.compute_representative_points!(tri)
       add_ghost_triangles!(tri)
       polys = Dict(
-            1 => [[2, 20, 19, 8, DT.BoundaryIndex, 2]],
-            2 => [[3, 16, 20, 1, DT.BoundaryIndex, 3]],
-            3 => [[4, 17, 16, 2, DT.BoundaryIndex, 4]],
-            4 => [[5, 18, 17, 3, DT.BoundaryIndex, 5]],
-            5 => [[6, 22, 24, 18, 4, DT.BoundaryIndex, 6]],
-            6 => [[7, 25, 9, 12, 23, 22, 5, DT.BoundaryIndex, 7]],
-            7 => [[8, 26, 9, 25, 6, DT.BoundaryIndex, 8]],
-            8 => [[1, 19, 10, 26, 7, DT.BoundaryIndex, 1]],
-            9 => [[6, 25, 7, 26, 10, DT.BoundaryIndex - 1, 12, 6]],
-            10 => [[11, DT.BoundaryIndex - 1, 9, 26, 8, 19, 20, 21, 11]],
-            11 => [[12, DT.BoundaryIndex - 1, 10, 21, 23, 12]],
-            12 => [[23, 6, 9, DT.BoundaryIndex - 1, 11, 23]],
-            13 => [[18, 24, 22, 23, 21, 14, DT.BoundaryIndex - 2, 18],
-                  [18, 24, 22, 23, 21, 14, DT.BoundaryIndex - 3, 18]],
-            14 => [[13, 21, 15, DT.BoundaryIndex - 2, 13],
-                  [13, 21, 15, DT.BoundaryIndex - 3, 13]],
-            15 => [[14, 21, 20, 16, DT.BoundaryIndex - 2, 14],
-                  [14, 21, 20, 16, DT.BoundaryIndex - 3, 14]],
-            16 => [[15, 20, 2, 3, 17, DT.BoundaryIndex - 2, 15],
-                  [15, 20, 2, 3, 17, DT.BoundaryIndex - 3, 15]],
-            17 => [[16, 3, 4, 18, DT.BoundaryIndex - 2, 16],
-                  [16, 3, 4, 18, DT.BoundaryIndex - 3, 16]],
-            18 => [[17, 4, 5, 24, 13, DT.BoundaryIndex - 2, 17],
-                  [17, 4, 5, 24, 13, DT.BoundaryIndex - 3, 17]],
+            1 => [[2, 20, 19, 8, DT.𝒢, 2]],
+            2 => [[3, 16, 20, 1, DT.𝒢, 3]],
+            3 => [[4, 17, 16, 2, DT.𝒢, 4]],
+            4 => [[5, 18, 17, 3, DT.𝒢, 5]],
+            5 => [[6, 22, 24, 18, 4, DT.𝒢, 6]],
+            6 => [[7, 25, 9, 12, 23, 22, 5, DT.𝒢, 7]],
+            7 => [[8, 26, 9, 25, 6, DT.𝒢, 8]],
+            8 => [[1, 19, 10, 26, 7, DT.𝒢, 1]],
+            9 => [[6, 25, 7, 26, 10, DT.𝒢 - 1, 12, 6]],
+            10 => [[11, DT.𝒢 - 1, 9, 26, 8, 19, 20, 21, 11]],
+            11 => [[12, DT.𝒢 - 1, 10, 21, 23, 12]],
+            12 => [[23, 6, 9, DT.𝒢 - 1, 11, 23]],
+            13 => [[18, 24, 22, 23, 21, 14, DT.𝒢 - 2, 18],
+                  [18, 24, 22, 23, 21, 14, DT.𝒢 - 3, 18]],
+            14 => [[13, 21, 15, DT.𝒢 - 2, 13],
+                  [13, 21, 15, DT.𝒢 - 3, 13]],
+            15 => [[14, 21, 20, 16, DT.𝒢 - 2, 14],
+                  [14, 21, 20, 16, DT.𝒢 - 3, 14]],
+            16 => [[15, 20, 2, 3, 17, DT.𝒢 - 2, 15],
+                  [15, 20, 2, 3, 17, DT.𝒢 - 3, 15]],
+            17 => [[16, 3, 4, 18, DT.𝒢 - 2, 16],
+                  [16, 3, 4, 18, DT.𝒢 - 3, 16]],
+            18 => [[17, 4, 5, 24, 13, DT.𝒢 - 2, 17],
+                  [17, 4, 5, 24, 13, DT.𝒢 - 3, 17]],
             19 => [[1, 20, 10, 8, 1]],
             20 => [[16, 15, 21, 10, 19, 1, 2, 16]],
             21 => [[15, 14, 13, 23, 11, 10, 20, 15]],
@@ -809,10 +775,10 @@ end
             24 => [[18, 5, 22, 13, 18]],
             25 => [[9, 6, 7, 9]],
             26 => [[10, 9, 7, 8, 10]],
-            DT.BoundaryIndex => [[5, 4, 3, 2, 1, 8, 7, 6, 5]],
-            DT.BoundaryIndex - 1 => [[9, 10, 11, 12, 9]],
-            DT.BoundaryIndex - 2 => [[14, 15, 16, 17, 18, 13, 14]],
-            DT.BoundaryIndex - 3 => [[14, 15, 16, 17, 18, 13, 14]]
+            DT.𝒢 => [[5, 4, 3, 2, 1, 8, 7, 6, 5]],
+            DT.𝒢 - 1 => [[9, 10, 11, 12, 9]],
+            DT.𝒢 - 2 => [[14, 15, 16, 17, 18, 13, 14]],
+            DT.𝒢 - 3 => [[14, 15, 16, 17, 18, 13, 14]]
       )
       fnc_polys = Dict{Int,Vector{Int}}()
       for i in keys(polys)
@@ -824,37 +790,37 @@ end
       end
       fnc_polys = Dict{Int,Vector{Int}}()
       for i in keys(polys)
-            fnc_polys[i] = DT.get_surrounding_polygon(tri, i; skip_boundary_indices=true)
+            fnc_polys[i] = DT.get_surrounding_polygon(tri, i; skip_ghost_vertices=true)
             push!(fnc_polys[i], fnc_polys[i][begin])
       end
       for (poly_true, poly_f) in zip(values(polys), values(fnc_polys))
-            @test any(DT.circular_equality(filter(!DT.is_boundary_index, S), poly_f) for S in poly_true)
+            @test any(DT.circular_equality(filter(!DT.is_ghost_vertex, S), poly_f) for S in poly_true)
       end
 
-      for _ in 1:1000
-            local tri, polys, fnc_polys
-            tri = example_with_special_corners()
-            polys = Dict(
-                  1 => [DT.BoundaryIndex, 5, 4, 16, 3, 2, DT.BoundaryIndex],
-                  2 => [DT.BoundaryIndex, 1, 3, DT.BoundaryIndex],
-                  3 => [2, 1, 16, 6, 7, DT.BoundaryIndex, 2],
-                  4 => [5, 16, 1, 5],
-                  5 => [13, 18, 16, 4, 1, DT.BoundaryIndex, 13],
-                  6 => [3, 16, 17, 7, 3],
-                  7 => [3, 6, 17, 15, 8, DT.BoundaryIndex, 3],
-                  8 => [7, 15, 9, DT.BoundaryIndex, 7],
-                  9 => [8, 15, 11, 10, DT.BoundaryIndex, 8],
-                  10 => [9, 11, 12, 13, DT.BoundaryIndex, 9],
-                  11 => [9, 15, 12, 10, 9],
-                  12 => [18, 13, 10, 11, 15, 14, 18],
-                  13 => [10, 12, 18, 5, DT.BoundaryIndex, 10],
-                  14 => [15, 17, 18, 12, 15],
-                  15 => [8, 7, 17, 14, 12, 11, 9, 8],
-                  16 => [4, 5, 18, 17, 6, 3, 1, 4],
-                  17 => [7, 6, 16, 18, 14, 15, 7],
-                  18 => [5, 13, 12, 14, 17, 16, 5]
-            )
-            tri = triangulate(get_points(tri); delete_ghosts=false)
+      tri2 = example_with_special_corners()
+      polys = Dict(
+            1 => [DT.𝒢, 5, 4, 16, 3, 2, DT.𝒢],
+            2 => [DT.𝒢, 1, 3, DT.𝒢],
+            3 => [2, 1, 16, 6, 7, DT.𝒢, 2],
+            4 => [5, 16, 1, 5],
+            5 => [13, 18, 16, 4, 1, DT.𝒢, 13],
+            6 => [3, 16, 17, 7, 3],
+            7 => [3, 6, 17, 15, 8, DT.𝒢, 3],
+            8 => [7, 15, 9, DT.𝒢, 7],
+            9 => [8, 15, 11, 10, DT.𝒢, 8],
+            10 => [9, 11, 12, 13, DT.𝒢, 9],
+            11 => [9, 15, 12, 10, 9],
+            12 => [18, 13, 10, 11, 15, 14, 18],
+            13 => [10, 12, 18, 5, DT.𝒢, 10],
+            14 => [15, 17, 18, 12, 15],
+            15 => [8, 7, 17, 14, 12, 11, 9, 8],
+            16 => [4, 5, 18, 17, 6, 3, 1, 4],
+            17 => [7, 6, 16, 18, 14, 15, 7],
+            18 => [5, 13, 12, 14, 17, 16, 5]
+      )
+      for mmm in 1:1000
+            local tri, fnc_polys
+            tri = triangulate(get_points(tri2); delete_ghosts=false)
             fnc_polys = Dict{Int,Vector{Int}}()
             for i in keys(polys)
                   fnc_polys[i] = DT.get_surrounding_polygon(tri, i)
@@ -865,12 +831,12 @@ end
             end
             fnc_polys = Dict{Int,Vector{Int}}()
             for i in keys(polys)
-                  fnc_polys[i] = DT.get_surrounding_polygon(tri, i; skip_boundary_indices=true)
+                  fnc_polys[i] = DT.get_surrounding_polygon(tri, i; skip_ghost_vertices=true)
                   push!(fnc_polys[i], fnc_polys[i][begin])
             end
             for (k, S) in polys
-                  _S = filter(!DT.is_boundary_index, S)
-                  DT.is_boundary_index(S[begin]) && push!(_S, _S[begin]) # might have removed a boundary index in the first entry, so we'd no longer have a circular array
+                  _S = filter(!DT.is_ghost_vertex, S)
+                  DT.is_ghost_vertex(S[begin]) && push!(_S, _S[begin]) # might have removed a boundary index in the first entry, so we'd no longer have a circular array
                   @test DT.circular_equality(_S, fnc_polys[k])
             end
       end
@@ -880,7 +846,7 @@ end
       tri = triangulate(rand(2, 500); delete_ghosts=false)
       graph = get_graph(tri)
       for e in DT.get_edges(graph)
-            new_e = DT.sort_edge_by_degree(e, graph)
+            new_e = DT.sort_edge_by_degree(tri, e)
             d1 = DT.num_neighbours(graph, e[1])
             d2 = DT.num_neighbours(graph, e[2])
             if d1 ≤ d2
@@ -891,19 +857,19 @@ end
       end
 end
 
-@testset "split_constrained_edge!" begin
+@testset "split_segment!" begin
       constrained_edges = Set{NTuple{2,Int}}(((2, 7),))
-      DT.split_constrained_edge!(constrained_edges, (2, 7), [])
+      DT.split_segment!(constrained_edges, (2, 7), [])
       @test constrained_edges == Set{NTuple{2,Int}}(((2, 7),))
-      DT.split_constrained_edge!(constrained_edges, (2, 7), [(2, 3), (3, 5), (10, 12)])
+      DT.split_segment!(constrained_edges, (2, 7), [(2, 3), (3, 5), (10, 12)])
       @test constrained_edges == Set{NTuple{2,Int}}(((2, 3), (3, 5), (10, 12)))
-      DT.split_constrained_edge!(constrained_edges, (2, 7), [])
+      DT.split_segment!(constrained_edges, (2, 7), [])
       @test constrained_edges == Set{NTuple{2,Int}}(((2, 3), (3, 5), (10, 12)))
-      DT.split_constrained_edge!(constrained_edges, (3, 5), [(2, 10), (11, 15), (2, 3)])
+      DT.split_segment!(constrained_edges, (3, 5), [(2, 10), (11, 15), (2, 3)])
       @test constrained_edges == Set{NTuple{2,Int}}(((2, 3), (2, 10), (11, 15), (10, 12)))
-      DT.split_constrained_edge!(constrained_edges, (3, 2), [])
+      DT.split_segment!(constrained_edges, (3, 2), [])
       @test constrained_edges == Set{NTuple{2,Int}}(((2, 3), (2, 10), (11, 15), (10, 12)))
-      DT.split_constrained_edge!(constrained_edges, (3, 2), [(10, 2), (23, 10)])
+      DT.split_segment!(constrained_edges, (3, 2), [(10, 2), (23, 10)])
       @test constrained_edges == Set{NTuple{2,Int}}(((11, 15), (10, 12), (23, 10), (2, 10)))
 end
 
@@ -1170,85 +1136,6 @@ end
       @test c == [(2, 7), (7, 12), (12, 17), (17, 22), (22, 27), (27, 32), (32, 37), (37, 42), (42, 47)]
 end
 
-@testset "nearest_power_of_two" begin
-      x = [0.1992981, 2.9391, 0.0001, 0.891, 7.871,
-            10.59182, 63.0, 252.0, 0.1]
-      all_pow2 = exp2.(-32:32)
-      dist = abs.(x .- all_pow2')
-      nums = all_pow2[[findmin(dist, dims=2)[2][i][2] for i in eachindex(x)]]
-      nums2 = DT.nearest_power_of_two.(x)
-      @test nums == nums2
-
-      nrst = DT.balanced_power_of_two_ternary_split.(x)
-      @test log2.(nrst) ≈ [-3, 0, -14, -1, 2, 2, 5, 7, -4]
-
-      for _ in 1:1000
-            ℓ = 2000rand()^2
-            nrst = DT.balanced_power_of_two_ternary_split(ℓ)
-            balanced_power_of_two_ternary_split = 1.0
-            while ℓ > 3balanced_power_of_two_ternary_split
-                  balanced_power_of_two_ternary_split = 2balanced_power_of_two_ternary_split
-            end
-            while ℓ < 1.5balanced_power_of_two_ternary_split
-                  balanced_power_of_two_ternary_split = 0.5balanced_power_of_two_ternary_split
-            end
-            x = floor(log2(ℓ / 3))
-            y = floor(log2(ℓ / 1.5))
-            if abs(x - log2(ℓ)) < abs(y - log2(ℓ))
-                  @test nrst ≈ exp2(x)
-            else
-                  @test nrst ≈ exp2(y)
-            end
-            @test nrst ≈ balanced_power_of_two_ternary_split
-      end
-
-      @test DT.balanced_power_of_two_quarternary_split(1.2) == 0.5
-      @test DT.balanced_power_of_two_quarternary_split(1.5) == 0.5
-      @test DT.balanced_power_of_two_quarternary_split(1.6) == 0.5
-      @test DT.balanced_power_of_two_quarternary_split(2.0) == 1.0
-end
-
-@testset "Testing if a segment's vertices both adjoin another vertex" begin
-      tri = fixed_shewchuk_example_constrained()
-      add_edge!(tri, 9, 10)
-      add_edge!(tri, 9, 11)
-      @test (DT.segment_vertices_adjoin_other_segments(tri, (9, 10)) == 1) && (DT.segment_vertices_adjoin_other_segments(tri, (10, 9)) == 1)
-      add_edge!(tri, 10, 11)
-      @test (DT.segment_vertices_adjoin_other_segments(tri, (9, 10)) == 2) && (DT.segment_vertices_adjoin_other_segments(tri, (10, 9)) == 2)
-      add_edge!(tri, 4, 3)
-      @test (DT.segment_vertices_adjoin_other_segments(tri, (4, 3)) == 0) && (DT.segment_vertices_adjoin_other_segments(tri, (3, 4)) == 0)
-end
-
-@testset "Testing if an edge lies on two distinct segments" begin
-      p1 = (0.0, 0.0)
-      p2 = (1.0, 0.0)
-      p3 = (0.9, 0.3)
-      p4 = (0.3, 0.0)
-      tri = triangulate([p1, p2, p3, p4])
-      add_edge!(tri, 1, 2)
-      add_edge!(tri, 1, 3)
-      @test DT.edge_lies_on_two_distinct_segments(tri, 1, 4) == (false, 0)
-      @test DT.edge_lies_on_two_distinct_segments(tri, 4, 1) == (false, 0)
-      @test DT.edge_lies_on_two_distinct_segments(tri, 4, 3) == (true, 1)
-      @test DT.edge_lies_on_two_distinct_segments(tri, 3, 4) == (true, 1)
-      add_edge!(tri, 2, 3) # testing that we return the closest vertex
-      @test DT.edge_lies_on_two_distinct_segments(tri, 4, 3) == (true, 1)
-      @test DT.edge_lies_on_two_distinct_segments(tri, 3, 4) == (true, 1)
-      tri.points[4] = (0.9, 0.0) # testing that we return the closest vertex
-      @test DT.edge_lies_on_two_distinct_segments(tri, 4, 3) == (true, 2)
-      @test DT.edge_lies_on_two_distinct_segments(tri, 3, 4) == (true, 2)
-      @test DT.edge_lies_on_two_distinct_segments(tri, 3, 2) == (false, 0)
-      @test DT.edge_lies_on_two_distinct_segments(tri, 2, 3) == (false, 0)
-      @test DT.edge_lies_on_two_distinct_segments(tri, 1, 3) == (false, 0)
-      @test DT.edge_lies_on_two_distinct_segments(tri, 3, 1) == (false, 0)
-end
-
-@testset "rotate_triangle_to_standard_form" begin
-      @test DT.rotate_triangle_to_standard_form(2, 4, 5) == (4, 5, 2)
-      @test DT.rotate_triangle_to_standard_form(3, 2, 7) == (7, 3, 2)
-      @test DT.rotate_triangle_to_standard_form(3, 2, 1) == (3, 2, 1)
-end
-
 @testset "next/previndex_circular" begin
       @test DT.nextindex_circular([1, 2, 3, 4, 5, 6], 1) == 2
       @test DT.nextindex_circular([1, 2, 3, 4, 5, 6], 2) == 3
@@ -1265,12 +1152,12 @@ end
       @test DT.previndex_circular([1, 2, 3, 4, 5, 6], 6) == 5
 end
 
-@testset "first/last_boundary_index" begin
-      @test DT.is_first_boundary_index([1, 2, 3, -1, -5], 4)
-      @test !DT.is_first_boundary_index([1, 2, 3, -1, -5], 5)
-      @test DT.is_first_boundary_index([-1, -2, 5, 4], 1)
-      @test DT.is_last_boundary_index([-1, 5, 4, 6, -2, -1], 1)
-      @test DT.is_first_boundary_index([-1, 2, 3, 4, 5, -6, -1], 6)
+@testset "first/last_ghost_vertex" begin
+      @test DT.is_first_ghost_vertex([1, 2, 3, -1, -5], 4)
+      @test !DT.is_first_ghost_vertex([1, 2, 3, -1, -5], 5)
+      @test DT.is_first_ghost_vertex([-1, -2, 5, 4], 1)
+      @test DT.is_last_ghost_vertex([-1, 5, 4, 6, -2, -1], 1)
+      @test DT.is_first_ghost_vertex([-1, 2, 3, 4, 5, -6, -1], 6)
 end
 
 @testset "get_neighbouring_boundary_edges" begin
@@ -1312,7 +1199,7 @@ end
       @test left_e == (4, 3) && right_e == (6, 5)
 end
 
-@testset "convert_to_boundary_edge" begin
+@testset "convert_to_edge_adjoining_ghost_vertex" begin
       a = (3.0, 3.0)
       b = (0.0, 3.0)
       c = (0.0, 0.0)
@@ -1320,15 +1207,15 @@ end
       e = (1.0, 1.5)
       pts = [a, b, c, d, e]
       tri = triangulate(pts, delete_ghosts=false, randomise=false)
-      @test DT.convert_to_boundary_edge(tri, (1, 2)) == (2, 1)
-      @test DT.convert_to_boundary_edge(tri, (2, 1)) == (2, 1)
+      @test DT.convert_to_edge_adjoining_ghost_vertex(tri, (1, 2)) == (2, 1)
+      @test DT.convert_to_edge_adjoining_ghost_vertex(tri, (2, 1)) == (2, 1)
 end
 
 @testset "get_shared_vertex" begin
       e = (1, 3)
       f = (7, 5)
-      @test DT.get_shared_vertex(e, f) == DT.DefaultAdjacentValue
-      @test DT.get_shared_vertex(f, e) == DT.DefaultAdjacentValue
+      @test DT.get_shared_vertex(e, f) == DT.∅
+      @test DT.get_shared_vertex(f, e) == DT.∅
       e = (7, 3)
       f = (3, 8)
       @test DT.get_shared_vertex(e, f) == 3
@@ -1338,15 +1225,16 @@ end
       @test DT.get_shared_vertex(f, e) == 7
 end
 
-@testset "replace_boundary_triangle_with_ghost_triangle" begin
+@testset "replace_(boundary/ghost)_triangle_with_(ghost/boundary)_triangle" begin
       tri = triangulate(rand(2, 5000), delete_ghosts=false)
-      _tri = triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 25, 25, add_ghost_triangles=true)
+      _tri = triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 25, 25, delete_ghosts=false)
       for tri in (tri, _tri)
             for T in each_ghost_triangle(tri)
-                  T = DT.rotate_ghost_triangle_to_standard_form(T)
-                  i, j, k = indices(T)
+                  T = DT.sort_triangle(T)
+                  i, j, k = triangle_vertices(T)
                   V = (j, i, get_adjacent(tri, j, i))
                   @test DT.replace_boundary_triangle_with_ghost_triangle(tri, V) == T
+                  @test DT.replace_ghost_triangle_with_boundary_triangle(tri, T) == V
             end
       end
 end
@@ -1358,16 +1246,16 @@ end
             push!(points, [(i^2 * cos(t), i^2 * sin(t)) for t in t]...)
       end
       push!(points, (0.0, 0.0))
-      n = num_points(points)
+      n = DT.num_points(points)
       tri = triangulate(points, delete_ghosts=false)
 
       neighbours = DT.iterated_neighbourhood(tri, n, 1)
-      @test neighbours == filter(!DT.is_boundary_index, get_neighbours(tri, n))
+      @test neighbours == filter(!DT.is_ghost_vertex, get_neighbours(tri, n))
       neighbours = DT.iterated_neighbourhood(tri, n, 2)
       S1 = get_neighbours(tri, n)
       S2 = [get_neighbours(tri, i) for i in S1]
       [union!(S1, S) for S in S2]
-      filter!(s -> !(s == n || DT.is_boundary_index(s)), S1)
+      filter!(s -> !(s == n || DT.is_ghost_vertex(s)), S1)
       @test S1 == neighbours
       neighbours = DT.iterated_neighbourhood(tri, n, 3)
       S1 = get_neighbours(tri, n)
@@ -1375,7 +1263,7 @@ end
       S3 = [get_neighbours(tri, i) for i in reduce(union, S2)]
       [union!(S1, S) for S in S2]
       [union!(S1, S) for S in S3]
-      filter!(s -> !(s == n || DT.is_boundary_index(s)), S1)
+      filter!(s -> !(s == n || DT.is_ghost_vertex(s)), S1)
       @test S1 == neighbours
       neighbours = DT.iterated_neighbourhood(tri, n, 4)
       S1 = get_neighbours(tri, n)
@@ -1385,7 +1273,7 @@ end
       [union!(S1, S) for S in S2]
       [union!(S1, S) for S in S3]
       [union!(S1, S) for S in S4]
-      filter!(s -> !(s == n || DT.is_boundary_index(s)), S1)
+      filter!(s -> !(s == n || DT.is_ghost_vertex(s)), S1)
       @test S1 == neighbours
 
       tri = triangulate_rectangle(0, 1, 0, 1, 10, 10)
@@ -1435,4 +1323,247 @@ end
 @testset "_getxy" begin
       @test DT._getxy((0.3, 0.5)) == (0.3, 0.5)
       @test DT._getxy((0.3f0, 0.7f0)) == (Float64(0.3f0), Float64(0.7f0))
+end
+
+@testset "norm" begin
+      # test that we avoid underflow  
+      @test DT.norm((1e-300, 1e-300)) ≈ norm([1e-300, 1e-300]) ≈ 1.414213562373095e-300
+      @test DT.norm((1e-300, 0.0)) ≈ norm([1e-300, 0.0]) ≈ 1e-300
+      @test DT.norm((0.0, 1e-300)) ≈ norm([0.0, 1e-300]) ≈ 1e-300
+
+      # that we avoid overflow 
+      @test DT.norm((1e300, 1e300)) ≈ norm([1e300, 1e300]) ≈ 1.414213562373095e300
+      @test DT.norm((1e300, 0.0)) ≈ norm([1e300, 0.0]) ≈ 1e300
+      @test DT.norm((0.0, 1e300)) ≈ norm([0.0, 1e300]) ≈ 1e300
+
+      # some other random tests 
+      for _ in 1:10000
+            x, y = rand(2)
+            @test DT.norm((x, y)) ≈ norm((x, y)) ≈ DT.norm((y, x))
+            @test DT.norm((x, y))^2 ≈ DT.norm_sqr((x, y))
+      end
+      @inferred DT.norm((1.0, 1.0))
+      @inferred DT.norm((1.0f0, 1.0f0))
+
+      # specific case 
+      @test DT.dist_sqr((3.0, -1.0), (2.0, 0.0)) == 2.0
+end
+
+@testset "edge_length" begin
+      tri = triangulate(rand(2, 50))
+      for e in each_solid_edge(tri)
+            @test DT.edge_length(tri, e) ≈
+                  DT.edge_length(tri, DT.reverse_edge(e)) ≈
+                  DT.edge_length(tri, e...) ≈
+                  norm(get_point(tri, e[1]) .- get_point(tri, e[2]))
+            @test DT.edge_length_sqr(tri, e) ≈
+                  DT.edge_length_sqr(tri, DT.reverse_edge(e)) ≈
+                  DT.edge_length_sqr(tri, e...) ≈
+                  LinearAlgebra.norm_sqr(get_point(tri, e[1]) .- get_point(tri, e[2]))
+      end
+end
+
+@testset "midpoint" begin
+      tri = triangulate(rand(2, 50))
+      for e in each_solid_edge(tri)
+            @test collect(DT.midpoint(tri, e)) ≈
+                  collect(DT.midpoint(tri, DT.reverse_edge(e))) ≈
+                  collect(DT.midpoint(tri, e...)) ≈
+                  0.5 .* collect((get_point(tri, e[1]) .+ get_point(tri, e[2])))
+      end
+end
+
+@testset "check_precision" begin
+      @test DT.check_precision(sqrt(eps(Float64)) - 1e-32)
+      @test !DT.check_precision(1.0)
+      @test DT.check_precision(sqrt(eps(Float64)))
+
+      @test DT.check_absolute_precision(1e-32, 0.0)
+      @test DT.check_absolute_precision(sqrt(eps(Float64)), 0)
+      @test !DT.check_absolute_precision(0.5, 2.0)
+
+      @test !DT.check_relative_precision(1e-32, 0.0)
+      @test !DT.check_relative_precision(sqrt(eps(Float64)), 0)
+      @test !DT.check_relative_precision(0, 1e-32)
+      @test !DT.check_relative_precision(0, sqrt(eps(Float64)))
+
+      @test DT.check_ratio_precision(1.0, 1.0)
+      @test !DT.check_ratio_precision(5, 2)
+      @test !DT.check_ratio_precision(0.0, 1.0)
+      @test !DT.check_ratio_precision(1.0, 0.0)
+end
+
+@testset "get_boundary_chain" begin
+      rng = StableRNG(123)
+      points = randn(rng, 2, 250)
+      tri = triangulate(points; rng)
+      hull = get_convex_hull_vertices(tri)
+      chain = DT.get_boundary_chain(tri, 65, 147, -1)
+      @test DT.circular_equality([chain..., chain[1]], hull)
+      chain = DT.get_boundary_chain(tri, 199, 96, -1)
+      @test chain == [199, 151, 96]
+      chain = DT.get_boundary_chain(tri, 151, 96, -1)
+      @test chain == [151, 96]
+end
+
+@testset "dist" begin
+      for i in 1:100
+            tri = triangulate(rand(StableRNG(i), 2, 500); rng=StableRNG(i + 1))
+            for j in 1:100
+                  p = randn(StableRNG(i * j), 2)
+                  δ = DT.distance_to_polygon(p, get_points(tri), get_convex_hull_vertices(tri))
+                  V = jump_and_march(tri, p)
+                  if DT.is_ghost_triangle(V)
+                        @test δ < 0
+                  else
+                        @test δ ≥ 0.0
+                  end
+                  @test δ ≈ DT.dist(tri, p)
+            end
+      end
+      points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.5, 0.9), (0.0, 1.0), (0.2, 0.2), (0.8, 0.2), (0.8, 0.8), (0.2, 0.8)]
+      tri = triangulate(points; boundary_nodes=[[[1, 2, 3, 4, 5, 1]], [[6, 9, 8, 7, 6]]])
+      for i in 1:10000
+            p = randn(StableRNG(i^2), 2)
+            δ = DT.distance_to_polygon(p, get_points(tri), get_boundary_nodes(tri))
+            V = jump_and_march(tri, p; rng=StableRNG(i^3), concavity_protection=true)
+            if DT.is_ghost_triangle(V)
+                  @test δ < 0
+            else
+                  @test δ ≥ 0.0
+            end
+            @test δ ≈ DT.dist(tri, p)
+      end
+end
+
+@testset "adjust_θ" begin
+      θ₁ = deg2rad(77.4711922908485)
+      θ₂ = deg2rad(175.2363583092738)
+      θ₁′, θ₂′ = DT.adjust_θ(θ₁, θ₂, true)
+      @test (θ₁, θ₂) == (θ₁′, θ₂′)
+      θ₁′, θ₂′ = DT.adjust_θ(θ₂, θ₁, true)
+      @test (θ₁′, θ₂′) ⪧ (θ₂, θ₁ + 2π) && θ₂′ - θ₁′ ≈ deg2rad(262.2348339815747)
+      θ₁′, θ₂′ = DT.adjust_θ(θ₁, θ₂, false)
+      @test (θ₁′, θ₂′) ⪧ (θ₁, θ₂ - 2π) && θ₂′ - θ₁′ ≈ -deg2rad(360 - 97.7651660184254)
+      θ₁′, θ₂′ = DT.adjust_θ(θ₂, θ₁, false)
+      @test (θ₁′, θ₂′) ⪧ (θ₂, θ₁) && θ₂′ - θ₁′ ≈ -deg2rad(97.7651660184254)
+      for _ in 1:100000
+            θ₁, θ₂ = 2π .* rand(2)
+            θ₁′, θ₂′ = DT.adjust_θ(θ₁, θ₂, rand() < 1 / 2)
+            @test abs(θ₂′ - θ₁′) ≤ 2π
+      end
+end
+
+@testset "uniquetol" begin
+      A = [0.0, 0.1, 0.2, 0.3, 0.4, 0.4 + 1e-16]
+      B = DT.uniquetol(A)
+      @test B == [0.0, 0.1, 0.2, 0.3, 0.4]
+      A = [-5, -4, -3, -3 - 1e-16, 0, 5 - 1e-16, 5 - 1e-14, 5 + 1e-16, 5 + 1e-14, 10, 15 + 1e-16]
+      sort!(A)
+      B = DT.uniquetol(A)
+      @test B == [-5, -4, -3, 0, 5 - 1e-14, 10.0, 15.0]
+end
+
+@testset "eval_fnc_at_het_tuple_element" begin
+      global basic_def
+      f = x -> x isa Number
+      tup = (1, 2.0, "string", [1 2 3], [5, 7, 9], 0x00, 'A')
+      basic_def(f, tup, idx) = f(tup[idx])
+      DT.eval_fnc_at_het_tuple_element(f, tup, 1)
+      DT.eval_fnc_at_het_tuple_element(f, tup, 4)
+      DT.eval_fnc_at_het_tuple_element(f, tup, 7)
+      basic_def(f, tup, 1)
+      basic_def(f, tup, 4)
+      basic_def(f, tup, 7)
+      a1 = @ballocated DT.eval_fnc_at_het_tuple_element($f, $tup, $1)
+      a2 = @ballocated DT.eval_fnc_at_het_tuple_element($f, $tup, $2)
+      a3 = @ballocated DT.eval_fnc_at_het_tuple_element($f, $tup, $3)
+      a4 = @ballocated DT.eval_fnc_at_het_tuple_element($f, $tup, $4)
+      a5 = @ballocated DT.eval_fnc_at_het_tuple_element($f, $tup, $5)
+      a6 = @ballocated DT.eval_fnc_at_het_tuple_element($f, $tup, $6)
+      a7 = @ballocated DT.eval_fnc_at_het_tuple_element($f, $tup, $7)
+      b1 = @ballocated basic_def($f, $tup, $1)
+      b2 = @ballocated basic_def($f, $tup, $2)
+      b3 = @ballocated basic_def($f, $tup, $3)
+      b4 = @ballocated basic_def($f, $tup, $4)
+      b5 = @ballocated basic_def($f, $tup, $5)
+      b6 = @ballocated basic_def($f, $tup, $6)
+      b7 = @ballocated basic_def($f, $tup, $7)
+      @test all(iszero, (a1, a2, a3, a4, a5, a6, a7))
+      @test all(!iszero, (b1, b2, b3, b4, b5, b6, b7))
+      for i in 1:7
+            global basic_def
+            @test DT.eval_fnc_at_het_tuple_element(f, tup, i) == basic_def(f, tup, i)
+            @inferred DT.eval_fnc_at_het_tuple_element(f, tup, i)
+      end
+end
+
+@testset "eval_fnc_in_het_tuple" begin
+      global basic_def2
+      gg1(x) = x
+      gg2(x) = x^2
+      gg3(x) = x^3
+      gg4(x) = x^4
+      gg5(x) = x^5
+      gg6(x) = x^6
+      gg7(x) = x^7
+      tup = (gg1, gg2, gg3, gg4, gg5, gg6, gg7)
+      arg = rand()
+      basic_def2(tup, arg, idx) = tup[idx](arg)
+      DT.eval_fnc_in_het_tuple(tup, arg, 1)
+      DT.eval_fnc_in_het_tuple(tup, arg, 4)
+      DT.eval_fnc_in_het_tuple(tup, arg, 7)
+      basic_def2(tup, arg, 1)
+      basic_def2(tup, arg, 4)
+      basic_def2(tup, arg, 7)
+      a1 = @ballocated DT.eval_fnc_in_het_tuple($tup, $arg, $1)
+      a2 = @ballocated DT.eval_fnc_in_het_tuple($tup, $arg, $2)
+      a3 = @ballocated DT.eval_fnc_in_het_tuple($tup, $arg, $3)
+      a4 = @ballocated DT.eval_fnc_in_het_tuple($tup, $arg, $4)
+      a5 = @ballocated DT.eval_fnc_in_het_tuple($tup, $arg, $5)
+      a6 = @ballocated DT.eval_fnc_in_het_tuple($tup, $arg, $6)
+      a7 = @ballocated DT.eval_fnc_in_het_tuple($tup, $arg, $7)
+      b1 = @ballocated basic_def2($tup, $arg, $1)
+      b2 = @ballocated basic_def2($tup, $arg, $2)
+      b3 = @ballocated basic_def2($tup, $arg, $3)
+      b4 = @ballocated basic_def2($tup, $arg, $4)
+      b5 = @ballocated basic_def2($tup, $arg, $5)
+      b6 = @ballocated basic_def2($tup, $arg, $6)
+      b7 = @ballocated basic_def2($tup, $arg, $7)
+      @test all(iszero, (a1, a2, a3, a4, a5, a6, a7))
+      @test all(!iszero, (b1, b2, b3, b4, b5, b6, b7))
+      for i in 1:7
+            global basic_def2
+            @test DT.eval_fnc_in_het_tuple(tup, arg, i) == basic_def2(tup, arg, i)
+            @inferred DT.eval_fnc_in_het_tuple(tup, arg, i)
+            @test_throws Exception @inferred basic_def2(tup, arg, i)
+      end
+end
+
+@testset "eval_fnc_at_het_tuple_two_elements" begin
+      global fft 
+      global basic_defft
+      fft(x, y) = objectid(x) + objectid(y)
+      tup = (1, 2.0, "string", [1 2 3], [5, 7, 9], 0x00, 'A')
+      basic_defft(f, tup, idx, idx2) = f(tup[idx], tup[idx2])
+      DT.eval_fnc_at_het_tuple_two_elements(fft, tup, 1, 4)
+      DT.eval_fnc_at_het_tuple_two_elements(fft, tup, 4, 3)
+      DT.eval_fnc_at_het_tuple_two_elements(fft, tup, 2, 5)
+      basic_defft(fft, tup, 1, 4)
+      basic_defft(fft, tup, 4, 3)
+      basic_defft(fft, tup, 2, 5)
+      a = zeros(length(tup), length(tup))
+      b = similar(a)
+      for i in eachindex(tup)
+            for j in eachindex(tup)
+                  global fft 
+                  global basic_defft
+                  a[i, j] = @ballocated DT.eval_fnc_at_het_tuple_two_elements($fft, $tup, $i, $j)
+                  b[i, j] = @ballocated basic_defft($fft, $tup, $i, $j)
+                  @test DT.eval_fnc_at_het_tuple_two_elements(fft, tup, i, j) == basic_defft(fft, tup, i, j)
+                  @inferred DT.eval_fnc_at_het_tuple_two_elements(fft, tup, i, j)
+            end
+      end
+      @test all(iszero, a)
+      @test all(!iszero, b)
 end

@@ -55,56 +55,6 @@ end
     @test DT.getn(c) == 200
 end
 
-@testset "Getting a new representative point" begin
-    rep = DT.get_empty_representative_points()
-    DT.new_representative_point!(rep, 2)
-    @test 2 ∈ keys(rep)
-    @test DT.RepresentativeCoordinates(0.0, 0.0, 0) == rep[2]
-    DT.new_representative_point!(rep, 3)
-    @test 3 ∈ keys(rep)
-    @test DT.RepresentativeCoordinates(0.0, 0.0, 0) == rep[3]
-
-    DT.update_centroid_after_addition!(rep, 2, [2.0, 5.0])
-    @test rep[2] == DT.RepresentativeCoordinates(2.0, 5.0, 1)
-    DT.update_centroid_after_addition!(rep, 3, [-17.0, 0.0])
-    @test rep[3] == DT.RepresentativeCoordinates(-17.0, 0.0, 1)
-end
-
-@testset "Using get! with a new representative point" begin
-    rep = DT.get_empty_representative_points()
-    DT.new_representative_point!(rep, 2)
-    DT.new_representative_point!(rep, 3)
-    DT.update_centroid_after_addition!(rep, 2, [2.0, 5.0])
-    DT.update_centroid_after_addition!(rep, 3, [-17.0, 0.0])
-    centroid = get!(DT.RepresentativeCoordinates{Int,Float64}, rep,
-        13)
-    centroid.x = 0.292
-    centroid.y = 0.991
-    @test rep[13] == DT.RepresentativeCoordinates(0.292, 0.991, 0)
-
-    DT.update_centroid_after_addition!(rep, 7, [13.3, -5.0])
-    @test rep[7] == DT.RepresentativeCoordinates(13.3, -5.0, 1)
-end
-
-@testset "Resetting all representative points" begin
-    rep = DT.get_empty_representative_points()
-    DT.new_representative_point!(rep, 2)
-    DT.new_representative_point!(rep, 3)
-    DT.update_centroid_after_addition!(rep, 2, [2.0, 5.0])
-    DT.update_centroid_after_addition!(rep, 3, [-17.0, 0.0])
-    centroid = get!(DT.RepresentativeCoordinates{Int,Float64}, rep,
-        13)
-    centroid.x = 0.292
-    centroid.y = 0.991
-    DT.reset_representative_points!(rep)
-    @test DT.RepresentativeCoordinates(0.0, 0.0, 0) == rep[2]
-    @test DT.RepresentativeCoordinates(0.0, 0.0, 0) == rep[3]
-
-    DT.empty_representative_points!(rep)
-    @test_throws KeyError rep[2]
-    @test_throws KeyError rep[3]
-end
-
 @testset "Representative points from a triangulation" begin
     x = [0.0, 1.0, 1.0, 0.0, 0.0]
     y = [0.0, 0.0, 1.0, 1.0, 0.0]
@@ -131,24 +81,23 @@ end
     x, y, x1, x2, x3, x4, x5, y1, y2, y3, y4, y5 = complicated_geometry()
     boundary_nodes, points = convert_boundary_points_to_indices(x, y)
     tri = triangulate(points; boundary_nodes, delete_ghosts=false)
-    A = get_total_area(tri)
-    refine!(tri; max_area=1e-3A)
     for i in (1, 2, 3)
         local x1, y1, x2, y2, x3, y3, x4, y4, x5, y5
         if i == 3
             DT.compute_representative_points!(tri)
             rep = DT.get_representative_point_list(tri)
         elseif i == 2
-            rep = DT.get_empty_representative_points()
-            DT.compute_representative_points!(rep, get_points(tri), get_boundary_nodes(tri))
+            empty!(tri.representative_point_list)
+            DT.compute_representative_points!(tri)
+            rep = DT.get_representative_point_list(tri)
         else
             rep = DT.get_representative_point_list(tri)
         end
-        x1, y1 = DT.polylabel(tri.points, tri.boundary_nodes)
-        x2, y2 = DT.polylabel(tri.points, tri.boundary_nodes[2])
-        x3, y3 = DT.polylabel(tri.points, tri.boundary_nodes[3])
-        x4, y4 = DT.polylabel(tri.points, tri.boundary_nodes[4])
-        x5, y5 = DT.polylabel(tri.points, tri.boundary_nodes[5])
+        x1, y1 = DT.pole_of_inaccessibility(tri.points, tri.boundary_nodes)
+        x2, y2 = DT.pole_of_inaccessibility(tri.points, tri.boundary_nodes[2])
+        x3, y3 = DT.pole_of_inaccessibility(tri.points, tri.boundary_nodes[3])
+        x4, y4 = DT.pole_of_inaccessibility(tri.points, tri.boundary_nodes[4])
+        x5, y5 = DT.pole_of_inaccessibility(tri.points, tri.boundary_nodes[5])
         d1 = DT.distance_to_polygon((x1, y1), tri.points, tri.boundary_nodes)
         d2 = DT.distance_to_polygon((x2, y2), tri.points, tri.boundary_nodes[2])
         d3 = DT.distance_to_polygon((x3, y3), tri.points, tri.boundary_nodes[3])

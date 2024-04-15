@@ -12,41 +12,40 @@ include("../helper_functions.jl")
     randomise = false
     skip_points = ()
     IntegerType = Int
-    pt_order = DT.get_point_order(points, randomise, skip_points, IntegerType)
+    rng = Random.default_rng()
+    pt_order = DT.get_insertion_order(points, randomise, skip_points, IntegerType, rng)
     @test pt_order == 1:50
     randomise = true
-    pt_order = DT.get_point_order(points, randomise, skip_points, IntegerType)
+    pt_order = DT.get_insertion_order(points, randomise, skip_points, IntegerType, rng)
     @test pt_order ≠ 1:50
-    @test all(∈(pt_order), each_point_index(points))
+    @test all(∈(pt_order), DT.each_point_index(points))
     skip_points = (37, 48, 11)
     randomise = false
-    pt_order = DT.get_point_order(points, randomise, skip_points, IntegerType)
+    pt_order = DT.get_insertion_order(points, randomise, skip_points, IntegerType, rng)
     @test pt_order == setdiff(1:50, skip_points)
     randomise = true
-    pt_order = DT.get_point_order(points, randomise, skip_points, IntegerType)
+    pt_order = DT.get_insertion_order(points, randomise, skip_points, IntegerType, rng)
     @test pt_order ≠ setdiff(1:50, skip_points)
     @test all(∉(pt_order), skip_points)
-    @test all(∈(pt_order), setdiff(each_point_index(points), skip_points))
+    @test all(∈(pt_order), setdiff(DT.each_point_index(points), skip_points))
 end
 
 @testset "Getting the initial triangle" begin
     tri = triangulate_rectangle(0.0, 10.0, 0.0, 20.0, 11, 21)
-    point_order = collect(each_point_index(tri))
-    point_order_orig = deepcopy(point_order)
-    initial_triangle = DT.get_initial_triangle(tri, point_order)
+    insertion_order = collect(DT.each_point_index(tri))
+    insertion_order_orig = deepcopy(insertion_order)
+    initial_triangle = DT.get_initial_triangle(tri, insertion_order)
     @test initial_triangle == (10, 11, 12)
     @test DT.is_positively_oriented(DT.triangle_orientation(tri, initial_triangle))
-    @test initial_triangle ==
-          DT.get_initial_triangle(DT.triangle_type(tri), DT.integer_type(tri),
-        point_order_orig, tri.points)
 end
 
 @testset "Initialising the Bowyer-Watson algorithm" begin
-    tri = triangulate_rectangle(0.0, 10.0, 0.0, 20.0, 11, 21)
-    _tri = DT.initialise_bowyer_watson(tri.points)
+    tri = triangulate_rectangle(0.0, 10.0, 0.0, 20.0, 11, 21, delete_ghosts=false)
+    _tri = DT.Triangulation(tri.points)
+    DT.initialise_bowyer_watson!(_tri, DT.each_point_index(_tri) |> collect)
     S = filter(!DT.is_ghost_triangle, _tri.triangles)
     u, v, w = first(S)
-    BI = DT.BoundaryIndex
+    BI = DT.𝒢
     @test get_triangles(_tri) == Set(((u, v, w), (w, v, BI), (v, u, BI), (u, w, BI)))
     @test get_adjacent(get_adjacent(_tri)) == Dict((u, v) => w,
         (v, w) => u,
@@ -65,33 +64,7 @@ end
         u => Set{NTuple{2,Int}}([(v, w), (BI, v), (w, BI)]),
         v => Set{NTuple{2,Int}}([(w, u), (BI, w), (u, BI)]),
         w => Set{NTuple{2,Int}}([(u, v), (v, BI), (BI, u)]))
-    @test get_graph(get_graph(_tri)).V == Set([u, v, w, BI])
-    skip_points = (10, 11, 12)
-    _tri = DT.initialise_bowyer_watson(tri.points; randomise=false, skip_points)
-    S = filter(!DT.is_ghost_triangle, _tri.triangles)
-    u, v, w = first(S)
-    BI = DT.BoundaryIndex
-    @test get_triangles(_tri) == Set(((u, v, w), (w, v, BI), (v, u, BI), (u, w, BI)))
-    @test get_adjacent(get_adjacent(_tri)) == Dict((u, v) => w,
-        (v, w) => u,
-        (w, u) => v,
-        (w, v) => BI,
-        (v, BI) => w,
-        (BI, w) => v,
-        (v, u) => BI,
-        (u, BI) => v,
-        (BI, v) => u,
-        (u, w) => BI,
-        (w, BI) => u,
-        (BI, u) => w)
-    @test get_adjacent2vertex(get_adjacent2vertex(_tri)) ==
-          Dict(BI => Set{NTuple{2,Int}}([(w, v), (v, u), (u, w)]),
-        u => Set{NTuple{2,Int}}([(v, w), (BI, v), (w, BI)]),
-        v => Set{NTuple{2,Int}}([(w, u), (BI, w), (u, BI)]),
-        w => Set{NTuple{2,Int}}([(u, v), (v, BI), (BI, u)]))
-    @test get_graph(get_graph(_tri)).V == Set([u, v, w, BI])
-    @test all(∉(_tri.graph.graph.V), skip_points)
-    @inferred DT.initialise_bowyer_watson(tri.points)
+    @test DT.get_graph(_tri).vertices == Set([u, v, w, BI])
 end
 
 @testset "A basic triangulation" begin
@@ -99,9 +72,11 @@ end
     [8.0, 3.0], [-0.6, 1.57], [3.58, 6.15]
     points = [a, b, c, d, e, f, g]
     rng = StableRNG(8881)
-    tri = DT.triangulate_bowyer_watson(points; rng, delete_ghosts=false)
-    @inferred DT.triangulate_bowyer_watson(points; rng, delete_ghosts=false)
-    BI = DT.BoundaryIndex
+    tri = DT.triangulate(points; rng, delete_ghosts=false)
+    @static if VERSION ≥ v"1.9"
+        @inferred DT.triangulate(points; rng, delete_ghosts=false)
+    end
+    BI = DT.𝒢
     @test get_triangles(tri) == Set{NTuple{3,Int}}(((3, 2, BI),
         (4, BI, 5),
         (5, 7, 6),
@@ -117,9 +92,9 @@ end
     @test validate_triangulation(tri)
 end
 
-@testset "A random triangulation with a plot" begin
+@testset "A random triangulation" begin
     pts = randn(2, 500)
-    tri = DT.triangulate_bowyer_watson(pts; delete_ghosts=false)
+    tri = DT.triangulate(pts; delete_ghosts=false)
     @test validate_triangulation(tri)
 end
 
@@ -127,7 +102,7 @@ end
     _tri = triangulate_rectangle(-3.0, 2.0, 5.0, 17.3, 23, 57; single_boundary=true)
     @test validate_triangulation(_tri)
     for _ in 1:100
-        @time tri = DT.triangulate_bowyer_watson(_tri.points)
+        tri = DT.triangulate(_tri.points)
         @test validate_triangulation(tri)
     end
 end
@@ -146,12 +121,12 @@ end
             (8, 9, 3),
             (9, 7, 3),
             (3, 7, 4),
-            (1, 5, DT.BoundaryIndex),
-            (5, 4, DT.BoundaryIndex),
-            (4, 7, DT.BoundaryIndex),
-            (7, 9, DT.BoundaryIndex),
-            (9, 2, DT.BoundaryIndex),
-            (2, 1, DT.BoundaryIndex)))
+            (1, 5, DT.𝒢),
+            (5, 4, DT.𝒢),
+            (4, 7, DT.𝒢),
+            (7, 9, DT.𝒢),
+            (9, 2, DT.𝒢),
+            (2, 1, DT.𝒢)))
         T2 = Set{NTuple{3,Int}}(((2, 9, 8),
             (2, 8, 6),
             (2, 6, 1),
@@ -177,12 +152,12 @@ end
                 @_adj(8, 9, 3)...,
                 @_adj(9, 7, 3)...,
                 @_adj(3, 7, 4)...,
-                @_adj(1, 5, DT.BoundaryIndex)...,
-                @_adj(5, 4, DT.BoundaryIndex)...,
-                @_adj(4, 7, DT.BoundaryIndex)...,
-                @_adj(7, 9, DT.BoundaryIndex)...,
-                @_adj(9, 2, DT.BoundaryIndex)...,
-                @_adj(2, 1, DT.BoundaryIndex)...))
+                @_adj(1, 5, DT.𝒢)...,
+                @_adj(5, 4, DT.𝒢)...,
+                @_adj(4, 7, DT.𝒢)...,
+                @_adj(7, 9, DT.𝒢)...,
+                @_adj(9, 2, DT.𝒢)...,
+                @_adj(2, 1, DT.𝒢)...))
         adj2 = DT.Adjacent(
             Dict(@_adj(2, 9, 8)...,
                 @_adj(2, 8, 6)...,
@@ -196,13 +171,13 @@ end
                 @_adj(8, 9, 3)...,
                 @_adj(9, 7, 3)...,
                 @_adj(3, 7, 4)...,
-                (1, 5) => DT.BoundaryIndex,
-                (5, 4) => DT.BoundaryIndex,
-                (4, 7) => DT.BoundaryIndex,
-                (7, 9) => DT.BoundaryIndex,
-                (9, 2) => DT.BoundaryIndex,
-                (2, 1) => DT.BoundaryIndex))
-        adj2v = DT.Adjacent2Vertex(Dict(DT.BoundaryIndex => Set{NTuple{2,Int}}(((1, 5),
+                (1, 5) => DT.𝒢,
+                (5, 4) => DT.𝒢,
+                (4, 7) => DT.𝒢,
+                (7, 9) => DT.𝒢,
+                (9, 2) => DT.𝒢,
+                (2, 1) => DT.𝒢))
+        adj2v = DT.Adjacent2Vertex(Dict(DT.𝒢 => Set{NTuple{2,Int}}(((1, 5),
                 (5, 4),
                 (4, 7),
                 (7, 9),
@@ -210,34 +185,34 @@ end
                 (2, 1))),
             1 => Set{NTuple{2,Int}}(((2, 6), (6, 10),
                 (10, 5),
-                (5, DT.BoundaryIndex),
-                (DT.BoundaryIndex, 2))),
+                (5, DT.𝒢),
+                (DT.𝒢, 2))),
             2 => Set{NTuple{2,Int}}(((9, 8), (8, 6), (6, 1),
-                (1, DT.BoundaryIndex),
-                (DT.BoundaryIndex, 9))),
+                (1, DT.𝒢),
+                (DT.𝒢, 9))),
             3 => Set{NTuple{2,Int}}(((9, 7), (7, 4), (4, 10),
                 (10, 8), (8, 9))),
             4 => Set{NTuple{2,Int}}(((5, 10), (10, 3),
                 (3, 7),
-                (7, DT.BoundaryIndex),
-                (DT.BoundaryIndex, 5))),
+                (7, DT.𝒢),
+                (DT.𝒢, 5))),
             5 => Set{NTuple{2,Int}}(((1, 10), (10, 4),
-                (4, DT.BoundaryIndex),
-                (DT.BoundaryIndex, 1))),
+                (4, DT.𝒢),
+                (DT.𝒢, 1))),
             6 => Set{NTuple{2,Int}}(((2, 8), (8, 10),
                 (10, 1), (1, 2))),
             7 => Set{NTuple{2,Int}}(((4, 3), (3, 9),
-                (9, DT.BoundaryIndex),
-                (DT.BoundaryIndex, 4))),
+                (9, DT.𝒢),
+                (DT.𝒢, 4))),
             8 => Set{NTuple{2,Int}}(((3, 10), (10, 6),
                 (6, 2), (2, 9), (9, 3))),
             9 => Set{NTuple{2,Int}}(((7, 3), (3, 8), (8, 2),
-                (2, DT.BoundaryIndex),
-                (DT.BoundaryIndex, 7))),
+                (2, DT.𝒢),
+                (DT.𝒢, 7))),
             10 => Set{NTuple{2,Int}}(((8, 3), (3, 4), (4, 5),
                 (5, 1), (1, 6),
                 (6, 8)))))
-        adj2v2 = DT.Adjacent2Vertex(Dict(DT.BoundaryIndex => Set{NTuple{2,Int}}(((1, 5),
+        adj2v2 = DT.Adjacent2Vertex(Dict(DT.𝒢 => Set{NTuple{2,Int}}(((1, 5),
                 (5, 4),
                 (4, 7),
                 (7, 9),
@@ -279,9 +254,7 @@ end
         B[2:end, 2:end] .= A
         B[1, [1, 5, 4, 7, 9, 2].+1] .= 1
         B[[1, 5, 4, 7, 9, 2].+1, 1] .= 1
-        graph = DT.Graph((x -> DT.SimpleGraphs.relabel(x,
-            Dict(1 => DT.BoundaryIndex,
-                (2:11 .=> 1:10)...)))(DT.SimpleGraphs.UndirectedGraph(B)))
+        graph = _make_graph_from_adjacency(B, Dict(1 => DT.𝒢, (2:11 .=> 1:10)...))
         a = [1.5, 4.0]
         b = [0.0, 3.5]
         c = [2.0, 1.5]
@@ -294,11 +267,11 @@ end
         j = [1.5, 3.0]
         pts = [a, b, c, d, e, f, g, h, i, j]
         ch = DT.ConvexHull(pts, [1, 2, 9, 7, 4, 5, 1])
-        tri = DT.triangulate_bowyer_watson(pts; delete_ghosts=false)
+        tri = DT.triangulate(pts; delete_ghosts=false)
         @test DT.compare_triangle_collections(T, get_triangles(tri)) &&
               get_adjacent(tri) == adj &&
               get_adjacent2vertex(tri) == adj2v &&
-              get_graph(tri) == graph &&
+              DT.get_graph(tri) == graph &&
               get_convex_hull(tri) == ch
         @test validate_triangulation(tri)
         delete_ghost_triangles!(tri)
@@ -320,7 +293,8 @@ end
     i = [0.0, 0.5]
     j = [1.5, 3.0]
     pts = [a, b, c, d, e, f, g, h, i, j]
-    tri = DT.triangulate_bowyer_watson(pts; delete_ghosts=false)
+    tri = DT.triangulate(pts; delete_ghosts=false)
+    @test validate_triangulation(tri)
 end
 
 @testset "Issue #94" begin

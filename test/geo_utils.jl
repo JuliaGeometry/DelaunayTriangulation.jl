@@ -6,12 +6,6 @@ using CairoMakie
 
 include("./helper_functions.jl")
 
-throw_f = expr -> @static if VERSION < v"1.8"
-      ErrorException(expr)
-else
-      expr
-end
-
 @testset "Getting polygon features" begin
       tri, label_map, index_map = simple_geometry()
       pts = get_points(tri)
@@ -366,7 +360,6 @@ end
                         index_map["a"]]]
             q = DT.CellQueue{Float64}()
             @test isempty(q)
-            @test q.queue.o == Base.Order.Reverse
             c = DT.Cell(DT.polygon_features(pts, boundary_nodes)[2]..., 10.0, pts, boundary_nodes)
             DT.insert_cell!(q, c)
             @test q.queue[c] == c.max_dist
@@ -505,9 +498,14 @@ end
       boundary_nodes = [
             [[1, 4, 3, 2], [2, 9, 10, 11, 8, 7, 12], [12, 6, 13, 5, 14, 15, 16, 17, 16], [16, 17, 18, 19, 20, 21, 22, 23, 1]],
             [[26, 25, 24], [24, 28, 27, 26]],
-            [[29, 30, 31, 29]]
+            [[29,31,30,29]]
       ]
       x, y = DT.pole_of_inaccessibility(pts, boundary_nodes)
+      @test x ≈ -1.0785225000000000003
+      @test y ≈ 5.37259749999999999999
+
+      tri = triangulate(pts; boundary_nodes)
+      @test collect(DT.getxy(DT.get_representative_point_coordinates(tri, 1))) ≈ [x, y]
 end
 
 @testset "A previously broken example" begin
@@ -569,7 +567,7 @@ end
             198, 207, 216, 215, 214, 213, 212, 211, 210, 209, 208, 199,
             190, 181, 172, 163, 154, 145, 136, 127, 118, 109, 100, 91, 82,
             73, 64, 55, 46, 37, 28, 19, 10, 1]
-      pc = DT.polylabel(PT, BN)
+      pc = DT.pole_of_inaccessibility(PT, BN)
       @test collect(pc) ≈ collect(DT.polygon_features(PT, BN)[2])
 end
 
@@ -733,33 +731,6 @@ end
       @test xmin ≈ 12.5 && xmax ≈ 29.1825559185446 && ymin ≈ 26.4 && ymax ≈ 37.4716894585871
 end
 
-@testset "intersection_of_ray_with_boundary" begin
-      p1 = (0.0, 0.0)
-      p2 = (1.0, 0.0)
-      p3 = (1.0, 1.0)
-      p4 = (0.0, 1.0)
-      points = [p1, p2, p3, p4]
-      boundary_nodes = [1, 2, 3, 4, 1]
-      p = (0.67116551183, 0.42898)
-      q = (2.0, 1.0)
-      r = DT.intersection_of_ray_with_boundary(points, boundary_nodes, p, q)
-      @test collect(r) ≈ [1.0, 0.5702880802903] rtol = 1e-4
-      q = (0.7782903228571, 0.8384621)
-      r = DT.intersection_of_ray_with_boundary(points, boundary_nodes, p, q)
-      @test collect(r) ≈ [0.8205468677133, 1.0] rtol = 1e-4
-      p = (0.6, 0.4)
-      q = (1.4, 0.4)
-      r = DT.intersection_of_ray_with_boundary(points, boundary_nodes, p, q)
-      @test collect(r) ≈ [1.0, 0.4]
-      p = (1.0, 0.4)
-      r = DT.intersection_of_ray_with_boundary(points, boundary_nodes, p, q)
-      @test p == r
-      p = (0.2, 0.4)
-      q = (1.0, 0.4)
-      r = DT.intersection_of_ray_with_boundary(points, boundary_nodes, p, q)
-      @test q == r
-end
-
 @testset "segment_intersection_coordinates" begin
       a, b, c, d = (0.5, 4.0), (1.5, 3.5), (2.0, 4.0), (0.5, 3.0)
       u, v = DT.segment_intersection_coordinates(a, b, c, d)
@@ -847,7 +818,7 @@ end
             tri = triangulate(rand(2, 500))
             ch = get_convex_hull(tri)
             pts = get_points(ch)
-            verts = get_indices(ch)
+            verts = DT.get_vertices(ch)
             orig_verts = deepcopy(verts)
             pop!(verts)
             shuffle!(verts)
@@ -875,13 +846,11 @@ end
       r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
       rtrue = (1.3, 4.252704459932)
       @test collect(r) ≈ collect(rtrue)
-      @test DT.identify_side(r, a, b, c, d) == :right
       p = (1.0, 4.5)
       q = (2.0, 4.5)
       r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
       rtrue = (1.3, 4.5)
       @test collect(r) ≈ collect(rtrue)
-      @test DT.identify_side(r, a, b, c, d) == :right
 
       a, b, c, d = 0.0, 1.0, 0.0, 1.0
       p = (0.5, 0.5)
@@ -889,99 +858,51 @@ end
       r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
       rtrue = (1.0, 0.5)
       @test collect(r) ≈ collect(rtrue)
-      @test DT.identify_side(r, a, b, c, d) == :right
       q = (0.5, 1.5)
       r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
       rtrue = (0.5, 1.0)
       @test collect(r) ≈ collect(rtrue)
-      @test DT.identify_side(r, a, b, c, d) == :top
       q = (0.202587350495, 1.5151867707735)
       r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
       rtrue = (0.353517464218, 1.0)
       @test collect(r) ≈ collect(rtrue) rtol = 1e-6
-      @test DT.identify_side(r, a, b, c, d) == :top
       q = (-0.5, 1.5)
       r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
       rtrue = (0.0, 1.0)
       @test collect(r) ≈ collect(rtrue)
-      @test DT.identify_side(r, a, b, c, d) == :top
       q = (-1.0, 0.5)
       r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
       rtrue = (0.0, 0.5)
       @test collect(r) ≈ collect(rtrue)
-      @test DT.identify_side(r, a, b, c, d) == :left
       q = (-1.5, 0.0)
       r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
       rtrue = (0.0, 0.375)
       @test collect(r) ≈ collect(rtrue)
-      @test DT.identify_side(r, a, b, c, d) == :left
       q = (-1.0, -1.0)
       r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
       rtrue = (0.0, 0.0)
       @test collect(r) ≈ collect(rtrue) atol = 1e-6
-      @test DT.identify_side(r, a, b, c, d) == :bottom
       q = (0.0, -1.0)
       r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
       rtrue = (1 / 3, 0.0)
       @test collect(r) ≈ collect(rtrue)
-      @test DT.identify_side(r, a, b, c, d) == :bottom
       q = (0.5, -1.0)
       r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
       rtrue = (0.5, 0.0)
       @test collect(r) ≈ collect(rtrue)
-      @test DT.identify_side(r, a, b, c, d) == :bottom
       q = (2.0, -1.0)
       r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
       rtrue = (1.0, 0.0)
       @test collect(r) ≈ collect(rtrue)
-      @test DT.identify_side(r, a, b, c, d) == :bottom
       q = (0.4026485332004, 0.7749544176151)
       r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
       rtrue = (0.3229679893052, 1.0)
       @test collect(r) ≈ collect(rtrue)
-      @test DT.identify_side(r, a, b, c, d) == :top
       u, v = (a, d), (b, d)
       newr = DT.segment_intersection_coordinates(p, r, u, v)
       @test collect(newr) ≈ collect(r)
       cert = DT.line_segment_intersection_type(p, r, u, v)
       @test DT.is_touching(cert)
-
-      for _ in 1:10000
-            for q in (5randn(2), rand(), 10rand(), 17randn(2))
-                  q = 5randn(2)
-                  r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
-                  side = DT.identify_side(r, a, b, c, d)
-                  if side == :top
-                        @test r[2] ≈ d
-                        u, v = (a, d), (b, d)
-                  elseif side == :left
-                        @test r[1] ≈ a
-                        u, v = (a, d), (a, c)
-                  elseif side == :right
-                        @test r[1] ≈ b
-                        u, v = (b, d), (b, c)
-                  else #side == :bottom
-                        @test r[2] ≈ c
-                        u, v = (a, c), (b, c)
-                  end
-                  rtrue = DT.segment_intersection_coordinates(p, q, u, v)
-                  @test collect(r) ≈ collect(rtrue)
-            end
-      end
-end
-
-@testset "point_position_relative_to_box" begin
-      p = (4.0, 5.0)
-      a, b, c, d = 3.0, 7.0, 1.0, 8.0
-      @test DT.is_inside(DT.point_position_relative_to_box(a, b, c, d, p))
-      p = (2.0, 4.0)
-      @test DT.is_outside(DT.point_position_relative_to_box(a, b, c, d, p))
-      p = (a, (c + d) / 2)
-      @test DT.is_on(DT.point_position_relative_to_box(a, b, c, d, p))
-      p = (b, (c + d) / 2)
-      @test DT.is_on(DT.point_position_relative_to_box(a, b, c, d, p))
-      p = ((a + b) / 2, c)
-      @test DT.is_on(DT.point_position_relative_to_box(a, b, c, d, p))
 end
 
 @testset "Polygon" begin
@@ -1072,30 +993,6 @@ end
       ]), ≈)
 end
 
-@testset "intersection_of_ray_with_edge" begin
-      p, q, a, b = (0.0, 0.0), (5.0, 5.0), (-2.0, 5.0), (0.0, 5.0)
-      r = DT.intersection_of_ray_with_edge(p, q, a, b)
-      @test all(isnan, r)
-      b = (2.0, -1.0)
-      r = DT.intersection_of_ray_with_edge(p, q, a, b)
-      @test collect(r) ≈ [0.8, 0.8]
-      b = (0.0, -1.0)
-      r = DT.intersection_of_ray_with_edge(p, q, a, b)
-      @test all(isnan, r)
-      a, b = (-2.0, -2.0), (-4.0, -4.0)
-      r = DT.intersection_of_ray_with_edge(p, q, a, b)
-      @test all(isnan, r)
-      a, b = (4.0, 2.0), (2.0, 2.0)
-      r = DT.intersection_of_ray_with_edge(p, q, a, b)
-      @test collect(r) ≈ [2.0, 2.0]
-      p, q, a, b = (0.0, 0.0), (0.0, 6.0), (4.0, 0.0), (2.0, -2.0)
-      r = DT.intersection_of_ray_with_edge(p, q, a, b)
-      @test all(isnan, r)
-      b = (-2.0, 0.0)
-      r = DT.intersection_of_ray_with_edge(p, q, a, b)
-      @test collect(r) ≈ [0.0, 0.0]
-end
-
 @testset "Liang-Barsky algorithm" begin
       p, q = (-7.0, 5.0), (1.0, 8.0)
       a, b, c, d = 0.0, 8.0, 0.0, 4.0
@@ -1133,3 +1030,141 @@ end
       @test collect(v) ≈ [10, 7 + 1 / 3]
 end
 
+@testset "get_plane_through_three_points" begin
+      @static if VERSION ≥ v"1.10"
+      _plane_mat(p, q, r) =
+            let c = (p .+ q .+ r) ./ 3
+                  [c... 1; p... 1; q... 1; r... 1]
+            end
+      else 
+            _plane_mat(p, q, r) = 
+            let c = (p .+ q .+ r) ./ 3 
+                  vcat([c... 1], [p... 1], [q... 1], [r... 1])
+            end
+      end
+      _plane_norm(p, q, r) = begin
+            x = q .- p
+            y = r .- p
+            nv = cross(x |> collect, y |> collect)
+            return nv ./ norm(nv)
+      end
+      for _ in 1:10000
+            p, q, r = Tuple(rand(3)), Tuple(rand(3)), Tuple(rand(3))
+            α, β, γ, δ = DT.get_plane_through_three_points(p, q, r)
+            @inferred DT.get_plane_through_three_points(p, q, r)
+            @test det(_plane_mat(p, q, r)) ≈ 0.0 atol = 1e-14
+            n = _plane_norm(p, q, r)
+            @test n ≈ [α, β, γ] / norm([α, β, γ]) || n ≈ -[α, β, γ] / norm([α, β, γ])
+
+            p, q, r = (rand(2)..., 0.0), (rand(2)..., 0.0), (rand(2)..., 0.0)
+            α, β, γ, δ = DT.get_plane_through_three_points(p, q, r)
+            @test det(_plane_mat(p, q, r)) ≈ 0.0 atol = 1e-14
+            n = [0, 0, 1]
+            @test n ≈ [α, β, γ] / norm([α, β, γ]) || n ≈ -[α, β, γ] / norm([α, β, γ])
+            p, q, r = (rand(), 2.0, rand()), (rand(), 2.0, rand()), (rand(), 2.0, rand())
+            α, β, γ, δ = DT.get_plane_through_three_points(p, q, r)
+            @test det(_plane_mat(p, q, r)) ≈ 0.0 atol = 1e-14
+            n = [0, 1, 0]
+            @test n ≈ [α, β, γ] / norm([α, β, γ]) || n ≈ -[α, β, γ] / norm([α, β, γ])
+            p, q, r = (2.0, rand(), rand()), (2.0, rand(), rand()), (2.0, rand(), rand())
+            α, β, γ, δ = DT.get_plane_through_three_points(p, q, r)
+            @test det(_plane_mat(p, q, r)) ≈ 0.0 atol = 1e-14
+            n = [1, 0, 0]
+            @test n ≈ [α, β, γ] / norm([α, β, γ]) || n ≈ -[α, β, γ] / norm([α, β, γ])
+      end
+      p, q, r = (1.3, 0.5, 5.5), (2.5, 2.22, 3.86), (5.3, 1.39, 2.85)
+      a, b, c, d = DT.get_plane_through_three_points(p, q, r)
+      @test a ≈ -3.0984
+      @test b ≈ -3.38
+      @test c ≈ -5.812
+      @test d ≈ 37.68392
+end
+
+@testset "get_steepest_descent_direction" begin
+      for _ in 1:10000
+            p, q, r = Tuple(rand(3)), Tuple(rand(3)), Tuple(rand(3))
+            α, β, γ, δ = DT.get_plane_through_three_points(p, q, r)
+            x, y = DT.get_steepest_descent_direction(p, q, r)
+            @inferred DT.get_steepest_descent_direction(p, q, r)
+            @test x ≈ sign(γ) * α && sign(γ) * y ≈ β
+            p1 = DT.get_steepest_descent_direction(p, q, r) |> collect
+            p2 = DT.get_steepest_descent_direction(q, r, p) |> collect
+            p3 = DT.get_steepest_descent_direction(r, p, q) |> collect
+            p4 = DT.get_steepest_descent_direction(r, q, p) |> collect
+            @test p1 ≈ p2 ≈ p3 ≈ p4
+      end
+      p, q, r = (1.3, 0.5, 5.5), (2.5, 2.22, 3.86), (5.3, 1.39, 2.9)
+      x, y = DT.get_steepest_descent_direction(p, q, r)
+      @test x ≈ 3.0124 && y ≈ 3.44
+end
+
+@testset "get_distance_to_plane" begin
+      for _ in 1:10000
+            p, q, r = Tuple(rand(3)), Tuple(rand(3)), Tuple(rand(3))
+            s = Tuple(rand(3))
+            α, β, γ, δ = DT.get_plane_through_three_points(p, q, r)
+            d = DT.get_vertical_distance_to_plane(p, q, r, s)
+            @inferred DT.get_vertical_distance_to_plane(p, q, r, s)
+            @test d ≈ s[3] + (α * s[1] + β * s[2] + δ) / γ
+
+            p, q, r = Tuple(rand(3)), Tuple(rand(3)), Tuple(rand(3))
+            s = Tuple(rand(3))
+            α, β, γ, δ = DT.get_plane_through_three_points(p, q, r)
+            n = [α, β, γ] / norm([α, β, γ])
+            x, y, z = s
+            z₀ = -(α * x + β * y + δ) / γ
+            Q = [x, y, z₀]
+            P = [x, y, z]
+            v = Q - P
+            δ = dot(v, n)
+            d = DT.get_distance_to_plane(p, q, r, s)
+            @inferred DT.get_distance_to_plane(p, q, r, s)
+            @test abs(d) ≈ abs(δ)
+            @test sign(d) == sign(DT.get_vertical_distance_to_plane(p, q, r, s))
+      end
+
+      for _ in 1:1000
+            p, q, r = (rand(), rand(), 2.0), (rand(), rand(), 2.0), (rand(), rand(), 2.0)
+            s = (rand(), rand(), 10 * randn())
+            d = DT.get_distance_to_plane(p, q, r, s)
+            @test d ≈ s[3] - 2 ≈ DT.get_vertical_distance_to_plane(p, q, r, s)
+            if s[3] > 2.0
+                  @test d > 0.0
+            else
+                  @test d ≤ 0.0
+            end
+      end
+end
+
+@testset "angle_between" begin
+      p = (2.0, 9.0)
+      q = (2.0, -5.0)
+      θ = DT.angle_between(p, q)
+      @test rad2deg(θ) ≈ 145.6697828044967 rtol = 1e-4
+      θ = DT.angle_between(q, p)
+      @test rad2deg(θ) ≈ 214.3302171955033 rtol = 1e-4
+      p = (7.0, 1.0)
+      q = (2.0, -5.0)
+      θ = DT.angle_between(p, q)
+      @test rad2deg(θ) ≈ 76.3286928678042
+      θ = DT.angle_between(q, p)
+      @test rad2deg(θ) ≈ 283.6713071321958
+      p = (0.0, 9.0)
+      q = (0.0, -4.0)
+      θ = DT.angle_between(p, q)
+      @test rad2deg(θ) ≈ 180.0
+      θ = DT.angle_between(q, p)
+      @test rad2deg(θ) ≈ 180.0
+      p = (0.0, -5.0)
+      q = (0.0, -4.0)
+      θ = DT.angle_between(p, q)
+      @test rad2deg(θ) ≈ 0.0
+      θ = DT.angle_between(q, p)
+      @test rad2deg(θ) ≈ 0.0
+      p = (-0.27, -4.96)
+      q = (0.0, -4.0)
+      θ = DT.angle_between(p, q)
+      @test rad2deg(θ) ≈ 356.8841517402107 rtol = 1e-4
+      θ = DT.angle_between(q, p)
+      @test rad2deg(θ) ≈ 3.1158482597894 rtol = 1e-4
+end

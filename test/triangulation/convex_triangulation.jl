@@ -4,100 +4,46 @@ using Random
 using Test
 using CairoMakie
 using StableRNGs
+using ReferenceTests
+using StatsBase
 
 include("../helper_functions.jl")
 
-@testset "Setting up the vectors for a convex triangulation" begin
-    rng = StableRNG(9992881)
-    pts = rand(rng, 2, 50)
-    tri = triangulate(pts; rng)
-    _S = get_convex_hull_indices(tri)
-    points = get_points(tri)
-    rng2 = StableRNG(92871)
-
-    next, prev, k, S, shuffled_indices = DT.prepare_convex_triangulation_vectors(_S)
-    @test next == zeros(Int, length(_S) - 1)
-    @test prev == zeros(Int, length(_S) - 1)
-    @test k == length(_S) - 1
-    @test shuffled_indices == collect(1:(length(_S)-1))
-    @test S == _S[begin:(end-1)]
-
-    SS = DT.prepare_convex_triangulation_vectors(_S[begin:(end-1)])[4]
-    @test SS == _S[begin:(end-1)]
-
-    DT.reset_convex_triangulation_vectors!(next, prev, shuffled_indices, k, rng2)
-    @test next == [(2:length(S))..., 1]
-    @test prev == [length(S), 1:(length(S)-1)...]
-    @test shuffled_indices == shuffle(StableRNG(92871), collect(1:(length(_S)-1)))
-
-    u, v, w = DT.index_shuffled_linked_list(S, next, prev, shuffled_indices, 2)
-    @test u == S[shuffled_indices[2]]
-    @test v == S[next[shuffled_indices[2]]]
-    @test w == S[prev[shuffled_indices[2]]]
-end
-
-@testset "Triangulating random convex polygons and testing post-processing" begin
-    for _ in 1:100
-        local pts, S, points
-        pts = rand(2, 2500)
-        tri_orig = triangulate(pts)
-        S = get_convex_hull_indices(tri_orig)
-        points = get_points(tri_orig)
-        tri_bw = triangulate(points; skip_points=setdiff(each_point_index(tri_orig), S))
-        tri_ch = triangulate_convex(points, S; add_ghost_triangles=false, compute_centers=false, add_convex_hull=false, delete_empty_features=false)
-        DT.compare_triangle_collections(get_triangles(tri_bw), get_triangles(tri_ch))
-
-        for (ij, k) in get_adjacent(tri_ch)
-            if DT.edge_exists(k)
-                @test get_adjacent(tri_bw, ij) == k
+@testset "Triangulating random convex polygons" begin
+    for n in 3:5:2500
+        points = rand(2, n)
+        S = get_random_convex_polygon(points)
+        skip_points = setdiff(axes(points, 2), S)
+        for delete_ghosts in (false, true)
+            tri_bowyer = triangulate(points; skip_points, delete_ghosts)
+            tri_chew = triangulate_convex(points, S; delete_ghosts)
+            @test validate_triangulation(tri_bowyer)
+            @test validate_triangulation(tri_chew)
+            @test DT.compare_triangle_collections(get_triangles(tri_bowyer), get_triangles(tri_chew))
+            for (ij, k) in get_adjacent(tri_chew).adjacent
+                if DT.edge_exists(k)
+                    @test get_adjacent(tri_bowyer, ij) == k
+                end
             end
-        end
-        for (w, E) in get_adjacent2vertex(tri_ch)
-            for ij in each_edge(E)
-                @test DT.contains_edge(ij, get_adjacent2vertex(tri_bw, w))
+            for (w, E) in get_adjacent2vertex(tri_chew).adjacent2vertex
+                for ij in each_edge(E)
+                    @test DT.contains_edge(ij, get_adjacent2vertex(tri_bowyer, w))
+                end
             end
+            for i in each_vertex(tri_chew)
+                @test get_neighbours(tri_chew, i) == get_neighbours(tri_bowyer, i)
+            end
+            @test DT.get_convex_hull_vertices(tri_chew) == [S; S[begin]] 
+            @test tri_chew.representative_point_list[1].x ≈ mean(points[1,s] for s in S)
+            @test tri_chew.representative_point_list[1].y ≈ mean(points[2,s] for s in S)
+            @test tri_chew.representative_point_list[1].n ≈ length(S)
+            @test compare_trees(DT.get_polygon_hierarchy(tri_bowyer), DT.construct_polygon_hierarchy(points))
+            @test compare_trees(DT.get_polygon_hierarchy(tri_chew), DT.construct_polygon_hierarchy(points))
         end
-        for i in get_vertices(tri_ch)
-            @test get_neighbours(tri_ch, i) == setdiff(get_neighbours(tri_bw, i), DT.BoundaryIndex)
-        end
-        @test isempty(get_convex_hull_indices(tri_ch))
-
-        DT.convex_triangulation_post_processing!(tri_ch, S[begin:end-1], false, true, false, false)
-        @test get_convex_hull(tri_ch) == get_convex_hull(tri_bw)
-        empty!(get_convex_hull_indices(tri_ch))
-        _pt = deepcopy(tri_bw.representative_point_list)
-        DT.convex_triangulation_post_processing!(tri_ch, S[begin:end-1], false, false, true, false)
-        @test tri_ch.representative_point_list[1].x ≈ _pt[1].x rtol = 1e-1
-        @test tri_ch.representative_point_list[1].y ≈ _pt[1].y rtol = 1e-1
-        @test tri_ch.representative_point_list[1].n ≈ _pt[1].n
-        DT.convex_triangulation_post_processing!(tri_ch, S[begin:end-1], false, false, false, true)
-        @test all(DT.edge_exists, values(get_adjacent(get_adjacent(tri_ch))))
-        DT.convex_triangulation_post_processing!(tri_ch, S[begin:end-1], true, false, false, false)
-        DT.add_ghost_triangles!(tri_bw)
-        @test DT.compare_triangle_collections(get_triangles(tri_ch), get_triangles(tri_bw))
-        @test (get_adjacent ∘ get_adjacent)(tri_ch) == (get_adjacent ∘ get_adjacent)(tri_bw)
-        @test (get_adjacent2vertex ∘ get_adjacent2vertex)(tri_ch) == (get_adjacent2vertex ∘ get_adjacent2vertex)(tri_bw)
-        @test (get_graph ∘ get_graph)(tri_ch) == (get_graph ∘ get_graph)(tri_bw)
-
-        tri_ch = triangulate_convex(points, S; add_ghost_triangles=true, delete_empty_features=true, add_convex_hull=false, compute_centers=false)
-        DT.add_ghost_triangles!(tri_bw)
-        @test DT.compare_triangle_collections(get_triangles(tri_ch), get_triangles(tri_bw))
-        @test (get_adjacent ∘ get_adjacent)(tri_ch) == (get_adjacent ∘ get_adjacent)(tri_bw)
-        @test (get_adjacent2vertex ∘ get_adjacent2vertex)(tri_ch) == (get_adjacent2vertex ∘ get_adjacent2vertex)(tri_bw)
-        @test (get_graph ∘ get_graph)(tri_ch) == (get_graph ∘ get_graph)(tri_bw)
-        @test !(get_convex_hull(tri_ch) == get_convex_hull(tri_bw))
-
-        tri_ch = triangulate_convex(points, S)
-        @test get_convex_hull(tri_ch) == get_convex_hull(tri_bw)
-        @test DT.compare_triangle_collections(get_triangles(tri_ch), get_triangles(tri_bw))
-        @test (get_adjacent ∘ get_adjacent)(tri_ch) == (get_adjacent ∘ get_adjacent)(tri_bw)
-        @test (get_adjacent2vertex ∘ get_adjacent2vertex)(tri_ch) == (get_adjacent2vertex ∘ get_adjacent2vertex)(tri_bw)
-        @test (get_graph ∘ get_graph)(tri_ch) == (get_graph ∘ get_graph)(tri_bw)
     end
 end
 
-
-@testset "Triangulating a small polygon" begin
+@testset "Triangulating a small polygon with some collinearities" begin
     p1 = [8.0, 4.0]
     p2 = [10.0, 4.0]
     p3 = [12.0, 4.0]
@@ -112,8 +58,8 @@ end
     p12 = [8.0, 6.0]
     pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12]
     for _ in 1:10000
-        tri_ch = triangulate_convex(pts, 1:12)
-        @test validate_triangulation(tri_ch)
+        tri_chew = triangulate_convex(pts, 1:12)
+        @test validate_triangulation(tri_chew)
     end
 end
 
@@ -127,22 +73,24 @@ end
         pts[:, 27] .= p2
         pts[:, 5] .= p3
         S = [11, 27, 5, 11]
-        tri_ch = triangulate_convex(pts, S)
-        tri_bw = triangulate(pts; skip_points=setdiff(1:50, [11, 27, 5]), delete_ghosts=false)
-        @test get_convex_hull(tri_ch) == get_convex_hull(tri_bw)
-        @test DT.compare_triangle_collections(get_triangles(tri_ch), get_triangles(tri_bw))
-        @test (get_adjacent ∘ get_adjacent)(tri_ch) == (get_adjacent ∘ get_adjacent)(tri_bw)
-        @test (get_adjacent2vertex ∘ get_adjacent2vertex)(tri_ch) == (get_adjacent2vertex ∘ get_adjacent2vertex)(tri_bw)
-        @test (get_graph ∘ get_graph)(tri_ch) == (get_graph ∘ get_graph)(tri_bw)
+        @test_throws AssertionError("S must not be circular.") triangulate_convex(pts, S)
+        pop!(S)
+        tri_chew = triangulate_convex(pts, S)
+        tri_bowyer = triangulate(pts; skip_points=setdiff(1:50, [11, 27, 5]), delete_ghosts=false)
+        @test get_convex_hull(tri_chew) == get_convex_hull(tri_bowyer)
+        @test DT.compare_triangle_collections(get_triangles(tri_chew), get_triangles(tri_bowyer))
+        @test (get_adjacent ∘ get_adjacent)(tri_chew) == (get_adjacent ∘ get_adjacent)(tri_bowyer)
+        @test (get_adjacent2vertex ∘ get_adjacent2vertex)(tri_chew) == (get_adjacent2vertex ∘ get_adjacent2vertex)(tri_bowyer)
+        @test get_graph(tri_chew) == get_graph(tri_bowyer)
 
         pts[:, 28] .= [1.01, 1.01]
-        S = [11, 27, 28, 5, 11]
-        tri_ch = triangulate_convex(pts, S)
-        tri_bw = triangulate(pts; skip_points=setdiff(1:50, [11, 27, 5, 28]), delete_ghosts=false)
-        @test get_convex_hull(tri_ch) == get_convex_hull(tri_bw)
-        @test DT.compare_triangle_collections(get_triangles(tri_ch), get_triangles(tri_bw))
-        @test (get_adjacent ∘ get_adjacent)(tri_ch) == (get_adjacent ∘ get_adjacent)(tri_bw)
-        @test (get_adjacent2vertex ∘ get_adjacent2vertex)(tri_ch) == (get_adjacent2vertex ∘ get_adjacent2vertex)(tri_bw)
-        @test (get_graph ∘ get_graph)(tri_ch) == (get_graph ∘ get_graph)(tri_bw)
+        S = [11, 27, 28, 5]
+        tri_chew = triangulate_convex(pts, S)
+        tri_bowyer = triangulate(pts; skip_points=setdiff(1:50, [11, 27, 5, 28]), delete_ghosts=false)
+        @test get_convex_hull(tri_chew) == get_convex_hull(tri_bowyer)
+        @test DT.compare_triangle_collections(get_triangles(tri_chew), get_triangles(tri_bowyer))
+        @test (get_adjacent ∘ get_adjacent)(tri_chew) == (get_adjacent ∘ get_adjacent)(tri_bowyer)
+        @test (get_adjacent2vertex ∘ get_adjacent2vertex)(tri_chew) == (get_adjacent2vertex ∘ get_adjacent2vertex)(tri_bowyer)
+        @test get_graph(tri_chew) == get_graph(tri_bowyer)
     end
 end
