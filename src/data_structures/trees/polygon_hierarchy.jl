@@ -17,12 +17,12 @@ Constructs a [`PolygonTree`](@ref) with `parent`, `index`, and `height`, and no 
 """
 mutable struct PolygonTree{I}
     parent::Union{Nothing,PolygonTree{I}}
-    children::Set{PolygonTree{I}} # would do const, but for compat reasons I don't. don't know how to fix this with @static either
+    children::Set{PolygonTree{I}} # would do const, but for compat reasons I don't. can't seem to fix this with @static either
     index::I # would do const, but for compat reasons I don't
     height::Int
 end
 PolygonTree{I}(parent::Union{Nothing,PolygonTree{I}}, index, height) where {I} = PolygonTree{I}(parent, Set{PolygonTree{I}}(), index, height)
-@static if VERSION ≥ 1.10
+@static if VERSION ≥ v"1.10"
     function Base.:(==)(tree1::PolygonTree, tree2::PolygonTree)
         parent1 = get_parent(tree1)
         parent2 = get_parent(tree2)
@@ -67,7 +67,7 @@ else
         return hash_tree(tree1) == hash_tree(tree2)
     end
 end
-@static if VERSION ≥ 1.10
+@static if VERSION ≥ v"1.10"
     function Base.deepcopy(tree::PolygonTree) # without this definition, deepcopy would occassionally segfault 
         parent = get_parent(tree)
         children = get_children(tree)
@@ -194,7 +194,7 @@ struct PolygonHierarchy{I}
     reorder_cache::Vector{PolygonTree{I}}
 end
 PolygonHierarchy{I}() where {I} = PolygonHierarchy{I}(BitVector(), BoundingBox[], Dict{I,PolygonTree{I}}(), PolygonTree{I}[])
-@static if VERSION ≥ 1.10
+@static if VERSION ≥ v"1.10"
     function Base.deepcopy(hierarchy::PolygonHierarchy{I}) where {I} # without this definition, deepcopy would occassionally segfault 
         polygon_orientations = get_polygon_orientations(hierarchy)
         bounding_boxes = get_bounding_boxes(hierarchy)
