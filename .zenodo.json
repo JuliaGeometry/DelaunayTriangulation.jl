@@ -5,7 +5,7 @@
 			"orcid": "0000-0001-6462-0135"
 		}
 	],
-	"description": "DelaunayTriangulation.jl: Delaunay triangulation and Voronoi tessellations of planar point sets.",
+	"description": "DelaunayTriangulation.jl: Delaunay triangulation and Voronoi tessellations in two dimensions.",
 	"keywords": [
 		"triangulation",
 		"tessellation",
