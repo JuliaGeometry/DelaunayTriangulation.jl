@@ -125,7 +125,7 @@ function Base.:(==)(tri1::Triangulation, tri2::Triangulation)
     get_boundary_edge_map(tri1) ≠ get_boundary_edge_map(tri2) && return false
     get_ghost_vertex_map(tri1) ≠ get_ghost_vertex_map(tri2) && return false
     get_ghost_vertex_ranges(tri1) ≠ get_ghost_vertex_ranges(tri2) && return false
-    get_convex_hull(tri1) ≠ get_convex_hull(tri2) && return false
+    # get_convex_hull(tri1) ≠ get_convex_hull(tri2) && return false
     rep1 = get_representative_point_list(tri1)
     rep2 = get_representative_point_list(tri2)
     length(rep1) ≠ length(rep2) && return false

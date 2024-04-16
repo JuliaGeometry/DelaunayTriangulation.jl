@@ -11,7 +11,7 @@ include("../helper_functions.jl")
         points, edges, mat_edges = get_random_vertices_and_constrained_edges(40, 200, 20, rng)
         # Need to deepcopy edges below, else it gets changed and updated on the first call to tri, which changes the insertion order of the segments and thus comparing tri to _tri might not work
         tri = triangulate(points; segments=deepcopy(edges), rng=StableRNG(i))
-        if i % 250 == 0
+        if i % 25 == 0
             _tri = retriangulate(tri; segments=deepcopy(edges), rng=StableRNG(i))
             @inferred retriangulate(tri)
             @test tri == _tri
