@@ -345,19 +345,15 @@ function triangle_circumcenter(p, q, r, A=triangle_area(p, q, r))
     qx, qy = _getxy(q)
     rx, ry = _getxy(r)
     d11 = (px - rx)^2 + (py - ry)^2
-    #d11 = dist((px, py), (rx, ry))^2
     d12 = py - ry
     d21 = (qx - rx)^2 + (qy - ry)^2
-    #d21 = dist((qx, qy), (rx, ry))^2
     d22 = qy - ry
     ox = rx + (d11 * d22 - d12 * d21) / (4A)
-    #ox = muladd(d11 * d22 - d12 * d21, 1/(4A), rx)
     e11 = px - rx
     e12 = d11
     e21 = qx - rx
     e22 = d21
     oy = ry + (e11 * e22 - e12 * e21) / (4A)
-    #oy = muladd(e11 * e22 - e12 * e21, 1/(4A), ry)
     return (ox, oy)
 end
 

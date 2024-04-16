@@ -28,6 +28,13 @@ include("../helper_functions.jl")
     end
 end
 
+@testset "Retriangulate should ignore deleted points" begin 
+    points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.5, 0.5)]
+    tri = triangulate(points; skip_points = 5)
+    _tri = retriangulate(tri)
+    @test tri == _tri && !DelaunayTriangulation.has_vertex(_tri, 5) && validate_triangulation(_tri)
+end
+
 @testset "Lots of collinearity" begin
     _tri = triangulate_rectangle(-3.0, 2.0, 5.0, 17.3, 23, 57; single_boundary=true)
     @test validate_triangulation(_tri)

@@ -163,12 +163,14 @@ Retriangulates the triangulation `tri` using the points `points`, returning a ne
 - `points=get_points(tri)`: The points to use for retriangulating the triangulation. By default, this is simply `get_points(tri)`.
 
 # Keyword Arguments
+- `skip_points=Set(filter(i -> !has_vertex(tri, i), each_point_index(tri)))`: The points to skip when inserting points into the triangulation.
 - `kwargs...`: Extra keyword arguments passed to `triangulate`. Other keyword arguments, like `segments` and `boundary_nodes`, 
    are automatically passed from the fields of `tri`, but may be overridden by passing the corresponding keyword arguments.
 """
 function retriangulate(tri::T, points=get_points(tri);
     segments=get_interior_segments(tri),
     boundary_nodes=get_boundary_nodes(tri),
+    skip_points = Set(filter(i -> !has_vertex(tri, i), each_point_index(tri))),
     kwargs...) where {T<:Triangulation}
     return triangulate(
         points;
@@ -181,6 +183,7 @@ function retriangulate(tri::T, points=get_points(tri);
         EdgesType=edges_type(tri),
         TrianglesType=triangles_type(tri),
         check_arguments=false,
+        skip_points,
         kwargs...
     )::T
 end

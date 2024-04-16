@@ -1177,3 +1177,14 @@ end
     δ = DT.maximum_distance_to_box(a, b, c, d, A)
     @test sqrt(δ) ≈ 14.142135623731
 end
+
+@testset "Previously broken example" begin
+    # The points were duplicated from refine and not included in tri, but 
+    # retriangulate kept trying to use them
+    points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
+    tri = triangulate(points; boundary_nodes=[1, 2, 3, 4, 1])
+    refine!(tri; max_area=1e-2, min_angle=29.871)
+    vorn = voronoi(tri)
+    smooth_vorn = centroidal_smooth(vorn; maxiters=250)
+    @test validate_tessellation(smooth_vorn)
+end
