@@ -115,14 +115,6 @@ include("algorithms/voronoi/clipped.jl")
 include("algorithms/voronoi/main.jl")
 include("algorithms/voronoi/unbounded.jl")
 
-# TODO: Remove these after updating their use inside Makie.jl.
-indices(args...) = triangle_vertices(args...)
-edge_indices(args...) = edge_vertices(args...)
-get_all_constrained_edges(tri) = get_all_segments(tri)
-each_constrained_edge(tri) = each_segment(tri)
-get_convex_hull_indices(tri) = get_convex_hull_vertices(tri)
-is_boundary_index(g) = is_ghost_vertex(g)
-
 export
     each_triangle,
     each_solid_triangle,
