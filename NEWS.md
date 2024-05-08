@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.3
+
+- Removed some old function definitions that were no longer needed anymore following the new Makie release.
+
 ## v1.0.0
 
 In addition to the changes below, note that many bugs have been fixed. Feel free to make any issues or PRs if you encounter any problems.
