@@ -274,10 +274,6 @@ end
 This function gives our $\boldsymbol\lambda$ vector. Notice that, in the computation of these coordinates,
 we need needed to have $\mathcal V(X)$ directly or make use of the data $z_i$.
 
-````@example interpolation
-### Evaluating the Sibsonian interpolant
-````
-
 Now we can evaluate our Sibson interpolant. The following function does this for us.
 
 ````@example interpolation
