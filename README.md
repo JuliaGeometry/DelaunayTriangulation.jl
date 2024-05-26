@@ -27,6 +27,78 @@ To ensure that the algorithms are robust, we use [ExactPredicates.jl](https://gi
 
 Some examples are below (and in the documentation), but if you would also like to see how DelaunayTriangulation.jl is used in other packages, see [FiniteVolumeMethod.jl](https://github.com/SciML/FiniteVolumeMethod.jl) (solving 2D PDEs) and [NaturalNeighbours.jl](https://github.com/DanielVandH/NaturalNeighbours.jl) (scattered data interpolation).
 
+## Example Usage 
+Here is a quick example of some ways the package can be used. As mentioned, see the docs for many examples.
+
+```julia
+# using Pkg; Pkg.add(["DelaunayTriangulation", "CairoMakie"])
+using DelaunayTriangulation, CairoMakie
+
+# Unconstrained 
+points = rand(2, 50)
+tri1 = triangulate(points)
+
+# Voronoi example 
+vorn2 = voronoi(tri1)
+
+# Clipped Voronoi 
+vorn3 = voronoi(tri1, clip=true)
+
+# Smoothed Voronoi 
+vorn4 = centroidal_smooth(vorn3)
+
+# Constrained example with refinement 
+boundary_points = [(0.0, 0.0), (1.0, 0.0), (1.0, 0.3), (0.5, 0.3),
+    (0.3, 0.7), (0.1, 1.0), (0.0, 1.0), (0.0, 0.0)]
+boundary_nodes, points = convert_boundary_points_to_indices(boundary_points)
+tri5 = triangulate(points; boundary_nodes)
+refine!(tri5; max_area=1e-2get_area(tri5))
+
+# Disjoint constrained example with refinement 
+boundary_points = [
+    [[(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.0, 0.0)]],
+    [[(0.3, 0.3), (0.3, 0.7), (0.7, 0.7), (0.7, 0.3), (0.3, 0.3)]],
+    [[(1.2, 0.0), (1.4, 0.0), (1.4, 1.2), (0.0, 1.2), (0.0, 1.1),
+        (1.1, 1.1), (1.1, 0.0), (1.2, 0.0)]]
+]
+boundary_nodes, points = convert_boundary_points_to_indices(boundary_points)
+tri6 = triangulate(points; boundary_nodes)
+refine!(tri6; max_area=1e-2get_area(tri6))
+
+# Curve-bounded example
+using DelaunayTriangulation: EllipticalArc
+ellipse = EllipticalArc((1.0, 0.0), (1.0, 0.0), (0.0, 0.0), 1.0, 2.0, 0.0)
+tri7 = triangulate(NTuple{2,Float64}[]; boundary_nodes=[ellipse])
+refine!(tri7; max_area=1e-2get_area(tri7))
+
+# Disjoint curve-bounded example 
+ellipse = EllipticalArc((7.0, 3.5), (7.0, 3.5), (0.0, 3.5), 7.0, 10.0, 0.0)
+catmull_cp = [(0.0, 0.0), (-2.0, -1.0), (-4.0, 0.0), (-5.0, 2.0), (-1.0, 4.0), (0.0, 3.0),
+    (1.0, 4.0), (5.0, 2.0), (4.0, 0.0), (2.0, -1.0), (0.0, 0.0)]
+catmull_spl = CatmullRomSpline(catmull_cp)
+circle = CircularArc((0.5, 1.5), (0.5, 1.5), (0.0, 1.0))
+circle2 = CircularArc((0.1, 1.5), (0.1, 1.5), (0.0, 1.0), positive=false)
+points = [(-4.0, -10.0), (4.0, -10.0), (4.0, -7.0), (-4.0, -7.0)]
+square = [1, 2, 3, 4, 1]
+boundary_nodes = [[square], [[ellipse]], [[catmull_spl]], [[circle]], [[circle2]]]
+tri8 = triangulate(points; boundary_nodes)
+refine!(tri8; max_area=1e-2get_area(tri8)) # could also use find_polygon to help define a custom refinement function for each shape
+
+# Plotting 
+fig = Figure(fontsize = 42, size = (2800, 1480))
+rat = AxisAspect(1)
+ax = Axis(fig[1, 1], title="Unconstrained", width=600,height=600);            triplot!(ax, tri1)
+ax = Axis(fig[1, 2], title="Voronoi", width=600,height=600);                  voronoiplot!(ax, vorn2)
+ax = Axis(fig[1, 3], title="Clipped Voronoi", width=600,height=600);          voronoiplot!(ax, vorn3)
+ax = Axis(fig[1, 4], title="Centroidal Voronoi", width=600,height=600);       voronoiplot!(ax, vorn4)
+ax = Axis(fig[2, 1], title="Constrained", width=600,height=600);              triplot!(ax, tri5)
+ax = Axis(fig[2, 2], title="Disjoint Constrained", width=600,height=600);     triplot!(ax, tri6)
+ax = Axis(fig[2, 3], title="Curve-Bounded", width=600,height=600);            triplot!(ax, tri7)
+ax = Axis(fig[2, 4], title="Disjoint Curve-Bounded", width=600,height=600);   triplot!(ax, tri8)
+```
+
+![](readme.png)
+
 ## Similar Packages
 
 This is not the only Delaunay triangulation package available. Some others are:
