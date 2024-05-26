@@ -86,7 +86,6 @@ refine!(tri8; max_area=1e-2get_area(tri8)) # could also use find_polygon to help
 
 # Plotting 
 fig = Figure(fontsize = 42, size = (2800, 1480))
-rat = AxisAspect(1)
 ax = Axis(fig[1, 1], title="Unconstrained", width=600,height=600);            triplot!(ax, tri1)
 ax = Axis(fig[1, 2], title="Voronoi", width=600,height=600);                  voronoiplot!(ax, vorn2)
 ax = Axis(fig[1, 3], title="Clipped Voronoi", width=600,height=600);          voronoiplot!(ax, vorn3)
