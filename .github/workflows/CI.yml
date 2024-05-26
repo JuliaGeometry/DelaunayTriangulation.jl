@@ -53,9 +53,8 @@ jobs:
         if: always()
         uses: codecov/codecov-action@v4
         with:
-          files: lcov.info
-          threshold: 5%
-          target: auto
+            token: ${{ secrets.CODECOV_TOKEN }}
+            fail_ci_if_error: false
   docs:
     name: Documentation
     runs-on: ubuntu-latest
