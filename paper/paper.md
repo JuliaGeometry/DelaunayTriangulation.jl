@@ -36,9 +36,9 @@ DelaunayTriangulation.jl has already seen use in several areas. DelaunayTriangul
 
 # Examples
 
-We give two examples of how the package can be used. Many more examples are given in the [documentation](https://juliageometry.github.io/DelaunayTriangulation.jl/stable/), including [tutorials](https://juliageometry.github.io/DelaunayTriangulation.jl/stable/tutorials/overview/) and [fully detailed applications](https://juliageometry.github.io/DelaunayTriangulation.jl/stable/applications/overview/) such as cell simulations. To fully demonstrate the utility of the package, our examples follow realistic applications. We omit code used for plotting with Makie.jl [@danisch2021makie] in the examples below for space reasons. The complete code is available [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/paper/paper/paper.jl).
+We give one examples of how the package can be used, focusing on Delaunay triangulations rather than Voronoi tessellations. Many more examples are given in the [documentation](https://juliageometry.github.io/DelaunayTriangulation.jl/stable/), including [tutorials](https://juliageometry.github.io/DelaunayTriangulation.jl/stable/tutorials/overview/) and [fully detailed applications](https://juliageometry.github.io/DelaunayTriangulation.jl/stable/applications/overview/) such as cell simulations. To fully demonstrate the utility of the package, we consider a realistic application. We omit code used for plotting with Makie.jl [@danisch2021makie] in the example below for space reasons. The complete code is available [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/paper/paper/paper.jl).
 
-For our first example, we consider a domain motivated by mean exit time. In particular, consider the problem
+We consider a domain motivated by mean exit time. In particular, consider the problem
 $$
 \begin{array}{rcll}
 D\nabla^2 T(x, y) & = & -1 & (x, y) \in \Omega, \\
@@ -49,7 +49,7 @@ T(x, y) & = & 0 & (x, y) = (x_s, y_s), \\
 $$
 Here, $T(x, y)$ denotes the mean exit time of a particle exiting $\Omega$ with diffusivity $D$ starting at $(x, y)$ [@redner2001guide; @carr2022mean], $\hat{\boldsymbol n}(x, y)$ is the unit normal vector field on $\Gamma_r$, $(x_s, y_s) = (0, 0)$, and the domain $\Omega$ with boundary $\partial\Omega = \Gamma_a \cup \Gamma_r$ is shown in \autoref{fig:1}(a). This setup defines a mean exit time where the particle can only exit through $\Gamma_a$ or through the sink $(x_s, y_s)$, and it gets reflected off of $\Gamma_r$.
 
-The code to generate a mesh of the domain is given below. We use curves to define the boundary so that curve-bounded refinement can be applied using the algorithm of @gosselin2009delaunay. The resulting mesh is shown in \autoref{fig:1}, together with a solution of the mean exit time problem with $D = 6.25 \times 10^{-4}$; FiniteVolumeMethod.jl [@vandenheuvel2024finite] is used to solve this problem, and the code for this can be found [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/paper/paper/paper.jl).
+The code to generate a mesh of the domain is given below. We use `CircularArc`s to define the boundary so that curve-bounded refinement can be applied using the algorithm of @gosselin2009delaunay. The resulting mesh is shown in \autoref{fig:1}, together with a solution of the mean exit time problem with $D = 6.25 \times 10^{-4}$; FiniteVolumeMethod.jl [@vandenheuvel2024finite] is used to solve this problem, and the code for this can be found [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/paper/paper/paper.jl).
 
 ```julia
 # The outer circle
@@ -77,28 +77,5 @@ refine!(tri; max_area=1e-3get_area(tri))
 ```
 
 ![(a) The generated mesh using DelaunayTriangulation.jl for the mean exit time domain. The red dots along the boundary define the absorbing part of the boundary, $\Gamma_a$, and the blue dots define the reflecting part, $\Gamma_r$. (b) The solution to the mean exit time problem using the mesh from (a) together with FiniteVolumeMethod.jl [@vandenheuvel2024finite].\label{fig:1}](figure1.png)
-
-We now give an example using Voronoi tessellations. Our example is motivated from Lloyd's algorithm for $k$-means clustering [@du1999centroidal]. We generate $k$ random points and compute their centroidal Voronoi tessellation. We then generate data and label them according to which Voronoi cell they belong to.[^1] The code is given below, and the resulting plot is given in \autoref{fig:2}.
-
-[^1]: This example is somewhat contrived. Our procedure only corresponds to $k$-means clustering when the data set is dense [@kanugo2002efficient; @du1999centroidal]. To exactly obtain $k$-means clustering, the density function used for computing the centroids would need to be adjusted. See Section 2.3 of @du1999centroidal for more details.
-
-```julia
-using Random
-Random.seed!(123)
-k = 7
-clusters = [(rand(), rand()) for _ in 1:k]
-# Assume data live in [0, 1]²
-push!(clusters, (0.0, 0.0), (1.0, 0.0), (0.0, 1.0), (1.0, 1.0))
-# Tessellate and smooth 
-tri = triangulate(clusters)
-vor = voronoi(tri, clip=true) # clips to [0, 1]²
-cvor = centroidal_smooth(vor)
-# Generate data and assign 
-data = rand(2, 2500)
-label = p -> get_nearest_neighbour(cvor, p)
-labels = label.(eachcol(data))
-```
-
-![Example of $k$-means clustering. The polygons are the clusters, and each point is coloured according to which cluster it belongs to, computed using `get_nearest_neighbour`.\label{fig:2}](figure2.png){width=60%}
 
 # References

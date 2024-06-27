@@ -60,25 +60,3 @@ ax.yticklabelsvisible = false
 Colorbar(fig[1,3], hm, label = L"T(x, y)")
 resize_to_layout!(fig)
 save("paper/figure1.png", fig)
-
-## Example 2: K-means clustering (assuming a dense data set)
-using Random
-Random.seed!(123)
-k = 7
-clusters = [(rand(), rand()) for _ in 1:k]
-# Assume data live in [0, 1]²
-push!(clusters, (0.0, 0.0), (1.0, 0.0), (0.0, 1.0), (1.0, 1.0))
-# Tessellate and smooth 
-tri = triangulate(clusters)
-vor = voronoi(tri, clip=true) # don't want unbounded
-cvor = centroidal_smooth(vor)
-# Generate data and assign 
-data = rand(2, 2500)
-label = p -> get_nearest_neighbour(cvor, p)
-labels = label.(eachcol(data))
-fig, ax, sc = voronoiplot(cvor, color=:white, strokewidth=4,
-    show_generators=false)
-colors = cgrad(:jet, num_polygons(cvor), categorical=true)
-scatter!(ax, data, color=colors[labels])
-fig
-save("paper/figure2.png", fig)
