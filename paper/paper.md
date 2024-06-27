@@ -27,7 +27,7 @@ DelaunayTriangulation.jl is a feature-rich Julia [@bezanson2017julia] package fo
 
 # Statement of Need 
 
-Delaunay triangulations and Voronoi tessellations have applications in a myriad of fields. Delaunay triangulations have been used for point location [@mucke1999fast], solving differential equations [@cheng2013delaunay; @golias1997delaunay; @ju2006adaptive], route planning [@chen2010enhanced; @sakthivel2022solving; @zhihai2021dynamic], etc. Voronoi tessellations are typically useful when there is some notion of _influence_ associated with a point, and have been applied to problems such as geospatial interpolation [@bobach2009natural], image processing [@du2006centroidal; @du1999centroidal], and cell biology [@hermann2008delaunay; @wang2024calibration; @osborne2017comparing].
+Delaunay triangulations and Voronoi tessellations have applications in a myriad of fields. Delaunay triangulations have been used for point location [@mucke1999fast], solving differential equations [@golias1997delaunay; @ju2006adaptive], route planning [@chen2010enhanced; @jan2008path], etc. Voronoi tessellations are typically useful when there is some notion of _influence_ associated with a point, and have been applied to problems such as geospatial interpolation [@bobach2009natural], image processing [@du1999centroidal], and cell biology [@hermann2008delaunay; @wang2024calibration].
 
 Several software packages with support for computing Delaunay triangulations and Voronoi tessellations in two dimensions already exist, such as _Triangle_ [@shewchuk1996triangle], _MATLAB_ [@MATLAB], _SciPy_ [@SciPy], _CGAL_ [@CGAL], and _Gmsh_ [@GMSH]. DelaunayTriangulation.jl is the most feature-rich of these and benefits from the high-performance of Julia to efficiently support many operations. Julia's multiple dispatch [@bezanson2017julia] 
 is leveraged to allow for complete customisation in how a user wishes to represent geometric primitives such as points and domain boundaries, a useful feature for allowing users to represent primitives in a way that suits their application without needing to sacrfice performance. The [documentation](https://juliageometry.github.io/DelaunayTriangulation.jl/stable/) lists many more features, including its ability a wide range of domains, even those that are disjoint and with holes. 
@@ -110,7 +110,7 @@ labels = label.(eachcol(data))
 There are still several features that are intended to eventually be implemented, some of these being:
 
 1. Weighted triangulations and Voronoi treemaps, using the algorithms described in [@cheng2013delaunay; @arlind2012computing].
-2. Support for maximum angle constraints and generalised Steiner points, using algorithms and ideas described in [@ungor2009off; @hale2009quality; hale2009computing].
+2. Support for maximum angle constraints and generalised Steiner points, using algorithms and ideas described in [@hale2009quality; hale2009computing].
 3. Clipped Voronoi tessellations to arbitrary boundaries, possibly using the VoroCrust algorithm [@ahmed2020vorocrust].
 4. Centroidal tessellations with inhomogeneous mass densities, as described in [@du1999centroidal].
 5. Inserting curves into an existing triangulation [@gosselin2009delaunay; @zaide2014inserting].
