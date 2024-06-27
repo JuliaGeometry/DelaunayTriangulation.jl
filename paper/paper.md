@@ -30,7 +30,7 @@ DelaunayTriangulation.jl is a feature-rich Julia [@bezanson2017julia] package fo
 Delaunay triangulations and Voronoi tessellations have applications in a myriad of fields. Delaunay triangulations have been used for point location [@mucke1999fast], solving differential equations [@golias1997delaunay; @ju2006adaptive], route planning [@chen2010enhanced; @yan2008path], etc. Voronoi tessellations are typically useful when there is some notion of _influence_ associated with a point, and have been applied to problems such as geospatial interpolation [@bobach2009natural], image processing [@du1999centroidal], and cell biology [@hermann2008delaunay; @wang2024calibration].
 
 Several software packages with support for computing Delaunay triangulations and Voronoi tessellations in two dimensions already exist, such as _Triangle_ [@shewchuk1996triangle], _MATLAB_ [@MATLAB], _SciPy_ [@SciPy], _CGAL_ [@CGAL], and _Gmsh_ [@GMSH]. DelaunayTriangulation.jl is the most feature-rich of these and benefits from the high-performance of Julia to efficiently support many operations. Julia's multiple dispatch [@bezanson2017julia] 
-is leveraged to allow for complete customisation in how a user wishes to represent geometric primitives such as points and domain boundaries, a useful feature for allowing users to represent primitives in a way that suits their application without needing to sacrfice performance. The [documentation](https://juliageometry.github.io/DelaunayTriangulation.jl/stable/) lists many more features, including its ability a wide range of domains, even those that are disjoint and with holes. 
+is leveraged to allow for complete customisation in how a user wishes to represent geometric primitives such as points and domain boundaries, a useful feature for allowing users to represent primitives in a way that suits their application without needing to sacrfice performance. The [documentation](https://juliageometry.github.io/DelaunayTriangulation.jl/stable/) lists many more features, including its ability to represent a wide range of domains, even those that are disjoint and with holes. 
 
 DelaunayTriangulation.jl has already seen use in several areas. DelaunayTriangulation.jl was used for mesh generation in [@vandenheuvel2023computational] and is used for the `tricontourf`, `triplot`, and `voronoiplot` routines inside Makie.jl [@danisch2021makie]. The packages [FiniteVolumeMethod.jl](https://github.com/SciML/FiniteVolumeMethod.jl) [@vandenheuvel2024finite] and [NaturalNeighbours.jl](https://github.com/DanielVandH/NaturalNeighbours.jl) [@vandenheuvel2024natural] are also built directly on top of DelaunayTriangulation.jl. The design of boundaries in DelaunayTriangulation.jl has been motivated especially for the efficient representation of boundary conditions along different parts of a boundary for solving differential equations, and this is heavily utilised by FiniteVolumeMethod.jl.  
 
@@ -76,7 +76,7 @@ tri = triangulate([sink], boundary_nodes=[C0, [[C1]], [[C2]]])
 refine!(tri; max_area=1e-3get_area(tri))
 ```
 
-![(a) The generated mesh using DelaunayTriangulation.jl for the mean exit time domain. The red dots along the boundary define the absorbing part of the boundary, $\Gamma_a$, and the blue parts define the reflecting part, $\Gamma_r$. (b) The solution to the mean exit time problem using the mesh from (a) together with FiniteVolumeMethod.jl [@vandenheuvel2024finite].\label{fig:1}](figure1.png)
+![(a) The generated mesh using DelaunayTriangulation.jl for the mean exit time domain. The red dots along the boundary define the absorbing part of the boundary, $\Gamma_a$, and the blue dots define the reflecting part, $\Gamma_r$. (b) The solution to the mean exit time problem using the mesh from (a) together with FiniteVolumeMethod.jl [@vandenheuvel2024finite].\label{fig:1}](figure1.png)
 
 We now give an example using Voronoi tessellations. Our example is motivated from Lloyd's algorithm for $k$-means clustering [@du1999centroidal]. We generate $k$ random points and compute their centroidal Voronoi tessellation. We then generate data and label them according to which Voronoi cell they belong to.[^1] The code is given below, and the resulting plot is given in \autoref{fig:2}.
 
@@ -100,18 +100,5 @@ labels = label.(eachcol(data))
 ```
 
 ![Example of $k$-means clustering. The polygons are the clusters, and each point is coloured according to which cluster it belongs to, computed using `get_nearest_neighbour`.\label{fig:2}](figure2.png)
-
-# Extensions
-
-There are still several features that are intended to eventually be implemented, some of these being:
-
-1. Weighted triangulations and Voronoi treemaps, using the algorithms described in [@cheng2013delaunay; @arlind2012computing].
-2. Support for maximum angle constraints and generalised Steiner points, using algorithms and ideas described in [@hale2009quality; hale2009computing].
-3. Clipped Voronoi tessellations to arbitrary boundaries, possibly using the VoroCrust algorithm [@ahmed2020vorocrust].
-4. Centroidal tessellations with inhomogeneous mass densities, as described in [@du1999centroidal].
-5. Inserting curves into an existing triangulation [@gosselin2009delaunay; @zaide2014inserting].
-6. Delaunay repair algorithms for retriangulating perturbed point sets, using ideas from [@shewchuk2005star; @yuanfeng2010fast]. 
-
-There is no intention to support three-dimensional geometries within DelaunayTriangulation.jl. For this, the best option is TetGen [@hang2015tetgen].
 
 # References
