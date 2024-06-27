@@ -47,9 +47,7 @@ T(x, y) & = & 0 & (x, y) = (x_s, y_s), \\
 \nabla T(x, y) \cdot \hat{\boldsymbol n}(x, y) & = & 0 & (x, y) \in \Gamma_r. 
 \end{array}
 $$
-Here, $T(x, y)$ denotes the mean exit time of a particle exiting $\Omega$ with diffusivity $D$ starting at $(x, y)$ [@redner2001guide; @carr2022mean], $\hat{\boldsymbol n}(x, y)$ is the unit normal vector field on $\Gamma_r$, $(x_s, y_s) = (0, 0)$, and the domain $\Omega$ with boundary $\partial\Omega = \Gamma_a \cup \Gamma_r$ is shown in \autoref{fig:0}. This setup defines a mean exit time where the particle can only exit through $\Gamma_a$ or through the sink $(x_s, y_s)$, and it gets reflected off of $\Gamma_r$.
-
-![The domain $\Omega$. The red part of the boundary defines the absorbing boundary $\Gamma_a$, and the blue part defines the reflecting boundary $\Gamma_r$.](figure0.png){ width=20%, label = "fig:0"}
+Here, $T(x, y)$ denotes the mean exit time of a particle exiting $\Omega$ with diffusivity $D$ starting at $(x, y)$ [@redner2001guide; @carr2022mean], $\hat{\boldsymbol n}(x, y)$ is the unit normal vector field on $\Gamma_r$, $(x_s, y_s) = (0, 0)$, and the domain $\Omega$ with boundary $\partial\Omega = \Gamma_a \cup \Gamma_r$ is shown in \autoref{fig:1}(a). This setup defines a mean exit time where the particle can only exit through $\Gamma_a$ or through the sink $(x_s, y_s)$, and it gets reflected off of $\Gamma_r$.
 
 The code to generate a mesh of the domain in \autoref{fig:0} is given below. We use curves to define the boundary so that curve-bounded refinement can be applied [@gosselin2009delaunay]. The resulting mesh is shown in \autoref{fig:1}, together with a solution of the mean exit time problem with $D = 6.25 \times 10^{-4}$; FiniteVolumeMethod.jl [@vandenheuvel2024finite] is used to solve this problem, and the code for this can be found [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/paper/paper/paper.jl).
 
@@ -78,7 +76,7 @@ tri = triangulate([sink], boundary_nodes=[C0, [[C1]], [[C2]]])
 refine!(tri; max_area=1e-3get_area(tri))
 ```
 
-![(a) The generated mesh using DelaunayTriangulation.jl for the mean exit time domain. The different parts of the boundary are shown with different coloured dots. (b) The solution to the mean exit time problem using the mesh from (a) together with FiniteVolumeMethod.jl [@vandenheuvel2024finite].\label{fig:1}](figure1.png)
+![(a) The generated mesh using DelaunayTriangulation.jl for the mean exit time domain. The red dots along the boundary define the absorbing part of the boundary, $\Gamma_a$, and the blue parts define the reflecting part, $\Gamma_r$. (b) The solution to the mean exit time problem using the mesh from (a) together with FiniteVolumeMethod.jl [@vandenheuvel2024finite].\label{fig:1}](figure1.png)
 
 We now give an example using Voronoi tessellations. Our example is motivated from Lloyd's algorithm for $k$-means clustering [@du1999centroidal]. We generate $k$ random points and compute their centroidal Voronoi tessellation. We then generate data and label them according to which Voronoi cell they belong to.[^1] The code is given below, and the resulting plot is given in \autoref{fig:2}.
 

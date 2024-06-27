@@ -1,38 +1,5 @@
 using DelaunayTriangulation, CairoMakie
 
-## Domain definition 
-θ = 5π / 64
-cs = θ -> (cos(θ), sin(θ))
-p₁, q₁ = cs(-π / 2 - θ), cs(θ) # Absorbing 
-p₂, q₂ = q₁, cs(π / 2 - θ)     # Reflecting 
-p₃, q₃ = q₂, cs(π + θ)         # Absorbing 
-p₄, q₄ = q₃, p₁                # Reflecting
-c₀ = (0.0, 0.0)
-𝒞₀₁ = CircularArc(p₁, q₁, c₀) # first, last, center
-𝒞₀₂ = CircularArc(p₂, q₂, c₀)
-𝒞₀₃ = CircularArc(p₃, q₃, c₀)
-𝒞₀₄ = CircularArc(p₄, q₄, c₀)
-c₁, p₅ = (-0.4, -0.4), (-0.65, -0.65)
-c₂, p₆ = (0.4, 0.4), (0.65, 0.65)
-𝒞₁ = CircularArc(p₅, p₅, c₁, positive=false) # Reflecting
-𝒞₂ = CircularArc(p₆, p₆, c₂, positive=false) # Reflecting
-sink = (0.0, 0.0)
-fig = Figure()
-ax = Axis(fig[1, 1])
-t = LinRange(0, 1, 1000)
-[lines!(ax, 𝒞.(t), color=:red, linewidth=4) for 𝒞 in (𝒞₀₁, 𝒞₀₃)]
-[lines!(ax, 𝒞.(t), color=:blue, linewidth=4) for 𝒞 in (𝒞₀₂, 𝒞₀₄, 𝒞₁, 𝒞₂)]
-scatter!(ax, [sink], color=:black, markersize=14)
-text!(ax, [(0.0, -0.2),
-        (-0.7, -0.5), (0.8, 0.6),
-        (0.7, -0.5), (-0.7, 0.5)],
-    text=[L"(x_s, y_s)",
-        L"\Gamma_r", L"\Gamma_r",
-        L"\Gamma_a", L"\Gamma_a"],
-    fontsize=26)
-fig
-save("paper/figure0.png", fig)
-
 ## Example 1: Mean exit time
 # The outer circle
 θ = 5π / 64
@@ -60,7 +27,7 @@ refine!(tri; max_area=1e-3get_area(tri))
 fig, ax, sc = triplot(tri,
     axis=(width=500, height=500, title="(a): Triangulation"),
     figure=(fontsize=30,))
-colors = [:red, :blue, :darkgreen, :magenta, :black, :purple]
+colors = [:red, :blue, :red, :blue, :blue, :blue]
 section = (tri, i) -> [get_point(tri, i) for i in get_neighbours(tri, i)]
 for i in each_ghost_vertex(tri)
     scatter!(ax, section(tri, i), color=colors[-i], markersize=15) # ghost vertices are negative
