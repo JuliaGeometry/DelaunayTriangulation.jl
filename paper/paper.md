@@ -9,7 +9,7 @@ tags:
     - tessellation
 authors:
     - name: Daniel J. VandenHeuvel
-      orcid: https://orcid.org/0000-0001-6462-0135
+      orcid: 0000-0001-6462-0135
       affiliation: 1
       corresponding: true
 affiliations:
