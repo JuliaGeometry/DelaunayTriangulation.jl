@@ -59,30 +59,30 @@ The code to generate a mesh of the domain in Figure \ref{fig0} is given below. W
 # The outer circle
 θ = 5π / 64
 cs = θ -> (cos(θ), sin(θ))
-p₁, q₁ = cs(-π / 2 - θ), cs(θ) # Absorbing 
-p₂, q₂ = q₁, cs(π / 2 - θ)     # Reflecting 
-p₃, q₃ = q₂, cs(π + θ)         # Absorbing 
-p₄, q₄ = q₃, p₁                # Reflecting
-c₀ = (0.0, 0.0)
-𝒞₀₁ = CircularArc(p₁, q₁, c₀) # first, last, center
-𝒞₀₂ = CircularArc(p₂, q₂, c₀)
-𝒞₀₃ = CircularArc(p₃, q₃, c₀)
-𝒞₀₄ = CircularArc(p₄, q₄, c₀)
-𝒞₀ = [[𝒞₀₁], [𝒞₀₂], [𝒞₀₃], [𝒞₀₄]]
+p1, q1 = cs(-π / 2 - θ), cs(θ) # Absorbing 
+p2, q2 = q1, cs(π / 2 - θ)     # Reflecting 
+p3, q3 = q2, cs(π + θ)         # Absorbing 
+p4, q4 = q3, p1                # Reflecting
+c0 = (0.0, 0.0)
+C01 = CircularArc(p1, q1, c0) # first, last, center
+C02 = CircularArc(p2, q2, c0)
+C03 = CircularArc(p3, q3, c0)
+C04 = CircularArc(p4, q4, c0)
+C0 = [[C01], [C02], [C03], [C04]]
 # Inner circles
-c₁, p₅ = (-0.4, -0.4), (-0.65, -0.65)
-c₂, p₆ = (0.4, 0.4), (0.65, 0.65)
-𝒞₁ = CircularArc(p₅, p₅, c₁, positive=false) # Reflecting
-𝒞₂ = CircularArc(p₆, p₆, c₂, positive=false) # Reflecting
+c1, p5 = (-0.4, -0.4), (-0.65, -0.65)
+c2, p6 = (0.4, 0.4), (0.65, 0.65)
+C1 = CircularArc(p5, p5, c1, positive=false) # Reflecting
+C2 = CircularArc(p6, p6, c2, positive=false) # Reflecting
 # Triangulate and refine
 sink = (0.0, 0.0)
-tri = triangulate([sink], boundary_nodes=[𝒞₀, [[𝒞₁]], [[𝒞₂]]])
+tri = triangulate([sink], boundary_nodes=[C0, [[C1]], [[C2]]])
 refine!(tri; max_area=1e-3get_area(tri))
 ```
 
-![(a) The generated mesh using DelaunayTriangulation.jl for the mean exit time domain. The different parts of the boundary are shown with different coloured dots. (b) The solution to the mean exit time problem using the mesh from (a) together with FiniteVolumeMethod.jl[@vandenheuvel2024finite].](figure1.png)
+![(a) The generated mesh using DelaunayTriangulation.jl for the mean exit time domain. The different parts of the boundary are shown with different coloured dots. (b) The solution to the mean exit time problem using the mesh from (a) together with FiniteVolumeMethod.jl[@vandenheuvel2024finite].\label{fig1}](figure1.png)
 
-We now give an example using Voronoi tessellations. Our example is motivated from Lloyd's algorithm for $k$-means clustering [@kanugo2002efficient; @du1999centroidal]. We generate $k$ random points and compute their centroidal Voronoi tessellation. We then generate data and label them according to which Voronoi cell they belong to.[^1] The code is given below.
+We now give an example using Voronoi tessellations. Our example is motivated from Lloyd's algorithm for $k$-means clustering [@kanugo2002efficient; @du1999centroidal]. We generate $k$ random points and compute their centroidal Voronoi tessellation. We then generate data and label them according to which Voronoi cell they belong to.[^1] The code is given below, and the resulting plot is given in Figure \ref{fig2}.
 
 [^1]: This example is somewhat contrived. Our procedure only corresponds to $k$-means clustering when the data set is dense [@kanugo2002efficient; @du1999centroidal]. To exactly obtain $k$-means clustering, the density function used for computing the centroids would need to be adjusted. See Section 2.3 of [@du1999centroidal] for more details.
 
@@ -103,7 +103,7 @@ label = p -> get_nearest_neighbour(cvor, p)
 labels = label.(eachcol(data))
 ```
 
-![Example of $k$-means clustering. The polygons are the clusters, and each point is coloured according to which cluster it belongs to, computed using `get_nearest_neighbour`.](figure2.png)
+![Example of $k$-means clustering. The polygons are the clusters, and each point is coloured according to which cluster it belongs to, computed using `get_nearest_neighbour`.\label{fig2}](figure2.png)
 
 # Extensions
 
