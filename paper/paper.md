@@ -49,7 +49,7 @@ T(x, y) & = & 0 & (x, y) = (x_s, y_s), \\
 $$
 Here, $T(x, y)$ denotes the mean exit time of a particle exiting $\Omega$ with diffusivity $D$ starting at $(x, y)$ [@redner2001guide; @carr2022mean], $\hat{\boldsymbol n}(x, y)$ is the unit normal vector field on $\Gamma_r$, $(x_s, y_s) = (0, 0)$, and the domain $\Omega$ with boundary $\partial\Omega = \Gamma_a \cup \Gamma_r$ is shown in \autoref{fig:1}(a). This setup defines a mean exit time where the particle can only exit through $\Gamma_a$ or through the sink $(x_s, y_s)$, and it gets reflected off of $\Gamma_r$.
 
-The code to generate a mesh of the domain in \autoref{fig:0} is given below. We use curves to define the boundary so that curve-bounded refinement can be applied [@gosselin2009delaunay]. The resulting mesh is shown in \autoref{fig:1}, together with a solution of the mean exit time problem with $D = 6.25 \times 10^{-4}$; FiniteVolumeMethod.jl [@vandenheuvel2024finite] is used to solve this problem, and the code for this can be found [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/paper/paper/paper.jl).
+The code to generate a mesh of the domain is given below. We use curves to define the boundary so that curve-bounded refinement can be applied [@gosselin2009delaunay]. The resulting mesh is shown in \autoref{fig:1}, together with a solution of the mean exit time problem with $D = 6.25 \times 10^{-4}$; FiniteVolumeMethod.jl [@vandenheuvel2024finite] is used to solve this problem, and the code for this can be found [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/paper/paper/paper.jl).
 
 ```julia
 # The outer circle
