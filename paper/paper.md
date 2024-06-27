@@ -51,7 +51,7 @@ Here, $T(x, y)$ denotes the mean exit time of a particle exiting $\Omega$ with d
 
 ![The domain $\Omega$. The red part of the boundary defines the absorbing boundary $\Gamma_a$, and the blue part defines the reflecting boundary $\Gamma_r$.\label{fig:0}](figure0.png){ width = 20% }
 
-The code to generate a mesh of the domain in Figure \ref{fig0} is given below. We use curves to define the boundary so that curve-bounded refinement can be applied [@gosselin2009delaunay]. The resulting mesh is shown in \autoref{fig:1}, together with a solution of the mean exit time problem with $D = 6.25 \times 10^{-4}$; FiniteVolumeMethod.jl [@vandenheuvel2024finite] is used to solve this problem, and the code for this can be found [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/paper/paper/paper.jl).
+The code to generate a mesh of the domain in \autoref{fig:0} is given below. We use curves to define the boundary so that curve-bounded refinement can be applied [@gosselin2009delaunay]. The resulting mesh is shown in \autoref{fig:1}, together with a solution of the mean exit time problem with $D = 6.25 \times 10^{-4}$; FiniteVolumeMethod.jl [@vandenheuvel2024finite] is used to solve this problem, and the code for this can be found [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/paper/paper/paper.jl).
 
 ```julia
 # The outer circle
