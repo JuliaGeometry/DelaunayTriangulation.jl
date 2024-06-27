@@ -99,6 +99,6 @@ label = p -> get_nearest_neighbour(cvor, p)
 labels = label.(eachcol(data))
 ```
 
-![Example of $k$-means clustering. The polygons are the clusters, and each point is coloured according to which cluster it belongs to, computed using `get_nearest_neighbour`.\label{fig:2}](figure2.png)
+![Example of $k$-means clustering. The polygons are the clusters, and each point is coloured according to which cluster it belongs to, computed using `get_nearest_neighbour`.\label{fig:2}](figure2.png){width=20%}
 
 # References
