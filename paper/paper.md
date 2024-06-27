@@ -40,14 +40,12 @@ We give two examples of how the package can be used. Many more examples are give
 
 For our first example, we consider a domain motivated by mean exit time. In particular, consider the problem
 $$
-\begin{align*}
 \begin{array}{rcll}
 D\nabla^2 T(x, y) & = & -1 & (x, y) \in \Omega, \\
 T(x, y) & = & 0 & (x, y) \in \Gamma_a, \\
 T(x, y) & = & 0 & (x, y) = (x_s, y_s), \\
 \nabla T(x, y) \cdot \hat{\boldsymbol n}(x, y) & = & 0 & (x, y) \in \Gamma_r. 
 \end{array}
-\end{align*}
 $$
 Here, $T(x, y)$ denotes the mean exit time of a particle exiting $\Omega$ with diffusivity $D$ starting at $(x, y)$ [@redner2001guide; @carr2022mean], $\hat{\boldsymbol n}(x, y)$ is the unit normal vector field on $\Gamma_r$, $(x_s, y_s) = (0, 0)$, and the domain $\Omega$ with boundary $\partial\Omega = \Gamma_a \cup \Gamma_r$ is shown in Figure ref{fig0}. This setup defines a mean exit time where the particle can only exit through $\Gamma_a$ or through the sink $(x_s, y_s)$, and it gets reflected off of $\Gamma_r$.
 
