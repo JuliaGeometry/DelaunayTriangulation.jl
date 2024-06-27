@@ -34,9 +34,9 @@ is leveraged to allow for complete customisation in how a user wishes to represe
 
 DelaunayTriangulation.jl has already seen use in several areas. DelaunayTriangulation.jl was used for mesh generation in @vandenheuvel2023computational and is used for the `tricontourf`, `triplot`, and `voronoiplot` routines inside Makie.jl [@danisch2021makie]. The packages [FiniteVolumeMethod.jl](https://github.com/SciML/FiniteVolumeMethod.jl) [@vandenheuvel2024finite] and [NaturalNeighbours.jl](https://github.com/DanielVandH/NaturalNeighbours.jl) [@vandenheuvel2024natural] are also built directly on top of DelaunayTriangulation.jl. 
 
-# Examples
+# Example
 
-We give one examples of how the package can be used, focusing on Delaunay triangulations rather than Voronoi tessellations. Many more examples are given in the [documentation](https://juliageometry.github.io/DelaunayTriangulation.jl/stable/), including [tutorials](https://juliageometry.github.io/DelaunayTriangulation.jl/stable/tutorials/overview/) and [fully detailed applications](https://juliageometry.github.io/DelaunayTriangulation.jl/stable/applications/overview/) such as cell simulations. To fully demonstrate the utility of the package, we consider a realistic application. We omit code used for plotting with Makie.jl [@danisch2021makie] in the example below for space reasons. The complete code is available [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/paper/paper/paper.jl).
+We give one example of how the package can be used, focusing on Delaunay triangulations rather than Voronoi tessellations. Many more examples are given in the [documentation](https://juliageometry.github.io/DelaunayTriangulation.jl/stable/), including [tutorials](https://juliageometry.github.io/DelaunayTriangulation.jl/stable/tutorials/overview/) and [fully detailed applications](https://juliageometry.github.io/DelaunayTriangulation.jl/stable/applications/overview/) such as cell simulations. To fully demonstrate the utility of the package, we consider a realistic application. We omit code used for plotting with Makie.jl [@danisch2021makie] in the example below for space reasons. The complete code is available [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/paper/paper/paper.jl).
 
 We consider a domain motivated by mean exit time. In particular, consider the problem
 $$
