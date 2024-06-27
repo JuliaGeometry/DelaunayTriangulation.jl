@@ -14,7 +14,7 @@ authors:
     - corresponding: true
 affiliations:
     - name: Department of Mathematics, Imperial College London, UK
-    index: 1
+      index: 1
 date: 26 June 2024
 bibliography: paper.bib
 ---
