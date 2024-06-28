@@ -68,7 +68,7 @@ Base.show(io::IO, tree::PolygonTree) = Base.show(io, MIME"text/plain"(), tree)
 
 Returns the parent of `tree`.
 """
-get_parent(tree::PolygonTree) = tree.parent
+@stable default_union_limit = 2 get_parent(tree::PolygonTree) = tree.parent
 
 """
     get_children(tree::PolygonTree) -> Set{PolygonTree}
@@ -349,7 +349,7 @@ end
 
 Returns a [`PolygonHierarchy`](@ref) defining the polygon hierarchy for a given set of `points`. This defines a hierarchy with a single polygon.
 """
-function construct_polygon_hierarchy(points; IntegerType=Int)
+@unstable function construct_polygon_hierarchy(points; IntegerType=Int)
     hierarchy = PolygonHierarchy{IntegerType}()
     return construct_polygon_hierarchy!(hierarchy, points)
 end
@@ -369,11 +369,11 @@ end
 Returns a [`PolygonHierarchy`](@ref) defining the polygon hierarchy for a given set of `boundary_nodes` that define a set of piecewise 
 linear curves. 
 """
-function construct_polygon_hierarchy(points, boundary_nodes; IntegerType=Int)
+@unstable function construct_polygon_hierarchy(points, boundary_nodes; IntegerType=Int)
     hierarchy = PolygonHierarchy{IntegerType}()
     return construct_polygon_hierarchy!(hierarchy, points, boundary_nodes)
 end
-construct_polygon_hierarchy(points, ::Nothing; IntegerType=Int) = construct_polygon_hierarchy(points; IntegerType)
+@unstable construct_polygon_hierarchy(points, ::Nothing; IntegerType=Int) = construct_polygon_hierarchy(points; IntegerType)
 function construct_polygon_hierarchy!(hierarchy::PolygonHierarchy{I}, points, boundary_nodes) where {I}
     if !has_boundary_nodes(boundary_nodes)
         return construct_polygon_hierarchy!(hierarchy, points)
@@ -553,7 +553,7 @@ Finds a tree in `hierarchy` containing `p`.
 # Output
 - `nothing` if `p` is not inside any tree in `hierarchy`, and the [`PolygonTree`](@ref) containing `p` otherwise.
 """
-function find_tree(hierarchy::PolygonHierarchy, points, boundary_nodes, p)
+@stable default_union_limit = 2 function find_tree(hierarchy::PolygonHierarchy, points, boundary_nodes, p)
     found = nothing
     for (_, tree) in get_trees(hierarchy)
         is_in = is_in_tree(hierarchy, points, boundary_nodes, tree, p)

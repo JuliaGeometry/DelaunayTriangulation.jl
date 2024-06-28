@@ -79,7 +79,7 @@ end
 
 Returns the subtree of `tree` at `level` that `bounding_box` should be inserted into.
 """
-function find_subtree(tree, bounding_box, level)
+@stable default_union_limit = 2 function find_subtree(tree, bounding_box, level)
     node = get_root(tree)::Union{Branch,Leaf{Branch}}
     while get_level(node) > level
         min_enlargement = minimise_enlargement(node, bounding_box)
@@ -554,7 +554,7 @@ function get_next_child(node::AbstractNode, start_idx, need_tests, itr)
     return start_idx, res
 end
 
-function _iterate(itr::RTreeIntersectionIterator, node, node_indices, need_tests)
+@stable default_union_limit = 2 function _iterate(itr::RTreeIntersectionIterator, node, node_indices, need_tests)
     while true
         local level, start_idx
         level = get_level(node)

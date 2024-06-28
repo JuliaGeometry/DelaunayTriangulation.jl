@@ -207,7 +207,7 @@ Computes the centroid of a triangle with vertices `p`, `q`, and `r`, given by
 c = \dfrac{p + q + r}{3}.
 ```
 """
-triangle_centroid(p, q, r) = ((_getx(p) + _getx(q) + _getx(r)) / 3, (_gety(p) + _gety(q) + _gety(r)) / 3)
+triangle_centroid(p, q, r) = ((getx(p) + getx(q) + getx(r)) / 3, (gety(p) + gety(q) + gety(r)) / 3)
 
 @doc raw"""
     triangle_angles(p, q, r) -> (Number, Number, Number)
@@ -222,9 +222,9 @@ where `A` is the area of the triangle. The angles are returned in sorted order.
 function triangle_angles(p, q, r)
     ℓ₁², ℓ₂², ℓ₃² = squared_triangle_lengths(p, q, r)
     A = triangle_area(ℓ₁², ℓ₂², ℓ₃²)
-    px, py = _getxy(p)
-    qx, qy = _getxy(q)
-    rx, ry = _getxy(r)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
+    rx, ry = getxy(r)
     ax, by = px - qx, py - qy
     bx, ay = px - rx, py - ry
     dotab = ax * bx + ay * by
@@ -307,9 +307,9 @@ Computes the squared lengths of the edges of the triangle with coordinates `p`, 
 the index refers to which edge in the order `(p, q)`, `(q, r)`, `(q, p)`.
 """
 function squared_triangle_lengths_and_smallest_index(p, q, r)
-    p = _getxy(p)
-    q = _getxy(q)
-    r = _getxy(r)
+    p = getxy(p)
+    q = getxy(q)
+    r = getxy(r)
     ℓ₁² = dist_sqr(p, q)
     ℓ₂² = dist_sqr(q, r)
     ℓ₃² = dist_sqr(r, p)
@@ -341,9 +341,9 @@ where ``d_{11} = \|p - r\|_2^2``, ``d_{12} = p_y - r_y``, ``d_{21} = \|q - r\|_2
 ``e_{12} = d_{11}``, ``e_{21} = q_x - r_x``, and ``e_{22} = d_{21}``.
 """
 function triangle_circumcenter(p, q, r, A=triangle_area(p, q, r))
-    px, py = _getxy(p)
-    qx, qy = _getxy(q)
-    rx, ry = _getxy(r)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
+    rx, ry = getxy(r)
     d11 = (px - rx)^2 + (py - ry)^2
     d12 = py - ry
     d21 = (qx - rx)^2 + (qy - ry)^2
@@ -407,8 +407,8 @@ function triangle_offcenter(p, q, r, c₁=triangle_circumcenter(p, q, r), β=1.0
         p, q, r = select_shortest_edge_for_offcenter(p, q, r, c₁, ℓ₁²)
     end
     h = distance_to_offcenter(β, ℓ₁)
-    p = _getxy(p)
-    q = _getxy(q)
+    p = getxy(p)
+    q = getxy(q)
     m = midpoint(p, q)
     c₁ = getxy(c₁)
     dist_to_c₁ = dist(m, c₁)
@@ -479,13 +479,13 @@ These outputs `(u, v, w)` are a permutation of `(p, q, r)` (maintaining positive
 where `m = (u + v)/2`. If there is no unique maximiser, then the output is the permutation that is lexicographically smallest (i.e., sorted by x and then by y).
 """
 function select_shortest_edge_for_offcenter(p, q, r, c, ℓ²)
-    p = _getxy(p)
-    q = _getxy(q)
-    r = _getxy(r)
-    #px, py = _getxy(p)
-    #qx, qy = _getxy(q)
-    #rx, ry = _getxy(r)
-    #cx, cy = _getxy(c)
+    p = getxy(p)
+    q = getxy(q)
+    r = getxy(r)
+    #px, py = getxy(p)
+    #qx, qy = getxy(q)
+    #rx, ry = getxy(r)
+    #cx, cy = getxy(c)
     #pqx, pqy = (px + qx) / 2, (py + qy) / 2
     #qrx, qry = (qx + rx) / 2, (qy + ry) / 2
     #prx, pry = (px + rx) / 2, (py + ry) / 2
@@ -598,18 +598,18 @@ end
 Computes the midpoints of the edges of the triangle with coordinates `(p, q, r)`.
 """
 function triangle_edge_midpoints(p, q, r)
-    #px, py = _getxy(p)
-    #qx, qy = _getxy(q)
-    #rx, ry = _getxy(r)
+    #px, py = getxy(p)
+    #qx, qy = getxy(q)
+    #rx, ry = getxy(r)
     #mx = (px + qx) / 2
     #my = (py + qy) / 2
     #nx = (qx + rx) / 2
     #ny = (qy + ry) / 2
     #ox = (rx + px) / 2
     #oy = (ry + py) / 2
-    _p = _getxy(p)
-    _q = _getxy(q)
-    _r = _getxy(r)
+    _p = getxy(p)
+    _q = getxy(q)
+    _r = getxy(r)
     return midpoint(_p, _q), midpoint(_q, _r), midpoint(_r, _p)
     #return (mx, my), (nx, ny), (ox, oy)
 end

@@ -24,7 +24,7 @@ Computes the minimum of the distance between the `i`th point of `pts` and `(qx, 
 """
 function compare_distance(current_dist, current_idx::I, pts, i, qx, qy) where {I}
     p = get_point(pts, i)
-    px, py = _getxy(p)
+    px, py = getxy(p)
     _dist = dist_sqr((px, py), (qx, qy))
     if _dist < current_dist
         current_dist = _dist
@@ -63,7 +63,7 @@ function select_initial_point(tri::Triangulation, q;
     I = integer_type(tri)
     current_dist = typemax(F)
     current_idx = I(first(point_indices))
-    qx, qy = _getxy(q)
+    qx, qy = getxy(q)
     for _ in 1:m # Not using replacement, but probability of duplicates is approximately 0.5num_solid_vertices(tri)^(-1/3)
         i = I(rand(rng, point_indices))
         (is_ghost_vertex(i) || (!allow_boundary_points && is_boundary_node(tri, i)[1])) && continue
@@ -736,7 +736,9 @@ function jump_and_march(tri::Triangulation, q;
     maxiters=2 + num_exterior_curves(tri) - num_solid_vertices(tri) + num_solid_edges(tri),
     concavity_protection=false,
     use_barriers::Val{U}=Val(false)) where {F,U}
-    return _jump_and_march(tri, q, k, store_history, history, rng, maxiters, zero(maxiters), concavity_protection, zero(maxiters), use_barriers)
+    I = integer_type(tri)
+    maxiters = Int(maxiters)
+    return _jump_and_march(tri, q, I(k), store_history, history, rng, maxiters, zero(maxiters), concavity_protection, zero(maxiters), use_barriers)
 end
 
 """

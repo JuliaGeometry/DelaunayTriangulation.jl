@@ -1320,9 +1320,9 @@ end
       ))
 end
 
-@testset "_getxy" begin
-      @test DT._getxy((0.3, 0.5)) == (0.3, 0.5)
-      @test DT._getxy((0.3f0, 0.7f0)) == (Float64(0.3f0), Float64(0.7f0))
+@testset "getxy" begin
+      @test DT.getxy((0.3, 0.5)) == (0.3, 0.5)
+      @test DT.getxy((0.3f0, 0.7f0)) == (Float64(0.3f0), Float64(0.7f0))
 end
 
 @testset "norm" begin

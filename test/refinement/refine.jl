@@ -1189,7 +1189,7 @@ end
         @inferred triangulate(rand(2, 250))
         end
         for (iii, tri) in enumerate((tri_1, tri_2, tri_3, tri_4, tri_5, tri_6))
-            @show iii
+            @info "Testing if encroached edges are detected. Run: $iii."
             args = DT.RefinementArguments(tri; use_lens=false)
             in_dt_encroached_edges, not_in_dt_encroached_edges = slow_encroachment_test(tri)
             all_bn = DT.get_all_boundary_nodes(tri)
@@ -1215,7 +1215,7 @@ end
             in_dt_encroached_edges_lens_10, not_in_dt_encroached_edges_lens_10 = slow_encroachment_test_diametral_lens(tri, 10.0)
             all_bn = DT.get_all_boundary_nodes(tri)
             for (lens_angle, not_in_dt_encroached_edges) in zip((45.0, 30.0, 20.0, 10.0), (not_in_dt_encroached_edges_lens_45, not_in_dt_encroached_edges_lens_30, not_in_dt_encroached_edges_lens_20, not_in_dt_encroached_edges_lens_10))
-                @show lens_angle
+                @info "Testing encroached edge detection. lens angle: $lens_angle"
                 args = DT.RefinementArguments(tri; use_lens=true, min_angle=lens_angle)
                 for (e, (b, k)) in not_in_dt_encroached_edges
                     if DT.initial(e) ∈ all_bn && DT.terminal(e) ∈ all_bn && !DT.contains_segment(tri, e) # e.g. if an edge crosses an interior
@@ -2256,7 +2256,7 @@ end
                 for (idx3, min_area) in enumerate((1e-12,))
                     for (idx4, max_area) in enumerate((1e-1, 1e-2))
                         for (idx5, seditious_angle) in enumerate((10.0, 20.0))
-                            @show idx1, idx2, idx3, idx4, idx5
+                            @info "Testing refinement of a simple convex example. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle."
                             rng = StableRNG(_rng_num(idx1, idx2, idx3, idx4, idx5))
                             points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
                             tri = triangulate(points; boundary_nodes=[1, 2, 3, 4, 1], rng)
@@ -2290,7 +2290,7 @@ end
                 for (idx3, min_area) in enumerate((1e-12,))
                     for (idx4, max_area) in enumerate((1e-2, 1e-3, 1e-4))
                         for (idx5, seditious_angle) in enumerate((20.0, 40.0))
-                            @show idx1, idx2, idx3, idx4, idx5
+                            @info "Testing refinement of a triangulation with a hole. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle."
                             rng = StableRNG(_rng_num(idx1, idx2, idx3, idx4, idx5))
                             points = [(0.0, 0.0), (0.5, 0.1), (1.0, 0.0), (0.9, 0.5), (1.0, 1.0), (0.5, 0.9), (0.0, 1.0),
                                 (0.3, 0.3), (0.7, 0.3), (0.7, 0.7), (0.3, 0.7)]
@@ -2318,7 +2318,7 @@ end
                 for (idx3, min_area) in enumerate((1e-12,))
                     for (idx4, max_area) in enumerate((1e-1, 1e-3, 1e-4))
                         for (idx5, seditious_angle) in enumerate((10.0, 20.0, 60.0))
-                            @show idx1, idx2, idx3, idx4, idx5
+                            @info "Testing refinement of a very non-convex example. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle."
                             rng = StableRNG(_rng_num(idx1, idx2, idx3, idx4, idx5))
                             points = [(0.0, 0.0), (0.0, 1.0), (0.1, 1.0),
                                 (0.1, 0.1), (0.2, 0.1), (0.2, 1.0),
@@ -2353,7 +2353,7 @@ end
                 for (idx3, min_area) in enumerate((1e-12,))
                     for (idx4, max_area) in enumerate((1e-2, 1e-3, 1e-4))
                         for (idx5, seditious_angle) in enumerate((20.0, 40.0))
-                            @show idx1, idx2, idx3, idx4, idx5
+                            @info "Testing refinement of a triangulation with multiple holes. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle."
                             rng = StableRNG(_rng_num(idx1, idx2, idx3, idx4, idx5))
                             curve_1 = [[
                                 (0.0, 0.0), (4.0, 0.0), (8.0, 0.0), (12.0, 0.0), (12.0, 4.0),
@@ -2408,7 +2408,7 @@ end
                 for (idx3, min_area) in enumerate((1e-12,))
                     for (idx4, max_area) in enumerate((1e-1, 1e-2, 1e-4))
                         for (idx5, seditious_angle) in enumerate((10.0, 20.0))
-                            @show idx1, idx2, idx3, idx4, idx5
+                            @info "Testing refinement of a square. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle."
                             rng = StableRNG(_rng_num(idx1, idx2, idx3, idx4, idx5))
                             p1 = (0.0, 0.0)
                             p2 = (1.0, 0.0)
@@ -2461,7 +2461,7 @@ end
                 for (idx3, min_area) in enumerate((1e-12,))
                     for (idx4, max_area) in enumerate((1e-1, 1e-2))
                         for (idx5, seditious_angle) in enumerate((10.0, 20.0))
-                            @show idx1, idx2, idx3, idx4, idx5
+                            @info "Testing that infinite bouncing is avoided during refinement. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle."
                             p1 = (0.0, 0.0)
                             p2 = (1.0, 0.0)
                             p3 = (0.0, 0.7)

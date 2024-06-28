@@ -1523,7 +1523,7 @@ end
                         for (idx3, min_area) in enumerate((1e-12,))
                             for (idx4, max_area) in enumerate(max_area_opts[curve_idx])
                                 for (idx5, seditious_angle) in enumerate((10.0, 20.0))
-                                    @show idx1, idx2, idx3, idx4, idx5, curve_idx, point_idx
+                                    @info "Testing curve-bounded refinement with circumcenters. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle; curve: $curve_idx; point set: $point_idx"
                                     rng = StableRNG(abs(_rng_num(idx1, idx2, idx3, idx4, idx5, curve_idx, point_idx)))
                                     points, curve = deepcopy(point_sets[point_idx][curve_idx]), deepcopy(curve_sets[curve_idx])
                                     if point_idx ≤ 2

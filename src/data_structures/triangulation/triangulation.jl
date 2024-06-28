@@ -404,7 +404,7 @@ end
 Initialises an empty `Triangulation` for triangulating `points`. The keyword arguments 
 `kwargs...` match those of [`triangulate`](@ref).
 """
-@inline function Triangulation(points;
+@unstable @inline function Triangulation(points;
     IntegerType=Int,
     EdgeType=NTuple{2,IntegerType},
     TriangleType=NTuple{3,IntegerType},
@@ -447,7 +447,7 @@ Returns the `Triangulation` corresponding to the triangulation of `points` with 
 # Output 
 - `tri`: The [`Triangulation`](@ref).
 """
-function Triangulation(points::P, triangles::T, boundary_nodes::BN;
+@unstable @inline function Triangulation(points::P, triangles::T, boundary_nodes::BN;
     IntegerType::Type{I}=Int,
     EdgeType::Type{E}=NTuple{2,IntegerType},
     TriangleType::Type{V}=NTuple{3,IntegerType},
@@ -457,6 +457,18 @@ function Triangulation(points::P, triangles::T, boundary_nodes::BN;
     delete_ghosts=false) where {P,T,BN,I,E,V,Es,Ts}
     _bn = copy(boundary_nodes)
     tri = Triangulation(points; boundary_nodes=_bn, weights, IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType)
+    return build_triangulation_from_data!(tri, triangles, _bn, delete_ghosts)
+end
+
+"""
+    build_triangulation_from_data!(tri::Triangulation, triangles, boundary_nodes, delete_ghosts)
+
+Given an empty `triangulation`, `tri`, adds all the `triangles` and `boundary_nodes` into it. Use 
+`delete_ghosts=true` if you want to have all ghost triangles deleted afterwards.
+"""
+@inline function build_triangulation_from_data!(tri::Triangulation, triangles, boundary_nodes, delete_ghosts)
+    Es = edges_type(tri)
+    points = get_points(tri)
     polygon_hierarchy = get_polygon_hierarchy(tri)
     construct_polygon_hierarchy!(polygon_hierarchy, points, boundary_nodes)
     adj = get_adjacent(tri)
@@ -474,7 +486,7 @@ function Triangulation(points::P, triangles::T, boundary_nodes::BN;
     convex_hull!(tri; reconstruct=true)
     segments = get_all_segments(tri)
     ghost_vertex_map = get_ghost_vertex_map(tri)
-    all_segments = merge_segments(ghost_vertex_map, _bn, Es())
+    all_segments = merge_segments(ghost_vertex_map, boundary_nodes, Es())
     for edge in each_edge(all_segments)
         add_edge!(segments, edge)
     end

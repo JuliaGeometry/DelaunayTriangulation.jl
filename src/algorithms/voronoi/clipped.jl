@@ -316,9 +316,6 @@ There are no outputs, as `polygon_edge_queue` is modified in-place.
 function enqueue_new_edge!(polygon_edge_queue, vorn::VoronoiTessellation, e)
     u, v = edge_vertices(e)
     p, q = get_generator(vorn, u, v)
-    #px, py = _getxy(p)
-    #qx, qy = _getxy(q)
-    #m = (px + qx) / 2, (py + qy) / 2
     m = midpoint(p, q)
     incident_polygon = get_nearest_neighbour(vorn, m; k=u)
     push!(polygon_edge_queue, (e, incident_polygon))

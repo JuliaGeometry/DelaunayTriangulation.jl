@@ -173,13 +173,13 @@ function _get_small_angle_complexes_segments!(d, segments, points, ::Type{I}) wh
     for (vertex, vertices) in segment_map
         length(vertices) == 1 && continue
         p = get_point(points, vertex)
-        px, py = _getxy(p)
+        px, py = getxy(p)
         for i in eachindex(vertices)
             j = i == lastindex(vertices) ? firstindex(vertices) : i + 1
             u, v = vertices[i], vertices[j]
             q, r = get_point(points, u, v)
-            qx, qy = _getxy(q)
-            rx, ry = _getxy(r)
+            qx, qy = getxy(q)
+            rx, ry = getxy(r)
             b = (qx - px, qy - py)
             a = (rx - px, ry - py)
             θ = angle_between(b, a)
@@ -221,12 +221,12 @@ function construct_segment_map(segments, points, ::Type{I}) where {I}
         p = get_point(points, vertex)
         first_vertex = first(vertices)
         q = get_point(points, first_vertex)
-        px, py = _getxy(p)
-        qx, qy = _getxy(q)
+        px, py = getxy(p)
+        qx, qy = getxy(q)
         base = (qx - px, qy - py)
         sort!(vertices, by=_vertex -> begin
                 _q = get_point(points, _vertex)
-                _qx, _qy = _getxy(_q)
+                _qx, _qy = getxy(_q)
                 next_base = (_qx - px, _qy - py)
                 return angle_between(base, next_base)
             end, rev=false)
@@ -245,12 +245,12 @@ function sort_members!(complex::SmallAngleComplex, points)
     first_member = first(members)
     first_edge = get_next_edge(first_member)
     p, q = get_point(points, apex, first_edge)
-    px, py = _getxy(p)
-    qx, qy = _getxy(q)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
     base = (qx - px, qy - py)
     sort!(members, by=member -> begin
             _q = get_point(points, get_next_edge(member))
-            _qx, _qy = _getxy(_q)
+            _qx, _qy = getxy(_q)
             next_base = (_qx - px, _qy - py)
             return angle_between(base, next_base)
         end, rev=false)
@@ -276,8 +276,8 @@ function partition_members(complexes::Vector{SmallAngleComplex{I}}, points) wher
     member = first(members)
     next_edge = get_next_edge(member)
     p, q = get_point(points, apex, next_edge)
-    px, py = _getxy(p)
-    qx, qy = _getxy(q)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
     base = (qx - px, qy - py)
     n = length(members)
     push!(init_complex, member)
@@ -293,7 +293,7 @@ function _partition_members_itr!(new_complexes::Vector{SmallAngleComplex{I}}, me
     member = members[i]
     next_edge = get_next_edge(member)
     q = get_point(points, next_edge)
-    qx, qy = _getxy(q)
+    qx, qy = getxy(q)
     next_base = (qx - px, qy - py)
     θ = angle_between(base, next_base)
     if θ ≤ π / 3
@@ -327,7 +327,7 @@ function get_minimum_edge_length(complex::SmallAngleComplex, points)
     for member in members
         next_edge = get_next_edge(member)
         q = get_point(points, next_edge)
-        len = min(len, dist(_getxy(p), _getxy(q)))
+        len = min(len, dist(getxy(p), getxy(q)))
     end
     return len
 end

@@ -41,10 +41,10 @@ function pole_of_inaccessibility(points, boundary_nodes; precision=one(number_ty
 
     ## Initialise the priority queue and decide if the polygon centroid of bounding box centroid is the best initial guess
     _, centroid = polygon_features(points, boundary_nodes)
-    centroid_cell = Cell(_getx(centroid), _gety(centroid), zero(half_width), points, boundary_nodes)
-    bounding_box_cell = Cell(Float64(xmin + width / 2), Float64(ymin + height / 2), zero(half_width), points, boundary_nodes)
+    centroid_cell = Cell(getx(centroid), gety(centroid), zero(half_width), points, boundary_nodes)
+    bounding_box_cell = Cell(xmin + width / 2, ymin + height / 2, zero(half_width), points, boundary_nodes)
     best_cell = centroid_cell.dist > bounding_box_cell.dist ? centroid_cell : bounding_box_cell
-    queue = CellQueue{Float64}()
+    queue = CellQueue{number_type(points)}()
     insert_cell!(queue, best_cell)
 
     ## Now fill the bounding box with more cells
@@ -80,8 +80,8 @@ function process_cell!(queue::CellQueue{F}, best_cell::Cell{F}, points, boundary
     end
     # We now break the cell into four, since we have not yet found the largest radius. This is the "quadtree" part of the approach.
     h = next_cell.half_width / 2
-    x = _getx(next_cell)
-    y = _gety(next_cell)
+    x = getx(next_cell)
+    y = gety(next_cell)
     cell_1 = Cell(x - h, y - h, h, points, boundary_nodes)
     cell_2 = Cell(x + h, y - h, h, points, boundary_nodes)
     cell_3 = Cell(x - h, y + h, h, points, boundary_nodes)

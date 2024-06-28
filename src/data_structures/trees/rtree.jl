@@ -145,7 +145,7 @@ A constant for representing an invalid rectangle, i.e. a rectangle with `NaN` en
 """
 const InvalidBoundingBox = BoundingBox(InvalidBoundingInterval, InvalidBoundingInterval)
 BoundingBox(a, b, c, d) = BoundingBox(BoundingInterval(a, b), BoundingInterval(c, d))
-BoundingBox(p::NTuple{2,<:Number}) = BoundingBox(_getx(p), _getx(p), _gety(p), _gety(p))
+BoundingBox(p::NTuple{2,<:Number}) = BoundingBox(getx(p), getx(p), gety(p), gety(p))
 
 """
     hspan(r::BoundingBox) -> Float64
@@ -279,7 +279,7 @@ function bounding_box(points)
     ymin = Inf
     ymax = -Inf
     for p in each_point(points)
-        px, py = _getxy(p)
+        px, py = getxy(p)
         xmin = min(xmin, px)
         xmax = max(xmax, px)
         ymin = min(ymin, py)
@@ -309,9 +309,9 @@ end
 Returns the bounding box of the points `p`, `q` and `r`.
 """
 function bounding_box(p::NTuple, q::NTuple, r::NTuple)
-    px, py = _getxy(p)
-    qx, qy = _getxy(q)
-    rx, ry = _getxy(r)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
+    rx, ry = getxy(r)
     xmin, _, xmax = min_med_max(px, qx, rx)
     ymin, _, ymax = min_med_max(py, qy, ry)
     return BoundingBox(xmin, xmax, ymin, ymax)
@@ -394,21 +394,21 @@ get_bounding_box(node::AbstractNode) = node.bounding_box
 
 Returns the children of `node`.
 """
-get_children(node::AbstractNode) = node.children
+@stable default_union_limit = 2 get_children(node::AbstractNode) = node.children
 
 """
     get_child(node::AbstractNode, i::Integer) -> AbstractNode
 
 Returns the `i`th child of `node`.
 """
-get_child(node::AbstractNode, i::Integer) = node.children[i]
+@stable default_union_limit = 2 get_child(node::AbstractNode, i::Integer) = node.children[i]
 
 """
     get_parent(node::AbstractNode) -> Union{Branch, Nothing}
 
 Returns the parent of `node`.
 """
-get_parent(node::AbstractNode) = node.parent
+@stable default_union_limit = 2 get_parent(node::AbstractNode) = node.parent
 
 """
     has_parent(node::AbstractNode) -> Bool
@@ -466,7 +466,7 @@ Returns the position of `node` in its parent's children. If `node` has no parent
 """
 function find_position_in_parent(node::AbstractNode)
     if has_parent(node)
-        return findfirst(==(node), get_children(get_parent(node)))
+        return findfirst(==(node), get_children(get_parent(node)))::Int
     else
         return ∅
     end
@@ -799,7 +799,7 @@ end
 
 Returns the root of `tree`.
 """
-get_root(tree::RTree) = tree.root
+@stable default_union_limit = 2 get_root(tree::RTree) = tree.root
 
 """
     get_branch_cache(tree::RTree) -> BranchCache

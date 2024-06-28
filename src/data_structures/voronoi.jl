@@ -418,7 +418,7 @@ function polygon_bounds(vorn::VoronoiTessellation, unbounded_extension_factor=0.
     ymax = typemin(F)
     if include_polygon_vertices
         for i in each_polygon_vertex(vorn)
-            x, y = _getxy(get_polygon_point(vorn, i))
+            x, y = getxy(get_polygon_point(vorn, i))
             xmin = min(xmin, x)
             xmax = max(xmax, x)
             ymin = min(ymin, y)
@@ -426,7 +426,7 @@ function polygon_bounds(vorn::VoronoiTessellation, unbounded_extension_factor=0.
         end
     end
     for i in each_generator(vorn)
-        x, y = _getxy(get_generator(vorn, i))
+        x, y = getxy(get_generator(vorn, i))
         xmin = min(xmin, x)
         xmax = max(xmax, x)
         ymin = min(ymin, y)
