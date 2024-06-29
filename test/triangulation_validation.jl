@@ -428,18 +428,27 @@ function Base.summary(state::GraphTrianglesState)
     if test_state(state)
         return "The graph correctly matches the triangle set."
     else
-        return "The graph is inconsistent with the triangle set. The triangle $(state.bad_triangle) is in the triangle set but either $(state.bad_edge[1]) or $(state.bad_edge[2]) are not in $(state.bad_vertex)'s neighbourhood."
+        if state.bad_vertex == DT.∅
+            return "The graph is inconsistent with the triangle set, as one of the vertices of $(state.bad_triangle) is not a vertex in the graph."
+        else
+            return "The graph is inconsistent with the triangle set. The triangle $(state.bad_triangle) is in the triangle set but either $(state.bad_edge[1]) or $(state.bad_edge[2]) are not in $(state.bad_vertex)'s neighbourhood."
+        end
     end
 end
 function test_graph_matches_triangles(tri)
     for T in each_triangle(tri)
-        i, j, k = DT.triangle_vertices(T)
-        flag1 = all(∈(get_neighbours(tri, i)), (j, k))
-        !flag1 && return GraphTrianglesState(flag1, Int.(triangle_vertices(T)), Int.((j, k)), Int(i))
-        flag2 = all(∈(get_neighbours(tri, j)), (k, i))
-        !flag2 && return GraphTrianglesState(flag2, Int.(triangle_vertices(T)), Int.((k, i)), Int(j))
-        flag3 = all(∈(get_neighbours(tri, k)), (i, j))
-        !flag3 && return GraphTrianglesState(flag3, Int.(triangle_vertices(T)), Int.((i, j)), Int(k))
+        try
+            i, j, k = DT.triangle_vertices(T)
+            flag1 = all(∈(get_neighbours(tri, i)), (j, k))
+            !flag1 && return GraphTrianglesState(flag1, Int.(triangle_vertices(T)), Int.((j, k)), Int(i))
+            flag2 = all(∈(get_neighbours(tri, j)), (k, i))
+            !flag2 && return GraphTrianglesState(flag2, Int.(triangle_vertices(T)), Int.((k, i)), Int(j))
+            flag3 = all(∈(get_neighbours(tri, k)), (i, j))
+            !flag3 && return GraphTrianglesState(flag3, Int.(triangle_vertices(T)), Int.((i, j)), Int(k))
+        catch e
+            e isa KeyError && return GraphTrianglesState(false, Int.(triangle_vertices(T)), (DT.∅, DT.∅), DT.∅)
+            rethrow(e)
+        end
     end
     return GraphTrianglesState(true, (DT.∅, DT.∅, DT.∅), (DT.∅, DT.∅), DT.∅)
 end

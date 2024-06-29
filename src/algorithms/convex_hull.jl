@@ -9,7 +9,7 @@ Computes the convex hull of `points`. The monotone chain algorithm is used.
 # Output
 - `ch`: The [`ConvexHull`](@ref). 
 """
-function convex_hull(points; IntegerType::Type{I}=Int) where {I}
+@unstable function convex_hull(points; IntegerType::Type{I}=Int) where {I}
     ch = ConvexHull(points, I[])
     sizehint!(ch, num_points(points))
     return convex_hull!(ch)

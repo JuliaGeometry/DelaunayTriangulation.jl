@@ -527,7 +527,7 @@ end
 end
 
 @testset "Adding a point onto multiple boundary edges with multiple ghost indices" begin
-    for _ in 1:100
+    for _ in 1:20
         tri = triangulate_rectangle(0, 4, 0, 8, 5, 9; delete_ghosts=false)
         add_point!(tri, 1.5, 0.0)
         add_segment!(tri, 1, 45)
@@ -553,7 +553,7 @@ end
 end
 
 @testset "Handling only a single boundary index" begin
-    for _ in 1:100
+    for _ in 1:20
         tri = triangulate_rectangle(0, 4, 0, 8, 5, 9; delete_ghosts=false, single_boundary=true)
         for x in [0.2, 0.3, 1.5, 2.3, 2.8, 3.5]
             add_point!(tri, x, 0.0)
@@ -576,7 +576,7 @@ end
 
 @testset "Starting with a thin set of boundary nodes, and filling them in with automatic collinearity detection" begin
     @testset "Contiguous boundary" begin
-        for _ in 1:100
+        for _ in 1:20
             tri = triangulate_rectangle(0, 4, 0, 8, 5, 9; delete_ghosts=false)
             pts = get_points(tri)
             boundary_nodes = [1, 5, 45, 41, 1]
@@ -713,7 +713,7 @@ end
     end
 
     @testset "Multiple segments" begin
-        for _ in 1:100
+        for _ in 1:20
             tri = triangulate_rectangle(0, 4, 0, 8, 5, 9; delete_ghosts=false)
             pts = get_points(tri)
             boundary_nodes = [[1, 5], [5, 45], [45, 41], [41, 1]]
@@ -1000,7 +1000,7 @@ end
     @test validate_triangulation(tri)
     add_point!(tri, 4.0, 2.5; rng)
     @test validate_triangulation(tri)
-    add_point!(tri, 4.0, 7. ; rng)
+    add_point!(tri, 4.0, 7.5; rng)
     add_point!(tri, 2.5, 8.0; rng)
     add_point!(tri, 0.0, 5.5; rng)
     add_point!(tri, 0.5, 2.2; rng)

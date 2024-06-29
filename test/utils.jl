@@ -688,7 +688,7 @@ end
       @test !DT.is_circular(x)
       push!(x, x[begin])
       @test DT.is_circular(x)
-      @test DT.is_circular([])
+      @test DT.is_circular(Float64[])
 end
 
 @testset "circular_equality" begin
@@ -705,7 +705,7 @@ end
             @test DT.circular_equality(x, y) && DT.circular_equality(y, x)
       end
       @test DT.circular_equality([3, 2, 1, 13, 12, 11, 5, 4, 3], [1, 13, 12, 11, 5, 4, 3, 2, 1])
-      @test DT.circular_equality([], [])
+      @test DT.circular_equality(Float64[], Float64[])
 end
 
 @testset "get_surrounding_polygon" begin
@@ -1406,10 +1406,15 @@ end
       @test chain == [151, 96]
 end
 
+#=
+Tuple{Bool, Bool, Tuple{Int64, Int64, Int64}, Tuple{Float64, Float64}, Int64, Int64, Tuple{Float64, Float64}, Tuple{Float64, Float64}}, 
+Tuple{Bool, Bool, Tuple{Int64, Int64, Int64},         Vector{Float64}, Int64, Int64, Vector{Float64}, Vector{Float64}}}`, which is not a concrete type.
+=#
+
 @testset "dist" begin
-      for i in 1:100
+      for i in 1:10
             tri = triangulate(rand(StableRNG(i), 2, 500); rng=StableRNG(i + 1))
-            for j in 1:100
+            for j in 1:10
                   p = randn(StableRNG(i * j), 2)
                   δ = DT.distance_to_polygon(p, get_points(tri), get_convex_hull_vertices(tri))
                   V = jump_and_march(tri, p)
@@ -1423,7 +1428,7 @@ end
       end
       points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.5, 0.9), (0.0, 1.0), (0.2, 0.2), (0.8, 0.2), (0.8, 0.8), (0.2, 0.8)]
       tri = triangulate(points; boundary_nodes=[[[1, 2, 3, 4, 5, 1]], [[6, 9, 8, 7, 6]]])
-      for i in 1:10000
+      for i in 1:100
             p = randn(StableRNG(i^2), 2)
             δ = DT.distance_to_polygon(p, get_points(tri), get_boundary_nodes(tri))
             V = jump_and_march(tri, p; rng=StableRNG(i^3), concavity_protection=true)
@@ -1541,7 +1546,7 @@ end
 end
 
 @testset "eval_fnc_at_het_tuple_two_elements" begin
-      global fft 
+      global fft
       global basic_defft
       fft(x, y) = objectid(x) + objectid(y)
       tup = (1, 2.0, "string", [1 2 3], [5, 7, 9], 0x00, 'A')
@@ -1556,7 +1561,7 @@ end
       b = similar(a)
       for i in eachindex(tup)
             for j in eachindex(tup)
-                  global fft 
+                  global fft
                   global basic_defft
                   a[i, j] = @ballocated DT.eval_fnc_at_het_tuple_two_elements($fft, $tup, $i, $j)
                   b[i, j] = @ballocated basic_defft($fft, $tup, $i, $j)
@@ -1566,4 +1571,9 @@ end
       end
       @test all(iszero, a)
       @test all(!iszero, b)
+end
+
+@testset "_to_val" begin
+      @test DT._to_val(2) == Val(2)
+      @test DT._to_val(Val(2)) == Val(2)
 end

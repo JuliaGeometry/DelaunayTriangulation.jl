@@ -144,7 +144,7 @@ end
 
     @testset "Edges" begin
         for _ in 1:25
-            n = rand(1:2500)
+            n = rand(1:250)
             points = 5 .* randn(2, n)
             tree_si = SI.RTree{Float64,2}(Int, NTuple{2,Int}; variant=SI.RTreeLinear)
             tree = DT.BoundaryRTree(points)

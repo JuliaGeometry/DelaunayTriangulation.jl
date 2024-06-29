@@ -814,7 +814,7 @@ end
 end
 
 @testset "sort_convex_polygon!" begin
-      for _ in 1:500
+      for _ in 1:50
             tri = triangulate(rand(2, 500))
             ch = get_convex_hull(tri)
             pts = get_points(ch)

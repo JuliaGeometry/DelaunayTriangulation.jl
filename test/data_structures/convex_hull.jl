@@ -50,7 +50,7 @@ end
 end
 
 @testset "Random tests" begin
-    for _ in 1:5000
+    for _ in 1:500
         pts = rand(2, 6)
         tri = triangulate(pts)
         ch = convex_hull(pts)

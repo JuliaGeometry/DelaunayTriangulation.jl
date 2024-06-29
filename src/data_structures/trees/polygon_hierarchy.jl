@@ -618,9 +618,9 @@ from the curves in `boundary_curves`. Uses [`polygonise`](@ref) to fill in the b
 - `IntegerType=Int`: The integer type to use for indexing the polygons.
 - `n=4096`: The number of points to use for filling in the boundary curves in [`polygonise`](@ref).
 """
-function construct_polygon_hierarchy(points, boundary_nodes, boundary_curves; IntegerType=Int, n=4096)
+@unstable function construct_polygon_hierarchy(points, boundary_nodes, boundary_curves; IntegerType=Int, n=4096)
     new_points, new_boundary_nodes = polygonise(points, boundary_nodes, boundary_curves; n)
     hierarchy = PolygonHierarchy{IntegerType}()
     return construct_polygon_hierarchy!(hierarchy, new_points, new_boundary_nodes)
 end
-construct_polygon_hierarchy(points, boundary_nodes, ::Tuple{}; IntegerType=Int, n=4096) = construct_polygon_hierarchy(points, boundary_nodes; IntegerType)
+@unstable construct_polygon_hierarchy(points, boundary_nodes, ::Tuple{}; IntegerType=Int, n=4096) = construct_polygon_hierarchy(points, boundary_nodes; IntegerType)

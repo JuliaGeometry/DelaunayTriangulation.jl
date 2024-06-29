@@ -353,7 +353,7 @@ function find_bounding_box(tree::RTree, id_bounding_box::DiametralBoundingBox)
     idx_leaf = find_bounding_box(get_root(tree), id_bounding_box)::Tuple{Leaf{Branch},Int}
     return idx_leaf[1]::Leaf{Branch}, idx_leaf[2]::Int
 end
-function find_bounding_box(branch::Branch, id_bounding_box::DiametralBoundingBox)
+@stable default_union_limit = 2 function find_bounding_box(branch::Branch, id_bounding_box::DiametralBoundingBox)
     bounding_box = get_bounding_box(id_bounding_box)
     for child in get_children(branch)
         child_rect = get_bounding_box(child)
@@ -364,7 +364,7 @@ function find_bounding_box(branch::Branch, id_bounding_box::DiametralBoundingBox
     end
     return nothing
 end
-function find_bounding_box(leaf::Leaf, id_bounding_box::DiametralBoundingBox)
+@stable default_union_limit = 2 function find_bounding_box(leaf::Leaf, id_bounding_box::DiametralBoundingBox)
     bounding_edge = get_edge(id_bounding_box)
     for (idx, child) in enumerate(get_children(leaf))
         child_edge = get_edge(child)
@@ -405,7 +405,7 @@ end
 
 Condenses `tree` after a deletion of one of `node`'s children. The `detached` argument will contain the nodes that were detached from `tree` during the condensing process.
 """
-function collapse_after_deletion!(node::AbstractNode, tree, detached)
+@stable function collapse_after_deletion!(node::AbstractNode, tree, detached)
     m = get_min_nodes(tree)
     if is_root(node, tree)
         original_root = node
@@ -429,7 +429,7 @@ function collapse_after_deletion!(node::AbstractNode, tree, detached)
         elseif node === original_root
             update_bounding_box!(node)
         end
-        return node
+        return nothing # node
     else
         idx = find_position_in_parent(node)
         if num_children(node) < m
@@ -440,6 +440,7 @@ function collapse_after_deletion!(node::AbstractNode, tree, detached)
         end
         return collapse_after_deletion!(get_parent(node), tree, detached)
     end
+    return nothing
 end
 
 """

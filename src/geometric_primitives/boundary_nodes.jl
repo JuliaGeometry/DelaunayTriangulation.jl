@@ -705,7 +705,7 @@ Given a set of boundary nodes, returns the empty skeleton of the boundary nodes.
 but with vertices of type `IntegerType`. This is mainly needed for [`convert_boundary_curves!`](@ref). You will need to implement a new method for this 
 if you want your custom boundary node interface to be supported for curve-bounded domains.
 """
-@inline function get_skeleton(boundary_nodes, ::Type{I}) where {I}
+@unstable @inline function get_skeleton(boundary_nodes, ::Type{I}) where {I}
     if has_multiple_curves(boundary_nodes)
         return _get_skeleton_multiple_curves(boundary_nodes, I)
     elseif has_multiple_sections(boundary_nodes)
@@ -714,18 +714,22 @@ if you want your custom boundary node interface to be supported for curve-bounde
         return _get_skeleton_contiguous(boundary_nodes, I)
     end
 end
-@inline function _get_skeleton_multiple_curves(boundary_nodes, ::Type{I}) where {I}
+@stable @inline function _get_skeleton_multiple_curves(boundary_nodes, ::Type{I}) where {I}
     boundary_nodes′ = Vector{Vector{Vector{I}}}(undef, num_curves(boundary_nodes))
     for curve_index in 1:num_curves(boundary_nodes)
-        boundary_nodes_curve = get_boundary_nodes(boundary_nodes, curve_index)
+        boundary_nodes_curve = allow_unstable() do
+            get_boundary_nodes(boundary_nodes, curve_index)
+        end
         boundary_nodes′[curve_index] = _get_skeleton_multiple_sections(boundary_nodes_curve, I)
     end
     return boundary_nodes′
 end
-@inline function _get_skeleton_multiple_sections(boundary_nodes, ::Type{I}) where {I}
+@stable @inline function _get_skeleton_multiple_sections(boundary_nodes, ::Type{I}) where {I}
     boundary_nodes′ = Vector{Vector{I}}(undef, num_sections(boundary_nodes))
     for section_index in 1:num_sections(boundary_nodes)
-        boundary_nodes_section = get_boundary_nodes(boundary_nodes, section_index)
+        boundary_nodes_section = allow_unstable() do
+            get_boundary_nodes(boundary_nodes, section_index)
+        end
         boundary_nodes′[section_index] = _get_skeleton_contiguous(boundary_nodes_section, I)
     end
     return boundary_nodes′

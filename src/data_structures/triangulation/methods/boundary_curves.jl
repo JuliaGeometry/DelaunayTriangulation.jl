@@ -34,7 +34,7 @@ end
 
 Returns the set of boundary curves associated with `boundary_nodes` and `points`. 
 """
-@inline function to_boundary_curves(points, boundary_nodes)
+@unstable @inline function to_boundary_curves(points, boundary_nodes)
     if has_multiple_curves(boundary_nodes)
         return _to_boundary_curves_multiple_curves(points, boundary_nodes)
     elseif has_multiple_sections(boundary_nodes)
@@ -51,20 +51,24 @@ end
         return (PiecewiseLinear(points, boundary_nodes),)
     end
 end
-@inline function _to_boundary_curves_multiple_sections(points, boundary_nodes, section=1, boundary_curves=())
+@unstable @inline function _to_boundary_curves_multiple_sections(points, boundary_nodes, section=1, boundary_curves=())
     if section > num_sections(boundary_nodes)
         return boundary_curves
     else
-        section_nodes = get_boundary_nodes(boundary_nodes, section)
+        section_nodes = allow_unstable() do
+            get_boundary_nodes(boundary_nodes, section)
+        end
         new_boundary_curves = _to_boundary_curves_single_curve(points, section_nodes)
         return _to_boundary_curves_multiple_sections(points, boundary_nodes, section + 1, (boundary_curves..., new_boundary_curves...))
     end
 end
-@inline function _to_boundary_curves_multiple_curves(points, boundary_nodes, curve=1, boundary_curves=())
+@unstable @inline function _to_boundary_curves_multiple_curves(points, boundary_nodes, curve=1, boundary_curves=())
     if curve > num_curves(boundary_nodes)
         return boundary_curves
     else
-        curve_nodes = get_boundary_nodes(boundary_nodes, curve)
+        curve_nodes = allow_unstable() do
+            get_boundary_nodes(boundary_nodes, curve)
+        end
         new_boundary_curves = _to_boundary_curves_multiple_sections(points, curve_nodes)
         return _to_boundary_curves_multiple_curves(points, boundary_nodes, curve + 1, (boundary_curves..., new_boundary_curves...))
     end
@@ -90,7 +94,7 @@ triangulation. In particular:
 - `boundary_curves`: The boundary curves associated with `boundary_nodes`.
 - `boundary_nodes`: The modified boundary nodes.
 """
-@inline function convert_boundary_curves!(points, boundary_nodes, ::Type{I}) where {I<:Integer}
+@unstable @inline function convert_boundary_curves!(points, boundary_nodes, ::Type{I}) where {I<:Integer}
     boundary_curves = to_boundary_curves(points, boundary_nodes)
     !is_curve_bounded(boundary_curves) && return boundary_curves, boundary_nodes
     new_boundary_nodes = get_skeleton(boundary_nodes, I)
@@ -103,14 +107,22 @@ triangulation. In particular:
     end
     return boundary_curves, new_boundary_nodes
 end
-@inline function _convert_boundary_curves_multiple_curves!(points, boundary_nodes, boundary_curves, new_boundary_nodes)
+@stable @inline function _convert_boundary_curves_multiple_curves!(points, boundary_nodes, boundary_curves, new_boundary_nodes)
     ctr = 1
     for curve_index in 1:num_curves(boundary_nodes)
-        curve_nodes = get_boundary_nodes(boundary_nodes, curve_index)
-        new_curve_nodes = get_boundary_nodes(new_boundary_nodes, curve_index)
+        curve_nodes = allow_unstable() do
+            get_boundary_nodes(boundary_nodes, curve_index)
+        end
+        new_curve_nodes = allow_unstable() do
+            get_boundary_nodes(new_boundary_nodes, curve_index)
+        end
         for section_index in 1:num_sections(curve_nodes)
-            section_nodes = get_boundary_nodes(curve_nodes, section_index)
-            new_section_nodes = get_boundary_nodes(new_curve_nodes, section_index)
+            section_nodes = allow_unstable() do
+                get_boundary_nodes(curve_nodes, section_index)
+            end
+            new_section_nodes = allow_unstable() do
+                get_boundary_nodes(new_curve_nodes, section_index)
+            end
             _convert_boundary_curves_contiguous!(points, section_nodes, boundary_curves, ctr, new_section_nodes)
             ctr += 1
         end
@@ -119,8 +131,12 @@ end
 end
 @inline function _convert_boundary_curves_multiple_sections!(points, boundary_nodes, boundary_curves, new_boundary_nodes)
     for section_index in 1:num_sections(boundary_nodes)
-        section_nodes = get_boundary_nodes(boundary_nodes, section_index)
-        new_section_nodes = get_boundary_nodes(new_boundary_nodes, section_index)
+        section_nodes = allow_unstable() do
+            get_boundary_nodes(boundary_nodes, section_index)
+        end
+        new_section_nodes = allow_unstable() do
+            get_boundary_nodes(new_boundary_nodes, section_index)
+        end
         _convert_boundary_curves_contiguous!(points, section_nodes, boundary_curves, section_index, new_section_nodes)
     end
     return nothing

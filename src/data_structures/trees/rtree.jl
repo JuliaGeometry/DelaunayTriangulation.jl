@@ -436,7 +436,7 @@ num_children(node::AbstractNode) = length(get_children(node))
 
 Returns the type of the children of `node`.
 """
-get_child_type(node::AbstractNode) = eltype(get_children(node))
+@stable default_union_limit = 2 get_child_type(node::AbstractNode) = eltype(get_children(node))
 
 """
     add_child!(node::AbstractNode, child)
@@ -457,7 +457,7 @@ set_bounding_box!(node::AbstractNode, bounding_box::BoundingBox) = node.bounding
 
 Removes the last child of `node` via `pop!`.
 """
-pop_child!(node::AbstractNode) = pop!(get_children(node))
+@stable default_union_limit = 2 pop_child!(node::AbstractNode) = pop!(get_children(node))
 
 """
     find_position_in_parent(node::AbstractNode) -> Int 

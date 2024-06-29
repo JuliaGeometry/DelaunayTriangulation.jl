@@ -16,7 +16,7 @@ the integers themselves refer to points in `points`.
 struct Polygon{T,V,P} <: AbstractVector{T}
     vertices::V
     points::P
-    @inline function Polygon(vertices::V, points::P) where {V,P}
+    @stable default_union_limit = 2 @inline function Polygon(vertices::V, points::P) where {V,P}
         p = get_point(points, vertices[begin])
         T = typeof(p)
         if vertices[begin] ≠ vertices[end]

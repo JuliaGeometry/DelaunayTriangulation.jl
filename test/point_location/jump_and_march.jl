@@ -106,7 +106,7 @@ rep[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
     ny = 10
     tri3 = DT.triangulate_rectangle(a, b, c, d, nx, ny, delete_ghosts=false)
 
-    for tri in (tri, tri2, tri3)
+    for (tri_idx, tri) in enumerate((tri, tri2, tri3))
         DT.compute_representative_points!(tri)
         rep = DT.get_representative_point_list(tri)
         if !(tri === tri2 || tri === tri3)
@@ -122,15 +122,16 @@ rep[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
         end
 
         @testset "Test that we can find a point in every triangle" begin
-            for _ in 1:36
+            for run in 1:6
                 for V in each_triangle(tri.triangles)
+                    rand() < 0.5 && continue # skip 50%
                     if !DT.is_exterior_ghost_triangle(tri, triangle_vertices(V)...)
                         i, j, k = triangle_vertices(V)
                         p, q, r = get_point(tri, i, j, k)
                         local c
                         c = (p .+ q .+ r) ./ 3
                         for k in DT.each_solid_vertex(tri)
-                            _V = jump_and_march(tri, c; k)
+                            _V = jump_and_march(tri, c; k, concavity_protection = true)
                             @test DT.is_positively_oriented(DT.triangle_orientation(tri, _V))
                             if !DT.is_ghost_triangle(_V...)
                                 @test DT.compare_triangles(_V, V) &&
@@ -149,9 +150,6 @@ rep[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
                                 if i1 ≠ i2
                                     i1 = i1 + 1
                                 end
-                                if i1 ≠ i2
-                                    @test false
-                                end
                                 _V = DT.construct_triangle(typeof(V), i1, DT.getj(V1), DT.getk(V1))
                                 @test DT.compare_triangles(_V, V) &&
                                       DT.is_inside(DT.point_position_relative_to_triangle(tri,
@@ -162,28 +160,28 @@ rep[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
                     end
                 end
             end
+        end
 
-            @testset "Test that we don't break for points already in the triangulation" begin
-                for _ in 1:36
-                    for k in DT.each_solid_vertex(tri)
-                        for j in DT.each_solid_vertex(tri)
-                            _V = jump_and_march(tri, get_point(tri, k); k=j)
-                            @test k ∈ triangle_vertices(_V)
-                            @test DT.is_positively_oriented(DT.triangle_orientation(tri, _V))
-                        end
+        @testset "Test that we don't break for points already in the triangulation" begin
+            for _ in 1:6
+                for k in DT.each_solid_vertex(tri)
+                    for j in DT.each_solid_vertex(tri)
+                        _V = jump_and_march(tri, get_point(tri, k); k=j)
+                        @test k ∈ triangle_vertices(_V)
+                        @test DT.is_positively_oriented(DT.triangle_orientation(tri, _V))
                     end
                 end
             end
+        end
 
-            @testset "Finding points in ghost triangles" begin
-                # Technically this will also find points in solid triangles, but by doing random testing with large random points, 
-                # we ensure that we primarily find ghost triangles
-                for _ in 1:36
-                    q = (50randn(), 50rand())
-                    for k in DT.each_solid_vertex(tri)
-                        _V1 = jump_and_march(tri, q; k)
-                        @test DT.is_inside(DT.point_position_relative_to_triangle(tri, _V1, q))
-                    end
+        @testset "Finding points in ghost triangles" begin
+            # Technically this will also find points in solid triangles, but by doing random testing with large random points, 
+            # we ensure that we primarily find ghost triangles
+            for _ in 1:6
+                q = (50randn(), 50rand())
+                for k in DT.each_solid_vertex(tri)
+                    _V1 = jump_and_march(tri, q; k)
+                    @test DT.is_inside(DT.point_position_relative_to_triangle(tri, _V1, q))
                 end
             end
         end

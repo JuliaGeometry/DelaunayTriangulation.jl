@@ -816,7 +816,8 @@ There are multiple stages to this initialisation, starting from [`check_for_inte
    is used on the found ghost triangle if needed. If there is an intersection, then we return the triangle containing the intersection point that we can start the algorithm from, 
    and its associated vertices and points. 
 """
-function initialise_jump_and_march_boundary_vertex(tri::Triangulation, q, k, store_history::F, history, ghost_vertex, concavity_protection) where {F}
+@stable function initialise_jump_and_march_boundary_vertex(tri::Triangulation, _q, k, store_history::F, history, ghost_vertex, concavity_protection) where {F}
+    q = getxy(_q) # type stability in case e.g. a user provides a vector into jump and march
     direction, q_pos, next_vertex, right_cert, left_cert =
         check_for_intersections_with_adjacent_boundary_edges(tri, k, q, ghost_vertex)
     Ttype = triangle_type(tri)

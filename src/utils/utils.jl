@@ -549,7 +549,7 @@ end
 end
 @inline function _eval_fnc_at_het_tuple_two_elements(f::F, idx2, el::E, el2::V, tup...) where {F,E,V}
     idx2 == 1 && return _eval_fnc_at_het_tuple_two_elements(f, 1, el, el2)
-    return _eval_fnc_at_het_tuple_two_elements(f, idx2 - 1, el,  tup...)
+    return _eval_fnc_at_het_tuple_two_elements(f, idx2 - 1, el, tup...)
 end
 @inline function _eval_fnc_at_het_tuple_two_elements(f::F, idx2, el::E, el2::V) where {F,E,V}
     return f(el, el2)
@@ -586,3 +586,11 @@ end
 Evaluates `f(args...)`.
 """
 @inline self_eval(f, args...) = f(args...)
+
+"""
+    _to_val(v) -> Val 
+
+Wraps `v` in a `Val`, or if `v isa Val` simply returns `v`.
+"""
+@unstable @inline _to_val(v::V) where {V} = Val(v)::Val{v}
+@stable @inline _to_val(v::Val{B}) where {B} = v
