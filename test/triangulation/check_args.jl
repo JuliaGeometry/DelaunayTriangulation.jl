@@ -1,7 +1,7 @@
 using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using CairoMakie
-# Base.include(@__MODULE__, "../helper_functions.jl")
+include("../helper_functions.jl")
 _test_throws(e1, e2=e1) = @static VERSION ≥ v"1.9" ? e1 : e2
 
 

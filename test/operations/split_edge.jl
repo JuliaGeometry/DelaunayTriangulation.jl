@@ -3,7 +3,7 @@ const DT = DelaunayTriangulation
 using DataStructures
 using StableRNGs
 
-# Base.include(@__MODULE__, "../helper_functions.jl")
+include("../helper_functions.jl")
 
 @testset "Specific example" begin
     tri = example_triangulation()

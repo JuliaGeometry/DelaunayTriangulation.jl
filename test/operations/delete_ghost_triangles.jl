@@ -3,7 +3,7 @@ const DT = DelaunayTriangulation
 using StructEquality
 using ..DelaunayTriangulation: Triangulation
 
-# Base.include(@__MODULE__, "../helper_functions.jl")
+include("../helper_functions.jl")
 
 @testset "Deleting ghost triangles" begin
     tri, label_map, index_map = simple_geometry()

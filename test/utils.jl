@@ -4,7 +4,7 @@ using LinearAlgebra
 using BenchmarkTools
 using StableRNGs
 
-# Base.include(@__MODULE__, "./helper_functions.jl")
+include("./helper_functions.jl")
 
 @testset "is_true" begin
       @test DT.is_true(true)

@@ -6,7 +6,7 @@ using StatsBase
 using ElasticArrays
 using ..DelaunayTriangulation: Certificate
 
-# Base.include(@__MODULE__, "../helper_functions.jl")
+include("../helper_functions.jl")
 
 global x, y = complicated_geometry()
 boundary_nodes, points = convert_boundary_points_to_indices(x, y; existing_points=ElasticMatrix{Float64}(undef, 2, 0))

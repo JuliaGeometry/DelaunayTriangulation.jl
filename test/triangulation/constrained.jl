@@ -2,7 +2,7 @@ using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using CairoMakie
 using StableRNGs
-# Base.include(@__MODULE__, "../helper_functions.jl")
+include("../helper_functions.jl")
 
 @testset "Random constrained Delaunay triangulations" begin
     for i in 1:25
