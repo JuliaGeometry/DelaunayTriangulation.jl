@@ -592,5 +592,5 @@ Evaluates `f(args...)`.
 
 Wraps `v` in a `Val`, or if `v isa Val` simply returns `v`.
 """
-@unstable @inline _to_val(v::V) where {V} = Val(v)::Val{v}
-@stable @inline _to_val(v::Val{B}) where {B} = v
+@inline _to_val(v::V) where {V} = Val(v)::Val{v}
+@inline _to_val(v::Val{B}) where {B} = v

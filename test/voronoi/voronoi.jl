@@ -860,7 +860,8 @@ end
 @testset "Centroidal tessellation" begin
     flag = 0
     tot = 0
-    for i in 1:50
+    for i in 1:250
+        @info "Testing centroidal tessellation: Run: $i"
         p1 = randn(2, 50)
         p2 = rand(SVector{2,Float64}, 30)
         p3 = rand(Point2f, 250)
@@ -893,14 +894,6 @@ end
     end
     @test flag / tot > 0.9
 end
-
-for i in 1:10000
-    @show i
-rng = StableRNG(i)
-points = randn(rng, Float32, 2, 15)
-tri = triangulate(points; rng)
-voronoi(tri, clip=true,smooth=true)
-end 
 
 @testset "Lattice" begin
     for _ in 1:100

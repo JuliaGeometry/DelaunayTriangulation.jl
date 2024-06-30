@@ -24,7 +24,7 @@ Triangulates the rectangle `[a, b] × [c, d]`.
 # Outputs 
 - `tri`: The triangulation of the rectangle.
 """
-@unstable @inline function triangulate_rectangle(a, b, c, d, nx, ny;
+@inline function triangulate_rectangle(a, b, c, d, nx, ny;
     single_boundary=false,
     delete_ghosts=false,
     IntegerType::Type{I}=Int,
@@ -34,7 +34,7 @@ Triangulates the rectangle `[a, b] × [c, d]`.
     TrianglesType::Type{Ts}=Set{TriangleType}) where {I,E,V,Es,Ts}
     return _triangulate_rectangle(a, b, c, d, nx, ny, I, E, V, Es, Ts, single_boundary, delete_ghosts)
 end
-@unstable @inline function _triangulate_rectangle(a, b, c, d, nx, ny,
+@inline function _triangulate_rectangle(a, b, c, d, nx, ny,
     ::Type{I}, ::Type{E}, ::Type{V}, ::Type{Es}, ::Type{Ts},
     single_boundary, delete_ghosts) where {I,E,V,Es,Ts}
     T, sub2ind = get_lattice_triangles(nx, ny, Ts, V)

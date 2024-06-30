@@ -104,7 +104,7 @@ Computes the Delaunay triangulation of `points`, and then the constrained Delaun
 # Outputs
 - `tri::Triangulation`: The triangulation.
 """
-@unstable function triangulate(points::P;
+function triangulate(points::P;
     segments=nothing,
     boundary_nodes=nothing,
     weights=ZeroWeight(),

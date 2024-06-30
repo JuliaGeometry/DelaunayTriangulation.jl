@@ -112,7 +112,7 @@ set_parent!(node::BalancedBSTNode, parent) = node.parent = parent
 
 Returns the left child of `node`. If the `node` is `nothing`, returns `nothing`.
 """
-@stable default_union_limit = 2 get_left(node::BalancedBSTNode) = node.left
+get_left(node::BalancedBSTNode) = node.left
 
 """
     set_left!(node::BalancedBSTNode, left::Union{Nothing, BalancedBSTNode})
@@ -126,7 +126,7 @@ set_left!(node::BalancedBSTNode, left) = node.left = left
 
 Returns the right child of `node`. If the `node` is `nothing`, returns `nothing`.
 """
-@stable default_union_limit = 2 get_right(node::BalancedBSTNode) = node.right
+get_right(node::BalancedBSTNode) = node.right
 
 """
     set_right!(node::BalancedBSTNode, right::Union{Nothing, BalancedBSTNode})
@@ -207,7 +207,7 @@ BalancedBST{K}() where {K} = BalancedBST{K}(nothing, 0)
 
 Returns the root of `tree`. If `tree` is empty, returns `nothing`.
 """
-@stable default_union_limit = 2 get_root(tree::BalancedBST) = tree.root
+get_root(tree::BalancedBST) = tree.root
 
 """
     set_root!(tree::BalancedBST{K}, root::Union{Nothing,BalancedBSTNode{K}})
@@ -255,7 +255,7 @@ end
 Inserts `key` into the subtree rooted at `node` if it is not already present. Returns the new root of the subtree.
 """
 insert_node!(node::Nothing, key) = BalancedBSTNode(key)
-@stable default_union_limit = 2 function insert_node!(node::BalancedBSTNode, key)
+function insert_node!(node::BalancedBSTNode, key)
     if key < get_key(node)
         left = get_left(node)
         new_left = insert_node!(left, key)
@@ -347,7 +347,7 @@ end
 Rotates a subtree rooted at `parent` to the left, returning the new root of the subtree.
 This local operation is used to preserve the binary search tree property after inserting or deleting a node. 
 """
-@stable default_union_limit = 2 function rotate_left!(parent::BalancedBSTNode)
+function rotate_left!(parent::BalancedBSTNode)
     right_child = get_right(parent)
     left_grandchild = get_left(right_child)
     set_left!(right_child, parent)
@@ -365,7 +365,7 @@ end
 Rotates a subtree rooted at `parent` to the right, returning the new root of the subtree.
 This local operation is used to preserve the binary search tree property after inserting or deleting a node. 
 """
-@stable default_union_limit = 2 function rotate_right!(parent::BalancedBSTNode)
+function rotate_right!(parent::BalancedBSTNode)
     left_child = get_left(parent)
     right_grandchild = get_right(left_child)
     set_right!(left_child, parent)
@@ -382,7 +382,7 @@ end
 
 Returns the node in `tree` with key `key`. If no such node exists, returns `nothing`.
 """
-@stable default_union_limit = 2 function Base.findfirst(tree::BalancedBST, key) 
+function Base.findfirst(tree::BalancedBST, key) 
     prev = nothing
     node = get_root(tree)
     while !isnothing(node) && get_key(node) ≠ key
@@ -430,7 +430,7 @@ end
 
 Deletes the node with key `key` from the subtree rooted at `node` if it exists. Returns the new root of the subtree.
 """
-@stable default_union_limit = 2 function delete_node!(node::BalancedBSTNode, key) 
+function delete_node!(node::BalancedBSTNode, key) 
     if key < get_key(node)
         left = get_left(node)
         new_left = delete_node!(left, key)

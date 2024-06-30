@@ -46,8 +46,8 @@ using StableRNGs
 using LinearAlgebra
 using StatsBase
 using CairoMakie
-@kwdef mutable struct CellModel
-    tri::Triangulation
+@kwdef mutable struct CellModel{P}
+    tri::Triangulation{P}
     new_r_cache::Vector{NTuple{2,Float64}} # for r(t + Δt)
     const α::Float64
     const s::Float64

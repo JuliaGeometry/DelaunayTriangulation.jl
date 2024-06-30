@@ -209,14 +209,14 @@ get_median_angle(stats::TriangulationStatistics, T) = get_angles(stats, T)[2]
 
 Returns a vector of the statistic `stat` for each triangle in `stats`.
 """
-@unstable function get_all_stat(stats::TriangulationStatistics, stat::Symbol)
+function get_all_stat(stats::TriangulationStatistics, stat::Symbol)
     indiv_stats = get_individual_statistics(stats)
     T = first(keys(indiv_stats))
     F = typeof(getfield(indiv_stats[T], stat))
     stats = Vector{F}(undef, length(indiv_stats))
     return get_all_stat!(stats, indiv_stats, stat)
 end
-@stable function get_all_stat!(stats::Vector{F}, indiv_stats::Dict, stat::Symbol) where {F}
+function get_all_stat!(stats::Vector{F}, indiv_stats::Dict, stat::Symbol) where {F}
     for (i, T) in enumerate(keys(indiv_stats))
         stats[i] = getfield(indiv_stats[T], stat)::F
     end

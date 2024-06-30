@@ -32,7 +32,7 @@ See also [`BoundaryEnricher`](@ref) and [`enrich_boundary!`](@ref).
     To refine the mesh further beyond its initial coarse discretisation, as produced from this function, 
     please see [`refine!`](@ref).
 """
-@unstable function triangulate_curve_bounded(points::P;
+function triangulate_curve_bounded(points::P;
     segments=nothing,
     boundary_nodes=nothing,
     IntegerType::Type{I}=Int,
@@ -56,7 +56,7 @@ See also [`BoundaryEnricher`](@ref) and [`enrich_boundary!`](@ref).
         insertion_order,
         kwargs...)
 end
-@unstable function _triangulate_curve_bounded(points::P, enricher;
+function _triangulate_curve_bounded(points::P, enricher;
     IntegerType::Type{I}=Int,
     check_arguments=true,
     delete_ghosts=false,

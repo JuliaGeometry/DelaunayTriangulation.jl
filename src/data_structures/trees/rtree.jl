@@ -394,21 +394,21 @@ get_bounding_box(node::AbstractNode) = node.bounding_box
 
 Returns the children of `node`.
 """
-@stable default_union_limit = 2 get_children(node::AbstractNode) = node.children
+get_children(node::AbstractNode) = node.children
 
 """
     get_child(node::AbstractNode, i::Integer) -> AbstractNode
 
 Returns the `i`th child of `node`.
 """
-@stable default_union_limit = 2 get_child(node::AbstractNode, i::Integer) = node.children[i]
+get_child(node::AbstractNode, i::Integer) = node.children[i]
 
 """
     get_parent(node::AbstractNode) -> Union{Branch, Nothing}
 
 Returns the parent of `node`.
 """
-@stable default_union_limit = 2 get_parent(node::AbstractNode) = node.parent
+get_parent(node::AbstractNode) = node.parent
 
 """
     has_parent(node::AbstractNode) -> Bool
@@ -436,7 +436,7 @@ num_children(node::AbstractNode) = length(get_children(node))
 
 Returns the type of the children of `node`.
 """
-@stable default_union_limit = 2 get_child_type(node::AbstractNode) = eltype(get_children(node))
+get_child_type(node::AbstractNode) = eltype(get_children(node))
 
 """
     add_child!(node::AbstractNode, child)
@@ -457,7 +457,7 @@ set_bounding_box!(node::AbstractNode, bounding_box::BoundingBox) = node.bounding
 
 Removes the last child of `node` via `pop!`.
 """
-@stable default_union_limit = 2 pop_child!(node::AbstractNode) = pop!(get_children(node))
+pop_child!(node::AbstractNode) = pop!(get_children(node))
 
 """
     find_position_in_parent(node::AbstractNode) -> Int 
@@ -799,7 +799,7 @@ end
 
 Returns the root of `tree`.
 """
-@stable default_union_limit = 2 get_root(tree::RTree) = tree.root
+get_root(tree::RTree) = tree.root
 
 """
     get_branch_cache(tree::RTree) -> BranchCache

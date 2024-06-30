@@ -272,7 +272,7 @@ is found to be negative due to precision issues, in which case [`squared_triangl
 
     All coordinates are converted into Float64, but the returned area is converted back into the original precision.
 """
-@stable function squared_triangle_area(_p, _q, _r)
+function squared_triangle_area(_p, _q, _r)
     p, q, r = _getxy(_p), _getxy(_q), _getxy(_r)
     ℓ₁², ℓ₂², ℓ₃² = squared_triangle_lengths(p, q, r)
     A² = squared_triangle_area(ℓ₁², ℓ₂², ℓ₃²)
@@ -353,7 +353,7 @@ where ``d_{11} = \|p - r\|_2^2``, ``d_{12} = p_y - r_y``, ``d_{21} = \|q - r\|_2
 
     All coordinates are converted into Float64, but the returned area is converted back into the original precision.
 """
-@stable function triangle_circumcenter(_p, _q, _r, _A=triangle_area(_p, _q, _r))
+function triangle_circumcenter(_p, _q, _r, _A=triangle_area(_p, _q, _r))
     p, q, r = _getxy(_p), _getxy(_q), _getxy(_r)
     A = Float64(_A)
     px, py = getxy(p)

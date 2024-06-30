@@ -80,7 +80,7 @@ See also [`clip_polygon`](@ref).
 - `poly`: The polygon to clip.
 - `clip_poly`: The polygon to clip to.
 """
-@stable function get_clipping_poly_structs(vorn::VoronoiTessellation, i, bounding_box)
+function get_clipping_poly_structs(vorn::VoronoiTessellation, i, bounding_box)
     vertices = get_polygon(vorn, i)
     points = get_polygon_points(vorn)
     clip_vertices = (1, 2, 3, 4)

@@ -105,7 +105,7 @@ get_members(complex::SmallAngleComplex) = complex.members
 
 Returns a map from an apex vertex to a list of all curves that define a small angle complex associated with that apex vertex.
 """
-@unstable function get_small_angle_complexes(points, boundary_nodes, boundary_curves, segments=nothing; IntegerType=Int)
+function get_small_angle_complexes(points, boundary_nodes, boundary_curves, segments=nothing; IntegerType=Int)
     d = Dict{IntegerType,Vector{SmallAngleComplex{IntegerType}}}()
     if has_multiple_curves(boundary_nodes)
         _get_small_angle_complexes_multiple_curves!(d, boundary_nodes, boundary_curves, IntegerType)
@@ -376,12 +376,12 @@ struct BoundaryEnricher{P,B,C,I,BM,S}
     queue::Queue{I}
     small_angle_complexes::Dict{I,Vector{SmallAngleComplex{I}}}
 end
-@unstable function BoundaryEnricher(points::P, boundary_nodes::B, segments=nothing; IntegerType=Int, n=4096, coarse_n=0) where {P,B}
+function BoundaryEnricher(points::P, boundary_nodes::B, segments=nothing; IntegerType=Int, n=4096, coarse_n=0) where {P,B}
     boundary_curves, new_boundary_nodes = convert_boundary_curves!(points, boundary_nodes, IntegerType)
     polygon_hierarchy = construct_polygon_hierarchy(points, new_boundary_nodes, boundary_curves; IntegerType, n)
     return _construct_boundary_enricher(points, new_boundary_nodes, boundary_curves,  polygon_hierarchy, segments, n, coarse_n, IntegerType)
 end
-@stable function _construct_boundary_enricher(points, boundary_nodes, boundary_curves, polygon_hierarchy, segments, n, coarse_n, ::Type{I}) where {I}
+function _construct_boundary_enricher(points, boundary_nodes, boundary_curves, polygon_hierarchy, segments, n, coarse_n, ::Type{I}) where {I}
     expand_bounds!(polygon_hierarchy, ε)
     coarse_discretisation!(points, boundary_nodes, boundary_curves; n=coarse_n)
     boundary_edge_map = construct_boundary_edge_map(boundary_nodes, I)
@@ -480,7 +480,7 @@ end
 
 Returns the `curve_index`th curve from the boundary curves in `boundary_enricher`.
 """
-@unstable get_boundary_curve(boundary_enricher::BoundaryEnricher, curve_index) = get_boundary_curves(boundary_enricher)[curve_index]
+get_boundary_curve(boundary_enricher::BoundaryEnricher, curve_index) = get_boundary_curves(boundary_enricher)[curve_index]
 
 """
     get_polygon_hierarchy(boundary_enricher::BoundaryEnricher{P,B,C,I}) -> PolygonHierarchy{I}

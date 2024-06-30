@@ -404,7 +404,7 @@ end
 Initialises an empty `Triangulation` for triangulating `points`. The keyword arguments 
 `kwargs...` match those of [`triangulate`](@ref).
 """
-@unstable @inline function Triangulation(points::P;
+@inline function Triangulation(points::P;
     IntegerType::Type{I}=Int,
     EdgeType::Type{E}=NTuple{2,IntegerType},
     TriangleType::Type{T}=NTuple{3,IntegerType},
@@ -455,7 +455,7 @@ Returns the `Triangulation` corresponding to the triangulation of `points` with 
 # Output 
 - `tri`: The [`Triangulation`](@ref).
 """
-@unstable @inline function Triangulation(points::P, triangles::T, boundary_nodes::BN;
+@inline function Triangulation(points::P, triangles::T, boundary_nodes::BN;
     IntegerType::Type{I}=Int,
     EdgeType::Type{E}=NTuple{2,IntegerType},
     TriangleType::Type{V}=NTuple{3,IntegerType},

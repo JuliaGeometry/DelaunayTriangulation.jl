@@ -397,7 +397,7 @@ function sort_triangle(T::V) where {V}
     end
 end
 sort_triangle(i::Integer, j::Integer, k::Integer) = sort_triangle((i, j, k))
-@unstable @inline function sort_triangle(i, j, k) # in case one of the vertices is a point rather than an integer 
+@inline function sort_triangle(i, j, k) # in case one of the vertices is a point rather than an integer 
     # Note that the return type is a 3-Union 
     if is_ghost_vertex(i)
         return j, k, i

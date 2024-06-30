@@ -726,7 +726,7 @@ The algorithm underlying this function is complicated and broken into many parts
 4. If we have not yet returned and the triangle is no longer positively oriented, we check if the triangle is degenerate using [`jump_and_march_degenerate_arrangement`](@ref)
      and reinitialise the algorithm if needed. Otherwise, we have found the triangle containing `q` and return the triangle.
 """
-@stable function jump_and_march(tri::Triangulation, _q;
+function jump_and_march(tri::Triangulation, _q;
     point_indices=each_solid_vertex(tri),
     m=default_num_samples(num_vertices(point_indices)),
     try_points=(),
@@ -820,7 +820,7 @@ There are multiple stages to this initialisation, starting from [`check_for_inte
    is used on the found ghost triangle if needed. If there is an intersection, then we return the triangle containing the intersection point that we can start the algorithm from, 
    and its associated vertices and points. 
 """
-@stable function initialise_jump_and_march_boundary_vertex(tri::Triangulation, _q, k, store_history::F, history, ghost_vertex, concavity_protection) where {F}
+function initialise_jump_and_march_boundary_vertex(tri::Triangulation, _q, k, store_history::F, history, ghost_vertex, concavity_protection) where {F}
     q = getxy(_q) # type stability in case e.g. a user provides a vector into jump and march
     direction, q_pos, next_vertex, right_cert, left_cert =
         check_for_intersections_with_adjacent_boundary_edges(tri, k, q, ghost_vertex)

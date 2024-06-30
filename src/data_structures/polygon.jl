@@ -17,7 +17,7 @@ struct Polygon{T,V,P} <: AbstractVector{T}
     vertices::V
     points::P
     is_circular::Bool
-    @stable @inline function Polygon(vertices::V, points::P) where {V,P}
+    @inline function Polygon(vertices::V, points::P) where {V,P}
         p = get_point(points, vertices[begin])
         T = typeof(p)
         return new{T,V,P}(vertices, points, is_circular(vertices))
