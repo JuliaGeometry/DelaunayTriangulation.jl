@@ -2262,4 +2262,5 @@ export maximum_total_variation
 export all_points_are_inside
 export all_diametral_circles_are_empty
 export compute_diametral_lens
+export get_points_in_diametral_lens
 end
