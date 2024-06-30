@@ -304,7 +304,7 @@ Since our domain has multiple curves, the `pos` values are `Tuple`s of the form 
 pos, ℓ = get_boundary_edge_map(tri, 1245, 1402)
 ```
 
-This means that `(1245, 1402)` is the `7`th edge of the third section on the first boundary:
+This means that `(1245, 1402)` is the `7`th edge of the first section on the third boundary:
 
 ```@example curvout
 bn = get_boundary_nodes(tri, pos) # notice that we can pass Tuples (m, n) as a single argument
