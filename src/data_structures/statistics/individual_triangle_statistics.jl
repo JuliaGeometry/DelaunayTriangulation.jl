@@ -267,8 +267,13 @@ end
 
 Computes the squared area of the triangle with coordinates `p`, `q`, `r`. Initially, `squared_triangle_area` is used for this, unless the squared area 
 is found to be negative due to precision issues, in which case [`squared_triangle_area_v2`](@ref) is used instead.
+
+!!! note "Precision"
+
+    All coordinates are converted into Float64, but the returned area is converted back into the original precision.
 """
-function squared_triangle_area(p, q, r)
+@stable function squared_triangle_area(_p, _q, _r)
+    p, q, r = _getxy(_p), _getxy(_q), _getxy(_r)
     ℓ₁², ℓ₂², ℓ₃² = squared_triangle_lengths(p, q, r)
     A² = squared_triangle_area(ℓ₁², ℓ₂², ℓ₃²)
     if A² ≤ zero(A²)
@@ -277,13 +282,17 @@ function squared_triangle_area(p, q, r)
     if A² ≤ zero(A²)
         A² = zero(A²)
     end
-    return number_type(p)(A²)
+    return number_type(_p)(A²)
 end
 
 """
     triangle_area(p, q, r) -> Number
 
 Computes the area of the triangle with coordinates `p`, `q`, `r`.
+
+!!! note "Precision"
+
+    All coordinates are converted into Float64, but the returned area is converted back into the original precision.
 """
 function triangle_area(p, q, r)
     A² = squared_triangle_area(p, q, r)
@@ -339,8 +348,14 @@ c_x = r_x + \dfrac{d_{11}d_{22} - d_{12}d_{21}}{4A}, \quad c_y = r_y + \dfrac{e_
 ```
 where ``d_{11} = \|p - r\|_2^2``, ``d_{12} = p_y - r_y``, ``d_{21} = \|q - r\|_2^2``, ``d_{22} = q_y - r_y``, ``e_{11} = p_x - r_x``
 ``e_{12} = d_{11}``, ``e_{21} = q_x - r_x``, and ``e_{22} = d_{21}``.
+
+!!! note "Precision"
+
+    All coordinates are converted into Float64, but the returned area is converted back into the original precision.
 """
-function triangle_circumcenter(p, q, r, A=triangle_area(p, q, r))
+@stable function triangle_circumcenter(_p, _q, _r, _A=triangle_area(_p, _q, _r))
+    p, q, r = _getxy(_p), _getxy(_q), _getxy(_r)
+    A = Float64(_A)
     px, py = getxy(p)
     qx, qy = getxy(q)
     rx, ry = getxy(r)
@@ -354,7 +369,8 @@ function triangle_circumcenter(p, q, r, A=triangle_area(p, q, r))
     e21 = qx - rx
     e22 = d21
     oy = ry + (e11 * e22 - e12 * e21) / (4A)
-    return (ox, oy)
+    F = number_type(_p)
+    return (F(ox), F(oy))
 end
 
 """

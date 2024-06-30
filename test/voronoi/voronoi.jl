@@ -95,11 +95,6 @@ include("../helper_functions.jl")
     end
 end
 
-#=
-DelaunayTriangulation.Polygon{Tuple{Float64, Float64}, SubArray{Int64, 1, Vector{Int64}, Tuple{UnitRange{Int64}}, true}, Vector{Tuple{Float64, Float64}}}, 
-DelaunayTriangulation.Polygon{Tuple{Float64, Float64}, Vector{Int64}, Vector{Tuple{Float64, Float64}}}}, DelaunayTriangulation.Polygon{Tuple{Float64, Float64}, NTuple{4, Int64}, NTuple{4, Tuple{Float64, Float64}}}}
-=#
-
 @testset "Smaller example, checking ray coordinates" begin
     for _ in 1:10
         tri = example_triangulation()
@@ -898,6 +893,14 @@ end
     end
     @test flag / tot > 0.9
 end
+
+for i in 1:10000
+    @show i
+rng = StableRNG(i)
+points = randn(rng, Float32, 2, 15)
+tri = triangulate(points; rng)
+voronoi(tri, clip=true,smooth=true)
+end 
 
 @testset "Lattice" begin
     for _ in 1:100
