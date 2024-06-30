@@ -1,5 +1,6 @@
 # maybe this should belong inside src for users at some point?
 
+#=
 """
     abstract type AbstractTriangulationState 
 
@@ -12,6 +13,8 @@ state of a certain test of a triangulation.
 - Subtypes should implement `Base.summary(state)` which creates a string summarising the state. This is 
     used in `show` for printing the `state`.
 """
+=#
+
 abstract type AbstractTriangulationState end
 test_state(state::AbstractTriangulationState) = state.flag
 Base.show(io::IO, state::AbstractTriangulationState) = print(io, summary(state))

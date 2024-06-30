@@ -90,7 +90,7 @@ for folder in ("tutorials", "applications")
             postprocess=editurl_update ∘ post_strip,
             credit=true,
             name=splitext(file)[1],
-            execute=false,
+            execute=!IS_LIVESERVER,
             flavor=Literate.DocumenterFlavor(),
         )
     end

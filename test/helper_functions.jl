@@ -6,6 +6,8 @@ using Random
 using DataStructures
 using DelimitedFiles
 using OrderedCollections
+using Test
+using DelaunayTriangulation
 import SpatialIndexing as SI
 getxy((0.0, 0.0)) # avoid shadow
 

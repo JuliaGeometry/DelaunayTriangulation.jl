@@ -35,7 +35,8 @@ Float64
 number_type
 number_type(x) = number_type(typeof(x))
 number_type(::Type{T}) where {T<:AbstractArray} = number_type(eltype(T))
-number_type(::Type{NTuple{N,T}}) where {N,T} = T
+number_type(x::Type{<:NTuple{N}}) where {N} = eltype(x)
+number_type(::Type{Tuple{}}) = Any
 number_type(::Type{T}) where {T} = T
 
 @doc """

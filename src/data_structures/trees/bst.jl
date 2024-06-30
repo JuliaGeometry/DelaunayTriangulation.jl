@@ -23,7 +23,7 @@ Constructs a new node with key `key`, height `1`, and count `1`. The parent, lef
 mutable struct BalancedBSTNode{K}
     key::K
     height::Int8
-    count::Int32 
+    count::Int32
     parent::Union{Nothing,BalancedBSTNode{K}}
     left::Union{Nothing,BalancedBSTNode{K}}
     right::Union{Nothing,BalancedBSTNode{K}}
@@ -65,7 +65,7 @@ set_key!(node::BalancedBSTNode, key) = node.key = key
     get_height(node::Union{Nothing, BalancedBSTNode}) -> Int8
 
 Returns the height of `node`. If the `node` is `nothing`, returns `0`.
-""" 
+"""
 get_height(node::BalancedBSTNode) = node.height
 get_height(node::Nothing) = Int8(0)
 
@@ -146,7 +146,7 @@ has_parent(node::BalancedBSTNode) = !isnothing(get_parent(node))
     has_left(node::BalancedBSTNode) -> Bool
 
 Returns `true` if `node` has a left child, `false` otherwise.
-""" 
+"""
 has_left(node::BalancedBSTNode) = !isnothing(get_left(node))
 
 """
@@ -169,9 +169,13 @@ Struct representing a balanced binary search tree.
 
     Nodes with duplicate keys are not supported. If a duplicate key is inserted, the tree will not be modified.
 """
-mutable struct BalancedBST{K} 
+mutable struct BalancedBST{K}
     root::Union{Nothing,BalancedBSTNode{K}}
     count::Int32
+    BalancedBST(root::BalancedBSTNode{K}, count) where {K} = new{K}(root, count)
+    BalancedBST{K}(root::BalancedBSTNode{K}, count) where {K} = new{K}(root, count)
+    BalancedBST{K}(::Nothing, count) where {K} = new{K}(nothing, count)
+    # need to separate out the constructors to avoid unbound type argument issues from Aqua
 end
 function Base.show(io::IO, ::MIME"text/plain", tree::BalancedBST)
     count = get_count(tree)
@@ -240,7 +244,7 @@ has_root(tree::BalancedBST) = !isnothing(get_root(tree))
 
 Inserts `key` into `tree` if it is not already present.
 """
-function Base.push!(tree::BalancedBST, key) 
+function Base.push!(tree::BalancedBST, key)
     haskey(tree, key) && return tree
     root = get_root(tree)
     new_root = insert_node!(root, key)
@@ -382,7 +386,7 @@ end
 
 Returns the node in `tree` with key `key`. If no such node exists, returns `nothing`.
 """
-function Base.findfirst(tree::BalancedBST, key) 
+function Base.findfirst(tree::BalancedBST, key)
     prev = nothing
     node = get_root(tree)
     while !isnothing(node) && get_key(node) ≠ key
@@ -405,7 +409,7 @@ end
 
 Returns `true` if `tree` has a node with key `key`, `false` otherwise.
 """
-function Base.haskey(tree::BalancedBST, key) 
+function Base.haskey(tree::BalancedBST, key)
     !has_root(tree) && return false
     node = findfirst(tree, key)
     return get_key(node) == key
@@ -430,7 +434,7 @@ end
 
 Deletes the node with key `key` from the subtree rooted at `node` if it exists. Returns the new root of the subtree.
 """
-function delete_node!(node::BalancedBSTNode, key) 
+function delete_node!(node::BalancedBSTNode, key)
     if key < get_key(node)
         left = get_left(node)
         new_left = delete_node!(left, key)
