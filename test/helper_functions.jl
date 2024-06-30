@@ -2261,4 +2261,5 @@ export flatten_boundary_nodes
 export maximum_total_variation
 export all_points_are_inside
 export all_diametral_circles_are_empty
+export compute_diametral_lens
 end

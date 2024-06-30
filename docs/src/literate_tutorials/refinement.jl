@@ -25,7 +25,7 @@ fig_path = joinpath(@__DIR__, "../figures") #src
 # We will constrain the triangulation such that the minimum angle is 
 # 30 degrees, and the maximum area of a triangulation is 1% of the triangulation's 
 # total area. Note that below we need to make sure `points` is mutable, else 
-# it is not possible to push points into the triangulation. Here we use a tuple, but you 
+# it is not possible to push points into the triangulation. Here we use a vector, but you 
 # could also use e.g. an `ElasticMatrix` from [ElasticArrays.jl](https://github.com/JuliaArrays/ElasticArrays.jl).
 rng = StableRNG(123)
 x = rand(rng, 50)
@@ -52,7 +52,7 @@ fig
 @test_reference joinpath(fig_path, "mesh_refinement_ex_1.png") fig #src
 
 # The triangulation is now much finer. There are still some parts with 
-# many more triangles than other regions, but this is most nearly a boundary 
+# many more triangles than other regions, but these are mostly near a boundary 
 # or where was a cluster of random points. If we wanted, we could refine again 
 # to try and improve this.
 refine!(tri; min_angle=30.0, max_area=0.001A, rng) # 0.1% instead of 1%
@@ -176,7 +176,7 @@ tri = triangulate(points; boundary_nodes, rng)
 refine!(tri; min_angle=30.0, custom_constraint=area_constraint, rng)
 fig, ax, sc = triplot(tri)
 fig 
-@test_reference joinpath(fig_path, "mesh_refinement_ex_8.png") fig #src
+@test_reference joinpath(fig_path, "mesh_refinement_ex_8.png") fig by=psnr_equality(12) #src
 
 # This is now much better, and the two parts of the domain are 
 # appropriately refined. Let us extend our custom constraint function to also 

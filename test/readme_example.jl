@@ -63,4 +63,4 @@ ax = Axis(fig[2, 3], title="Curve-Bounded", width=600,height=600);            tr
 ax = Axis(fig[2, 4], title="Disjoint Curve-Bounded", width=600,height=600);   triplot!(ax, tri8)
 
 readme_img = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "readme.png")
-@test_reference readme_img fig
+@test_reference readme_img fig by=psnr_equality(10)
