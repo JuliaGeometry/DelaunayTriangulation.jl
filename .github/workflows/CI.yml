@@ -38,15 +38,6 @@ jobs:
 
       - name: Cache artifacts, etc.
         uses: julia-actions/cache@v2
-        env:
-          cache-name: cache-artifacts
-        with:
-          path: ~/.julia/artifacts
-          key: ${{ runner.os }}-test-${{ env.cache-name }}-${{ hashFiles('**/Project.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-test-${{ env.cache-name }}-
-            ${{ runner.os }}-test-
-            ${{ runner.os }}-
 
       - name: Build the package
         uses: julia-actions/julia-buildpkg@v1
