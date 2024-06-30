@@ -139,48 +139,48 @@ end
     @testset verbose = true "Voronoi" begin
         safe_include("voronoi/voronoi.jl")
     end
-end
 
-@testset verbose = true "Run the documentation examples" begin
-    @testset verbose = true "Check that the applications in the docs run" begin
-        app_dir = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "docs", "src", "literate_applications")
-        app_files = readdir(app_dir)
-        for file in app_files
-            safe_include(joinpath(app_dir, file); push=false)
+    @testset verbose = true "Run the documentation examples" begin
+        @testset verbose = true "Check that the applications in the docs run" begin
+            app_dir = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "docs", "src", "literate_applications")
+            app_files = readdir(app_dir)
+            for file in app_files
+                safe_include(joinpath(app_dir, file); push=false)
+            end
+            mp4_path = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "cell_simulation.mp4")
+            isfile(mp4_path) && rm(mp4_path)
         end
-        mp4_path = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "cell_simulation.mp4")
-        isfile(mp4_path) && rm(mp4_path)
-    end
-
-    @testset verbose = true "Test the tutorials" begin
-        tut_dir = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "docs", "src", "literate_tutorials")
-        tut_files = readdir(tut_dir)
-        for file in tut_files
-            safe_include(joinpath(tut_dir, file); push=false)
+    
+        @testset verbose = true "Test the tutorials" begin
+            tut_dir = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "docs", "src", "literate_tutorials")
+            tut_files = readdir(tut_dir)
+            for file in tut_files
+                safe_include(joinpath(tut_dir, file); push=false)
+            end
         end
-    end
-
-    @testset verbose = true "Test the readme example" begin
-        safe_include("readme_example.jl")
-    end
-
-    @testset "All script files are included somewhere" begin
-        missing_set = String[]
-        test_dir = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "test", "")
-        for (root, dir, files) in walkdir(test_dir)
-            for file in files
-                filename = normpath(replace(joinpath(root, file), test_dir => ""))
-                if endswith(filename, ".jl") && filename ∉ ALL_TEST_SCRIPTS && filename ∉ NON_TEST_SCRIPTS
-                    push!(missing_set, filename)
+    
+        @testset verbose = true "Test the readme example" begin
+            safe_include("readme_example.jl")
+        end
+    
+        @testset "All script files are included somewhere" begin
+            missing_set = String[]
+            test_dir = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "test", "")
+            for (root, dir, files) in walkdir(test_dir)
+                for file in files
+                    filename = normpath(replace(joinpath(root, file), test_dir => ""))
+                    if endswith(filename, ".jl") && filename ∉ ALL_TEST_SCRIPTS && filename ∉ NON_TEST_SCRIPTS
+                        push!(missing_set, filename)
+                    end
                 end
             end
-        end
-        if !isempty(missing_set)
-            @info "There were some test scripts that were not included. These are printed below."
-            for script in missing_set
-                @info "     $script"
+            if !isempty(missing_set)
+                @info "There were some test scripts that were not included. These are printed below."
+                for script in missing_set
+                    @info "     $script"
+                end
             end
+            @test isempty(missing_set)
         end
-        @test isempty(missing_set)
     end
 end
