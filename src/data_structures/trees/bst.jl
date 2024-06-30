@@ -449,7 +449,7 @@ function delete_node!(node::BalancedBSTNode, key)
         elseif !has_right(node)
             return get_left(node)
         else
-            min = minimum(get_right(node))
+            min = _minimum(get_right(node))
             set_key!(node, get_key(min))
             right = get_right(node)
             new_right = delete_node!(right, get_key(min))
@@ -484,11 +484,11 @@ function delete_node!(node::BalancedBSTNode, key)
 end
 
 """
-    minimum(node::Union{BalancedBSTNode,Nothing}) -> Union{BalancedBSTNode,Nothing}
+    _minimum(node::Union{BalancedBSTNode,Nothing}) -> Union{BalancedBSTNode,Nothing}
 
 Returns the node with the minimum key in the subtree rooted at `node`. If `node` is `nothing`, returns `nothing`.
 """
-function Base.minimum(node::Union{BalancedBSTNode,Nothing})
+function _minimum(node::Union{BalancedBSTNode,Nothing})
     while !isnothing(node) && has_left(node)
         node = get_left(node)
     end
