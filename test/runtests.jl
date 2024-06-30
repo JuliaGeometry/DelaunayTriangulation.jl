@@ -45,12 +45,12 @@ function safe_include(filename; name=filename, push=true) # Workaround for not b
     end
 end
 
-@testset verbose = true "Aqua" begin
-    Aqua.test_all(DelaunayTriangulation; ambiguities=false, project_extras=false) # don't care about julia < 1.2
-    Aqua.test_ambiguities(DelaunayTriangulation) # don't pick up Base and Core...
-end
-
 @testset verbose = true "DelaunayTriangulation.jl" begin
+    @testset verbose = true "Aqua" begin
+        Aqua.test_all(DelaunayTriangulation; ambiguities=false, project_extras=false) # don't care about julia < 1.2
+        Aqua.test_ambiguities(DelaunayTriangulation) # don't pick up Base and Core...
+    end    
+
     @testset verbose = true "Triangulation" begin
         safe_include("triangulation/rectangle.jl")
         safe_include("triangulation/bowyer_watson.jl")
