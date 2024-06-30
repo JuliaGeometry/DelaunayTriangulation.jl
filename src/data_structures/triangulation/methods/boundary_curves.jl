@@ -11,21 +11,21 @@ is_curve_bounded
 @inline is_curve_bounded(::Number) = false
 @inline is_curve_bounded(boundary_curves::Tuple) = any(is_curve_bounded, boundary_curves)
 @inline is_curve_bounded(tri::Triangulation) = is_curve_bounded(get_boundary_curves(tri))
-@inline function is_curve_bounded(boundary_nodes::AbstractVector)
+@stable @inline function is_curve_bounded(boundary_nodes::AbstractVector)::Bool
     if has_multiple_curves(boundary_nodes)
         nc = num_curves(boundary_nodes)
         for curve_index in 1:nc
-            is_curve_bounded(get_boundary_nodes(boundary_nodes, curve_index)) && return true
+            is_curve_bounded(get_boundary_nodes(boundary_nodes, curve_index))::Bool && return true
         end
         return false
     elseif has_multiple_sections(boundary_nodes)
         ns = num_sections(boundary_nodes)
         for section_index in 1:ns
-            is_curve_bounded(get_boundary_nodes(boundary_nodes, section_index)) && return true
+            is_curve_bounded(get_boundary_nodes(boundary_nodes, section_index))::Bool && return true
         end
         return false
     else
-        return has_boundary_nodes(boundary_nodes) && is_curve_bounded(get_boundary_nodes(boundary_nodes, 1))
+        return has_boundary_nodes(boundary_nodes) && is_curve_bounded(get_boundary_nodes(boundary_nodes, 1))::Bool
     end
 end
 

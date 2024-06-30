@@ -191,10 +191,10 @@ julia> get_boundary_nodes([1, 2, 3, 4, 5, 1], [1, 2, 3, 4, 5, 1])
 ```
 """
 get_boundary_nodes
-@inline get_boundary_nodes(boundary_nodes, m::Integer) = boundary_nodes[m]
-@inline get_boundary_nodes(boundary_nodes, m::Integer, n::Integer) = get_boundary_nodes(get_boundary_nodes(boundary_nodes, m), n)
-@inline get_boundary_nodes(boundary_nodes, (m, n)::NTuple{2,Integer}) = get_boundary_nodes(boundary_nodes, m, n) # for indexing from a boundary map 
-@inline get_boundary_nodes(boundary_nodes::A, ::A) where {A} = boundary_nodes # for indexing from a boundary map
+@unstable @inline get_boundary_nodes(boundary_nodes, m::Integer) = boundary_nodes[m]
+@unstable @inline get_boundary_nodes(boundary_nodes, m::Integer, n::Integer) = get_boundary_nodes(get_boundary_nodes(boundary_nodes, m), n)
+@unstable @inline get_boundary_nodes(boundary_nodes, (m, n)::NTuple{2,Integer}) = get_boundary_nodes(boundary_nodes, m, n) # for indexing from a boundary map 
+@unstable @inline get_boundary_nodes(boundary_nodes::A, ::A) where {A} = boundary_nodes # for indexing from a boundary map
 
 """
     each_boundary_node(boundary_nodes) -> Iterator 

@@ -53,7 +53,7 @@ Selects the initial point for [`jump_and_march`](@ref) to start from.
 - `i`: The index of the point closest to `q` out of those queried.
 """
 select_initial_point
-function select_initial_point(tri::Triangulation, q;
+function select_initial_point(tri::Triangulation, _q;
     point_indices=each_solid_vertex(tri),
     m=default_num_samples(num_vertices(point_indices)),
     try_points=(),
@@ -63,7 +63,8 @@ function select_initial_point(tri::Triangulation, q;
     I = integer_type(tri)
     current_dist = typemax(F)
     current_idx = I(first(point_indices))
-    qx, qy = getxy(q)
+    _qx, _qy = getxy(_q)
+    qx, qy = F(_qx), F(_qy)
     for _ in 1:m # Not using replacement, but probability of duplicates is approximately 0.5num_solid_vertices(tri)^(-1/3)
         i = I(rand(rng, point_indices))
         (is_ghost_vertex(i) || (!allow_boundary_points && is_boundary_node(tri, i)[1])) && continue
@@ -725,12 +726,12 @@ The algorithm underlying this function is complicated and broken into many parts
 4. If we have not yet returned and the triangle is no longer positively oriented, we check if the triangle is degenerate using [`jump_and_march_degenerate_arrangement`](@ref)
      and reinitialise the algorithm if needed. Otherwise, we have found the triangle containing `q` and return the triangle.
 """
-function jump_and_march(tri::Triangulation, q;
+@stable function jump_and_march(tri::Triangulation, _q;
     point_indices=each_solid_vertex(tri),
     m=default_num_samples(num_vertices(point_indices)),
     try_points=(),
     rng::AbstractRNG=Random.default_rng(),
-    k=select_initial_point(tri, q; point_indices, m, try_points, rng),
+    k=select_initial_point(tri, _q; point_indices, m, try_points, rng),
     store_history::F=Val(false),
     history=nothing,
     maxiters=2 + num_exterior_curves(tri) - num_solid_vertices(tri) + num_solid_edges(tri),
@@ -738,6 +739,9 @@ function jump_and_march(tri::Triangulation, q;
     use_barriers::Val{U}=Val(false)) where {F,U}
     I = integer_type(tri)
     maxiters = Int(maxiters)
+    G = number_type(tri)
+    _qx, _qy = getxy(_q)
+    q = (G(_qx), G(_qy))
     return _jump_and_march(tri, q, I(k), store_history, history, rng, maxiters, zero(maxiters), concavity_protection, zero(maxiters), use_barriers)
 end
 

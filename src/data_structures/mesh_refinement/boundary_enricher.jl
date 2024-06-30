@@ -105,7 +105,7 @@ get_members(complex::SmallAngleComplex) = complex.members
 
 Returns a map from an apex vertex to a list of all curves that define a small angle complex associated with that apex vertex.
 """
-function get_small_angle_complexes(points, boundary_nodes, boundary_curves, segments=nothing; IntegerType=Int)
+@unstable function get_small_angle_complexes(points, boundary_nodes, boundary_curves, segments=nothing; IntegerType=Int)
     d = Dict{IntegerType,Vector{SmallAngleComplex{IntegerType}}}()
     if has_multiple_curves(boundary_nodes)
         _get_small_angle_complexes_multiple_curves!(d, boundary_nodes, boundary_curves, IntegerType)
@@ -375,25 +375,30 @@ struct BoundaryEnricher{P,B,C,I,BM,S}
     spatial_tree::BoundaryRTree{P}
     queue::Queue{I}
     small_angle_complexes::Dict{I,Vector{SmallAngleComplex{I}}}
-    function BoundaryEnricher(points::P, boundary_nodes::B, segments=nothing; IntegerType=Int, n=4096, coarse_n=0) where {P,B}
-        boundary_curves, new_boundary_nodes = convert_boundary_curves!(points, boundary_nodes, IntegerType)
-        polygon_hierarchy = construct_polygon_hierarchy(points, new_boundary_nodes, boundary_curves; IntegerType, n)
-        expand_bounds!(polygon_hierarchy, ε)
-        coarse_discretisation!(points, new_boundary_nodes, boundary_curves; n=coarse_n)
-        boundary_edge_map = construct_boundary_edge_map(new_boundary_nodes, IntegerType)
-        parent_map = Dict{NTuple{2,IntegerType},IntegerType}()
-        curve_index_map = Dict{IntegerType,IntegerType}()
-        spatial_tree = BoundaryRTree(points)
-        queue = Queue{IntegerType}()
-        small_angle_complexes = get_small_angle_complexes(points, new_boundary_nodes, boundary_curves, segments; IntegerType)
-        _segments = isnothing(segments) ? Set{NTuple{2,IntegerType}}() : segments
-        enricher = new{P,typeof(new_boundary_nodes),typeof(boundary_curves),IntegerType,typeof(boundary_edge_map),typeof(_segments)}(points, new_boundary_nodes, _segments, boundary_curves, polygon_hierarchy, parent_map, curve_index_map, boundary_edge_map, spatial_tree, queue, small_angle_complexes)
-        construct_parent_map!(enricher)
-        construct_curve_index_map!(enricher)
-        construct_tree!(enricher)
-        return enricher
-    end
 end
+@unstable function BoundaryEnricher(points::P, boundary_nodes::B, segments=nothing; IntegerType=Int, n=4096, coarse_n=0) where {P,B}
+    boundary_curves, new_boundary_nodes = convert_boundary_curves!(points, boundary_nodes, IntegerType)
+    polygon_hierarchy = construct_polygon_hierarchy(points, new_boundary_nodes, boundary_curves; IntegerType, n)
+    return _construct_boundary_enricher(points, new_boundary_nodes, boundary_curves,  polygon_hierarchy, segments, n, coarse_n, IntegerType)
+end
+@stable function _construct_boundary_enricher(points, boundary_nodes, boundary_curves, polygon_hierarchy, segments, n, coarse_n, ::Type{I}) where {I}
+    expand_bounds!(polygon_hierarchy, ε)
+    coarse_discretisation!(points, boundary_nodes, boundary_curves; n=coarse_n)
+    boundary_edge_map = construct_boundary_edge_map(boundary_nodes, I)
+    parent_map = Dict{NTuple{2,I},I}()
+    curve_index_map = Dict{I,I}()
+    spatial_tree = BoundaryRTree(points)
+    queue = Queue{I}()
+    small_angle_complexes = get_small_angle_complexes(points, boundary_nodes, boundary_curves, segments; IntegerType=I)
+    _segments = isnothing(segments) ? Set{NTuple{2,I}}() : segments
+    enricher = BoundaryEnricher(points, boundary_nodes, _segments, boundary_curves, polygon_hierarchy, parent_map, curve_index_map, boundary_edge_map, spatial_tree, queue, small_angle_complexes)
+    construct_parent_map!(enricher)
+    construct_curve_index_map!(enricher)
+    construct_tree!(enricher)
+    return enricher
+end
+##={P,typeof(boundary_nodes),typeof(boundary_curves),IntegerType,typeof(boundary_edge_map),typeof(_segments)}=#
+
 function Base.:(==)(enricher1::BoundaryEnricher, enricher2::BoundaryEnricher)
     get_points(enricher1) ≠ get_points(enricher2) && return false
     get_boundary_nodes(enricher1) ≠ get_boundary_nodes(enricher2) && return false
@@ -475,7 +480,7 @@ end
 
 Returns the `curve_index`th curve from the boundary curves in `boundary_enricher`.
 """
-get_boundary_curve(boundary_enricher::BoundaryEnricher, curve_index) = get_boundary_curves(boundary_enricher)[curve_index]
+@unstable get_boundary_curve(boundary_enricher::BoundaryEnricher, curve_index) = get_boundary_curves(boundary_enricher)[curve_index]
 
 """
     get_polygon_hierarchy(boundary_enricher::BoundaryEnricher{P,B,C,I}) -> PolygonHierarchy{I}
@@ -937,7 +942,7 @@ The `is_interior` argument can be used to specify whether the edge is an interio
 
 See also [`split_boundary_edge!`](@ref) and [`split_interior_segment!`](@ref).
 """
-function split_edge!(enricher::BoundaryEnricher, i, j, r, update_boundary_nodes=Val(true), update_segments=Val(true), is_interior = is_segment(enricher, i, j))
+function split_edge!(enricher::BoundaryEnricher, i, j, r, update_boundary_nodes=Val(true), update_segments=Val(true), is_interior=is_segment(enricher, i, j))
     if is_interior
         split_interior_segment!(enricher, i, j, r, update_segments)
     else

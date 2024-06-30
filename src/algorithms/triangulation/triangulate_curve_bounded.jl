@@ -32,7 +32,7 @@ See also [`BoundaryEnricher`](@ref) and [`enrich_boundary!`](@ref).
     To refine the mesh further beyond its initial coarse discretisation, as produced from this function, 
     please see [`refine!`](@ref).
 """
-function triangulate_curve_bounded(points::P;
+@unstable function triangulate_curve_bounded(points::P;
     segments=nothing,
     boundary_nodes=nothing,
     IntegerType::Type{I}=Int,
@@ -46,6 +46,25 @@ function triangulate_curve_bounded(points::P;
     insertion_order=nothing, # use this so that it gets ignored by the kwargs
     kwargs...) where {P,I}
     enricher = BoundaryEnricher(points, boundary_nodes, segments; IntegerType, n=polygonise_n, coarse_n)
+    return _triangulate_curve_bounded(points, enricher;
+        IntegerType,
+        check_arguments,
+        delete_ghosts,
+        delete_empty_features,
+        recompute_representative_points,
+        rng,
+        insertion_order,
+        kwargs...)
+end
+@unstable function _triangulate_curve_bounded(points::P, enricher;
+    IntegerType::Type{I}=Int,
+    check_arguments=true,
+    delete_ghosts=false,
+    delete_empty_features=true,
+    recompute_representative_points=true,
+    rng::AbstractRNG=Random.default_rng(),
+    insertion_order=nothing, # use this so that it gets ignored by the kwargs
+    kwargs...) where {P,I}
     check_arguments && check_args(enricher)
     enrich_boundary!(enricher)
     new_boundary_nodes = get_boundary_nodes(enricher)
@@ -53,6 +72,7 @@ function triangulate_curve_bounded(points::P;
     full_polygon_hierarchy = get_polygon_hierarchy(enricher)
     boundary_curves = get_boundary_curves(enricher)
     tri = triangulate(points;
+        IntegerType,
         segments=new_segments,
         boundary_nodes=new_boundary_nodes,
         full_polygon_hierarchy,

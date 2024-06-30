@@ -16,18 +16,15 @@ the integers themselves refer to points in `points`.
 struct Polygon{T,V,P} <: AbstractVector{T}
     vertices::V
     points::P
-    @stable default_union_limit = 2 @inline function Polygon(vertices::V, points::P) where {V,P}
+    is_circular::Bool
+    @stable @inline function Polygon(vertices::V, points::P) where {V,P}
         p = get_point(points, vertices[begin])
         T = typeof(p)
-        if vertices[begin] ≠ vertices[end]
-            return new{T,V,P}(vertices, points)
-        else
-            _verts = @views vertices[begin:(end-1)]
-            return new{T,typeof(_verts),P}(_verts, points)
-        end
+        return new{T,V,P}(vertices, points, is_circular(vertices))
     end
 end
-Base.size(P::Polygon) = (length(P.vertices),)
+Base.length(P::Polygon) = length(P.vertices) - P.is_circular
+Base.size(P::Polygon) = (length(P),)
 Base.getindex(P::Polygon, i::Int) = get_point(P.points, P.vertices[i])
 Base.getindex(P::Polygon, i::Vararg{Int,N}) where {N} =
     map(i) do j

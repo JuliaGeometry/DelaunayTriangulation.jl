@@ -1498,7 +1498,8 @@ end
     point_sets = (point_sets_no_extra, point_sets_extra_points, point_sets_extra_segments)
     curve_sets = deepcopy.([curve_I, curve_II, curve_III, curve_IV, curve_V, curve_VI, curve_VII, curve_VIII, curve_IX, curve_X, curve_XI, curve_XII])
     point_names = ("default", "extra_points", "extra_segments")
-    _rng_num(idx1, idx2, idx3, idx4, idx5, curve_idx, point_idx) = 2^idx1 * 3^idx2 * 5^idx3 * 7^idx4 * 11^idx5 * 13^curve_idx * 17^point_idx
+    _rng_num(idx1,
+     idx2, idx3, idx4, idx5, curve_idx, point_idx) = 2^idx1 * 3^idx2 * 5^idx3 * 7^idx4 * 11^idx5 * 13^curve_idx * 17^point_idx
 
     @testset "all_examples" begin
         max_area_opts = [
@@ -1544,10 +1545,10 @@ end
                                     @test validate_refinement(tri, args, warn=false)
                                     if _rng_num(idx1, idx2, idx3, idx4, idx5, curve_idx, point_idx) == _rng_num(1, 3, 1, 2, 2, curve_idx, point_idx)
                                         fig, ax, sc = triplot(tri)
-                                        @test_reference "refine_curve_bounded_example_$(curve_idx)_$(names[curve_idx])_$(point_names[point_idx])_$(abs(_rng_num(1, 3, 1, 2, 2, curve_idx, point_idx))).png" fig by=psnr_equality(9)
+                                        @test_reference "refine_curve_bounded_example_$(curve_idx)_$(names[curve_idx])_$(point_names[point_idx])_$(abs(_rng_num(1, 3, 1, 2, 2, curve_idx, point_idx))).png" fig by = psnr_equality(9)
                                     elseif _rng_num(idx1, idx2, idx3, idx4, idx5, curve_idx, point_idx) == _rng_num(2, 3, 1, 2, 2, curve_idx, point_idx)
                                         fig, ax, sc = triplot(tri)
-                                        @test_reference "refine_curve_bounded_example_$(curve_idx)_$(names[curve_idx])_$(point_names[point_idx])_$(abs(_rng_num(2, 3, 1, 2, 2, curve_idx, point_idx))).png" fig by=psnr_equality(9)
+                                        @test_reference "refine_curve_bounded_example_$(curve_idx)_$(names[curve_idx])_$(point_names[point_idx])_$(abs(_rng_num(2, 3, 1, 2, 2, curve_idx, point_idx))).png" fig by = psnr_equality(9)
                                     end
                                     @test tri.boundary_enricher.boundary_edge_map == tri.boundary_edge_map
                                 end
