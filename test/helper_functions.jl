@@ -1,3 +1,4 @@
+module HelperFunctions
 using StaticArrays
 using StableRNGs
 using LinearAlgebra
@@ -2194,4 +2195,70 @@ function plot_small_angle_complexes(enricher)
     end
     display(fig)
     return fig
+end
+
+export validate_triangulation
+export @_adj
+export _make_graph_from_adjacency
+export get_random_convex_polygon
+export compare_trees
+export second_shewchuk_example_constrained
+export get_random_vertices_and_constrained_edges
+export example_for_testing_add_point_on_constrained_triangulation
+export sort_edge_vector
+export complicated_geometry
+export validate_refinement
+export validate_statistics
+export validate_tessellation
+export compare_edge_vectors 
+export simple_geometry 
+export fixed_shewchuk_example_constrained
+export ⊢
+export is_sink 
+export is_conformal
+export _validate_offcenter
+export example_with_special_corners
+export get_idx
+export is_interior_sink
+export _compare_pairs
+export ⪧
+export slow_total_absolute_curvature
+export slow_arc_length
+export slow_bezier_eval
+export slow_eval_bspline
+export slow_get_segment
+export closest_point_on_curve
+export get_dt_rectangles
+export si_diametral_bounding_box
+export __inorder
+export get_child_from_tree
+export traverse_tree
+export poor_triangulation_example
+export example_triangulation
+export test_adjacent2vertex_map_matches_adjacent_map
+export test_state 
+export test_adjacent_map_matches_adjacent2vertex_map
+export test_each_edge_has_two_incident_triangles
+export test_triangle_orientation
+export test_iterators
+export example_empty_triangulation
+export shewchuk_example_constrained
+export test_segment_triangle_intersections
+export test_split_edges
+export test_intersections
+export validate_insertion_event_history
+export _approx_ispow2
+export _slow_compute_concentric_shell_ternary_split_position
+export slow_triangle_assess_queue
+export slow_triangle_assess
+export compare_encroach_queues
+export slow_encroachment_test
+export compute_diametral_circle
+export get_points_in_diametral_circle
+export slow_encroachment_test_diametral_lens
+export compare_triangle_queues
+export flatten_boundary_nodes
+export maximum_total_variation
+export all_points_are_inside
+export all_diametral_circles_are_empty
 end

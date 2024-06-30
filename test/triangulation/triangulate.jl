@@ -5,7 +5,7 @@ using Test
 using DataStructures
 using CairoMakie
 
-_functions.jl")
+
 
 @testset "Random tests" begin
     for _ in 1:100

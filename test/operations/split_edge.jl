@@ -2,8 +2,8 @@ using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using DataStructures
 using StableRNGs
+using StaticArrays
 
-_functions.jl")
 
 @testset "Specific example" begin
     tri = example_triangulation()

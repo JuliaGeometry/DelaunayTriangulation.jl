@@ -2,11 +2,12 @@ using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using DataStructures
 using CairoMakie
+using StaticArrays
 using StatsBase
 using ElasticArrays
 using ..DelaunayTriangulation: Certificate
 
-_functions.jl")
+
 
 global x, y = complicated_geometry()
 boundary_nodes, points = convert_boundary_points_to_indices(x, y; existing_points=ElasticMatrix{Float64}(undef, 2, 0))

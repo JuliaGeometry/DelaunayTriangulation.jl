@@ -1,8 +1,9 @@
 using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using CairoMakie
+using Random
 using StableRNGs
-_functions.jl")
+
 
 @testset "Random constrained Delaunay triangulations" begin
     for i in 1:25

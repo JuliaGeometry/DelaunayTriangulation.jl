@@ -33,6 +33,8 @@ using Test
 
 const ALL_TEST_SCRIPTS = Set{String}()
 const NON_TEST_SCRIPTS = Set{String}(["helper_functions.jl", "triangulation_validation.jl", "runtests.jl", "triangulation\\weighted.jl"])
+include("helper_functions.jl")
+using .HelperFunctions
 
 ct() = Dates.format(now(), "HH:MM:SS")
 function safe_include(filename; name=filename, push=true) # Workaround for not being able to interpolate into SafeTestset test names
@@ -40,7 +42,8 @@ function safe_include(filename; name=filename, push=true) # Workaround for not b
     mod = @eval module $(gensym()) end
     @info "[$(ct())] Testing $name"
     @testset verbose = true "$name" begin
-        Base.include(mod, "helper_functions.jl")
+        @eval mod using ..HelperFunctions
+        @eval mod using ..Test
         Base.include(mod, filename)
     end
 end
@@ -61,6 +64,7 @@ end
         # Needs to be setup properly before we do more testing of it. Please see the 
         # comments at the end of the weighted.jl file (the one included in the comment below).
         # safe_include("triangulation/weighted.jl")
+        # There is also some testing for weighted triangulations at the end of test/predicates/general.jl (search for witness plane).
     end
 
     @testset verbose = true "Interfaces" begin

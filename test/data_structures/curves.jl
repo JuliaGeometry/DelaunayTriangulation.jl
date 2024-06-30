@@ -4,6 +4,7 @@ const DT = DelaunayTriangulation
 using LinearAlgebra
 EllipticalArc = DT.EllipticalArc # shadow
 using CairoMakie
+using StableRNGs
 using StructEquality
 using ForwardDiff
 using ReferenceTests

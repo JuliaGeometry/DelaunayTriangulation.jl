@@ -1,7 +1,7 @@
 using Test, DataStructures
 using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
-_functions.jl")
+
 
 @test DT.hparent(2) == 1
 @test DT.hparent(3) == 1

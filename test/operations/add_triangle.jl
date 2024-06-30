@@ -3,8 +3,7 @@ const DT = DelaunayTriangulation
 using DataStructures
 using ..DelaunayTriangulation: Triangulation
 using StableRNGs
-
-_functions.jl")
+using StaticArrays
 
 _x, _y = complicated_geometry()
 global x = _x

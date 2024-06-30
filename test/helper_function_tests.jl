@@ -1,7 +1,6 @@
 using ..DelaunayTriangulation
 using Test
 const DT = DelaunayTriangulation
-"../helper_functions.jl"
 
 @testset "Check that validate_triangulation breaks on triangulations that it should break on" begin
     for _ in 1:20

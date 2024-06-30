@@ -10,7 +10,7 @@ using Test
 using StructEquality
 using DelimitedFiles
 using StableRNGs
-_functions.jl")
+
 const SACM = DT.SmallAngleComplexMember
 const SAC = DT.SmallAngleComplex
 

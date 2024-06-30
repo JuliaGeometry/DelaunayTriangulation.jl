@@ -2,9 +2,10 @@ using ..DelaunayTriangulation
 using SpatialIndexing
 using CairoMakie
 using LinearAlgebra
+using Random
 const DT = DelaunayTriangulation
 const SI = SpatialIndexing
-_functions.jl")
+
 
 @testset "Expanding a BoundingBox" begin
     bbox = DT.BoundingBox(2, 5, 13, 20)

@@ -4,7 +4,7 @@ using LinearAlgebra
 using Random
 using StatsBase
 
-_functions.jl")
+
 
 tri, label_map, index_map = simple_geometry()
 add_ghost_triangles!(tri)

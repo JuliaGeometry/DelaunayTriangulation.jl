@@ -4,7 +4,7 @@ using CairoMakie
 using StableRNGs
 using LinearAlgebra
 using ..DelaunayTriangulation: add_weight!, get_weight, get_weights
-_functions.jl")
+
 
 @testset "ZeroWeight" begin
     zw = DT.ZeroWeight()
