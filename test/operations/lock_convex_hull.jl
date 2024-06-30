@@ -3,7 +3,7 @@ const DT = DelaunayTriangulation
 using CairoMakie
 using DataStructures
 
-include("../helper_functions.jl")
+Base.include(@__MODULE__, "../helper_functions.jl")
 
 @testset "lock_convex_hull" begin
     for _ in 1:150

@@ -11,7 +11,7 @@ getxy((0.0, 0.0)) # avoid shadow
 
 const DT = DelaunayTriangulation
 
-include("triangulation_validation.jl")
+Base.include(@__MODULE__, "triangulation_validation.jl")
 
 function complicated_geometry()
     x1 = [collect(LinRange(0, 2, 4)),
@@ -131,7 +131,7 @@ macro _adj(i, j, k)
     return :(($i, $j) => $k, ($j, $k) => $i, ($k, $i) => $j)
 end
 
-using SimpleGraphs
+import SimpleGraphs: SimpleGraphs
 function example_triangulation()
     p1 = @SVector[0.0, 1.0]
     p2 = @SVector[3.0, -1.0]

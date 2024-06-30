@@ -3,7 +3,7 @@ const DT = DelaunayTriangulation
 using Random
 using StableRNGs
 
-include("../helper_functions.jl")
+Base.include(@__MODULE__, "../helper_functions.jl")
 
 rng = StableRNG(8888)
 
