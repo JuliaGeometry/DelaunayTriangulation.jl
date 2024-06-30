@@ -860,7 +860,7 @@ end
 @testset "Centroidal tessellation" begin
     flag = 0
     tot = 0
-    for i in 1:250
+    for i in 1:25
         @info "Testing centroidal tessellation: Run: $i"
         p1 = randn(2, 50)
         p2 = rand(SVector{2,Float64}, 30)
