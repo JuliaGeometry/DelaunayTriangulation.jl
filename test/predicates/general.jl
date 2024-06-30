@@ -4,7 +4,7 @@ using StaticArrays
 const DT = DelaunayTriangulation
 using ..DelaunayTriangulation: Certificate
 
-include("../helper_functions.jl")
+_functions.jl")
 
 @testset "Opposite signs" begin
     @test DT.opposite_signs(1, -1)

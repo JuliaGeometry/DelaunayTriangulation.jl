@@ -4,7 +4,7 @@ using DataStructures
 using ..DelaunayTriangulation: Triangulation
 using StableRNGs
 
-include("../helper_functions.jl")
+_functions.jl")
 
 _x, _y = complicated_geometry()
 global x = _x

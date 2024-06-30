@@ -3,7 +3,7 @@ const DT = DelaunayTriangulation
 using CairoMakie
 using StableRNGs
 
-include("../helper_functions.jl")
+_functions.jl")
 
 @testset "Simple domain" begin
     p1 = (0.2, 0.2)

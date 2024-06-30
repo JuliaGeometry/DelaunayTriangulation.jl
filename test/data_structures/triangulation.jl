@@ -9,7 +9,7 @@ using StableRNGs
 using ..DelaunayTriangulation: add_weight!, get_weight, get_weights
 
 @struct_equal DT.TriangulationCache
-include("../helper_functions.jl")
+_functions.jl")
 
 using ..DelaunayTriangulation: Triangulation
 

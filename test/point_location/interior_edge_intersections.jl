@@ -5,7 +5,7 @@ using StatsBase
 using Random
 using ..DelaunayTriangulation: Certificate
 
-include("../helper_functions.jl")
+_functions.jl")
 
 tri, label_map, index_map = simple_geometry()
 add_ghost_triangles!(tri)

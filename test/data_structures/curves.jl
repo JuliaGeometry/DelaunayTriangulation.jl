@@ -7,7 +7,6 @@ using CairoMakie
 using StructEquality
 using ForwardDiff
 using ReferenceTests
-include("../helper_functions.jl")
 
 @testset "LineSegment" begin
     # Construction 

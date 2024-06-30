@@ -4,8 +4,6 @@ using LinearAlgebra
 using BenchmarkTools
 using StableRNGs
 
-include("./helper_functions.jl")
-
 @testset "is_true" begin
       @test DT.is_true(true)
       @test DT.is_true(Val(true))

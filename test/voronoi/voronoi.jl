@@ -10,7 +10,7 @@ using LinearAlgebra
 using StructEquality
 @struct_equal DT.Queue
 
-include("../helper_functions.jl")
+_functions.jl")
 
 @testset "Unconstrained test" begin
     for _ in 1:10

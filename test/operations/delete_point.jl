@@ -1,7 +1,7 @@
 using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using StableRNGs
-include("../helper_functions.jl")
+_functions.jl")
 
 @testset verbose = true "Deleting interior nodes" begin
     @testset "Random point sets" begin

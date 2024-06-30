@@ -4,7 +4,7 @@ using LinearAlgebra
 using Random
 using StableRNGs
 
-include("../helper_functions.jl")
+_functions.jl")
 
 global tri, label_map, index_map = simple_geometry()
 add_ghost_triangles!(tri)

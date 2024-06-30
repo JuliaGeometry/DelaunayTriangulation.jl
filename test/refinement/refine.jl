@@ -12,7 +12,7 @@ using StableRNGs
 @struct_equal DT.InsertionEventHistory
 @struct_equal DT.RefinementConstraints
 @struct_equal DT.RefinementQueue
-include("../helper_functions.jl")
+_functions.jl")
 const ppoints = rand(2, 50)
 const ptri = triangulate(ppoints) # p for placeholder 
 const pT = (1, 2, 3)

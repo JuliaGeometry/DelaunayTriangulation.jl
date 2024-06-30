@@ -2,7 +2,7 @@ using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using DataStructures
 
-include("../helper_functions.jl")
+_functions.jl")
 
 @testset "Small example" begin
     tri = example_triangulation()

@@ -5,7 +5,7 @@ using StableRNGs
 const GV = DT.𝒢
 using ..DelaunayTriangulation: Certificate
 
-include("../helper_functions.jl")
+_functions.jl")
 
 x, y = complicated_geometry()
 rng = StableRNG(99988)

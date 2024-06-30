@@ -7,7 +7,7 @@ using StableRNGs
 using ReferenceTests
 using StatsBase
 
-include("../helper_functions.jl")
+_functions.jl")
 
 @testset "Triangulating random convex polygons" begin
     for n in Iterators.flatten([3:20, 25:50:1000])

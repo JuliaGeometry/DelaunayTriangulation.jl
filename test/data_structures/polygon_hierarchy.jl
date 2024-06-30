@@ -9,7 +9,7 @@ using Test
 using StructEquality
 using DelimitedFiles
 using StableRNGs
-include("../helper_functions.jl")
+_functions.jl")
 
 # Examples:
 #   I: A piecewise linear contiguous section.
