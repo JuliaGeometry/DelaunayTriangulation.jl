@@ -498,7 +498,7 @@ mutable struct Leaf{Branch} <: AbstractNode
     children::Vector{DiametralBoundingBox} # would do const, but for compat reasons I don't
     Leaf(parent::Branch, bounding_box, children) where {Branch} = new{Branch}(parent, bounding_box, children)
     Leaf{Branch}(parent::Branch, bounding_box, children) where {Branch} = new{Branch}(parent, bounding_box, children)
-    Leaf{Branch}(::Nothing, bounding_box, children) where {Branch} = new{Branch}(parent, bounding_box, children)
+    Leaf{Branch}(::Nothing, bounding_box, children) where {Branch} = new{Branch}(nothing, bounding_box, children)
     # need to separate out the constructors to avoid unbound type argument issues from Aqua
 end
 function Base.:(==)(leaf1::Leaf, leaf2::Leaf)
