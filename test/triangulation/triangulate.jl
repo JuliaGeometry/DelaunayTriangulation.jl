@@ -5,7 +5,7 @@ using Test
 using DataStructures
 using CairoMakie
 
-Base.include(@__MODULE__, "../helper_functions.jl")
+# Base.include(@__MODULE__, "../helper_functions.jl")
 
 @testset "Random tests" begin
     for _ in 1:100

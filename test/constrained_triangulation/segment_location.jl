@@ -1,7 +1,7 @@
 using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using CairoMakie
-Base.include(@__MODULE__, "../helper_functions.jl")
+# Base.include(@__MODULE__, "../helper_functions.jl")
 
 @testset "Shewchuk Example: A small example with some collinearities" begin
     tri = shewchuk_example_constrained()

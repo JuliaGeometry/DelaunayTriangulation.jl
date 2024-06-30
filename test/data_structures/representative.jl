@@ -2,7 +2,7 @@ using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using StatsBase
 
-Base.include(@__MODULE__, "../helper_functions.jl")
+# Base.include(@__MODULE__, "../helper_functions.jl")
 
 @testset "Initialise" begin
     c = DT.RepresentativeCoordinates{Int,Float64}()

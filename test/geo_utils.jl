@@ -4,7 +4,7 @@ using LinearAlgebra
 using Random
 using CairoMakie
 
-include("./helper_functions.jl")
+# Base.include(@__MODULE__, "./helper_functions.jl")
 
 @testset "Getting polygon features" begin
       tri, label_map, index_map = simple_geometry()

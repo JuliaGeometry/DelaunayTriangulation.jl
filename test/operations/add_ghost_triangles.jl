@@ -1,7 +1,7 @@
 using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 
-Base.include(@__MODULE__, "../helper_functions.jl")
+# Base.include(@__MODULE__, "../helper_functions.jl")
 
 @testset "Adding ghost triangles" begin
     tri, label_map, index_map = simple_geometry()

@@ -11,7 +11,7 @@ getxy((0.0, 0.0)) # avoid shadow
 
 const DT = DelaunayTriangulation
 
-Base.include(@__MODULE__, "triangulation_validation.jl")
+# Base.include(@__MODULE__, "triangulation_validation.jl")
 
 function complicated_geometry()
     x1 = [collect(LinRange(0, 2, 4)),

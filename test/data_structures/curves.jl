@@ -7,7 +7,7 @@ using CairoMakie
 using StructEquality
 using ForwardDiff
 using ReferenceTests
-Base.include(@__MODULE__, "../helper_functions.jl")
+# Base.include(@__MODULE__, "../helper_functions.jl")
 
 @testset "LineSegment" begin
     # Construction 

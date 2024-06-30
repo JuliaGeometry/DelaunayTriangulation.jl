@@ -4,7 +4,7 @@ using Test
 using DataStructures
 using StaticArraysCore
 
-Base.include(@__MODULE__, "../helper_functions.jl")
+# Base.include(@__MODULE__, "../helper_functions.jl")
 
 global bn1 = [[[1, 2], [3, 4], [5, 6], [10, 12]],
        [[13, 25, 50], [75, 17, 5, 10]],

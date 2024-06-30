@@ -4,7 +4,7 @@ using CairoMakie
 using LinearAlgebra
 const DT = DelaunayTriangulation
 const SI = SpatialIndexing
-Base.include(@__MODULE__, "../helper_functions.jl")
+# Base.include(@__MODULE__, "../helper_functions.jl")
 
 @testset "Expanding a BoundingBox" begin
     bbox = DT.BoundingBox(2, 5, 13, 20)

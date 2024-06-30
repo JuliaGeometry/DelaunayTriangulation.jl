@@ -3,7 +3,7 @@ const DT = DelaunayTriangulation
 using CairoMakie
 using ReferenceTests
 
-Base.include(@__MODULE__, "../helper_functions.jl")
+# Base.include(@__MODULE__, "../helper_functions.jl")
 
 @testset "Computing statistics" begin
     _x, _y = complicated_geometry()

@@ -2,6 +2,8 @@ using DelaunayTriangulation
 using Test
 using SafeTestsets
 
+include("helper_functions.jl")
+
 @testset verbose = true "DelaunayTriangulation.jl" begin
     @testset verbose = true "Triangulation" begin
         @info "Testing Rectangular Triangulation"
@@ -255,11 +257,6 @@ using SafeTestsets
             include("refinement/curve_bounded.jl")
         end
     end
-
-    @info "Testing Documentation images"
-    #@safetestset "Documentation images" begin
-    #    include("doc_images.jl")
-    #end
 
     @info "Testing Voronoi"
     @safetestset "Voronoi" begin
