@@ -37,7 +37,16 @@ jobs:
           arch: ${{ matrix.arch }}
 
       - name: Cache artifacts, etc.
-        uses: julia-actions/cache@v2
+        uses: julia-actions/cache@v4
+        env:
+          cache-name: cache-artifacts
+        with:
+          path: ~/.julia/artifacts
+          key: ${{ runner.os }}-test-${{ env.cache-name }}-${{ hashFiles('**/Project.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-test-${{ env.cache-name }}-
+            ${{ runner.os }}-test-
+            ${{ runner.os }}-
 
       - name: Build the package
         uses: julia-actions/julia-buildpkg@v1
@@ -54,6 +63,7 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
             token: ${{ secrets.CODECOV_TOKEN }}
+            file: lcov.info
             fail_ci_if_error: false
   docs:
     name: Documentation

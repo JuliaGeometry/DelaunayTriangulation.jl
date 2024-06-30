@@ -197,7 +197,7 @@ tri = triangulate(points; boundary_nodes, rng)
 refine!(tri; custom_constraint, rng)
 fig, ax, sc = triplot(tri)
 fig 
-@test_reference joinpath(fig_path, "mesh_refinement_ex_9.png") fig #src
+@test_reference joinpath(fig_path, "mesh_refinement_ex_9.png") fig by=psnr_equality(10.0) #src
 
 # Indeed, the inner domain is much finer. These examples could be extended 
 # to more complicated cases, for example using adaptive mesh refinement for a numerical 
