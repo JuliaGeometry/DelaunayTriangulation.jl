@@ -49,7 +49,7 @@ fig, ax, sc = triplot(orig_tri, axis=(title="Pre-refinement",))
 ax = Axis(fig[1, 2], title="Post-refinement")
 triplot!(ax, tri)
 fig
-@test_reference joinpath(fig_path, "mesh_refinement_ex_1.png") fig #src
+@test_reference joinpath(fig_path, "mesh_refinement_ex_1.png") fig by=psnr_equality(10) #src
 
 # The triangulation is now much finer. There are still some parts with 
 # many more triangles than other regions, but these are mostly near a boundary 
@@ -58,7 +58,7 @@ fig
 refine!(tri; min_angle=30.0, max_area=0.001A, rng) # 0.1% instead of 1%
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "mesh_refinement_ex_2.png") fig #src
+@test_reference joinpath(fig_path, "mesh_refinement_ex_2.png") fig by=psnr_equality(10) #src
 
 # The quality has now been improved. We could also try improving the minimum 
 # angle further, but even 30 is a bit closer to the limit of convergence (which is 
@@ -74,7 +74,7 @@ statistics(test_tri)
 # resulting triangulation is given below:
 fig, ax, sc = triplot(test_tri)
 fig
-@test_reference joinpath(fig_path, "mesh_refinement_ex_3.png") fig #src
+@test_reference joinpath(fig_path, "mesh_refinement_ex_3.png") fig by=psnr_equality(10) #src
 
 # This is certainly not a suitable triangulation.
 
@@ -92,7 +92,7 @@ hist!(ax, rad2deg.(angles), bins=20:2:60)
 vlines!(ax, [30.0], color=:red)
 resize_to_layout!(fig)
 fig
-@test_reference joinpath(fig_path, "mesh_refinement_ex_4.png") fig #src
+@test_reference joinpath(fig_path, "mesh_refinement_ex_4.png") fig by=psnr_equality(10) #src
 
 # We see that indeed many of the triangle areas are very small, and the angles 
 # are all greater than 30 degrees.
@@ -119,14 +119,14 @@ rng = StableRNG(456)
 tri = triangulate(points; boundary_nodes, rng)
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "mesh_refinement_ex_5.png") fig #src
+@test_reference joinpath(fig_path, "mesh_refinement_ex_5.png") fig by=psnr_equality(10) #src
 
 # Let us now refine this triangulation. 
 A = get_area(tri)
 refine!(tri; min_angle=27.3, max_area=0.01A, rng)
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "mesh_refinement_ex_6.png") fig #src
+@test_reference joinpath(fig_path, "mesh_refinement_ex_6.png") fig by=psnr_equality(10) #src
 
 # We inspect the plot, and we might think that it's perhaps not fine enough.
 # Let's use finer constraints and see what happens. Since 
@@ -137,7 +137,7 @@ fig
 refine!(tri; min_angle=33.9, max_area=0.001A, rng)
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "mesh_refinement_ex_7.png") fig #src
+@test_reference joinpath(fig_path, "mesh_refinement_ex_7.png") fig by=psnr_equality(10) #src
 
 # This is indeed much better, but notice that the inner hole 
 # is much more fine than the outer. This is because we are applying the same 
@@ -225,7 +225,7 @@ rng = StableRNG(789)
 tri = triangulate(points; boundary_nodes, rng)
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "mesh_refinement_ex_10.png") fig #src
+@test_reference joinpath(fig_path, "mesh_refinement_ex_10.png") fig by=psnr_equality(10) #src
 
 # Now let's refine. 
 A = get_area(tri)
@@ -234,7 +234,7 @@ refine!(tri; min_angle=30.0, max_area=0.001A, rng)
 #-
 fig, ax, sc = triplot(tri)
 fig 
-@test_reference joinpath(fig_path, "mesh_refinement_ex_11.png") fig #src
+@test_reference joinpath(fig_path, "mesh_refinement_ex_11.png") fig by=psnr_equality(10) #src
 
 # We see that the triangulation is now adequately refined. There are 
 # still triangles near the boundaries whose minimum angle is less 
@@ -246,7 +246,7 @@ angles = first.(get_all_stat(stats, :angles)) # the first is the smallest
 fig, ax, sc = scatter(rad2deg.(angles))
 hlines!(ax, [30.0], color = :red, linewidth = 4)
 fig 
-@test_reference joinpath(fig_path, "mesh_refinement_ex_12.png") fig #src
+@test_reference joinpath(fig_path, "mesh_refinement_ex_12.png") fig by=psnr_equality(10) #src
 
 # As we can see, the vast majority of the triangles satisfy the constraint, 
 # but there are still some that do not. Here is another set of results with a lower minimum angle constraint. 
@@ -264,7 +264,7 @@ scatter!(ax, rad2deg.(angles))
 hlines!(ax, [18.73], color = :red, linewidth = 4)
 resize_to_layout!(fig)
 fig 
-@test_reference joinpath(fig_path, "mesh_refinement_ex_13.png") fig #src
+@test_reference joinpath(fig_path, "mesh_refinement_ex_13.png") fig by=psnr_equality(10) #src
 
 # In this case, all the triangles satisfy the constraint, of course
 # at the expense of some other triangles having lesser quality.
