@@ -12,7 +12,6 @@ function intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
     prtx, prty = b, d
     prbx, prby = b, c
     θ = mod(atan(qy - py, qx - px), 2π)
-    @show θ == π
     θlb = mod(atan(pℓby - py, pℓbx - px), 2π)
     θlt = mod(atan(pℓty - py, pℓtx - px), 2π)
     θrt = mod(atan(prty - py, prtx - px), 2π)
