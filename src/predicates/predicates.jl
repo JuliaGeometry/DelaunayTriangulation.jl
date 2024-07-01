@@ -636,9 +636,7 @@ function point_position_relative_to_diametral_lens(p, q, r, lens_angle=30.0)
     ddot = (px - rx) * (qx - rx) + (py - ry) * (qy - ry) # (p - r) · (q - r)
     ddot > 0 && return Certificate.Outside # no need to check - not obtuse
     ddot² = ddot^2
-    #pr² = (px - rx)^2 + (py - ry)^2 # |p - r|²
     ℓpr² = dist_sqr((px, py), (rx, ry))
-    # ℓqr² = (qx - rx)^2 + (qy - ry)^2 # |q - r|²
     ℓqr² = dist_sqr((qx, qy), (rx, ry))
     cosine_scale² = cosd(2lens_angle)^2 # ≥ 0 since lens_angle ∈ [0°, 45°]
     rhs = (ℓpr² * ℓqr²) * cosine_scale²

@@ -36,7 +36,6 @@ struct Cell{T}
         q = (x, y)
         dist = distance_to_polygon(q, points, boundary_nodes)
         max_dist = dist + half_width * sqrt(2)
-        #max_dist = muladd(sqrt(2), half_width, dist)
         return new{T}(x, y, half_width, dist, max_dist)
     end
 end

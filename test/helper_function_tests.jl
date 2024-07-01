@@ -14,25 +14,25 @@ const DT = DelaunayTriangulation
         h = [6.0, 4.0]
         pts = [a, b, c, d, e, f, g, h]
         tri = triangulate(pts; delete_ghosts=false)
-        @test validate_triangulation(tri)
+        @test validate_triangulation(tri; print_result=false)
         DT.delete_triangle!(tri, 6, 2, 3)
-        @test !validate_triangulation(tri)
+        @test !validate_triangulation(tri; print_result=false)
         DT.add_triangle!(tri, 6, 3, 2)
         @test !test_state(test_triangle_orientation(tri))
-        @test !validate_triangulation(tri)
+        @test !validate_triangulation(tri; print_result=false)
         tri.points[7] = [2, -0.5]
-        @test !validate_triangulation(tri)
+        @test !validate_triangulation(tri; print_result=false)
         tri.points[7] = [2.0, -2.0]
         tri.adjacent.adjacent[(6, 3)] = DT.∅
         @test !test_state(test_each_edge_has_two_incident_triangles(tri))
-        @test !validate_triangulation(tri)
+        @test !validate_triangulation(tri; print_result=false)
         tri.adjacent.adjacent[(6, 3)] = 2
         tri.adjacent.adjacent[(6, 17)] = 10
         @test !test_state(test_adjacent2vertex_map_matches_adjacent_map(tri))
         @test !test_state(test_adjacent_map_matches_adjacent2vertex_map(tri))
         tri = triangulate(pts; delete_ghosts=false)
         DT.delete_vertex!(tri, 3)
-        @test !validate_triangulation(tri)
+        @test !validate_triangulation(tri; print_result=false)
         tri = triangulate(pts; delete_ghosts=false)
         push!(tri.triangles, (11, 17, 20))
         @test any(!test_state, test_iterators(tri))

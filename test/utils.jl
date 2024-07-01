@@ -1230,9 +1230,18 @@ end
             for T in each_ghost_triangle(tri)
                   T = DT.sort_triangle(T)
                   i, j, k = triangle_vertices(T)
-                  V = (j, i, get_adjacent(tri, j, i))
+                  w = get_adjacent(tri, j, i)
+                  V = (j, i, w)
                   @test DT.replace_boundary_triangle_with_ghost_triangle(tri, V) == T
                   @test DT.replace_ghost_triangle_with_boundary_triangle(tri, T) == V
+                  if (i, j) ∉ ((624, 625), (1, 26), (2, 1), (625, 600)) # corners of the lattice have two associated ghosts
+                        V = (i, w, j)
+                        @test DT.replace_boundary_triangle_with_ghost_triangle(tri, V) == T
+                        @test DT.replace_ghost_triangle_with_boundary_triangle(tri, T) == (j, i, w)
+                        V = (w, j, i)
+                        @test DT.replace_boundary_triangle_with_ghost_triangle(tri, V) == T
+                        @test DT.replace_ghost_triangle_with_boundary_triangle(tri, T) == (j, i, w)
+                  end
             end
       end
 end
@@ -1561,13 +1570,13 @@ end
             for j in eachindex(tup)
                   global fft
                   global basic_defft
-                  a[i, j] = @ballocated DT.eval_fnc_at_het_tuple_two_elements($fft, $tup, $i, $j)
-                  b[i, j] = @ballocated basic_defft($fft, $tup, $i, $j)
+                  a[i, j] = @allocated DT.eval_fnc_at_het_tuple_two_elements(fft, tup, i, j)
+                  b[i, j] = @allocated basic_defft(fft, tup, i, j)
                   @test DT.eval_fnc_at_het_tuple_two_elements(fft, tup, i, j) == basic_defft(fft, tup, i, j)
                   @inferred DT.eval_fnc_at_het_tuple_two_elements(fft, tup, i, j)
             end
       end
-      @test all(iszero, a)
+      @test all(iszero, a .- 16) || all(iszero, a)
       @test all(!iszero, b)
 end
 

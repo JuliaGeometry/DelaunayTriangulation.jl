@@ -12,6 +12,7 @@ function intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
     prtx, prty = b, d
     prbx, prby = b, c
     θ = mod(atan(qy - py, qx - px), 2π)
+    @show θ == π
     θlb = mod(atan(pℓby - py, pℓbx - px), 2π)
     θlt = mod(atan(pℓty - py, pℓtx - px), 2π)
     θrt = mod(atan(prty - py, prtx - px), 2π)
@@ -28,22 +29,18 @@ function intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
         # y = py + Rsinθ = c ⟹ R = (c - py) / sinθ 
         # x = px + Rcosθ = px + (c - py)cotθ
         return px + (c - py) * cot(θ), c
-        #return muladd(c - py, cot(θ), px), c
     elseif θrt ≤ θ ≤ θlt # y = d, a ≤ x ≤ b 
         # y = py + Rsinθ = d ⟹ R = (d - py) / sinθ
         # x = px + Rcosθ = px + (d - py)cotθ
         return px + (d - py) * cot(θ), d
-        #return muladd(d - py, cot(θ), px), d
     elseif θlt ≤ θ ≤ θlb # x = a, c ≤ y ≤ d
         # x = px + Rcosθ = a ⟹ R = (a - px) / cosθ
         # y = py + Rsinθ = py + (a - px)tanθ
         return a, py + (a - px) * tan(θ)
-        #return a, muladd(a - px, tan(θ), py)
     else # x = b, c ≤ y ≤ d
         # x = px + Rcosθ = b ⟹ R = (b - px) / cosθ
         # y = py + Rsinθ = py + (b - px)tanθ
         return b, py + (b - px) * tan(θ)
-        #return b, muladd(b - px, tan(θ), py)
     end
 end
 
@@ -97,7 +94,7 @@ Given two line segments `(a, b)` and `(c, d)`, classifies the intersection of th
 """
 function classify_and_compute_segment_intersection(a, b, c, d)
     F = number_type(a)
-    if any(isinf, a) || any(isinf, b) || any(isinf, c) || any(isinf, d)
+    if any(!isfinite, getxy(a)) || any(!isfinite, getxy(b)) || any(!isfinite, getxy(c)) || any(!isfinite, getxy(d))
         return Cert.None, Cert.None, Cert.None, (F(NaN), F(NaN))
     end
     cert = line_segment_intersection_type(a, b, c, d)
@@ -142,9 +139,7 @@ function polygon_features_single_segment(points, boundary_nodes; scale=Val(true)
         xᵢ₊₁, yᵢ₊₁ = getxy(pᵢ₊₁)
         area_contribution = xᵢ * yᵢ₊₁ - xᵢ₊₁ * yᵢ
         cx += (xᵢ + xᵢ₊₁) * area_contribution
-        #cx = muladd(xᵢ + xᵢ₊₁, area_contribution, cx)
         cy += (yᵢ + yᵢ₊₁) * area_contribution
-        #cy = muladd(yᵢ + yᵢ₊₁, area_contribution, cy)
         a += area_contribution
         vᵢ, pᵢ, xᵢ, yᵢ = vᵢ₊₁, pᵢ₊₁, xᵢ₊₁, yᵢ₊₁
     end

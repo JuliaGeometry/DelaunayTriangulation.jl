@@ -10,8 +10,6 @@ using LinearAlgebra
 using StructEquality
 @struct_equal DT.Queue
 
-
-
 @testset "Unconstrained test" begin
     for _ in 1:10
         A = (-1.0, 7.0)
@@ -1188,4 +1186,12 @@ end
     vorn = voronoi(tri)
     smooth_vorn = centroidal_smooth(vorn; maxiters=250)
     @test validate_tessellation(smooth_vorn)
+end
+
+@testset "toggle_inf_warn" begin
+    @test DT.INF_WARN[]
+    DT.toggle_inf_warn!()
+    @test !DT.INF_WARN[]
+    DT.toggle_inf_warn!()
+    @test DT.INF_WARN[]
 end

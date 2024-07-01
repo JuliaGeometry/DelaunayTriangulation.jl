@@ -218,7 +218,9 @@ previndex_circular(C, i) = i == firstindex(C) ? lastindex(C) - 1 : i - 1
 """
     replace_boundary_triangle_with_ghost_triangle(tri::Triangulation, V) -> Triangle
 
-Given a boundary triangle `V` of `tri`, returns the adjacent ghost triangle.
+Given a boundary triangle `V` of `tri`, returns the adjacent ghost triangle. Note that 
+for triangles in a corner of a domain, like a lattice triangulation, there are two choices 
+of ghost triangle.
 """
 function replace_boundary_triangle_with_ghost_triangle(tri::Triangulation, V)
     u, v, w = triangle_vertices(V)

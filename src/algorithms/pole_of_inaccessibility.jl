@@ -30,10 +30,8 @@ function pole_of_inaccessibility(points, boundary_nodes; precision=one(number_ty
     min_extent = min(width, height)
     if iszero(min_extent)
         if xmin == xmax
-            #return xmin, (ymin + ymax) / 2
             return xmin, midpoint(ymin, ymax)
         else
-            #return (xmin + xmax) / 2, ymin
             return midpoint(xmin, xmax), ymin
         end
     end

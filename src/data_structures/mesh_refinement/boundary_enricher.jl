@@ -397,7 +397,6 @@ function _construct_boundary_enricher(points, boundary_nodes, boundary_curves, p
     construct_tree!(enricher)
     return enricher
 end
-##={P,typeof(boundary_nodes),typeof(boundary_curves),IntegerType,typeof(boundary_edge_map),typeof(_segments)}=#
 
 function Base.:(==)(enricher1::BoundaryEnricher, enricher2::BoundaryEnricher)
     get_points(enricher1) ≠ get_points(enricher2) && return false

@@ -433,8 +433,6 @@ function triangle_offcenter(p, q, r, c₁=triangle_circumcenter(p, q, r), β=1.0
     dirx, diry = (c₁x - mx) / dist_to_c₁, (c₁y - my) / dist_to_c₁
     ox = mx + h * dirx
     oy = my + h * diry
-    #ox = muladd(h, dirx, mx)
-    #oy = muladd(h, diry, my)
     return ox, oy
 end
 
@@ -498,24 +496,13 @@ function select_shortest_edge_for_offcenter(p, q, r, c, ℓ²)
     p = getxy(p)
     q = getxy(q)
     r = getxy(r)
-    #px, py = getxy(p)
-    #qx, qy = getxy(q)
-    #rx, ry = getxy(r)
-    #cx, cy = getxy(c)
-    #pqx, pqy = (px + qx) / 2, (py + qy) / 2
-    #qrx, qry = (qx + rx) / 2, (qy + ry) / 2
-    #prx, pry = (px + rx) / 2, (py + ry) / 2
     pq = midpoint(p, q)
     qr = midpoint(q, r)
     rp = midpoint(r, p)
-    #ℓqr² = (rx - qx)^2 + (ry - qy)^2
-    #ℓrp² = (px - rx)^2 + (py - ry)^2
     ℓqr² = dist_sqr(r, q)
     ℓrp² = dist_sqr(r, p)
-    #ℓ_pq_c² = (pqx - cx)^2 + (pqy - cy)^2
     ℓpqc² = dist_sqr(pq, c)
     if ℓqr² ≈ ℓ² && ℓrp² > ℓ² # shortest edges are pq and qr
-        #ℓ_qr_c² = (qrx - cx)^2 + (qry - cy)^2
         ℓqrc² = dist_sqr(qr, c)
         if ℓpqc² ≈ ℓqrc²
             if pq < qr
@@ -529,7 +516,6 @@ function select_shortest_edge_for_offcenter(p, q, r, c, ℓ²)
             return q, r, p
         end
     elseif ℓrp² ≈ ℓ² && ℓqr² > ℓ² # shortest edges are pq and rp
-        #ℓ_rp_c² = (prx - cx)^2 + (pry - cy)^2
         ℓrpc² = dist_sqr(rp, c)
         if ℓpqc² ≈ ℓrpc²
             if pq < rp
@@ -614,20 +600,7 @@ end
 Computes the midpoints of the edges of the triangle with coordinates `(p, q, r)`.
 """
 function triangle_edge_midpoints(p, q, r)
-    #px, py = getxy(p)
-    #qx, qy = getxy(q)
-    #rx, ry = getxy(r)
-    #mx = (px + qx) / 2
-    #my = (py + qy) / 2
-    #nx = (qx + rx) / 2
-    #ny = (qy + ry) / 2
-    #ox = (rx + px) / 2
-    #oy = (ry + py) / 2
-    _p = getxy(p)
-    _q = getxy(q)
-    _r = getxy(r)
-    return midpoint(_p, _q), midpoint(_q, _r), midpoint(_r, _p)
-    #return (mx, my), (nx, ny), (ox, oy)
+    return midpoint(p, q), midpoint(q, r), midpoint(r, p)
 end
 
 """

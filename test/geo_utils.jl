@@ -809,6 +809,15 @@ end
       @test DT.is_right(cert_c)
       @test DT.is_right(cert_d)
       @test all(isnan, p)
+
+      cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection((NaN, NaN), b, c, d)
+      @test DT.is_none(cert) && DT.is_none(cert_c) && DT.is_none(cert_d) && all(isnan, p)
+      cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, (Inf, Inf), c, d)
+      @test DT.is_none(cert) && DT.is_none(cert_c) && DT.is_none(cert_d) && all(isnan, p)
+      cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, b, (NaN, NaN), d)
+      @test DT.is_none(cert) && DT.is_none(cert_c) && DT.is_none(cert_d) && all(isnan, p)
+      cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, b, c, (Inf, Inf))
+      @test DT.is_none(cert) && DT.is_none(cert_c) && DT.is_none(cert_d) && all(isnan, p)
 end
 
 @testset "sort_convex_polygon!" begin
