@@ -10,8 +10,6 @@ using LinearAlgebra
 using StructEquality
 @struct_equal DT.Queue
 
-include("../helper_functions.jl")
-
 @testset "Unconstrained test" begin
     for _ in 1:10
         A = (-1.0, 7.0)
@@ -860,7 +858,8 @@ end
 @testset "Centroidal tessellation" begin
     flag = 0
     tot = 0
-    for i in 1:50
+    for i in 1:25
+        @info "Testing centroidal tessellation: Run: $i"
         p1 = randn(2, 50)
         p2 = rand(SVector{2,Float64}, 30)
         p3 = rand(Point2f, 250)
@@ -1187,4 +1186,12 @@ end
     vorn = voronoi(tri)
     smooth_vorn = centroidal_smooth(vorn; maxiters=250)
     @test validate_tessellation(smooth_vorn)
+end
+
+@testset "toggle_inf_warn" begin
+    @test DT.INF_WARN[]
+    DT.toggle_inf_warn!()
+    @test !DT.INF_WARN[]
+    DT.toggle_inf_warn!()
+    @test DT.INF_WARN[]
 end

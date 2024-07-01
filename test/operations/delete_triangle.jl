@@ -3,8 +3,8 @@ const DT = DelaunayTriangulation
 using CairoMakie
 using DataStructures
 using ..DelaunayTriangulation: Triangulation
+using StaticArrays
 
-include("../helper_functions.jl")
 
 global tri, label_map, index_map = simple_geometry()
 add_ghost_triangles!(tri)

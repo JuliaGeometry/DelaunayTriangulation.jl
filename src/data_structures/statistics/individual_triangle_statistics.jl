@@ -207,7 +207,7 @@ Computes the centroid of a triangle with vertices `p`, `q`, and `r`, given by
 c = \dfrac{p + q + r}{3}.
 ```
 """
-triangle_centroid(p, q, r) = ((_getx(p) + _getx(q) + _getx(r)) / 3, (_gety(p) + _gety(q) + _gety(r)) / 3)
+triangle_centroid(p, q, r) = ((getx(p) + getx(q) + getx(r)) / 3, (gety(p) + gety(q) + gety(r)) / 3)
 
 @doc raw"""
     triangle_angles(p, q, r) -> (Number, Number, Number)
@@ -222,9 +222,9 @@ where `A` is the area of the triangle. The angles are returned in sorted order.
 function triangle_angles(p, q, r)
     ℓ₁², ℓ₂², ℓ₃² = squared_triangle_lengths(p, q, r)
     A = triangle_area(ℓ₁², ℓ₂², ℓ₃²)
-    px, py = _getxy(p)
-    qx, qy = _getxy(q)
-    rx, ry = _getxy(r)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
+    rx, ry = getxy(r)
     ax, by = px - qx, py - qy
     bx, ay = px - rx, py - ry
     dotab = ax * bx + ay * by
@@ -267,8 +267,13 @@ end
 
 Computes the squared area of the triangle with coordinates `p`, `q`, `r`. Initially, `squared_triangle_area` is used for this, unless the squared area 
 is found to be negative due to precision issues, in which case [`squared_triangle_area_v2`](@ref) is used instead.
+
+!!! note "Precision"
+
+    All coordinates are converted into Float64, but the returned area is converted back into the original precision.
 """
-function squared_triangle_area(p, q, r)
+function squared_triangle_area(_p, _q, _r)
+    p, q, r = _getxy(_p), _getxy(_q), _getxy(_r)
     ℓ₁², ℓ₂², ℓ₃² = squared_triangle_lengths(p, q, r)
     A² = squared_triangle_area(ℓ₁², ℓ₂², ℓ₃²)
     if A² ≤ zero(A²)
@@ -277,13 +282,17 @@ function squared_triangle_area(p, q, r)
     if A² ≤ zero(A²)
         A² = zero(A²)
     end
-    return number_type(p)(A²)
+    return number_type(_p)(A²)
 end
 
 """
     triangle_area(p, q, r) -> Number
 
 Computes the area of the triangle with coordinates `p`, `q`, `r`.
+
+!!! note "Precision"
+
+    All coordinates are converted into Float64, but the returned area is converted back into the original precision.
 """
 function triangle_area(p, q, r)
     A² = squared_triangle_area(p, q, r)
@@ -307,9 +316,9 @@ Computes the squared lengths of the edges of the triangle with coordinates `p`, 
 the index refers to which edge in the order `(p, q)`, `(q, r)`, `(q, p)`.
 """
 function squared_triangle_lengths_and_smallest_index(p, q, r)
-    p = _getxy(p)
-    q = _getxy(q)
-    r = _getxy(r)
+    p = getxy(p)
+    q = getxy(q)
+    r = getxy(r)
     ℓ₁² = dist_sqr(p, q)
     ℓ₂² = dist_sqr(q, r)
     ℓ₃² = dist_sqr(r, p)
@@ -339,11 +348,17 @@ c_x = r_x + \dfrac{d_{11}d_{22} - d_{12}d_{21}}{4A}, \quad c_y = r_y + \dfrac{e_
 ```
 where ``d_{11} = \|p - r\|_2^2``, ``d_{12} = p_y - r_y``, ``d_{21} = \|q - r\|_2^2``, ``d_{22} = q_y - r_y``, ``e_{11} = p_x - r_x``
 ``e_{12} = d_{11}``, ``e_{21} = q_x - r_x``, and ``e_{22} = d_{21}``.
+
+!!! note "Precision"
+
+    All coordinates are converted into Float64, but the returned area is converted back into the original precision.
 """
-function triangle_circumcenter(p, q, r, A=triangle_area(p, q, r))
-    px, py = _getxy(p)
-    qx, qy = _getxy(q)
-    rx, ry = _getxy(r)
+function triangle_circumcenter(_p, _q, _r, _A=triangle_area(_p, _q, _r))
+    p, q, r = _getxy(_p), _getxy(_q), _getxy(_r)
+    A = Float64(_A)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
+    rx, ry = getxy(r)
     d11 = (px - rx)^2 + (py - ry)^2
     d12 = py - ry
     d21 = (qx - rx)^2 + (qy - ry)^2
@@ -354,7 +369,8 @@ function triangle_circumcenter(p, q, r, A=triangle_area(p, q, r))
     e21 = qx - rx
     e22 = d21
     oy = ry + (e11 * e22 - e12 * e21) / (4A)
-    return (ox, oy)
+    F = number_type(_p)
+    return (F(ox), F(oy))
 end
 
 """
@@ -407,8 +423,8 @@ function triangle_offcenter(p, q, r, c₁=triangle_circumcenter(p, q, r), β=1.0
         p, q, r = select_shortest_edge_for_offcenter(p, q, r, c₁, ℓ₁²)
     end
     h = distance_to_offcenter(β, ℓ₁)
-    p = _getxy(p)
-    q = _getxy(q)
+    p = getxy(p)
+    q = getxy(q)
     m = midpoint(p, q)
     c₁ = getxy(c₁)
     dist_to_c₁ = dist(m, c₁)
@@ -417,8 +433,6 @@ function triangle_offcenter(p, q, r, c₁=triangle_circumcenter(p, q, r), β=1.0
     dirx, diry = (c₁x - mx) / dist_to_c₁, (c₁y - my) / dist_to_c₁
     ox = mx + h * dirx
     oy = my + h * diry
-    #ox = muladd(h, dirx, mx)
-    #oy = muladd(h, diry, my)
     return ox, oy
 end
 
@@ -479,27 +493,16 @@ These outputs `(u, v, w)` are a permutation of `(p, q, r)` (maintaining positive
 where `m = (u + v)/2`. If there is no unique maximiser, then the output is the permutation that is lexicographically smallest (i.e., sorted by x and then by y).
 """
 function select_shortest_edge_for_offcenter(p, q, r, c, ℓ²)
-    p = _getxy(p)
-    q = _getxy(q)
-    r = _getxy(r)
-    #px, py = _getxy(p)
-    #qx, qy = _getxy(q)
-    #rx, ry = _getxy(r)
-    #cx, cy = _getxy(c)
-    #pqx, pqy = (px + qx) / 2, (py + qy) / 2
-    #qrx, qry = (qx + rx) / 2, (qy + ry) / 2
-    #prx, pry = (px + rx) / 2, (py + ry) / 2
+    p = getxy(p)
+    q = getxy(q)
+    r = getxy(r)
     pq = midpoint(p, q)
     qr = midpoint(q, r)
     rp = midpoint(r, p)
-    #ℓqr² = (rx - qx)^2 + (ry - qy)^2
-    #ℓrp² = (px - rx)^2 + (py - ry)^2
     ℓqr² = dist_sqr(r, q)
     ℓrp² = dist_sqr(r, p)
-    #ℓ_pq_c² = (pqx - cx)^2 + (pqy - cy)^2
     ℓpqc² = dist_sqr(pq, c)
     if ℓqr² ≈ ℓ² && ℓrp² > ℓ² # shortest edges are pq and qr
-        #ℓ_qr_c² = (qrx - cx)^2 + (qry - cy)^2
         ℓqrc² = dist_sqr(qr, c)
         if ℓpqc² ≈ ℓqrc²
             if pq < qr
@@ -513,7 +516,6 @@ function select_shortest_edge_for_offcenter(p, q, r, c, ℓ²)
             return q, r, p
         end
     elseif ℓrp² ≈ ℓ² && ℓqr² > ℓ² # shortest edges are pq and rp
-        #ℓ_rp_c² = (prx - cx)^2 + (pry - cy)^2
         ℓrpc² = dist_sqr(rp, c)
         if ℓpqc² ≈ ℓrpc²
             if pq < rp
@@ -598,20 +600,7 @@ end
 Computes the midpoints of the edges of the triangle with coordinates `(p, q, r)`.
 """
 function triangle_edge_midpoints(p, q, r)
-    #px, py = _getxy(p)
-    #qx, qy = _getxy(q)
-    #rx, ry = _getxy(r)
-    #mx = (px + qx) / 2
-    #my = (py + qy) / 2
-    #nx = (qx + rx) / 2
-    #ny = (qy + ry) / 2
-    #ox = (rx + px) / 2
-    #oy = (ry + py) / 2
-    _p = _getxy(p)
-    _q = _getxy(q)
-    _r = _getxy(r)
-    return midpoint(_p, _q), midpoint(_q, _r), midpoint(_r, _p)
-    #return (mx, my), (nx, ny), (ox, oy)
+    return midpoint(p, q), midpoint(q, r), midpoint(r, p)
 end
 
 """

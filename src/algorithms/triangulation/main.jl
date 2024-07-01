@@ -27,6 +27,12 @@ Computes the Delaunay triangulation of `points`, and then the constrained Delaun
     For curve-bounded domains, `points` may get mutated to include the endpoints of the provided curves, and when inserting 
     Steiner points to split segments or refine boundaries.
 
+!!! danger "Floating point precision"
+
+    If your points are defined using non-`Float64` coordinates, you may run into precision issues that 
+    lead to problems with robustness. The consequences of this could be potentially catastrophic, leading to 
+    infinite loops for example. If you do encounter such issues, consider converting your coordinates to `Float64`.
+
 # Keyword Arguments 
 - `segments=nothing`: The segments to include in the triangulation. If `nothing`, then no segments are included.
 
@@ -124,9 +130,8 @@ function triangulate(points::P;
     polygonise_n=4096,
     coarse_n=0,
     enrich=false) where {P,I,E,V,Es,Ts,M,H}
-    if is_weighted(weights)
-        throw(ArgumentError("Weighted triangulations are not yet fully implemented."))
-    end
+    number_type(points) == Float64 || @warn "Using non-Float64 coordinates may cause issues. If you run into problems, consider using Float64 coordinates." maxlog=1
+    is_weighted(weights) && throw(ArgumentError("Weighted triangulations are not yet fully implemented."))
     is_constrained = !(isnothing(segments) || isempty(segments)) || !(isnothing(boundary_nodes) || !has_boundary_nodes(boundary_nodes))
     is_weighted(weights) && is_constrained && throw(ArgumentError("You cannot compute a constrained triangulation with weighted points."))
     if enrich || (isempty(boundary_curves) && is_curve_bounded(boundary_nodes)) # If boundary_curves is not empty, then we are coming from triangulate_curve_bounded
@@ -136,7 +141,7 @@ function triangulate(points::P;
         full_polygon_hierarchy = construct_polygon_hierarchy(points, boundary_nodes; IntegerType)
     end
     check_arguments && check_args(points, boundary_nodes, full_polygon_hierarchy)
-    tri = Triangulation(points; IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType, weights, boundary_curves, boundary_enricher)
+    tri = Triangulation(points; IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType, weights, boundary_curves, boundary_enricher, build_cache = Val(true))
     return _triangulate!(tri, segments, boundary_nodes, randomise, try_last_inserted_point, skip_points, num_sample_rule, rng, insertion_order,
         recompute_representative_points, delete_holes, full_polygon_hierarchy, delete_ghosts, delete_empty_features)
 end

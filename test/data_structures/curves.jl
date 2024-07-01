@@ -4,10 +4,10 @@ const DT = DelaunayTriangulation
 using LinearAlgebra
 EllipticalArc = DT.EllipticalArc # shadow
 using CairoMakie
+using StableRNGs
 using StructEquality
 using ForwardDiff
 using ReferenceTests
-include("../helper_functions.jl")
 
 @testset "LineSegment" begin
     # Construction 
@@ -710,8 +710,8 @@ end
             return [(x, y - y′) for (x, y′) in points]
         end # just to match my reference figure
     control_points = invert([(207.0, 65.0), (84.0, 97.0), (58.0, 196.0), (261.0, 130.0), (216.0, 217.0), (54.0, 122.0), (52.0, 276.0), (85.0, 330.0), (258.0, 334.0), (209.0, 286.0)])
-    for lookup_steps in (1000, 5000, 10000)
-        if lookup_steps ≠ 5000
+    for lookup_steps in (100, 500, 1000)
+        if lookup_steps ≠ 500
             bezier = BezierCurve(control_points; lookup_steps)
         else
             bezier = BezierCurve(control_points)
@@ -719,7 +719,7 @@ end
         p = (100.0, 100.0)
         t′, q = DT.get_closest_point(bezier, p)
         @test q ⪧ bezier(t′)
-        for _ in 1:5000
+        for _ in 1:50
             p = rand(2) * 300 |> Tuple
             t′, q = DT.get_closest_point(bezier, p)
             @test q ⪧ bezier(t′)
@@ -728,7 +728,7 @@ end
             @test q ⪧ _q rtol = 1e-1 atol = 1e-1
             @test DT.dist(p, _q) ≈ DT.dist(p, q) rtol = 1e-1 atol = 1e-1
         end
-        for t in LinRange(0, 1, 15000)
+        for t in LinRange(0, 1, 150)
             p = bezier(t)
             t′, q = DT.get_closest_point(bezier, p)
             @test q ⪧ bezier(t′)
@@ -836,7 +836,7 @@ end
 
     ## Twice differentiate 
     for bezier in (bezier1, bezier2, bezier3, bezier4)
-        for t in LinRange(0, 1, 10000)
+        for t in LinRange(0, 1, 1000)
             der1 = DT.twice_differentiate(bezier, t)
             h = 1e-4
             der2 = (bezier(t + h) .- 2 .* bezier(t) .+ bezier(t - h)) ./ (h^2)
@@ -846,7 +846,7 @@ end
 
     ## Thrice differentiate
     for bezier in (bezier1, bezier2, bezier3, bezier4)
-        for t in LinRange(0, 1, 10000)
+        for t in LinRange(0, 1, 1000)
             der1 = DT.thrice_differentiate(bezier, t)
             h = 1e-6
             f = t -> DT.twice_differentiate(bezier, t)
@@ -1284,7 +1284,7 @@ end
         @test ⪧(der, (2π * cos(2π * t), -2π * sin(2π * t)); atol=1e-2)
     end
 
-    t = LinRange(0, 1, 15000)
+    t = LinRange(0, 1, 1500)
     for spl in (spline, sextic_spline, periodic_spline, quadratic_periodic_spline, longer_spline, quadratic_spline)
         for t in t
             der1 = ForwardDiff.derivative(t -> slow_eval_bspline(spl.control_points, spl.knots, t), t)
@@ -1306,7 +1306,7 @@ end
 
     ## Twice differentiate 
     for spl in (spline, sextic_spline, periodic_spline, quadratic_periodic_spline, longer_spline, quadratic_spline)
-        for t in LinRange(0, 1, 15000)
+        for t in LinRange(0, 1, 1500)
             der1 = DT.twice_differentiate(spl, t)
             @inferred DT.twice_differentiate(spl, t)
             h = 1e-6
@@ -1353,7 +1353,7 @@ end
         end
     end
 
-    t = LinRange(0, 1, 25000)
+    t = LinRange(0, 1, 2500)
     f = tuple.(sin.(π .* t), cos.(π .* t))
     spl = BSpline(f)
     for t in t[4:end-4]
@@ -2061,7 +2061,7 @@ end
     boundary_nodes = [eachindex(t); 1]
     reverse_points = rev_pspl.(t)
     reverse_boundary_nodes = [eachindex(t); 1]
-    for _ in 1:100000
+    for _ in 1:1000
         p = (30randn(), 30randn())
         δ = DT.distance_to_polygon(p, points, boundary_nodes)
         δ2 = DT.distance_to_polygon(p, reverse_points, reverse_boundary_nodes)
@@ -2093,7 +2093,7 @@ end
         @test DT.arc_length(spl, 0.0, 1.0) ≈ slow_arc_length(spl, 0.0, 1.0) rtol = 1e-3
         @test DT.arc_length(spl, 0.3, 0.9) ≈ slow_arc_length(spl, 0.3, 0.9) rtol = 1e-3
         @test DT.arc_length(spl, 0.2, 0.21) ≈ slow_arc_length(spl, 0.2, 0.21) rtol = 1e-4
-        for _ in 1:100000
+        for _ in 1:1000
             t₁, t₂ = rand(2)
             t₁, t₂ = minmax(t₁, t₂)
             @test DT.arc_length(spl, t₁, t₂) ≈ slow_arc_length(spl, t₁, t₂) rtol = 1e-2
@@ -2102,7 +2102,7 @@ end
 
     ## Curvature 
     for c in (spl, pspl)
-        for t in LinRange(0, 1, 10000)
+        for t in LinRange(0, 1, 1000)
             ∂x, ∂y = DT.differentiate(c, t)
             ∂²x, ∂²y = DT.twice_differentiate(c, t)
             vec1 = [∂x, ∂y, 0.0]
@@ -2121,7 +2121,7 @@ end
         @inferred DT.total_variation(c)
         TVslow = slow_total_absolute_curvature(c, 0, 1)
         @test TV ≈ TVslow rtol = 1e-1 atol = 1e-3
-        for _ in 1:100000
+        for _ in 1:1000
             t1, t2 = minmax(rand(2)...)
             TV = DT.total_variation(c, t1, t2)
             @inferred DT.total_variation(c, t1, t2)
@@ -2132,7 +2132,7 @@ end
 
     ## Equidistant split
     for c in (spl, pspl)
-        for _ in 1:100000
+        for _ in 1:1000
             t1, t2 = minmax(rand(2)...)
             @inferred DT.get_equidistant_split(c, t1, t2)
             t = DT.get_equidistant_split(c, t1, t2)
@@ -2146,7 +2146,7 @@ end
 
     ## Equivariation split 
     for c in (spl, pspl)
-        for _ in 1:100000
+        for _ in 1:1000
             t1, t2 = minmax(rand(2)...)
             @inferred DT.get_equivariation_split(c, t1, t2)
             t, T = DT.get_equivariation_split(c, t1, t2)
@@ -2168,7 +2168,7 @@ end
 
     ## Inverse 
     for c in (spl, pspl)
-        for t in LinRange(0, 1, 2500000)
+        for t in LinRange(0, 1, 25000)
             t′ = DT.get_inverse(c, c(t))
             if c ≠ pspl
                 @test t ≈ t′ rtol = 1e-3

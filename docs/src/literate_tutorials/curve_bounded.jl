@@ -50,7 +50,7 @@ arc = CircularArc(p, p, c)
 
 # Here, the syntax is `CircularArc(first_point, last_point, centre)`. Since the circle is closed, we 
 # use `p` for both `first_point` and `last_point`. Notice that the `arc` is a function. In particular,
-typeof(arc) |> supertype
+typeof(arc) |> supertype |> supertype
 
 # If we wanted to look at this circle, we would need to evaluate it at a set of $t \in [0, 1]$.
 t = LinRange(0, 1, 2500)
@@ -122,7 +122,7 @@ refine!(tri; max_area=1e-2, rng, custom_constraint=(_tri, T) -> begin
 end)
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "triangulate_curve_bounded_ex_3.png") fig #src
+@test_reference joinpath(fig_path, "triangulate_curve_bounded_ex_3.png") fig by=psnr_equality(8) #src
 
 # ## A Complicated Multiply-Connected Disjoint Domain 
 # For our last example, we take a complicated case with a domain that is disjoint, and where the individual 

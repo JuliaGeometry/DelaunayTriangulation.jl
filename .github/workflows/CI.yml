@@ -54,6 +54,7 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
             token: ${{ secrets.CODECOV_TOKEN }}
+            file: lcov.info
             fail_ci_if_error: false
   docs:
     name: Documentation

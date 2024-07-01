@@ -13,7 +13,7 @@ Moves the generator `generator` to the centroid of its Voronoi cell. Returns the
 """
 function move_generator_to_centroid!(points, vorn::VoronoiTessellation, generator)
     c = get_centroid(vorn, generator)
-    cx, cy = _getxy(c)
+    cx, cy = getxy(c)
     p = get_generator(vorn, generator)
     δ = dist(c, p)
     set_point!(points, generator, cx, cy)
@@ -36,7 +36,7 @@ of the bounding box of the underlying point set.
 function default_displacement_tolerance(vorn::VoronoiTessellation)
     xmin, xmax, ymin, ymax = polygon_bounds(vorn)
     max_extent = max(xmax - xmin, ymax - ymin)
-    return max_extent / 1e4
+    return oftype(max_extent, max_extent / 1e4)
 end
 
 """

@@ -52,7 +52,7 @@ function clip_polygon_to_edge(input_list, q, p)
     return output_list
 end
 
-function clip_polygon(poly::Polygon, clip_poly::Polygon{T}) where {T}
+function clip_polygon(poly::Polygon{T}, clip_poly::Polygon) where {T}
     output_list = poly
     q = clip_poly[end]
     for p in clip_poly

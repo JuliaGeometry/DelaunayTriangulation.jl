@@ -5,7 +5,7 @@ using StableRNGs
 using CairoMakie
 using DataStructures
 
-include("../helper_functions.jl")
+
 
 @testset "Getting the correct order" begin
     points = rand(2, 50)

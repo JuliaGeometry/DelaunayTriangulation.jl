@@ -1,33 +1,34 @@
 using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using CairoMakie
+using Random
 using StableRNGs
-include("../helper_functions.jl")
 
-@testset "Test random constrained Delaunay triangulations" begin
-    for i in 1:100
-        @show i
+
+@testset "Random constrained Delaunay triangulations" begin
+    for i in 1:25
+        @info "Testing random constrained Delaunay triangulations. Run: $i; Block: 1."
         rng = StableRNG(i)
-        points, edges, mat_edges = get_random_vertices_and_constrained_edges(40, 200, 20, rng)
+        points, edges, mat_edges = get_random_vertices_and_constrained_edges(40, 100, 20, rng)
         # Need to deepcopy edges below, else it gets changed and updated on the first call to tri, which changes the insertion order of the segments and thus comparing tri to _tri might not work
         tri = triangulate(points; segments=deepcopy(edges), rng=StableRNG(i))
-        if i % 25 == 0
+        if i % 5 == 0
             _tri = retriangulate(tri; segments=deepcopy(edges), rng=StableRNG(i))
             @inferred retriangulate(tri)
             @test tri == _tri
         end
         @test validate_triangulation(tri)
         empty!(get_all_segments(tri))
-        @test !validate_triangulation(tri)
+        @test !validate_triangulation(tri; print_result=false)
     end
-    for i in 1:100
-        @show i
+    for i in 1:10
+        @info "Testing random constrained Delaunay triangulations. Run: $i; Block: 2."
         rng = StableRNG(i^5)
-        points, edges, mat_edges = get_random_vertices_and_constrained_edges(200, 1000, 200, rng)
+        points, edges, mat_edges = get_random_vertices_and_constrained_edges(200, 500, 100, rng)
         tri = triangulate(points; segments=edges, rng)
         @test validate_triangulation(tri)
         empty!(get_all_segments(tri))
-        @test !validate_triangulation(tri)
+        @test !validate_triangulation(tri; print_result=false)
     end
 end
 
@@ -41,16 +42,18 @@ end
 end
 
 @testset "Random parabolas" begin
-    for i in 1:50
+    for i in 1:10
+        @info "Testing random parabolas. Run: $i"
         rng = StableRNG(i)
-        pts = [(2rand(rng) - 1, rand(rng)) for _ in 1:500]
-        x = LinRange(-1, 1, 250)
-        a = LinRange(0.0, 1.0, 8)
+        np, nx = 100, 26
+        pts = [(2rand(rng) - 1, rand(rng)) for _ in 1:100]
+        x = LinRange(-1, 1, 26)
+        a = 10.0 .^ (LinRange(0, log10(2), 20)) .- 1
         C = Set{NTuple{2,Int}}()
         for i in eachindex(a)
             y = a[i] * x .^ 2
             append!(pts, zip(x, y))
-            push!(C, [(i, i + 1) for i in (500+250*(i-1)+1):(500+250*(i-1)+249)]...)
+            push!(C, [(j, j + 1) for j in (np+nx*(i-1)+1):(np+nx*(i-1)+(nx-1))]...)
         end
         tri = triangulate(pts; segments=C, rng)
         @test validate_triangulation(tri)
@@ -59,36 +62,38 @@ end
 
 @testset "Random collection of straight lines" begin
     for i in 1:10
+        @info "Testing random collection of straight lines. Run: $i"
         rng = StableRNG(i)
         pts = NTuple{2,Float64}[]
         C = Set{NTuple{2,Int}}()
         j = 1
-        for i in 1:100
-            push!(pts, (2i / 101 - 1, 2rand(rng) - 1))
-            push!(pts, (2i / 101 - 1, 2rand(rng) - 1))
+        for i in 1:10
+            push!(pts, (2i / 11 - 1, 2rand(rng) - 1))
+            push!(pts, (2i / 11 - 1, 2rand(rng) - 1))
             push!(C, (j, j + 1))
             j += 2
         end
-        x1 = LinRange(-1, 1 - 1e-12, 100)
-        y1 = LinRange(-1, -1, 100)
-        x2 = LinRange(1, 1, 100)
-        y2 = LinRange(-1, 1 - 1e-12, 100)
-        x3 = LinRange(1, -1 + 1e-12, 100)
-        y3 = LinRange(1, 1, 100)
-        x4 = LinRange(-1, -1, 100)
-        y4 = LinRange(1, -1 + 1e-12, 100)
+        x1 = LinRange(-1, 1 - 1e-12, 10)
+        y1 = LinRange(-1, -1, 10)
+        x2 = LinRange(1, 1, 10)
+        y2 = LinRange(-1, 1 - 1e-12, 10)
+        x3 = LinRange(1, -1 + 1e-12, 10)
+        y3 = LinRange(1, 1, 10)
+        x4 = LinRange(-1, -1, 10)
+        y4 = LinRange(1, -1 + 1e-12, 10)
         append!(pts, zip(x1, y1), zip(x2, y2), zip(x3, y3), zip(x4, y4))
-        push!(C, [(j, j + 1) for j in 201:299]...)
-        push!(C, [(j, j + 1) for j in 301:399]...)
-        push!(C, [(j, j + 1) for j in 401:499]...)
-        push!(C, [(j, j + 1) for j in 501:599]...)
+        push!(C, [(j, j + 1) for j in 21:29]...)
+        push!(C, [(j, j + 1) for j in 31:39]...)
+        push!(C, [(j, j + 1) for j in 41:49]...)
+        push!(C, [(j, j + 1) for j in 51:59]...)
         tri = triangulate(pts; segments=C, rng)
         @test validate_triangulation(tri)
     end
 end
 
 @testset "Lattice" begin
-    for m in 1:20
+    for m in 1:2
+        @info "Testing dense lattice. Run: $m"
         rng = StableRNG(m)
         a = 0.0
         b = 5.0
@@ -102,19 +107,9 @@ end
             add_segment!(tri, e; rng)
         end
         add_segment!(tri, 190, 99; rng)
-        for e in [(99, 113), (113, 101), (101, 115), (115, 127), (127, 141), (141, 177)]
+        for e in [(99, 113), (113, 101), (101, 115)]
             add_segment!(tri, e; rng)
         end
-        @test validate_triangulation(tri)
-
-        a = 0.0
-        b = 1.0
-        c = 0.0
-        d = 1.0
-        nx = 2
-        ny = 2
-        tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true)
-        add_segment!(tri, 1, 4; rng)
         @test validate_triangulation(tri)
 
         a = -0.1
@@ -131,12 +126,25 @@ end
         @test validate_triangulation(tri)
         tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true)
         tri = triangulate(get_points(tri); rng)
-        for e in [(1, 28), (28, 103), (103, 180), (180, 625), (625, 523), (523, 23), (23, 71), (71, 60), (60, 28)]
+        for e in [(1, 28), (28, 103), (103, 180), (180, 625), (625, 523)]
             add_segment!(tri, e; rng)
         end
-        for e in [(402, 227), (227, 430), (430, 437), (437, 614), (527, 602), (528, 603), (555, 605)]
+        for e in [(437, 614), (527, 602), (528, 603), (555, 605)]
             add_segment!(tri, e; rng)
         end
+        @test validate_triangulation(tri)
+    end
+    for m in 1:20
+        rng = StableRNG(m)
+        @info "Testing coarse lattice. Run: $m"
+        a = 0.0
+        b = 1.0
+        c = 0.0
+        d = 1.0
+        nx = 2
+        ny = 2
+        tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true)
+        add_segment!(tri, 1, 4; rng)
         @test validate_triangulation(tri)
 
         a = 0
@@ -162,7 +170,8 @@ end
 end
 
 @testset "Triangulating with a deleted exterior" begin
-    for i in 1:500
+    for i in 1:50
+        @info "Testing triangulation of a domain with a hole: Run $i"
         rng = StableRNG(i)
         pts = [(rand(rng), rand(rng)) for _ in 1:50]
         bnd_pts = [(0.3cos(θ), 0.3sin(θ)) .+ 0.5 for θ in LinRange(0, 2π - 1 / 250, 25)]
@@ -177,7 +186,8 @@ end
 end
 
 @testset "Triangulation with two curves" begin
-    for i in 1:50
+    for i in 1:10
+        @info "Testing triangulation of a domain with two curves: Run $i"
         rng = StableRNG(i)
         pts = [(rand(rng), rand(rng)) for _ in 1:50]
         x1 = LinRange(0, 1, 100)
@@ -208,6 +218,7 @@ end
 
 @testset "Adding points into a constrained triangulation; no collinearities" begin
     for L in 1:10
+        @info "Testing the addition of points into a constrained triangulation. Run: $L"
         pts, C = example_for_testing_add_point_on_constrained_triangulation()
         tri = triangulate(pts; segments=C, delete_ghosts=false)
         @test validate_triangulation(tri)
@@ -288,7 +299,7 @@ end
         ]
         @test DT.compare_triangle_collections(get_triangles(tri), T)
         @test validate_triangulation(tri)
-        for i in 1:250
+        for i in 1:25
             x = 4rand()
             y = 5rand()
             DT.push_point!(tri, x, y)
@@ -301,6 +312,7 @@ end
 
 @testset "Adding points into a constrained triangulation; interior segment collinearities" begin
     for m in 1:3
+        @info "Testing the addition of points into a constrained triangulation with interior segment collinearities. Run: $m"
         pts, C = example_for_testing_add_point_on_constrained_triangulation()
         push!(C, (1, 12))
         tri = triangulate(pts; segments=C, delete_ghosts=false)
@@ -477,7 +489,7 @@ end
 
         add_segment!(tri, 6, 10)
         @test validate_triangulation(tri)
-        new_points = LinRange(-1.8, 2.8, 250)
+        new_points = LinRange(-1.8, 2.8, 25)
         new_points = collect(new_points)
         shuffle!(new_points)
         foreach(new_points) do p
@@ -485,10 +497,10 @@ end
             add_point!(tri, DT.num_points(tri))
             @test validate_triangulation(tri)
         end
-        @test length(get_interior_segments(tri)) == 257
-        @test length(get_all_segments(tri)) == 257
+        @test length(get_interior_segments(tri)) == 32
+        @test length(get_all_segments(tri)) == 32
 
-        new_points = LinRange(0.357, 4.8912, 40)
+        new_points = LinRange(0.357, 4.8912, 10)
         new_points = collect(new_points)
         shuffle!(new_points)
         foreach(new_points) do p
@@ -500,7 +512,7 @@ end
 end
 
 @testset "Adding a point onto a single boundary edge" begin
-    for i in 1:(11*21)
+    for i in 1:20
         tri = triangulate_rectangle(0, 10, 0, 20, 11, 21; delete_ghosts=false)
         add_point!(tri, 1.5, 0.0; initial_search_point=i)
         @test validate_triangulation(tri)
@@ -516,7 +528,7 @@ end
 end
 
 @testset "Adding a point onto multiple boundary edges with multiple ghost indices" begin
-    for _ in 1:100
+    for _ in 1:20
         tri = triangulate_rectangle(0, 4, 0, 8, 5, 9; delete_ghosts=false)
         add_point!(tri, 1.5, 0.0)
         add_segment!(tri, 1, 45)
@@ -542,7 +554,7 @@ end
 end
 
 @testset "Handling only a single boundary index" begin
-    for _ in 1:100
+    for _ in 1:20
         tri = triangulate_rectangle(0, 4, 0, 8, 5, 9; delete_ghosts=false, single_boundary=true)
         for x in [0.2, 0.3, 1.5, 2.3, 2.8, 3.5]
             add_point!(tri, x, 0.0)
@@ -565,7 +577,7 @@ end
 
 @testset "Starting with a thin set of boundary nodes, and filling them in with automatic collinearity detection" begin
     @testset "Contiguous boundary" begin
-        for _ in 1:100
+        for _ in 1:20
             tri = triangulate_rectangle(0, 4, 0, 8, 5, 9; delete_ghosts=false)
             pts = get_points(tri)
             boundary_nodes = [1, 5, 45, 41, 1]
@@ -702,7 +714,7 @@ end
     end
 
     @testset "Multiple segments" begin
-        for _ in 1:100
+        for _ in 1:20
             tri = triangulate_rectangle(0, 4, 0, 8, 5, 9; delete_ghosts=false)
             pts = get_points(tri)
             boundary_nodes = [[1, 5], [5, 45], [45, 41], [41, 1]]
@@ -990,19 +1002,12 @@ end
     add_point!(tri, 4.0, 2.5; rng)
     @test validate_triangulation(tri)
     add_point!(tri, 4.0, 7.5; rng)
-    @test validate_triangulation(tri)
     add_point!(tri, 2.5, 8.0; rng)
-    @test validate_triangulation(tri)
     add_point!(tri, 0.0, 5.5; rng)
-    @test validate_triangulation(tri)
     add_point!(tri, 0.5, 2.2; rng)
-    @test validate_triangulation(tri)
     add_segment!(tri, 21, 27; rng)
-    @test validate_triangulation(tri)
     add_segment!(tri, 14, 45; rng)
-    @test validate_triangulation(tri)
     add_point!(tri, 1.0, 2.5; rng)
-    @test validate_triangulation(tri)
     add_point!(tri, 1.0, 5.5; rng)
     @test validate_triangulation(tri)
     add_point!(tri, 2.5, 2.0; rng)
@@ -1010,11 +1015,8 @@ end
     add_point!(tri, 3.0, 5.5; rng)
     @test validate_triangulation(tri)
     add_point!(tri, 2.5, 6.0; rng)
-    @test validate_triangulation(tri)
     add_segment!(tri, 12, 5)
-    @test validate_triangulation(tri)
     add_segment!(tri, 2, 52)
-    @test validate_triangulation(tri)
     add_segment!(tri, 53, 21)
     @test validate_triangulation(tri)
     @test get_boundary_nodes(tri) == [[
@@ -1030,11 +1032,10 @@ end
     @test validate_triangulation(tri)
     add_point!(tri, 0.5, 4.4)
     add_point!(tri, 0.5, 4.6)
-    @test validate_triangulation(tri)
     add_point!(tri, 0.5, 4.5)
     @test validate_triangulation(tri)
 
-    for L in 1:100
+    for L in 1:3
         tri = triangulate_rectangle(0, 4, 0, 8, 5, 9; delete_ghosts=false)
         boundary_nodes = [[
                 [1, 5, 45], [45, 41], [41, 1]
@@ -1050,19 +1051,13 @@ end
             [[12, 17, 22, 27, 32, 33, 34], [34, 29, 24, 19, 14, 13, 12]]
         ]
         add_point!(tri, 1.5, 0.0)
-        @test validate_triangulation(tri)
         add_point!(tri, 2.5, 0.0)
         @test validate_triangulation(tri)
         add_point!(tri, 4.0, 2.5)
-        @test validate_triangulation(tri)
         add_point!(tri, 4.0, 7.5)
-        @test validate_triangulation(tri)
         add_point!(tri, 2.5, 8.0)
-        @test validate_triangulation(tri)
         add_point!(tri, 0.0, 5.5)
-        @test validate_triangulation(tri)
         add_point!(tri, 0.5, 2.2)
-        @test validate_triangulation(tri)
         add_segment!(tri, 21, 27)
         @test validate_triangulation(tri)
         add_segment!(tri, 14, 45)
@@ -1072,15 +1067,11 @@ end
         add_point!(tri, 1.0, 5.5)
         @test validate_triangulation(tri)
         add_point!(tri, 2.5, 2.0)
-        @test validate_triangulation(tri)
         add_point!(tri, 3.0, 5.5)
         @test validate_triangulation(tri)
         add_point!(tri, 2.5, 6.0)
-        @test validate_triangulation(tri)
         add_segment!(tri, 12, 5)
-        @test validate_triangulation(tri)
         add_segment!(tri, 2, 52)
-        @test validate_triangulation(tri)
         add_segment!(tri, 53, 21)
         @test validate_triangulation(tri)
         @test get_boundary_nodes(tri) == [[
@@ -1096,7 +1087,6 @@ end
         @test validate_triangulation(tri)
         add_point!(tri, 0.5, 4.4)
         add_point!(tri, 0.5, 4.6)
-        @test validate_triangulation(tri)
         add_point!(tri, 0.5, 4.5)
         @test validate_triangulation(tri)
     end

@@ -138,9 +138,7 @@ function _get_ray(vorn::VoronoiTessellation, i, ghost_vertex)
     ghost_tri = get_circumcenter_to_triangle(vorn, C[ghost_vertex])
     u, v, _ = triangle_vertices(ghost_tri) # w is the ghost vertex
     p, q = get_generator(vorn, u, v)
-    # px, py = _getxy(p)
-    qx, qy = _getxy(q)
-    # mx, my = (px + qx) / 2, (py + qy) / 2
+    qx, qy = getxy(q)
     mx, my = midpoint(p, q)
     m = (mx, my)
     is_first = is_first_ghost_vertex(C, ghost_vertex)
@@ -228,10 +226,10 @@ function grow_polygon_outside_of_box(vorn::VoronoiTessellation, i, bounding_box)
     u, v = ghost_vertices
     u_m, u_r = _get_ray(vorn, i, u)
     v_m, v_r = _get_ray(vorn, i, v)
-    u_mx, u_my = _getxy(u_m)
-    u_rx, u_ry = _getxy(u_r)
-    v_mx, v_my = _getxy(v_m)
-    v_rx, v_ry = _getxy(v_r)
+    u_mx, u_my = getxy(u_m)
+    u_rx, u_ry = getxy(u_r)
+    v_mx, v_my = getxy(v_m)
+    v_rx, v_ry = getxy(v_r)
     p = (0.0, 0.0)
     q = (0.0, 0.0)
     dist_to_box = maximum_distance_to_box(a, b, c, d, u_m) # this is a squared distance
@@ -239,9 +237,7 @@ function grow_polygon_outside_of_box(vorn::VoronoiTessellation, i, bounding_box)
     while inside
         t *= 2.0
         p = (u_mx + t * (u_rx - u_mx), u_my + t * (u_ry - u_my))
-        # p = (muladd(t, u_rx - u_mx, u_mx), muladd(t, u_ry - u_my, u_my))
         q = (v_mx + t * (v_rx - v_mx), v_my + t * (v_ry - v_my))
-        #q = (muladd(t, v_rx - v_mx, v_mx), muladd(t, v_ry - v_my, v_my))
         int1, int2 = liang_barsky(a, b, c, d, p, q)
         outside = all(isnan, int1) && all(isnan, int2)
         # We need to be careful of the case where the generator is outside of the bounding box. In this case, 
@@ -249,10 +245,6 @@ function grow_polygon_outside_of_box(vorn::VoronoiTessellation, i, bounding_box)
         # So, to avoid this, we also apply a conservative check that the length of each ray is greater than 
         # the maximum distance from the generators to the bounding box.
         # See the example with [(-3,7),(1,6),(-1,3),(-2,4),(3,-2),(5,5),(-4,-3),(3,8)] and bb = (0,5,-15,15) with the 7th polygon.
-        #px, py = _getxy(p)
-        #qx, qy = _getxy(q)
-        #p_length = (px - u_mx)^2 + (py - u_my)^2
-        #q_length = (qx - v_mx)^2 + (qy - v_my)^2
         p_length = dist_sqr(p, (u_mx, u_my))
         q_length = dist_sqr(q, (v_mx, v_my))
         might_be_inside = min(p_length, q_length) < dist_to_box
@@ -297,7 +289,7 @@ function get_new_polygon_indices(vorn, vertices)
             push!(new_points, (NaN, NaN))
             new_vertices[i] = v
         else
-            push!(new_points, _getxy(get_polygon_point(vorn, v)))
+            push!(new_points, getxy(get_polygon_point(vorn, v)))
             new_vertices[i] = length(new_points)
         end
     end

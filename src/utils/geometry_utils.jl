@@ -5,8 +5,8 @@ Compute the intersection of the ray emanating from `p` and passing through `q` w
 `p` is inside of the box.
 """
 function intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
-    px, py = _getxy(p)
-    qx, qy = _getxy(q)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
     pℓbx, pℓby = a, c
     pℓtx, pℓty = a, d
     prtx, prty = b, d
@@ -28,22 +28,18 @@ function intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
         # y = py + Rsinθ = c ⟹ R = (c - py) / sinθ 
         # x = px + Rcosθ = px + (c - py)cotθ
         return px + (c - py) * cot(θ), c
-        #return muladd(c - py, cot(θ), px), c
     elseif θrt ≤ θ ≤ θlt # y = d, a ≤ x ≤ b 
         # y = py + Rsinθ = d ⟹ R = (d - py) / sinθ
         # x = px + Rcosθ = px + (d - py)cotθ
         return px + (d - py) * cot(θ), d
-        #return muladd(d - py, cot(θ), px), d
     elseif θlt ≤ θ ≤ θlb # x = a, c ≤ y ≤ d
         # x = px + Rcosθ = a ⟹ R = (a - px) / cosθ
         # y = py + Rsinθ = py + (a - px)tanθ
         return a, py + (a - px) * tan(θ)
-        #return a, muladd(a - px, tan(θ), py)
     else # x = b, c ≤ y ≤ d
         # x = px + Rcosθ = b ⟹ R = (b - px) / cosθ
         # y = py + Rsinθ = py + (b - px)tanθ
         return b, py + (b - px) * tan(θ)
-        #return b, muladd(b - px, tan(θ), py)
     end
 end
 
@@ -53,15 +49,14 @@ end
 Given two segments `(a, b)` and `(c, d)` that are assumed to intersect, computes the coordinates of the intersection.
 """
 function segment_intersection_coordinates(a, b, c, d)
-    ax, ay = _getxy(a)
-    bx, by = _getxy(b)
-    cx, cy = _getxy(c)
-    dx, dy = _getxy(d)
+    ax, ay = getxy(a)
+    bx, by = getxy(b)
+    cx, cy = getxy(c)
+    dx, dy = getxy(d)
     num = (cx - ax) * (dy - ay) - (cy - ay) * (dx - ax)
     den = (bx - ax) * (dy - cy) - (by - ay) * (dx - cx)
     α = num / den
-    # return ax + α * (bx - ax), ay + α * (by - ay)
-    return muladd(α, bx - ax, ax), muladd(α, by - ay, ay)
+    return ax + α * (bx - ax), ay + α * (by - ay)
 end
 
 """
@@ -76,9 +71,8 @@ with the edge and collinear with its midpoint, tests if `c` intersects the edge.
 function intersection_of_edge_and_bisector_ray(a, b, c)
     cert = point_position_relative_to_line(a, b, c)
     if !is_left(cert)
-        ax, ay = _getxy(a)
-        bx, by = _getxy(b)
-        # m = (ax + bx) / 2, (ay + by) / 2
+        ax, ay = getxy(a)
+        bx, by = getxy(b)
         m = midpoint((ax, ay), (bx, by))
         return cert, m
     else
@@ -98,8 +92,9 @@ Given two line segments `(a, b)` and `(c, d)`, classifies the intersection of th
 - `p`: The intersection point if `cert` is `Cert.Single` or `Cert.Touching`, and `(NaN, NaN)` otherwise.
 """
 function classify_and_compute_segment_intersection(a, b, c, d)
-    if any(isinf, a) || any(isinf, b) || any(isinf, c) || any(isinf, d)
-        return Cert.None, Cert.None, Cert.None, (NaN, NaN)
+    F = number_type(a)
+    if any(!isfinite, getxy(a)) || any(!isfinite, getxy(b)) || any(!isfinite, getxy(c)) || any(!isfinite, getxy(d))
+        return Cert.None, Cert.None, Cert.None, (F(NaN), F(NaN))
     end
     cert = line_segment_intersection_type(a, b, c, d)
     cert_c = point_position_relative_to_line(a, b, c)
@@ -136,16 +131,14 @@ function polygon_features_single_segment(points, boundary_nodes; scale=Val(true)
     n_edge = num_boundary_edges(boundary_nodes)
     vᵢ = get_boundary_nodes(boundary_nodes, 1)
     pᵢ = get_point(points, vᵢ)
-    xᵢ, yᵢ = _getxy(pᵢ)
+    xᵢ, yᵢ = getxy(pᵢ)
     for j in 2:(n_edge+1)
         vᵢ₊₁ = get_boundary_nodes(boundary_nodes, j)
         pᵢ₊₁ = get_point(points, vᵢ₊₁)
-        xᵢ₊₁, yᵢ₊₁ = _getxy(pᵢ₊₁)
+        xᵢ₊₁, yᵢ₊₁ = getxy(pᵢ₊₁)
         area_contribution = xᵢ * yᵢ₊₁ - xᵢ₊₁ * yᵢ
         cx += (xᵢ + xᵢ₊₁) * area_contribution
-        #cx = muladd(xᵢ + xᵢ₊₁, area_contribution, cx)
         cy += (yᵢ + yᵢ₊₁) * area_contribution
-        #cy = muladd(yᵢ + yᵢ₊₁, area_contribution, cy)
         a += area_contribution
         vᵢ, pᵢ, xᵢ, yᵢ = vᵢ₊₁, pᵢ₊₁, xᵢ₊₁, yᵢ₊₁
     end
@@ -180,10 +173,8 @@ function polygon_features_multiple_curves(points, boundary_nodes)
     for i in 1:nc
         bn = get_boundary_nodes(boundary_nodes, i)
         sub_a, (sub_cx, sub_cy) = polygon_features_multiple_segments(points, bn)
-        #cx += sub_a * sub_cx
-        cx = muladd(sub_a, sub_cx, cx)
-        #cy += sub_a * sub_cy
-        cy = muladd(sub_a, sub_cy, cy)
+        cx += sub_a * sub_cx
+        cy += sub_a * sub_cy
         a += sub_a
     end
     return a, (cx / a, cy / a)
@@ -227,17 +218,17 @@ function distance_to_polygon(q, points, boundary_nodes)
     end
 end
 function distance_to_polygon_single_segment(q, points, boundary_nodes, is_in_outer=false; return_sqrt=Val(true))
-    x, y = _getxy(q)
+    x, y = getxy(q)
     F = number_type(points)
     dist = typemax(F)
     n_edge = num_boundary_edges(boundary_nodes)
     vᵢ = get_boundary_nodes(boundary_nodes, 1)
     pᵢ = get_point(points, vᵢ)
-    xᵢ, yᵢ = _getxy(pᵢ)
+    xᵢ, yᵢ = getxy(pᵢ)
     for j in 2:(n_edge+1)
         vᵢ₊₁ = get_boundary_nodes(boundary_nodes, j)
         pᵢ₊₁ = get_point(points, vᵢ₊₁)
-        xᵢ₊₁, yᵢ₊₁ = _getxy(pᵢ₊₁)
+        xᵢ₊₁, yᵢ₊₁ = getxy(pᵢ₊₁)
         if (yᵢ₊₁ > y) ≠ (yᵢ > y)
             intersect_x = (xᵢ - xᵢ₊₁) * (y - yᵢ₊₁) / (yᵢ - yᵢ₊₁) + xᵢ₊₁
             if x < intersect_x
@@ -290,9 +281,9 @@ and in [`check_args`](@ref). If `check_all_curves` is `true`, then the bounding 
 function polygon_bounds(points, boundary_nodes, check_all_curves=Val(false))
     if has_multiple_curves(boundary_nodes)
         if !is_true(check_all_curves)
-            return polygon_bounds_multiple_segments(points, get_boundary_nodes(boundary_nodes, 1)) # 1 is the outermost boundary, unless you have a multiple polygon 
+            return polygon_bounds_multiple_segments(points, get_boundary_nodes(boundary_nodes, 1)) # 1 is the outermost boundary, unless you have a multiple polygon. PolygonHierarchy would be better for this but too bad 
         else
-            F = number_type(number_type(points))
+            F = number_type(points)
             xmin, xmax, ymin, ymax = typemax(F), typemin(F), typemax(F), typemin(F)
             nc = num_curves(boundary_nodes)
             for i in 1:nc
@@ -318,7 +309,7 @@ function polygon_bounds_single_segment(points, boundary_nodes)
     for i in 1:n_edge
         vᵢ = get_boundary_nodes(boundary_nodes, i)
         pᵢ = get_point(points, vᵢ)
-        xᵢ, yᵢ = _getxy(pᵢ)
+        xᵢ, yᵢ = getxy(pᵢ)
         xmin = min(xᵢ, xmin)
         xmax = max(xᵢ, xmax)
         ymin = min(yᵢ, ymin)
@@ -350,7 +341,7 @@ assumed that the vertices are not circular, i.e. `vertices[begin] ≠ vertices[e
 """
 function sort_convex_polygon!(vertices, points)
     cx, cy = mean_points(points, vertices)
-    to_angle = p -> atan(_gety(p) - cy, _getx(p) - cx)
+    to_angle = p -> atan(gety(p) - cy, getx(p) - cx)
     vert_to_angle = v -> (to_angle ∘ get_point)(points, v)
     sort!(vertices, by=vert_to_angle)
     return vertices
@@ -451,8 +442,8 @@ as the base. See [this article](https://straypixels.net/angle-between-vectors/).
 The returned angle is in `[0, 2π)`.
 """
 function angle_between(p, q)
-    px, py = _getxy(p)
-    qx, qy = _getxy(q)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
     a = px * qx + py * qy
     b = px * -qy + py * qx
     return mod(atan(b, a), 2π)

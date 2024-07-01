@@ -145,7 +145,7 @@ A constant for representing an invalid rectangle, i.e. a rectangle with `NaN` en
 """
 const InvalidBoundingBox = BoundingBox(InvalidBoundingInterval, InvalidBoundingInterval)
 BoundingBox(a, b, c, d) = BoundingBox(BoundingInterval(a, b), BoundingInterval(c, d))
-BoundingBox(p::NTuple{2,<:Number}) = BoundingBox(_getx(p), _getx(p), _gety(p), _gety(p))
+BoundingBox(p::NTuple{2,<:Number}) = BoundingBox(getx(p), getx(p), gety(p), gety(p))
 
 """
     hspan(r::BoundingBox) -> Float64
@@ -279,7 +279,7 @@ function bounding_box(points)
     ymin = Inf
     ymax = -Inf
     for p in each_point(points)
-        px, py = _getxy(p)
+        px, py = getxy(p)
         xmin = min(xmin, px)
         xmax = max(xmax, px)
         ymin = min(ymin, py)
@@ -309,9 +309,9 @@ end
 Returns the bounding box of the points `p`, `q` and `r`.
 """
 function bounding_box(p::NTuple, q::NTuple, r::NTuple)
-    px, py = _getxy(p)
-    qx, qy = _getxy(q)
-    rx, ry = _getxy(r)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
+    rx, ry = getxy(r)
     xmin, _, xmax = min_med_max(px, qx, rx)
     ymin, _, ymax = min_med_max(py, qy, ry)
     return BoundingBox(xmin, xmax, ymin, ymax)
@@ -466,7 +466,7 @@ Returns the position of `node` in its parent's children. If `node` has no parent
 """
 function find_position_in_parent(node::AbstractNode)
     if has_parent(node)
-        return findfirst(==(node), get_children(get_parent(node)))
+        return findfirst(==(node), get_children(get_parent(node)))::Int
     else
         return ∅
     end
@@ -496,6 +496,10 @@ mutable struct Leaf{Branch} <: AbstractNode
     parent::Union{Branch,Nothing}
     bounding_box::BoundingBox
     children::Vector{DiametralBoundingBox} # would do const, but for compat reasons I don't
+    Leaf(parent::Branch, bounding_box, children) where {Branch} = new{Branch}(parent, bounding_box, children)
+    Leaf{Branch}(parent::Branch, bounding_box, children) where {Branch} = new{Branch}(parent, bounding_box, children)
+    Leaf{Branch}(::Nothing, bounding_box, children) where {Branch} = new{Branch}(nothing, bounding_box, children)
+    # need to separate out the constructors to avoid unbound type argument issues from Aqua
 end
 function Base.:(==)(leaf1::Leaf, leaf2::Leaf)
     xor(isnothing(leaf1), isnothing(leaf2)) && return false # if we test get_parent(leaf1) ≠ get_parent(leaf2), then we get a StackOverflowError

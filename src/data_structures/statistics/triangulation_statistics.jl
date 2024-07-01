@@ -211,5 +211,14 @@ Returns a vector of the statistic `stat` for each triangle in `stats`.
 """
 function get_all_stat(stats::TriangulationStatistics, stat::Symbol)
     indiv_stats = get_individual_statistics(stats)
-    return [getfield(indiv_stats[T], stat) for T in keys(indiv_stats)]
+    T = first(keys(indiv_stats))
+    F = typeof(getfield(indiv_stats[T], stat))
+    stats = Vector{F}(undef, length(indiv_stats))
+    return get_all_stat!(stats, indiv_stats, stat)
+end
+function get_all_stat!(stats::Vector{F}, indiv_stats::Dict, stat::Symbol) where {F}
+    for (i, T) in enumerate(keys(indiv_stats))
+        stats[i] = getfield(indiv_stats[T], stat)::F
+    end
+    return stats
 end

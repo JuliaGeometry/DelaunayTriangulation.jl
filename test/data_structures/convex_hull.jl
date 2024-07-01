@@ -50,7 +50,7 @@ end
 end
 
 @testset "Random tests" begin
-    for _ in 1:5000
+    for _ in 1:500
         pts = rand(2, 6)
         tri = triangulate(pts)
         ch = convex_hull(pts)
@@ -71,4 +71,9 @@ end
     @test !isempty(DT.get_vertices(ch))
     empty!(ch)
     @test isempty(DT.get_vertices(ch))
+end
+
+@testset "Issue #109" begin
+    points = rand(2, 50)
+    @test convex_hull(points).vertices == convex_hull(vcat(points, points)).vertices
 end

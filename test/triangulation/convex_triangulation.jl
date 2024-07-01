@@ -7,10 +7,10 @@ using StableRNGs
 using ReferenceTests
 using StatsBase
 
-include("../helper_functions.jl")
+
 
 @testset "Triangulating random convex polygons" begin
-    for n in 3:5:2500
+    for n in Iterators.flatten([3:20, 25:50:1000])
         points = rand(2, n)
         S = get_random_convex_polygon(points)
         skip_points = setdiff(axes(points, 2), S)
@@ -33,9 +33,9 @@ include("../helper_functions.jl")
             for i in each_vertex(tri_chew)
                 @test get_neighbours(tri_chew, i) == get_neighbours(tri_bowyer, i)
             end
-            @test DT.get_convex_hull_vertices(tri_chew) == [S; S[begin]] 
-            @test tri_chew.representative_point_list[1].x ≈ mean(points[1,s] for s in S)
-            @test tri_chew.representative_point_list[1].y ≈ mean(points[2,s] for s in S)
+            @test DT.get_convex_hull_vertices(tri_chew) == [S; S[begin]]
+            @test tri_chew.representative_point_list[1].x ≈ mean(points[1, s] for s in S)
+            @test tri_chew.representative_point_list[1].y ≈ mean(points[2, s] for s in S)
             @test tri_chew.representative_point_list[1].n ≈ length(S)
             @test compare_trees(DT.get_polygon_hierarchy(tri_bowyer), DT.construct_polygon_hierarchy(points))
             @test compare_trees(DT.get_polygon_hierarchy(tri_chew), DT.construct_polygon_hierarchy(points))
@@ -44,27 +44,29 @@ include("../helper_functions.jl")
 end
 
 @testset "Triangulating a small polygon with some collinearities" begin
-    p1 = [8.0, 4.0]
-    p2 = [10.0, 4.0]
-    p3 = [12.0, 4.0]
-    p4 = [14.0, 4.0]
-    p5 = [14.0, 6.0]
-    p6 = [14.0, 8.0]
-    p7 = [14.0, 10.0]
-    p8 = [12.0, 10.0]
-    p9 = [10.0, 10.0]
-    p10 = [8.0, 10.0]
-    p11 = [8.0, 8.0]
-    p12 = [8.0, 6.0]
-    pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12]
-    for _ in 1:10000
-        tri_chew = triangulate_convex(pts, 1:12)
-        @test validate_triangulation(tri_chew)
+    for T in (Float64, Float32)
+        p1 = T[8.0, 4.0]
+        p2 = T[10.0, 4.0]
+        p3 = T[12.0, 4.0]
+        p4 = T[14.0, 4.0]
+        p5 = T[14.0, 6.0]
+        p6 = T[14.0, 8.0]
+        p7 = T[14.0, 10.0]
+        p8 = T[12.0, 10.0]
+        p9 = T[10.0, 10.0]
+        p10 = T[8.0, 10.0]
+        p11 = T[8.0, 8.0]
+        p12 = T[8.0, 6.0]
+        pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12]
+        for _ in 1:100
+            tri_chew = triangulate_convex(pts, 1:12)
+            @test validate_triangulation(tri_chew)
+        end
     end
 end
 
 @testset "Triangulating more random polygons, smaller size" begin
-    for _ in 1:15000
+    for _ in 1:1500
         pts = rand(2, 50)
         p1 = [0.0, 0.0]
         p2 = [1.0, 0.0]

@@ -2,7 +2,6 @@ using ..DelaunayTriangulation
 using Test 
 using DataStructures 
 const DT = DelaunayTriangulation
-include("../helper_functions.jl")
 
 tree = DT.BalancedBST{Int}()
 tree_avl = AVLTree{Int}()

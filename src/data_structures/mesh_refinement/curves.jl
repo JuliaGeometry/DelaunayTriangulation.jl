@@ -925,9 +925,9 @@ Given two curves `c₁` and `c₂` such that `c₁(1) == c₂(0)`, returns the a
 curves as being left of both.
 """
 function angle_between(c₁::AbstractParametricCurve, c₂::AbstractParametricCurve)
-    T₁x, T₁y = _getxy(differentiate(c₁, 1.0))
-    T₂x, T₂y = _getxy(differentiate(c₂, 0.0))
-    qx, qy = _getxy(c₁(1.0))
+    T₁x, T₁y = getxy(differentiate(c₁, 1.0))
+    T₂x, T₂y = getxy(differentiate(c₂, 0.0))
+    qx, qy = getxy(c₁(1.0))
     px, py = qx - T₁x, qy - T₁y
     rx, ry = qx + T₂x, qy + T₂y
     L₁ = LineSegment((px, py), (qx, qy), 0.0)
@@ -1085,7 +1085,7 @@ function get_inverse(L::LineSegment, p)
     elseif p == L.last
         return 1.0
     end
-    px, py = _getxy(p)
+    px, py = getxy(p)
     x₀, y₀ = getxy(L.first)
     x₁, y₁ = getxy(L.last)
     if iszero(x₁ - x₀)
@@ -1104,7 +1104,7 @@ If the segments are part of some domain, then the line segments should be orient
 function angle_between(L₁::LineSegment, L₂::LineSegment)
     T₁ = differentiate(L₁, 1.0)
     T₂ = differentiate(L₂, 0.0)
-    T₁x, T₁y = _getxy(T₁)
+    T₁x, T₁y = getxy(T₁)
     T₁′ = (-T₁x, -T₁y)
     θ = angle_between(T₁′, T₂)
     return θ
@@ -1175,8 +1175,8 @@ function differentiate(L::PiecewiseLinear, t)
         v = get_boundary_nodes(boundary_nodes, n + 1)
     end
     p, q = get_point(points, u), get_point(points, v)
-    px, py = _getxy(p)
-    qx, qy = _getxy(q)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
     return (qx - px, qy - py)
 end
 
@@ -1241,9 +1241,9 @@ function Base.:(==)(c₁::CircularArc, c₂::CircularArc)
 end
 
 function CircularArc(p, q, c; positive=true)
-    px, py = _getxy(p)
-    qx, qy = _getxy(q)
-    cx, cy = _getxy(c)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
+    cx, cy = getxy(c)
     r = dist((px, py), (cx, cy))
     θ₀ = mod(atan(py - cy, px - cx), 2π)
     if p == q
@@ -1332,7 +1332,7 @@ function get_inverse(c::CircularArc, p)
     elseif p == c.last
         return 1.0
     end
-    px, py = _getxy(p)
+    px, py = getxy(p)
     cx, cy = getxy(c.center)
     r = c.radius
     cθ = (px - cx) / r
@@ -1394,9 +1394,9 @@ function Base.:(==)(e₁::EllipticalArc, e₂::EllipticalArc)
 end
 
 function EllipticalArc(p, q, c, α, β, θ°; positive=true)
-    px, py = _getxy(p)
-    qx, qy = _getxy(q)
-    cx, cy = _getxy(c)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
+    cx, cy = getxy(c)
     θ = deg2rad(θ°)
     sθ, cθ = sincos(θ)
     start_cost = inv(α) * (cθ * (px - cx) + sθ * (py - cy))
@@ -1500,7 +1500,7 @@ function get_inverse(e::EllipticalArc, p)
     elseif p == e.last
         return 1.0
     end
-    px, py = _getxy(p)
+    px, py = getxy(p)
     c, α, β, (sinθ, cosθ), θ₀, Δθ = e.center, e.horz_radius, e.vert_radius, e.rotation_scales, e.start_angle, e.sector_angle
     cx, cy = getxy(c)
     px′ = px - cx

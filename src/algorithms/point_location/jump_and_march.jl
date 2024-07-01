@@ -24,7 +24,7 @@ Computes the minimum of the distance between the `i`th point of `pts` and `(qx, 
 """
 function compare_distance(current_dist, current_idx::I, pts, i, qx, qy) where {I}
     p = get_point(pts, i)
-    px, py = _getxy(p)
+    px, py = getxy(p)
     _dist = dist_sqr((px, py), (qx, qy))
     if _dist < current_dist
         current_dist = _dist
@@ -53,7 +53,7 @@ Selects the initial point for [`jump_and_march`](@ref) to start from.
 - `i`: The index of the point closest to `q` out of those queried.
 """
 select_initial_point
-function select_initial_point(tri::Triangulation, q;
+function select_initial_point(tri::Triangulation, _q;
     point_indices=each_solid_vertex(tri),
     m=default_num_samples(num_vertices(point_indices)),
     try_points=(),
@@ -63,7 +63,8 @@ function select_initial_point(tri::Triangulation, q;
     I = integer_type(tri)
     current_dist = typemax(F)
     current_idx = I(first(point_indices))
-    qx, qy = _getxy(q)
+    _qx, _qy = getxy(_q)
+    qx, qy = F(_qx), F(_qy)
     for _ in 1:m # Not using replacement, but probability of duplicates is approximately 0.5num_solid_vertices(tri)^(-1/3)
         i = I(rand(rng, point_indices))
         (is_ghost_vertex(i) || (!allow_boundary_points && is_boundary_node(tri, i)[1])) && continue
@@ -725,18 +726,23 @@ The algorithm underlying this function is complicated and broken into many parts
 4. If we have not yet returned and the triangle is no longer positively oriented, we check if the triangle is degenerate using [`jump_and_march_degenerate_arrangement`](@ref)
      and reinitialise the algorithm if needed. Otherwise, we have found the triangle containing `q` and return the triangle.
 """
-function jump_and_march(tri::Triangulation, q;
+function jump_and_march(tri::Triangulation, _q;
     point_indices=each_solid_vertex(tri),
     m=default_num_samples(num_vertices(point_indices)),
     try_points=(),
     rng::AbstractRNG=Random.default_rng(),
-    k=select_initial_point(tri, q; point_indices, m, try_points, rng),
+    k=select_initial_point(tri, _q; point_indices, m, try_points, rng),
     store_history::F=Val(false),
     history=nothing,
     maxiters=2 + num_exterior_curves(tri) - num_solid_vertices(tri) + num_solid_edges(tri),
     concavity_protection=false,
     use_barriers::Val{U}=Val(false)) where {F,U}
-    return _jump_and_march(tri, q, k, store_history, history, rng, maxiters, zero(maxiters), concavity_protection, zero(maxiters), use_barriers)
+    I = integer_type(tri)
+    maxiters = Int(maxiters)
+    G = number_type(tri)
+    _qx, _qy = getxy(_q)
+    q = (G(_qx), G(_qy))
+    return _jump_and_march(tri, q, I(k), store_history, history, rng, maxiters, zero(maxiters), concavity_protection, zero(maxiters), use_barriers)
 end
 
 """
@@ -814,7 +820,8 @@ There are multiple stages to this initialisation, starting from [`check_for_inte
    is used on the found ghost triangle if needed. If there is an intersection, then we return the triangle containing the intersection point that we can start the algorithm from, 
    and its associated vertices and points. 
 """
-function initialise_jump_and_march_boundary_vertex(tri::Triangulation, q, k, store_history::F, history, ghost_vertex, concavity_protection) where {F}
+function initialise_jump_and_march_boundary_vertex(tri::Triangulation, _q, k, store_history::F, history, ghost_vertex, concavity_protection) where {F}
+    q = getxy(_q) # type stability in case e.g. a user provides a vector into jump and march
     direction, q_pos, next_vertex, right_cert, left_cert =
         check_for_intersections_with_adjacent_boundary_edges(tri, k, q, ghost_vertex)
     Ttype = triangle_type(tri)

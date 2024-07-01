@@ -429,7 +429,7 @@ function collapse_after_deletion!(node::AbstractNode, tree, detached)
         elseif node === original_root
             update_bounding_box!(node)
         end
-        return node
+        return nothing # node
     else
         idx = find_position_in_parent(node)
         if num_children(node) < m
@@ -440,6 +440,7 @@ function collapse_after_deletion!(node::AbstractNode, tree, detached)
         end
         return collapse_after_deletion!(get_parent(node), tree, detached)
     end
+    return nothing
 end
 
 """

@@ -19,6 +19,15 @@ Modules = [DelaunayTriangulation]
 Pages = ["src/algorithms/triangulation/unconstrained_triangulation.jl"]
 ```
 
+## Triangulation Rectangular Domains
+
+Here are some of the internal functions used for `triangulate_rectangle`.
+
+```@docs 
+get_lattice_triangles 
+get_lattice_points 
+get_lattice_boundary
+```
 
 ## Triangulating Convex Polygons
 

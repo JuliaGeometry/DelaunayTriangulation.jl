@@ -344,7 +344,7 @@ end
 const MIDPOINT_TOLERANCE = 1e-6
 
 """
-    compute_split_position(tri::Triangulation, args::RefinementArguments, e) -> NTuple{2, Float64}
+    compute_split_position(tri::Triangulation, args::RefinementArguments, e) -> NTuple{2, Float}
 
 Computes the position to split a segment `e` of `tri` at in [`split_subsegment!`](@ref). 
 
@@ -375,9 +375,10 @@ function compute_split_position(tri::Triangulation, args::RefinementArguments, e
 end
 function _compute_split_position_piecewise_linear(tri::Triangulation, args::RefinementArguments, e)
     p, q = get_point(tri, initial(e), terminal(e))
-    px, py = _getxy(p)
-    qx, qy = _getxy(q)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
     mx, my = midpoint(px, qx), midpoint(py, qy)
+    F = number_type(tri)
     if !is_subsegment(args, e)
         push!(args.midpoint_split_list, num_points(tri) + 1)
         # Split at the midpoint when splitting for the first time
@@ -400,7 +401,7 @@ function _compute_split_position_piecewise_linear(tri::Triangulation, args::Refi
                 t = one(t) - t
             end
         else # No need to worry about ping-pong encroachment
-            t = inv(2.0)
+            t = one(F) / 2
         end
         if abs(t - 1 / 2) < MIDPOINT_TOLERANCE # close enough to the midpoint, so just bisect - every third split on a segment should be a bisection anyway. 
             push!(args.midpoint_split_list, num_points(tri) + 1)
@@ -448,7 +449,7 @@ and `s ∈ [ℓ / 3, 2ℓ / 3]`.
 function balanced_power_of_two_ternary_split(ℓ)
     # This is the same as doing rₛₕₑₗₗ = 2^k, k = ⌊log₂(rₘₐₓ)⌋, rₘₐₓ = 2ℓ/3.
     # This version is actually faster, though, by about 4x.
-    balanced_split = 1.0
+    balanced_split = one(ℓ)
     while ℓ / 3 > balanced_split
         balanced_split = 2balanced_split
     end
@@ -459,13 +460,13 @@ function balanced_power_of_two_ternary_split(ℓ)
 end
 
 """
-    balanced_power_of_two_quarternary_split(ℓ) -> Float64
+    balanced_power_of_two_quarternary_split(ℓ) -> Float
     
 Returns the value of `s ∈ [0, ℓ]` that gives the most balanced quarternary split of the segment `pq`, so `s` is a power-of-two
 and `s ∈ [ℓ / 4, ℓ / 2]`.
 """
 function balanced_power_of_two_quarternary_split(ℓ)
-    balanced_split = 1.0
+    balanced_split = one(ℓ)
     while ℓ / 4 > balanced_split
         balanced_split = 2balanced_split
     end
@@ -517,13 +518,14 @@ function segment_vertices_adjoin_other_segments_at_acute_angle(tri::Triangulatio
     end
     # Now classify 
     a, b = other_segments
-    if a ≠ I(∅) && b ≠ I(∅)
-        return 2, I(∅)
+    num_adjoin, adjoin_vert = if a ≠ I(∅) && b ≠ I(∅)
+        2, I(∅)
     elseif a ≠ I(∅) || b ≠ I(∅)
-        return 1, a ≠ I(∅) ? u : v
+        1, a ≠ I(∅) ? u : v
     else
-        return 0, I(∅)
+        0, I(∅)
     end
+    return num_adjoin, adjoin_vert
 end
 
 """
@@ -570,8 +572,8 @@ Checks if there are precision issues related to the computed split position `(mx
 returning `true` if so and `false` otherwise.
 """
 function check_split_subsegment_precision(mx, my, p, q)
-    px, py = _getxy(p)
-    qx, qy = _getxy(q)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
     abs_err_flag_1 = check_absolute_precision(mx, px) && check_absolute_precision(my, py)
     abs_err_flag_2 = check_absolute_precision(mx, qx) && check_absolute_precision(my, qy)
     abs_err_flag = abs_err_flag_1 || abs_err_flag_2
@@ -639,7 +641,7 @@ function _split_subsegment_curve_bounded_standard!(tri::Triangulation, args::Ref
     enricher = get_boundary_enricher(tri)
     i, j = edge_vertices(e)
     t, Δθ, ct = compute_split_position(enricher, i, j)
-    cx, cy = _getxy(ct)
+    cx, cy = getxy(ct)
     p, q = get_point(tri, i, j)
     precision_flag = check_split_subsegment_precision(cx, cy, p, q) || isnan(Δθ)
     if precision_flag
@@ -673,7 +675,7 @@ function _split_subsegment_curve_bounded_small_angle!(tri::Triangulation, args::
         ct = _compute_split_position_complex(enricher, apex, member, circle_radius)
         next_edge = get_next_edge(member)
         q = get_point(points, next_edge)
-        cx, cy = _getxy(ct)
+        cx, cy = getxy(ct)
         precision_flag = check_split_subsegment_precision(cx, cy, p, q)
         precision_flag && continue
         empty!(args.events)
@@ -774,9 +776,9 @@ function is_triangle_seditious(tri::Triangulation, args, u, v, w, smallest_idx)
         !check_seditious_precision(ℓac², ℓbc²) && continue
         if args.constraints.seditious_angle > 0.0
             p, q, r = get_point(tri, a, b, c)
-            px, py = _getxy(p)
-            qx, qy = _getxy(q)
-            rx, ry = _getxy(r)
+            px, py = getxy(p)
+            qx, qy = getxy(q)
+            rx, ry = getxy(r)
             ddot = (px - rx) * (qx - rx) + (py - ry) * (qy - ry)
             ddot < 0 && continue
             ℓacℓbc² = ℓac² * ℓbc²

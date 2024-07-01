@@ -2,8 +2,8 @@ using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using CairoMakie
 using StableRNGs
+using StaticArrays
 
-include("../helper_functions.jl")
 
 @testset "Simple domain" begin
     p1 = (0.2, 0.2)

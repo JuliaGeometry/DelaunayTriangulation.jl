@@ -74,8 +74,6 @@ function add_point!(c::RepresentativeCoordinates, p)
     n = getn(c)
     c.x = 1 / (n + 1) * (n * c.x + getx(p))
     c.y = 1 / (n + 1) * (n * c.y + gety(p))
-    #c.x = 1 / (n + 1) * muladd(n, c.x, getx(p))
-    #c.y = 1 / (n + 1) * muladd(n, c.y, gety(p))
     c.n += 1
     return c
 end
@@ -87,10 +85,8 @@ Treating `c` as an arithmetic average, updates the coordinates of `c` to exclude
 """
 function delete_point!(c::RepresentativeCoordinates, p)
     n = getn(c)
-    #c.x = 1 / (n - 1) * (n * c.x - getx(p))
-    #c.y = 1 / (n - 1) * (n * c.y - gety(p))
-    c.x = 1 / (n - 1) * muladd(n, c.x, -getx(p))
-    c.y = 1 / (n - 1) * muladd(n, c.y, -gety(p))
+    c.x = 1 / (n - 1) * (n * c.x - getx(p))
+    c.y = 1 / (n - 1) * (n * c.y - gety(p))
     c.n -= 1
     return nothing
 end

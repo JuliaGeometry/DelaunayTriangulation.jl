@@ -23,10 +23,11 @@ There are several forms for the methods:
 3. `get_boundary_nodes(tri, (m, n))`: This is equivalent to `get_boundary_nodes(tri, m, n)`.
 4. `get_boundary_nodes(tri::A, ::A)`: This just returns `boundary_nodes`.  
 """
-get_boundary_nodes(tri::Triangulation, mnℓ...) = get_boundary_nodes(get_boundary_nodes(tri), mnℓ...)
-get_boundary_nodes(tri::Triangulation, m::Integer) = get_boundary_nodes(get_boundary_nodes(tri), m) # method ambiguity
-get_boundary_nodes(tri::Triangulation, (m, n)::NTuple{2,Integer}) = get_boundary_nodes(get_boundary_nodes(tri), (m, n)) # method ambiguity
-get_boundary_nodes(tri::Triangulation, m::Integer, n::Integer) = get_boundary_nodes(get_boundary_nodes(tri), m, n) # method ambiguity
+@inline get_boundary_nodes(tri::Triangulation, mnℓ...) = get_boundary_nodes(get_boundary_nodes(tri), mnℓ...)
+@inline get_boundary_nodes(tri::Triangulation, m::Integer) = get_boundary_nodes(get_boundary_nodes(tri), m) # method ambiguity
+@inline get_boundary_nodes(tri::Triangulation, (m, n)::NTuple{2,Integer}) = get_boundary_nodes(get_boundary_nodes(tri), (m, n)) # method ambiguity
+@inline get_boundary_nodes(tri::Triangulation, m::Integer, n::Integer) = get_boundary_nodes(get_boundary_nodes(tri), m, n) # method ambiguity
+@inline get_boundary_nodes(tri::A, ::A) where {A<:Triangulation} = get_boundary_nodes(tri) # ambiguity. method doesn't really make sense 
 
 """
     get_right_boundary_node(tri::Triangulation, k, ghost_vertex) -> Vertex
