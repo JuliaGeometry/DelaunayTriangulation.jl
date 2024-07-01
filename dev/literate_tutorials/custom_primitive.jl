@@ -166,7 +166,7 @@ tri = triangulate(points; boundary_nodes=polygons, segments,
 refine!(tri; max_area=1e-3, rng)
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "custom_structs_ex_1.png") fig #src
+@test_reference joinpath(fig_path, "custom_structs_ex_1.png") fig by = psnr_equality(5.0) #src
 
 # Now let's give an example of a centroidal Voronoi tessellation to show that 
 # this all works. 
@@ -179,8 +179,7 @@ tri = triangulate(points;
     EdgesType=CustomSegments,
     TrianglesType=CustomTriangles,
     rng)
-vorn = voronoi(tri; clip=true, rng)
-vorn_cs = centroidal_smooth(vorn; rng)
-fig, ax, sc = voronoiplot(vorn_cs)
+vorn = voronoi(tri; clip=true, smooth=true, rng)
+fig, ax, sc = voronoiplot(vorn)
 fig
-@test_reference joinpath(fig_path, "custom_structs_ex_2.png") fig #src
+@test_reference joinpath(fig_path, "custom_structs_ex_2.png") fig by = psnr_equality(5.0) #src

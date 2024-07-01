@@ -55,12 +55,12 @@ vorn</code></pre><pre class="documenter-example-output"><code class="nohighlight
  (2.0, -1.0)
  (3.0, -1.0)
  (-1.5, 0.5)
- (5.551115123125783e-17, 2.0)
+ (0.0, 2.0)
  (-1.0, 2.0)
  (1.0, 2.0)
- (1.1102230246251565e-16, -1.0)
+ (0.0, -1.0)
  (-2.0, -1.0)
- (0.24999999999999978, -1.0)</code></pre><p>These coordinates are used to define the vertices of these polygons. It is important to note that these points are not guaranteed to be unique if a circumcenter appears on the boundary, or if the tessellation is clipped. To access the coordinate of a polygon associated with a given polygon vertex, use <a href="../../api/voronoi/#DelaunayTriangulation.get_polygon_point"><code>get_polygon_point</code></a>:</p><pre><code class="language-julia hljs">get_polygon_point(vorn, 1)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(3.5, 0.5)</code></pre><p>If you wanted the total number of polygon vertices, possibly counting duplicate vertices, you can use <a href="../../api/voronoi/#DelaunayTriangulation.num_polygon_vertices"><code>num_polygon_vertices</code></a>:</p><pre><code class="language-julia hljs">num_polygon_vertices(vorn)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">21</code></pre><h2 id="[get_polygons(vorn)](@ref-get_polygons)"><a class="docs-heading-anchor" href="#[get_polygons(vorn)](@ref-get_polygons)"><a href="../../api/voronoi/#DelaunayTriangulation.get_polygons"><code>get_polygons(vorn)</code></a></a><a id="[get_polygons(vorn)](@ref-get_polygons)-1"></a><a class="docs-heading-anchor-permalink" href="#[get_polygons(vorn)](@ref-get_polygons)" title="Permalink"></a></h2><p>This field is used for mapping polygon indices to their vertices, with these vertices referring to coordinates from <code>get_polygon_points(vorn)</code>:</p><pre><code class="language-julia hljs">DelaunayTriangulation.get_polygons(vorn)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{Int64, Vector{Int64}} with 8 entries:
+ (0.25, -1.0)</code></pre><p>These coordinates are used to define the vertices of these polygons. It is important to note that these points are not guaranteed to be unique if a circumcenter appears on the boundary, or if the tessellation is clipped. To access the coordinate of a polygon associated with a given polygon vertex, use <a href="../../api/voronoi/#DelaunayTriangulation.get_polygon_point"><code>get_polygon_point</code></a>:</p><pre><code class="language-julia hljs">get_polygon_point(vorn, 1)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(3.5, 0.5)</code></pre><p>If you wanted the total number of polygon vertices, possibly counting duplicate vertices, you can use <a href="../../api/voronoi/#DelaunayTriangulation.num_polygon_vertices"><code>num_polygon_vertices</code></a>:</p><pre><code class="language-julia hljs">num_polygon_vertices(vorn)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">21</code></pre><h2 id="[get_polygons(vorn)](@ref-get_polygons)"><a class="docs-heading-anchor" href="#[get_polygons(vorn)](@ref-get_polygons)"><a href="../../api/voronoi/#DelaunayTriangulation.get_polygons"><code>get_polygons(vorn)</code></a></a><a id="[get_polygons(vorn)](@ref-get_polygons)-1"></a><a class="docs-heading-anchor-permalink" href="#[get_polygons(vorn)](@ref-get_polygons)" title="Permalink"></a></h2><p>This field is used for mapping polygon indices to their vertices, with these vertices referring to coordinates from <code>get_polygon_points(vorn)</code>:</p><pre><code class="language-julia hljs">DelaunayTriangulation.get_polygons(vorn)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{Int64, Vector{Int64}} with 8 entries:
   5 =&gt; [1, 9, 12, 11, 1]
   4 =&gt; [3, 16, 17, 3]
   6 =&gt; [20, 19, 3, 20]
@@ -76,20 +76,20 @@ vorn</code></pre><pre class="documenter-example-output"><code class="nohighlight
  16
   3
  19</code></pre><p>means that the first polygon has vertices <code>[19, 21, 4, 18, 16, 3, 19]</code>. All polygons are stored as a circular vector of counter-clockwise oriented vertices. Note also that polygon indices are the same as the generator vertex, so that e.g. this polygon <code>1</code> is that associated with generator <code>1</code>.  You can get the number of polygons using <a href="../../api/voronoi/#DelaunayTriangulation.num_polygons"><code>num_polygons</code></a>:</p><pre><code class="language-julia hljs">num_polygons(vorn)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">8</code></pre><p>Of course, this is the same as the number of generators. If you wanted to get the coordinates instead of the vertices associated with a polygon, you use <a href="../../api/voronoi/#DelaunayTriangulation.get_polygon_coordinates"><code>get_polygon_coordinates</code></a>:</p><pre><code class="language-julia hljs">get_polygon_coordinates(vorn, 1)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">7-element Vector{Tuple{Float64, Float64}}:
- (1.1102230246251565e-16, -1.0)
- (0.24999999999999978, -1.0)
+ (0.0, -1.0)
+ (0.25, -1.0)
  (1.0, 0.5)
  (1.0, 2.0)
- (5.551115123125783e-17, 2.0)
+ (0.0, 2.0)
  (-1.5, 0.5)
- (1.1102230246251565e-16, -1.0)</code></pre><p>This is almost the same result as doing</p><pre><code class="language-julia hljs">get_polygon_point.(Ref(vorn), get_polygon(vorn, 1))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">7-element Vector{Tuple{Float64, Float64}}:
- (1.1102230246251565e-16, -1.0)
- (0.24999999999999978, -1.0)
+ (0.0, -1.0)</code></pre><p>This is almost the same result as doing</p><pre><code class="language-julia hljs">get_polygon_point.(Ref(vorn), get_polygon(vorn, 1))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">7-element Vector{Tuple{Float64, Float64}}:
+ (0.0, -1.0)
+ (0.25, -1.0)
  (1.0, 0.5)
  (1.0, 2.0)
- (5.551115123125783e-17, 2.0)
+ (0.0, 2.0)
  (-1.5, 0.5)
- (1.1102230246251565e-16, -1.0)</code></pre><p>but is more efficient.</p><p>When the tessellation is unbounded, this field is slightly different. Let&#39;s consider an example.</p><pre><code class="language-julia hljs">rng2 = StableRNG(321)
+ (0.0, -1.0)</code></pre><p>but is more efficient.</p><p>When the tessellation is unbounded, this field is slightly different. Let&#39;s consider an example.</p><pre><code class="language-julia hljs">rng2 = StableRNG(321)
 points2 = rand(rng2, 2, 10)
 tri2 = triangulate(points2; rng = rng2)
 vorn2 = voronoi(tri2, rng = rng2)
@@ -206,4 +206,4 @@ Dict{Tuple{Int64, Int64}, Int64} with 33 entries:
   2
   8
   3
-  1</code></pre><p>For our unclipped tessellation, the field is empty:</p><pre><code class="language-julia hljs">DelaunayTriangulation.get_boundary_polygons(vorn2)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Set{Int64}()</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../triangulation_output/">« Triangulation Output</a><a class="docs-footer-nextpage" href="../../api/overview/">Section Overview »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Thursday 27 June 2024 18:02">Thursday 27 June 2024</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+  1</code></pre><p>For our unclipped tessellation, the field is empty:</p><pre><code class="language-julia hljs">DelaunayTriangulation.get_boundary_polygons(vorn2)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Set{Int64}()</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../triangulation_output/">« Triangulation Output</a><a class="docs-footer-nextpage" href="../../api/overview/">Section Overview »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Monday 1 July 2024 11:53">Monday 1 July 2024</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

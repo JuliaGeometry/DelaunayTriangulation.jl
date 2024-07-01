@@ -4,18 +4,18 @@ using StableRNGs
 using LinearAlgebra
 using StatsBase
 using CairoMakie
-@kwdef mutable struct CellModel
-    tri::Triangulation
+Base.@kwdef mutable struct CellModel{P}
+    tri::Triangulation{P}
     new_r_cache::Vector{NTuple{2,Float64}} # for r(t + Δt)
-    const α::Float64
-    const s::Float64
-    const Δt::Float64
-    const rng::StableRNGs.LehmerRNG
-    const final_time::Float64
-    const β::Float64
-    const K::Float64
-    const ϵ::Float64
-end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Main.CellModel</code></pre><p>Let&#39;s now write functions for performing the migration step.</p><pre><code class="language-julia hljs">function migrate_cells!(cells::CellModel) # a more efficient way would be to loop over edges rather than vertices
+    α::Float64
+    s::Float64
+    Δt::Float64
+    rng::StableRNGs.LehmerRNG
+    final_time::Float64
+    β::Float64
+    K::Float64
+    ϵ::Float64
+end</code></pre><p>Let&#39;s now write functions for performing the migration step.</p><pre><code class="language-julia hljs">function migrate_cells!(cells::CellModel) # a more efficient way would be to loop over edges rather than vertices
     tri = cells.tri
     for i in each_solid_vertex(tri)
         rᵢ = get_point(tri, i)
@@ -33,7 +33,7 @@ end</code></pre><pre class="documenter-example-output"><code class="nohighlight 
     end
     cells.tri = retriangulate(tri; cells.rng)
     return nothing
-end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">migrate_cells! (generic function with 1 method)</code></pre><p>Now we can write the proliferation functions. First, let us write a function that computes the Voronoi areas. If we had the <code>VoronoiTessellation</code> computed, we would just use <code>get_area</code>, but we are aiming to avoid having to compute <span>$\mathcal V\mathcal T(\mathcal P)$</span> directly.</p><pre><code class="language-julia hljs">function polygon_area(points) # this is the same function from the Interpolation section
+end</code></pre><pre><code class="nohighlight hljs">migrate_cells! (generic function with 1 method)</code></pre><p>Now we can write the proliferation functions. First, let us write a function that computes the Voronoi areas. If we had the <code>VoronoiTessellation</code> computed, we would just use <code>get_area</code>, but we are aiming to avoid having to compute <span>$\mathcal V\mathcal T(\mathcal P)$</span> directly.</p><pre><code class="language-julia hljs">function polygon_area(points) # this is the same function from the Interpolation section
     n = DelaunayTriangulation.num_points(points)
     p, q, r, s = get_point(points, 1, 2, n, n - 1)
     px, py = getxy(p)
@@ -68,7 +68,7 @@ function get_voronoi_area(tri::Triangulation, i)
     end
     push!(points, points[begin])
     return polygon_area(points), points
-end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">get_voronoi_area (generic function with 1 method)</code></pre><p>The function <code>get_voronoi_area</code> above returns <code>0</code> if the cell is on the boundary. Finally, our function for performing the proliferation step is below.</p><pre><code class="language-julia hljs">function proliferate_cells!(cells::CellModel)
+end</code></pre><pre><code class="nohighlight hljs">get_voronoi_area (generic function with 1 method)</code></pre><p>The function <code>get_voronoi_area</code> above returns <code>0</code> if the cell is on the boundary. Finally, our function for performing the proliferation step is below.</p><pre><code class="language-julia hljs">function proliferate_cells!(cells::CellModel)
     E = 0.0
     Δt = cells.Δt
     tri = cells.tri
@@ -92,7 +92,7 @@ end</code></pre><pre class="documenter-example-output"><code class="nohighlight 
         push!(cells.new_r_cache, q)
     end
     return nothing
-end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">proliferate_cells! (generic function with 1 method)</code></pre><p>Finally, our simulation function is below.</p><pre><code class="language-julia hljs">function perform_step!(cells::CellModel)
+end</code></pre><pre><code class="nohighlight hljs">proliferate_cells! (generic function with 1 method)</code></pre><p>Finally, our simulation function is below.</p><pre><code class="language-julia hljs">function perform_step!(cells::CellModel)
     proliferate_cells!(cells)
     migrate_cells!(cells)
     return nothing
@@ -107,7 +107,7 @@ function simulate_cells(cells::CellModel)
         push!(all_points, deepcopy(get_points(cells.tri)))
     end
     return all_points
-end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">simulate_cells (generic function with 1 method)</code></pre><h2 id="Example"><a class="docs-heading-anchor" href="#Example">Example</a><a id="Example-1"></a><a class="docs-heading-anchor-permalink" href="#Example" title="Permalink"></a></h2><p>Let us now give an example. Our initial set of points will be randomly chosen inside the rectangle <span>$[-2, 2] \times [-5, 5]$</span>. We use <span>$\alpha = 5$</span>, <span>$s = 2$</span>, <span>$\Delta t = 10^{-3}$</span>, <span>$\beta = 0.25$</span>, <span>$K = 100^2$</span>, and <span>$\epsilon = 0.5$</span>.</p><pre><code class="language-julia hljs">rng = StableRNG(123444)
+end</code></pre><pre><code class="nohighlight hljs">simulate_cells (generic function with 1 method)</code></pre><h2 id="Example"><a class="docs-heading-anchor" href="#Example">Example</a><a id="Example-1"></a><a class="docs-heading-anchor-permalink" href="#Example" title="Permalink"></a></h2><p>Let us now give an example. Our initial set of points will be randomly chosen inside the rectangle <span>$[-2, 2] \times [-5, 5]$</span>. We use <span>$\alpha = 5$</span>, <span>$s = 2$</span>, <span>$\Delta t = 10^{-3}$</span>, <span>$\beta = 0.25$</span>, <span>$K = 100^2$</span>, and <span>$\epsilon = 0.5$</span>.</p><pre><code class="language-julia hljs">rng = StableRNG(123444)
 a, b, c, d = -2.0, 2.0, -5.0, 5.0
 points = [(a + (b - a) * rand(rng), c + (d - c) * rand(rng)) for _ in 1:10]
 tri = triangulate(points; rng=rng)
@@ -134,17 +134,17 @@ using StableRNGs
 using LinearAlgebra
 using StatsBase
 using CairoMakie
-@kwdef mutable struct CellModel
-    tri::Triangulation
+Base.@kwdef mutable struct CellModel{P}
+    tri::Triangulation{P}
     new_r_cache::Vector{NTuple{2,Float64}} # for r(t + Δt)
-    const α::Float64
-    const s::Float64
-    const Δt::Float64
-    const rng::StableRNGs.LehmerRNG
-    const final_time::Float64
-    const β::Float64
-    const K::Float64
-    const ϵ::Float64
+    α::Float64
+    s::Float64
+    Δt::Float64
+    rng::StableRNGs.LehmerRNG
+    final_time::Float64
+    β::Float64
+    K::Float64
+    ϵ::Float64
 end
 
 function migrate_cells!(cells::CellModel) # a more efficient way would be to loop over edges rather than vertices
@@ -269,4 +269,4 @@ t = 0:Δt:cells.final_time
 record(fig, &quot;cell_simulation.mp4&quot;, 1:10:length(t); framerate=60) do ii
     i[] = ii
     title_obs[] = L&quot;t = %$(((ii-1) * Δt))&quot;
-end;</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a>If you are interested in hwot ehse ideas are applied in one dimension, see also <a href="https://github.com/DanielVandH/EpithelialDynamics1D.jl">EpithelialDynamics1D.jl</a>.</li><li class="footnote" id="footnote-2"><a class="tag is-link" href="#citeref-2">2</a>There are efficient methods for updating the triangulation after small perturbations, e.g. the paper <a href="https://doi.org/10.1145/1064092.1064129"><em>Star splaying: an algorithm for repairing Delaunay triangulations and convex hulls</em></a> by Shewchuk (2005). For this implementation, we do not concern ourselves with being overly efficient, and simply retriangulate.</li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../interpolation/">« Interpolation</a><a class="docs-footer-nextpage" href="../pde_discretisation/">Solving PDEs »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Thursday 27 June 2024 18:02">Thursday 27 June 2024</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end;</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a>If you are interested in hwot ehse ideas are applied in one dimension, see also <a href="https://github.com/DanielVandH/EpithelialDynamics1D.jl">EpithelialDynamics1D.jl</a>.</li><li class="footnote" id="footnote-2"><a class="tag is-link" href="#citeref-2">2</a>There are efficient methods for updating the triangulation after small perturbations, e.g. the paper <a href="https://doi.org/10.1145/1064092.1064129"><em>Star splaying: an algorithm for repairing Delaunay triangulations and convex hulls</em></a> by Shewchuk (2005). For this implementation, we do not concern ourselves with being overly efficient, and simply retriangulate.</li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../interpolation/">« Interpolation</a><a class="docs-footer-nextpage" href="../pde_discretisation/">Solving PDEs »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Monday 1 July 2024 11:53">Monday 1 July 2024</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

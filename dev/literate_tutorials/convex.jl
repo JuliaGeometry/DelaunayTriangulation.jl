@@ -54,5 +54,5 @@ using BenchmarkTools
 #-
 @benchmark triangulate($points) 
 
-# For the smaller example that we started above, `triangulate_convex` is also 
+# For the smaller example that we started with above, `triangulate_convex` is also 
 # faster, although not by much (≈15.10 μs versus ≈10.7 μs).
