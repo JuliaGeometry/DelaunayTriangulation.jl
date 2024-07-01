@@ -29,6 +29,7 @@ function convex_hull!(ch::ConvexHull{P,I}) where {P,I}
     n = num_points(points)
     sizehint!(indices, n)
     insertion_order = lexicographic_order(points)
+    unique!(i -> get_point(points, i), insertion_order)
     if n == 1
         push!(indices, insertion_order[begin])
         return ch
