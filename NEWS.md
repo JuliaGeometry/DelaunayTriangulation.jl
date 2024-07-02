@@ -1,5 +1,22 @@
 # Changelog
 
+## v1.0.4
+
+Nothing breaking. Main changes:
+
+- Fixes some issue with type instabilities
+- Adds `construct_polygon_hierarchy` to the public API list (it was already intended to be there)
+- All computations are now in the provided precision except for the triangle area and circumcenter which are done in `Float64`. A warning is given when a non-Float64 precision is given.
+- Closes #118 
+- Redesigns the `Polygon` struct to have an `is_circular` field, avoiding the need for `views`
+- Completely refactors `validate_triangulation`. Still only lives in the test files though. Maybe one day it can live inside the package itself incase users somehow have a use for it..
+- Clean up the runtests.jl file, and make sure that the README/docs are fully tested
+- Use Aqua and fix ambiguities
+- Remove accidental piracy of `minimum(::Nothing)`
+- Remove CI spam from method redefinitions
+- Fix some issues with doc images and some typos
+- Fix #109
+
 ## v1.0.3
 
 - Removed some old function definitions that were no longer needed anymore following the new Makie release.
