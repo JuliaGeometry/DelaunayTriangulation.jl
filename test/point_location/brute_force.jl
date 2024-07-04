@@ -2,7 +2,7 @@ using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using StatsBase
 
-
+include("../helper_functions.jl")
 
 global tri, label_map, index_map = simple_geometry()
 

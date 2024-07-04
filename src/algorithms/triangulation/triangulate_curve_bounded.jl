@@ -46,25 +46,6 @@ function triangulate_curve_bounded(points::P;
     insertion_order=nothing, # use this so that it gets ignored by the kwargs
     kwargs...) where {P,I}
     enricher = BoundaryEnricher(points, boundary_nodes, segments; IntegerType, n=polygonise_n, coarse_n)
-    return _triangulate_curve_bounded(points, enricher;
-        IntegerType,
-        check_arguments,
-        delete_ghosts,
-        delete_empty_features,
-        recompute_representative_points,
-        rng,
-        insertion_order,
-        kwargs...)
-end
-function _triangulate_curve_bounded(points::P, enricher;
-    IntegerType::Type{I}=Int,
-    check_arguments=true,
-    delete_ghosts=false,
-    delete_empty_features=true,
-    recompute_representative_points=true,
-    rng::AbstractRNG=Random.default_rng(),
-    insertion_order=nothing, # use this so that it gets ignored by the kwargs
-    kwargs...) where {P,I}
     check_arguments && check_args(enricher)
     enrich_boundary!(enricher)
     new_boundary_nodes = get_boundary_nodes(enricher)
@@ -72,7 +53,6 @@ function _triangulate_curve_bounded(points::P, enricher;
     full_polygon_hierarchy = get_polygon_hierarchy(enricher)
     boundary_curves = get_boundary_curves(enricher)
     tri = triangulate(points;
-        IntegerType,
         segments=new_segments,
         boundary_nodes=new_boundary_nodes,
         full_polygon_hierarchy,
@@ -250,7 +230,7 @@ function _split_subcurve_complex!(enricher::BoundaryEnricher, apex, complex_id)
         split_point = _compute_split_position_complex(enricher, apex, member, circle_radius)
         next_edge = get_next_edge(member)
         q = get_point(points, next_edge)
-        if check_split_subsegment_precision(getx(split_point), gety(split_point), p, q)
+        if check_split_subsegment_precision(_getx(split_point), _gety(split_point), p, q)
             num_precision_issues += 1
             continue
         end
@@ -287,7 +267,7 @@ function compute_split_position(enricher::BoundaryEnricher, i, j)
     end
     points = get_points(enricher)
     p, q = get_point(points, i, j)
-    if check_split_subsegment_precision(getx(ct), gety(ct), p, q)
+    if check_split_subsegment_precision(_getx(ct), _gety(ct), p, q)
         #=
         This happens when the points p and q are so close to each other, that the interval 
         (i-1, i, i+1) found for the binary splitting used in get_closest_point are the exact same, 
@@ -326,8 +306,8 @@ function _compute_split_position_acute(enricher::BoundaryEnricher, i, j, num_adj
     if abs(t - 1 / 2) < MIDPOINT_TOLERANCE
         t = 1 / 2
     end
-    px, py = getxy(p)
-    qx, qy = getxy(q)
+    px, py = _getxy(p)
+    qx, qy = _getxy(q)
     parent_curve = get_parent(enricher, i, j)
     if parent_curve == ∅ || is_piecewise_linear(enricher, parent_curve) # == ∅ means the member is associated with an interior segment
         ct = (px + t * (qx - px), py + t * (qy - py))
@@ -349,8 +329,8 @@ function _compute_split_position_standard(enricher::BoundaryEnricher, i, j)
     parent_curve = get_parent(enricher, i, j)
     p, q = get_point(points, i, j)
     if parent_curve == ∅ || is_piecewise_linear(enricher, parent_curve) # == ∅ means the member is associated with an interior segment
-        px, py = getxy(p)
-        qx, qy = getxy(q)
+        px, py = _getxy(p)
+        qx, qy = _getxy(q)
         ct = midpoint((px, py), (qx, qy))
         Δθ = 0.0
         t = NaN # there's no sensible value to apply here. it's not 1/2 since that's for LineSegments, not for PiecewiseLinear
@@ -372,8 +352,8 @@ function _compute_split_position_complex(enricher::BoundaryEnricher, apex, membe
     next_edge = get_next_edge(member)
     q = get_point(points, next_edge)
     if parent_curve == ∅ || is_piecewise_linear(enricher, parent_curve) # == ∅ means the member is associated with an interior segment
-        px, py = getxy(p)
-        qx, qy = getxy(q)
+        px, py = _getxy(p)
+        qx, qy = _getxy(q)
         ℓ = dist((px, py), (qx, qy))
         t = circle_radius / ℓ
         split_point = (px + t * (qx - px), py + t * (qy - py))

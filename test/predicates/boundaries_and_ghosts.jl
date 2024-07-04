@@ -2,11 +2,10 @@ using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using DataStructures
 using StableRNGs
-using StaticArrays
 const GV = DT.𝒢
 using ..DelaunayTriangulation: Certificate
 
-
+include("../helper_functions.jl")
 
 x, y = complicated_geometry()
 rng = StableRNG(99988)

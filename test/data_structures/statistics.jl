@@ -3,7 +3,7 @@ const DT = DelaunayTriangulation
 using CairoMakie
 using ReferenceTests
 
-
+include("../helper_functions.jl")
 
 @testset "Computing statistics" begin
     _x, _y = complicated_geometry()
@@ -213,12 +213,15 @@ end
     _validate_offcenter(p, q, r, 1.0)
 
     # Some random triangles
-    for _ in 1:50
-        tri = triangulate(rand(2, 50))
+    for _ in 1:500
+        tri = triangulate(rand(2, 500))
         for T in each_solid_triangle(tri)
             p, q, r = get_point(tri, T...)
             _validate_offcenter(p, q, r, 1.0)
             _validate_offcenter(p, q, r, sqrt(2))
+            _validate_offcenter(p, q, r, 1.0)
+            _validate_offcenter(p, q, r, 1.0)
+            _validate_offcenter(p, q, r, 1.0)
         end
     end
 

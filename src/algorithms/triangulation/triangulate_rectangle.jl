@@ -24,7 +24,7 @@ Triangulates the rectangle `[a, b] × [c, d]`.
 # Outputs 
 - `tri`: The triangulation of the rectangle.
 """
-@inline function triangulate_rectangle(a, b, c, d, nx, ny;
+function triangulate_rectangle(a, b, c, d, nx, ny;
     single_boundary=false,
     delete_ghosts=false,
     IntegerType::Type{I}=Int,
@@ -32,40 +32,11 @@ Triangulates the rectangle `[a, b] × [c, d]`.
     TriangleType::Type{V}=NTuple{3,IntegerType},
     EdgesType::Type{Es}=Set{EdgeType},
     TrianglesType::Type{Ts}=Set{TriangleType}) where {I,E,V,Es,Ts}
-    return _triangulate_rectangle(a, b, c, d, nx, ny, I, E, V, Es, Ts, single_boundary, delete_ghosts)
-end
-@inline function _triangulate_rectangle(a, b, c, d, nx, ny,
-    ::Type{I}, ::Type{E}, ::Type{V}, ::Type{Es}, ::Type{Ts},
-    single_boundary, delete_ghosts) where {I,E,V,Es,Ts}
-    T, sub2ind = get_lattice_triangles(nx, ny, Ts, V)
-    points = get_lattice_points(a, b, c, d, nx, ny, sub2ind)
-    boundary_nodes = get_lattice_boundary(nx, ny, sub2ind, Val(single_boundary), I)
-    tri = Triangulation(points, T, boundary_nodes; IntegerType=I, EdgeType=E, TriangleType=V, EdgesType=Es, TrianglesType=Ts, delete_ghosts)
-    compute_representative_points!(tri)
-    return tri
-end
 
-"""
-    get_lattice_triangles(nx, ny, Ts, V) 
-
-Computes the triangles defining a lattice with `nx` and `ny` points in the `x`- and `y`-directions,
-respectively.
-
-See [`triangulate_rectangle`](@ref).
-
-# Arguments 
-- `nx`: The number of `x` points in the lattice.
-- `ny`: The number of `y` points in the lattice.
-- `Ts`: The type to use for representing a collection of triangles.
-- `V`: The type to use for representing an individual triangle.
-
-# Outputs 
-- `T`: The collection of triangles.
-- `sub2ind`: A map that takes cartesian indices `(i, j)` into the associated linear index along the lattice. See `LinearIndices`.
-"""
-@inline function get_lattice_triangles(nx, ny, ::Type{Ts}, ::Type{V}) where {Ts, V}
+    ## Define the triangles
     T = Ts()
     sub2ind = LinearIndices((1:nx, 1:ny))
+    idx = 1
     for j in 1:(ny-1)
         for i in 1:(nx-1)
             u = sub2ind[CartesianIndex(i, j)]
@@ -80,29 +51,8 @@ See [`triangulate_rectangle`](@ref).
             add_triangle!(T, τ)
         end
     end
-    return T, sub2ind
-end
 
-"""
-    get_lattice_points(a, b, c, d, nx, ny, sub2ind)
-
-Returns the points on a lattice `[a, b] × [c, d]`.
-
-See [`triangulate_rectangle`](@ref).
-
-# Arguments 
-- `a`: The minimum `x`-coordinate. 
-- `b`: The maximum `x`-coordinate.
-- `c`: The minimum `y`-coordinate.
-- `d`: The maximum `y`-coordinate.
-- `nx`: The number of points in the `x`-direction.
-- `ny`: The number of points in the `y`-direction.
-- `sub2ind`: The map returned from [`get_lattice_triangles`](@ref).
-
-# Outputs 
-- `points`: The points on the lattice, where `points[sub2ind[CartesianIndex(i, j)]]` is the point at the `i`th `x` point and the `j`th `y` point,
-"""
-@inline function get_lattice_points(a, b, c, d, nx, ny, sub2ind)
+    ## Define the points 
     points = Vector{NTuple{2,Float64}}(undef, nx * ny)
     Δx = (b - a) / (nx - 1)
     Δy = (d - c) / (ny - 1)
@@ -114,28 +64,8 @@ See [`triangulate_rectangle`](@ref).
             points[idx] = (x, y)
         end
     end
-    return points
-end
 
-"""
-    get_lattice_boundary(nx, ny, sub2ind, single_boundary, IntegerType)
-
-Returns the boundary nodes defining a lattice. 
-
-See [`triangulate_rectangle`](@ref).
-
-# Arguments 
-- `nx`: The number of `x` points in the lattice.
-- `ny`: The number of `y` points in the lattice.
-- `sub2ind`: The map returned from [`get_lattice_triangles`](@ref).
-- `single_boundary`: If `true`, then the boundary nodes are stored as a contiguous section. Otherwise, the boundary is split into four sections, in the order 
-   bottom, right, top, left.
-- `IntegerType`: The type used for representing vertices. 
-
-# Outputs 
-- `boundary_nodes`: The boundary nodes, returned according to `single_boundary` as described above.
-"""
-@inline function get_lattice_boundary(nx, ny, sub2ind, single_boundary::Val{B}, ::Type{I}) where {B, I}
+    ## Define the boundary nodes 
     b1 = Vector{I}(undef, nx)
     b2 = Vector{I}(undef, ny)
     b3 = Vector{I}(undef, nx)
@@ -152,7 +82,7 @@ See [`triangulate_rectangle`](@ref).
     for j in ny:-1:1
         b4[ny-j+1] = sub2ind[CartesianIndex(1, j)]
     end
-    if is_true(single_boundary)
+    if single_boundary
         popfirst!(b2)
         popfirst!(b3)
         popfirst!(b4)
@@ -160,5 +90,9 @@ See [`triangulate_rectangle`](@ref).
     else
         boundary_nodes = [b1, b2, b3, b4]
     end
-    return boundary_nodes
+
+    ## Now triangulate 
+    tri = Triangulation(points, T, boundary_nodes; IntegerType, EdgeType, TriangleType,EdgesType, TrianglesType, delete_ghosts)
+    compute_representative_points!(tri)
+    return tri
 end

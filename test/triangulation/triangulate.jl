@@ -5,11 +5,11 @@ using Test
 using DataStructures
 using CairoMakie
 
-
+include("../helper_functions.jl")
 
 @testset "Random tests" begin
     for _ in 1:100
-        pts = rand(2, 38)
+        pts = rand(2, 382)
         tri = triangulate(pts)
         @test validate_triangulation(tri)
         _tri = DT.triangulate(pts)
@@ -38,7 +38,7 @@ end
 @testset "Lots of collinearity" begin
     _tri = triangulate_rectangle(-3.0, 2.0, 5.0, 17.3, 23, 57; single_boundary=true)
     @test validate_triangulation(_tri)
-    for _ in 1:10
+    for _ in 1:100
         tri = triangulate(_tri.points)
         @test validate_triangulation(tri)
     end

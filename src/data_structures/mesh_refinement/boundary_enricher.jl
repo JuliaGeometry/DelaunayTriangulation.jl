@@ -173,13 +173,13 @@ function _get_small_angle_complexes_segments!(d, segments, points, ::Type{I}) wh
     for (vertex, vertices) in segment_map
         length(vertices) == 1 && continue
         p = get_point(points, vertex)
-        px, py = getxy(p)
+        px, py = _getxy(p)
         for i in eachindex(vertices)
             j = i == lastindex(vertices) ? firstindex(vertices) : i + 1
             u, v = vertices[i], vertices[j]
             q, r = get_point(points, u, v)
-            qx, qy = getxy(q)
-            rx, ry = getxy(r)
+            qx, qy = _getxy(q)
+            rx, ry = _getxy(r)
             b = (qx - px, qy - py)
             a = (rx - px, ry - py)
             θ = angle_between(b, a)
@@ -221,12 +221,12 @@ function construct_segment_map(segments, points, ::Type{I}) where {I}
         p = get_point(points, vertex)
         first_vertex = first(vertices)
         q = get_point(points, first_vertex)
-        px, py = getxy(p)
-        qx, qy = getxy(q)
+        px, py = _getxy(p)
+        qx, qy = _getxy(q)
         base = (qx - px, qy - py)
         sort!(vertices, by=_vertex -> begin
                 _q = get_point(points, _vertex)
-                _qx, _qy = getxy(_q)
+                _qx, _qy = _getxy(_q)
                 next_base = (_qx - px, _qy - py)
                 return angle_between(base, next_base)
             end, rev=false)
@@ -245,12 +245,12 @@ function sort_members!(complex::SmallAngleComplex, points)
     first_member = first(members)
     first_edge = get_next_edge(first_member)
     p, q = get_point(points, apex, first_edge)
-    px, py = getxy(p)
-    qx, qy = getxy(q)
+    px, py = _getxy(p)
+    qx, qy = _getxy(q)
     base = (qx - px, qy - py)
     sort!(members, by=member -> begin
             _q = get_point(points, get_next_edge(member))
-            _qx, _qy = getxy(_q)
+            _qx, _qy = _getxy(_q)
             next_base = (_qx - px, _qy - py)
             return angle_between(base, next_base)
         end, rev=false)
@@ -276,8 +276,8 @@ function partition_members(complexes::Vector{SmallAngleComplex{I}}, points) wher
     member = first(members)
     next_edge = get_next_edge(member)
     p, q = get_point(points, apex, next_edge)
-    px, py = getxy(p)
-    qx, qy = getxy(q)
+    px, py = _getxy(p)
+    qx, qy = _getxy(q)
     base = (qx - px, qy - py)
     n = length(members)
     push!(init_complex, member)
@@ -293,7 +293,7 @@ function _partition_members_itr!(new_complexes::Vector{SmallAngleComplex{I}}, me
     member = members[i]
     next_edge = get_next_edge(member)
     q = get_point(points, next_edge)
-    qx, qy = getxy(q)
+    qx, qy = _getxy(q)
     next_base = (qx - px, qy - py)
     θ = angle_between(base, next_base)
     if θ ≤ π / 3
@@ -327,7 +327,7 @@ function get_minimum_edge_length(complex::SmallAngleComplex, points)
     for member in members
         next_edge = get_next_edge(member)
         q = get_point(points, next_edge)
-        len = min(len, dist(getxy(p), getxy(q)))
+        len = min(len, dist(_getxy(p), _getxy(q)))
     end
     return len
 end
@@ -375,29 +375,25 @@ struct BoundaryEnricher{P,B,C,I,BM,S}
     spatial_tree::BoundaryRTree{P}
     queue::Queue{I}
     small_angle_complexes::Dict{I,Vector{SmallAngleComplex{I}}}
+    function BoundaryEnricher(points::P, boundary_nodes::B, segments=nothing; IntegerType=Int, n=4096, coarse_n=0) where {P,B}
+        boundary_curves, new_boundary_nodes = convert_boundary_curves!(points, boundary_nodes, IntegerType)
+        polygon_hierarchy = construct_polygon_hierarchy(points, new_boundary_nodes, boundary_curves; IntegerType, n)
+        expand_bounds!(polygon_hierarchy, ε)
+        coarse_discretisation!(points, new_boundary_nodes, boundary_curves; n=coarse_n)
+        boundary_edge_map = construct_boundary_edge_map(new_boundary_nodes, IntegerType)
+        parent_map = Dict{NTuple{2,IntegerType},IntegerType}()
+        curve_index_map = Dict{IntegerType,IntegerType}()
+        spatial_tree = BoundaryRTree(points)
+        queue = Queue{IntegerType}()
+        small_angle_complexes = get_small_angle_complexes(points, new_boundary_nodes, boundary_curves, segments; IntegerType)
+        _segments = isnothing(segments) ? Set{NTuple{2,IntegerType}}() : segments
+        enricher = new{P,typeof(new_boundary_nodes),typeof(boundary_curves),IntegerType,typeof(boundary_edge_map),typeof(_segments)}(points, new_boundary_nodes, _segments, boundary_curves, polygon_hierarchy, parent_map, curve_index_map, boundary_edge_map, spatial_tree, queue, small_angle_complexes)
+        construct_parent_map!(enricher)
+        construct_curve_index_map!(enricher)
+        construct_tree!(enricher)
+        return enricher
+    end
 end
-function BoundaryEnricher(points::P, boundary_nodes::B, segments=nothing; IntegerType=Int, n=4096, coarse_n=0) where {P,B}
-    boundary_curves, new_boundary_nodes = convert_boundary_curves!(points, boundary_nodes, IntegerType)
-    polygon_hierarchy = construct_polygon_hierarchy(points, new_boundary_nodes, boundary_curves; IntegerType, n)
-    return _construct_boundary_enricher(points, new_boundary_nodes, boundary_curves,  polygon_hierarchy, segments, n, coarse_n, IntegerType)
-end
-function _construct_boundary_enricher(points, boundary_nodes, boundary_curves, polygon_hierarchy, segments, n, coarse_n, ::Type{I}) where {I}
-    expand_bounds!(polygon_hierarchy, ε)
-    coarse_discretisation!(points, boundary_nodes, boundary_curves; n=coarse_n)
-    boundary_edge_map = construct_boundary_edge_map(boundary_nodes, I)
-    parent_map = Dict{NTuple{2,I},I}()
-    curve_index_map = Dict{I,I}()
-    spatial_tree = BoundaryRTree(points)
-    queue = Queue{I}()
-    small_angle_complexes = get_small_angle_complexes(points, boundary_nodes, boundary_curves, segments; IntegerType=I)
-    _segments = isnothing(segments) ? Set{NTuple{2,I}}() : segments
-    enricher = BoundaryEnricher(points, boundary_nodes, _segments, boundary_curves, polygon_hierarchy, parent_map, curve_index_map, boundary_edge_map, spatial_tree, queue, small_angle_complexes)
-    construct_parent_map!(enricher)
-    construct_curve_index_map!(enricher)
-    construct_tree!(enricher)
-    return enricher
-end
-
 function Base.:(==)(enricher1::BoundaryEnricher, enricher2::BoundaryEnricher)
     get_points(enricher1) ≠ get_points(enricher2) && return false
     get_boundary_nodes(enricher1) ≠ get_boundary_nodes(enricher2) && return false
@@ -941,7 +937,7 @@ The `is_interior` argument can be used to specify whether the edge is an interio
 
 See also [`split_boundary_edge!`](@ref) and [`split_interior_segment!`](@ref).
 """
-function split_edge!(enricher::BoundaryEnricher, i, j, r, update_boundary_nodes=Val(true), update_segments=Val(true), is_interior=is_segment(enricher, i, j))
+function split_edge!(enricher::BoundaryEnricher, i, j, r, update_boundary_nodes=Val(true), update_segments=Val(true), is_interior = is_segment(enricher, i, j))
     if is_interior
         split_interior_segment!(enricher, i, j, r, update_segments)
     else

@@ -188,4 +188,4 @@ nodes, points = convert_boundary_points_to_indices(curves)
 tri = triangulate(points; boundary_nodes=nodes)
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "constrained_ex_8.png") fig by=psnr_equality(12) #src
+@test_reference joinpath(fig_path, "constrained_ex_8.png") fig #src

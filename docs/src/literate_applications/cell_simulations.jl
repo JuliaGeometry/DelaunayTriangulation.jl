@@ -46,17 +46,17 @@ using StableRNGs
 using LinearAlgebra
 using StatsBase
 using CairoMakie
-Base.@kwdef mutable struct CellModel{P}
-    tri::Triangulation{P}
+@kwdef mutable struct CellModel
+    tri::Triangulation
     new_r_cache::Vector{NTuple{2,Float64}} # for r(t + Δt)
-    α::Float64
-    s::Float64
-    Δt::Float64
-    rng::StableRNGs.LehmerRNG
-    final_time::Float64
-    β::Float64
-    K::Float64
-    ϵ::Float64
+    const α::Float64
+    const s::Float64
+    const Δt::Float64
+    const rng::StableRNGs.LehmerRNG
+    const final_time::Float64
+    const β::Float64
+    const K::Float64
+    const ϵ::Float64
 end
 
 # Let's now write functions for performing the migration step.

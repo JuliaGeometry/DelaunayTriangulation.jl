@@ -58,7 +58,7 @@ is_weighted(weights) = true
 Returns the lifted companion of the point `p`, in particular `(x, y, x^2 + y^2 - w)`, where `(x, y)` is `p`.
 """
 function get_lifted_point(p, w)
-    x, y = getxy(p)
+    x, y = _getxy(p)
     return (x, y, norm_sqr((x, y)) - w)
 end
 

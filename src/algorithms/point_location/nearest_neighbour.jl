@@ -22,14 +22,20 @@ function jump_and_march(vor::VoronoiTessellation, q; kwargs...)
 end
 function jump_to_voronoi_polygon(tri::Triangulation, q; kwargs...)
     V = jump_and_march(tri, q; kwargs...)
-    qx, qy = getxy(q)
+    qx, qy = _getxy(q)
     V = sort_triangle(V)
     i, j, k = triangle_vertices(V)
     a, b = get_point(tri, i, j)
+    #ax, ay = _getxy(a)
+    #bx, by = _getxy(b)
+    #daq = (qx - ax)^2 + (qy - ay)^2
+    #dbq = (qx - bx)^2 + (qy - by)^2
     daq² = dist_sqr(a, q)
     dbq² = dist_sqr(b, q)
     if !is_ghost_vertex(k)
         c = get_point(tri, k)
+        #cx, cy = _getxy(c)
+        #dcq = (qx - cx)^2 + (qy - cy)^2
         dcq² = dist_sqr(c, q)
     else
         dcq² = typemax(number_type(tri))

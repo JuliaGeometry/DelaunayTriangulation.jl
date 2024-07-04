@@ -5,7 +5,7 @@ using Random
 using StableRNGs
 using StatsBase
 
-
+include("../helper_functions.jl")
 
 tri, label_map, index_map = simple_geometry()
 add_ghost_triangles!(tri)

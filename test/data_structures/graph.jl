@@ -2,6 +2,7 @@ using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using DataStructures
 
+include("../helper_functions.jl")
 
 @testset "Constructing empty graphs" begin
     g1 = DT.Graph{Int64}()

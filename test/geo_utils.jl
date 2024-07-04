@@ -4,6 +4,8 @@ using LinearAlgebra
 using Random
 using CairoMakie
 
+include("./helper_functions.jl")
+
 @testset "Getting polygon features" begin
       tri, label_map, index_map = simple_geometry()
       pts = get_points(tri)
@@ -809,19 +811,10 @@ end
       @test DT.is_right(cert_c)
       @test DT.is_right(cert_d)
       @test all(isnan, p)
-
-      cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection((NaN, NaN), b, c, d)
-      @test DT.is_none(cert) && DT.is_none(cert_c) && DT.is_none(cert_d) && all(isnan, p)
-      cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, (Inf, Inf), c, d)
-      @test DT.is_none(cert) && DT.is_none(cert_c) && DT.is_none(cert_d) && all(isnan, p)
-      cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, b, (NaN, NaN), d)
-      @test DT.is_none(cert) && DT.is_none(cert_c) && DT.is_none(cert_d) && all(isnan, p)
-      cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, b, c, (Inf, Inf))
-      @test DT.is_none(cert) && DT.is_none(cert_c) && DT.is_none(cert_d) && all(isnan, p)
 end
 
 @testset "sort_convex_polygon!" begin
-      for _ in 1:50
+      for _ in 1:500
             tri = triangulate(rand(2, 500))
             ch = get_convex_hull(tri)
             pts = get_points(ch)

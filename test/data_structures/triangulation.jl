@@ -9,7 +9,7 @@ using StableRNGs
 using ..DelaunayTriangulation: add_weight!, get_weight, get_weights
 
 @struct_equal DT.TriangulationCache
-
+include("../helper_functions.jl")
 
 using ..DelaunayTriangulation: Triangulation
 
@@ -644,9 +644,9 @@ end
 end
 
 @testset "triangle_line_segment_intersection" begin
-      n = 20
+      n = 60
       for _ in 1:10
-            n += rand(1:5)
+            n += rand(1:125)
             tri1 = triangulate(12randn(2, n), delete_ghosts=false)
             tri2 = triangulate(12randn(2, n), delete_ghosts=true)
             for tri in (tri1, tri2)
@@ -1254,8 +1254,8 @@ end
       @test tri1 == tri2
 
       # Custom types 
-      tri1 = triangulate(rand(2, 50); IntegerType=Int32)
-      tri2 = Triangulation(get_points(tri1), each_solid_triangle(tri1), get_convex_hull_vertices(tri1); IntegerType=Int32)
+      tri1 = triangulate(rand(2, 50); EdgeType=NTuple{2,Int32}, TrianglesType=Set{NTuple{3,Int}})
+      tri2 = Triangulation(get_points(tri1), each_solid_triangle(tri1), get_convex_hull_vertices(tri1); EdgeType=NTuple{2,Int32}, TrianglesType=Set{NTuple{3,Int}})
       unlock_convex_hull!(tri2)
       @test tri1 == tri2
       @test tri1 ⊢ tri2

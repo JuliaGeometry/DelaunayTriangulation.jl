@@ -19,8 +19,8 @@ Applies the Liang-Barsky algorithm to find the intersection of the line segment 
 function liang_barsky(a, b, c, d, p, q)
     t1 = 0.0
     t2 = 1.0
-    px, py = getxy(p)
-    qx, qy = getxy(q)
+    px, py = _getxy(p)
+    qx, qy = _getxy(q)
     Δx = qx - px
     t1, t2, inside = liang_barsky_clipper(-Δx, px - a, t1, t2)
     if inside

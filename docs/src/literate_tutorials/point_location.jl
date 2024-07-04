@@ -49,7 +49,7 @@ V = jump_and_march(tri, q, m=10)
 @test DelaunayTriangulation.is_inside(DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)) #src
 
 # means that we get a sample of size 10, and start at whichever point is the closest.
-# (For technical reasons, this sampling is with replacement, so it is possible that the same point is sampled more than once.)
+# (For technical reasons, this sample is with replacement, so it is possible that the same point is sampled more than once.)
 # You could also instead specify the point to start at using the `k` keyword argument, in which case no points are sampled.
 # For example, 
 V = jump_and_march(tri, q, k=6)
@@ -126,7 +126,10 @@ Vs = [jump_and_march(tri, q; rng) for q in qs]
 # the triangle found for `(1.2, 1.6)` is 
 Vs[end]
 
-# but the point `(1.2, 1.6)` is actually inside the triangulation.
+# but the point `(1.2, 1.6)` is actually inside the triangulation. We can even see 
+# this if we run `jump_and_march` again:
+V = jump_and_march(tri, (1.2, 1.6); rng)
+
 # To protect against this, you need to use `concavity_protection=true`, which 
 # will enable a check to be made that the point is actually outside the triangulation whenever 
 # a ghost triangle is to be returned. If the check finds this to not be the case, it 
@@ -181,7 +184,7 @@ qs = [
 fig, ax, sc = triplot(tri)
 scatter!(ax, qs, color=:blue, markersize=16)
 fig
-@test_reference joinpath(fig_path, "point_location_ex_4.png") fig by=psnr_equality(10) #src
+@test_reference joinpath(fig_path, "point_location_ex_4.png") fig #src
 
 # Here are the `jump_and_march` results. 
 Vs = [jump_and_march(tri, q; rng, concavity_protection=true) for q in qs]

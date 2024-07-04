@@ -151,16 +151,16 @@ This field stores the adjacent map, mapping each edge `(u, v)` in the triangulat
 get_adjacent(tri)
 ```
 
-For example, the mapping `(1079, 1416) => 1926` implies that the triangle `(1079, 1416, 1926)` is in the triangulation and is positively oriented, which we can verify:
+For example, the mapping `(1648, 2064) => 803` implies that the triangle `(1648, 2064, 803)` is in the triangulation and is positively oriented, which we can verify:
 
 ```@example curvout 
-DelaunayTriangulation.contains_triangle(tri, 1079, 1416, 1926)
+DelaunayTriangulation.contains_triangle(tri, 1648, 2064, 803)
 ```
 
 It is important to note that, for any triangle `(u, v, w)`, the mappings `(u, v) => w`, `(v, w) => u`, and `(w, u) => v` will all appear in the adjacent map. For example:
 
 ```@example curvout 
-get_adjacent(tri, 1079, 1416), get_adjacent(tri, 1416, 1926), get_adjacent(tri, 1926, 1079)
+get_adjacent(tri, 1648, 2064), get_adjacent(tri, 2064, 803), get_adjacent(tri, 803, 1648)
 ```
 
 You can use `get_adjacent(tri, u, v)` to find this vertex `w`, as we demonstrated above. For cases where the edge does not exist, you will get `0`:
@@ -191,7 +191,7 @@ An example of this mapping is:
 get_adjacent2vertex(tri, 719)
 ```
 
-This output means that `(1632, 1656, 719)`, `(1055, 1687, 719)`, `(1687, 2056, 719)`, `(1162, 1055, 719)`, `(2056, 1632, 719)`, and `(1656, 1162, 719)` are all positively oriented triangles in the triangulation, and these are the only triangles that contain the vertex `719`. In contrast to `get_adjacent`, calling `get_adjacent2vertex` on a vertex not in the triangulation will throw a `KeyError`. For ghost vertices, you will get the set of all edges on the boundary associated with that vertex, for example
+This output means that `(2057, 1625, 719)`, `(1055, 1680, 719)`, `(1625, 1649, 719)`, `(1649, 1162, 719)`, `(1162, 1055, 719)`, and `(1680, 2057, 719)` are all positively oriented triangles in the triangulation, and these are the only triangles that contain the vertex `719`. In contrast to `get_adjacent`, calling `get_adjacent2vertex` on a vertex not in the triangulation will throw a `KeyError`. For ghost vertices, you will get the set of all edges on the boundary associated with that vertex, for example
 
 ```@example curvout 
 get_adjacent2vertex(tri, -1)
@@ -301,10 +301,10 @@ get_boundary_edge_map(tri)
 Since our domain has multiple curves, the `pos` values are `Tuple`s of the form `(m, n)`, where `m` is the curve and `n` is the section of that curve. So, for example, we have
 
 ```@example curvout
-pos, ℓ = get_boundary_edge_map(tri, 1245, 1402)
+pos, ℓ = get_boundary_edge_map(tri, 1493, 763)
 ```
 
-This means that `(1245, 1402)` is the `7`th edge of the first section on the third boundary:
+This means that `(1493, 763)` is the `45`th edge of the first section on the third boundary:
 
 ```@example curvout
 bn = get_boundary_nodes(tri, pos) # notice that we can pass Tuples (m, n) as a single argument

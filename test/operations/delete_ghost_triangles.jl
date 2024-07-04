@@ -2,8 +2,8 @@ using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using StructEquality
 using ..DelaunayTriangulation: Triangulation
-using StaticArrays
 
+include("../helper_functions.jl")
 
 @testset "Deleting ghost triangles" begin
     tri, label_map, index_map = simple_geometry()

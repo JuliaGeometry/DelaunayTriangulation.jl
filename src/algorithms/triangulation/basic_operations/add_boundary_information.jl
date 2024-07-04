@@ -26,13 +26,13 @@ function add_boundary_node_information!(tri::Triangulation, bn, ghost_vertex)
         add_neighbour!(tri, ghost_vertex, u, v)
         u = v
     end
-    return ghost_vertex
+    return tri
 end
 function add_boundary_segment_information!(tri::Triangulation, bn, ghost_vertex)
     for n in 1:num_sections(bn)
         bn_n = get_boundary_nodes(bn, n)
         add_boundary_node_information!(tri, bn_n, ghost_vertex)
-        ghost_vertex -= one(ghost_vertex)
+        ghost_vertex -= 1
     end
     return ghost_vertex
 end
@@ -41,5 +41,5 @@ function add_boundary_curve_information!(tri::Triangulation, bn, ghost_vertex)
         bn_m = get_boundary_nodes(bn, m)
         ghost_vertex = add_boundary_segment_information!(tri, bn_m, ghost_vertex)
     end
-    return ghost_vertex
+    return tri
 end

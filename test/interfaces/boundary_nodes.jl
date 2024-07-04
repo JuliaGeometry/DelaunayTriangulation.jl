@@ -4,7 +4,7 @@ using Test
 using DataStructures
 using StaticArraysCore
 
-
+include("../helper_functions.jl")
 
 global bn1 = [[[1, 2], [3, 4], [5, 6], [10, 12]],
        [[13, 25, 50], [75, 17, 5, 10]],
@@ -84,48 +84,48 @@ end
 end
 
 @testset "Getting ghost vertex ranges" begin
-       for r in 1:500 # this example used to StackOverflow randomly, so let's just be sure it doesn't come back
-              d1 = DT.construct_ghost_vertex_ranges(bn1)
-              d2 = DT.construct_ghost_vertex_ranges(bn2)
-              d3 = DT.construct_ghost_vertex_ranges(bn3)
-              boundary_nodes = [[[1, 2, 3, 4], [4, 5, 6, 1]],
-                     [[18, 19, 20, 25, 26, 30]],
-                     [[50, 51, 52, 53, 54, 55], [55, 56, 57, 58],
-                            [58, 101, 103, 105, 107, 120],
-                            [120, 121, 122, 50]]]
-              d4 = DT.construct_ghost_vertex_ranges(boundary_nodes)
-              @test d4 == Dict(-1 => -2:-1,
-                     -2 => -2:-1,
-                     -3 => -3:-3,
-                     -4 => -7:-4,
-                     -5 => -7:-4,
-                     -6 => -7:-4,
-                     -7 => -7:-4)
-              @test d1 == Dict(-1 => -4:-1,
-                     -2 => -4:-1,
-                     -3 => -4:-1,
-                     -4 => -4:-1,
-                     -5 => -6:-5,
-                     -6 => -6:-5,
-                     -7 => -8:-7,
-                     -8 => -8:-7)
-              @test d2 == Dict(-1 => -2:-1, -2 => -2:-1)
-              @test d3 == Dict(-1 => -1:-1)
+       for _ in 1:10000 # this example used to StackOverflow randomly, so let's just be sure it doesn't come back
+       d1 = DT.construct_ghost_vertex_ranges(bn1)
+       d2 = DT.construct_ghost_vertex_ranges(bn2)
+       d3 = DT.construct_ghost_vertex_ranges(bn3)
+       boundary_nodes = [[[1, 2, 3, 4], [4, 5, 6, 1]],
+              [[18, 19, 20, 25, 26, 30]],
+              [[50, 51, 52, 53, 54, 55], [55, 56, 57, 58],
+                     [58, 101, 103, 105, 107, 120],
+                     [120, 121, 122, 50]]]
+       d4 = DT.construct_ghost_vertex_ranges(boundary_nodes)
+       @test d4 == Dict(-1 => -2:-1,
+              -2 => -2:-1,
+              -3 => -3:-3,
+              -4 => -7:-4,
+              -5 => -7:-4,
+              -6 => -7:-4,
+              -7 => -7:-4)
+       @test d1 == Dict(-1 => -4:-1,
+              -2 => -4:-1,
+              -3 => -4:-1,
+              -4 => -4:-1,
+              -5 => -6:-5,
+              -6 => -6:-5,
+              -7 => -8:-7,
+              -8 => -8:-7)
+       @test d2 == Dict(-1 => -2:-1, -2 => -2:-1)
+       @test d3 == Dict(-1 => -1:-1)
 
-              x, y = complicated_geometry()
-              boundary_nodes, points = convert_boundary_points_to_indices(x, y)
-              tri = triangulate(points; boundary_nodes)
-              @test tri.ghost_vertex_ranges == Dict(-1 => -4:-1,
-                     -2 => -4:-1,
-                     -3 => -4:-1,
-                     -4 => -4:-1,
-                     -5 => -5:-5,
-                     -6 => -6:-6,
-                     -7 => -10:-7,
-                     -8 => -10:-7,
-                     -9 => -10:-7,
-                     -10 => -10:-7,
-                     -11 => -11:-11)
+       x, y = complicated_geometry()
+       boundary_nodes, points = convert_boundary_points_to_indices(x, y)
+       tri = triangulate(points; boundary_nodes)
+       @test tri.ghost_vertex_ranges == Dict(-1 => -4:-1,
+              -2 => -4:-1,
+              -3 => -4:-1,
+              -4 => -4:-1,
+              -5 => -5:-5,
+              -6 => -6:-6,
+              -7 => -10:-7,
+              -8 => -10:-7,
+              -9 => -10:-7,
+              -10 => -10:-7,
+              -11 => -11:-11)
        end
 end
 

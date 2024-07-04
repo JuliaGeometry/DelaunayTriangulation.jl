@@ -35,8 +35,7 @@ Float64
 number_type
 number_type(x) = number_type(typeof(x))
 number_type(::Type{T}) where {T<:AbstractArray} = number_type(eltype(T))
-number_type(x::Type{<:NTuple{N}}) where {N} = eltype(x)
-number_type(::Type{Tuple{}}) = Any
+number_type(::Type{NTuple{N,T}}) where {N,T} = T
 number_type(::Type{T}) where {T} = T
 
 @doc """
@@ -218,9 +217,7 @@ previndex_circular(C, i) = i == firstindex(C) ? lastindex(C) - 1 : i - 1
 """
     replace_boundary_triangle_with_ghost_triangle(tri::Triangulation, V) -> Triangle
 
-Given a boundary triangle `V` of `tri`, returns the adjacent ghost triangle. Note that 
-for triangles in a corner of a domain, like a lattice triangulation, there are two choices 
-of ghost triangle.
+Given a boundary triangle `V` of `tri`, returns the adjacent ghost triangle.
 """
 function replace_boundary_triangle_with_ghost_triangle(tri::Triangulation, V)
     u, v, w = triangle_vertices(V)
@@ -552,7 +549,7 @@ end
 end
 @inline function _eval_fnc_at_het_tuple_two_elements(f::F, idx2, el::E, el2::V, tup...) where {F,E,V}
     idx2 == 1 && return _eval_fnc_at_het_tuple_two_elements(f, 1, el, el2)
-    return _eval_fnc_at_het_tuple_two_elements(f, idx2 - 1, el, tup...)
+    return _eval_fnc_at_het_tuple_two_elements(f, idx2 - 1, el,  tup...)
 end
 @inline function _eval_fnc_at_het_tuple_two_elements(f::F, idx2, el::E, el2::V) where {F,E,V}
     return f(el, el2)
@@ -589,11 +586,3 @@ end
 Evaluates `f(args...)`.
 """
 @inline self_eval(f, args...) = f(args...)
-
-"""
-    _to_val(v) -> Val 
-
-Wraps `v` in a `Val`, or if `v isa Val` simply returns `v`.
-"""
-@inline _to_val(v::V) where {V} = Val(v)::Val{v}
-@inline _to_val(v::Val{B}) where {B} = v

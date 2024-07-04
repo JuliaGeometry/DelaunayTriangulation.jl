@@ -157,7 +157,7 @@ triangle_type(::VoronoiTessellation{Tr,P,I,T}) where {Tr,P,I,T} = T
 Gets the coordinates for the generators `i...`, returned as `Tuple`s of the form `(x, y)` for each generator.
 """
 get_generator(vor::VoronoiTessellation, i) = get_generators(vor)[i]
-get_generator(vor::VoronoiTessellation, i, j::Vararg{I, N}) where {I, N} = (get_generator(vor, i), ntuple(k -> get_generator(vor, j[k]), Val(N))...)
+get_generator(vor::VoronoiTessellation, i::Vararg{I,N}) where {I,N} = ntuple(j -> get_generator(vor, i[j]), Val(N))
 
 """
     get_polygon_point(vor::VoronoiTessellation, i) -> NTuple{2, Number}
@@ -418,7 +418,7 @@ function polygon_bounds(vorn::VoronoiTessellation, unbounded_extension_factor=0.
     ymax = typemin(F)
     if include_polygon_vertices
         for i in each_polygon_vertex(vorn)
-            x, y = getxy(get_polygon_point(vorn, i))
+            x, y = _getxy(get_polygon_point(vorn, i))
             xmin = min(xmin, x)
             xmax = max(xmax, x)
             ymin = min(ymin, y)
@@ -426,7 +426,7 @@ function polygon_bounds(vorn::VoronoiTessellation, unbounded_extension_factor=0.
         end
     end
     for i in each_generator(vorn)
-        x, y = getxy(get_generator(vorn, i))
+        x, y = _getxy(get_generator(vorn, i))
         xmin = min(xmin, x)
         xmax = max(xmax, x)
         ymin = min(ymin, y)

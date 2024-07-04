@@ -2,8 +2,8 @@ using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using Random
 using StableRNGs
-using StaticArrays
 
+include("../helper_functions.jl")
 
 rng = StableRNG(8888)
 

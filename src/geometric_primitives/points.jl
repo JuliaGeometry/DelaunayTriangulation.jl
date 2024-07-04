@@ -174,7 +174,7 @@ NTuple{4, Tuple{Float64, Float64}}
 ```
 """
 get_point
-get_point(points, i) = getpoint(points, i) 
+get_point(points, i) = getpoint(points, i) # needs to be getxy so that we have type stabilty with get_point for tri due to representative_point_lists
 get_point(points, i::Vararg{Any,N}) where {N} = ntuple(j -> get_point(points, i[j]), Val(N))
 
 @doc """

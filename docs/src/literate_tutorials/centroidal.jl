@@ -18,9 +18,7 @@ points = 25randn(rng, 2, 500)
 tri = triangulate(points; rng)
 vorn = voronoi(tri, clip=true)
 
-# To now compute the centroidal tessellation, use [`centroidal_smooth`](@ref). (
-# If you want to straight from a triangulation to a centroidal tessellation, you 
-# can also just use `smooth_vorn = voronoi(tri, clip = true, smooth = true)`.)
+# To now compute the centroidal tessellation, use [`centroidal_smooth`](@ref).
 smooth_vorn = centroidal_smooth(vorn; rng)
 
 # Let us now compare the two tessellations.
