@@ -99,6 +99,23 @@ ax = Axis(fig[2, 4], title="Disjoint Curve-Bounded", width=600,height=600);   tr
 
 ![](readme.png)
 
+## Contributing
+
+Contributions are very welcome. If you encounter any issues or would like to make any feature requests and suggestions, you are encouraged to open an issue - any bug reports should be accompanied by a minimal example that reproduces your bug. You are also highly encouraged to make simple pull requests fixing any grammar or spelling issues you see in the documentation, or fixing any unclear explanations (or make an issue raising your concern instead if you prefer).
+
+The issues tab also lists features that would be nice to have in the package. If you would like to contribute towards any of those features, or towards any other significant enhancements, you are recommended to first post on that issue about your ideas before committing towards a complete implementation. 
+
+### Writing a Pull Request 
+
+When contributing in the form of a pull request, there are a few important features that should be present, listed below. The point of these requirements is not to make you concerned about the amount of work needed to fulfill them, but to ensure that your contribution can be accepted more readily without the reviewer and yourself needing to go back-and-forth to meet the package's standards. If you do not meet them, you may still be fine depending on what you are contributing. You can always ask for help.
+
+1. **You should outline what your pull request does in the description**. You should link back to an associated issue.
+2. **Document any new functions**. If your contribution involves any new functions, make sure they are well documented even if they are only for internal use.
+3. **You need to include appropriate tests for your contribution**. For small changes, simple tests are fine, but for larger changes that implement or change an algorithm, understanding what tests you need to write is crucial when you are implementing a new feature. For example, if you wanted to implement a new algorithm for inserting a curve into a triangulation, you need to make sure that you test things like (1) point sets in general position, (2) point sets with many cocircular points, (3) collinear edges, and so on. In particular, degeneracies are some of the most important things to test for. This is not simple to do if you are inexperienced, so do feel free to ask for guidance.
+4. **Your contribution should only do one thing**. To make sure that it is easy to track your changes, and to make it easier to track regressions across versions, please try to only make your contribution do one thing. For example, do not move around a bunch of files while at the same time implementing a function somewhere else - make two pull requests.
+
+If you are just contributing something minimal, for example a typo, even a blank PR is fine so long as it is obvious what you have done.
+
 ## Similar Packages
 
 This is not the only Delaunay triangulation package available. Some others are:
