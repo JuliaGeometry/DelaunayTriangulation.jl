@@ -48,6 +48,9 @@ function Base.:(==)(tree1::PolygonTree, tree2::PolygonTree)
 end
 @static if VERSION ≥ v"1.10"
     function Base.deepcopy(tree::PolygonTree) # without this definition, deepcopy would occassionally segfault 
+        @warn "Deepcopy on PolygonTrees is not currently supported. Returning the tree without copying." maxlog = 1 # https://github.com/JuliaGeometry/DelaunayTriangulation.jl/issues/129
+        return tree
+        #=
         parent = get_parent(tree)
         children = get_children(tree)
         index = get_index(tree)
@@ -56,6 +59,8 @@ end
         new_children = deepcopy(children)
         new_index = deepcopy(index)
         return PolygonTree(new_parent, new_children, new_index, height)
+        =# # Why does the above still segfault sometimes?
+        # TODO: Fix
     end
 end
 function Base.show(io::IO, ::MIME"text/plain", tree::PolygonTree)
