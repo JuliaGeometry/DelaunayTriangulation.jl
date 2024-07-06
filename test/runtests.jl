@@ -37,11 +37,11 @@ include("helper_functions.jl")
 using .HelperFunctions
 
 ct() = Dates.format(now(), "HH:MM:SS")
-function safe_include(filename; name=filename, push=true) # Workaround for not being able to interpolate into SafeTestset test names
+function safe_include(filename; name=filename, push=true, verbose = true) # Workaround for not being able to interpolate into SafeTestset test names
     push && push!(ALL_TEST_SCRIPTS, normpath(filename))
     mod = @eval module $(gensym()) end
     @info "[$(ct())] Testing $name"
-    @testset verbose = true "$name" begin
+    @testset verbose = verbose "$name" begin
         @eval mod using ..HelperFunctions
         @eval mod using ..Test
         Base.include(mod, filename)
@@ -89,7 +89,7 @@ end
         safe_include("data_structures/curves.jl")
         safe_include("data_structures/rtree.jl")
         safe_include("data_structures/bst.jl")
-        safe_include("data_structures/polygon_hierarchy.jl")
+        safe_include("data_structures/polygon_hierarchy.jl", verbose = false)
     end
 
     @testset verbose = true "Predicates" begin
