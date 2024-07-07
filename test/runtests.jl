@@ -1,4 +1,13 @@
-@show ENV["USE_EXACTPREDICATES"]
+# setup LocalPreferences.toml 
+using Preferences 
+USE_EXACTPREDICATES = ENV["USE_EXACTPREDICATES"]
+if USE_EXACTPREDICATES == "true"
+    @set_preferences!("DelaunayTriangulation", "USE_EXACTPREDICATES" => true)
+elseif USE_EXACTPREDICATES == "false" 
+    @set_preferences!("DelaunayTriangulation", "USE_EXACTPREDICATES" => false)
+end # if USE_EXACTPREDICATES == "default", do nothing
+@show DelaunayTriangulation.USE_EXACTPREDICATES
+
 throw("...")
 
 # get all the compilation out of the way
