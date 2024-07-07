@@ -221,31 +221,33 @@ end
         @test findmin(all_dists)[2] == u
     end
 
-    points = [
-        (0.0, 0.0), (-1.0, 1.0), (-0.5, 1.0), (0.0, 1.0), (0.5, 1.0), (1.0, 1.0),
-        (1.0, 0.8), (1.0, 0.0), (1.0, -0.5), (1.0, -1.0),
-        (0.1, -1.0), (-0.8, -1.0), (-1.0, -1.0),
-        (-1.0, -0.7), (-1.0, -0.1), (-1.0, 0.6),
-        (-0.1, -0.8), (0.2, -0.8),
-        (-0.6, -0.4), (0.9, 0.0), (-0.5, 0.5), (-0.4, 0.6), (-0.1, 0.8)
-    ]
-    tri = triangulate(points, delete_ghosts=false)
-    vorn = voronoi(tri)
-    @test validate_tessellation(vorn)
-    xg = LinRange(-1, 1, 250)
-    yg = LinRange(-1, 1, 250)
-    x = vec([x for x in xg, _ in yg])
-    y = vec([y for _ in xg, y in yg])
-    for (ξ, η) in zip(x, y)
-        p = (ξ, η)
-        u = get_nearest_neighbour(vorn, p)
-        @inferred get_nearest_neighbour(vorn, p)
-        all_dists = [norm(p .- get_generator(vorn, i)) for i in sort(collect(each_generator(vorn)))]
-        k = findmin(all_dists)[2]
-        @test k == u
-        for m in DT.each_point_index(tri)
-            u = get_nearest_neighbour(vorn, p, try_points=m)
-            @test u == k
+    if load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true)
+        points = [
+            (0.0, 0.0), (-1.0, 1.0), (-0.5, 1.0), (0.0, 1.0), (0.5, 1.0), (1.0, 1.0),
+            (1.0, 0.8), (1.0, 0.0), (1.0, -0.5), (1.0, -1.0),
+            (0.1, -1.0), (-0.8, -1.0), (-1.0, -1.0),
+            (-1.0, -0.7), (-1.0, -0.1), (-1.0, 0.6),
+            (-0.1, -0.8), (0.2, -0.8),
+            (-0.6, -0.4), (0.9, 0.0), (-0.5, 0.5), (-0.4, 0.6), (-0.1, 0.8)
+        ]
+        tri = triangulate(points, delete_ghosts=false)
+        vorn = voronoi(tri)
+        @test validate_tessellation(vorn)
+        xg = LinRange(-1, 1, 250)
+        yg = LinRange(-1, 1, 250)
+        x = vec([x for x in xg, _ in yg])
+        y = vec([y for _ in xg, y in yg])
+        for (ξ, η) in zip(x, y)
+            p = (ξ, η)
+            u = get_nearest_neighbour(vorn, p)
+            @inferred get_nearest_neighbour(vorn, p)
+            all_dists = [norm(p .- get_generator(vorn, i)) for i in sort(collect(each_generator(vorn)))]
+            k = findmin(all_dists)[2]
+            @test k == u
+            for m in DT.each_point_index(tri)
+                u = get_nearest_neighbour(vorn, p, try_points=m)
+                @test u == k
+            end
         end
     end
 end
@@ -894,14 +896,16 @@ end
     @test flag / tot > 0.9
 end
 
-@testset "Lattice" begin
-    for _ in 1:100
-        tri = triangulate_rectangle(0, 1, 0, 1, 11, 11, delete_ghosts=false)
-        tri = triangulate(tri.points)
-        vorn = voronoi(tri)
-        @test validate_tessellation(vorn; check_convex=false)
-        vorn = voronoi(tri, clip=true)
-        @test validate_tessellation(vorn; check_convex=false, check_adjacent=false)
+if load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true)
+    @testset "Lattice" begin
+        for _ in 1:100
+            tri = triangulate_rectangle(0, 1, 0, 1, 11, 11, delete_ghosts=false)
+            tri = triangulate(tri.points)
+            vorn = voronoi(tri)
+            @test validate_tessellation(vorn; check_convex=false)
+            vorn = voronoi(tri, clip=true)
+            @test validate_tessellation(vorn; check_convex=false, check_adjacent=false)
+        end
     end
 end
 
