@@ -6,9 +6,6 @@ if USE_EXACTPREDICATES == "true"
 elseif USE_EXACTPREDICATES == "false" 
     set_preferences!("DelaunayTriangulation", "USE_EXACTPREDICATES" => false)
 end # if USE_EXACTPREDICATES == "default", do nothing
-@show DelaunayTriangulation.USE_EXACTPREDICATES
-
-throw("...")
 
 # get all the compilation out of the way
 using BenchmarkTools
@@ -42,7 +39,11 @@ using StatsBase
 using StructEquality
 using Aqua
 using Test
-using Preferences
+
+@show DelaunayTriangulation.USE_EXACTPREDICATES
+
+throw("...")
+
 
 const ALL_TEST_SCRIPTS = Set{String}()
 const NON_TEST_SCRIPTS = Set{String}(["helper_functions.jl", "triangulation_validation.jl", "runtests.jl", "triangulation\\weighted.jl", "triangulation/weighted.jl"])
