@@ -4,7 +4,7 @@ CurrentModule = DelaunayTriangulation
 
 # Disabling Exact Predicates
 
-For performance reasons, you may find it useful to want to disable exact predicates using [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl). This can be easily done using a setup with [Preferences.jl](https://github.com/JuliaPackaging/Preferences.jl), but before you consider disabling exact predicates.jl, there are a few things to be aware of. If you just want to disable them without reading a lot of information warning you about the consequences, pleas skip to the end.
+For performance reasons, you may find it useful to want to disable exact predicates using [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl). This can be easily done using a setup with [Preferences.jl](https://github.com/JuliaPackaging/Preferences.jl), but before you consider disabling exact predicates.jl, there are a few things to be aware of. If you just want to disable them without reading a lot of information warning you about the consequences, please skip to the end.
 
 ## Why use exact predicates?
 
@@ -73,18 +73,28 @@ into it. If you later want to re-enable exact predicates, either delete the file
 
 When you are not using exact predicates, you may want to check if your computed triangulation is actually a valid Delaunay triangulation. We provide the function `DelaunayTriangulation.validate_triangulation` for this purpose. This functionality is quite slow to use and is not currently optimised or well-documented (contributions towards addressing these issues are welcome), but it will work. One important note is that this check does actually use predicates in certain areas, so this check is still not guaranteed to be 100% accurate. Here is an example of its use.
 
-```@example validate
+```julia
 using DelaunayTriangulation
 tri = triangulate(rand(2, 50))
 DelaunayTriangulation.validate_triangulation(tri)
 ```
-
-```@example validate 
+```julia 
+true
+```
+```julia
 T = first(each_solid_triangle(tri)) 
 DelaunayTriangulation.delete_triangle!(tri, T) # break the triangulation for this example
 DelaunayTriangulation.validate_triangulation(tri)
 ```
+```julia
+The edge (12, 40) does not have two incident triangles.
+The edge (12, 40) appears as an edge in the graph but it and its reverse are not both a key of the adjacent map.
 
-```@example validate 
+false
+```
+```julia
 DelaunayTriangulation.validate_triangulation(tri; print_result = false)
+```
+```julia 
+false
 ```
