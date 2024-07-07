@@ -185,6 +185,8 @@ include("algorithms/voronoi/clipped.jl")
 include("algorithms/voronoi/main.jl")
 include("algorithms/voronoi/unbounded.jl")
 
+include("validation.jl")
+
 export
     each_triangle,
     each_solid_triangle,

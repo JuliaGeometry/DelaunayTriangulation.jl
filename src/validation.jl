@@ -1,5 +1,3 @@
-# maybe this should belong inside src for users at some point?
-
 #=
 """
     abstract type AbstractTriangulationState 
@@ -19,6 +17,22 @@ abstract type AbstractTriangulationState end
 test_state(state::AbstractTriangulationState) = state.flag
 Base.show(io::IO, state::AbstractTriangulationState) = print(io, summary(state))
 
+function compare_edge_vectors(E1, E2)
+    E1s = sort_edge_vector(collect(E1))
+    E2s = sort_edge_vector(collect(E2))
+    return E1s == E2s
+end
+
+function sort_edge_vector(E)
+    sorted_E = similar(E)
+    for i in eachindex(E)
+        u, v = E[i]
+        e = (min(u, v), max(u, v))
+        sorted_E[i] = e
+    end
+    return sort(sorted_E)
+end
+
 struct TriangleOrientationState <: AbstractTriangulationState
     flag::Bool
     bad_triangle::NTuple{3,Int}
@@ -34,12 +48,12 @@ function Base.summary(state::TriangleOrientationState)
 end
 function test_triangle_orientation(tri)
     for T in each_solid_triangle(tri)
-        cert = DT.triangle_orientation(tri, T)
-        flag = DT.is_positively_oriented(cert)
-        orientation = DT.is_positively_oriented(cert) ? :positively : DT.is_negatively_oriented(cert) ? :negatively : :degenerately
+        cert = triangle_orientation(tri, T)
+        flag = is_positively_oriented(cert)
+        orientation = is_positively_oriented(cert) ? :positively : is_negatively_oriented(cert) ? :negatively : :degenerately
         !flag && return TriangleOrientationState(flag, Int.(triangle_vertices(T)), orientation)
     end
-    return TriangleOrientationState(true, (DT.∅, DT.∅, DT.∅), :positive)
+    return TriangleOrientationState(true, (∅, ∅, ∅), :positive)
 end
 
 struct DelaunayCriterionState <: AbstractTriangulationState
@@ -52,7 +66,7 @@ function Base.summary(state::DelaunayCriterionState)
     if test_state(state)
         return "All the triangles are Delaunay."
     else
-        if state.bad_vertex !== DT.∅
+        if state.bad_vertex !== ∅
             return "The Delaunay criterion does not hold for the triangle-vertex pair ($(state.bad_triangle), $(state.bad_vertex))."
         else
             return "The test of the Delaunay criterion failed as there was a BoundsError when testing the visibility."
@@ -62,23 +76,23 @@ end
 function test_delaunay_criterion(tri)
     try
         points = get_points(tri)
-        triangle_tree = DT.BoundaryRTree(points)
-        segment_tree = DT.BoundaryRTree(points)
-        failures = Tuple{DT.triangle_type(tri),DT.integer_type(tri)}[]
+        triangle_tree = BoundaryRTree(points)
+        segment_tree = BoundaryRTree(points)
+        failures = Tuple{triangle_type(tri),integer_type(tri)}[]
         for T in each_solid_triangle(tri)
-            i, j, k = DT.triangle_vertices(T)
+            i, j, k = triangle_vertices(T)
             p, q, r = get_point(tri, i, j, k)
-            c = DT.triangle_circumcenter(p, q, r)
-            cr = DT.triangle_circumradius(p, q, r)
+            c = triangle_circumcenter(p, q, r)
+            cr = triangle_circumradius(p, q, r)
             xmin, xmax = getx(c) - cr, getx(c) + cr
             ymin, ymax = gety(c) - cr, gety(c) + cr
             any(!isfinite, (xmin, xmax, ymin, ymax)) && continue
-            bbox = DT.BoundingBox(xmin, xmax, ymin, ymax)
-            dbx = DT.DiametralBoundingBox(bbox, (i, j)) # just store (i, j) and get k via get_adjacent 
+            bbox = BoundingBox(xmin, xmax, ymin, ymax)
+            dbx = DiametralBoundingBox(bbox, (i, j)) # just store (i, j) and get k via get_adjacent 
             insert!(triangle_tree.tree, dbx)
         end
         for e in each_segment(tri)
-            i, j = DT.edge_vertices(e)
+            i, j = edge_vertices(e)
             p, q = get_point(tri, i, j)
             px, py = getxy(p)
             qx, qy = getxy(q)
@@ -86,32 +100,32 @@ function test_delaunay_criterion(tri)
             xmax = max(px, qx)
             ymin = min(py, qy)
             ymax = max(py, qy)
-            bbox = DT.BoundingBox(xmin, xmax, ymin, ymax)
-            dbx = DT.DiametralBoundingBox(bbox, (i, j))
+            bbox = BoundingBox(xmin, xmax, ymin, ymax)
+            dbx = DiametralBoundingBox(bbox, (i, j))
             insert!(segment_tree.tree, dbx)
         end
         for r in shuffle(collect(each_solid_vertex(tri)))
             !isempty(failures) && break
-            intersects = DT.get_intersections(triangle_tree, r, cache_id=1) # can't use multithreading here
+            intersects = get_intersections(triangle_tree, r, cache_id=1) # can't use multithreading here
             for box in intersects
-                i, j = DT.get_edge(box)
+                i, j = get_edge(box)
                 k = get_adjacent(tri, i, j)
                 any(==(r), (i, j, k)) && continue
-                T = DT.construct_triangle(DT.triangle_type(tri), i, j, k)
-                cert = DT.point_position_relative_to_circumcircle(tri, T, r)
-                c = DT.triangle_centroid(get_point(tri, i, j, k)...)
-                if DT.is_inside(cert)
-                    DT.is_boundary_edge(tri, i, j) && DT.is_right(DT.point_position_relative_to_line(tri, i, j, r)) && continue # if it's outside of the domain relative to this edge, just continue
-                    DT.is_boundary_edge(tri, j, k) && DT.is_right(DT.point_position_relative_to_line(tri, j, k, r)) && continue
-                    DT.is_boundary_edge(tri, k, i) && DT.is_right(DT.point_position_relative_to_line(tri, k, i, r)) && continue
-                    for (i, j) in DT.triangle_edges(i, j, k)
-                        DT.contains_segment(tri, i, j) && continue # visibility is defined according to the relative interior of the simplex, which means that it's fine if a segment can see the vertex
+                T = construct_triangle(triangle_type(tri), i, j, k)
+                cert = point_position_relative_to_circumcircle(tri, T, r)
+                c = triangle_centroid(get_point(tri, i, j, k)...)
+                if is_inside(cert)
+                    is_boundary_edge(tri, i, j) && is_right(point_position_relative_to_line(tri, i, j, r)) && continue # if it's outside of the domain relative to this edge, just continue
+                    is_boundary_edge(tri, j, k) && is_right(point_position_relative_to_line(tri, j, k, r)) && continue
+                    is_boundary_edge(tri, k, i) && is_right(point_position_relative_to_line(tri, k, i, r)) && continue
+                    for (i, j) in triangle_edges(i, j, k)
+                        contains_segment(tri, i, j) && continue # visibility is defined according to the relative interior of the simplex, which means that it's fine if a segment can see the vertex
                         if rand() < 1 / 2 # just testing both
-                            cert = DT.test_visibility(tri, i, j, r, shift=0.01, attractor=c)
+                            cert = test_visibility(tri, i, j, r, shift=0.01, attractor=c)
                         else
                             cert = test_visibility(tri, segment_tree, i, j, r, c)
                         end
-                        flag = DT.is_visible(cert)
+                        flag = is_visible(cert)
                         flag && push!(failures, (T, r))
                         flag && break
                     end
@@ -119,35 +133,35 @@ function test_delaunay_criterion(tri)
             end
         end
         if isempty(failures)
-            return DelaunayCriterionState(true, (DT.∅, DT.∅, DT.∅), DT.∅)
+            return DelaunayCriterionState(true, (∅, ∅, ∅), ∅)
         else
             return DelaunayCriterionState(false, Int.(failures[1][1]), Int(failures[1][2]))
         end
     catch e
-        e isa BoundsError && return DelaunayCriterionState(false, (DT.∅, DT.∅, DT.∅), DT.∅)
+        e isa BoundsError && return DelaunayCriterionState(false, (∅, ∅, ∅), ∅)
         rethrow(e)
     end
 end
 function test_visibility(tri::Triangulation, segment_tree, i, j, k, centroid=nothing)
-    if DT.is_boundary_edge(tri, j, i)
+    if is_boundary_edge(tri, j, i)
         i, j = j, i
     end
     p, q, a = get_point(tri, i, j, k)
-    if DT.is_boundary_edge(tri, i, j)
-        side_e = DT.point_position_relative_to_line(p, q, a)
-        DT.is_right(side_e) && return DT.Cert.Invisible
+    if is_boundary_edge(tri, i, j)
+        side_e = point_position_relative_to_line(p, q, a)
+        is_right(side_e) && return Cert.Invisible
     end
     # Need to see if i or j is a boundary node without the other being a boundary node.
     # If this is the case, it's possible that one of them mistakenly sees k.
     for u in (i, j)
-        flag, g = DT.is_boundary_node(tri, u)
+        flag, g = is_boundary_node(tri, u)
         if flag
-            ℓ = DT.get_left_boundary_node(tri, u, g)
-            cert = DT.point_position_relative_to_line(tri, ℓ, u, k)
-            DT.is_right(cert) && return DT.Cert.Invisible
-            ℓ = DT.get_right_boundary_node(tri, u, g)
-            cert = DT.point_position_relative_to_line(tri, u, ℓ, k)
-            DT.is_right(cert) && return DT.Cert.Invisible
+            ℓ = get_left_boundary_node(tri, u, g)
+            cert = point_position_relative_to_line(tri, ℓ, u, k)
+            is_right(cert) && return Cert.Invisible
+            ℓ = get_right_boundary_node(tri, u, g)
+            cert = point_position_relative_to_line(tri, u, ℓ, k)
+            is_right(cert) && return Cert.Invisible
         end
     end
     flags = falses(10)
@@ -163,18 +177,17 @@ function test_visibility(tri::Triangulation, segment_tree, i, j, k, centroid=not
         mx, my = getxy(m)
         ax, ay = getxy(a)
         xmin, ymin, xmax, ymax = min(mx, ax), min(my, ay), max(mx, ax), max(my, ay)
-        bbox = DT.BoundingBox(xmin, xmax, ymin, ymax)
-        intersections = DT.get_intersections(segment_tree, bbox; cache_id=2)
+        bbox = BoundingBox(xmin, xmax, ymin, ymax)
+        intersections = get_intersections(segment_tree, bbox; cache_id=2)
         for box in intersections
-            u, v = DT.get_edge(box)
-            # !DT.edges_are_disjoint((i, j), (u, v)) && continue
+            u, v = get_edge(box)
             p′, q′ = get_point(tri, u, v)
-            cert = DT.line_segment_intersection_type(m, a, p′, q′)
-            flags[idx] = !DT.has_no_intersections(cert) && !DT.is_touching(cert)
+            cert = line_segment_intersection_type(m, a, p′, q′)
+            flags[idx] = !has_no_intersections(cert) && !is_touching(cert)
             flags[idx] && break
         end
     end
-    return all(flags) ? DT.Cert.Invisible : DT.Cert.Visible
+    return all(flags) ? Cert.Invisible : Cert.Visible
 end
 
 struct EdgesHaveTwoIncidentTrianglesState <: AbstractTriangulationState
@@ -191,22 +204,22 @@ function Base.summary(state::EdgesHaveTwoIncidentTrianglesState)
 end
 function test_each_edge_has_two_incident_triangles(tri)
     for e in each_edge(tri)
-        i, j = DT.edge_vertices(e)
+        i, j = edge_vertices(e)
         vᵢⱼ = get_adjacent(tri, i, j)
         vⱼᵢ = get_adjacent(tri, j, i)
-        if DT.is_boundary_edge(tri, j, i)
-            flag = DT.is_ghost_vertex(vᵢⱼ) && DT.edge_exists(vⱼᵢ)
+        if is_boundary_edge(tri, j, i)
+            flag = is_ghost_vertex(vᵢⱼ) && edge_exists(vⱼᵢ)
             !flag && return EdgesHaveTwoIncidentTrianglesState(flag, Int.(edge_vertices(e)))
-        elseif DT.is_boundary_edge(tri, i, j)
-            flag = DT.is_ghost_vertex(vⱼᵢ) && DT.edge_exists(vᵢⱼ)
+        elseif is_boundary_edge(tri, i, j)
+            flag = is_ghost_vertex(vⱼᵢ) && edge_exists(vᵢⱼ)
             !flag && return EdgesHaveTwoIncidentTrianglesState(flag, Int.(edge_vertices(e)))
         else
-            flag = DT.edge_exists(vᵢⱼ) && DT.edge_exists(vⱼᵢ)
+            flag = edge_exists(vᵢⱼ) && edge_exists(vⱼᵢ)
             !flag && return EdgesHaveTwoIncidentTrianglesState(flag, Int.(edge_vertices(e)))
         end
     end
-    DT.clear_empty_features!(tri)
-    return EdgesHaveTwoIncidentTrianglesState(true, (DT.∅, DT.∅))
+    clear_empty_features!(tri)
+    return EdgesHaveTwoIncidentTrianglesState(true, (∅, ∅))
 end
 
 struct AdjacentMapState <: AbstractTriangulationState
@@ -225,7 +238,7 @@ function Base.summary(state::AdjacentMapState)
 end
 function test_adjacent_map_matches_triangles(tri)
     for T in each_triangle(tri)
-        u, v, w = DT.triangle_vertices(T)
+        u, v, w = triangle_vertices(T)
         flag1 = get_adjacent(tri, u, v) == w
         !flag1 && return AdjacentMapState(flag1, Int.(triangle_vertices(T)), Int.((u, v)), get_adjacent(tri, u, v))
         flag2 = get_adjacent(tri, v, w) == u
@@ -233,8 +246,8 @@ function test_adjacent_map_matches_triangles(tri)
         flag3 = get_adjacent(tri, w, u) == v
         !flag3 && return AdjacentMapState(flag3, Int.(triangle_vertices(T)), Int.((w, u)), get_adjacent(tri, w, u))
     end
-    DT.clear_empty_features!(tri)
-    return AdjacentMapState(true, (DT.∅, DT.∅, DT.∅), (DT.∅, DT.∅), DT.∅)
+    clear_empty_features!(tri)
+    return AdjacentMapState(true, (∅, ∅, ∅), (∅, ∅), ∅)
 end
 
 struct Adjacent2VertexMapState <: AbstractTriangulationState
@@ -253,20 +266,20 @@ function Base.summary(state::Adjacent2VertexMapState)
     end
 end
 function test_adjacent2vertex_map_matches_triangles(tri)
-    E = DT.edge_type(tri)
+    E = edge_type(tri)
     for T in each_triangle(tri)
         u, v, w = triangle_vertices(T)
         for (u, v, w) in ((u, v, w), (v, w, u), (w, u, v))
-            vw = DT.construct_edge(E, v, w)
+            vw = construct_edge(E, v, w)
             Su = get_adjacent2vertex(tri, u)
-            flag = DT.contains_edge(vw, Su)
+            flag = contains_edge(vw, Su)
             if !flag
-                _Su = Set{NTuple{2,Int}}(Int.(DT.edge_vertices(e)) for e in each_edge(Su))
-                return Adjacent2VertexMapState(flag, Int.(DT.triangle_vertices(T)), Int.((v, w)), Int(u), _Su)
+                _Su = Set{NTuple{2,Int}}(Int.(edge_vertices(e)) for e in each_edge(Su))
+                return Adjacent2VertexMapState(flag, Int.(triangle_vertices(T)), Int.((v, w)), Int(u), _Su)
             end
         end
     end
-    return Adjacent2VertexMapState(true, (DT.∅, DT.∅, DT.∅), (DT.∅, DT.∅), DT.∅, Set{NTuple{2,Int}}())
+    return Adjacent2VertexMapState(true, (∅, ∅, ∅), (∅, ∅), ∅, Set{NTuple{2,Int}}())
 end
 
 struct AdjacentMapAdjacent2VertexMapState <: AbstractTriangulationState
@@ -286,14 +299,14 @@ function Base.summary(state::AdjacentMapAdjacent2VertexMapState)
 end
 function test_adjacent_map_matches_adjacent2vertex_map(tri)
     for (k, S) in get_adjacent2vertex(get_adjacent2vertex(tri))
-        _S = Set{NTuple{2,Int}}(Int.(DT.edge_vertices(e)) for e in each_edge(S))
+        _S = Set{NTuple{2,Int}}(Int.(edge_vertices(e)) for e in each_edge(S))
         for e in each_edge(S)
             flag = get_adjacent(tri, e) == k
             !flag && return AdjacentMapAdjacent2VertexMapState(flag, Int(k), get_adjacent(tri, e), _S, Int.(edge_vertices(e)))
         end
     end
-    DT.clear_empty_features!(tri)
-    return AdjacentMapAdjacent2VertexMapState(true, DT.∅, DT.∅, Set{NTuple{2,Int}}(), (DT.∅, DT.∅))
+    clear_empty_features!(tri)
+    return AdjacentMapAdjacent2VertexMapState(true, ∅, ∅, Set{NTuple{2,Int}}(), (∅, ∅))
 end
 
 struct Adjacent2VertexMapAdjacentMapState <: AbstractTriangulationState
@@ -320,14 +333,14 @@ function test_adjacent2vertex_map_matches_adjacent_map(tri)
         k = get_adjacent(tri, e)
         if haskey(adj2v, k)
             S = get_adjacent2vertex(tri, k)
-            flag = DT.contains_edge(e, S)
+            flag = contains_edge(e, S)
         else
             flag = false
         end
         !flag && return Adjacent2VertexMapAdjacentMapState(flag, Int(k), Int.(edge_vertices(e)), haskey(adj2v, k))
     end
-    DT.clear_empty_features!(tri)
-    return Adjacent2VertexMapAdjacentMapState(true, DT.∅, (DT.∅, DT.∅), true)
+    clear_empty_features!(tri)
+    return Adjacent2VertexMapAdjacentMapState(true, ∅, (∅, ∅), true)
 end
 
 struct GraphState <: AbstractTriangulationState
@@ -345,14 +358,14 @@ end
 function test_graph_contains_all_vertices(tri)
     all_vertices = Set{Int}()
     for T in each_triangle(tri) # need a method that doesn't use the graph
-        i, j, k = DT.triangle_vertices(T)
+        i, j, k = triangle_vertices(T)
         push!(all_vertices, i, j, k)
     end
     for i in all_vertices
-        flag = DT.has_vertex(tri, i)
+        flag = has_vertex(tri, i)
         !flag && return GraphState(flag, i)
     end
-    return GraphState(true, DT.∅)
+    return GraphState(true, ∅)
 end
 
 struct GraphAdjacentMapState <: AbstractTriangulationState
@@ -368,23 +381,23 @@ function Base.summary(state::GraphAdjacentMapState)
     end
 end
 function test_graph_matches_adjacent_map(tri)
-    E = DT.edge_type(tri)
+    E = edge_type(tri)
     adj_dict = get_adjacent(get_adjacent(tri))
     for e in each_edge(tri)
-        i, j = DT.edge_vertices(e)
-        if DT.has_ghost_triangles(tri) || !DT.is_ghost_edge(i, j)
-            eᵢⱼ = DT.construct_edge(E, i, j)
-            eⱼᵢ = DT.construct_edge(E, j, i)
-            flag = if !DT.has_multiple_sections(tri)
+        i, j = edge_vertices(e)
+        if has_ghost_triangles(tri) || !is_ghost_edge(i, j)
+            eᵢⱼ = construct_edge(E, i, j)
+            eⱼᵢ = construct_edge(E, j, i)
+            flag = if !has_multiple_sections(tri)
                 eᵢⱼ ∈ keys(adj_dict) && eⱼᵢ ∈ keys(adj_dict)
             else
-                DT.edge_exists(tri, i, j) && DT.edge_exists(tri, j, i)
+                edge_exists(tri, i, j) && edge_exists(tri, j, i)
             end
             !flag && return GraphAdjacentMapState(flag, Int.(edge_vertices(e)))
         end
     end
-    DT.clear_empty_features!(tri)
-    return GraphAdjacentMapState(true, (DT.∅, DT.∅))
+    clear_empty_features!(tri)
+    return GraphAdjacentMapState(true, (∅, ∅))
 end
 
 struct AdjacentMapGraphState <: AbstractTriangulationState
@@ -409,7 +422,7 @@ function Base.summary(state::AdjacentMapGraphState)
 end
 function test_adjacent_map_matches_graph(tri)
     for (e, k) in get_adjacent(get_adjacent(tri))
-        i, j = DT.edge_vertices(e)
+        i, j = edge_vertices(e)
         flag1 = all(∈(get_neighbours(tri, i)), (j, k))
         !flag1 && return AdjacentMapGraphState(flag1, Int(i), Int.((i, j)), Int.((j, k)), false, Int(k))
         flag2 = all(∈(get_neighbours(tri, j)), (k, i))
@@ -417,7 +430,7 @@ function test_adjacent_map_matches_graph(tri)
         flag3 = all(∈(get_neighbours(tri, k)), (i, j))
         !flag3 && return AdjacentMapGraphState(flag3, Int(k), Int.((i, j)), Int.((i, j)), true, Int(k))
     end
-    return AdjacentMapGraphState(true, DT.∅, (DT.∅, DT.∅), (DT.∅, DT.∅), true, DT.∅)
+    return AdjacentMapGraphState(true, ∅, (∅, ∅), (∅, ∅), true, ∅)
 end
 
 struct GraphTrianglesState <: AbstractTriangulationState
@@ -431,7 +444,7 @@ function Base.summary(state::GraphTrianglesState)
     if test_state(state)
         return "The graph correctly matches the triangle set."
     else
-        if state.bad_vertex == DT.∅
+        if state.bad_vertex == ∅
             return "The graph is inconsistent with the triangle set, as one of the vertices of $(state.bad_triangle) is not a vertex in the graph."
         else
             return "The graph is inconsistent with the triangle set. The triangle $(state.bad_triangle) is in the triangle set but either $(state.bad_edge[1]) or $(state.bad_edge[2]) are not in $(state.bad_vertex)'s neighbourhood."
@@ -441,7 +454,7 @@ end
 function test_graph_matches_triangles(tri)
     for T in each_triangle(tri)
         try
-            i, j, k = DT.triangle_vertices(T)
+            i, j, k = triangle_vertices(T)
             flag1 = all(∈(get_neighbours(tri, i)), (j, k))
             !flag1 && return GraphTrianglesState(flag1, Int.(triangle_vertices(T)), Int.((j, k)), Int(i))
             flag2 = all(∈(get_neighbours(tri, j)), (k, i))
@@ -449,11 +462,11 @@ function test_graph_matches_triangles(tri)
             flag3 = all(∈(get_neighbours(tri, k)), (i, j))
             !flag3 && return GraphTrianglesState(flag3, Int.(triangle_vertices(T)), Int.((i, j)), Int(k))
         catch e
-            e isa KeyError && return GraphTrianglesState(false, Int.(triangle_vertices(T)), (DT.∅, DT.∅), DT.∅)
+            e isa KeyError && return GraphTrianglesState(false, Int.(triangle_vertices(T)), (∅, ∅), ∅)
             rethrow(e)
         end
     end
-    return GraphTrianglesState(true, (DT.∅, DT.∅, DT.∅), (DT.∅, DT.∅), DT.∅)
+    return GraphTrianglesState(true, (∅, ∅, ∅), (∅, ∅), ∅)
 end
 
 struct SegmentState <: AbstractTriangulationState
@@ -477,31 +490,31 @@ function Base.summary(state::SegmentState)
 end
 function test_segments(tri)
     for e in each_segment(tri)
-        flag = DT.edge_exists(tri, e) || DT.edge_exists(tri, DT.reverse_edge(e))
+        flag = edge_exists(tri, e) || edge_exists(tri, reverse_edge(e))
         !flag && return SegmentState(flag, Int.(edge_vertices(e)), 0)
-        flag = DT.contains_edge(e, get_interior_segments(tri)) || DT.contains_edge(DT.reverse_edge(e), get_interior_segments(tri))
+        flag = contains_edge(e, get_interior_segments(tri)) || contains_edge(reverse_edge(e), get_interior_segments(tri))
         if !flag
-            flag = DT.contains_boundary_edge(tri, e) || DT.contains_boundary_edge(tri, DT.reverse_edge(e))
+            flag = contains_boundary_edge(tri, e) || contains_boundary_edge(tri, reverse_edge(e))
             !flag && return SegmentState(flag, Int.(edge_vertices(e)), 1)
         end
     end
     for e in get_interior_segments(tri)
-        flag = DT.edge_exists(tri, e) || DT.edge_exists(tri, DT.reverse_edge(e))
+        flag = edge_exists(tri, e) || edge_exists(tri, reverse_edge(e))
         !flag && return SegmentState(flag, Int.(edge_vertices(e)), 0)
     end
     int_segs = Set{NTuple{2,Int}}()
     all_segs = Set{NTuple{2,Int}}()
     for e in get_interior_segments(tri)
-        u, v = DT.edge_vertices(e)
+        u, v = edge_vertices(e)
         push!(int_segs, minmax(u, v))
     end
     for e in each_segment(tri)
-        u, v = DT.edge_vertices(e)
+        u, v = edge_vertices(e)
         push!(all_segs, minmax(u, v))
     end
     flag = int_segs ⊆ all_segs
-    !flag && return SegmentState(flag, (DT.∅, DT.∅), 2)
-    return SegmentState(true, (DT.∅, DT.∅), 0)
+    !flag && return SegmentState(flag, (∅, ∅), 2)
+    return SegmentState(true, (∅, ∅), 0)
 end
 
 struct BoundaryEdgeMapBoundaryNodesState <: AbstractTriangulationState
@@ -518,15 +531,15 @@ function Base.summary(state::BoundaryEdgeMapBoundaryNodesState)
         return "The boundary edge map is inconsistent with the boundary nodes. The edge $(state.bad_edge) maps to $(state.bad_pos) in the boundary edge map but $(state.bad_pos) corresponds to the edge $(state.bad_edge_2)."
     end
 end
-function test_boundary_edge_map_matches_boundary_nodes(tri::DT.Triangulation)
-    boundary_edge_map = DT.get_boundary_edge_map(tri)
+function test_boundary_edge_map_matches_boundary_nodes(tri::Triangulation)
+    boundary_edge_map = get_boundary_edge_map(tri)
     for (edge, pos) in boundary_edge_map
-        u = DT.get_boundary_nodes(DT.get_boundary_nodes(tri, pos[1]), pos[2])
-        v = DT.get_boundary_nodes(DT.get_boundary_nodes(tri, pos[1]), pos[2] + 1)
-        flag = u == DT.initial(edge)
+        u = get_boundary_nodes(get_boundary_nodes(tri, pos[1]), pos[2])
+        v = get_boundary_nodes(get_boundary_nodes(tri, pos[1]), pos[2] + 1)
+        flag = u == initial(edge)
         !flag && return BoundaryEdgeMapBoundaryNodesState(flag, Int.(edge_vertices(edge)), Int.((u, v)), pos)
     end
-    return BoundaryEdgeMapBoundaryNodesState(true, (DT.∅, DT.∅), (DT.∅, DT.∅), ())
+    return BoundaryEdgeMapBoundaryNodesState(true, (∅, ∅), (∅, ∅), ())
 end
 
 struct BoundaryNodesBoundaryEdgeMapState <: AbstractTriangulationState
@@ -543,53 +556,53 @@ function Base.summary(state::BoundaryNodesBoundaryEdgeMapState)
         return "The boundary nodes are inconsistent with the boundary edge map. The edge $(state.bad_edge) maps to $(state.bad_pos_2) but is at $(state.bad_pos)."
     end
 end
-function test_boundary_nodes_matches_boundary_edge_map(tri::DT.Triangulation)
-    boundary_nodes = DT.get_boundary_nodes(tri)
-    E = DT.edge_type(tri)
-    if DT.has_multiple_curves(tri)
-        nc = DT.num_curves(tri)
+function test_boundary_nodes_matches_boundary_edge_map(tri::Triangulation)
+    boundary_nodes = get_boundary_nodes(tri)
+    E = edge_type(tri)
+    if has_multiple_curves(tri)
+        nc = num_curves(tri)
         for i in 1:nc
             curve_nodes = get_boundary_nodes(tri, i)
-            ns = DT.num_sections(curve_nodes)
+            ns = num_sections(curve_nodes)
             for j in 1:ns
                 segment_nodes = get_boundary_nodes(curve_nodes, j)
-                ne = DT.num_boundary_edges(segment_nodes)
+                ne = num_boundary_edges(segment_nodes)
                 for k in 1:ne
                     left_node = get_boundary_nodes(segment_nodes, k)
                     right_node = get_boundary_nodes(segment_nodes, k + 1)
-                    edge = DT.construct_edge(E, left_node, right_node)
-                    pos = DT.get_boundary_edge_map(tri, edge)
+                    edge = construct_edge(E, left_node, right_node)
+                    pos = get_boundary_edge_map(tri, edge)
                     flag = pos == ((i, j), k)
                     !flag && return BoundaryNodesBoundaryEdgeMapState(flag, Int.(edge_vertices(edge)), pos, ((i, j), k))
                 end
             end
         end
-    elseif DT.has_multiple_sections(tri)
-        ns = DT.num_sections(tri)
+    elseif has_multiple_sections(tri)
+        ns = num_sections(tri)
         for i in 1:ns
             segment_nodes = get_boundary_nodes(tri, i)
-            ne = DT.num_boundary_edges(segment_nodes)
+            ne = num_boundary_edges(segment_nodes)
             for j in 1:ne
                 left_node = get_boundary_nodes(segment_nodes, j)
                 right_node = get_boundary_nodes(segment_nodes, j + 1)
-                edge = DT.construct_edge(E, left_node, right_node)
-                pos = DT.get_boundary_edge_map(tri, edge)
+                edge = construct_edge(E, left_node, right_node)
+                pos = get_boundary_edge_map(tri, edge)
                 flag = pos == (i, j)
                 !flag && return BoundaryNodesBoundaryEdgeMapState(flag, Int.(edge_vertices(edge)), pos, (i, j))
             end
         end
     else
-        ne = DT.num_boundary_edges(boundary_nodes)
+        ne = num_boundary_edges(boundary_nodes)
         for i in 1:ne
             left_node = get_boundary_nodes(boundary_nodes, i)
             right_node = get_boundary_nodes(boundary_nodes, i + 1)
-            edge = DT.construct_edge(E, left_node, right_node)
-            pos = DT.get_boundary_edge_map(tri, edge)
+            edge = construct_edge(E, left_node, right_node)
+            pos = get_boundary_edge_map(tri, edge)
             flag = pos == (get_boundary_nodes(tri), i)
             !flag && return BoundaryNodesBoundaryEdgeMapState(flag, Int.(edge_vertices(edge)), pos, (get_boundary_nodes(tri), i))
         end
     end
-    return BoundaryNodesBoundaryEdgeMapState(true, (DT.∅, DT.∅), (), ())
+    return BoundaryNodesBoundaryEdgeMapState(true, (∅, ∅), (), ())
 end
 
 abstract type AbstractTriangulationIteratorState <: AbstractTriangulationState end
@@ -687,8 +700,8 @@ end
 function GhostEdgeIteratorState(unique_flag, length_flag, output_flag, iterator_length, correct_length)
     return IteratorState(unique_flag, length_flag, output_flag, iterator_length, correct_length, :ghost_edge, :edge, :each_ghost_edge)
 end
-function test_iterators(tri::DT.Triangulation)
-    I = DT.integer_type(tri)
+function test_iterators(tri::Triangulation)
+    I = integer_type(tri)
     T = NTuple{3,I}
     E = NTuple{2,I}
     solid_triangles = T[]
@@ -701,16 +714,16 @@ function test_iterators(tri::DT.Triangulation)
     ghost_edges = E[]
     all_edges = E[]
     for T in each_triangle(tri)
-        i, j, k = DT.triangle_vertices(T)
+        i, j, k = triangle_vertices(T)
         push!(all_triangles, (i, j, k))
-        if DT.is_ghost_triangle(i, j, k)
+        if is_ghost_triangle(i, j, k)
             push!(ghost_triangles, (i, j, k))
         else
             push!(solid_triangles, (i, j, k))
         end
-        for (u, v) in DT.triangle_edges(i, j, k)
+        for (u, v) in triangle_edges(i, j, k)
             push!(all_edges, (u, v))
-            if DT.is_ghost_edge(u, v)
+            if is_ghost_edge(u, v)
                 push!(ghost_edges, (u, v))
             else
                 push!(solid_edges, (u, v))
@@ -718,7 +731,7 @@ function test_iterators(tri::DT.Triangulation)
         end
         for k in (i, j, k)
             push!(all_vertices, k)
-            if DT.is_ghost_vertex(k)
+            if is_ghost_vertex(k)
                 push!(ghost_vertices, k)
             else
                 push!(solid_vertices, k)
@@ -732,15 +745,15 @@ function test_iterators(tri::DT.Triangulation)
     unique_ghost_triangle_flag = allunique(ghost_triangles)
     unique_ghost_edge_flag = allunique(ghost_edges)
     for (i, e) in enumerate(all_edges)
-        u, v = DT.edge_vertices(e)
+        u, v = edge_vertices(e)
         all_edges[i] = (min(u, v), max(u, v))
     end
     for (i, e) in enumerate(solid_edges)
-        u, v = DT.edge_vertices(e)
+        u, v = edge_vertices(e)
         solid_edges[i] = (min(u, v), max(u, v))
     end
     for (i, e) in enumerate(ghost_edges)
-        u, v = DT.edge_vertices(e)
+        u, v = edge_vertices(e)
         ghost_edges[i] = (min(u, v), max(u, v))
     end
     unique!(all_edges)
@@ -770,9 +783,9 @@ function test_iterators(tri::DT.Triangulation)
     sort!(all_vertices)
     sort!(solid_vertices)
     sort!(ghost_vertices)
-    triangle_output_flag = DT.compare_triangle_collections(all_triangles, collect(each_triangle(tri)))
-    solid_triangle_output_flag = DT.compare_triangle_collections(solid_triangles, collect(each_solid_triangle(tri)))
-    ghost_triangle_output_flag = DT.compare_triangle_collections(ghost_triangles, collect(each_ghost_triangle(tri)))
+    triangle_output_flag = compare_triangle_collections(all_triangles, each_triangle(tri))
+    solid_triangle_output_flag = compare_triangle_collections(solid_triangles, each_solid_triangle(tri))
+    ghost_triangle_output_flag = compare_triangle_collections(ghost_triangles, each_ghost_triangle(tri))
     edge_output_flag = compare_edge_vectors(all_edges, each_edge(tri))
     solid_edge_output_flag = compare_edge_vectors(solid_edges, each_solid_edge(tri))
     ghost_edge_output_flag = compare_edge_vectors(ghost_edges, each_ghost_edge(tri))
@@ -813,14 +826,14 @@ function test_no_duplicate_segments(tri)
     interior_segments = get_interior_segments(tri)
     all_segments = get_all_segments(tri)
     for e in each_edge(interior_segments)
-        flag = !DT.contains_edge(DT.reverse_edge(e), interior_segments)
-        !flag && return DuplicateSegmentsState(flag, true, Int.(DT.edge_vertices(e)))
+        flag = !contains_edge(reverse_edge(e), interior_segments)
+        !flag && return DuplicateSegmentsState(flag, true, Int.(edge_vertices(e)))
     end
     for e in each_edge(all_segments)
-        flag = !DT.contains_edge(DT.reverse_edge(e), all_segments)
-        !flag && return DuplicateSegmentsState(flag, false, Int.(DT.edge_vertices(e)))
+        flag = !contains_edge(reverse_edge(e), all_segments)
+        !flag && return DuplicateSegmentsState(flag, false, Int.(edge_vertices(e)))
     end
-    return DuplicateSegmentsState(true, true, (DT.∅, DT.∅))
+    return DuplicateSegmentsState(true, true, (∅, ∅))
 end
 
 struct TriangulationState <: AbstractTriangulationState
@@ -850,11 +863,11 @@ struct TriangulationState <: AbstractTriangulationState
     ghost_edge_iterator_state::IteratorState
 end
 
-function TriangulationState(tri::DT.Triangulation)
-    has_ghosts = DT.has_ghost_triangles(tri)
-    DT.delete_ghost_triangles!(tri)
-    DT.add_ghost_triangles!(tri)
-    DT.clear_empty_features!(tri)
+function TriangulationState(tri::Triangulation)
+    has_ghosts = has_ghost_triangles(tri)
+    delete_ghost_triangles!(tri)
+    add_ghost_triangles!(tri)
+    clear_empty_features!(tri)
     state = TriangulationState(
         Adjacent2VertexMapAdjacentMapState(tri),
         Adjacent2VertexMapState(tri),
@@ -873,7 +886,7 @@ function TriangulationState(tri::DT.Triangulation)
         TriangleOrientationState(tri),
         test_iterators(tri)...
     )
-    !has_ghosts && DT.delete_ghost_triangles!(tri)
+    !has_ghosts && delete_ghost_triangles!(tri)
     return state
 end
 
@@ -898,7 +911,14 @@ function Base.show(io::IO, triangulation_state::TriangulationState)
     return
 end
 
-function validate_triangulation(tri; print_result=true)
+"""
+    validate_triangulation(tri::Triangulation; print_result=true) -> Bool 
+
+Tests if `tri` is a valid `Triangulation`. Returns `true` if so, 
+and `false` otherwise. If `print_result=true` and `tri` is not a 
+valid triangulation, all the issues with `tri` will be printed.
+"""
+function validate_triangulation(tri::Triangulation; print_result=true)
     state = TriangulationState(tri)
     print_result && !test_state(state) && println(state)
     return test_state(state)

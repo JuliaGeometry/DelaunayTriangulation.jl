@@ -146,6 +146,7 @@ const _PAGES = [
         "Geometrical Predicates" => "manual/predicates.md",
         "Triangulation Output" => "manual/triangulation_output.md",
         "Voronoi Tessellation Output" => "manual/voronoi_output.md",
+        "Disabling Exact Predicates" => "manual/disabling_ea.md",
     ],
     "API Reference" => [
         "Section Overview" => "api/overview.md",

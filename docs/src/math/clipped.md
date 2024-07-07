@@ -318,7 +318,7 @@ new_points[u] = p
 new_points[v] = q
 new_vertices[u] = u
 new_vertices[v] = v
-poly!(ax, [new_points; new_points[1]], color = :darkgreen, linewidth = 3)
+poly!(ax, [new_points; new_points[1]], color = :darkgreen)
 lines!(ax, [0.0, 5.0, 5.0, 0.0, 0.0], [-15.0, -15.0, 15.0, 15.0, -15.0], color = :red)
 resize_to_layout!(fig)
 ```

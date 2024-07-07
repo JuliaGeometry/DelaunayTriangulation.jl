@@ -18,7 +18,7 @@ This is a package for computing Delaunay triangulations and Voronoi tessellation
 - Computation of the pole of inaccessibility.
 - The interface for defining geometric primitives is fully customisable.
 
-To ensure that the algorithms are robust, we use [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl) to define all geometric predicates in this package. Much of the work in this package is derived from the book [*Delaunay Mesh Generation* by Cheng, Dey, and Shewchuk (2013)](https://people.eecs.berkeley.edu/~jrs/meshbook.html).
+To ensure that the algorithms are robust, we use [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl) to define all geometric predicates in this package. (ExactPredicates.jl can be disabled, as described [here](manual/disabling_ea.md).) Much of the work in this package is derived from the book [*Delaunay Mesh Generation* by Cheng, Dey, and Shewchuk (2013)](https://people.eecs.berkeley.edu/~jrs/meshbook.html).
 
 # Documentation Structure 
 
