@@ -1,5 +1,16 @@
 # Changelog
 
+## v.1.1.0
+
+- Added the option to disable ExactPredicates.jl using Preferences.jl. See [#131](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/131).
+- Added `DelauanyTriangulation.validate_triangulation` for validating triangulations. See [#131](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/131).
+- Fixed a bug with the currently unused `orient(p, q, r, s)` predicate. See [#131](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/131).
+- Added private functions `getz`, `_getz`, `getxyz`, and `_getxyz`. See [#131](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/131).
+
+## v1.0.5 
+
+- Disabled `deepcopy` on `PolygonTree`s and made it a no-op. See [#129](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/issues/129).
+
 ## v1.0.4
 
 Nothing breaking. Main changes:
