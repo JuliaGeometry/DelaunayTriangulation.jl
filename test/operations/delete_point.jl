@@ -1,6 +1,7 @@
 using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using StableRNGs
+using Preferences
 using StaticArrays
 
 @testset verbose = true "Deleting interior nodes" begin
@@ -46,51 +47,54 @@ using StaticArrays
             end
         end
     end
-    @testset "Lattice with a single boundary index" begin
-        for j in 1:20
-            rng1 = StableRNG(j)
-            a, b = sort(10randn(rng1, 2))
-            c, d = sort(15randn(rng1, 2))
-            nx = rand(rng1, 5:25)
-            ny = rand(rng1, 5:25)
-            tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true)
-            points = get_points(tri)
-            n = nx * ny
-            for k in 1:(n÷10)
-                rng2 = StableRNG(j + k * n)
-                i = rand(rng2, each_solid_vertex(tri) |> collect)
-                while DT.is_boundary_node(tri, i)[1]
+
+    if load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true)
+        @testset "Lattice with a single boundary index" begin
+            for j in 1:20
+                rng1 = StableRNG(j)
+                a, b = sort(10randn(rng1, 2))
+                c, d = sort(15randn(rng1, 2))
+                nx = rand(rng1, 5:25)
+                ny = rand(rng1, 5:25)
+                tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true)
+                points = get_points(tri)
+                n = nx * ny
+                for k in 1:(n÷10)
+                    rng2 = StableRNG(j + k * n)
                     i = rand(rng2, each_solid_vertex(tri) |> collect)
+                    while DT.is_boundary_node(tri, i)[1]
+                        i = rand(rng2, each_solid_vertex(tri) |> collect)
+                    end
+                    delete_point!(tri, i; rng=rng2)
+                    @test validate_triangulation(tri)
                 end
-                delete_point!(tri, i; rng=rng2)
-                @test validate_triangulation(tri)
             end
+            tri = triangulate_rectangle(0, 1, 0, 1, 25, 25; delete_ghosts=false, single_boundary=true)
+            add_segment!(tri, 7, 7 + 25)
+            @test_throws DT.InvalidVertexDeletionError delete_point!(tri, 2)
+            @test_throws DT.InvalidVertexDeletionError delete_point!(tri, 7)
+            @test_throws DT.InvalidVertexDeletionError delete_point!(tri, 7 + 25)
+            @test_throws DT.InvalidVertexDeletionError delete_point!(tri, -1)
         end
-        tri = triangulate_rectangle(0, 1, 0, 1, 25, 25; delete_ghosts=false, single_boundary=true)
-        add_segment!(tri, 7, 7 + 25)
-        @test_throws DT.InvalidVertexDeletionError delete_point!(tri, 2)
-        @test_throws DT.InvalidVertexDeletionError delete_point!(tri, 7)
-        @test_throws DT.InvalidVertexDeletionError delete_point!(tri, 7 + 25)
-        @test_throws DT.InvalidVertexDeletionError delete_point!(tri, -1)
-    end
-    @testset "Lattice with multiple boundary indices" begin
-        for j in 1:20
-            rng1 = StableRNG(j)
-            a, b = sort(10randn(rng1, 2))
-            c, d = sort(15randn(rng1, 2))
-            nx = rand(rng1, 5:25)
-            ny = rand(rng1, 5:25)
-            tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=false)
-            points = get_points(tri)
-            n = nx * ny
-            for k in 1:(n÷10)
-                rng2 = StableRNG(j + k * n)
-                i = rand(rng2, each_solid_vertex(tri) |> collect)
-                while DT.is_boundary_node(tri, i)[1]
+        @testset "Lattice with multiple boundary indices" begin
+            for j in 1:20
+                rng1 = StableRNG(j)
+                a, b = sort(10randn(rng1, 2))
+                c, d = sort(15randn(rng1, 2))
+                nx = rand(rng1, 5:25)
+                ny = rand(rng1, 5:25)
+                tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=false)
+                points = get_points(tri)
+                n = nx * ny
+                for k in 1:(n÷10)
+                    rng2 = StableRNG(j + k * n)
                     i = rand(rng2, each_solid_vertex(tri) |> collect)
+                    while DT.is_boundary_node(tri, i)[1]
+                        i = rand(rng2, each_solid_vertex(tri) |> collect)
+                    end
+                    delete_point!(tri, i; rng=rng2)
+                    @test validate_triangulation(tri)
                 end
-                delete_point!(tri, i; rng=rng2)
-                @test validate_triangulation(tri)
             end
         end
     end

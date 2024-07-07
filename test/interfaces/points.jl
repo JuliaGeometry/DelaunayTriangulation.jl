@@ -1,7 +1,7 @@
 using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using Test
-using StaticArraysCore
+using StaticArrays
 using StatsBase
 import GeometryBasics: Point2f
 
@@ -235,3 +235,35 @@ end
     )
 end
 
+@testset "getz/_getz/getxyz/_getxyz" begin
+    p = (1.0, 2.0, 3.0)
+    q = (1.0f0, 2.0f0, 3.0f0)
+    r = [1.0f0, 4.0f0, 5.0f0]
+    s = @SVector [3, 7, 5]
+    t = [5.0, 13.0, -5.0]
+    
+    @test DT.getz(p) === 3.0 
+    @test DT._getz(p) === 3.0
+    @test DT.getxyz(p) === (1.0, 2.0, 3.0)
+    @test DT._getxyz(p) === (1.0, 2.0, 3.0)
+
+    @test DT.getz(q) === 3.0f0
+    @test DT._getz(q) === 3.0
+    @test DT.getxyz(q) === (1.0f0, 2.0f0, 3.0f0)
+    @test DT._getxyz(q) === (1.0, 2.0, 3.0)
+
+    @test DT.getz(r) === 5.0f0
+    @test DT._getz(r) === 5.0
+    @test DT.getxyz(r) === (1.0f0, 4.0f0, 5.0f0)
+    @test DT._getxyz(r) === (1.0, 4.0, 5.0)
+
+    @test DT.getz(s) === 5
+    @test DT._getz(s) === 5.0
+    @test DT.getxyz(s) === (3, 7, 5)
+    @test DT._getxyz(s) === (3.0, 7.0, 5.0)
+
+    @test DT.getz(t) === -5.0
+    @test DT._getz(t) === -5.0
+    @test DT.getxyz(t) === (5.0, 13.0, -5.0)
+    @test DT._getxyz(t) === (5.0, 13.0, -5.0)
+end

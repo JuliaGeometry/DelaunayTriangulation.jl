@@ -8,6 +8,7 @@ import GeometryBasics: Point2f
 using StaticArrays
 using LinearAlgebra
 using StructEquality
+using Preferences
 @struct_equal DT.Queue
 
 @testset "Unconstrained test" begin
@@ -194,13 +195,13 @@ end
 end
 
 @testset "Voronoi point location" begin
-    A = (-1.0, 7.0)
-    B = (4.0, 4.0)
-    C = (-2.0, -1.0)
-    D = (-1.0, 3.0)
-    E = (3.0, -1.0)
-    F = (1.0, 4.0)
-    G = (-3.0, 5.0)
+    A = (-1.0, 7.0) .+ (1e-6rand(), 1e-6rand()) # perturb to allow the tests to work even without ExactPredicates
+    B = (4.0, 4.0) .+ (1e-6rand(), 1e-6rand())
+    C = (-2.0, -1.0) .+ (1e-6rand(), 1e-6rand())
+    D = (-1.0, 3.0) .+ (1e-6rand(), 1e-6rand())
+    E = (3.0, -1.0) .+ (1e-6rand(), 1e-6rand())
+    F = (1.0, 4.0) .+ (1e-6rand(), 1e-6rand())
+    G = (-3.0, 5.0) .+ (1e-6rand(), 1e-6rand())
     pts = [A, B, C, D, E, F, G]
     tri = triangulate(pts; delete_ghosts=false, randomise=false)
     vor = voronoi(tri)

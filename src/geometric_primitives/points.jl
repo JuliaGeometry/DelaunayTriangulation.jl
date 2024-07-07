@@ -33,6 +33,13 @@ julia> gety(p)
 gety(p) = p[2]
 
 """
+    getz(p) -> Number 
+
+Get the z-coordinate of `p`.
+"""
+getz(p) = p[3]
+
+"""
     getxy(p) -> NTuple{2, Number}
 
 Get the coordinates of `p` as a `Tuple`.
@@ -48,6 +55,13 @@ julia> getxy(p)
 ```
 """
 getxy(p) = (getx(p), gety(p))
+
+"""
+    getxyz(p) -> NTuple{3, Number}
+
+Given a three-dimensional `p`, returns its coordinates as a `Tuple`.
+"""
+getxyz(p) = (getx(p), gety(p), getz(p))
 
 """
     _getx(p) -> Float64
@@ -94,9 +108,16 @@ julia> DelaunayTriangulation._gety(p)
 _gety(p) = Float64(gety(p))
 
 """
+    _getz(p) -> Float64 
+
+Get the z-coordinate of `p` as a `Float64.`
+"""
+_getz(p) = Float64(getz(p))
+
+"""
     _getxy(p) -> NTuple{2, Float64}
 
-Get the coordinates of `p` as a `Tuple`.
+Get the coordinates of `p` as a `Tuple` of `Float64`s.
 
 # Examples
 ```jldoctest
@@ -114,6 +135,13 @@ julia> DelaunayTriangulation._getxy(p)
 ```
 """
 _getxy(p) = (_getx(p), _gety(p))
+
+"""
+    _getxyz(p) -> NTuple{3, Float64}
+
+Given a three-dimemsional `p`, returns its coordinates as a `Tuple` of `Float64`s.
+"""
+_getxyz(p) = (_getx(p), _gety(p), _getz(p))
 
 @doc """
     getpoint(points, vertex) -> NTuple{2, Number}

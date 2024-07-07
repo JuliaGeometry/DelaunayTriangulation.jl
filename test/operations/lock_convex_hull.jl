@@ -4,7 +4,6 @@ using CairoMakie
 using DataStructures
 using StaticArrays
 
-
 @testset "lock_convex_hull" begin
     for _ in 1:150
         pts = rand(2, 500)

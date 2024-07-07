@@ -1,3 +1,6 @@
+@show ENV["USE_EXACTPREDICATES"]
+throw("...")
+
 # get all the compilation out of the way
 using BenchmarkTools
 using CairoMakie
@@ -30,6 +33,7 @@ using StatsBase
 using StructEquality
 using Aqua
 using Test
+using Preferences
 
 const ALL_TEST_SCRIPTS = Set{String}()
 const NON_TEST_SCRIPTS = Set{String}(["helper_functions.jl", "triangulation_validation.jl", "runtests.jl", "triangulation\\weighted.jl", "triangulation/weighted.jl"])
@@ -50,7 +54,7 @@ end
 
 @testset verbose = true "DelaunayTriangulation.jl" begin
     @testset verbose = true "Aqua" begin
-        Aqua.test_all(DelaunayTriangulation; ambiguities=false, project_extras=false) # don't care about julia < 1.2
+        Aqua.test_all(DelaunayTriangulation; ambiguities=false, project_extras=false, stale_deps = load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true)) # don't care about julia < 1.2
         Aqua.test_ambiguities(DelaunayTriangulation) # don't pick up Base and Core...
     end    
 

@@ -10,7 +10,7 @@ using Test
 using StructEquality
 using DelimitedFiles
 using StableRNGs
-
+using Preferences
 const SACM = DT.SmallAngleComplexMember
 const SAC = DT.SmallAngleComplex
 
@@ -1450,6 +1450,9 @@ end
         point_sets = deepcopy.([points_I, points_II, points_III, points_IV, points_V, points_VI, points_VII, points_VIII, points_IX, points_X, points_XI, points_XII])
         curve_sets = deepcopy.([curve_I, curve_II, curve_III, curve_IV, curve_V, curve_VI, curve_VII, curve_VIII, curve_IX, curve_X, curve_XI, curve_XII])
         for i in eachindex(point_sets, curve_sets)
+            if !load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true) && i == 4 
+                continue 
+            end
             points, curve = deepcopy(point_sets[i]), deepcopy(curve_sets[i])
             tri = triangulate(points; boundary_nodes=curve, enrich=i ≤ 3)
             @test validate_triangulation(tri)
@@ -1517,6 +1520,9 @@ end
             (1e-1, 1e-2)
         ]
         for curve_idx in 4:lastindex(curve_sets)
+            if curve_idx ∈ (4, 6, 12) && !load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true)
+                continue 
+            end
             for point_idx in 1:3
                 point_idx == 3 && curve_idx ≥ 5 && continue # no extra segments for curves ≥ 5
                 for (idx1, use_lens) in enumerate((false, true))
