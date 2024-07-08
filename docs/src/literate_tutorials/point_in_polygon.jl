@@ -194,16 +194,16 @@ fig
 
 # Here is the second method. 
 tri = triangulate(points; boundary_nodes=nodes)
-is_inside_2 = [DelaunayTriangulation.dist(tri, q) > 0 for q in query_points]
+is_inside_2 = [DelaunayTriangulation.dist(tri, q) > 0 for q in query_points];
 @test is_inside == is_inside_2 #src
 
 # The third method is to use [`find_polygon`](@ref) to find the polygon containing the point. If no such polygon exists, `find_polygon` returns 
 # `0`, so this is what we use to determine if a point is inside or outside the polygon.
-is_inside_3 = [find_polygon(tri, q) ≠ 0 for q in query_points]
+is_inside_3 = [find_polygon(tri, q) ≠ 0 for q in query_points];
 @test mean(is_inside) ≈ mean(is_inside_3) atol = 1e-2 #src
 
 # This test is not exactly the same as the previous one (with a difference of about five points) due to points near the boundary. 
 # The fourth method is:
 hierarchy = DelaunayTriangulation.construct_polygon_hierarchy(points, nodes)
-is_inside_4 = [find_polygon(hierarchy, points, nodes, q) ≠ 0 for q in query_points]
+is_inside_4 = [find_polygon(hierarchy, points, nodes, q) ≠ 0 for q in query_points];
 @test is_inside_4 == is_inside_3 #src
