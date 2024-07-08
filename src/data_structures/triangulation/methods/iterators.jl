@@ -26,7 +26,7 @@ Returns an iterator over all point indices in `tri`.
 """
 each_point_index(tri::Triangulation) = each_point_index(get_points(tri))
 
-""""
+"""
     each_vertex(tri::Triangulation) -> Set{Vertex}
 
 Returns an iterator over all vertices in `tri`. Note that, if `has_ghost_triangles(tri)`,
