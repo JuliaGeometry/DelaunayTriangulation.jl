@@ -540,14 +540,6 @@ function point_position_relative_to_witness_plane(tri::Triangulation, i, j, k, â
     return convert_certificate(cert, Cert.Above, Cert.On, Cert.Below)
 end
 
-ExactPredicates.Codegen.@genpredicate function angle_is_acute(p::2, q::2, r::2)
-    pr = p - r
-    qr = q - r
-    ExactPredicates.Codegen.group!(pr...)
-    ExactPredicates.Codegen.group!(qr...)
-    return pr[1] * qr[1] + pr[2] * qr[2]
-end
-
 """
     opposite_angle(p, q, r) -> Certificate
 

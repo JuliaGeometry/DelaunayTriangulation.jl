@@ -1,3 +1,14 @@
+# setup LocalPreferences.toml 
+using Preferences 
+USE_EXACTPREDICATES = get(ENV, "USE_EXACTPREDICATES", "default")
+if USE_EXACTPREDICATES == "true"
+    set_preferences!("DelaunayTriangulation", "USE_EXACTPREDICATES" => true)
+elseif USE_EXACTPREDICATES == "false" 
+    set_preferences!("DelaunayTriangulation", "USE_EXACTPREDICATES" => false)
+end # if USE_EXACTPREDICATES == "default", do nothing
+
+@info "Testing with USE_EXACTPREDICATES = $USE_EXACTPREDICATES"
+
 # get all the compilation out of the way
 using BenchmarkTools
 using CairoMakie
@@ -41,7 +52,7 @@ function safe_include(filename; name=filename, push=true, verbose = true) # Work
     push && push!(ALL_TEST_SCRIPTS, normpath(filename))
     mod = @eval module $(gensym()) end
     @info "[$(ct())] Testing $name"
-    @testset verbose = verbose "$name" begin
+    @testset verbose = verbose "$(basename(name))" begin
         @eval mod using ..HelperFunctions
         @eval mod using ..Test
         Base.include(mod, filename)
@@ -50,7 +61,7 @@ end
 
 @testset verbose = true "DelaunayTriangulation.jl" begin
     @testset verbose = true "Aqua" begin
-        Aqua.test_all(DelaunayTriangulation; ambiguities=false, project_extras=false) # don't care about julia < 1.2
+        Aqua.test_all(DelaunayTriangulation; ambiguities=false, project_extras=false, stale_deps = load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true)) # don't care about julia < 1.2
         Aqua.test_ambiguities(DelaunayTriangulation) # don't pick up Base and Core...
     end    
 

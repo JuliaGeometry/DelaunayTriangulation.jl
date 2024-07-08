@@ -59,4 +59,5 @@ get_insertion_order
 get_vertices(::Triangulation)
 get_edges(::Triangulation)
 num_neighbours
+validate_triangulation
 ```

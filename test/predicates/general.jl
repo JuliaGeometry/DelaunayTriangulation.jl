@@ -4,7 +4,41 @@ using StaticArrays
 const DT = DelaunayTriangulation
 using ..DelaunayTriangulation: Certificate
 
+@testset "ext" begin
+    for _ in 1:50
+        p = @SVector rand(2)
+        q = @SVector rand(2)
+        @test ExactPredicates.ext(p, q) == DT.ext(p..., q...)
+    end
+end
 
+@testset "inp" begin
+    for _ in 1:50
+        p = @SVector rand(2)
+        q = @SVector rand(2)
+        @test ExactPredicates.inp(p, q) == DT.inp(p..., q...)
+    end
+end
+
+@testset "det" begin
+    for _ in 1:50
+        a, b, c, d = rand(4)
+        @test ExactPredicates.det(a, b, c, d) == DT.det(a, b, c, d)
+
+        a, b, c, d, e, f, g, h, i = rand(9)
+        @test ExactPredicates.det(a, b, c, d, e, f, g, h, i) == DT.det(a, b, c, d, e, f, g, h, i)
+    end
+end
+
+@testset "sgn" begin
+    @test DT.sgn(2.0) === 1
+    @test DT.sgn(2) === 1
+    @test DT.sgn(-1.0) === -1
+    @test DT.sgn(-1) === -1
+    @test DT.sgn(0.0) === 0
+    @test DT.sgn(-0.0) === 0
+    @test DT.sgn(0) === 0
+end
 
 @testset "Opposite signs" begin
     @test DT.opposite_signs(1, -1)
@@ -22,27 +56,35 @@ end
     @testset "Random points" begin
         for _ in 1:1500
             p, q, r = eachcol(rand(2, 3))
-            @test DT.orient_predicate(p, q, r) == orient(p, q, r)
+            @test DT.orient_predicate(p, q, r) === orient(p, q, r)
             @inferred DT.orient_predicate(p, q, r)
+            @test DT._orient_predicate(p, q, r) === orient(p, q, r)
+            @inferred DT._orient_predicate(p, q, r)
 
             p, q, r, s = eachcol(rand(3, 4))
-            @test DT.orient_predicate(p, q, r, s) == orient(p, q, r, s)
+            @test DT.orient_predicate(p, q, r, s) === orient(p, q, r, s)
             @inferred DT.orient_predicate(p, q, r, s)
+            @test DT._orient_predicate(p, q, r, s) === orient(p, q, r, s)
+            @inferred DT._orient_predicate(p, q, r, s)
 
             a, b, c, p = eachcol(rand(2, 4))
-            @test DT.incircle_predicate(a, b, c, p) == incircle(a, b, c, p)
+            @test DT.incircle_predicate(a, b, c, p) === incircle(a, b, c, p)
             @inferred DT.incircle_predicate(a, b, c, p)
+            @test DT._incircle_predicate(a, b, c, p) === incircle(a, b, c, p)
+            @inferred DT._incircle_predicate(a, b, c, p)
 
             a, b, p, q = eachcol(rand(2, 4))
-            @test DT.parallelorder_predicate(a, b, p, q) == parallelorder(a, b, p, q)
+            @test DT.parallelorder_predicate(a, b, p, q) === parallelorder(a, b, p, q)
             @inferred DT.parallelorder_predicate(a, b, p, q)
+            @test DT._parallelorder_predicate(a, b, p, q) === parallelorder(a, b, p, q)
+            @inferred DT._parallelorder_predicate(a, b, p, q)
 
             p, a, b = eachcol(rand(2, 3))
-            @test DT.sameside_predicate(a, b, p) == sameside(p, a, b)
+            @test DT.sameside_predicate(a, b, p) === sameside(p, a, b)
             @inferred DT.sameside_predicate(a, b, p)
 
             p, q, a, b = eachcol(rand(2, 4))
-            @test DT.meet_predicate(p, q, a, b) == meet(p, q, a, b)
+            @test DT.meet_predicate(p, q, a, b) === meet(p, q, a, b)
             @inferred DT.meet_predicate(p, q, a, b)
         end
     end
@@ -59,15 +101,18 @@ end
             a = (rand(x), rand(y))
             b = (rand(x), rand(y))
             c = (rand(x), rand(y))
-            @test DT.orient_predicate(p, q, r) == orient(p, q, r)
-            @test DT.incircle_predicate(a, b, c, p) == incircle(a, b, c, p)
+            @test DT.orient_predicate(p, q, r) === orient(p, q, r)
+            @test DT.incircle_predicate(a, b, c, p) === incircle(a, b, c, p)
             @test DT.sameside_predicate(a, b, p) == sameside(p, a, b)
-            @test DT.meet_predicate(p, q, a, b) == meet(p, q, a, b)
+            @test DT.meet_predicate(p, q, a, b) === meet(p, q, a, b)
+            @test DT._orient_predicate(p, q, r) === orient(p, q, r)
+            @test DT._incircle_predicate(a, b, c, p) === incircle(a, b, c, p)
             p = (rand(x), rand(y), rand(z))
             q = (rand(x), rand(y), rand(z))
             r = (rand(x), rand(y), rand(z))
             s = (rand(x), rand(y), rand(z))
             @test DT.orient_predicate(p, q, r, s) == orient(p, q, r, s)
+            @test DT._orient_predicate(p, q, r, s) == orient(p, q, r, s)
         end
     end
 
@@ -75,16 +120,23 @@ end
         p₁ = [5.7044025422189, 1.801603986463]
         p₂ = [8.3797127128527, 5.8924221838871]
         p₃ = [2.8875415689061, 6.2038339497809]
-        @test DT.orient_predicate(p₁, p₂, p₃) == 1
-        @test DT.orient_predicate(p₁, p₂, [10.0, 4.0]) == -1
+        @test DT.orient_predicate(p₁, p₂, p₃) === 1
+        @test DT.orient_predicate(p₁, p₂, [10.0, 4.0]) === -1
+        @test DT._orient_predicate(p₁, p₂, p₃) === 1
+        @test DT._orient_predicate(p₁, p₂, [10.0, 4.0]) === -1
         p₁ = [5.0, 1.0]
         p₂ = [5.0, 6.0]
-        @test DT.orient_predicate(p₁, p₂, [5.0, 5.0]) == 0
-        @test DT.orient_predicate(p₁, p₂, [5.0, 2.0]) == 0
-        @test DT.orient_predicate(p₂, p₁, [5.0, 2.0]) == 0
+        @test DT.orient_predicate(p₁, p₂, [5.0, 5.0]) === 0
+        @test DT.orient_predicate(p₁, p₂, [5.0, 2.0]) === 0
+        @test DT.orient_predicate(p₂, p₁, [5.0, 2.0]) === 0
+        @test DT._orient_predicate(p₁, p₂, [5.0, 5.0]) === 0
+        @test DT._orient_predicate(p₁, p₂, [5.0, 2.0]) === 0
+        @test DT._orient_predicate(p₂, p₁, [5.0, 2.0]) === 0
         p, q, r, s = (-4.16, -2.84, 0.0), (-4.65, -5.83, 0.0), (-1.12, -5.61, 0.0), (-7.83, 0.27, 4.6)
-        @test DT.orient_predicate(p, q, r, s) == -1
-        @test DT.orient_predicate(p, r, q, s) == 1
+        @test DT.orient_predicate(p, q, r, s) === -1
+        @test DT.orient_predicate(p, r, q, s) === 1
+        @test DT._orient_predicate(p, q, r, s) === -1
+        @test DT._orient_predicate(p, r, q, s) === 1
     end
 end
 

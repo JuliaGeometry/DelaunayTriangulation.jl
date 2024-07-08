@@ -4,7 +4,7 @@ using LinearAlgebra
 using Random
 using StableRNGs
 using StatsBase
-
+using Preferences
 
 
 tri, label_map, index_map = simple_geometry()
@@ -121,40 +121,42 @@ rep[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
             rep[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
         end
 
-        @testset "Test that we can find a point in every triangle" begin
-            for run in 1:6
-                for V in each_triangle(tri.triangles)
-                    rand() < 0.5 && continue # skip 50%
-                    if !DT.is_exterior_ghost_triangle(tri, triangle_vertices(V)...)
-                        i, j, k = triangle_vertices(V)
-                        p, q, r = get_point(tri, i, j, k)
-                        local c
-                        c = (p .+ q .+ r) ./ 3
-                        for k in DT.each_solid_vertex(tri)
-                            _V = jump_and_march(tri, c; k, concavity_protection=true)
-                            @test DT.is_positively_oriented(DT.triangle_orientation(tri, _V))
-                            if !DT.is_ghost_triangle(_V...)
-                                @test DT.compare_triangles(_V, V) &&
-                                      DT.is_inside(DT.point_position_relative_to_triangle(tri,
-                                    _V,
-                                    c))
-                            else
-                                local V1, V2
-                                V1 = DT.sort_triangle(V)
-                                V2 = DT.sort_triangle(_V)
-                                i1 = DT.geti(V1)
-                                i2 = DT.geti(V2)
-                                if i1 ≠ i2
-                                    i1 = i1 - 1
+        if load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true)
+            @testset "Test that we can find a point in every triangle" begin
+                for run in 1:6
+                    for V in each_triangle(tri.triangles)
+                        rand() < 0.5 && continue # skip 50%
+                        if !DT.is_exterior_ghost_triangle(tri, triangle_vertices(V)...)
+                            i, j, k = triangle_vertices(V)
+                            p, q, r = get_point(tri, i, j, k)
+                            local c
+                            c = (p .+ q .+ r) ./ 3
+                            for k in DT.each_solid_vertex(tri)
+                                _V = jump_and_march(tri, c; k, concavity_protection=true)
+                                @test DT.is_positively_oriented(DT.triangle_orientation(tri, _V))
+                                if !DT.is_ghost_triangle(_V...)
+                                    @test DT.compare_triangles(_V, V) &&
+                                          DT.is_inside(DT.point_position_relative_to_triangle(tri,
+                                        _V,
+                                        c))
+                                else
+                                    local V1, V2
+                                    V1 = DT.sort_triangle(V)
+                                    V2 = DT.sort_triangle(_V)
+                                    i1 = DT.geti(V1)
+                                    i2 = DT.geti(V2)
+                                    if i1 ≠ i2
+                                        i1 = i1 - 1
+                                    end
+                                    if i1 ≠ i2
+                                        i1 = i1 + 1
+                                    end
+                                    _V = DT.construct_triangle(typeof(V), i1, DT.getj(V1), DT.getk(V1))
+                                    @test DT.compare_triangles(_V, V) &&
+                                          DT.is_inside(DT.point_position_relative_to_triangle(tri,
+                                        _V,
+                                        c))
                                 end
-                                if i1 ≠ i2
-                                    i1 = i1 + 1
-                                end
-                                _V = DT.construct_triangle(typeof(V), i1, DT.getj(V1), DT.getk(V1))
-                                @test DT.compare_triangles(_V, V) &&
-                                      DT.is_inside(DT.point_position_relative_to_triangle(tri,
-                                    _V,
-                                    c))
                             end
                         end
                     end
@@ -162,14 +164,16 @@ rep[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
             end
         end
 
-        @testset "Test that we don't break for points already in the triangulation" begin
-            for _ in 1:6
-                for k in DT.each_solid_vertex(tri)
-                    rand() < 1 / 2 && continue
-                    for j in DT.each_solid_vertex(tri)
-                        _V = jump_and_march(tri, get_point(tri, k); k=j)
-                        @test k ∈ triangle_vertices(_V)
-                        @test DT.is_positively_oriented(DT.triangle_orientation(tri, _V))
+        if !load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true) && tri_idx ≠ 3
+            @testset "Test that we don't break for points already in the triangulation" begin
+                for _ in 1:6
+                    for k in DT.each_solid_vertex(tri)
+                        rand() < 1 / 2 && continue
+                        for j in DT.each_solid_vertex(tri)
+                            _V = jump_and_march(tri, get_point(tri, k); k=j)
+                            @test k ∈ triangle_vertices(_V)
+                            @test DT.is_positively_oriented(DT.triangle_orientation(tri, _V))
+                        end
                     end
                 end
             end

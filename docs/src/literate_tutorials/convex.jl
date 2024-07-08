@@ -8,6 +8,7 @@ using DelaunayTriangulation
 using CairoMakie
 using ReferenceTests #src
 using Test #src
+using Preferences #src
 fig_path = joinpath(@__DIR__, "../figures") #src
 
 points = [
@@ -21,7 +22,7 @@ tri = triangulate_convex(points, 1:7)
 #-
 fig, ax, sc = triplot(tri)
 fig 
-@test_reference joinpath(fig_path, "convex_ex_1.png") fig #src
+load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true) && @test_reference joinpath(fig_path, "convex_ex_1.png") fig #src
 
 # This `tri` is our triangulation of the convex polygon. 
 # The first input is the set of points, and `S` defines 
@@ -44,7 +45,7 @@ tri = triangulate_convex(points, S)
 #-
 fig, ax, sc = triplot(tri)
 fig 
-@test_reference joinpath(fig_path, "convex_ex_2.png") fig #src
+load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true) && @test_reference joinpath(fig_path, "convex_ex_2.png") fig #src
 
 # Here is a comparison of the time it takes to triangulate this 
 # using `triangulate_convex` or `triangulate`.

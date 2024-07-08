@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 jobs:
   test:
-    name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
+    name: Julia ${{ matrix.version }} - ${{ matrix.arch }} - ${{ github.event_name }} - ExactPredicates ${{ matrix.preferences }} - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     env:
       JULIA_NUM_THREADS: ${{ matrix.julia-threads }}
@@ -21,11 +21,15 @@ jobs:
       matrix:
         version:
           - '1'
-          - '1.6'
+          - 'lts'
         os:
           - ubuntu-latest
         arch:
           - x64
+        preferences:
+          - 'default'
+          - 'true'
+          - 'false'
     steps:
       - name: Checkout repository for access
         uses: actions/checkout@v4
@@ -35,6 +39,7 @@ jobs:
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
+      - run: julia -e 'using InteractiveUtils; versioninfo(verbose=true)'
 
       - name: Cache artifacts, etc.
         uses: julia-actions/cache@v2
@@ -44,6 +49,8 @@ jobs:
 
       - name: Run the tests
         uses: julia-actions/julia-runtest@v1
+        env:
+          USE_EXACTPREDICATES: ${{ matrix.preferences }}
 
       - name: Process the coverage
         if: always()

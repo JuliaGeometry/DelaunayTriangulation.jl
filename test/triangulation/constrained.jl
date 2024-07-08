@@ -3,7 +3,7 @@ const DT = DelaunayTriangulation
 using CairoMakie
 using Random
 using StableRNGs
-
+using Preferences
 
 @testset "Random constrained Delaunay triangulations" begin
     for i in 1:25
@@ -91,81 +91,83 @@ end
     end
 end
 
-@testset "Lattice" begin
-    for m in 1:2
-        @info "Testing dense lattice. Run: $m"
-        rng = StableRNG(m)
-        a = 0.0
-        b = 5.0
-        c = -3.0
-        d = 7.0
-        nx = 13
-        ny = 20
-        tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true)
-        add_segment!(tri, 56, 162; rng)
-        for e in [(1, 249), (1, 250), (1, 251), (1, 26), (1, 39), (1, 52)]
-            add_segment!(tri, e; rng)
-        end
-        add_segment!(tri, 190, 99; rng)
-        for e in [(99, 113), (113, 101), (101, 115)]
-            add_segment!(tri, e; rng)
-        end
-        @test validate_triangulation(tri)
+if load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true)
+    @testset "Lattice" begin
+        for m in 1:2
+            @info "Testing dense lattice. Run: $m"
+            rng = StableRNG(m)
+            a = 0.0
+            b = 5.0
+            c = -3.0
+            d = 7.0
+            nx = 13
+            ny = 20
+            tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true)
+            add_segment!(tri, 56, 162; rng)
+            for e in [(1, 249), (1, 250), (1, 251), (1, 26), (1, 39), (1, 52)]
+                add_segment!(tri, e; rng)
+            end
+            add_segment!(tri, 190, 99; rng)
+            for e in [(99, 113), (113, 101), (101, 115)]
+                add_segment!(tri, e; rng)
+            end
+            @test validate_triangulation(tri)
 
-        a = -0.1
-        b = 0.1
-        c = -0.01
-        d = 0.01
-        nx = 25
-        ny = 25
-        tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true)
-        tri = triangulate(get_points(tri))
-        for i in 2:24
-            add_segment!(tri, i, 600 + i; rng)
+            a = -0.1
+            b = 0.1
+            c = -0.01
+            d = 0.01
+            nx = 25
+            ny = 25
+            tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true)
+            tri = triangulate(get_points(tri))
+            for i in 2:24
+                add_segment!(tri, i, 600 + i; rng)
+            end
+            @test validate_triangulation(tri)
+            tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true)
+            tri = triangulate(get_points(tri); rng)
+            for e in [(1, 28), (28, 103), (103, 180), (180, 625), (625, 523)]
+                add_segment!(tri, e; rng)
+            end
+            for e in [(437, 614), (527, 602), (528, 603), (555, 605)]
+                add_segment!(tri, e; rng)
+            end
+            @test validate_triangulation(tri)
         end
-        @test validate_triangulation(tri)
-        tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true)
-        tri = triangulate(get_points(tri); rng)
-        for e in [(1, 28), (28, 103), (103, 180), (180, 625), (625, 523)]
-            add_segment!(tri, e; rng)
-        end
-        for e in [(437, 614), (527, 602), (528, 603), (555, 605)]
-            add_segment!(tri, e; rng)
-        end
-        @test validate_triangulation(tri)
-    end
-    for m in 1:20
-        rng = StableRNG(m)
-        @info "Testing coarse lattice. Run: $m"
-        a = 0.0
-        b = 1.0
-        c = 0.0
-        d = 1.0
-        nx = 2
-        ny = 2
-        tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true)
-        add_segment!(tri, 1, 4; rng)
-        @test validate_triangulation(tri)
+        for m in 1:20
+            rng = StableRNG(m)
+            @info "Testing coarse lattice. Run: $m"
+            a = 0.0
+            b = 1.0
+            c = 0.0
+            d = 1.0
+            nx = 2
+            ny = 2
+            tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true)
+            add_segment!(tri, 1, 4; rng)
+            @test validate_triangulation(tri)
 
-        a = 0
-        b = 1
-        c = 0
-        d = 5
-        nx = 25
-        ny = 3
-        tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true)
-        tri = triangulate(get_points(tri); rng)
-        for i in 1:(nx-1)
-            u = i
-            v = 2nx
-            add_segment!(tri, u, v)
+            a = 0
+            b = 1
+            c = 0
+            d = 5
+            nx = 25
+            ny = 3
+            tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true)
+            tri = triangulate(get_points(tri); rng)
+            for i in 1:(nx-1)
+                u = i
+                v = 2nx
+                add_segment!(tri, u, v)
+            end
+            for i in 51:75
+                u = i
+                v = 26
+                add_segment!(tri, u, v; rng)
+            end
+            @test validate_triangulation(tri)
         end
-        for i in 51:75
-            u = i
-            v = 26
-            add_segment!(tri, u, v; rng)
-        end
-        @test validate_triangulation(tri)
     end
 end
 
@@ -185,34 +187,36 @@ end
     end
 end
 
-@testset "Triangulation with two curves" begin
-    for i in 1:10
-        @info "Testing triangulation of a domain with two curves: Run $i"
-        rng = StableRNG(i)
-        pts = [(rand(rng), rand(rng)) for _ in 1:50]
-        x1 = LinRange(0, 1, 100)
-        y1 = LinRange(0, 0, 100)
-        x2 = LinRange(1, 1, 100)
-        y2 = LinRange(0, 1, 100)
-        x3 = LinRange(1, 0, 100)
-        y3 = LinRange(1, 1, 100)
-        x4 = LinRange(0, 0, 100)
-        y4 = LinRange(1, 0, 100)
-        x = [x1..., x2..., x3..., x4...]
-        y = [y1..., y2..., y3..., y4...]
-        outer_square = [(x, y) for (x, y) in zip(x, y)] |> unique
-        push!(outer_square, outer_square[begin])
-        outer_square_x = [first.(outer_square)]
-        outer_square_y = [last.(outer_square)]
-        circ_pts = [(0.3cos(θ), 0.3sin(θ)) .+ 0.5 for θ in LinRange(2π, 0, 50)]
-        circ_pts[end] = circ_pts[1]
-        inner_circle_x = [first.(circ_pts)]
-        inner_circle_y = [last.(circ_pts)]
-        x = [outer_square_x, inner_circle_x]
-        y = [outer_square_y, inner_circle_y]
-        nodes, pts = convert_boundary_points_to_indices(x, y; existing_points=pts)
-        tri = triangulate(pts; boundary_nodes=nodes, rng)
-        @test validate_triangulation(tri)
+if load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true)
+    @testset "Triangulation with two curves" begin
+        for i in 1:10
+            @info "Testing triangulation of a domain with two curves: Run $i"
+            rng = StableRNG(i)
+            pts = [(rand(rng), rand(rng)) for _ in 1:50]
+            x1 = LinRange(0, 1, 100)
+            y1 = LinRange(0, 0, 100)
+            x2 = LinRange(1, 1, 100)
+            y2 = LinRange(0, 1, 100)
+            x3 = LinRange(1, 0, 100)
+            y3 = LinRange(1, 1, 100)
+            x4 = LinRange(0, 0, 100)
+            y4 = LinRange(1, 0, 100)
+            x = [x1..., x2..., x3..., x4...]
+            y = [y1..., y2..., y3..., y4...]
+            outer_square = [(x, y) for (x, y) in zip(x, y)] |> unique
+            push!(outer_square, outer_square[begin])
+            outer_square_x = [first.(outer_square)]
+            outer_square_y = [last.(outer_square)]
+            circ_pts = [(0.3cos(θ), 0.3sin(θ)) .+ 0.5 for θ in LinRange(2π, 0, 50)]
+            circ_pts[end] = circ_pts[1]
+            inner_circle_x = [first.(circ_pts)]
+            inner_circle_y = [last.(circ_pts)]
+            x = [outer_square_x, inner_circle_x]
+            y = [outer_square_y, inner_circle_y]
+            nodes, pts = convert_boundary_points_to_indices(x, y; existing_points=pts)
+            tri = triangulate(pts; boundary_nodes=nodes, rng)
+            @test validate_triangulation(tri)
+        end
     end
 end
 

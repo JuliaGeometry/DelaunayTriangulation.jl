@@ -14,7 +14,7 @@ getxy((0.0, 0.0)) # avoid shadow
 
 const DT = DelaunayTriangulation
 
-include("triangulation_validation.jl")
+using DelaunayTriangulation: validate_triangulation
 
 function complicated_geometry()
     x1 = [collect(LinRange(0, 2, 4)),
@@ -2197,6 +2197,14 @@ function plot_small_angle_complexes(enricher)
     return fig
 end
 
+using DelaunayTriangulation:
+    test_adjacent2vertex_map_matches_adjacent_map,
+    test_state,
+    test_adjacent_map_matches_adjacent2vertex_map,
+    test_each_edge_has_two_incident_triangles,
+    test_triangle_orientation,
+    test_iterators
+
 export validate_triangulation
 export @_adj
 export _make_graph_from_adjacency
@@ -2210,11 +2218,11 @@ export complicated_geometry
 export validate_refinement
 export validate_statistics
 export validate_tessellation
-export compare_edge_vectors 
-export simple_geometry 
+export compare_edge_vectors
+export simple_geometry
 export fixed_shewchuk_example_constrained
 export ⊢
-export is_sink 
+export is_sink
 export is_conformal
 export _validate_offcenter
 export example_with_special_corners
@@ -2235,12 +2243,6 @@ export get_child_from_tree
 export traverse_tree
 export poor_triangulation_example
 export example_triangulation
-export test_adjacent2vertex_map_matches_adjacent_map
-export test_state 
-export test_adjacent_map_matches_adjacent2vertex_map
-export test_each_edge_has_two_incident_triangles
-export test_triangle_orientation
-export test_iterators
 export example_empty_triangulation
 export shewchuk_example_constrained
 export test_segment_triangle_intersections
@@ -2263,4 +2265,10 @@ export all_points_are_inside
 export all_diametral_circles_are_empty
 export compute_diametral_lens
 export get_points_in_diametral_lens
+export test_adjacent2vertex_map_matches_adjacent_map
+export test_state
+export test_adjacent_map_matches_adjacent2vertex_map
+export test_each_edge_has_two_incident_triangles
+export test_triangle_orientation
+export test_iterators
 end

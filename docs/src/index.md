@@ -18,7 +18,7 @@ This is a package for computing Delaunay triangulations and Voronoi tessellation
 - Computation of the pole of inaccessibility.
 - The interface for defining geometric primitives is fully customisable.
 
-To ensure that the algorithms are robust, we use [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl) to define all geometric predicates in this package. Much of the work in this package is derived from the book [*Delaunay Mesh Generation* by Cheng, Dey, and Shewchuk (2013)](https://people.eecs.berkeley.edu/~jrs/meshbook.html).
+To ensure that the algorithms are robust, we use [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl) to define all geometric predicates in this package. (ExactPredicates.jl can be disabled, as described [here](manual/disabling_ea.md).) Much of the work in this package is derived from the book [*Delaunay Mesh Generation* by Cheng, Dey, and Shewchuk (2013)](https://people.eecs.berkeley.edu/~jrs/meshbook.html).
 
 # Documentation Structure 
 
@@ -71,6 +71,7 @@ When contributing in the form of a pull request, there are a few important featu
 2. **Document any new functions**. If your contribution involves any new functions, make sure they are well documented even if they are only for internal use.
 3. **You need to include appropriate tests for your contribution**. For small changes, simple tests are fine, but for larger changes that implement or change an algorithm, understanding what tests you need to write is crucial when you are implementing a new feature. For example, if you wanted to implement a new algorithm for inserting a curve into a triangulation, you need to make sure that you test things like (1) point sets in general position, (2) point sets with many cocircular points, (3) collinear edges, and so on. In particular, degeneracies are some of the most important things to test for. This is not simple to do if you are inexperienced, so do feel free to ask for guidance.
 4. **Your contribution should only do one thing**. To make sure that it is easy to track your changes, and to make it easier to track regressions across versions, please try to only make your contribution do one thing. For example, do not move around a bunch of files while at the same time implementing a function somewhere else - make two pull requests.
+5. **Add to NEWS.md**. Describe your change in the NEWS.md file.
 
 If you are just contributing something minimal, for example a typo, even a blank PR is fine so long as it is obvious what you have done.
 

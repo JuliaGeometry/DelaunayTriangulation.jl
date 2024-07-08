@@ -28,4 +28,10 @@ Pages = ["src/predicates/boundaries_and_ghosts.jl"]
 
 ```@docs
 convert_certificate
+DefaultAdjacentValue
+𝒢
+GhostVertex
+ε
+∅
+USE_EXACTPREDICATES
 ```
