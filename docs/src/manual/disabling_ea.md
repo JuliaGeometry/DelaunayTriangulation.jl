@@ -4,7 +4,7 @@ CurrentModule = DelaunayTriangulation
 
 # Disabling Exact Predicates
 
-For performance reasons, you may find it useful to want to disable exact predicates using [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl). This can be easily done using a setup with [Preferences.jl](https://github.com/JuliaPackaging/Preferences.jl), but before you consider disabling exact predicates.jl, there are a few things to be aware of. If you just want to disable them without reading a lot of information warning you about the consequences, please skip to the end.
+For performance reasons, you may find it useful to want to disable exact predicates using [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl). This can be easily done using a setup with [Preferences.jl](https://github.com/JuliaPackaging/Preferences.jl), but before you consider disabling exact predicates, there are a few things to be aware of. If you just want to disable them without reading a lot of information warning you about the consequences, please skip to the end.
 
 ## Why use exact predicates?
 
