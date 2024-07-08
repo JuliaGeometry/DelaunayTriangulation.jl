@@ -97,7 +97,7 @@ orient_predicate(::Any, ::Any, ::Any)
 
 @static if USE_EXACTPREDICATES
     orient_predicate(p, q, r) = orient(_getxy(p), _getxy(q), _getxy(r))
-else
+elseif USE_INEXACTPREDICATES
     orient_predicate(p, q, r) = _orient_predicate(_getxy(p), _getxy(q), _getxy(r))
 end
 function _orient_predicate(p, q, r)
@@ -152,7 +152,7 @@ orient_predicate(::Any, ::Any, ::Any, ::Any)
 
 @static if USE_EXACTPREDICATES
     orient_predicate(p, q, r, s) = orient(_getxyz(p), _getxyz(q), _getxyz(r), _getxyz(s))
-else
+elseif USE_INEXACTPREDICATES
     orient_predicate(p, q, r, s) = _orient_predicate(_getxyz(p), _getxyz(q), _getxyz(r), _getxyz(s))
 end
 function _orient_predicate(p, q, r, s)
@@ -190,7 +190,7 @@ incircle_predicate
 
 @static if USE_EXACTPREDICATES
     incircle_predicate(a, b, c, p) = incircle(_getxy(a), _getxy(b), _getxy(c), _getxy(p))
-else
+elseif USE_INEXACTPREDICATES
     incircle_predicate(a, b, c, p) = _incircle_predicate(_getxy(a), _getxy(b), _getxy(c), _getxy(p))
 end
 function _incircle_predicate(p, q, r, a)
@@ -225,7 +225,7 @@ parallelorder_predicate
 
 @static if USE_EXACTPREDICATES
     parallelorder_predicate(a, b, p, q) = parallelorder(_getxy(a), _getxy(b), _getxy(p), _getxy(q))
-else
+elseif USE_INEXACTPREDICATES
     parallelorder_predicate(a, b, p, q) = _parallelorder_predicate(_getxy(a), _getxy(b), _getxy(p), _getxy(q))
 end
 function _parallelorder_predicate(a, b, p, q)
@@ -309,7 +309,7 @@ end
         ExactPredicates.Codegen.group!(qr...)
         return pr[1] * qr[1] + pr[2] * qr[2]
     end
-else
+elseif USE_INEXACTPREDICATES
     function angle_is_acute(p, q, r)
         px, py = _getxy(p)
         qx, qy = _getxy(q)

@@ -1979,7 +1979,7 @@ end
     end
 
     ## Closest point 
-    if load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true)
+    if !USE_INEXACTPREDICATES
         for spl in (spl, pspl)
             for _ in 1:500
                 p = randn(2) * 30 |> Tuple

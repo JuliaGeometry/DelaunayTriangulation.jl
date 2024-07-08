@@ -6,6 +6,8 @@ CurrentModule = DelaunayTriangulation
 
 This section discusses how geometrical predicates are defined in this package. The predicates in this package are primarily derived from those implemented in [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl). The choice of exact predicates is important for the robustness of the algorithms in this package. Without using exact predicates, you may quickly find issues such as infinite loops or errors in the algorithms, as discussed for example at the start of p.3 of [these notes](https://perso.uclouvain.be/jean-francois.remacle/LMECA2170/robnotes.pdf) by Shewchuk. If you do want to disable exact predicates, see [here](disabling_ea.md).
 
+Please also note that the use of ExactPredicates.jl for computing predicates is not part of the API - it is possible that a new system is used in the future for computing predicates. With the `PREDICATES` preference, defined [here](disabling_ea.md), we allow for this possibility; the default for this preference is also not part of the public API.
+
 ## Certificates 
 
 All predicates defined in this package return a [`Certificate`](@ref) which simply specifies the result of the predicate. This is easier than working with `Bool`s only as (1) not all predicates have only two outcomes and (2) it is easier to see the certificate than to remember exactly what outcome is represented by a `Bool`. For example:

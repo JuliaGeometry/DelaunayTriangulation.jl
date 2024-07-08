@@ -279,7 +279,7 @@ end
     end
 end
 
-if load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true)
+if !USE_INEXACTPREDICATES
     @testset "A previously broken example" begin
         for m in 1:100
             a = -0.1

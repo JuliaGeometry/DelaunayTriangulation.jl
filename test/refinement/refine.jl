@@ -435,7 +435,7 @@ end
                         DT.undo_insertion!(tri, history)
                         @test tri.boundary_edge_map == orig_tri.boundary_edge_map
                         validate_statistics(tri)
-                        if load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true)
+                        if !USE_INEXACTPREDICATES
                             @test validate_triangulation(tri)
                         end
                         @test tri == orig_tri
@@ -1710,7 +1710,7 @@ end
     end
 end
 
-if load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true)
+if !USE_INEXACTPREDICATES
     @testset "enqueueing and splitting all encroached segments" begin
         for iii in 1:100
             for use_lens in (false, true)
@@ -2576,7 +2576,7 @@ end
         @test_reference "refining_disjoint_sets.png" fig by = psnr_equality(15)
     end
 
-    if load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true)
+    if !USE_INEXACTPREDICATES
         @testset "Small angles" begin
             ps = 0
             fig = Figure(fontsize=52)
@@ -2777,7 +2777,7 @@ end
         @test_reference "complicated_example_with_tight_walls_and_small_angles.png" fig by = psnr_equality(15)
     end
 
-    if load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true)
+    if !USE_INEXACTPREDICATES
         if !(get(ENV, "CI", "false") == "true")
             @testset "Tasmania" begin
                 rng = StableRNG(123)

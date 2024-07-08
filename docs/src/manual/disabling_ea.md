@@ -2,13 +2,13 @@
 CurrentModule = DelaunayTriangulation
 ```
 
-# Disabling Exact Predicates
+# Disabling Robust Predicates
 
-For performance reasons, you may find it useful to want to disable exact predicates using [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl). This can be easily done using a setup with [Preferences.jl](https://github.com/JuliaPackaging/Preferences.jl), but before you consider disabling exact predicates, there are a few things to be aware of. If you just want to disable them without reading a lot of information warning you about the consequences, please skip to the end.
+For performance reasons, you may find it useful to want to disable robust predicates using [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl). This can be easily done using a setup with [Preferences.jl](https://github.com/JuliaPackaging/Preferences.jl), but before you consider disabling robust predicates, there are a few things to be aware of. If you just want to disable them without reading a lot of information warning you about the consequences, please skip to the end. (In future versions, we may also allow use for adaptive predicates rather than exact predicates.)
 
-## Why use exact predicates?
+## Why use robust predicates?
 
-Three great resources for understanding why we need exact predicates are
+Three great resources for understanding why we need robust predicates are
 
 1. Jonathan Shewchuk's paper on adaptive precision floating-point arithmetic [here](https://doi.org/10.1007/PL00009321).
 2. Jonathan Shewchuk's lecture notes on geometric robustness [here](https://people.eecs.berkeley.edu/~jrs/meshpapers/robnotes.pdf).
@@ -40,7 +40,7 @@ Another issue is due to the fact that floating point arithmetic is not associati
 O_{pqr} = O_{qrp} = O_{rpq},
 ```
 
-but this is not true in floating point arithmetic. This causes issues with consistency - a point may be found to be both left and right of an edge depending on the order of the points given to the `orient` predicate, inevitably leading to an invalid triangulation. With the use of exact predicates, this property is guaranteed to hold, ensuring that all the predicate results are consistent with each other. This has the following consequence: **Even if you think exact predicates are not necessary for you because none of your inputs are exact (for example), you still want them to guarantee consistency with predicates regardless of the input order**.
+but this is not true in floating point arithmetic. This causes issues with consistency - a point may be found to be both left and right of an edge depending on the order of the points given to the `orient` predicate, inevitably leading to an invalid triangulation. With the use of robust predicates, this property is guaranteed to hold, ensuring that all the predicate results are consistent with each other. This has the following consequence: **Even if you think robust predicates are not necessary for you because none of your inputs are exact (for example), you still want them to guarantee consistency with predicates regardless of the input order**.
 
 ## Will disabling exact predicates give me better performance?
 
@@ -50,28 +50,28 @@ One case where you could see improvements would be if there were many collinear 
 
 You should always benchmark your problems to see if disabling exact predicates, if you choose to do, will actually give you better performance.
 
-## How do I disable exact predicates?
+## How do I disable robust predicates?
 
-If you still want to disable exact predicates, here is how you can do so. Before doing `using DelaunayTriangulation`, you can use 
+If you still want to disable robust predicates, here is how you can do so. Before doing `using DelaunayTriangulation`, you can use 
 
 ```julia
 using Preferences: set_preferences! 
-set_preferences!("DelaunayTriangulation", "USE_EXACTPREDICATES" => false)
+set_preferences!("DelaunayTriangulation", "PREDICATES" => "INEXACT")
 using DelaunayTriangulation # only load after setting the preference 
 ```
 
-The `set_preferences!` call will make a `LocalPreferences.toml` file in your directory that sets this preference. Once this file exists you are free to delete `Preferences.jl`. If you want to skip using Preferences.jl entirely, you can also just create `LocalPreferences.toml` in your working directory manually and put 
+(The reason we don't use a Boolean approach and do something like `"USE_EXACTPREDICATES => true"` is in case we want to add another type of method for computing predicates such as adaptive rather than exact methods.) The `set_preferences!` call will make a `LocalPreferences.toml` file in your directory that sets this preference. Once this file exists you are free to delete `Preferences.jl`. If you want to skip using Preferences.jl entirely, you can also just create `LocalPreferences.toml` in your working directory manually and put 
 
 ```
 [DelaunayTriangulation]
-USE_EXACTPREDICATES = false
+PREDICATES = "INEXACT"
 ```
 
-into it. If you later want to re-enable exact predicates, either delete the file or write `USE_EXACTPREDICATES = true` instead. This setup ensures that there is no slowdown in the package from checking if ExactPredicates.jl is being used at runtime, as it is all done at compile time instead.
+into it. If you later want to re-enable robust predicates, either delete the file or write `PREDICATES = "EXACT"` instead. This setup ensures that there is no slowdown in the package from checking if robust predicates are being used at runtime, as it is all done at compile time instead.
 
 ## Can I check if my computed triangulation is valid?
 
-When you are not using exact predicates, you may want to check if your computed triangulation is actually a valid Delaunay triangulation. We provide the function `DelaunayTriangulation.validate_triangulation` for this purpose. This functionality is quite slow to use and is not currently optimised or well-documented (contributions towards addressing these issues are welcome), but it will work. One important note is that this check does actually use predicates in certain areas, so this check is still not guaranteed to be 100% accurate. Here is an example of its use.
+When you are not using robust predicates, you may want to check if your computed triangulation is actually a valid Delaunay triangulation. We provide the function `DelaunayTriangulation.validate_triangulation` for this purpose. This functionality is quite slow to use and is not currently optimised or well-documented (contributions towards addressing these issues are welcome), but it will work. One important note is that this check does actually use predicates in certain areas, so this check is still not guaranteed to be 100% accurate without robust predicates. Here is an example of its use.
 
 ```julia
 using DelaunayTriangulation

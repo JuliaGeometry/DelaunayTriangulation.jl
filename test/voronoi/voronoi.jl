@@ -221,7 +221,7 @@ end
         @test findmin(all_dists)[2] == u
     end
 
-    if load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true)
+    if !USE_INEXACTPREDICATES
         points = [
             (0.0, 0.0), (-1.0, 1.0), (-0.5, 1.0), (0.0, 1.0), (0.5, 1.0), (1.0, 1.0),
             (1.0, 0.8), (1.0, 0.0), (1.0, -0.5), (1.0, -1.0),
@@ -896,7 +896,7 @@ end
     @test flag / tot > 0.9
 end
 
-if load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true)
+if !USE_INEXACTPREDICATES
     @testset "Lattice" begin
         for _ in 1:100
             tri = triangulate_rectangle(0, 1, 0, 1, 11, 11, delete_ghosts=false)

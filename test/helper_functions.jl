@@ -2203,9 +2203,19 @@ using DelaunayTriangulation:
     test_adjacent_map_matches_adjacent2vertex_map,
     test_each_edge_has_two_incident_triangles,
     test_triangle_orientation,
-    test_iterators
+    test_iterators,
+    USE_INEXACTPREDICATES,
+    USE_EXACTPREDICATES
+using Preferences
+if USE_INEXACTPREDICATES 
+    @test load_preference(DelaunayTriangulation, "PREDICATES", "EXACT") == "INEXACT"
+elseif USE_EXACTPREDICATES 
+    @test load_preference(DelaunayTriangulation, "PREDICATES", "EXACT") == "EXACT"
+end
 
 export validate_triangulation
+export USE_INEXACTPREDICATES
+export USE_EXACTPREDICATES
 export @_adj
 export _make_graph_from_adjacency
 export get_random_convex_polygon

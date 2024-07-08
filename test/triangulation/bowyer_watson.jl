@@ -97,7 +97,7 @@ end
     @test validate_triangulation(tri)
 end
 
-if load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true)
+if !USE_INEXACTPREDICATES
     @testset "Lots of collinearity" begin
         _tri = triangulate_rectangle(-3.0, 2.0, 5.0, 17.3, 23, 57; single_boundary=true)
         @test validate_triangulation(_tri)

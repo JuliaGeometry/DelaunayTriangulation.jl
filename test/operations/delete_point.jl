@@ -48,7 +48,7 @@ using StaticArrays
         end
     end
 
-    if load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true)
+    if !USE_INEXACTPREDICATES
         @testset "Lattice with a single boundary index" begin
             for j in 1:20
                 rng1 = StableRNG(j)
