@@ -87,7 +87,7 @@ end
 """
     get_initial_search_point(tri::Triangulation, num_points, new_point, insertion_order, num_sample_rule::F, rng, try_last_inserted_point) where {F} -> Vertex 
 
-For a given iteration of the Bowyer-Watson algorithm, finds the point to start the point location with [`jump_and_march`](@ref) at.
+For a given iteration of the Bowyer-Watson algorithm, finds the point to start the point location with [`find_triangle`](@ref) at.
 
 # Arguments
 - `tri`: The triangulation.
@@ -99,7 +99,7 @@ For a given iteration of the Bowyer-Watson algorithm, finds the point to start t
 - `try_last_inserted_point`: If `true`, then the last inserted point is also considered as the start point. 
 
 # Output
-- `initial_search_point`: The vertex to start the point location with [`jump_and_march`](@ref) at.
+- `initial_search_point`: The vertex to start the point location with [`find_triangle`](@ref) at.
 """
 function get_initial_search_point(tri::Triangulation, num_points, new_point, insertion_order, num_sample_rule::F, rng, try_last_inserted_point) where {F}
     num_currently_inserted = num_points + 3 - 1     # + 3 for the points already inserted
@@ -119,7 +119,7 @@ Adds `new_point` into `tri`.
 # Arguments 
 - `tri`: The triangulation.
 - `new_point`: The point to insert.
-- `initial_search_point::I`: The vertex to start the point location with [`jump_and_march`](@ref) at. See [`get_initial_search_point`](@ref).
+- `initial_search_point::I`: The vertex to start the point location with [`find_triangle`](@ref) at. See [`get_initial_search_point`](@ref).
 - `rng::AbstractRNG`: The random number generator to use.
 - `update_representative_point=true`: If `true`, then the representative point is updated. See [`update_centroid_after_addition!`](@ref).
 - `store_event_history=Val(false)`: If `true`, then the event history from the insertion is stored. 
@@ -132,7 +132,7 @@ Adds `new_point` into `tri`.
 # Extended help 
 This function works as follows:
 
-1. First, the triangle containing the new point, `V`, is found using [`jump_and_march`](@ref).
+1. First, the triangle containing the new point, `V`, is found using [`find_triangle`](@ref).
 2. Once the triangle is found, we call into `add_point_bowyer_watson_and_process_after_found_triangle` to properly insert the point. 
 3. Inside `add_point_bowyer_watson_and_process_after_found_triangle`, we first call into `add_point_bowyer_watson_after_found_triangle` to add the point into the cavity. We then 
    call into `add_point_bowyer_watson_onto_segment` to make any changes necessary incase the triangulation is constrained and `new_point` lies on a segment, since the depth-first search of the triangles containing `new_point` in its circumcenter
@@ -143,7 +143,7 @@ The function [`add_point_bowyer_watson_dig_cavities!`](@ref) is the main workhor
 function add_point_bowyer_watson!(tri::Triangulation, new_point, initial_search_point::I, rng::AbstractRNG=Random.default_rng(), update_representative_point=true, store_event_history=Val(false), event_history=nothing, peek::P=Val(false)) where {I,P}
     _new_point = is_true(peek) ? new_point : I(new_point)
     q = get_point(tri, _new_point)
-    V = jump_and_march(tri, q; m=nothing, point_indices=nothing, try_points=nothing, k=initial_search_point, rng)
+    V = find_triangle(tri, q; m=nothing, point_indices=nothing, try_points=nothing, k=initial_search_point, rng)
     if is_weighted(tri)
         #=
         This part here is why the Bowyer-Watson algorithm is not implemented for weighted triangulations yet. I don't understand why it sometimes 

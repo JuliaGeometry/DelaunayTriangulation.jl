@@ -656,7 +656,7 @@ the two does not intersect any segments.
 - `cert`: A [`Certificate`](@ref). This will be `Visible` if `i` is visible from `q`, and `Invisible` otherwise.
 """
 function test_visibility(tri::Triangulation, q, i)
-    V, invisible_flag = jump_and_march(tri, q; use_barriers=Val(true), k=i, concavity_protection=true)
+    V, invisible_flag = find_triangle(tri, q; use_barriers=Val(true), k=i, concavity_protection=true)
     if invisible_flag
         return Certificate.Invisible
     else

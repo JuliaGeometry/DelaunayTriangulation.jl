@@ -1426,7 +1426,7 @@ Tuple{Bool, Bool, Tuple{Int64, Int64, Int64},         Vector{Float64}, Int64, In
             for j in 1:10
                   p = randn(StableRNG(i * j), 2)
                   δ = DT.distance_to_polygon(p, get_points(tri), get_convex_hull_vertices(tri))
-                  V = jump_and_march(tri, p)
+                  V = find_triangle(tri, p)
                   if DT.is_ghost_triangle(V)
                         @test δ < 0
                   else
@@ -1440,7 +1440,7 @@ Tuple{Bool, Bool, Tuple{Int64, Int64, Int64},         Vector{Float64}, Int64, In
       for i in 1:100
             p = randn(StableRNG(i^2), 2)
             δ = DT.distance_to_polygon(p, get_points(tri), get_boundary_nodes(tri))
-            V = jump_and_march(tri, p; rng=StableRNG(i^3), concavity_protection=true)
+            V = find_triangle(tri, p; rng=StableRNG(i^3), concavity_protection=true)
             if DT.is_ghost_triangle(V)
                   @test δ < 0
             else

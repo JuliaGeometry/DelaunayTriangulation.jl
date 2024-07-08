@@ -30,7 +30,7 @@ See the documentation for more information about mesh refinement, e.g. convergen
 - `use_lens=true`: Whether to use the diametral lens or the diametral circle for checking encroachment.
 - `steiner_scale=0.999`: The perturbation factor to use for generalised Steiner points if `use_circumcenter=false`. (Not currently used - see above.)
 - `rng=Random.default_rng()`: The random number generator to use in case it is needed during point location.
-- `concavity_protection=false`: Whether to use concavity protection or not for [`jump_and_march`](@ref). Most likely not needed, but may help in pathological cases.
+- `concavity_protection=false`: Whether to use concavity protection or not for [`find_triangle`](@ref). Most likely not needed, but may help in pathological cases.
 
 # Output 
 The triangulation is refined in-place.
@@ -236,7 +236,7 @@ end
 """
     locate_steiner_point(tri::Triangulation, args::RefinementArguments, T, c) -> Triangle, Cert 
 
-Locates the Steiner point `c` of a triangle `T` of `tri` in [`get_steiner_point`](@ref). The Steiner point is located by walking from the initial vertex `init` to `c` using [`jump_and_march`](@ref).
+Locates the Steiner point `c` of a triangle `T` of `tri` in [`get_steiner_point`](@ref). The Steiner point is located by walking from the initial vertex `init` to `c` using [`find_triangle`](@ref).
 
 # Arguments
 - `tri::Triangulation`: The [`Triangulation`](@ref) to split a triangle of.
@@ -252,7 +252,7 @@ function locate_steiner_point(tri::Triangulation, args::RefinementArguments, T, 
     flag = point_position_relative_to_triangle(tri, T, c)
     !is_outside(flag) && return T, flag # T is never a ghost triangle, so don't worry about checking is_on(flag) here
     init = get_init_for_steiner_point(tri, T)
-    V, _ = jump_and_march(tri, c; m=nothing, point_indices=nothing, try_points=nothing, k=init, args.rng, args.concavity_protection, use_barriers=Val(true))
+    V, _ = find_triangle(tri, c; m=nothing, point_indices=nothing, try_points=nothing, k=init, args.rng, args.concavity_protection, use_barriers=Val(true))
     flag = point_position_relative_to_triangle(tri, V, c)
     if is_ghost_triangle(V) && is_on(flag)
         V = replace_ghost_triangle_with_boundary_triangle(tri, V)

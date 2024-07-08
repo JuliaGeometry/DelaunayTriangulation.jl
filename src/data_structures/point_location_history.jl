@@ -1,7 +1,7 @@
 """
     PointLocationHistory{T,E,I}
 
-History from using [`jump_and_march`](@ref).
+History from using [`find_triangle`](@ref).
 
 # Fields 
 - `triangles::Vector{T}`: The visited triangles. 

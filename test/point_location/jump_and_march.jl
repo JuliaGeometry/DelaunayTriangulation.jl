@@ -62,12 +62,12 @@ boundary_nodes = get_boundary_nodes(tri)
     for _ in 1:36
         for k in DT.each_point_index(pts)
             for i in eachindex(allq)
-                T1 = jump_and_march(tri, allq[i]; k)
-                T2 = jump_and_march(tri, allq[i])
+                T1 = find_triangle(tri, allq[i]; k)
+                T2 = find_triangle(tri, allq[i])
                 @test DT.is_positively_oriented(DT.triangle_orientation(tri, T1))
                 @test DT.is_positively_oriented(DT.triangle_orientation(tri, T2))
-                @inferred jump_and_march(tri, allq[i]; k)
-                @inferred jump_and_march(tri, allq[i])
+                @inferred find_triangle(tri, allq[i]; k)
+                @inferred find_triangle(tri, allq[i])
                 for V in [T1, T2]
                     if length(allV[i]) == 1
                         @test DT.compare_triangles(V, allV[i][1]) && DT.is_inside(DT.point_position_relative_to_triangle(tri, V, allq[i]))
@@ -132,7 +132,7 @@ rep[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
                             local c
                             c = (p .+ q .+ r) ./ 3
                             for k in DT.each_solid_vertex(tri)
-                                _V = jump_and_march(tri, c; k, concavity_protection=true)
+                                _V = find_triangle(tri, c; k, concavity_protection=true)
                                 @test DT.is_positively_oriented(DT.triangle_orientation(tri, _V))
                                 if !DT.is_ghost_triangle(_V...)
                                     @test DT.compare_triangles(_V, V) &&
@@ -170,7 +170,7 @@ rep[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
                     for k in DT.each_solid_vertex(tri)
                         rand() < 1 / 2 && continue
                         for j in DT.each_solid_vertex(tri)
-                            _V = jump_and_march(tri, get_point(tri, k); k=j)
+                            _V = find_triangle(tri, get_point(tri, k); k=j)
                             @test k ∈ triangle_vertices(_V)
                             @test DT.is_positively_oriented(DT.triangle_orientation(tri, _V))
                         end
@@ -186,7 +186,7 @@ rep[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
                 q = (50randn(), 50rand())
                 for k in DT.each_solid_vertex(tri)
                     rand() < 1 / 2 && continue
-                    _V1 = jump_and_march(tri, q; k)
+                    _V1 = find_triangle(tri, q; k)
                     @test DT.is_inside(DT.point_position_relative_to_triangle(tri, _V1, q))
                 end
             end
@@ -212,7 +212,7 @@ end
     for qi in each_solid_vertex(tri)
         for k in each_solid_vertex(tri)
             q = get_point(tri, qi)
-            T = jump_and_march(tri, q; k)
+            T = find_triangle(tri, q; k)
             @test DT.is_positively_oriented(DT.triangle_orientation(tri, T))
             @test DT.is_on(DT.point_position_relative_to_triangle(tri, T, q))
         end
@@ -289,7 +289,7 @@ end
     T = (i, j, k)
     r = 5
     for i in 1:10000
-        V = jump_and_march(tri, get_point(tri, k); point_indices=nothing, m=nothing, try_points=nothing, k=r, concavity_protection=true)
+        V = find_triangle(tri, get_point(tri, k); point_indices=nothing, m=nothing, try_points=nothing, k=r, concavity_protection=true)
         @test !DT.is_outside(DT.point_position_relative_to_triangle(tri, V, get_point(tri, k)))
     end
 end
@@ -317,7 +317,7 @@ end
     ]
     δs = [DelaunayTriangulation.distance_to_polygon(q, get_points(tri), get_boundary_nodes(tri)) for q in qs]
     for i in 1:1000
-        Vs = [jump_and_march(tri, q, concavity_protection=true, rng=StableRNG(i + j)) for (j, q) in enumerate(qs)]
+        Vs = [find_triangle(tri, q, concavity_protection=true, rng=StableRNG(i + j)) for (j, q) in enumerate(qs)]
         for (q, δ, V) in zip(qs, δs, Vs)
             cert = DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)
             if δ ≥ 0.0
@@ -334,7 +334,7 @@ end
         rng = StableRNG(i)
         qs = [((b - a) * rand(rng) + a, (d - c) * rand(rng) + c) for _ in 1:1000]
         δs = [DelaunayTriangulation.distance_to_polygon(q, get_points(tri), get_boundary_nodes(tri)) for q in qs]
-        Vs = [jump_and_march(tri, q, concavity_protection=true, rng=StableRNG(i + j)) for (j, q) in enumerate(qs)]
+        Vs = [find_triangle(tri, q, concavity_protection=true, rng=StableRNG(i + j)) for (j, q) in enumerate(qs)]
         for (q, δ, V) in zip(qs, δs, Vs)
             cert = DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)
             if δ ≥ 0.0
@@ -377,11 +377,11 @@ end
         (1.5, 2.0), (8.15, 6.0)
     ]
     q = (7.0, 7.0) # When you have a point that is exactly the same as a representative point, you need to be careful of (1) the point being exactly collinear with a ghost edge, and (2) the algorithm mistakenly regarding q as if it were equal to a triangle's vertices (since this is where the ghost vertices map). This is now fixed, but we need this isolated to avoid regressions.
-    V = jump_and_march(tri, q, rng=StableRNG(268), k=31, concavity_protection=true)
+    V = find_triangle(tri, q, rng=StableRNG(268), k=31, concavity_protection=true)
     @test !DT.is_outside(DT.point_position_relative_to_triangle(tri, V, q))
     δs = [DelaunayTriangulation.distance_to_polygon(q, get_points(tri), get_boundary_nodes(tri)) for q in qs]
     for i in 1:1000
-        Vs = [jump_and_march(tri, q; concavity_protection=true, rng=StableRNG(i)) for q in qs]
+        Vs = [find_triangle(tri, q; concavity_protection=true, rng=StableRNG(i)) for q in qs]
         for (q, δ, V) in zip(qs, δs, Vs)
             cert = DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)
             if δ > 0.0
@@ -400,7 +400,7 @@ end
         rng = StableRNG(i)
         qs = [((b - a) * rand(rng) + a, (d - c) * rand(rng) + c) for _ in 1:100]
         δs = [DelaunayTriangulation.distance_to_polygon(q, get_points(tri), get_boundary_nodes(tri)) for q in qs]
-        Vs = [jump_and_march(tri, q, concavity_protection=true, rng=StableRNG(i + j)) for (j, q) in enumerate(qs)]
+        Vs = [find_triangle(tri, q, concavity_protection=true, rng=StableRNG(i + j)) for (j, q) in enumerate(qs)]
         for (q, δ, V) in zip(qs, δs, Vs)
             cert = DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)
             if δ ≥ 0.0
@@ -419,19 +419,19 @@ end
         for _ in 1:10
             points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
             tri = triangulate(points; boundary_nodes=[1, 2, 3, 4, 1], randomise=false)
-            V, invisible_flag = jump_and_march(tri, (1 / 2, -1.0), use_barriers=Val(true), k=4)
+            V, invisible_flag = find_triangle(tri, (1 / 2, -1.0), use_barriers=Val(true), k=4)
             @test invisible_flag && DT.is_invisible(DT.test_visibility(tri, (1 / 2, -1.0), 4))
-            @inferred jump_and_march(tri, (1 / 2, -1.0), use_barriers=Val(true), k=4)
+            @inferred find_triangle(tri, (1 / 2, -1.0), use_barriers=Val(true), k=4)
             @test V == (1, 2, 3)
             @test DT.is_positively_oriented(DT.triangle_orientation(tri, V))
-            V, invisible_flag = jump_and_march(tri, (1 / 2, -1.0), use_barriers=Val(true), k=3)
+            V, invisible_flag = find_triangle(tri, (1 / 2, -1.0), use_barriers=Val(true), k=3)
             @test invisible_flag && DT.is_invisible(DT.test_visibility(tri, (1 / 2, -1.0), 3))
             @test V == (1, 2, 3)
             @test DT.is_positively_oriented(DT.triangle_orientation(tri, V))
-            V, invisible_flag = jump_and_march(tri, (1 / 2, -1.0), use_barriers=Val(true), k=1)
+            V, invisible_flag = find_triangle(tri, (1 / 2, -1.0), use_barriers=Val(true), k=1)
             @test invisible_flag && DT.is_invisible(DT.test_visibility(tri, (1 / 2, -1.0), 1))
             @test DT.is_inside(DT.point_position_relative_to_triangle(tri, V, (1 / 2, -1, 0))) # starting at a boundary edge right next to the query point
-            V, invisible_flag = jump_and_march(tri, (1 / 2, -1.0), use_barriers=Val(true), k=2)
+            V, invisible_flag = find_triangle(tri, (1 / 2, -1.0), use_barriers=Val(true), k=2)
             @test invisible_flag && DT.is_invisible(DT.test_visibility(tri, (1 / 2, -1.0), 2))
             @test DT.is_inside(DT.point_position_relative_to_triangle(tri, V, (1 / 2, -1.0)))
         end
@@ -446,10 +446,10 @@ end
             q1 = (-1.0, 1.0)
             q2 = (-4.0, 1.0)
             q3 = (-8.0, 2.0)
-            V1, invisible_flag1 = jump_and_march(tri, q1, use_barriers=Val(true), k=1)
-            V2, invisible_flag2 = jump_and_march(tri, q2, use_barriers=Val(true), k=1)
-            @inferred jump_and_march(tri, q1, use_barriers=Val(true), k=1)
-            V3, invisible_flag3 = jump_and_march(tri, q3, use_barriers=Val(true), k=1)
+            V1, invisible_flag1 = find_triangle(tri, q1, use_barriers=Val(true), k=1)
+            V2, invisible_flag2 = find_triangle(tri, q2, use_barriers=Val(true), k=1)
+            @inferred find_triangle(tri, q1, use_barriers=Val(true), k=1)
+            V3, invisible_flag3 = find_triangle(tri, q3, use_barriers=Val(true), k=1)
             @test DT.compare_triangles(V1, (9, 8, 1))
             @test DT.is_positively_oriented(DT.triangle_orientation(tri, V1))
             @test DT.compare_triangles(V2, (2, 3, 9))
@@ -459,9 +459,9 @@ end
             @test invisible_flag1 && DT.is_invisible(DT.test_visibility(tri, q1, 1))
             @test !invisible_flag2 && DT.is_visible(DT.test_visibility(tri, q2, 1))
             @test !invisible_flag3 && DT.is_visible(DT.test_visibility(tri, q3, 1))
-            V1, invisible_flag1 = jump_and_march(tri, q1, use_barriers=Val(true), k=2)
-            V2, invisible_flag2 = jump_and_march(tri, q2, use_barriers=Val(true), k=2)
-            V3, invisible_flag3 = jump_and_march(tri, q3, use_barriers=Val(true), k=2)
+            V1, invisible_flag1 = find_triangle(tri, q1, use_barriers=Val(true), k=2)
+            V2, invisible_flag2 = find_triangle(tri, q2, use_barriers=Val(true), k=2)
+            V3, invisible_flag3 = find_triangle(tri, q3, use_barriers=Val(true), k=2)
             @test DT.compare_triangles(V1, (9, 3, 4))
             @test DT.is_inside(DT.point_position_relative_to_triangle(tri, V1, q1))
             @test DT.compare_triangles(V2, (2, 3, 9))
@@ -471,9 +471,9 @@ end
             @test !invisible_flag1 && DT.is_visible(DT.test_visibility(tri, q1, 2))
             @test !invisible_flag2 && DT.is_visible(DT.test_visibility(tri, q2, 2))
             @test !invisible_flag3 && DT.is_visible(DT.test_visibility(tri, q3, 2))
-            V1, invisible_flag1 = jump_and_march(tri, q1, use_barriers=Val(true), k=3)
-            V2, invisible_flag2 = jump_and_march(tri, q2, use_barriers=Val(true), k=3)
-            V3, invisible_flag3 = jump_and_march(tri, q3, use_barriers=Val(true), k=3)
+            V1, invisible_flag1 = find_triangle(tri, q1, use_barriers=Val(true), k=3)
+            V2, invisible_flag2 = find_triangle(tri, q2, use_barriers=Val(true), k=3)
+            V3, invisible_flag3 = find_triangle(tri, q3, use_barriers=Val(true), k=3)
             @test DT.compare_triangles(V1, (9, 3, 4))
             @test DT.is_inside(DT.point_position_relative_to_triangle(tri, V1, q1))
             @test DT.compare_triangles(V2, (2, 3, 9))
@@ -483,9 +483,9 @@ end
             @test !invisible_flag1 && DT.is_visible(DT.test_visibility(tri, q1, 3))
             @test !invisible_flag2 && DT.is_visible(DT.test_visibility(tri, q2, 3))
             @test !invisible_flag3 && DT.is_visible(DT.test_visibility(tri, q3, 3))
-            V1, invisible_flag1 = jump_and_march(tri, q1, use_barriers=Val(true), k=4)
-            V2, invisible_flag2 = jump_and_march(tri, q2, use_barriers=Val(true), k=4)
-            V3, invisible_flag3 = jump_and_march(tri, q3, use_barriers=Val(true), k=4)
+            V1, invisible_flag1 = find_triangle(tri, q1, use_barriers=Val(true), k=4)
+            V2, invisible_flag2 = find_triangle(tri, q2, use_barriers=Val(true), k=4)
+            V3, invisible_flag3 = find_triangle(tri, q3, use_barriers=Val(true), k=4)
             @test DT.compare_triangles(V1, (9, 3, 4))
             @test DT.is_inside(DT.point_position_relative_to_triangle(tri, V1, q1))
             @test DT.compare_triangles(V2, (2, 3, 9))
@@ -495,9 +495,9 @@ end
             @test !invisible_flag1 && DT.is_visible(DT.test_visibility(tri, q1, 4))
             @test !invisible_flag2 && DT.is_visible(DT.test_visibility(tri, q2, 4))
             @test invisible_flag3 && DT.is_invisible(DT.test_visibility(tri, q3, 4))
-            V1, invisible_flag1 = jump_and_march(tri, q1, use_barriers=Val(true), k=5)
-            V2, invisible_flag2 = jump_and_march(tri, q2, use_barriers=Val(true), k=5)
-            V3, invisible_flag3 = jump_and_march(tri, q3, use_barriers=Val(true), k=5)
+            V1, invisible_flag1 = find_triangle(tri, q1, use_barriers=Val(true), k=5)
+            V2, invisible_flag2 = find_triangle(tri, q2, use_barriers=Val(true), k=5)
+            V3, invisible_flag3 = find_triangle(tri, q3, use_barriers=Val(true), k=5)
             @test DT.compare_triangles(V1, (9, 3, 4))
             @test DT.is_inside(DT.point_position_relative_to_triangle(tri, V1, q1))
             @test DT.compare_triangles(V2, (2, 3, 9))
@@ -507,9 +507,9 @@ end
             @test !invisible_flag1 && DT.is_visible(DT.test_visibility(tri, q1, 5))
             @test !invisible_flag2 && DT.is_visible(DT.test_visibility(tri, q2, 5))
             @test !invisible_flag3 && DT.is_visible(DT.test_visibility(tri, q3, 5))
-            V1, invisible_flag1 = jump_and_march(tri, q1, use_barriers=Val(true), k=6)
-            V2, invisible_flag2 = jump_and_march(tri, q2, use_barriers=Val(true), k=6)
-            V3, invisible_flag3 = jump_and_march(tri, q3, use_barriers=Val(true), k=6)
+            V1, invisible_flag1 = find_triangle(tri, q1, use_barriers=Val(true), k=6)
+            V2, invisible_flag2 = find_triangle(tri, q2, use_barriers=Val(true), k=6)
+            V3, invisible_flag3 = find_triangle(tri, q3, use_barriers=Val(true), k=6)
             @test DT.compare_triangles(V1, (9, 3, 4))
             @test DT.is_inside(DT.point_position_relative_to_triangle(tri, V1, q1))
             @test DT.compare_triangles(V2, (2, 3, 9))
@@ -519,9 +519,9 @@ end
             @test !invisible_flag1 && DT.is_visible(DT.test_visibility(tri, q1, 6))
             @test !invisible_flag2 && DT.is_visible(DT.test_visibility(tri, q2, 6))
             @test invisible_flag3 && DT.is_invisible(DT.test_visibility(tri, q3, 6))
-            V1, invisible_flag1 = jump_and_march(tri, q1, use_barriers=Val(true), k=7)
-            V2, invisible_flag2 = jump_and_march(tri, q2, use_barriers=Val(true), k=7)
-            V3, invisible_flag3 = jump_and_march(tri, q3, use_barriers=Val(true), k=7)
+            V1, invisible_flag1 = find_triangle(tri, q1, use_barriers=Val(true), k=7)
+            V2, invisible_flag2 = find_triangle(tri, q2, use_barriers=Val(true), k=7)
+            V3, invisible_flag3 = find_triangle(tri, q3, use_barriers=Val(true), k=7)
             @test DT.compare_triangles(V1, (9, 3, 4))
             @test DT.is_inside(DT.point_position_relative_to_triangle(tri, V1, q1))
             @test DT.compare_triangles(V2, (8, 9, 4))
@@ -531,9 +531,9 @@ end
             @test !invisible_flag1 && DT.is_visible(DT.test_visibility(tri, q1, 7))
             @test invisible_flag2 && DT.is_invisible(DT.test_visibility(tri, q2, 7))
             @test !invisible_flag3 && DT.is_visible(DT.test_visibility(tri, q3, 7))
-            V1, invisible_flag1 = jump_and_march(tri, q1, use_barriers=Val(true), k=8)
-            V2, invisible_flag2 = jump_and_march(tri, q2, use_barriers=Val(true), k=8)
-            V3, invisible_flag3 = jump_and_march(tri, q3, use_barriers=Val(true), k=8)
+            V1, invisible_flag1 = find_triangle(tri, q1, use_barriers=Val(true), k=8)
+            V2, invisible_flag2 = find_triangle(tri, q2, use_barriers=Val(true), k=8)
+            V3, invisible_flag3 = find_triangle(tri, q3, use_barriers=Val(true), k=8)
             @test DT.compare_triangles(V1, (9, 3, 4))
             @test DT.is_inside(DT.point_position_relative_to_triangle(tri, V1, q1))
             @test DT.compare_triangles(V2, (2, 3, 9))
@@ -543,9 +543,9 @@ end
             @test !invisible_flag1 && DT.is_visible(DT.test_visibility(tri, q1, 8))
             @test !invisible_flag2 && DT.is_visible(DT.test_visibility(tri, q2, 8))
             @test !invisible_flag3 && DT.is_visible(DT.test_visibility(tri, q3, 8))
-            V1, invisible_flag1 = jump_and_march(tri, q1, use_barriers=Val(true), k=9)
-            V2, invisible_flag2 = jump_and_march(tri, q2, use_barriers=Val(true), k=9)
-            V3, invisible_flag3 = jump_and_march(tri, q3, use_barriers=Val(true), k=9)
+            V1, invisible_flag1 = find_triangle(tri, q1, use_barriers=Val(true), k=9)
+            V2, invisible_flag2 = find_triangle(tri, q2, use_barriers=Val(true), k=9)
+            V3, invisible_flag3 = find_triangle(tri, q3, use_barriers=Val(true), k=9)
             @test DT.compare_triangles(V1, (9, 3, 4))
             @test DT.is_inside(DT.point_position_relative_to_triangle(tri, V1, q1))
             @test DT.compare_triangles(V2, (2, 3, 9))
@@ -599,7 +599,7 @@ end
             end
 
             _k = findfirst(==(a), points)
-            (VK, flagVK), (VL, flagVL), (VM, flagVM), (VN, flagVN), (VO, flagVO), (VP, flagVP), (VS, flagVS) = jump_and_march.(Ref(tri), all_q; k=_k, use_barriers=Val(true))
+            (VK, flagVK), (VL, flagVL), (VM, flagVM), (VN, flagVN), (VO, flagVO), (VP, flagVP), (VS, flagVS) = find_triangle.(Ref(tri), all_q; k=_k, use_barriers=Val(true))
             #@test blocked_test(VK, (u, f, v))
             #@test visible_test(VL, (f1, g1, k), L1) || visible_test(VL, (f1, k, ℓ), L1) # on (f1, k)
             #@test blocked_test(VM, (d1, r1, g1))
@@ -615,7 +615,7 @@ end
             @test flagVP && DT.is_invisible(DT.test_visibility(tri, P1, _k))
             @test !flagVS && DT.is_visible(DT.test_visibility(tri, S1, _k))
             _k = findfirst(==(q), points)
-            (VK, flagVK), (VL, flagVL), (VM, flagVM), (VN, flagVN), (VO, flagVO), (VP, flagVP), (VS, flagVS) = jump_and_march.(Ref(tri), all_q; k=_k, use_barriers=Val(true))
+            (VK, flagVK), (VL, flagVL), (VM, flagVM), (VN, flagVN), (VO, flagVO), (VP, flagVP), (VS, flagVS) = find_triangle.(Ref(tri), all_q; k=_k, use_barriers=Val(true))
             #@test blocked_test(VK, (q, u, z))
             #@test blocked_test(VL, (h1, z, a1))
             #@test blocked_test(VM, (z, a1, h1))
@@ -631,7 +631,7 @@ end
             @test flagVP && DT.is_invisible(DT.test_visibility(tri, P1, _k))
             @test flagVS && DT.is_invisible(DT.test_visibility(tri, S1, _k))
             _k = findfirst(==(q1), points)
-            (VK, flagVK), (VL, flagVL), (VM, flagVM), (VN, flagVN), (VO, flagVO), (VP, flagVP), (VS, flagVS) = jump_and_march.(Ref(tri), all_q; k=_k, use_barriers=Val(true))
+            (VK, flagVK), (VL, flagVL), (VM, flagVM), (VN, flagVN), (VO, flagVO), (VP, flagVP), (VS, flagVS) = find_triangle.(Ref(tri), all_q; k=_k, use_barriers=Val(true))
             #@test blocked_test(VK, (a1, w, d1))
             #@test blocked_test(VL, (e1, d1, f1))
             #@test blocked_test(VM, (e1, d1, f1))
@@ -647,7 +647,7 @@ end
             @test flagVP && DT.is_invisible(DT.test_visibility(tri, P1, _k))
             @test flagVS && DT.is_invisible(DT.test_visibility(tri, S1, _k))
             _k = findfirst(==(p), points)
-            (VK, flagVK), (VL, flagVL), (VM, flagVM), (VN, flagVN), (VO, flagVO), (VP, flagVP), (VS, flagVS) = jump_and_march.(Ref(tri), all_q; k=_k, use_barriers=Val(true))
+            (VK, flagVK), (VL, flagVL), (VM, flagVM), (VN, flagVN), (VO, flagVO), (VP, flagVP), (VS, flagVS) = find_triangle.(Ref(tri), all_q; k=_k, use_barriers=Val(true))
             #@test blocked_test(VK, (a1, w, d1))
             #@test visible_test(VL, (f1, g1, k), L1) || visible_test(VL, (f1, k, ℓ), L1) # on (f1, k)
             #@test blocked_test(VM, (c1, b1, o))
@@ -663,7 +663,7 @@ end
             @test flagVP && DT.is_invisible(DT.test_visibility(tri, P1, _k))
             @test flagVS && DT.is_invisible(DT.test_visibility(tri, S1, _k))
             _k = findfirst(==(b), points)
-            (VK, flagVK), (VL, flagVL), (VM, flagVM), (VN, flagVN), (VO, flagVO), (VP, flagVP), (VS, flagVS) = jump_and_march.(Ref(tri), all_q; k=_k, use_barriers=Val(true))
+            (VK, flagVK), (VL, flagVL), (VM, flagVM), (VN, flagVN), (VO, flagVO), (VP, flagVP), (VS, flagVS) = find_triangle.(Ref(tri), all_q; k=_k, use_barriers=Val(true))
             @test blocked_test(VK, (b1, e1, f1)) || blocked_test(VK, (a1, w, d1))
             @test visible_test(VL, (f1, g1, k), L1) || visible_test(VL, (f1, k, ℓ), L1) # on (f1, k)
             @test blocked_test(VM, (f1, g1, k))
@@ -680,7 +680,7 @@ end
             @test flagVS && DT.is_invisible(DT.test_visibility(tri, S1, _k))
             add_segment!(tri, findfirst(==(m), points), findfirst(==(ℓ), points))
             push!(all_q, (9.0, 1.0), (9.5, 0.5), (8.9, 1.1))
-            (VK, flagVK), (VL, flagVL), (VM, flagVM), (VN, flagVN), (VO, flagVO), (VP, flagVP), (VS, flagVS), (VH4, flagVH4), (VK9, flagVK9), (VH5, flagVH5) = jump_and_march.(Ref(tri), all_q; k=_k, use_barriers=Val(true))
+            (VK, flagVK), (VL, flagVL), (VM, flagVM), (VN, flagVN), (VO, flagVO), (VP, flagVP), (VS, flagVS), (VH4, flagVH4), (VK9, flagVK9), (VH5, flagVH5) = find_triangle.(Ref(tri), all_q; k=_k, use_barriers=Val(true))
             @test blocked_test(VK, (m, ℓ, b))
             @test blocked_test(VL, (m, ℓ, b))
             @test blocked_test(VM, (m, ℓ, b))
@@ -711,7 +711,7 @@ end
             tri = triangulate(points)
             for _ in 1:20000
                 q = rand(2)
-                V, flag = jump_and_march(tri, q; use_barriers=Val(true))
+                V, flag = find_triangle(tri, q; use_barriers=Val(true))
                 @test !DT.is_outside(DT.point_position_relative_to_triangle(tri, V, q))
                 @test !flag
             end
@@ -731,7 +731,7 @@ end
             while DT.is_boundary_node(tri, k)[1]
                 k = rand(each_solid_vertex(tri))
             end
-            V, flag = jump_and_march(tri, q; k, use_barriers=Val(true))
+            V, flag = find_triangle(tri, q; k, use_barriers=Val(true))
             @test !DT.is_ghost_triangle(V)
         end
     end

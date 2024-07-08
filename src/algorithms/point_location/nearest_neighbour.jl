@@ -8,20 +8,20 @@ Get the index of the nearest neighbour of `q` in `tri_or_vor`.
 - `q`: The point to be located.
 
 # Keyword Arguments
-- `kwargs...`: Keyword arguments passed to [`jump_and_march`](@ref).
+- `kwargs...`: Keyword arguments passed to [`find_triangle`](@ref).
 
 # Output 
 - `i`: The index of the nearest neighbour. This is a point of the triangulation if `tri_or_vor` is a [`Triangulation`](@ref) or of a generator if `tri_or_vor` is a [`VoronoiTessellation`](@ref).
 """
 get_nearest_neighbour
-get_nearest_neighbour(vor::VoronoiTessellation, q; kwargs...) = jump_and_march(vor, q; kwargs...)
+get_nearest_neighbour(vor::VoronoiTessellation, q; kwargs...) = find_triangle(vor, q; kwargs...)
 get_nearest_neighbour(tri::Triangulation, q; kwargs...) = jump_to_voronoi_polygon(tri, q; kwargs...)
 
-function jump_and_march(vor::VoronoiTessellation, q; kwargs...)
+function find_triangle(vor::VoronoiTessellation, q; kwargs...)
     return jump_to_voronoi_polygon(get_triangulation(vor), q; kwargs...)
 end
 function jump_to_voronoi_polygon(tri::Triangulation, q; kwargs...)
-    V = jump_and_march(tri, q; kwargs...)
+    V = find_triangle(tri, q; kwargs...)
     qx, qy = getxy(q)
     V = sort_triangle(V)
     i, j, k = triangle_vertices(V)

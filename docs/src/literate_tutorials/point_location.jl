@@ -4,7 +4,7 @@
 # In this tutorial, we demonstrate how triangulations can be 
 # used to perform point location. The problem of interest is: Given 
 # a point `p` and a triangulation `tri`, what triangle `T` in `tri` 
-# contains `p`? We provide a function [`jump_and_march`](@ref) for this task, 
+# contains `p`? We provide a function [`find_triangle`](@ref) for this task, 
 # implementing the algorithm of [Mücke, Saias, and Zhu (1999)](https://doi.org/10.1016/S0925-7721(98)00035-2).
 # The algorithm has been slightly modified to allow for regions with holes. 
 # Support is also provided for non-convex and disjoint domains, but the algorithm 
@@ -35,30 +35,30 @@ scatter!(ax, q)
 fig
 
 # The aim is to, from `tri`, find which triangle contains the point `q` shown. 
-# Using the `jump_and_march` function, this is simple.
-V = jump_and_march(tri, q)
+# Using the `find_triangle` function, this is simple.
+V = find_triangle(tri, q)
 
 # The result means that the triangle `(2, 7, 6)` contains the point, as we can easily check:
 DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)
 @test DelaunayTriangulation.is_inside(DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)) #src
 
-# When we provide no keyword arguments, the default behaviour of `jump_and_march` is to first 
+# When we provide no keyword arguments, the default behaviour of `find_triangle` is to first 
 # sample some number of points (defaults to $\lceil \sqrt[3]{n}\rceil$, where $n$ is the number of points),
 # and then start at the point that is closest to `q` out of those sampled, then marching along the triangulation
 # until `q` is found. This number of samples can be changed using the `m` keyword argument. For example,
-V = jump_and_march(tri, q, m=10)
+V = find_triangle(tri, q, m=10)
 @test DelaunayTriangulation.is_inside(DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)) #src
 
 # means that we get a sample of size 10, and start at whichever point is the closest.
 # (For technical reasons, this sampling is with replacement, so it is possible that the same point is sampled more than once.)
 # You could also instead specify the point to start at using the `k` keyword argument, in which case no points are sampled.
 # For example, 
-V = jump_and_march(tri, q, k=6)
+V = find_triangle(tri, q, k=6)
 @test DelaunayTriangulation.is_inside(DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)) #src
 
 # starts the algorithm at the point `6`.
 
-# Note also that the triangles found from `jump_and_march` do not have to be given in the same order as they appear 
+# Note also that the triangles found from `find_triangle` do not have to be given in the same order as they appear 
 # in the triangulation. For example, if a triangle `(i, j, k)` contains the point `q`, then any of `(i, j, k)`, `(j, k, i)`, 
 # or `(k, i, j)` could be returned. 
 
@@ -69,7 +69,7 @@ scatter!(ax, q)
 fig
 
 # We obtain:
-V = jump_and_march(tri, q)
+V = find_triangle(tri, q)
 @test DelaunayTriangulation.is_inside(DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)) #src
 
 # See that the result is a ghost triangle `(1, 5, -1)`. As discussed in the [manual](../manual/ghost_triangles.md),
@@ -121,7 +121,7 @@ fig
 load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true) && @test_reference joinpath(fig_path, "point_location_ex_3.png") fig #src
 
 # Now let's find the triangles.
-Vs = [jump_and_march(tri, q; rng) for q in qs]
+Vs = [find_triangle(tri, q; rng) for q in qs]
 
 # While we do find some triangles, they may not all be correct. For example, 
 # the triangle found for `(1.2, 1.6)` is 
@@ -132,7 +132,7 @@ Vs[end]
 # will enable a check to be made that the point is actually outside the triangulation whenever 
 # a ghost triangle is to be returned. If the check finds this to not be the case, it 
 # restarts. With these results, we now compute:
-Vs = [jump_and_march(tri, q; rng, concavity_protection=true) for q in qs]
+Vs = [find_triangle(tri, q; rng, concavity_protection=true) for q in qs]
 
 # Here is how we can actually test that these results are now correct. We cannot directly 
 # use [`DelaunayTriangulation.point_position_relative_to_triangle`](@ref) because it does not
@@ -159,7 +159,7 @@ results
 # ## Disjoint domains 
 # Now we continue the previous example by adding in another set of
 # domains that are disjoint to the current domain, thus allowing us to 
-# demonstrate how `jump_and_march` applies here. The new domain is below,
+# demonstrate how `find_triangle` applies here. The new domain is below,
 # along with the points we will be searching for. 
 m₁, n₁, o₁ = (6.0, 8.0), (8.0, 8.0), (8.0, 4.0)
 p₁, q₁, r₁ = (10.0, 4.0), (6.0, 6.0), (8.0, 6.0)
@@ -184,8 +184,8 @@ scatter!(ax, qs, color=:blue, markersize=16)
 fig
 load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true) && @test_reference joinpath(fig_path, "point_location_ex_4.png") fig by=psnr_equality(10) #src
 
-# Here are the `jump_and_march` results. 
-Vs = [jump_and_march(tri, q; rng, concavity_protection=true) for q in qs]
+# Here are the `find_triangle` results. 
+Vs = [find_triangle(tri, q; rng, concavity_protection=true) for q in qs]
 
 # Again, we can verify that these are all correct as follows. Without `concavity_protection=true`, 
 # these would not be all correct.

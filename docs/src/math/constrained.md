@@ -40,7 +40,7 @@ fig, ax, sc = triplot(tri)
 lines!(ax, [get_point(tri, e...)...], color = :blue, linewidth = 4)
 history = DelaunayTriangulation.PointLocationHistory{NTuple{3,Int},NTuple{2,Int},Int}()
 q = get_point(tri, 7)
-jump_and_march(tri, q; k = 2, history, store_history = Val(true))
+find_triangle(tri, q; k = 2, history, store_history = Val(true))
 lines!(ax, [get_point(tri, 2, history.left_vertices..., 7)...], color = :red, linewidth = 4)
 lines!(ax, [get_point(tri, 2, history.right_vertices..., 7)...], color = :green, linewidth = 4)
 for T in history.triangles

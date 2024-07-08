@@ -16,7 +16,7 @@ end
 Searches for the triangle containing the point `q` by brute force. An exception will be 
 raised if no triangle contains the point.
 
-See also [`jump_and_march`](@ref).
+See also [`find_triangle`](@ref).
 
 # Arguments 
 - `tri::Triangulation`: The [`Triangulation`](@ref).

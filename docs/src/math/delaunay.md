@@ -175,7 +175,7 @@ history = DelaunayTriangulation.PointLocationHistory{NTuple{3,Int},NTuple{2,Int}
 q = (0.8, 0.8)
 p = get_point(tri, 226)
 fig, ax, sc = triplot(tri)
-V = jump_and_march(tri, q; k = 226, store_history = Val(true), history)
+V = find_triangle(tri, q; k = 226, store_history = Val(true), history)
 for T in history.triangles
     ii, jj, kk = triangle_vertices(T)
     pp, qq, rr = get_point(tri, ii, jj, kk)

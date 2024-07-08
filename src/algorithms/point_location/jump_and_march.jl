@@ -36,7 +36,7 @@ end
 @doc """
     select_initial_point(tri::Triangulation, q; kwargs...) -> Vertex
 
-Selects the initial point for [`jump_and_march`](@ref) to start from.
+Selects the initial point for [`find_triangle`](@ref) to start from.
 
 # Arguments 
 - `tri::Triangulation`: The [`Triangulation`](@ref).
@@ -139,7 +139,7 @@ end
 """
     select_initial_triangle_interior_vertex(tri::Triangulation, k, q, store_history=Val(false), history=nothing, rng::AbstractRNG=Random.default_rng()) -> (Point, Vertex, Vertex, Point, Point)
 
-Selects the initial triangle for [`jump_and_march`](@ref) to start from, for the case where `k` is an interior vertex.
+Selects the initial triangle for [`find_triangle`](@ref) to start from, for the case where `k` is an interior vertex.
 
 # Arguments 
 - `tri::Triangulation`: The [`Triangulation`](@ref).
@@ -159,7 +159,7 @@ Selects the initial triangle for [`jump_and_march`](@ref) to start from, for the
 !!! warning "Non-convex geometries"
 
     This function assumes that the geometry is convex. To deal with this, when an infinite loop is detected 
-    we return `∅` for both `i` and `j`, and then let [`jump_and_march`](@ref) handle how to 
+    we return `∅` for both `i` and `j`, and then let [`find_triangle`](@ref) handle how to 
     correct the algorithm from there.    
 
 # Extended help
@@ -261,7 +261,7 @@ function fix_initial_collinear_edge_for_interior_vertex(tri::Triangulation, k, q
                \pᵢ
         Then we want to know if q is to the right of `ppⱼ` (here, `line_cert_j` is the collinear certificate) 
         or to the left. If it is to the left, then it is on the edge `ppⱼ`. This is not a problem, but we let 
-        [`jump_and_march`](@ref) handle this case somewhere else. Thus, we should want to find a case where `q` 
+        [`find_triangle`](@ref) handle this case somewhere else. Thus, we should want to find a case where `q` 
         is right of `ppⱼ` and not handle this interior edge case, so we check `!is_left(on_edge_cert)`. 
         =#
         if !is_left(on_edge_cert)
@@ -360,7 +360,7 @@ See also [`check_for_intersections_with_adjacent_boundary_edges`](@ref), which u
 !!! warning "Non-convex geometries"
 
     This function assumes that the geometry is convex. The function will still be able to return, but `is_outside(q_pos_cert)` may not necessarily mean `q` 
-    is outside of the triangulation. The main function [`jump_and_march`](@ref) will have to restart the algorithm if it is found that `is_outside(q_pos_cert)` 
+    is outside of the triangulation. The main function [`find_triangle`](@ref) will have to restart the algorithm if it is found that `is_outside(q_pos_cert)` 
     was incorrect.
 
 # Extended help 
@@ -588,7 +588,7 @@ function check_for_intersections_with_triangle_left_to_boundary_vertex(tri::Tria
 end
 
 """
-    exterior_jump_and_march(tri::Triangulation, k, q, ghost_vertex=𝒢) -> (Vertex, Vertex)
+    exterior_find_triangle(tri::Triangulation, k, q, ghost_vertex=𝒢) -> (Vertex, Vertex)
 
 Given a query point `q` outside of the triangulation, find the ghost triangle containing `q`.
 
@@ -610,21 +610,21 @@ Given a query point `q` outside of the triangulation, find the ghost triangle co
 # Extended help
 This function works by first finding the position of `q` relative to `pₘp`, where `pₘ` is the representative point for 
 the `ghost_vertex` and `p = get_point(tri, k)`. Depending on this position, we rotate counter-clockwise if `q` is 
-left of the line using `exterior_jump_and_march_rotate_left` and clockwise otherwise using `exterior_jump_and_march_rotate_right`.
+left of the line using `exterior_find_triangle_rotate_left` and clockwise otherwise using `exterior_find_triangle_rotate_right`.
 By keeping track of the current position of `q` and its position relative to the next ghost edge, we can identify when `q` 
 resides inside a ghost triangle.
 """
-function exterior_jump_and_march(tri::Triangulation, k, q, ghost_vertex=integer_type(tri)(𝒢))
+function exterior_find_triangle(tri::Triangulation, k, q, ghost_vertex=integer_type(tri)(𝒢))
     pₘ, pᵢ = get_point(tri, ghost_vertex, k)
     i = k
     q_position = point_position_relative_to_line(pₘ, pᵢ, q)
     if is_left(q_position) # q is left of the ghost edge through pᵢ, so rotate left 
-        return exterior_jump_and_march_rotate_left(tri, q, i, pₘ, ghost_vertex)
+        return exterior_find_triangle_rotate_left(tri, q, i, pₘ, ghost_vertex)
     else # rotate right 
-        return exterior_jump_and_march_rotate_right(tri, q, i, pₘ, ghost_vertex)
+        return exterior_find_triangle_rotate_right(tri, q, i, pₘ, ghost_vertex)
     end
 end
-function exterior_jump_and_march_rotate_left(tri, q, i, pₘ, ghost_vertex)
+function exterior_find_triangle_rotate_left(tri, q, i, pₘ, ghost_vertex)
     j = get_right_boundary_node(tri, i, ghost_vertex)
     pⱼ = get_point(tri, j)
     new_q_pos = point_position_relative_to_line(pₘ, pⱼ, q)
@@ -636,7 +636,7 @@ function exterior_jump_and_march_rotate_left(tri, q, i, pₘ, ghost_vertex)
     end
     return j, i  # Swap the orientation so that i, j is a boundary edge 
 end
-function exterior_jump_and_march_rotate_right(tri, q, i, pₘ, ghost_vertex)
+function exterior_find_triangle_rotate_right(tri, q, i, pₘ, ghost_vertex)
     j = get_left_boundary_node(tri, i, ghost_vertex)
     pⱼ = get_point(tri, j)
     new_q_pos = point_position_relative_to_line(pₘ, pⱼ, q)
@@ -650,7 +650,7 @@ function exterior_jump_and_march_rotate_right(tri, q, i, pₘ, ghost_vertex)
 end
 
 """
-    jump_and_march(tri, q; kwargs...) -> Triangle[, Bool] 
+    find_triangle(tri, q; kwargs...) -> Triangle[, Bool] 
 
 Find the triangle in the triangulation `tri` containing the query point `q` using the jump-and-march algorithm.
 
@@ -666,7 +666,7 @@ Find the triangle in the triangulation `tri` containing the query point `q` usin
 - `k=select_initial_point(tri, q; point_indices, m, try_points, rng)`: The initial point to start the algorithm from. See [`select_initial_point`](@ref).
 - `store_history=Val(false)`: Whether to store the history of the algorithm.
 - `history=nothing`: The history of the algorithm. If `store_history`, then this should be a [`PointLocationHistory`](@ref) object.
-- `maxiters=2 + num_exterior_curves(tri) - num_solid_vertices(tri) + num_solid_edges(tri)`: The maximum number of iterations to perform before restarting the algorithm with [`restart_jump_and_march`](@ref).
+- `maxiters=2 + num_exterior_curves(tri) - num_solid_vertices(tri) + num_solid_edges(tri)`: The maximum number of iterations to perform before restarting the algorithm with [`restart_find_triangle`](@ref).
 
 !!! note "Restarting the algorithm"
 
@@ -718,15 +718,15 @@ The algorithm underlying this function is complicated and broken into many parts
     documentation contains a much more detailed description.
     
 1. Firstly, the algorithm is initialised depending on whether `k` is a boundary or an interior vertex, using 
-     [`initialise_jump_and_march_boundary_vertex`](@ref) or [`initialise_jump_and_march_interior_vertex`](@ref) respectively.
-2. From the initial triangle `(i, j, k)` chosen, we then check if `q` is one of `pᵢ`, `pⱼ`, and `p = pₖ` and then return according to [`jump_and_march_return_on_vertex`](@ref) if needed.
+     [`initialise_find_triangle_boundary_vertex`](@ref) or [`initialise_find_triangle_interior_vertex`](@ref) respectively.
+2. From the initial triangle `(i, j, k)` chosen, we then check if `q` is one of `pᵢ`, `pⱼ`, and `p = pₖ` and then return according to [`find_triangle_return_on_vertex`](@ref) if needed.
 3. If we do not return above, we need to step from the initial triangle towards `q`. Since we put `pᵢ` and `pⱼ`
      to the left and right of the line `pq`, respectively, this means that we step until the triangle `pᵢpⱼq` is no longer 
-     positively oriented. So, while the triangle is positively oriented, we step according to [`jump_and_march_across_triangle`](@ref).
-4. If we have not yet returned and the triangle is no longer positively oriented, we check if the triangle is degenerate using [`jump_and_march_degenerate_arrangement`](@ref)
+     positively oriented. So, while the triangle is positively oriented, we step according to [`find_triangle_across_triangle`](@ref).
+4. If we have not yet returned and the triangle is no longer positively oriented, we check if the triangle is degenerate using [`find_triangle_degenerate_arrangement`](@ref)
      and reinitialise the algorithm if needed. Otherwise, we have found the triangle containing `q` and return the triangle.
 """
-function jump_and_march(tri::Triangulation, _q;
+function find_triangle(tri::Triangulation, _q;
     point_indices=each_solid_vertex(tri),
     m=default_num_samples(num_vertices(point_indices)),
     try_points=(),
@@ -742,11 +742,11 @@ function jump_and_march(tri::Triangulation, _q;
     G = number_type(tri)
     _qx, _qy = getxy(_q)
     q = (G(_qx), G(_qy))
-    return _jump_and_march(tri, q, I(k), store_history, history, rng, maxiters, zero(maxiters), concavity_protection, zero(maxiters), use_barriers)
+    return _find_triangle(tri, q, I(k), store_history, history, rng, maxiters, zero(maxiters), concavity_protection, zero(maxiters), use_barriers)
 end
 
 """
-    initialise_jump_and_march_interior_vertex(tri::Triangulation, q, k, store_history::F, history, rng) -> (Bool, Point, Vertex, Vertex, Point, Point)
+    initialise_find_triangle_interior_vertex(tri::Triangulation, q, k, store_history::F, history, rng) -> (Bool, Point, Vertex, Vertex, Point, Point)
 
 Initialise the jump-and-march algorithm for an interior vertex `k`.
 
@@ -770,7 +770,7 @@ Initialise the jump-and-march algorithm for an interior vertex `k`.
 This function works by simply using [`select_initial_triangle_interior_vertex`](@ref) to find the initial triangle to start from. A check is made 
 to see if the edge `(i, j)` refers to a non-existent edge `($∅, $∅)`, in which case the algorithm needs to be restarted.
 """
-function initialise_jump_and_march_interior_vertex(tri::Triangulation, q, k, store_history::F, history, rng) where {F}
+function initialise_find_triangle_interior_vertex(tri::Triangulation, q, k, store_history::F, history, rng) where {F}
     # If k is not a boundary node, then we can rotate around the point k to find an initial triangle 
     # to start the search. Additionally, if there are no ghost triangles, we can only hope that q 
     # is inside the interior, meaning we should only search for the initial triangle here anyway.
@@ -783,7 +783,7 @@ function initialise_jump_and_march_interior_vertex(tri::Triangulation, q, k, sto
 end
 
 """
-    initialise_jump_and_march_boundary_vertex(tri::Triangulation, q, k, store_history:, history, ghost_vertex, concavity_protection) -> (Bool, Bool, Triangle, Point, Vertex, Vertex, Point, Point)
+    initialise_find_triangle_boundary_vertex(tri::Triangulation, q, k, store_history:, history, ghost_vertex, concavity_protection) -> (Bool, Bool, Triangle, Point, Vertex, Vertex, Point, Point)
 
 Initialise the jump-and-march algorithm for a boundary vertex `k`.
 
@@ -810,17 +810,17 @@ Initialise the jump-and-march algorithm for a boundary vertex `k`.
 There are multiple stages to this initialisation, starting from [`check_for_intersections_with_adjacent_boundary_edges`](@ref). 
 
 - If it is found that `q` is not outside of the triangulation, so that `q` is collinear with one of the boundary edges, then we use [`search_down_adjacent_boundary_edges`](@ref) to find where to start, noting 
-   that we can return immediately if `q` is found to be on an adjacent boundary edge. Otherwise, [`exterior_jump_and_march`](@ref) can then be used to find the ghost triangle containing 
+   that we can return immediately if `q` is found to be on an adjacent boundary edge. Otherwise, [`exterior_find_triangle`](@ref) can then be used to find the ghost triangle containing 
    `q`; if `concavity_protection = true`, then [`concavity_protection_check`](@ref) is used to determine if a restart is needed.
 
 - If is is not found that `q` is outside of the triangulation yet based on information from the adjacent boundary edges, then we need to check the neighbouring 
    interior edges using [`check_for_intersections_with_interior_edges_adjacent_to_boundary_vertex`](@ref), returning early if `q` is found to be inside one of 
    the neighbouring triangles. If the line `pq`, where `p = get_point(tri, k)`, does not intersect any of the neighbouring edges and it is not inside any of 
-   the neighbouring triangles, then it must be outside of the triangulation and so we use [`exterior_jump_and_march`](@ref) to find the triangle; as before, [`concavity_protection_check`](@ref)
+   the neighbouring triangles, then it must be outside of the triangulation and so we use [`exterior_find_triangle`](@ref) to find the triangle; as before, [`concavity_protection_check`](@ref)
    is used on the found ghost triangle if needed. If there is an intersection, then we return the triangle containing the intersection point that we can start the algorithm from, 
    and its associated vertices and points. 
 """
-function initialise_jump_and_march_boundary_vertex(tri::Triangulation, _q, k, store_history::F, history, ghost_vertex, concavity_protection) where {F}
+function initialise_find_triangle_boundary_vertex(tri::Triangulation, _q, k, store_history::F, history, ghost_vertex, concavity_protection) where {F}
     q = getxy(_q) # type stability in case e.g. a user provides a vector into jump and march
     direction, q_pos, next_vertex, right_cert, left_cert =
         check_for_intersections_with_adjacent_boundary_edges(tri, k, q, ghost_vertex)
@@ -831,7 +831,7 @@ function initialise_jump_and_march_boundary_vertex(tri::Triangulation, _q, k, st
         if is_on(q_pos)
             return false, true, construct_triangle(Ttype, u, v, w), q, k, k, q, q # false is the restart_flag, true is the return_flag. We return q, q, q just to get type stability with all returns
         else
-            u, v = exterior_jump_and_march(tri, u, q, ghost_vertex)
+            u, v = exterior_find_triangle(tri, u, q, ghost_vertex)
             w = get_adjacent(tri, u, v)
             V = construct_triangle(Ttype, u, v, w) # Can't just use I(𝒢) here since there could be multiple - just use get_adjacent
             if concavity_protection_check(tri, concavity_protection, V, q)
@@ -847,7 +847,7 @@ function initialise_jump_and_march_boundary_vertex(tri::Triangulation, _q, k, st
     if is_inside(triangle_cert)
         return false, true, construct_triangle(Ttype, i, j, k), q, i, j, q, q
     elseif is_none(edge_cert)
-        u, v = exterior_jump_and_march(tri, k, q, ghost_vertex)
+        u, v = exterior_find_triangle(tri, k, q, ghost_vertex)
         w = get_adjacent(tri, u, v)
         V = construct_triangle(Ttype, u, v, w)
         if concavity_protection_check(tri, concavity_protection, V, q)
@@ -862,7 +862,7 @@ function initialise_jump_and_march_boundary_vertex(tri::Triangulation, _q, k, st
 end
 
 """
-    jump_and_march_return_on_vertex(tri::Triangulation, q, k, p, pᵢ, pⱼ, i, j) -> (Bool, Bool, Triangle)
+    find_triangle_return_on_vertex(tri::Triangulation, q, k, p, pᵢ, pⱼ, i, j) -> (Bool, Bool, Triangle)
 
 Check if `q` is one of the vertices of the triangle `(i, j, k)` and return if needed.
 
@@ -885,7 +885,7 @@ Check if `q` is one of the vertices of the triangle `(i, j, k)` and return if ne
 An extra check is made in this algorithm for the case that the point that `q` is equal to is one of the points corresponding to a ghost vertex, 
 so it may be for example that `q == pᵢ` but `is_ghost_vertex(i)`, in which case the algorithm would need to restart.
 """
-function jump_and_march_return_on_vertex(tri::Triangulation, q, k, p, pᵢ, pⱼ, i, j)
+function find_triangle_return_on_vertex(tri::Triangulation, q, k, p, pᵢ, pⱼ, i, j)
     # Just return where we currently are. We do need to be careful, though: 
     # If k was a ghost vertex, then one of pᵢ or pⱼ could come from the 
     # representative point list, which could mean that q is equal to one of the 
@@ -907,9 +907,9 @@ function jump_and_march_return_on_vertex(tri::Triangulation, q, k, p, pᵢ, pⱼ
 end
 
 """
-    jump_and_march_across_triangle(tri::Triangulation, q, k, store_history, history, maxiters, cur_iter, concavity_protection, arrangement, original_k, last_changed, p, i, j, pᵢ, pⱼ) -> (Bool, Bool, Bool, Triangle, Integer, Certificate, Vertex, Vertex, Vertex, Point, Point, Integer, Integer)
+    find_triangle_across_triangle(tri::Triangulation, q, k, store_history, history, maxiters, cur_iter, concavity_protection, arrangement, original_k, last_changed, p, i, j, pᵢ, pⱼ) -> (Bool, Bool, Bool, Triangle, Integer, Certificate, Vertex, Vertex, Vertex, Point, Point, Integer, Integer)
 
-Walks across the current triangle past the edge `(i, j)`. progressing the [`jump_and_march`](@ref) algorithm.
+Walks across the current triangle past the edge `(i, j)`. progressing the [`find_triangle`](@ref) algorithm.
 
 # Arguments 
 - `tri::Triangulation`: The [`Triangulation`](@ref).
@@ -917,7 +917,7 @@ Walks across the current triangle past the edge `(i, j)`. progressing the [`jump
 - `k`: The vertex that the algorithm started from.
 - `store_history`: Whether to store the history of the algorithm.
 - `history`: The history of the algorithm. If `store_history`, then this should be a [`PointLocationHistory`](@ref) object.
-- `maxiters`: The maximum number of iterations to perform before restarting the algorithm with [`restart_jump_and_march`](@ref).
+- `maxiters`: The maximum number of iterations to perform before restarting the algorithm with [`restart_find_triangle`](@ref).
 - `cur_iter`: The current iteration of the algorithm.
 - `concavity_protection`: Whether to use concavity protection. See [`concavity_protection_check`](@ref). This is only needed if your triangulation is not convex.
 - `arrangement`: A [`Certificate`](@ref) defining the orientation of the triangle `pᵢpⱼq`.
@@ -949,7 +949,7 @@ This part of the algorithm is relatively complicated because there are many case
 and note that the documentation contains a much more detailed description.
 
 1. Firstly, we need to check whether `k` is an exterior ghost vertex or not. If `k` is an exterior ghost vertex, then this means that we are stepping outside of the 
-   triangulation. Thus, we use [`exterior_jump_and_march`](@ref) to find where `q` is, starting from the `last_changed` vertex. If `concavity_protection = true`, then 
+   triangulation. Thus, we use [`exterior_find_triangle`](@ref) to find where `q` is, starting from the `last_changed` vertex. If `concavity_protection = true`, then 
    [`concavity_protection_check`](@ref) is used to determine if a restart is needed, or if we can return safely. If we reach this step but `!has_ghost_triangles(tri)`,
    then the algorithm should need to be reinitialised since `q` should not be outside of the triangulation, and so we return with `reinitialise_flag = true`.
 2. Now we consider the case where `k` is not an exterior ghost vertex. We move forward by updating the value of `k` so that `k = get_adjacent(tri, i, j)`, and then consider where `pₖ` is relative 
@@ -964,7 +964,7 @@ and note that the documentation contains a much more detailed description.
             If `last_changed = i`, then moving left is what caused us to find this collinear edge, and so we send `k` left by letting `i = k`. Otherwise, we send `k` right by letting `j = k`.
 3. Now having stepped forward, we recompute the [`Certificate`](@ref) for arrangement and return, setting `restart_flag = true` if `cur_iters ≥ maxiters`.
 """
-function jump_and_march_across_triangle(tri::Triangulation, q, k, store_history::F, history, maxiters, cur_iter, concavity_protection, arrangement, original_k, last_changed, p, i, j, pᵢ, pⱼ) where {F}
+function find_triangle_across_triangle(tri::Triangulation, q, k, store_history::F, history, maxiters, cur_iter, concavity_protection, arrangement, original_k, last_changed, p, i, j, pᵢ, pⱼ) where {F}
     cur_iter += 1
     if is_true(store_history)
         if last_changed == i
@@ -979,7 +979,7 @@ function jump_and_march_across_triangle(tri::Triangulation, q, k, store_history:
         # ghost triangles, though, we just restart the search. Note that interior boundary indices do not matter since the ghost 
         # triangles there have the same orientation, so we can find them as normal.
         if has_ghost_triangles(tri)
-            i, j = exterior_jump_and_march(tri, last_changed == i ? j : i, q, k) # use last_changed to ensure we get the boundary point
+            i, j = exterior_find_triangle(tri, last_changed == i ? j : i, q, k) # use last_changed to ensure we get the boundary point
             V = construct_triangle(triangle_type(tri), i, j, get_adjacent(tri, i, j))
             if concavity_protection_check(tri, concavity_protection, V, q)
                 return true, false, false, V, cur_iter, arrangement, k, last_changed, original_k, pᵢ, pⱼ, i, j # restart_flag, return_flag, reinitialise_flag, V
@@ -1070,7 +1070,7 @@ function jump_and_march_across_triangle(tri::Triangulation, q, k, store_history:
 end
 
 """
-    jump_and_march_degenerate_arrangement(tri::Triangulation, q, k, store_history::F, history, pᵢ, pⱼ, i, j) -> Bool
+    find_triangle_degenerate_arrangement(tri::Triangulation, q, k, store_history::F, history, pᵢ, pⱼ, i, j) -> Bool
 
 Given a degenerate arrangement `pᵢpⱼq`, reinitialise the jump and march algorithm.
 
@@ -1088,7 +1088,7 @@ Given a degenerate arrangement `pᵢpⱼq`, reinitialise the jump and march algo
 # Outputs
 - `Bool`: Whether the algorithm needs to be restarted.
 """
-function jump_and_march_degenerate_arrangement(tri::Triangulation, q, k, store_history::F, history, pᵢ, pⱼ, i, j) where {F}
+function find_triangle_degenerate_arrangement(tri::Triangulation, q, k, store_history::F, history, pᵢ, pⱼ, i, j) where {F}
     pₖ = get_point(tri, k) # Need to have this here in case we skip the entire loop, above, meaning pₖ won't exist
     in_cert = point_position_relative_to_triangle(pᵢ, pⱼ, pₖ, q) # ... Maybe there is a better way to compute this, reusing previous certificates? Not sure. ...
     if is_true(store_history)
@@ -1100,31 +1100,31 @@ function jump_and_march_degenerate_arrangement(tri::Triangulation, q, k, store_h
     return is_outside(in_cert) # if outside, we need to reinitialise. Otherwise, we're all good.
 end
 
-function _jump_and_march(tri::Triangulation, q, k, store_history::F, history, rng::AbstractRNG, maxiters, cur_iter, concavity_protection, num_restarts, use_barriers::Val{U}) where {F,U}
+function _find_triangle(tri::Triangulation, q, k, store_history::F, history, rng::AbstractRNG, maxiters, cur_iter, concavity_protection, num_restarts, use_barriers::Val{U}) where {F,U}
     is_bnd, ghost_vertex = is_boundary_node(tri, k)
     I = integer_type(tri)
     trit = triangle_type(tri)
     if !(is_bnd && is_exterior_ghost_vertex(tri, ghost_vertex)) || !has_ghost_triangles(tri)
-        restart_flag, p, i, j, pᵢ, pⱼ = initialise_jump_and_march_interior_vertex(tri, q, k, store_history, history, rng)
+        restart_flag, p, i, j, pᵢ, pⱼ = initialise_find_triangle_interior_vertex(tri, q, k, store_history, history, rng)
         if restart_flag && (!(is_bnd && is_interior_ghost_vertex(tri, ghost_vertex)) || !is_true(use_barriers)) # if we are not at an interior boundary node, then we should not have reached a barrier yet. but if we are at such a node, then the only reason to restart is if we have reached a barrier.
-            return restart_jump_and_march(tri, q, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts + 1, use_barriers)
+            return restart_find_triangle(tri, q, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts + 1, use_barriers)
         elseif restart_flag && is_true(use_barriers)
             V = construct_triangle(trit, I(∅), I(∅), I(∅))
             return V, true
         end
     else
-        restart_flag, return_flag, V, p, i, j, pᵢ, pⱼ = initialise_jump_and_march_boundary_vertex(tri, q, k, store_history, history, ghost_vertex, concavity_protection)
+        restart_flag, return_flag, V, p, i, j, pᵢ, pⱼ = initialise_find_triangle_boundary_vertex(tri, q, k, store_history, history, ghost_vertex, concavity_protection)
         if restart_flag && !is_true(use_barriers) 
-            return restart_jump_and_march(tri, q, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts + 1, use_barriers)
+            return restart_find_triangle(tri, q, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts + 1, use_barriers)
         elseif restart_flag && is_true(use_barriers)
             return V, true
         end
         return_flag && return is_true(use_barriers) ? (V, is_ghost_triangle(V)) : V
     end
     if q == p || q == pᵢ || q == pⱼ
-        restart_flag, return_flag, V = jump_and_march_return_on_vertex(tri, q, k, p, pᵢ, pⱼ, i, j)
+        restart_flag, return_flag, V = find_triangle_return_on_vertex(tri, q, k, p, pᵢ, pⱼ, i, j)
         if restart_flag && !is_true(use_barriers) 
-            return restart_jump_and_march(tri, q, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts + 1, use_barriers)
+            return restart_find_triangle(tri, q, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts + 1, use_barriers)
         elseif restart_flag && is_true(use_barriers)
             return V, true
         end
@@ -1147,22 +1147,22 @@ function _jump_and_march(tri::Triangulation, q, k, store_history::F, history, rn
         add_right_vertex!(history, j)
     end
     while is_positively_oriented(arrangement) && !reached_barrier
-        restart_flag, return_flag, reinitialise_flag, V, cur_iter, arrangement, k, last_changed, original_k, pᵢ, pⱼ, i, j = jump_and_march_across_triangle(tri, q, k, store_history, history, maxiters, cur_iter, concavity_protection, arrangement, original_k, last_changed, p, i, j, pᵢ, pⱼ)
+        restart_flag, return_flag, reinitialise_flag, V, cur_iter, arrangement, k, last_changed, original_k, pᵢ, pⱼ, i, j = find_triangle_across_triangle(tri, q, k, store_history, history, maxiters, cur_iter, concavity_protection, arrangement, original_k, last_changed, p, i, j, pᵢ, pⱼ)
         if restart_flag && !is_true(use_barriers) 
-            return restart_jump_and_march(tri, q, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts + 1, use_barriers)
+            return restart_find_triangle(tri, q, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts + 1, use_barriers)
         elseif restart_flag && is_true(use_barriers)
             return V, true
         end
         return_flag && return is_true(use_barriers) ? (V, reached_barrier) : V
-        reinitialise_flag && return _jump_and_march(tri, q, k, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts + 1, use_barriers)
+        reinitialise_flag && return _find_triangle(tri, q, k, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts + 1, use_barriers)
         reached_barrier = is_true(use_barriers) && is_positively_oriented(arrangement) && contains_segment(tri, i, j) # check the arrangement cert since, if it is now negative, then we don't care about the next edge (i, j) because we have reached the triangle
     end
     # We can finish the above loop even if q is not in the triangle, in which case pᵢpⱼq was a straight line. 
     # To clear this up, let us just restart. 
     if is_degenerate(arrangement)
-        reinitialise_flag = jump_and_march_degenerate_arrangement(tri, q, k, store_history, history, pᵢ, pⱼ, i, j)
+        reinitialise_flag = find_triangle_degenerate_arrangement(tri, q, k, store_history, history, pᵢ, pⱼ, i, j)
         if reinitialise_flag && !is_true(use_barriers) 
-            return _jump_and_march(tri, q, last_changed == I(∅) ? i : last_changed, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts + 1, use_barriers)
+            return _find_triangle(tri, q, last_changed == I(∅) ? i : last_changed, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts + 1, use_barriers)
         elseif reinitialise_flag && is_true(use_barriers)
             return V, true
         end
@@ -1171,7 +1171,7 @@ function _jump_and_march(tri::Triangulation, q, k, store_history::F, history, rn
     k = get_adjacent(tri, j, i)
     V = construct_triangle(trit, j, i, k)
     if !reached_barrier && concavity_protection_check(tri, concavity_protection, V, q)
-        return restart_jump_and_march(tri, q, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts + 1, use_barriers)
+        return restart_find_triangle(tri, q, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts + 1, use_barriers)
     end
     if is_true(use_barriers)
         return V, reached_barrier
@@ -1183,7 +1183,7 @@ end
 """
     concavity_protection_check(tri::Triangulation, concavity_protection, V, q) -> Bool
 
-Check whether the [`jump_and_march`](@ref) algorithm needs to restart. This is only needed if `tri` is not convex.
+Check whether the [`find_triangle`](@ref) algorithm needs to restart. This is only needed if `tri` is not convex.
 
 # Arguments
 - `tri::Triangulation`: The [`Triangulation`](@ref).
@@ -1212,9 +1212,9 @@ end
 
 const RESTART_LIMIT = 25
 """
-    restart_jump_and_march(tri::Triangulation, q, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts, use_barriers) -> Triangle[, Bool]
+    restart_find_triangle(tri::Triangulation, q, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts, use_barriers) -> Triangle[, Bool]
 
-Restart the [`jump_and_march`](@ref) algorithm, or use [`brute_force_search`](@ref) to find `q` if `num_restarts ≥ $RESTART_LIMIT`.
+Restart the [`find_triangle`](@ref) algorithm, or use [`brute_force_search`](@ref) to find `q` if `num_restarts ≥ $RESTART_LIMIT`.
 
 # Arguments
 - `tri::Triangulation`: The [`Triangulation`](@ref).
@@ -1222,7 +1222,7 @@ Restart the [`jump_and_march`](@ref) algorithm, or use [`brute_force_search`](@r
 - `store_history`: Whether to store the history of the algorithm.
 - `history`: The history of the algorithm. If `store_history`, then this should be a [`PointLocationHistory`](@ref) object.
 - `rng`: The random number generator to use.
-- `maxiters`: The maximum number of iterations to perform before restarting the algorithm with [`restart_jump_and_march`](@ref).
+- `maxiters`: The maximum number of iterations to perform before restarting the algorithm with [`restart_find_triangle`](@ref).
 - `cur_iter`: The current iteration of the algorithm.
 - `concavity_protection`: Whether to use concavity protection. See [`concavity_protection_check`](@ref). This is only needed if your triangulation is not convex.
 - `num_restarts`: The number of times the algorithm has been restarted. 
@@ -1233,12 +1233,12 @@ Restart the [`jump_and_march`](@ref) algorithm, or use [`brute_force_search`](@r
 
 In addition, if `use_barriers = Val(true)`, then a second output is returned, which is a boolean indicating whether the algorithm reached a barrier (`true`) or not (`false`).
 """
-function restart_jump_and_march(tri, q, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts, use_barriers)
+function restart_find_triangle(tri, q, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts, use_barriers)
     if num_restarts < RESTART_LIMIT
         m = num_solid_vertices(tri)
         point_indices = each_solid_vertex(tri)
         k = select_initial_point(tri, q; m=(m >> 1) + 1, point_indices, rng) # don't want to try all points, still want to give the algorithm a chance
-        return _jump_and_march(tri, q, k, store_history, history, rng, maxiters, zero(cur_iter), concavity_protection, num_restarts, use_barriers)
+        return _find_triangle(tri, q, k, store_history, history, rng, maxiters, zero(cur_iter), concavity_protection, num_restarts, use_barriers)
     else
         V = brute_force_search(tri, q)
         V_is_bad = concavity_protection_check(tri, concavity_protection, V, q)

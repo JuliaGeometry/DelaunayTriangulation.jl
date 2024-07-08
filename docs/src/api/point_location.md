@@ -6,7 +6,7 @@ CurrentModule = DelaunayTriangulation
 
 ```@docs
 brute_force_search
-jump_and_march
+find_triangle
 get_nearest_neighbour
 find_polygon
 ```
