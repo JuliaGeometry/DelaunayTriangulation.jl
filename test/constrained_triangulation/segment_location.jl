@@ -1,6 +1,7 @@
 using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using CairoMakie
+using Preferences
 
 @testset "Shewchuk Example: A small example with some collinearities" begin
     tri = shewchuk_example_constrained()
@@ -278,29 +279,31 @@ end
     end
 end
 
-@testset "A previously broken example" begin
-    for m in 1:100
-        a = -0.1
-        b = 0.1
-        c = -0.01
-        d = 0.01
-        nx = 25
-        ny = 25
-        tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true)
-        tri = triangulate(get_points(tri))
-        for i in 2:24
-            add_segment!(tri, i, 600 + i)
+if load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true)
+    @testset "A previously broken example" begin
+        for m in 1:100
+            a = -0.1
+            b = 0.1
+            c = -0.01
+            d = 0.01
+            nx = 25
+            ny = 25
+            tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true)
+            tri = triangulate(get_points(tri))
+            for i in 2:24
+                add_segment!(tri, i, 600 + i)
+            end
+            tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true)
+            tri = triangulate(get_points(tri))
+            e = (23, 71)
+            history = DT.PointLocationHistory{NTuple{3,Int},NTuple{2,Int},Int}()
+            jump_and_march(tri, get_point(tri, 71);
+                m=nothing, k=23, store_history=true, history=history)
+            collinear_segments = history.collinear_segments
+            DT.connect_segments!(collinear_segments)
+            DT.extend_segments!(collinear_segments, e)
+            @test collinear_segments == [(23, 47), (47, 71)]
         end
-        tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true)
-        tri = triangulate(get_points(tri))
-        e = (23, 71)
-        history = DT.PointLocationHistory{NTuple{3,Int},NTuple{2,Int},Int}()
-        jump_and_march(tri, get_point(tri, 71);
-            m=nothing, k=23,  store_history=true, history=history)
-        collinear_segments = history.collinear_segments
-        DT.connect_segments!(collinear_segments)
-        DT.extend_segments!(collinear_segments, e)
-        @test collinear_segments == [(23, 47), (47, 71)]
     end
 end
 

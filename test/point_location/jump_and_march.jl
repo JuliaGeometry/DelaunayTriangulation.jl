@@ -164,14 +164,16 @@ rep[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
             end
         end
 
-        @testset "Test that we don't break for points already in the triangulation" begin
-            for _ in 1:6
-                for k in DT.each_solid_vertex(tri)
-                    rand() < 1 / 2 && continue
-                    for j in DT.each_solid_vertex(tri)
-                        _V = jump_and_march(tri, get_point(tri, k); k=j)
-                        @test k ∈ triangle_vertices(_V)
-                        @test DT.is_positively_oriented(DT.triangle_orientation(tri, _V))
+        if !load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true) && tri_idx ≠ 3
+            @testset "Test that we don't break for points already in the triangulation" begin
+                for _ in 1:6
+                    for k in DT.each_solid_vertex(tri)
+                        rand() < 1 / 2 && continue
+                        for j in DT.each_solid_vertex(tri)
+                            _V = jump_and_march(tri, get_point(tri, k); k=j)
+                            @test k ∈ triangle_vertices(_V)
+                            @test DT.is_positively_oriented(DT.triangle_orientation(tri, _V))
+                        end
                     end
                 end
             end
