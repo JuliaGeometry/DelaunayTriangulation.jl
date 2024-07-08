@@ -191,7 +191,7 @@ end
             @test !DT.is_submerged(tri, i)
         end
         for i in 1:DT.num_points(tri)
-            @test (DT.is_submerged(tri, i, jump_and_march(tri, get_point(tri, i)))) == (i ∈ submerged)
+            @test (DT.is_submerged(tri, i, find_triangle(tri, get_point(tri, i)))) == (i ∈ submerged)
         end
     end
 end

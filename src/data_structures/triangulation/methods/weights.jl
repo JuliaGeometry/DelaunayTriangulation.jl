@@ -167,7 +167,7 @@ function is_submerged(tri::Triangulation, i)
     # (If the link dies, it is the PhD thesis of Michal Zemek, "Regular Triangulation in 3D and Its Applications".)
     is_ghost_vertex(i) && return false
     q = get_point(tri, i)
-    V = jump_and_march(tri, q)
+    V = find_triangle(tri, q)
     return is_submerged(tri, i, V)
 end
 function is_submerged(tri::Triangulation, i, V) 

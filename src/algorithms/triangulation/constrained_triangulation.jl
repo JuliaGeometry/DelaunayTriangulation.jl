@@ -674,7 +674,7 @@ end
 
 Find all the triangles intersected by an edge `e`.
 
-See also [`jump_and_march`](@ref).
+See also [`find_triangle`](@ref).
 
 # Arguments 
 - `tri::Triangulation`: The [`Triangulation`](@ref).
@@ -696,7 +696,7 @@ function locate_intersecting_triangles(tri::Triangulation, e, rotate=Val(true), 
     history = PointLocationHistory{V,E,I}()
     add_left_vertex!(history, initial(e))
     add_right_vertex!(history, initial(e))
-    jump_and_march(tri, get_point(tri, terminal(e));
+    find_triangle(tri, get_point(tri, terminal(e));
         m=nothing, k=initial(e), store_history=Val(true), history, rng
     )
     add_left_vertex!(history, terminal(e))

@@ -122,7 +122,7 @@ end
         safe_include("point_location/select_initial_triangle_interior_node.jl")
         safe_include("point_location/interior_edge_intersections.jl")
         safe_include("point_location/ghost_search.jl")
-        safe_include("point_location/jump_and_march.jl")
+        safe_include("point_location/find_triangle.jl")
         safe_include("point_location/find_polygon.jl")
     end
 

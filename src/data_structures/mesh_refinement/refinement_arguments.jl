@@ -18,7 +18,7 @@ A struct for storing arguments for mesh refinement.
 - `locked_convex_hull::Bool`: Whether the convex hull of the triangulation had to be locked for refinement. 
 - `had_ghosts::Bool`: Whether the triangulation initially had ghost triangles or not.
 - `rng::R`: The random number generator.
-- `concavity_protection::Bool`: Whether to use concavity protection or not for [`jump_and_march`](@ref). Most likely not needed, but may help in pathological cases.
+- `concavity_protection::Bool`: Whether to use concavity protection or not for [`find_triangle`](@ref). Most likely not needed, but may help in pathological cases.
 
 # Constructors 
 In addition to the default constructor, we provide 

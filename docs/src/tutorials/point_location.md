@@ -7,7 +7,7 @@ EditURL = "https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/d
 In this tutorial, we demonstrate how triangulations can be
 used to perform point location. The problem of interest is: Given
 a point `p` and a triangulation `tri`, what triangle `T` in `tri`
-contains `p`? We provide a function [`jump_and_march`](@ref) for this task,
+contains `p`? We provide a function [`find_triangle`](@ref) for this task,
 implementing the algorithm of [Mücke, Saias, and Zhu (1999)](https://doi.org/10.1016/S0925-7721(98)00035-2).
 The algorithm has been slightly modified to allow for regions with holes.
 Support is also provided for non-convex and disjoint domains, but the algorithm
@@ -37,10 +37,10 @@ fig
 ````
 
 The aim is to, from `tri`, find which triangle contains the point `q` shown.
-Using the `jump_and_march` function, this is simple.
+Using the `find_triangle` function, this is simple.
 
 ````@example point_location
-V = jump_and_march(tri, q)
+V = find_triangle(tri, q)
 ````
 
 The result means that the triangle `(2, 7, 6)` contains the point, as we can easily check:
@@ -49,13 +49,13 @@ The result means that the triangle `(2, 7, 6)` contains the point, as we can eas
 DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)
 ````
 
-When we provide no keyword arguments, the default behaviour of `jump_and_march` is to first
+When we provide no keyword arguments, the default behaviour of `find_triangle` is to first
 sample some number of points (defaults to $\lceil \sqrt[3]{n}\rceil$, where $n$ is the number of points),
 and then start at the point that is closest to `q` out of those sampled, then marching along the triangulation
 until `q` is found. This number of samples can be changed using the `m` keyword argument. For example,
 
 ````@example point_location
-V = jump_and_march(tri, q, m=10)
+V = find_triangle(tri, q, m=10)
 ````
 
 means that we get a sample of size 10, and start at whichever point is the closest.
@@ -64,12 +64,12 @@ You could also instead specify the point to start at using the `k` keyword argum
 For example,
 
 ````@example point_location
-V = jump_and_march(tri, q, k=6)
+V = find_triangle(tri, q, k=6)
 ````
 
 starts the algorithm at the point `6`.
 
-Note also that the triangles found from `jump_and_march` do not have to be given in the same order as they appear
+Note also that the triangles found from `find_triangle` do not have to be given in the same order as they appear
 in the triangulation. For example, if a triangle `(i, j, k)` contains the point `q`, then any of `(i, j, k)`, `(j, k, i)`,
 or `(k, i, j)` could be returned.
 
@@ -85,7 +85,7 @@ fig
 We obtain:
 
 ````@example point_location
-V = jump_and_march(tri, q)
+V = find_triangle(tri, q)
 ````
 
 See that the result is a ghost triangle `(1, 5, -1)`. As discussed in the [manual](../manual/ghost_triangles.md),
@@ -149,7 +149,7 @@ fig
 Now let's find the triangles.
 
 ````@example point_location
-Vs = [jump_and_march(tri, q; rng) for q in qs]
+Vs = [find_triangle(tri, q; rng) for q in qs]
 ````
 
 While we do find some triangles, they may not all be correct. For example,
@@ -160,10 +160,10 @@ Vs[end]
 ````
 
 but the point `(1.2, 1.6)` is actually inside the triangulation. We can even see
-this if we run `jump_and_march` again:
+this if we run `find_triangle` again:
 
 ````@example point_location
-V = jump_and_march(tri, (1.2, 1.6); rng)
+V = find_triangle(tri, (1.2, 1.6); rng)
 ````
 
 To protect against this, you need to use `concavity_protection=true`, which
@@ -172,7 +172,7 @@ a ghost triangle is to be returned. If the check finds this to not be the case, 
 restarts. With these results, we now compute:
 
 ````@example point_location
-Vs = [jump_and_march(tri, q; rng, concavity_protection=true) for q in qs]
+Vs = [find_triangle(tri, q; rng, concavity_protection=true) for q in qs]
 ````
 
 Here is how we can actually test that these results are now correct. We cannot directly
@@ -202,7 +202,7 @@ As we see, the triangles are now all correct.
 ## Disjoint domains
 Now we continue the previous example by adding in another set of
 domains that are disjoint to the current domain, thus allowing us to
-demonstrate how `jump_and_march` applies here. The new domain is below,
+demonstrate how `find_triangle` applies here. The new domain is below,
 along with the points we will be searching for.
 
 ````@example point_location
@@ -229,10 +229,10 @@ scatter!(ax, qs, color=:blue, markersize=16)
 fig
 ````
 
-Here are the `jump_and_march` results.
+Here are the `find_triangle` results.
 
 ````@example point_location
-Vs = [jump_and_march(tri, q; rng, concavity_protection=true) for q in qs]
+Vs = [find_triangle(tri, q; rng, concavity_protection=true) for q in qs]
 ````
 
 Again, we can verify that these are all correct as follows. Without `concavity_protection=true`,
@@ -274,20 +274,20 @@ fig, ax, sc = triplot(tri)
 scatter!(ax, q)
 fig
 
-V = jump_and_march(tri, q)
+V = find_triangle(tri, q)
 
 DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)
 
-V = jump_and_march(tri, q, m=10)
+V = find_triangle(tri, q, m=10)
 
-V = jump_and_march(tri, q, k=6)
+V = find_triangle(tri, q, k=6)
 
 q = (-5.0, 8.0)
 fig, ax, sc = triplot(tri)
 scatter!(ax, q)
 fig
 
-V = jump_and_march(tri, q)
+V = find_triangle(tri, q)
 
 fig, ax, sc = triplot(tri, show_ghost_edges=true)
 scatter!(ax, q)
@@ -321,13 +321,13 @@ fig, ax, sc = triplot(tri, show_ghost_edges=false)
 scatter!(ax, qs, color=:blue, markersize=16)
 fig
 
-Vs = [jump_and_march(tri, q; rng) for q in qs]
+Vs = [find_triangle(tri, q; rng) for q in qs]
 
 Vs[end]
 
-V = jump_and_march(tri, (1.2, 1.6); rng)
+V = find_triangle(tri, (1.2, 1.6); rng)
 
-Vs = [jump_and_march(tri, q; rng, concavity_protection=true) for q in qs]
+Vs = [find_triangle(tri, q; rng, concavity_protection=true) for q in qs]
 
 δs = [DelaunayTriangulation.dist(tri, q) for q in qs]
 results = Vector{Bool}(undef, length(qs))
@@ -365,7 +365,7 @@ fig, ax, sc = triplot(tri)
 scatter!(ax, qs, color=:blue, markersize=16)
 fig
 
-Vs = [jump_and_march(tri, q; rng, concavity_protection=true) for q in qs]
+Vs = [find_triangle(tri, q; rng, concavity_protection=true) for q in qs]
 
 δs = [DelaunayTriangulation.dist(tri, q) for q in qs]
 results = Vector{Bool}(undef, length(qs))

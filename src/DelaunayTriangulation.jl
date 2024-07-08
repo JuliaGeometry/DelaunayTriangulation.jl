@@ -187,6 +187,8 @@ include("algorithms/voronoi/unbounded.jl")
 
 include("validation.jl")
 
+const jump_and_march = find_triangle # Remove in 2.0
+
 export
     each_triangle,
     each_solid_triangle,
@@ -257,6 +259,7 @@ export
     triangulate_rectangle,
     triangulate_convex,
     brute_force_search,
+    find_triangle,
     jump_and_march,
     convert_boundary_points_to_indices,
     refine!,

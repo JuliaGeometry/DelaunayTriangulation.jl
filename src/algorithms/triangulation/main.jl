@@ -90,7 +90,7 @@ Computes the Delaunay triangulation of `points`, and then the constrained Delaun
 - `try_last_inserted_point=true`: Whether to try the last inserted point first when inserting points into the triangulation. 
 - `skip_points=()`: The points to skip when inserting points into the triangulation. 
    Note that, for curve-bounded domains, `skip_points` is ignored when using [`enrich_boundary!`](@ref).
-- `num_sample_rule=default_num_samples`: A function mapping a number of points `n` to a number of samples `m` to use for sampling the initial points during the point location step of the algorithm within [`jump_and_march`](@ref).
+- `num_sample_rule=default_num_samples`: A function mapping a number of points `n` to a number of samples `m` to use for sampling the initial points during the point location step of the algorithm within [`find_triangle`](@ref).
 - `rng::AbstractRNG=Random.default_rng()`: The random number generator.
 - `insertion_order::Vector=get_insertion_order(points, randomise, skip_points, IntegerType, rng)`: The insertion order to use for inserting points into the triangulation. This is ignored if you are defining a curve-bounded domain.
 - `recompute_representative_points=true`: Whether to recompute the representative points after the triangulation is computed. This is done using [`compute_representative_points!`](@ref). 

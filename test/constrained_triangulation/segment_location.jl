@@ -297,7 +297,7 @@ if load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true)
             tri = triangulate(get_points(tri))
             e = (23, 71)
             history = DT.PointLocationHistory{NTuple{3,Int},NTuple{2,Int},Int}()
-            jump_and_march(tri, get_point(tri, 71);
+            find_triangle(tri, get_point(tri, 71);
                 m=nothing, k=23, store_history=true, history=history)
             collinear_segments = history.collinear_segments
             DT.connect_segments!(collinear_segments)
@@ -311,7 +311,7 @@ end
     tri = triangulate_rectangle(0, 5, 0, 10, 6, 11; delete_ghosts=false)
     e = (14, 40)
     history = DT.PointLocationHistory{NTuple{3,Int},NTuple{2,Int},Int}()
-    jump_and_march(tri, get_point(tri, 40);
+    find_triangle(tri, get_point(tri, 40);
         m=nothing, k=14, store_history=true, history=history)
     collinear_segments = history.collinear_segments
     DT.fix_segments!(collinear_segments, history.collinear_point_indices)
@@ -321,7 +321,7 @@ end
 
     e = (2, 54)
     history = DT.PointLocationHistory{NTuple{3,Int},NTuple{2,Int},Int}()
-    jump_and_march(tri, get_point(tri, 54);
+    find_triangle(tri, get_point(tri, 54);
         m=nothing, k=2, store_history=true, history=history)
     collinear_segments = history.collinear_segments
     bad_indices = history.collinear_point_indices

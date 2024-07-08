@@ -654,7 +654,7 @@ end
                         for k in each_solid_vertex(tri)
                               q = get_point(tri, qi)
                               history = DT.PointLocationHistory{NTuple{3,Int},NTuple{2,Int},Int}()
-                              jump_and_march(tri, q;
+                              find_triangle(tri, q;
                                     k,
                                     store_history=true,
                                     history)

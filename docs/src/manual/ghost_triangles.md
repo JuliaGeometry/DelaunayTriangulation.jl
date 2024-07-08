@@ -42,4 +42,4 @@ fig
 
 As you can see, the outer boundary has ghost edges (shown in blue) going out to infinity, oriented with the pole of inaccessibility of the entire domain (shown in red). The ghost edges along the circular boundary are finite and simply connect with the pole of inaccessibility of the circle (shown in magenta). 
 
-For more complex domains, in particular non-convex domains, the ghost edges start to overlap and they become less useful, which unfortunately slows down point location (see [`jump_and_march`](@ref)'s docstring).
+For more complex domains, in particular non-convex domains, the ghost edges start to overlap and they become less useful, which unfortunately slows down point location (see [`find_triangle`](@ref)'s docstring).

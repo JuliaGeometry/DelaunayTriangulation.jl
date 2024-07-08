@@ -1340,7 +1340,7 @@ function validate_refinement(tri, args; check_conformal=true, warn=true)
             minθ = min(minθ, t1, t2, t3)
             maxθ = max(maxθ, t1, t2, t3)
         end
-        V = jump_and_march(tri, steiner_point)
+        V = find_triangle(tri, steiner_point)
         flag = DT.point_position_relative_to_triangle(tri, V, steiner_point)
         if DT.is_on(flag) && DT.is_ghost_triangle(V)
             V = DT.replace_ghost_triangle_with_boundary_triangle(tri, V)
