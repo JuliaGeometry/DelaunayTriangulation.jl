@@ -52,33 +52,44 @@ toggle_inf_warn!() = (INF_WARN[] = !INF_WARN[])
 end
 
 @static if VERSION ≥ v"1.6"
-    const USE_EXACTPREDICATES = @load_preference("USE_EXACTPREDICATES", true)::Bool
+    const PREDICATES = @load_preference("PREDICATES", "EXACT")::String # This default is not guaranteed to be consistent between versions
 else 
-    const USE_EXACTPREDICATES = true 
+    const PREDICATES = "EXACT"
 end
+@static if PREDICATES ∉ ("EXACT", "INEXACT")
+    throw("You have set the PREDICATES option to PREDICATES = $PREDICATES. This is not allowed, only EXACT or INEXACT are possible choices.")
+end
+
 @doc """
-    USE_EXACTPREDICATES
+    PREDICATES 
 
-Whether to use ExactPredicates.jl for computing predicates. By default, 
-this is true, but a user can change this by defining a preference with Preferences.jl, i.e. 
-you could do the following 
+Type of predicates to use. This can be either 
 
+- `PREDICATES = "EXACT"`: Use ExactPredicates.jl.
+- `PREDICATES = "INEXACT"`: Compute the predicates numerically without any extra checks.
+
+(In the future, this may include `"ADAPTIVE"`.) By default this is assumed to be 
+`"EXACT"`, but this default is not guaranteed to be the same across versions. 
+You can change this setting using Preferences.jl. For example, to 
+use inexact predicates, do
 ```julia-repl
 julia> using Preferences: set_preferences!
 
-julia> set_preferences!("DelaunayTriangulation", "USE_EXACTPREDICATES" => false)
+julia> set_preferences!("DelaunayTriangulation", "PREDICATES" => "INEXACT")
 
 julia> using DelaunayTriangulation # load only after setting the preference
 
-julia> DelaunayTriangulation.USE_EXACTPREDICATES
-false
+julia> DelaunayTriangulation.PREDICATES
+"INEXACT"
 ```
-
-You have set `USE_EXACTPREDICATES = $USE_EXACTPREDICATES`. 
 
 !!! note "Precision"
 
-    Even if you have disabled ExactPredicates.jl, the predicates 
-    are still computed in Float64 precision.
+    Regardless of the setting, all coordinates are computed to `Float64` before 
+    computing any predicates.
 """
-USE_EXACTPREDICATES
+PREDICATES
+
+const USE_EXACTPREDICATES = PREDICATES == "EXACT"
+const USE_INEXACTPREDICATES = PREDICATES == "INEXACT"
+

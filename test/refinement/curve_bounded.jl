@@ -1450,7 +1450,7 @@ end
         point_sets = deepcopy.([points_I, points_II, points_III, points_IV, points_V, points_VI, points_VII, points_VIII, points_IX, points_X, points_XI, points_XII])
         curve_sets = deepcopy.([curve_I, curve_II, curve_III, curve_IV, curve_V, curve_VI, curve_VII, curve_VIII, curve_IX, curve_X, curve_XI, curve_XII])
         for i in eachindex(point_sets, curve_sets)
-            if !load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true) && i == 4 
+            if USE_INEXACTPREDICATES && i == 4 
                 continue 
             end
             points, curve = deepcopy(point_sets[i]), deepcopy(curve_sets[i])
@@ -1520,7 +1520,7 @@ end
             (1e-1, 1e-2)
         ]
         for curve_idx in 4:lastindex(curve_sets)
-            if curve_idx ∈ (4, 6, 12) && !load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true)
+            if curve_idx ∈ (4, 6, 12) && !!USE_INEXACTPREDICATES
                 continue 
             end
             for point_idx in 1:3

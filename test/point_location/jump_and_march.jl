@@ -122,7 +122,7 @@ rep[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
             rep[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
         end
 
-        if load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true)
+        if !USE_INEXACTPREDICATES
             @testset "Test that we can find a point in every triangle" begin
                 for run in 1:6
                     for V in each_triangle(tri.triangles)
@@ -165,7 +165,7 @@ rep[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
             end
         end
 
-        if !load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true) && tri_idx ≠ 3
+        if !!USE_INEXACTPREDICATES && tri_idx ≠ 3
             @testset "Test that we don't break for points already in the triangulation" begin
                 for _ in 1:6
                     for k in DT.each_solid_vertex(tri)

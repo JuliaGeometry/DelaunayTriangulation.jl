@@ -142,7 +142,7 @@ end
     validate_statistics(tri)
 end
 
-if load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true)
+if !USE_INEXACTPREDICATES
     @testset "Interior holes that were already triangles" begin
         p1 = (0.0, 0.0)
         p2 = (1.0, 0.0)

@@ -91,7 +91,7 @@ end
     end
 end
 
-if load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true)
+if !USE_INEXACTPREDICATES
     @testset "Lattice" begin
         for m in 1:2
             @info "Testing dense lattice. Run: $m"
@@ -187,7 +187,7 @@ end
     end
 end
 
-if load_preference(DelaunayTriangulation, "USE_EXACTPREDICATES", true)
+if !USE_INEXACTPREDICATES
     @testset "Triangulation with two curves" begin
         for i in 1:10
             @info "Testing triangulation of a domain with two curves: Run $i"

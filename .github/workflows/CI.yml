@@ -27,9 +27,9 @@ jobs:
         arch:
           - x64
         preferences:
-          - 'default'
-          - 'true'
-          - 'false'
+          - 'DEFAULT'
+          - 'EXACT'
+          - 'INEXACT'
     steps:
       - name: Checkout repository for access
         uses: actions/checkout@v4
@@ -50,7 +50,7 @@ jobs:
       - name: Run the tests
         uses: julia-actions/julia-runtest@v1
         env:
-          USE_EXACTPREDICATES: ${{ matrix.preferences }}
+          PREDICATES: ${{ matrix.preferences }}
 
       - name: Process the coverage
         if: always()
