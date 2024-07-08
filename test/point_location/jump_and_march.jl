@@ -6,6 +6,7 @@ using StableRNGs
 using StatsBase
 using Preferences
 
+@test find_triangle === jump_and_march
 
 tri, label_map, index_map = simple_geometry()
 add_ghost_triangles!(tri)
@@ -62,12 +63,12 @@ boundary_nodes = get_boundary_nodes(tri)
     for _ in 1:36
         for k in DT.each_point_index(pts)
             for i in eachindex(allq)
-                T1 = find_triangle(tri, allq[i]; k)
-                T2 = find_triangle(tri, allq[i])
+                T1 = jump_and_march(tri, allq[i]; k)
+                T2 = jump_and_march(tri, allq[i])
                 @test DT.is_positively_oriented(DT.triangle_orientation(tri, T1))
                 @test DT.is_positively_oriented(DT.triangle_orientation(tri, T2))
-                @inferred find_triangle(tri, allq[i]; k)
-                @inferred find_triangle(tri, allq[i])
+                @inferred jump_and_march(tri, allq[i]; k)
+                @inferred jump_and_march(tri, allq[i])
                 for V in [T1, T2]
                     if length(allV[i]) == 1
                         @test DT.compare_triangles(V, allV[i][1]) && DT.is_inside(DT.point_position_relative_to_triangle(tri, V, allq[i]))
@@ -428,7 +429,7 @@ end
             @test invisible_flag && DT.is_invisible(DT.test_visibility(tri, (1 / 2, -1.0), 3))
             @test V == (1, 2, 3)
             @test DT.is_positively_oriented(DT.triangle_orientation(tri, V))
-            V, invisible_flag = find_triangle(tri, (1 / 2, -1.0), use_barriers=Val(true), k=1)
+            V, invisible_flag = jump_and_march(tri, (1 / 2, -1.0), use_barriers=Val(true), k=1)
             @test invisible_flag && DT.is_invisible(DT.test_visibility(tri, (1 / 2, -1.0), 1))
             @test DT.is_inside(DT.point_position_relative_to_triangle(tri, V, (1 / 2, -1, 0))) # starting at a boundary edge right next to the query point
             V, invisible_flag = find_triangle(tri, (1 / 2, -1.0), use_barriers=Val(true), k=2)
