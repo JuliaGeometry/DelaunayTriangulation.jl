@@ -52,7 +52,7 @@ function safe_include(filename; name=filename, push=true, verbose = true) # Work
     push && push!(ALL_TEST_SCRIPTS, normpath(filename))
     mod = @eval module $(gensym()) end
     @info "[$(ct())] Testing $name"
-    @testset verbose = verbose "$name" begin
+    @testset verbose = verbose "$(basename(name))" begin
         @eval mod using ..HelperFunctions
         @eval mod using ..Test
         Base.include(mod, filename)

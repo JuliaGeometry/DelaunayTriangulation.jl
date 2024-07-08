@@ -1224,17 +1224,19 @@ end
 end
 
 @testset "replace_(boundary/ghost)_triangle_with_(ghost/boundary)_triangle" begin
-      tri = triangulate(rand(2, 5000), delete_ghosts=false)
-      _tri = triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 25, 25, delete_ghosts=false)
-      for tri in (tri, _tri)
-            for T in each_ghost_triangle(tri)
-                  T = DT.sort_triangle(T)
-                  i, j, k = triangle_vertices(T)
-                  w = get_adjacent(tri, j, i)
-                  V = (j, i, w)
-                  @test DT.replace_boundary_triangle_with_ghost_triangle(tri, V) == T
-                  @test DT.replace_ghost_triangle_with_boundary_triangle(tri, T) == V
-                  if (i, j) ∉ ((624, 625), (1, 26), (2, 1), (625, 600)) # corners of the lattice have two associated ghosts
+      for _ in 1:10
+            tri = triangulate(rand(2, 5000), delete_ghosts=false)
+            _tri = triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 25, 25, delete_ghosts=false)
+            for tri in (tri, _tri)
+                  for T in each_ghost_triangle(tri)
+                        T = DT.sort_triangle(T)
+                        i, j, k = triangle_vertices(T)
+                        w = get_adjacent(tri, j, i)
+                        V = (j, i, w)
+                        kr = count(e -> DT.is_boundary_edge(tri, e...), DT.triangle_edges(V))
+                        kr == 2 && continue # two associated ghosts, test is not clear
+                        @test DT.replace_boundary_triangle_with_ghost_triangle(tri, V) == T
+                        @test DT.replace_ghost_triangle_with_boundary_triangle(tri, T) == V
                         V = (i, w, j)
                         @test DT.replace_boundary_triangle_with_ghost_triangle(tri, V) == T
                         @test DT.replace_ghost_triangle_with_boundary_triangle(tri, T) == (j, i, w)

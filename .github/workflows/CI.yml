@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 jobs:
   test:
-    name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }} - ExactPredicates ${{ matrix.preferences }}
+    name: Julia ${{ matrix.version }} - ${{ matrix.arch }} - ${{ github.event_name }} - ExactPredicates ${{ matrix.preferences }} - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     env:
       JULIA_NUM_THREADS: ${{ matrix.julia-threads }}
