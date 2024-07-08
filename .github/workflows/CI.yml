@@ -27,9 +27,9 @@ jobs:
         arch:
           - x64
         preferences:
-          - 'default'
-          - 'exact'
-          - 'inexact'
+          - 'DEFAULT'
+          - 'EXACT'
+          - 'INEXACT'
     steps:
       - name: Checkout repository for access
         uses: actions/checkout@v4

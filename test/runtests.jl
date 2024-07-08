@@ -5,7 +5,7 @@ if PREDICATES == "EXACT"
     set_preferences!("DelaunayTriangulation", "PREDICATES" => "EXACT")
 elseif PREDICATES == "INEXACT" 
     set_preferences!("DelaunayTriangulation", "PREDICATES" => "INEXACT")
-elseif PREDICATES != "default"
+elseif PREDICATES != "DEFAULT"
     throw("Invalid PREDICATES setting, $PREDICATES.")
 end # if PREDICATES == "default", do nothing
 
