@@ -22,7 +22,7 @@ a centroid which is not always inside the polygon. Some useful links are [this b
 and the [the original repo](https://github.com/mapbox/polylabel). Our implementation is partially based on 
 on [the python implementation](https://github.com/Twista/python-polylabel) and [this other Julia implementation](https://github.com/asinghvi17/Polylabel.jl).
 """
-function pole_of_inaccessibility(points, boundary_nodes; precision=one(number_type(points)))
+function pole_of_inaccessibility(points, boundary_nodes; precision = one(number_type(points)))
     ## Initiate
     xmin, xmax, ymin, ymax = polygon_bounds(points, boundary_nodes)
     width = xmax - xmin
@@ -37,6 +37,7 @@ function pole_of_inaccessibility(points, boundary_nodes; precision=one(number_ty
     end
     half_width = min_extent / 2
 
+
     ## Initialise the priority queue and decide if the polygon centroid of bounding box centroid is the best initial guess
     _, centroid = polygon_features(points, boundary_nodes)
     centroid_cell = Cell(getx(centroid), gety(centroid), zero(half_width), points, boundary_nodes)
@@ -44,6 +45,7 @@ function pole_of_inaccessibility(points, boundary_nodes; precision=one(number_ty
     best_cell = centroid_cell.dist > bounding_box_cell.dist ? centroid_cell : bounding_box_cell
     queue = CellQueue{number_type(points)}()
     insert_cell!(queue, best_cell)
+
 
     ## Now fill the bounding box with more cells
     x = xmin
@@ -57,6 +59,7 @@ function pole_of_inaccessibility(points, boundary_nodes; precision=one(number_ty
         x += min_extent
     end
 
+
     ## Now let us process all the current cells. The idea is to try and find the best cell, and any bad cells are split into four.
     itr = 1
     while !isempty(queue)
@@ -64,11 +67,14 @@ function pole_of_inaccessibility(points, boundary_nodes; precision=one(number_ty
         best_cell = process_cell!(queue, best_cell, points, boundary_nodes, precision)
     end
 
+
     ## We are done, and the last best_cell is the solution 
     return best_cell.x, best_cell.y
 end
-function process_cell!(queue::CellQueue{F}, best_cell::Cell{F}, points, boundary_nodes,
-    precision) where {F}
+function process_cell!(
+        queue::CellQueue{F}, best_cell::Cell{F}, points, boundary_nodes,
+        precision,
+    ) where {F}
     next_cell = get_next_cell!(queue)
     if next_cell.dist > best_cell.dist
         best_cell = next_cell # This cell will have a large circle, so let's choose it 

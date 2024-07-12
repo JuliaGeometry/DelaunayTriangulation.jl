@@ -24,7 +24,7 @@ A cache to be used as a field in [`Triangulation`](@ref).
 
     The `points` of the cache's `triangulation` will be aliased to the `points` of the parent triangulation.
 """
-struct TriangulationCache{T,M,I,S,F}
+struct TriangulationCache{T, M, I, S, F}
     triangulation::T
     triangulation_2::T
     marked_vertices::M
@@ -40,12 +40,14 @@ function Base.show(io::IO, ::MIME"text/plain", cache::TriangulationCache)
     end
 end
 
+
 """
     get_triangulation(cache::TriangulationCache) -> Triangulation
 
 Returns the [`Triangulation`](@ref) stored in `cache`.
 """
 get_triangulation(cache::TriangulationCache) = cache.triangulation
+
 
 """
     get_triangulation_2(cache::TriangulationCache) -> Triangulation
@@ -54,12 +56,14 @@ Returns the second [`Triangulation`](@ref) stored in `cache`.
 """
 get_triangulation_2(cache::TriangulationCache) = cache.triangulation_2
 
+
 """
     get_marked_vertices(cache::TriangulationCache) -> Vector{Vertex}
 
 Returns the marked vertices stored in `cache`.
 """
 get_marked_vertices(cache::TriangulationCache) = cache.marked_vertices
+
 
 """
     get_interior_segments_on_hull(cache::TriangulationCache) -> Set{Edge}
@@ -68,6 +72,7 @@ Returns the interior segments on the convex hull of the triangulation stored in 
 """
 get_interior_segments_on_hull(cache::TriangulationCache) = cache.interior_segments_on_hull
 
+
 """
     get_surrounding_polygon(cache::TriangulationCache) -> Vector{Vertex}
 
@@ -75,12 +80,14 @@ Returns the polygon surrounding the triangulation stored in `cache`.
 """
 get_surrounding_polygon(cache::TriangulationCache) = cache.surrounding_polygon
 
+
 """
     get_fan_triangles(cache::TriangulationCache) -> Triangles 
 
 Returns the triangles in a fan stored in `cache`.
 """
 get_fan_triangles(cache::TriangulationCache) = cache.fan_triangles
+
 
 """
     empty!(cache::TriangulationCache) 
@@ -102,6 +109,7 @@ function Base.empty!(cache::TriangulationCache)
     empty!(fan_triangles)
     return cache
 end
+
 
 """
     empty_unconstrained_triangulation!(tri::Triangulation)

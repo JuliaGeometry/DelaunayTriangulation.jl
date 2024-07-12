@@ -28,7 +28,7 @@ In addition to the default constructor, we provide
 for constructing this struct. This constructor will lock the convex hull and add ghost triangles to `tri` if
 needed ([`refine!`](@ref) will undo these changes once the refinement is finished))
 """
-struct RefinementArguments{Q,C,H,I,E,R,T}
+struct RefinementArguments{Q, C, H, I, E, R, T}
     queue::Q
     constraints::C
     events::H
@@ -46,6 +46,7 @@ struct RefinementArguments{Q,C,H,I,E,R,T}
     concavity_protection::Bool
 end
 
+
 """
     RefinementArguments(tri::Triangulation; kwargs...) -> RefinementArguments
 
@@ -58,19 +59,21 @@ match those from [`refine!`](@ref).
     has no constrained boundary, then the convex hull will be locked so that it is treated as a constrained 
     boundary. These changes will be undone in [`refine!`](@ref) once the refinement is finished.
 """
-function RefinementArguments(tri::Triangulation;
-    min_angle=30.0,
-    max_angle=180.0,
-    min_area=get_area(tri) / 1e9,
-    max_area=typemax(number_type(tri)),
-    max_points=max(1_000, num_solid_vertices(tri))^2,
-    seditious_angle=20.0,
-    custom_constraint=(_tri, T) -> false,
-    use_circumcenter=true, # TODO: When we implement generalised Steiner points, change this default to FALSE.
-    use_lens=true,
-    steiner_scale=0.999,
-    rng=Random.default_rng(),
-    concavity_protection=false)
+function RefinementArguments(
+        tri::Triangulation;
+        min_angle = 30.0,
+        max_angle = 180.0,
+        min_area = get_area(tri) / 1.0e9,
+        max_area = typemax(number_type(tri)),
+        max_points = max(1_000, num_solid_vertices(tri))^2,
+        seditious_angle = 20.0,
+        custom_constraint = (_tri, T) -> false,
+        use_circumcenter = true, # TODO: When we implement generalised Steiner points, change this default to FALSE.
+        use_lens = true,
+        steiner_scale = 0.999,
+        rng = Random.default_rng(),
+        concavity_protection = false,
+    )
     if !use_circumcenter
         throw(ArgumentError("Generalised Steiner points are not yet implemented."))
     end
@@ -78,14 +81,15 @@ function RefinementArguments(tri::Triangulation;
     !has_ghosts && add_ghost_triangles!(tri)
     lock_convex_hull = !has_boundary_nodes(tri)
     lock_convex_hull && lock_convex_hull!(tri)
-    constraints = RefinementConstraints(;
+    constraints = RefinementConstraints(
+        ;
         min_angle,
         max_angle,
         min_area,
         max_area,
         max_points,
         seditious_angle,
-        custom_constraint
+        custom_constraint,
     )
     queue = RefinementQueue(tri)
     events = InsertionEventHistory(tri)
@@ -119,9 +123,10 @@ function RefinementArguments(tri::Triangulation;
         lock_convex_hull,
         has_ghosts,
         rng,
-        concavity_protection
+        concavity_protection,
     )
 end
+
 
 """
     is_free(args::RefinementArguments, u) -> Bool
@@ -129,6 +134,7 @@ end
 Returns `true` if `u` is a free vertex, and `false` otherwise. A free vertex is a Steiner vertex (meaning a non-input vertex) that is not part of a segment or subsegment.
 """
 is_free(args::RefinementArguments, u) = !(u < args.min_steiner_vertex) && !(is_midpoint_split(args, u) || is_offcenter_split(args, u))
+
 
 """
     keep_iterating(tri::Triangulation, args::RefinementArguments) -> Bool
@@ -139,6 +145,7 @@ is less than or equal to the maximum number of points allowed by the [`Refinemen
 """
 keep_iterating(tri::Triangulation, args::RefinementArguments) = !isempty(args.queue) && num_solid_vertices(tri) < args.constraints.max_points
 
+
 """
     keep_splitting(tri::Triangulation, args::RefinementArguments) -> Bool
 
@@ -148,12 +155,14 @@ is less than or equal to the maximum number of points allowed by the [`Refinemen
 """
 keep_splitting(tri::Triangulation, args::RefinementArguments) = has_segments(args.queue) && num_solid_vertices(tri) < args.constraints.max_points
 
+
 """
     is_midpoint_split(args::RefinementArguments, u) -> Bool
 
 Returns `true` if `u` is a midpoint of an encroached segment, and `false` otherwise.
 """
 is_midpoint_split(args::RefinementArguments, u) = u ∈ args.midpoint_split_list
+
 
 """
     is_offcenter_split(args::RefinementArguments, u) -> Bool
@@ -162,12 +171,14 @@ Returns `true` if `u` is an off-centre split of an encroached segment, and `fals
 """
 is_offcenter_split(args::RefinementArguments, u) = u ∈ args.offcenter_split_list
 
+
 """
     is_subsegment(args::RefinementArguments, u, v) -> Bool
 
 Returns `true` if the edge `(u, v)` is a subsegment, and `false` otherwise.
 """
 is_subsegment(args::RefinementArguments, e) = !contains_unoriented_edge(e, args.segment_list)
+
 
 """
     is_segment_vertex(args::RefinementArguments, u) -> Bool

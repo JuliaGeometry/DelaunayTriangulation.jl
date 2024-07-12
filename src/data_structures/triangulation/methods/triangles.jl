@@ -6,6 +6,7 @@ then some of these triangles will be ghost triangles.
 """
 num_triangles(tri::Triangulation) = num_triangles(get_triangles(tri))
 
+
 """
     contains_triangle(tri::Triangulation, T) -> (Triangle, Bool)
     contains_triangle(tri::Triangulation, i, j, k) -> (Triangle, Bool)
@@ -18,12 +19,14 @@ Tests whether `tri` contains `T = (i, j, k)` up to rotation, returning
 contains_triangle(tri::Triangulation, T) = contains_triangle(T, get_triangles(tri))
 contains_triangle(tri::Triangulation, i, j, k) = contains_triangle(i, j, k, get_triangles(tri))
 
+
 """
     construct_triangle(tri::Triangulation, i, j, k) -> Triangle
 
 Returns a triangle in `tri` from the vertices `i`, `j`, and `k` such that the triangle is positively oriented.
 """
 construct_positively_oriented_triangle(tri::Triangulation, i, j, k) = construct_positively_oriented_triangle(triangle_type(tri), i, j, k, get_points(tri))
+
 
 """
     num_ghost_triangles(tri::Triangulation) -> Integer
@@ -44,6 +47,7 @@ function num_ghost_triangles(tri::Triangulation)
     end
     return num_ghosts
 end
+
 
 """
     num_solid_triangles(tri::Triangulation) -> Integer

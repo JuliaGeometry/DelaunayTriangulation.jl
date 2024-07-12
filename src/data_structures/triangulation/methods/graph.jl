@@ -9,6 +9,7 @@ See also [`each_edge`](@ref), [`each_solid_edge`](@ref), and [`each_ghost_edge`]
 """
 get_edges(tri::Triangulation) = get_edges(get_graph(tri))
 
+
 """
     get_vertices(tri::Triangulation) -> Set{Vertex}
 
@@ -19,6 +20,7 @@ See also [`each_vertex`](@ref), [`each_solid_vertex`](@ref), and [`each_ghost_ve
 """
 get_vertices(tri::Triangulation) = get_vertices(get_graph(tri))
 
+
 """
     get_neighbours(tri::Triangulation) -> Dict{Vertex, Set{Vertex}}
 
@@ -26,6 +28,7 @@ Returns the `neighbours` map of `tri`. Note that, if `has_ghost_triangles(tri)`,
 then some of the neighbours and vertices will be ghost vertices.
 """
 get_neighbours(tri::Triangulation) = get_neighbours(get_graph(tri))
+
 
 """
     get_neighbours(tri::Triangulation, u) -> Set{Vertex}
@@ -35,6 +38,7 @@ then some of the neighbours and vertices will be ghost vertices.
 """
 get_neighbours(tri::Triangulation, u) = get_neighbours(get_graph(tri), u)
 
+
 """
     add_vertex!(tri::Triangulation, u...)
 
@@ -42,12 +46,14 @@ Adds the vertices `u...` into the graph of `tri`.
 """
 add_vertex!(tri::Triangulation, u...) = add_vertex!(get_graph(tri), u...)
 
+
 """
     has_vertex(tri::Triangulation, u) -> Bool
 
 Returns `true` if `u` is a vertex in `tri`, and `false` otherwise.
 """
 has_vertex(tri::Triangulation, u) = has_vertex(get_graph(tri), u)
+
 
 """
     num_neighbours(tri::Triangulation, u) -> Integer
@@ -57,6 +63,7 @@ then some of the neighbours counted might be ghost vertices if `u` is a boundary
 """
 num_neighbours(tri::Triangulation, u) = num_neighbours(get_graph(tri), u)
 
+
 """
     add_neighbour!(tri::Triangulation, u, v...)
 
@@ -64,12 +71,14 @@ Adds the neighbours `v...` to `u` in the graph of `tri`.
 """
 add_neighbour!(tri::Triangulation, u, v...) = add_neighbour!(get_graph(tri), u, v...)
 
+
 """
     delete_neighbour!(tri::Triangulation, u, v...)
 
 Deletes the neighbours `v...` from `u` in the graph of `tri`.
-""" 
+"""
 delete_neighbour!(tri::Triangulation, u, v...) = delete_neighbour!(get_graph(tri), u, v...)
+
 
 """
     delete_vertex!(tri::Triangulation, u...)
@@ -78,12 +87,14 @@ Deletes the vertices `u...` from the graph of `tri`.
 """
 delete_vertex!(tri::Triangulation, u...) = delete_vertex!(get_graph(tri), u...)
 
+
 """
     delete_ghost_vertices_from_graph!(tri::Triangulation)
 
 Deletes all ghost vertices from the graph of `tri`.
 """
 delete_ghost_vertices_from_graph!(tri::Triangulation) = delete_ghost_vertices_from_graph!(get_graph(tri))
+
 
 """
     num_vertices(tri::Triangulation) -> Integer
@@ -95,12 +106,14 @@ See also [`num_solid_vertices`](@ref) and [`num_ghost_vertices`](@ref).
 """
 num_vertices(tri::Triangulation) = num_vertices(get_graph(tri))
 
+
 """
     has_ghost_vertices(tri::Triangulation) -> Bool
 
 Returns `true` if `tri` has ghost vertices, and `false` otherwise.
 """
 has_ghost_vertices(tri::Triangulation) = has_ghost_vertices(get_graph(tri))
+
 
 """
     num_ghost_vertices(tri::Triangulation) -> Integer
@@ -111,6 +124,7 @@ See also [`num_solid_vertices`](@ref) and [`num_vertices`](@ref).
 """
 num_ghost_vertices(tri::Triangulation) = length(all_ghost_vertices(tri)) * has_ghost_vertices(tri)
 
+
 """
     num_solid_vertices(tri::Triangulation) -> Integer
 
@@ -119,6 +133,7 @@ Returns the number of solid vertices in `tri`.
 See also [`num_ghost_vertices`](@ref) and [`num_vertices`](@ref).
 """
 num_solid_vertices(tri::Triangulation) = num_vertices(tri) - num_ghost_vertices(tri)
+
 
 """
     num_edges(tri::Triangulation) -> Integer
@@ -129,6 +144,7 @@ then some of these edges will be ghost edges.
 See also [`num_solid_edges`](@ref) and [`num_ghost_edges`](@ref).
 """
 num_edges(tri::Triangulation) = num_edges(get_graph(tri))
+
 
 """
     num_ghost_edges(tri::Triangulation) -> Integer
@@ -150,6 +166,7 @@ function num_ghost_edges(tri::Triangulation)
     return num_ghosts
 end
 
+
 """
     num_solid_edges(tri::Triangulation) -> Integer
 
@@ -158,6 +175,7 @@ Returns the number of solid edges in `tri`.
 See also [`num_ghost_edges`](@ref) and [`num_edges`](@ref).
 """
 num_solid_edges(tri::Triangulation) = num_edges(tri) - num_ghost_edges(tri)
+
 
 """
     sort_edge_by_degree(tri::Triangulation, e) -> Edge

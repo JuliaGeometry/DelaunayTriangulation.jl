@@ -4,8 +4,12 @@ using Literate
 using Test
 using Dates
 
-DocMeta.setdocmeta!(DelaunayTriangulation, :DocTestSetup, :(using DelaunayTriangulation, Test);
-    recursive=true)
+
+DocMeta.setdocmeta!(
+    DelaunayTriangulation, :DocTestSetup, :(using DelaunayTriangulation, Test);
+    recursive = true,
+)
+
 
 const IS_LIVESERVER = false && get(ENV, "LIVESERVER_ACTIVE", "false") == "true"
 if IS_LIVESERVER
@@ -19,6 +23,7 @@ function safe_include(filename)
     return Base.include(mod, filename)
 end
 const session_tmp = mktempdir()
+
 
 # When running docs locally, the EditURL is incorrect. For example, we might get 
 #   ```@meta
@@ -36,12 +41,13 @@ function update_edit_url(content, file, folder)
     return content
 end
 
+
 # We can add the code to the end of each file in its uncommented form programatically.
 function add_just_the_code_section(dir, file)
     file_name, file_ext = splitext(file)
     file_path = joinpath(dir, file)
     new_file_path = joinpath(session_tmp, file_name * "_just_the_code" * file_ext)
-    cp(file_path, new_file_path, force=true)
+    cp(file_path, new_file_path, force = true)
     folder = splitpath(dir)[end] # literate_tutorials or literate_applications
     open(new_file_path, "a") do io
         write(io, "\n")
@@ -55,6 +61,7 @@ function add_just_the_code_section(dir, file)
     end
     return new_file_path
 end
+
 
 # Now process all the literate files
 ct() = Dates.format(now(), "HH:MM:SS")
@@ -74,7 +81,7 @@ for folder in ("tutorials", "applications")
         #    end
         #end
         new_file_path = add_just_the_code_section(dir, file)
-        script = Literate.script(file_path, session_tmp, name=splitext(file)[1] * "_just_the_code_cleaned")
+        script = Literate.script(file_path, session_tmp, name = splitext(file)[1] * "_just_the_code_cleaned")
         code = strip(read(script, String))
         @info "[$(ct())] Processing $file: Converting markdown script"
         line_ending_symbol = occursin(code, "\r\n") ? "\r\n" : "\n"
@@ -86,15 +93,16 @@ for folder in ("tutorials", "applications")
         Literate.markdown(
             new_file_path,
             outputdir;
-            documenter=true,
-            postprocess=editurl_update ∘ post_strip,
-            credit=true,
-            name=splitext(file)[1],
-            execute=!IS_LIVESERVER,
-            flavor=Literate.DocumenterFlavor(),
+            documenter = true,
+            postprocess = editurl_update ∘ post_strip,
+            credit = true,
+            name = splitext(file)[1],
+            execute = !IS_LIVESERVER,
+            flavor = Literate.DocumenterFlavor(),
         )
     end
 end
+
 
 # All the pages to be included
 const _PAGES = [
@@ -127,7 +135,7 @@ const _PAGES = [
         "Voronoi Tessellations" => "tutorials/voronoi.md",
         "Clipped Voronoi Tessellations" => [
             "Clipping to the Convex Hull" => "tutorials/clipped.md",
-            "Clipping to a Rectangle" => "tutorials/clipped_rectangle.md"
+            "Clipping to a Rectangle" => "tutorials/clipped_rectangle.md",
         ],
         "Centroidal Voronoi Tessellations" => "tutorials/centroidal.md",
         "Point Location" => "tutorials/point_location.md",
@@ -135,7 +143,7 @@ const _PAGES = [
         "Convex Hulls" => "tutorials/convex_hull.md",
         "Pole of Inaccessibility" => "tutorials/pole_of_inaccessibility.md",
         "Point-in-Polygon Testing" => "tutorials/point_in_polygon.md",
-        "Using Custom Structs for Primitives and Boundaries" => "tutorials/custom_primitive.md"
+        "Using Custom Structs for Primitives and Boundaries" => "tutorials/custom_primitive.md",
     ],
     "Manual" => [
         "Overview" => "manual/overview.md",
@@ -168,7 +176,7 @@ const _PAGES = [
         "Data Structures" => "extended/data_structures.md",
         "Algorithm Internals" => "extended/algorithms.md",
         "Utility Functions" => "extended/utils.md",
-    ],  
+    ],
     "Mathematical Details" => [
         "Overview" => "math/overview.md",
         "Delaunay Triangulations" => "math/delaunay.md",
@@ -189,6 +197,7 @@ const _PAGES = [
     ],
     "Terminology" => "terminology.md",
 ]
+
 
 # Make sure we haven't forgotten any files
 set = Set{String}()
@@ -219,36 +228,45 @@ for (root, dir, files) in walkdir(doc_dir)
 end
 !isempty(missing_set) && error("Missing files: $missing_set")
 
+
 # Make and deploy
-makedocs(;
-    modules=[DelaunayTriangulation],
-    authors="Daniel VandenHeuvel <danj.vandenheuvel@gmail.com>",
-    sitename="DelaunayTriangulation.jl",
-    format=Documenter.HTML(;
-        prettyurls=IS_CI,
-        canonical="https://JuliaGeometry.github.io/DelaunayTriangulation.jl",
-        edit_link="main",
-        size_threshold=8000 * 2^10,
-        size_threshold_warn=1000 * 2^10,
-        size_threshold_ignore=["api/triangulation.md", "extended/data_structures.md"],
-        collapselevel=1,
-        assets=String[],
-        mathengine=MathJax3(Dict(
-            :loader => Dict("load" => ["[tex]/physics"]),
-            :tex => Dict(
-                "inlineMath" => [["\$", "\$"], ["\\(", "\\)"]],
-                "tags" => "ams",
-                "packages" => ["base", "ams", "autoload", "physics"],
+makedocs(
+    ;
+    modules = [DelaunayTriangulation],
+    authors = "Daniel VandenHeuvel <danj.vandenheuvel@gmail.com>",
+    sitename = "DelaunayTriangulation.jl",
+    format = Documenter.HTML(
+        ;
+        prettyurls = IS_CI,
+        canonical = "https://JuliaGeometry.github.io/DelaunayTriangulation.jl",
+        edit_link = "main",
+        size_threshold = 8000 * 2^10,
+        size_threshold_warn = 1000 * 2^10,
+        size_threshold_ignore = ["api/triangulation.md", "extended/data_structures.md"],
+        collapselevel = 1,
+        assets = String[],
+        mathengine = MathJax3(
+            Dict(
+                :loader => Dict("load" => ["[tex]/physics"]),
+                :tex => Dict(
+                    "inlineMath" => [["\$", "\$"], ["\\(", "\\)"]],
+                    "tags" => "ams",
+                    "packages" => ["base", "ams", "autoload", "physics"],
+                ),
             ),
-        ))),
-    linkcheck=false,
-    warnonly=true,
-    draft=IS_LIVESERVER,
-    pages=_PAGES,
-    pagesonly=true,
+        ),
+    ),
+    linkcheck = false,
+    warnonly = true,
+    draft = IS_LIVESERVER,
+    pages = _PAGES,
+    pagesonly = true,
 )
 
-deploydocs(;
-    repo="github.com/JuliaGeometry/DelaunayTriangulation.jl",
-    devbranch="main",
-    push_preview=true)
+
+deploydocs(
+    ;
+    repo = "github.com/JuliaGeometry/DelaunayTriangulation.jl",
+    devbranch = "main",
+    push_preview = true,
+)

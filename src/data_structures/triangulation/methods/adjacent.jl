@@ -16,6 +16,7 @@ function get_adjacent(tri::Triangulation, uv)
 end
 get_adjacent(tri::Triangulation, u, v) = get_adjacent(tri, construct_edge(edge_type(tri), u, v))
 
+
 """
     _safe_get_adjacent(tri::Triangulation, uv) -> Vertex
 
@@ -44,6 +45,7 @@ function _safe_get_adjacent(tri::Triangulation, uv)
     return get_adjacent(adj, uv)
 end
 
+
 """
     add_adjacent!(tri::Triangulation, uv, w)
     add_adjacent!(tri::Triangulation, u, v, w)
@@ -52,6 +54,7 @@ Adds the key-value pair `(u, v) ⟹ w` to the adjacency map of `tri`.
 """
 add_adjacent!(tri::Triangulation, uv, w) = add_adjacent!(get_adjacent(tri), uv, w)
 add_adjacent!(tri::Triangulation, u, v, w) = add_adjacent!(get_adjacent(tri), u, v, w)
+
 
 """
     delete_adjacent!(tri::Triangulation, uv)

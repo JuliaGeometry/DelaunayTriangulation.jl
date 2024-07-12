@@ -46,12 +46,14 @@ function Base.hash(cell::Cell, h::UInt)
     return hash(Cell, h)
 end
 
+
 """
     getx(c::Cell) -> Number
 
 Returns the x-coordinate of `c`.
 """
 getx(c::Cell) = c.x
+
 
 """
     gety(c::Cell) -> Number

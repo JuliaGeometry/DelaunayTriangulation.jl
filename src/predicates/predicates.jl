@@ -12,8 +12,10 @@ Computes the orientation of the triangle `T = (i, j, k)` with correspondig coord
 triangle_orientation
 function triangle_orientation(p, q, r)
     cert = orient_predicate(p, q, r)
-    return convert_certificate(cert, Cert.NegativelyOriented, Cert.Degenerate,
-        Cert.PositivelyOriented)
+    return convert_certificate(
+        cert, Cert.NegativelyOriented, Cert.Degenerate,
+        Cert.PositivelyOriented,
+    )
 end
 function triangle_orientation(tri::Triangulation, i, j, k)
     if is_exterior_ghost_triangle(tri, i, j, k)
@@ -23,6 +25,7 @@ function triangle_orientation(tri::Triangulation, i, j, k)
     return triangle_orientation(p, q, r)
 end
 triangle_orientation(tri::Triangulation, T) = triangle_orientation(tri, geti(T), getj(T), getk(T))
+
 
 """
     point_position_relative_to_circle(a, b, c, p) -> Certificate
@@ -38,6 +41,7 @@ function point_position_relative_to_circle(a, b, c, p)
     cert = incircle_predicate(a, b, c, p)
     return convert_certificate(cert, Cert.Outside, Cert.On, Cert.Inside)
 end
+
 
 @doc """
     point_position_relative_to_line(a, b, p) -> Certificate
@@ -64,6 +68,7 @@ function point_position_relative_to_line(tri::Triangulation, i, j, u)
     end
 end
 
+
 @doc """
     point_closest_to_line(a, b, p, q) -> Certificate
     point_closest_to_line(tri::Triangulation, i, j, u, v) -> Certificate
@@ -84,6 +89,7 @@ function point_closest_to_line(tri::Triangulation, i, j, u, v)
     a, b, p, q = get_point(tri, i, j, u, v)
     return point_closest_to_line(a, b, p, q)
 end
+
 
 @doc """
     point_position_on_line_segment(a, b, p) -> Certificate
@@ -113,6 +119,7 @@ function point_position_on_line_segment(tri::Triangulation, i, j, u)
     a, b, p = get_point(tri, i, j, u)
     return point_position_on_line_segment(a, b, p)
 end
+
 
 @doc """
     line_segment_intersection_type(p, q, a, b) -> Certificate 
@@ -168,6 +175,7 @@ function line_segment_intersection_type(tri::Triangulation, u, v, i, j)
     p, q, a, b = get_point(tri, u, v, i, j)
     return line_segment_intersection_type(p, q, a, b)
 end
+
 
 @doc """
     point_position_relative_to_triangle(a, b, c, p) -> Certificate
@@ -225,12 +233,14 @@ function point_position_relative_to_triangle(tri::Triangulation, i, j, k, u)
         #is_collinear(edge_ca) && return Cert.On
         return Cert.Inside
 
+
         # The collinear tests were deleted for the ghost edges. It doesn't really make much sense to see if a point is 
         # on the ghost edges. It's not like we can do anything with that information, and if we are using it then 
         # there's no point distinguishing between the two adjacent ghost triangles in that case.
     end
 end
 point_position_relative_to_triangle(tri::Triangulation, T, u) = point_position_relative_to_triangle(tri, geti(T), getj(T), getk(T), u)
+
 
 """
     point_position_relative_to_oriented_outer_halfplane(a, b, p) -> Certificate 
@@ -262,6 +272,7 @@ function point_position_relative_to_oriented_outer_halfplane(a, b, p)
     end
 end
 
+
 @doc """
     is_legal(tri::Triangulation, i, j) -> Certificate 
     is_legal(p, q, r, s) -> Certificate
@@ -285,19 +296,23 @@ function is_legal(p, q, r, s)
     end
 end
 
+
 function is_legal(tri::Triangulation, i, j)
-    (contains_segment(tri, i, j) ||
-     is_boundary_edge(tri, j, i) ||
-     is_boundary_edge(tri, i, j) ||
-     !edge_exists(tri, i, j) ||
-     !edge_exists(tri, j, i) ||
-     is_ghost_edge(i, j)) && return Cert.Legal
+    (
+        contains_segment(tri, i, j) ||
+            is_boundary_edge(tri, j, i) ||
+            is_boundary_edge(tri, i, j) ||
+            !edge_exists(tri, i, j) ||
+            !edge_exists(tri, j, i) ||
+            is_ghost_edge(i, j)
+    ) && return Cert.Legal
     k = get_adjacent(tri, i, j)
     ℓ = get_adjacent(tri, j, i)
     p, q, r, s = get_point(tri, i, j, k, ℓ)
     cert = is_legal(p, q, r, s)
     return cert
 end
+
 
 @doc """
     triangle_line_segment_intersection(p, q, r, a, b) -> Certificate 
@@ -321,6 +336,7 @@ function triangle_line_segment_intersection(p, q, r, a, b)
     if a_eq && b_eq
         return Cert.Touching
     end
+
 
     # Case II: a or b is one of the vertices of (p, q, r)
     if a_eq || b_eq
@@ -351,11 +367,13 @@ function triangle_line_segment_intersection(p, q, r, a, b)
         end
     end
 
+
     # We have now covered the cases where a or b, or both, are a vertex of (p, q, r).
     # The remaining degenerate case is the case where a or b, or both, are on an edge 
     # of (p, q, r). We can determine this possibility with the following certificates.
     a_tri = point_position_relative_to_triangle(p, q, r, a)
     b_tri = point_position_relative_to_triangle(p, q, r, b)
+
 
     # Case III: a and b are both on an edge of (p, q, r)
     if is_on(a_tri) && is_on(b_tri)
@@ -373,6 +391,7 @@ function triangle_line_segment_intersection(p, q, r, a, b)
         b_edge = pqb ? (p, q) : (qrb ? (q, r) : (r, p))
         return a_edge == b_edge ? Cert.Touching : Cert.Inside
     end
+
 
     # Case IV: a or b are on an edge of (p, q, r)
     # For this case, the working is essentially the same as in Case II.
@@ -405,10 +424,12 @@ function triangle_line_segment_intersection(p, q, r, a, b)
         end
     end
 
+
     # We can now assume that neither a nor b appear anywhere on (p, q, r). Just to make things a bit simpler, 
     # let us determine directly where a and b are relative to the triangle 
     a_pos = point_position_relative_to_triangle(p, q, r, a)
     b_pos = point_position_relative_to_triangle(p, q, r, b)
+
 
     # Case V: a and b are inside the triangle 
     if is_inside(a_pos) && is_inside(b_pos)
@@ -453,6 +474,7 @@ function triangle_line_segment_intersection(tri::Triangulation, i, j, k, u, v)
     return triangle_line_segment_intersection(p, q, r, a, b)
 end
 
+
 """
     find_edge(tri::Triangulation, T, ℓ) -> Edge 
 
@@ -472,6 +494,7 @@ function find_edge(tri::Triangulation, T, ℓ)
         return construct_edge(E, k, i)
     end
 end
+
 
 @doc """
     point_position_relative_to_circumcircle(tri::Triangulation, i, j, k, ℓ) -> Certificate
@@ -512,11 +535,12 @@ function point_position_relative_to_circumcircle(tri::Triangulation, i, j, k, �
     else
         cert = point_position_relative_to_witness_plane(tri, i, j, k, ℓ)
         return is_above(cert) ? Cert.Outside :
-               is_below(cert) ? Cert.Inside :
-               Cert.On
+            is_below(cert) ? Cert.Inside :
+            Cert.On
     end
 end
 point_position_relative_to_circumcircle(tri::Triangulation, T, ℓ) = point_position_relative_to_circumcircle(tri, geti(T), getj(T), getk(T), ℓ)
+
 
 """
     point_position_relative_to_witness_plane(tri::Triangulation, i, j, k, ℓ) -> Certificate
@@ -540,6 +564,7 @@ function point_position_relative_to_witness_plane(tri::Triangulation, i, j, k, �
     return convert_certificate(cert, Cert.Above, Cert.On, Cert.Below)
 end
 
+
 """
     opposite_angle(p, q, r) -> Certificate
 
@@ -560,6 +585,7 @@ function opposite_angle(p, q, r) # https://math.stackexchange.com/a/701682/86140
     cert = angle_is_acute(p, q, r)
     return convert_certificate(cert, Certificate.Obtuse, Certificate.Right, Certificate.Acute)
 end
+
 
 """
     point_position_relative_to_diametral_circle(p, q, r) -> Certificate
@@ -584,6 +610,7 @@ function point_position_relative_to_diametral_circle(p, q, r)
         return Certificate.Outside
     end
 end
+
 
 """
     point_position_relative_to_diametral_lens(p, q, r, lens_angle=30.0) -> Certificate 
@@ -621,7 +648,7 @@ To test if a point `r` is inside the diametral lens with lens angle `θ°`, we s
 at that point, i.e. the angle at `r` in the triangle `pqr`. If this angle is greater than `180° - 2θ°`, then `r` is inside of the lens. This result 
 comes from [Shewchuk (2002)](https://doi.org/10.1016/S0925-7721(01)00047-5). Note that this is the same as a diametral circle in the case `θ° = 45°`. 
 """
-function point_position_relative_to_diametral_lens(p, q, r, lens_angle=30.0)
+function point_position_relative_to_diametral_lens(p, q, r, lens_angle = 30.0)
     px, py = _getxy(p)
     qx, qy = _getxy(q)
     rx, ry = _getxy(r)
@@ -641,6 +668,7 @@ function point_position_relative_to_diametral_lens(p, q, r, lens_angle=30.0)
     end
 end
 
+
 """
     test_visibility(tri::Triangulation, q, i) -> Certificate 
 
@@ -656,13 +684,14 @@ the two does not intersect any segments.
 - `cert`: A [`Certificate`](@ref). This will be `Visible` if `i` is visible from `q`, and `Invisible` otherwise.
 """
 function test_visibility(tri::Triangulation, q, i)
-    V, invisible_flag = find_triangle(tri, q; use_barriers=Val(true), k=i, concavity_protection=true)
+    V, invisible_flag = find_triangle(tri, q; use_barriers = Val(true), k = i, concavity_protection = true)
     if invisible_flag
         return Certificate.Invisible
     else
         return Certificate.Visible
     end
 end
+
 
 """
     test_visibility(tri::Triangulation, u, v, i; shift=0.0, attractor=get_point(tri,i)) -> Certificate 
@@ -682,7 +711,7 @@ of `(u, v)` can see `i`. To test this, we only check `10` points equally spaced 
 # Outputs
 - `cert`: A [`Certificate`](@ref). This will be `Visible` if `i` is visible from `(u, v)`, and `Invisible` otherwise.
 """
-function test_visibility(tri::Triangulation, u, v, i; shift=0.0, attractor=get_point(tri,i))
+function test_visibility(tri::Triangulation, u, v, i; shift = 0.0, attractor = get_point(tri, i))
     pu, pv = get_point(tri, u, v)
     pux, puy = getxy(pu)
     pvx, pvy = getxy(pv)

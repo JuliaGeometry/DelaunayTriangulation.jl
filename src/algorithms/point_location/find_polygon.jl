@@ -18,6 +18,7 @@ function find_polygon(tri::Triangulation, q)
     return isnothing(tree) ? 0 : get_index(tree)
 end
 
+
 function find_polygon(hierarchy::PolygonHierarchy, points, boundary_nodes, q)
     tree = find_tree(hierarchy, points, boundary_nodes, q)
     return isnothing(tree) ? 0 : get_index(tree)

@@ -13,7 +13,7 @@ Computes the Voronoi tessellation dual to a triangulation.
 # Output 
 - `vorn`: The [`VoronoiTessellation`](@ref).
 """
-function voronoi(tri::Triangulation; clip=false, smooth=false, kwargs...)
+function voronoi(tri::Triangulation; clip = false, smooth = false, kwargs...)
     if smooth
         @assert clip "Smoothing requires clipping."
     end

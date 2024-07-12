@@ -20,20 +20,21 @@ There is no output, as `tri` is updated in-place.
 
     If `(i, j, k, ℓ)`, where `ℓ = get_adjacent(tri, i, j)` and `k = get_adjacent(tri, j, i)`, is not a convex quadrilateral, then this edge flip will make the triangulation non-planar.
 """
-function flip_edge!(tri::Triangulation, i::I, j::I, store_event_history::Val{B}=Val(false), event_history=nothing) where {I<:Integer,B}
+function flip_edge!(tri::Triangulation, i::I, j::I, store_event_history::Val{B} = Val(false), event_history = nothing) where {I <: Integer, B}
     ℓ = get_adjacent(tri, i, j)
     k = get_adjacent(tri, j, i)
     flip_edge!(tri, i, j, k, ℓ, store_event_history, event_history)
     return tri
 end
-function flip_edge!(tri::Triangulation, i::I, j::I, k::I, ℓ::I, store_event_history::Val{B}=Val(false), event_history=nothing) where {I<:Integer,B}
-    delete_triangle!(tri, i, k, j; protect_boundary=true, update_ghost_edges=false)
-    delete_triangle!(tri, i, j, ℓ; protect_boundary=true, update_ghost_edges=false)
-    add_triangle!(tri, ℓ, k, j; protect_boundary=true, update_ghost_edges=false)
-    add_triangle!(tri, ℓ, i, k; protect_boundary=true, update_ghost_edges=false)
+function flip_edge!(tri::Triangulation, i::I, j::I, k::I, ℓ::I, store_event_history::Val{B} = Val(false), event_history = nothing) where {I <: Integer, B}
+    delete_triangle!(tri, i, k, j; protect_boundary = true, update_ghost_edges = false)
+    delete_triangle!(tri, i, j, ℓ; protect_boundary = true, update_ghost_edges = false)
+    add_triangle!(tri, ℓ, k, j; protect_boundary = true, update_ghost_edges = false)
+    add_triangle!(tri, ℓ, i, k; protect_boundary = true, update_ghost_edges = false)
     is_true(store_event_history) && store_flip_edge_history!(event_history, i, j, k, ℓ)
     return tri
 end
+
 
 function store_flip_edge_history!(event_history, i, j, k, ℓ)
     trit = triangle_type(event_history)

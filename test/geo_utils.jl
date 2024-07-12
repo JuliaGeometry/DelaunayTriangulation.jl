@@ -4,241 +4,140 @@ using LinearAlgebra
 using Random
 using CairoMakie
 
+
 @testset "Getting polygon features" begin
-      tri, label_map, index_map = simple_geometry()
-      pts = get_points(tri)
-      boundary_nodes = [index_map["a"],
+    tri, label_map, index_map = simple_geometry()
+    pts = get_points(tri)
+    boundary_nodes = [
+        index_map["a"],
+        index_map["b"],
+        index_map["c"],
+        index_map["d"],
+        index_map["e"],
+        index_map["f"],
+        index_map["g"],
+        index_map["h"],
+        index_map["a"],
+    ]
+    a, (cx, cy) = DT.polygon_features(pts, boundary_nodes)
+    @inferred DT.polygon_features(pts, boundary_nodes)
+    @test a ≈ 400.0 && cx ≈ 10.0 && cy ≈ 10.0
+    boundary_nodes = [
+        index_map["j"],
+        index_map["k"],
+        index_map["ℓ"],
+        index_map["i"],
+        index_map["j"],
+    ]
+    a, (cx, cy) = DT.polygon_features(pts, boundary_nodes)
+    @test a ≈ 40.0 && cx ≈ 6.0 && cy ≈ 11.0
+    boundary_nodes = [
+        [
+            index_map["a"],
             index_map["b"],
             index_map["c"],
+            index_map["d"],
+        ],
+        [
             index_map["d"],
             index_map["e"],
             index_map["f"],
             index_map["g"],
+        ],
+        [
+            index_map["g"],
             index_map["h"],
-            index_map["a"]]
-      a, (cx, cy) = DT.polygon_features(pts, boundary_nodes)
-      @inferred DT.polygon_features(pts, boundary_nodes)
-      @test a ≈ 400.0 && cx ≈ 10.0 && cy ≈ 10.0
-      boundary_nodes = [index_map["j"],
+            index_map["a"],
+        ],
+    ]
+    a, (cx, cy) = DT.polygon_features(pts, boundary_nodes)
+    @inferred DT.polygon_features(pts, boundary_nodes)
+    @test a ≈ 400.0 && cx ≈ 10.0 && cy ≈ 10.0
+    boundary_nodes = [
+        [
+            index_map["j"],
+            index_map["k"],
+        ],
+        [
             index_map["k"],
             index_map["ℓ"],
             index_map["i"],
-            index_map["j"]]
-      a, (cx, cy) = DT.polygon_features(pts, boundary_nodes)
-      @test a ≈ 40.0 && cx ≈ 6.0 && cy ≈ 11.0
-      boundary_nodes = [[index_map["a"],
-                  index_map["b"],
-                  index_map["c"],
-                  index_map["d"]],
-            [index_map["d"],
-                  index_map["e"],
-                  index_map["f"],
-                  index_map["g"]],
-            [index_map["g"],
-                  index_map["h"],
-                  index_map["a"]]]
-      a, (cx, cy) = DT.polygon_features(pts, boundary_nodes)
-      @inferred DT.polygon_features(pts, boundary_nodes)
-      @test a ≈ 400.0 && cx ≈ 10.0 && cy ≈ 10.0
-      boundary_nodes = [[index_map["j"],
-                  index_map["k"]],
-            [index_map["k"],
-                  index_map["ℓ"],
-                  index_map["i"]],
-            [index_map["i"],
-                  index_map["j"]]]
-      a, (cx, cy) = DT.polygon_features(pts, boundary_nodes)
-      @test a ≈ 40.0 && cx ≈ 6.0 && cy ≈ 11.0
-      a, (cx, cy) = DT.polygon_features(pts, tri.boundary_nodes)
-      @inferred DT.polygon_features(pts, tri.boundary_nodes)
-      a1, a2, a3 = 400.0, 32.0, 40.0
-      c1, c2, c3 = (10.0, 10.0), (15.58333333333, 7.0), (6.0, 11.0)
-      @test a ≈ a1 - a2 - a3
-      @test cx ≈ (c1[1] * a1 - c2[1] * a2 - c3[1] * a3) / (a1 - a2 - a3)
-      @test cy ≈ (c1[2] * a1 - c2[2] * a2 - c3[2] * a3) / (a1 - a2 - a3)
+        ],
+        [
+            index_map["i"],
+            index_map["j"],
+        ],
+    ]
+    a, (cx, cy) = DT.polygon_features(pts, boundary_nodes)
+    @test a ≈ 40.0 && cx ≈ 6.0 && cy ≈ 11.0
+    a, (cx, cy) = DT.polygon_features(pts, tri.boundary_nodes)
+    @inferred DT.polygon_features(pts, tri.boundary_nodes)
+    a1, a2, a3 = 400.0, 32.0, 40.0
+    c1, c2, c3 = (10.0, 10.0), (15.58333333333, 7.0), (6.0, 11.0)
+    @test a ≈ a1 - a2 - a3
+    @test cx ≈ (c1[1] * a1 - c2[1] * a2 - c3[1] * a3) / (a1 - a2 - a3)
+    @test cy ≈ (c1[2] * a1 - c2[2] * a2 - c3[2] * a3) / (a1 - a2 - a3)
 end
+
 
 @testset "Another test for area" begin
-      tri = triangulate(rand(2, 50))
-      for T in each_solid_triangle(tri)
-            u, v, w = T
-            p, q, r = get_point(tri, u, v, w)
-            a1 = DT.triangle_area(p, q, r)
-            a2 = DT.polygon_features(get_points(tri), [u, v, w, u])[1]
-            @test a1 ≈ a2 atol = 1e-4
-      end
+    tri = triangulate(rand(2, 50))
+    for T in each_solid_triangle(tri)
+        u, v, w = T
+        p, q, r = get_point(tri, u, v, w)
+        a1 = DT.triangle_area(p, q, r)
+        a2 = DT.polygon_features(get_points(tri), [u, v, w, u])[1]
+        @test a1 ≈ a2 atol = 1.0e-4
+    end
 end
+
 
 @testset "Degenerate area calculation" begin #72
-      p = (0.007668495f0, 0.7747718f0)
-      q = (0.0044495463f0, 0.97074896f0)
-      r = (0.015137732f0, 0.31555605f0)
-      a1 = DT.triangle_area(p, q, r)
-      @test a1 isa Float32
-      a2 = DT.polygon_features([p, q, r], [1, 2, 3, 1])[1]
-      @test a1 ≈ a2 atol = 1e-4
+    p = (0.007668495f0, 0.7747718f0)
+    q = (0.0044495463f0, 0.97074896f0)
+    r = (0.015137732f0, 0.31555605f0)
+    a1 = DT.triangle_area(p, q, r)
+    @test a1 isa Float32
+    a2 = DT.polygon_features([p, q, r], [1, 2, 3, 1])[1]
+    @test a1 ≈ a2 atol = 1.0e-4
 end
+
 
 @testset "Distance to a segment" begin
-      p1 = [0.0, 0.0]
-      p2 = [10.0, 0.0]
-      q = [0.0, 5.0]
-      d = DT.squared_distance_to_segment(p1..., p2..., q...)
-      @test sqrt(d) == q[2]
-      @inferred DT.squared_distance_to_segment(p1..., p2..., q...)
-      for _ in 1:10000
-            local q
-            pᵢ = 10randn(2)
-            pⱼ = 10randn(2)
-            q = 10randn(2)
-            pᵢx, pᵢy = pᵢ
-            pⱼx, pⱼy = pⱼ
-            qx, qy = q
-            t = ((pᵢx - pⱼx) * (pᵢx - qx) + (pᵢy - pⱼy) * (pᵢy - qy)) /
-                ((pᵢx - pⱼx)^2 + (pᵢy - pⱼy)^2) # solve (d/dt)||q - (pᵢ + t(pⱼ - pᵢ))|| = 0 for t
-            if t < 0
-                  @test DT.squared_distance_to_segment(pᵢ..., pⱼ..., q...) ≈ norm(q - pᵢ)^2
-            elseif t > 1
-                  @test DT.squared_distance_to_segment(pᵢ..., pⱼ..., q...) ≈ norm(q - pⱼ)^2
-            else
-                  @test DT.squared_distance_to_segment(pᵢ..., pⱼ..., q...) ≈
-                        norm(q - (pᵢ + t * (pⱼ - pᵢ)))^2
-            end
-      end
+    p1 = [0.0, 0.0]
+    p2 = [10.0, 0.0]
+    q = [0.0, 5.0]
+    d = DT.squared_distance_to_segment(p1..., p2..., q...)
+    @test sqrt(d) == q[2]
+    @inferred DT.squared_distance_to_segment(p1..., p2..., q...)
+    for _ in 1:10000
+        local q
+        pᵢ = 10randn(2)
+        pⱼ = 10randn(2)
+        q = 10randn(2)
+        pᵢx, pᵢy = pᵢ
+        pⱼx, pⱼy = pⱼ
+        qx, qy = q
+        t = ((pᵢx - pⱼx) * (pᵢx - qx) + (pᵢy - pⱼy) * (pᵢy - qy)) /
+            ((pᵢx - pⱼx)^2 + (pᵢy - pⱼy)^2) # solve (d/dt)||q - (pᵢ + t(pⱼ - pᵢ))|| = 0 for t
+        if t < 0
+            @test DT.squared_distance_to_segment(pᵢ..., pⱼ..., q...) ≈ norm(q - pᵢ)^2
+        elseif t > 1
+            @test DT.squared_distance_to_segment(pᵢ..., pⱼ..., q...) ≈ norm(q - pⱼ)^2
+        else
+            @test DT.squared_distance_to_segment(pᵢ..., pⱼ..., q...) ≈
+                norm(q - (pᵢ + t * (pⱼ - pᵢ)))^2
+        end
+    end
 end
+
 
 @testset "Distance to a polygon" begin
-      tri, label_map, index_map = simple_geometry()
-      pts = get_points(tri)
-      @testset "Single boundary" begin
-            boundary_nodes = [index_map["a"],
-                  index_map["b"],
-                  index_map["c"],
-                  index_map["d"],
-                  index_map["e"],
-                  index_map["f"],
-                  index_map["g"],
-                  index_map["h"],
-                  index_map["a"]]
-            q = (28.0, 18.0)
-            dist = DT.distance_to_polygon_single_segment(q, pts, boundary_nodes)
-            @test dist ≈ -8.0
-            @inferred DT.distance_to_polygon(q, pts, boundary_nodes)
-            @test dist == DT.distance_to_polygon(q, pts, boundary_nodes) ==
-                  DT.distance_to_polygon(q, pts, tri.boundary_nodes)
-            q = (26.9116654358588, 23.0120339025522)
-            dist = DT.distance_to_polygon_single_segment(q, pts, boundary_nodes)
-            @test dist ≈ -7.5394606788132
-            @test dist == DT.distance_to_polygon(q, pts, boundary_nodes) ==
-                  DT.distance_to_polygon(q, pts, tri.boundary_nodes)
-            q = (9.5687897994641, 11.7840765682329)
-            dist = DT.distance_to_polygon_single_segment(q, pts, boundary_nodes)
-            @test dist ≈ 20.0 - q[2]
-            @test dist == DT.distance_to_polygon(q, pts, boundary_nodes)
-            @test DT.distance_to_polygon(q, pts, tri.boundary_nodes) ≈ q[1] - 8.0
-            q = (2.0, 2.0)
-            dist = DT.distance_to_polygon_single_segment(q, pts, boundary_nodes)
-            @test dist ≈ 2.0
-            @test dist == DT.distance_to_polygon(q, pts, boundary_nodes) ==
-                  DT.distance_to_polygon(q, pts, tri.boundary_nodes)
-            q = (-2.0, 0.0)
-            dist = DT.distance_to_polygon_single_segment(q, pts, boundary_nodes)
-            @test dist ≈ -2.0
-            @test dist == DT.distance_to_polygon(q, pts, boundary_nodes) ==
-                  DT.distance_to_polygon(q, pts, tri.boundary_nodes)
-            q = (0.0, 0.0)
-            dist = DT.distance_to_polygon_single_segment(q, pts, boundary_nodes)
-            @test dist ≈ 0.0
-            @test dist == DT.distance_to_polygon(q, pts, boundary_nodes) ==
-                  DT.distance_to_polygon(q, pts, tri.boundary_nodes)
-            q = (10.0, 0.0)
-            dist = DT.distance_to_polygon_single_segment(q, pts, boundary_nodes)
-            @inferred DT.distance_to_polygon_single_segment(q, pts, boundary_nodes)
-            @test dist ≈ 0.0
-            @test dist == DT.distance_to_polygon(q, pts, boundary_nodes) ==
-                  DT.distance_to_polygon(q, pts, tri.boundary_nodes)
-            q = (4.6998638334488, 13.8273575177129)
-            dist = DT.distance_to_polygon_single_segment(q, pts, boundary_nodes)
-            @test dist ≈ q[1]
-            @test dist == DT.distance_to_polygon(q, pts, boundary_nodes)
-            @test DT.distance_to_polygon(q, pts, tri.boundary_nodes) ≈ -(q[1] - 4.0)
-            q = [-0.181375963606, 9.9696497047896]
-            dist = DT.distance_to_polygon_single_segment(q, pts, boundary_nodes)
-            @test dist ≈ q[1]
-            @test dist == DT.distance_to_polygon(q, pts, boundary_nodes) ==
-                  DT.distance_to_polygon(q, pts, tri.boundary_nodes)
-      end
-
-      @testset "Multiple boundary segments" begin
-            boundary_nodes = [[index_map["a"],
-                        index_map["b"],
-                        index_map["c"],
-                        index_map["d"]],
-                  [index_map["d"],
-                        index_map["e"],
-                        index_map["f"],
-                        index_map["g"]],
-                  [index_map["g"],
-                        index_map["h"],
-                        index_map["a"]]]
-            q = (28.0, 18.0)
-            dist = DT.distance_to_polygon_multiple_segments(q, pts, boundary_nodes)
-            @test dist ≈ -8.0
-            @test dist == DT.distance_to_polygon(q, pts, boundary_nodes) ==
-                  DT.distance_to_polygon(q, pts, tri.boundary_nodes)
-            q = (26.9116654358588, 23.0120339025522)
-            dist = DT.distance_to_polygon_multiple_segments(q, pts, boundary_nodes)
-            @test dist ≈ -7.5394606788132
-            @test dist == DT.distance_to_polygon(q, pts, boundary_nodes) ==
-                  DT.distance_to_polygon(q, pts, tri.boundary_nodes)
-            q = (9.5687897994641, 11.7840765682329)
-            @inferred DT.distance_to_polygon(q, pts, boundary_nodes)
-            @inferred DT.distance_to_polygon(q, pts, tri.boundary_nodes) ==
-                      DT.distance_to_polygon(q, pts, tri.boundary_nodes)
-            dist = DT.distance_to_polygon_multiple_segments(q, pts, boundary_nodes)
-            @test dist ≈ 20.0 - q[2]
-            @test dist == DT.distance_to_polygon(q, pts, boundary_nodes)
-            q = (2.0, 2.0)
-            dist = DT.distance_to_polygon_multiple_segments(q, pts, boundary_nodes)
-            @test dist ≈ 2.0
-            @test dist == DT.distance_to_polygon(q, pts, boundary_nodes) ==
-                  DT.distance_to_polygon(q, pts, tri.boundary_nodes)
-            q = (-2.0, 0.0)
-            dist = DT.distance_to_polygon_multiple_segments(q, pts, boundary_nodes)
-            @test dist ≈ -2.0
-            @test dist == DT.distance_to_polygon(q, pts, boundary_nodes) ==
-                  DT.distance_to_polygon(q, pts, tri.boundary_nodes)
-            q = (0.0, 0.0)
-            dist = DT.distance_to_polygon_multiple_segments(q, pts, boundary_nodes)
-            @test dist ≈ 0.0
-            @test dist == DT.distance_to_polygon(q, pts, boundary_nodes) ==
-                  DT.distance_to_polygon(q, pts, tri.boundary_nodes)
-            q = (10.0, 0.0)
-            dist = DT.distance_to_polygon_multiple_segments(q, pts, boundary_nodes)
-            @inferred DT.distance_to_polygon_multiple_segments(q, pts, boundary_nodes)
-            @test dist ≈ 0.0
-            @test dist == DT.distance_to_polygon(q, pts, boundary_nodes) ==
-                  DT.distance_to_polygon(q, pts, tri.boundary_nodes)
-            q = (4.6998638334488, 13.8273575177129)
-            dist = DT.distance_to_polygon_multiple_segments(q, pts, boundary_nodes)
-            @test dist ≈ q[1]
-            @test dist == DT.distance_to_polygon(q, pts, boundary_nodes)
-            q = [-0.181375963606, 9.9696497047896]
-            dist = DT.distance_to_polygon_multiple_segments(q, pts, boundary_nodes)
-            @test dist ≈ q[1]
-            @test dist == DT.distance_to_polygon(q, pts, boundary_nodes)
-            q = [14.2840577995064, 9.7320720329939]
-            dist = DT.distance_to_polygon_multiple_segments(q, pts, boundary_nodes)
-            @test dist ≈ 20.0 - q[1]
-            @test dist == DT.distance_to_polygon(q, pts, boundary_nodes)
-            @test DT.distance_to_polygon(q, pts, tri.boundary_nodes) ≈ -(q[1] - 14.0)
-      end
-end
-
-@testset "Bounding box of a polygon" begin
-      tri, label_map, index_map = simple_geometry()
-      pts = get_points(tri)
-      boundary_nodes = [index_map["a"],
+    tri, label_map, index_map = simple_geometry()
+    pts = get_points(tri)
+    @testset "Single boundary" begin
+        boundary_nodes = [
+            index_map["a"],
             index_map["b"],
             index_map["c"],
             index_map["d"],
@@ -246,932 +145,1166 @@ end
             index_map["f"],
             index_map["g"],
             index_map["h"],
-            index_map["a"]]
-      @test DT.polygon_bounds(pts, boundary_nodes) == (0.0, 20.0, 0.0, 20.0)
-      @inferred DT.polygon_bounds(pts, boundary_nodes)
-      boundary_nodes = [[index_map["a"],
-                  index_map["b"],
-                  index_map["c"],
-                  index_map["d"]],
-            [index_map["d"],
-                  index_map["e"],
-                  index_map["f"],
-                  index_map["g"]],
-            [index_map["g"],
-                  index_map["h"],
-                  index_map["a"]]]
-      @test DT.polygon_bounds(pts, boundary_nodes) == (0.0, 20.0, 0.0, 20.0)
-      @inferred DT.polygon_bounds(pts, boundary_nodes)
-      @test DT.polygon_bounds(pts, tri.boundary_nodes) == (0.0, 20.0, 0.0, 20.0)
-      @inferred DT.polygon_bounds(pts, tri.boundary_nodes)
+            index_map["a"],
+        ]
+        q = (28.0, 18.0)
+        dist = DT.distance_to_polygon_single_segment(q, pts, boundary_nodes)
+        @test dist ≈ -8.0
+        @inferred DT.distance_to_polygon(q, pts, boundary_nodes)
+        @test dist == DT.distance_to_polygon(q, pts, boundary_nodes) ==
+            DT.distance_to_polygon(q, pts, tri.boundary_nodes)
+        q = (26.9116654358588, 23.0120339025522)
+        dist = DT.distance_to_polygon_single_segment(q, pts, boundary_nodes)
+        @test dist ≈ -7.5394606788132
+        @test dist == DT.distance_to_polygon(q, pts, boundary_nodes) ==
+            DT.distance_to_polygon(q, pts, tri.boundary_nodes)
+        q = (9.5687897994641, 11.7840765682329)
+        dist = DT.distance_to_polygon_single_segment(q, pts, boundary_nodes)
+        @test dist ≈ 20.0 - q[2]
+        @test dist == DT.distance_to_polygon(q, pts, boundary_nodes)
+        @test DT.distance_to_polygon(q, pts, tri.boundary_nodes) ≈ q[1] - 8.0
+        q = (2.0, 2.0)
+        dist = DT.distance_to_polygon_single_segment(q, pts, boundary_nodes)
+        @test dist ≈ 2.0
+        @test dist == DT.distance_to_polygon(q, pts, boundary_nodes) ==
+            DT.distance_to_polygon(q, pts, tri.boundary_nodes)
+        q = (-2.0, 0.0)
+        dist = DT.distance_to_polygon_single_segment(q, pts, boundary_nodes)
+        @test dist ≈ -2.0
+        @test dist == DT.distance_to_polygon(q, pts, boundary_nodes) ==
+            DT.distance_to_polygon(q, pts, tri.boundary_nodes)
+        q = (0.0, 0.0)
+        dist = DT.distance_to_polygon_single_segment(q, pts, boundary_nodes)
+        @test dist ≈ 0.0
+        @test dist == DT.distance_to_polygon(q, pts, boundary_nodes) ==
+            DT.distance_to_polygon(q, pts, tri.boundary_nodes)
+        q = (10.0, 0.0)
+        dist = DT.distance_to_polygon_single_segment(q, pts, boundary_nodes)
+        @inferred DT.distance_to_polygon_single_segment(q, pts, boundary_nodes)
+        @test dist ≈ 0.0
+        @test dist == DT.distance_to_polygon(q, pts, boundary_nodes) ==
+            DT.distance_to_polygon(q, pts, tri.boundary_nodes)
+        q = (4.6998638334488, 13.8273575177129)
+        dist = DT.distance_to_polygon_single_segment(q, pts, boundary_nodes)
+        @test dist ≈ q[1]
+        @test dist == DT.distance_to_polygon(q, pts, boundary_nodes)
+        @test DT.distance_to_polygon(q, pts, tri.boundary_nodes) ≈ -(q[1] - 4.0)
+        q = [-0.181375963606, 9.9696497047896]
+        dist = DT.distance_to_polygon_single_segment(q, pts, boundary_nodes)
+        @test dist ≈ q[1]
+        @test dist == DT.distance_to_polygon(q, pts, boundary_nodes) ==
+            DT.distance_to_polygon(q, pts, tri.boundary_nodes)
+    end
 
-      # this example used to give ymin = ∞!
-      pts =
+
+    @testset "Multiple boundary segments" begin
+        boundary_nodes = [
             [
-                  (0.42128834958962136, 0.33007028464908217)
-                  (0.11356454007618466, 0.7448537954874419)
-                  (0.7546603355923669, 0.9543777463196534)
-                  (0.4891168285858787, 0.633382367024488)
-                  (0.6747495735823583, 0.45029401396930835)
-                  (0.4974345692650808, 0.5149317175333161)
-                  (0.5484553916212294, 0.5711900118327666)
-                  (0.11175023541896634, 0.990159314424705)
-                  (0.4879170832093027, 0.08984797306499748)
-                  (0.1335657114656048, 0.35758096957091445)
-                  (0.7400877461824955, 0.8325280694798072)
-                  (0.3299481327824305, 0.3440909795000966)
-                  (0.1962438207259194, 0.6775012296614791)
-                  (0.3403201981957973, 0.012234115125469014)
-                  (0.39090662279892596, 0.6232084829209825)
-                  (0.05180909728733263, 0.008306644625064141)
-                  (0.4469104766158789, 0.5039047194497466)
-                  (0.33193129503638996, 0.1768246437543215)
-                  (0.24763476605581736, 0.9547830758766014)
-                  (0.8626957317918005, 0.8901670309728742)
-                  (0.16962017427458131, 0.8788693051101659)
-                  (0.6974737865767218, 0.3655018057608477)
-                  (0.5781761692908192, 0.49368701064930676)
-                  (0.802284945950765, 0.6391848231098498)
-                  (0.24014031334952324, 0.03642844544263135)
-                  (0.29635836817046646, 0.49234998547822206)
-                  (0.6537526603197776, 0.9534202877086324)
-                  (0.22033649109831877, 0.6097719755673441)
-                  (0.5794841917252405, 0.6525875695433809)
-                  (0.48634161888118377, 0.7185107690604786)
-                  (0.5345141678719951, 0.5951779828559485)
-                  (0.07485448974139897, 0.3652052168490376)
-                  (0.9456233879280223, 0.20388899534798632)
-                  (0.27834285268176084, 0.8083123815440214)
-                  (0.6267933326859505, 0.39246432872096704)
-                  (0.7616653549409313, 0.6567908542485912)
-                  (0.7064053508954178, 0.5295025690789412)
-                  (0.6402160832134494, 0.7577312997966936)
-                  (0.3919353829681529, 0.8457590619098538)
-                  (0.9716293296512977, 0.5682387373301687)
-            ]
-      boundary_nodes = [16, 14, 33, 40, 20, 3, 8, 16]
-      _pts = pts[boundary_nodes]
-      xmin = minimum(getindex.(_pts, 1))
-      xmax = maximum(getindex.(_pts, 1))
-      ymin = minimum(getindex.(_pts, 2))
-      ymax = maximum(getindex.(_pts, 2))
-      _xmin, _xmax, _ymin, _ymax = DT.polygon_bounds(pts, boundary_nodes)
-      @test xmin == _xmin
-      @test ymin == _ymin
-      @test xmax == _xmax
-      @test ymax == _ymax
+                index_map["a"],
+                index_map["b"],
+                index_map["c"],
+                index_map["d"],
+            ],
+            [
+                index_map["d"],
+                index_map["e"],
+                index_map["f"],
+                index_map["g"],
+            ],
+            [
+                index_map["g"],
+                index_map["h"],
+                index_map["a"],
+            ],
+        ]
+        q = (28.0, 18.0)
+        dist = DT.distance_to_polygon_multiple_segments(q, pts, boundary_nodes)
+        @test dist ≈ -8.0
+        @test dist == DT.distance_to_polygon(q, pts, boundary_nodes) ==
+            DT.distance_to_polygon(q, pts, tri.boundary_nodes)
+        q = (26.9116654358588, 23.0120339025522)
+        dist = DT.distance_to_polygon_multiple_segments(q, pts, boundary_nodes)
+        @test dist ≈ -7.5394606788132
+        @test dist == DT.distance_to_polygon(q, pts, boundary_nodes) ==
+            DT.distance_to_polygon(q, pts, tri.boundary_nodes)
+        q = (9.5687897994641, 11.7840765682329)
+        @inferred DT.distance_to_polygon(q, pts, boundary_nodes)
+        @inferred DT.distance_to_polygon(q, pts, tri.boundary_nodes) ==
+            DT.distance_to_polygon(q, pts, tri.boundary_nodes)
+        dist = DT.distance_to_polygon_multiple_segments(q, pts, boundary_nodes)
+        @test dist ≈ 20.0 - q[2]
+        @test dist == DT.distance_to_polygon(q, pts, boundary_nodes)
+        q = (2.0, 2.0)
+        dist = DT.distance_to_polygon_multiple_segments(q, pts, boundary_nodes)
+        @test dist ≈ 2.0
+        @test dist == DT.distance_to_polygon(q, pts, boundary_nodes) ==
+            DT.distance_to_polygon(q, pts, tri.boundary_nodes)
+        q = (-2.0, 0.0)
+        dist = DT.distance_to_polygon_multiple_segments(q, pts, boundary_nodes)
+        @test dist ≈ -2.0
+        @test dist == DT.distance_to_polygon(q, pts, boundary_nodes) ==
+            DT.distance_to_polygon(q, pts, tri.boundary_nodes)
+        q = (0.0, 0.0)
+        dist = DT.distance_to_polygon_multiple_segments(q, pts, boundary_nodes)
+        @test dist ≈ 0.0
+        @test dist == DT.distance_to_polygon(q, pts, boundary_nodes) ==
+            DT.distance_to_polygon(q, pts, tri.boundary_nodes)
+        q = (10.0, 0.0)
+        dist = DT.distance_to_polygon_multiple_segments(q, pts, boundary_nodes)
+        @inferred DT.distance_to_polygon_multiple_segments(q, pts, boundary_nodes)
+        @test dist ≈ 0.0
+        @test dist == DT.distance_to_polygon(q, pts, boundary_nodes) ==
+            DT.distance_to_polygon(q, pts, tri.boundary_nodes)
+        q = (4.6998638334488, 13.8273575177129)
+        dist = DT.distance_to_polygon_multiple_segments(q, pts, boundary_nodes)
+        @test dist ≈ q[1]
+        @test dist == DT.distance_to_polygon(q, pts, boundary_nodes)
+        q = [-0.181375963606, 9.9696497047896]
+        dist = DT.distance_to_polygon_multiple_segments(q, pts, boundary_nodes)
+        @test dist ≈ q[1]
+        @test dist == DT.distance_to_polygon(q, pts, boundary_nodes)
+        q = [14.2840577995064, 9.7320720329939]
+        dist = DT.distance_to_polygon_multiple_segments(q, pts, boundary_nodes)
+        @test dist ≈ 20.0 - q[1]
+        @test dist == DT.distance_to_polygon(q, pts, boundary_nodes)
+        @test DT.distance_to_polygon(q, pts, tri.boundary_nodes) ≈ -(q[1] - 14.0)
+    end
 end
+
+
+@testset "Bounding box of a polygon" begin
+    tri, label_map, index_map = simple_geometry()
+    pts = get_points(tri)
+    boundary_nodes = [
+        index_map["a"],
+        index_map["b"],
+        index_map["c"],
+        index_map["d"],
+        index_map["e"],
+        index_map["f"],
+        index_map["g"],
+        index_map["h"],
+        index_map["a"],
+    ]
+    @test DT.polygon_bounds(pts, boundary_nodes) == (0.0, 20.0, 0.0, 20.0)
+    @inferred DT.polygon_bounds(pts, boundary_nodes)
+    boundary_nodes = [
+        [
+            index_map["a"],
+            index_map["b"],
+            index_map["c"],
+            index_map["d"],
+        ],
+        [
+            index_map["d"],
+            index_map["e"],
+            index_map["f"],
+            index_map["g"],
+        ],
+        [
+            index_map["g"],
+            index_map["h"],
+            index_map["a"],
+        ],
+    ]
+    @test DT.polygon_bounds(pts, boundary_nodes) == (0.0, 20.0, 0.0, 20.0)
+    @inferred DT.polygon_bounds(pts, boundary_nodes)
+    @test DT.polygon_bounds(pts, tri.boundary_nodes) == (0.0, 20.0, 0.0, 20.0)
+    @inferred DT.polygon_bounds(pts, tri.boundary_nodes)
+
+
+    # this example used to give ymin = ∞!
+    pts =
+        [
+        (0.42128834958962136, 0.33007028464908217)
+        (0.11356454007618466, 0.7448537954874419)
+        (0.7546603355923669, 0.9543777463196534)
+        (0.4891168285858787, 0.633382367024488)
+        (0.6747495735823583, 0.45029401396930835)
+        (0.4974345692650808, 0.5149317175333161)
+        (0.5484553916212294, 0.5711900118327666)
+        (0.11175023541896634, 0.990159314424705)
+        (0.4879170832093027, 0.08984797306499748)
+        (0.1335657114656048, 0.35758096957091445)
+        (0.7400877461824955, 0.8325280694798072)
+        (0.3299481327824305, 0.3440909795000966)
+        (0.1962438207259194, 0.6775012296614791)
+        (0.3403201981957973, 0.012234115125469014)
+        (0.39090662279892596, 0.6232084829209825)
+        (0.05180909728733263, 0.008306644625064141)
+        (0.4469104766158789, 0.5039047194497466)
+        (0.33193129503638996, 0.1768246437543215)
+        (0.24763476605581736, 0.9547830758766014)
+        (0.8626957317918005, 0.8901670309728742)
+        (0.16962017427458131, 0.8788693051101659)
+        (0.6974737865767218, 0.3655018057608477)
+        (0.5781761692908192, 0.49368701064930676)
+        (0.802284945950765, 0.6391848231098498)
+        (0.24014031334952324, 0.03642844544263135)
+        (0.29635836817046646, 0.49234998547822206)
+        (0.6537526603197776, 0.9534202877086324)
+        (0.22033649109831877, 0.6097719755673441)
+        (0.5794841917252405, 0.6525875695433809)
+        (0.48634161888118377, 0.7185107690604786)
+        (0.5345141678719951, 0.5951779828559485)
+        (0.07485448974139897, 0.3652052168490376)
+        (0.9456233879280223, 0.20388899534798632)
+        (0.27834285268176084, 0.8083123815440214)
+        (0.6267933326859505, 0.39246432872096704)
+        (0.7616653549409313, 0.6567908542485912)
+        (0.7064053508954178, 0.5295025690789412)
+        (0.6402160832134494, 0.7577312997966936)
+        (0.3919353829681529, 0.8457590619098538)
+        (0.9716293296512977, 0.5682387373301687)
+    ]
+    boundary_nodes = [16, 14, 33, 40, 20, 3, 8, 16]
+    _pts = pts[boundary_nodes]
+    xmin = minimum(getindex.(_pts, 1))
+    xmax = maximum(getindex.(_pts, 1))
+    ymin = minimum(getindex.(_pts, 2))
+    ymax = maximum(getindex.(_pts, 2))
+    _xmin, _xmax, _ymin, _ymax = DT.polygon_bounds(pts, boundary_nodes)
+    @test xmin == _xmin
+    @test ymin == _ymin
+    @test xmax == _xmax
+    @test ymax == _ymax
+end
+
 
 @testset "Cell data structure" begin
-      tri, label_map, index_map = simple_geometry()
-      pts = get_points(tri)
-      @testset "Constructor and operations" begin
-            p = DT.Cell(10.0, 10.0, 10.0, pts, tri.boundary_nodes)
-            @test p.dist == DT.distance_to_polygon((10.0, 10.0), pts, tri.boundary_nodes)
-            @test p.max_dist ≈ p.dist + 10.0 * sqrt(2)
-            q = DT.Cell(7.0, 17.0, 0.3, pts, tri.boundary_nodes)
-            @test (p < q) == (p.max_dist < q.max_dist)
-            @test (p > q) == (p.max_dist > q.max_dist)
-            @test (p == q) == (p.max_dist == q.max_dist)
-            @test (p ≤ q) == (p.max_dist ≤ q.max_dist)
-            @test (p ≥ q) == (p.max_dist ≥ q.max_dist)
-            @test p.x == 10.0
-            @test p.y == 10.0
-            @test p.half_width == 10.0
-            @test q.x == 7.0
-            @test q.y == 17.0
-            @test q.half_width == 0.3
-            @inferred p < q
-      end
+    tri, label_map, index_map = simple_geometry()
+    pts = get_points(tri)
+    @testset "Constructor and operations" begin
+        p = DT.Cell(10.0, 10.0, 10.0, pts, tri.boundary_nodes)
+        @test p.dist == DT.distance_to_polygon((10.0, 10.0), pts, tri.boundary_nodes)
+        @test p.max_dist ≈ p.dist + 10.0 * sqrt(2)
+        q = DT.Cell(7.0, 17.0, 0.3, pts, tri.boundary_nodes)
+        @test (p < q) == (p.max_dist < q.max_dist)
+        @test (p > q) == (p.max_dist > q.max_dist)
+        @test (p == q) == (p.max_dist == q.max_dist)
+        @test (p ≤ q) == (p.max_dist ≤ q.max_dist)
+        @test (p ≥ q) == (p.max_dist ≥ q.max_dist)
+        @test p.x == 10.0
+        @test p.y == 10.0
+        @test p.half_width == 10.0
+        @test q.x == 7.0
+        @test q.y == 17.0
+        @test q.half_width == 0.3
+        @inferred p < q
+    end
 
-      @testset "CellQueue" begin
-            boundary_nodes = [[index_map["a"],
-                        index_map["b"],
-                        index_map["c"],
-                        index_map["d"]],
-                  [index_map["d"],
-                        index_map["e"],
-                        index_map["f"],
-                        index_map["g"]],
-                  [index_map["g"],
-                        index_map["h"],
-                        index_map["a"]]]
-            q = DT.CellQueue{Float64}()
-            @test isempty(q)
-            c = DT.Cell(DT.polygon_features(pts, boundary_nodes)[2]..., 10.0, pts, boundary_nodes)
-            DT.insert_cell!(q, c)
-            @test q.queue[c] == c.max_dist
-            @inferred DT.get_next_cell!(q)
-      end
+
+    @testset "CellQueue" begin
+        boundary_nodes = [
+            [
+                index_map["a"],
+                index_map["b"],
+                index_map["c"],
+                index_map["d"],
+            ],
+            [
+                index_map["d"],
+                index_map["e"],
+                index_map["f"],
+                index_map["g"],
+            ],
+            [
+                index_map["g"],
+                index_map["h"],
+                index_map["a"],
+            ],
+        ]
+        q = DT.CellQueue{Float64}()
+        @test isempty(q)
+        c = DT.Cell(DT.polygon_features(pts, boundary_nodes)[2]..., 10.0, pts, boundary_nodes)
+        DT.insert_cell!(q, c)
+        @test q.queue[c] == c.max_dist
+        @inferred DT.get_next_cell!(q)
+    end
 end
+
 
 @testset "Pole of inaccessibility" begin
-      pts = [(0.0, 10.0), (0.0, 8.0), (0.0, 6.0), (0.0, 4.0), (0.0, 2.0),
-            (0.0, 0.0), (2.0, 0.0), (4.0, 0.0), (6.0, 0.0), (8.0, 0.0), (10.0, 0.0),
-            (10.0, 2.0), (10.0, 4.0), (8.0, 4.0), (6.0, 4.0),
-            (4.0, 4.0), (4.0, 6.0), (4.0, 8.0), (4.0, 10.0), (2.0, 10.0),
-            (0.0, 10.0)]
-      @testset "Single segment" begin
-            boundary_nodes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 1]
-            x, y = DT.pole_of_inaccessibility(pts, boundary_nodes)
-            @inferred DT.pole_of_inaccessibility(pts, boundary_nodes)
-            @test x == 2.5 && y == 2.5
-      end
+    pts = [
+        (0.0, 10.0), (0.0, 8.0), (0.0, 6.0), (0.0, 4.0), (0.0, 2.0),
+        (0.0, 0.0), (2.0, 0.0), (4.0, 0.0), (6.0, 0.0), (8.0, 0.0), (10.0, 0.0),
+        (10.0, 2.0), (10.0, 4.0), (8.0, 4.0), (6.0, 4.0),
+        (4.0, 4.0), (4.0, 6.0), (4.0, 8.0), (4.0, 10.0), (2.0, 10.0),
+        (0.0, 10.0),
+    ]
+    @testset "Single segment" begin
+        boundary_nodes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 1]
+        x, y = DT.pole_of_inaccessibility(pts, boundary_nodes)
+        @inferred DT.pole_of_inaccessibility(pts, boundary_nodes)
+        @test x == 2.5 && y == 2.5
+    end
 
-      @testset "Multiple segments" begin
-            push!(pts,
-                  (2.4988557436664, 2.4749992804628),
-                  (1.258244761794, 3.494679539536),
-                  (1.2242554198249, 1.4553190213896),
-                  (3.3825786348632, 1.2683776405595),
-                  (3.3825786348632, 3.4097061846133),
-                  (2.0, 4.0))
-            boundary_nodes = [[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-                        1]],
-                  [reverse([21, 22, 23, 24, 25, 21])]]
-            x, y = DT.pole_of_inaccessibility(pts, boundary_nodes)
-            @inferred DT.pole_of_inaccessibility(pts, boundary_nodes)
-            @test (x ≈ 8.125 || x ≈ 5.625) && y ≈ 1.875
-      end
 
-      @testset "Multiply connected" begin
-            push!(pts,
-                  (7.4103156582024, 2.4749992804628),
-                  (7.0, 1.0),
-                  (8.8548626918894, 0.8775002079148),
-                  (9.2797294665033, 2.2370738866791))
-            boundary_nodes = [[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-                        1]],
-                  [reverse([21, 22, 23, 24, 25, 21])],
-                  [reverse([26, 27, 28, 29, 26])]]
-            x, y = DT.pole_of_inaccessibility(pts, boundary_nodes)
-            @test x ≈ 2.5 && y ≈ 7.5
-      end
+    @testset "Multiple segments" begin
+        push!(
+            pts,
+            (2.4988557436664, 2.4749992804628),
+            (1.258244761794, 3.494679539536),
+            (1.2242554198249, 1.4553190213896),
+            (3.3825786348632, 1.2683776405595),
+            (3.3825786348632, 3.4097061846133),
+            (2.0, 4.0),
+        )
+        boundary_nodes = [
+            [
+                [
+                    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                    1,
+                ],
+            ],
+            [reverse([21, 22, 23, 24, 25, 21])],
+        ]
+        x, y = DT.pole_of_inaccessibility(pts, boundary_nodes)
+        @inferred DT.pole_of_inaccessibility(pts, boundary_nodes)
+        @test (x ≈ 8.125 || x ≈ 5.625) && y ≈ 1.875
+    end
 
-      @testset "More complicated examples" begin
-            pts = [0.0 8.0
-                  2.0 5.0
-                  3.0 7.0
-                  1.8190689042843 8.1342247183191
-                  3.2296265960022 8.864995570655
-                  4.2493068550754 7.7433472856744
-                  4.5042269198437 5.8739334773735
-                  3.6714880416006 4.3784024307328
-                  2.7367811374502 2.6279513193238
-                  5.5069125079324 1.3873403374514
-                  8.4299959172756 2.7469140162157
-                  9.7045962411171 5.5340400576824
-                  8.565953285152 7.7943312986281
-                  6.7135341478357 9.0349422805005
-                  4.1303441581835 9.663745106929
-                  2.7537758084347 10.3775212882802
-                  1.0882980519485 10.4964839851721
-                  -1.1380038470281 9.8336918167745
-                  -2.2596521320086 8.4571234670257
-                  -2.7864869325298 5.9419121613117
-                  -1.3929239117964 3.647631578397
-                  0.3235378576436 4.9732159151922
-                  -0.9000784532443 6.6216990006939
-                  0.9863300260411 9.6807397779135
-                  0.153591147798 9.5447824100371
-                  0.2725538446899 8.6610595188403
-                  2.9067278472957 8.1852087312728
-                  2.1249729820062 9.4258197131452]'
-            A = Dict('a':'z' .=> 1:26)
-            boundary_nodes = [[[A['a'], A['d'], A['c'], A['b']],
-                        [A['b'], A['i'], A['j'], A['k'], A['h'], A['g'], A['l']],
-                        [A['l'], A['f'], A['m'], A['e'], A['n'], A['o'], A['p'], A['q'], A['p']],
-                        [A['p'], A['q'], A['r'], A['s'], A['t'], A['u'], A['v'], A['w'], A['a']]],
-                  [[28 - 2, 27 - 2, 26 - 2],
-                        [26 - 2, 30 - 2, 29 - 2, 28 - 2]]]
-            x, y = DT.pole_of_inaccessibility(pts, boundary_nodes)
 
-            @test x ≈ 4.6146922812432685 && y ≈ 3.0953047713990314
-            len = size(pts, 2)
-            pts = hcat(pts, [7.274358290326 3.0 5.3369657980869; 2.7978980291693 4.0 1.8801857960034])
-            boundary_nodes = [[[A['a'], A['d'], A['c'], A['b']],
-                        [A['b'], A['i'], A['j'], A['k'], A['h'], A['g'], A['l']],
-                        [A['l'], A['f'], A['m'], A['e'], A['n'], A['o'], A['p'], A['q'], A['p']],
-                        [A['p'], A['q'], A['r'], A['s'], A['t'], A['u'], A['v'], A['w'], A['a']]],
-                  [[28 - 2, 27 - 2, 26 - 2],
-                        [26 - 2, 30 - 2, 29 - 2, 28 - 2]],
-                  [[len + 1, len + 2, len + 3, len + 1]]]
-            x, y = DT.pole_of_inaccessibility(pts, boundary_nodes)
-            @test x ≈ -1.0785224985822 && y ≈ 5.3725906833292
-      end
-end
+    @testset "Multiply connected" begin
+        push!(
+            pts,
+            (7.4103156582024, 2.4749992804628),
+            (7.0, 1.0),
+            (8.8548626918894, 0.8775002079148),
+            (9.2797294665033, 2.2370738866791),
+        )
+        boundary_nodes = [
+            [
+                [
+                    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                    1,
+                ],
+            ],
+            [reverse([21, 22, 23, 24, 25, 21])],
+            [reverse([26, 27, 28, 29, 26])],
+        ]
+        x, y = DT.pole_of_inaccessibility(pts, boundary_nodes)
+        @test x ≈ 2.5 && y ≈ 7.5
+    end
 
-@testset "Making a figure" begin
-      pts = [0.0 8.0
+
+    @testset "More complicated examples" begin
+        pts = [
+            0.0 8.0
             2.0 5.0
             3.0 7.0
-            1.81907 8.13422
-            3.22963 8.865
-            4.24931 7.74335
-            4.50423 5.87393
-            3.67149 4.3784
-            2.73678 2.62795
-            5.50691 1.38734
-            8.43 2.74691
-            9.7046 5.53404
-            8.56595 7.79433
-            6.71353 9.03494
-            4.13034 9.66375
-            2.75378 10.3775
-            1.0883 10.4965
-            -1.138 9.83369
-            -2.25965 8.45712
-            -2.78649 5.94191
-            -1.39292 3.64763
-            0.323538 4.97322
-            -0.900078 6.6217
-            0.98633 9.68074
-            0.153591 9.54478
-            0.272554 8.66106
-            2.90673 8.18521
-            2.12497 9.42582
-            7.27436 2.7979
-            3.0 4.0
-            5.33697 1.88019]'
-      boundary_nodes = [
-            [[1, 4, 3, 2], [2, 9, 10, 11, 8, 7, 12], [12, 6, 13, 5, 14, 15, 16, 17, 16], [16, 17, 18, 19, 20, 21, 22, 23, 1]],
-            [[26, 25, 24], [24, 28, 27, 26]],
-            [[29,31,30,29]]
-      ]
-      x, y = DT.pole_of_inaccessibility(pts, boundary_nodes)
-      @test x ≈ -1.0785225000000000003
-      @test y ≈ 5.37259749999999999999
+            1.8190689042843 8.1342247183191
+            3.2296265960022 8.864995570655
+            4.2493068550754 7.7433472856744
+            4.5042269198437 5.8739334773735
+            3.6714880416006 4.3784024307328
+            2.7367811374502 2.6279513193238
+            5.5069125079324 1.3873403374514
+            8.4299959172756 2.7469140162157
+            9.7045962411171 5.5340400576824
+            8.565953285152 7.7943312986281
+            6.7135341478357 9.0349422805005
+            4.1303441581835 9.663745106929
+            2.7537758084347 10.3775212882802
+            1.0882980519485 10.4964839851721
+            -1.1380038470281 9.8336918167745
+            -2.2596521320086 8.4571234670257
+            -2.7864869325298 5.9419121613117
+            -1.3929239117964 3.647631578397
+            0.3235378576436 4.9732159151922
+            -0.9000784532443 6.6216990006939
+            0.9863300260411 9.6807397779135
+            0.153591147798 9.5447824100371
+            0.2725538446899 8.6610595188403
+            2.9067278472957 8.1852087312728
+            2.1249729820062 9.4258197131452
+        ]'
+        A = Dict('a':'z' .=> 1:26)
+        boundary_nodes = [
+            [
+                [A['a'], A['d'], A['c'], A['b']],
+                [A['b'], A['i'], A['j'], A['k'], A['h'], A['g'], A['l']],
+                [A['l'], A['f'], A['m'], A['e'], A['n'], A['o'], A['p'], A['q'], A['p']],
+                [A['p'], A['q'], A['r'], A['s'], A['t'], A['u'], A['v'], A['w'], A['a']],
+            ],
+            [
+                [28 - 2, 27 - 2, 26 - 2],
+                [26 - 2, 30 - 2, 29 - 2, 28 - 2],
+            ],
+        ]
+        x, y = DT.pole_of_inaccessibility(pts, boundary_nodes)
 
-      tri = triangulate(pts; boundary_nodes)
-      @test collect(DT.getxy(DT.get_representative_point_coordinates(tri, 1))) ≈ [x, y]
+
+        @test x ≈ 4.6146922812432685 && y ≈ 3.0953047713990314
+        len = size(pts, 2)
+        pts = hcat(pts, [7.274358290326 3.0 5.3369657980869; 2.7978980291693 4.0 1.8801857960034])
+        boundary_nodes = [
+            [
+                [A['a'], A['d'], A['c'], A['b']],
+                [A['b'], A['i'], A['j'], A['k'], A['h'], A['g'], A['l']],
+                [A['l'], A['f'], A['m'], A['e'], A['n'], A['o'], A['p'], A['q'], A['p']],
+                [A['p'], A['q'], A['r'], A['s'], A['t'], A['u'], A['v'], A['w'], A['a']],
+            ],
+            [
+                [28 - 2, 27 - 2, 26 - 2],
+                [26 - 2, 30 - 2, 29 - 2, 28 - 2],
+            ],
+            [[len + 1, len + 2, len + 3, len + 1]],
+        ]
+        x, y = DT.pole_of_inaccessibility(pts, boundary_nodes)
+        @test x ≈ -1.0785224985822 && y ≈ 5.3725906833292
+    end
 end
+
+
+@testset "Making a figure" begin
+    pts = [
+        0.0 8.0
+        2.0 5.0
+        3.0 7.0
+        1.81907 8.13422
+        3.22963 8.865
+        4.24931 7.74335
+        4.50423 5.87393
+        3.67149 4.3784
+        2.73678 2.62795
+        5.50691 1.38734
+        8.43 2.74691
+        9.7046 5.53404
+        8.56595 7.79433
+        6.71353 9.03494
+        4.13034 9.66375
+        2.75378 10.3775
+        1.0883 10.4965
+        -1.138 9.83369
+        -2.25965 8.45712
+        -2.78649 5.94191
+        -1.39292 3.64763
+        0.323538 4.97322
+        -0.900078 6.6217
+        0.98633 9.68074
+        0.153591 9.54478
+        0.272554 8.66106
+        2.90673 8.18521
+        2.12497 9.42582
+        7.27436 2.7979
+        3.0 4.0
+        5.33697 1.88019
+    ]'
+    boundary_nodes = [
+        [[1, 4, 3, 2], [2, 9, 10, 11, 8, 7, 12], [12, 6, 13, 5, 14, 15, 16, 17, 16], [16, 17, 18, 19, 20, 21, 22, 23, 1]],
+        [[26, 25, 24], [24, 28, 27, 26]],
+        [[29, 31, 30, 29]],
+    ]
+    x, y = DT.pole_of_inaccessibility(pts, boundary_nodes)
+    @test x ≈ -1.0785225000000000003
+    @test y ≈ 5.37259749999999999999
+
+
+    tri = triangulate(pts; boundary_nodes)
+    @test collect(DT.getxy(DT.get_representative_point_coordinates(tri, 1))) ≈ [x, y]
+end
+
 
 @testset "A previously broken example" begin
-      PT = [-3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402,
-            3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912,
-            2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224,
-            2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273,
-            1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557,
-            0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467,
-            -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364,
-            -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026,
-            -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916,
-            -3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402,
-            3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912,
-            2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224,
-            2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273,
-            1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557,
-            0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467,
-            -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364,
-            -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026,
-            -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916,
-            -3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402,
-            3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912,
-            2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224,
-            2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273,
-            1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557,
-            0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467,
-            -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364,
-            -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026,
-            -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916,
-            -4.927587132008278, -4.927587132008278, -4.927587132008278, -4.927587132008278, -4.927587132008278, -4.927587132008278, -4.927587132008278, -4.927587132008278,
-            -4.927587132008278, -3.304869996725775, -3.304869996725775, -3.304869996725775, -3.304869996725775, -3.304869996725775, -3.304869996725775, -3.304869996725775,
-            -3.304869996725775, -3.304869996725775, -1.6821528614432721, -1.6821528614432721, -1.6821528614432721, -1.6821528614432721, -1.6821528614432721, -1.6821528614432721,
-            -1.6821528614432721, -1.6821528614432721, -1.6821528614432721, -0.05943572616076942, -0.05943572616076942, -0.05943572616076942, -0.05943572616076942, -0.05943572616076942,
-            -0.05943572616076942, -0.05943572616076942, -0.05943572616076942, -0.05943572616076942, 1.5632814091217337, 1.5632814091217337, 1.5632814091217337, 1.5632814091217337,
-            1.5632814091217337, 1.5632814091217337, 1.5632814091217337, 1.5632814091217337, 1.5632814091217337, 3.185998544404236, 3.185998544404236, 3.185998544404236, 3.185998544404236,
-            3.185998544404236, 3.185998544404236, 3.185998544404236, 3.185998544404236, 3.185998544404236, 4.808715679686739, 4.808715679686739, 4.808715679686739, 4.808715679686739,
-            4.808715679686739, 4.808715679686739, 4.808715679686739, 4.808715679686739, 4.808715679686739, 6.431432814969242, 6.431432814969242, 6.431432814969242, 6.431432814969242,
-            6.431432814969242, 6.431432814969242, 6.431432814969242, 6.431432814969242, 6.431432814969242, 8.054149950251745, 8.054149950251745, 8.054149950251745, 8.054149950251745,
-            8.054149950251745, 8.054149950251745, 8.054149950251745, 8.054149950251745, 8.054149950251745, 9.676867085534248, 9.676867085534248, 9.676867085534248, 9.676867085534248,
-            9.676867085534248, 9.676867085534248, 9.676867085534248, 9.676867085534248, 9.676867085534248, 11.299584220816751, 11.299584220816751, 11.299584220816751, 11.299584220816751,
-            11.299584220816751, 11.299584220816751, 11.299584220816751, 11.299584220816751, 11.299584220816751, 12.922301356099254, 12.922301356099254, 12.922301356099254, 12.922301356099254,
-            12.922301356099254, 12.922301356099254, 12.922301356099254, 12.922301356099254, 12.922301356099254, 14.545018491381757, 14.545018491381757, 14.545018491381757, 14.545018491381757,
-            14.545018491381757, 14.545018491381757, 14.545018491381757, 14.545018491381757, 14.545018491381757, 16.16773562666426, 16.16773562666426, 16.16773562666426, 16.16773562666426,
-            16.16773562666426, 16.16773562666426, 16.16773562666426, 16.16773562666426, 16.16773562666426, 17.790452761946764, 17.790452761946764, 17.790452761946764, 17.790452761946764,
-            17.790452761946764, 17.790452761946764, 17.790452761946764, 17.790452761946764, 17.790452761946764, 19.413169897229267, 19.413169897229267, 19.413169897229267, 19.413169897229267,
-            19.413169897229267, 19.413169897229267, 19.413169897229267, 19.413169897229267, 19.413169897229267, 21.03588703251177, 21.03588703251177, 21.03588703251177, 21.03588703251177,
-            21.03588703251177, 21.03588703251177, 21.03588703251177, 21.03588703251177, 21.03588703251177, 22.658604167794273, 22.658604167794273, 22.658604167794273, 22.658604167794273,
-            22.658604167794273, 22.658604167794273, 22.658604167794273, 22.658604167794273, 22.658604167794273, 24.281321303076776, 24.281321303076776, 24.281321303076776, 24.281321303076776,
-            24.281321303076776, 24.281321303076776, 24.281321303076776, 24.281321303076776, 24.281321303076776, 25.90403843835928, 25.90403843835928, 25.90403843835928, 25.90403843835928,
-            25.90403843835928, 25.90403843835928, 25.90403843835928, 25.90403843835928, 25.90403843835928, 27.52675557364178, 27.52675557364178, 27.52675557364178, 27.52675557364178,
-            27.52675557364178, 27.52675557364178, 27.52675557364178, 27.52675557364178, 27.52675557364178, 29.149472708924286, 29.149472708924286, 29.149472708924286, 29.149472708924286,
-            29.149472708924286, 29.149472708924286, 29.149472708924286, 29.149472708924286, 29.149472708924286, 30.772189844206785, 30.772189844206785, 30.772189844206785, 30.772189844206785,
-            30.772189844206785, 30.772189844206785, 30.772189844206785, 30.772189844206785, 30.772189844206785, 32.39490697948929, 32.39490697948929, 32.39490697948929, 32.39490697948929,
-            32.39490697948929, 32.39490697948929, 32.39490697948929, 32.39490697948929, 32.39490697948929]
-      PT = [PT[1:216]'; PT[217:end]']
-      BN = [1, 2, 3, 4, 5, 6, 7, 8, 9, 18, 27, 36, 45, 54, 63, 72,
-            81, 90, 99, 108, 117, 126, 135, 144, 153, 162, 171, 180, 189,
-            198, 207, 216, 215, 214, 213, 212, 211, 210, 209, 208, 199,
-            190, 181, 172, 163, 154, 145, 136, 127, 118, 109, 100, 91, 82,
-            73, 64, 55, 46, 37, 28, 19, 10, 1]
-      pc = DT.pole_of_inaccessibility(PT, BN)
-      @test collect(pc) ≈ collect(DT.polygon_features(PT, BN)[2])
+    PT = [
+        -3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402,
+        3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912,
+        2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224,
+        2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273,
+        1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557,
+        0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467,
+        -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364,
+        -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026,
+        -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916,
+        -3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402,
+        3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912,
+        2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224,
+        2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273,
+        1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557,
+        0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467,
+        -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364,
+        -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026,
+        -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916,
+        -3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402,
+        3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912,
+        2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224,
+        2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273,
+        1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467, -0.569282706070557,
+        0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364, -1.4572528434350467,
+        -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026, -2.3452229807995364,
+        -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916, -3.233193118164026,
+        -2.3452229807995364, -1.4572528434350467, -0.569282706070557, 0.31868743129393273, 1.2066575686584224, 2.094627706022912, 2.982597843387402, 3.8705679807518916,
+        -4.927587132008278, -4.927587132008278, -4.927587132008278, -4.927587132008278, -4.927587132008278, -4.927587132008278, -4.927587132008278, -4.927587132008278,
+        -4.927587132008278, -3.304869996725775, -3.304869996725775, -3.304869996725775, -3.304869996725775, -3.304869996725775, -3.304869996725775, -3.304869996725775,
+        -3.304869996725775, -3.304869996725775, -1.6821528614432721, -1.6821528614432721, -1.6821528614432721, -1.6821528614432721, -1.6821528614432721, -1.6821528614432721,
+        -1.6821528614432721, -1.6821528614432721, -1.6821528614432721, -0.05943572616076942, -0.05943572616076942, -0.05943572616076942, -0.05943572616076942, -0.05943572616076942,
+        -0.05943572616076942, -0.05943572616076942, -0.05943572616076942, -0.05943572616076942, 1.5632814091217337, 1.5632814091217337, 1.5632814091217337, 1.5632814091217337,
+        1.5632814091217337, 1.5632814091217337, 1.5632814091217337, 1.5632814091217337, 1.5632814091217337, 3.185998544404236, 3.185998544404236, 3.185998544404236, 3.185998544404236,
+        3.185998544404236, 3.185998544404236, 3.185998544404236, 3.185998544404236, 3.185998544404236, 4.808715679686739, 4.808715679686739, 4.808715679686739, 4.808715679686739,
+        4.808715679686739, 4.808715679686739, 4.808715679686739, 4.808715679686739, 4.808715679686739, 6.431432814969242, 6.431432814969242, 6.431432814969242, 6.431432814969242,
+        6.431432814969242, 6.431432814969242, 6.431432814969242, 6.431432814969242, 6.431432814969242, 8.054149950251745, 8.054149950251745, 8.054149950251745, 8.054149950251745,
+        8.054149950251745, 8.054149950251745, 8.054149950251745, 8.054149950251745, 8.054149950251745, 9.676867085534248, 9.676867085534248, 9.676867085534248, 9.676867085534248,
+        9.676867085534248, 9.676867085534248, 9.676867085534248, 9.676867085534248, 9.676867085534248, 11.299584220816751, 11.299584220816751, 11.299584220816751, 11.299584220816751,
+        11.299584220816751, 11.299584220816751, 11.299584220816751, 11.299584220816751, 11.299584220816751, 12.922301356099254, 12.922301356099254, 12.922301356099254, 12.922301356099254,
+        12.922301356099254, 12.922301356099254, 12.922301356099254, 12.922301356099254, 12.922301356099254, 14.545018491381757, 14.545018491381757, 14.545018491381757, 14.545018491381757,
+        14.545018491381757, 14.545018491381757, 14.545018491381757, 14.545018491381757, 14.545018491381757, 16.16773562666426, 16.16773562666426, 16.16773562666426, 16.16773562666426,
+        16.16773562666426, 16.16773562666426, 16.16773562666426, 16.16773562666426, 16.16773562666426, 17.790452761946764, 17.790452761946764, 17.790452761946764, 17.790452761946764,
+        17.790452761946764, 17.790452761946764, 17.790452761946764, 17.790452761946764, 17.790452761946764, 19.413169897229267, 19.413169897229267, 19.413169897229267, 19.413169897229267,
+        19.413169897229267, 19.413169897229267, 19.413169897229267, 19.413169897229267, 19.413169897229267, 21.03588703251177, 21.03588703251177, 21.03588703251177, 21.03588703251177,
+        21.03588703251177, 21.03588703251177, 21.03588703251177, 21.03588703251177, 21.03588703251177, 22.658604167794273, 22.658604167794273, 22.658604167794273, 22.658604167794273,
+        22.658604167794273, 22.658604167794273, 22.658604167794273, 22.658604167794273, 22.658604167794273, 24.281321303076776, 24.281321303076776, 24.281321303076776, 24.281321303076776,
+        24.281321303076776, 24.281321303076776, 24.281321303076776, 24.281321303076776, 24.281321303076776, 25.90403843835928, 25.90403843835928, 25.90403843835928, 25.90403843835928,
+        25.90403843835928, 25.90403843835928, 25.90403843835928, 25.90403843835928, 25.90403843835928, 27.52675557364178, 27.52675557364178, 27.52675557364178, 27.52675557364178,
+        27.52675557364178, 27.52675557364178, 27.52675557364178, 27.52675557364178, 27.52675557364178, 29.149472708924286, 29.149472708924286, 29.149472708924286, 29.149472708924286,
+        29.149472708924286, 29.149472708924286, 29.149472708924286, 29.149472708924286, 29.149472708924286, 30.772189844206785, 30.772189844206785, 30.772189844206785, 30.772189844206785,
+        30.772189844206785, 30.772189844206785, 30.772189844206785, 30.772189844206785, 30.772189844206785, 32.39490697948929, 32.39490697948929, 32.39490697948929, 32.39490697948929,
+        32.39490697948929, 32.39490697948929, 32.39490697948929, 32.39490697948929, 32.39490697948929,
+    ]
+    PT = [PT[1:216]'; PT[217:end]']
+    BN = [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 18, 27, 36, 45, 54, 63, 72,
+        81, 90, 99, 108, 117, 126, 135, 144, 153, 162, 171, 180, 189,
+        198, 207, 216, 215, 214, 213, 212, 211, 210, 209, 208, 199,
+        190, 181, 172, 163, 154, 145, 136, 127, 118, 109, 100, 91, 82,
+        73, 64, 55, 46, 37, 28, 19, 10, 1,
+    ]
+    pc = DT.pole_of_inaccessibility(PT, BN)
+    @test collect(pc) ≈ collect(DT.polygon_features(PT, BN)[2])
 end
+
 
 @testset "Bounding box for a multiple polygon" begin
-      C = (15.7109521325776, 33.244486807457)
-      D = (14.2705719699703, 32.8530791545746)
-      E = (14.3, 27.2)
-      F = (14.1, 27.0)
-      G = (13.7, 27.2)
-      H = (13.4, 27.5)
-      I = (13.1, 27.6)
-      J = (12.7, 27.4)
-      K = (12.5, 27.1)
-      L = (12.7, 26.7)
-      M = (13.1, 26.5)
-      N = (13.6, 26.4)
-      O = (14.0, 26.4)
-      P = (14.6, 26.5)
-      Q = (15.1983491346581, 26.8128534095401)
-      R = (15.6, 27.6)
-      S = (15.6952958264624, 28.2344688505621)
-      T = (17.8088971520274, 33.1192363585346)
-      U = (16.3058917649589, 33.0722674401887)
-      V = (16.3215480710742, 29.7374742376305)
-      W = (16.3841732955354, 29.393035503094)
-      Z = (16.6190178872649, 28.9233463196351)
-      A1 = (17.0417381523779, 28.5319386667527)
-      B1 = (17.5114273358368, 28.3753756055997)
-      C1 = (18.1376795804487, 28.3597192994844)
-      D1 = (18.7169629067146, 28.5632512789833)
-      E1 = (19.2805899268653, 28.8920337074045)
-      F1 = (19.26493362075, 28.4536571361762)
-      G1 = (20.6426885588962, 28.4223445239456)
-      H1 = (20.689657477242, 33.1035800524193)
-      I1 = (19.2805899268653, 33.0722674401887)
-      J1 = (19.2962462329806, 29.7531305437458)
-      K1 = (19.0614016412512, 29.393035503094)
-      L1 = (18.7482755189452, 29.236472441941)
-      M1 = (18.4508057027546, 29.1425346052493)
-      N1 = (18.1689921926793, 29.3147539725175)
-      O1 = (17.7932408459121, 29.6278800948235)
-      P1 = (22.6466957416542, 35.4207133574833)
-      Q1 = (21.2219718851621, 34.9979930923702)
-      R1 = (21.2376281912774, 28.4693134422915)
-      S1 = (22.6780083538847, 28.4380008300609)
-      T1 = (24.5724213938357, 33.1975178891111)
-      U1 = (23.3512295168425, 32.8530791545746)
-      V1 = (23.3199169046119, 28.4380008300609)
-      W1 = (24.6663592305274, 28.3753756055997)
-      Z1 = (15.1942940307729, 35.4363696635986)
-      A2 = (14.7246048473139, 35.3737444391374)
-      B2 = (14.3645098066621, 35.1858687657538)
-      C2 = (14.1766341332786, 34.8570863373326)
-      D2 = (14.1140089088174, 34.3247719294125)
-      E2 = (14.2705719699703, 33.8394264398383)
-      F2 = (14.7246048473139, 33.6202381542241)
-      G2 = (15.4604512347329, 33.6045818481088)
-      H2 = (16.0, 34.0)
-      I2 = (15.9771093365377, 34.6848669700643)
-      J2 = (15.6170142958859, 35.2328376840997)
-      K2 = (24.1653574348379, 35.4520259697138)
-      L2 = (23.7739497819555, 35.4363696635986)
-      M2 = (23.4608236596496, 35.2641502963303)
-      N2 = (23.272947986266, 34.9040552556785)
-      O2 = (23.1320412312284, 34.5909291333725)
-      P2 = (23.1163849251131, 34.2151777866054)
-      Q2 = (23.2886042923813, 33.8081138276077)
-      R2 = (23.8209187003014, 33.6045818481088)
-      S2 = (24.3062641898756, 33.5576129297629)
-      T2 = (24.7602970672192, 33.8550827459536)
-      U2 = (25.010797965064, 34.4656786844502)
-      V2 = (24.8385785977957, 34.9666804801397)
-      W2 = (24.5254524754898, 35.2641502963303)
-      Z2 = (25.3708930057158, 37.4716894585871)
-      A3 = (24.7916096794498, 37.3464390096648)
-      B3 = (24.4471709449133, 36.9550313567823)
-      C3 = (24.3062641898756, 36.5636237038999)
-      D3 = (24.4941398632592, 35.9999966837492)
-      E3 = (25.0264542711793, 35.5929327247515)
-      F3 = (25.5587686790994, 35.5929327247515)
-      F3 = (25.5587686790994, 35.5929327247515)
-      G3 = (26.0, 36.0)
-      H3 = (26.1380520053653, 36.5792800100152)
-      I3 = (26.0, 37.0)
-      J3 = (25.7466443524829, 37.2838137852036)
-      K3 = (26.3885529032101, 35.4676822758291)
-      L3 = (25.9814889442124, 35.3580881330221)
-      M3 = (25.6840191280217, 35.1858687657538)
-      N3 = (25.5274560668688, 34.9040552556785)
-      O3 = (25.4961434546382, 34.5596165211419)
-      P3 = (25.5274560668688, 34.246490398836)
-      Q3 = (25.6683628219064, 33.8394264398383)
-      R3 = (26.0284578625583, 33.6358944603394)
-      S3 = (26.5451159643631, 33.6202381542241)
-      T3 = (27.0, 34.0)
-      U3 = (27.280962351782, 34.5596165211419)
-      V3 = (27.0304614539373, 35.2171813779844)
-      W3 = (26.1693646175959, 33.087923746304)
-      Z3 = (26.0, 33.0)
-      A4 = (25.5274560668688, 32.7278287056522)
-      B4 = (25.2612988629087, 32.4147025833463)
-      C4 = (25.1830173323322, 32.0702638488098)
-      D4 = (25.2299862506781, 31.7727940326191)
-      E4 = (25.6527065157911, 31.5222931347744)
-      F4 = (26.2946150665183, 31.7258251142732)
-      G4 = (26.5607722704784, 32.5086404200381)
-      H4 = (27.1557119028596, 32.7434850117675)
-      I4 = (27.6097447802033, 32.4929841139228)
-      J4 = (27.6410573924338, 32.1015764610403)
-      K4 = (27.7193389230103, 31.6005746653509)
-      L4 = (27.437525412935, 31.4283552980826)
-      M4 = (26.9834925355914, 31.2561359308143)
-      N4 = (26.5764285765937, 31.0995728696614)
-      O4 = (26.0441141686736, 30.7864467473554)
-      P4 = (25.6527065157911, 30.5672584617413)
-      Q4 = (25.3239240873699, 30.1915071149741)
-      R4 = (25.1673610262169, 29.8783809926682)
-      S4 = (25.1047358017558, 29.6122237887082)
-      T4 = (25.0890794956405, 29.1895035235952)
-      U4 = (25.2926114751393, 28.8294084829433)
-      V4 = (25.6840191280217, 28.5632512789833)
-      W4 = (26.1537083114806, 28.3753756055997)
-      Z4 = (26.8269294744384, 28.391031911715)
-      A5 = (27.4844943312809, 28.6102201973292)
-      B5 = (27.7342002330051, 28.7239579596219)
-      C5 = (27.7264126450755, 28.4202565942047)
-      D5 = (29.1825559185446, 28.3922538389457)
-      E5 = (29.1545531632856, 32.2146299318021)
-      F5 = (29.000538009361, 32.5786657501693)
-      G5 = (28.6785063238822, 32.9006974356481)
-      H5 = (28.3144705055149, 33.0827153448317)
-      I5 = (27.9084305542591, 33.2367304987563)
-      J5 = (27.3343740714492, 33.3207387645334)
-      K5 = (26.8303244767868, 33.2367304987563)
-      L5 = (27.6564057569279, 30.786489413592)
-      M5 = (27.6984098898165, 30.3944508399657)
-      N5 = (27.6984098898165, 29.7363860913787)
-      O5 = (27.5863988687804, 29.4143544059)
-      P5 = (27.2643671833016, 29.2043337414573)
-      Q5 = (26.9843396307114, 29.1763309861983)
-      R5 = (26.6903107004917, 29.3163447624934)
-      S5 = (26.5782996794556, 29.7503874690082)
-      T5 = (26.7603175886393, 30.3384453294476)
-      U5 = (27.3203726938197, 30.7024811478149)
-      J_curve = [[C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, C]]
-      U_curve = [[T, U, V, W, Z, A1, B1, C1, D1, E1, F1, G1, H1, I1, J1, K1, L1, M1, N1, O1, T]]
-      L_curve = [[P1, Q1, R1, S1, P1]]
-      I_curve = [[T1, U1, V1, W1, T1]]
-      A_curve_outline = [[
+    C = (15.7109521325776, 33.244486807457)
+    D = (14.2705719699703, 32.8530791545746)
+    E = (14.3, 27.2)
+    F = (14.1, 27.0)
+    G = (13.7, 27.2)
+    H = (13.4, 27.5)
+    I = (13.1, 27.6)
+    J = (12.7, 27.4)
+    K = (12.5, 27.1)
+    L = (12.7, 26.7)
+    M = (13.1, 26.5)
+    N = (13.6, 26.4)
+    O = (14.0, 26.4)
+    P = (14.6, 26.5)
+    Q = (15.1983491346581, 26.8128534095401)
+    R = (15.6, 27.6)
+    S = (15.6952958264624, 28.2344688505621)
+    T = (17.8088971520274, 33.1192363585346)
+    U = (16.3058917649589, 33.0722674401887)
+    V = (16.3215480710742, 29.7374742376305)
+    W = (16.3841732955354, 29.393035503094)
+    Z = (16.6190178872649, 28.9233463196351)
+    A1 = (17.0417381523779, 28.5319386667527)
+    B1 = (17.5114273358368, 28.3753756055997)
+    C1 = (18.1376795804487, 28.3597192994844)
+    D1 = (18.7169629067146, 28.5632512789833)
+    E1 = (19.2805899268653, 28.8920337074045)
+    F1 = (19.26493362075, 28.4536571361762)
+    G1 = (20.6426885588962, 28.4223445239456)
+    H1 = (20.689657477242, 33.1035800524193)
+    I1 = (19.2805899268653, 33.0722674401887)
+    J1 = (19.2962462329806, 29.7531305437458)
+    K1 = (19.0614016412512, 29.393035503094)
+    L1 = (18.7482755189452, 29.236472441941)
+    M1 = (18.4508057027546, 29.1425346052493)
+    N1 = (18.1689921926793, 29.3147539725175)
+    O1 = (17.7932408459121, 29.6278800948235)
+    P1 = (22.6466957416542, 35.4207133574833)
+    Q1 = (21.2219718851621, 34.9979930923702)
+    R1 = (21.2376281912774, 28.4693134422915)
+    S1 = (22.6780083538847, 28.4380008300609)
+    T1 = (24.5724213938357, 33.1975178891111)
+    U1 = (23.3512295168425, 32.8530791545746)
+    V1 = (23.3199169046119, 28.4380008300609)
+    W1 = (24.6663592305274, 28.3753756055997)
+    Z1 = (15.1942940307729, 35.4363696635986)
+    A2 = (14.7246048473139, 35.3737444391374)
+    B2 = (14.3645098066621, 35.1858687657538)
+    C2 = (14.1766341332786, 34.8570863373326)
+    D2 = (14.1140089088174, 34.3247719294125)
+    E2 = (14.2705719699703, 33.8394264398383)
+    F2 = (14.7246048473139, 33.6202381542241)
+    G2 = (15.4604512347329, 33.6045818481088)
+    H2 = (16.0, 34.0)
+    I2 = (15.9771093365377, 34.6848669700643)
+    J2 = (15.6170142958859, 35.2328376840997)
+    K2 = (24.1653574348379, 35.4520259697138)
+    L2 = (23.7739497819555, 35.4363696635986)
+    M2 = (23.4608236596496, 35.2641502963303)
+    N2 = (23.272947986266, 34.9040552556785)
+    O2 = (23.1320412312284, 34.5909291333725)
+    P2 = (23.1163849251131, 34.2151777866054)
+    Q2 = (23.2886042923813, 33.8081138276077)
+    R2 = (23.8209187003014, 33.6045818481088)
+    S2 = (24.3062641898756, 33.5576129297629)
+    T2 = (24.7602970672192, 33.8550827459536)
+    U2 = (25.010797965064, 34.4656786844502)
+    V2 = (24.8385785977957, 34.9666804801397)
+    W2 = (24.5254524754898, 35.2641502963303)
+    Z2 = (25.3708930057158, 37.4716894585871)
+    A3 = (24.7916096794498, 37.3464390096648)
+    B3 = (24.4471709449133, 36.9550313567823)
+    C3 = (24.3062641898756, 36.5636237038999)
+    D3 = (24.4941398632592, 35.9999966837492)
+    E3 = (25.0264542711793, 35.5929327247515)
+    F3 = (25.5587686790994, 35.5929327247515)
+    F3 = (25.5587686790994, 35.5929327247515)
+    G3 = (26.0, 36.0)
+    H3 = (26.1380520053653, 36.5792800100152)
+    I3 = (26.0, 37.0)
+    J3 = (25.7466443524829, 37.2838137852036)
+    K3 = (26.3885529032101, 35.4676822758291)
+    L3 = (25.9814889442124, 35.3580881330221)
+    M3 = (25.6840191280217, 35.1858687657538)
+    N3 = (25.5274560668688, 34.9040552556785)
+    O3 = (25.4961434546382, 34.5596165211419)
+    P3 = (25.5274560668688, 34.246490398836)
+    Q3 = (25.6683628219064, 33.8394264398383)
+    R3 = (26.0284578625583, 33.6358944603394)
+    S3 = (26.5451159643631, 33.6202381542241)
+    T3 = (27.0, 34.0)
+    U3 = (27.280962351782, 34.5596165211419)
+    V3 = (27.0304614539373, 35.2171813779844)
+    W3 = (26.1693646175959, 33.087923746304)
+    Z3 = (26.0, 33.0)
+    A4 = (25.5274560668688, 32.7278287056522)
+    B4 = (25.2612988629087, 32.4147025833463)
+    C4 = (25.1830173323322, 32.0702638488098)
+    D4 = (25.2299862506781, 31.7727940326191)
+    E4 = (25.6527065157911, 31.5222931347744)
+    F4 = (26.2946150665183, 31.7258251142732)
+    G4 = (26.5607722704784, 32.5086404200381)
+    H4 = (27.1557119028596, 32.7434850117675)
+    I4 = (27.6097447802033, 32.4929841139228)
+    J4 = (27.6410573924338, 32.1015764610403)
+    K4 = (27.7193389230103, 31.6005746653509)
+    L4 = (27.437525412935, 31.4283552980826)
+    M4 = (26.9834925355914, 31.2561359308143)
+    N4 = (26.5764285765937, 31.0995728696614)
+    O4 = (26.0441141686736, 30.7864467473554)
+    P4 = (25.6527065157911, 30.5672584617413)
+    Q4 = (25.3239240873699, 30.1915071149741)
+    R4 = (25.1673610262169, 29.8783809926682)
+    S4 = (25.1047358017558, 29.6122237887082)
+    T4 = (25.0890794956405, 29.1895035235952)
+    U4 = (25.2926114751393, 28.8294084829433)
+    V4 = (25.6840191280217, 28.5632512789833)
+    W4 = (26.1537083114806, 28.3753756055997)
+    Z4 = (26.8269294744384, 28.391031911715)
+    A5 = (27.4844943312809, 28.6102201973292)
+    B5 = (27.7342002330051, 28.7239579596219)
+    C5 = (27.7264126450755, 28.4202565942047)
+    D5 = (29.1825559185446, 28.3922538389457)
+    E5 = (29.1545531632856, 32.2146299318021)
+    F5 = (29.000538009361, 32.5786657501693)
+    G5 = (28.6785063238822, 32.9006974356481)
+    H5 = (28.3144705055149, 33.0827153448317)
+    I5 = (27.9084305542591, 33.2367304987563)
+    J5 = (27.3343740714492, 33.3207387645334)
+    K5 = (26.8303244767868, 33.2367304987563)
+    L5 = (27.6564057569279, 30.786489413592)
+    M5 = (27.6984098898165, 30.3944508399657)
+    N5 = (27.6984098898165, 29.7363860913787)
+    O5 = (27.5863988687804, 29.4143544059)
+    P5 = (27.2643671833016, 29.2043337414573)
+    Q5 = (26.9843396307114, 29.1763309861983)
+    R5 = (26.6903107004917, 29.3163447624934)
+    S5 = (26.5782996794556, 29.7503874690082)
+    T5 = (26.7603175886393, 30.3384453294476)
+    U5 = (27.3203726938197, 30.7024811478149)
+    J_curve = [[C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, C]]
+    U_curve = [[T, U, V, W, Z, A1, B1, C1, D1, E1, F1, G1, H1, I1, J1, K1, L1, M1, N1, O1, T]]
+    L_curve = [[P1, Q1, R1, S1, P1]]
+    I_curve = [[T1, U1, V1, W1, T1]]
+    A_curve_outline = [
+        [
             K5, W3, Z3, A4, B4, C4, D4, E4, F4, G4, H4, I4, J4, K4, L4, M4, N4,
             O4, P4, Q4, R4, S4, T4, U4, V4, W4, Z4, A5, B5, C5, D5, E5, F5, G5,
-            H5, I5, J5, K5]]
-      A_curve_hole = [[L5, M5, N5, O5, P5, Q5, R5, S5, T5, U5, L5]]
-      dot_1 = [[Z1, A2, B2, C2, D2, E2, F2, G2, H2, I2, J2, Z1]]
-      dot_2 = [[Z2, A3, B3, C3, D3, E3, F3, G3, H3, I3, J3, Z2]]
-      dot_3 = [[K2, L2, M2, N2, O2, P2, Q2, R2, S2, T2, U2, V2, W2, K2]]
-      dot_4 = [[K3, L3, M3, N3, O3, P3, Q3, R3, S3, T3, U3, V3, K3]]
-      curves = [J_curve, U_curve, L_curve, I_curve, A_curve_outline, A_curve_hole, dot_1, dot_2, dot_3, dot_4]
-      nodes, points = convert_boundary_points_to_indices(curves)
-      xmin, xmax, ymin, ymax = DelaunayTriangulation.polygon_bounds(points, nodes, Val(true)) # Val(true) => check all parts of the polygon
-      @test xmin ≈ 12.5 && xmax ≈ 29.1825559185446 && ymin ≈ 26.4 && ymax ≈ 37.4716894585871
+            H5, I5, J5, K5,
+        ],
+    ]
+    A_curve_hole = [[L5, M5, N5, O5, P5, Q5, R5, S5, T5, U5, L5]]
+    dot_1 = [[Z1, A2, B2, C2, D2, E2, F2, G2, H2, I2, J2, Z1]]
+    dot_2 = [[Z2, A3, B3, C3, D3, E3, F3, G3, H3, I3, J3, Z2]]
+    dot_3 = [[K2, L2, M2, N2, O2, P2, Q2, R2, S2, T2, U2, V2, W2, K2]]
+    dot_4 = [[K3, L3, M3, N3, O3, P3, Q3, R3, S3, T3, U3, V3, K3]]
+    curves = [J_curve, U_curve, L_curve, I_curve, A_curve_outline, A_curve_hole, dot_1, dot_2, dot_3, dot_4]
+    nodes, points = convert_boundary_points_to_indices(curves)
+    xmin, xmax, ymin, ymax = DelaunayTriangulation.polygon_bounds(points, nodes, Val(true)) # Val(true) => check all parts of the polygon
+    @test xmin ≈ 12.5 && xmax ≈ 29.1825559185446 && ymin ≈ 26.4 && ymax ≈ 37.4716894585871
 end
+
 
 @testset "segment_intersection_coordinates" begin
-      a, b, c, d = (0.5, 4.0), (1.5, 3.5), (2.0, 4.0), (0.5, 3.0)
-      u, v = DT.segment_intersection_coordinates(a, b, c, d)
-      @test u ≈ 1.3571428571429 && v ≈ 3.57142857
-      a, b, c, d = (0.5, 3.5), (1.5, 3.5), (1.0, 4.0), (1.0, 3.0)
-      u, v = DT.segment_intersection_coordinates(a, b, c, d)
-      @test u ≈ 1.0 && v ≈ 3.5
-      a, b, c, d = (0.5, 4.0), (1.5, 4.0), (1.0, 4.0), (1.0, 3.0)
-      u, v = DT.segment_intersection_coordinates(a, b, c, d)
-      @test u ≈ 1.0 && v ≈ 4.0
+    a, b, c, d = (0.5, 4.0), (1.5, 3.5), (2.0, 4.0), (0.5, 3.0)
+    u, v = DT.segment_intersection_coordinates(a, b, c, d)
+    @test u ≈ 1.3571428571429 && v ≈ 3.57142857
+    a, b, c, d = (0.5, 3.5), (1.5, 3.5), (1.0, 4.0), (1.0, 3.0)
+    u, v = DT.segment_intersection_coordinates(a, b, c, d)
+    @test u ≈ 1.0 && v ≈ 3.5
+    a, b, c, d = (0.5, 4.0), (1.5, 4.0), (1.0, 4.0), (1.0, 3.0)
+    u, v = DT.segment_intersection_coordinates(a, b, c, d)
+    @test u ≈ 1.0 && v ≈ 4.0
 end
+
 
 @testset "intersection_of_edge_and_bisector_ray" begin
-      a = (-7.0, 3.0)
-      b = (-5.0, 7.0)
-      c = (-10.0, 7.0)
-      cert, m = DT.intersection_of_edge_and_bisector_ray(a, b, c)
-      @test all(isnan, m)
-      c = (-4.86, 4.47)
-      cert, m = DT.intersection_of_edge_and_bisector_ray(a, b, c)
-      @test m == (-6.0, 5.0)
-      c = (-4.0, 4.0)
-      cert, m = DT.intersection_of_edge_and_bisector_ray(a, b, c)
-      @test m == (-6.0, 5.0)
-      p = (0.0, 3.0)
-      q = (3.0, 3.0)
-      r = (1.5, 2.9)
-      @test DT.intersection_of_edge_and_bisector_ray(p, q, r)[2] == (1.5, 3.0)
-      a = (-5.0, 3.0)
-      b = (-5.0, 7.0)
-      c = (-5.0, 5.0)
-      @test DT.intersection_of_edge_and_bisector_ray(a, b, c)[2] == (-5.0, 5.0)
-      @test DT.is_collinear(DT.intersection_of_edge_and_bisector_ray(a, b, c)[1])
-      c = (-5.0, 4.5)
-      @test DT.intersection_of_edge_and_bisector_ray(a, b, c)[2] == (-5.0, 5.0)
+    a = (-7.0, 3.0)
+    b = (-5.0, 7.0)
+    c = (-10.0, 7.0)
+    cert, m = DT.intersection_of_edge_and_bisector_ray(a, b, c)
+    @test all(isnan, m)
+    c = (-4.86, 4.47)
+    cert, m = DT.intersection_of_edge_and_bisector_ray(a, b, c)
+    @test m == (-6.0, 5.0)
+    c = (-4.0, 4.0)
+    cert, m = DT.intersection_of_edge_and_bisector_ray(a, b, c)
+    @test m == (-6.0, 5.0)
+    p = (0.0, 3.0)
+    q = (3.0, 3.0)
+    r = (1.5, 2.9)
+    @test DT.intersection_of_edge_and_bisector_ray(p, q, r)[2] == (1.5, 3.0)
+    a = (-5.0, 3.0)
+    b = (-5.0, 7.0)
+    c = (-5.0, 5.0)
+    @test DT.intersection_of_edge_and_bisector_ray(a, b, c)[2] == (-5.0, 5.0)
+    @test DT.is_collinear(DT.intersection_of_edge_and_bisector_ray(a, b, c)[1])
+    c = (-5.0, 4.5)
+    @test DT.intersection_of_edge_and_bisector_ray(a, b, c)[2] == (-5.0, 5.0)
 end
+
 
 @testset "classify_and_compute_segment_intersection" begin
-      a = (-2.0, 3.0)
-      b = (-2.0, 5.0)
-      c = (-4.97, 4.82)
-      d = (-4.0, 4.0)
-      cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, b, c, d)
-      @test DT.is_none(cert)
-      @test DT.is_left(cert_c)
-      @test DT.is_left(cert_d)
-      @test all(isnan, p)
-      d = (2.0, -1.0)
-      cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, b, c, d)
-      @test DT.is_none(cert)
-      @test DT.is_left(cert_c)
-      @test DT.is_right(cert_d)
-      c = (-5.0, 4.0)
-      d = (1.0, 4.0)
-      cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, b, c, d)
-      @test DT.has_one_intersection(cert)
-      @test DT.is_left(cert_c)
-      @test DT.is_right(cert_d)
-      @test p == (-2.0, 4.0)
-      a = (0.0, 5.0)
-      b = (0.0, 7.0)
-      c = (-5.0, 4.0)
-      d = (0.0, 6.0)
-      cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, b, c, d)
-      @test DT.is_touching(cert)
-      @test DT.is_left(cert_c)
-      @test DT.is_collinear(cert_d)
-      @test p == (0.0, 6.0)
-      c = (2.0, 6.0)
-      cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, b, c, d)
-      @test DT.is_touching(cert)
-      @test DT.is_right(cert_c)
-      @test DT.is_collinear(cert_d)
-      @test p == (0.0, 6.0)
-      d = (1.0, 5.0)
-      cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, b, c, d)
-      @test DT.is_none(cert)
-      @test DT.is_right(cert_c)
-      @test DT.is_right(cert_d)
-      @test all(isnan, p)
+    a = (-2.0, 3.0)
+    b = (-2.0, 5.0)
+    c = (-4.97, 4.82)
+    d = (-4.0, 4.0)
+    cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, b, c, d)
+    @test DT.is_none(cert)
+    @test DT.is_left(cert_c)
+    @test DT.is_left(cert_d)
+    @test all(isnan, p)
+    d = (2.0, -1.0)
+    cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, b, c, d)
+    @test DT.is_none(cert)
+    @test DT.is_left(cert_c)
+    @test DT.is_right(cert_d)
+    c = (-5.0, 4.0)
+    d = (1.0, 4.0)
+    cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, b, c, d)
+    @test DT.has_one_intersection(cert)
+    @test DT.is_left(cert_c)
+    @test DT.is_right(cert_d)
+    @test p == (-2.0, 4.0)
+    a = (0.0, 5.0)
+    b = (0.0, 7.0)
+    c = (-5.0, 4.0)
+    d = (0.0, 6.0)
+    cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, b, c, d)
+    @test DT.is_touching(cert)
+    @test DT.is_left(cert_c)
+    @test DT.is_collinear(cert_d)
+    @test p == (0.0, 6.0)
+    c = (2.0, 6.0)
+    cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, b, c, d)
+    @test DT.is_touching(cert)
+    @test DT.is_right(cert_c)
+    @test DT.is_collinear(cert_d)
+    @test p == (0.0, 6.0)
+    d = (1.0, 5.0)
+    cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, b, c, d)
+    @test DT.is_none(cert)
+    @test DT.is_right(cert_c)
+    @test DT.is_right(cert_d)
+    @test all(isnan, p)
 
-      cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection((NaN, NaN), b, c, d)
-      @test DT.is_none(cert) && DT.is_none(cert_c) && DT.is_none(cert_d) && all(isnan, p)
-      cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, (Inf, Inf), c, d)
-      @test DT.is_none(cert) && DT.is_none(cert_c) && DT.is_none(cert_d) && all(isnan, p)
-      cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, b, (NaN, NaN), d)
-      @test DT.is_none(cert) && DT.is_none(cert_c) && DT.is_none(cert_d) && all(isnan, p)
-      cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, b, c, (Inf, Inf))
-      @test DT.is_none(cert) && DT.is_none(cert_c) && DT.is_none(cert_d) && all(isnan, p)
+
+    cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection((NaN, NaN), b, c, d)
+    @test DT.is_none(cert) && DT.is_none(cert_c) && DT.is_none(cert_d) && all(isnan, p)
+    cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, (Inf, Inf), c, d)
+    @test DT.is_none(cert) && DT.is_none(cert_c) && DT.is_none(cert_d) && all(isnan, p)
+    cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, b, (NaN, NaN), d)
+    @test DT.is_none(cert) && DT.is_none(cert_c) && DT.is_none(cert_d) && all(isnan, p)
+    cert, cert_c, cert_d, p = DT.classify_and_compute_segment_intersection(a, b, c, (Inf, Inf))
+    @test DT.is_none(cert) && DT.is_none(cert_c) && DT.is_none(cert_d) && all(isnan, p)
 end
+
 
 @testset "sort_convex_polygon!" begin
-      for _ in 1:50
-            tri = triangulate(rand(2, 500))
-            ch = get_convex_hull(tri)
-            pts = get_points(ch)
-            verts = DT.get_vertices(ch)
-            orig_verts = deepcopy(verts)
-            pop!(verts)
-            shuffle!(verts)
-            DT.sort_convex_polygon!(verts, pts)
-            push!(verts, verts[begin])
-            @test DT.circular_equality(verts, orig_verts)
-            A = DT.polygon_features(pts, verts)[1]
-            @test A ≥ 0.0
-      end
+    for _ in 1:50
+        tri = triangulate(rand(2, 500))
+        ch = get_convex_hull(tri)
+        pts = get_points(ch)
+        verts = DT.get_vertices(ch)
+        orig_verts = deepcopy(verts)
+        pop!(verts)
+        shuffle!(verts)
+        DT.sort_convex_polygon!(verts, pts)
+        push!(verts, verts[begin])
+        @test DT.circular_equality(verts, orig_verts)
+        A = DT.polygon_features(pts, verts)[1]
+        @test A ≥ 0.0
+    end
 end
+
 
 @testset "Degenerate pole_of_inaccessibility" begin
-      points = [(0.0, 0.0), (0.0, 1.0), (0.0, 2.0), (0.0, 3.0)]
-      boundary_nodes = [1, 2, 3, 4, 1]
-      @test DT.pole_of_inaccessibility(points, boundary_nodes) == (0.0, 1.5)
-      points = [(2.0, 0.0), (3.5, 0.0), (5.0, 0.0)]
-      boundary_nodes = [1, 2, 3, 1]
-      @test DT.pole_of_inaccessibility(points, boundary_nodes) == (3.5, 0.0)
+    points = [(0.0, 0.0), (0.0, 1.0), (0.0, 2.0), (0.0, 3.0)]
+    boundary_nodes = [1, 2, 3, 4, 1]
+    @test DT.pole_of_inaccessibility(points, boundary_nodes) == (0.0, 1.5)
+    points = [(2.0, 0.0), (3.5, 0.0), (5.0, 0.0)]
+    boundary_nodes = [1, 2, 3, 1]
+    @test DT.pole_of_inaccessibility(points, boundary_nodes) == (3.5, 0.0)
 end
+
 
 @testset "identify_side and intersection_of_ray_with_bounding_box" begin
-      a, b, c, d = 0.5, 1.3, 2.7, 5.8
-      p = (0.7378963231985, 4.6758264584035)
-      q = (2.17804800057, 3.5917562397227)
-      r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
-      rtrue = (1.3, 4.252704459932)
-      @test collect(r) ≈ collect(rtrue)
-      p = (1.0, 4.5)
-      q = (2.0, 4.5)
-      r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
-      rtrue = (1.3, 4.5)
-      @test collect(r) ≈ collect(rtrue)
+    a, b, c, d = 0.5, 1.3, 2.7, 5.8
+    p = (0.7378963231985, 4.6758264584035)
+    q = (2.17804800057, 3.5917562397227)
+    r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
+    rtrue = (1.3, 4.252704459932)
+    @test collect(r) ≈ collect(rtrue)
+    p = (1.0, 4.5)
+    q = (2.0, 4.5)
+    r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
+    rtrue = (1.3, 4.5)
+    @test collect(r) ≈ collect(rtrue)
 
-      a, b, c, d = 0.0, 1.0, 0.0, 1.0
-      p = (0.5, 0.5)
-      q = (2.5, 0.5)
-      r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
-      rtrue = (1.0, 0.5)
-      @test collect(r) ≈ collect(rtrue)
-      q = (0.5, 1.5)
-      r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
-      rtrue = (0.5, 1.0)
-      @test collect(r) ≈ collect(rtrue)
-      q = (0.202587350495, 1.5151867707735)
-      r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
-      rtrue = (0.353517464218, 1.0)
-      @test collect(r) ≈ collect(rtrue) rtol = 1e-6
-      q = (-0.5, 1.5)
-      r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
-      rtrue = (0.0, 1.0)
-      @test collect(r) ≈ collect(rtrue)
-      q = (-1.0, 0.5)
-      r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
-      rtrue = (0.0, 0.5)
-      @test collect(r) ≈ collect(rtrue)
-      q = (-1.5, 0.0)
-      r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
-      rtrue = (0.0, 0.375)
-      @test collect(r) ≈ collect(rtrue)
-      q = (-1.0, -1.0)
-      r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
-      rtrue = (0.0, 0.0)
-      @test collect(r) ≈ collect(rtrue) atol = 1e-6
-      q = (0.0, -1.0)
-      r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
-      rtrue = (1 / 3, 0.0)
-      @test collect(r) ≈ collect(rtrue)
-      q = (0.5, -1.0)
-      r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
-      rtrue = (0.5, 0.0)
-      @test collect(r) ≈ collect(rtrue)
-      q = (2.0, -1.0)
-      r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
-      rtrue = (1.0, 0.0)
-      @test collect(r) ≈ collect(rtrue)
-      q = (0.4026485332004, 0.7749544176151)
-      r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
-      rtrue = (0.3229679893052, 1.0)
-      @test collect(r) ≈ collect(rtrue)
-      u, v = (a, d), (b, d)
-      newr = DT.segment_intersection_coordinates(p, r, u, v)
-      @test collect(newr) ≈ collect(r)
-      cert = DT.line_segment_intersection_type(p, r, u, v)
-      @test DT.is_touching(cert)
+
+    a, b, c, d = 0.0, 1.0, 0.0, 1.0
+    p = (0.5, 0.5)
+    q = (2.5, 0.5)
+    r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
+    rtrue = (1.0, 0.5)
+    @test collect(r) ≈ collect(rtrue)
+    q = (0.5, 1.5)
+    r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
+    rtrue = (0.5, 1.0)
+    @test collect(r) ≈ collect(rtrue)
+    q = (0.202587350495, 1.5151867707735)
+    r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
+    rtrue = (0.353517464218, 1.0)
+    @test collect(r) ≈ collect(rtrue) rtol = 1.0e-6
+    q = (-0.5, 1.5)
+    r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
+    rtrue = (0.0, 1.0)
+    @test collect(r) ≈ collect(rtrue)
+    q = (-1.0, 0.5)
+    r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
+    rtrue = (0.0, 0.5)
+    @test collect(r) ≈ collect(rtrue)
+    q = (-1.5, 0.0)
+    r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
+    rtrue = (0.0, 0.375)
+    @test collect(r) ≈ collect(rtrue)
+    q = (-1.0, -1.0)
+    r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
+    rtrue = (0.0, 0.0)
+    @test collect(r) ≈ collect(rtrue) atol = 1.0e-6
+    q = (0.0, -1.0)
+    r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
+    rtrue = (1 / 3, 0.0)
+    @test collect(r) ≈ collect(rtrue)
+    q = (0.5, -1.0)
+    r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
+    rtrue = (0.5, 0.0)
+    @test collect(r) ≈ collect(rtrue)
+    q = (2.0, -1.0)
+    r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
+    rtrue = (1.0, 0.0)
+    @test collect(r) ≈ collect(rtrue)
+    q = (0.4026485332004, 0.7749544176151)
+    r = DT.intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
+    rtrue = (0.3229679893052, 1.0)
+    @test collect(r) ≈ collect(rtrue)
+    u, v = (a, d), (b, d)
+    newr = DT.segment_intersection_coordinates(p, r, u, v)
+    @test collect(newr) ≈ collect(r)
+    cert = DT.line_segment_intersection_type(p, r, u, v)
+    @test DT.is_touching(cert)
 end
+
 
 @testset "Polygon" begin
-      verts = [1, 11, 18, 26, 32, 72]
-      _verts = [verts; 1]
-      points = [rand(2) for _ in 1:maximum(verts)]
-      for verts in (verts, _verts)
-            poly = DT.Polygon(verts, points)
-            @test length(poly) == 6
-            @test size(poly) == (6,)
-            @test poly[1] == Tuple(points[1])
-            @test poly[2] == Tuple(points[11])
-            @test poly[3] == Tuple(points[18])
-            @test poly[4] == Tuple(points[26])
-            @test poly[5] == Tuple(points[32])
-            @test poly[6] == Tuple(points[72])
-            @test eachindex(poly) == 1:6
-            @test collect(poly) == Tuple.(getindex.(Ref(points), [1, 11, 18, 26, 32, 72]))
-            @test poly[begin:end] == [poly[i] for i in 1:6]
-            @inferred poly[1]
-            @inferred poly[5]
-      end
+    verts = [1, 11, 18, 26, 32, 72]
+    _verts = [verts; 1]
+    points = [rand(2) for _ in 1:maximum(verts)]
+    for verts in (verts, _verts)
+        poly = DT.Polygon(verts, points)
+        @test length(poly) == 6
+        @test size(poly) == (6,)
+        @test poly[1] == Tuple(points[1])
+        @test poly[2] == Tuple(points[11])
+        @test poly[3] == Tuple(points[18])
+        @test poly[4] == Tuple(points[26])
+        @test poly[5] == Tuple(points[32])
+        @test poly[6] == Tuple(points[72])
+        @test eachindex(poly) == 1:6
+        @test collect(poly) == Tuple.(getindex.(Ref(points), [1, 11, 18, 26, 32, 72]))
+        @test poly[begin:end] == [poly[i] for i in 1:6]
+        @inferred poly[1]
+        @inferred poly[5]
+    end
 end
+
 
 @testset "Sutherland-Hodgman algorithm" begin
-      # rectangular
-      verts = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-      points = [(50.0, 150.0), (200.0, 50.0), (350.0, 150.0), (350.0, 300.0),
-            (250.0, 300.0), (200.0, 250.0), (150.0, 350.0), (100.0, 250.0), (100.0, 200.0)]
-      clip_verts = [1, 2, 3, 4]
-      clip_points = [(100.0, 100.0), (300.0, 100.0), (300.0, 300.0), (100.0, 300.0)]
-      spoly = DT.Polygon(verts, points)
-      cpoly = DT.Polygon(clip_verts, clip_points)
-      result = DT.clip_polygon(spoly, cpoly)
-      @inferred DT.clip_polygon(spoly, cpoly)
-      @test collect.(result) ≈ [
-            [100.0, 116 + 2 / 3],
-            [125, 100],
-            [275, 100],
-            [300, 116 + 2 / 3],
-            [300, 300],
-            [250, 300],
-            [200, 250],
-            [175, 300],
-            [125, 300],
-            [100, 250],
-            [100.0, 116 + 2 / 3]
-      ]
-      @test DT.clip_polygon(verts, points, clip_verts, clip_points) == result
-      @test DT.polygon_features(result, eachindex(result))[1] > 0
+    # rectangular
+    verts = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    points = [
+        (50.0, 150.0), (200.0, 50.0), (350.0, 150.0), (350.0, 300.0),
+        (250.0, 300.0), (200.0, 250.0), (150.0, 350.0), (100.0, 250.0), (100.0, 200.0),
+    ]
+    clip_verts = [1, 2, 3, 4]
+    clip_points = [(100.0, 100.0), (300.0, 100.0), (300.0, 300.0), (100.0, 300.0)]
+    spoly = DT.Polygon(verts, points)
+    cpoly = DT.Polygon(clip_verts, clip_points)
+    result = DT.clip_polygon(spoly, cpoly)
+    @inferred DT.clip_polygon(spoly, cpoly)
+    @test collect.(result) ≈ [
+        [100.0, 116 + 2 / 3],
+        [125, 100],
+        [275, 100],
+        [300, 116 + 2 / 3],
+        [300, 300],
+        [250, 300],
+        [200, 250],
+        [175, 300],
+        [125, 300],
+        [100, 250],
+        [100.0, 116 + 2 / 3],
+    ]
+    @test DT.clip_polygon(verts, points, clip_verts, clip_points) == result
+    @test DT.polygon_features(result, eachindex(result))[1] > 0
 
-      # bigger example 
-      function to_rand_point_verts(___points)
-            _points = [Tuple(rand(2)) for _ in 1:500]
-            _points = [_points; ___points]
-            shuffle!(_points)
-            vertices = identity.(indexin(___points, _points)) # identity to convert eltype from Union{Nothing, Int}
-            return _points, vertices
-      end
-      a = (-4.0, 4.0)
-      b = (-1.0, 6.0)
-      c = (3.0, 6.0)
-      d = (4.0, 4.0)
-      e = (4.0, -1.0)
-      f = (2.0, -3.0)
-      g = (-2.94, -1.32)
-      points = [g, f, e, d, c, b, a] # ccw
-      npoints, nvertices = to_rand_point_verts(deepcopy(points))
-      h = (-2.0, 7.0)
-      i = (-5.0, 6.0)
-      j = (-5.0, 2.0)
-      k = (-4.0, -2.0)
-      ℓ = (-1.0, -3.0)
-      m = (2.0, 2.0)
-      n = (1.0, 5.0)
-      clip_points = [h, i, j, k, ℓ, m, n]
-      nclip_points, nclip_vertices = to_rand_point_verts(deepcopy(clip_points))
-      result = DT.clip_polygon(nvertices, npoints, nclip_vertices, nclip_points)
-      @test DT.circular_equality(collect.(result), collect.([
-            g,
-            (-0.4915938130464, -2.1526563550773),
-            m,
-            n,
-            (-0.5, 6.0),
-            b,
-            a,
-            g
-      ]), ≈)
+
+    # bigger example 
+    function to_rand_point_verts(___points)
+        _points = [Tuple(rand(2)) for _ in 1:500]
+        _points = [_points; ___points]
+        shuffle!(_points)
+        vertices = identity.(indexin(___points, _points)) # identity to convert eltype from Union{Nothing, Int}
+        return _points, vertices
+    end
+    a = (-4.0, 4.0)
+    b = (-1.0, 6.0)
+    c = (3.0, 6.0)
+    d = (4.0, 4.0)
+    e = (4.0, -1.0)
+    f = (2.0, -3.0)
+    g = (-2.94, -1.32)
+    points = [g, f, e, d, c, b, a] # ccw
+    npoints, nvertices = to_rand_point_verts(deepcopy(points))
+    h = (-2.0, 7.0)
+    i = (-5.0, 6.0)
+    j = (-5.0, 2.0)
+    k = (-4.0, -2.0)
+    ℓ = (-1.0, -3.0)
+    m = (2.0, 2.0)
+    n = (1.0, 5.0)
+    clip_points = [h, i, j, k, ℓ, m, n]
+    nclip_points, nclip_vertices = to_rand_point_verts(deepcopy(clip_points))
+    result = DT.clip_polygon(nvertices, npoints, nclip_vertices, nclip_points)
+    @test DT.circular_equality(
+        collect.(result), collect.(
+            [
+                g,
+                (-0.4915938130464, -2.1526563550773),
+                m,
+                n,
+                (-0.5, 6.0),
+                b,
+                a,
+                g,
+            ],
+        ), ≈,
+    )
 end
+
 
 @testset "Liang-Barsky algorithm" begin
-      p, q = (-7.0, 5.0), (1.0, 8.0)
-      a, b, c, d = 0.0, 8.0, 0.0, 4.0
-      u, v = DT.liang_barsky(a, b, c, d, p, q)
-      @test all(isnan, u) && all(isnan, v)
-      p, q = (-3.0, 1.0), (10.0, 5.0)
-      u, v = DT.liang_barsky(a, b, c, d, p, q)
-      @test collect(u) ≈ [0, 1.9230769230769]
-      @test collect(v) ≈ [6.75, 4.0]
-      p, q = (0.0, -2.0), (0.0, 6.0)
-      u, v = DT.liang_barsky(a, b, c, d, p, q)
-      @test collect(u) ≈ [0, 0]
-      @test collect(v) ≈ [0, 4]
-      p, q = (2.0, 6.0), (-2.0, 2.0)
-      u, v = DT.liang_barsky(a, b, c, d, p, q)
-      @test u == v && (collect(u) ≈ [0, 4])
-      p, q = (10.0, 6.0), (-2.0, 6.0)
-      u, v = DT.liang_barsky(a, b, c, d, p, q)
-      @test all(isnan, u) && all(isnan, v)
-      p, q = (4.0, 6.0), (4.0, -2.0)
-      u, v = DT.liang_barsky(a, b, c, d, p, q)
-      @test collect(u) ≈ [4.0, 4.0]
-      @test collect(v) ≈ [4.0, 0.0]
-      p, q = (2.0, 6.0), (10.0, -2.0)
-      u, v = DT.liang_barsky(a, b, c, d, p, q)
-      @test collect(u) ≈ [4.0, 4.0]
-      @test collect(v) ≈ [8.0, 0.0]
-      a, b, c, d = 4, 10, 2, 8
-      u, v = DT.liang_barsky(a, b, c, d, p, q)
-      @test collect(u) ≈ [4.0, 4.0]
-      @test collect(v) ≈ [6.0, 2.0]
-      p, q = (2.0, 6.0), (14.0, 8.0)
-      u, v = DT.liang_barsky(a, b, c, d, p, q)
-      @test collect(u) ≈ [4, 6 + 1 / 3]
-      @test collect(v) ≈ [10, 7 + 1 / 3]
+    p, q = (-7.0, 5.0), (1.0, 8.0)
+    a, b, c, d = 0.0, 8.0, 0.0, 4.0
+    u, v = DT.liang_barsky(a, b, c, d, p, q)
+    @test all(isnan, u) && all(isnan, v)
+    p, q = (-3.0, 1.0), (10.0, 5.0)
+    u, v = DT.liang_barsky(a, b, c, d, p, q)
+    @test collect(u) ≈ [0, 1.9230769230769]
+    @test collect(v) ≈ [6.75, 4.0]
+    p, q = (0.0, -2.0), (0.0, 6.0)
+    u, v = DT.liang_barsky(a, b, c, d, p, q)
+    @test collect(u) ≈ [0, 0]
+    @test collect(v) ≈ [0, 4]
+    p, q = (2.0, 6.0), (-2.0, 2.0)
+    u, v = DT.liang_barsky(a, b, c, d, p, q)
+    @test u == v && (collect(u) ≈ [0, 4])
+    p, q = (10.0, 6.0), (-2.0, 6.0)
+    u, v = DT.liang_barsky(a, b, c, d, p, q)
+    @test all(isnan, u) && all(isnan, v)
+    p, q = (4.0, 6.0), (4.0, -2.0)
+    u, v = DT.liang_barsky(a, b, c, d, p, q)
+    @test collect(u) ≈ [4.0, 4.0]
+    @test collect(v) ≈ [4.0, 0.0]
+    p, q = (2.0, 6.0), (10.0, -2.0)
+    u, v = DT.liang_barsky(a, b, c, d, p, q)
+    @test collect(u) ≈ [4.0, 4.0]
+    @test collect(v) ≈ [8.0, 0.0]
+    a, b, c, d = 4, 10, 2, 8
+    u, v = DT.liang_barsky(a, b, c, d, p, q)
+    @test collect(u) ≈ [4.0, 4.0]
+    @test collect(v) ≈ [6.0, 2.0]
+    p, q = (2.0, 6.0), (14.0, 8.0)
+    u, v = DT.liang_barsky(a, b, c, d, p, q)
+    @test collect(u) ≈ [4, 6 + 1 / 3]
+    @test collect(v) ≈ [10, 7 + 1 / 3]
 end
+
 
 @testset "get_plane_through_three_points" begin
-      @static if VERSION ≥ v"1.10"
-      _plane_mat(p, q, r) =
+    @static if VERSION ≥ v"1.10"
+        _plane_mat(p, q, r) =
             let c = (p .+ q .+ r) ./ 3
-                  [c... 1; p... 1; q... 1; r... 1]
-            end
-      else 
-            _plane_mat(p, q, r) = 
-            let c = (p .+ q .+ r) ./ 3 
-                  vcat([c... 1], [p... 1], [q... 1], [r... 1])
-            end
-      end
-      _plane_norm(p, q, r) = begin
-            x = q .- p
-            y = r .- p
-            nv = cross(x |> collect, y |> collect)
-            return nv ./ norm(nv)
-      end
-      for _ in 1:10000
-            p, q, r = Tuple(rand(3)), Tuple(rand(3)), Tuple(rand(3))
-            α, β, γ, δ = DT.get_plane_through_three_points(p, q, r)
-            @inferred DT.get_plane_through_three_points(p, q, r)
-            @test det(_plane_mat(p, q, r)) ≈ 0.0 atol = 1e-14
-            n = _plane_norm(p, q, r)
-            @test n ≈ [α, β, γ] / norm([α, β, γ]) || n ≈ -[α, β, γ] / norm([α, β, γ])
+            [c... 1; p... 1; q... 1; r... 1]
+        end
+    else
+        _plane_mat(p, q, r) =
+            let c = (p .+ q .+ r) ./ 3
+            vcat([c... 1], [p... 1], [q... 1], [r... 1])
+        end
+    end
+    _plane_norm(p, q, r) = begin
+        x = q .- p
+        y = r .- p
+        nv = cross(x |> collect, y |> collect)
+        return nv ./ norm(nv)
+    end
+    for _ in 1:10000
+        p, q, r = Tuple(rand(3)), Tuple(rand(3)), Tuple(rand(3))
+        α, β, γ, δ = DT.get_plane_through_three_points(p, q, r)
+        @inferred DT.get_plane_through_three_points(p, q, r)
+        @test det(_plane_mat(p, q, r)) ≈ 0.0 atol = 1.0e-14
+        n = _plane_norm(p, q, r)
+        @test n ≈ [α, β, γ] / norm([α, β, γ]) || n ≈ -[α, β, γ] / norm([α, β, γ])
 
-            p, q, r = (rand(2)..., 0.0), (rand(2)..., 0.0), (rand(2)..., 0.0)
-            α, β, γ, δ = DT.get_plane_through_three_points(p, q, r)
-            @test det(_plane_mat(p, q, r)) ≈ 0.0 atol = 1e-14
-            n = [0, 0, 1]
-            @test n ≈ [α, β, γ] / norm([α, β, γ]) || n ≈ -[α, β, γ] / norm([α, β, γ])
-            p, q, r = (rand(), 2.0, rand()), (rand(), 2.0, rand()), (rand(), 2.0, rand())
-            α, β, γ, δ = DT.get_plane_through_three_points(p, q, r)
-            @test det(_plane_mat(p, q, r)) ≈ 0.0 atol = 1e-14
-            n = [0, 1, 0]
-            @test n ≈ [α, β, γ] / norm([α, β, γ]) || n ≈ -[α, β, γ] / norm([α, β, γ])
-            p, q, r = (2.0, rand(), rand()), (2.0, rand(), rand()), (2.0, rand(), rand())
-            α, β, γ, δ = DT.get_plane_through_three_points(p, q, r)
-            @test det(_plane_mat(p, q, r)) ≈ 0.0 atol = 1e-14
-            n = [1, 0, 0]
-            @test n ≈ [α, β, γ] / norm([α, β, γ]) || n ≈ -[α, β, γ] / norm([α, β, γ])
-      end
-      p, q, r = (1.3, 0.5, 5.5), (2.5, 2.22, 3.86), (5.3, 1.39, 2.85)
-      a, b, c, d = DT.get_plane_through_three_points(p, q, r)
-      @test a ≈ -3.0984
-      @test b ≈ -3.38
-      @test c ≈ -5.812
-      @test d ≈ 37.68392
+
+        p, q, r = (rand(2)..., 0.0), (rand(2)..., 0.0), (rand(2)..., 0.0)
+        α, β, γ, δ = DT.get_plane_through_three_points(p, q, r)
+        @test det(_plane_mat(p, q, r)) ≈ 0.0 atol = 1.0e-14
+        n = [0, 0, 1]
+        @test n ≈ [α, β, γ] / norm([α, β, γ]) || n ≈ -[α, β, γ] / norm([α, β, γ])
+        p, q, r = (rand(), 2.0, rand()), (rand(), 2.0, rand()), (rand(), 2.0, rand())
+        α, β, γ, δ = DT.get_plane_through_three_points(p, q, r)
+        @test det(_plane_mat(p, q, r)) ≈ 0.0 atol = 1.0e-14
+        n = [0, 1, 0]
+        @test n ≈ [α, β, γ] / norm([α, β, γ]) || n ≈ -[α, β, γ] / norm([α, β, γ])
+        p, q, r = (2.0, rand(), rand()), (2.0, rand(), rand()), (2.0, rand(), rand())
+        α, β, γ, δ = DT.get_plane_through_three_points(p, q, r)
+        @test det(_plane_mat(p, q, r)) ≈ 0.0 atol = 1.0e-14
+        n = [1, 0, 0]
+        @test n ≈ [α, β, γ] / norm([α, β, γ]) || n ≈ -[α, β, γ] / norm([α, β, γ])
+    end
+    p, q, r = (1.3, 0.5, 5.5), (2.5, 2.22, 3.86), (5.3, 1.39, 2.85)
+    a, b, c, d = DT.get_plane_through_three_points(p, q, r)
+    @test a ≈ -3.0984
+    @test b ≈ -3.38
+    @test c ≈ -5.812
+    @test d ≈ 37.68392
 end
+
 
 @testset "get_steepest_descent_direction" begin
-      for _ in 1:10000
-            p, q, r = Tuple(rand(3)), Tuple(rand(3)), Tuple(rand(3))
-            α, β, γ, δ = DT.get_plane_through_three_points(p, q, r)
-            x, y = DT.get_steepest_descent_direction(p, q, r)
-            @inferred DT.get_steepest_descent_direction(p, q, r)
-            @test x ≈ sign(γ) * α && sign(γ) * y ≈ β
-            p1 = DT.get_steepest_descent_direction(p, q, r) |> collect
-            p2 = DT.get_steepest_descent_direction(q, r, p) |> collect
-            p3 = DT.get_steepest_descent_direction(r, p, q) |> collect
-            p4 = DT.get_steepest_descent_direction(r, q, p) |> collect
-            @test p1 ≈ p2 ≈ p3 ≈ p4
-      end
-      p, q, r = (1.3, 0.5, 5.5), (2.5, 2.22, 3.86), (5.3, 1.39, 2.9)
-      x, y = DT.get_steepest_descent_direction(p, q, r)
-      @test x ≈ 3.0124 && y ≈ 3.44
+    for _ in 1:10000
+        p, q, r = Tuple(rand(3)), Tuple(rand(3)), Tuple(rand(3))
+        α, β, γ, δ = DT.get_plane_through_three_points(p, q, r)
+        x, y = DT.get_steepest_descent_direction(p, q, r)
+        @inferred DT.get_steepest_descent_direction(p, q, r)
+        @test x ≈ sign(γ) * α && sign(γ) * y ≈ β
+        p1 = DT.get_steepest_descent_direction(p, q, r) |> collect
+        p2 = DT.get_steepest_descent_direction(q, r, p) |> collect
+        p3 = DT.get_steepest_descent_direction(r, p, q) |> collect
+        p4 = DT.get_steepest_descent_direction(r, q, p) |> collect
+        @test p1 ≈ p2 ≈ p3 ≈ p4
+    end
+    p, q, r = (1.3, 0.5, 5.5), (2.5, 2.22, 3.86), (5.3, 1.39, 2.9)
+    x, y = DT.get_steepest_descent_direction(p, q, r)
+    @test x ≈ 3.0124 && y ≈ 3.44
 end
+
 
 @testset "get_distance_to_plane" begin
-      for _ in 1:10000
-            p, q, r = Tuple(rand(3)), Tuple(rand(3)), Tuple(rand(3))
-            s = Tuple(rand(3))
-            α, β, γ, δ = DT.get_plane_through_three_points(p, q, r)
-            d = DT.get_vertical_distance_to_plane(p, q, r, s)
-            @inferred DT.get_vertical_distance_to_plane(p, q, r, s)
-            @test d ≈ s[3] + (α * s[1] + β * s[2] + δ) / γ
+    for _ in 1:10000
+        p, q, r = Tuple(rand(3)), Tuple(rand(3)), Tuple(rand(3))
+        s = Tuple(rand(3))
+        α, β, γ, δ = DT.get_plane_through_three_points(p, q, r)
+        d = DT.get_vertical_distance_to_plane(p, q, r, s)
+        @inferred DT.get_vertical_distance_to_plane(p, q, r, s)
+        @test d ≈ s[3] + (α * s[1] + β * s[2] + δ) / γ
 
-            p, q, r = Tuple(rand(3)), Tuple(rand(3)), Tuple(rand(3))
-            s = Tuple(rand(3))
-            α, β, γ, δ = DT.get_plane_through_three_points(p, q, r)
-            n = [α, β, γ] / norm([α, β, γ])
-            x, y, z = s
-            z₀ = -(α * x + β * y + δ) / γ
-            Q = [x, y, z₀]
-            P = [x, y, z]
-            v = Q - P
-            δ = dot(v, n)
-            d = DT.get_distance_to_plane(p, q, r, s)
-            @inferred DT.get_distance_to_plane(p, q, r, s)
-            @test abs(d) ≈ abs(δ)
-            @test sign(d) == sign(DT.get_vertical_distance_to_plane(p, q, r, s))
-      end
 
-      for _ in 1:1000
-            p, q, r = (rand(), rand(), 2.0), (rand(), rand(), 2.0), (rand(), rand(), 2.0)
-            s = (rand(), rand(), 10 * randn())
-            d = DT.get_distance_to_plane(p, q, r, s)
-            @test d ≈ s[3] - 2 ≈ DT.get_vertical_distance_to_plane(p, q, r, s)
-            if s[3] > 2.0
-                  @test d > 0.0
-            else
-                  @test d ≤ 0.0
-            end
-      end
+        p, q, r = Tuple(rand(3)), Tuple(rand(3)), Tuple(rand(3))
+        s = Tuple(rand(3))
+        α, β, γ, δ = DT.get_plane_through_three_points(p, q, r)
+        n = [α, β, γ] / norm([α, β, γ])
+        x, y, z = s
+        z₀ = -(α * x + β * y + δ) / γ
+        Q = [x, y, z₀]
+        P = [x, y, z]
+        v = Q - P
+        δ = dot(v, n)
+        d = DT.get_distance_to_plane(p, q, r, s)
+        @inferred DT.get_distance_to_plane(p, q, r, s)
+        @test abs(d) ≈ abs(δ)
+        @test sign(d) == sign(DT.get_vertical_distance_to_plane(p, q, r, s))
+    end
+
+
+    for _ in 1:1000
+        p, q, r = (rand(), rand(), 2.0), (rand(), rand(), 2.0), (rand(), rand(), 2.0)
+        s = (rand(), rand(), 10 * randn())
+        d = DT.get_distance_to_plane(p, q, r, s)
+        @test d ≈ s[3] - 2 ≈ DT.get_vertical_distance_to_plane(p, q, r, s)
+        if s[3] > 2.0
+            @test d > 0.0
+        else
+            @test d ≤ 0.0
+        end
+    end
 end
 
+
 @testset "angle_between" begin
-      p = (2.0, 9.0)
-      q = (2.0, -5.0)
-      θ = DT.angle_between(p, q)
-      @test rad2deg(θ) ≈ 145.6697828044967 rtol = 1e-4
-      θ = DT.angle_between(q, p)
-      @test rad2deg(θ) ≈ 214.3302171955033 rtol = 1e-4
-      p = (7.0, 1.0)
-      q = (2.0, -5.0)
-      θ = DT.angle_between(p, q)
-      @test rad2deg(θ) ≈ 76.3286928678042
-      θ = DT.angle_between(q, p)
-      @test rad2deg(θ) ≈ 283.6713071321958
-      p = (0.0, 9.0)
-      q = (0.0, -4.0)
-      θ = DT.angle_between(p, q)
-      @test rad2deg(θ) ≈ 180.0
-      θ = DT.angle_between(q, p)
-      @test rad2deg(θ) ≈ 180.0
-      p = (0.0, -5.0)
-      q = (0.0, -4.0)
-      θ = DT.angle_between(p, q)
-      @test rad2deg(θ) ≈ 0.0
-      θ = DT.angle_between(q, p)
-      @test rad2deg(θ) ≈ 0.0
-      p = (-0.27, -4.96)
-      q = (0.0, -4.0)
-      θ = DT.angle_between(p, q)
-      @test rad2deg(θ) ≈ 356.8841517402107 rtol = 1e-4
-      θ = DT.angle_between(q, p)
-      @test rad2deg(θ) ≈ 3.1158482597894 rtol = 1e-4
+    p = (2.0, 9.0)
+    q = (2.0, -5.0)
+    θ = DT.angle_between(p, q)
+    @test rad2deg(θ) ≈ 145.6697828044967 rtol = 1.0e-4
+    θ = DT.angle_between(q, p)
+    @test rad2deg(θ) ≈ 214.3302171955033 rtol = 1.0e-4
+    p = (7.0, 1.0)
+    q = (2.0, -5.0)
+    θ = DT.angle_between(p, q)
+    @test rad2deg(θ) ≈ 76.3286928678042
+    θ = DT.angle_between(q, p)
+    @test rad2deg(θ) ≈ 283.6713071321958
+    p = (0.0, 9.0)
+    q = (0.0, -4.0)
+    θ = DT.angle_between(p, q)
+    @test rad2deg(θ) ≈ 180.0
+    θ = DT.angle_between(q, p)
+    @test rad2deg(θ) ≈ 180.0
+    p = (0.0, -5.0)
+    q = (0.0, -4.0)
+    θ = DT.angle_between(p, q)
+    @test rad2deg(θ) ≈ 0.0
+    θ = DT.angle_between(q, p)
+    @test rad2deg(θ) ≈ 0.0
+    p = (-0.27, -4.96)
+    q = (0.0, -4.0)
+    θ = DT.angle_between(p, q)
+    @test rad2deg(θ) ≈ 356.8841517402107 rtol = 1.0e-4
+    θ = DT.angle_between(q, p)
+    @test rad2deg(θ) ≈ 3.1158482597894 rtol = 1.0e-4
 end

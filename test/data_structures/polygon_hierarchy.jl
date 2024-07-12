@@ -10,6 +10,7 @@ using StructEquality
 using DelimitedFiles
 using StableRNGs
 
+
 for _ in 1:20 # Run many times to make sure the segfault is gone
     # Examples:
     #   I: A piecewise linear contiguous section.
@@ -26,93 +27,106 @@ for _ in 1:20 # Run many times to make sure the segfault is gone
     curve_I = [1, 2, 3, 4, 1]
     points_I = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
 
+
     curve_II = [[1, 2, 3, 4, 5], [5, 6, 7, 8, 9], [9, 10, 11, 1]]
     points_II = [
         (0.0, 0.0), (0.25, 0.0), (0.5, 0.0), (0.75, 0.0), (1.0, 0.0),
         (1.0, 0.25), (1.0, 0.5), (1.0, 0.75), (1.0, 1.0),
-        (0.75, 0.75), (0.25, 0.25)
+        (0.75, 0.75), (0.25, 0.25),
     ]
+
 
     curve_III = [[[1, 2, 3, 4, 5], [5, 6, 7, 8, 9], [9, 10, 11, 1]], [[15, 14, 13, 12], [12, 15]]]
     points_III = [
         (0.0, 0.0), (0.25, 0.0), (0.5, 0.0), (0.75, 0.0), (1.0, 0.0),
         (1.0, 0.25), (1.0, 0.5), (1.0, 0.75), (1.0, 1.0),
         (0.0, 1.0), (0.0, 0.5),
-        (0.25, 0.25), (0.75, 0.25), (0.75, 0.75), (0.25, 0.75), (0.5, 0.5)
+        (0.25, 0.25), (0.75, 0.25), (0.75, 0.75), (0.25, 0.75), (0.5, 0.5),
     ]
 
+
     curve_IV = [CircularArc((1.0, 0.0), (1.0, 0.0), (0.0, 0.0))]
-    points_IV = NTuple{2,Float64}[]
+    points_IV = NTuple{2, Float64}[]
+
 
     curve_V = [BezierCurve([(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.0, 0.0)])]
     points_V = [(0.0, 0.0), (0.2, 0.25)]
 
+
     curve_VI = [
         [CircularArc((1.0, 0.0), (0.0, 1.0), (0.0, 0.0))],
         [BSpline([(0.0, 1.0), (-1.0, 2.0), (-2.0, 0.0), (-2.0, -1.0), (0.0, -2.0)])],
-        [5, 6, 10]
+        [5, 6, 10],
     ]
     points_VI = [(0.1, 0.1), (0.15, 0.15), (0.23, 0.23), (0.009, 0.11), (0.0, -2.0), (0.2, -1.7), (0.000591, 0.00019), (0.111, -0.005), (-0.0001, -0.00991), (1.0, 0.0)]
 
+
     curve_VII = [
         [CircularArc((2.0, 0.0), (-2.0, 0.0), (0.0, 0.0))],
-        [BSpline([(-2.0, 0.0), (-2.0, -1.0), (0.0, -1.0), (1.0, -1.0), (2.0, -1.0), (2.0, 0.0)])]
+        [BSpline([(-2.0, 0.0), (-2.0, -1.0), (0.0, -1.0), (1.0, -1.0), (2.0, -1.0), (2.0, 0.0)])],
     ]
     points_VII = [(2.0, 0.0), (0.0, 0.5)]
+
 
     curve_VIII = [
         [1, 2, 3, 4, 5],
         [DT.EllipticalArc((0.0, 0.0), (2.0, -2.0), (1.0, -1.0), sqrt(2), sqrt(2), 45.0)],
         [6, 7, 8, 9, 10],
-        [CatmullRomSpline([(10.0, -3.0), (20.0, 0.0), (18.0, 0.0), (10.0, 0.0)])]
+        [CatmullRomSpline([(10.0, -3.0), (20.0, 0.0), (18.0, 0.0), (10.0, 0.0)])],
     ]
-    points_VIII = [(10.0, 0.0), (8.0, 0.0), (4.0, 0.0), (2.0, 2.0), (0.0, 0.0), (2.0, -2.0),
-        (2.5, -2.0), (3.5, -2.0), (4.5, -3.0), (10.0, -3.0), (10.0, 12.0), (14.0, 0.0)]
+    points_VIII = [
+        (10.0, 0.0), (8.0, 0.0), (4.0, 0.0), (2.0, 2.0), (0.0, 0.0), (2.0, -2.0),
+        (2.5, -2.0), (3.5, -2.0), (4.5, -3.0), (10.0, -3.0), (10.0, 12.0), (14.0, 0.0),
+    ]
+
 
     curve_IX =
         [
-            [
-                [1, 2, 3, 4, 5, 6, 7, 1]
-            ],
-            [
-                [CircularArc((0.6, 0.5), (0.6, 0.5), (0.5, 0.5), positive=false)]
-            ],
-        ]
+        [
+            [1, 2, 3, 4, 5, 6, 7, 1],
+        ],
+        [
+            [CircularArc((0.6, 0.5), (0.6, 0.5), (0.5, 0.5), positive = false)],
+        ],
+    ]
     points_IX = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.5, 1.5), (0.0, 1.0), (0.0, 0.5), (0.0, 0.2)]
+
 
     curve_X = [
         [
-            [1, 2, 3], [DT.EllipticalArc((2.0, 0.0), (-2.0, 0.0), (0.0, 0.0), 2, 1 / 2, 0.0)]
+            [1, 2, 3], [DT.EllipticalArc((2.0, 0.0), (-2.0, 0.0), (0.0, 0.0), 2, 1 / 2, 0.0)],
         ],
         [
-            [BSpline(reverse([(1.0, 0.2), (0.0, 0.4), (0.0, 0.3), (-1.0, 0.2)]))], reverse([4, 5, 6, 7, 8])
-        ]
+            [BSpline(reverse([(1.0, 0.2), (0.0, 0.4), (0.0, 0.3), (-1.0, 0.2)]))], reverse([4, 5, 6, 7, 8]),
+        ],
     ]
     points_X = [
-        (-2.0, 0.0), (0.0, 0.0), (2.0, 0.0), (-1.0, 0.2), (-1.0, 0.1), (0.0, 0.1), (1.0, 0.1), (1.0, 0.2)
+        (-2.0, 0.0), (0.0, 0.0), (2.0, 0.0), (-1.0, 0.2), (-1.0, 0.1), (0.0, 0.1), (1.0, 0.1), (1.0, 0.2),
     ]
+
 
     curve_XI = [
         [
-            [1, 2, 3], [DT.EllipticalArc((2.0, 0.0), (-2.0, 0.0), (0.0, 0.0), 2, 1 / 2, 0.0)]
+            [1, 2, 3], [DT.EllipticalArc((2.0, 0.0), (-2.0, 0.0), (0.0, 0.0), 2, 1 / 2, 0.0)],
         ],
         [
-            [BSpline([(0.0, 0.4), (1.0, 0.2), (0.0, 0.1), (-1.0, 0.2), (0.0, 0.4)])]
+            [BSpline([(0.0, 0.4), (1.0, 0.2), (0.0, 0.1), (-1.0, 0.2), (0.0, 0.4)])],
         ],
         [
-            [4, 5, 6, 7, 4]
+            [4, 5, 6, 7, 4],
         ],
         [
-            [BezierCurve(reverse([(-1.0, -3.0), (-1.0, -2.5), (0.0, -2.5), (0.0, -2.0)]))], [CatmullRomSpline(reverse([(0.0, -2.0), (1.0, -3.0), (0.0, -4.0), (-1.0, -3.0)]))]
+            [BezierCurve(reverse([(-1.0, -3.0), (-1.0, -2.5), (0.0, -2.5), (0.0, -2.0)]))], [CatmullRomSpline(reverse([(0.0, -2.0), (1.0, -3.0), (0.0, -4.0), (-1.0, -3.0)]))],
         ],
         [
-            [12, 11, 10, 12]
+            [12, 11, 10, 12],
         ],
         [
-            [CircularArc((1.1, -3.0), (1.1, -3.0), (0.0, -3.0), positive=false)]
-        ]
+            [CircularArc((1.1, -3.0), (1.1, -3.0), (0.0, -3.0), positive = false)],
+        ],
     ]
     points_XI = [(-2.0, 0.0), (0.0, 0.0), (2.0, 0.0), (-2.0, -5.0), (2.0, -5.0), (2.0, -1 / 10), (-2.0, -1 / 10), (-1.0, -3.0), (0.0, -4.0), (0.0, -2.3), (-0.5, -3.5), (0.9, -3.0)]
+
 
     @testset "Points" begin
         points = rand(2, 500)
@@ -133,6 +147,7 @@ for _ in 1:20 # Run many times to make sure the segfault is gone
         @test !DT.has_children(tree)
     end
 
+
     @testset "Points with a piecewise linear boundary" begin
         points = deepcopy(points_I)
         boundary_nodes = deepcopy(curve_I)
@@ -151,6 +166,7 @@ for _ in 1:20 # Run many times to make sure the segfault is gone
         @test DT.get_height(tree) == 0
         @test !DT.has_children(tree)
 
+
         points = deepcopy(points_II)
         boundary_nodes = deepcopy(curve_II)
         hierarchy = DT.construct_polygon_hierarchy(points, boundary_nodes)
@@ -167,6 +183,7 @@ for _ in 1:20 # Run many times to make sure the segfault is gone
         @test DT.get_index(tree) == 1
         @test DT.get_height(tree) == 0
         @test !DT.has_children(tree)
+
 
         points = deepcopy(points_III)
         boundary_nodes = deepcopy(curve_III)
@@ -192,6 +209,7 @@ for _ in 1:20 # Run many times to make sure the segfault is gone
         @test DT.get_height(tree) == 1
         @test !DT.has_children(tree)
         hierarchy2 = DT.construct_polygon_hierarchy(points, boundary_nodes)
+
 
         A, B, C, D = (-9.0, 7.0), (-2.0, 7.0), (-2.0, -1.0), (-9.0, -1.0)
         E, F, G, H, I, J = (2.0, 6.0), (10.0, 6.0), (10.0, -5.0), (0.0, -5.0), (0.0, 5.0), (2.0, 5.0)
@@ -241,10 +259,10 @@ for _ in 1:20 # Run many times to make sure the segfault is gone
             DT.BoundingBox(-10.0, -2.0, -12.0, -4.0),
             DT.BoundingBox(-8.0, -4.0, -10.0, -6.0),
             DT.BoundingBox(-9.0, -3.0, -11.0, -5.0),
-            DT.BoundingBox(-9.0, -2.0, -17.0, -15.0)
+            DT.BoundingBox(-9.0, -2.0, -17.0, -15.0),
         ]
         @test DT.get_polygon_orientations(hierarchy) == [
-            false, false, false, false, true, true, true, true, true, true, true, false, false, true, true
+            false, false, false, false, true, true, true, true, true, true, true, false, false, true, true,
         ]
         trees = DT.get_trees(hierarchy)
         tree6 = trees[6]
@@ -290,39 +308,41 @@ for _ in 1:20 # Run many times to make sure the segfault is gone
         @test DT.get_index(tree15) == 15 && DT.get_height(tree15) == 0 && !DT.has_children(tree15) && !DT.has_parent(tree15)
         DT.expand_bounds!(hierarchy)
         @test DT.get_bounding_boxes(hierarchy) ⊢ [
-            DT.expand(DT.BoundingBox(-9.0, -2.0, -1.0, 7.0), 0.10),
-            DT.expand(DT.BoundingBox(0.0, 10.0, -5.0, 6.0), 0.10),
-            DT.expand(DT.BoundingBox(-1.0, 1.0, 6.0, 7.0), 0.10),
-            DT.expand(DT.BoundingBox(-20.0, -16.0, 8.0, 10.0), 0.10),
-            DT.expand(DT.BoundingBox(-22.0, -14.0, -14.0, 4.0), 0.10),
-            DT.expand(DT.BoundingBox(-22.0, -14.0, 6.0, 12.0), 0.10),
-            DT.expand(DT.BoundingBox(-12.0, 14.0, -14.0, 12.0), 0.10),
-            DT.expand(DT.BoundingBox(1.0, 8.0, -4.0, 2.0), 0.10),
-            DT.expand(DT.BoundingBox(1.0, 8.0, 3.0, 4.0), 0.10),
-            DT.expand(DT.BoundingBox(-8.0, -3.0, 0.0, 5.0), 0.10),
-            DT.expand(DT.BoundingBox(-8.0, -3.0, 4.0, 6.0), 0.10),
-            DT.expand(DT.BoundingBox(-10.0, -2.0, -12.0, -4.0), 0.10),
-            DT.expand(DT.BoundingBox(-8.0, -4.0, -10.0, -6.0), 0.10),
-            DT.expand(DT.BoundingBox(-9.0, -3.0, -11.0, -5.0), 0.10),
-            DT.expand(DT.BoundingBox(-9.0, -2.0, -17.0, -15.0), 0.10)
+            DT.expand(DT.BoundingBox(-9.0, -2.0, -1.0, 7.0), 0.1),
+            DT.expand(DT.BoundingBox(0.0, 10.0, -5.0, 6.0), 0.1),
+            DT.expand(DT.BoundingBox(-1.0, 1.0, 6.0, 7.0), 0.1),
+            DT.expand(DT.BoundingBox(-20.0, -16.0, 8.0, 10.0), 0.1),
+            DT.expand(DT.BoundingBox(-22.0, -14.0, -14.0, 4.0), 0.1),
+            DT.expand(DT.BoundingBox(-22.0, -14.0, 6.0, 12.0), 0.1),
+            DT.expand(DT.BoundingBox(-12.0, 14.0, -14.0, 12.0), 0.1),
+            DT.expand(DT.BoundingBox(1.0, 8.0, -4.0, 2.0), 0.1),
+            DT.expand(DT.BoundingBox(1.0, 8.0, 3.0, 4.0), 0.1),
+            DT.expand(DT.BoundingBox(-8.0, -3.0, 0.0, 5.0), 0.1),
+            DT.expand(DT.BoundingBox(-8.0, -3.0, 4.0, 6.0), 0.1),
+            DT.expand(DT.BoundingBox(-10.0, -2.0, -12.0, -4.0), 0.1),
+            DT.expand(DT.BoundingBox(-8.0, -4.0, -10.0, -6.0), 0.1),
+            DT.expand(DT.BoundingBox(-9.0, -3.0, -11.0, -5.0), 0.1),
+            DT.expand(DT.BoundingBox(-9.0, -2.0, -17.0, -15.0), 0.1),
         ]
-        @test all([
-            DT.BoundingBox(-9.0, -2.0, -1.0, 7.0),
-            DT.BoundingBox(0.0, 10.0, -5.0, 6.0),
-            DT.BoundingBox(-1.0, 1.0, 6.0, 7.0),
-            DT.BoundingBox(-20.0, -16.0, 8.0, 10.0),
-            DT.BoundingBox(-22.0, -14.0, -14.0, 4.0),
-            DT.BoundingBox(-22.0, -14.0, 6.0, 12.0),
-            DT.BoundingBox(-12.0, 14.0, -14.0, 12.0),
-            DT.BoundingBox(1.0, 8.0, -4.0, 2.0),
-            DT.BoundingBox(1.0, 8.0, 3.0, 4.0),
-            DT.BoundingBox(-8.0, -3.0, 0.0, 5.0),
-            DT.BoundingBox(-8.0, -3.0, 4.0, 6.0),
-            DT.BoundingBox(-10.0, -2.0, -12.0, -4.0),
-            DT.BoundingBox(-8.0, -4.0, -10.0, -6.0),
-            DT.BoundingBox(-9.0, -3.0, -11.0, -5.0),
-            DT.BoundingBox(-9.0, -2.0, -17.0, -15.0)
-        ] .∈ DT.get_bounding_boxes(hierarchy))
+        @test all(
+            [
+                DT.BoundingBox(-9.0, -2.0, -1.0, 7.0),
+                DT.BoundingBox(0.0, 10.0, -5.0, 6.0),
+                DT.BoundingBox(-1.0, 1.0, 6.0, 7.0),
+                DT.BoundingBox(-20.0, -16.0, 8.0, 10.0),
+                DT.BoundingBox(-22.0, -14.0, -14.0, 4.0),
+                DT.BoundingBox(-22.0, -14.0, 6.0, 12.0),
+                DT.BoundingBox(-12.0, 14.0, -14.0, 12.0),
+                DT.BoundingBox(1.0, 8.0, -4.0, 2.0),
+                DT.BoundingBox(1.0, 8.0, 3.0, 4.0),
+                DT.BoundingBox(-8.0, -3.0, 0.0, 5.0),
+                DT.BoundingBox(-8.0, -3.0, 4.0, 6.0),
+                DT.BoundingBox(-10.0, -2.0, -12.0, -4.0),
+                DT.BoundingBox(-8.0, -4.0, -10.0, -6.0),
+                DT.BoundingBox(-9.0, -3.0, -11.0, -5.0),
+                DT.BoundingBox(-9.0, -2.0, -17.0, -15.0),
+            ] .∈ DT.get_bounding_boxes(hierarchy),
+        )
         @test traverse_tree(hierarchy.trees[7]) ≠ traverse_tree(hierarchy.trees[15])
         @test compare_trees(hierarchy, hierarchy)
         @test compare_trees(deepcopy(hierarchy), deepcopy(hierarchy))
@@ -334,6 +354,7 @@ for _ in 1:20 # Run many times to make sure the segfault is gone
         @test hierarchy ≠ hierarchy2
         @test deepcopy(hierarchy) ≠ hierarchy2
     end
+
 
     @testset "Curve-bounded" begin
         IntegerType = Int
@@ -348,11 +369,12 @@ for _ in 1:20 # Run many times to make sure the segfault is gone
         hierarchy = DT.construct_polygon_hierarchy(points, nnew_boundary_nodes, boundary_curves)
         DT.expand_bounds!(hierarchy, DT.ε)
         @test DT.get_bounding_boxes(hierarchy) ⊢ [DT.BoundingBox(-1 - 2DT.ε, 1 + 2DT.ε, -1 - 2DT.ε, 1 + 2DT.ε)] &&
-              DT.get_polygon_orientations(hierarchy) ⊢ BitVector([1])
+            DT.get_polygon_orientations(hierarchy) ⊢ BitVector([1])
         trees = DT.get_trees(hierarchy)
         @test length(trees) == 1
         tree = trees[1]
         @test DT.get_index(tree) == 1 && DT.get_height(tree) == 0 && !DT.has_parent(tree) && !DT.has_children(tree)
+
 
         points = deepcopy(points_V)
         boundary_nodes = deepcopy(curve_V)
@@ -364,6 +386,7 @@ for _ in 1:20 # Run many times to make sure the segfault is gone
         tree = trees[1]
         @test DT.get_index(tree) == 1 && DT.get_height(tree) == 0 && !DT.has_parent(tree) && !DT.has_children(tree)
 
+
         points = deepcopy(points_VI)
         boundary_nodes = deepcopy(curve_VI)
         boundary_curves, new_boundary_nodes = DT.convert_boundary_curves!(points, boundary_nodes, IntegerType)
@@ -373,6 +396,7 @@ for _ in 1:20 # Run many times to make sure the segfault is gone
         @test length(trees) == 1
         tree = trees[1]
         @test DT.get_index(tree) == 1 && DT.get_height(tree) == 0 && !DT.has_parent(tree) && !DT.has_children(tree)
+
 
         points = deepcopy(points_VII)
         boundary_nodes = deepcopy(curve_VII)
@@ -384,6 +408,7 @@ for _ in 1:20 # Run many times to make sure the segfault is gone
         tree = trees[1]
         @test DT.get_index(tree) == 1 && DT.get_height(tree) == 0 && !DT.has_parent(tree) && !DT.has_children(tree)
 
+
         points = deepcopy(points_VIII)
         boundary_nodes = deepcopy(curve_VIII)
         boundary_curves, new_boundary_nodes = DT.convert_boundary_curves!(points, boundary_nodes, IntegerType)
@@ -393,6 +418,7 @@ for _ in 1:20 # Run many times to make sure the segfault is gone
         @test length(trees) == 1
         tree = trees[1]
         @test DT.get_index(tree) == 1 && DT.get_height(tree) == 0 && !DT.has_parent(tree) && !DT.has_children(tree)
+
 
         points = deepcopy(points_IX)
         boundary_nodes = deepcopy(curve_IX)
@@ -406,6 +432,7 @@ for _ in 1:20 # Run many times to make sure the segfault is gone
         tree = first(DT.get_children(tree))
         @test DT.get_index(tree) == 2 && DT.get_height(tree) == 1 && DT.get_parent(tree) == trees[1] && !DT.has_children(tree)
 
+
         points = deepcopy(points_X)
         boundary_nodes = deepcopy(curve_X)
         boundary_curves, new_boundary_nodes = DT.convert_boundary_curves!(points, boundary_nodes, IntegerType)
@@ -417,6 +444,7 @@ for _ in 1:20 # Run many times to make sure the segfault is gone
         @test DT.get_index(tree) == 1 && DT.get_height(tree) == 0 && !DT.has_parent(tree) && DT.has_children(tree) && DT.num_children(tree) == 1
         tree = first(DT.get_children(tree))
         @test DT.get_index(tree) == 2 && DT.get_height(tree) == 1 && DT.get_parent(tree) == trees[1] && !DT.has_children(tree)
+
 
         points = deepcopy(points_XI)
         boundary_nodes = deepcopy(curve_XI)
@@ -438,6 +466,7 @@ for _ in 1:20 # Run many times to make sure the segfault is gone
         tree5 = first(DT.get_children(tree4))
         @test DT.get_index(tree5) == 5 && DT.get_height(tree5) == 3 && DT.get_parent(tree5) == tree4 && !DT.has_children(tree5)
     end
+
 
     @testset "Shared endpoint" begin
         points = [(-1.0, 0.0), (1.0, 0.0), (0.0, 1.0), (1.0, 2.0), (-1.0, 2.0)]

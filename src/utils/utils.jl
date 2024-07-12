@@ -34,10 +34,11 @@ Float64
 """
 number_type
 number_type(x) = number_type(typeof(x))
-number_type(::Type{T}) where {T<:AbstractArray} = number_type(eltype(T))
+number_type(::Type{T}) where {T <: AbstractArray} = number_type(eltype(T))
 number_type(x::Type{<:NTuple{N}}) where {N} = eltype(x)
 number_type(::Type{Tuple{}}) = Any
 number_type(::Type{T}) where {T} = T
+
 
 @doc """
     get_ghost_vertex(i, j, k) -> Vertex
@@ -77,6 +78,7 @@ function get_ghost_vertex(i, j)
     return j
 end
 
+
 @doc """
     is_true(b) -> Bool
 
@@ -104,6 +106,7 @@ is_true(b::Bool) = b
 is_true(b::Val{true}) = true
 is_true(b::Val{false}) = false
 
+
 """
     choose_uvw(e1, e2, e3, u, v, w) -> (Vertex, Vertex, Vertex)
 
@@ -120,6 +123,7 @@ function choose_uvw(e1, e2, e3, u, v, w)
     return (w, u, v)
 end
 
+
 """
     is_circular(A) -> Bool
 
@@ -127,18 +131,19 @@ Tests if `A` is circular, meaning that `A[begin] == A[end]`.
 """
 is_circular(A) = isempty(A) || (A[begin] == A[end])
 
+
 """
     circular_equality(A, B, by=isequal) -> Bool
 
 Compares the two circular vectors `A` and `B` for equality up to circular rotation, 
 using `by` to compare individual elements.
 """
-function circular_equality(A, B, by=isequal)
+function circular_equality(A, B, by = isequal)
     @assert is_circular(A) && is_circular(B) "A and B must be circular"
     length(A) ≠ length(B) && return false
     isempty(A) && return true # isempty(B) is true as well because of the previous assertion 
-    _A = @views A[begin:(end-1)]
-    _B = @views B[begin:(end-1)]
+    _A = @views A[begin:(end - 1)]
+    _B = @views B[begin:(end - 1)]
     same_idx = findfirst(by(_A[begin]), _B)
     same_idx === nothing && return false
     n = length(_A)
@@ -149,6 +154,7 @@ function circular_equality(A, B, by=isequal)
     end
     return true
 end
+
 
 """
     get_ordinal_suffix(i) -> String
@@ -201,6 +207,7 @@ function get_ordinal_suffix(i) # https://stackoverflow.com/a/13627586
     end
 end
 
+
 """
     nextindex_circular(C, i) -> Integer 
 
@@ -208,12 +215,14 @@ Returns the next index after `i` in the circular vector `C`.
 """
 nextindex_circular(C, i) = i == lastindex(C) ? firstindex(C) : i + 1
 
+
 """
     previndex_circular(C, i) -> Integer
 
 Returns the previous index before `i` in the circular vector `C`.
 """
 previndex_circular(C, i) = i == firstindex(C) ? lastindex(C) - 1 : i - 1
+
 
 """
     replace_boundary_triangle_with_ghost_triangle(tri::Triangulation, V) -> Triangle
@@ -230,6 +239,7 @@ function replace_boundary_triangle_with_ghost_triangle(tri::Triangulation, V)
     return construct_triangle(T, u, w, get_adjacent(tri, u, w))
 end
 
+
 """
     replace_ghost_triangle_with_boundary_triangle(tri::Triangulation, V) -> Triangle
 
@@ -240,6 +250,7 @@ function replace_ghost_triangle_with_boundary_triangle(tri::Triangulation, V)
     u, v, w = triangle_vertices(T) # w is the ghost triangle 
     return construct_triangle(triangle_type(tri), v, u, get_adjacent(tri, v, u))
 end
+
 
 @doc raw"""
     iterated_neighbourhood(tri::Triangulation, i, d) -> Set{Vertex}
@@ -283,6 +294,7 @@ function iterated_neighbourhood!(neighbours, tri, i, d)
     return neighbours
 end
 
+
 """
     get_area(tri::Triangulation) -> Number 
 
@@ -299,6 +311,7 @@ function get_area(tri::Triangulation)
     return A
 end
 
+
 """
     norm(p) -> Number 
 
@@ -309,6 +322,7 @@ function norm(p)
     return hypot(x, y)
 end
 
+
 """
     norm_sqr(p) -> Number
 
@@ -318,6 +332,7 @@ function norm_sqr(p)
     x, y = getxy(p)
     return x^2 + y^2
 end
+
 
 """
     dist(p, q) -> Number
@@ -331,6 +346,7 @@ function dist(p, q)
     return norm(vec)
 end
 
+
 """
     dist_sqr(p, q) -> Number
 
@@ -342,6 +358,7 @@ function dist_sqr(p, q)
     vec = (qx - px, qy - py)
     return norm_sqr(vec)
 end
+
 
 @doc """
     edge_length(tri::Triangulation, u, v) -> Number
@@ -356,6 +373,7 @@ function edge_length(tri::Triangulation, u, v)
 end
 edge_length(tri::Triangulation, e) = edge_length(tri, initial(e), terminal(e))
 
+
 @doc """
     edge_length_sqr(tri::Triangulation, u, v) -> Number
     edge_length_sqr(tri::Triangulation, e) -> Number
@@ -367,6 +385,7 @@ function edge_length_sqr(tri::Triangulation, u, v)
     return dist_sqr(p, q)
 end
 edge_length_sqr(tri::Triangulation, e) = edge_length_sqr(tri, initial(e), terminal(e))
+
 
 """
     midpoint(p, q) -> Number or NTuple{2, Number}
@@ -386,6 +405,7 @@ function midpoint(p, q)
     return (midpoint(px, qx), midpoint(py, qy))
 end
 
+
 """
     midpoint(tri::Triangulation, u, v) -> NTuple{2, Number}
     midpoint(tri::Triangulation, e) -> NTuple{2, Number}
@@ -398,6 +418,7 @@ function midpoint(tri::Triangulation, u, v)
 end
 midpoint(tri::Triangulation, e) = midpoint(tri, initial(e), terminal(e))
 
+
 """
     check_precision(x) -> Bool 
 
@@ -405,12 +426,14 @@ Returns `true` if `abs(x)` is less than or equal to `sqrt(eps(Float64))`.
 """
 check_precision(x) = abs(x) ≤ ε
 
+
 """
     check_absolute_precision(x, y) -> Bool
 
 Returns `true` if `abs(x - y)` is less than or equal to `sqrt(eps(Float64))`.
 """
 check_absolute_precision(x, y) = check_precision(x - y)
+
 
 """
     check_relative_precision(x, y) -> Bool
@@ -425,12 +448,14 @@ function check_relative_precision(x, y)
     return !iszero(x) && check_precision(abs(x - y) / x)
 end
 
+
 """
     check_ratio_precision(x, y) -> Bool 
 
 Returns `true` if `abs(x/y)` is bounded between `0.99` and `1.01`.
 """
 check_ratio_precision(x, y) = !iszero(y) && 0.99 < abs(x / y) < 1.01
+
 
 """
     get_boundary_chain(tri::Triangulation, i, j) -> Edges 
@@ -452,6 +477,7 @@ function get_boundary_chain(tri::Triangulation, i, j, ghost_vertex)
     return chain
 end
 
+
 """
     dist(tri::Triangulation, p) -> Number
 
@@ -472,6 +498,7 @@ function dist(tri::Triangulation, p)
         return distance_to_polygon(p, points, get_convex_hull_vertices(tri))
     end
 end
+
 
 """
     adjust_θ(θ₁, θ₂, positive) -> (Number, Number)
@@ -499,13 +526,14 @@ function adjust_θ(θ₁, θ₂, positive)
     end
 end
 
+
 """
     uniquetol(A::Vector{Float64}; tol=1e-12) -> Vector{Float64}
 
 Returns the unique elements of `A` up to tolerance `tol`. We say that two values `x` and `y` are within tolerance if `abs(u - v) ≤ M*tol`, where `M = maximum(abs.(A))`. It 
 is assumed that `A` is sorted - this is NOT checked.
 """
-function uniquetol(A::Vector{Float64}; tol=1e-12)
+function uniquetol(A::Vector{Float64}; tol = 1.0e-12)
     isempty(A) && return Float64[]
     M = max(abs(A[begin]), abs(A[end])) # assuming A is sorted
     intol = (x, y) -> abs(x - y) ≤ M * tol
@@ -519,69 +547,74 @@ function uniquetol(A::Vector{Float64}; tol=1e-12)
     return Auniq
 end
 
+
 """
     eval_fnc_at_het_tuple_element(f, tup, idx) 
 
 Evaluates `f(tup[idx])` in a type-stable way. If `idx > length(tup)`, then `f` is evaluated on the last element of `tup`.
 """
-@inline function eval_fnc_at_het_tuple_element(f::F, tup::T, idx) where {F,T}
+@inline function eval_fnc_at_het_tuple_element(f::F, tup::T, idx) where {F, T}
     return _eval_fnc_at_het_tuple_element(f, idx, tup...)
 end
-@inline function _eval_fnc_at_het_tuple_element(f::F, idx, el::E, tup...) where {F,E}
+@inline function _eval_fnc_at_het_tuple_element(f::F, idx, el::E, tup...) where {F, E}
     idx == 1 && return _eval_fnc_at_het_tuple_element(f, 1, el)
     return _eval_fnc_at_het_tuple_element(f, idx - 1, tup...)
 end
-@inline function _eval_fnc_at_het_tuple_element(f::F, idx, el::E) where {F,E}
+@inline function _eval_fnc_at_het_tuple_element(f::F, idx, el::E) where {F, E}
     return f(el)
 end
+
 
 """
     eval_fnc_at_het_tuple_two_elements(f, tup, idx1, idx2)
 
 Evaluates `f(tup[idx1], tup[idx2])` in a type-stable way. 
 """
-@inline function eval_fnc_at_het_tuple_two_elements(f::F, tup::T, idx1, idx2) where {F,T<:Tuple}
+@inline function eval_fnc_at_het_tuple_two_elements(f::F, tup::T, idx1, idx2) where {F, T <: Tuple}
     return _eval_fnc_at_het_tuple_two_elements(f, idx2, tup, idx1, tup...)
 end
-@inline function _eval_fnc_at_het_tuple_two_elements(f::F, idx2, next_tup::T, idx1, el::E, tup...) where {F,E,T<:Tuple}
+@inline function _eval_fnc_at_het_tuple_two_elements(f::F, idx2, next_tup::T, idx1, el::E, tup...) where {F, E, T <: Tuple}
     idx1 == 1 && return _eval_fnc_at_het_tuple_two_elements(f, idx2, next_tup, 1, el)
     return _eval_fnc_at_het_tuple_two_elements(f, idx2, next_tup, idx1 - 1, tup...)
 end
-@inline function _eval_fnc_at_het_tuple_two_elements(f::F, idx2, next_tup::T, idx1, el::E) where {F,E,T<:Tuple}
+@inline function _eval_fnc_at_het_tuple_two_elements(f::F, idx2, next_tup::T, idx1, el::E) where {F, E, T <: Tuple}
     return _eval_fnc_at_het_tuple_two_elements(f, idx2, el, next_tup...)
 end
-@inline function _eval_fnc_at_het_tuple_two_elements(f::F, idx2, el::E, el2::V, tup...) where {F,E,V}
+@inline function _eval_fnc_at_het_tuple_two_elements(f::F, idx2, el::E, el2::V, tup...) where {F, E, V}
     idx2 == 1 && return _eval_fnc_at_het_tuple_two_elements(f, 1, el, el2)
     return _eval_fnc_at_het_tuple_two_elements(f, idx2 - 1, el, tup...)
 end
-@inline function _eval_fnc_at_het_tuple_two_elements(f::F, idx2, el::E, el2::V) where {F,E,V}
+@inline function _eval_fnc_at_het_tuple_two_elements(f::F, idx2, el::E, el2::V) where {F, E, V}
     return f(el, el2)
 end
+
 
 """
     eval_fnc_at_het_tuple_element_with_arg(f, tup, arg, idx)
 
 Evaluates `f(tup[idx], arg...)` in a type-stable way. If `idx > length(tup)`, then `f` is evaluated on the last element of `tup`.
 """
-@inline function eval_fnc_at_het_tuple_element_with_arg(f::F, tup::T, arg, idx) where {F,T}
+@inline function eval_fnc_at_het_tuple_element_with_arg(f::F, tup::T, arg, idx) where {F, T}
     return _eval_fnc_at_het_tuple_element_with_arg(f, idx, arg, tup...)
 end
-@inline function _eval_fnc_at_het_tuple_element_with_arg(f::F, idx, arg, el::E, tup...) where {F,E}
+@inline function _eval_fnc_at_het_tuple_element_with_arg(f::F, idx, arg, el::E, tup...) where {F, E}
     idx == 1 && return _eval_fnc_at_het_tuple_element_with_arg(f, 1, arg, el)
     return _eval_fnc_at_het_tuple_element_with_arg(f, idx - 1, arg, tup...)
 end
-@inline function _eval_fnc_at_het_tuple_element_with_arg(f::F, idx, arg, el::E) where {F,E}
+@inline function _eval_fnc_at_het_tuple_element_with_arg(f::F, idx, arg, el::E) where {F, E}
     return f(el, arg...)
 end
+
 
 """
     eval_fnc_in_het_tuple(tup, arg, idx)
 
 Evaluates `tup[idx](arg...)` in a type-stable way. If `idx > length(tup)`, then `tup[end](arg...)` is evaluated.
 """
-@inline function eval_fnc_in_het_tuple(tup::T, arg::A, idx) where {T,A}
+@inline function eval_fnc_in_het_tuple(tup::T, arg::A, idx) where {T, A}
     return eval_fnc_at_het_tuple_element_with_arg(self_eval, tup, arg, idx)
 end
+
 
 """
     self_eval(f, args...)
@@ -589,6 +622,7 @@ end
 Evaluates `f(args...)`.
 """
 @inline self_eval(f, args...) = f(args...)
+
 
 """
     _to_val(v) -> Val 

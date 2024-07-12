@@ -14,9 +14,11 @@ using StableRNGs
 @struct_equal DT.RefinementConstraints
 @struct_equal DT.RefinementQueue
 
+
 const ppoints = rand(2, 50)
 const ptri = triangulate(ppoints) # p for placeholder 
 const pT = (1, 2, 3)
+
 
 @testset verbose = true "RefinementConstraints" begin
     @testset "Defaults" begin
@@ -33,11 +35,12 @@ const pT = (1, 2, 3)
         @test sprint(show, MIME"text/plain"(), constraints) == "RefinementConstraints\n   θₘᵢₙ°: 0.0\n   θₘₐₓ°: 180.0\n   Aₘᵢₙ: 0.0\n   Aₘₐₓ: Inf\n   ρₘₐₓ: Inf\n   max_points: ∞\n   θ_seditious°: 20.0\n   custom_constraint: $(constraints.custom_constraint)"
     end
 
+
     @testset "Setting some values" begin
-        constraints = DT.RefinementConstraints(min_area=1e-9, max_area=13.7, max_points=505, seditious_angle=60.0)
+        constraints = DT.RefinementConstraints(min_area = 1.0e-9, max_area = 13.7, max_points = 505, seditious_angle = 60.0)
         @test constraints.min_angle == 0.0
         @test constraints.max_angle == 180.0
-        @test constraints.min_area == 1e-9
+        @test constraints.min_area == 1.0e-9
         @test constraints.max_area == 13.7
         @test constraints.max_radius_edge_ratio == Inf
         @test constraints.max_points == 505
@@ -47,9 +50,10 @@ const pT = (1, 2, 3)
         @test !DT.has_max_angle_constraint(constraints)
     end
 
+
     @testset "Constraints and setting min_angle" begin
-        constraints = DT.RefinementConstraints(min_angle=30.0, custom_constraint=(tri, T) -> T == (1, 2, 3))
-        @inferred DT.RefinementConstraints(min_angle=30.0, custom_constraint=(tri, T) -> T == (1, 2, 3))
+        constraints = DT.RefinementConstraints(min_angle = 30.0, custom_constraint = (tri, T) -> T == (1, 2, 3))
+        @inferred DT.RefinementConstraints(min_angle = 30.0, custom_constraint = (tri, T) -> T == (1, 2, 3))
         @test constraints.min_angle == 30.0
         @test constraints.max_angle == 180.0
         @test constraints.min_area == 0.0
@@ -64,11 +68,12 @@ const pT = (1, 2, 3)
         @test !DT.has_max_angle_constraint(constraints)
     end
 
+
     @testset "Setting a maximum angle constraint and a non-30 min_angle" begin
-        constraints = DT.RefinementConstraints(max_angle=179.9, min_angle=27.59, min_area=1e-9)
+        constraints = DT.RefinementConstraints(max_angle = 179.9, min_angle = 27.59, min_area = 1.0e-9)
         @test constraints.min_angle == 27.59
         @test constraints.max_angle == 179.9
-        @test constraints.min_area == 1e-9
+        @test constraints.min_area == 1.0e-9
         @test constraints.max_area == Inf
         @test constraints.max_radius_edge_ratio == cscd(27.59) / 2
         @test constraints.max_points == typemax(Int)
@@ -80,20 +85,22 @@ const pT = (1, 2, 3)
     end
 end
 
+
 @testset verbose = true "RefinementQueue" begin
-    T = NTuple{3,Int}
-    E = NTuple{2,Int}
+    T = NTuple{3, Int}
+    E = NTuple{2, Int}
     F = Float64
 
+
     @testset "Initialisation" begin
-        queue1 = DT.RefinementQueue{T,E,F}()
+        queue1 = DT.RefinementQueue{T, E, F}()
         queue2 = DT.RefinementQueue(ptri)
         @inferred DT.RefinementQueue(ptri)
         for queue in (queue1, queue2)
-            @test queue.segments == DT.MaxPriorityQueue{E,F}()
-            @test typeof(queue.segments) == DT.MaxPriorityQueue{E,F}
-            @test queue.triangles == DT.MaxPriorityQueue{T,F}()
-            @test typeof(queue.triangles) == DT.MaxPriorityQueue{T,F}
+            @test queue.segments == DT.MaxPriorityQueue{E, F}()
+            @test typeof(queue.segments) == DT.MaxPriorityQueue{E, F}
+            @test queue.triangles == DT.MaxPriorityQueue{T, F}()
+            @test typeof(queue.triangles) == DT.MaxPriorityQueue{T, F}
             @test isempty(queue.segments)
             @test isempty(queue.triangles)
             @test !DT.has_segments(queue)
@@ -101,6 +108,7 @@ end
             @test isempty(queue)
         end
     end
+
 
     @testset "Pushing and popping segments" begin
         queue = DT.RefinementQueue(ptri)
@@ -119,16 +127,17 @@ end
         queue[(27, 25)] = 150.0
         queue[(17, 13)] = 23.5
         queue[(13, 17)] = 109.591
-        @test queue.segments == PriorityQueue(Base.Order.Reverse,
+        @test queue.segments == PriorityQueue(
+            Base.Order.Reverse,
             (1, 2) => 1.0,
             (5, 7) => 5.6,
             (10, 3) => 1.881,
             (11, 12) => 0.0,
             (27, 25) => 150.0,
-            (17, 13) => 109.591
+            (17, 13) => 109.591,
         )
         @test sprint(show, MIME"text/plain"(), queue) == "RefinementQueue\n   6 segments: DelaunayTriangulation.MaxPriorityQueue((27, 25) => 150.0, (17, 13) => 109.591, (5, 7) => 5.6, (10, 3) => 1.881, (1, 2) => 1.0, (11, 12) => 0.0)\n   0 triangles: DelaunayTriangulation.MaxPriorityQueue{Tuple{Int64, Int64, Int64}, Float64}()"
-        res = Pair{NTuple{2,Int},Float64}[]
+        res = Pair{NTuple{2, Int}, Float64}[]
         while DT.has_segments(queue)
             push!(res, DT.popfirst_segment!(queue))
         end
@@ -138,11 +147,12 @@ end
             (5, 7) => 5.6,
             (10, 3) => 1.881,
             (1, 2) => 1.0,
-            (11, 12) => 0.0
+            (11, 12) => 0.0,
         ]
         @test isempty(queue)
         @test !DT.has_segments(queue)
     end
+
 
     @testset "Pushing and popping triangles" begin
         queue = DT.RefinementQueue(ptri)
@@ -158,15 +168,16 @@ end
         queue[(7, 9, 5)] = 18.375
         queue[(10, 15, 20)] = 0.0
         queue[(10, 17, 21)] = 13818.5
-        @test queue.triangles == PriorityQueue(Base.Order.Reverse,
+        @test queue.triangles == PriorityQueue(
+            Base.Order.Reverse,
             (1, 2, 3) => 1.0,
             (5, 7, 9) => 18.375,
             (10, 3, 4) => 1.881,
             (10, 17, 21) => 13818.5,
-            (10, 15, 20) => 0.0
+            (10, 15, 20) => 0.0,
         )
         @test sprint(show, MIME"text/plain"(), queue) == "RefinementQueue\n   0 segments: DelaunayTriangulation.MaxPriorityQueue{Tuple{Int64, Int64}, Float64}()\n   5 triangles: DelaunayTriangulation.MaxPriorityQueue((10, 17, 21) => 13818.5, (5, 7, 9) => 18.375, (10, 3, 4) => 1.881, (1, 2, 3) => 1.0, (10, 15, 20) => 0.0)"
-        res = Pair{NTuple{3,Int},Float64}[]
+        res = Pair{NTuple{3, Int}, Float64}[]
         while DT.has_triangles(queue)
             push!(res, DT.popfirst_triangle!(queue))
         end
@@ -175,16 +186,17 @@ end
             (5, 7, 9) => 18.375,
             (10, 3, 4) => 1.881,
             (1, 2, 3) => 1.0,
-            (10, 15, 20) => 0.0
+            (10, 15, 20) => 0.0,
         ]
         @test isempty(queue)
         @test !DT.has_triangles(queue)
     end
 
+
     @testset "Pushing and popping both segments and triangles / haskey" begin
         queue = DT.RefinementQueue(ptri)
-        true_triangle_queue = PriorityQueue{NTuple{3,Int},Float64}(Base.Order.Reverse)
-        true_segment_queue = PriorityQueue{NTuple{2,Int},Float64}(Base.Order.Reverse)
+        true_triangle_queue = PriorityQueue{NTuple{3, Int}, Float64}(Base.Order.Reverse)
+        true_segment_queue = PriorityQueue{NTuple{2, Int}, Float64}(Base.Order.Reverse)
         for T in each_solid_triangle(ptri)
             _i, _j, _k = triangle_vertices(T)
             ρ = DT.triangle_radius_edge_ratio(get_point(ptri, T...)...)
@@ -225,10 +237,10 @@ end
         @test !isempty(queue)
         @test DT.has_segments(queue)
         @test DT.has_triangles(queue)
-        triangle_res = Pair{NTuple{3,Int},Float64}[]
-        segment_res = Pair{NTuple{2,Int},Float64}[]
-        true_triangle_res = Pair{NTuple{3,Int},Float64}[]
-        true_segment_res = Pair{NTuple{2,Int},Float64}[]
+        triangle_res = Pair{NTuple{3, Int}, Float64}[]
+        segment_res = Pair{NTuple{2, Int}, Float64}[]
+        true_triangle_res = Pair{NTuple{3, Int}, Float64}[]
+        true_segment_res = Pair{NTuple{2, Int}, Float64}[]
         for i in 1:length(true_triangle_queue)
             T, ρ = DT.popfirst_triangle!(queue)
             push!(triangle_res, DT.sort_triangle(T) => ρ)
@@ -251,10 +263,11 @@ end
     end
 end
 
+
 @testset verbose = true "InsertionEventHistory" begin
     @testset "Initialisation" begin
-        T = NTuple{3,Int}
-        E = NTuple{2,Int}
+        T = NTuple{3, Int}
+        E = NTuple{2, Int}
         F = Float64
         history = DT.InsertionEventHistory(ptri)
         @inferred DT.InsertionEventHistory(ptri)
@@ -267,9 +280,10 @@ end
         @test DT.triangle_type(history) == T
     end
 
+
     @testset "Mutating" begin
-        T = NTuple{3,Int}
-        E = NTuple{2,Int}
+        T = NTuple{3, Int}
+        E = NTuple{2, Int}
         F = Float64
         history = DT.InsertionEventHistory(ptri)
         @test !DT.has_segment_changes(history)
@@ -302,15 +316,16 @@ end
         @test history.deleted_triangles ⊢ Set{T}()
     end
 
+
     @testset verbose = true "Various operations" begin
         @testset "Adding some points inside" begin
             for _ in 1:10
                 points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
-                tri = triangulate(points; randomise=false)
+                tri = triangulate(points; randomise = false)
                 orig_tri = deepcopy(tri)
                 history = DT.InsertionEventHistory(tri)
                 x, y = 0.9, 0.9
-                add_point!(tri, (x, y), store_event_history=Val(true), event_history=history)
+                add_point!(tri, (x, y), store_event_history = Val(true), event_history = history)
                 @test DT.compare_triangle_collections(history.added_triangles, Set([(2, 3, 5), (5, 3, 4), (1, 5, 4), (1, 2, 5)]))
                 @test DT.compare_triangle_collections(history.deleted_triangles, Set([(1, 2, 3), (1, 3, 4)]))
                 @test !DT.has_segment_changes(history)
@@ -322,12 +337,12 @@ end
                 validate_insertion_event_history(tri, orig_tri, history)
                 DT.undo_insertion!(tri, history)
                 @test tri == orig_tri
-                add_point!(tri, (x, y), store_event_history=Val(true), event_history=history)
+                add_point!(tri, (x, y), store_event_history = Val(true), event_history = history)
                 orig_tri = deepcopy(tri)
                 new_points = [(0.5, 0.5), (0.2, 0.2), (0.5, 0.75), (0.236, 0.987)]
                 for (x, y) in new_points
                     empty!(history)
-                    add_point!(tri, (x, y), store_event_history=Val(true), event_history=history)
+                    add_point!(tri, (x, y), store_event_history = Val(true), event_history = history)
                     @test tri ≠ orig_tri # make sure == isn't lying for later 
                     validate_insertion_event_history(tri, orig_tri, history)
                     @test !DT.has_segment_changes(history)
@@ -335,14 +350,14 @@ end
                     validate_statistics(tri)
                     @test validate_triangulation(tri)
                     @test tri == orig_tri
-                    add_point!(tri, (x, y), store_event_history=Val(true), event_history=history)
+                    add_point!(tri, (x, y), store_event_history = Val(true), event_history = history)
                     orig_tri = deepcopy(tri)
                 end
-                @test tri == triangulate(points; randomise=false)
+                @test tri == triangulate(points; randomise = false)
                 new_points = [Tuple(rand(2)) for _ in 1:100]
                 for (x, y) in new_points
                     empty!(history)
-                    add_point!(tri, (x, y), store_event_history=Val(true), event_history=history)
+                    add_point!(tri, (x, y), store_event_history = Val(true), event_history = history)
                     @test tri ≠ orig_tri # make sure == isn't lying for later 
                     validate_insertion_event_history(tri, orig_tri, history)
                     @test !DT.has_segment_changes(history)
@@ -350,21 +365,22 @@ end
                     validate_statistics(tri)
                     @test validate_triangulation(tri)
                     @test tri == orig_tri
-                    add_point!(tri, (x, y), store_event_history=Val(true), event_history=history)
+                    add_point!(tri, (x, y), store_event_history = Val(true), event_history = history)
                     orig_tri = deepcopy(tri)
                 end
-                @test tri == triangulate(points; randomise=false)
+                @test tri == triangulate(points; randomise = false)
             end
         end
+
 
         @testset "Testing how add_point! handles segments" begin
             for _ in 1:10
                 points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.5, 0.0), (0.5, 1.0)]
-                tri = triangulate(points; segments=Set(((5, 6),)), randomise=false)
+                tri = triangulate(points; segments = Set(((5, 6),)), randomise = false)
                 orig_tri = deepcopy(tri)
                 history = DT.InsertionEventHistory(tri)
                 x, y = 0.5, 0.5
-                add_point!(tri, (x, y), store_event_history=Val(true), event_history=history)
+                add_point!(tri, (x, y), store_event_history = Val(true), event_history = history)
                 @test DT.compare_triangle_collections(history.added_triangles, Set([(1, 5, 7), (7, 5, 2), (7, 2, 3), (6, 7, 3), (4, 7, 6), (4, 1, 7)]))
                 @test DT.compare_triangle_collections(history.deleted_triangles, Set([(1, 5, 4), (5, 2, 3), (5, 3, 6), (4, 5, 6)]))
                 @test DT.compare_unoriented_edge_collections(history.added_segments, Set([(5, 7), (7, 6)]))
@@ -376,14 +392,14 @@ end
                 validate_insertion_event_history(tri, orig_tri, history)
                 DT.undo_insertion!(tri, history)
                 @test tri == orig_tri
-                add_point!(tri, (x, y), store_event_history=Val(true), event_history=history)
+                add_point!(tri, (x, y), store_event_history = Val(true), event_history = history)
                 orig_tri = deepcopy(tri)
                 new_points = LinRange(0.0001, 0.9999, 25) |> collect
                 setdiff!(new_points, 0.5)
                 x = 0.5
                 for y in new_points
                     empty!(history)
-                    add_point!(tri, x, y, store_event_history=Val(true), event_history=history)
+                    add_point!(tri, x, y, store_event_history = Val(true), event_history = history)
                     @test tri ≠ orig_tri # make sure == isn't lying for later
                     validate_insertion_event_history(tri, orig_tri, history)
                     @test DT.has_segment_changes(history)
@@ -391,20 +407,21 @@ end
                     @test tri == orig_tri
                     validate_statistics(tri)
                     @test validate_triangulation(tri)
-                    add_point!(tri, (x, y), store_event_history=Val(true), event_history=history)
+                    add_point!(tri, (x, y), store_event_history = Val(true), event_history = history)
                     orig_tri = deepcopy(tri)
                 end
             end
         end
 
+
         @testset "Testing how add_point! handles points on existing boundary segments" begin
             for _ in 1:10
                 points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
-                tri = triangulate(points; boundary_nodes=[1, 2, 3, 4, 1], randomise=false)
+                tri = triangulate(points; boundary_nodes = [1, 2, 3, 4, 1], randomise = false)
                 orig_tri = deepcopy(tri)
                 history = DT.InsertionEventHistory(tri)
                 x, y = 0.5, 0.0
-                add_point!(tri, (x, y), store_event_history=Val(true), event_history=history)
+                add_point!(tri, (x, y), store_event_history = Val(true), event_history = history)
                 @test validate_triangulation(tri)
                 @test DT.compare_triangle_collections(history.added_triangles, Set([(1, 5, 4), (5, 2, 3), (4, 5, 3), (5, 1, -1), (2, 5, -1)]))
                 @test DT.compare_triangle_collections(history.deleted_triangles, Set([(1, 2, 3), (1, 3, 4), (2, 1, -1)]))
@@ -419,7 +436,7 @@ end
                 validate_statistics(tri)
                 @test validate_triangulation(tri)
                 @test tri == orig_tri
-                add_point!(tri, (x, y), store_event_history=Val(true), event_history=history)
+                add_point!(tri, (x, y), store_event_history = Val(true), event_history = history)
                 orig_tri = deepcopy(tri)
                 new_points = LinRange(0.0001, 0.9999, 10) |> collect
                 setdiff!(new_points, 0.5)
@@ -427,7 +444,7 @@ end
                 for r in new_points
                     for p in ((r, 0.0), (1.0, r), (r, 1.0), (0.0, r))
                         empty!(history)
-                        add_point!(tri, p, store_event_history=Val(true), event_history=history)
+                        add_point!(tri, p, store_event_history = Val(true), event_history = history)
                         @test tri ≠ orig_tri # make sure == isn't lying for later
                         validate_insertion_event_history(tri, orig_tri, history)
                         @test DT.has_segment_changes(history)
@@ -439,22 +456,23 @@ end
                             @test validate_triangulation(tri)
                         end
                         @test tri == orig_tri
-                        add_point!(tri, p, store_event_history=Val(true), event_history=history)
+                        add_point!(tri, p, store_event_history = Val(true), event_history = history)
                         orig_tri = deepcopy(tri)
                     end
                 end
             end
         end
 
+
         @testset "Testing how add_point! handles points on existing boundary segments in a multiply-connected domain" begin
             for _ in 1:10
                 points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.3, 0.3), (0.7, 0.3), (0.5, 0.7)]
                 boundary_nodes = [[[1, 2], [2, 3], [3, 4], [4, 1]], [[5, 7], [7, 6], [6, 5]]]
-                tri = triangulate(points; boundary_nodes, randomise=false)
+                tri = triangulate(points; boundary_nodes, randomise = false)
                 orig_tri = deepcopy(tri)
                 history = DT.InsertionEventHistory(tri)
                 x, y = (0.5, 0.3)
-                add_point!(tri, (x, y), store_event_history=Val(true), event_history=history)
+                add_point!(tri, (x, y), store_event_history = Val(true), event_history = history)
                 @test validate_triangulation(tri)
                 @test DT.compare_triangle_collections(history.added_triangles, Set([(1, 8, 5), (1, 2, 8), (8, 2, 6), (8, 6, -7), (5, 8, -7)]))
                 @test DT.compare_triangle_collections(history.deleted_triangles, Set([(1, 6, 5), (1, 2, 6), (5, 6, -7)]))
@@ -469,7 +487,7 @@ end
                 validate_statistics(tri)
                 @test validate_triangulation(tri)
                 @test tri == orig_tri
-                add_point!(tri, (x, y), store_event_history=Val(true), event_history=history)
+                add_point!(tri, (x, y), store_event_history = Val(true), event_history = history)
                 orig_tri = deepcopy(tri)
                 new_points = LinRange(0.31, 0.69, 15) |> collect
                 @test validate_triangulation(tri)
@@ -477,7 +495,7 @@ end
                 for r in new_points
                     for p in ((r, 0.3), (r, 0.0))
                         empty!(history)
-                        add_point!(tri, p, store_event_history=Val(true), event_history=history)
+                        add_point!(tri, p, store_event_history = Val(true), event_history = history)
                         @test tri ≠ orig_tri # make sure == isn't lying for later
                         validate_insertion_event_history(tri, orig_tri, history)
                         @test DT.has_segment_changes(history)
@@ -487,17 +505,18 @@ end
                         validate_statistics(tri)
                         @test validate_triangulation(tri)
                         @test tri == orig_tri
-                        add_point!(tri, p, store_event_history=Val(true), event_history=history)
+                        add_point!(tri, p, store_event_history = Val(true), event_history = history)
                         orig_tri = deepcopy(tri)
                     end
                 end
             end
         end
 
+
         @testset "Testing how split_edge! is handled on non-segments" begin
             for _ in 1:10
                 points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.25, 0.25), (0.75, 0.75)]
-                tri = triangulate(points; randomise=false)
+                tri = triangulate(points; randomise = false)
                 orig_tri = deepcopy(tri)
                 history = DT.InsertionEventHistory(tri)
                 x, y = (0.5, 0.5)
@@ -543,10 +562,11 @@ end
             end
         end
 
+
         @testset "Testing how split_edge! is handled on segments" begin
             for _ in 1:10
                 points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
-                tri = triangulate(points; randomise=false, segments=Set([(1, 3)]))
+                tri = triangulate(points; randomise = false, segments = Set([(1, 3)]))
                 orig_tri = deepcopy(tri)
                 history = DT.InsertionEventHistory(tri)
                 x, y = (0.5, 0.5)
@@ -592,10 +612,11 @@ end
             end
         end
 
+
         @testset "Testing how split_edge! is handled on boundary segments" begin
             for _ in 1:10
                 points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
-                tri = triangulate(points; boundary_nodes=[1, 2, 3, 4, 1], randomise=false)
+                tri = triangulate(points; boundary_nodes = [1, 2, 3, 4, 1], randomise = false)
                 orig_tri = deepcopy(tri)
                 history = DT.InsertionEventHistory(tri)
                 x, y = (0.5, 0.0)
@@ -642,10 +663,11 @@ end
             end
         end
 
+
         @testset "Testing how flip_edge! is handled" begin
             for _ in 1:10
                 points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
-                tri = triangulate(points; randomise=false)
+                tri = triangulate(points; randomise = false)
                 orig_tri = deepcopy(tri)
                 history = DT.InsertionEventHistory(tri)
                 flip_edge!(tri, 1, 3, Val(true), history)
@@ -665,10 +687,11 @@ end
             end
         end
 
+
         @testset "Testing how complete_split_edge_and_legalise! is handled for non-segments" begin
             for _ in 1:100
                 points = [(0.01, 0.0), (0.99, 0.00027), (1.0, 1.00025), (0.0, 0.994)]
-                tri = triangulate(points; randomise=false)
+                tri = triangulate(points; randomise = false)
                 orig_tri = deepcopy(tri)
                 history = DT.InsertionEventHistory(tri)
                 push!(points, (0.5, 0.5))
@@ -712,14 +735,15 @@ end
                     DT.complete_split_edge_and_legalise!(tri, DT.num_points(tri) - 1, 3, DT.num_points(tri), Val(true), history)
                     orig_tri = deepcopy(tri)
                 end
-                @test tri == triangulate(points; randomise=false)
+                @test tri == triangulate(points; randomise = false)
             end
         end
+
 
         @testset "Testing how complete_split_edge_and_legalise! is handled for segments" begin
             for _ in 1:10
                 points = [(0.01, 0.0), (0.99, 0.00027), (1.0, 1.00025), (0.0, 0.994), (0.5, 0.1), (0.5, 0.9)]
-                tri = triangulate(points; randomise=false, segments=Set([(5, 6)]))
+                tri = triangulate(points; randomise = false, segments = Set([(5, 6)]))
                 orig_tri = deepcopy(tri)
                 history = DT.InsertionEventHistory(tri)
                 push!(points, (0.5, 0.5))
@@ -764,10 +788,11 @@ end
             end
         end
 
+
         @testset "Testing how complete_split_edge_and_legalise! is handled for boundary segments" begin
             for _ in 1:10
                 points = [(0.01, 0.0), (0.99, 0.00027), (1.0, 1.00025), (0.0, 0.994), (0.5, 0.1), (0.5, 0.9)]
-                tri = triangulate(points; randomise=false, boundary_nodes=[1, 2, 3, 4, 1])
+                tri = triangulate(points; randomise = false, boundary_nodes = [1, 2, 3, 4, 1])
                 orig_tri = deepcopy(tri)
                 history = DT.InsertionEventHistory(tri)
                 push!(points, (0.1, 0.0))
@@ -810,9 +835,10 @@ end
                     orig_tri = deepcopy(tri)
                 end
                 convex_hull!(tri)
-                @test tri == triangulate(points; randomise=false, boundary_nodes=tri.boundary_nodes)
+                @test tri == triangulate(points; randomise = false, boundary_nodes = tri.boundary_nodes)
             end
         end
+
 
         @testset "Testing delete_point!" begin
             for i in 1:2500
@@ -820,13 +846,14 @@ end
                 tri = triangulate(points)
                 orig_tri = deepcopy(tri)
                 history = DT.InsertionEventHistory(tri)
-                delete_point!(tri, 5, store_event_history=Val(true), event_history=history)
+                delete_point!(tri, 5, store_event_history = Val(true), event_history = history)
                 validate_insertion_event_history(tri, orig_tri, history)
                 DT.undo_insertion!(tri, history, Val(false))
                 validate_statistics(tri)
                 @test validate_triangulation(tri)
                 @test tri == orig_tri
             end
+
 
             for j in 1:250
                 rng = StableRNG(j)
@@ -840,7 +867,7 @@ end
                     end
                     orig_tri = deepcopy(tri)
                     history = DT.InsertionEventHistory(tri)
-                    delete_point!(tri, i, rng=rng, store_event_history=Val(true), event_history=history)
+                    delete_point!(tri, i, rng = rng, store_event_history = Val(true), event_history = history)
                     @test validate_triangulation(tri)
                     validate_insertion_event_history(tri, orig_tri, history)
                     DT.undo_insertion!(tri, history, Val(false))
@@ -850,6 +877,7 @@ end
         end
     end
 
+
     @testset "A smaller split_edge! example" begin
         p1 = (0.0, 0.0)
         p2 = (1.0, 0.0)
@@ -857,7 +885,7 @@ end
         p4 = (1.0, 1.0)
         pts = [p1, p2, p3, p4]
         rng = StableRNG(123)
-        tri = triangulate(pts; boundary_nodes=[1, 2, 4, 3, 1], rng, delete_ghosts=false)
+        tri = triangulate(pts; boundary_nodes = [1, 2, 4, 3, 1], rng, delete_ghosts = false)
         _tri = deepcopy(tri)
         push!(pts, (0.5, 0.5))
         events = DT.InsertionEventHistory(tri)
@@ -893,6 +921,7 @@ end
     end
 end
 
+
 @testset verbose = true "RefinementArguments" begin
     @testset "Defaults" begin
         tri = triangulate(rand(2, 50))
@@ -900,7 +929,7 @@ end
         @inferred DT.RefinementArguments(tri)
         @test args.constraints.min_angle == 30.0
         @test args.constraints.max_angle == 180.0
-        @test args.constraints.min_area == get_area(tri) / 1e9
+        @test args.constraints.min_area == get_area(tri) / 1.0e9
         @test args.constraints.max_area == Inf
         @test args.constraints.max_points == 1000^2
         @test args.constraints.seditious_angle == 20.0
@@ -916,11 +945,11 @@ end
         @test DT.has_ghost_triangles(tri)
         @test DT.has_boundary_nodes(tri) # convex hull 
         @test args.min_steiner_vertex == 51
-        segment_list = Set{NTuple{2,Int}}()
+        segment_list = Set{NTuple{2, Int}}()
         segment_vertices = Set{Int}()
-        for i in 1:(length(tri.convex_hull.vertices)-1)
+        for i in 1:(length(tri.convex_hull.vertices) - 1)
             u = tri.convex_hull.vertices[i]
-            v = tri.convex_hull.vertices[i+1]
+            v = tri.convex_hull.vertices[i + 1]
             push!(segment_list, (u, v))
             push!(segment_vertices, u, v)
             @test !DT.is_subsegment(args, (u, v)) && !DT.is_subsegment(args, (v, u))
@@ -934,21 +963,23 @@ end
         @test !args.concavity_protection
     end
 
+
     @testset "Setting values" begin
         tri = triangulate(rand(2, 50))
-        args = DT.RefinementArguments(tri;
-            min_angle=30.5,
-            max_angle=90.5,
-            min_area=0.2,
-            max_area=0.9,
-            max_points=573,
-            custom_constraint=(tri, T) -> T == (1, 2, 3),
-            use_circumcenter=true,
-            use_lens=false,
-            steiner_scale=0.95,
-            seditious_angle=25.3,
-            rng=StableRNG(123),
-            concavity_protection=true
+        args = DT.RefinementArguments(
+            tri;
+            min_angle = 30.5,
+            max_angle = 90.5,
+            min_area = 0.2,
+            max_area = 0.9,
+            max_points = 573,
+            custom_constraint = (tri, T) -> T == (1, 2, 3),
+            use_circumcenter = true,
+            use_lens = false,
+            steiner_scale = 0.95,
+            seditious_angle = 25.3,
+            rng = StableRNG(123),
+            concavity_protection = true,
         )
         @test args.constraints.min_angle == 30.5
         @test args.constraints.max_angle == 90.5
@@ -969,11 +1000,11 @@ end
         @test DT.has_ghost_triangles(tri)
         @test DT.has_boundary_nodes(tri) # convex hull
         @test args.min_steiner_vertex == 51
-        segment_list = Set{NTuple{2,Int}}()
+        segment_list = Set{NTuple{2, Int}}()
         segment_vertices = Set{Int}()
-        for i in 1:(length(tri.convex_hull.vertices)-1)
+        for i in 1:(length(tri.convex_hull.vertices) - 1)
             u = tri.convex_hull.vertices[i]
-            v = tri.convex_hull.vertices[i+1]
+            v = tri.convex_hull.vertices[i + 1]
             push!(segment_list, (u, v))
             push!(segment_vertices, u, v)
             @test !DT.is_subsegment(args, (u, v)) && !DT.is_subsegment(args, (v, u))
@@ -984,29 +1015,32 @@ end
         @test args.midpoint_split_list ⊢ Set{Int}()
         @test args.offcenter_split_list ⊢ Set{Int}()
         @test args.concavity_protection
-        @inferred DT.RefinementArguments(tri;
-            min_angle=30.5,
-            max_angle=90.5,
-            min_area=0.2,
-            max_area=0.9,
-            max_points=573,
-            custom_constraint=(tri, T) -> T == (1, 2, 3),
-            use_circumcenter=true,
-            use_lens=false,
-            steiner_scale=0.95,
-            rng=StableRNG(123),
-            concavity_protection=true
+        @inferred DT.RefinementArguments(
+            tri;
+            min_angle = 30.5,
+            max_angle = 90.5,
+            min_area = 0.2,
+            max_area = 0.9,
+            max_points = 573,
+            custom_constraint = (tri, T) -> T == (1, 2, 3),
+            use_circumcenter = true,
+            use_lens = false,
+            steiner_scale = 0.95,
+            rng = StableRNG(123),
+            concavity_protection = true,
         )
     end
 
+
     @testset "Adding ghost triangles" begin
         points = rand(2, 50)
-        tri = triangulate(points, delete_ghosts=true)
+        tri = triangulate(points, delete_ghosts = true)
         args = DT.RefinementArguments(tri)
         @test !args.had_ghosts
         @test DT.has_ghost_triangles(tri)
-        @test tri == triangulate(points, delete_ghosts=false, boundary_nodes=tri.convex_hull.vertices)
+        @test tri == triangulate(points, delete_ghosts = false, boundary_nodes = tri.convex_hull.vertices)
     end
+
 
     @testset "Checking free vertices" begin
         tri = triangulate(rand(2, 50))
@@ -1022,6 +1056,7 @@ end
         @test !DT.is_free(args, 101)
     end
 
+
     @testset "Checking midpoint and offcenter splits" begin
         tri = triangulate(rand(2, 50))
         args = DT.RefinementArguments(tri)
@@ -1033,9 +1068,10 @@ end
         @test DT.is_offcenter_split(args, 101)
     end
 
+
     @testset "Iteration" begin
         tri = triangulate([(rand(), rand()) for _ in 1:50])
-        args = DT.RefinementArguments(tri; max_points=55)
+        args = DT.RefinementArguments(tri; max_points = 55)
         DT.unlock_convex_hull!(tri) # if the random points later are added outside the domain, they don't always get added as a vertex
         @test !DT.keep_iterating(tri, args)
         args.queue[(1, 2, 3)] = 1.0
@@ -1067,14 +1103,16 @@ end
     end
 end
 
+
 @testset verbose = true "is_encroached/encroaches_upon" begin
     @testset "Testing if point is in diametral circle" begin
-        args1 = DT.RefinementArguments(ptri; use_lens=false)
-        @inferred DT.RefinementArguments(ptri; use_lens=false)
-        args2 = DT.RefinementArguments(ptri; use_lens=true, min_angle=45.0)
-        p = Vector{NTuple{2,Float64}}(undef, 7)
-        q = Vector{NTuple{2,Float64}}(undef, 7)
-        r = Vector{NTuple{2,Float64}}(undef, 7)
+        args1 = DT.RefinementArguments(ptri; use_lens = false)
+        @inferred DT.RefinementArguments(ptri; use_lens = false)
+        args2 = DT.RefinementArguments(ptri; use_lens = true, min_angle = 45.0)
+        p = Vector{NTuple{2, Float64}}(undef, 7)
+        q = Vector{NTuple{2, Float64}}(undef, 7)
+        r = Vector{NTuple{2, Float64}}(undef, 7)
+
 
         p[1], q[1], r[1] = (2.6, 1.63), (5.68, 1.37), (4.5, 4.63)
         p[2], q[2], r[2] = p[1], q[1], (4.18, 1.96)
@@ -1083,6 +1121,7 @@ end
         p[5], q[5], r[5] = p[4], q[4], (3.6, -1.25)
         p[6], q[6], r[6] = (2.0, 0.0), (4.0, 0.0), (4.0, 2.0)
         p[7], q[7], r[7] = (2.0, 0.0), (4.0, 2.0), (4.0, 0.0)
+
 
         certs = [
             DT.is_outside,
@@ -1093,6 +1132,7 @@ end
             DT.is_outside,
             DT.is_on,
         ]
+
 
         for (p, q, r, c) in zip(p, q, r, certs)
             @test c(DT.point_position_relative_to_diametral_circle(p, q, r))
@@ -1108,11 +1148,12 @@ end
         end
     end
 
+
     @testset "Testing if a point is in a diametral lens" begin
-        args = DT.RefinementArguments(ptri; use_lens=true, min_angle=30.0)
+        args = DT.RefinementArguments(ptri; use_lens = true, min_angle = 30.0)
         p = (-7.0, 4.0)
         q = (-2.0, 4.0)
-        points = Vector{Tuple{NTuple{2,Float64},Function}}(undef, 0)
+        points = Vector{Tuple{NTuple{2, Float64}, Function}}(undef, 0)
         push!(points, ((-5.5, 5.0), DT.is_inside))
         push!(points, ((-4.0, 4.5), DT.is_inside))
         push!(points, ((-5.0, 4.5), DT.is_inside))
@@ -1140,28 +1181,30 @@ end
             end
         end
 
+
         p, q = (-7.0, 4.0), (-2.0, 4.0)
         upper_circle, lower_circle, circle = compute_diametral_circle(p, q)
         points_in_diametral_circle, points_outside_diametral_circle = get_points_in_diametral_circle(p, q)
-        fig = Figure(fontsize=43)
-        ax = Axis(fig[1, 1], width=600, height=600, title="Diametral circle", titlealign=:left)
-        scatter!(ax, points_in_diametral_circle, markersize=4, color=:blue)
-        scatter!(ax, points_outside_diametral_circle, markersize=4, color=:red)
+        fig = Figure(fontsize = 43)
+        ax = Axis(fig[1, 1], width = 600, height = 600, title = "Diametral circle", titlealign = :left)
+        scatter!(ax, points_in_diametral_circle, markersize = 4, color = :blue)
+        scatter!(ax, points_outside_diametral_circle, markersize = 4, color = :red)
         #band!(ax, lower_circle, upper_circle, color=(:green, 0.4))
-        lines!(ax, circle, color=:black, linewidth=7)
-        lines!(ax, [p, q], color=:black, linewidth=7)
+        lines!(ax, circle, color = :black, linewidth = 7)
+        lines!(ax, [p, q], color = :black, linewidth = 7)
         xlims!(ax, -7.5, -1.5)
         ylims!(ax, 1, 7)
+
 
         for (i, lens_angle) in enumerate((45.0, 30.0, 20.0, 10.0))
             upper_lens, lower_lens, lens = compute_diametral_lens(p, q, lens_angle)
             points_in_diametral_lens, points_outside_diametral_lens = get_points_in_diametral_lens(p, q, lens_angle)
-            ax = Axis(fig[1, 1+i], width=600, height=600, title="Diametral lens (angle $(lens_angle)°)", titlealign=:left)
-            scatter!(ax, points_in_diametral_lens, markersize=4, color=:blue)
-            scatter!(ax, points_outside_diametral_lens, markersize=4, color=(:red, 0.1))
+            ax = Axis(fig[1, 1 + i], width = 600, height = 600, title = "Diametral lens (angle $(lens_angle)°)", titlealign = :left)
+            scatter!(ax, points_in_diametral_lens, markersize = 4, color = :blue)
+            scatter!(ax, points_outside_diametral_lens, markersize = 4, color = (:red, 0.1))
             #band!(ax, lower_lens, upper_lens, color=(:green, 0.4))
-            lines!(ax, lens, color=:black, linewidth=7)
-            lines!(ax, [p, q], color=:black, linewidth=7)
+            lines!(ax, lens, color = :black, linewidth = 7)
+            lines!(ax, [p, q], color = :black, linewidth = 7)
             xlims!(ax, -7.5, -1.5)
             ylims!(ax, 1, 7)
         end
@@ -1170,30 +1213,31 @@ end
         @test_reference "diametral_figures.png" fig
     end
 
+
     @testset "Testing if encroached edges are detected" begin
         _x, _y = complicated_geometry()
         x = _x
         y = _y
         boundary_nodes, points = convert_boundary_points_to_indices(x, y)
-        tri_1 = triangulate(points; boundary_nodes, delete_ghosts=false)
+        tri_1 = triangulate(points; boundary_nodes, delete_ghosts = false)
         boundary_nodes, points = convert_boundary_points_to_indices(x[1], y[1])
-        tri_2 = triangulate(points; boundary_nodes, delete_ghosts=false)
+        tri_2 = triangulate(points; boundary_nodes, delete_ghosts = false)
         boundary_nodes, points = convert_boundary_points_to_indices([0.0, 2.0, 2.0, 0.0, 0.0], [0.0, 0.0, 2.0, 2.0, 0.0])
-        tri_3 = triangulate(points; boundary_nodes, delete_ghosts=false)
+        tri_3 = triangulate(points; boundary_nodes, delete_ghosts = false)
         boundary_nodes, points = convert_boundary_points_to_indices(reverse(reverse.(x[2])), reverse(reverse.(y[2])))
-        tri_4 = triangulate(points; boundary_nodes, delete_ghosts=false)
+        tri_4 = triangulate(points; boundary_nodes, delete_ghosts = false)
         a, b = 0.0, 5.0
         c, d = 3.0, 7.0
         nx = 3
         ny = 3
-        tri_5 = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=false)
-        tri_6 = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true)
+        tri_5 = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts = false, single_boundary = false)
+        tri_6 = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts = false, single_boundary = true)
         @static if VERSION ≥ v"1.10"
             @inferred triangulate(rand(2, 250))
         end
         for (iii, tri) in enumerate((tri_1, tri_2, tri_3, tri_4, tri_5, tri_6))
             @info "Testing if encroached edges are detected. Run: $iii."
-            args = DT.RefinementArguments(tri; use_lens=false)
+            args = DT.RefinementArguments(tri; use_lens = false)
             in_dt_encroached_edges, not_in_dt_encroached_edges = slow_encroachment_test(tri)
             all_bn = DT.get_all_boundary_nodes(tri)
             for (e, (b, k)) in not_in_dt_encroached_edges
@@ -1212,6 +1256,7 @@ end
                 @test DT.is_encroached(tri, args, e) == b
             end
 
+
             in_dt_encroached_edges_lens_45, not_in_dt_encroached_edges_lens_45 = slow_encroachment_test_diametral_lens(tri, 45.0)
             in_dt_encroached_edges_lens_30, not_in_dt_encroached_edges_lens_30 = slow_encroachment_test_diametral_lens(tri, 30.0)
             in_dt_encroached_edges_lens_20, not_in_dt_encroached_edges_lens_20 = slow_encroachment_test_diametral_lens(tri, 20.0)
@@ -1219,7 +1264,7 @@ end
             all_bn = DT.get_all_boundary_nodes(tri)
             for (lens_angle, not_in_dt_encroached_edges) in zip((45.0, 30.0, 20.0, 10.0), (not_in_dt_encroached_edges_lens_45, not_in_dt_encroached_edges_lens_30, not_in_dt_encroached_edges_lens_20, not_in_dt_encroached_edges_lens_10))
                 @info "Testing encroached edge detection. lens angle: $lens_angle"
-                args = DT.RefinementArguments(tri; use_lens=true, min_angle=lens_angle)
+                args = DT.RefinementArguments(tri; use_lens = true, min_angle = lens_angle)
                 for (e, (b, k)) in not_in_dt_encroached_edges
                     if DT.initial(e) ∈ all_bn && DT.terminal(e) ∈ all_bn && !DT.contains_segment(tri, e) # e.g. if an edge crosses an interior
                         continue
@@ -1232,7 +1277,7 @@ end
                 end
             end
             for (lens_angle, in_dt_encroached_edges) in zip((45.0, 30.0, 20.0, 10.0), (in_dt_encroached_edges_lens_45, in_dt_encroached_edges_lens_30, in_dt_encroached_edges_lens_20, in_dt_encroached_edges_lens_10))
-                args = DT.RefinementArguments(tri; use_lens=true, min_angle=lens_angle)
+                args = DT.RefinementArguments(tri; use_lens = true, min_angle = lens_angle)
                 for (e, (b, k)) in in_dt_encroached_edges
                     if DT.initial(e) ∈ all_bn && DT.terminal(e) ∈ all_bn && !DT.contains_segment(tri, e)
                         continue
@@ -1249,12 +1294,14 @@ end
     end
 end
 
+
 @testset verbose = true "Subsegment splitting" begin
     @testset "balanced_power_of_two_ternary_split" begin
         x = [0.1992981, 2.9391, 0.0001, 0.891, 7.871, 10.59182, 63.0, 252.0, 0.1]
         nrst = DT.balanced_power_of_two_ternary_split.(x)
         @inferred DT.balanced_power_of_two_ternary_split(x[1])
         @test log2.(nrst) ≈ [-3, 0, -14, -1, 2, 2, 5, 7, -4]
+
 
         for _ in 1:1000
             ℓ = 2000rand()^2
@@ -1279,6 +1326,7 @@ end
         end
     end
 
+
     @testset "balanced_power_of_two_quarternary_split" begin
         for _ in 1:100000
             ℓ = 2000rand()^2
@@ -1302,6 +1350,7 @@ end
         end
     end
 
+
     @testset "Testing that ternary concentric shells are split in [1/3, 2/3]ℓ" begin
         for i in 1:500000
             p = 105randn(2)
@@ -1315,6 +1364,7 @@ end
         end
     end
 
+
     @testset "Testing that quarternary concentric shells are split in [1/4, 1/2]ℓ" begin
         for _ in 1:50000
             p = 105randn(2)
@@ -1325,10 +1375,11 @@ end
         end
     end
 
+
     @testset "segment_vertices_adjoin_other_segments_at_acute_angle/compute_split_position" begin
         for _ in 1:10
             points = [(-10.0, -10.0), (10.0, -10.0), (10.0, 10.0), (-10.0, 10.0), (0.05717272721, 0.00000001), (0.99988881, -0.000000998881)] # don't use (0, 1), else the split positions are all 1/2 since 1/2 is a power of 2 split
-            tri = triangulate(points; boundary_nodes=[1, 2, 3, 4, 1], segments=Set([(5, 6)]))
+            tri = triangulate(points; boundary_nodes = [1, 2, 3, 4, 1], segments = Set([(5, 6)]))
             args = DT.RefinementArguments(tri)
             e = (5, 6) # if e = (6, 5) instead, we would need to be sure that t3 below is replaced by 1 - t3, since we always compute relative to the least vertex. See the comment in compute_split_position.
             adde! = args -> push!(args.segment_list, e)
@@ -1381,10 +1432,12 @@ end
                 adde!(args)
             end
 
+
             # case 1: No adjoining segments 
             @test segadj(tri, e) == segadj(tri, DT.reverse_edge(e)) == (0, 0)
             @inferred segadj(tri, e)
             zero_test(tri, args, p, q, e, m1)
+
 
             # case 2: A single adjoining segment, but at an obtuse angle
             add_point!(tri, -0.2, 0.6)
@@ -1392,30 +1445,36 @@ end
             @test segadj(tri, e) == segadj(tri, DT.reverse_edge(e)) == (0, 0)
             zero_test(tri, args, p, q, e, m1_p)
 
+
             add_point!(tri, 1.4, 0.5)
             add_segment!(tri, 6, DT.num_points(tri))
             @test segadj(tri, e) == segadj(tri, DT.reverse_edge(e)) == (0, 0)
             zero_test(tri, args, p, q, e, m1_p)
+
 
             add_point!(tri, -0.6, 0.0)
             add_segment!(tri, 5, DT.num_points(tri))
             @test segadj(tri, e) == segadj(tri, DT.reverse_edge(e)) == (0, 0)
             zero_test(tri, args, p, q, e, m1_p)
 
+
             add_point!(tri, 1.4, 0.0)
             add_segment!(tri, 6, DT.num_points(tri))
             @test segadj(tri, e) == segadj(tri, DT.reverse_edge(e)) == (0, 0)
             zero_test(tri, args, p, q, e, m1_p)
+
 
             add_point!(tri, -0.1, -0.3)
             add_segment!(tri, 5, DT.num_points(tri))
             @test segadj(tri, e) == segadj(tri, DT.reverse_edge(e)) == (0, 0)
             zero_test(tri, args, p, q, e, m1_p)
 
+
             add_point!(tri, 1.2, -0.3)
             add_segment!(tri, 6, DT.num_points(tri))
             @test segadj(tri, e) == segadj(tri, DT.reverse_edge(e)) == (0, 0)
             zero_test(tri, args, p, q, e, m1_p)
+
 
             # case 3: A single adjoining segment at an acute angle taken from below the segment 
             orig_tri = deepcopy(tri)
@@ -1425,12 +1484,14 @@ end
             @test segadj(tri, e) == segadj(tri, DT.reverse_edge(e)) == (1, 5)
             one_test(tri, args, p, q, e, m2_p)
 
+
             tri = deepcopy(orig_tri)
             add_point!(tri, 0.5, -0.1)
             add_point!(orig_tri, 0.5, -0.1)
             add_segment!(tri, 6, DT.num_points(tri))
             @test segadj(tri, e) == segadj(tri, DT.reverse_edge(e)) == (1, 6)
             one_test(tri, args, p, q, e, m2_q)
+
 
             # case 4: A single adjoining segment at an acute angle taken from above the segment 
             tri = deepcopy(orig_tri)
@@ -1440,6 +1501,7 @@ end
             @test segadj(tri, e) == segadj(tri, DT.reverse_edge(e)) == (1, 5)
             one_test(tri, args, p, q, e, m2_p)
 
+
             tri = deepcopy(orig_tri)
             add_point!(tri, 0.6, 0.2)
             add_point!(orig_tri, 0.6, 0.2)
@@ -1447,10 +1509,12 @@ end
             @test segadj(tri, e) == segadj(tri, DT.reverse_edge(e)) == (1, 6)
             one_test(tri, args, p, q, e, m2_q)
 
+
             _points = [(0.0, 0.0), (9.0, 0.0), (9.0, 7.0)]
-            _tri = triangulate(_points; segments=Set([(1, 2), (1, 3)]))
+            _tri = triangulate(_points; segments = Set([(1, 2), (1, 3)]))
             @test DT.segment_vertices_adjoin_other_segments_at_acute_angle(_tri, (1, 2)) == (1, 1)
             @test DT.segment_vertices_adjoin_other_segments_at_acute_angle(_tri, (1, 3)) == (1, 1)
+
 
             # case 5: Two adjoining segments at an acute angle taken from above the segment from the same vertex
             tri = deepcopy(orig_tri)
@@ -1463,6 +1527,7 @@ end
             @test segadj(tri, e) == segadj(tri, DT.reverse_edge(e)) == (1, 5)
             one_test(tri, args, p, q, e, m2_p)
 
+
             # case 6: Two adjoining segments at an acute angle
             tri = deepcopy(orig_tri)
             add_point!(tri, 0.4, 0.1)
@@ -1474,6 +1539,7 @@ end
             @test segadj(tri, e) == segadj(tri, DT.reverse_edge(e)) == (2, 0)
             two_test(tri, args, p, q, e, m3_p)
 
+
             tri = deepcopy(orig_tri)
             add_point!(tri, 0.1, -0.5)
             add_point!(tri, 0.9, -0.6)
@@ -1483,6 +1549,7 @@ end
             add_segment!(tri, 6, DT.num_points(tri))
             @test segadj(tri, e) == segadj(tri, DT.reverse_edge(e)) == (2, 0)
             two_test(tri, args, p, q, e, m3_p)
+
 
             tri = deepcopy(orig_tri)
             add_point!(tri, 0.1, 0.7)
@@ -1494,6 +1561,7 @@ end
             @test segadj(tri, e) == segadj(tri, DT.reverse_edge(e)) == (2, 0)
             two_test(tri, args, p, q, e, m3_p)
 
+
             # case 7: Two adjoining segments at an an acute angle with the same shared vertex
             tri = deepcopy(orig_tri)
             add_point!(tri, 0.6, 0.4)
@@ -1504,24 +1572,27 @@ end
         end
     end
 
+
     @testset "split_subsegment" begin
         for _ in 1:10
             points = [(-2.0, -2.0), (2.0, -2.0), (2.0, 2.0), (-2.0, 2.0), (-1.1, 0.0), (1.1, 0.0)]
             orig_points = copy(points)
-            tri = triangulate(points; boundary_nodes=[1, 2, 3, 4, 1], segments=Set([(5, 6)]))
+            tri = triangulate(points; boundary_nodes = [1, 2, 3, 4, 1], segments = Set([(5, 6)]))
             orig_tri = deepcopy(tri)
             args = DT.RefinementArguments(tri)
             e = (5, 6)
 
+
             # just a normal split 
             @test DT.is_free(args, 7)
             DT.split_subsegment!(tri, args, e)
-            @test tri == triangulate([orig_points; (0.0, 0.0)]; boundary_nodes=[1, 2, 3, 4, 1], segments=Set([(5, 7), (7, 6)]))
+            @test tri == triangulate([orig_points; (0.0, 0.0)]; boundary_nodes = [1, 2, 3, 4, 1], segments = Set([(5, 7), (7, 6)]))
             @test DT.is_midpoint_split(args, 7)
             @test !DT.is_midpoint_split(args, 6) && !DT.is_midpoint_split(args, 5)
             @test get_point(tri, 7) == (0.0, 0.0)
             validate_insertion_event_history(tri, orig_tri, args.events)
             @test !DT.is_free(args, 7)
+
 
             # abutting segment next to segment on other straight line doesn't constitute a small angle
             @test DT.is_free(args, 8)
@@ -1532,10 +1603,11 @@ end
             orig_points = copy(orig_tri.points)
             DT.split_subsegment!(tri, args, (8, 7))
             @test !DT.is_free(args, 9)
-            @test tri == triangulate([orig_points; (-0.275, 0.0)]; boundary_nodes=[1, 2, 3, 4, 1], segments=Set([(8, 7), (7, 6), (5, 8)]))
+            @test tri == triangulate([orig_points; (-0.275, 0.0)]; boundary_nodes = [1, 2, 3, 4, 1], segments = Set([(8, 7), (7, 6), (5, 8)]))
             @test args.midpoint_split_list ⊢ Set([7, 8, 9])
             @test get_point(tri, 9) == (-0.275, 0.0)
             validate_insertion_event_history(tri, orig_tri, args.events)
+
 
             # now adding an adjoining segment not at a small angle
             @test DT.is_free(args, 10)
@@ -1552,13 +1624,14 @@ end
             @test !DT.is_free(args, 12)
             @test collect(get_point(tri, 11)) ≈ [-0.825, 0.0]
             @test collect(get_point(tri, 12)) ≈ [-0.4125, 0.0]
-            @test tri == triangulate([orig_points; get_point(tri, 12)]; boundary_nodes=[1, 2, 3, 4, 1], segments=Set([get_interior_segments(tri)..., (8, 9)]))
+            @test tri == triangulate([orig_points; get_point(tri, 12)]; boundary_nodes = [1, 2, 3, 4, 1], segments = Set([get_interior_segments(tri)..., (8, 9)]))
             @test args.midpoint_split_list ⊢ Set([7, 8, 9, 11, 12])
             validate_insertion_event_history(tri, orig_tri, args.events)
 
+
             # a small-input angle
             points = [(0.0, 0.0), (9.0, 0.0), (9.0, 7.0)]
-            tri = triangulate(points; segments=Set([(1, 2), (1, 3)]))
+            tri = triangulate(points; segments = Set([(1, 2), (1, 3)]))
             args = DT.RefinementArguments(tri)
             orig_tri = deepcopy(tri)
             orig_points = copy(orig_tri.points)
@@ -1598,14 +1671,15 @@ end
             @test !DT.encroaches_upon(get_point(tri, 1), get_point(tri, 8), get_point(tri, 9), args) # edges aligned on the same concentric circular shell should not encroach upon one another 
             @test !DT.encroaches_upon(get_point(tri, 1), get_point(tri, 9), get_point(tri, 8), args) # edges aligned on the same concentric circular shell should not encroach upon one another
             @test validate_triangulation(tri)
-            DT.unlock_convex_hull!(tri; reconstruct=true)
+            DT.unlock_convex_hull!(tri; reconstruct = true)
             @test validate_triangulation(tri)
+
 
             # a small-input angle: Same as above, but flipped along vertical axis 
             points = [(0.0, 0.0), (7.0, 0.0), (0.0, 7.0)]
-            tri = triangulate(points; segments=Set([(1, 2), (2, 3)]))
+            tri = triangulate(points; segments = Set([(1, 2), (2, 3)]))
             args = DT.RefinementArguments(tri)
-            unlock_convex_hull!(tri; reconstruct=true) # so that (1, 3) is not a segment
+            unlock_convex_hull!(tri; reconstruct = true) # so that (1, 3) is not a segment
             DT.split_subsegment!(tri, args, (2, 1))
             @test collect(get_point(tri, 4)) ≈ [3.5, 0.0] # midpoint 
             DT.split_subsegment!(tri, args, (1, 4))
@@ -1639,12 +1713,13 @@ end
             @test validate_triangulation(tri)
             @inferred get_point(tri, 5)
 
+
             # small-input angle with multiple adjoining segments at acute angles. there will still only ever be one adjoining acute segment for a given vertex, though.
             points = [(0.0, 0.0), (5.0, 7.0), (11.0, 4.0), (3.0, -1.0), (-12.0, -3.0)]
             segments = Set([(1, 2), (1, 3), (1, 4), (1, 5)]) # (1, 5) doesn't adjoin any at an acute angle 
             tri = triangulate(points; segments)
             args = DT.RefinementArguments(tri)
-            unlock_convex_hull!(tri; reconstruct=true)
+            unlock_convex_hull!(tri; reconstruct = true)
             DT.split_subsegment!(tri, args, (1, 2)) # -> 6
             DT.split_subsegment!(tri, args, (1, 3)) # -> 7
             DT.split_subsegment!(tri, args, (1, 4)) # -> 8
@@ -1671,6 +1746,7 @@ end
             @test norm(DT.get_point(tri, 16) .- get_point(tri, 1)) ≈ 2.0
             @test norm(DT.get_point(tri, 16) .- get_point(tri, 7)) ≈ 3.8523499553598124
             @inferred DT.split_subsegment!(tri, args, (1, 16))
+
 
             # small-input angle with adjoining segments at each vertex 
             for iii in 1:2
@@ -1710,6 +1786,7 @@ end
     end
 end
 
+
 if !USE_INEXACTPREDICATES
     @testset "enqueueing and splitting all encroached segments" begin
         for iii in 1:100
@@ -1722,7 +1799,7 @@ if !USE_INEXACTPREDICATES
                         p4 = (1.0, 1.0)
                         p5 = (0.5, 0.5)
                         pts = [p1, p2, p3, p4, p5]
-                        C = Set{NTuple{2,Int}}()
+                        C = Set{NTuple{2, Int}}()
                         for i in 1:15
                             θ = 2π * rand()
                             r = 0.5sqrt(rand())
@@ -1731,11 +1808,11 @@ if !USE_INEXACTPREDICATES
                             push!(pts, (x, y))
                             push!(C, (5, 5 + i))
                         end
-                        tri = triangulate(pts; delete_ghosts=false, boundary_nodes=[1, 2, 4, 3, 1], segments=C)
-                        args = DT.RefinementArguments(tri, use_lens=use_lens, min_angle=25.0, seditious_angle=15.0, max_area=0.1)
+                        tri = triangulate(pts; delete_ghosts = false, boundary_nodes = [1, 2, 4, 3, 1], segments = C)
+                        args = DT.RefinementArguments(tri, use_lens = use_lens, min_angle = 25.0, seditious_angle = 15.0, max_area = 0.1)
                         DT.enqueue_all_encroached_segments!(args, tri)
                         @inferred DT.enqueue_all_encroached_segments!(args, tri)
-                        manual_enqueue = PriorityQueue{NTuple{2,Int},Float64}(Base.Order.Reverse)
+                        manual_enqueue = PriorityQueue{NTuple{2, Int}, Float64}(Base.Order.Reverse)
                         for e in each_edge(tri)
                             if DT.contains_segment(tri, e...)
                                 flag = DT.is_encroached(tri, args, e)
@@ -1770,10 +1847,10 @@ if !USE_INEXACTPREDICATES
                         for _ in 1:10
                             push!(points, (rand(), rand()))
                         end
-                        tri = triangulate(points; boundary_nodes=[1, 2, 3, 4, 1])
-                        args = DT.RefinementArguments(tri, use_lens=use_lens, min_angle=29.0, seditious_angle=19.0, max_area=0.05)
+                        tri = triangulate(points; boundary_nodes = [1, 2, 3, 4, 1])
+                        args = DT.RefinementArguments(tri, use_lens = use_lens, min_angle = 29.0, seditious_angle = 19.0, max_area = 0.05)
                         DT.enqueue_all_encroached_segments!(args, tri)
-                        manual_enqueue = PriorityQueue{NTuple{2,Int},Float64}(Base.Order.Reverse)
+                        manual_enqueue = PriorityQueue{NTuple{2, Int}, Float64}(Base.Order.Reverse)
                         for e in each_edge(tri)
                             if DT.contains_segment(tri, e...)
                                 flag = DT.is_encroached(tri, args, e)
@@ -1804,9 +1881,10 @@ if !USE_INEXACTPREDICATES
     end
 end
 
+
 @testset "triangle assessment" begin
     @testset "is_triangle_nestled" begin
-        tri = triangulate_rectangle(0, 10, 0, 10, 6, 6, single_boundary=false)
+        tri = triangulate_rectangle(0, 10, 0, 10, 6, 6, single_boundary = false)
         segments = get_all_segments(tri)
         @inferred get_all_segments(tri)
         for T in each_solid_triangle(tri)
@@ -1828,6 +1906,7 @@ end
             end
         end
 
+
         points = [(8.0, 0.0), (2.0, 6.0), (2.0, 2.0)]
         segments = Set([(1, 2)])
         tri = triangulate(points; segments)
@@ -1837,12 +1916,14 @@ end
         add_segment!(tri, 1, 3)
         @test DT.is_triangle_nestled(tri, (1, 2, 3), idx) && DT.is_triangle_nestled(tri, (2, 3, 1), mod1(idx - 1, 3)) && DT.is_triangle_nestled(tri, (3, 1, 2), mod1(idx - 2, 3))
 
+
         points = [(0.0, 0.0), (2.0, 0.0), (10.0, 0.0), (1.0, 1.0), (8.0, 2.0), (0.0, 6.0), (10.0, 6.0)]
         segments = Set([(1, 2), (1, 5), (1, 4)])
         tri = triangulate(points; segments)
         T = (1, 4, 6)
         @test !DT.is_triangle_nestled(tri, T, 1) && !DT.is_triangle_nestled(tri, (4, 6, 1), 2) && !DT.is_triangle_nestled(tri, (6, 1, 4), 3)
     end
+
 
     @testset "is_triangle_seditious" begin
         for seditious_angle in (20.0, 0.0)
@@ -1871,11 +1952,12 @@ end
         end
     end
 
+
     @testset "assess_triangle_quality" begin
         points = [(0.0, 0.0), (2.0, 0.0), (10.0, 0.0), (1.0, 1.0), (8.0, 2.0), (0.0, 6.0), (10.0, 6.0)]
         segments = Set([(1, 2), (1, 5), (1, 4)])
         tri = triangulate(points; segments)
-        args = DT.RefinementArguments(tri; min_angle=15.0, min_area=3.01, max_area=10.0)
+        args = DT.RefinementArguments(tri; min_angle = 15.0, min_area = 3.01, max_area = 10.0)
         good_T, bad_T = slow_triangle_assess(tri, args)
         @test DT.contains_triangle((1, 4, 6), good_T)[2] # small angle, but area = 3 < min_area
         @test DT.contains_triangle((6, 4, 5), bad_T)[2] # large area 
@@ -1885,22 +1967,24 @@ end
         @test DT.contains_triangle((1, 5, 4), good_T)[2]
         @test DT.contains_triangle((1, 2, 5), good_T)[2]
 
+
         points = [(0.0, 0.0), (6.0, 0.0), (12.0, 0.0), (11.0, 3.0), (5.788590116313, 1.5787063953581)]
         segments = Set([(1, 2), (2, 3), (1, 5), (5, 4)])
         tri = triangulate(points; segments)
-        args = DT.RefinementArguments(tri, min_angle=31.0)
+        args = DT.RefinementArguments(tri, min_angle = 31.0)
         @test !DT.assess_triangle_quality(tri, args, (1, 2, 5))[2] # seditious 
         @test !DT.assess_triangle_quality(tri, args, (5, 2, 4))[2] # seditious 
         @test DT.assess_triangle_quality(tri, args, (4, 2, 3))[2] # small angle
         slow_triangle_assess(tri, args)
     end
 
+
     @testset "enqueue_all_bad_triangles!" begin
         for _ in 1:100
             points = [Tuple(rand(2)) for _ in 1:250]
             push!(points, (-1, -1), (2, -1), (2, 2), (-1, 2))
             tri = triangulate(points)
-            args = DT.RefinementArguments(tri; min_area=1e-8, max_area=1e-2, min_angle=28.5)
+            args = DT.RefinementArguments(tri; min_area = 1.0e-8, max_area = 1.0e-2, min_angle = 28.5)
             @test isempty(args.queue.triangles)
             DT.enqueue_all_bad_triangles!(args, tri)
             @test !isempty(args.queue.triangles)
@@ -1908,25 +1992,29 @@ end
             compare_triangle_queues(args, manual_queue)
         end
 
+
         points = [(0.0, 0.0), (2.0, 0.0), (10.0, 0.0), (1.0, 1.0), (8.0, 2.0), (0.0, 6.0), (10.0, 6.0)]
         segments = Set([(1, 2), (1, 5), (1, 4)])
         tri = triangulate(points; segments)
-        args = DT.RefinementArguments(tri; min_angle=15.0, min_area=3.01, max_area=10.0)
+        args = DT.RefinementArguments(tri; min_angle = 15.0, min_area = 3.01, max_area = 10.0)
         DT.enqueue_all_bad_triangles!(args, tri)
-        queue = PriorityQueue(Base.Order.Reverse,
+        queue = PriorityQueue(
+            Base.Order.Reverse,
             (6, 4, 5) => DT.triangle_radius_edge_ratio(get_point(tri, (6, 4, 5)...)...),
-            (6, 5, 7) => DT.triangle_radius_edge_ratio(get_point(tri, (6, 5, 7)...)...))
+            (6, 5, 7) => DT.triangle_radius_edge_ratio(get_point(tri, (6, 5, 7)...)...),
+        )
         compare_triangle_queues(args, queue)
     end
 end
+
 
 @testset "steiner_points with circumcenters" begin
     @testset "get_steiner_point" begin
         for _ in 1:10
             tri = triangulate(rand(2, 5000))
-            args = DT.RefinementArguments(tri, use_circumcenter=true)
-            good_results = Dict{NTuple{3,Int},NTuple{2,Float64}}()
-            bad_results = Dict{NTuple{3,Int},NTuple{2,Float64}}()
+            args = DT.RefinementArguments(tri, use_circumcenter = true)
+            good_results = Dict{NTuple{3, Int}, NTuple{2, Float64}}()
+            bad_results = Dict{NTuple{3, Int}, NTuple{2, Float64}}()
             for T in each_solid_triangle(tri)
                 flag, c = DT.get_steiner_point(tri, args, T)
                 DT.is_none(flag) && @test c == DT.triangle_circumcenter(get_point(tri, T...)...)
@@ -1941,11 +2029,12 @@ end
         end
     end
 
+
     @testset "locate_steiner_point" begin
         # random tests
         for _ in 1:10
             tri = triangulate(randn(2, 5000))
-            args = DT.RefinementArguments(tri, use_circumcenter=true)
+            args = DT.RefinementArguments(tri, use_circumcenter = true)
             for T in each_solid_triangle(tri)
                 flag, c = DT.get_steiner_point(tri, args, T)
                 V, loc_flag = DT.locate_steiner_point(tri, args, T, c)
@@ -1959,9 +2048,10 @@ end
             end
         end
 
+
         # circumcenter on hypotenuse
         tri = triangulate([(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)])
-        args = DT.RefinementArguments(tri, use_circumcenter=true)
+        args = DT.RefinementArguments(tri, use_circumcenter = true)
         c = (0.5, 0.5)
         for _ in 1:100
             for T in ((1, 2, 3), (2, 3, 1), (3, 1, 2))
@@ -1972,20 +2062,22 @@ end
         end
     end
 
+
     @testset "check_for_invisible_steiner_point" begin
         @testset "many triangles" begin
             for _ in 1:10
                 a, b, c, d, e, f, g, h, i, j, k, ℓ = (0.0, 0.0), (8.0, 0.0), (4.0, 0.0),
-                (8.0, 4.0), (8.0, 8.0), (4.0, 8.0), (0.0, 8.0),
-                (0.0, 4.0), (4.0, 6.0), (2.0, 4.0), (4.0, 2.0), (6.0, 4.0)
+                    (8.0, 4.0), (8.0, 8.0), (4.0, 8.0), (0.0, 8.0),
+                    (0.0, 4.0), (4.0, 6.0), (2.0, 4.0), (4.0, 2.0), (6.0, 4.0)
                 boundary_nodes, points = convert_boundary_points_to_indices([[[a, c, b, d, e, f, g, h, a]], [[i, ℓ, k, j, i]]])
                 m, n, o, p, q, r = (1.0, 7.0), (6.0, 7.0), (6.0, 3.0), (2.0, 3.0), (2.5, 2.5), (1.0, 1.0)
                 push!(points, m, n, o, p, q, r)
-                tri = triangulate(points; boundary_nodes=boundary_nodes)
-                args = DT.RefinementArguments(tri, use_circumcenter=true)
+                tri = triangulate(points; boundary_nodes = boundary_nodes)
+                args = DT.RefinementArguments(tri, use_circumcenter = true)
                 _to_T = ((p, q, r),) -> (findfirst(==(p), points), findfirst(==(q), points), findfirst(==(r), points))
                 _ls = T -> DT.locate_steiner_point(tri, args, _to_T(T), DT.triangle_circumcenter(get_point(tri, _to_T(T)...)...))
                 _check = (T, V, flag) -> DT.check_for_invisible_steiner_point(tri, V, _to_T(T), flag, DT.triangle_circumcenter(get_point(tri, _to_T(T)...)...))
+
 
                 T = (g, h, m)
                 V, flag = _ls(T)
@@ -1993,11 +2085,13 @@ end
                 c′, V′ = _check(T, V, flag)
                 @test V′ == _to_T(T) && c′ == DT.triangle_centroid(T...)
 
+
                 T = (g, m, f)
                 V, flag = _ls(T)
                 @test DT.is_outside(flag)
                 c′, V′ = _check(T, V, flag)
                 @test V′ == _to_T(T) && c′ == DT.triangle_centroid(T...)
+
 
                 T = (f, m, i)
                 V, flag = _ls(T)
@@ -2005,11 +2099,13 @@ end
                 c′, V′ = _check(T, V, flag)
                 @test c′ == DT.triangle_circumcenter(get_point(tri, _to_T(T)...)...) && V′ == _to_T(T)
 
+
                 T = (f, i, n)
                 V, flag = _ls(T)
                 @test DT.is_inside(flag) && DT.compare_triangles(V, _to_T((f, i, n)))
                 c′, V′ = _check(T, V, flag)
                 @test c′ == DT.triangle_circumcenter(get_point(tri, _to_T(T)...)...) && V′ == _to_T(T)
+
 
                 T = (j, h, p)
                 V, flag = _ls(T)
@@ -2017,11 +2113,13 @@ end
                 c′, V′ = _check(T, V, flag)
                 @test c′ == DT.triangle_circumcenter(get_point(tri, _to_T(T)...)...) && (V′ == _to_T(T) || V′ == _to_T((h, r, p)))
 
+
                 T = (q, k, j)
                 V, flag = _ls(T)
                 @test DT.is_outside(flag)
                 c′, V′ = _check(T, V, flag)
                 @test V′ == _to_T(T) && c′ == DT.triangle_centroid(T...)
+
 
                 T = (ℓ, k, o)
                 V, flag = _ls(T)
@@ -2029,17 +2127,20 @@ end
                 c′, V′ = _check(T, V, flag)
                 @test V′ == _to_T(T) && c′ == DT.triangle_centroid(T...)
 
+
                 T = (k, q, c)
                 V, flag = _ls(T)
                 @test DT.is_inside(flag) && DT.compare_triangles(V, _to_T((q, r, c)))
                 c′, V′ = _check(T, V, flag)
                 @test c′ == DT.triangle_circumcenter(get_point(tri, _to_T(T)...)...) && V′ == V
 
+
                 T = (d, o, b)
                 V, flag = _ls(T)
                 @test DT.is_inside(flag) && DT.compare_triangles(V, _to_T((d, o, b)))
                 c′, V′ = _check(T, V, flag)
                 @test c′ == DT.triangle_circumcenter(get_point(tri, _to_T(T)...)...) && V′ == V
+
 
                 T = (n, i, ℓ)
                 V, flag = _ls(T)
@@ -2049,11 +2150,12 @@ end
             end
         end
 
+
         @testset "triangle on boundary edge" begin
             for _ in 1:10
                 points = [(0.0, 0.0), (2.0, 0.0), (0.0, 2.0)]
-                tri = triangulate(points; boundary_nodes=[1, 2, 3, 1])
-                args = DT.RefinementArguments(tri, use_circumcenter=true)
+                tri = triangulate(points; boundary_nodes = [1, 2, 3, 1])
+                args = DT.RefinementArguments(tri, use_circumcenter = true)
                 flag, c = DT.get_steiner_point(tri, args, (1, 2, 3))
                 @inferred DT.get_steiner_point(tri, args, (1, 2, 3))
                 @test DT.is_none(flag) && c == DT.triangle_circumcenter(get_point(tri, 1, 2, 3)...)
@@ -2068,11 +2170,12 @@ end
             end
         end
 
+
         @testset "triangle on segment edge" begin
             for _ in 1:10
                 points = [(0.0, 0.0), (1.0, 0.0), (0.7, 0.7), (0.0, 1.0)]
-                tri = triangulate(points; boundary_nodes=[1, 2, 3, 4, 1], segments=Set([(2, 4)]))
-                args = DT.RefinementArguments(tri, use_circumcenter=true)
+                tri = triangulate(points; boundary_nodes = [1, 2, 3, 4, 1], segments = Set([(2, 4)]))
+                args = DT.RefinementArguments(tri, use_circumcenter = true)
                 T = (1, 2, 4)
                 flag, c = DT.get_steiner_point(tri, args, T)
                 @test DT.is_none(flag) && c == DT.triangle_circumcenter(get_point(tri, T...)...)
@@ -2082,6 +2185,7 @@ end
                 c′, V′ = DT.check_for_invisible_steiner_point(tri, V, T, flag, c)
                 @test c′ == (1 / 2, 1 / 2) && V′ == V
                 @test DT.get_init_for_steiner_point(tri, T) == DT.get_init_for_steiner_point(tri, (2, 4, 1)) == DT.get_init_for_steiner_point(tri, (4, 1, 2)) == 1
+
 
                 T = (2, 3, 4) # this triangle's circumcenter is blocked by a segment
                 flag, c = DT.get_steiner_point(tri, args, T)
@@ -2095,19 +2199,22 @@ end
         end
     end
 
+
     @testset "split_triangle! / assess_added_triangles!" begin
         for _ in 1:10
             points = [(0.0, 0.0), (0.0, 8.0), (10.0, 8.0), (8.0, 0.0), (4.0, 6.0), (4.5, 5.0), (5.0, 8.0)]
             tri = triangulate(points)
-            args = DT.RefinementArguments(tri, use_circumcenter=true)
+            args = DT.RefinementArguments(tri, use_circumcenter = true)
             orig_tri = deepcopy(tri)
             orig_points = deepcopy(points)
+
 
             flag = DT.split_triangle!(tri, args, (2, 1, 5))
             @test tri == orig_tri
             @test DT.is_encroachment_failure(flag)
             segments = args.queue.segments
             @test length(segments) == 1 && segments[(2, 1)] == 8.0^2
+
 
             flag = DT.split_triangle!(tri, args, (2, 5, 7))
             @test DT.is_successful_insertion(flag)
@@ -2120,15 +2227,17 @@ end
             DT.assess_added_triangles!(args, tri)
             @test length(args.queue.triangles) == 1 && args.queue[(8, 2, 5)] == DT.triangle_radius_edge_ratio(get_point(tri, (8, 2, 5)...)...)
 
+
             flag = DT.split_triangle!(tri, args, (6, 1, 4))
             @test tri == orig_tri
             @test DT.is_encroachment_failure(flag)
             segments = args.queue.segments
             @test length(segments) == 2 && segments[(1, 4)] == 8.0^2
 
+
             points = [(0.0, 0.0), (0.0, 8.0), (10.0, 8.0), (8.0, 0.0), (4.0, 6.0), (4.0, 1.0), (5.0, 8.0)]
             tri = triangulate(points)
-            args = DT.RefinementArguments(tri, use_circumcenter=true)
+            args = DT.RefinementArguments(tri, use_circumcenter = true)
             orig_tri = deepcopy(tri)
             orig_points = deepcopy(points)
             flag = DT.split_triangle!(tri, args, (6, 1, 4))
@@ -2136,11 +2245,12 @@ end
             @test length(args.queue.segments) == 1 && args.queue.segments[(1, 4)] == 8.0^2
             @test tri == orig_tri
 
+
             points = [(0.0, 0.0), (0.0, 8.0), (10.0, 8.0), (8.0, 0.0), (4.0, 6.0), (4.0, 4.0), (5.0, 8.0)] # circumcenter is on the boundary edge
             tri = triangulate(points)
             orig_tri = deepcopy(tri)
             orig_points = deepcopy(points)
-            args = DT.RefinementArguments(tri, use_circumcenter=true)
+            args = DT.RefinementArguments(tri, use_circumcenter = true)
             unlock_convex_hull!(tri) # don't want to deal with EncroachmentFailure proper, only if it's outside of the domain
             flag = DT.split_triangle!(tri, args, (6, 1, 4))
             @test DT.is_successful_insertion(flag)
@@ -2150,9 +2260,10 @@ end
         end
     end
 
+
     @testset "check_for_steiner_point_on_segment" begin
         points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
-        tri = triangulate(points; randomise=false)
+        tri = triangulate(points; randomise = false)
         push!(points, (1 / 2, 1 / 2))
         V = (1, 2, 3)
         V′ = (1, 2, 3)
@@ -2173,6 +2284,7 @@ end
     end
 end
 
+
 @testset "finalise!" begin
     tri = triangulate(rand(2, 50))
     args = DT.RefinementArguments(tri)
@@ -2182,13 +2294,15 @@ end
     @test !DT.has_boundary_nodes(tri)
     @test DT.has_ghost_triangles(tri)
 
-    tri = triangulate_rectangle(0, 1, 0, 1, 5, 5, delete_ghosts=true)
+
+    tri = triangulate_rectangle(0, 1, 0, 1, 5, 5, delete_ghosts = true)
     args = DT.RefinementArguments(tri)
     @test DT.has_boundary_nodes(tri)
     @test DT.has_ghost_triangles(tri)
     DT.finalise!(tri, args)
     @test DT.has_boundary_nodes(tri)
     @test !DT.has_ghost_triangles(tri)
+
 
     tri = triangulate_rectangle(0, 1, 0, 1, 5, 5)
     args = DT.RefinementArguments(tri)
@@ -2198,7 +2312,8 @@ end
     @test DT.has_boundary_nodes(tri)
     @test DT.has_ghost_triangles(tri)
 
-    tri = triangulate(rand(2, 50), delete_ghosts=true)
+
+    tri = triangulate(rand(2, 50), delete_ghosts = true)
     args = DT.RefinementArguments(tri)
     @test DT.has_boundary_nodes(tri)
     @test DT.has_ghost_triangles(tri)
@@ -2206,6 +2321,7 @@ end
     @test !DT.has_boundary_nodes(tri)
     @test !DT.has_ghost_triangles(tri)
 end
+
 
 @testset "chew's second algorithm - deleting free vertices from diametral circle" begin
     points = [(0.0, 0.00000006667778), (10.0, 0.0), (10.0, 5.077777777), (0.0000209991, 5.0001991949), (2.0, 3.0), (8.0, 3.0)]
@@ -2216,19 +2332,20 @@ end
     for p in [(4.0, 2.0), (5.0, 2.5), (3.0, 3.5), (5.0, 4.5), (6.5, 3.5), (7.0, 4.0), (6.5, 1.5), (4.0, 3.5)]
         add_point!(tri, p)
     end
-    fig = Figure(fontsize=33)
-    ax = Axis(fig[1, 1], width=600, height=400)
+    fig = Figure(fontsize = 33)
+    ax = Axis(fig[1, 1], width = 600, height = 400)
     _, _, C = compute_diametral_circle(get_point(tri, 5, 6)...)
     triplot!(ax, tri)
-    lines!(ax, C, color=:red)
+    lines!(ax, C, color = :red)
     DT.split_subsegment!(tri, args, (5, 6))
-    ax = Axis(fig[1, 2], width=600, height=400)
+    ax = Axis(fig[1, 2], width = 600, height = 400)
     triplot!(ax, tri)
-    lines!(ax, C, color=:red)
+    lines!(ax, C, color = :red)
     resize_to_layout!(fig)
     fig
     @test_reference "delete_free_vertices_around_subsegment.png" fig
     @test validate_triangulation(tri)
+
 
     points = [(0.0, 0.0), (10.0, 0.0), (10.0, 5.0), (0.0, 5.0), (2.0, 3.0), (8.0, 3.0), (3.5, 4.0), (9.0, 3.5)]
     boundary_nodes = [1, 2, 3, 4, 1]
@@ -2238,42 +2355,44 @@ end
     for p in [(4.0, 2.0), (5.0, 2.5), (3.0, 3.5), (5.0, 4.5), (6.5, 3.5), (7.0, 4.0), (6.5, 1.5), (4.0, 3.5)]
         add_point!(tri, p)
     end
-    fig = Figure(fontsize=33)
-    ax = Axis(fig[1, 1], width=600, height=400)
+    fig = Figure(fontsize = 33)
+    ax = Axis(fig[1, 1], width = 600, height = 400)
     _, _, C = compute_diametral_circle(get_point(tri, 5, 6)...)
     triplot!(ax, tri)
-    lines!(ax, C, color=:red)
+    lines!(ax, C, color = :red)
     DT.split_subsegment!(tri, args, (5, 6))
-    ax = Axis(fig[1, 2], width=600, height=400)
+    ax = Axis(fig[1, 2], width = 600, height = 400)
     triplot!(ax, tri)
-    lines!(ax, C, color=:red)
+    lines!(ax, C, color = :red)
     resize_to_layout!(fig)
     fig
     @test_reference "delete_free_vertices_around_subsegment2.png" fig
 end
 
+
 @testset verbose = true "refinement testing with circumcenters" begin
     _rng_num(idx1, idx2, idx3, idx4, idx5) = 2^idx1 * 3^idx2 * 5^idx3 * 7^idx4 * 11^idx5
+
 
     @testset "A simple convex example" begin
         for (idx1, use_lens) in enumerate((false, true))
             for (idx2, min_angle) in enumerate((20.0, 27.5, 30.0))
-                for (idx3, min_area) in enumerate((1e-12,))
-                    for (idx4, max_area) in enumerate((1e-1, 1e-2))
+                for (idx3, min_area) in enumerate((1.0e-12,))
+                    for (idx4, max_area) in enumerate((1.0e-1, 1.0e-2))
                         for (idx5, seditious_angle) in enumerate((10.0, 20.0))
                             @info "Testing refinement of a simple convex example. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle."
                             rng = StableRNG(_rng_num(idx1, idx2, idx3, idx4, idx5))
                             points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
-                            tri = triangulate(points; boundary_nodes=[1, 2, 3, 4, 1], rng)
+                            tri = triangulate(points; boundary_nodes = [1, 2, 3, 4, 1], rng)
                             custom_constraint = (_tri, T) -> begin
                                 i, j, k = triangle_vertices(T)
                                 p, q, r = get_point(_tri, i, j, k)
                                 c = (p .+ q .+ r) ./ 3
                                 y = gety(c)
-                                return y < 1 / 2 && DT.triangle_area(p, q, r) > 1e-3
+                                return y < 1 / 2 && DT.triangle_area(p, q, r) > 1.0e-3
                             end
-                            refine!(tri; min_angle, min_area, max_area, custom_constraint, seditious_angle, use_circumcenter=true, use_lens, rng)
-                            args = DT.RefinementArguments(tri; min_angle, min_area, max_area, seditious_angle, custom_constraint, use_circumcenter=true, use_lens)
+                            refine!(tri; min_angle, min_area, max_area, custom_constraint, seditious_angle, use_circumcenter = true, use_lens, rng)
+                            args = DT.RefinementArguments(tri; min_angle, min_area, max_area, seditious_angle, custom_constraint, use_circumcenter = true, use_lens)
                             @test validate_refinement(tri, args)
                             if _rng_num(idx1, idx2, idx3, idx4, idx5) == _rng_num(1, 3, 1, 2, 2)
                                 fig, ax, sc = triplot(tri)
@@ -2289,20 +2408,23 @@ end
         end
     end
 
+
     @testset "Triangulation with a hole" begin
         for (idx1, use_lens) in enumerate((false, true))
             for (idx2, min_angle) in enumerate((12.9, 27.5, 30.0))
-                for (idx3, min_area) in enumerate((1e-12,))
-                    for (idx4, max_area) in enumerate((1e-2, 1e-3, 1e-4))
+                for (idx3, min_area) in enumerate((1.0e-12,))
+                    for (idx4, max_area) in enumerate((1.0e-2, 1.0e-3, 1.0e-4))
                         for (idx5, seditious_angle) in enumerate((20.0, 40.0))
                             @info "Testing refinement of a triangulation with a hole. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle."
                             rng = StableRNG(_rng_num(idx1, idx2, idx3, idx4, idx5))
-                            points = [(0.0, 0.0), (0.5, 0.1), (1.0, 0.0), (0.9, 0.5), (1.0, 1.0), (0.5, 0.9), (0.0, 1.0),
-                                (0.3, 0.3), (0.7, 0.3), (0.7, 0.7), (0.3, 0.7)]
+                            points = [
+                                (0.0, 0.0), (0.5, 0.1), (1.0, 0.0), (0.9, 0.5), (1.0, 1.0), (0.5, 0.9), (0.0, 1.0),
+                                (0.3, 0.3), (0.7, 0.3), (0.7, 0.7), (0.3, 0.7),
+                            ]
                             boundary_nodes = [[[1, 2, 3, 4, 5, 6, 7, 1]], [[11, 10, 9, 8, 11]]]
                             tri = triangulate(points; boundary_nodes, rng)
-                            refine!(tri; min_angle, min_area, max_area, use_circumcenter=true, use_lens, rng, seditious_angle)
-                            @test validate_refinement(tri, DT.RefinementArguments(tri; min_angle, min_area, seditious_angle, max_area, use_circumcenter=true, use_lens))
+                            refine!(tri; min_angle, min_area, max_area, use_circumcenter = true, use_lens, rng, seditious_angle)
+                            @test validate_refinement(tri, DT.RefinementArguments(tri; min_angle, min_area, seditious_angle, max_area, use_circumcenter = true, use_lens))
                             if _rng_num(idx1, idx2, idx3, idx4, idx5) == _rng_num(1, 3, 1, 3, 1)
                                 fig, ax, sc = triplot(tri)
                                 @test_reference "triangulation_with_a_hole_circle.png" fig by = psnr_equality(15)
@@ -2317,15 +2439,17 @@ end
         end
     end
 
+
     @testset "A very non-convex example" begin
         for (idx1, use_lens) in enumerate((false, true))
             for (idx2, min_angle) in enumerate((12.9, 15.8, 30.0))
-                for (idx3, min_area) in enumerate((1e-12,))
-                    for (idx4, max_area) in enumerate((1e-1, 1e-3, 1e-4))
+                for (idx3, min_area) in enumerate((1.0e-12,))
+                    for (idx4, max_area) in enumerate((1.0e-1, 1.0e-3, 1.0e-4))
                         for (idx5, seditious_angle) in enumerate((10.0, 20.0, 60.0))
                             @info "Testing refinement of a very non-convex example. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle."
                             rng = StableRNG(_rng_num(idx1, idx2, idx3, idx4, idx5))
-                            points = [(0.0, 0.0), (0.0, 1.0), (0.1, 1.0),
+                            points = [
+                                (0.0, 0.0), (0.0, 1.0), (0.1, 1.0),
                                 (0.1, 0.1), (0.2, 0.1), (0.2, 1.0),
                                 (0.3, 1.0), (0.3, 0.0), (0.4, 0.0),
                                 (0.4, 0.9), (0.5, 0.9), (0.5, 0.1),
@@ -2333,11 +2457,12 @@ end
                                 (0.7, 0.1), (0.8, 0.1), (0.8, 0.9),
                                 (0.9, 0.9), (0.9, 0.1), (0.9, 0.0),
                                 (1.0, 0.0), (1.0, -0.1), (0.0, -0.1),
-                                (0.0, 0.0)] |> reverse!
+                                (0.0, 0.0),
+                            ] |> reverse!
                             boundary_nodes, points = convert_boundary_points_to_indices(points)
                             tri = triangulate(points; boundary_nodes, rng)
-                            refine!(tri; min_angle, min_area, max_area, use_circumcenter=true, use_lens, seditious_angle, rng)
-                            @test validate_refinement(tri; min_angle, min_area, max_area, seditious_angle, use_circumcenter=true, use_lens, check_conformal=false)
+                            refine!(tri; min_angle, min_area, max_area, use_circumcenter = true, use_lens, seditious_angle, rng)
+                            @test validate_refinement(tri; min_angle, min_area, max_area, seditious_angle, use_circumcenter = true, use_lens, check_conformal = false)
                             if _rng_num(idx1, idx2, idx3, idx4, idx5) == _rng_num(1, 3, 1, 3, 2)
                                 fig, ax, sc = triplot(tri)
                                 @test_reference "a_very_non_convex_example_circle.png" fig
@@ -2352,27 +2477,32 @@ end
         end
     end
 
+
     @testset "A constrained triangulation with multiple holes" begin
         for (idx1, use_lens) in enumerate((false, true))
             for (idx2, min_angle) in enumerate((12.9, 15.8, 30.0))
-                for (idx3, min_area) in enumerate((1e-12,))
-                    for (idx4, max_area) in enumerate((1e-2, 1e-3, 1e-4))
+                for (idx3, min_area) in enumerate((1.0e-12,))
+                    for (idx4, max_area) in enumerate((1.0e-2, 1.0e-3, 1.0e-4))
                         for (idx5, seditious_angle) in enumerate((20.0, 40.0))
                             @info "Testing refinement of a triangulation with multiple holes. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle."
                             rng = StableRNG(_rng_num(idx1, idx2, idx3, idx4, idx5))
-                            curve_1 = [[
-                                (0.0, 0.0), (4.0, 0.0), (8.0, 0.0), (12.0, 0.0), (12.0, 4.0),
-                                (12.0, 8.0), (14.0, 10.0), (16.0, 12.0), (16.0, 16.0),
-                                (14.0, 18.0), (12.0, 20.0), (12.0, 24.0), (12.0, 28.0),
-                                (8.0, 28.0), (4.0, 28.0), (0.0, 28.0), (-2.0, 26.0), (0.0, 22.0),
-                                (0.0, 18.0), (0.0, 10.0), (0.0, 8.0), (0.0, 4.0), (-4.0, 4.0),
-                                (-4.0, 0.0), (0.0, 0.0),
-                            ]]
-                            curve_2 = [[
-                                (4.0, 26.0), (8.0, 26.0), (10.0, 26.0), (10.0, 24.0),
-                                (10.0, 22.0), (10.0, 20.0), (8.0, 20.0), (6.0, 20.0),
-                                (4.0, 20.0), (4.0, 22.0), (4.0, 24.0), (4.0, 26.0)
-                            ]]
+                            curve_1 = [
+                                [
+                                    (0.0, 0.0), (4.0, 0.0), (8.0, 0.0), (12.0, 0.0), (12.0, 4.0),
+                                    (12.0, 8.0), (14.0, 10.0), (16.0, 12.0), (16.0, 16.0),
+                                    (14.0, 18.0), (12.0, 20.0), (12.0, 24.0), (12.0, 28.0),
+                                    (8.0, 28.0), (4.0, 28.0), (0.0, 28.0), (-2.0, 26.0), (0.0, 22.0),
+                                    (0.0, 18.0), (0.0, 10.0), (0.0, 8.0), (0.0, 4.0), (-4.0, 4.0),
+                                    (-4.0, 0.0), (0.0, 0.0),
+                                ],
+                            ]
+                            curve_2 = [
+                                [
+                                    (4.0, 26.0), (8.0, 26.0), (10.0, 26.0), (10.0, 24.0),
+                                    (10.0, 22.0), (10.0, 20.0), (8.0, 20.0), (6.0, 20.0),
+                                    (4.0, 20.0), (4.0, 22.0), (4.0, 24.0), (4.0, 26.0),
+                                ],
+                            ]
                             curve_3 = [[(4.0, 16.0), (12.0, 16.0), (12.0, 14.0), (4.0, 14.0), (4.0, 16.0)]]
                             curve_4 = [[(4.0, 8.0), (10.0, 8.0), (8.0, 6.0), (6.0, 6.0), (4.0, 8.0)]]
                             curves = [curve_1, curve_2, curve_3, curve_4]
@@ -2387,12 +2517,13 @@ end
                                 (-4.0, 22.0), (-4.0, 26.0), (-2.0, 28.0), (6.0, 15.0), (7.0, 15.0),
                                 (8.0, 15.0), (9.0, 15.0), (10.0, 15.0), (6.2, 7.8),
                                 (5.6, 7.8), (5.6, 7.6), (5.6, 7.4), (6.2, 7.4), (6.0, 7.6),
-                                (7.0, 7.8), (7.0, 7.4)]
-                            boundary_nodes, points = convert_boundary_points_to_indices(curves; existing_points=points)
+                                (7.0, 7.8), (7.0, 7.4),
+                            ]
+                            boundary_nodes, points = convert_boundary_points_to_indices(curves; existing_points = points)
                             tri = triangulate(points; boundary_nodes, rng)
                             max_area = max_area * get_area(tri)
-                            refine!(tri; min_angle, min_area, max_area, use_circumcenter=true, seditious_angle, use_lens, rng)
-                            @test validate_refinement(tri; min_angle, min_area, max_area, use_circumcenter=true, seditious_angle, use_lens, check_conformal=false)
+                            refine!(tri; min_angle, min_area, max_area, use_circumcenter = true, seditious_angle, use_lens, rng)
+                            @test validate_refinement(tri; min_angle, min_area, max_area, use_circumcenter = true, seditious_angle, use_lens, check_conformal = false)
                             if _rng_num(idx1, idx2, idx3, idx4, idx5) == _rng_num(1, 3, 1, 3, 1)
                                 fig, ax, sc = triplot(tri)
                                 @test_reference "a_constrained_triangulation_with_multiple_holes_circle.png" fig by = psnr_equality(15)
@@ -2407,11 +2538,12 @@ end
         end
     end
 
+
     @testset "another square example, directly testing stats" begin
         for (idx1, use_lens) in enumerate((false, true))
             for (idx2, min_angle) in enumerate((12.9, 15.8, 27.5, 30.0))
-                for (idx3, min_area) in enumerate((1e-12,))
-                    for (idx4, max_area) in enumerate((1e-1, 1e-2, 1e-4))
+                for (idx3, min_area) in enumerate((1.0e-12,))
+                    for (idx4, max_area) in enumerate((1.0e-1, 1.0e-2, 1.0e-4))
                         for (idx5, seditious_angle) in enumerate((10.0, 20.0))
                             @info "Testing refinement of a square. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle."
                             rng = StableRNG(_rng_num(idx1, idx2, idx3, idx4, idx5))
@@ -2421,7 +2553,7 @@ end
                             p4 = (1.0, 1.0)
                             pts = [p1, p2, p3, p4]
                             tri = triangulate(pts; rng)
-                            refine!(tri; min_angle, min_area, max_area, use_circumcenter=true, seditious_angle, use_lens, rng)
+                            refine!(tri; min_angle, min_area, max_area, use_circumcenter = true, seditious_angle, use_lens, rng)
                             stats = statistics(tri)
                             @test DT.get_smallest_angle(stats) ≥ deg2rad(min_angle)
                             @test DT.get_largest_area(stats) ≤ max_area
@@ -2430,7 +2562,7 @@ end
                             @test DT.convex_hull(tri).vertices == DT.convex_hull(tri.points).vertices
                             @test validate_triangulation(tri)
                             validate_statistics(tri)
-                            @test validate_refinement(tri; min_angle, min_area, max_area, seditious_angle, use_circumcenter=true, use_lens)
+                            @test validate_refinement(tri; min_angle, min_area, max_area, seditious_angle, use_circumcenter = true, use_lens)
                             if _rng_num(idx1, idx2, idx3, idx4, idx5) == _rng_num(1, 4, 1, 3, 2)
                                 fig, ax, sc = triplot(tri)
                                 @test_reference "another_square_example_circle.png" fig by = psnr_equality(15)
@@ -2445,6 +2577,7 @@ end
         end
     end
 
+
     @testset "algorithm terminates appropriately" begin
         for _ in 1:10
             p1 = (0.0, 0.0)
@@ -2453,18 +2586,19 @@ end
             p4 = (1.0, 1.0)
             pts = [p1, p2, p3, p4]
             tri = triangulate(pts)
-            refine!(tri; max_area=1e-6, max_points=5_000, use_circumcenter=true)
+            refine!(tri; max_area = 1.0e-6, max_points = 5_000, use_circumcenter = true)
             @test DT.num_solid_vertices(tri) == 5000
             @test validate_triangulation(tri)
-            @test !validate_refinement(tri; max_area=1e-6, max_points=5_000, use_circumcenter=true, warn=false)
+            @test !validate_refinement(tri; max_area = 1.0e-6, max_points = 5_000, use_circumcenter = true, warn = false)
         end
     end
+
 
     @testset "avoiding infinite bouncing with concentric circular shells" begin
         for (idx1, use_lens) in enumerate((false, true))
             for (idx2, min_angle) in enumerate((23.0, 27.5, 30.0))
-                for (idx3, min_area) in enumerate((1e-12,))
-                    for (idx4, max_area) in enumerate((1e-1, 1e-2))
+                for (idx3, min_area) in enumerate((1.0e-12,))
+                    for (idx4, max_area) in enumerate((1.0e-1, 1.0e-2))
                         for (idx5, seditious_angle) in enumerate((10.0, 20.0))
                             @info "Testing that infinite bouncing is avoided during refinement. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle."
                             p1 = (0.0, 0.0)
@@ -2475,8 +2609,8 @@ end
                             rng = StableRNG(_rng_num(idx1, idx2, idx3, idx4, idx5))
                             tri = triangulate(pts; rng)
                             add_segment!(tri, 1, 4; rng)
-                            refine!(tri; min_angle, min_area, max_area, seditious_angle, use_circumcenter=true, use_lens, rng)
-                            @test validate_refinement(tri; min_angle, min_area, max_area, seditious_angle, use_circumcenter=true, use_lens)
+                            refine!(tri; min_angle, min_area, max_area, seditious_angle, use_circumcenter = true, use_lens, rng)
+                            @test validate_refinement(tri; min_angle, min_area, max_area, seditious_angle, use_circumcenter = true, use_lens)
                             validate_statistics(tri)
                             if _rng_num(idx1, idx2, idx3, idx4, idx5) == _rng_num(1, 3, 1, 2, 2)
                                 fig, ax, sc = triplot(tri)
@@ -2492,31 +2626,35 @@ end
         end
     end
 
+
     @testset "some seditious edge testing and default calls" begin
         for _ in 1:10
             points = [(0.0, 0.0), (1.0, 0.0), (0.8, 0.2)]
             tri = triangulate(points)
-            refine!(tri, use_circumcenter=true)
+            refine!(tri, use_circumcenter = true)
             @test_reference "seditious_edge_testing_1.png" triplot(tri) by = psnr_equality(15)
-            @test validate_refinement(tri, use_circumcenter=true)
+            @test validate_refinement(tri, use_circumcenter = true)
             validate_statistics(tri)
+
 
             points = [(0.0, 0.0), (1.0, 0.0), (0.8, 0.2)]
             tri = triangulate(points)
-            refine!(tri, use_circumcenter=true, use_lens=false)
+            refine!(tri, use_circumcenter = true, use_lens = false)
             @test_reference "seditious_edge_testing_2.png" triplot(tri) by = psnr_equality(15)
-            @test validate_refinement(tri, use_circumcenter=true, use_lens=false)
+            @test validate_refinement(tri, use_circumcenter = true, use_lens = false)
             validate_statistics(tri)
+
 
             points = [(0.0, 0.0), (1.0, 0.0), (0.8, 0.2)]
             tri = triangulate(points)
-            args = DT.RefinementArguments(tri, use_circumcenter=true, use_lens=false, max_area=1e-3get_area(tri))
+            args = DT.RefinementArguments(tri, use_circumcenter = true, use_lens = false, max_area = 1.0e-3get_area(tri))
             refine!(tri, args)
             @test validate_refinement(tri, args)
             @test_reference "seditious_edge_testing_3.png" triplot(tri) by = psnr_equality(15)
             validate_statistics(tri)
         end
     end
+
 
     @testset "Triangulating with an interior hole" begin
         p1 = (0.0, 0.0)
@@ -2530,7 +2668,7 @@ end
         pts = [p1, p2, p3, p4, p5, p6, p7, p8]
         boundary_nodes = [[[1, 2, 3, 4, 1]], [[8, 7, 6, 5, 8]]]
         rng = StableRNG(123)
-        tri = triangulate(pts; rng, boundary_nodes=boundary_nodes, delete_ghosts=false)
+        tri = triangulate(pts; rng, boundary_nodes = boundary_nodes, delete_ghosts = false)
         add_point!(tri, 0.1, 0.8; rng)
         add_point!(tri, 0.3, 0.2; rng)
         add_point!(tri, 0.7, 0.2; rng)
@@ -2539,7 +2677,7 @@ end
         add_segment!(tri, 11, 12; rng)
         add_segment!(tri, 9, 12; rng)
         add_segment!(tri, 10, 11; rng)
-        refine!(tri; max_area=0.001, max_points=5000, use_circumcenter=true, use_lens=true, rng)
+        refine!(tri; max_area = 0.001, max_points = 5000, use_circumcenter = true, use_lens = true, rng)
         stats = statistics(tri)
         @test DT.get_smallest_angle(stats) ≥ deg2rad(30)
         @test DT.get_largest_area(stats) ≤ 0.001
@@ -2547,15 +2685,16 @@ end
         @test DT.convex_hull(tri).vertices == DT.convex_hull(tri.points).vertices
         validate_statistics(tri, stats)
         @test validate_triangulation(tri)
-        @test validate_refinement(tri; max_area=0.001, max_points=5000, use_circumcenter=true, use_lens=true)
+        @test validate_refinement(tri; max_area = 0.001, max_points = 5000, use_circumcenter = true, use_lens = true)
         fig, ax, sc = triplot(tri)
         @test_reference "triangulating_with_an_interior_hole.png" fig by = psnr_equality(15)
     end
 
+
     @testset "Refining disjoint sets" begin
         θ = LinRange(0, 2π, 30) |> collect
         θ[end] = 0
-        xy = Vector{Vector{Vector{NTuple{2,Float64}}}}()
+        xy = Vector{Vector{Vector{NTuple{2, Float64}}}}()
         rng = StableRNG(123)
         cx = 0.0
         for i in 1:2
@@ -2564,30 +2703,31 @@ end
             cx += 3.0
         end
         boundary_nodes, points = convert_boundary_points_to_indices(xy)
-        tri = triangulate(points; boundary_nodes=boundary_nodes, rng)
+        tri = triangulate(points; boundary_nodes = boundary_nodes, rng)
         A = DT.get_area(tri)
         max_area = 0.001A
-        min_area = 1e-9A
-        refine!(tri; min_area, rng, max_area, use_circumcenter=true)
+        min_area = 1.0e-9A
+        refine!(tri; min_area, rng, max_area, use_circumcenter = true)
         stats = statistics(tri)
         validate_statistics(tri)
-        @test validate_refinement(tri; min_area, max_area, use_circumcenter=true)
+        @test validate_refinement(tri; min_area, max_area, use_circumcenter = true)
         fig, ax, sc = triplot(tri)
         @test_reference "refining_disjoint_sets.png" fig by = psnr_equality(15)
     end
 
+
     if !USE_INEXACTPREDICATES
         @testset "Small angles" begin
             ps = 0
-            fig = Figure(fontsize=52)
+            fig = Figure(fontsize = 52)
             for i in 1:12
                 if i > 6
                     use_lens = true
                     i -= 6
-                    ax = Axis(fig[2, i], title="Lens; $i", width=600, height=600)
+                    ax = Axis(fig[2, i], title = "Lens; $i", width = 600, height = 600)
                 else
                     use_lens = false
-                    ax = Axis(fig[1, i], title="Circle; $i", width=600, height=600)
+                    ax = Axis(fig[1, i], title = "Circle; $i", width = 600, height = 600)
                 end
                 hidedecorations!(ax)
                 hidespines!(ax)
@@ -2598,7 +2738,7 @@ end
                 p4 = (1.0, 1.0)
                 p5 = (0.5, 0.5)
                 pts = [p1, p2, p3, p4, p5]
-                C = Set{NTuple{2,Int}}()
+                C = Set{NTuple{2, Int}}()
                 for i in 1:20
                     θ = 2π * rand(rng)
                     r = 0.5sqrt(rand(rng))
@@ -2607,12 +2747,12 @@ end
                     push!(pts, (x, y))
                     push!(C, (5, 5 + i))
                 end
-                tri = triangulate(pts; rng, boundary_nodes=[1, 2, 4, 3, 1], segments=C)
-                refine!(tri; min_angle=27.3, min_area=0.0, use_circumcenter=true, rng, use_lens)
+                tri = triangulate(pts; rng, boundary_nodes = [1, 2, 4, 3, 1], segments = C)
+                refine!(tri; min_angle = 27.3, min_area = 0.0, use_circumcenter = true, rng, use_lens)
                 stats = statistics(tri)
                 ps += DT.get_largest_angle(stats) ≤ max(π - 2 * deg2rad(17.0), 2asin((sqrt(3) - 1) / 2)) # Corollary 8 of "When and Why Ruppert's Algorithm Works. In Twelfth International Meshing Roundtable, pp. 91–102, Santa Fe, NM, Sept 2003."
                 validate_statistics(tri)
-                @test validate_refinement(tri; min_angle=27.3, min_area=0.0, use_circumcenter=true, warn=false, use_lens, rng)
+                @test validate_refinement(tri; min_angle = 27.3, min_area = 0.0, use_circumcenter = true, warn = false, use_lens, rng)
                 triplot!(ax, tri)
             end
             resize_to_layout!(fig)
@@ -2620,6 +2760,7 @@ end
             @test ps == 12
         end
     end
+
 
     @testset "Another disjoint domain" begin
         rng = StableRNG(123)
@@ -2634,24 +2775,29 @@ end
         reverse!(inverse_points)
         curve_points = [[points], [inverse_points]]
         boundary_nodes, points = convert_boundary_points_to_indices(curve_points)
-        C = Set([[(50, i) for i in 98:-1:81]..., [(50, i) for i in 69:-1:51]...,
-            [(10, i) for i in 36:49]...])
+        C = Set(
+            [
+                [(50, i) for i in 98:-1:81]..., [(50, i) for i in 69:-1:51]...,
+                [(10, i) for i in 36:49]...,
+            ],
+        )
         C′ = empty(C)
         bem = DT.construct_boundary_edge_map(boundary_nodes)
         for c in C
             c′ = DT.reverse_edge(c)
             c ∉ keys(bem) && c′ ∉ keys(bem) && push!(C′, c)
         end
-        tri = triangulate(points; boundary_nodes, rng, segments=C′)
+        tri = triangulate(points; boundary_nodes, rng, segments = C′)
         @test DT.is_disjoint(tri)
         @test validate_triangulation(tri)
         A = DT.get_area(tri)
-        refine!(tri, max_area=1e-3A, min_area=1e-12A, rng=rng, use_circumcenter=true, use_lens=true)
+        refine!(tri, max_area = 1.0e-3A, min_area = 1.0e-12A, rng = rng, use_circumcenter = true, use_lens = true)
         validate_statistics(tri)
-        @test validate_refinement(tri, max_area=1e-3A, min_area=0.0, use_circumcenter=true, use_lens=true, warn=false)
+        @test validate_refinement(tri, max_area = 1.0e-3A, min_area = 0.0, use_circumcenter = true, use_lens = true, warn = false)
         fig, ax, sc = triplot(tri)
         @test_reference "refining_disjoint_sets_2.png" fig by = psnr_equality(15)
     end
+
 
     @testset "Tight example with a single triangle boundary interior" begin
         A = (0.0, 0.0)
@@ -2695,15 +2841,16 @@ end
         boundary_pts = [[pts], [inner_pts]]
         nodes, points = convert_boundary_points_to_indices(boundary_pts)
         rng = StableRNG(123)
-        tri = triangulate(points; boundary_nodes=nodes, rng)
+        tri = triangulate(points; boundary_nodes = nodes, rng)
         @test validate_triangulation(tri)
         A = get_area(tri)
-        refine!(tri; max_area=1e-3A, use_circumcenter=true, rng)
+        refine!(tri; max_area = 1.0e-3A, use_circumcenter = true, rng)
         validate_statistics(tri)
-        @test validate_refinement(tri; max_area=1e-3A, rng, use_circumcenter=true, warn=true)
+        @test validate_refinement(tri; max_area = 1.0e-3A, rng, use_circumcenter = true, warn = true)
         fig, ax, sc = triplot(tri)
         @test_reference "tight_example_with_a_single_triangle_boundary_interior.png" fig by = psnr_equality(15)
     end
+
 
     @testset "A complicated example with tight walls and small angles" begin
         rng = StableRNG(123456)
@@ -2759,7 +2906,7 @@ end
         boundary_pts = [[pts], [inner_pts]]
         nodes, points = convert_boundary_points_to_indices(boundary_pts)
         push!(points, (20.0, 20.0))
-        C = Set{NTuple{2,Int}}()
+        C = Set{NTuple{2, Int}}()
         for i in 1:50
             θ = 2π * rand(rng)
             r = 4sqrt(rand(rng))
@@ -2768,14 +2915,15 @@ end
             push!(points, (x, y))
             push!(C, (48, 48 + i))
         end
-        tri = triangulate(points; boundary_nodes=nodes, segments=C, rng)
+        tri = triangulate(points; boundary_nodes = nodes, segments = C, rng)
         @test validate_triangulation(tri)
         A = get_area(tri)
-        refine!(tri; max_area=1.0, rng, use_circumcenter=true)
+        refine!(tri; max_area = 1.0, rng, use_circumcenter = true)
         validate_statistics(tri)
         fig, ax, sc = triplot(tri)
         @test_reference "complicated_example_with_tight_walls_and_small_angles.png" fig by = psnr_equality(15)
     end
+
 
     if !USE_INEXACTPREDICATES
         if !(get(ENV, "CI", "false") == "true")
@@ -2789,16 +2937,17 @@ end
                 unique!(tassy)
                 push!(tassy, tassy[begin])
                 boundary_nodes, points = convert_boundary_points_to_indices(tassy)
-                tri = triangulate(points; rng, boundary_nodes=boundary_nodes)
+                tri = triangulate(points; rng, boundary_nodes = boundary_nodes)
                 A = get_area(tri)
-                refine!(tri; max_area=1e-2A, use_circumcenter=true, rng)
+                refine!(tri; max_area = 1.0e-2A, use_circumcenter = true, rng)
                 validate_statistics(tri)
-                @test validate_refinement(tri; max_area=1e-2A, rng, use_circumcenter=true, warn=false)
+                @test validate_refinement(tri; max_area = 1.0e-2A, rng, use_circumcenter = true, warn = false)
                 fig, ax, sc = triplot(tri)
                 @test_reference "tasmania.png" fig by = psnr_equality(15)
             end
         end
     end
+
 
     @testset "Test that nothing is breaking for Float32 inputs" begin
         for _ in 1:25
@@ -2807,9 +2956,9 @@ end
             p3 = (0.0f0, 1.0f0)
             p4 = (1.0f0, 1.0f0)
             pts = [p1, p2, p3, p4]
-            tri = triangulate(pts; delete_ghosts=false)
+            tri = triangulate(pts; delete_ghosts = false)
             validate_statistics(tri)
-            refine!(tri; max_area=0.001, max_points=25_000, use_circumcenter=true)
+            refine!(tri; max_area = 0.001, max_points = 25_000, use_circumcenter = true)
             stats = statistics(tri)
             @inferred statistics(tri)
             @test DT.get_smallest_angle(stats) ≥ deg2rad(30.0)
@@ -2817,8 +2966,9 @@ end
             @test !DT.is_constrained(tri)
             @test DT.convex_hull(tri).vertices == DT.convex_hull(tri.points).vertices
             @test validate_triangulation(tri)
-            @test validate_refinement(tri; max_area=0.001, max_points=25_000, use_circumcenter=true)
+            @test validate_refinement(tri; max_area = 0.001, max_points = 25_000, use_circumcenter = true)
         end
+
 
         for _ in 1:5
             rng = StableRNG(123)
@@ -2832,7 +2982,7 @@ end
             p8 = (0.4f0, 0.6f0)
             pts = [p1, p2, p3, p4, p5, p6, p7, p8]
             boundary_nodes = [[[1, 2, 3, 4, 1]], [[8, 7, 6, 5, 8]]]
-            tri = triangulate(pts; rng, boundary_nodes=boundary_nodes, delete_ghosts=false)
+            tri = triangulate(pts; rng, boundary_nodes = boundary_nodes, delete_ghosts = false)
             add_point!(tri, 0.1f0, 0.8f0)
             add_point!(tri, 0.3f0, 0.2f0)
             add_point!(tri, 0.7f0, 0.2f0)
@@ -2841,15 +2991,16 @@ end
             add_segment!(tri, 11, 12)
             add_segment!(tri, 9, 12)
             add_segment!(tri, 10, 11)
-            refine!(tri; rng, max_area=0.001f0, max_points=25000, min_angle=24.0f0, min_area=0.0, use_circumcenter=true)
+            refine!(tri; rng, max_area = 0.001f0, max_points = 25000, min_angle = 24.0f0, min_area = 0.0, use_circumcenter = true)
             stats = statistics(tri)
             @test DT.get_smallest_angle(stats) ≥ deg2rad(24.0f0)
             @test DT.get_largest_area(stats) ≤ 0.001f0
             @test DT.is_constrained(tri)
             @test DT.convex_hull(tri).vertices == DT.convex_hull(tri.points).vertices
-            @test validate_refinement(tri; max_area=0.001, max_points=25000, min_angle=24.0f0, min_area=0.0, use_circumcenter=true)
+            @test validate_refinement(tri; max_area = 0.001, max_points = 25000, min_angle = 24.0f0, min_area = 0.0, use_circumcenter = true)
         end
     end
+
 
     @testset "Custom refinement example" begin
         rng = StableRNG(123)
@@ -2886,16 +3037,17 @@ end
                 return A ≥ 0.008 || θ ≤ 30.0
             end
         end
-        refine!(tri; custom_constraint=custom_refine_ex, rng, use_circumcenter=true)
+        refine!(tri; custom_constraint = custom_refine_ex, rng, use_circumcenter = true)
         stat = Bool[]
         delete_ghost_triangles!(tri)
         for T in each_triangle(tri)
             push!(stat, custom_refine_ex(tri, T))
         end
         @test !any(stat)
-        @test validate_refinement(tri; custom_constraint=custom_refine_ex, use_circumcenter=true)
+        @test validate_refinement(tri; custom_constraint = custom_refine_ex, use_circumcenter = true)
         validate_statistics(tri)
     end
+
 
     @testset "Julia logo" begin
         rng = StableRNG(123)
@@ -3043,10 +3195,13 @@ end
         U_curve = [[T, U, V, W, Z, A1, B1, C1, D1, E1, F1, G1, H1, I1, J1, K1, L1, M1, N1, O1, T]]
         L_curve = [[P1, Q1, R1, S1, P1]]
         I_curve = [[T1, U1, V1, W1, T1]]
-        A_curve_outline = [[
-            K5, W3, Z3, A4, B4, C4, D4, E4, F4, G4, H4, I4, J4, K4, L4, M4, N4,
-            O4, P4, Q4, R4, S4, T4, U4, V4, W4, Z4, A5, B5, C5, D5, E5, F5, G5,
-            H5, I5, J5, K5]]
+        A_curve_outline = [
+            [
+                K5, W3, Z3, A4, B4, C4, D4, E4, F4, G4, H4, I4, J4, K4, L4, M4, N4,
+                O4, P4, Q4, R4, S4, T4, U4, V4, W4, Z4, A5, B5, C5, D5, E5, F5, G5,
+                H5, I5, J5, K5,
+            ],
+        ]
         A_curve_hole = [[L5, M5, N5, O5, P5, Q5, R5, S5, T5, U5, L5]]
         dot_1 = [[Z1, A2, B2, C2, D2, E2, F2, G2, H2, I2, J2, Z1]]
         dot_2 = [[Z2, A3, B3, C3, D3, E3, F3, G3, H3, I3, J3, Z2]]
@@ -3054,11 +3209,11 @@ end
         dot_4 = [[K3, L3, M3, N3, O3, P3, Q3, R3, S3, T3, U3, V3, K3]]
         curves = [J_curve, U_curve, L_curve, I_curve, A_curve_outline, A_curve_hole, dot_1, dot_2, dot_3, dot_4]
         nodes, points = convert_boundary_points_to_indices(curves)
-        tri = triangulate(points; boundary_nodes=nodes, rng)
+        tri = triangulate(points; boundary_nodes = nodes, rng)
         A = get_area(tri)
-        refine!(tri; min_angle=26.45, max_area=0.005A / 9, rng, use_circumcenter=true)
+        refine!(tri; min_angle = 26.45, max_area = 0.005A / 9, rng, use_circumcenter = true)
         validate_statistics(tri)
-        @test validate_refinement(tri; min_angle=26.45, max_area=0.005A / 9, rng, use_circumcenter=true)
+        @test validate_refinement(tri; min_angle = 26.45, max_area = 0.005A / 9, rng, use_circumcenter = true)
         fig, ax, sc = triplot(tri)
         @test_reference "julia_logo.png" fig by = psnr_equality(15)
     end

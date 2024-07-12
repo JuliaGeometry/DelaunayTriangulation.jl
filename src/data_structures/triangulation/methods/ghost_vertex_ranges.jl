@@ -6,6 +6,7 @@ ghost vertices corresponding to the same curve or section as `ℓ` does.
 """
 get_ghost_vertex_range(tri::Triangulation, ℓ) = get_ghost_vertex_ranges(tri)[ℓ]
 
+
 """
     all_ghost_vertices(tri::Triangulation) -> KeySet 
 

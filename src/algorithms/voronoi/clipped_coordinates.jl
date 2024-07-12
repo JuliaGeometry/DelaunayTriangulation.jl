@@ -17,6 +17,7 @@ function is_first_ghost_vertex(cell, i)
     return !is_ghost_vertex(cell[prev])
 end
 
+
 """
     is_last_ghost_vertex(cell, i) -> Bool
 
@@ -36,6 +37,7 @@ function is_last_ghost_vertex(cell, i)
     return is_ghost_vertex(cell[prev])
 end
 
+
 """
     get_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box=nothing) -> Vector{NTuple{2,Number}}
 
@@ -51,7 +53,7 @@ See also [`get_unbounded_polygon_coordinates`](@ref) and [`get_bounded_polygon_c
 # Outputs
 - `coords`: The coordinates of the polygon. This is a circular vector.
 """
-function get_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box=nothing)
+function get_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box = nothing)
     if !isnothing(bounding_box)
         a, b, c, d = bounding_box
         @assert a < b && c < d "The bounding box must be of the form (xmin, xmax, ymin, ymax) with xmin < xmax and ymin < ymax."
@@ -63,6 +65,7 @@ function get_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box=noth
         return get_bounded_polygon_coordinates(vorn, i, bounding_box)
     end
 end
+
 
 """
     get_clipping_poly_structs(vorn::VoronoiTessellation, i, bounding_box) -> (Polygon, Polygon)
@@ -89,6 +92,7 @@ function get_clipping_poly_structs(vorn::VoronoiTessellation, i, bounding_box)
     return Polygon(vertices, points), Polygon(clip_vertices, clip_points)
 end
 
+
 """
     clip_bounded_polygon_to_bounding_box(vorn::VoronoiTessellation, i, bounding_box) -> Vector{NTuple{2,Number}}
 
@@ -109,6 +113,7 @@ function clip_bounded_polygon_to_bounding_box(vorn::VoronoiTessellation, i, boun
     return clip_polygon(poly, clip_poly)
 end
 
+
 """
     _get_ray(vorn, i, boundary_index)
 
@@ -117,6 +122,7 @@ here means that `get_polygon(vorn, i)[boundary_index]` is a boundary index.
 The returned points are given in the form `(p, q)`, defining the oriented line `pq` such that the line 
 is in the direction of infinity.
 """
+
 
 """
     _get_ray(vorn, i, ghost_vertex) -> (Point, Point)
@@ -165,6 +171,7 @@ function _get_ray(vorn::VoronoiTessellation, i, ghost_vertex)
     return m, r
 end
 
+
 """
     maximum_distance_to_box(a, b, c, d, p) -> Number
 
@@ -193,6 +200,7 @@ function maximum_distance_to_box(a, b, c, d, p)
     return max(d1, d2, d3, d4)
 end
 
+
 """
     grow_polygon_outside_of_box(vorn::VoronoiTessellation, i, bounding_box)
 
@@ -202,6 +210,7 @@ of the polygon. The method of growth is iterative, utilising the Liang-Barsky al
 at each stage while we translate the line. The returned polygon does not satisfy 
 `P[begin] == P[end]`.
 """
+
 
 """
     grow_polygon_outside_of_box(vorn::VoronoiTessellation, i, bounding_box) -> (Vector{Int}, Vector{NTuple{2,Number}})
@@ -258,6 +267,7 @@ function grow_polygon_outside_of_box(vorn::VoronoiTessellation, i, bounding_box)
     return new_vertices, new_points
 end
 
+
 """
     get_new_polygon_indices(vorn, vertices) -> (Vector{Int}, Vector{NTuple{2,Float64}}, Tuple{Int, Int})
 
@@ -273,11 +283,11 @@ Returns the new vertices and points of the polygon, as well as the indices of th
 - `ghost_vertices`: The indices of the ghost vertices in `new_vertices`.
 """
 function get_new_polygon_indices(vorn, vertices)
-    new_points = NTuple{2,Float64}[]
+    new_points = NTuple{2, Float64}[]
     sizehint!(new_points, length(vertices))
     new_vertices = similar(vertices, length(vertices) - 1)
     ghost_vertices = (0, 0)
-    for i in firstindex(vertices):(lastindex(vertices)-1)
+    for i in firstindex(vertices):(lastindex(vertices) - 1)
         v = vertices[i]
         if is_ghost_vertex(v)
             is_first = is_first_ghost_vertex(vertices, i)
@@ -296,6 +306,7 @@ function get_new_polygon_indices(vorn, vertices)
     return new_vertices, new_points, ghost_vertices
 end
 
+
 """
     get_bounded_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box) -> Vector{NTuple{2,Number}}
 
@@ -305,7 +316,7 @@ function get_bounded_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_
     if isnothing(bounding_box)
         C = get_polygon(vorn, i)
         F = number_type(vorn)
-        coords = Vector{NTuple{2,F}}(undef, length(C))
+        coords = Vector{NTuple{2, F}}(undef, length(C))
         for j in eachindex(C)
             coords[j] = get_polygon_point(vorn, C[j])
         end
@@ -315,6 +326,7 @@ function get_bounded_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_
     end
 end
 
+
 """
     get_unbounded_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box) -> Vector{NTuple{2,Number}}
 
@@ -323,6 +335,7 @@ Returns the coordinates of the `i`th polygon of `vorn`, clipped to `bounding_box
 function get_unbounded_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box)
     return clip_unbounded_polygon_to_bounding_box(vorn, i, bounding_box)
 end
+
 
 """
     clip_unbounded_polygon_to_bounding_box(vorn::VoronoiTessellation, i, bounding_box) -> Vector{NTuple{2,Number}}

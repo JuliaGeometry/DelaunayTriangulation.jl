@@ -9,20 +9,20 @@ Initialise a `VoronoiTessellation` from the triangulation `tri`.
 # Output
 - `vorn`: The [`VoronoiTessellation`](@ref). This tessellation is not yet filled in, as all the polygons and other fields need to be properly defined. This simply defines all the initial objects that will be pushed into.
 """
-function initialise_voronoi_tessellation(tri::Tr) where {Tr<:Triangulation}
+function initialise_voronoi_tessellation(tri::Tr) where {Tr <: Triangulation}
     I = integer_type(tri)
     T = triangle_type(tri)
     F = number_type(tri)
-    P = NTuple{2,F}
+    P = NTuple{2, F}
     polygon_points = Vector{P}()
-    circumcenter_to_triangle = Dict{I,T}()
-    triangle_to_circumcenter = Dict{T,I}()
+    circumcenter_to_triangle = Dict{I, T}()
+    triangle_to_circumcenter = Dict{T, I}()
     sizehint!(polygon_points, num_triangles(tri))
     sizehint!(circumcenter_to_triangle, num_triangles(tri))
     sizehint!(triangle_to_circumcenter, num_triangles(tri))
     cur_ghost_idx = I(0)
-    cocircular_dict = Dict{P,I}()
-    encountered_circumcenters = Dict{P,I}()
+    cocircular_dict = Dict{P, I}()
+    encountered_circumcenters = Dict{P, I}()
     cocircular_circumcenters = Set{I}()
     for V in each_triangle(tri)
         V = sort_triangle(V)
@@ -50,25 +50,26 @@ function initialise_voronoi_tessellation(tri::Tr) where {Tr<:Triangulation}
                 cocircular_dict[(cx, cy)] = num_points(polygon_points)
             end
         else
-            circumcenter_to_triangle[I(𝒢)-cur_ghost_idx] = V
+            circumcenter_to_triangle[I(𝒢) - cur_ghost_idx] = V
             triangle_to_circumcenter[V] = I(𝒢) - cur_ghost_idx
             cur_ghost_idx += I(1)
         end
     end
-    polygons = Dict{I,Vector{I}}()
+    polygons = Dict{I, Vector{I}}()
     sizehint!(polygons, num_solid_vertices(tri))
     unbounded_polygons = Set{I}()
     sizehint!(unbounded_polygons, num_ghost_edges(tri))
-    generators = Dict{I,P}()
+    generators = Dict{I, P}()
     sizehint!(generators, num_solid_vertices(tri))
     for i in each_solid_vertex(tri)
         generators[i] = get_point(tri, i)
     end
     E = edge_type(tri)
-    adj = Adjacent{I,E}()
+    adj = Adjacent{I, E}()
     boundary_polygons = Set{I}()
-    return VoronoiTessellation{Tr,P,I,T,typeof(cocircular_circumcenters),E}(tri, generators, polygon_points, polygons, circumcenter_to_triangle, triangle_to_circumcenter, unbounded_polygons, cocircular_circumcenters, adj, boundary_polygons)
+    return VoronoiTessellation{Tr, P, I, T, typeof(cocircular_circumcenters), E}(tri, generators, polygon_points, polygons, circumcenter_to_triangle, triangle_to_circumcenter, unbounded_polygons, cocircular_circumcenters, adj, boundary_polygons)
 end
+
 
 """
     prepare_add_voronoi_polygon(vorn::VoronoiTessellation, i) -> (Vector, Vector)
@@ -90,6 +91,7 @@ function prepare_add_voronoi_polygon(vorn::VoronoiTessellation, i)
     sizehint!(B, length(S))
     return S, B
 end
+
 
 """
     get_next_triangle_for_voronoi_polygon(vorn::VoronoiTessellation, i, k, S, m) -> (Vertex, Vertex)
@@ -116,6 +118,7 @@ function get_next_triangle_for_voronoi_polygon(vorn::VoronoiTessellation, i, k, 
     return ci, k
 end
 
+
 """
     connect_circumcenters!(B, ci)
 
@@ -125,6 +128,7 @@ function connect_circumcenters!(B, ci)
     push!(B, ci)
     return B
 end
+
 
 """
     add_edge_to_voronoi_polygon!(B, vorn::VoronoiTessellation, i, k, S, m, encountered_duplicate_circumcenter) -> (Vertex, Bool, Vertex)
@@ -153,6 +157,7 @@ function add_edge_to_voronoi_polygon!(B, vorn::VoronoiTessellation, i, k, S, m, 
     return ci, encountered_duplicate_circumcenter, k
 end
 
+
 """
     close_voronoi_polygon!(vorn::VoronoiTessellation, B, i, encountered_duplicate_circumcenter, prev_ci)
 
@@ -176,6 +181,7 @@ function close_voronoi_polygon!(vorn::VoronoiTessellation, B, i, encountered_dup
     return nothing
 end
 
+
 """
     add_voronoi_polygon!(vorn::VoronoiTessellation, i) -> Vector
 
@@ -194,7 +200,7 @@ function add_voronoi_polygon!(vorn::VoronoiTessellation, i)
     k = S[begin]
     encountered_duplicate_circumcenter = false
     prev_ci, encountered_duplicate_circumcenter, k = add_edge_to_voronoi_polygon!(B, vorn, i, k, S, m, encountered_duplicate_circumcenter)
-    for m in (firstindex(S)+2):lastindex(S)
+    for m in (firstindex(S) + 2):lastindex(S)
         ci, encountered_duplicate_circumcenter, k = add_edge_to_voronoi_polygon!(B, vorn, i, k, S, m, encountered_duplicate_circumcenter)
         add_adjacent!(vorn, prev_ci, ci, i)
         prev_ci = ci

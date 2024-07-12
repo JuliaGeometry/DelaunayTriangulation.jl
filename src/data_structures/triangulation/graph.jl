@@ -20,10 +20,10 @@ The map taking vertices `u` to the set of all `v` such that `(u, v)` is an edge 
 """
 struct Graph{I}
     vertices::Set{I}
-    edges::Set{NTuple{2,I}}
-    neighbours::Dict{I,Set{I}}
+    edges::Set{NTuple{2, I}}
+    neighbours::Dict{I, Set{I}}
 end
-Graph{I}() where {I} = Graph(Set{I}(), Set{NTuple{2,I}}(), Dict{I,Set{I}}())
+Graph{I}() where {I} = Graph(Set{I}(), Set{NTuple{2, I}}(), Dict{I, Set{I}}())
 function Base.show(io::IO, ::MIME"text/plain", graph::Graph)
     println(io, "Graph")
     println(io, "    Number of edges: ", num_edges(graph))
@@ -54,12 +54,14 @@ function Base.sizehint!(graph::Graph, n1, n2, n3)
     return graph
 end
 
+
 """
     get_vertices(graph::Graph) -> Set{Vertex}
 
 Returns the set of vertices in `graph`.
 """
 get_vertices(graph::Graph) = graph.vertices
+
 
 """
     get_edges(graph::Graph) -> Set{NTuple{2, Vertex}}
@@ -68,12 +70,14 @@ Returns the set of edges in `graph`.
 """
 get_edges(graph::Graph) = graph.edges
 
+
 """
     get_neighbours(graph::Graph) -> Dict{Vertex, Set{Vertex}}
 
 Returns the `neighbours` map of `graph`.
 """
 get_neighbours(graph::Graph) = graph.neighbours
+
 
 """
     get_neighbours(G::Graph, u) -> Set{Vertex}
@@ -82,12 +86,14 @@ Returns the set of neighbours of `u` in `G`.
 """
 get_neighbours(G::Graph, u) = get_neighbours(G)[u]
 
+
 """
     num_neighbours(G::Graph, u) -> Integer
 
 Returns the number of neighbours of `u` in `G`.
 """
 num_neighbours(G::Graph, u) = length(get_neighbours(G, u))
+
 
 """
     num_edges(G::Graph) -> Integer
@@ -97,6 +103,7 @@ edges `(i, j)` and `(j, i)` are counted as one edge.
 """
 num_edges(G::Graph) = length(get_edges(G))
 
+
 """
     num_vertices(G::Graph) -> Integer
 
@@ -104,12 +111,14 @@ Returns the number of vertices in `G`.
 """
 num_vertices(G::Graph) = length(get_vertices(G))
 
+
 """
     has_vertex(G::Graph, u) -> Bool
 
 Returns `true` if `u` is a vertex in `G`, and `false` otherwise.
 """
 has_vertex(G::Graph, u) = u ∈ get_vertices(G)
+
 
 """
     add_vertex!(G::Graph, u...)
@@ -127,6 +136,7 @@ function add_vertex!(G::Graph{I}, u...) where {I}
     return G
 end
 
+
 """
     add_edge!(G::Graph, u, v)
 
@@ -137,6 +147,7 @@ function add_edge!(G::Graph{I}, u, v) where {I}
     (v, u) ∉ E && push!(E, (u, v))
     return G
 end
+
 
 """
     delete_edge!(G::Graph, u, v)
@@ -149,6 +160,7 @@ function delete_edge!(G::Graph{I}, u, v) where {I}
     delete!(E, (v, u)) # undirected graph
     return G
 end
+
 
 """
     add_neighbour!(G::Graph, u, v...)
@@ -173,6 +185,7 @@ function add_neighbour!(G::Graph{I}, u, v...) where {I}
     return G
 end
 
+
 """
     delete_neighbour!(G::Graph, u, v...)
 
@@ -194,6 +207,7 @@ function delete_neighbour!(G::Graph{I}, u, v...) where {I}
     return G
 end
 
+
 """
     add_triangle!(G::Graph, u, v, w)
     add_triangle!(G::Graph, T)
@@ -208,6 +222,7 @@ function add_triangle!(G::Graph, u::Integer, v::Integer, w::Integer)
 end
 add_triangle!(G::Graph, T) = add_triangle!(G, geti(T), getj(T), getk(T))
 
+
 """
     delete_triangle!(G::Graph, u, v, w)
     delete_triangle!(G::Graph, T)
@@ -220,6 +235,7 @@ function delete_triangle!(G::Graph, u::Integer, v::Integer, w::Integer)
     return G
 end
 delete_triangle!(G::Graph, T) = delete_triangle!(G, geti(T), getj(T), getk(T))
+
 
 """
     delete_vertex!(G::Graph, u...)
@@ -245,6 +261,7 @@ function delete_vertex!(G::Graph, u...)
     return G
 end
 
+
 """
     delete_ghost_vertices!(G::Graph)
 
@@ -259,6 +276,7 @@ function delete_ghost_vertices_from_graph!(G::Graph{I}) where {I}
     return G
 end
 
+
 """
     has_ghost_vertices(G::Graph) -> Bool
 
@@ -268,6 +286,7 @@ function has_ghost_vertices(G::Graph)
     V = get_vertices(G)
     return any(is_ghost_vertex, V)
 end
+
 
 """
     clear_empty_vertices!(G::Graph)
@@ -282,6 +301,7 @@ function clear_empty_vertices!(G::Graph)
     end
     return G
 end
+
 
 function Base.empty!(G::Graph)
     V = get_vertices(G)

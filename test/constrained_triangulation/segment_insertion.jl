@@ -3,6 +3,7 @@ const DT = DelaunayTriangulation
 using CairoMakie
 using StableRNGs
 
+
 #=
 We test constrained Delaunay triangulations by 
 comparing results to MATLAB. For example, 
@@ -42,6 +43,7 @@ a triangulation with a constrained edge
      5     2     4
 =#
 
+
 @testset "is_vertex_closer_than_neighbours" begin
     tri = fixed_shewchuk_example_constrained()
     @test !DT.is_vertex_closer_than_neighbours(tri, 2, 7, 10, 8, 9)
@@ -56,6 +58,7 @@ a triangulation with a constrained edge
     @test DT.is_vertex_closer_than_neighbours(tri, 7, 2, 6, 5, 4)
 end
 
+
 @testset "Inserting segments into the Shewchuk example" begin
     tri = fixed_shewchuk_example_constrained()
     e = (2, 7)
@@ -63,13 +66,15 @@ end
     DT.delete_intersected_triangles!(tri, T)
     points = get_points(tri)
     _tri_1 = tri.cache
-    DT.triangulate_cavity_cdt!(_tri_1.triangulation, L, _tri_1.triangulation_2, _tri_1.marked_vertices,_tri_1.fan_triangles)
+    DT.triangulate_cavity_cdt!(_tri_1.triangulation, L, _tri_1.triangulation_2, _tri_1.marked_vertices, _tri_1.fan_triangles)
     DT.add_new_triangles!(tri, _tri_1.triangulation)
     empty!(_tri_1)
-    DT.triangulate_cavity_cdt!(_tri_1.triangulation, R, _tri_1.triangulation_2, _tri_1.marked_vertices,_tri_1.fan_triangles)
+    DT.triangulate_cavity_cdt!(_tri_1.triangulation, R, _tri_1.triangulation_2, _tri_1.marked_vertices, _tri_1.fan_triangles)
     DT.add_new_triangles!(tri, _tri_1.triangulation)
     empty!(_tri_1)
-    true_tri = ([ # two triangles to account for the cocircular points (2, 9, 3, 10)
+    true_tri = (
+        [
+            # two triangles to account for the cocircular points (2, 9, 3, 10)
             (1, 4, 2)
             (8, 11, 10)
             (8, 7, 11)
@@ -112,22 +117,23 @@ end
             (5, 4, DT.𝒢)
             (4, 1, DT.𝒢)
             (1, 2, DT.𝒢)
-        ]
+        ],
     )
     @test any(T -> DT.compare_triangle_collections(get_triangles(tri), T), true_tri)
     push!(get_all_segments(tri), e)
     push!(get_interior_segments(tri), e)
     @test validate_triangulation(tri)
 
+
     e = (2, 11)
     T, C, L, R = DT.locate_intersecting_triangles(tri, e)
     DT.delete_intersected_triangles!(tri, T)
     points = get_points(tri)
     _tri_1 = tri.cache
-    DT.triangulate_cavity_cdt!(_tri_1.triangulation, L, _tri_1.triangulation_2, _tri_1.marked_vertices,_tri_1.fan_triangles)
+    DT.triangulate_cavity_cdt!(_tri_1.triangulation, L, _tri_1.triangulation_2, _tri_1.marked_vertices, _tri_1.fan_triangles)
     DT.add_new_triangles!(tri, _tri_1.triangulation)
     empty!(_tri_1)
-    DT.triangulate_cavity_cdt!(_tri_1.triangulation, R, _tri_1.triangulation_2, _tri_1.marked_vertices,_tri_1.fan_triangles)
+    DT.triangulate_cavity_cdt!(_tri_1.triangulation, R, _tri_1.triangulation_2, _tri_1.marked_vertices, _tri_1.fan_triangles)
     DT.add_new_triangles!(tri, _tri_1.triangulation)
     empty!(_tri_1)
     true_tri = [
@@ -157,14 +163,15 @@ end
     push!(get_interior_segments(tri), e)
     @test validate_triangulation(tri)
 
+
     e = (1, 7)
     T, C, L, R = DT.locate_intersecting_triangles(tri, e)
     DT.delete_intersected_triangles!(tri, T)
     _tri_1 = tri.cache
-    DT.triangulate_cavity_cdt!(_tri_1.triangulation, L, _tri_1.triangulation_2, _tri_1.marked_vertices,_tri_1.fan_triangles)
+    DT.triangulate_cavity_cdt!(_tri_1.triangulation, L, _tri_1.triangulation_2, _tri_1.marked_vertices, _tri_1.fan_triangles)
     DT.add_new_triangles!(tri, _tri_1.triangulation)
     empty!(_tri_1)
-    DT.triangulate_cavity_cdt!(_tri_1.triangulation, R, _tri_1.triangulation_2, _tri_1.marked_vertices,_tri_1.fan_triangles)
+    DT.triangulate_cavity_cdt!(_tri_1.triangulation, R, _tri_1.triangulation_2, _tri_1.marked_vertices, _tri_1.fan_triangles)
     DT.add_new_triangles!(tri, _tri_1.triangulation)
     empty!(_tri_1)
     true_tri = [
@@ -195,6 +202,7 @@ end
     @test validate_triangulation(tri)
 end
 
+
 @testset "Testing the special corner example with many edges" begin
     tri = example_with_special_corners()
     es = [(9, 13), (9, 12), (9, 18), (9, 15), (15, 3), (16, 2)]
@@ -204,10 +212,10 @@ end
             DT.delete_intersected_triangles!(tri, T)
             points = get_points(tri)
             _tri_1 = tri.cache
-            DT.triangulate_cavity_cdt!(_tri_1.triangulation, L, _tri_1.triangulation_2, _tri_1.marked_vertices,_tri_1.fan_triangles)
+            DT.triangulate_cavity_cdt!(_tri_1.triangulation, L, _tri_1.triangulation_2, _tri_1.marked_vertices, _tri_1.fan_triangles)
             DT.add_new_triangles!(tri, _tri_1.triangulation)
             empty!(_tri_1)
-            DT.triangulate_cavity_cdt!(_tri_1.triangulation, R, _tri_1.triangulation_2, _tri_1.marked_vertices,_tri_1.fan_triangles)
+            DT.triangulate_cavity_cdt!(_tri_1.triangulation, R, _tri_1.triangulation_2, _tri_1.marked_vertices, _tri_1.fan_triangles)
             DT.add_new_triangles!(tri, _tri_1.triangulation)
             empty!(_tri_1)
         end

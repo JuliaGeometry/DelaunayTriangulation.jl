@@ -23,9 +23,9 @@ There is no output, as `tri` is updated in-place.
     To get around this, we only store in these fields the triangles necessary to allow [`undo_insertion!`](@ref) to work,
     so that at a triangle that might have appeared in both will only appear in one.
 """
-function legalise_edge!(tri::Triangulation, i, j, r, store_event_history=Val(false), event_history=nothing)
+function legalise_edge!(tri::Triangulation, i, j, r, store_event_history = Val(false), event_history = nothing)
     cert = is_legal(tri, i, j)
-    if is_illegal(cert) 
+    if is_illegal(cert)
         e = get_adjacent(tri, j, i)
         flip_edge!(tri, i, j, e, r, store_event_history, event_history)
         legalise_edge!(tri, i, e, r, store_event_history, event_history)

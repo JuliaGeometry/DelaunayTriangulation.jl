@@ -17,7 +17,8 @@ function get_point(tri::Triangulation, i)
         return c
     end
 end
-get_point(tri::Triangulation, i::Vararg{Any,N}) where {N} = ntuple(j -> get_point(tri, i[j]), Val(N))
+get_point(tri::Triangulation, i::Vararg{Any, N}) where {N} = ntuple(j -> get_point(tri, i[j]), Val(N))
+
 
 """
     num_points(tri::Triangulation) -> Integer
@@ -33,6 +34,7 @@ Returns the number of points in `tri`.
 """
 num_points(tri::Triangulation) = num_points(get_points(tri))
 
+
 """
     push_point!(tri::Triangulation, x, y)
     push_point!(tri::Triangulation, p)
@@ -42,12 +44,14 @@ Pushes the point `p = (x, y)` into the points of `tri`.
 push_point!(tri::Triangulation, x, y) = push_point!(get_points(tri), x, y)
 push_point!(tri::Triangulation, p) = push_point!(get_points(tri), p)
 
+
 """
     pop_point!(tri::Triangulation)
 
 Pops the last point from the points of `tri`.
 """
 pop_point!(tri::Triangulation) = pop_point!(get_points(tri))
+
 
 """
     set_point!(tri::Triangulation, i, x, y)

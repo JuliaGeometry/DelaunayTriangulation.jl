@@ -6,6 +6,7 @@ interior segments, then see [`get_interior_segments`](@ref),
 """
 each_segment(tri::Triangulation) = (each_edge ∘ get_all_segments)(tri)
 
+
 """
     contains_segment(tri::Triangulation, ij) -> Bool 
     contains_segment(tri::Triangulation, i, j) -> Bool

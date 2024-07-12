@@ -11,6 +11,7 @@ function reset_representative_points!(tri::Triangulation)
     return representative_point_list
 end
 
+
 """
     empty_representative_points!(tri::Triangulation)
 
@@ -22,19 +23,21 @@ function empty_representative_points!(tri::Triangulation)
     return representative_point_list
 end
 
+
 """
     update_centroid_after_addition!(tri::Triangulation, curve_index, p)
 
 Updates the centroid of the `curve_index`th curve in `tri` after the addition of the point `p`.
-""" 
+"""
 function update_centroid_after_addition!(tri::Triangulation, curve_index, p)
     I = integer_type(tri)
     F = number_type(tri)
     representative_point_list = get_representative_point_list(tri)
-    centroid = get!(RepresentativeCoordinates{I,F}, representative_point_list, curve_index)
+    centroid = get!(RepresentativeCoordinates{I, F}, representative_point_list, curve_index)
     add_point!(centroid, p)
     return representative_point_list
 end
+
 
 """
     update_centroid_after_deletion!(tri::Triangulation, curve_index, p)
@@ -45,10 +48,11 @@ function update_centroid_after_deletion!(tri::Triangulation, curve_index, p)
     I = integer_type(tri)
     F = number_type(tri)
     representative_point_list = get_representative_point_list(tri)
-    centroid = get!(RepresentativeCoordinates{I,F}, representative_point_list, curve_index)
+    centroid = get!(RepresentativeCoordinates{I, F}, representative_point_list, curve_index)
     delete_point!(centroid, p)
     return representative_point_list
 end
+
 
 """
     get_representative_point_coordinates(tri::Triangulation, curve_index) -> NTuple{2, Number}
@@ -63,6 +67,7 @@ function get_representative_point_coordinates(tri::Triangulation, curve_index)
     return (F(x), F(y))
 end
 
+
 """
     new_representative_point!(tri::Triangulation, curve_index) 
 
@@ -75,6 +80,7 @@ function new_representative_point!(tri::Triangulation, curve_index)
     representative_point_list[curve_index] = RepresentativeCoordinates(zero(T), zero(T), zero(I))
     return representative_point_list
 end
+
 
 """
     compute_representative_points!(tri::Triangulation; use_convex_hull=!has_boundary_nodes(tri), precision=one(number_type(tri)))
@@ -98,7 +104,7 @@ There are no outputs as `tri` is updated in-place, but for each curve the repres
     might have representative points that are in a hole of one of their interior holes. This isn't much of a problem, indeed it wouldn't be a significant 
     problem even if we had the representative point in a hole of the first curve, but it is something to be aware of.
 """
-function compute_representative_points!(tri::Triangulation; use_convex_hull=!has_boundary_nodes(tri), precision=one(number_type(tri)))
+function compute_representative_points!(tri::Triangulation; use_convex_hull = !has_boundary_nodes(tri), precision = one(number_type(tri)))
     reset_representative_points!(tri)
     if use_convex_hull
         return _compute_representative_points!(tri, get_convex_hull_vertices(tri); precision)
@@ -106,7 +112,7 @@ function compute_representative_points!(tri::Triangulation; use_convex_hull=!has
         return _compute_representative_points!(tri, get_boundary_nodes(tri); precision)
     end
 end
-function _compute_representative_points!(tri::Triangulation, boundary_nodes; precision=one(number_type(tri))) # need this to be separate for type stability.
+function _compute_representative_points!(tri::Triangulation, boundary_nodes; precision = one(number_type(tri))) # need this to be separate for type stability.
     points = get_points(tri)
     representative_point_list = get_representative_point_list(tri)
     I = integer_type(tri)

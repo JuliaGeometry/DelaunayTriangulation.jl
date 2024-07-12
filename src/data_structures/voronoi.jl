@@ -24,18 +24,19 @@ See also [`voronoi`](@ref).
 - `boundary_polygons::Set{I}`: A `Set` of indices of the polygons that are on the boundary of the tessellation. Only relevant for clipped 
    tessellations, otherwise see `unbounded_polygons`.
 """
-struct VoronoiTessellation{Tr<:Triangulation,P,I,T,S,E}
+struct VoronoiTessellation{Tr <: Triangulation, P, I, T, S, E}
     triangulation::Tr
-    generators::Dict{I,P}
+    generators::Dict{I, P}
     polygon_points::Vector{P} # not guaranteed to be unique if a circumcenter appears on the boundary, but the vertices (below) do handle this automatically
-    polygons::Dict{I,Vector{I}}
-    circumcenter_to_triangle::Dict{I,T}
-    triangle_to_circumcenter::Dict{T,I}
+    polygons::Dict{I, Vector{I}}
+    circumcenter_to_triangle::Dict{I, T}
+    triangle_to_circumcenter::Dict{T, I}
     unbounded_polygons::Set{I}
     cocircular_circumcenters::S
-    adjacent::Adjacent{I,E}
+    adjacent::Adjacent{I, E}
     boundary_polygons::Set{I}
 end
+
 
 """
     get_triangulation(vorn::VoronoiTessellation) -> Triangulation 
@@ -43,6 +44,7 @@ end
 Gets the underlying triangulation of the Voronoi tessellation `vorn`.
 """
 get_triangulation(vorn::VoronoiTessellation) = vorn.triangulation
+
 
 """
     get_generators(vorn::VoronoiTessellation) -> Dict{Vertex,Point}
@@ -52,6 +54,7 @@ coordinates are given as `Tuple`s of the form `(x, y)`.
 """
 get_generators(vorn::VoronoiTessellation) = vorn.generators
 
+
 """
     get_polygon_points(vorn::VoronoiTessellation) -> Vector{Point}
 
@@ -59,6 +62,7 @@ Gets the polygon points of the Voronoi tessellation `vorn`. These are the vertic
 given as `Tuple`s of the form `(x, y)`.
 """
 get_polygon_points(vorn::VoronoiTessellation) = vorn.polygon_points
+
 
 """
     get_polygons(vorn::VoronoiTessellation) -> Dict{Index,Vector{Vertex}}
@@ -69,6 +73,7 @@ and the first and last vertices are equal.
 """
 get_polygons(vorn::VoronoiTessellation) = vorn.polygons
 
+
 """
     get_circumcenter_to_triangle(vorn::VoronoiTessellation) -> Dict{Index,Triangle}    
 
@@ -76,6 +81,7 @@ Gets the circumcenters of the Voronoi tessellation `vorn` as a `Dict`, mapping c
 corresponding triangles. The triangles are sorted so that the minimum vertex is last.
 """
 get_circumcenter_to_triangle(vorn::VoronoiTessellation) = vorn.circumcenter_to_triangle
+
 
 """
     get_triangle_to_circumcenter(vorn::VoronoiTessellation) -> Dict{Triangle,Index}
@@ -85,12 +91,14 @@ circumcenters. The circumcenters are given as their vertices, referring to point
 """
 get_triangle_to_circumcenter(vorn::VoronoiTessellation) = vorn.triangle_to_circumcenter
 
+
 """
     get_unbounded_polygons(vorn::VoronoiTessellation) -> Set{Index}
 
 Gets the unbounded polygons of the Voronoi tessellation `vorn` as a `Set` of polygon indices.
 """
 get_unbounded_polygons(vorn::VoronoiTessellation) = vorn.unbounded_polygons
+
 
 """
     get_cocircular_circumcenters(vorn::VoronoiTessellation) -> Set
@@ -100,6 +108,7 @@ that come from triangles that are cocircular with another adjoining triangle.
 """
 get_cocircular_circumcenters(vorn::VoronoiTessellation) = vorn.cocircular_circumcenters
 
+
 """
     get_adjacent(vorn::VoronoiTessellation) -> Adjacent{Index,Edge}
 
@@ -108,12 +117,14 @@ to the polygons that they belong to.
 """
 get_adjacent(vorn::VoronoiTessellation) = vorn.adjacent
 
+
 """
     get_boundary_polygons(vorn::VoronoiTessellation) -> Set{Index}
 
 Gets the boundary polygons of the Voronoi tessellation `vorn` as a `Set` of polygon indices.
 """
 get_boundary_polygons(vorn::VoronoiTessellation) = vorn.boundary_polygons
+
 
 function Base.show(io::IO, ::MIME"text/plain", vor::VoronoiTessellation)
     println(io, "Voronoi Tessellation.")
@@ -122,33 +133,38 @@ function Base.show(io::IO, ::MIME"text/plain", vor::VoronoiTessellation)
     print(io, "    Number of polygons: $(num_polygons(vor))")
 end
 
+
 """
     edge_type(vorn::VoronoiTessellation) -> DataType 
 
 Type used for representing individual edges in the Voronoi tessellation.
 """
-edge_type(::VoronoiTessellation{Tr,P,I,T,S,E}) where {Tr,P,I,T,S,E} = E
+edge_type(::VoronoiTessellation{Tr, P, I, T, S, E}) where {Tr, P, I, T, S, E} = E
+
 
 """
     number_type(vorn::VoronoiTessellation) -> DataType
 
 Type used for representing individual coordinates in the Voronoi tessellation.
 """
-number_type(::VoronoiTessellation{Tr,P}) where {Tr,P} = number_type(P)
+number_type(::VoronoiTessellation{Tr, P}) where {Tr, P} = number_type(P)
+
 
 """
     integer_type(vorn::VoronoiTessellation) -> DataType
 
 Type used for representing indices in the Voronoi tessellation.
 """
-integer_type(::VoronoiTessellation{Tr,P,I}) where {Tr,P,I} = I
+integer_type(::VoronoiTessellation{Tr, P, I}) where {Tr, P, I} = I
+
 
 """
     triangle_type(vorn::VoronoiTessellation) -> DataType
 
 Type used for representing individual triangles in the Voronoi tessellation.
 """
-triangle_type(::VoronoiTessellation{Tr,P,I,T}) where {Tr,P,I,T} = T
+triangle_type(::VoronoiTessellation{Tr, P, I, T}) where {Tr, P, I, T} = T
+
 
 """
     get_generator(vor::VoronoiTessellation, i) -> NTuple{2, Number}
@@ -159,6 +175,7 @@ Gets the coordinates for the generators `i...`, returned as `Tuple`s of the form
 get_generator(vor::VoronoiTessellation, i) = get_generators(vor)[i]
 get_generator(vor::VoronoiTessellation, i, j::Vararg{I, N}) where {I, N} = (get_generator(vor, i), ntuple(k -> get_generator(vor, j[k]), Val(N))...)
 
+
 """
     get_polygon_point(vor::VoronoiTessellation, i) -> NTuple{2, Number}
     get_polygon_point(vor::VoronoiTessellation, i...) -> NTuple{length(i), NTuple{2, Number}}
@@ -166,6 +183,7 @@ get_generator(vor::VoronoiTessellation, i, j::Vararg{I, N}) where {I, N} = (get_
 Gets the coordinates corresponding to the vertices `i...` of the polygons, returned as `Tuple`s of the form `(x, y)` for each vertex.
 """
 get_polygon_point(vor::VoronoiTessellation, i...) = get_point(get_polygon_points(vor), i...)
+
 
 """
     get_polygon(vor::VoronoiTessellation, i) -> Vector{Vertex}
@@ -175,12 +193,14 @@ with the first and last vertices equal. To obtain the coordinates, see [`get_pol
 """
 get_polygon(vor::VoronoiTessellation, i) = get_polygons(vor)[i]
 
+
 """
     get_circumcenter_to_triangle(vor::VoronoiTessellation, i) -> Triangle
 
 Gets the triangle associated with the `i`th circumcenter. The triangle is sorted so that the minimum vertex is last.
 """
 get_circumcenter_to_triangle(vor::VoronoiTessellation, i) = get_circumcenter_to_triangle(vor)[i]
+
 
 """
     get_triangle_to_circumcenter(vor::VoronoiTessellation, T) -> Index
@@ -204,12 +224,14 @@ function get_triangle_to_circumcenter(vor::VoronoiTessellation, T)
     end
 end
 
+
 """
     get_neighbouring_boundary_edges(vorn::VoronoiTessellation, e) -> (Edge, Edge)
 
 Given a boundary edge `e`, returns the edges left and right of `e`. 
 """
 get_neighbouring_boundary_edges(vorn::VoronoiTessellation, e) = get_neighbouring_boundary_edges(get_triangulation(vorn), e)
+
 
 """
     num_polygons(vor::VoronoiTessellation) -> Integer
@@ -218,12 +240,14 @@ Returns the number of polygons in the Voronoi tessellation `vor`.
 """
 num_polygons(vor::VoronoiTessellation) = length(get_polygons(vor))
 
+
 """
     num_polygon_vertices(vor::VoronoiTessellation) -> Integer
 
 Returns the number of polygon vertices in the Voronoi tessellation `vor`. This might include duplicate vertices if `get_polygon_points(vor)` has duplicates.
 """
 num_polygon_vertices(vor::VoronoiTessellation) = num_points(get_polygon_points(vor))
+
 
 """
     num_generators(vor::VoronoiTessellation) -> Integer
@@ -232,6 +256,7 @@ Returns the number of generators in the Voronoi tessellation `vor`.
 """
 num_generators(vor::VoronoiTessellation) = length(get_generators(vor))
 
+
 """
     add_polygon!(vor::VoronoiTessellation, B, i)
 
@@ -239,6 +264,7 @@ Adds, or replaces, the polygon associated with the index `i` with `B`. `B` shoul
 sequence of vertices, with `B[begin] == B[end]`.
 """
 add_polygon!(vor::VoronoiTessellation, B, i) = get_polygons(vor)[i] = B
+
 
 """
     push_polygon_point!(vor::VoronoiTessellation, p)
@@ -249,12 +275,14 @@ Adds the point `p = (x, y)` into the vector of polygon points of `vor`.
 push_polygon_point!(vor::VoronoiTessellation, p) = push_point!(get_polygon_points(vor), p)
 push_polygon_point!(vor::VoronoiTessellation, x, y) = push_point!(get_polygon_points(vor), x, y)
 
+
 """
     add_unbounded_polygon!(vor::VoronoiTessellation, i)
 
 Adds the index `i` to the set of unbounded polygons of `vor`.
 """
 add_unbounded_polygon!(vor::VoronoiTessellation, i) = push!(get_unbounded_polygons(vor), i)
+
 
 """
     delete_unbounded_polygon!(vor::VoronoiTessellation, i)
@@ -263,12 +291,14 @@ Deletes the index `i` from the set of unbounded polygons of `vor`.
 """
 delete_unbounded_polygon!(vor::VoronoiTessellation, i) = delete!(get_unbounded_polygons(vor), i)
 
+
 """
     add_boundary_polygon!(vor::VoronoiTessellation, i)
 
 Adds the index `i` to the set of boundary polygons of `vor`.
 """
 add_boundary_polygon!(vorn::VoronoiTessellation, i) = push!(get_boundary_polygons(vorn), i)
+
 
 """
     each_boundary_polygon(vorn::VoronoiTessellation) -> KeySet 
@@ -277,12 +307,14 @@ Returns an iterator over the boundary polygon indices of `vorn`.
 """
 each_generator(vor::VoronoiTessellation) = keys(get_generators(vor))
 
+
 """
     each_polygon_vertex(vor::VoronoiTessellation) -> UnitRange
 
 Returns an iterator over each polygon point index of `vor`.
 """
 each_polygon_vertex(vor::VoronoiTessellation) = eachindex(get_polygon_points(vor))
+
 
 """
     each_polygon(vor::VoronoiTessellation) -> Set 
@@ -291,6 +323,7 @@ Returns an iterator over the polygon indices of `vor`.
 """
 each_unbounded_polygon(vor::VoronoiTessellation) = get_unbounded_polygons(vor)
 
+
 """
     each_polygon(vor::VoronoiTessellation) -> ValueIterator
 
@@ -298,12 +331,14 @@ Returns an iterator over each set of polygon vertices of `vor`.
 """
 each_polygon(vor::VoronoiTessellation) = values(get_polygons(vor))
 
+
 """
     each_polygon_index(vor::VoronoiTessellation) -> KeySet 
 
 Returns an iterator over the polygon indices of `vor`.
 """
 each_polygon_index(vor::VoronoiTessellation) = keys(get_polygons(vor))
+
 
 """
     get_adjacent(vor::VoronoiTessellation, ij) -> Index 
@@ -314,6 +349,7 @@ Gets the polygon index associated with the oriented edge `ij` in the Voronoi tes
 get_adjacent(vor::VoronoiTessellation, e) = get_adjacent(get_adjacent(vor), e)
 get_adjacent(vor::VoronoiTessellation, i, j) = get_adjacent(get_adjacent(vor), i, j)
 
+
 """
     add_adjacent!(vor::VoronoiTessellation, ij, k)
     add_adjacent!(vor::VoronoiTessellation, i, j, k)
@@ -323,6 +359,7 @@ Adds the adjacency relationship `(i, j) ⟹ k` between the oriented edge `(i, j)
 add_adjacent!(vor::VoronoiTessellation, e, i) = add_adjacent!(get_adjacent(vor), e, i)
 add_adjacent!(vor::VoronoiTessellation, i, j, k) = add_adjacent!(get_adjacent(vor), i, j, k)
 
+
 """
     delete_adjacent!(vor::VoronoiTessellation, ij)
     delete_adjacent!(vor::VoronoiTessellation, i, j)
@@ -331,6 +368,7 @@ Deletes the edge `(i, j)` from the adjacency map of `vor`.
 """
 delete_adjacent!(vor::VoronoiTessellation, e) = delete_adjacent!(get_adjacent(vor), e)
 delete_adjacent!(vor::VoronoiTessellation, i, j) = delete_adjacent!(get_adjacent(vor), i, j)
+
 
 """
     delete_polygon!(vor::VoronoiTessellation, polygon)
@@ -348,6 +386,7 @@ function delete_polygon_adjacent!(vorn::VoronoiTessellation, polygon)
     return vorn
 end
 
+
 """
     add_polygon_adjacent!(vorn::VoronoiTessellation, polygon)
 
@@ -364,6 +403,7 @@ function add_polygon_adjacent!(vorn::VoronoiTessellation, polygon)
     return vorn
 end
 
+
 """
     polygon_features(vor::VoronoiTessellation, i) -> (Number, NTuple{2, Number})
 
@@ -378,6 +418,7 @@ function polygon_features(vor::VoronoiTessellation, i)
     return polygon_features(get_polygon_points(vor), polygon)
 end
 
+
 """
     get_area(vor::VoronoiTessellation, i) -> Number
 
@@ -385,12 +426,14 @@ Gets the area of the `i`th Voronoi polygon.
 """
 get_area(vor::VoronoiTessellation, i) = polygon_features(vor, i)[1]
 
+
 """
     get_centroid(vor::VoronoiTessellation, i) -> NTuple{2, Number}
 
 Gets the centroid of the `i`th Voronoi polygon, given as a `Tuple` of the form `(x, y)`.
 """
 get_centroid(vor::VoronoiTessellation, i) = polygon_features(vor, i)[2]
+
 
 """
     polygon_bounds(vorn::VoronoiTessellation, unbounded_extension_factor=0.0; include_polygon_vertices=true) -> (Number, Number, Number, Number)
@@ -410,7 +453,7 @@ Gets the bounding box for the Voronoi tessellation `vorn`.
 - `ymin`: Given by `ymin′ - unbounded_extension_factor * (ymin′ - ymin′)`, where `ymin′` is the original minimum `y`-coordinate of the computed bounding box and similarly for `ymax′`.
 - `ymax`: Given by `ymax′ + unbounded_extension_factor * (ymax′ - ymax′)`, where `ymax′` is the original maximum `y`-coordinate of the computed bounding box and similarly for `ymin′`.
 """
-function polygon_bounds(vorn::VoronoiTessellation, unbounded_extension_factor=0.0; include_polygon_vertices=true)
+function polygon_bounds(vorn::VoronoiTessellation, unbounded_extension_factor = 0.0; include_polygon_vertices = true)
     F = number_type(vorn)
     xmin = typemax(F)
     xmax = typemin(F)
@@ -439,6 +482,7 @@ function polygon_bounds(vorn::VoronoiTessellation, unbounded_extension_factor=0.
     return _xmin, _xmax, _ymin, _ymax
 end
 
+
 """
     get_surrounding_polygon(vor::VoronoiTessellation, i) -> Vector{Vertex}
 
@@ -452,6 +496,7 @@ function get_surrounding_polygon(vor::VoronoiTessellation, i)
     push!(S, S[begin])
     return S
 end
+
 
 """
     convert_to_edge_adjoining_ghost_vertex(vorn::VoronoiTessellation, e) -> Edge

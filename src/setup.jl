@@ -6,12 +6,14 @@ from an adjacency query.
 """
 const DefaultAdjacentValue = 0
 
+
 """
     ∅ = DefaultAdjacentValue
 
 Alias for [`DefaultAdjacentValue`](@ref).
 """
 const ∅ = DefaultAdjacentValue
+
 
 """
     GhostVertex = -1
@@ -22,12 +24,14 @@ this number. See https://juliageometry.github.io/DelaunayTriangulation.jl/stable
 """
 const GhostVertex = -1
 
+
 """
     𝒢 = GhostVertex
 
 Alias for [`𝒢`](@ref).
 """
 const 𝒢 = GhostVertex
+
 
 """
     ε = sqrt(eps(Float64))
@@ -38,6 +42,7 @@ avoid degenerate circumcenters.
 """
 const ε = sqrt(eps(Float64))
 
+
 const INF_WARN = Ref(true)
 """
     toggle_inf_warn!()
@@ -47,18 +52,21 @@ By default, this warning is enabled.
 """
 toggle_inf_warn!() = (INF_WARN[] = !INF_WARN[])
 
+
 @static if VERSION ≥ v"1.6"
     using Preferences
 end
 
+
 @static if VERSION ≥ v"1.6"
     const PREDICATES = @load_preference("PREDICATES", "EXACT")::String # This default is not guaranteed to be consistent between versions
-else 
+else
     const PREDICATES = "EXACT"
 end
 @static if PREDICATES ∉ ("EXACT", "INEXACT")
     throw("You have set the PREDICATES option to PREDICATES = $PREDICATES. This is not allowed, only EXACT or INEXACT are possible choices.")
 end
+
 
 @doc """
     PREDICATES 
@@ -90,6 +98,8 @@ julia> DelaunayTriangulation.PREDICATES
 """
 PREDICATES
 
+
 const USE_EXACTPREDICATES = PREDICATES == "EXACT"
 const USE_INEXACTPREDICATES = PREDICATES == "INEXACT"
+
 

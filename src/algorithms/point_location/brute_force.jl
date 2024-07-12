@@ -1,4 +1,4 @@
-struct PointNotFoundError{T,P} <: Exception
+struct PointNotFoundError{T, P} <: Exception
     tri::T
     q::P
 end
@@ -9,6 +9,7 @@ function Base.showerror(io::IO, e::PointNotFoundError)
     end
     return print(io, err)
 end
+
 
 """
     brute_force_search(tri::Triangulation, q; itr = each_triangle(tri))
@@ -28,13 +29,14 @@ See also [`find_triangle`](@ref).
 # Output 
 - `V`: The triangle containing the point `q`.
 """
-function brute_force_search(tri::Triangulation, q; itr=each_triangle(tri))
+function brute_force_search(tri::Triangulation, q; itr = each_triangle(tri))
     for V in itr
         cert = point_position_relative_to_triangle(tri, V, q)
         !is_outside(cert) && return V
     end
     return throw(PointNotFoundError(tri, q))
 end
+
 
 """
     brute_force_search_enclosing_circumcircle(tri::Triangulation, i) -> Triangle 
@@ -48,7 +50,7 @@ function brute_force_search_enclosing_circumcircle(tri::Triangulation, i)
         cert = point_position_relative_to_circumcircle(tri, V, i)
         !is_outside(cert) && return V
     end
-    tri_type=triangle_type(tri)
+    tri_type = triangle_type(tri)
     V = construct_triangle(tri_type, ∅, ∅, ∅)
     return V
 end

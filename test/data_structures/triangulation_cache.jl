@@ -5,9 +5,11 @@ using StructEquality
 using Setfield
 using ..DelaunayTriangulation: add_weight!, get_weight, get_weights
 
+
 @struct_equal DT.TriangulationCache
 
-tri = triangulate(rand(2, 50); weights=DT.ZeroWeight())
+
+tri = triangulate(rand(2, 50); weights = DT.ZeroWeight())
 cache = DT.get_cache(tri)
 @test get_weights(DT.get_triangulation(DT.get_cache(tri))) === get_weights(tri)
 DT.unconstrained_triangulation!(DT.get_triangulation(cache))

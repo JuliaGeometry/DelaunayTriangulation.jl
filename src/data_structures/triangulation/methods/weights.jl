@@ -5,6 +5,7 @@ Pushes the weight `w` into `weights`. The default definition for this is `push!(
 """
 add_weight!(weights, w) = push!(weights, w)
 
+
 """
     get_weight(weights, i) -> Float64
 
@@ -13,6 +14,7 @@ but this can be extended - e.g., [`ZeroWeight`](@ref) uses `get_weight(weights, 
 """
 get_weight(weights, i) = Float64(weights[i])
 
+
 """
     ZeroWeight
 
@@ -20,6 +22,7 @@ Struct used for indicating that a triangulation has zero weights. The weights ar
 """
 struct ZeroWeight end
 get_weight(::ZeroWeight, i) = zero(Float64)
+
 
 """
     add_weight!(tri::Triangulation, w)
@@ -32,6 +35,7 @@ function add_weight!(tri::Triangulation, w)
     return tri
 end
 
+
 """
     get_weight(tri::Triangulation, i) -> Number
 
@@ -41,6 +45,7 @@ function get_weight(tri::Triangulation, i)
     weights = get_weights(tri)
     return get_weight(weights, i)
 end
+
 
 """
     is_weighted(weights) -> Bool
@@ -52,6 +57,7 @@ Note that even for vectors like `zeros(n)`, this will return `true`; by default,
 is_weighted(weights::ZeroWeight) = false
 is_weighted(weights) = true
 
+
 """
     get_lifted_point(p, w) -> Tuple{Float64, Float64, Float64}
 
@@ -61,6 +67,7 @@ function get_lifted_point(p, w)
     x, y = getxy(p)
     return (x, y, norm_sqr((x, y)) - w)
 end
+
 
 """
     get_lifted_point(tri::Triangulation, i) -> Tuple{Float64, Float64, Float64}
@@ -74,6 +81,7 @@ function get_lifted_point(tri::Triangulation, i)
     return get_lifted_point(p, w)
 end
 
+
 """
     get_power_distance(tri::Triangulation, i, j) -> Float64
 
@@ -86,6 +94,7 @@ function get_power_distance(tri::Triangulation, i, j)
     wⱼ = get_weight(tri, j)
     return dij² - wᵢ - wⱼ
 end
+
 
 """"
     get_distance_to_witness_plane(tri::Triangulation, i, V) -> Float64 
@@ -120,6 +129,7 @@ function get_distance_to_witness_plane(tri::Triangulation, i, V)
     end
 end
 
+
 """
     get_weighted_nearest_neighbour(tri::Triangulation, i, j = rand(each_solid_vertex(tri))) -> Vertex 
 
@@ -127,7 +137,7 @@ Using a greedy search, finds the closest vertex in `tri` to the vertex `i` (whic
 measuring distance in lifted space (i.e., using the power distance - see [`get_power_distance`](@ref)). 
 The search starts from the vertex `j` which should be in `tri`. 
 """
-function get_weighted_nearest_neighbour(tri::Triangulation, i, j=rand(each_solid_vertex(tri)))
+function get_weighted_nearest_neighbour(tri::Triangulation, i, j = rand(each_solid_vertex(tri)))
     if has_vertex(tri, i)
         return i
     else
@@ -153,6 +163,7 @@ function _get_weighted_nearest_neighbour(tri, i, j)
     end
 end
 
+
 @doc """
     is_submerged(tri::Triangulation, i) -> Bool 
     is_submerged(tri::Triangulation, i, V) -> Bool
@@ -170,7 +181,7 @@ function is_submerged(tri::Triangulation, i)
     V = find_triangle(tri, q)
     return is_submerged(tri, i, V)
 end
-function is_submerged(tri::Triangulation, i, V) 
+function is_submerged(tri::Triangulation, i, V)
     is_ghost_vertex(i) && return false
     cert = point_position_relative_to_circumcircle(tri, V, i)
     return is_outside(cert)

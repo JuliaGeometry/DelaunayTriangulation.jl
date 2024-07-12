@@ -22,14 +22,16 @@ struct RefinementConstraints{F}
     max_points::Int
     seditious_angle::Float64
     custom_constraint::F
-    function RefinementConstraints(;
-        min_angle=0.0,
-        max_angle=180.0,
-        min_area=0.0,
-        max_area=Inf,
-        max_points=typemax(Int),
-        seditious_angle=20.0,
-        custom_constraint=(tri, triangle) -> false)
+    function RefinementConstraints(
+            ;
+            min_angle = 0.0,
+            max_angle = 180.0,
+            min_area = 0.0,
+            max_area = Inf,
+            max_points = typemax(Int),
+            seditious_angle = 20.0,
+            custom_constraint = (tri, triangle) -> false,
+        )
         max_radius_edge_ratio = cscd(min_angle) / 2
         min_angle, max_angle, min_area, max_area, max_radius_edge_ratio, seditious_angle = convert.(Float64, (min_angle, max_angle, min_area, max_area, max_radius_edge_ratio, seditious_angle))
         F = typeof(custom_constraint)
@@ -48,12 +50,14 @@ function Base.show(io::IO, ::MIME"text/plain", constraints::RefinementConstraint
     print(io, "   custom_constraint: ", constraints.custom_constraint)
 end
 
+
 """
     has_max_angle_constraint(constraints::RefinementConstraints) -> Bool
 
 Return `true` if `constraints` has a maximum angle constraint, `false` otherwise.
 """
 has_max_angle_constraint(constraints::RefinementConstraints) = constraints.max_angle < 180.0
+
 
 """
     violates_custom_constraint(constraints::RefinementConstraints{F}, tri::Triangulation, T) where {F} -> Bool

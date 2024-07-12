@@ -50,6 +50,7 @@ function refine!(tri::Triangulation; kwargs...) # WARNING: Minimum error might b
     return tri
 end
 
+
 function refine!(tri::Triangulation, args::RefinementArguments)
     enqueue_all_encroached_segments!(args, tri)
     split_all_encroached_segments!(tri, args)
@@ -60,6 +61,7 @@ function refine!(tri::Triangulation, args::RefinementArguments)
     # finalise!(tri, args) # don't finalise here, can be dangerous when reusing this method on an unconstrained triangulation
     return tri
 end
+
 
 """
     refine_itr!(tri::Triangulation, args::RefinementArguments)
@@ -88,6 +90,7 @@ function refine_itr!(tri::Triangulation, args::RefinementArguments)
     return tri
 end
 
+
 """
     enqueue_all_encroached_segments!(args::RefinementArguments, tri::Triangulation)
 
@@ -103,6 +106,7 @@ function enqueue_all_encroached_segments!(args::RefinementArguments, tri::Triang
     return args
 end
 
+
 """
     enqueue_all_bad_triangles!(args::RefinementArguments, tri::Triangulation)
 
@@ -116,6 +120,7 @@ function enqueue_all_bad_triangles!(args::RefinementArguments, tri::Triangulatio
     return args
 end
 
+
 """
     finalise!(tri::Triangulation, args::RefinementArguments)
 
@@ -123,9 +128,10 @@ Finalises the triangulation after refinement, e.g. by deleting ghost triangles a
 """
 function finalise!(tri::Triangulation, args::RefinementArguments)
     !args.had_ghosts && delete_ghost_triangles!(tri)
-    args.locked_convex_hull && unlock_convex_hull!(tri; reconstruct=true)
+    args.locked_convex_hull && unlock_convex_hull!(tri; reconstruct = true)
     return tri
 end
+
 
 """
     split_triangle!(tri::Triangulation, args::RefinementArguments, T) -> Certificate 
@@ -165,6 +171,7 @@ function split_triangle!(tri::Triangulation, args::RefinementArguments, T)
     end
 end
 
+
 """
     get_steiner_point(tri::Triangulation, args::RefinementArguments, T) -> Certificate, Point
 
@@ -193,6 +200,7 @@ function get_steiner_point(tri::Triangulation, args::RefinementArguments, T)
     return Cert.None, c # nothing went wrong yet
 end
 
+
 """
     check_steiner_point_precision(tri::Triangulation, T, c) -> Bool
 
@@ -214,6 +222,7 @@ function check_steiner_point_precision(tri::Triangulation, T, c)
     return rel_err_flag || abs_err_flag
 end
 
+
 """
     get_init_for_steiner_point(tri::Triangulation, T) -> Vertex 
 
@@ -232,6 +241,7 @@ function get_init_for_steiner_point(tri::Triangulation, T)
     init = max_edge == ℓij² ? k : max_edge == ℓjk² ? i : j
     return init
 end
+
 
 """
     locate_steiner_point(tri::Triangulation, args::RefinementArguments, T, c) -> Triangle, Cert 
@@ -252,13 +262,14 @@ function locate_steiner_point(tri::Triangulation, args::RefinementArguments, T, 
     flag = point_position_relative_to_triangle(tri, T, c)
     !is_outside(flag) && return T, flag # T is never a ghost triangle, so don't worry about checking is_on(flag) here
     init = get_init_for_steiner_point(tri, T)
-    V, _ = find_triangle(tri, c; m=nothing, point_indices=nothing, try_points=nothing, k=init, args.rng, args.concavity_protection, use_barriers=Val(true))
+    V, _ = find_triangle(tri, c; m = nothing, point_indices = nothing, try_points = nothing, k = init, args.rng, args.concavity_protection, use_barriers = Val(true))
     flag = point_position_relative_to_triangle(tri, V, c)
     if is_ghost_triangle(V) && is_on(flag)
         V = replace_ghost_triangle_with_boundary_triangle(tri, V)
     end
     return V, flag
 end
+
 
 # This function is needed for two reasons: Firstly, when using diametral lens, boundary triangles might have their circumcenters on the boundary, and so we cannot split the triangle to improve its quality.
 # Secondly, if we have to walk past a segment to insert the circumcenter, then we will not improve the triangle's quality which is the whole point of split_triangle!. 
@@ -289,6 +300,7 @@ function check_for_invisible_steiner_point(tri::Triangulation, V, T, flag, c)
     return c′, T
 end
 
+
 """
     check_for_steiner_point_on_segment(tri::Triangulation, V, V′, new_point, flag) -> Bool
 
@@ -314,6 +326,7 @@ function check_for_steiner_point_on_segment(tri::Triangulation, V, V′, new_poi
     end
     return false
 end
+
 
 """
     enqueue_newly_encroached_segments!(args::RefinementArguments, tri::Triangulation) -> Bool
@@ -341,7 +354,9 @@ function enqueue_newly_encroached_segments!(args::RefinementArguments, tri::Tria
     return any_encroached
 end
 
-const MIDPOINT_TOLERANCE = 1e-6
+
+const MIDPOINT_TOLERANCE = 1.0e-6
+
 
 """
     compute_split_position(tri::Triangulation, args::RefinementArguments, e) -> NTuple{2, Float}
@@ -414,6 +429,7 @@ function _compute_split_position_piecewise_linear(tri::Triangulation, args::Refi
     end
 end
 
+
 """
     compute_concentric_shell_ternary_split_position(p, q) -> Float64
 
@@ -427,6 +443,7 @@ function compute_concentric_shell_ternary_split_position(p, q)
     return t
 end
 
+
 """
     compute_concentric_shell_quarternary_split_position(p, q) -> Float64
 
@@ -439,6 +456,7 @@ function compute_concentric_shell_quarternary_split_position(p, q)
     t = s / ℓ
     return t
 end
+
 
 """
     balanced_power_of_two_ternary_split(ℓ) -> Float64
@@ -459,6 +477,7 @@ function balanced_power_of_two_ternary_split(ℓ)
     return balanced_split
 end
 
+
 """
     balanced_power_of_two_quarternary_split(ℓ) -> Float
     
@@ -475,6 +494,7 @@ function balanced_power_of_two_quarternary_split(ℓ)
     end
     return balanced_split
 end
+
 
 """
     segment_vertices_adjoin_other_segments_at_acute_angle(tri::Triangulation, e) -> Int, Vertex
@@ -528,6 +548,7 @@ function segment_vertices_adjoin_other_segments_at_acute_angle(tri::Triangulatio
     return num_adjoin, adjoin_vert
 end
 
+
 """
     is_encroached(tri::Triangulation, args::RefinementArguments, edge) -> Bool
 
@@ -549,6 +570,7 @@ function is_encroached(tri::Triangulation, args::RefinementArguments, edge)
     return false
 end
 
+
 """
     encroaches_upon(p, q, r, args::RefinementArguments) -> Bool
 
@@ -565,6 +587,7 @@ function encroaches_upon(p, q, r, args::RefinementArguments)
     return !is_outside(d)
 end
 
+
 """
     check_split_subsegment_precision(mx, my, p, q) -> Bool
 
@@ -577,8 +600,9 @@ function check_split_subsegment_precision(mx, my, p, q)
     abs_err_flag_1 = check_absolute_precision(mx, px) && check_absolute_precision(my, py)
     abs_err_flag_2 = check_absolute_precision(mx, qx) && check_absolute_precision(my, qy)
     abs_err_flag = abs_err_flag_1 || abs_err_flag_2
-    return abs_err_flag 
+    return abs_err_flag
 end
+
 
 """
     split_subsegment!(tri::Triangulation, args::RefinementArguments, e) 
@@ -595,6 +619,7 @@ function split_subsegment!(tri::Triangulation, args::RefinementArguments, e)
         return _split_subsegment_piecewise_linear!(tri, args, e)
     end
 end
+
 
 """
     _split_subsegment_piecewise_linear!(tri::Triangulation, args::RefinementArguments, e)
@@ -618,6 +643,7 @@ function _split_subsegment_piecewise_linear!(tri::Triangulation, args::Refinemen
     assess_added_triangles!(args, tri)
     return tri
 end
+
 
 """
     _split_subsegment_curve_bounded!(tri::Triangulation, args::RefinementArguments, e)
@@ -654,7 +680,7 @@ function _split_subsegment_curve_bounded_standard!(tri::Triangulation, args::Ref
         r = I(num_points(tri))
         is_interior = is_segment(enricher, i, j)
         complete_split_edge_and_legalise!(tri, i, j, r, Val(true), args.events)
-        split_edge!(enricher, i, j, r, Val(false), Val(false), is_interior) 
+        split_edge!(enricher, i, j, r, Val(false), Val(false), is_interior)
         assess_added_triangles!(args, tri)
         push!(args.midpoint_split_list, r)
         return tri
@@ -695,6 +721,7 @@ function _split_subsegment_curve_bounded_small_angle!(tri::Triangulation, args::
     return tri
 end
 
+
 """
     delete_free_vertices_around_subsegment!(tri::Triangulation, args::RefinementArguments, e)
 
@@ -715,13 +742,14 @@ function delete_free_vertices_around_subsegment!(tri::Triangulation, args::Refin
         w = get_adjacent(tri, e′)
         r = get_point(tri, w)
         while is_free(args, w) && !is_outside(point_position_relative_to_diametral_circle(p, q, r))
-            delete_point!(tri, w; store_event_history=Val(true), event_history=args.events, args.rng)
+            delete_point!(tri, w; store_event_history = Val(true), event_history = args.events, args.rng)
             w = get_adjacent(tri, e′)
             r = get_point(tri, w)
         end
     end
     return tri
 end
+
 
 """
     split_all_encroached_segments!(tri::Triangulation, args::RefinementArguments)
@@ -736,6 +764,7 @@ function split_all_encroached_segments!(tri::Triangulation, args::RefinementArgu
     end
     return tri
 end
+
 
 """
     is_triangle_seditious(tri::Triangulation, args, u, v, w, smallest_idx) -> Bool
@@ -793,6 +822,7 @@ function is_triangle_seditious(tri::Triangulation, args, u, v, w, smallest_idx)
     return false
 end
 
+
 """
     check_seditious_precision(ℓrp, ℓrq) -> Bool
 
@@ -805,6 +835,7 @@ function check_seditious_precision(ℓrp, ℓrq)
     zero_flag = iszero(ℓrp) || iszero(ℓrq)
     return ratio_flag || rel_err_flag || abs_err_flag || zero_flag
 end
+
 
 """
     is_triangle_nestled(tri::Triangulation, T, idx) -> Bool
@@ -831,6 +862,7 @@ function is_triangle_nestled(tri::Triangulation, T, idx) # nestled: a triangle i
     e_kj_seg = contains_segment(tri, k, j)
     return e_ki_seg && e_kj_seg
 end
+
 
 """
     assess_triangle_quality(tri::Triangulation, args::RefinementArguments, T) -> Float64, Bool
@@ -875,6 +907,7 @@ function assess_triangle_quality(tri::Triangulation, args::RefinementArguments, 
     # Now we know that the triangle is skinny, so we can return depending on whether it is safe to split it 
     return ρ, !(is_seditious || is_nestled)
 end
+
 
 """
     assess_added_triangles!(args::RefinementArguments, tri::Triangulation)

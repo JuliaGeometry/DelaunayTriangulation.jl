@@ -76,7 +76,7 @@ The [`BoundaryEnricher`](@ref) used for triangulating a curve-bounded domain. If
 A [`TriangulationCache`](@ref) used as a cache for [`add_segment!`](@ref) which requires a separate `Triangulation` structure for use.
 This will not contain any segments or boundary nodes. Also stores segments useful for [`lock_convex_hull!`](@ref) and [`unlock_convex_hull!`](@ref).
 """
-struct Triangulation{P,T,BN,W,I,E,Es,BC,BEM,GVM,GVR,BPL,C,BE}
+struct Triangulation{P, T, BN, W, I, E, Es, BC, BEM, GVM, GVR, BPL, C, BE}
     # Geometry
     points::P
     triangles::T
@@ -85,8 +85,8 @@ struct Triangulation{P,T,BN,W,I,E,Es,BC,BEM,GVM,GVR,BPL,C,BE}
     all_segments::Es
     weights::W
     # Topology
-    adjacent::Adjacent{I,E}
-    adjacent2vertex::Adjacent2Vertex{I,Es}
+    adjacent::Adjacent{I, E}
+    adjacent2vertex::Adjacent2Vertex{I, Es}
     graph::Graph{I}
     # Boundary handling
     boundary_curves::BC
@@ -94,7 +94,7 @@ struct Triangulation{P,T,BN,W,I,E,Es,BC,BEM,GVM,GVR,BPL,C,BE}
     ghost_vertex_map::GVM
     ghost_vertex_ranges::GVR
     # Other 
-    convex_hull::ConvexHull{P,I}
+    convex_hull::ConvexHull{P, I}
     representative_point_list::BPL
     polygon_hierarchy::PolygonHierarchy{I}
     boundary_enricher::BE
@@ -111,6 +111,7 @@ function Base.show(io::IO, ::MIME"text/plain", tri::Triangulation)
     println(io, "   Weighted: ", is_weighted(tri))
     print(io, "   Constrained: ", is_constrained(tri))
 end
+
 
 function Base.:(==)(tri1::Triangulation, tri2::Triangulation)
     !has_ghost_triangles(tri1) && has_ghost_triangles(tri2) && return false
@@ -139,12 +140,14 @@ function Base.:(==)(tri1::Triangulation, tri2::Triangulation)
     return true
 end
 
+
 """
     get_points(tri::Triangulation) -> Points 
 
 Return the points of the triangulation. Note that this may include points not yet in `tri`.
 """
 get_points(tri::Triangulation) = tri.points
+
 
 """
     get_triangles(tri::Triangulation) -> Triangles
@@ -153,6 +156,7 @@ Return the triangles of the triangulation. These triangles are all given in coun
 and may include ghost triangles.
 """
 get_triangles(tri::Triangulation) = tri.triangles
+
 
 """
     get_boundary_nodes(tri::Triangulation) -> BoundaryNodes 
@@ -163,6 +167,7 @@ has no constrained boundary, then the boundary is instead given by its convex hu
 """
 get_boundary_nodes(tri::Triangulation) = tri.boundary_nodes
 
+
 """
     get_interior_segments(tri::Triangulation) -> Edges 
 
@@ -170,6 +175,7 @@ Return the interior segments of the triangulation. These are segments that are f
 they are not the same as edges.
 """
 get_interior_segments(tri::Triangulation) = tri.interior_segments
+
 
 """
     get_all_segments(tri::Triangulation) -> Edges
@@ -179,12 +185,14 @@ edges that are forced to be in the triangulation.
 """
 get_all_segments(tri::Triangulation) = tri.all_segments
 
+
 """
     get_weights(tri::Triangulation) -> Weights
 
 Return the weights of the triangulation. These are the weights of the vertices of the triangulation.
 """
 get_weights(tri::Triangulation) = tri.weights
+
 
 """
     get_adjacent(tri::Triangulation) -> Adjacent
@@ -196,6 +204,7 @@ See also [`Adjacent`](@ref).
 """
 get_adjacent(tri::Triangulation) = tri.adjacent
 
+
 """
     get_adjacent2vertex(tri::Triangulation) -> Adjacent2Vertex
 
@@ -204,12 +213,14 @@ all edges `(u, v)` such that `(u, v, w)` is a positively oriented triangle in `t
 """
 get_adjacent2vertex(tri::Triangulation) = tri.adjacent2vertex
 
+
 """
     get_graph(tri::Triangulation) -> Graph
 
 Returns the [`Graph`](@ref) of the triangulation `tri`. This is an undirected graph.
 """
 get_graph(tri::Triangulation) = tri.graph
+
 
 """
     get_boundary_curves(tri::Triangulation) -> NTuple{N, Function}
@@ -221,6 +232,7 @@ For curves that are defined by boundary nodes rather than by a function, the fun
 are all defined by `t -> NTuple{2, Number}`, where `t ∈ [0, 1]` and the `NTuple{2, Number}` is the coordinate on the curve at that `t`.
 """
 get_boundary_curves(tri::Triangulation) = tri.boundary_curves
+
 
 """
     get_boundary_edge_map(tri::Triangulation) -> Dict
@@ -234,6 +246,7 @@ with the section that `(u, v)` resides on, and `u = get_boundary_nodes(boundary_
 See also [`construct_boundary_edge_map`](@ref).
 """
 get_boundary_edge_map(tri::Triangulation) = tri.boundary_edge_map
+
 
 """
     get_ghost_vertex_map(tri::Triangulation) -> Dict
@@ -259,6 +272,7 @@ See also [`construct_ghost_vertex_map`](@ref).
 """
 get_ghost_vertex_map(tri::Triangulation) = tri.ghost_vertex_map
 
+
 """
     get_ghost_vertex_ranges(tri::Triangulation) -> Dict
 
@@ -269,6 +283,7 @@ See also [`construct_ghost_vertex_ranges`](@ref).
 """
 get_ghost_vertex_ranges(tri::Triangulation) = tri.ghost_vertex_ranges
 
+
 """
     get_convex_hull(tri::Triangulation) -> ConvexHull 
 
@@ -276,6 +291,7 @@ Returns the convex hull of the points in `tri`. This is given as a [`ConvexHull`
 are sorted counter-clockwise and defined so that the first and last vertices are equal.
 """
 get_convex_hull(tri::Triangulation) = tri.convex_hull
+
 
 """
     get_representative_point_list(tri::Triangulation) -> Dict 
@@ -285,12 +301,14 @@ curve. These representative points are how we interpret ghost triangles relative
 """
 get_representative_point_list(tri::Triangulation) = tri.representative_point_list
 
+
 """
     get_polygon_hierarchy(tri::Triangulation) -> PolygonHierarchy
 
 Returns the [`PolygonHierarchy`](@ref) of the boundary of `tri`. This defines the hierarchy of the boundary curves, giving information about which curves are contained in which other curves.
 """
 get_polygon_hierarchy(tri::Triangulation) = tri.polygon_hierarchy
+
 
 """
     get_exterior_curve_indices(tri::Triangulation) -> KeySet{Integer}
@@ -299,12 +317,14 @@ Returns the set of all curve indices that correspond to exterior curves of `tri`
 """
 get_exterior_curve_indices(tri::Triangulation) = get_exterior_curve_indices(get_polygon_hierarchy(tri))
 
+
 """
     get_boundary_enricher(tri::Triangulation) -> BoundaryEnricher
 
 Returns the [`BoundaryEnricher`](@ref) of `tri`. If the domain is not curve-bounded, this is `nothing`.
 """
 get_boundary_enricher(tri::Triangulation) = tri.boundary_enricher
+
 
 """
     get_cache(tri::Triangulation) -> TriangulationCache
@@ -313,6 +333,7 @@ Returns the cache of `tri`. This is a [`TriangulationCache`](@ref) used as a cac
 """
 get_cache(tri::Triangulation) = tri.cache
 
+
 """
     number_type(tri::Triangulation) -> DataType 
 
@@ -320,33 +341,38 @@ Returns the type used for representing individual coordinates in `tri`.
 """
 number_type(::Triangulation{P}) where {P} = number_type(P)
 
+
 """
     integer_type(tri::Triangulation) -> DataType
 
 Returns the type used for representing vertices in `tri`.
 """
-integer_type(::Triangulation{P,T,BN,W,I}) where {P,T,BN,W,I} = I
+integer_type(::Triangulation{P, T, BN, W, I}) where {P, T, BN, W, I} = I
+
 
 """
     edges_type(tri::Triangulation) -> DataType
 
 Returns the type used for representing collections of edges in `tri`.
 """
-edges_type(::Triangulation{P,T,BN,W,I,E,Es}) where {P,T,BN,W,I,E,Es} = Es
+edges_type(::Triangulation{P, T, BN, W, I, E, Es}) where {P, T, BN, W, I, E, Es} = Es
+
 
 """
     edge_type(tri::Triangulation) -> DataType
 
 Returns the type used for representing individual edges in `tri`.
 """
-edge_type(::Triangulation{P,T,BN,W,I,E}) where {P,T,BN,W,I,E} = E
+edge_type(::Triangulation{P, T, BN, W, I, E}) where {P, T, BN, W, I, E} = E
+
 
 """
     triangle_type(tri::Triangulation) -> DataType
 
 Returns the type used for representing collections of triangles in `tri`.
 """
-triangles_type(::Triangulation{P,T}) where {P,T} = T
+triangles_type(::Triangulation{P, T}) where {P, T} = T
+
 
 """
     triangle_type(tri::Triangulation) -> DataType
@@ -355,11 +381,14 @@ Returns the type used for representing individual triangles in `tri`.
 """
 triangle_type(tri::Triangulation) = triangle_type(triangles_type(tri))
 
-@inline function __Triangulation(points::P, boundary_nodes, IntegerType::Type{I}, EdgeType::Type{E},
-    TriangleType::Type{V}, EdgesType::Type{Es}, TrianglesType::Type{Ts}) where {P,I,E,V,Es,Ts}
+
+@inline function __Triangulation(
+        points::P, boundary_nodes, IntegerType::Type{I}, EdgeType::Type{E},
+        TriangleType::Type{V}, EdgesType::Type{Es}, TrianglesType::Type{Ts},
+    ) where {P, I, E, V, Es, Ts}
     T = TrianglesType()
-    adj = Adjacent{IntegerType,EdgeType}()
-    adj2v = Adjacent2Vertex{IntegerType,EdgesType}()
+    adj = Adjacent{IntegerType, EdgeType}()
+    adj2v = Adjacent2Vertex{IntegerType, EdgesType}()
     graph = Graph{IntegerType}()
     all_segments = EdgesType()
     boundary_edge_map = construct_boundary_edge_map(boundary_nodes, IntegerType, EdgeType)
@@ -376,27 +405,32 @@ triangle_type(tri::Triangulation) = triangle_type(triangles_type(tri))
     return T, adj, adj2v, graph, all_segments, boundary_edge_map, ghost_vertex_map, ghost_vertex_ranges, ch, polygon_hierarchy
 end
 
-@inline function _build_cache(points::P, IntegerType::Type{I}, EdgeType::Type{E},
-    TriangleType::Type{V}, EdgesType::Type{Es}, TrianglesType::Type{T}, weights::W, build_cache::Val{B}) where {P,I,E,V,Es,T,W,B}
+
+@inline function _build_cache(
+        points::P, IntegerType::Type{I}, EdgeType::Type{E},
+        TriangleType::Type{V}, EdgesType::Type{Es}, TrianglesType::Type{T}, weights::W, build_cache::Val{B},
+    ) where {P, I, E, V, Es, T, W, B}
     if B
         BN = Vector{IntegerType}
         BC = Tuple{}
-        BEM = Dict{EdgeType,Tuple{Vector{IntegerType},IntegerType}}
-        GVM = Dict{IntegerType,Vector{IntegerType}}
-        GVR = Dict{IntegerType,UnitRange{IntegerType}}
-        BPL = Dict{IntegerType,RepresentativeCoordinates{IntegerType,number_type(points)}}
-        C = TriangulationCache{Nothing,Nothing,Nothing,Nothing,Nothing}
+        BEM = Dict{EdgeType, Tuple{Vector{IntegerType}, IntegerType}}
+        GVM = Dict{IntegerType, Vector{IntegerType}}
+        GVR = Dict{IntegerType, UnitRange{IntegerType}}
+        BPL = Dict{IntegerType, RepresentativeCoordinates{IntegerType, number_type(points)}}
+        C = TriangulationCache{Nothing, Nothing, Nothing, Nothing, Nothing}
         cache = TriangulationCache(
-            Triangulation(points; weights, IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType, build_cache=Val(false)),
-            Triangulation(points; weights, IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType, build_cache=Val(false)),
-            I[], Es(), I[], T())::TriangulationCache{
-            Triangulation{P,T,BN,W,I,E,Es,BC,BEM,GVM,GVR,BPL,C,Nothing},Vector{I},Es,Vector{I},T
+            Triangulation(points; weights, IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType, build_cache = Val(false)),
+            Triangulation(points; weights, IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType, build_cache = Val(false)),
+            I[], Es(), I[], T(),
+        )::TriangulationCache{
+            Triangulation{P, T, BN, W, I, E, Es, BC, BEM, GVM, GVR, BPL, C, Nothing}, Vector{I}, Es, Vector{I}, T,
         }
     else
-        cache = TriangulationCache(nothing, nothing, nothing, nothing, nothing, nothing)::TriangulationCache{Nothing,Nothing,Nothing,Nothing,Nothing}
+        cache = TriangulationCache(nothing, nothing, nothing, nothing, nothing, nothing)::TriangulationCache{Nothing, Nothing, Nothing, Nothing, Nothing}
     end
     return cache
 end
+
 
 """
     Triangulation(points; kwargs...) -> Triangulation 
@@ -404,34 +438,43 @@ end
 Initialises an empty `Triangulation` for triangulating `points`. The keyword arguments 
 `kwargs...` match those of [`triangulate`](@ref).
 """
-@inline function Triangulation(points::P;
-    IntegerType::Type{I}=Int,
-    EdgeType::Type{E}=NTuple{2,IntegerType},
-    TriangleType::Type{T}=NTuple{3,IntegerType},
-    EdgesType::Type{Es}=Set{EdgeType},
-    TrianglesType::Type{Vs}=Set{TriangleType},
-    boundary_nodes=IntegerType[],
-    segments=EdgesType(),
-    weights=ZeroWeight(),
-    representative_point_list=Dict{IntegerType,RepresentativeCoordinates{IntegerType,number_type(points)}}(),
-    boundary_curves=(),
-    build_cache=true,
-    boundary_enricher=nothing) where {P,I,E,T,Es,Vs}
-    return _Triangulation(points,
+@inline function Triangulation(
+        points::P;
+        IntegerType::Type{I} = Int,
+        EdgeType::Type{E} = NTuple{2, IntegerType},
+        TriangleType::Type{T} = NTuple{3, IntegerType},
+        EdgesType::Type{Es} = Set{EdgeType},
+        TrianglesType::Type{Vs} = Set{TriangleType},
+        boundary_nodes = IntegerType[],
+        segments = EdgesType(),
+        weights = ZeroWeight(),
+        representative_point_list = Dict{IntegerType, RepresentativeCoordinates{IntegerType, number_type(points)}}(),
+        boundary_curves = (),
+        build_cache = true,
+        boundary_enricher = nothing,
+    ) where {P, I, E, T, Es, Vs}
+    return _Triangulation(
+        points,
         IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType,
         boundary_nodes, segments, weights, representative_point_list,
-        boundary_curves, _to_val(build_cache), boundary_enricher)
+        boundary_curves, _to_val(build_cache), boundary_enricher,
+    )
 end
-@inline function _Triangulation(points, ::Type{I}, ::Type{E}, ::Type{V}, ::Type{Es}, ::Type{Ts},
-    boundary_nodes, segments, weights, representative_point_list,
-    boundary_curves, build_cache::Val{B}, boundary_enricher) where {I,E,V,Es,Ts,B}
+@inline function _Triangulation(
+        points, ::Type{I}, ::Type{E}, ::Type{V}, ::Type{Es}, ::Type{Ts},
+        boundary_nodes, segments, weights, representative_point_list,
+        boundary_curves, build_cache::Val{B}, boundary_enricher,
+    ) where {I, E, V, Es, Ts, B}
     T, adj, adj2v, graph, all_segments, boundary_edge_map, ghost_vertex_map, ghost_vertex_ranges, ch, polygon_hierarchy = __Triangulation(points, boundary_nodes, I, E, V, Es, Ts)
     cache = _build_cache(points, I, E, V, Es, Ts, weights, build_cache)
-    tri = Triangulation(points, T, boundary_nodes, segments, all_segments, weights,
+    tri = Triangulation(
+        points, T, boundary_nodes, segments, all_segments, weights,
         adj, adj2v, graph, boundary_curves, boundary_edge_map,
-        ghost_vertex_map, ghost_vertex_ranges, ch, representative_point_list, polygon_hierarchy, boundary_enricher, cache)
+        ghost_vertex_map, ghost_vertex_ranges, ch, representative_point_list, polygon_hierarchy, boundary_enricher, cache,
+    )
     return tri
 end
+
 
 """
     Triangulation(points, triangles, boundary_nodes; kwargs...) -> Triangulation
@@ -455,18 +498,21 @@ Returns the `Triangulation` corresponding to the triangulation of `points` with 
 # Output 
 - `tri`: The [`Triangulation`](@ref).
 """
-@inline function Triangulation(points::P, triangles::T, boundary_nodes::BN;
-    IntegerType::Type{I}=Int,
-    EdgeType::Type{E}=NTuple{2,IntegerType},
-    TriangleType::Type{V}=NTuple{3,IntegerType},
-    EdgesType::Type{Es}=Set{EdgeType},
-    TrianglesType::Type{Ts}=Set{TriangleType},
-    weights=ZeroWeight(),
-    delete_ghosts=false) where {P,T,BN,I,E,V,Es,Ts}
+@inline function Triangulation(
+        points::P, triangles::T, boundary_nodes::BN;
+        IntegerType::Type{I} = Int,
+        EdgeType::Type{E} = NTuple{2, IntegerType},
+        TriangleType::Type{V} = NTuple{3, IntegerType},
+        EdgesType::Type{Es} = Set{EdgeType},
+        TrianglesType::Type{Ts} = Set{TriangleType},
+        weights = ZeroWeight(),
+        delete_ghosts = false,
+    ) where {P, T, BN, I, E, V, Es, Ts}
     _bn = copy(boundary_nodes)
-    tri = Triangulation(points; boundary_nodes=_bn, weights, IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType)
+    tri = Triangulation(points; boundary_nodes = _bn, weights, IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType)
     return build_triangulation_from_data!(tri, triangles, _bn, delete_ghosts)
 end
+
 
 """
     build_triangulation_from_data!(tri::Triangulation, triangles, boundary_nodes, delete_ghosts)
@@ -491,7 +537,7 @@ Given an empty `triangulation`, `tri`, adds all the `triangles` and `boundary_no
     end
     add_boundary_information!(tri)
     add_ghost_triangles!(tri)
-    convex_hull!(tri; reconstruct=true)
+    convex_hull!(tri; reconstruct = true)
     segments = get_all_segments(tri)
     ghost_vertex_map = get_ghost_vertex_map(tri)
     all_segments = merge_segments(ghost_vertex_map, boundary_nodes, Es())

@@ -17,9 +17,10 @@ julia> DelaunayTriangulation.construct_edge(Vector{Int32}, 5, 15)
 ```
 """
 construct_edge
-construct_edge(::Type{NTuple{2,I}}, i, j) where {I} = (I(i), I(j))
+construct_edge(::Type{NTuple{2, I}}, i, j) where {I} = (I(i), I(j))
 construct_edge(::Type{Vector{I}}, i, j) where {I} = I[i, j]
-construct_edge(::Type{A}, i, j) where {I,A<:AbstractVector{I}} = A(I[i, j])
+construct_edge(::Type{A}, i, j) where {I, A <: AbstractVector{I}} = A(I[i, j])
+
 
 """
     initial(e) -> Vertex
@@ -43,6 +44,7 @@ julia> DelaunayTriangulation.initial(e)
 """
 initial(e) = e[1]
 
+
 """
     terminal(e) -> Vertex
 
@@ -65,6 +67,7 @@ julia> DelaunayTriangulation.terminal(e)
 """
 terminal(e) = e[2]
 
+
 """
     edge_vertices(e) -> NTuple{2, Vertex}
 
@@ -86,6 +89,7 @@ julia> edge_vertices(e)
 ```
 """
 edge_vertices(e) = (initial(e), terminal(e))
+
 
 """
     reverse_edge(e) -> Edge
@@ -110,6 +114,7 @@ julia> DelaunayTriangulation.reverse_edge(e)
 ```
 """
 reverse_edge(e) = construct_edge(typeof(e), terminal(e), initial(e))
+
 
 """
     compare_unoriented_edges(u, v) -> Bool
@@ -140,10 +145,11 @@ true
 ```
 """
 function compare_unoriented_edges(u, v)
-  i, j = edge_vertices(u)
-  k, ℓ = edge_vertices(v)
-  return (i, j) == (k, ℓ) || (i, j) == (ℓ, k)
+    i, j = edge_vertices(u)
+    k, ℓ = edge_vertices(v)
+    return (i, j) == (k, ℓ) || (i, j) == (ℓ, k)
 end
+
 
 """
     num_edges(E) -> Integer 
@@ -161,6 +167,7 @@ julia> num_edges(e)
 ```
 """
 num_edges(E) = length(E)
+
 
 """
     edge_type(E) -> DataType
@@ -191,6 +198,7 @@ Vector{Int64} (alias for Array{Int64, 1})
 ```
 """
 edge_type(E) = eltype(E)
+
 
 @doc """
     contains_edge(i, j, E) -> Bool
@@ -231,12 +239,14 @@ contains_edge
 contains_edge(e, E) = e ∈ E
 contains_edge(i, j, E) = contains_edge(construct_edge(edge_type(E), i, j), E)
 
+
 """
     contains_unoriented_edge(e, E) -> Bool
   
 Check if `E` contains the unoriented edge `e`, i.e. check if `E` contains the edge `e` or `reverse_edge(e)`.
 """
 contains_unoriented_edge(e, E) = contains_edge(e, E) || contains_edge(reverse_edge(e), E)
+
 
 """
     add_to_edges!(E, e)
@@ -260,6 +270,7 @@ Set{Tuple{Int64, Int64}} with 3 elements:
 ```
 """
 add_to_edges!(E, e) = push!(E, e)
+
 
 """
     add_edge!(E, e...)
@@ -299,10 +310,11 @@ Set{Tuple{Int64, Int64}} with 7 elements:
 ```
 """
 function add_edge!(E, e...)
-  for v in e
-    add_to_edges!(E, v)
-  end
+    for v in e
+        add_to_edges!(E, v)
+    end
 end
+
 
 """
     delete_from_edges!(E, e)
@@ -328,6 +340,7 @@ Set{Vector{Int64}} with 3 elements:
 ```
 """
 delete_from_edges!(E, e) = delete!(E, e)
+
 
 """
     delete_edge!(E, e...)
@@ -364,10 +377,11 @@ Set{Vector{Int64}} with 2 elements:
 ```
 """
 function delete_edge!(E, e...)
-  for v in e
-    delete_from_edges!(E, v)
-  end
+    for v in e
+        delete_from_edges!(E, v)
+    end
 end
+
 
 """
     delete_unoriented_edge!(E, e)
@@ -375,6 +389,7 @@ end
 Delete the unoriented edge `e` from `E`, i.e. delete both the edge `e` and `reverse_edge(e)`.
 """
 delete_unoriented_edge!(E, e) = delete_edge!(E, e, reverse_edge(e))
+
 
 @doc """
     each_edge(E) -> Iterator
@@ -401,6 +416,7 @@ Set{Tuple{Int64, Int64}} with 3 elements:
 each_edge
 each_edge(E) = E
 each_edge(E::AbstractMatrix) = eachcol(E)
+
 
 @doc """
     random_edge([rng], E) -> E
@@ -437,18 +453,20 @@ random_edge
 random_edge(E) = rand(E)
 random_edge(rng, E) = rand(rng, E)
 
+
 """
   compare_unoriented_edge_collections(E, F) -> Bool
 
 Tests if the edge collections `E` and `F` are equal, ignoring edge orientation.
 """
 function compare_unoriented_edge_collections(E, F)
-  num_edges(E) ≠ num_edges(F) && return false
-  for e in each_edge(E)
-    contains_unoriented_edge(e, F) || return false
-  end
-  return true
+    num_edges(E) ≠ num_edges(F) && return false
+    for e in each_edge(E)
+        contains_unoriented_edge(e, F) || return false
+    end
+    return true
 end
+
 
 """
     edges_are_disjoint(e, e′) -> Bool 

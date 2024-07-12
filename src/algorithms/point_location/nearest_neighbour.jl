@@ -17,6 +17,7 @@ get_nearest_neighbour
 get_nearest_neighbour(vor::VoronoiTessellation, q; kwargs...) = find_triangle(vor, q; kwargs...)
 get_nearest_neighbour(tri::Triangulation, q; kwargs...) = jump_to_voronoi_polygon(tri, q; kwargs...)
 
+
 function find_triangle(vor::VoronoiTessellation, q; kwargs...)
     return jump_to_voronoi_polygon(get_triangulation(vor), q; kwargs...)
 end

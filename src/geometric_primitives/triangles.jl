@@ -18,9 +18,10 @@ julia> DelaunayTriangulation.construct_triangle(Vector{Int32}, 1, 2, 3)
 ```
 """
 construct_triangle
-construct_triangle(::Type{NTuple{3,I}}, i, j, k) where {I} = (I(i), I(j), I(k))
+construct_triangle(::Type{NTuple{3, I}}, i, j, k) where {I} = (I(i), I(j), I(k))
 construct_triangle(::Type{Vector{I}}, i, j, k) where {I} = I[i, j, k]
-construct_triangle(::Type{A}, i, j, k) where {I,A<:AbstractVector{I}} = A(I[i, j, k])
+construct_triangle(::Type{A}, i, j, k) where {I, A <: AbstractVector{I}} = A(I[i, j, k])
+
 
 """
     geti(T) -> Vertex
@@ -40,6 +41,7 @@ julia> DelaunayTriangulation.geti([2, 5, 1])
 """
 geti(T) = T[1]
 
+
 """
     getj(T) -> Vertex
 
@@ -57,6 +59,7 @@ julia> DelaunayTriangulation.getj([10, 19, 21])
 ```
 """
 getj(T) = T[2]
+
 
 """
     getk(T) -> Vertex
@@ -76,6 +79,7 @@ julia> DelaunayTriangulation.getk([1,2,3])
 """
 getk(T) = T[3]
 
+
 """
     triangle_vertices(T) -> NTuple{3, Vertex}
 
@@ -93,6 +97,7 @@ julia> triangle_vertices([5, 18, 23]) # -> tuple
 ```
 """
 triangle_vertices(T) = (geti(T), getj(T), getk(T))
+
 
 """
     triangle_type(::Type{T}) -> DataType
@@ -115,6 +120,7 @@ Vector{Int64} (alias for Array{Int64, 1})
 """
 triangle_type(::Type{T}) where {T} = eltype(T)
 
+
 """
     num_triangles(T) -> Integer
 
@@ -133,6 +139,7 @@ julia> num_triangles(T)
 ```
 """
 num_triangles(T) = length(T)
+
 
 @doc """
     triangle_edges(T) -> NTuple{3, Edge}
@@ -158,6 +165,7 @@ julia> DelaunayTriangulation.triangle_edges(1, 2, 3)
 triangle_edges
 triangle_edges(i, j, k) = ((i, j), (j, k), (k, i))
 triangle_edges(T) = triangle_edges(geti(T), getj(T), getk(T))
+
 
 """
     rotate_triangle(T, rotation) -> Triangle
@@ -190,7 +198,7 @@ julia> DelaunayTriangulation.rotate_triangle(T, 3)
 (1, 2, 3)
 ```
 """
-function rotate_triangle(T::V, ::Val{N}) where {N,V}
+function rotate_triangle(T::V, ::Val{N}) where {N, V}
     i, j, k = triangle_vertices(T)
     N < 0 && throw(ArgumentError("Cannot rotate triangle $T by a negative amount."))
     if N == 0
@@ -204,6 +212,7 @@ function rotate_triangle(T::V, ::Val{N}) where {N,V}
     end
 end
 rotate_triangle(T::V, N::Integer) where {V} = rotate_triangle(T, Val(N))
+
 
 """
     construct_positively_oriented_triangle(::Type{V}, i, j, k, points) where {V} -> V
@@ -266,6 +275,7 @@ function construct_positively_oriented_triangle(::Type{V}, i, j, k, points) wher
     end
 end
 
+
 """
     compare_triangles(T, V) -> Bool
 
@@ -302,9 +312,10 @@ function compare_triangles(T, V)
     i, j, k = triangle_vertices(T)
     u, v, w = triangle_vertices(V)
     return (i, j, k) == (u, v, w) ||
-           (i, j, k) == (v, w, u) ||
-           (i, j, k) == (w, u, v)
+        (i, j, k) == (v, w, u) ||
+        (i, j, k) == (w, u, v)
 end
+
 
 @doc """
     contains_triangle(T, V) -> (Triangle, Bool)
@@ -338,7 +349,7 @@ julia> DelaunayTriangulation.contains_triangle(9, 7, 8, V)
 ```
 """
 contains_triangle
-function contains_triangle(T::F, V::S) where {F,S}
+function contains_triangle(T::F, V::S) where {F, S}
     if F ≠ triangle_type(S)
         i, j, k = triangle_vertices(T)
         Tfix = construct_triangle(triangle_type(S), i, j, k)
@@ -362,6 +373,7 @@ function contains_triangle(i, j, k, V::Vs) where {Vs}
     T = construct_triangle(triangle_type(Vs), i, j, k)
     return contains_triangle(T, V)
 end
+
 
 @doc """
     sort_triangle(T) -> Triangle
@@ -408,6 +420,7 @@ sort_triangle(i::Integer, j::Integer, k::Integer) = sort_triangle((i, j, k))
     end
 end
 
+
 """
     add_to_triangles!(T, V)
 
@@ -433,7 +446,7 @@ Set{Tuple{Int64, Int64, Int64}} with 4 elements:
   (-1, 3, 6)
 ```
 """
-function add_to_triangles!(T::Ts, V::VT) where {Ts,VT}
+function add_to_triangles!(T::Ts, V::VT) where {Ts, VT}
     if VT ≠ triangle_type(Ts)
         i, j, k = triangle_vertices(V)
         U = construct_triangle(triangle_type(Ts), i, j, k)
@@ -442,6 +455,7 @@ function add_to_triangles!(T::Ts, V::VT) where {Ts,VT}
         return push!(T, V)
     end
 end
+
 
 @doc """
     add_triangle!(T, V...)
@@ -488,6 +502,7 @@ function add_triangle!(T::Ts, i::Integer, j::Integer, k::Integer) where {Ts} # m
     return add_to_triangles!(T, F)
 end
 
+
 """
     delete_from_triangles!(T, V)
 
@@ -519,6 +534,7 @@ function delete_from_triangles!(V, T)
     pred && delete!(V, rotated_T)
     return V
 end
+
 
 @doc """
     delete_triangle!(V, T...)
@@ -569,6 +585,7 @@ function delete_triangle!(V::Vs, i::Integer, j::Integer, k::Integer) where {Vs} 
     return delete_from_triangles!(V, F)
 end
 
+
 @doc """
     each_triangle(T) -> Iterator
 
@@ -598,6 +615,7 @@ julia> each_triangle(T)
 each_triangle
 each_triangle(T) = T
 each_triangle(T::AbstractMatrix) = eachcol(T)
+
 
 """
     compare_triangle_collections(T, V) -> Bool
@@ -635,6 +653,7 @@ function compare_triangle_collections(T, V)
     end
     return true
 end
+
 
 """
     sort_triangles(T) -> Triangle

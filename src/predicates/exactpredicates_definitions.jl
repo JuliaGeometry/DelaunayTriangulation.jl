@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 =#
 
+
 """
     ext(ux, uy, vx, vy)
 
@@ -30,6 +31,7 @@ Computes `ExactPredicates.ext((ux, uy), (vx, vy))`, i.e.
 returns `ux * vy - uy * vx`.
 """
 ext(ux, uy, vx, vy) = ux * vy - uy * vx
+
 
 """
     inp(ux, uy, vx, vy)
@@ -39,6 +41,7 @@ returns `ux * vx + uy * vy`.
 """
 inp(ux, uy, vx, vy) = ux * vx + uy * vy
 
+
 """
     det(a, b, c, d)
 
@@ -46,6 +49,7 @@ Computes `ExactPredicates.det(a, b, c, d)`,
 i.e. returns `a*d - b*c`.
 """
 det(a, b, c, d) = a * d - b * c
+
 
 """
     det(a, b, c, d, e, f, g, h, i)
@@ -58,6 +62,7 @@ i.e. returns the determinant of
 """
 det(a, b, c, d, e, f, g, h, i) = a * det(e, f, h, i) - d * det(b, c, h, i) + g * det(b, c, e, f)
 
+
 """
     opposite_signs(x, y) -> Bool
 
@@ -66,12 +71,14 @@ Assumes that `x` and `y` are in `[-1, 0, 1]`.
 """
 opposite_signs(x, y) = xor(x, y) == -2
 
+
 """
     sgn(x) -> Int 
 
 Returns `Int(sign(x))`.
-""" 
+"""
 sgn(x) = Int(sign(x))
+
 
 """
     orient_predicate(p, q, r) -> Integer 
@@ -95,6 +102,7 @@ The orient predicate is defined by the determinant
 """
 orient_predicate(::Any, ::Any, ::Any)
 
+
 @static if USE_EXACTPREDICATES
     orient_predicate(p, q, r) = orient(_getxy(p), _getxy(q), _getxy(r))
 elseif USE_INEXACTPREDICATES
@@ -108,6 +116,7 @@ function _orient_predicate(p, q, r)
     vx, vy = qx - rx, qy - ry
     return sgn(ext(ux, uy, vx, vy))
 end
+
 
 """
     orient_predicate(p, q, r, s) -> Integer
@@ -150,6 +159,7 @@ The orient predicate is defined by the determinant
 """
 orient_predicate(::Any, ::Any, ::Any, ::Any)
 
+
 @static if USE_EXACTPREDICATES
     orient_predicate(p, q, r, s) = orient(_getxyz(p), _getxyz(q), _getxyz(r), _getxyz(s))
 elseif USE_INEXACTPREDICATES
@@ -165,6 +175,7 @@ function _orient_predicate(p, q, r, s)
     g, h, i = rx - sx, ry - sy, rz - sz
     return sgn(det(a, b, c, d, e, f, g, h, i))
 end
+
 
 """
     incircle_predicate(a, b, c, p) -> Integer
@@ -188,6 +199,7 @@ The incircle predicate is defined by the determinant
 """
 incircle_predicate
 
+
 @static if USE_EXACTPREDICATES
     incircle_predicate(a, b, c, p) = incircle(_getxy(a), _getxy(b), _getxy(c), _getxy(p))
 elseif USE_INEXACTPREDICATES
@@ -208,6 +220,7 @@ function _incircle_predicate(p, q, r, a)
     return sgn(val1 - val2)
 end
 
+
 """
     parallelorder_predicate(a, b, p, q) -> Integer
 
@@ -223,6 +236,7 @@ without exact arithmetic.
 """
 parallelorder_predicate
 
+
 @static if USE_EXACTPREDICATES
     parallelorder_predicate(a, b, p, q) = parallelorder(_getxy(a), _getxy(b), _getxy(p), _getxy(q))
 elseif USE_INEXACTPREDICATES
@@ -237,6 +251,7 @@ function _parallelorder_predicate(a, b, p, q)
     qpx, qpy = qx - px, qy - py
     return sgn(ext(δx, δy, qpx, qpy))
 end
+
 
 """
     sameside_predicate(a, b, p) -> Integer
@@ -265,6 +280,7 @@ function sameside_predicate(a, b, p)
     end
 end
 
+
 """
     meet_predicate(p, q, a, b) 
 
@@ -289,9 +305,9 @@ function meet_predicate(p, q, a, b)
         return -1
     elseif pqa == 0 && pqb == 0
         if sameside_predicate(a, b, p) == 1 &&
-           sameside_predicate(a, b, q) == 1 &&
-           sameside_predicate(p, q, a) == 1 &&
-           sameside_predicate(p, q, b) == 1
+                sameside_predicate(a, b, q) == 1 &&
+                sameside_predicate(p, q, a) == 1 &&
+                sameside_predicate(p, q, b) == 1
             return -1
         else
             return 0
@@ -300,6 +316,7 @@ function meet_predicate(p, q, a, b)
         return 0
     end
 end
+
 
 @static if USE_EXACTPREDICATES
     ExactPredicates.Codegen.@genpredicate function angle_is_acute(p::2, q::2, r::2)
@@ -319,6 +336,7 @@ elseif USE_INEXACTPREDICATES
         return sgn(inp(ux, uy, vx, vy))
     end
 end
+
 
 @doc """
     angle_is_acute(p, q, r)

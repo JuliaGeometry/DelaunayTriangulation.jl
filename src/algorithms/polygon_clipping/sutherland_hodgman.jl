@@ -17,6 +17,7 @@ function clip_polygon(vertices, points, clip_vertices, clip_points)
     return clip_polygon(Polygon(vertices, points), Polygon(clip_vertices, clip_points))
 end
 
+
 function clip_polygon_to_edge(input_list, q, p)
     output_list = eltype(input_list)[]
     s = input_list[end]
@@ -52,11 +53,12 @@ function clip_polygon_to_edge(input_list, q, p)
     return output_list
 end
 
+
 function clip_polygon(poly::Polygon{T}, clip_poly::Polygon) where {T}
     output_list = poly
     q = clip_poly[end]
     for p in clip_poly
-        input_list = output_list 
+        input_list = output_list
         isempty(output_list) && break
         output_list = clip_polygon_to_edge(input_list, q, p)
         q = p

@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 =#
 
+
 """
     insert!(tree::RTree, bounding_box[, level = 1]) -> Bool 
 
@@ -36,6 +37,7 @@ function Base.insert!(tree::RTree, bounding_box, level)
     subtree = find_subtree(tree, get_bounding_box(bounding_box), level)
     return insert!(subtree, bounding_box, tree)
 end
+
 
 """
     insert!(node::AbstractNode, child, tree::RTree) -> Bool
@@ -58,6 +60,7 @@ function Base.insert!(node::AbstractNode, child, tree::RTree)
     end
 end
 
+
 """
     append!(node::AbstractNode, child)
 
@@ -74,19 +77,21 @@ function Base.append!(node::AbstractNode, child::C) where {C}
     return node
 end
 
+
 """
     find_subtree(tree, bounding_box, level) -> Union{Branch,Leaf{Branch}}
 
 Returns the subtree of `tree` at `level` that `bounding_box` should be inserted into.
 """
 function find_subtree(tree, bounding_box, level)
-    node = get_root(tree)::Union{Branch,Leaf{Branch}}
+    node = get_root(tree)::Union{Branch, Leaf{Branch}}
     while get_level(node) > level
         min_enlargement = minimise_enlargement(node, bounding_box)
-        node = get_child(node, min_enlargement.idx)::Union{Branch,Leaf{Branch}}
+        node = get_child(node, min_enlargement.idx)::Union{Branch, Leaf{Branch}}
     end
     return node
 end
+
 
 """
     EnlargementValues
@@ -112,6 +117,7 @@ struct EnlargementValues
 end
 EnlargementValues(bounding_box) = EnlargementValues(Inf, 0, Inf, bounding_box)
 
+
 """
     update_enlargement(values::EnlargementValues, child, idx) -> EnlargementValues
 
@@ -128,6 +134,7 @@ function update_enlargement(values, child, idx)
     end
 end
 
+
 """
     minimise_enlargement(node, bounding_box) -> EnlargementValues
 
@@ -141,6 +148,7 @@ function minimise_enlargement(node, bounding_box)
     end
     return values
 end
+
 
 """
     update_bounding_box!(node)
@@ -159,6 +167,7 @@ function update_bounding_box!(node)
     return node
 end
 
+
 """
     update_bounding_box!(node, idx, original_bounding_box, tree)
 
@@ -176,6 +185,7 @@ function update_bounding_box!(node, idx, original_bounding_box, tree)
     end
     return node
 end
+
 
 """
     overflow_insert!(node, child, tree) -> Bool
@@ -196,6 +206,7 @@ function overflow_insert!(node, child, tree)
     end
     return true
 end
+
 
 """
     split!(node::AbstractNode, tree::RTree) -> Branch, Branch
@@ -258,6 +269,7 @@ function split!(node::N, tree) where {N}
     return left, right
 end
 
+
 """
     split_seeds(node::AbstractNode) -> NTuple{2, Int}
 
@@ -308,6 +320,7 @@ function split_seeds(node)
     return i, j
 end
 
+
 """
     replace!(node::AbstractNode, left, right, original_bounding_box, tree::RTree)
 
@@ -329,6 +342,7 @@ function replace!(node, left, right, original_bounding_box, tree)
     return flag || rect_is_old
 end
 
+
 """
     delete!(tree::RTree, id_bounding_box::DiametralBoundingBox) 
 
@@ -344,13 +358,14 @@ function Base.delete!(tree::RTree, id_bounding_box::DiametralBoundingBox)
     return tree
 end
 
+
 """
     find_bounding_box(tree::RTree, id_bounding_box::DiametralBoundingBox) -> Tuple{Leaf{Branch}, Int}
 
 Returns the leaf node and the index in the leaf node's children that `id_bounding_box` is associated with.
 """
 function find_bounding_box(tree::RTree, id_bounding_box::DiametralBoundingBox)
-    idx_leaf = find_bounding_box(get_root(tree), id_bounding_box)::Tuple{Leaf{Branch},Int}
+    idx_leaf = find_bounding_box(get_root(tree), id_bounding_box)::Tuple{Leaf{Branch}, Int}
     return idx_leaf[1]::Leaf{Branch}, idx_leaf[2]::Int
 end
 function find_bounding_box(branch::Branch, id_bounding_box::DiametralBoundingBox)
@@ -372,6 +387,7 @@ function find_bounding_box(leaf::Leaf, id_bounding_box::DiametralBoundingBox)
     end
     return nothing
 end
+
 
 """
     detach!(node::AbstractNode, idx) -> Bool
@@ -399,6 +415,7 @@ function detach!(node::AbstractNode, idx)
     end
     return false
 end
+
 
 """
     collapse_after_deletion!(node::AbstractNode, tree::RTree, detached) 
@@ -443,6 +460,7 @@ function collapse_after_deletion!(node::AbstractNode, tree, detached)
     return nothing
 end
 
+
 """
     insert_detached!(tree::RTree, detached)
 
@@ -450,7 +468,7 @@ Given the `detached` nodes from [`collapse_after_deletion!`](@ref), inserts them
 """
 function insert_detached!(tree::RTree, detached)
     isempty(detached) && return tree
-    sort!(detached, by=get_level, rev=true)
+    sort!(detached, by = get_level, rev = true)
     for node in detached
         for child in get_children(node)
             insert!(tree, child, get_level(node))
@@ -461,15 +479,17 @@ function insert_detached!(tree::RTree, detached)
     return tree
 end
 
+
 """
     get_intersections(tree::RTree, bounding_box::BoundingBox; cache_id=1) -> RTreeIntersectionIterator
 
 Returns an [`RTreeIntersectionIterator`](@ref) over the elements in `tree` that intersect with `bounding_box`.
 `cache_id` must be `1` or `2`, and determines what cache to use for the intersection query.
 """
-function get_intersections(tree::RTree, bounding_box::BoundingBox; cache_id=1)
+function get_intersections(tree::RTree, bounding_box::BoundingBox; cache_id = 1)
     return RTreeIntersectionIterator(tree, bounding_box, cache_id)
 end
+
 
 """
     get_intersections(tree::RTree, point::NTuple{2,<:Number}; cache_id=1) -> RTreeIntersectionIterator
@@ -478,9 +498,10 @@ Returns an [`RTreeIntersectionIterator`](@ref) over the elements in `tree` that 
 as a [`BoundingBox`](@ref) with zero width and height centered at `point`.
 `cache_id` must be `1` or `2`, and determines what cache to use for the intersection query.
 """
-function get_intersections(tree::RTree, point::NTuple{2,<:Number}; cache_id=1)
+function get_intersections(tree::RTree, point::NTuple{2, <:Number}; cache_id = 1)
     return RTreeIntersectionIterator(tree, BoundingBox(point), cache_id)
 end
+
 
 """
     iterate(itr::RTreeIntersectionIterator, state...)
@@ -516,6 +537,7 @@ function Base.iterate(itr::RTreeIntersectionIterator, state::RTreeIntersectionIt
     end
 end
 
+
 """
     test_intersection(node::AbstractNode, itr::RTreeIntersectionIterator) -> QueryResult
 
@@ -532,6 +554,7 @@ function test_intersection(node::AbstractNode, itr::RTreeIntersectionIterator)
     end
 end
 
+
 function test_intersection(element, itr::RTreeIntersectionIterator)
     element_rect = get_bounding_box(element)
     if !isempty(element_rect ∩ itr.bounding_box)
@@ -540,6 +563,7 @@ function test_intersection(element, itr::RTreeIntersectionIterator)
         return QR.Outside
     end
 end
+
 
 """
     get_next_child(node::AbstractNode, start_idx, need_tests, itr::RTreeIntersectionIterator) -> Int, QueryResult
@@ -554,6 +578,7 @@ function get_next_child(node::AbstractNode, start_idx, need_tests, itr)
     end
     return start_idx, res
 end
+
 
 function _iterate(itr::RTreeIntersectionIterator, node, node_indices, need_tests)
     while true

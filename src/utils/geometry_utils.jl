@@ -43,6 +43,7 @@ function intersection_of_ray_with_bounding_box(p, q, a, b, c, d)
     end
 end
 
+
 """
     segment_intersection_coordinates(a, b, c, d) -> NTuple{2, Number}
 
@@ -58,6 +59,7 @@ function segment_intersection_coordinates(a, b, c, d)
     α = num / den
     return ax + α * (bx - ax), ay + α * (by - ay)
 end
+
 
 """
     intersection_of_edge_and_bisector_ray(a, b, c) -> (Certificate, NTuple{2, Number})
@@ -80,6 +82,7 @@ function intersection_of_edge_and_bisector_ray(a, b, c)
         return cert, (F(NaN), F(NaN))
     end
 end
+
 
 """
     classify_and_compute_segment_intersection(a, b, c, d) -> (Certificate, Certificate, Certificate, NTuple{2, Number})
@@ -108,6 +111,7 @@ function classify_and_compute_segment_intersection(a, b, c, d)
     end
 end
 
+
 """
     polygon_features(points, boundary_nodes) -> (Number, NTuple{2, Number})
 
@@ -123,7 +127,7 @@ function polygon_features(points, boundary_nodes)
         return polygon_features_single_segment(points, boundary_nodes)
     end
 end
-function polygon_features_single_segment(points, boundary_nodes; scale=Val(true))
+function polygon_features_single_segment(points, boundary_nodes; scale = Val(true))
     F = number_type(points)
     cx = zero(F)
     cy = zero(F)
@@ -132,7 +136,7 @@ function polygon_features_single_segment(points, boundary_nodes; scale=Val(true)
     vᵢ = get_boundary_nodes(boundary_nodes, 1)
     pᵢ = get_point(points, vᵢ)
     xᵢ, yᵢ = getxy(pᵢ)
-    for j in 2:(n_edge+1)
+    for j in 2:(n_edge + 1)
         vᵢ₊₁ = get_boundary_nodes(boundary_nodes, j)
         pᵢ₊₁ = get_point(points, vᵢ₊₁)
         xᵢ₊₁, yᵢ₊₁ = getxy(pᵢ₊₁)
@@ -156,8 +160,10 @@ function polygon_features_multiple_segments(points, boundary_nodes)
     ns = num_sections(boundary_nodes)
     for i in 1:ns
         bn = get_boundary_nodes(boundary_nodes, i)
-        sub_a, (sub_cx, sub_cy) = polygon_features_single_segment(points, bn;
-            scale=Val(false))
+        sub_a, (sub_cx, sub_cy) = polygon_features_single_segment(
+            points, bn;
+            scale = Val(false),
+        )
         a += sub_a
         cx += sub_cx
         cy += sub_cy
@@ -180,6 +186,7 @@ function polygon_features_multiple_curves(points, boundary_nodes)
     return a, (cx / a, cy / a)
 end
 
+
 """
     squared_distance_to_segment(x₁, y₁, x₂, y₂, x, y) -> Number 
 
@@ -200,6 +207,7 @@ function squared_distance_to_segment(x₁, y₁, x₂, y₂, x, y)
     return δ²
 end
 
+
 """
     distance_to_polygon(q, points, boundary_nodes) -> Number
 
@@ -217,7 +225,7 @@ function distance_to_polygon(q, points, boundary_nodes)
         return distance_to_polygon_single_segment(q, points, boundary_nodes)
     end
 end
-function distance_to_polygon_single_segment(q, points, boundary_nodes, is_in_outer=false; return_sqrt=Val(true))
+function distance_to_polygon_single_segment(q, points, boundary_nodes, is_in_outer = false; return_sqrt = Val(true))
     x, y = getxy(q)
     F = number_type(points)
     dist = typemax(F)
@@ -225,7 +233,7 @@ function distance_to_polygon_single_segment(q, points, boundary_nodes, is_in_out
     vᵢ = get_boundary_nodes(boundary_nodes, 1)
     pᵢ = get_point(points, vᵢ)
     xᵢ, yᵢ = getxy(pᵢ)
-    for j in 2:(n_edge+1)
+    for j in 2:(n_edge + 1)
         vᵢ₊₁ = get_boundary_nodes(boundary_nodes, j)
         pᵢ₊₁ = get_point(points, vᵢ₊₁)
         xᵢ₊₁, yᵢ₊₁ = getxy(pᵢ₊₁)
@@ -242,13 +250,13 @@ function distance_to_polygon_single_segment(q, points, boundary_nodes, is_in_out
     dist = is_true(return_sqrt) ? sqrt(dist) : dist
     return is_in_outer ? dist : -dist
 end
-function distance_to_polygon_multiple_segments(q, points, boundary_nodes, is_in_outer=-one(number_type(points)); return_sqrt=Val(true))
+function distance_to_polygon_multiple_segments(q, points, boundary_nodes, is_in_outer = -one(number_type(points)); return_sqrt = Val(true))
     F = number_type(points)
     dist = typemax(F)
     ns = num_sections(boundary_nodes)
     for i in 1:ns
         bn = get_boundary_nodes(boundary_nodes, i)
-        new_dist = distance_to_polygon_single_segment(q, points, bn, is_in_outer == one(F); return_sqrt=Val(false))
+        new_dist = distance_to_polygon_single_segment(q, points, bn, is_in_outer == one(F); return_sqrt = Val(false))
         is_in_outer = sign(new_dist)
         new_dist = abs(new_dist)
         dist = new_dist < dist ? new_dist : dist
@@ -263,8 +271,10 @@ function distance_to_polygon_multiple_curves(q, points, boundary_nodes)
     nc = num_curves(boundary_nodes)
     for i in 1:nc
         bn = get_boundary_nodes(boundary_nodes, i)
-        new_dist = distance_to_polygon_multiple_segments(q, points, bn, is_in_outer == one(F);
-            return_sqrt=Val(false))
+        new_dist = distance_to_polygon_multiple_segments(
+            q, points, bn, is_in_outer == one(F);
+            return_sqrt = Val(false),
+        )
         is_in_outer = sign(new_dist)
         new_dist = abs(new_dist)
         dist = new_dist < dist ? new_dist : dist
@@ -272,13 +282,14 @@ function distance_to_polygon_multiple_curves(q, points, boundary_nodes)
     return is_in_outer * sqrt(dist)
 end
 
+
 """
     polygon_bounds(points, boundary_nodes, check_all_curves=Val(false)) -> (Number, Number, Number, Number)
 
 Computes the bounding box of the polygon defined by `(points, boundary_nodes)`. The `boundary_nodes` must match the specification in the documentation
 and in [`check_args`](@ref). If `check_all_curves` is `true`, then the bounding box of the union of all curves of the `polygon` is computed instead of just the first curve.
 """
-function polygon_bounds(points, boundary_nodes, check_all_curves=Val(false))
+function polygon_bounds(points, boundary_nodes, check_all_curves = Val(false))
     if has_multiple_curves(boundary_nodes)
         if !is_true(check_all_curves)
             return polygon_bounds_multiple_segments(points, get_boundary_nodes(boundary_nodes, 1)) # 1 is the outermost boundary, unless you have a multiple polygon. PolygonHierarchy would be better for this but too bad 
@@ -332,6 +343,7 @@ function polygon_bounds_multiple_segments(points, boundary_nodes)
     return xmin, xmax, ymin, ymax
 end
 
+
 """
     sort_convex_polygon!(vertices, points) 
 
@@ -343,9 +355,10 @@ function sort_convex_polygon!(vertices, points)
     cx, cy = mean_points(points, vertices)
     to_angle = p -> atan(gety(p) - cy, getx(p) - cx)
     vert_to_angle = v -> (to_angle ∘ get_point)(points, v)
-    sort!(vertices, by=vert_to_angle)
+    sort!(vertices, by = vert_to_angle)
     return vertices
 end
+
 
 """
     get_plane_through_three_points(a, b, c) -> NTuple{4, Number}
@@ -385,6 +398,7 @@ From this, we find:
     return α, β, γ, δ
 end
 
+
 """
     get_steepest_descent_direction(a, b, c) -> NTuple{2, Number}
 
@@ -404,6 +418,7 @@ function get_steepest_descent_direction(a::Tuple, b::Tuple, c::Tuple)
     return sγ * α, sγ * β
 end
 
+
 """
     get_vertical_distance_to_plane(a, b, c, p) -> Number 
 
@@ -416,6 +431,7 @@ function get_vertical_distance_to_plane(a::Tuple, b::Tuple, c::Tuple, p::Tuple)
     plane_z = -(α * x + β * y + δ) / γ
     return z - plane_z
 end
+
 
 """
     get_distance_to_plane(a, b, c, p) -> Number 
@@ -433,6 +449,7 @@ function get_distance_to_plane(a::Tuple, b::Tuple, c::Tuple, p::Tuple)
     x, y, z = p
     return x * nx + y * ny + z * nz + Jd
 end
+
 
 """
     angle_between(p, q) -> Float64

@@ -63,6 +63,7 @@ EnumX.@enumx Certificate begin
     Invisible
 end
 
+
 for inst in instances(Certificate.T)
     name = String(Symbol(inst))
     @eval begin
@@ -71,7 +72,7 @@ for inst in instances(Certificate.T)
 
         Returns `true` if `cert` is `$($name)`, and `false` otherwise.
         """ ($(Symbol("is_$(lowercase(name))")))(cert::Certificate.T) = cert == $inst
-    end 
+    end
 end
 """
     is_positively_oriented(cert::Certificate) -> Bool
@@ -80,12 +81,14 @@ Returns `true` if `cert` is `PositivelyOriented`, and `false` otherwise.
 """
 is_positively_oriented(cert::Certificate.T) = is_positivelyoriented(cert)
 
+
 """
     is_negatively_oriented(cert::Certificate) -> Bool
 
 Returns `true` if `cert` is `NegativelyOriented`, and `false` otherwise.
 """
 is_negatively_oriented(cert::Certificate.T) = is_negativelyoriented(cert)
+
 
 """
     has_no_intersections(cert::Certificate) -> Bool
@@ -94,12 +97,14 @@ Returns `true` if `cert` is `None`, and `false` otherwise. Synonymous with `is_n
 """
 has_no_intersections(cert::Certificate.T) = is_none(cert)
 
+
 """
     has_one_intersection(cert::Certificate) -> Bool
 
 Returns `true` if `cert` is `Single`, and `false` otherwise. Synonymous with `is_single`.
 """
 has_one_intersection(cert::Certificate.T) = is_single(cert)
+
 
 """
     has_multiple_intersections(cert::Certificate) -> Bool
@@ -111,6 +116,7 @@ is_successful_insertion(cert::Certificate.T) = is_successfulinsertion(cert)
 is_failed_insertion(cert::Certificate.T) = is_failedinsertion(cert)
 is_precision_failure(cert::Certificate.T) = is_precisionfailure(cert)
 is_encroachment_failure(cert::Certificate.T) = is_encroachmentfailure(cert)
+
 
 """
     convert_certificate(cert::I, Cert1, Cert2, Cert3) -> Certificate 
@@ -127,5 +133,6 @@ Given `cert ∈ (-1, 0, 1)`, return `Cert1`, `Cert2` or `Cert3` depending on if 
         return Cert3
     end
 end
+
 
 const Cert = Certificate

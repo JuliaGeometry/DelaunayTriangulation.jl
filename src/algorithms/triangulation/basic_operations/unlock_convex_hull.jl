@@ -6,7 +6,7 @@ assuming that it was locked using [`lock_convex_hull!`](@ref). If `reconstruct =
 convex hull of `tri` will be reconstructed from the boundary nodes of `tri`. This is useful if, for example, 
 you have split some of the boundary edges during mesh refinement.
 """
-function unlock_convex_hull!(tri::Triangulation; reconstruct=false)
+function unlock_convex_hull!(tri::Triangulation; reconstruct = false)
     if !has_boundary_nodes(tri)
         throw(ArgumentError("Cannot unlock the convex hull of a triangulation without boundary nodes."))
     end
@@ -43,7 +43,7 @@ function unlock_convex_hull!(tri::Triangulation; reconstruct=false)
         chain = get_boundary_chain(tri, u, v, I(𝒢))
         ne = length(chain) - 1
         for ℓ in 1:ne
-            i, j = chain[ℓ], chain[ℓ+1]
+            i, j = chain[ℓ], chain[ℓ + 1]
             e_int = construct_edge(E, i, j)
             add_edge!(all_segments, e_int)
             add_edge!(interior_segments, e_int)

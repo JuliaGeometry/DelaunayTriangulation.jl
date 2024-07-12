@@ -16,8 +16,10 @@ so that its existence in the triangulation is known.
 # Outputs 
 There are no outputs as `tri` is updated in-place.
 """
-function add_triangle!(tri::Ts, u::Integer, v::Integer, w::Integer;
-    protect_boundary=false, update_ghost_edges=false) where {Ts<:Triangulation}
+function add_triangle!(
+        tri::Ts, u::Integer, v::Integer, w::Integer;
+        protect_boundary = false, update_ghost_edges = false,
+    ) where {Ts <: Triangulation}
     ## Add the necessary triangles
     adj = get_adjacent(tri)
     adj2v = get_adjacent2vertex(tri)
@@ -43,13 +45,14 @@ function add_triangle!(tri::Ts, u::Integer, v::Integer, w::Integer;
     end
     return tri
 end
-function add_triangle!(tri::Triangulation, T; protect_boundary=false, update_ghost_edges=false)
+function add_triangle!(tri::Triangulation, T; protect_boundary = false, update_ghost_edges = false)
     u, v, w = triangle_vertices(T)
     add_triangle!(tri, u, v, w; protect_boundary, update_ghost_edges)
     return tri
 end
 
-function add_boundary_edges_single!(u, v, w, uv_bnd, vw_bnd, wu_bnd, triangles, adj::Adjacent{I,E}, adj2v, graph, update_ghost_edges) where {I,E}
+
+function add_boundary_edges_single!(u, v, w, uv_bnd, vw_bnd, wu_bnd, triangles, adj::Adjacent{I, E}, adj2v, graph, update_ghost_edges) where {I, E}
     g = I(𝒢)
     # Here, we are adding two ghost triangles uwg and wvg, where g is the ghost vertex, coming from 
     # the two new boundary edges uw and wv. 
@@ -79,7 +82,8 @@ function add_boundary_edges_single!(u, v, w, uv_bnd, vw_bnd, wu_bnd, triangles, 
     return nothing
 end
 
-function add_boundary_edges_double!(u, v, w, uv_bnd, vw_bnd, wu_bnd, triangles, adj::Adjacent{I,E}, adj2v, graph, update_ghost_edges) where {I,E}
+
+function add_boundary_edges_double!(u, v, w, uv_bnd, vw_bnd, wu_bnd, triangles, adj::Adjacent{I, E}, adj2v, graph, update_ghost_edges) where {I, E}
     g = I(𝒢)
     # Here, we are only adding a single ghost triangle vug, where g is the ghost vertex, 
     # coming from the new boundary edge vu. 
@@ -109,7 +113,8 @@ function add_boundary_edges_double!(u, v, w, uv_bnd, vw_bnd, wu_bnd, triangles, 
     return nothing
 end
 
-function add_boundary_edges_triple!(u, v, w, triangles, adj::Adjacent{I,E}, adj2v, graph, update_ghost_edges) where {I,E}
+
+function add_boundary_edges_triple!(u, v, w, triangles, adj::Adjacent{I, E}, adj2v, graph, update_ghost_edges) where {I, E}
     g = I(𝒢)
     # Here, we are adding three ghost triangles uwg, wvg, and vug, where g is the ghost vertex.
     add_adjacent!(adj, v, u, g)

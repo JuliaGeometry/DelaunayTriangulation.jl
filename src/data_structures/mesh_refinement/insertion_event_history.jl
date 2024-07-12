@@ -18,7 +18,7 @@ The default constructor is available, but we also provide
 
 which will initialise this struct with empty, appropriately `sizehint!`ed, sets.
 """
-struct InsertionEventHistory{T,E}
+struct InsertionEventHistory{T, E}
     added_triangles::Set{T}
     deleted_triangles::Set{T}
     added_segments::Set{E}
@@ -35,6 +35,7 @@ function Base.show(io::IO, ::MIME"text/plain", events::InsertionEventHistory)
     println(io, "   $(length(events.added_boundary_segments)) added_boundary_segments: $(events.added_boundary_segments)")
     print(io, "   $(length(events.deleted_boundary_segments)) deleted_boundary_segments: $(events.deleted_boundary_segments)")
 end
+
 
 """
     InsertionEventHistory(tri::Triangulation) -> InsertionEventHistory
@@ -56,8 +57,9 @@ function InsertionEventHistory(tri::Triangulation)
     sizehint!(delete_edge_set, 8)
     sizehint!(add_bnd_set, 8)
     sizehint!(delete_bnd_set, 8)
-    return InsertionEventHistory{T,E}(add_set, delete_set, add_edge_set, delete_edge_set, add_bnd_set, delete_bnd_set)
+    return InsertionEventHistory{T, E}(add_set, delete_set, add_edge_set, delete_edge_set, add_bnd_set, delete_bnd_set)
 end
+
 
 """
     add_triangle!(events::InsertionEventHistory, T)
@@ -66,12 +68,14 @@ Add the triangle `T` to the `added_triangles` of `events`.
 """
 add_triangle!(events::InsertionEventHistory, T) = push!(events.added_triangles, T)
 
+
 """
     delete_triangle!(events::InsertionEventHistory, T)
 
 Add the triangle `T` to the `deleted_triangles` of `events`.
 """
 delete_triangle!(events::InsertionEventHistory, T) = push!(events.deleted_triangles, T)
+
 
 """
     add_edge!(events::InsertionEventHistory, e)
@@ -80,6 +84,7 @@ Add the edge `e` to the `added_segments` of `events`.
 """
 add_edge!(events::InsertionEventHistory, e) = push!(events.added_segments, e)
 
+
 """
     delete_edge!(events::InsertionEventHistory, e)
 
@@ -87,17 +92,19 @@ Add the edge `e` to the `deleted_segments` of `events`.
 """
 delete_edge!(events::InsertionEventHistory, e) = push!(events.deleted_segments, e)
 
+
 """
     split_boundary_edge!(events::InsertionEventHistory, u, v, new_point)
 
 Add the edge `(u, v)` to the `deleted_boundary_segments` of `events` and add the edges `(u, new_point)` and `(new_point, v)` to the `added_boundary_segments` of `events`.
 """
-function split_boundary_edge!(events::InsertionEventHistory{T,E}, u, v, new_point) where {T,E}
+function split_boundary_edge!(events::InsertionEventHistory{T, E}, u, v, new_point) where {T, E}
     !contains_edge(construct_edge(E, v, u), events.deleted_boundary_segments) && push!(events.deleted_boundary_segments, construct_edge(E, u, v))
     !contains_edge(construct_edge(E, new_point, u), events.added_boundary_segments) && push!(events.added_boundary_segments, construct_edge(E, u, new_point))
     !contains_edge(construct_edge(E, v, new_point), events.added_boundary_segments) && push!(events.added_boundary_segments, construct_edge(E, new_point, v))
     return events
 end
+
 
 """
     has_triangle_changes(events::InsertionEventHistory) -> Bool 
@@ -105,9 +112,14 @@ end
 Returns `true` if there are any changes to the segments in `events`, and `false` otherwise.
 """
 function has_segment_changes(events::InsertionEventHistory)
-    return any(!isempty, (events.added_segments, events.deleted_segments,
-        events.added_boundary_segments, events.deleted_boundary_segments))
+    return any(
+        !isempty, (
+            events.added_segments, events.deleted_segments,
+            events.added_boundary_segments, events.deleted_boundary_segments,
+        ),
+    )
 end
+
 
 """
     each_added_triangle(events::InsertionEventHistory) -> Iterator
@@ -116,12 +128,14 @@ Returns an iterator over the triangles that were added to the triangulation duri
 """
 each_added_triangle(events::InsertionEventHistory) = each_triangle(events.added_triangles)
 
+
 """
     each_deleted_triangle(events::InsertionEventHistory) -> Iterator
 
 Returns an iterator over the triangles that were deleted from the triangulation during the insertion of a point.
 """
 each_added_segment(events::InsertionEventHistory) = each_edge(events.added_segments)
+
 
 """
     each_added_boundary_segment(events::InsertionEventHistory) -> Iterator
@@ -130,12 +144,14 @@ Returns an iterator over the boundary segments that were added to the triangulat
 """
 each_added_boundary_segment(events::InsertionEventHistory) = each_edge(events.added_boundary_segments)
 
+
 """
     triangle_type(::InsertionEventHistory{T}) where {T} = T
 
 Returns the type of the triangles in `events`, `T`.
 """
 triangle_type(::InsertionEventHistory{T}) where {T} = T
+
 
 """
     empty!(events::InsertionEventHistory)
@@ -152,6 +168,7 @@ function Base.empty!(events::InsertionEventHistory)
     return events
 end
 
+
 """
     undo_insertion!(tri::Triangulation, events::InsertionEventHistory, pop=Val(true))
 
@@ -160,13 +177,13 @@ recorded into `events` and the vertex is `num_points(tri)`.
 
 If you do not want to delete the latest vertex from the triangulation, set `pop` to `Val(false)`.
 """
-function undo_insertion!(tri::Triangulation, events::InsertionEventHistory, pop=Val(true))
+function undo_insertion!(tri::Triangulation, events::InsertionEventHistory, pop = Val(true))
     vertex = num_points(tri)
     for T in events.added_triangles
-        delete_triangle!(tri, T; protect_boundary=true, update_ghost_edges=false)
+        delete_triangle!(tri, T; protect_boundary = true, update_ghost_edges = false)
     end
     for T in events.deleted_triangles
-        add_triangle!(tri, T; protect_boundary=true, update_ghost_edges=false)
+        add_triangle!(tri, T; protect_boundary = true, update_ghost_edges = false)
     end
     undo_segment_changes!(tri, events)
     undo_boundary_segment_changes!(tri, events)
@@ -177,6 +194,7 @@ function undo_insertion!(tri::Triangulation, events::InsertionEventHistory, pop=
     end
     return tri
 end
+
 
 """
     undo_segment_changes!(tri::Triangulation, events::InsertionEventHistory)
@@ -203,6 +221,7 @@ function undo_segment_changes!(tri::Triangulation, events::InsertionEventHistory
     end
     return tri
 end
+
 
 """
     undo_boundary_segment_changes!(tri::Triangulation, events::InsertionEventHistory)

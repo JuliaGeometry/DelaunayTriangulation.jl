@@ -12,12 +12,13 @@ according to their maximum distance.
 
 Constructs a new `CellQueue` with elements of type `Cell{T}`.
 """
-struct CellQueue{T} 
-    queue::MaxPriorityQueue{Cell{T},T}
+struct CellQueue{T}
+    queue::MaxPriorityQueue{Cell{T}, T}
     function CellQueue{T}() where {T}
-        return new{T}(MaxPriorityQueue{Cell{T},T}())
+        return new{T}(MaxPriorityQueue{Cell{T}, T}())
     end
 end
+
 
 """
     insert_cell!(queue::CellQueue, cell::Cell)
@@ -31,12 +32,14 @@ function insert_cell!(queue::CellQueue, cell::Cell)
     return queue
 end
 
+
 """
     get_next_cell!(queue::CellQueue)
 
 Returns the next cell in the queue.
 """
 get_next_cell!(queue::CellQueue) = popfirst!(queue.queue).first
+
 
 """
     isempty(queue::CellQueue) -> Bool 

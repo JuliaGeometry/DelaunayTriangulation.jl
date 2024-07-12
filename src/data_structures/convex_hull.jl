@@ -11,7 +11,7 @@ Struct for representing a convex hull. See also [`convex_hull`](@ref).
     ConvexHull(points, vertices)
     convex_hull(points; IntegerType=Int)
 """
-struct ConvexHull{P,I}
+struct ConvexHull{P, I}
     points::P
     vertices::Vector{I}
 end
@@ -32,12 +32,14 @@ function Base.show(io::IO, m::MIME"text/plain", ch::ConvexHull)
 end
 Base.sizehint!(ch::ConvexHull, n) = Base.sizehint!(get_vertices(ch), n)
 
+
 @doc """
     get_points(convex_hull::ConvexHull) -> Points
 
 Returns the underlying point set of `convex_hull`.
 """
 get_points(convex_hull::ConvexHull) = convex_hull.points
+
 
 @doc """
     get_vertices(convex_hull::ConvexHull) -> Vector{Vertices}
@@ -46,6 +48,7 @@ Returns the vertices of `convex_hull`. These are given in counter-clockwise orde
 are defined so that the first and last vertices and equal.
 """
 get_vertices(convex_hull::ConvexHull) = convex_hull.vertices
+
 
 function Base.empty!(ch::ConvexHull)
     vertices = get_vertices(ch)
