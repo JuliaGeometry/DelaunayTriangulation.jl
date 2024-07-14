@@ -32,9 +32,6 @@ include("utils.jl")
 include("algorithms.jl")
 include("validation.jl")
 include("exports.jl")
-
-@static if VERSION ≥ v"1.11.0-DEV.469"
-    include("public.jl")
-end
+include("public.jl")
 
 end
