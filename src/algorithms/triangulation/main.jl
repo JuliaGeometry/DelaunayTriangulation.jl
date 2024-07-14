@@ -98,8 +98,6 @@ Computes the Delaunay triangulation of `points`, and then the constrained Delaun
 - `check_arguments=true`: Whether to check the arguments `points` and `boundary_nodes` are valid. This is done using [`check_args`](@ref).
 - `polygonise_n=4096`: Number of points to use for polygonising the boundary when considering the poylgon hierarchy for a curve-bounded domain using [`polygonise`](@ref). See [`triangulate_curve_bounded`](@ref).
 - `coarse_n=0`: Number of points to use for initialising a curve-bounded domain. See [`triangulate_curve_bounded`](@ref). (A value of `0` means the number of points is chosen automatically until the diametral circles of all edges are empty.)
-- `conform=false`: If `true`, then the triangulation will be enriched so that all segments are split until each segment's diametral circle contains no other points. This is done by treating the 
-   triangulation as a curve-bounded triangulation and using [`enrich_boundary!`](@ref).
 
 # Outputs
 - `tri::Triangulation`: The triangulation.

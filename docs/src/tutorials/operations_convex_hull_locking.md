@@ -15,7 +15,7 @@ inside `refine!` when providing an unconstrained triangulation
 for mesh refinement. Let us give an example of how this can be done,
 in case you want to do this for your own application.
 
-````@example operations_convex_hull_locking
+````julia
 using DelaunayTriangulation
 using CairoMakie
 
@@ -24,12 +24,30 @@ tri = triangulate(points)
 get_boundary_nodes(tri)
 ````
 
+````
+Int64[]
+````
+
 As you can see, the boundary nodes field is empty.
 We can lock the convex hull using [`lock_convex_hull!`](@ref):
 
-````@example operations_convex_hull_locking
+````julia
 lock_convex_hull!(tri)
 get_boundary_nodes(tri)
+````
+
+````
+10-element Vector{Int64}:
+  8
+ 27
+ 37
+ 32
+  3
+ 41
+ 22
+ 10
+ 21
+  8
 ````
 
 Now the boundary nodes field is not empty. Note that if you try
@@ -37,9 +55,13 @@ and lock the convex hull again, you will get an error because
 `DelaunayTriangulation.has_boundary_nodes(tri)` is now true.
 To now unlock the convex hull, we use [`unlock_convex_hull!`](@ref):
 
-````@example operations_convex_hull_locking
+````julia
 unlock_convex_hull!(tri)
 get_boundary_nodes(tri)
+````
+
+````
+Int64[]
 ````
 
 This function will error if it detects that the existing boundary

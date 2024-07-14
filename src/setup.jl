@@ -93,3 +93,10 @@ PREDICATES
 const USE_EXACTPREDICATES = PREDICATES == "EXACT"
 const USE_INEXACTPREDICATES = PREDICATES == "INEXACT"
 
+@eval macro $(Symbol("const"))(field)
+    if VERSION >= v"1.8.0-DEV.1148"
+        return Expr(:const, esc(field))
+    else
+        return esc(field)
+    end
+end

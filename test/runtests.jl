@@ -44,6 +44,8 @@ using StructEquality
 using Aqua
 using Test
 
+@test isempty(Docs.undocumented_names(DelaunayTriangulation))
+
 const ALL_TEST_SCRIPTS = Set{String}()
 const NON_TEST_SCRIPTS = Set{String}(["helper_functions.jl", "triangulation_validation.jl", "runtests.jl", "triangulation\\weighted.jl", "triangulation/weighted.jl"])
 include("helper_functions.jl")

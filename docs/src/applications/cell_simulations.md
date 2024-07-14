@@ -8,7 +8,7 @@ model here, allowing only diffusion and proliferation. The point here is to just
 in a `Triangulation` to perform this type of simulation. A good paper discussing these types of simulations is the paper
 [_Comparing individual-based approaches to modelling the self-organization of multicellular tissues_](https://doi.org/10.1371/journal.pcbi.1005387) by Osborne et al. (2017).
 
-[^1]: If you are interested in hwot ehse ideas are applied in one dimension, see also [EpithelialDynamics1D.jl](https://github.com/DanielVandH/EpithelialDynamics1D.jl).
+[^1]: If you are interested in how these ideas are applied in one dimension, see also [EpithelialDynamics1D.jl](https://github.com/DanielVandH/EpithelialDynamics1D.jl).
 
 ## Cell model
 Let us consider a domain $\Omega$, and suppose we have an initial
@@ -46,29 +46,29 @@ We update the triangulation after each step.[^2]
 ## Implementation
 Let us now implement this model. First, we define a struct for storing the parameters of our model.
 
-````@example cell_simulations
+````julia
 using DelaunayTriangulation
 using StableRNGs
 using LinearAlgebra
 using StatsBase
 using CairoMakie
-@kwdef mutable struct CellModel
-    tri::Triangulation
+Base.@kwdef mutable struct CellModel{P}
+    tri::Triangulation{P}
     new_r_cache::Vector{NTuple{2,Float64}} # for r(t + Δt)
-    const α::Float64
-    const s::Float64
-    const Δt::Float64
-    const rng::StableRNGs.LehmerRNG
-    const final_time::Float64
-    const β::Float64
-    const K::Float64
-    const ϵ::Float64
+    α::Float64
+    s::Float64
+    Δt::Float64
+    rng::StableRNGs.LehmerRNG
+    final_time::Float64
+    β::Float64
+    K::Float64
+    ϵ::Float64
 end
 ````
 
 Let's now write functions for performing the migration step.
 
-````@example cell_simulations
+````julia
 function migrate_cells!(cells::CellModel) # a more efficient way would be to loop over edges rather than vertices
     tri = cells.tri
     for i in each_solid_vertex(tri)
@@ -90,11 +90,15 @@ function migrate_cells!(cells::CellModel) # a more efficient way would be to loo
 end
 ````
 
+````
+migrate_cells! (generic function with 1 method)
+````
+
 Now we can write the proliferation functions. First, let us write a function that computes the Voronoi areas. If we had the
 `VoronoiTessellation` computed, we would just use `get_area`, but we are aiming to avoid having to compute $\mathcal V\mathcal T(\mathcal P)$
 directly.
 
-````@example cell_simulations
+````julia
 function polygon_area(points) # this is the same function from the Interpolation section
     n = DelaunayTriangulation.num_points(points)
     p, q, r, s = get_point(points, 1, 2, n, n - 1)
@@ -133,10 +137,14 @@ function get_voronoi_area(tri::Triangulation, i)
 end
 ````
 
+````
+get_voronoi_area (generic function with 1 method)
+````
+
 The function `get_voronoi_area` above returns `0` if the cell is on the boundary. Finally, our function for performing the
 proliferation step is below.
 
-````@example cell_simulations
+````julia
 function proliferate_cells!(cells::CellModel)
     E = 0.0
     Δt = cells.Δt
@@ -164,9 +172,13 @@ function proliferate_cells!(cells::CellModel)
 end
 ````
 
+````
+proliferate_cells! (generic function with 1 method)
+````
+
 Finally, our simulation function is below.
 
-````@example cell_simulations
+````julia
 function perform_step!(cells::CellModel)
     proliferate_cells!(cells)
     migrate_cells!(cells)
@@ -185,12 +197,16 @@ function simulate_cells(cells::CellModel)
 end
 ````
 
+````
+simulate_cells (generic function with 1 method)
+````
+
 ## Example
 Let us now give an example. Our initial set of points will be randomly chosen inside
 the rectangle $[-2, 2] \times [-5, 5]$. We use $\alpha = 5$, $s = 2$, $\Delta t = 10^{-3}$,
 $\beta = 0.25$, $K = 100^2$, and $\epsilon = 0.5$.
 
-````@example cell_simulations
+````julia
 rng = StableRNG(123444)
 a, b, c, d = -2.0, 2.0, -5.0, 5.0
 points = [(a + (b - a) * rand(rng), c + (d - c) * rand(rng)) for _ in 1:10]
@@ -214,7 +230,6 @@ record(fig, "cell_simulation.mp4", 1:10:length(t); framerate=60) do ii
     i[] = ii
     title_obs[] = L"t = %$(((ii-1) * Δt))"
 end;
-nothing #hide
 ````
 
 ![](cell_simulation.mp4)
@@ -229,17 +244,17 @@ using StableRNGs
 using LinearAlgebra
 using StatsBase
 using CairoMakie
-@kwdef mutable struct CellModel
-    tri::Triangulation
+Base.@kwdef mutable struct CellModel{P}
+    tri::Triangulation{P}
     new_r_cache::Vector{NTuple{2,Float64}} # for r(t + Δt)
-    const α::Float64
-    const s::Float64
-    const Δt::Float64
-    const rng::StableRNGs.LehmerRNG
-    const final_time::Float64
-    const β::Float64
-    const K::Float64
-    const ϵ::Float64
+    α::Float64
+    s::Float64
+    Δt::Float64
+    rng::StableRNGs.LehmerRNG
+    final_time::Float64
+    β::Float64
+    K::Float64
+    ϵ::Float64
 end
 
 function migrate_cells!(cells::CellModel) # a more efficient way would be to loop over edges rather than vertices
