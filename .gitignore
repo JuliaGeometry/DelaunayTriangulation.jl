@@ -8,3 +8,4 @@ docs/Manifest.toml
 /docs/build/
 /.vscode
 LocalPreferences.toml
+docs/src/applications/cell_simulation.mp4

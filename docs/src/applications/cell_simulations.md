@@ -46,7 +46,7 @@ We update the triangulation after each step.[^2]
 ## Implementation
 Let us now implement this model. First, we define a struct for storing the parameters of our model.
 
-````julia
+````@example cell_simulations
 using DelaunayTriangulation
 using StableRNGs
 using LinearAlgebra
@@ -68,7 +68,7 @@ end
 
 Let's now write functions for performing the migration step.
 
-````julia
+````@example cell_simulations
 function migrate_cells!(cells::CellModel) # a more efficient way would be to loop over edges rather than vertices
     tri = cells.tri
     for i in each_solid_vertex(tri)
@@ -90,15 +90,11 @@ function migrate_cells!(cells::CellModel) # a more efficient way would be to loo
 end
 ````
 
-````
-migrate_cells! (generic function with 1 method)
-````
-
 Now we can write the proliferation functions. First, let us write a function that computes the Voronoi areas. If we had the
 `VoronoiTessellation` computed, we would just use `get_area`, but we are aiming to avoid having to compute $\mathcal V\mathcal T(\mathcal P)$
 directly.
 
-````julia
+````@example cell_simulations
 function polygon_area(points) # this is the same function from the Interpolation section
     n = DelaunayTriangulation.num_points(points)
     p, q, r, s = get_point(points, 1, 2, n, n - 1)
@@ -137,14 +133,10 @@ function get_voronoi_area(tri::Triangulation, i)
 end
 ````
 
-````
-get_voronoi_area (generic function with 1 method)
-````
-
 The function `get_voronoi_area` above returns `0` if the cell is on the boundary. Finally, our function for performing the
 proliferation step is below.
 
-````julia
+````@example cell_simulations
 function proliferate_cells!(cells::CellModel)
     E = 0.0
     Δt = cells.Δt
@@ -172,13 +164,9 @@ function proliferate_cells!(cells::CellModel)
 end
 ````
 
-````
-proliferate_cells! (generic function with 1 method)
-````
-
 Finally, our simulation function is below.
 
-````julia
+````@example cell_simulations
 function perform_step!(cells::CellModel)
     proliferate_cells!(cells)
     migrate_cells!(cells)
@@ -197,16 +185,12 @@ function simulate_cells(cells::CellModel)
 end
 ````
 
-````
-simulate_cells (generic function with 1 method)
-````
-
 ## Example
 Let us now give an example. Our initial set of points will be randomly chosen inside
 the rectangle $[-2, 2] \times [-5, 5]$. We use $\alpha = 5$, $s = 2$, $\Delta t = 10^{-3}$,
 $\beta = 0.25$, $K = 100^2$, and $\epsilon = 0.5$.
 
-````julia
+````@example cell_simulations
 rng = StableRNG(123444)
 a, b, c, d = -2.0, 2.0, -5.0, 5.0
 points = [(a + (b - a) * rand(rng), c + (d - c) * rand(rng)) for _ in 1:10]
@@ -230,6 +214,7 @@ record(fig, "cell_simulation.mp4", 1:10:length(t); framerate=60) do ii
     i[] = ii
     title_obs[] = L"t = %$(((ii-1) * Δt))"
 end;
+nothing #hide
 ````
 
 ![](cell_simulation.mp4)

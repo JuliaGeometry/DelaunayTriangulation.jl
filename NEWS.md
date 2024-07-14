@@ -1,6 +1,6 @@
 # Changelog
 
-## v.1.1.0
+## Main (upcoming v.1.1.0)
 
 - Added the option to disable ExactPredicates.jl using Preferences.jl. See [#131](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/131) and [#137](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/137).
 - Added `DelauanyTriangulation.validate_triangulation` for validating triangulations. See [#131](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/131).
