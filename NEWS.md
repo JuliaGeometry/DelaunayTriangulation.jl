@@ -7,6 +7,12 @@
 - Fixed a bug with the currently unused `orient(p, q, r, s)` predicate. See [#131](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/131).
 - Added private functions `getz`, `_getz`, `getxyz`, and `_getxyz`. See [#131](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/131).
 - `jump_and_march` has now been renamed to `find_triangle`. For compatibility, `jump_and_march` still works and is simply an alias of `find_triangle`. See [#133](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/133).
+- Mutable structs now use `const` on fields that aren't changed. For compatibility with older versions, this is implemented using a macro that is a no-op where this is not supported. See [#140](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/140).
+- We now use the `public` word to define public functions. This is only included on Julia versions v1.11 and above. See [#140](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/140).
+- We now test on the pre-release. See [#140](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/140).
+- The module `DelaunayTriangulation` now has a docstring. See [#140](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/140).
+- The `.md` files for tutorials and applications in the docs have been properly updated to match their literate counterparts. See [#140](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/140).
+- We now use a workflow to enforce changes to `NEWS.md` for any PRs. See [#140](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/140).
 
 ## v1.0.5 
 
