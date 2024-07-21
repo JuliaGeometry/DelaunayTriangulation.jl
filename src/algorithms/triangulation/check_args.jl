@@ -87,9 +87,9 @@ end
 function Base.showerror(io::IO, err::InconsistentOrientationError)
     print(io, "InconsistentOrientationError: ")
     if err.should_be_positive
-        print(io, "The orientation of the boundary curve with index ", err.index, " should be positive, but it is negative.")
+        print(io, "The orientation of the boundary curve with index ", err.index, " should be positive, but it is negative.  You can fix this by passing the curve as `reverse(curve)`.")
     else
-        print(io, "The orientation of the boundary curve with index ", err.index, " should be negative, but it is positive.")
+        print(io, "The orientation of the boundary curve with index ", err.index, " should be negative, but it is positive.  You can fix this by passing the curve as `reverse(curve)`.")
     end
     return io
 end
