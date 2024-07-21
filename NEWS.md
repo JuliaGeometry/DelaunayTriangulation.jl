@@ -13,6 +13,7 @@
 - The module `DelaunayTriangulation` now has a docstring. See [#140](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/140).
 - The `.md` files for tutorials and applications in the docs have been properly updated to match their literate counterparts. See [#140](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/140).
 - We now use a workflow to enforce changes to `NEWS.md` for any PRs. See [#140](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/140).
+- Improved the error message for an incorrect orientation. See [#144](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/144).
 
 ## v1.0.5 
 
