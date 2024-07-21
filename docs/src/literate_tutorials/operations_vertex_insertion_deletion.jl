@@ -44,7 +44,7 @@ delete_ghost_triangles!(tri)
 try #hide
     add_point!(tri, 2.0, 1.5)
 catch e #hide
-    println(e) #hide
+println(e) #hide
 end #hide
 
 # This is a `BoundsError`, because the triangulation has had to 
