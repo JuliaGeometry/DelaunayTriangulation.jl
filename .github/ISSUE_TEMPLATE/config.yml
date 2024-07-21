@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Question and/or feature request 
+    url: https://github.com/JuliaGeometry/DelaunayTriangulation.jl/discussions
+    about: Please ask and answer questions about DelaunayTriangulation.jl, as well as request features, on the Discussions tab.
