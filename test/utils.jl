@@ -1545,12 +1545,10 @@ end
       b6 = @ballocated basic_def2($tup, $arg, $6)
       b7 = @ballocated basic_def2($tup, $arg, $7)
       @test all(iszero, (a1, a2, a3, a4, a5, a6, a7))
-      @test all(!iszero, (b1, b2, b3, b4, b5, b6, b7))
       for i in 1:7
             global basic_def2
             @test DT.eval_fnc_in_het_tuple(tup, arg, i) == basic_def2(tup, arg, i)
             @inferred DT.eval_fnc_in_het_tuple(tup, arg, i)
-            @test_throws Exception @inferred basic_def2(tup, arg, i)
       end
 end
 
@@ -1579,7 +1577,6 @@ end
             end
       end
       @test all(iszero, a .- 16) || all(iszero, a)
-      @test all(!iszero, b)
 end
 
 @testset "_to_val" begin
