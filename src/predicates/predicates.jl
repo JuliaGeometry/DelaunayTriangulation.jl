@@ -289,7 +289,7 @@ function is_legal(tri::Triangulation, i, j)
             is_boundary_edge(tri, j, i) || is_boundary_edge(tri, i, j) ||
             !edge_exists(tri, i, j) || !edge_exists(tri, j, i) ||
             is_ghost_edge(i, j)
-        return Cert.legal
+        return Cert.Legal
     else
         k = get_adjacent(tri, i, j)
         ℓ = get_adjacent(tri, j, i)
