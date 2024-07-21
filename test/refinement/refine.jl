@@ -1215,7 +1215,7 @@ end
             in_dt_encroached_edges_lens_45, not_in_dt_encroached_edges_lens_45 = slow_encroachment_test_diametral_lens(tri, 45.0)
             in_dt_encroached_edges_lens_30, not_in_dt_encroached_edges_lens_30 = slow_encroachment_test_diametral_lens(tri, 30.0)
             in_dt_encroached_edges_lens_20, not_in_dt_encroached_edges_lens_20 = slow_encroachment_test_diametral_lens(tri, 20.0)
-            in_dt_encroached_edges_lens_10, not_in_dt_encroached_edges_lens_10 = slow_encroachment_test_diametral_lens(tri, 10.0)
+            in_dt_encroached_edges_lens_10, not_in_dt_encroached_edges_lens_10 = slow_encroachment_test_diametral_lens(tri, 15.0)
             all_bn = DT.get_all_boundary_nodes(tri)
             for (lens_angle, not_in_dt_encroached_edges) in zip((45.0, 30.0, 20.0, 15.0), (not_in_dt_encroached_edges_lens_45, not_in_dt_encroached_edges_lens_30, not_in_dt_encroached_edges_lens_20, not_in_dt_encroached_edges_lens_10))
                 @info "Testing encroached edge detection. lens angle: $lens_angle"
