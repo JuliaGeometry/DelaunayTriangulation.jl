@@ -7,6 +7,7 @@
 - Fixed a bug with the currently unused `orient(p, q, r, s)` predicate. See [#131](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/131).
 - Added private functions `getz`, `_getz`, `getxyz`, and `_getxyz`. See [#131](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/131).
 - `jump_and_march` has now been renamed to `find_triangle`. For compatibility, `jump_and_march` still works and is simply an alias of `find_triangle`. See [#133](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/133).
+- Improved the error message for an incorrect orientation. See [#144](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/144).
 
 ## v1.0.5 
 
