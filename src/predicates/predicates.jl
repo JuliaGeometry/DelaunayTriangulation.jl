@@ -286,17 +286,17 @@ end
 
 function is_legal(tri::Triangulation, i, j)
     if contains_segment(tri, i, j) ||
-        is_boundary_edge(tri, j, i) || is_boundary_edge(tri, i, j) ||
-        !edge_exists(tri, i, j) || !edge_exists(tri, j) ||
-        is_ghost_edge(i, j)
-        return Cert.legal 
-    else 
+            is_boundary_edge(tri, j, i) || is_boundary_edge(tri, i, j) ||
+            !edge_exists(tri, i, j) || !edge_exists(tri, j) ||
+            is_ghost_edge(i, j)
+        return Cert.legal
+    else
         k = get_adjacent(tri, i, j)
         ℓ = get_adjacent(tri, j, i)
         p, q, r, s = get_point(tri, i, j, k, ℓ)
         cert = is_legal(p, q, r, s)
         return cert
-    end 
+    end
 end
 
 @doc """
