@@ -287,7 +287,7 @@ end
 function is_legal(tri::Triangulation, i, j)
     if contains_segment(tri, i, j) ||
             is_boundary_edge(tri, j, i) || is_boundary_edge(tri, i, j) ||
-            !edge_exists(tri, i, j) || !edge_exists(tri, j) ||
+            !edge_exists(tri, i, j) || !edge_exists(tri, j, i) ||
             is_ghost_edge(i, j)
         return Cert.legal
     else
