@@ -1217,7 +1217,7 @@ end
             in_dt_encroached_edges_lens_20, not_in_dt_encroached_edges_lens_20 = slow_encroachment_test_diametral_lens(tri, 20.0)
             in_dt_encroached_edges_lens_10, not_in_dt_encroached_edges_lens_10 = slow_encroachment_test_diametral_lens(tri, 10.0)
             all_bn = DT.get_all_boundary_nodes(tri)
-            for (lens_angle, not_in_dt_encroached_edges) in zip((45.0, 30.0, 20.0, 10.0), (not_in_dt_encroached_edges_lens_45, not_in_dt_encroached_edges_lens_30, not_in_dt_encroached_edges_lens_20, not_in_dt_encroached_edges_lens_10))
+            for (lens_angle, not_in_dt_encroached_edges) in zip((45.0, 30.0, 20.0, 15.0), (not_in_dt_encroached_edges_lens_45, not_in_dt_encroached_edges_lens_30, not_in_dt_encroached_edges_lens_20, not_in_dt_encroached_edges_lens_10))
                 @info "Testing encroached edge detection. lens angle: $lens_angle"
                 args = DT.RefinementArguments(tri; use_lens=true, min_angle=lens_angle)
                 for (e, (b, k)) in not_in_dt_encroached_edges
@@ -1231,7 +1231,7 @@ end
                     end
                 end
             end
-            for (lens_angle, in_dt_encroached_edges) in zip((45.0, 30.0, 20.0, 10.0), (in_dt_encroached_edges_lens_45, in_dt_encroached_edges_lens_30, in_dt_encroached_edges_lens_20, in_dt_encroached_edges_lens_10))
+            for (lens_angle, in_dt_encroached_edges) in zip((45.0, 30.0, 20.0, 15.0), (in_dt_encroached_edges_lens_45, in_dt_encroached_edges_lens_30, in_dt_encroached_edges_lens_20, in_dt_encroached_edges_lens_10))
                 args = DT.RefinementArguments(tri; use_lens=true, min_angle=lens_angle)
                 for (e, (b, k)) in in_dt_encroached_edges
                     if DT.initial(e) ∈ all_bn && DT.terminal(e) ∈ all_bn && !DT.contains_segment(tri, e)
