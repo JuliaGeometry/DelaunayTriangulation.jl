@@ -419,7 +419,8 @@ function check_args(enricher::BoundaryEnricher)
     points = get_points(enricher)
     boundary_nodes = get_boundary_nodes(enricher)
     hierarchy = get_polygon_hierarchy(enricher)
-    return check_args(points, boundary_nodes, hierarchy)
+    boundary_curves = get_boundary_curves(enricher)
+    return check_args(points, boundary_nodes, hierarchy, boundary_curves)
 end
 
 """

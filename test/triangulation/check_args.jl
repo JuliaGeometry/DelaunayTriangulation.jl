@@ -1,6 +1,5 @@
 using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
-using CairoMakie
 
 _test_throws(e1, e2=e1) = @static VERSION ≥ v"1.9" ? e1 : e2
 
@@ -46,7 +45,7 @@ end
     boundary_nodes = [4, 3, 2, 1, 4]
     hierarchy = DT.construct_polygon_hierarchy(points, boundary_nodes)
     @test_throws _test_throws(DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 1 should be positive, but it is negative.", DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 1 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(curve).", DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
     @test_throws _test_throws(DT.InconsistentOrientationError) triangulate(points; boundary_nodes)
 
     boundary_nodes = [[1, 2, 3, 4, 1]]
@@ -60,7 +59,7 @@ end
     boundary_nodes = [[4, 3, 2, 1, 4]]
     hierarchy = DT.construct_polygon_hierarchy(points, boundary_nodes)
     @test_throws _test_throws(DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 1 should be positive, but it is negative.", DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 1 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(reverse.(curve)).", DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
     @test_throws _test_throws(DT.InconsistentOrientationError) triangulate(points; boundary_nodes)
 
     boundary_nodes = [[[1, 2, 3, 4, 1]]]
@@ -74,7 +73,7 @@ end
     boundary_nodes = [[[4, 3, 2, 1, 4]]]
     hierarchy = DT.construct_polygon_hierarchy(points, boundary_nodes)
     @test_throws _test_throws(DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 1 should be positive, but it is negative.", DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 1 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(reverse.(curve)).", DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
     @test_throws _test_throws(DT.InconsistentOrientationError) triangulate(points; boundary_nodes)
 end
 
@@ -103,7 +102,7 @@ end
     boundary_nodes = [[1, 8, 7, 6], [6, 5, 4], [4, 3], [3, 2, 1]]
     hierarchy = DT.construct_polygon_hierarchy(points, boundary_nodes)
     @test_throws _test_throws(DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 1 should be positive, but it is negative.", DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 1 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(reverse.(curve)).", DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
     @test_throws _test_throws(DT.InconsistentOrientationError) triangulate(points; boundary_nodes)
 
     points = [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]
@@ -149,12 +148,12 @@ end
     boundary_nodes = [[[1, 7, 6, 5, 4, 3, 2, 1]], [[11, 10, 9, 8, 11]]]
     hierarchy = DT.construct_polygon_hierarchy(points, boundary_nodes)
     @test_throws _test_throws(DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 1 should be positive, but it is negative.", DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 1 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(reverse.(curve)).", DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
     @test_throws _test_throws(DT.InconsistentOrientationError) triangulate(points; boundary_nodes)
     boundary_nodes = [[[1, 2, 3, 4, 5, 6, 7, 1]], [[11, 8, 9, 10, 11]]]
     hierarchy = DT.construct_polygon_hierarchy(points, boundary_nodes)
     @test_throws _test_throws(DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 2 should be negative, but it is positive.", DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 2 should be negative, but it is positive. You may be able to fix this by passing the curve as reverse(reverse.(curve)).", DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
     @test_throws _test_throws(DT.InconsistentOrientationError) triangulate(points; boundary_nodes)
 end
 
@@ -322,7 +321,7 @@ end
     boundary_nodes, points = convert_boundary_points_to_indices(curves)
     hierarchy = DT.construct_polygon_hierarchy(points, boundary_nodes)
     @test_throws _test_throws(DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 7 should be positive, but it is negative.", DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 7 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(reverse.(curve)).", DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
     @test_throws _test_throws(DT.InconsistentOrientationError) triangulate(points; boundary_nodes)
 end
 
@@ -332,7 +331,7 @@ end
     enricher_I = DT.BoundaryEnricher(points_I, curve_I)
     points, boundary_nodes = get_points(enricher_I), get_boundary_nodes(enricher_I)
     hierarchy = DT.get_polygon_hierarchy(enricher_I)
-    @test DT.check_args(points, boundary_nodes, hierarchy)
+    @test DT.check_args(points, boundary_nodes, hierarchy, DT.get_boundary_curves(enricher_I))
     @test DT.check_args(enricher_I)
 
     curve_II = [[1, 2, 3, 4, 5], [5, 6, 7, 8, 9], [9, 10, 11, 1]]
@@ -344,7 +343,7 @@ end
     enricher_II = DT.BoundaryEnricher(points_II, curve_II)
     points, boundary_nodes = get_points(enricher_II), get_boundary_nodes(enricher_II)
     hierarchy = DT.get_polygon_hierarchy(enricher_II)
-    @test DT.check_args(points, boundary_nodes, hierarchy)
+    @test DT.check_args(points, boundary_nodes, hierarchy, DT.get_boundary_curves(enricher_II))
     @test DT.check_args(enricher_II)
 
     curve_III = [[[1, 2, 3, 4, 5], [5, 6, 7, 8, 9], [9, 10, 11, 1]], [[15, 14, 13, 12], [12, 15]]]
@@ -357,7 +356,7 @@ end
     enricher_III = DT.BoundaryEnricher(points_III, curve_III)
     points, boundary_nodes = get_points(enricher_III), get_boundary_nodes(enricher_III)
     hierarchy = DT.get_polygon_hierarchy(enricher_III)
-    @test DT.check_args(points, boundary_nodes, hierarchy)
+    @test DT.check_args(points, boundary_nodes, hierarchy, DT.get_boundary_curves(enricher_III))
     @test DT.check_args(enricher_III)
 
     curve_IV = [CircularArc((1.0, 0.0), (1.0, 0.0), (0.0, 0.0))]
@@ -372,9 +371,11 @@ end
     enricher_IV = DT.BoundaryEnricher(points_IV, curve_IV)
     points, boundary_nodes = get_points(enricher_IV), get_boundary_nodes(enricher_IV)
     hierarchy = DT.get_polygon_hierarchy(enricher_IV)
-    @test_throws _test_throws(DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 1 should be positive, but it is negative.", DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws _test_throws(DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy, DT.get_boundary_curves(enricher_IV))
+    str = "If this curve is defined by an AbstractParametricCurve, you may instead need to reverse the order of the control points defining the sections of the curve; the `positive` keyword may also be of interest for CircularArcs and EllipticalArcs."
+    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 1 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(curve).\n$str", DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy, DT.get_boundary_curves(enricher_IV))
     @test_throws _test_throws(DT.InconsistentOrientationError) DT.check_args(enricher_IV)
+    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 1 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(curve).\n$str", DT.InconsistentOrientationError) DT.triangulate(NTuple{2,Float64}[]; boundary_nodes=[CircularArc((1.0, 0.0), (1.0, 0.0), (0.0, 0.0), positive=false)])
 
     curve_V = [BezierCurve([(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.0, 0.0)])]
     points_V = [(0.0, 0.0), (0.2, 0.25)]
@@ -526,13 +527,16 @@ end
             [CircularArc((1.1, -3.0), (1.1, -3.0), (0.0, -3.0), positive=false)]
         ]
     ]
+    _curve_XI = deepcopy(curve_XI)
     points_XI = [(-2.0, 0.0), (0.0, 0.0), (2.0, 0.0), (-2.0, -5.0), (2.0, -5.0), (2.0, -1 / 10), (-2.0, -1 / 10), (-1.0, -3.0), (0.0, -4.0), (0.0, -2.3), (-0.5, -3.5), (0.9, -3.0)]
+    _points_XI = deepcopy(points_XI)
     enricher_XI = DT.BoundaryEnricher(points_XI, curve_XI)
     points, boundary_nodes = get_points(enricher_XI), get_boundary_nodes(enricher_XI)
     hierarchy = DT.get_polygon_hierarchy(enricher_XI)
-    @test_throws _test_throws(DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 4 should be positive, but it is negative.", DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws _test_throws(DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy, DT.get_boundary_curves(enricher_XI))
+    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 4 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(reverse.(curve)).\n$str", DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy, DT.get_boundary_curves(enricher_XI))
     @test_throws _test_throws(DT.InconsistentOrientationError) DT.check_args(enricher_XI)
+    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 4 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(reverse.(curve)).\n$str", DT.InconsistentOrientationError) triangulate(_points_XI; boundary_nodes=_curve_XI)
 
     ctrl = [
         (0.0, 0.0), (2.0, 0.0), (1.6, -0.1),
