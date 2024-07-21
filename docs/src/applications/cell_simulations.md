@@ -46,29 +46,29 @@ We update the triangulation after each step.[^2]
 ## Implementation
 Let us now implement this model. First, we define a struct for storing the parameters of our model.
 
-````@example cell_simulations
+````julia
 using DelaunayTriangulation
 using StableRNGs
 using LinearAlgebra
 using StatsBase
 using CairoMakie
-@kwdef mutable struct CellModel
-    tri::Triangulation
-    new_r_cache::Vector{NTuple{2,Float64}} # for r(t + Δt)
-    const α::Float64
-    const s::Float64
-    const Δt::Float64
-    const rng::StableRNGs.LehmerRNG
-    const final_time::Float64
-    const β::Float64
-    const K::Float64
-    const ϵ::Float64
+Base.@kwdef mutable struct CellModel{P}
+    tri::Triangulation{P}
+    new_r_cache::Vector{NTuple{2, Float64}} # for r(t + Δt)
+    α::Float64
+    s::Float64
+    Δt::Float64
+    rng::StableRNGs.LehmerRNG
+    final_time::Float64
+    β::Float64
+    K::Float64
+    ϵ::Float64
 end
 ````
 
 Let's now write functions for performing the migration step.
 
-````@example cell_simulations
+````julia
 function migrate_cells!(cells::CellModel) # a more efficient way would be to loop over edges rather than vertices
     tri = cells.tri
     for i in each_solid_vertex(tri)
@@ -90,11 +90,15 @@ function migrate_cells!(cells::CellModel) # a more efficient way would be to loo
 end
 ````
 
+````
+migrate_cells! (generic function with 1 method)
+````
+
 Now we can write the proliferation functions. First, let us write a function that computes the Voronoi areas. If we had the
 `VoronoiTessellation` computed, we would just use `get_area`, but we are aiming to avoid having to compute $\mathcal V\mathcal T(\mathcal P)$
 directly.
 
-````@example cell_simulations
+````julia
 function polygon_area(points) # this is the same function from the Interpolation section
     n = DelaunayTriangulation.num_points(points)
     p, q, r, s = get_point(points, 1, 2, n, n - 1)
@@ -103,7 +107,7 @@ function polygon_area(points) # this is the same function from the Interpolation
     rx, ry = getxy(r)
     sx, sy = getxy(s)
     area = px * (qy - ry) + rx * (py - sy)
-    for i in 2:(n-1)
+    for i in 2:(n - 1)
         p, q, r = get_point(points, i, i + 1, i - 1)
         px, py = getxy(p)
         qx, qy = getxy(q)
@@ -113,7 +117,7 @@ function polygon_area(points) # this is the same function from the Interpolation
     return area / 2
 end
 function get_voronoi_area(tri::Triangulation, i)
-    points = NTuple{2,Float64}[]
+    points = NTuple{2, Float64}[]
     !DelaunayTriangulation.has_vertex(tri, i) && return (0.0, points) # might not be included anymore due to retriangulation
     DelaunayTriangulation.is_boundary_node(tri, i)[1] && return (0.0, points) # to prevent boundary cells from proliferating
     N = get_neighbours(tri, i)
@@ -133,10 +137,14 @@ function get_voronoi_area(tri::Triangulation, i)
 end
 ````
 
+````
+get_voronoi_area (generic function with 1 method)
+````
+
 The function `get_voronoi_area` above returns `0` if the cell is on the boundary. Finally, our function for performing the
 proliferation step is below.
 
-````@example cell_simulations
+````julia
 function proliferate_cells!(cells::CellModel)
     E = 0.0
     Δt = cells.Δt
@@ -157,16 +165,20 @@ function proliferate_cells!(cells::CellModel)
         δ = DelaunayTriangulation.distance_to_polygon(p, get_points(tri), poly)
         s, c = sincos(θ)
         q = p .+ (δ * cells.ϵ) .* (c, s)
-        add_point!(tri, q; rng=cells.rng)
+        add_point!(tri, q; rng = cells.rng)
         push!(cells.new_r_cache, q)
     end
     return nothing
 end
 ````
 
+````
+proliferate_cells! (generic function with 1 method)
+````
+
 Finally, our simulation function is below.
 
-````@example cell_simulations
+````julia
 function perform_step!(cells::CellModel)
     proliferate_cells!(cells)
     migrate_cells!(cells)
@@ -174,7 +186,7 @@ function perform_step!(cells::CellModel)
 end
 function simulate_cells(cells::CellModel)
     t = 0.0
-    all_points = Vector{Vector{NTuple{2,Float64}}}()
+    all_points = Vector{Vector{NTuple{2, Float64}}}()
     push!(all_points, deepcopy(get_points(cells.tri)))
     while t < cells.final_time
         perform_step!(cells)
@@ -185,36 +197,43 @@ function simulate_cells(cells::CellModel)
 end
 ````
 
+````
+simulate_cells (generic function with 1 method)
+````
+
 ## Example
 Let us now give an example. Our initial set of points will be randomly chosen inside
 the rectangle $[-2, 2] \times [-5, 5]$. We use $\alpha = 5$, $s = 2$, $\Delta t = 10^{-3}$,
 $\beta = 0.25$, $K = 100^2$, and $\epsilon = 0.5$.
 
-````@example cell_simulations
+````julia
 rng = StableRNG(123444)
 a, b, c, d = -2.0, 2.0, -5.0, 5.0
 points = [(a + (b - a) * rand(rng), c + (d - c) * rand(rng)) for _ in 1:10]
-tri = triangulate(points; rng=rng)
-cells = CellModel(; tri=tri, new_r_cache=similar(points), α=5.0, s=2.0, Δt=1e-3,
-    β=0.25, K=100.0^2, rng, final_time=25.0, ϵ=0.5)
+tri = triangulate(points; rng = rng)
+cells = CellModel(;
+    tri = tri, new_r_cache = similar(points), α = 5.0, s = 2.0, Δt = 1.0e-3,
+    β = 0.25, K = 100.0^2, rng, final_time = 25.0, ϵ = 0.5,
+)
 results = simulate_cells(cells);
 
-fig = Figure(fontsize=26)
+fig = Figure(fontsize = 26)
 title_obs = Observable(L"t = %$(0.0)")
-ax1 = Axis(fig[1, 1], width=1200, height=400, title=title_obs, titlealign=:left)
+ax1 = Axis(fig[1, 1], width = 1200, height = 400, title = title_obs, titlealign = :left)
 Δt = cells.Δt
 i = Observable(1)
-voronoiplot!(ax1, @lift(voronoi(triangulate(results[$i]; rng), clip=true, rng=rng)),
-    color=:darkgreen, strokecolor=:black, strokewidth=2, show_generators=false)
+voronoiplot!(
+    ax1, @lift(voronoi(triangulate(results[$i]; rng), clip = true, rng = rng)),
+    color = :darkgreen, strokecolor = :black, strokewidth = 2, show_generators = false,
+)
 xlims!(ax1, -12, 12)
 ylims!(ax1, -12, 12)
 resize_to_layout!(fig)
 t = 0:Δt:cells.final_time
-record(fig, "cell_simulation.mp4", 1:10:length(t); framerate=60) do ii
+record(fig, "cell_simulation.mp4", 1:10:length(t); framerate = 60) do ii
     i[] = ii
     title_obs[] = L"t = %$(((ii-1) * Δt))"
 end;
-nothing #hide
 ````
 
 ![](cell_simulation.mp4)
@@ -229,17 +248,17 @@ using StableRNGs
 using LinearAlgebra
 using StatsBase
 using CairoMakie
-@kwdef mutable struct CellModel
-    tri::Triangulation
-    new_r_cache::Vector{NTuple{2,Float64}} # for r(t + Δt)
-    const α::Float64
-    const s::Float64
-    const Δt::Float64
-    const rng::StableRNGs.LehmerRNG
-    const final_time::Float64
-    const β::Float64
-    const K::Float64
-    const ϵ::Float64
+Base.@kwdef mutable struct CellModel{P}
+    tri::Triangulation{P}
+    new_r_cache::Vector{NTuple{2, Float64}} # for r(t + Δt)
+    α::Float64
+    s::Float64
+    Δt::Float64
+    rng::StableRNGs.LehmerRNG
+    final_time::Float64
+    β::Float64
+    K::Float64
+    ϵ::Float64
 end
 
 function migrate_cells!(cells::CellModel) # a more efficient way would be to loop over edges rather than vertices
@@ -270,7 +289,7 @@ function polygon_area(points) # this is the same function from the Interpolation
     rx, ry = getxy(r)
     sx, sy = getxy(s)
     area = px * (qy - ry) + rx * (py - sy)
-    for i in 2:(n-1)
+    for i in 2:(n - 1)
         p, q, r = get_point(points, i, i + 1, i - 1)
         px, py = getxy(p)
         qx, qy = getxy(q)
@@ -280,7 +299,7 @@ function polygon_area(points) # this is the same function from the Interpolation
     return area / 2
 end
 function get_voronoi_area(tri::Triangulation, i)
-    points = NTuple{2,Float64}[]
+    points = NTuple{2, Float64}[]
     !DelaunayTriangulation.has_vertex(tri, i) && return (0.0, points) # might not be included anymore due to retriangulation
     DelaunayTriangulation.is_boundary_node(tri, i)[1] && return (0.0, points) # to prevent boundary cells from proliferating
     N = get_neighbours(tri, i)
@@ -319,7 +338,7 @@ function proliferate_cells!(cells::CellModel)
         δ = DelaunayTriangulation.distance_to_polygon(p, get_points(tri), poly)
         s, c = sincos(θ)
         q = p .+ (δ * cells.ϵ) .* (c, s)
-        add_point!(tri, q; rng=cells.rng)
+        add_point!(tri, q; rng = cells.rng)
         push!(cells.new_r_cache, q)
     end
     return nothing
@@ -332,7 +351,7 @@ function perform_step!(cells::CellModel)
 end
 function simulate_cells(cells::CellModel)
     t = 0.0
-    all_points = Vector{Vector{NTuple{2,Float64}}}()
+    all_points = Vector{Vector{NTuple{2, Float64}}}()
     push!(all_points, deepcopy(get_points(cells.tri)))
     while t < cells.final_time
         perform_step!(cells)
@@ -345,23 +364,27 @@ end
 rng = StableRNG(123444)
 a, b, c, d = -2.0, 2.0, -5.0, 5.0
 points = [(a + (b - a) * rand(rng), c + (d - c) * rand(rng)) for _ in 1:10]
-tri = triangulate(points; rng=rng)
-cells = CellModel(; tri=tri, new_r_cache=similar(points), α=5.0, s=2.0, Δt=1e-3,
-    β=0.25, K=100.0^2, rng, final_time=25.0, ϵ=0.5)
+tri = triangulate(points; rng = rng)
+cells = CellModel(;
+    tri = tri, new_r_cache = similar(points), α = 5.0, s = 2.0, Δt = 1.0e-3,
+    β = 0.25, K = 100.0^2, rng, final_time = 25.0, ϵ = 0.5,
+)
 results = simulate_cells(cells);
 
-fig = Figure(fontsize=26)
+fig = Figure(fontsize = 26)
 title_obs = Observable(L"t = %$(0.0)")
-ax1 = Axis(fig[1, 1], width=1200, height=400, title=title_obs, titlealign=:left)
+ax1 = Axis(fig[1, 1], width = 1200, height = 400, title = title_obs, titlealign = :left)
 Δt = cells.Δt
 i = Observable(1)
-voronoiplot!(ax1, @lift(voronoi(triangulate(results[$i]; rng), clip=true, rng=rng)),
-    color=:darkgreen, strokecolor=:black, strokewidth=2, show_generators=false)
+voronoiplot!(
+    ax1, @lift(voronoi(triangulate(results[$i]; rng), clip = true, rng = rng)),
+    color = :darkgreen, strokecolor = :black, strokewidth = 2, show_generators = false,
+)
 xlims!(ax1, -12, 12)
 ylims!(ax1, -12, 12)
 resize_to_layout!(fig)
 t = 0:Δt:cells.final_time
-record(fig, "cell_simulation.mp4", 1:10:length(t); framerate=60) do ii
+record(fig, "cell_simulation.mp4", 1:10:length(t); framerate = 60) do ii
     i[] = ii
     title_obs[] = L"t = %$(((ii-1) * Δt))"
 end;
