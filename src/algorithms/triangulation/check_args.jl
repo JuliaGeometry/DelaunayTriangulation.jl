@@ -1,5 +1,5 @@
 """
-    check_args(points, boundary_nodes, hierarchy::PolygonHierarchy) -> Bool 
+    check_args(points, boundary_nodes, hierarchy::PolygonHierarchy, boundary_curves = ()) -> Bool 
 
 Check that the arguments `points` and `boundary_nodes` to [`triangulate`](@ref), and a constructed 
 [`PolygonHierarchy`](@ref) given by `hierarchy`, are valid. In particular, the function checks:
@@ -20,13 +20,13 @@ If `boundary_nodes` are provided, meaning [`has_boundary_nodes`](@ref), then the
     Another requirement for [`triangulate`](@ref) is that none of the boundaries intersect in their interior, which also prohibits 
     interior self-intersections. This is NOT checked. Similarly, segments should not intersect in their interior, which is not checked.
 """
-function check_args(points, boundary_nodes, hierarchy)
+function check_args(points, boundary_nodes, hierarchy, boundary_curves = ())
     has_unique_points(points)
     has_enough_points(points)
     has_bnd = has_boundary_nodes(boundary_nodes)
     if has_bnd
         has_consistent_connections(boundary_nodes)
-        has_consistent_orientations(hierarchy)
+        has_consistent_orientations(hierarchy, boundary_nodes, is_curve_bounded(boundary_curves))
     end
     return true
 end
@@ -47,6 +47,8 @@ end
 struct InconsistentOrientationError{I} <: Exception
     index::I
     should_be_positive::Bool
+    is_sectioned::Bool
+    is_curve_bounded::Bool
 end
 function Base.showerror(io::IO, err::DuplicatePointsError)
     points = err.points
@@ -86,11 +88,20 @@ function Base.showerror(io::IO, err::InconsistentConnectionError)
 end
 function Base.showerror(io::IO, err::InconsistentOrientationError)
     print(io, "InconsistentOrientationError: ")
-    if err.should_be_positive
-        print(io, "The orientation of the boundary curve with index ", err.index, " should be positive, but it is negative.")
-    else
-        print(io, "The orientation of the boundary curve with index ", err.index, " should be negative, but it is positive.")
+    suggestion = err.is_sectioned ? "reverse(reverse.(curve))" : "reverse(curve)"
+    str = " You may be able to fix this by passing the curve as $suggestion."
+    if err.is_curve_bounded
+        # Only show this longer message if this part of the boundary could be defined by an AbstractParametricCurve. 
+        # It's hard to detect if the curve is indeed defined by an AbstractParametricCurve since the curve could be defined 
+        # by a combination of multiple AbstractParametricCurves and possibly a PiecewiseLinear part. Thus, the above advice
+        # might nto be wrong.
+        str2 = "\nIf this curve is defined by an AbstractParametricCurve, you may instead need to reverse the order of the control points defining" * 
+        " the sections of the curve; the `positive` keyword may also be of interest for CircularArcs and EllipticalArcs."
+        str *= str2 
     end
+    sign = err.should_be_positive ? "positive" : "negative" 
+    sign2 = err.should_be_positive ? "negative" : "positive"
+    print(io, "The orientation of the boundary curve with index ", err.index, " should be $sign, but it is $sign2.", str)
     return io
 end
 
@@ -106,24 +117,25 @@ function has_enough_points(points)
     return true
 end
 
-function has_consistent_orientations(hierarchy::PolygonHierarchy)
+function has_consistent_orientations(hierarchy::PolygonHierarchy, boundary_nodes, is_curve_bounded)
     # Since trees start at height zero, the heights 0, 2, 4, ... must be positive, and 1, 3, 5, ... must be negative.
     for (_, tree) in get_trees(hierarchy)
-        has_consistent_orientations(tree, hierarchy)
+        has_consistent_orientations(tree, hierarchy, boundary_nodes, is_curve_bounded)
     end
     return true
 end
-function has_consistent_orientations(tree::PolygonTree, hierarchy::PolygonHierarchy)
+function has_consistent_orientations(tree::PolygonTree, hierarchy::PolygonHierarchy, boundary_nodes, is_curve_bounded)
     height = get_height(tree)
     index = get_index(tree)
     pos_orientation = get_polygon_orientation(hierarchy, index)
+    is_sectioned = has_multiple_curves(boundary_nodes) || has_multiple_sections(boundary_nodes)
     if iseven(height)
-        !pos_orientation && throw(InconsistentOrientationError(index, true))
+        !pos_orientation && throw(InconsistentOrientationError(index, true, is_sectioned, is_curve_bounded))
     else
-        pos_orientation && throw(InconsistentOrientationError(index, false))
+        pos_orientation && throw(InconsistentOrientationError(index, false, is_sectioned, is_curve_bounded))
     end
     for child in get_children(tree)
-        has_consistent_orientations(child, hierarchy)
+        has_consistent_orientations(child, hierarchy, boundary_nodes, is_curve_bounded)
     end
     return true
 end

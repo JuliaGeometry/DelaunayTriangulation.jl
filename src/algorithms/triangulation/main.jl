@@ -138,7 +138,7 @@ function triangulate(points::P;
     if isnothing(full_polygon_hierarchy)
         full_polygon_hierarchy = construct_polygon_hierarchy(points, boundary_nodes; IntegerType)
     end
-    check_arguments && check_args(points, boundary_nodes, full_polygon_hierarchy)
+    check_arguments && check_args(points, boundary_nodes, full_polygon_hierarchy, boundary_curves)
     tri = Triangulation(points; IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType, weights, boundary_curves, boundary_enricher, build_cache = Val(true))
     return _triangulate!(tri, segments, boundary_nodes, randomise, try_last_inserted_point, skip_points, num_sample_rule, rng, insertion_order,
         recompute_representative_points, delete_holes, full_polygon_hierarchy, delete_ghosts, delete_empty_features)
