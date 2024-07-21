@@ -42,7 +42,7 @@ fig
 # adding a point outside of the triangulation would not work. Here is an example of this failing.
 delete_ghost_triangles!(tri)
 try #hide
-    add_point!(tri, 2.0, 1.5)
+add_point!(tri, 2.0, 1.5)
 catch e #hide
 println(e) #hide
 end #hide
