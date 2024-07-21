@@ -12,10 +12,7 @@ Computes the orientation of the triangle `T = (i, j, k)` with correspondig coord
 triangle_orientation
 function triangle_orientation(p, q, r)
     cert = orient_predicate(p, q, r)
-    return convert_certificate(
-        cert, Cert.NegativelyOriented, Cert.Degenerate,
-        Cert.PositivelyOriented,
-    )
+    return convert_certificate(cert, Cert.NegativelyOriented, Cert.Degenerate, Cert.PositivelyOriented)
 end
 function triangle_orientation(tri::Triangulation, i, j, k)
     if is_exterior_ghost_triangle(tri, i, j, k)
@@ -288,19 +285,18 @@ function is_legal(p, q, r, s)
 end
 
 function is_legal(tri::Triangulation, i, j)
-    (
-        contains_segment(tri, i, j) ||
-            is_boundary_edge(tri, j, i) ||
-            is_boundary_edge(tri, i, j) ||
-            !edge_exists(tri, i, j) ||
-            !edge_exists(tri, j, i) ||
-            is_ghost_edge(i, j)
-    ) && return Cert.Legal
-    k = get_adjacent(tri, i, j)
-    ℓ = get_adjacent(tri, j, i)
-    p, q, r, s = get_point(tri, i, j, k, ℓ)
-    cert = is_legal(p, q, r, s)
-    return cert
+    if contains_segment(tri, i, j) ||
+        is_boundary_edge(tri, j, i) || is_boundary_edge(tri, i, j) ||
+        !edge_exists(tri, i, j) || !edge_exists(tri, j) ||
+        is_ghost_edge(i, j)
+        return Cert.legal 
+    else 
+        k = get_adjacent(tri, i, j)
+        ℓ = get_adjacent(tri, j, i)
+        p, q, r, s = get_point(tri, i, j, k, ℓ)
+        cert = is_legal(p, q, r, s)
+        return cert
+    end 
 end
 
 @doc """
