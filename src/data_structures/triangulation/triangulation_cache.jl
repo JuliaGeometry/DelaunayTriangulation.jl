@@ -24,7 +24,7 @@ A cache to be used as a field in [`Triangulation`](@ref).
 
     The `points` of the cache's `triangulation` will be aliased to the `points` of the parent triangulation.
 """
-struct TriangulationCache{T,M,I,S,F}
+struct TriangulationCache{T, M, I, S, F}
     triangulation::T
     triangulation_2::T
     marked_vertices::M

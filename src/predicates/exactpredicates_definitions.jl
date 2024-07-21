@@ -70,7 +70,7 @@ opposite_signs(x, y) = xor(x, y) == -2
     sgn(x) -> Int 
 
 Returns `Int(sign(x))`.
-""" 
+"""
 sgn(x) = Int(sign(x))
 
 """
@@ -289,9 +289,9 @@ function meet_predicate(p, q, a, b)
         return -1
     elseif pqa == 0 && pqb == 0
         if sameside_predicate(a, b, p) == 1 &&
-           sameside_predicate(a, b, q) == 1 &&
-           sameside_predicate(p, q, a) == 1 &&
-           sameside_predicate(p, q, b) == 1
+                sameside_predicate(a, b, q) == 1 &&
+                sameside_predicate(p, q, a) == 1 &&
+                sameside_predicate(p, q, b) == 1
             return -1
         else
             return 0

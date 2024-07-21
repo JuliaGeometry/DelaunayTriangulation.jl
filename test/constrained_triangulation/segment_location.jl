@@ -14,7 +14,7 @@ using Preferences
             [(1, 4, 2), (4, 5, 9), (5, 6, 8)],
             [(3, 4, 10), (10, 8, 11)],
             [(3, 2, 4), (2, 1, 4)],
-            [(3, 4, 10), (10, 4, 9), (10, 9, 5), (8, 5, 6), (5, 8, 10)]
+            [(3, 4, 10), (10, 4, 9), (10, 9, 5), (8, 5, 6), (5, 8, 10)],
         ]
         collinear = [
             [],
@@ -23,7 +23,7 @@ using Preferences
             [(1, 4), (4, 5), (5, 6)],
             ([(11, 10), (10, 3)], [(3, 10), (10, 11)]),
             [(1, 2), (2, 3)],
-            []
+            [],
         ]
         for _ in 1:250
             for (edge, tris, edges) in zip(e, allT, collinear)
@@ -38,7 +38,7 @@ using Preferences
             (Set(((1, 4), (4, 5), (5, 6))),),
             (Set(((1, 4), (4, 5), (5, 6), (1, 2), (2, 3))),),
             (Set(((1, 4), (4, 5), (5, 6), (1, 2), (2, 3), (3, 10), (10, 11))), Set(((1, 4), (4, 5), (5, 6), (1, 2), (2, 3), (11, 10), (10, 3)))),
-            (Set(((1, 4), (4, 5), (5, 6), (1, 2), (2, 3), (3, 10), (10, 11), (11, 7), (7, 6))), Set(((1, 4), (4, 5), (5, 6), (1, 2), (2, 3), (11, 10), (10, 3), (11, 7), (7, 6))))
+            (Set(((1, 4), (4, 5), (5, 6), (1, 2), (2, 3), (3, 10), (10, 11), (11, 7), (7, 6))), Set(((1, 4), (4, 5), (5, 6), (1, 2), (2, 3), (11, 10), (10, 3), (11, 7), (7, 6)))),
         ]
         for _ in 1:250
             tri = shewchuk_example_constrained()
@@ -82,36 +82,36 @@ end
         e[1] = (7, 28)
         _T1 = [(7, 8, 12), (12, 8, 13), (17, 12, 13), (17, 13, 18), (22, 17, 18), (22, 18, 23), (27, 22, 23), (27, 23, 28)]
         crossed_triangles[1] = (_T1, reverse(_T1))
-        constrained_edges[1] = Set{NTuple{2,Int}}((e[1],))
-        collinear_segments[1] = NTuple{2,Int}[]
+        constrained_edges[1] = Set{NTuple{2, Int}}((e[1],))
+        collinear_segments[1] = NTuple{2, Int}[]
 
         e[2] = (44, 21)
         crossed_triangles[2] = [(21, 22, 26), (26, 22, 27), (31, 26, 27), (31, 27, 32), (32, 27, 28), (32, 28, 33), (37, 32, 33), (37, 33, 38), (38, 33, 34), (38, 34, 39), (43, 38, 39), (43, 39, 44)]
-        constrained_edges[2] = Set{NTuple{2,Int}}((e[1], e[2]))
-        collinear_segments[2] = NTuple{2,Int}[]
+        constrained_edges[2] = Set{NTuple{2, Int}}((e[1], e[2]))
+        collinear_segments[2] = NTuple{2, Int}[]
 
         e[3] = (8, 14)
         crossed_triangles[3] = ([(13, 8, 9), (13, 9, 14)], [(13, 9, 14), (13, 8, 9)])
-        constrained_edges[3] = Set{NTuple{2,Int}}((e[1], e[2], e[3]))
-        collinear_segments[3] = NTuple{2,Int}[]
+        constrained_edges[3] = Set{NTuple{2, Int}}((e[1], e[2], e[3]))
+        collinear_segments[3] = NTuple{2, Int}[]
 
         e[4] = (1, 50)
         _T4 = [(6, 1, 2), (6, 2, 7), (11, 6, 7), (11, 7, 12), (16, 11, 12), (16, 12, 17), (17, 12, 13), (17, 13, 18), (22, 17, 18), (22, 18, 23), (27, 22, 23), (27, 23, 28), (28, 23, 24), (28, 24, 29), (33, 28, 29), (33, 29, 34), (38, 33, 34), (38, 34, 39), (39, 34, 35), (39, 35, 40), (44, 39, 40), (44, 40, 45), (49, 44, 45), (49, 45, 50)]
         crossed_triangles[4] = (_T4, reverse(_T4))
-        constrained_edges[4] = Set{NTuple{2,Int}}((e[1], e[2], e[3], e[4]))
-        collinear_segments[4] = NTuple{2,Int}[]
+        constrained_edges[4] = Set{NTuple{2, Int}}((e[1], e[2], e[3], e[4]))
+        collinear_segments[4] = NTuple{2, Int}[]
 
         e[5] = (47, 4)
         _T5 = [(47, 42, 43), (42, 38, 43), (42, 37, 38), (38, 37, 33), (37, 32, 33), (32, 28, 33), (32, 27, 28), (27, 23, 28), (28, 23, 24), (23, 19, 24), (23, 18, 19), (18, 14, 19), (18, 13, 14), (13, 9, 14), (13, 8, 9), (8, 4, 9)]
         crossed_triangles[5] = (_T5, reverse(_T5))
-        constrained_edges[5] = Set{NTuple{2,Int}}((e[1], e[2], e[3], e[4], e[5]))
-        collinear_segments[5] = NTuple{2,Int}[]
+        constrained_edges[5] = Set{NTuple{2, Int}}((e[1], e[2], e[3], e[4], e[5]))
+        collinear_segments[5] = NTuple{2, Int}[]
 
         e[6] = (17, 24)
         _T6 = [(22, 17, 18), (22, 18, 23), (23, 18, 19), (23, 19, 24)]
         crossed_triangles[6] = (_T6, reverse(_T6))
-        constrained_edges[6] = Set{NTuple{2,Int}}((e[1], e[2], e[3], e[4], e[5], e[6]))
-        collinear_segments[6] = NTuple{2,Int}[]
+        constrained_edges[6] = Set{NTuple{2, Int}}((e[1], e[2], e[3], e[4], e[5], e[6]))
+        collinear_segments[6] = NTuple{2, Int}[]
 
         e[7] = (17, 27)
         _T7a = [(22, 21, 17), (21, 22, 26), (26, 22, 27)]
@@ -119,7 +119,7 @@ end
         _T7c = [(22, 23, 27), (23, 22, 18), (18, 22, 17)]
         _T7d = [(26, 22, 27), (22, 26, 21), (22, 21, 17)]
         crossed_triangles[7] = (_T7a, _T7b, _T7c, _T7d)
-        constrained_edges[7] = Set{NTuple{2,Int}}((e[1], e[2], e[3], e[4], e[5], e[6], (27, 22), (22, 17)))
+        constrained_edges[7] = Set{NTuple{2, Int}}((e[1], e[2], e[3], e[4], e[5], e[6], (27, 22), (22, 17)))
         collinear_segments[7] = ([(27, 22), (22, 17)], [(17, 22), (22, 27)])
 
         e[8] = (32, 24)
@@ -288,17 +288,19 @@ if !USE_INEXACTPREDICATES
             d = 0.01
             nx = 25
             ny = 25
-            tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true)
+            tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts = false, single_boundary = true)
             tri = triangulate(get_points(tri))
             for i in 2:24
                 add_segment!(tri, i, 600 + i)
             end
-            tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true)
+            tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts = false, single_boundary = true)
             tri = triangulate(get_points(tri))
             e = (23, 71)
-            history = DT.PointLocationHistory{NTuple{3,Int},NTuple{2,Int},Int}()
-            find_triangle(tri, get_point(tri, 71);
-                m=nothing, k=23, store_history=true, history=history)
+            history = DT.PointLocationHistory{NTuple{3, Int}, NTuple{2, Int}, Int}()
+            find_triangle(
+                tri, get_point(tri, 71);
+                m = nothing, k = 23, store_history = true, history = history,
+            )
             collinear_segments = history.collinear_segments
             DT.connect_segments!(collinear_segments)
             DT.extend_segments!(collinear_segments, e)
@@ -308,11 +310,13 @@ if !USE_INEXACTPREDICATES
 end
 
 @testset "Some other previously broken examples, dealing with segments going through points without passing through segments" begin
-    tri = triangulate_rectangle(0, 5, 0, 10, 6, 11; delete_ghosts=false)
+    tri = triangulate_rectangle(0, 5, 0, 10, 6, 11; delete_ghosts = false)
     e = (14, 40)
-    history = DT.PointLocationHistory{NTuple{3,Int},NTuple{2,Int},Int}()
-    find_triangle(tri, get_point(tri, 40);
-        m=nothing, k=14, store_history=true, history=history)
+    history = DT.PointLocationHistory{NTuple{3, Int}, NTuple{2, Int}, Int}()
+    find_triangle(
+        tri, get_point(tri, 40);
+        m = nothing, k = 14, store_history = true, history = history,
+    )
     collinear_segments = history.collinear_segments
     DT.fix_segments!(collinear_segments, history.collinear_point_indices)
     DT.connect_segments!(collinear_segments)
@@ -320,9 +324,11 @@ end
     @test collinear_segments == [(14, 27), (27, 40)]
 
     e = (2, 54)
-    history = DT.PointLocationHistory{NTuple{3,Int},NTuple{2,Int},Int}()
-    find_triangle(tri, get_point(tri, 54);
-        m=nothing, k=2, store_history=true, history=history)
+    history = DT.PointLocationHistory{NTuple{3, Int}, NTuple{2, Int}, Int}()
+    find_triangle(
+        tri, get_point(tri, 54);
+        m = nothing, k = 2, store_history = true, history = history,
+    )
     collinear_segments = history.collinear_segments
     bad_indices = history.collinear_point_indices
     DT.fix_segments!(collinear_segments, bad_indices)

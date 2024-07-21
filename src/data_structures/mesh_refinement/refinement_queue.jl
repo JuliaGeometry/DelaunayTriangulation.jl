@@ -14,11 +14,11 @@ The default constructor is available, but we also provide
 
 which will initialise this struct with empty queues with the appropriate types.
 """
-struct RefinementQueue{T,E,F}
-    segments::MaxPriorityQueue{E,F}
-    triangles::MaxPriorityQueue{T,F}
-    function RefinementQueue{T,E,F}() where {T,E,F}
-        return new{T,E,F}(MaxPriorityQueue{E,F}(), MaxPriorityQueue{T,F}())
+struct RefinementQueue{T, E, F}
+    segments::MaxPriorityQueue{E, F}
+    triangles::MaxPriorityQueue{T, F}
+    function RefinementQueue{T, E, F}() where {T, E, F}
+        return new{T, E, F}(MaxPriorityQueue{E, F}(), MaxPriorityQueue{T, F}())
     end
 end
 function Base.show(io::IO, ::MIME"text/plain", queue::RefinementQueue)
@@ -31,7 +31,7 @@ function RefinementQueue(tri::Triangulation)
     T = triangle_type(tri)
     E = edge_type(tri)
     F = number_type(tri)
-    return RefinementQueue{T,E,F}()
+    return RefinementQueue{T, E, F}()
 end
 
 """
@@ -39,7 +39,7 @@ end
 
 Return `true` if `queue` has `segment` or its reverse, and `false` otherwise.
 """
-function Base.haskey(queue::RefinementQueue{T,E,F}, segment::E) where {T,E,F}
+function Base.haskey(queue::RefinementQueue{T, E, F}, segment::E) where {T, E, F}
     return haskey(queue.segments, segment) || haskey(queue.segments, reverse_edge(segment))
 end
 
@@ -48,10 +48,10 @@ end
 
 Return `true` if `queue` has `triangle` or any of its counter-clockwise rotations, and `false` otherwise.
 """
-function Base.haskey(queue::RefinementQueue{T,E,F}, triangle::T) where {T,E,F}
+function Base.haskey(queue::RefinementQueue{T, E, F}, triangle::T) where {T, E, F}
     return haskey(queue.triangles, triangle) ||
-           haskey(queue.triangles, rotate_triangle(triangle, Val(1))) ||
-           haskey(queue.triangles, rotate_triangle(triangle, Val(2)))
+        haskey(queue.triangles, rotate_triangle(triangle, Val(1))) ||
+        haskey(queue.triangles, rotate_triangle(triangle, Val(2)))
 end
 
 """
@@ -60,7 +60,7 @@ end
 
 Return the radius-edge ratio of `triangle` in `queue`.
 """
-function Base.getindex(queue::RefinementQueue{T,E,F}, triangle::T) where {T,E,F}
+function Base.getindex(queue::RefinementQueue{T, E, F}, triangle::T) where {T, E, F}
     if haskey(queue.triangles, triangle)
         return queue.triangles[triangle]
     elseif haskey(queue.triangles, rotate_triangle(triangle, Val(1)))
@@ -77,7 +77,7 @@ end
 
 Add a `segment` to `queue` whose squared length is `ℓ²`. If the `segment` is already in the `queue`, its priority is updated to `ℓ`.
 """
-function Base.setindex!(queue::RefinementQueue{T,E,F}, ℓ²::F, segment::E) where {T,E,F}
+function Base.setindex!(queue::RefinementQueue{T, E, F}, ℓ²::F, segment::E) where {T, E, F}
     segments = queue.segments
     if haskey(segments, reverse_edge(segment))
         segments[reverse_edge(segment)] = ℓ²
@@ -93,7 +93,7 @@ end
 
 Add a `triangle` to `queue` whose radius-edge ratio is `ρ`. If the `triangle` is already in the `queue`, its priority is updated to `ρ`.
 """
-function Base.setindex!(queue::RefinementQueue{T,E,F}, ρ, triangle::T) where {T,E,F}
+function Base.setindex!(queue::RefinementQueue{T, E, F}, ρ, triangle::T) where {T, E, F}
     triangles = queue.triangles
     if haskey(triangles, triangle)
         triangles[triangle] = ρ

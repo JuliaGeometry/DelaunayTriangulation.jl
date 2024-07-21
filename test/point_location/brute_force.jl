@@ -3,7 +3,6 @@ const DT = DelaunayTriangulation
 using StatsBase
 
 
-
 global tri, label_map, index_map = simple_geometry()
 
 @testset "Finding points in ghost triangles" begin

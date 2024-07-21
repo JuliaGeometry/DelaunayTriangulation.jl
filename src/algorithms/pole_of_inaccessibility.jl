@@ -22,7 +22,7 @@ a centroid which is not always inside the polygon. Some useful links are [this b
 and the [the original repo](https://github.com/mapbox/polylabel). Our implementation is partially based on 
 on [the python implementation](https://github.com/Twista/python-polylabel) and [this other Julia implementation](https://github.com/asinghvi17/Polylabel.jl).
 """
-function pole_of_inaccessibility(points, boundary_nodes; precision=one(number_type(points)))
+function pole_of_inaccessibility(points, boundary_nodes; precision = one(number_type(points)))
     ## Initiate
     xmin, xmax, ymin, ymax = polygon_bounds(points, boundary_nodes)
     width = xmax - xmin
@@ -67,8 +67,10 @@ function pole_of_inaccessibility(points, boundary_nodes; precision=one(number_ty
     ## We are done, and the last best_cell is the solution 
     return best_cell.x, best_cell.y
 end
-function process_cell!(queue::CellQueue{F}, best_cell::Cell{F}, points, boundary_nodes,
-    precision) where {F}
+function process_cell!(
+        queue::CellQueue{F}, best_cell::Cell{F}, points, boundary_nodes,
+        precision,
+    ) where {F}
     next_cell = get_next_cell!(queue)
     if next_cell.dist > best_cell.dist
         best_cell = next_cell # This cell will have a large circle, so let's choose it 

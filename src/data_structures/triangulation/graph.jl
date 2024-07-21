@@ -20,10 +20,10 @@ The map taking vertices `u` to the set of all `v` such that `(u, v)` is an edge 
 """
 struct Graph{I}
     vertices::Set{I}
-    edges::Set{NTuple{2,I}}
-    neighbours::Dict{I,Set{I}}
+    edges::Set{NTuple{2, I}}
+    neighbours::Dict{I, Set{I}}
 end
-Graph{I}() where {I} = Graph(Set{I}(), Set{NTuple{2,I}}(), Dict{I,Set{I}}())
+Graph{I}() where {I} = Graph(Set{I}(), Set{NTuple{2, I}}(), Dict{I, Set{I}}())
 function Base.show(io::IO, ::MIME"text/plain", graph::Graph)
     println(io, "Graph")
     println(io, "    Number of edges: ", num_edges(graph))

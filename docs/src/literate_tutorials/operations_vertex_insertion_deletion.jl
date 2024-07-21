@@ -35,16 +35,16 @@ fig
 # small number of points. We can also add points that are outside of the triangulation:
 add_point!(tri, 0.0, 1.0)
 fig, ax, sc = triplot(tri)
-fig 
+fig
 @test_reference joinpath(fig_path, "triangulation_operations_3.png") fig #src
 
 # One important thing to note here is that, if not for the ghost triangles inside `tri`,
 # adding a point outside of the triangulation would not work. Here is an example of this failing.
 delete_ghost_triangles!(tri)
 try #hide
-add_point!(tri, 2.0, 1.5)
+    add_point!(tri, 2.0, 1.5)
 catch e #hide
-println(e) #hide
+    println(e) #hide
 end #hide
 
 # This is a `BoundsError`, because the triangulation has had to 
@@ -67,7 +67,7 @@ get_convex_hull_vertices(tri)
 
 # If we do want to fix the convex hull, we can use [`convex_hull!(tri)`](@ref).
 convex_hull!(tri)
-fig, ax, sc = triplot(tri, show_convex_hull=true)
+fig, ax, sc = triplot(tri, show_convex_hull = true)
 fig
 @test_reference joinpath(fig_path, "triangulation_operations_4.png") fig #src
 

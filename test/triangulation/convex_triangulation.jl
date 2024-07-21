@@ -8,7 +8,6 @@ using ReferenceTests
 using StatsBase
 
 
-
 @testset "Triangulating random convex polygons" begin
     for n in Iterators.flatten([3:20, 25:50:1000])
         points = rand(2, n)
@@ -78,7 +77,7 @@ end
         @test_throws AssertionError("S must not be circular.") triangulate_convex(pts, S)
         pop!(S)
         tri_chew = triangulate_convex(pts, S)
-        tri_bowyer = triangulate(pts; skip_points=setdiff(1:50, [11, 27, 5]), delete_ghosts=false)
+        tri_bowyer = triangulate(pts; skip_points = setdiff(1:50, [11, 27, 5]), delete_ghosts = false)
         @test get_convex_hull(tri_chew) == get_convex_hull(tri_bowyer)
         @test DT.compare_triangle_collections(get_triangles(tri_chew), get_triangles(tri_bowyer))
         @test (get_adjacent ∘ get_adjacent)(tri_chew) == (get_adjacent ∘ get_adjacent)(tri_bowyer)
@@ -88,7 +87,7 @@ end
         pts[:, 28] .= [1.01, 1.01]
         S = [11, 27, 28, 5]
         tri_chew = triangulate_convex(pts, S)
-        tri_bowyer = triangulate(pts; skip_points=setdiff(1:50, [11, 27, 5, 28]), delete_ghosts=false)
+        tri_bowyer = triangulate(pts; skip_points = setdiff(1:50, [11, 27, 5, 28]), delete_ghosts = false)
         @test get_convex_hull(tri_chew) == get_convex_hull(tri_bowyer)
         @test DT.compare_triangle_collections(get_triangles(tri_chew), get_triangles(tri_bowyer))
         @test (get_adjacent ∘ get_adjacent)(tri_chew) == (get_adjacent ∘ get_adjacent)(tri_bowyer)

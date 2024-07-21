@@ -53,7 +53,7 @@ end
 
 @static if VERSION ≥ v"1.6"
     const PREDICATES = @load_preference("PREDICATES", "EXACT")::String # This default is not guaranteed to be consistent between versions
-else 
+else
     const PREDICATES = "EXACT"
 end
 @static if PREDICATES ∉ ("EXACT", "INEXACT")
@@ -92,4 +92,3 @@ PREDICATES
 
 const USE_EXACTPREDICATES = PREDICATES == "EXACT"
 const USE_INEXACTPREDICATES = PREDICATES == "INEXACT"
-

@@ -12,8 +12,10 @@ Computes the orientation of the triangle `T = (i, j, k)` with correspondig coord
 triangle_orientation
 function triangle_orientation(p, q, r)
     cert = orient_predicate(p, q, r)
-    return convert_certificate(cert, Cert.NegativelyOriented, Cert.Degenerate,
-        Cert.PositivelyOriented)
+    return convert_certificate(
+        cert, Cert.NegativelyOriented, Cert.Degenerate,
+        Cert.PositivelyOriented,
+    )
 end
 function triangle_orientation(tri::Triangulation, i, j, k)
     if is_exterior_ghost_triangle(tri, i, j, k)
@@ -286,12 +288,14 @@ function is_legal(p, q, r, s)
 end
 
 function is_legal(tri::Triangulation, i, j)
-    (contains_segment(tri, i, j) ||
-     is_boundary_edge(tri, j, i) ||
-     is_boundary_edge(tri, i, j) ||
-     !edge_exists(tri, i, j) ||
-     !edge_exists(tri, j, i) ||
-     is_ghost_edge(i, j)) && return Cert.Legal
+    (
+        contains_segment(tri, i, j) ||
+            is_boundary_edge(tri, j, i) ||
+            is_boundary_edge(tri, i, j) ||
+            !edge_exists(tri, i, j) ||
+            !edge_exists(tri, j, i) ||
+            is_ghost_edge(i, j)
+    ) && return Cert.Legal
     k = get_adjacent(tri, i, j)
     ℓ = get_adjacent(tri, j, i)
     p, q, r, s = get_point(tri, i, j, k, ℓ)
@@ -512,8 +516,8 @@ function point_position_relative_to_circumcircle(tri::Triangulation, i, j, k, �
     else
         cert = point_position_relative_to_witness_plane(tri, i, j, k, ℓ)
         return is_above(cert) ? Cert.Outside :
-               is_below(cert) ? Cert.Inside :
-               Cert.On
+            is_below(cert) ? Cert.Inside :
+            Cert.On
     end
 end
 point_position_relative_to_circumcircle(tri::Triangulation, T, ℓ) = point_position_relative_to_circumcircle(tri, geti(T), getj(T), getk(T), ℓ)
@@ -621,7 +625,7 @@ To test if a point `r` is inside the diametral lens with lens angle `θ°`, we s
 at that point, i.e. the angle at `r` in the triangle `pqr`. If this angle is greater than `180° - 2θ°`, then `r` is inside of the lens. This result 
 comes from [Shewchuk (2002)](https://doi.org/10.1016/S0925-7721(01)00047-5). Note that this is the same as a diametral circle in the case `θ° = 45°`. 
 """
-function point_position_relative_to_diametral_lens(p, q, r, lens_angle=30.0)
+function point_position_relative_to_diametral_lens(p, q, r, lens_angle = 30.0)
     px, py = _getxy(p)
     qx, qy = _getxy(q)
     rx, ry = _getxy(r)
@@ -656,7 +660,7 @@ the two does not intersect any segments.
 - `cert`: A [`Certificate`](@ref). This will be `Visible` if `i` is visible from `q`, and `Invisible` otherwise.
 """
 function test_visibility(tri::Triangulation, q, i)
-    V, invisible_flag = find_triangle(tri, q; use_barriers=Val(true), k=i, concavity_protection=true)
+    V, invisible_flag = find_triangle(tri, q; use_barriers = Val(true), k = i, concavity_protection = true)
     if invisible_flag
         return Certificate.Invisible
     else
@@ -682,7 +686,7 @@ of `(u, v)` can see `i`. To test this, we only check `10` points equally spaced 
 # Outputs
 - `cert`: A [`Certificate`](@ref). This will be `Visible` if `i` is visible from `(u, v)`, and `Invisible` otherwise.
 """
-function test_visibility(tri::Triangulation, u, v, i; shift=0.0, attractor=get_point(tri,i))
+function test_visibility(tri::Triangulation, u, v, i; shift = 0.0, attractor = get_point(tri, i))
     pu, pv = get_point(tri, u, v)
     pux, puy = getxy(pu)
     pvx, pvy = getxy(pv)

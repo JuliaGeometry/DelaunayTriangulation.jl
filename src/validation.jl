@@ -35,7 +35,7 @@ end
 
 struct TriangleOrientationState <: AbstractTriangulationState
     flag::Bool
-    bad_triangle::NTuple{3,Int}
+    bad_triangle::NTuple{3, Int}
     triangle_orientation::Symbol
 end
 TriangleOrientationState(tri) = test_triangle_orientation(tri)
@@ -58,7 +58,7 @@ end
 
 struct DelaunayCriterionState <: AbstractTriangulationState
     flag::Bool
-    bad_triangle::NTuple{3,Int}
+    bad_triangle::NTuple{3, Int}
     bad_vertex::Int
 end
 DelaunayCriterionState(tri) = test_delaunay_criterion(tri)
@@ -78,7 +78,7 @@ function test_delaunay_criterion(tri)
         points = get_points(tri)
         triangle_tree = BoundaryRTree(points)
         segment_tree = BoundaryRTree(points)
-        failures = Tuple{triangle_type(tri),integer_type(tri)}[]
+        failures = Tuple{triangle_type(tri), integer_type(tri)}[]
         for T in each_solid_triangle(tri)
             i, j, k = triangle_vertices(T)
             p, q, r = get_point(tri, i, j, k)
@@ -106,7 +106,7 @@ function test_delaunay_criterion(tri)
         end
         for r in shuffle(collect(each_solid_vertex(tri)))
             !isempty(failures) && break
-            intersects = get_intersections(triangle_tree, r, cache_id=1) # can't use multithreading here
+            intersects = get_intersections(triangle_tree, r, cache_id = 1) # can't use multithreading here
             for box in intersects
                 i, j = get_edge(box)
                 k = get_adjacent(tri, i, j)
@@ -121,7 +121,7 @@ function test_delaunay_criterion(tri)
                     for (i, j) in triangle_edges(i, j, k)
                         contains_segment(tri, i, j) && continue # visibility is defined according to the relative interior of the simplex, which means that it's fine if a segment can see the vertex
                         if rand() < 1 / 2 # just testing both
-                            cert = test_visibility(tri, i, j, r, shift=0.01, attractor=c)
+                            cert = test_visibility(tri, i, j, r, shift = 0.01, attractor = c)
                         else
                             cert = test_visibility(tri, segment_tree, i, j, r, c)
                         end
@@ -142,7 +142,7 @@ function test_delaunay_criterion(tri)
         rethrow(e)
     end
 end
-function test_visibility(tri::Triangulation, segment_tree, i, j, k, centroid=nothing)
+function test_visibility(tri::Triangulation, segment_tree, i, j, k, centroid = nothing)
     if is_boundary_edge(tri, j, i)
         i, j = j, i
     end
@@ -178,7 +178,7 @@ function test_visibility(tri::Triangulation, segment_tree, i, j, k, centroid=not
         ax, ay = getxy(a)
         xmin, ymin, xmax, ymax = min(mx, ax), min(my, ay), max(mx, ax), max(my, ay)
         bbox = BoundingBox(xmin, xmax, ymin, ymax)
-        intersections = get_intersections(segment_tree, bbox; cache_id=2)
+        intersections = get_intersections(segment_tree, bbox; cache_id = 2)
         for box in intersections
             u, v = get_edge(box)
             p′, q′ = get_point(tri, u, v)
@@ -192,7 +192,7 @@ end
 
 struct EdgesHaveTwoIncidentTrianglesState <: AbstractTriangulationState
     flag::Bool
-    bad_edge::NTuple{2,Int}
+    bad_edge::NTuple{2, Int}
 end
 EdgesHaveTwoIncidentTrianglesState(tri) = test_each_edge_has_two_incident_triangles(tri)
 function Base.summary(state::EdgesHaveTwoIncidentTrianglesState)
@@ -224,8 +224,8 @@ end
 
 struct AdjacentMapState <: AbstractTriangulationState
     flag::Bool
-    bad_triangle::NTuple{3,Int}
-    bad_edge::NTuple{2,Int}
+    bad_triangle::NTuple{3, Int}
+    bad_edge::NTuple{2, Int}
     bad_vertex::Int
 end
 AdjacentMapState(tri) = test_adjacent_map_matches_triangles(tri)
@@ -252,10 +252,10 @@ end
 
 struct Adjacent2VertexMapState <: AbstractTriangulationState
     flag::Bool
-    bad_triangle::NTuple{3,Int}
-    bad_edge::NTuple{2,Int}
+    bad_triangle::NTuple{3, Int}
+    bad_edge::NTuple{2, Int}
     bad_vertex::Int
-    bad_edge_set::Set{NTuple{2,Int}}
+    bad_edge_set::Set{NTuple{2, Int}}
 end
 Adjacent2VertexMapState(tri) = test_adjacent2vertex_map_matches_triangles(tri)
 function Base.summary(state::Adjacent2VertexMapState)
@@ -274,20 +274,20 @@ function test_adjacent2vertex_map_matches_triangles(tri)
             Su = get_adjacent2vertex(tri, u)
             flag = contains_edge(vw, Su)
             if !flag
-                _Su = Set{NTuple{2,Int}}(Int.(edge_vertices(e)) for e in each_edge(Su))
+                _Su = Set{NTuple{2, Int}}(Int.(edge_vertices(e)) for e in each_edge(Su))
                 return Adjacent2VertexMapState(flag, Int.(triangle_vertices(T)), Int.((v, w)), Int(u), _Su)
             end
         end
     end
-    return Adjacent2VertexMapState(true, (∅, ∅, ∅), (∅, ∅), ∅, Set{NTuple{2,Int}}())
+    return Adjacent2VertexMapState(true, (∅, ∅, ∅), (∅, ∅), ∅, Set{NTuple{2, Int}}())
 end
 
 struct AdjacentMapAdjacent2VertexMapState <: AbstractTriangulationState
     flag::Bool
     bad_vertex::Int
     bad_vertex2::Int
-    bad_edge_set::Set{NTuple{2,Int}}
-    bad_edge::NTuple{2,Int}
+    bad_edge_set::Set{NTuple{2, Int}}
+    bad_edge::NTuple{2, Int}
 end
 AdjacentMapAdjacent2VertexMapState(tri) = test_adjacent_map_matches_adjacent2vertex_map(tri)
 function Base.summary(state::AdjacentMapAdjacent2VertexMapState)
@@ -299,20 +299,20 @@ function Base.summary(state::AdjacentMapAdjacent2VertexMapState)
 end
 function test_adjacent_map_matches_adjacent2vertex_map(tri)
     for (k, S) in get_adjacent2vertex(get_adjacent2vertex(tri))
-        _S = Set{NTuple{2,Int}}(Int.(edge_vertices(e)) for e in each_edge(S))
+        _S = Set{NTuple{2, Int}}(Int.(edge_vertices(e)) for e in each_edge(S))
         for e in each_edge(S)
             flag = get_adjacent(tri, e) == k
             !flag && return AdjacentMapAdjacent2VertexMapState(flag, Int(k), get_adjacent(tri, e), _S, Int.(edge_vertices(e)))
         end
     end
     clear_empty_features!(tri)
-    return AdjacentMapAdjacent2VertexMapState(true, ∅, ∅, Set{NTuple{2,Int}}(), (∅, ∅))
+    return AdjacentMapAdjacent2VertexMapState(true, ∅, ∅, Set{NTuple{2, Int}}(), (∅, ∅))
 end
 
 struct Adjacent2VertexMapAdjacentMapState <: AbstractTriangulationState
     flag::Bool
     bad_vertex::Int
-    bad_edge::NTuple{2,Int}
+    bad_edge::NTuple{2, Int}
     in_adjacent2vertex::Bool
 end
 Adjacent2VertexMapAdjacentMapState(tri) = test_adjacent2vertex_map_matches_adjacent_map(tri)
@@ -370,7 +370,7 @@ end
 
 struct GraphAdjacentMapState <: AbstractTriangulationState
     flag::Bool
-    bad_edge::NTuple{2,Int}
+    bad_edge::NTuple{2, Int}
 end
 GraphAdjacentMapState(tri) = test_graph_matches_adjacent_map(tri)
 function Base.summary(state::GraphAdjacentMapState)
@@ -403,8 +403,8 @@ end
 struct AdjacentMapGraphState <: AbstractTriangulationState
     flag::Bool
     bad_vertex::Int
-    bad_edge::NTuple{2,Int}
-    bad_edge_2::NTuple{2,Int}
+    bad_edge::NTuple{2, Int}
+    bad_edge_2::NTuple{2, Int}
     is_k::Bool
     adjacent_vertex::Int
 end
@@ -435,8 +435,8 @@ end
 
 struct GraphTrianglesState <: AbstractTriangulationState
     flag::Bool
-    bad_triangle::NTuple{3,Int}
-    bad_edge::NTuple{2,Int}
+    bad_triangle::NTuple{3, Int}
+    bad_edge::NTuple{2, Int}
     bad_vertex::Int
 end
 GraphTrianglesState(tri) = test_graph_matches_triangles(tri)
@@ -471,7 +471,7 @@ end
 
 struct SegmentState <: AbstractTriangulationState
     flag::Bool
-    segment::NTuple{2,Int}
+    segment::NTuple{2, Int}
     type::Int
 end
 SegmentState(tri) = test_segments(tri)
@@ -502,8 +502,8 @@ function test_segments(tri)
         flag = edge_exists(tri, e) || edge_exists(tri, reverse_edge(e))
         !flag && return SegmentState(flag, Int.(edge_vertices(e)), 0)
     end
-    int_segs = Set{NTuple{2,Int}}()
-    all_segs = Set{NTuple{2,Int}}()
+    int_segs = Set{NTuple{2, Int}}()
+    all_segs = Set{NTuple{2, Int}}()
     for e in get_interior_segments(tri)
         u, v = edge_vertices(e)
         push!(int_segs, minmax(u, v))
@@ -519,8 +519,8 @@ end
 
 struct BoundaryEdgeMapBoundaryNodesState <: AbstractTriangulationState
     flag::Bool
-    bad_edge::NTuple{2,Int}
-    bad_edge_2::NTuple{2,Int}
+    bad_edge::NTuple{2, Int}
+    bad_edge_2::NTuple{2, Int}
     bad_pos::Tuple
 end
 BoundaryEdgeMapBoundaryNodesState(tri) = test_boundary_edge_map_matches_boundary_nodes(tri)
@@ -544,7 +544,7 @@ end
 
 struct BoundaryNodesBoundaryEdgeMapState <: AbstractTriangulationState
     flag::Bool
-    bad_edge::NTuple{2,Int}
+    bad_edge::NTuple{2, Int}
     bad_pos::Tuple
     bad_pos_2::Tuple
 end
@@ -660,17 +660,17 @@ function Base.summary(state::IteratorState)
     return summary(state.output_state) # !test_state(state.output_state)
 end
 function IteratorState(
-    unique_flag, length_flag, output_flag,
-    iterator_length, correct_length,
-    iterator_name, primitive_name, iterator_function_name
-)
+        unique_flag, length_flag, output_flag,
+        iterator_length, correct_length,
+        iterator_name, primitive_name, iterator_function_name,
+    )
     flag = unique_flag && length_flag && output_flag
     return IteratorState(
         flag,
         UniqueIteratorOutputState(unique_flag, iterator_name, primitive_name),
         IteratorLengthState(length_flag, iterator_name, primitive_name, iterator_function_name, iterator_length, correct_length),
         IteratorOutputState(output_flag, iterator_name, primitive_name, iterator_function_name),
-        iterator_name
+        iterator_name,
     )
 end
 function VertexIteratorState(length_flag, output_flag, iterator_length, correct_length)
@@ -702,8 +702,8 @@ function GhostEdgeIteratorState(unique_flag, length_flag, output_flag, iterator_
 end
 function test_iterators(tri::Triangulation)
     I = integer_type(tri)
-    T = NTuple{3,I}
-    E = NTuple{2,I}
+    T = NTuple{3, I}
+    E = NTuple{2, I}
     solid_triangles = T[]
     ghost_triangles = T[]
     all_triangles = T[]
@@ -801,14 +801,14 @@ function test_iterators(tri::Triangulation)
         GhostTriangleIteratorState(unique_ghost_triangle_flag, ghost_triangle_length_flag, ghost_triangle_output_flag, ghost_triangle_iterator_length, ghost_triangle_correct_length),
         EdgeIteratorState(unique_edge_flag, edge_length_flag, edge_output_flag, edge_iterator_length, edge_correct_length),
         SolidEdgeIteratorState(unique_solid_edge_flag, solid_edge_length_flag, solid_edge_output_flag, solid_edge_iterator_length, solid_edge_correct_length),
-        GhostEdgeIteratorState(unique_ghost_edge_flag, ghost_edge_length_flag, ghost_edge_output_flag, ghost_edge_iterator_length, ghost_edge_correct_length)
+        GhostEdgeIteratorState(unique_ghost_edge_flag, ghost_edge_length_flag, ghost_edge_output_flag, ghost_edge_iterator_length, ghost_edge_correct_length),
     )
 end
 
 struct DuplicateSegmentsState <: AbstractTriangulationState
     flag::Bool
     interior::Bool
-    bad_edge::NTuple{2,Int}
+    bad_edge::NTuple{2, Int}
 end
 DuplicateSegmentsState(tri) = test_no_duplicate_segments(tri)
 function Base.summary(state::DuplicateSegmentsState)
@@ -884,7 +884,7 @@ function TriangulationState(tri::Triangulation)
         GraphTrianglesState(tri),
         SegmentState(tri),
         TriangleOrientationState(tri),
-        test_iterators(tri)...
+        test_iterators(tri)...,
     )
     !has_ghosts && delete_ghost_triangles!(tri)
     return state
@@ -918,7 +918,7 @@ Tests if `tri` is a valid `Triangulation`. Returns `true` if so,
 and `false` otherwise. If `print_result=true` and `tri` is not a 
 valid triangulation, all the issues with `tri` will be printed.
 """
-function validate_triangulation(tri::Triangulation; print_result=true)
+function validate_triangulation(tri::Triangulation; print_result = true)
     state = TriangulationState(tri)
     print_result && !test_state(state) && println(state)
     return test_state(state)

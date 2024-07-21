@@ -8,17 +8,18 @@ using ElasticArrays
 using ..DelaunayTriangulation: Certificate
 
 
-
 global x, y = complicated_geometry()
-boundary_nodes, points = convert_boundary_points_to_indices(x, y; existing_points=ElasticMatrix{Float64}(undef, 2, 0))
-_tri = triangulate(points; boundary_nodes, delete_ghosts=false)
+boundary_nodes, points = convert_boundary_points_to_indices(x, y; existing_points = ElasticMatrix{Float64}(undef, 2, 0))
+_tri = triangulate(points; boundary_nodes, delete_ghosts = false)
 A = get_area(_tri)
-refine!(_tri; max_area=1e-2A, use_circumcenter=true)
+refine!(_tri; max_area = 1.0e-2A, use_circumcenter = true)
 _pts = ElasticMatrix(get_points(_tri))
-global tri = DT.Triangulation(_pts, _tri.triangles, _tri.boundary_nodes, _tri.interior_segments,
+global tri = DT.Triangulation(
+    _pts, _tri.triangles, _tri.boundary_nodes, _tri.interior_segments,
     _tri.all_segments, _tri.weights, _tri.adjacent, _tri.adjacent2vertex, _tri.graph, _tri.boundary_curves,
     _tri.boundary_edge_map, _tri.ghost_vertex_map, _tri.ghost_vertex_ranges, DT.ConvexHull(_pts, _tri.convex_hull.vertices), _tri.representative_point_list,
-    _tri.polygon_hierarchy, _tri.boundary_enricher, _tri.cache)
+    _tri.polygon_hierarchy, _tri.boundary_enricher, _tri.cache,
+)
 DT.compute_representative_points!(tri)
 global rep = DT.get_representative_point_list(tri)
 global ghost_vertex_map = DT.get_ghost_vertex_map(tri)
@@ -61,8 +62,8 @@ global pts = DT.get_points(tri)
     points = [[0, -3.0], [3.0, 0.0], [0.0, 3.0], [-3.0, 0.0]]
     temptri = triangulate(points)
     @test DT.is_positively_oriented(DT.triangle_orientation(temptri, (1, 2, 3))) &&
-          DT.is_positively_oriented(DT.triangle_orientation(temptri, (2, 3, 4))) &&
-          DT.is_positively_oriented(DT.triangle_orientation(temptri, (4, 1, 2)))
+        DT.is_positively_oriented(DT.triangle_orientation(temptri, (2, 3, 4))) &&
+        DT.is_positively_oriented(DT.triangle_orientation(temptri, (4, 1, 2)))
 end
 
 @testset "point_position_relative_to_circumcircle" begin
@@ -72,14 +73,18 @@ end
             for ℓ in (i, j, k)
                 cert3 = DT.point_position_relative_to_circumcircle(tri, T, ℓ)
                 cert4 = DT.point_position_relative_to_circumcircle(tri, i, j, k, ℓ)
-                cert5 = DT.point_position_relative_to_circumcircle(tri, pts[:, i], j, k,
-                    pts[:, ℓ])
+                cert5 = DT.point_position_relative_to_circumcircle(
+                    tri, pts[:, i], j, k,
+                    pts[:, ℓ],
+                )
                 cert6 = DT.point_position_relative_to_circumcircle(tri, i, pts[:, j], k, ℓ)
                 @test all(DT.is_on, (cert3, cert4, cert5, cert6))
                 @inferred DT.point_position_relative_to_circumcircle(tri, T, ℓ)
                 @inferred DT.point_position_relative_to_circumcircle(tri, i, j, k, ℓ)
-                @inferred DT.point_position_relative_to_circumcircle(tri, pts[:, i], j, k,
-                    pts[:, ℓ])
+                @inferred DT.point_position_relative_to_circumcircle(
+                    tri, pts[:, i], j, k,
+                    pts[:, ℓ],
+                )
                 @inferred DT.point_position_relative_to_circumcircle(tri, i, pts[:, j], k, ℓ)
             end
             q = (pts[:, i] .+ pts[:, j] .+ pts[:, k]) ./ 3
@@ -105,7 +110,7 @@ end
         p10 = @SVector[4.74, 2.21]
         p11 = @SVector[2.32, -0.27]
         pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11]
-        tri = triangulate(pts; delete_ghosts=false)
+        tri = triangulate(pts; delete_ghosts = false)
         p12 = @SVector[-1.86, 5.99]
         push!(pts, p12)
         @test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 1, 9, DT.𝒢, 12))
@@ -172,7 +177,7 @@ end
         @test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 4, 3, DT.𝒢, 23))
         @test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 3, DT.𝒢, 4, 23))
         @test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, DT.𝒢, 4, 3, 23))
-        p24 = @SVector[-5.04821, -2.54880]
+        p24 = @SVector[-5.04821, -2.5488]
         push!(pts, p24)
         @test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 4, 3, DT.𝒢, 24))
         @test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 3, DT.𝒢, 4, 24))
@@ -193,7 +198,7 @@ end
         @test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 3, 2, DT.𝒢, 26))
         @test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 2, DT.𝒢, 3, 26))
         @test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, DT.𝒢, 3, 2, 26))
-        p27 = @SVector[-5.310, 2.87596]
+        p27 = @SVector[-5.31, 2.87596]
         push!(pts, p27)
         @test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 2, 1, DT.𝒢, 27))
         @test DT.is_inside(DT.point_position_relative_to_circumcircle(tri, 1, DT.𝒢, 2, 27))
@@ -214,7 +219,7 @@ end
         p13 = (8.0, 2.0)
         p14 = (0.0, 0.0)
         pts = [p8, p9, p13, p14]
-        tri = triangulate(pts; delete_ghosts=false)
+        tri = triangulate(pts; delete_ghosts = false)
         @test DT.is_on(DT.point_position_relative_to_circumcircle(tri, 1, 2, DT.𝒢, 3))
         push!(pts, (2.0, 14.0))
         @test DT.is_outside(DT.point_position_relative_to_circumcircle(tri, 1, 2, DT.𝒢, 5))
@@ -239,7 +244,7 @@ end
     p10 = @SVector[4.74, 2.21]
     p11 = @SVector[2.32, -0.27]
     pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11]
-    tri = triangulate(pts; delete_ghosts=false, randomise=false)
+    tri = triangulate(pts; delete_ghosts = false, randomise = false)
     p12 = @SVector[3.538447, 3.99844]
     push!(pts, p12)
     @test DT.is_left(DT.point_position_relative_to_line(tri, 9, 10, 12))
@@ -306,21 +311,57 @@ end
     orig_length = length(pts)
     DT.compute_representative_points!(tri)
     rep = DT.get_representative_point_list(tri)
-    rep[1] = DT.RepresentativeCoordinates(mean(reinterpret(reshape,
+    rep[1] = DT.RepresentativeCoordinates(
+        mean(
+            reinterpret(
+                reshape,
                 Float64,
-                pts[unique(reduce(vcat,
-                    tri.boundary_nodes[1]))]);
-            dims=2)..., 0)
-    rep[2] = DT.RepresentativeCoordinates(mean(reinterpret(reshape,
+                pts[
+                    unique(
+                        reduce(
+                            vcat,
+                            tri.boundary_nodes[1],
+                        ),
+                    ),
+                ],
+            );
+            dims = 2,
+        )..., 0,
+    )
+    rep[2] = DT.RepresentativeCoordinates(
+        mean(
+            reinterpret(
+                reshape,
                 Float64,
-                pts[unique(reduce(vcat,
-                    tri.boundary_nodes[2]))]);
-            dims=2)..., 0)
-    rep[3] = DT.RepresentativeCoordinates(mean(reinterpret(reshape,
+                pts[
+                    unique(
+                        reduce(
+                            vcat,
+                            tri.boundary_nodes[2],
+                        ),
+                    ),
+                ],
+            );
+            dims = 2,
+        )..., 0,
+    )
+    rep[3] = DT.RepresentativeCoordinates(
+        mean(
+            reinterpret(
+                reshape,
                 Float64,
-                pts[unique(reduce(vcat,
-                    tri.boundary_nodes[3]))]);
-            dims=2)..., 0)
+                pts[
+                    unique(
+                        reduce(
+                            vcat,
+                            tri.boundary_nodes[3],
+                        ),
+                    ),
+                ],
+            );
+            dims = 2,
+        )..., 0,
+    )
     ghost_vertex_map = DT.get_ghost_vertex_map(tri)
 
     @testset "point_position_relative_to_circumcircle" begin
@@ -343,7 +384,7 @@ end
         f1_i = length(pts) - 1
         g1_i = length(pts)
         h1 = (21.517785930112, 22.1693108196262)
-        i1 = (22.0683240766855, 21.526199282940)
+        i1 = (22.0683240766855, 21.52619928294)
         push!(pts, h1, i1)
         h1_i = length(pts) - 1
         i1_i = length(pts)
@@ -369,7 +410,8 @@ end
         q1_i = length(pts) - 2
         r1_i = length(pts) - 1
         s1_i = length(pts)
-        certs = [("w", "v", "f") => Certificate.Left,
+        certs = [
+            ("w", "v", "f") => Certificate.Left,
             ("c", "d", "k") => Certificate.Left,
             ("r", "q", "j") => Certificate.Right,
             ("r", "q", "d") => Certificate.Left,
@@ -403,7 +445,8 @@ end
             ("m", DT.𝒢 - 2, s1_i) => Certificate.Right,
             (DT.𝒢 - 2, "m", s1_i) => Certificate.Left,
             (DT.𝒢 - 2, "p", r1_i) => Certificate.Left,
-            ("p", DT.𝒢 - 2, r1_i) => Certificate.Right]
+            ("p", DT.𝒢 - 2, r1_i) => Certificate.Right,
+        ]
         for ((i, j, u), cert) in certs
             i = i isa String ? index_map[i] : i
             j = j isa String ? index_map[j] : j
@@ -549,7 +592,8 @@ end
         h1_i = length(pts) - 10
         g1_i = length(pts) - 11
         f1_i = length(pts) - 12
-        certs = [("g", "h", "b1", f1_i) => Certificate.Inside,
+        certs = [
+            ("g", "h", "b1", f1_i) => Certificate.Inside,
             ("b1", "i", "g", f1_i) => Certificate.Outside,
             ("b1", "h", "j", g1_i) => Certificate.Inside,
             ("i", "b1", "j", h1_i) => Certificate.Inside,
@@ -567,7 +611,8 @@ end
             ("a1", "f", "g", o1_i) => Certificate.On,
             ("h", "a", "s", q1_i) => Certificate.On,
             ("a1", "f", "g", p1_i) => Certificate.On,
-            ("b1", "j", "i", "v") => Certificate.Outside]
+            ("b1", "j", "i", "v") => Certificate.Outside,
+        ]
         for ((i, j, k, u), cert) in certs
             local cert1, cert2, cert3, cert4, cert5, cert6
             i = i isa String ? index_map[i] : i
@@ -617,7 +662,8 @@ end
         h1_i = length(pts) - 8
         g1_i = length(pts) - 9
         f1_i = length(pts) - 10
-        certs = [("h", "g", DT.𝒢, f1_i) => Certificate.Inside,
+        certs = [
+            ("h", "g", DT.𝒢, f1_i) => Certificate.Inside,
             ("h", "g", DT.𝒢, g1_i) => Certificate.Inside,
             ("h", "g", DT.𝒢, h1_i) => Certificate.Inside,
             (DT.𝒢, "h", "g", i1_i) => Certificate.Inside,
@@ -628,7 +674,8 @@ end
             ("h", "g", DT.𝒢, n1_i) => Certificate.Outside,
             ("h", "g", DT.𝒢, o1_i) => Certificate.Outside,
             ("h", "g", DT.𝒢, p1_i) => Certificate.Outside,
-            ("h", "g", DT.𝒢, "b1") => Certificate.Outside]
+            ("h", "g", DT.𝒢, "b1") => Certificate.Outside,
+        ]
         rep[1].x = 10.0
         rep[1].y = 10.0
         for ((i, j, k, u), cert) in certs
@@ -652,7 +699,7 @@ end
         g1 = (6.449, 23.343)
         h1 = (10.0, 24.0)
         i1 = (12.4666, 22.777)
-        j1 = (18.555, 22.600)
+        j1 = (18.555, 22.6)
         k1 = (24.0, 24.0)
         push!(pts, f1, g1, h1, i1, j1, k1)
         f1_i = length(pts) - 5
@@ -661,7 +708,8 @@ end
         i1_i = length(pts) - 2
         j1_i = length(pts) - 1
         k1_i = length(pts)
-        certs = [("g", "f", DT.𝒢, f1_i) => Certificate.Inside,
+        certs = [
+            ("g", "f", DT.𝒢, f1_i) => Certificate.Inside,
             ("f", "e", DT.𝒢, f1_i) => Certificate.Outside,
             ("g", "f", DT.𝒢, g1_i) => Certificate.Inside,
             ("e", DT.𝒢, "f", h1_i) => Certificate.Inside,
@@ -671,7 +719,8 @@ end
             (DT.𝒢, "f", "e", k1_i) => Certificate.Inside,
             ("e", "d", DT.𝒢, k1_i) => Certificate.Inside,
             ("b", "a", DT.𝒢, "s") => Certificate.Outside,
-            (DT.𝒢, "b", "a", "v") => Certificate.Outside]
+            (DT.𝒢, "b", "a", "v") => Certificate.Outside,
+        ]
         for ((i, j, k, u), cert) in certs
             local cert1, cert2, cert3, cert4, cert5, cert6
             i = i isa String ? index_map[i] : i
@@ -708,7 +757,8 @@ end
         h1_i = length(pts) - 8
         g1_i = length(pts) - 9
         f1_i = length(pts) - 10
-        certs = [("ℓ", "i", DT.𝒢 - 1, f1_i) => Certificate.Inside,
+        certs = [
+            ("ℓ", "i", DT.𝒢 - 1, f1_i) => Certificate.Inside,
             ("i", DT.𝒢 - 1, "ℓ", g1_i) => Certificate.Inside,
             (DT.𝒢 - 1, "ℓ", "i", k1_i) => Certificate.Outside,
             ("i", "j", DT.𝒢 - 1, k1_i) => Certificate.Inside,
@@ -723,7 +773,8 @@ end
             ("k", "ℓ", DT.𝒢 - 1, h1_i) => Certificate.Inside,
             ("ℓ", DT.𝒢 - 1, "k", m1_i) => Certificate.On,
             ("ℓ", DT.𝒢 - 1, "k", "b1") => Certificate.Outside,
-            ("j", "k", DT.𝒢 - 1, "s") => Certificate.Outside]
+            ("j", "k", DT.𝒢 - 1, "s") => Certificate.Outside,
+        ]
         for ((i, j, k, u), cert) in certs
             local cert4, cert5, cert6
             i = i isa String ? index_map[i] : i
@@ -769,7 +820,8 @@ end
         h1_i = length(pts) - 12
         g1_i = length(pts) - 13
         f1_i = length(pts) - 14
-        certs = [("o", "p", DT.𝒢 - 2, o1_i) => Certificate.On,
+        certs = [
+            ("o", "p", DT.𝒢 - 2, o1_i) => Certificate.On,
             ("p", DT.𝒢 - 2, "o", n1_i) => Certificate.On,
             (DT.𝒢 - 2, "o", "p", q1_i) => Certificate.Inside,
             (DT.𝒢 - 3, "o", "p", t1_i) => Certificate.Outside,
@@ -789,7 +841,8 @@ end
             ("m", DT.𝒢 - 3, "r", r1_i) => Certificate.Outside,
             ("m", DT.𝒢 - 3, "r", h1_i) => Certificate.Inside,
             ("m", "n", DT.𝒢 - 2, p1_i) => Certificate.Inside,
-            (DT.𝒢 - 2, "m", "n", s1_i) => Certificate.Outside]
+            (DT.𝒢 - 2, "m", "n", s1_i) => Certificate.Outside,
+        ]
         for ((i, j, k, u), cert) in certs
             local cert4, cert5, cert6
             i = i isa String ? index_map[i] : i

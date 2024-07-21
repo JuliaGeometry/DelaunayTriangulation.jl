@@ -52,7 +52,7 @@ function fix_segments!(segments::AbstractVector{E}, bad_indices) where {E}
         if i == firstindex(segments) # If it starts with a bad index, then no problem, it connects two valid indices.
             continue
         else
-            prev = segments[i-1]
+            prev = segments[i - 1]
             cur = segments[i]
             segments[i] = construct_edge(E, terminal(prev), terminal(cur))
         end
@@ -86,11 +86,11 @@ function connect_segments!(segments::AbstractVector{E}) where {E}
     f = firstindex(segments)
     ℓ = lastindex(segments)
     I = number_type(E)
-    insert_idxs = Tuple{Int,I,I}[]
+    insert_idxs = Tuple{Int, I, I}[]
     shift_idx = 0
-    for i in f:(ℓ-1)
+    for i in f:(ℓ - 1)
         eᵢ = segments[i]
-        eᵢ₊₁ = segments[i+1]
+        eᵢ₊₁ = segments[i + 1]
         if terminal(eᵢ) ≠ initial(eᵢ₊₁)
             push!(insert_idxs, (i + 1 + shift_idx, terminal(eᵢ), initial(eᵢ₊₁)))
             shift_idx += 1
@@ -221,39 +221,39 @@ into a set of boundary nodes for use in [`triangulate`](@ref).
 - `points`: The point set, which is the same as `existing_points` but with the boundary points appended to it. 
 """
 convert_boundary_points_to_indices
-function convert_boundary_points_to_indices(x::AAA, y::AAA; existing_points=NTuple{2,Float64}[], check_args=true, adjust=true) where {F<:Number,A<:AbstractVector{F},AA<:AbstractVector{A},AAA<:AbstractVector{AA}}
+function convert_boundary_points_to_indices(x::AAA, y::AAA; existing_points = NTuple{2, Float64}[], check_args = true, adjust = true) where {F <: Number, A <: AbstractVector{F}, AA <: AbstractVector{A}, AAA <: AbstractVector{AA}}
     check_args && @assert length(x) == length(y)
     nodes = [[Int[] for _ in eachindex(x[i])] for i in eachindex(x)]
     for i in eachindex(x)
-        _nodes, _ = convert_boundary_points_to_indices(x[i], y[i]; existing_points=existing_points, check_args=true)
+        _nodes, _ = convert_boundary_points_to_indices(x[i], y[i]; existing_points = existing_points, check_args = true)
         copyto!(nodes[i], _nodes)
     end
     return nodes, existing_points
 end
-function convert_boundary_points_to_indices(x::AA, y::AA; existing_points=NTuple{2,Float64}[], check_args=true, adjust=true) where {F<:Number,A<:AbstractVector{F},AA<:AbstractVector{A}}
+function convert_boundary_points_to_indices(x::AA, y::AA; existing_points = NTuple{2, Float64}[], check_args = true, adjust = true) where {F <: Number, A <: AbstractVector{F}, AA <: AbstractVector{A}}
     if check_args
         @assert length(x) == length(y)
         @assert all(i -> length(x[i]) == length(y[i]), eachindex(x, y))
         @assert x[begin][begin] ≈ x[end][end]
         @assert y[begin][begin] ≈ y[end][end]
-        @assert all(i -> x[i][end] ≈ x[i+1][begin], firstindex(x):(lastindex(x)-1))
-        @assert all(i -> y[i][end] ≈ y[i+1][begin], firstindex(y):(lastindex(y)-1))
+        @assert all(i -> x[i][end] ≈ x[i + 1][begin], firstindex(x):(lastindex(x) - 1))
+        @assert all(i -> y[i][end] ≈ y[i + 1][begin], firstindex(y):(lastindex(y) - 1))
     end
     nodes = [Int[] for _ in eachindex(x)]
     for i in eachindex(x)
-        _nodes, _ = convert_boundary_points_to_indices(x[i], y[i]; existing_points=existing_points, check_args=false, adjust=false)
+        _nodes, _ = convert_boundary_points_to_indices(x[i], y[i]; existing_points = existing_points, check_args = false, adjust = false)
         resize!(nodes[i], length(_nodes))
         copyto!(nodes[i], _nodes)
     end
     if adjust # needed so that the different segments connect
-        for i in firstindex(nodes):(lastindex(nodes)-1)
-            push!(nodes[i], nodes[i+1][begin])
+        for i in firstindex(nodes):(lastindex(nodes) - 1)
+            push!(nodes[i], nodes[i + 1][begin])
         end
         push!(nodes[end], nodes[begin][begin])
     end
     return nodes, existing_points
 end
-function convert_boundary_points_to_indices(x::A, y::A; existing_points=NTuple{2,Float64}[], check_args=true, adjust=true) where {F<:Number,A<:AbstractVector{F}}
+function convert_boundary_points_to_indices(x::A, y::A; existing_points = NTuple{2, Float64}[], check_args = true, adjust = true) where {F <: Number, A <: AbstractVector{F}}
     if check_args
         @assert length(x) == length(y)
         @assert x[begin] ≈ x[end]
@@ -261,7 +261,7 @@ function convert_boundary_points_to_indices(x::A, y::A; existing_points=NTuple{2
     end
     nodes = Int[]
     init = num_points(existing_points) + 1
-    for i in firstindex(x):(lastindex(x)-1)
+    for i in firstindex(x):(lastindex(x) - 1)
         push!(nodes, init)
         push_point!(existing_points, x[i], y[i])
         init += 1
@@ -269,20 +269,20 @@ function convert_boundary_points_to_indices(x::A, y::A; existing_points=NTuple{2
     adjust && push!(nodes, nodes[begin])
     return nodes, existing_points
 end
-function convert_boundary_points_to_indices(xy::A; existing_points=NTuple{2,Float64}[], check_args=true, adjust=true) where {F,A<:AbstractVector{F}}
+function convert_boundary_points_to_indices(xy::A; existing_points = NTuple{2, Float64}[], check_args = true, adjust = true) where {F, A <: AbstractVector{F}}
     x = [getx(xy[i]) for i in eachindex(xy)]
     y = [gety(xy[i]) for i in eachindex(xy)]
-    return convert_boundary_points_to_indices(x, y; existing_points=existing_points, check_args=check_args, adjust=adjust)
+    return convert_boundary_points_to_indices(x, y; existing_points = existing_points, check_args = check_args, adjust = adjust)
 end
-function convert_boundary_points_to_indices(xy::AA; existing_points=NTuple{2,Float64}[], check_args=true, adjust=true) where {F,A<:AbstractVector{F},AA<:AbstractVector{A}}
+function convert_boundary_points_to_indices(xy::AA; existing_points = NTuple{2, Float64}[], check_args = true, adjust = true) where {F, A <: AbstractVector{F}, AA <: AbstractVector{A}}
     x = [[getx(xy[i][j]) for j in eachindex(xy[i])] for i in eachindex(xy)]
     y = [[gety(xy[i][j]) for j in eachindex(xy[i])] for i in eachindex(xy)]
-    return convert_boundary_points_to_indices(x, y; existing_points=existing_points, check_args=check_args, adjust=adjust)
+    return convert_boundary_points_to_indices(x, y; existing_points = existing_points, check_args = check_args, adjust = adjust)
 end
-function convert_boundary_points_to_indices(xy::AAA; existing_points=NTuple{2,Float64}[], check_args=true, adjust=true) where {F,A<:AbstractVector{F},AA<:AbstractVector{A},AAA<:AbstractVector{AA}}
+function convert_boundary_points_to_indices(xy::AAA; existing_points = NTuple{2, Float64}[], check_args = true, adjust = true) where {F, A <: AbstractVector{F}, AA <: AbstractVector{A}, AAA <: AbstractVector{AA}}
     x = [[[getx(xy[i][j][k]) for k in eachindex(xy[i][j])] for j in eachindex(xy[i])] for i in eachindex(xy)]
     y = [[[gety(xy[i][j][k]) for k in eachindex(xy[i][j])] for j in eachindex(xy[i])] for i in eachindex(xy)]
-    return convert_boundary_points_to_indices(x, y; existing_points=existing_points, check_args=check_args, adjust=adjust)
+    return convert_boundary_points_to_indices(x, y; existing_points = existing_points, check_args = check_args, adjust = adjust)
 end
 
 """
@@ -326,24 +326,25 @@ function remake_triangulation_with_constraints(tri::Triangulation, segments, bou
     boundary_enricher = get_boundary_enricher(tri)
     cache = get_cache(tri)
     return new_ghost_vertex_map, new_ghost_vertex_ranges, Triangulation(
-        points,
-        triangles,
-        boundary_nodes,
-        interior_segments,
-        all_segments,
-        weights,
-        adjacent,
-        adjacent2vertex,
-        graph,
-        boundary_curves,
-        boundary_edge_map,
-        ghost_vertex_map, # Delay putting these in until we are done with the triangulation
-        ghost_vertex_ranges, # Delay putting these in until we are done with the triangulation
-        ch,
-        representative_point_list,
-        polygon_hierarchy,
-        boundary_enricher,
-        cache)
+            points,
+            triangles,
+            boundary_nodes,
+            interior_segments,
+            all_segments,
+            weights,
+            adjacent,
+            adjacent2vertex,
+            graph,
+            boundary_curves,
+            boundary_edge_map,
+            ghost_vertex_map, # Delay putting these in until we are done with the triangulation
+            ghost_vertex_ranges, # Delay putting these in until we are done with the triangulation
+            ch,
+            representative_point_list,
+            polygon_hierarchy,
+            boundary_enricher,
+            cache,
+        )
 end
 
 """
@@ -395,7 +396,8 @@ function replace_ghost_vertex_information(tri::Triangulation, ghost_vertex_map, 
         representative_point_list,
         polygon_hierarchy,
         boundary_enricher,
-        cache)
+        cache,
+    )
 end
 
 """
@@ -470,7 +472,7 @@ function prepare_vertex_linked_list(V::AbstractArray{I}) where {I}
     next = zeros(I, m)
     prev = zeros(I, m)
     shuffled_indices = zeros(I, m)
-    for i = 2:(m-1)
+    for i in 2:(m - 1)
         next[i] = i + 1
         prev[i] = i - 1
         shuffled_indices[i] = i
@@ -494,7 +496,7 @@ There is no output, but `list` is updated in-place.
 """
 function delete_polygon_vertices_in_random_order!(list::ShuffledPolygonLinkedList, tri::Triangulation, u, v, rng::AbstractRNG)
     m = list.k
-    for i in (m-1):-1:3
+    for i in (m - 1):-1:3
         j = select_random_vertex(tri, list, u, v, 2:i, rng)
         delete_vertex!(list, j)
         swap_permutation!(list, i, j)
@@ -519,7 +521,7 @@ See also [`prepare_vertex_linked_list`](@ref) and [`delete_polygon_vertices_in_r
 # Outputs
 - `list::ShuffledPolygonLinkedList`: The linked list of polygon vertices representing the cavity.
 """
-function setup_cavity_cdt(tri::Triangulation, V; rng::AbstractRNG=Random.default_rng())
+function setup_cavity_cdt(tri::Triangulation, V; rng::AbstractRNG = Random.default_rng())
     v = V[begin]
     u = V[end]
     list = prepare_vertex_linked_list(V)
@@ -545,10 +547,10 @@ Triangulates the cavity `V` left behind when deleting triangles intersected in a
 # Outputs 
 There is no output, but `tri` is updated in-place.
 """
-function triangulate_cavity_cdt!(tri::Triangulation, V, tri_fan::Triangulation, marked_vertices, fan_triangles; rng::AbstractRNG=Random.default_rng())
+function triangulate_cavity_cdt!(tri::Triangulation, V, tri_fan::Triangulation, marked_vertices, fan_triangles; rng::AbstractRNG = Random.default_rng())
     list = setup_cavity_cdt(tri, V; rng)
-    add_triangle!(tri, V[begin], V[list.shuffled_indices[2]], V[end]; protect_boundary=true, update_ghost_edges=false)
-    for i in 3:(list.k-1)
+    add_triangle!(tri, V[begin], V[list.shuffled_indices[2]], V[end]; protect_boundary = true, update_ghost_edges = false)
+    for i in 3:(list.k - 1)
         a, b, c = get_triplet(list, i)
         add_point_cavity_cdt!(tri, a, b, c, marked_vertices)
         if !isempty(marked_vertices) && (last(marked_vertices) == a) || (a ∈ marked_vertices) # We try and insert a last, so the first check will sometimes be a nice boost
@@ -571,15 +573,15 @@ end
 Given a sorted set of vertices `fan` in a fan of triangles associated with `fan_triangles`, retriangulates the fan, updating `tri` to do so and 
 using `tri_fan` as a temporary triangulation. (This implements Lines 17--19 and Line 28 of the algorithms in [this paper](http://dx.doi.org/10.1016/j.comgeo.2015.04.006).)
 """
-function retriangulate_fan!(tri::Triangulation, tri_fan::Triangulation, fan, fan_triangles; rng::AbstractRNG=Random.default_rng())
+function retriangulate_fan!(tri::Triangulation, tri_fan::Triangulation, fan, fan_triangles; rng::AbstractRNG = Random.default_rng())
     for T in each_triangle(fan_triangles)
         u, v, w = triangle_vertices(T)
-        delete_triangle!(tri, u, v, w; protect_boundary=true)
+        delete_triangle!(tri, u, v, w; protect_boundary = true)
     end
     triangulate_convex!(tri_fan, fan; rng)
     for T in each_solid_triangle(tri_fan)
         u, v, w = triangle_vertices(T)
-        add_triangle!(tri, u, v, w; protect_boundary=true, update_ghost_edges=false)
+        add_triangle!(tri, u, v, w; protect_boundary = true, update_ghost_edges = false)
     end
     return tri
 end
@@ -645,9 +647,9 @@ function add_point_cavity_cdt!(tri::Triangulation, u, v, w, marked_vertices)
         insert_flag = !is_inside(incircle_test) && is_positively_oriented(orient_test)
     end
     if insert_flag
-        add_triangle!(tri, u, v, w; protect_boundary=true, update_ghost_edges=false)
+        add_triangle!(tri, u, v, w; protect_boundary = true, update_ghost_edges = false)
     else
-        delete_triangle!(tri, w, v, x; protect_boundary=true, update_ghost_edges=false)
+        delete_triangle!(tri, w, v, x; protect_boundary = true, update_ghost_edges = false)
         add_point_cavity_cdt!(tri, u, v, x, marked_vertices)
         add_point_cavity_cdt!(tri, u, x, w, marked_vertices)
         if !is_inside(incircle_test)
@@ -664,7 +666,7 @@ Adds the triangles from `tris` to `tri_original`.
 """
 function add_new_triangles!(tri_original::Triangulation, tris)
     for tri in each_triangle(tris)
-        add_triangle!(tri_original, tri; protect_boundary=true, update_ghost_edges=false)
+        add_triangle!(tri_original, tri; protect_boundary = true, update_ghost_edges = false)
     end
     return tri_original
 end
@@ -688,16 +690,17 @@ See also [`find_triangle`](@ref).
 - `left_vertices`: The vertices of the intersected triangles that are left of `e`.
 - `right_vertices`: The vertices of the intersected triangles that are right of `e`.
 """
-function locate_intersecting_triangles(tri::Triangulation, e, rotate=Val(true), rng::AbstractRNG=Random.default_rng())
+function locate_intersecting_triangles(tri::Triangulation, e, rotate = Val(true), rng::AbstractRNG = Random.default_rng())
     V = triangle_type(tri)
     E = edge_type(tri)
     I = integer_type(tri)
     e = is_true(rotate) ? sort_edge_by_degree(tri, e) : e # faster to start at the minimum degree vertex of the edge
-    history = PointLocationHistory{V,E,I}()
+    history = PointLocationHistory{V, E, I}()
     add_left_vertex!(history, initial(e))
     add_right_vertex!(history, initial(e))
-    find_triangle(tri, get_point(tri, terminal(e));
-        m=nothing, k=initial(e), store_history=Val(true), history, rng
+    find_triangle(
+        tri, get_point(tri, terminal(e));
+        m = nothing, k = initial(e), store_history = Val(true), history, rng,
     )
     add_left_vertex!(history, terminal(e))
     add_right_vertex!(history, terminal(e))
@@ -722,7 +725,7 @@ Deletes the triangles in `triangles` from `tri`.
 """
 function delete_intersected_triangles!(tri, triangles) # don't really _need_ this method, but maybe it makes the code a bit clearer?
     for τ in each_triangle(triangles)
-        delete_triangle!(tri, τ; protect_boundary=true)
+        delete_triangle!(tri, τ; protect_boundary = true)
     end
     return tri
 end
@@ -736,7 +739,7 @@ split so that it is instead represented by `collinear_segments`. These new segme
 
 See also [`connect_segments!`](@ref), [`extend_segments!`](@ref), [`split_segment!`](@ref) and [`split_boundary_edge_at_collinear_segments!`](@ref).
 """
-function process_collinear_segments!(tri::Triangulation, e, collinear_segments; rng::AbstractRNG=Random.default_rng())
+function process_collinear_segments!(tri::Triangulation, e, collinear_segments; rng::AbstractRNG = Random.default_rng())
     isempty(collinear_segments) && return false
     all_segments = get_all_segments(tri) # the difference between all_segments and segments is important since we need to be careful about what segments are already in the triangulation 
     delete_edge!(all_segments, e)
@@ -805,7 +808,7 @@ to accommodate the changed types.
 # Outputs
 - `new_tri`: The new triangulation, now containing `segments` in the `interior_segments` field and `boundary_nodes` in the `boundary_nodes` field, and with the updated [`PolygonHierarchy`](@ref). See also [`remake_triangulation_with_constraints`](@ref) and [`replace_ghost_vertex_information`](@ref).
 """
-function constrained_triangulation!(tri::Triangulation, segments, boundary_nodes, full_polygon_hierarchy; rng=Random.default_rng(), delete_holes=true)
+function constrained_triangulation!(tri::Triangulation, segments, boundary_nodes, full_polygon_hierarchy; rng = Random.default_rng(), delete_holes = true)
     ghost_vertex_map, ghost_vertex_ranges, new_tri = remake_triangulation_with_constraints(tri, segments, boundary_nodes)
     all_segments = merge_segments(new_tri, ghost_vertex_map)
     for e in each_edge(all_segments)
@@ -821,4 +824,3 @@ function constrained_triangulation!(tri::Triangulation, segments, boundary_nodes
     end
     return new_tri_2
 end
-

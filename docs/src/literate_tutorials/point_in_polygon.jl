@@ -154,10 +154,13 @@ J_curve = [[C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, C]]
 U_curve = [[T, U, V, W, Z, A1, B1, C1, D1, E1, F1, G1, H1, I1, J1, K1, L1, M1, N1, O1, T]]
 L_curve = [[P1, Q1, R1, S1, P1]]
 I_curve = [[T1, U1, V1, W1, T1]]
-A_curve_outline = [[
-    K5, W3, Z3, A4, B4, C4, D4, E4, F4, G4, H4, I4, J4, K4, L4, M4, N4,
-    O4, P4, Q4, R4, S4, T4, U4, V4, W4, Z4, A5, B5, C5, D5, E5, F5, G5,
-    H5, I5, J5, K5]]
+A_curve_outline = [
+    [
+        K5, W3, Z3, A4, B4, C4, D4, E4, F4, G4, H4, I4, J4, K4, L4, M4, N4,
+        O4, P4, Q4, R4, S4, T4, U4, V4, W4, Z4, A5, B5, C5, D5, E5, F5, G5,
+        H5, I5, J5, K5,
+    ],
+]
 A_curve_hole = [[L5, M5, N5, O5, P5, Q5, R5, S5, T5, U5, L5]]
 dot_1 = [[Z1, A2, B2, C2, D2, E2, F2, G2, H2, I2, J2, Z1]]
 dot_2 = [[Z2, A3, B3, C3, D3, E3, F3, G3, H3, I3, J3, Z2]]
@@ -172,7 +175,7 @@ fig = Figure()
 ax = Axis(fig[1, 1])
 scatter!(ax, query_points)
 for nodes in nodes
-    lines!(ax, points[reduce(vcat, nodes)], color=:magenta, linewidth=3)
+    lines!(ax, points[reduce(vcat, nodes)], color = :magenta, linewidth = 3)
 end
 fig
 
@@ -187,20 +190,20 @@ fig
 # here do not use exact arithmetic, unlike other predicates in this package, so there may be some robustness issues 
 # for points very close to the boundary. Here is the first approach:
 is_inside = [DelaunayTriangulation.distance_to_polygon(q, points, nodes) > 0 for q in query_points]
-scatter!(ax, query_points[is_inside], color=:blue)
-scatter!(ax, query_points[.!is_inside], color=:red)
+scatter!(ax, query_points[is_inside], color = :blue)
+scatter!(ax, query_points[.!is_inside], color = :red)
 fig
 @test_reference joinpath(fig_path, "point_in_polygon_ex_1.png") fig #src
 
 # Here is the second method. 
-tri = triangulate(points; boundary_nodes=nodes)
+tri = triangulate(points; boundary_nodes = nodes)
 is_inside_2 = [DelaunayTriangulation.dist(tri, q) > 0 for q in query_points];
 @test is_inside == is_inside_2 #src
 
 # The third method is to use [`find_polygon`](@ref) to find the polygon containing the point. If no such polygon exists, `find_polygon` returns 
 # `0`, so this is what we use to determine if a point is inside or outside the polygon.
 is_inside_3 = [find_polygon(tri, q) ≠ 0 for q in query_points];
-@test mean(is_inside) ≈ mean(is_inside_3) atol = 1e-2 #src
+@test mean(is_inside) ≈ mean(is_inside_3) atol = 1.0e-2 #src
 
 # This test is not exactly the same as the previous one (with a difference of about five points) due to points near the boundary. 
 # The fourth method is:

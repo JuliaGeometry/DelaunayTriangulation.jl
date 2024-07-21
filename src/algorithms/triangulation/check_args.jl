@@ -37,7 +37,7 @@ end
 struct InsufficientPointsError{P} <: Exception
     points::P
 end
-struct InconsistentConnectionError{I,J} <: Exception
+struct InconsistentConnectionError{I, J} <: Exception
     curve_index::I
     segment_index₁::I
     segment_index₂::I
@@ -69,7 +69,7 @@ function Base.showerror(io::IO, err::InsufficientPointsError)
     print(io, "InsufficientPointsError: The provided point set has ", num_points(points), " points, but triangulations require at least three points.")
     return io
 end
-function Base.showerror(io::IO, err::InconsistentConnectionError) 
+function Base.showerror(io::IO, err::InconsistentConnectionError)
     print(io, "InconsistentConnectionError: ")
     if !iszero(err.segment_index₁) && !(isone(err.segment_index₁) && isone(err.segment_index₂))
         print(io, "Segment ", err.segment_index₁)
@@ -145,7 +145,7 @@ function has_consistent_connections_multiple_curves(boundary_nodes)
     end
     return true
 end
-function has_consistent_connections_multiple_sections(boundary_nodes, curve_index=0)
+function has_consistent_connections_multiple_sections(boundary_nodes, curve_index = 0)
     ns = num_sections(boundary_nodes)
     segmentⱼ₋₁ = get_boundary_nodes(boundary_nodes, 1)
     nn = num_boundary_edges(segmentⱼ₋₁) + 1

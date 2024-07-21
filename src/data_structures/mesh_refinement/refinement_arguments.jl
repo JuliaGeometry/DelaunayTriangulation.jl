@@ -28,7 +28,7 @@ In addition to the default constructor, we provide
 for constructing this struct. This constructor will lock the convex hull and add ghost triangles to `tri` if
 needed ([`refine!`](@ref) will undo these changes once the refinement is finished))
 """
-struct RefinementArguments{Q,C,H,I,E,R,T}
+struct RefinementArguments{Q, C, H, I, E, R, T}
     queue::Q
     constraints::C
     events::H
@@ -58,19 +58,21 @@ match those from [`refine!`](@ref).
     has no constrained boundary, then the convex hull will be locked so that it is treated as a constrained 
     boundary. These changes will be undone in [`refine!`](@ref) once the refinement is finished.
 """
-function RefinementArguments(tri::Triangulation;
-    min_angle=30.0,
-    max_angle=180.0,
-    min_area=get_area(tri) / 1e9,
-    max_area=typemax(number_type(tri)),
-    max_points=max(1_000, num_solid_vertices(tri))^2,
-    seditious_angle=20.0,
-    custom_constraint=(_tri, T) -> false,
-    use_circumcenter=true, # TODO: When we implement generalised Steiner points, change this default to FALSE.
-    use_lens=true,
-    steiner_scale=0.999,
-    rng=Random.default_rng(),
-    concavity_protection=false)
+function RefinementArguments(
+        tri::Triangulation;
+        min_angle = 30.0,
+        max_angle = 180.0,
+        min_area = get_area(tri) / 1.0e9,
+        max_area = typemax(number_type(tri)),
+        max_points = max(1_000, num_solid_vertices(tri))^2,
+        seditious_angle = 20.0,
+        custom_constraint = (_tri, T) -> false,
+        use_circumcenter = true, # TODO: When we implement generalised Steiner points, change this default to FALSE.
+        use_lens = true,
+        steiner_scale = 0.999,
+        rng = Random.default_rng(),
+        concavity_protection = false,
+    )
     if !use_circumcenter
         throw(ArgumentError("Generalised Steiner points are not yet implemented."))
     end
@@ -85,7 +87,7 @@ function RefinementArguments(tri::Triangulation;
         max_area,
         max_points,
         seditious_angle,
-        custom_constraint
+        custom_constraint,
     )
     queue = RefinementQueue(tri)
     events = InsertionEventHistory(tri)
@@ -119,7 +121,7 @@ function RefinementArguments(tri::Triangulation;
         lock_convex_hull,
         has_ghosts,
         rng,
-        concavity_protection
+        concavity_protection,
     )
 end
 

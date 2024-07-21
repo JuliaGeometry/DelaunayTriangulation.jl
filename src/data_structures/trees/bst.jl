@@ -24,9 +24,9 @@ mutable struct BalancedBSTNode{K}
     key::K
     height::Int8
     count::Int32
-    parent::Union{Nothing,BalancedBSTNode{K}}
-    left::Union{Nothing,BalancedBSTNode{K}}
-    right::Union{Nothing,BalancedBSTNode{K}}
+    parent::Union{Nothing, BalancedBSTNode{K}}
+    left::Union{Nothing, BalancedBSTNode{K}}
+    right::Union{Nothing, BalancedBSTNode{K}}
     function BalancedBSTNode(key::K) where {K}
         new{K}(key, 1, 1, nothing, nothing, nothing)
     end
@@ -170,7 +170,7 @@ Struct representing a balanced binary search tree.
     Nodes with duplicate keys are not supported. If a duplicate key is inserted, the tree will not be modified.
 """
 mutable struct BalancedBST{K}
-    root::Union{Nothing,BalancedBSTNode{K}}
+    root::Union{Nothing, BalancedBSTNode{K}}
     count::Int32
     BalancedBST(root::BalancedBSTNode{K}, count) where {K} = new{K}(root, count)
     BalancedBST{K}(root::BalancedBSTNode{K}, count) where {K} = new{K}(root, count)
@@ -299,7 +299,7 @@ end
 
 Computes the count of the subtree rooted at `node`, i.e. the number of nodes in the subtree rooted at `node`, including `node`.
 """
-function compute_count(node::Union{Nothing,BalancedBSTNode})
+function compute_count(node::Union{Nothing, BalancedBSTNode})
     if isnothing(node)
         return Int32(0)
     else
@@ -316,7 +316,7 @@ end
 
 Computes the height of the subtree rooted at `node`.
 """
-function compute_height(node::Union{Nothing,BalancedBSTNode})
+function compute_height(node::Union{Nothing, BalancedBSTNode})
     if isnothing(node)
         return Int8(0)
     else
@@ -333,7 +333,7 @@ end
 
 Computes the balance of the subtree rooted at `node`. This is the difference between the left and right heights.
 """
-function compute_balance(node::Union{Nothing,BalancedBSTNode})
+function compute_balance(node::Union{Nothing, BalancedBSTNode})
     if isnothing(node)
         return Int8(0)
     else
@@ -488,7 +488,7 @@ end
 
 Returns the node with the minimum key in the subtree rooted at `node`. If `node` is `nothing`, returns `nothing`.
 """
-function _minimum(node::Union{BalancedBSTNode,Nothing})
+function _minimum(node::Union{BalancedBSTNode, Nothing})
     while !isnothing(node) && has_left(node)
         node = get_left(node)
     end

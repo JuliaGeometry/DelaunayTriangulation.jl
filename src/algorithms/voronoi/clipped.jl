@@ -126,7 +126,7 @@ Add the edge `uv` to the list of intersected edges.
 # Outputs
 There are no outputs, as `intersected_edge_cache` is modified in-place.
 """
-function add_to_intersected_edge_cache!(intersected_edge_cache::AbstractVector{V}, u, v, a, b) where {E,V<:Pair{E,E}}
+function add_to_intersected_edge_cache!(intersected_edge_cache::AbstractVector{V}, u, v, a, b) where {E, V <: Pair{E, E}}
     uv = construct_edge(E, u, v)
     ab = construct_edge(E, a, b)
     push!(intersected_edge_cache, uv => ab)
@@ -164,15 +164,16 @@ Process the intersection of the Voronoi polygon of the site `u` with the ray ema
 In addition to the point `p`, [`add_segment_intersection!`](@ref) is also updated to incorporate the new intersection point, as is [`add_to_intersected_edge_cache!`](@ref).
 """
 function process_ray_intersection!(
-    vorn::VoronoiTessellation,
-    u,
-    v,
-    incident_polygon,
-    intersected_edge_cache,
-    segment_intersections,
-    boundary_sites,
-    exterior_circumcenters,
-    equal_circumcenter_mapping)
+        vorn::VoronoiTessellation,
+        u,
+        v,
+        incident_polygon,
+        intersected_edge_cache,
+        segment_intersections,
+        boundary_sites,
+        exterior_circumcenters,
+        equal_circumcenter_mapping,
+    )
     u_tri = get_circumcenter_to_triangle(vorn, u)
     a = geti(u_tri)
     b = getj(u_tri)
@@ -222,16 +223,17 @@ Process the intersection of the Voronoi polygon's edge `(u, v)` with the edge `e
 In addition to the point `p`, [`add_segment_intersection!`](@ref) is also updated to incorporate the new intersection point, as is [`add_to_intersected_edge_cache!`](@ref).
 """
 function process_segment_intersection!(
-    vorn::VoronoiTessellation,
-    u,
-    v,
-    e,
-    incident_polygon,
-    intersected_edge_cache,
-    segment_intersections,
-    boundary_sites,
-    exterior_circumcenters,
-    equal_circumcenter_mapping)
+        vorn::VoronoiTessellation,
+        u,
+        v,
+        e,
+        incident_polygon,
+        intersected_edge_cache,
+        segment_intersections,
+        boundary_sites,
+        exterior_circumcenters,
+        equal_circumcenter_mapping,
+    )
     e = convert_to_edge_adjoining_ghost_vertex(vorn, e)
     a, b = edge_vertices(e)
     p, q = get_generator(vorn, a, b)
@@ -284,20 +286,20 @@ function initialise_clipping_arrays(vorn::VoronoiTessellation)
     foreach(boundary_edges) do e
         push!(edges_to_process, e)
     end
-    polygon_edge_queue = Queue{Tuple{E,I}}()
-    boundary_sites = Dict{I,Set{I}}()
+    polygon_edge_queue = Queue{Tuple{E, I}}()
+    boundary_sites = Dict{I, Set{I}}()
     F = number_type(vorn)
-    segment_intersections = NTuple{2,F}[]
-    processed_pairs = Set{Tuple{E,I}}()
-    intersected_edge_cache = Pair{E,E}[]
+    segment_intersections = NTuple{2, F}[]
+    processed_pairs = Set{Tuple{E, I}}()
+    intersected_edge_cache = Pair{E, E}[]
     sizehint!(intersected_edge_cache, 2^3)
     exterior_circumcenters = Set{I}()
     left_edge_intersectors = Set{E}()
     right_edge_intersectors = Set{E}()
     current_edge_intersectors = Set{E}()
-    equal_circumcenter_mapping = Dict{I,I}()
+    equal_circumcenter_mapping = Dict{I, I}()
     return edges_to_process, polygon_edge_queue, boundary_sites, segment_intersections, processed_pairs, intersected_edge_cache, exterior_circumcenters,
-    left_edge_intersectors, right_edge_intersectors, current_edge_intersectors, equal_circumcenter_mapping
+        left_edge_intersectors, right_edge_intersectors, current_edge_intersectors, equal_circumcenter_mapping
 end
 
 """
@@ -317,7 +319,7 @@ function enqueue_new_edge!(polygon_edge_queue, vorn::VoronoiTessellation, e)
     u, v = edge_vertices(e)
     p, q = get_generator(vorn, u, v)
     m = midpoint(p, q)
-    incident_polygon = get_nearest_neighbour(vorn, m; k=u)
+    incident_polygon = get_nearest_neighbour(vorn, m; k = u)
     push!(polygon_edge_queue, (e, incident_polygon))
     return polygon_edge_queue
 end
@@ -383,18 +385,20 @@ Process the intersection of the ray from the ghost site `u` to the site `v` with
 # Outputs
 There are no outputs, but [`add_segment_intersection!`](@ref) and [`add_to_intersected_edge_cache!`](@ref) are used to update the intersection objects.
 """
-function process_ray_intersection_with_other_edges!(vorn::VoronoiTessellation,
-    u,
-    v,
-    e,
-    left_edge,
-    right_edge,
-    r,
-    segment_intersections,
-    boundary_sites,
-    incident_polygon,
-    equal_circumcenter_mapping,
-    intersected_edge_cache)
+function process_ray_intersection_with_other_edges!(
+        vorn::VoronoiTessellation,
+        u,
+        v,
+        e,
+        left_edge,
+        right_edge,
+        r,
+        segment_intersections,
+        boundary_sites,
+        incident_polygon,
+        equal_circumcenter_mapping,
+        intersected_edge_cache,
+    )
     if !any(isnan, r)
         E = edge_type(vorn)
         u_tri = get_circumcenter_to_triangle(vorn, u)
@@ -556,12 +560,16 @@ This function works as follows:
    we need to get the polygon adjacent to that edge. Then, if `(current_edge, adjacent_incident_polygon)` or `(reverse_edge(current_edge), adjacent_incident_polygon)` have not been processed, we enqueue `(current_edge, adjacent_incident_polygon)`.
 5. Once the edges have all been processed as above, we return.
 """
-function process_intersection_points!(polygon_edge_queue, vorn, current_incident_polygon,
-    left_edge_intersectors, right_edge_intersectors, current_edge_intersectors,
-    left_edge, right_edge, current_edge, processed_pairs, segment_intersections, boundary_sites)
-    all_indices = (initial(left_edge), terminal(left_edge),
+function process_intersection_points!(
+        polygon_edge_queue, vorn, current_incident_polygon,
+        left_edge_intersectors, right_edge_intersectors, current_edge_intersectors,
+        left_edge, right_edge, current_edge, processed_pairs, segment_intersections, boundary_sites,
+    )
+    all_indices = (
+        initial(left_edge), terminal(left_edge),
         initial(right_edge), terminal(right_edge),
-        initial(current_edge), terminal(current_edge))
+        initial(current_edge), terminal(current_edge),
+    )
     if num_polygon_vertices(vorn) > 1 # A single triangle is a special case that we add the corners into manually
         for (e, intersectors) in zip((left_edge, right_edge), (left_edge_intersectors, right_edge_intersectors))
             if (length(intersectors) > 0 && length(current_edge_intersectors) > 0) && ((e, current_incident_polygon) ∉ processed_pairs && (reverse_edge(e), current_incident_polygon) ∉ processed_pairs)
@@ -628,9 +636,11 @@ This function works as follows:
 5. Then, [`process_intersection_points!`](@ref) is used to process the intersection points, enqueueing new edges when needed.
 6. We then delete the edge from `edges_to_process` if it is in there and return.
 """
-function dequeue_and_process!(vorn, polygon_edge_queue, edges_to_process,
-    intersected_edge_cache, left_edge_intersectors, right_edge_intersectors, current_edge_intersectors,
-    processed_pairs, boundary_sites, segment_intersections, exterior_circumcenters, equal_circumcenter_mapping)
+function dequeue_and_process!(
+        vorn, polygon_edge_queue, edges_to_process,
+        intersected_edge_cache, left_edge_intersectors, right_edge_intersectors, current_edge_intersectors,
+        processed_pairs, boundary_sites, segment_intersections, exterior_circumcenters, equal_circumcenter_mapping,
+    )
     if isempty(polygon_edge_queue)
         e = convert_to_edge_adjoining_ghost_vertex(vorn, first(edges_to_process))
         enqueue_new_edge!(polygon_edge_queue, vorn, e)
@@ -645,9 +655,11 @@ function dequeue_and_process!(vorn, polygon_edge_queue, edges_to_process,
     end
     left_edge, right_edge, e = process_polygon!(vorn, e, incident_polygon, boundary_sites, segment_intersections, intersected_edge_cache, exterior_circumcenters, equal_circumcenter_mapping)
     classify_intersections!(intersected_edge_cache, left_edge_intersectors, right_edge_intersectors, current_edge_intersectors, left_edge, right_edge, e)
-    process_intersection_points!(polygon_edge_queue, vorn, incident_polygon,
+    process_intersection_points!(
+        polygon_edge_queue, vorn, incident_polygon,
         left_edge_intersectors, right_edge_intersectors, current_edge_intersectors,
-        left_edge, right_edge, e, processed_pairs, segment_intersections, boundary_sites)
+        left_edge, right_edge, e, processed_pairs, segment_intersections, boundary_sites,
+    )
     if contains_edge(e, edges_to_process)
         delete!(edges_to_process, e)
     elseif contains_edge(reverse_edge(e), edges_to_process)
@@ -681,22 +693,24 @@ This algorithm works as follows:
 """
 function find_all_intersections(vorn::VoronoiTessellation)
     edges_to_process,
-    polygon_edge_queue,
-    boundary_sites,
-    segment_intersections,
-    processed_pairs,
-    intersected_edge_cache,
-    exterior_circumcenters,
-    left_edge_intersectors,
-    right_edge_intersectors,
-    current_edge_intersectors,
-    equal_circumcenter_mapping = initialise_clipping_arrays(vorn)
+        polygon_edge_queue,
+        boundary_sites,
+        segment_intersections,
+        processed_pairs,
+        intersected_edge_cache,
+        exterior_circumcenters,
+        left_edge_intersectors,
+        right_edge_intersectors,
+        current_edge_intersectors,
+        equal_circumcenter_mapping = initialise_clipping_arrays(vorn)
     e = convert_to_edge_adjoining_ghost_vertex(vorn, first(edges_to_process))
     enqueue_new_edge!(polygon_edge_queue, vorn, e)
     while !isempty(edges_to_process) || !isempty(polygon_edge_queue)
-        dequeue_and_process!(vorn, polygon_edge_queue, edges_to_process,
+        dequeue_and_process!(
+            vorn, polygon_edge_queue, edges_to_process,
             intersected_edge_cache, left_edge_intersectors, right_edge_intersectors, current_edge_intersectors,
-            processed_pairs, boundary_sites, segment_intersections, exterior_circumcenters, equal_circumcenter_mapping)
+            processed_pairs, boundary_sites, segment_intersections, exterior_circumcenters, equal_circumcenter_mapping,
+        )
     end
     if num_polygon_vertices(vorn) == 1 # 1 triangle 
         for i in each_generator(vorn)
@@ -817,7 +831,7 @@ Clip the Voronoi tessellation `vorn` to the convex hull of the generators in `vo
 # Outputs 
 There are no outputs, but the Voronoi tessellation is clipped in-place.
 """
-function clip_voronoi_tessellation!(vorn::VoronoiTessellation, is_convex=true)
+function clip_voronoi_tessellation!(vorn::VoronoiTessellation, is_convex = true)
     boundary_sites, segment_intersections, exterior_circumcenters, equal_circumcenter_mapping = find_all_intersections(vorn)
     n = add_intersection_points!(vorn, segment_intersections)
     clip_all_polygons!(vorn, n, boundary_sites, exterior_circumcenters, equal_circumcenter_mapping, is_convex)

@@ -17,9 +17,9 @@ julia> DelaunayTriangulation.construct_edge(Vector{Int32}, 5, 15)
 ```
 """
 construct_edge
-construct_edge(::Type{NTuple{2,I}}, i, j) where {I} = (I(i), I(j))
+construct_edge(::Type{NTuple{2, I}}, i, j) where {I} = (I(i), I(j))
 construct_edge(::Type{Vector{I}}, i, j) where {I} = I[i, j]
-construct_edge(::Type{A}, i, j) where {I,A<:AbstractVector{I}} = A(I[i, j])
+construct_edge(::Type{A}, i, j) where {I, A <: AbstractVector{I}} = A(I[i, j])
 
 """
     initial(e) -> Vertex
@@ -140,9 +140,9 @@ true
 ```
 """
 function compare_unoriented_edges(u, v)
-  i, j = edge_vertices(u)
-  k, ℓ = edge_vertices(v)
-  return (i, j) == (k, ℓ) || (i, j) == (ℓ, k)
+    i, j = edge_vertices(u)
+    k, ℓ = edge_vertices(v)
+    return (i, j) == (k, ℓ) || (i, j) == (ℓ, k)
 end
 
 """
@@ -299,9 +299,9 @@ Set{Tuple{Int64, Int64}} with 7 elements:
 ```
 """
 function add_edge!(E, e...)
-  for v in e
-    add_to_edges!(E, v)
-  end
+    for v in e
+        add_to_edges!(E, v)
+    end
 end
 
 """
@@ -364,9 +364,9 @@ Set{Vector{Int64}} with 2 elements:
 ```
 """
 function delete_edge!(E, e...)
-  for v in e
-    delete_from_edges!(E, v)
-  end
+    for v in e
+        delete_from_edges!(E, v)
+    end
 end
 
 """
@@ -443,11 +443,11 @@ random_edge(rng, E) = rand(rng, E)
 Tests if the edge collections `E` and `F` are equal, ignoring edge orientation.
 """
 function compare_unoriented_edge_collections(E, F)
-  num_edges(E) ≠ num_edges(F) && return false
-  for e in each_edge(E)
-    contains_unoriented_edge(e, F) || return false
-  end
-  return true
+    num_edges(E) ≠ num_edges(F) && return false
+    for e in each_edge(E)
+        contains_unoriented_edge(e, F) || return false
+    end
+    return true
 end
 
 """

@@ -19,7 +19,7 @@ Updates the `convex_hull` field of `tri` to match the current triangulation.
 - `reconstruct=has_boundary_nodes(tri)`: If `true`, then the convex hull is reconstructed from scratch, using [`convex_hull`](@ref) on the points. Otherwise,
    computes the convex hull using the ghost triangles of `tri`. If there are no ghost triangles but `reconstruct=true`, then the convex hull is reconstructed from scratch.
 """
-function convex_hull!(tri::Triangulation; reconstruct=has_boundary_nodes(tri))
+function convex_hull!(tri::Triangulation; reconstruct = has_boundary_nodes(tri))
     I = integer_type(tri)
     if reconstruct
         convex_hull!(get_convex_hull(tri))
@@ -42,7 +42,7 @@ function convex_hull!(tri::Triangulation; reconstruct=has_boundary_nodes(tri))
         return tri
     else
         add_ghost_triangles!(tri)
-        convex_hull!(tri; reconstruct=false)
+        convex_hull!(tri; reconstruct = false)
         delete_ghost_triangles!(tri)
     end
     return tri

@@ -80,10 +80,10 @@ end
 Returns the subtree of `tree` at `level` that `bounding_box` should be inserted into.
 """
 function find_subtree(tree, bounding_box, level)
-    node = get_root(tree)::Union{Branch,Leaf{Branch}}
+    node = get_root(tree)::Union{Branch, Leaf{Branch}}
     while get_level(node) > level
         min_enlargement = minimise_enlargement(node, bounding_box)
-        node = get_child(node, min_enlargement.idx)::Union{Branch,Leaf{Branch}}
+        node = get_child(node, min_enlargement.idx)::Union{Branch, Leaf{Branch}}
     end
     return node
 end
@@ -350,7 +350,7 @@ end
 Returns the leaf node and the index in the leaf node's children that `id_bounding_box` is associated with.
 """
 function find_bounding_box(tree::RTree, id_bounding_box::DiametralBoundingBox)
-    idx_leaf = find_bounding_box(get_root(tree), id_bounding_box)::Tuple{Leaf{Branch},Int}
+    idx_leaf = find_bounding_box(get_root(tree), id_bounding_box)::Tuple{Leaf{Branch}, Int}
     return idx_leaf[1]::Leaf{Branch}, idx_leaf[2]::Int
 end
 function find_bounding_box(branch::Branch, id_bounding_box::DiametralBoundingBox)
@@ -450,7 +450,7 @@ Given the `detached` nodes from [`collapse_after_deletion!`](@ref), inserts them
 """
 function insert_detached!(tree::RTree, detached)
     isempty(detached) && return tree
-    sort!(detached, by=get_level, rev=true)
+    sort!(detached, by = get_level, rev = true)
     for node in detached
         for child in get_children(node)
             insert!(tree, child, get_level(node))
@@ -467,7 +467,7 @@ end
 Returns an [`RTreeIntersectionIterator`](@ref) over the elements in `tree` that intersect with `bounding_box`.
 `cache_id` must be `1` or `2`, and determines what cache to use for the intersection query.
 """
-function get_intersections(tree::RTree, bounding_box::BoundingBox; cache_id=1)
+function get_intersections(tree::RTree, bounding_box::BoundingBox; cache_id = 1)
     return RTreeIntersectionIterator(tree, bounding_box, cache_id)
 end
 
@@ -478,7 +478,7 @@ Returns an [`RTreeIntersectionIterator`](@ref) over the elements in `tree` that 
 as a [`BoundingBox`](@ref) with zero width and height centered at `point`.
 `cache_id` must be `1` or `2`, and determines what cache to use for the intersection query.
 """
-function get_intersections(tree::RTree, point::NTuple{2,<:Number}; cache_id=1)
+function get_intersections(tree::RTree, point::NTuple{2, <:Number}; cache_id = 1)
     return RTreeIntersectionIterator(tree, BoundingBox(point), cache_id)
 end
 

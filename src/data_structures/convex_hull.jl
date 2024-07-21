@@ -11,7 +11,7 @@ Struct for representing a convex hull. See also [`convex_hull`](@ref).
     ConvexHull(points, vertices)
     convex_hull(points; IntegerType=Int)
 """
-struct ConvexHull{P,I}
+struct ConvexHull{P, I}
     points::P
     vertices::Vector{I}
 end

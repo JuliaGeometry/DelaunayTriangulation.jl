@@ -51,7 +51,7 @@ See also [`get_unbounded_polygon_coordinates`](@ref) and [`get_bounded_polygon_c
 # Outputs
 - `coords`: The coordinates of the polygon. This is a circular vector.
 """
-function get_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box=nothing)
+function get_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box = nothing)
     if !isnothing(bounding_box)
         a, b, c, d = bounding_box
         @assert a < b && c < d "The bounding box must be of the form (xmin, xmax, ymin, ymax) with xmin < xmax and ymin < ymax."
@@ -273,11 +273,11 @@ Returns the new vertices and points of the polygon, as well as the indices of th
 - `ghost_vertices`: The indices of the ghost vertices in `new_vertices`.
 """
 function get_new_polygon_indices(vorn, vertices)
-    new_points = NTuple{2,Float64}[]
+    new_points = NTuple{2, Float64}[]
     sizehint!(new_points, length(vertices))
     new_vertices = similar(vertices, length(vertices) - 1)
     ghost_vertices = (0, 0)
-    for i in firstindex(vertices):(lastindex(vertices)-1)
+    for i in firstindex(vertices):(lastindex(vertices) - 1)
         v = vertices[i]
         if is_ghost_vertex(v)
             is_first = is_first_ghost_vertex(vertices, i)
@@ -305,7 +305,7 @@ function get_bounded_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_
     if isnothing(bounding_box)
         C = get_polygon(vorn, i)
         F = number_type(vorn)
-        coords = Vector{NTuple{2,F}}(undef, length(C))
+        coords = Vector{NTuple{2, F}}(undef, length(C))
         for j in eachindex(C)
             coords[j] = get_polygon_point(vorn, C[j])
         end

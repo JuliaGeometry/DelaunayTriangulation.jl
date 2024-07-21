@@ -12,15 +12,15 @@ The map taking `w` to the set of all `(u, v)` such that `(u, v, w)` is a positiv
     Adjacent2Vertex{IntegerType, EdgesType}()
     Adjacent2Vertex(adj2v::Dict{IntegerType, EdgesType})
 """
-struct Adjacent2Vertex{I,Es}
-  adjacent2vertex::Dict{I,Es}
-  Adjacent2Vertex(adj2v::Dict{I,Es}) where {I,Es} = new{I,Es}(adj2v)
+struct Adjacent2Vertex{I, Es}
+    adjacent2vertex::Dict{I, Es}
+    Adjacent2Vertex(adj2v::Dict{I, Es}) where {I, Es} = new{I, Es}(adj2v)
 end
-Adjacent2Vertex{I,Es}() where {I,Es} = Adjacent2Vertex(Dict{I,Es}())
+Adjacent2Vertex{I, Es}() where {I, Es} = Adjacent2Vertex(Dict{I, Es}())
 Base.:(==)(adj2v::Adjacent2Vertex, adj2v2::Adjacent2Vertex) = get_adjacent2vertex(adj2v) == get_adjacent2vertex(adj2v2)
-function Base.show(io::IO, m::MIME"text/plain", adj2v::Adjacent2Vertex{I,Es}) where {I,Es}
-  println(io, "Adjacent2Vertex{", I, ", ", Es, "} with map:")
-  show(io, m, get_adjacent2vertex(adj2v))
+function Base.show(io::IO, m::MIME"text/plain", adj2v::Adjacent2Vertex{I, Es}) where {I, Es}
+    println(io, "Adjacent2Vertex{", I, ", ", Es, "} with map:")
+    show(io, m, get_adjacent2vertex(adj2v))
 end
 Base.sizehint!(adj2v::Adjacent2Vertex, n) = Base.sizehint!(get_adjacent2vertex(adj2v), n)
 
@@ -86,8 +86,8 @@ Set{Tuple{Int64, Int64}} with 3 elements:
 ```
 """
 function get_adjacent2vertex(adj2v::Adjacent2Vertex, w)
-  dict = get_adjacent2vertex(adj2v)
-  return dict[w]
+    dict = get_adjacent2vertex(adj2v)
+    return dict[w]
 end
 
 """
@@ -122,16 +122,16 @@ Dict{Int64, Set{Tuple{Int64, Int64}}} with 2 entries:
   1  => Set([(5, 7), (2, 3)])
 ```
 """
-function add_adjacent2vertex!(adj2v::Adjacent2Vertex{I,Es}, w, uv) where {I,Es}
-  dict = get_adjacent2vertex(adj2v)
-  existing_edges = get!(Es, dict, w)
-  add_edge!(existing_edges, uv)
-  return adj2v
+function add_adjacent2vertex!(adj2v::Adjacent2Vertex{I, Es}, w, uv) where {I, Es}
+    dict = get_adjacent2vertex(adj2v)
+    existing_edges = get!(Es, dict, w)
+    add_edge!(existing_edges, uv)
+    return adj2v
 end
-function add_adjacent2vertex!(adj2v::Adjacent2Vertex{I,Es}, w, u, v) where {I,Es}
-  E = edge_type(Es)
-  uv = construct_edge(E, u, v)
-  return add_adjacent2vertex!(adj2v, w, uv)
+function add_adjacent2vertex!(adj2v::Adjacent2Vertex{I, Es}, w, u, v) where {I, Es}
+    E = edge_type(Es)
+    uv = construct_edge(E, u, v)
+    return add_adjacent2vertex!(adj2v, w, uv)
 end
 
 """
@@ -165,14 +165,14 @@ Dict{Int64, Set{Tuple{Int64, Int64}}} with 2 entries:
 ```
 """
 function delete_adjacent2vertex!(adj2v::Adjacent2Vertex, w, uv)
-  existing_edges = get_adjacent2vertex(adj2v, w)
-  delete_edge!(existing_edges, uv)
-  return adj2v
+    existing_edges = get_adjacent2vertex(adj2v, w)
+    delete_edge!(existing_edges, uv)
+    return adj2v
 end
-function delete_adjacent2vertex!(adj2v::Adjacent2Vertex{I,Es}, w, u, v) where {I,Es}
-  E = edge_type(Es)
-  uv = construct_edge(E, u, v)
-  return delete_adjacent2vertex!(adj2v, w, uv)
+function delete_adjacent2vertex!(adj2v::Adjacent2Vertex{I, Es}, w, u, v) where {I, Es}
+    E = edge_type(Es)
+    uv = construct_edge(E, u, v)
+    return delete_adjacent2vertex!(adj2v, w, uv)
 end
 
 """
@@ -201,9 +201,9 @@ Dict{Int64, Set{Tuple{Int64, Int64}}}()
 ```
 """
 function delete_adjacent2vertex!(adj2v::Adjacent2Vertex, w)
-  dict = get_adjacent2vertex(adj2v)
-  delete!(dict, w)
-  return adj2v
+    dict = get_adjacent2vertex(adj2v)
+    delete!(dict, w)
+    return adj2v
 end
 
 """
@@ -238,10 +238,10 @@ Dict{Int32, Set{Tuple{Int32, Int32}}} with 5 entries:
 ```
 """
 function add_triangle!(adj2v::Adjacent2Vertex, u::Integer, v::Integer, w::Integer)
-  add_adjacent2vertex!(adj2v, u, v, w)
-  add_adjacent2vertex!(adj2v, v, w, u)
-  add_adjacent2vertex!(adj2v, w, u, v)
-  return adj2v
+    add_adjacent2vertex!(adj2v, u, v, w)
+    add_adjacent2vertex!(adj2v, v, w, u)
+    add_adjacent2vertex!(adj2v, w, u, v)
+    return adj2v
 end
 add_triangle!(adj2v::Adjacent2Vertex, T) = add_triangle!(adj2v, geti(T), getj(T), getk(T))
 
@@ -295,10 +295,10 @@ Dict{Int32, Set{Tuple{Int32, Int32}}} with 5 entries:
 ```
 """
 function delete_triangle!(adj2v::Adjacent2Vertex, u::Integer, v::Integer, w::Integer)
-  delete_adjacent2vertex!(adj2v, u, v, w)
-  delete_adjacent2vertex!(adj2v, v, w, u)
-  delete_adjacent2vertex!(adj2v, w, u, v)
-  return adj2v
+    delete_adjacent2vertex!(adj2v, u, v, w)
+    delete_adjacent2vertex!(adj2v, v, w, u)
+    delete_adjacent2vertex!(adj2v, w, u, v)
+    return adj2v
 end
 delete_triangle!(adj2v::Adjacent2Vertex, T) = delete_triangle!(adj2v, geti(T), getj(T), getk(T))
 
@@ -335,15 +335,15 @@ Dict{Int64, Set{Tuple{Int64, Int64}}}()
 ```
 """
 function clear_empty_keys!(adj2v::Adjacent2Vertex)
-  dict = get_adjacent2vertex(adj2v)
-  for (w, S) in dict
-    isempty(S) && delete_adjacent2vertex!(adj2v, w)
-  end
-  return adj2v
+    dict = get_adjacent2vertex(adj2v)
+    for (w, S) in dict
+        isempty(S) && delete_adjacent2vertex!(adj2v, w)
+    end
+    return adj2v
 end
 
 function Base.empty!(adj2v::Adjacent2Vertex)
-  dict = get_adjacent2vertex(adj2v)
-  empty!(dict)
-  return adj2v
+    dict = get_adjacent2vertex(adj2v)
+    empty!(dict)
+    return adj2v
 end

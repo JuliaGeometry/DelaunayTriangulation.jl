@@ -19,9 +19,9 @@ true
 ```
 """
 has_multiple_curves
-has_multiple_curves(::AAA) where {F<:Number,A<:AV{F},AA<:AV{A},AAA<:AV{AA}} = true
-has_multiple_curves(::AA) where {F<:Number,A<:AV{F},AA<:AV{A}} = false
-has_multiple_curves(::A) where {F<:Number,A<:AV{F}} = false
+has_multiple_curves(::AAA) where {F <: Number, A <: AV{F}, AA <: AV{A}, AAA <: AV{AA}} = true
+has_multiple_curves(::AA) where {F <: Number, A <: AV{F}, AA <: AV{A}} = false
+has_multiple_curves(::A) where {F <: Number, A <: AV{F}} = false
 function has_multiple_curves(boundary_nodes::AV)
     #=
     Need this since, e.g.
@@ -62,9 +62,9 @@ true
 ```    
 """
 has_multiple_sections
-has_multiple_sections(::AAA) where {F<:Number,A<:AV{F},AA<:AV{A},AAA<:AV{AA}} = true
-has_multiple_sections(::AA) where {F<:Number,A<:AV{F},AA<:AV{A}} = true
-has_multiple_sections(::A) where {F<:Number,A<:AV{F}} = false
+has_multiple_sections(::AAA) where {F <: Number, A <: AV{F}, AA <: AV{A}, AAA <: AV{AA}} = true
+has_multiple_sections(::AA) where {F <: Number, A <: AV{F}, AA <: AV{A}} = true
+has_multiple_sections(::A) where {F <: Number, A <: AV{F}} = false
 function has_multiple_sections(boundary_nodes::AV)
     #=
     Need this since, e.g.
@@ -193,10 +193,10 @@ julia> get_boundary_nodes([1, 2, 3, 4, 5, 1], [1, 2, 3, 4, 5, 1])
 get_boundary_nodes
 @inline get_boundary_nodes(boundary_nodes, m::Integer) = boundary_nodes[m]
 @inline get_boundary_nodes(boundary_nodes, m::Integer, n::Integer) = get_boundary_nodes(get_boundary_nodes(boundary_nodes, m), n)
-@inline get_boundary_nodes(boundary_nodes, (m, n)::NTuple{2,Integer}) = get_boundary_nodes(boundary_nodes, m, n) # for indexing from a boundary map 
+@inline get_boundary_nodes(boundary_nodes, (m, n)::NTuple{2, Integer}) = get_boundary_nodes(boundary_nodes, m, n) # for indexing from a boundary map 
 @inline get_boundary_nodes(boundary_nodes::A, ::A) where {A} = boundary_nodes # for indexing from a boundary map
-@inline get_boundary_nodes(boundary_nodes::A, ::A) where {A<:Tuple{Integer,Integer}} = boundary_nodes # ambiguity
-@inline get_boundary_nodes(boundary_nodes::A, ::A) where {A<:Integer} = boundary_nodes # ambiguity
+@inline get_boundary_nodes(boundary_nodes::A, ::A) where {A <: Tuple{Integer, Integer}} = boundary_nodes # ambiguity
+@inline get_boundary_nodes(boundary_nodes::A, ::A) where {A <: Integer} = boundary_nodes # ambiguity
 
 """
     each_boundary_node(boundary_nodes) -> Iterator 
@@ -286,7 +286,7 @@ end
 
 This works for any form of `boundary_nodes`.
 """
-@inline function construct_ghost_vertex_map(boundary_nodes, IntegerType::Type{I}=number_type(boundary_nodes)) where {I}
+@inline function construct_ghost_vertex_map(boundary_nodes, IntegerType::Type{I} = number_type(boundary_nodes)) where {I}
     if has_multiple_curves(boundary_nodes)
         return _construct_ghost_vertex_map_multiple_curves(boundary_nodes, IntegerType)
     elseif has_multiple_sections(boundary_nodes)
@@ -296,7 +296,7 @@ This works for any form of `boundary_nodes`.
     end
 end
 function _construct_ghost_vertex_map_multiple_curves(boundary_nodes, IntegerType::Type{I}) where {I}
-    dict = Dict{I,NTuple{2,I}}()
+    dict = Dict{I, NTuple{2, I}}()
     nc = num_curves(boundary_nodes)
     current_idx = I(𝒢)
     for m in 1:nc
@@ -310,7 +310,7 @@ function _construct_ghost_vertex_map_multiple_curves(boundary_nodes, IntegerType
     return dict
 end
 function _construct_ghost_vertex_map_multiple_sections(boundary_nodes, IntegerType::Type{I}) where {I}
-    dict = Dict{I,I}()
+    dict = Dict{I, I}()
     ns = num_sections(boundary_nodes)
     current_idx = I(𝒢)
     for n in 1:ns
@@ -372,9 +372,11 @@ Dict{Tuple{Int64, Int64}, Tuple{Tuple{Int64, Int64}, Int64}} with 12 entries:
   (85, 91) => ((2, 2), 3)
 ```
 """
-@inline function construct_boundary_edge_map(boundary_nodes::A,
-    IntegerType::Type{I}=number_type(boundary_nodes),
-    EdgeType::Type{E}=NTuple{2,IntegerType}) where {A,I,E}
+@inline function construct_boundary_edge_map(
+        boundary_nodes::A,
+        IntegerType::Type{I} = number_type(boundary_nodes),
+        EdgeType::Type{E} = NTuple{2, IntegerType},
+    ) where {A, I, E}
     if has_multiple_curves(boundary_nodes)
         return _construct_boundary_edge_map_multiple_curves(boundary_nodes, IntegerType, EdgeType)
     elseif has_multiple_sections(boundary_nodes)
@@ -383,8 +385,8 @@ Dict{Tuple{Int64, Int64}, Tuple{Tuple{Int64, Int64}, Int64}} with 12 entries:
         return _construct_boundary_edge_map_contiguous(boundary_nodes, IntegerType, EdgeType)
     end
 end
-function _construct_boundary_edge_map_multiple_curves(boundary_nodes, IntegerType::Type{I}, EdgeType::Type{E}) where {I,E}
-    dict = Dict{E,Tuple{NTuple{2,I},I}}()
+function _construct_boundary_edge_map_multiple_curves(boundary_nodes, IntegerType::Type{I}, EdgeType::Type{E}) where {I, E}
+    dict = Dict{E, Tuple{NTuple{2, I}, I}}()
     nc = num_curves(boundary_nodes)
     for m in 1:nc
         bn_m = get_boundary_nodes(boundary_nodes, m)
@@ -402,8 +404,8 @@ function _construct_boundary_edge_map_multiple_curves(boundary_nodes, IntegerTyp
     end
     return dict
 end
-function _construct_boundary_edge_map_multiple_sections(boundary_nodes, IntegerType::Type{I}, EdgeType::Type{E}) where {I,E}
-    dict = Dict{E,NTuple{2,I}}()
+function _construct_boundary_edge_map_multiple_sections(boundary_nodes, IntegerType::Type{I}, EdgeType::Type{E}) where {I, E}
+    dict = Dict{E, NTuple{2, I}}()
     ns = num_sections(boundary_nodes)
     for n in 1:ns
         bn_n = get_boundary_nodes(boundary_nodes, n)
@@ -417,8 +419,8 @@ function _construct_boundary_edge_map_multiple_sections(boundary_nodes, IntegerT
     end
     return dict
 end
-function _construct_boundary_edge_map_contiguous(boundary_nodes::A, IntegerType::Type{I}, EdgeType::Type{E}) where {A,I,E}
-    dict = Dict{E,Tuple{A,I}}()
+function _construct_boundary_edge_map_contiguous(boundary_nodes::A, IntegerType::Type{I}, EdgeType::Type{E}) where {A, I, E}
+    dict = Dict{E, Tuple{A, I}}()
     ne = num_boundary_edges(boundary_nodes)
     for ℓ in 1:ne
         u = get_boundary_nodes(boundary_nodes, ℓ)
@@ -656,7 +658,7 @@ Dict{Int64, UnitRange{Int64}} with 7 entries:
   -6 => -7:-4
 ```
 """
-@inline function construct_ghost_vertex_ranges(boundary_nodes, IntegerType::Type{I}=number_type(boundary_nodes)) where {I}
+@inline function construct_ghost_vertex_ranges(boundary_nodes, IntegerType::Type{I} = number_type(boundary_nodes)) where {I}
     if has_multiple_curves(boundary_nodes)
         return _construct_ghost_vertex_ranges_multiple_curves(boundary_nodes, IntegerType)
     elseif has_multiple_sections(boundary_nodes)
@@ -668,7 +670,7 @@ end
 function _construct_ghost_vertex_ranges_multiple_curves(boundary_nodes, IntegerType::Type{I}) where {I}
     start = I(𝒢)
     current_ghost_vertex = I(𝒢)
-    dict = Dict{I,UnitRange{I}}()
+    dict = Dict{I, UnitRange{I}}()
     nc = num_curves(boundary_nodes)
     for i in 1:nc
         bn = get_boundary_nodes(boundary_nodes, i)
@@ -684,9 +686,9 @@ function _construct_ghost_vertex_ranges_multiple_curves(boundary_nodes, IntegerT
 end
 function _construct_ghost_vertex_ranges_multiple_sections(boundary_nodes, IntegerType::Type{I}) where {I}
     current_ghost_vertex = I(𝒢)
-    dict = Dict{I,UnitRange{I}}()
+    dict = Dict{I, UnitRange{I}}()
     ns = num_sections(boundary_nodes)
-    range = (current_ghost_vertex-ns+1):current_ghost_vertex
+    range = (current_ghost_vertex - ns + 1):current_ghost_vertex
     for _ in 1:ns
         dict[current_ghost_vertex] = range
         current_ghost_vertex -= 1
@@ -695,7 +697,7 @@ function _construct_ghost_vertex_ranges_multiple_sections(boundary_nodes, Intege
 end
 function _construct_ghost_vertex_ranges_contiguous(IntegerType::Type{I}) where {I}
     current_ghost_vertex = I(𝒢)
-    dict = Dict{I,UnitRange{I}}()
+    dict = Dict{I, UnitRange{I}}()
     dict[current_ghost_vertex] = current_ghost_vertex:current_ghost_vertex
     return dict
 end

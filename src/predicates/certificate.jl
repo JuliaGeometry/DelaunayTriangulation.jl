@@ -71,7 +71,7 @@ for inst in instances(Certificate.T)
 
         Returns `true` if `cert` is `$($name)`, and `false` otherwise.
         """ ($(Symbol("is_$(lowercase(name))")))(cert::Certificate.T) = cert == $inst
-    end 
+    end
 end
 """
     is_positively_oriented(cert::Certificate) -> Bool

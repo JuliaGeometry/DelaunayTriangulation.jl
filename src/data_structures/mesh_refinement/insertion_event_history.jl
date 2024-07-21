@@ -18,7 +18,7 @@ The default constructor is available, but we also provide
 
 which will initialise this struct with empty, appropriately `sizehint!`ed, sets.
 """
-struct InsertionEventHistory{T,E}
+struct InsertionEventHistory{T, E}
     added_triangles::Set{T}
     deleted_triangles::Set{T}
     added_segments::Set{E}
@@ -56,7 +56,7 @@ function InsertionEventHistory(tri::Triangulation)
     sizehint!(delete_edge_set, 8)
     sizehint!(add_bnd_set, 8)
     sizehint!(delete_bnd_set, 8)
-    return InsertionEventHistory{T,E}(add_set, delete_set, add_edge_set, delete_edge_set, add_bnd_set, delete_bnd_set)
+    return InsertionEventHistory{T, E}(add_set, delete_set, add_edge_set, delete_edge_set, add_bnd_set, delete_bnd_set)
 end
 
 """
@@ -92,7 +92,7 @@ delete_edge!(events::InsertionEventHistory, e) = push!(events.deleted_segments, 
 
 Add the edge `(u, v)` to the `deleted_boundary_segments` of `events` and add the edges `(u, new_point)` and `(new_point, v)` to the `added_boundary_segments` of `events`.
 """
-function split_boundary_edge!(events::InsertionEventHistory{T,E}, u, v, new_point) where {T,E}
+function split_boundary_edge!(events::InsertionEventHistory{T, E}, u, v, new_point) where {T, E}
     !contains_edge(construct_edge(E, v, u), events.deleted_boundary_segments) && push!(events.deleted_boundary_segments, construct_edge(E, u, v))
     !contains_edge(construct_edge(E, new_point, u), events.added_boundary_segments) && push!(events.added_boundary_segments, construct_edge(E, u, new_point))
     !contains_edge(construct_edge(E, v, new_point), events.added_boundary_segments) && push!(events.added_boundary_segments, construct_edge(E, new_point, v))
@@ -105,8 +105,12 @@ end
 Returns `true` if there are any changes to the segments in `events`, and `false` otherwise.
 """
 function has_segment_changes(events::InsertionEventHistory)
-    return any(!isempty, (events.added_segments, events.deleted_segments,
-        events.added_boundary_segments, events.deleted_boundary_segments))
+    return any(
+        !isempty, (
+            events.added_segments, events.deleted_segments,
+            events.added_boundary_segments, events.deleted_boundary_segments,
+        ),
+    )
 end
 
 """
@@ -160,13 +164,13 @@ recorded into `events` and the vertex is `num_points(tri)`.
 
 If you do not want to delete the latest vertex from the triangulation, set `pop` to `Val(false)`.
 """
-function undo_insertion!(tri::Triangulation, events::InsertionEventHistory, pop=Val(true))
+function undo_insertion!(tri::Triangulation, events::InsertionEventHistory, pop = Val(true))
     vertex = num_points(tri)
     for T in events.added_triangles
-        delete_triangle!(tri, T; protect_boundary=true, update_ghost_edges=false)
+        delete_triangle!(tri, T; protect_boundary = true, update_ghost_edges = false)
     end
     for T in events.deleted_triangles
-        add_triangle!(tri, T; protect_boundary=true, update_ghost_edges=false)
+        add_triangle!(tri, T; protect_boundary = true, update_ghost_edges = false)
     end
     undo_segment_changes!(tri, events)
     undo_boundary_segment_changes!(tri, events)

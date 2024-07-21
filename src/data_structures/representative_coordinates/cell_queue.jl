@@ -12,10 +12,10 @@ according to their maximum distance.
 
 Constructs a new `CellQueue` with elements of type `Cell{T}`.
 """
-struct CellQueue{T} 
-    queue::MaxPriorityQueue{Cell{T},T}
+struct CellQueue{T}
+    queue::MaxPriorityQueue{Cell{T}, T}
     function CellQueue{T}() where {T}
-        return new{T}(MaxPriorityQueue{Cell{T},T}())
+        return new{T}(MaxPriorityQueue{Cell{T}, T}())
     end
 end
 

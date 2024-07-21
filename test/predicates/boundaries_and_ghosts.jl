@@ -7,13 +7,12 @@ const GV = DT.𝒢
 using ..DelaunayTriangulation: Certificate
 
 
-
 x, y = complicated_geometry()
 rng = StableRNG(99988)
 boundary_nodes, points = convert_boundary_points_to_indices(x, y)
-tri = triangulate(points; rng, boundary_nodes, delete_ghosts=false)
+tri = triangulate(points; rng, boundary_nodes, delete_ghosts = false)
 A = get_area(tri)
-refine!(tri; max_area=1e-2A, rng, use_circumcenter=true)
+refine!(tri; max_area = 1.0e-2A, rng, use_circumcenter = true)
 
 tri2, label_map, index_map = simple_geometry()
 add_ghost_triangles!(tri2)
@@ -198,7 +197,7 @@ end
 @testset "has_boundary_nodes and is_constrained" begin
     @test DT.has_boundary_nodes(tri)
     @test DT.has_boundary_nodes(tri2)
-    _tri = triangulate_rectangle(-3.0, 2.0, 5.0, 17.3, 23, 57; single_boundary=true)
+    _tri = triangulate_rectangle(-3.0, 2.0, 5.0, 17.3, 23, 57; single_boundary = true)
     @test DT.has_boundary_nodes(_tri)
     __tri = triangulate(_tri.points)
     @test !DT.has_boundary_nodes(__tri)
@@ -213,7 +212,7 @@ end
     p2 = @SVector[-5.98, 2.17]
     p3 = @SVector[-6.36, -1.55]
     pts = [p1, p2, p3]
-    tri = triangulate(pts; delete_ghosts=false)
+    tri = triangulate(pts; delete_ghosts = false)
     @test all(DT.is_positively_oriented(DT.triangle_orientation(tri, T)) for T in each_triangle(tri))
     DT.add_triangle!(get_triangles(tri), (2, 3, -1))
     @test !all(DT.is_positively_oriented(DT.triangle_orientation(tri, T)) for T in each_triangle(tri))
@@ -223,7 +222,7 @@ end
     x, y = complicated_geometry()
     rng = StableRNG(99988)
     boundary_nodes, points = convert_boundary_points_to_indices(x, y)
-    tri = triangulate(points; rng, boundary_nodes, delete_ghosts=false)
+    tri = triangulate(points; rng, boundary_nodes, delete_ghosts = false)
     for (ghost_vertex, segment_index) in get_ghost_vertex_map(tri)
         nodes = get_boundary_nodes(tri, segment_index)
         for node in nodes

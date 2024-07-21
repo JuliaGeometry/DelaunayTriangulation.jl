@@ -3,7 +3,7 @@
 
 Tests if `i` is a ghost vertex, meaning `i ≤ $𝒢`.
 """
-is_ghost_vertex(i::I) where {I<:Integer} = i ≤ I(𝒢)
+is_ghost_vertex(i::I) where {I <: Integer} = i ≤ I(𝒢)
 is_ghost_vertex(i) = false # in case we provide a point instead of an integer 
 
 """

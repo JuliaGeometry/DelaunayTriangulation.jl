@@ -17,7 +17,7 @@ points = [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]
 p = (0.2, 0.5)
 tri = triangulate(points)
 fig, ax, sc = triplot(tri)
-scatter!(ax, [p], markersize=14)
+scatter!(ax, [p], markersize = 14)
 fig
 @test_reference joinpath(fig_path, "triangulation_operations_20.png") fig #src
 

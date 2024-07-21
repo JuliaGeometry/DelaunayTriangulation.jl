@@ -7,7 +7,7 @@ import GeometryBasics: Point2f
 
 global p1 = [1.3, 2.5]
 global p2 = (1.3, 2.5)
-global p3 = SVector{2,Float32}((1.3, 2.5))
+global p3 = SVector{2, Float32}((1.3, 2.5))
 
 @testset "Individual points" begin
     @testset "Getting coordinates" begin
@@ -52,9 +52,9 @@ global pts4 = ((2.0, 3.5), (1.7, 23.3), (-1.0, 0.0))
             @test DT.get_point(pts, (2.0, 5.3), (17.0, 5.3)) == ((2.0, 5.3), (17.0, 5.3))
             @inferred DT.get_point(pts, (2.0, 5.3), (17.0, 5.3)) == ((2.0, 5.3), (17.0, 5.3))
             @test DT.get_point(pts, 1, 2, (17.0, -2.0), (57.0, 23.0)) ==
-                  ((2.0, 3.5), (1.7, 23.3), (17.0, -2.0), (57.0, 23.0))
+                ((2.0, 3.5), (1.7, 23.3), (17.0, -2.0), (57.0, 23.0))
             @inferred DT.get_point(pts, 1, 2, (17.0, -2.0), (57.0, 23.0)) ==
-                      ((2.0, 3.5), (1.7, 23.3), (17.0, -2.0), (57.0, 23.0))
+                ((2.0, 3.5), (1.7, 23.3), (17.0, -2.0), (57.0, 23.0))
         end
     end
 
@@ -94,18 +94,22 @@ global pts4 = ((2.0, 3.5), (1.7, 23.3), (-1.0, 0.0))
     end
 
     @testset "Sorting points lexicographically" begin
-        A = [2.0 5.0 1.0 10.0 17.0 23.0 5.0 5.0
-            7.0 2.0 0.0 7.5 2.0 -2.5 3.5 3.0]
+        A = [
+            2.0 5.0 1.0 10.0 17.0 23.0 5.0 5.0
+            7.0 2.0 0.0 7.5 2.0 -2.5 3.5 3.0
+        ]
         idx = DT.lexicographic_order(A)
         @test idx == [3, 1, 2, 8, 7, 4, 5, 6]
-        A = [(2.0, 7.0),
+        A = [
+            (2.0, 7.0),
             (5.0, 2.0),
             (1.0, 0.0),
             (10.0, 7.5),
             (17.0, 2.0),
             (23.0, -2.5),
             (5.0, 3.5),
-            (5.0, 3.0)]
+            (5.0, 3.0),
+        ]
         idx = DT.lexicographic_order(A)
         @test idx == [3, 1, 2, 8, 7, 4, 5, 6]
     end
@@ -162,9 +166,9 @@ global pts4 = ((2.0, 3.5), (1.7, 23.3), (-1.0, 0.0))
         DT.set_point!(points, 2, 3.4, 6.7)
         @test points == [[1.0, 5.0], [3.4, 6.7]]
 
-        points = [SVector{2,Float64}(1.0, 5.4), SVector{2,Float64}(6.5, 2.3)]
+        points = [SVector{2, Float64}(1.0, 5.4), SVector{2, Float64}(6.5, 2.3)]
         DT.set_point!(points, 2, 3.4, 6.7)
-        @test points == [SVector{2,Float64}(1.0, 5.4), SVector{2,Float64}(3.4, 6.7)]
+        @test points == [SVector{2, Float64}(1.0, 5.4), SVector{2, Float64}(3.4, 6.7)]
 
         points = [Float32[1.0, 5.0], Float32[2.3, -6.7]]
         DT.set_point!(points, 1, 2.3, 6.9)
@@ -180,7 +184,7 @@ end
     points1 = [(1.0, 2.0), (5.0, 9.0), (3.0, 4.0)]
     points2 = [1.0 5.0 3.0; 2.0 9.0 4.0]
     points3 = rand(2, 75)
-    points4 = [SVector{2,Float32}((1.0, 2.0)), SVector{2,Float32}((5.0, 9.0)), SVector{2,Float32}((3.0, 4.0))]
+    points4 = [SVector{2, Float32}((1.0, 2.0)), SVector{2, Float32}((5.0, 9.0)), SVector{2, Float32}((3.0, 4.0))]
     points5 = [Point2f(1.0, 2.0), Point2f(5.0, 9.0), Point2f(3.0, 4.0)]
     points6 = [Float32[1.0, 2.0], Float32[5.0, 9.0], Float32[3.0, 4.0]]
     @test DT.find_point_index(points1, 1.0, 2.0) == 1
@@ -225,13 +229,13 @@ end
         (17.5, 17.5),
         (0.0, 0.0),
         (0.0, 0.0),
-        (20.0, 20.0)
+        (20.0, 20.0),
     ]
     dict = DT.find_duplicate_points(points)
     @test dict == Dict(
         (1.0, 2.0) => [1, 4],
         (17.5, 17.5) => [3, 6],
-        (0.0, 0.0) => [7, 8]
+        (0.0, 0.0) => [7, 8],
     )
 end
 
@@ -241,8 +245,8 @@ end
     r = [1.0f0, 4.0f0, 5.0f0]
     s = @SVector [3, 7, 5]
     t = [5.0, 13.0, -5.0]
-    
-    @test DT.getz(p) === 3.0 
+
+    @test DT.getz(p) === 3.0
     @test DT._getz(p) === 3.0
     @test DT.getxyz(p) === (1.0, 2.0, 3.0)
     @test DT._getxyz(p) === (1.0, 2.0, 3.0)

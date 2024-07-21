@@ -4,12 +4,12 @@ using DataStructures
 using StaticArrays
 
 global def_adj = DT.∅
-global default_1 = Dict{NTuple{2,Int},Int}()
-global default_2 = Dict{NTuple{2,Int32},Int32}()
-global default_3 = Dict{Vector{Int},Int}()
-global adj_1 = DT.Adjacent{Int,NTuple{2,Int}}()
-global adj_2 = DT.Adjacent{Int32,NTuple{2,Int32}}()
-global adj_3 = DT.Adjacent{Int,Vector{Int}}()
+global default_1 = Dict{NTuple{2, Int}, Int}()
+global default_2 = Dict{NTuple{2, Int32}, Int32}()
+global default_3 = Dict{Vector{Int}, Int}()
+global adj_1 = DT.Adjacent{Int, NTuple{2, Int}}()
+global adj_2 = DT.Adjacent{Int32, NTuple{2, Int32}}()
+global adj_3 = DT.Adjacent{Int, Vector{Int}}()
 
 @testset "Constructors and getters" begin
     @test adj_1.adjacent == default_1
@@ -24,10 +24,14 @@ global adj_3 = DT.Adjacent{Int,Vector{Int}}()
 end
 
 global dict_1 = Dict((1, 2) => 4, (2, 3) => 10, (5, 6) => 15, (20, 5) => 72)
-global dict_2 = Dict(@SVector[1, 2] => 4, @SVector[2, 3] => 10, @SVector[5, 6] => 15,
-    @SVector[20, 5] => 72)
-global dict_3 = Dict{NTuple{2,Int32},Int32}((1, 2) => 4, (2, 3) => 10, (5, 6) => 15,
-    (20, 5) => 72)
+global dict_2 = Dict(
+    @SVector[1, 2] => 4, @SVector[2, 3] => 10, @SVector[5, 6] => 15,
+    @SVector[20, 5] => 72,
+)
+global dict_3 = Dict{NTuple{2, Int32}, Int32}(
+    (1, 2) => 4, (2, 3) => 10, (5, 6) => 15,
+    (20, 5) => 72,
+)
 global ddict_1 = Dict(dict_1)
 global ddict_2 = Dict(dict_2)
 global ddict_3 = Dict(dict_3)

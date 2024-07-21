@@ -123,7 +123,7 @@ Finalises the triangulation after refinement, e.g. by deleting ghost triangles a
 """
 function finalise!(tri::Triangulation, args::RefinementArguments)
     !args.had_ghosts && delete_ghost_triangles!(tri)
-    args.locked_convex_hull && unlock_convex_hull!(tri; reconstruct=true)
+    args.locked_convex_hull && unlock_convex_hull!(tri; reconstruct = true)
     return tri
 end
 
@@ -252,7 +252,7 @@ function locate_steiner_point(tri::Triangulation, args::RefinementArguments, T, 
     flag = point_position_relative_to_triangle(tri, T, c)
     !is_outside(flag) && return T, flag # T is never a ghost triangle, so don't worry about checking is_on(flag) here
     init = get_init_for_steiner_point(tri, T)
-    V, _ = find_triangle(tri, c; m=nothing, point_indices=nothing, try_points=nothing, k=init, args.rng, args.concavity_protection, use_barriers=Val(true))
+    V, _ = find_triangle(tri, c; m = nothing, point_indices = nothing, try_points = nothing, k = init, args.rng, args.concavity_protection, use_barriers = Val(true))
     flag = point_position_relative_to_triangle(tri, V, c)
     if is_ghost_triangle(V) && is_on(flag)
         V = replace_ghost_triangle_with_boundary_triangle(tri, V)
@@ -341,7 +341,7 @@ function enqueue_newly_encroached_segments!(args::RefinementArguments, tri::Tria
     return any_encroached
 end
 
-const MIDPOINT_TOLERANCE = 1e-6
+const MIDPOINT_TOLERANCE = 1.0e-6
 
 """
     compute_split_position(tri::Triangulation, args::RefinementArguments, e) -> NTuple{2, Float}
@@ -577,7 +577,7 @@ function check_split_subsegment_precision(mx, my, p, q)
     abs_err_flag_1 = check_absolute_precision(mx, px) && check_absolute_precision(my, py)
     abs_err_flag_2 = check_absolute_precision(mx, qx) && check_absolute_precision(my, qy)
     abs_err_flag = abs_err_flag_1 || abs_err_flag_2
-    return abs_err_flag 
+    return abs_err_flag
 end
 
 """
@@ -654,7 +654,7 @@ function _split_subsegment_curve_bounded_standard!(tri::Triangulation, args::Ref
         r = I(num_points(tri))
         is_interior = is_segment(enricher, i, j)
         complete_split_edge_and_legalise!(tri, i, j, r, Val(true), args.events)
-        split_edge!(enricher, i, j, r, Val(false), Val(false), is_interior) 
+        split_edge!(enricher, i, j, r, Val(false), Val(false), is_interior)
         assess_added_triangles!(args, tri)
         push!(args.midpoint_split_list, r)
         return tri
@@ -715,7 +715,7 @@ function delete_free_vertices_around_subsegment!(tri::Triangulation, args::Refin
         w = get_adjacent(tri, e′)
         r = get_point(tri, w)
         while is_free(args, w) && !is_outside(point_position_relative_to_diametral_circle(p, q, r))
-            delete_point!(tri, w; store_event_history=Val(true), event_history=args.events, args.rng)
+            delete_point!(tri, w; store_event_history = Val(true), event_history = args.events, args.rng)
             w = get_adjacent(tri, e′)
             r = get_point(tri, w)
         end

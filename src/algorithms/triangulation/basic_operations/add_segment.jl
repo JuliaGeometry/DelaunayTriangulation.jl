@@ -71,7 +71,7 @@ Adds `segment = (i, j)` to `tri`.
 # Outputs 
 There is no output, but `tri` will be updated so that it now contains `segment`.
 """
-function add_segment!(tri::Triangulation, segment; rng::AbstractRNG=Random.default_rng())
+function add_segment!(tri::Triangulation, segment; rng::AbstractRNG = Random.default_rng())
     e = optimise_edge_order(tri, segment)
     fix_edge_order_after_rotation!(tri, segment, e)
     add_segment_to_list!(tri, e)
@@ -92,4 +92,4 @@ function add_segment!(tri::Triangulation, segment; rng::AbstractRNG=Random.defau
     end
     return tri
 end
-add_segment!(tri::Triangulation, i, j; rng=Random.default_rng()) = add_segment!(tri, construct_edge(edge_type(tri), i, j); rng)
+add_segment!(tri::Triangulation, i, j; rng = Random.default_rng()) = add_segment!(tri, construct_edge(edge_type(tri), i, j); rng)

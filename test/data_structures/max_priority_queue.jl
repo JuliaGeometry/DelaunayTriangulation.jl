@@ -20,14 +20,14 @@ pmax = 1000
 for n in [1:10; (11:50:10000)]
     if n ≠ 11
         r = rand(1:pmax, n)
-        ks, vs = 1:n+1, rand(1:pmax, n)
+        ks, vs = 1:(n + 1), rand(1:pmax, n)
     else
         r = [670, 438, 251, 527, 40, 428, 913, 922, 756, 344, 562]
-        ks, vs = 1:n+1, [591, 242, 443, 24, 640, 173, 83, 409, 197, 125, 352]
+        ks, vs = 1:(n + 1), [591, 242, 443, 24, 640, 173, 83, 409, 197, 125, 352]
     end
     priorities = Dict(zip(ks, vs))
     queue = DT.MaxPriorityQueue(priorities)
-    dt_queue = PriorityQueue{Int,Int}(Base.Reverse, priorities)
+    dt_queue = PriorityQueue{Int, Int}(Base.Reverse, priorities)
     if n == 11
         @test sprint(show, MIME"text/plain"(), queue) == "DelaunayTriangulation.MaxPriorityQueue{Int64, Int64} with 11 entries:\n  5 => 640\n  1 => 591\n  3 => 443\n  8 => 409\n  11 => 352\n  2 => 242\n  9 => 197\n  6 => 173\n  10 => 125\n  7 => 83\n  4 => 24"
     end
@@ -49,8 +49,8 @@ for n in [1:10; (11:50:10000)]
         @test queue[k] == dt_queue[k]
     end
     @test queue == dt_queue
-    pairs = Pair{Int,Int}[]
-    dt_pairs = Pair{Int,Int}[]
+    pairs = Pair{Int, Int}[]
+    dt_pairs = Pair{Int, Int}[]
     while !isempty(queue)
         pair = popfirst!(queue)
         dt_pair = dequeue_pair!(dt_queue)

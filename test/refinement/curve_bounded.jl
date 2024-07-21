@@ -39,7 +39,7 @@ names = (
     "multiply_connected_piecewise_linear_interior_circle",
     "multiply_connected_piecewise_linear_elliptical_bspline_piecewise_linear",
     "multiply_connected_piecewise_linear_elliptical_bspline_piecewise_linear_catmull_bezier_piecewise_linear_circle",
-    "multiply_connected_intersecting"
+    "multiply_connected_intersecting",
 )
 
 curve_I = [1, 2, 3, 4, 1]
@@ -60,7 +60,7 @@ curve_II = [[1, 2, 3, 4, 5], [5, 6, 7, 8, 9], [9, 10, 11, 1]]
 points_II = [
     (0.0, 0.0), (0.25, 0.0), (0.5, 0.0), (0.75, 0.0), (1.0, 0.0),
     (1.0, 0.25), (1.0, 0.5), (1.0, 0.75), (1.0, 1.0),
-    (0.75, 0.75), (0.25, 0.25)
+    (0.75, 0.75), (0.25, 0.25),
 ]
 fpoints_II = flatten_boundary_nodes(points_II, curve_II)
 points_II_extra = copy(points_II)
@@ -77,7 +77,7 @@ points_III = [
     (0.0, 0.0), (0.25, 0.0), (0.5, 0.0), (0.75, 0.0), (1.0, 0.0),
     (1.0, 0.25), (1.0, 0.5), (1.0, 0.75), (1.0, 1.0),
     (0.0, 1.0), (0.0, 0.5),
-    (0.25, 0.25), (0.75, 0.25), (0.75, 0.75), (0.25, 0.75)
+    (0.25, 0.25), (0.75, 0.25), (0.75, 0.75), (0.25, 0.75),
 ]
 fpoints_III = flatten_boundary_nodes(points_III, curve_III)
 points_III_extra = copy(points_III)
@@ -90,7 +90,7 @@ segments_III = Set([(n + 2, n + 1)])
 fpoints_III_extra_segments = flatten_boundary_nodes(points_III_extra_segments, curve_III, segments_III)
 
 curve_IV = [CircularArc((1.0, 0.0), (1.0, 0.0), (0.0, 0.0))]
-points_IV = NTuple{2,Float64}[]
+points_IV = NTuple{2, Float64}[]
 fpoints_IV = flatten_boundary_nodes(points_IV, curve_IV)
 points_IV_extra = copy(points_IV)
 push!(points_IV_extra, (0.99, 0.14), (0.0, 0.99), (-0.99, 0.0), (0.99, 0.0), (0.0, -0.99), (0.0, 0.0), (0.5, -0.5))
@@ -110,7 +110,7 @@ push!(points_V_extra, (0.01, 0.01), (0.25, 0.25), (0.5, 0.5), (0.25, 0.55), (0.5
 curve_VI = [
     [CircularArc((1.0, 0.0), (0.0, 1.0), (0.0, 0.0))],
     [BSpline([(0.0, 1.0), (-1.0, 2.0), (-2.0, 0.0), (-2.0, -1.0), (0.0, -2.0)])],
-    [5, 6, 10]
+    [5, 6, 10],
 ]
 points_VI = [(0.1, 0.1), (0.15, 0.15), (0.23, 0.23), (0.009, 0.11), (0.0, -2.0), (0.2, -1.7), (0.000591, 0.00019), (0.111, -0.005), (-0.0001, -0.00991), (1.0, 0.0)]
 fpoints_VI = flatten_boundary_nodes(points_VI, curve_VI)
@@ -119,7 +119,7 @@ push!(points_VI_extra, (0.0, 0.0), (0.999, 0.0), (-1.0, -1.0), (0.5, 0.0), (-1.0
 
 curve_VII = [
     [CircularArc((2.0, 0.0), (-2.0, 0.0), (0.0, 0.0))],
-    [BSpline([(-2.0, 0.0), (-2.0, -1.0), (0.0, -1.0), (1.0, -1.0), (2.0, -1.0), (2.0, 0.0)])]
+    [BSpline([(-2.0, 0.0), (-2.0, -1.0), (0.0, -1.0), (1.0, -1.0), (2.0, -1.0), (2.0, 0.0)])],
 ]
 points_VII = [(2.0, 0.0), (0.0, 0.5)]
 fpoints_VII = flatten_boundary_nodes(points_VII, curve_VII)
@@ -130,23 +130,25 @@ curve_VIII = [
     [1, 2, 3, 4, 5],
     [DT.EllipticalArc((0.0, 0.0), (2.0, -2.0), (1.0, -1.0), sqrt(2), sqrt(2), 45.0)],
     [6, 7, 8, 9, 10],
-    [CatmullRomSpline([(10.0, -3.0), (20.0, 0.0), (18.0, 0.0), (10.0, 0.0)], lookup_steps=5000)]
+    [CatmullRomSpline([(10.0, -3.0), (20.0, 0.0), (18.0, 0.0), (10.0, 0.0)], lookup_steps = 5000)],
 ]
-points_VIII = [(10.0, 0.0), (8.0, 0.0), (4.0, 0.0), (2.0, 2.0), (0.0, 0.0), (2.0, -2.0),
-    (2.5, -2.0), (3.5, -2.0), (4.5, -3.0), (10.0, -3.0), (10.0, -0.2), (14.0, -0.05)]
+points_VIII = [
+    (10.0, 0.0), (8.0, 0.0), (4.0, 0.0), (2.0, 2.0), (0.0, 0.0), (2.0, -2.0),
+    (2.5, -2.0), (3.5, -2.0), (4.5, -3.0), (10.0, -3.0), (10.0, -0.2), (14.0, -0.05),
+]
 fpoints_VIII = flatten_boundary_nodes(points_VIII, curve_VIII)
 points_VIII_extra = copy(points_VIII)
 push!(points_VIII_extra, (5.0, -0.01), (10.0, -1.0), (15.0, -1.95), (0.0, -1.0), (2.0, -1.5), (1.0, 0.5), (10.0, -2.0))
 
 curve_IX =
     [
-        [
-            [1, 2, 3, 4, 5, 6, 7, 1]
-        ],
-        [
-            [CircularArc((0.6, 0.5), (0.6, 0.5), (0.5, 0.5), positive=false)]
-        ],
-    ]
+    [
+        [1, 2, 3, 4, 5, 6, 7, 1],
+    ],
+    [
+        [CircularArc((0.6, 0.5), (0.6, 0.5), (0.5, 0.5), positive = false)],
+    ],
+]
 points_IX = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.5, 1.5), (0.0, 1.0), (0.0, 0.5), (0.0, 0.2)]
 fpoints_IX = flatten_boundary_nodes(points_IX, curve_IX)
 points_IX_extra = copy(points_IX)
@@ -154,14 +156,14 @@ push!(points_IX_extra, (0.5, 0.01), (0.01, 0.01), (0.01, 0.5), (0.01, 1.0), (0.5
 
 curve_X = [
     [
-        [1, 2, 3], [DT.EllipticalArc((2.0, 0.0), (-2.0, 0.0), (0.0, 0.0), 2, 1 / 2, 0.0)]
+        [1, 2, 3], [DT.EllipticalArc((2.0, 0.0), (-2.0, 0.0), (0.0, 0.0), 2, 1 / 2, 0.0)],
     ],
     [
-        [BSpline(reverse([(1.0, 0.2), (0.0, 0.4), (0.0, 0.3), (-1.0, 0.2)]))], reverse([4, 5, 6, 7, 8])
-    ]
+        [BSpline(reverse([(1.0, 0.2), (0.0, 0.4), (0.0, 0.3), (-1.0, 0.2)]))], reverse([4, 5, 6, 7, 8]),
+    ],
 ]
 points_X = [
-    (-2.0, 0.0), (0.0, 0.0), (2.0, 0.0), (-1.0, 0.2), (-1.0, 0.1), (0.0, 0.1), (1.0, 0.1), (1.0, 0.2)
+    (-2.0, 0.0), (0.0, 0.0), (2.0, 0.0), (-1.0, 0.2), (-1.0, 0.1), (0.0, 0.1), (1.0, 0.1), (1.0, 0.2),
 ]
 fpoints_X = flatten_boundary_nodes(points_X, curve_X)
 points_X_extra = copy(points_X)
@@ -169,23 +171,23 @@ push!(points_X_extra, (0.0, 0.01), (-0.5, 0.27), (1.0, 0.275), (1.5, 0.2), (0.0,
 
 curve_XI = [
     [
-        [1, 2, 3], [DT.EllipticalArc((2.0, 0.0), (-2.0, 0.0), (0.0, 0.0), 2, 1 / 2, 0.0)]
+        [1, 2, 3], [DT.EllipticalArc((2.0, 0.0), (-2.0, 0.0), (0.0, 0.0), 2, 1 / 2, 0.0)],
     ],
     [
-        [BSpline([(0.0, 0.4), (1.0, 0.2), (0.0, 0.1), (-1.0, 0.2), (0.0, 0.4)])]
+        [BSpline([(0.0, 0.4), (1.0, 0.2), (0.0, 0.1), (-1.0, 0.2), (0.0, 0.4)])],
     ],
     [
-        [4, 5, 6, 7, 4]
+        [4, 5, 6, 7, 4],
     ],
     [
-        [BezierCurve(reverse([(-1.0, -3.0), (-1.0, -2.5), (0.0, -2.5), (0.0, -2.0)]))], [CatmullRomSpline(reverse([(0.0, -2.0), (1.0, -3.0), (0.0, -4.0), (-1.0, -3.0)]))]
+        [BezierCurve(reverse([(-1.0, -3.0), (-1.0, -2.5), (0.0, -2.5), (0.0, -2.0)]))], [CatmullRomSpline(reverse([(0.0, -2.0), (1.0, -3.0), (0.0, -4.0), (-1.0, -3.0)]))],
     ],
     [
-        [12, 11, 10, 12]
+        [12, 11, 10, 12],
     ],
     [
-        [CircularArc((1.1, -3.0), (1.1, -3.0), (0.0, -3.0), positive=false)]
-    ]
+        [CircularArc((1.1, -3.0), (1.1, -3.0), (0.0, -3.0), positive = false)],
+    ],
 ]
 points_XI = [(-2.0, 0.0), (0.0, 0.0), (2.0, 0.0), (-2.0, -5.0), (2.0, -5.0), (2.0, -1 / 10), (-2.0, -1 / 10), (-1.0, -3.0), (0.0, -4.0), (0.0, -2.3), (-0.5, -3.5), (0.9, -3.0)]
 fpoints_XI = flatten_boundary_nodes(points_XI, curve_XI)
@@ -196,15 +198,15 @@ ctrl = [
     (0.0, 0.0), (2.0, 0.0), (1.6, -0.1),
     (0.3, -0.2), (-0.31, -0.35), (-0.2, 1.0),
     (0.0, 0.8), (0.2, 0.6), (0.4, 0.4),
-    (2.0, 0.4), (0.0, 0.0)
+    (2.0, 0.4), (0.0, 0.0),
 ]
 reverse!(ctrl)
 points_XII = [
     (-0.1, 0.8), (-0.15, -0.15), (0.3, -0.1),
     (0.0, -0.1), (-0.1, 0.0),
-    (0.4, 0.2), (0.2, 0.4), (0.0, 0.6)
+    (0.4, 0.2), (0.2, 0.4), (0.0, 0.6),
 ]
-curve_XII = [[[BSpline(ctrl, lookup_steps=25000)]], [[1, 8, 7, 6, 5, 4, 3, 2, 1]]]
+curve_XII = [[[BSpline(ctrl, lookup_steps = 25000)]], [[1, 8, 7, 6, 5, 4, 3, 2, 1]]]
 fpoints_XII = flatten_boundary_nodes(points_XII, curve_XII)
 points_XII_extra = copy(points_XII)
 push!(points_XII_extra, (0.5, -0.15), (1.0, -0.1), (1.0, 0.25), (0.0, 0.75), (-0.01, 0.0))
@@ -287,8 +289,10 @@ end
     @test curves_X_tuple == (DT.PiecewiseLinear(points_X, curve_X[1][1]), curve_X[1][2][1], curve_X[2][1][1], DT.PiecewiseLinear(points_X, curve_X[2][2]))
 
     curves_XI_tuple = DT.to_boundary_curves(points_XI, curve_XI)
-    @test curves_XI_tuple == (DT.PiecewiseLinear(points_XI, curve_XI[1][1]), curve_XI[1][2][1], curve_XI[2][1][1], DT.PiecewiseLinear(points_XI, curve_XI[3][1]), curve_XI[4][1][1], curve_XI[4][2][1],
-        DT.PiecewiseLinear(points_XI, curve_XI[5][1]), curve_XI[6][1][1])
+    @test curves_XI_tuple == (
+        DT.PiecewiseLinear(points_XI, curve_XI[1][1]), curve_XI[1][2][1], curve_XI[2][1][1], DT.PiecewiseLinear(points_XI, curve_XI[3][1]), curve_XI[4][1][1], curve_XI[4][2][1],
+        DT.PiecewiseLinear(points_XI, curve_XI[5][1]), curve_XI[6][1][1],
+    )
 end
 
 @testset "get_skeleton" begin
@@ -360,51 +364,53 @@ end
     boundary_nodes = deepcopy(curve_VI)
     boundary_curves, new_boundary_nodes = DT.convert_boundary_curves!(points, boundary_nodes, Int)
     @test boundary_curves == DT.to_boundary_curves(points, boundary_nodes) &&
-          new_boundary_nodes == [[10, 11], [11, 5], [5, 6, 10]] &&
-          points == [(0.1, 0.1), (0.15, 0.15), (0.23, 0.23), (0.009, 0.11), (0.0, -2.0), (0.2, -1.7), (0.000591, 0.00019), (0.111, -0.005), (-0.0001, -0.00991), (1.0, 0.0), (0.0, 1.0)]
+        new_boundary_nodes == [[10, 11], [11, 5], [5, 6, 10]] &&
+        points == [(0.1, 0.1), (0.15, 0.15), (0.23, 0.23), (0.009, 0.11), (0.0, -2.0), (0.2, -1.7), (0.000591, 0.00019), (0.111, -0.005), (-0.0001, -0.00991), (1.0, 0.0), (0.0, 1.0)]
 
     points = deepcopy(points_VII)
     boundary_nodes = deepcopy(curve_VII)
     boundary_curves, new_boundary_nodes = DT.convert_boundary_curves!(points, boundary_nodes, Int)
     @test boundary_curves == DT.to_boundary_curves(points, boundary_nodes) &&
-          new_boundary_nodes == [[1, 3], [3, 1]] &&
-          points == [(2.0, 0.0), (0.0, 0.5), (-2.0, 0.0)]
+        new_boundary_nodes == [[1, 3], [3, 1]] &&
+        points == [(2.0, 0.0), (0.0, 0.5), (-2.0, 0.0)]
 
     points = deepcopy(points_VIII)
     boundary_nodes = deepcopy(curve_VIII)
     boundary_curves, new_boundary_nodes = DT.convert_boundary_curves!(points, boundary_nodes, Int)
     @test boundary_curves == DT.to_boundary_curves(points, boundary_nodes) &&
-          new_boundary_nodes == [[1, 2, 3, 4, 5], [5, 6], [6, 7, 8, 9, 10], [10, 1]] &&
-          points == [(10.0, 0.0), (8.0, 0.0), (4.0, 0.0), (2.0, 2.0), (0.0, 0.0), (2.0, -2.0),
-              (2.5, -2.0), (3.5, -2.0), (4.5, -3.0), (10.0, -3.0), (10.0, -0.2), (14.0, -0.05)]
+        new_boundary_nodes == [[1, 2, 3, 4, 5], [5, 6], [6, 7, 8, 9, 10], [10, 1]] &&
+        points == [
+        (10.0, 0.0), (8.0, 0.0), (4.0, 0.0), (2.0, 2.0), (0.0, 0.0), (2.0, -2.0),
+        (2.5, -2.0), (3.5, -2.0), (4.5, -3.0), (10.0, -3.0), (10.0, -0.2), (14.0, -0.05),
+    ]
 
     points = deepcopy(points_IX)
     boundary_nodes = deepcopy(curve_IX)
     boundary_curves, new_boundary_nodes = DT.convert_boundary_curves!(points, boundary_nodes, Int)
     @test boundary_curves == DT.to_boundary_curves(points, boundary_nodes) &&
-          new_boundary_nodes == [[[1, 2, 3, 4, 5, 6, 7, 1]], [[8, 8]]] &&
-          points == [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.5, 1.5), (0.0, 1.0), (0.0, 0.5), (0.0, 0.2), (0.6, 0.5)]
+        new_boundary_nodes == [[[1, 2, 3, 4, 5, 6, 7, 1]], [[8, 8]]] &&
+        points == [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.5, 1.5), (0.0, 1.0), (0.0, 0.5), (0.0, 0.2), (0.6, 0.5)]
 
     points = deepcopy(points_X)
     boundary_nodes = deepcopy(curve_X)
     boundary_curves, new_boundary_nodes = DT.convert_boundary_curves!(points, boundary_nodes, Int)
     @test boundary_curves == DT.to_boundary_curves(points, boundary_nodes) &&
-          new_boundary_nodes == [[[1, 2, 3], [3, 1]], [[4, 8], [8, 7, 6, 5, 4]]] &&
-          points == [(-2.0, 0.0), (0.0, 0.0), (2.0, 0.0), (-1.0, 0.2), (-1.0, 0.1), (0.0, 0.1), (1.0, 0.1), (1.0, 0.2)]
+        new_boundary_nodes == [[[1, 2, 3], [3, 1]], [[4, 8], [8, 7, 6, 5, 4]]] &&
+        points == [(-2.0, 0.0), (0.0, 0.0), (2.0, 0.0), (-1.0, 0.2), (-1.0, 0.1), (0.0, 0.1), (1.0, 0.1), (1.0, 0.2)]
 
     points = deepcopy(points_XI)
     boundary_nodes = deepcopy(curve_XI)
     boundary_curves, new_boundary_nodes = DT.convert_boundary_curves!(points, boundary_nodes, Int)
     @test boundary_curves == DT.to_boundary_curves(points, boundary_nodes) &&
-          new_boundary_nodes == [[[1, 2, 3], [3, 1]], [[13, 13]], [[4, 5, 6, 7, 4]], [[14, 8], [8, 14]], [[12, 11, 10, 12]], [[15, 15]]] &&
-          points == [(-2.0, 0.0), (0.0, 0.0), (2.0, 0.0), (-2.0, -5.0), (2.0, -5.0), (2.0, -1 / 10), (-2.0, -1 / 10), (-1.0, -3.0), (0.0, -4.0), (0.0, -2.3), (-0.5, -3.5), (0.9, -3.0), (0.0, 0.4), (0.0, -2.0), (1.1, -3.0)]
+        new_boundary_nodes == [[[1, 2, 3], [3, 1]], [[13, 13]], [[4, 5, 6, 7, 4]], [[14, 8], [8, 14]], [[12, 11, 10, 12]], [[15, 15]]] &&
+        points == [(-2.0, 0.0), (0.0, 0.0), (2.0, 0.0), (-2.0, -5.0), (2.0, -5.0), (2.0, -1 / 10), (-2.0, -1 / 10), (-1.0, -3.0), (0.0, -4.0), (0.0, -2.3), (-0.5, -3.5), (0.9, -3.0), (0.0, 0.4), (0.0, -2.0), (1.1, -3.0)]
 end
 
 @testset "BoundaryEnricher" begin
     all_points = deepcopy.((points_I, points_II, points_III, points_IV, points_V, points_VI, points_VII, points_VIII, points_IX, points_X, points_XI))
     all_boundary_nodes = deepcopy.((curve_I, curve_II, curve_III, curve_IV, curve_V, curve_VI, curve_VII, curve_VIII, curve_IX, curve_X, curve_XI))
     for (points, boundary_nodes) in zip(all_points, all_boundary_nodes)
-        enricher = DT.BoundaryEnricher(points, boundary_nodes; IntegerType=Int)
+        enricher = DT.BoundaryEnricher(points, boundary_nodes; IntegerType = Int)
         @test get_points(enricher) == enricher.points == points
         @test get_boundary_nodes(enricher) == enricher.boundary_nodes
         @test DT.get_boundary_curves(enricher) == enricher.boundary_curves
@@ -422,7 +428,7 @@ end
         @test DT.get_queue(enricher) ⊢ DT.Queue{Int}()
         @test DT.get_boundary_edge_map(enricher) == enricher.boundary_edge_map == DT.construct_boundary_edge_map(DT.get_boundary_nodes(enricher))
         @test !DT.has_segments(enricher)
-        @test DT.get_segments(enricher) == Set{NTuple{2,Int}}()
+        @test DT.get_segments(enricher) == Set{NTuple{2, Int}}()
         @test !DT.is_segment(enricher, 1, 2)
     end
     points, boundary_nodes, segments = deepcopy(points_I_extra_segments), deepcopy(curve_I), deepcopy(segments_I)
@@ -449,7 +455,7 @@ end
         (8, 9) => 2,
         (9, 10) => 3,
         (10, 11) => 3,
-        (11, 1) => 3
+        (11, 1) => 3,
     )
     @test length(DT.get_parent_map(enricher)) == 11
     curve_index_map = DT.get_curve_index_map(enricher)
@@ -481,7 +487,7 @@ end
         5 => 4,
         6 => 4,
         7 => 5,
-        8 => 6
+        8 => 6,
     )
     @test DT.map_curve_index(enricher, 1) == 1
     @test DT.map_curve_index(enricher, 7) == 5
@@ -552,14 +558,14 @@ end
     points = deepcopy(points_V)
     boundary_nodes = deepcopy(curve_V)
     boundary_curves, new_boundary_nodes = DT.convert_boundary_curves!(points, boundary_nodes, Int)
-    DT.coarse_discretisation!(points, new_boundary_nodes, boundary_curves; n=5) # 5 gets mapped to 8
+    DT.coarse_discretisation!(points, new_boundary_nodes, boundary_curves; n = 5) # 5 gets mapped to 8
     @test length(points) == 9
     all_t = DT.get_inverse.(Ref(curve_V[1]), get_point(points, new_boundary_nodes...)) |> collect
     all_t[end] = 1.0
     @test issorted(all_t)
     boundary_nodes = new_boundary_nodes
     @test DT.num_boundary_edges(boundary_nodes) == 8
-    for i in 1:(num_boundary_edges(boundary_nodes)-1)
+    for i in 1:(num_boundary_edges(boundary_nodes) - 1)
         j = i + 1
         k = j + 1
         u, v, w = get_boundary_nodes(boundary_nodes, i), get_boundary_nodes(boundary_nodes, j), get_boundary_nodes(boundary_nodes, k)
@@ -574,14 +580,14 @@ end
         end
         Tθ₁ = slow_total_absolute_curvature(curve_V[1], t₁, t₂)
         Tθ₂ = slow_total_absolute_curvature(curve_V[1], t₂, t₃)
-        @test Tθ₁ ≈ Tθ₂ rtol = 1e-2
+        @test Tθ₁ ≈ Tθ₂ rtol = 1.0e-2
     end
 
     # VI 
     points = deepcopy(points_VI)
     boundary_nodes = deepcopy(curve_VI)
     boundary_curves, new_boundary_nodes = DT.convert_boundary_curves!(points, boundary_nodes, Int)
-    DT.coarse_discretisation!(points, new_boundary_nodes, boundary_curves; n=64)
+    DT.coarse_discretisation!(points, new_boundary_nodes, boundary_curves; n = 64)
     @test length(points) == 137
     all_t = DT.get_inverse.(Ref(curve_VI[1][1]), get_point(points, get_boundary_nodes(new_boundary_nodes, 1)...)) |> collect
     @test issorted(all_t)
@@ -593,7 +599,7 @@ end
     @test DT.num_boundary_edges(boundary_nodes[2]) == 64
     for idx in 1:2
         section_nodes = get_boundary_nodes(boundary_nodes, idx)
-        for i in 1:(num_boundary_edges(section_nodes)-1)
+        for i in 1:(num_boundary_edges(section_nodes) - 1)
             j = i + 1
             k = j + 1
             u, v, w = get_boundary_nodes(section_nodes, i), get_boundary_nodes(section_nodes, j), get_boundary_nodes(section_nodes, k)
@@ -601,7 +607,7 @@ end
             t₁, t₂, t₃ = DT.get_inverse(curve_VI[idx][1], p), DT.get_inverse(curve_VI[idx][1], q), DT.get_inverse(curve_VI[idx][1], r)
             Tθ₁ = DT.total_variation(curve_VI[idx][1], t₁, t₂)
             Tθ₂ = DT.total_variation(curve_VI[idx][1], t₂, t₃)
-            @test Tθ₁ ≈ Tθ₂ rtol = 1e-2
+            @test Tθ₁ ≈ Tθ₂ rtol = 1.0e-2
         end
     end
 
@@ -609,7 +615,7 @@ end
     points = deepcopy(points_VII)
     boundary_nodes = deepcopy(curve_VII)
     boundary_curves, new_boundary_nodes = DT.convert_boundary_curves!(points, boundary_nodes, Int)
-    DT.coarse_discretisation!(points, new_boundary_nodes, boundary_curves; n=512)
+    DT.coarse_discretisation!(points, new_boundary_nodes, boundary_curves; n = 512)
     @test length(points) == 1025
     all_t = DT.get_inverse.(Ref(curve_VII[1][1]), get_point(points, get_boundary_nodes(new_boundary_nodes, 1)...)) |> collect
     @test issorted(all_t)
@@ -620,7 +626,7 @@ end
     @test DT.num_boundary_edges(boundary_nodes[2]) == 512
     for idx in 1:2
         section_nodes = get_boundary_nodes(boundary_nodes, idx)
-        for i in 1:(num_boundary_edges(section_nodes)-1)
+        for i in 1:(num_boundary_edges(section_nodes) - 1)
             j = i + 1
             k = j + 1
             u, v, w = get_boundary_nodes(section_nodes, i), get_boundary_nodes(section_nodes, j), get_boundary_nodes(section_nodes, k)
@@ -628,7 +634,7 @@ end
             t₁, t₂, t₃ = DT.get_inverse(curve_VII[idx][1], p), DT.get_inverse(curve_VII[idx][1], q), DT.get_inverse(curve_VII[idx][1], r)
             Tθ₁ = DT.total_variation(curve_VII[idx][1], t₁, t₂)
             Tθ₂ = DT.total_variation(curve_VII[idx][1], t₂, t₃)
-            @test Tθ₁ ≈ Tθ₂ rtol = 1e-1
+            @test Tθ₁ ≈ Tθ₂ rtol = 1.0e-1
         end
     end
 
@@ -651,7 +657,7 @@ end
     @test boundary_nodes[3] == [6, 7, 8, 9, 10]
     for idx in [2, 4]
         section_nodes = get_boundary_nodes(boundary_nodes, idx)
-        for i in 1:(num_boundary_edges(section_nodes)-1)
+        for i in 1:(num_boundary_edges(section_nodes) - 1)
             j = i + 1
             k = j + 1
             u, v, w = get_boundary_nodes(section_nodes, i), get_boundary_nodes(section_nodes, j), get_boundary_nodes(section_nodes, k)
@@ -659,7 +665,7 @@ end
             t₁, t₂, t₃ = DT.get_inverse(curve_VIII[idx][1], p), DT.get_inverse(curve_VIII[idx][1], q), DT.get_inverse(curve_VIII[idx][1], r)
             Tθ₁ = DT.total_variation(curve_VIII[idx][1], t₁, t₂)
             Tθ₂ = DT.total_variation(curve_VIII[idx][1], t₂, t₃)
-            @test Tθ₁ ≈ Tθ₂ rtol = 1e-2
+            @test Tθ₁ ≈ Tθ₂ rtol = 1.0e-2
         end
     end
 
@@ -667,7 +673,7 @@ end
     points = deepcopy(points_IX)
     boundary_nodes = deepcopy(curve_IX)
     boundary_curves, new_boundary_nodes = DT.convert_boundary_curves!(points, boundary_nodes, Int)
-    DT.coarse_discretisation!(points, new_boundary_nodes, boundary_curves, n=1) # check that 1 becomes 4
+    DT.coarse_discretisation!(points, new_boundary_nodes, boundary_curves, n = 1) # check that 1 becomes 4
     @test length(points) == 11
     # 1 gets ignored because it's a piecewise linear curve 
     all_t = DT.get_inverse.(Ref(curve_IX[2][1][1]), get_point(points, new_boundary_nodes[2][1]...)) |> collect
@@ -679,7 +685,7 @@ end
     for idx in (2,)
         curve_nodes = get_boundary_nodes(boundary_nodes, idx)
         section_nodes = get_boundary_nodes(curve_nodes, 1)
-        for i in 1:(num_boundary_edges(section_nodes)-1)
+        for i in 1:(num_boundary_edges(section_nodes) - 1)
             j = i + 1
             k = j + 1
             u, v, w = get_boundary_nodes(section_nodes, i), get_boundary_nodes(section_nodes, j), get_boundary_nodes(section_nodes, k)
@@ -702,7 +708,7 @@ end
     points = deepcopy(points_X)
     boundary_nodes = deepcopy(curve_X)
     boundary_curves, new_boundary_nodes = DT.convert_boundary_curves!(points, boundary_nodes, Int)
-    DT.coarse_discretisation!(points, new_boundary_nodes, boundary_curves; n=32)
+    DT.coarse_discretisation!(points, new_boundary_nodes, boundary_curves; n = 32)
     @test length(points) == 70
     # 1 and 4 are piecewise linear curves 
     all_t = DT.get_inverse.(Ref(curve_X[1][2][1]), get_point(points, new_boundary_nodes[1][2]...)) |> collect
@@ -717,7 +723,7 @@ end
     for (idx, idx2) in zip((1, 2), (2, 1))
         curve_nodes = get_boundary_nodes(boundary_nodes, idx)
         section_nodes = get_boundary_nodes(curve_nodes, idx2)
-        for i in 1:(num_boundary_edges(section_nodes)-1)
+        for i in 1:(num_boundary_edges(section_nodes) - 1)
             j = i + 1
             k = j + 1
             u, v, w = get_boundary_nodes(section_nodes, i), get_boundary_nodes(section_nodes, j), get_boundary_nodes(section_nodes, k)
@@ -725,7 +731,7 @@ end
             t₁, t₂, t₃ = DT.get_inverse(curve_X[idx][idx2][1], p), DT.get_inverse(curve_X[idx][idx2][1], q), DT.get_inverse(curve_X[idx][idx2][1], r)
             Tθ₁ = DT.total_variation(curve_X[idx][idx2][1], t₁, t₂)
             Tθ₂ = DT.total_variation(curve_X[idx][idx2][1], t₂, t₃)
-            @test Tθ₁ ≈ Tθ₂ rtol = 1e-1
+            @test Tθ₁ ≈ Tθ₂ rtol = 1.0e-1
         end
     end
 
@@ -733,7 +739,7 @@ end
     points = deepcopy(points_XI)
     boundary_nodes = deepcopy(curve_XI)
     boundary_curves, new_boundary_nodes = DT.convert_boundary_curves!(points, boundary_nodes, Int32)
-    DT.coarse_discretisation!(points, new_boundary_nodes, boundary_curves; n=128)
+    DT.coarse_discretisation!(points, new_boundary_nodes, boundary_curves; n = 128)
     @test length(points) == 650
     # (1, 1), (3, 1), and (5, 1) are piecewise linear 
     # (2, 1) and (6, 1) are periodic 
@@ -758,7 +764,7 @@ end
     for (idx, idx2) in zip((1, 2, 4, 4, 6), (2, 1, 1, 2, 1))
         curve_nodes = get_boundary_nodes(boundary_nodes, idx)
         section_nodes = get_boundary_nodes(curve_nodes, idx2)
-        for i in 1:(num_boundary_edges(section_nodes)-1)
+        for i in 1:(num_boundary_edges(section_nodes) - 1)
             j = i + 1
             k = j + 1
             u, v, w = get_boundary_nodes(section_nodes, i), get_boundary_nodes(section_nodes, j), get_boundary_nodes(section_nodes, k)
@@ -773,7 +779,7 @@ end
             end
             Tθ₁ = DT.total_variation(curve_XI[idx][idx2][1], t₁, t₂)
             Tθ₂ = DT.total_variation(curve_XI[idx][idx2][1], t₂, t₃)
-            @test Tθ₁ ≈ Tθ₂ rtol = 1e-2
+            @test Tθ₁ ≈ Tθ₂ rtol = 1.0e-2
         end
     end
 end
@@ -796,8 +802,8 @@ end
     @test DT.is_piecewise_linear(enricher_III, 1)
     @test !DT.is_piecewise_linear(enricher_IV, 1)
     @test DT.is_piecewise_linear(enricher_XI, 1) && !DT.is_piecewise_linear(enricher_XI, 2) &&
-          !DT.is_piecewise_linear(enricher_XI, 3) && DT.is_piecewise_linear(enricher_XI, 4) && !DT.is_piecewise_linear(enricher_XI, 5) &&
-          !DT.is_piecewise_linear(enricher_XI, 6) && DT.is_piecewise_linear(enricher_XI, 7) && !DT.is_piecewise_linear(enricher_XI, 8)
+        !DT.is_piecewise_linear(enricher_XI, 3) && DT.is_piecewise_linear(enricher_XI, 4) && !DT.is_piecewise_linear(enricher_XI, 5) &&
+        !DT.is_piecewise_linear(enricher_XI, 6) && DT.is_piecewise_linear(enricher_XI, 7) && !DT.is_piecewise_linear(enricher_XI, 8)
     @inferred DT.is_piecewise_linear(enricher_I, 1)
     @inferred DT.is_piecewise_linear(enricher_II, 3)
     @inferred DT.is_piecewise_linear(enricher_III, 3)
@@ -927,7 +933,7 @@ end
         (3.4, -0.2), (3.4, 0.0)
     geo1 = [[g, m, h, ℓ, a, ii, b, jj, c, kk, d, p, e, o, f, n, g]]
     geo2 = [[a1, z, w, v, u, t, s, a1]]
-    boundary_nodes, points = convert_boundary_points_to_indices([geo1, geo2]; existing_points=[r, c1, b1, d1, e1, f1, g1])
+    boundary_nodes, points = convert_boundary_points_to_indices([geo1, geo2]; existing_points = [r, c1, b1, d1, e1, f1, g1])
     enricher = DT.BoundaryEnricher(points, boundary_nodes)
     i, j, k = findfirst(==(ii), points), findfirst(==(b), points), findfirst(==(r), points)
     @test DT.is_invisible(DT.test_visibility(enricher, i, j, k))
@@ -999,7 +1005,7 @@ end
     DT.split_edge!(enricher, 1, 2, length(enricher.points))
     vis = DT.test_visibility(enricher, length(enricher.points), 2, length(enricher.points) - 1)
     @test DT.is_invisible(vis)
-    enricher.points[end-1] = (0.5, 0.49)
+    enricher.points[end - 1] = (0.5, 0.49)
     vis = DT.test_visibility(enricher, length(enricher.points), 2, length(enricher.points) - 1)
     @test DT.is_visible(vis)
 end
@@ -1023,7 +1029,7 @@ end
     complexes = DT.get_small_angle_complexes(points, boundary_nodes, boundary_curves)
     _complexes = Dict(
         9 => [SAC(9, [SACM(2, 8), SACM(3, 10)])],
-        1 => [SAC(1, [SACM(3, 11), SACM(1, 2)])]
+        1 => [SAC(1, [SACM(3, 11), SACM(1, 2)])],
     )
     @test complexes == _complexes
     @test DT.get_small_angle_complexes(enricher) == complexes
@@ -1045,14 +1051,14 @@ end
     DT.replace_next_edge!(enricher, 9, 1, 2, 17)
     _complexes = Dict(
         9 => [SAC(9, [SACM(2, 8), SACM(3, 17)])],
-        1 => [SAC(1, [SACM(3, 11), SACM(1, 2)])]
+        1 => [SAC(1, [SACM(3, 11), SACM(1, 2)])],
     )
     @test DT.get_small_angle_complexes(enricher) == _complexes
 
     A, B, C, D, E, F, G, H, I, J, K = (0.0, 0.0), (0.2, 1.4), (0.6, 1.2),
-    (1.2, 0.2), (1.2, -0.2), (-1.4, -0.2),
-    (-1.0, -0.6), (0.6, 1.0), (0.8, 0.6),
-    (0.6, 0.4), (0.6, 0.2)
+        (1.2, 0.2), (1.2, -0.2), (-1.4, -0.2),
+        (-1.0, -0.6), (0.6, 1.0), (0.8, 0.6),
+        (0.6, 0.4), (0.6, 0.2)
     points = [A, B, C, D, E, F, G, H, I, J, K]
     boundary_nodes = [[[1, 3, 2, 1]], [[1, 9, 8, 1]], [[1, 11, 10, 1]], [[1, 5, 4, 1]], [[1, 6, 7, 1]]]
     enricher = DT.BoundaryEnricher(points, boundary_nodes)
@@ -1061,8 +1067,8 @@ end
     _complexes = Dict(
         1 => [
             SAC(1, [SACM(1, 2), SACM(1, 3), SACM(2, 8), SACM(2, 9), SACM(3, 10), SACM(3, 11), SACM(4, 4), SACM(4, 5)]),
-            SAC(1, [SACM(5, 7), SACM(5, 6)])
-        ]
+            SAC(1, [SACM(5, 7), SACM(5, 6)]),
+        ],
     )
     @test complexes == _complexes
     @test DT.get_small_angle_complexes(enricher) == complexes
@@ -1116,8 +1122,8 @@ end
     _complexes = Dict(
         1 => [
             SAC(1, [SACM(1, 2), SACM(1, 3), SACM(2, 8), SACM(2, 9), SACM(3, 10), SACM(3, 11), SACM(4, 4), SACM(4, 5)]),
-            SAC(1, [SACM(5, 7), SACM(5, 20)])
-        ]
+            SAC(1, [SACM(5, 7), SACM(5, 20)]),
+        ],
     )
     @test DT.get_small_angle_complexes(enricher) == _complexes
 
@@ -1161,7 +1167,7 @@ end
         19 => [16],
         20 => [16],
         21 => [16],
-        22 => [16]
+        22 => [16],
     )
 end
 
@@ -1172,7 +1178,7 @@ end
     _complexes = Dict(
         9 => [SAC(9, [SACM(2, 8), SACM(3, 10)])],
         1 => [SAC(1, [SACM(3, 11), SACM(1, 2)])],
-        16 => [SAC(16, [SACM(0, 18), SACM(0, 17), SACM(0, 19), SACM(0, 22)]), SAC(16, [SACM(0, 21), SACM(0, 20)])]
+        16 => [SAC(16, [SACM(0, 18), SACM(0, 17), SACM(0, 19), SACM(0, 22)]), SAC(16, [SACM(0, 21), SACM(0, 20)])],
     )
     @test complexes == _complexes
 
@@ -1221,9 +1227,9 @@ end
     ctr = 1
     for i in eachindex(enricher_III.boundary_nodes)
         for j in eachindex(enricher_III.boundary_nodes[i])
-            for k in 1:(length(enricher_III.boundary_nodes[i])-1)
+            for k in 1:(length(enricher_III.boundary_nodes[i]) - 1)
                 u = enricher_III.boundary_nodes[i][j][k]
-                v = enricher_III.boundary_nodes[i][j][k+1]
+                v = enricher_III.boundary_nodes[i][j][k + 1]
                 p = enricher_III.parent_map[(u, v)]
                 @test p == ctr
             end
@@ -1233,7 +1239,7 @@ end
     rects, els = get_dt_rectangles(enricher_III.spatial_tree.tree)
     all_edges = Set(DT.get_edge(el) for el in els)
     @test (ii, jj) ∉ all_edges && (jj, ii) ∉ all_edges &&
-          (ii, rr) ∈ all_edges && (jj, rr) ∈ all_edges
+        (ii, rr) ∈ all_edges && (jj, rr) ∈ all_edges
 end
 
 @testset "split_subcurve! (standard)" begin
@@ -1266,7 +1272,7 @@ end
     enricher_V = DT.BoundaryEnricher(deepcopy(points_V), deepcopy(curve_V))
     t, Δθ, ct = DT.compute_split_position(enricher_V, 3, 5)
     origθ = DT.total_variation(curve_V[1], DT.get_inverse(curve_V[1], get_point(enricher_V.points, 3)), DT.get_inverse(curve_V[1], get_point(enricher_V.points, 5)))
-    @test Δθ ≈ origθ / 2 rtol = 1e-3
+    @test Δθ ≈ origθ / 2 rtol = 1.0e-3
     @test 0.4999 ≤ t ≤ 0.708 && t ≈ 0.5994483483424031 && ct ⪧ curve_V[1](t)
     DT.split_subcurve!(enricher_V, 3, 5)
     @test enricher_V.points[end] ⪧ ct
@@ -1274,7 +1280,7 @@ end
     enricher_VI = DT.BoundaryEnricher(deepcopy(points_VI), deepcopy(curve_VI))
     t, Δθ, ct = DT.compute_split_position(enricher_VI, 12, 14)
     origθ = DT.total_variation(curve_VI[1][1], DT.get_inverse(curve_VI[1][1], get_point(enricher_VI.points, 12)), DT.get_inverse(curve_VI[1][1], get_point(enricher_VI.points, 14)))
-    @test Δθ ≈ origθ / 2 rtol = 1e-3
+    @test Δθ ≈ origθ / 2 rtol = 1.0e-3
     @test 0.5 ≤ t ≤ 0.75 && t ≈ 0.625 && ct ⪧ curve_VI[1][1](t)
     DT.split_subcurve!(enricher_VI, 12, 14)
     @test enricher_VI.points[end] ⪧ ct
@@ -1282,8 +1288,8 @@ end
     enricher_VII = DT.BoundaryEnricher(deepcopy(points_VII), deepcopy(curve_VII))
     t, Δθ, ct = DT.compute_split_position(enricher_VII, 8, 7)
     origθ = DT.total_variation(curve_VII[2][1], DT.get_inverse(curve_VII[2][1], get_point(enricher_VII.points, 8)), DT.get_inverse(curve_VII[2][1], get_point(enricher_VII.points, 7)))
-    @test Δθ ≈ origθ / 2 rtol = 1e-3
-    @test 0.10 ≤ t ≤ 0.501 && t ≈ 0.1599962634542922 && ct ⪧ curve_VII[2][1](t)
+    @test Δθ ≈ origθ / 2 rtol = 1.0e-3
+    @test 0.1 ≤ t ≤ 0.501 && t ≈ 0.1599962634542922 && ct ⪧ curve_VII[2][1](t)
     DT.split_subcurve!(enricher_VII, 8, 7)
     @test enricher_VII.points[end] ⪧ ct
 
@@ -1303,14 +1309,14 @@ end
     @test DT.dist(enricher.points[9], enricher.points[13]) ≈ DT.dist(enricher.points[9], enricher.points[12]) ≈ ℓ
     _complexes = Dict(
         9 => [SAC(9, [SACM(2, 12), SACM(3, 13)])],
-        1 => [SAC(1, [SACM(3, 11), SACM(1, 2)])]
+        1 => [SAC(1, [SACM(3, 11), SACM(1, 2)])],
     )
     @test DT.get_small_angle_complexes(enricher) == _complexes
 
     A, B, C, D, E, F, G, H, I, J, K = (0.0, 0.0), (0.2, 1.4), (0.6, 1.2),
-    (1.2, 0.2), (1.2, -0.2), (-1.4, -0.2),
-    (-1.0, -0.6), (0.6, 1.0), (0.8, 0.6),
-    (0.6, 0.4), (0.6, 0.2)
+        (1.2, 0.2), (1.2, -0.2), (-1.4, -0.2),
+        (-1.0, -0.6), (0.6, 1.0), (0.8, 0.6),
+        (0.6, 0.4), (0.6, 0.2)
     points = [A, B, C, D, E, F, G, H, I, J, K]
     boundary_nodes = [[[1, 3, 2, 1]], [[1, 9, 8, 1]], [[1, 11, 10, 1]], [[1, 5, 4, 1]], [[1, 6, 7, 1]]]
     enricher = DT.BoundaryEnricher(points, boundary_nodes)
@@ -1320,8 +1326,8 @@ end
     _complexes = Dict(
         1 => [
             SAC(1, [SACM(1, 12), SACM(1, 13), SACM(2, 14), SACM(2, 15), SACM(3, 16), SACM(3, 17), SACM(4, 18), SACM(4, 19)]),
-            SAC(1, [SACM(5, 7), SACM(5, 6)])
-        ]
+            SAC(1, [SACM(5, 7), SACM(5, 6)]),
+        ],
     )
     @test DT.get_small_angle_complexes(enricher) == _complexes
     DT.split_subcurve!(enricher, 1, 6)
@@ -1329,16 +1335,16 @@ end
     _complexes = Dict(
         1 => [
             SAC(1, [SACM(1, 12), SACM(1, 13), SACM(2, 14), SACM(2, 15), SACM(3, 16), SACM(3, 17), SACM(4, 18), SACM(4, 19)]),
-            SAC(1, [SACM(5, 20), SACM(5, 21)])
-        ]
+            SAC(1, [SACM(5, 20), SACM(5, 21)]),
+        ],
     )
     @test DT.get_small_angle_complexes(enricher) == _complexes
 end
 
 @testset "has_acute_neighbouring_angles and splitting small angles" begin
     A, B, C, D, E, F, G, H, I, J, K = (0.0, 0.0), (7.0, 0.0), (-0.2, 1.0), (1.0, 0.0),
-    (2.0, 0.0), (3.0, 0.0), (4.0, 0.0), (4.5, 0.5), (3.0, 0.8),
-    (1.6, 0.8), (0.4, 0.2)
+        (2.0, 0.0), (3.0, 0.0), (4.0, 0.0), (4.5, 0.5), (3.0, 0.8),
+        (1.6, 0.8), (0.4, 0.2)
     points = [E, F, G, B, H, I, C, A, D, E]
     boundary_nodes, points = convert_boundary_points_to_indices(points)
     enricher = DT.BoundaryEnricher(points, boundary_nodes)
@@ -1409,8 +1415,8 @@ end
         end
 
         A, B, C, D, E, F, G, H, I, J, K = (0.0, 0.0), (7.0, 0.0), (2.0, 1.0), (1.0, 0.0),
-        (2.0, 0.0), (3.0, 0.0), (4.0, 0.0), (4.5, 0.5), (3.0, 0.8),
-        (1.6, 0.8), (0.4, 0.2)
+            (2.0, 0.0), (3.0, 0.0), (4.0, 0.0), (4.5, 0.5), (3.0, 0.8),
+            (1.6, 0.8), (0.4, 0.2)
         points = [E, F, G, B, H, I, C, J, K, A, D, E]
         boundary_nodes, points = convert_boundary_points_to_indices(points)
         enricher = DT.BoundaryEnricher(points, boundary_nodes)
@@ -1450,11 +1456,11 @@ end
         point_sets = deepcopy.([points_I, points_II, points_III, points_IV, points_V, points_VI, points_VII, points_VIII, points_IX, points_X, points_XI, points_XII])
         curve_sets = deepcopy.([curve_I, curve_II, curve_III, curve_IV, curve_V, curve_VI, curve_VII, curve_VIII, curve_IX, curve_X, curve_XI, curve_XII])
         for i in eachindex(point_sets, curve_sets)
-            if USE_INEXACTPREDICATES && i == 4 
-                continue 
+            if USE_INEXACTPREDICATES && i == 4
+                continue
             end
             points, curve = deepcopy(point_sets[i]), deepcopy(curve_sets[i])
-            tri = triangulate(points; boundary_nodes=curve, enrich=i ≤ 3)
+            tri = triangulate(points; boundary_nodes = curve, enrich = i ≤ 3)
             @test validate_triangulation(tri)
             @test is_conformal(tri)
             @test DT.get_boundary_enricher(tri) == DT.enrich_boundary!(DT.BoundaryEnricher(deepcopy(point_sets[i]), deepcopy(curve_sets[i])))
@@ -1468,7 +1474,7 @@ end
         curve_sets = deepcopy.([curve_I, curve_II, curve_III, curve_IV, curve_V, curve_VI, curve_VII, curve_VIII, curve_IX, curve_X, curve_XI, curve_XII])
         for i in eachindex(point_sets, curve_sets)
             points, curve = deepcopy(point_sets[i]), deepcopy(curve_sets[i])
-            tri = triangulate(points; boundary_nodes=curve, enrich=i ≤ 3)
+            tri = triangulate(points; boundary_nodes = curve, enrich = i ≤ 3)
             @test validate_triangulation(tri)
             @test is_conformal(tri)
             i ∉ (2, 11) && @test DT.get_boundary_enricher(tri) == DT.enrich_boundary!(DT.BoundaryEnricher(deepcopy(point_sets[i]), deepcopy(curve_sets[i]))) # i ≠ 2 since we deliberately included some boundary points in the extra points, which triangulate then sees and mutates
@@ -1483,7 +1489,7 @@ end
         segment_sets = deepcopy.([segments_I, segments_II, segments_III, segments_IV])
         for i in eachindex(point_sets, curve_sets, segment_sets)
             points, curve, segments = deepcopy(point_sets[i]), deepcopy(curve_sets[i]), deepcopy(segment_sets[i])
-            tri = triangulate(points; boundary_nodes=curve, segments=segments, enrich=i ≤ 3)
+            tri = triangulate(points; boundary_nodes = curve, segments = segments, enrich = i ≤ 3)
             @test validate_triangulation(tri)
             @test is_conformal(tri)
             i ≠ 2 && @test DT.get_boundary_enricher(tri) == DT.enrich_boundary!(DT.BoundaryEnricher(deepcopy(point_sets[i]), deepcopy(curve_sets[i]), deepcopy(segment_sets[i])))
@@ -1501,54 +1507,56 @@ end
     point_sets = (point_sets_no_extra, point_sets_extra_points, point_sets_extra_segments)
     curve_sets = deepcopy.([curve_I, curve_II, curve_III, curve_IV, curve_V, curve_VI, curve_VII, curve_VIII, curve_IX, curve_X, curve_XI, curve_XII])
     point_names = ("default", "extra_points", "extra_segments")
-    _rng_num(idx1,
-     idx2, idx3, idx4, idx5, curve_idx, point_idx) = 2^idx1 * 3^idx2 * 5^idx3 * 7^idx4 * 11^idx5 * 13^curve_idx * 17^point_idx
+    _rng_num(
+        idx1,
+        idx2, idx3, idx4, idx5, curve_idx, point_idx,
+    ) = 2^idx1 * 3^idx2 * 5^idx3 * 7^idx4 * 11^idx5 * 13^curve_idx * 17^point_idx
 
     @testset "all_examples" begin
         max_area_opts = [
-            (1e-2, 1e-3),
-            (1e-2, 1e-3),
-            (1e-2, 1e-3),
-            (1e-2, 1e-3),
-            (1e-2, 1e-3),
-            (1e-1, 1e-2),
-            (1e-1, 1e-2),
-            (1e-1, 1e-2),
-            (1e-2, 1e-3),
-            (1e-1, 1e-2),
-            (1e-1, 1e-2),
-            (1e-1, 1e-2)
+            (1.0e-2, 1.0e-3),
+            (1.0e-2, 1.0e-3),
+            (1.0e-2, 1.0e-3),
+            (1.0e-2, 1.0e-3),
+            (1.0e-2, 1.0e-3),
+            (1.0e-1, 1.0e-2),
+            (1.0e-1, 1.0e-2),
+            (1.0e-1, 1.0e-2),
+            (1.0e-2, 1.0e-3),
+            (1.0e-1, 1.0e-2),
+            (1.0e-1, 1.0e-2),
+            (1.0e-1, 1.0e-2),
         ]
         for curve_idx in 4:lastindex(curve_sets)
             if curve_idx ∈ (4, 6, 12) && !!USE_INEXACTPREDICATES
-                continue 
+                continue
             end
             for point_idx in 1:3
                 point_idx == 3 && curve_idx ≥ 5 && continue # no extra segments for curves ≥ 5
                 for (idx1, use_lens) in enumerate((false, true))
                     for (idx2, min_angle) in enumerate((20.0, 27.5, 30.0))
-                        for (idx3, min_area) in enumerate((1e-12,))
+                        for (idx3, min_area) in enumerate((1.0e-12,))
                             for (idx4, max_area) in enumerate(max_area_opts[curve_idx])
                                 for (idx5, seditious_angle) in enumerate((10.0, 20.0))
                                     @info "Testing curve-bounded refinement with circumcenters. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle; curve: $curve_idx; point set: $point_idx"
                                     rng = StableRNG(abs(_rng_num(idx1, idx2, idx3, idx4, idx5, curve_idx, point_idx)))
                                     points, curve = deepcopy(point_sets[point_idx][curve_idx]), deepcopy(curve_sets[curve_idx])
                                     if point_idx ≤ 2
-                                        tri = triangulate(points; boundary_nodes=curve, enrich=curve_idx ≤ 3, rng)
+                                        tri = triangulate(points; boundary_nodes = curve, enrich = curve_idx ≤ 3, rng)
                                     else
                                         segments = deepcopy(segment_sets[curve_idx])
-                                        tri = triangulate(points; boundary_nodes=curve, segments=segments, enrich=curve_idx ≤ 3, rng)
+                                        tri = triangulate(points; boundary_nodes = curve, segments = segments, enrich = curve_idx ≤ 3, rng)
                                     end
                                     custom_constraint = (_tri, T) -> curve_idx ≠ 5 ? false : begin
-                                        i, j, k = triangle_vertices(T)
-                                        p, q, r = get_point(_tri, i, j, k)
-                                        c = (p .+ q .+ r) ./ 3
-                                        x, y = getxy(c)
-                                        return (x + y^2 < 1 / 4) && DT.triangle_area(p, q, r) > 1e-4 / 2
-                                    end
-                                    refine!(tri; min_angle, min_area, max_area, custom_constraint, seditious_angle, use_circumcenter=true, use_lens, rng)
-                                    args = DT.RefinementArguments(tri; min_angle, min_area, max_area, seditious_angle, custom_constraint, use_circumcenter=true, use_lens)
-                                    @test validate_refinement(tri, args, warn=false)
+                                            i, j, k = triangle_vertices(T)
+                                            p, q, r = get_point(_tri, i, j, k)
+                                            c = (p .+ q .+ r) ./ 3
+                                            x, y = getxy(c)
+                                            return (x + y^2 < 1 / 4) && DT.triangle_area(p, q, r) > 1.0e-4 / 2
+                                        end
+                                    refine!(tri; min_angle, min_area, max_area, custom_constraint, seditious_angle, use_circumcenter = true, use_lens, rng)
+                                    args = DT.RefinementArguments(tri; min_angle, min_area, max_area, seditious_angle, custom_constraint, use_circumcenter = true, use_lens)
+                                    @test validate_refinement(tri, args, warn = false)
                                     if _rng_num(idx1, idx2, idx3, idx4, idx5, curve_idx, point_idx) == _rng_num(1, 3, 1, 2, 2, curve_idx, point_idx)
                                         fig, ax, sc = triplot(tri)
                                         @test_reference "refine_curve_bounded_example_$(curve_idx)_$(names[curve_idx])_$(point_names[point_idx])_$(abs(_rng_num(1, 3, 1, 2, 2, curve_idx, point_idx))).png" fig by = psnr_equality(9)
@@ -1570,43 +1578,43 @@ end
         curve_idx = 12
         point_idx = 2
         points, curve = deepcopy(point_sets[point_idx][curve_idx]), deepcopy(curve_sets[curve_idx])
-        tri = triangulate(points; boundary_nodes=curve)
-        refine!(tri; max_area=1e-3, max_points=500, use_circumcenter=true)
+        tri = triangulate(points; boundary_nodes = curve)
+        refine!(tri; max_area = 1.0e-3, max_points = 500, use_circumcenter = true)
         @test DT.num_solid_vertices(tri) == 500
         @test validate_triangulation(tri)
-        @test !validate_refinement(tri; max_area=1e-3, max_points=500, use_circumcenter=true, warn=false)
+        @test !validate_refinement(tri; max_area = 1.0e-3, max_points = 500, use_circumcenter = true, warn = false)
     end
 end
 
 @testset "adding segment to a curve-bounded domain with no existing segments" begin
     curve = [
         [
-            [1, 2, 3], [EllipticalArc((2.0, 0.0), (-2.0, 0.0), (0.0, 0.0), 2, 1 / 2, 0.0)]
+            [1, 2, 3], [EllipticalArc((2.0, 0.0), (-2.0, 0.0), (0.0, 0.0), 2, 1 / 2, 0.0)],
         ],
         [
-            [BSpline([(0.0, 0.4), (1.0, 0.2), (0.0, 0.1), (-1.0, 0.2), (0.0, 0.4)])]
+            [BSpline([(0.0, 0.4), (1.0, 0.2), (0.0, 0.1), (-1.0, 0.2), (0.0, 0.4)])],
         ],
         [
-            [4, 5, 6, 7, 4]
+            [4, 5, 6, 7, 4],
         ],
         [
-            [BezierCurve([(0.0, -2.0), (0.0, -2.5), (-1.0, -2.5), (-1.0, -3.0)])], [CatmullRomSpline([(-1.0, -3.0), (0.0, -4.0), (1.0, -3.0), (0.0, -2.0)])]
+            [BezierCurve([(0.0, -2.0), (0.0, -2.5), (-1.0, -2.5), (-1.0, -3.0)])], [CatmullRomSpline([(-1.0, -3.0), (0.0, -4.0), (1.0, -3.0), (0.0, -2.0)])],
         ],
         [
-            [12, 11, 10, 12]
+            [12, 11, 10, 12],
         ],
         [
-            [CircularArc((1.1, -3.0), (1.1, -3.0), (0.0, -3.0), positive=false)]
-        ]
+            [CircularArc((1.1, -3.0), (1.1, -3.0), (0.0, -3.0), positive = false)],
+        ],
     ]
     points = [(-2.0, 0.0), (0.0, 0.0), (2.0, 0.0), (-2.0, -5.0), (2.0, -5.0), (2.0, -1 / 10), (-2.0, -1 / 10), (-1.0, -3.0), (0.0, -4.0), (0.0, -2.3), (-0.5, -3.5), (0.9, -3.0)]
     rng = StableRNG(123)
-    tri = triangulate(points; boundary_nodes=curve, rng)
-    refine!(tri; max_area=1e-2)
+    tri = triangulate(points; boundary_nodes = curve, rng)
+    refine!(tri; max_area = 1.0e-2)
     @test validate_triangulation(tri)
     r = DT.num_points(tri)
-    add_point!(tri, -3 / 2, -4.0, concavity_protection=true)
-    add_point!(tri, -3 / 2, -1.0, concavity_protection=true)
+    add_point!(tri, -3 / 2, -4.0, concavity_protection = true)
+    add_point!(tri, -3 / 2, -1.0, concavity_protection = true)
     @test validate_triangulation(tri)
     add_segment!(tri, r + 1, r + 2)
     @test validate_triangulation(tri)

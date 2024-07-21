@@ -16,11 +16,11 @@ Returns the counter-clockwise sequence of neighbours of `u` in `tri`.
    the associated boundary curve. If you do not have ghost triangles and you try to get the surrounding polygon
    of a boundary vertex, then this function may return an invalid polygon.
 """
-function get_surrounding_polygon(tri::Triangulation, u; skip_ghost_vertices=false)
+function get_surrounding_polygon(tri::Triangulation, u; skip_ghost_vertices = false)
     return copy(get_surrounding_polygon!(tri, u; skip_ghost_vertices))
 end
 
-function get_surrounding_polygon!(tri::Triangulation, u; skip_ghost_vertices=false)
+function get_surrounding_polygon!(tri::Triangulation, u; skip_ghost_vertices = false)
     cache = get_cache(tri)
     S = get_surrounding_polygon(cache)
     neighbouring_vertices = get_neighbours(tri, u)
@@ -96,9 +96,9 @@ end
 Ensures that the edges in `S` surrounding a deleted vertex of `tri` are correctly updated.
 """
 function fix_edges_after_deletion!(tri, S)
-    for i in firstindex(S):(lastindex(S)-1)
+    for i in firstindex(S):(lastindex(S) - 1)
         u = S[i]
-        v = S[i+1]
+        v = S[i + 1]
         w = get_adjacent(tri, v, u)
         if edge_exists(w)
             add_adjacent!(tri, u, w, v)
@@ -132,10 +132,12 @@ See also [`check_delete_point_args`](@ref).
 - `event_history=nothing`: The event history of the triangulation from deleting the point. Only updated if `store_event_history` is true, in which case it needs to be an [`InsertionEventHistory`](@ref) object.
 - `rng::AbstractRNG=Random.default_rng()`: The random number generator to use for the triangulation.
 """
-function delete_point!(tri::Triangulation, vertex;
-    store_event_history=Val(false),
-    event_history=nothing,
-    rng::AbstractRNG=Random.default_rng())
+function delete_point!(
+        tri::Triangulation, vertex;
+        store_event_history = Val(false),
+        event_history = nothing,
+        rng::AbstractRNG = Random.default_rng(),
+    )
     cache = get_cache(tri)
     empty!(cache)
     convex_tri = get_triangulation(cache)
@@ -145,13 +147,13 @@ function delete_point!(tri::Triangulation, vertex;
     trit = triangle_type(tri)
     for uv in each_edge(neighbouring_edges) # note that we are mutating this iterator during iteration
         u, v = edge_vertices(uv)
-        delete_triangle!(tri, vertex, u, v; protect_boundary=true)
+        delete_triangle!(tri, vertex, u, v; protect_boundary = true)
         is_true(store_event_history) && delete_triangle!(event_history, construct_triangle(trit, vertex, u, v))
     end
     triangulate_convex!(convex_tri, S; rng) # fill in the cavity
     for T in each_solid_triangle(convex_tri)
         u, v, w = triangle_vertices(T)
-        add_triangle!(tri, u, v, w; protect_boundary=true, update_ghost_edges=false)
+        add_triangle!(tri, u, v, w; protect_boundary = true, update_ghost_edges = false)
         is_true(store_event_history) && add_triangle!(event_history, T)
     end
     delete_adjacent2vertex!(tri, vertex)

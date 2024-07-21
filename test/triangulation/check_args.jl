@@ -2,7 +2,7 @@ using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using CairoMakie
 
-_test_throws(e1, e2=e1) = @static VERSION ≥ v"1.9" ? e1 : e2
+_test_throws(e1, e2 = e1) = @static VERSION ≥ v"1.9" ? e1 : e2
 
 
 @testset "A simple case" begin
@@ -126,8 +126,10 @@ end
 end
 
 @testset "Orientation and connectivity of a multiply-connected boundary" begin
-    points = [(0.0, 0.0), (0.5, 0.1), (1.0, 0.0), (0.9, 0.5), (1.0, 1.0), (0.5, 0.9), (0.0, 1.0),
-        (0.3, 0.3), (0.7, 0.3), (0.7, 0.7), (0.3, 0.7)]
+    points = [
+        (0.0, 0.0), (0.5, 0.1), (1.0, 0.0), (0.9, 0.5), (1.0, 1.0), (0.5, 0.9), (0.0, 1.0),
+        (0.3, 0.3), (0.7, 0.3), (0.7, 0.7), (0.3, 0.7),
+    ]
     boundary_nodes = [[[1, 2, 3, 4, 5, 6, 7, 1]], [[11, 10, 9, 8, 11]]]
     hierarchy = DT.construct_polygon_hierarchy(points, boundary_nodes)
     @test DT.check_args(points, boundary_nodes, hierarchy)
@@ -303,10 +305,13 @@ end
     U_curve = [[T, U, V, W, Z, A1, B1, C1, D1, E1, F1, G1, H1, I1, J1, K1, L1, M1, N1, O1, T]]
     L_curve = [[P1, Q1, R1, S1, P1]]
     I_curve = [[T1, U1, V1, W1, T1]]
-    A_curve_outline = [[
-        K5, W3, Z3, A4, B4, C4, D4, E4, F4, G4, H4, I4, J4, K4, L4, M4, N4,
-        O4, P4, Q4, R4, S4, T4, U4, V4, W4, Z4, A5, B5, C5, D5, E5, F5, G5,
-        H5, I5, J5, K5]]
+    A_curve_outline = [
+        [
+            K5, W3, Z3, A4, B4, C4, D4, E4, F4, G4, H4, I4, J4, K4, L4, M4, N4,
+            O4, P4, Q4, R4, S4, T4, U4, V4, W4, Z4, A5, B5, C5, D5, E5, F5, G5,
+            H5, I5, J5, K5,
+        ],
+    ]
     A_curve_hole = [[L5, M5, N5, O5, P5, Q5, R5, S5, T5, U5, L5]]
     dot_1 = [[Z1, A2, B2, C2, D2, E2, F2, G2, H2, I2, J2, Z1]]
     dot_2 = [[Z2, A3, B3, C3, D3, E3, F3, G3, H3, I3, J3, Z2]]
@@ -339,7 +344,7 @@ end
     points_II = [
         (0.0, 0.0), (0.25, 0.0), (0.5, 0.0), (0.75, 0.0), (1.0, 0.0),
         (1.0, 0.25), (1.0, 0.5), (1.0, 0.75), (1.0, 1.0),
-        (0.75, 0.75), (0.25, 0.25)
+        (0.75, 0.75), (0.25, 0.25),
     ]
     enricher_II = DT.BoundaryEnricher(points_II, curve_II)
     points, boundary_nodes = get_points(enricher_II), get_boundary_nodes(enricher_II)
@@ -352,7 +357,7 @@ end
         (0.0, 0.0), (0.25, 0.0), (0.5, 0.0), (0.75, 0.0), (1.0, 0.0),
         (1.0, 0.25), (1.0, 0.5), (1.0, 0.75), (1.0, 1.0),
         (0.0, 1.0), (0.0, 0.5),
-        (0.25, 0.25), (0.75, 0.25), (0.75, 0.75), (0.25, 0.75), (0.5, 0.5)
+        (0.25, 0.25), (0.75, 0.25), (0.75, 0.75), (0.25, 0.75), (0.5, 0.5),
     ]
     enricher_III = DT.BoundaryEnricher(points_III, curve_III)
     points, boundary_nodes = get_points(enricher_III), get_boundary_nodes(enricher_III)
@@ -361,14 +366,14 @@ end
     @test DT.check_args(enricher_III)
 
     curve_IV = [CircularArc((1.0, 0.0), (1.0, 0.0), (0.0, 0.0))]
-    points_IV = NTuple{2,Float64}[]
+    points_IV = NTuple{2, Float64}[]
     enricher_IV = DT.BoundaryEnricher(points_IV, curve_IV)
     points, boundary_nodes = get_points(enricher_IV), get_boundary_nodes(enricher_IV)
     hierarchy = DT.get_polygon_hierarchy(enricher_IV)
     @test DT.check_args(points, boundary_nodes, hierarchy)
     @test DT.check_args(enricher_IV)
-    curve_IV = [CircularArc((1.0, 0.0), (1.0, 0.0), (0.0, 0.0), positive=false)]
-    points_IV = NTuple{2,Float64}[]
+    curve_IV = [CircularArc((1.0, 0.0), (1.0, 0.0), (0.0, 0.0), positive = false)]
+    points_IV = NTuple{2, Float64}[]
     enricher_IV = DT.BoundaryEnricher(points_IV, curve_IV)
     points, boundary_nodes = get_points(enricher_IV), get_boundary_nodes(enricher_IV)
     hierarchy = DT.get_polygon_hierarchy(enricher_IV)
@@ -387,7 +392,7 @@ end
     curve_VI = [
         [CircularArc((1.0, 0.0), (0.0, 1.0), (0.0, 0.0))],
         [BSpline([(0.0, 1.0), (-1.0, 2.0), (-2.0, 0.0), (-2.0, -1.0), (0.0, -2.0)])],
-        [5, 6, 10]
+        [5, 6, 10],
     ]
     points_VI = [(0.1, 0.1), (0.15, 0.15), (0.23, 0.23), (0.009, 0.11), (0.0, -2.0), (0.2, -1.7), (0.000591, 0.00019), (0.111, -0.005), (-0.0001, -0.00991), (1.0, 0.0)]
     enricher_VI = DT.BoundaryEnricher(points_VI, curve_VI)
@@ -398,7 +403,7 @@ end
 
     curve_VII = [
         [CircularArc((2.0, 0.0), (-2.0, 0.0), (0.0, 0.0))],
-        [BSpline([(-2.0, 0.0), (-2.0, -1.0), (0.0, -1.0), (1.0, -1.0), (2.0, -1.0), (2.0, 0.0)])]
+        [BSpline([(-2.0, 0.0), (-2.0, -1.0), (0.0, -1.0), (1.0, -1.0), (2.0, -1.0), (2.0, 0.0)])],
     ]
     points_VII = [(2.0, 0.0), (0.0, 0.5)]
     enricher_VII = DT.BoundaryEnricher(points_VII, curve_VII)
@@ -411,10 +416,12 @@ end
         [1, 2, 3, 4, 5],
         [DT.EllipticalArc((0.0, 0.0), (2.0, -2.0), (1.0, -1.0), sqrt(2), sqrt(2), 45.0)],
         [6, 7, 8, 9, 10],
-        [CatmullRomSpline([(10.0, -3.0), (20.0, 0.0), (18.0, 0.0), (10.0, 0.0)])]
+        [CatmullRomSpline([(10.0, -3.0), (20.0, 0.0), (18.0, 0.0), (10.0, 0.0)])],
     ]
-    points_VIII = [(10.0, 0.0), (8.0, 0.0), (4.0, 0.0), (2.0, 2.0), (0.0, 0.0), (2.0, -2.0),
-        (2.5, -2.0), (3.5, -2.0), (4.5, -3.0), (10.0, -3.0), (10.0, 12.0), (14.0, 0.0)]
+    points_VIII = [
+        (10.0, 0.0), (8.0, 0.0), (4.0, 0.0), (2.0, 2.0), (0.0, 0.0), (2.0, -2.0),
+        (2.5, -2.0), (3.5, -2.0), (4.5, -3.0), (10.0, -3.0), (10.0, 12.0), (14.0, 0.0),
+    ]
     enricher_VIII = DT.BoundaryEnricher(points_VIII, curve_VIII)
     points, boundary_nodes = get_points(enricher_VIII), get_boundary_nodes(enricher_VIII)
     hierarchy = DT.get_polygon_hierarchy(enricher_VIII)
@@ -423,13 +430,13 @@ end
 
     curve_IX =
         [
-            [
-                [1, 2, 3, 4, 5, 6, 7, 1]
-            ],
-            [
-                [CircularArc((0.6, 0.5), (0.6, 0.5), (0.5, 0.5), positive=false)]
-            ],
-        ]
+        [
+            [1, 2, 3, 4, 5, 6, 7, 1],
+        ],
+        [
+            [CircularArc((0.6, 0.5), (0.6, 0.5), (0.5, 0.5), positive = false)],
+        ],
+    ]
     points_IX = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.5, 1.5), (0.0, 1.0), (0.0, 0.5), (0.0, 0.2)]
     enricher_IX = DT.BoundaryEnricher(points_IX, curve_IX)
     points, boundary_nodes = get_points(enricher_IX), get_boundary_nodes(enricher_IX)
@@ -439,14 +446,14 @@ end
 
     curve_X = [
         [
-            [1, 2, 3], [DT.EllipticalArc((2.0, 0.0), (-2.0, 0.0), (0.0, 0.0), 2, 1 / 2, 0.0)]
+            [1, 2, 3], [DT.EllipticalArc((2.0, 0.0), (-2.0, 0.0), (0.0, 0.0), 2, 1 / 2, 0.0)],
         ],
         [
-            [BSpline(reverse([(1.0, 0.2), (0.0, 0.4), (0.0, 0.3), (-1.0, 0.2)]))], reverse([4, 5, 6, 7, 8])
-        ]
+            [BSpline(reverse([(1.0, 0.2), (0.0, 0.4), (0.0, 0.3), (-1.0, 0.2)]))], reverse([4, 5, 6, 7, 8]),
+        ],
     ]
     points_X = [
-        (-2.0, 0.0), (0.0, 0.0), (2.0, 0.0), (-1.0, 0.2), (-1.0, 0.1), (0.0, 0.1), (1.0, 0.1), (1.0, 0.2)
+        (-2.0, 0.0), (0.0, 0.0), (2.0, 0.0), (-1.0, 0.2), (-1.0, 0.1), (0.0, 0.1), (1.0, 0.1), (1.0, 0.2),
     ]
     enricher_X = DT.BoundaryEnricher(points_X, curve_X)
     points, boundary_nodes = get_points(enricher_X), get_boundary_nodes(enricher_X)
@@ -456,23 +463,23 @@ end
 
     curve_XI = [
         [
-            [1, 2, 3], [DT.EllipticalArc((2.0, 0.0), (-2.0, 0.0), (0.0, 0.0), 2, 1 / 2, 0.0)]
+            [1, 2, 3], [DT.EllipticalArc((2.0, 0.0), (-2.0, 0.0), (0.0, 0.0), 2, 1 / 2, 0.0)],
         ],
         [
-            [BSpline([(0.0, 0.4), (1.0, 0.2), (0.0, 0.1), (-1.0, 0.2), (0.0, 0.4)])]
+            [BSpline([(0.0, 0.4), (1.0, 0.2), (0.0, 0.1), (-1.0, 0.2), (0.0, 0.4)])],
         ],
         [
-            [4, 5, 6, 7, 4]
+            [4, 5, 6, 7, 4],
         ],
         [
-            [BezierCurve(reverse([(-1.0, -3.0), (-1.0, -2.5), (0.0, -2.5), (0.0, -2.0)]))], [CatmullRomSpline(reverse([(0.0, -2.0), (1.0, -3.0), (0.0, -4.0), (-1.0, -3.0)]))]
+            [BezierCurve(reverse([(-1.0, -3.0), (-1.0, -2.5), (0.0, -2.5), (0.0, -2.0)]))], [CatmullRomSpline(reverse([(0.0, -2.0), (1.0, -3.0), (0.0, -4.0), (-1.0, -3.0)]))],
         ],
         [
-            [12, 11, 10, 12]
+            [12, 11, 10, 12],
         ],
         [
-            [CircularArc((1.1, -3.0), (1.1, -3.0), (0.0, -3.0), positive=false)]
-        ]
+            [CircularArc((1.1, -3.0), (1.1, -3.0), (0.0, -3.0), positive = false)],
+        ],
     ]
     points_XI = [(-2.0, 0.0), (0.0, 0.0), (2.0, 0.0), (-2.0, -5.0), (2.0, -5.0), (2.0, -1 / 10), (-2.0, -1 / 10), (-1.0, -3.0), (0.0, -4.0), (0.0, -2.3), (-0.5, -3.5), (0.9, -3.0)]
     enricher_XI = DT.BoundaryEnricher(points_XI, curve_XI)
@@ -482,23 +489,23 @@ end
     @test DT.check_args(enricher_XI)
     curve_XI = [
         [
-            [1, 2, 3], [DT.EllipticalArc((2.0, 0.0), (-2.0, 0.0), (0.0, 0.0), 2, 1 / 2, 0.0)]
+            [1, 2, 3], [DT.EllipticalArc((2.0, 0.0), (-2.0, 0.0), (0.0, 0.0), 2, 1 / 2, 0.0)],
         ],
         [
-            [BSpline([(0.0, 0.4), (1.0, 0.2), (0.0, 0.1), (-1.0, 0.2), (0.0, 0.4)])]
+            [BSpline([(0.0, 0.4), (1.0, 0.2), (0.0, 0.1), (-1.0, 0.2), (0.0, 0.4)])],
         ],
         [
-            [4, 5, 6, 7, 4]
+            [4, 5, 6, 7, 4],
         ],
         [
-            [BezierCurve(reverse([(-1.0, -3.0), (-1.0, -2.5), (0.0, -2.5), (0.0, -2.0)]))], [CatmullRomSpline([(0.0, -2.0), (1.0, -3.0), (0.0, -4.0), (-1.0, -3.0)])]
+            [BezierCurve(reverse([(-1.0, -3.0), (-1.0, -2.5), (0.0, -2.5), (0.0, -2.0)]))], [CatmullRomSpline([(0.0, -2.0), (1.0, -3.0), (0.0, -4.0), (-1.0, -3.0)])],
         ],
         [
-            [12, 11, 10, 12]
+            [12, 11, 10, 12],
         ],
         [
-            [CircularArc((1.1, -3.0), (1.1, -3.0), (0.0, -3.0), positive=false)]
-        ]
+            [CircularArc((1.1, -3.0), (1.1, -3.0), (0.0, -3.0), positive = false)],
+        ],
     ]
     points_XI = [(-2.0, 0.0), (0.0, 0.0), (2.0, 0.0), (-2.0, -5.0), (2.0, -5.0), (2.0, -1 / 10), (-2.0, -1 / 10), (-1.0, -3.0), (0.0, -4.0), (0.0, -2.3), (-0.5, -3.5), (0.9, -3.0)]
     enricher_XI = DT.BoundaryEnricher(points_XI, curve_XI)
@@ -508,23 +515,23 @@ end
     @test_throws _test_throws(DT.InconsistentConnectionError) DT.check_args(enricher_XI)
     curve_XI = [
         [
-            [1, 2, 3], [DT.EllipticalArc((2.0, 0.0), (-2.0, 0.0), (0.0, 0.0), 2, 1 / 2, 0.0)]
+            [1, 2, 3], [DT.EllipticalArc((2.0, 0.0), (-2.0, 0.0), (0.0, 0.0), 2, 1 / 2, 0.0)],
         ],
         [
-            [BSpline([(0.0, 0.4), (1.0, 0.2), (0.0, 0.1), (-1.0, 0.2), (0.0, 0.4)])]
+            [BSpline([(0.0, 0.4), (1.0, 0.2), (0.0, 0.1), (-1.0, 0.2), (0.0, 0.4)])],
         ],
         [
-            [4, 5, 6, 7, 4]
+            [4, 5, 6, 7, 4],
         ],
         [
-            [BezierCurve(reverse([(-1.0, -3.0), (-1.0, -2.5), (0.0, -2.5), (0.0, -2.0)]))], [CatmullRomSpline([(-1.0, -3.0), (1.0, -3.0), (0.0, -4.0), (0.0, -2.0)])]
+            [BezierCurve(reverse([(-1.0, -3.0), (-1.0, -2.5), (0.0, -2.5), (0.0, -2.0)]))], [CatmullRomSpline([(-1.0, -3.0), (1.0, -3.0), (0.0, -4.0), (0.0, -2.0)])],
         ],
         [
-            [12, 11, 10, 12]
+            [12, 11, 10, 12],
         ],
         [
-            [CircularArc((1.1, -3.0), (1.1, -3.0), (0.0, -3.0), positive=false)]
-        ]
+            [CircularArc((1.1, -3.0), (1.1, -3.0), (0.0, -3.0), positive = false)],
+        ],
     ]
     points_XI = [(-2.0, 0.0), (0.0, 0.0), (2.0, 0.0), (-2.0, -5.0), (2.0, -5.0), (2.0, -1 / 10), (-2.0, -1 / 10), (-1.0, -3.0), (0.0, -4.0), (0.0, -2.3), (-0.5, -3.5), (0.9, -3.0)]
     enricher_XI = DT.BoundaryEnricher(points_XI, curve_XI)
@@ -538,13 +545,13 @@ end
         (0.0, 0.0), (2.0, 0.0), (1.6, -0.1),
         (0.3, -0.2), (-0.31, -0.35), (-0.2, 1.0),
         (0.0, 0.8), (0.2, 0.6), (0.4, 0.4),
-        (2.0, 0.4), (0.0, 0.0)
+        (2.0, 0.4), (0.0, 0.0),
     ]
     reverse!(ctrl)
     points_XII = [
         (-0.1, 0.8), (-0.15, -0.15), (0.3, -0.1),
         (0.0, -0.1), (-0.1, 0.0),
-        (0.4, 0.2), (0.2, 0.4), (0.0, 0.6)
+        (0.4, 0.2), (0.2, 0.4), (0.0, 0.6),
     ]
     curve_XII = [[[BSpline(ctrl)]], [[1, 8, 7, 6, 5, 4, 3, 2, 1]]]
     enricher_XII = DT.BoundaryEnricher(points_XII, curve_XII)

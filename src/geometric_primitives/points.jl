@@ -202,8 +202,8 @@ NTuple{4, Tuple{Float64, Float64}}
 ```
 """
 get_point
-get_point(points, i) = getpoint(points, i) 
-get_point(points, i::Vararg{Any,N}) where {N} = ntuple(j -> get_point(points, i[j]), Val(N))
+get_point(points, i) = getpoint(points, i)
+get_point(points, i::Vararg{Any, N}) where {N} = ntuple(j -> get_point(points, i[j]), Val(N))
 
 @doc """
     each_point_index(points) -> Iterator
@@ -308,9 +308,9 @@ false
 function points_are_unique(points)
     n = num_points(points)
     T = number_type(points)
-    seen = Set{NTuple{2,T}}()
+    seen = Set{NTuple{2, T}}()
     sizehint!(seen, n)
-    for i in each_point_index(points) 
+    for i in each_point_index(points)
         p = get_point(points, i)
         p ∈ seen && return false
         push!(seen, p)
@@ -388,9 +388,9 @@ julia> DelaunayTriangulation.push_point!(points, (17.3, 5.0))
 ```
 """
 push_point!
-push_point!(points::AbstractVector{T}, x, y) where {F,T<:NTuple{2,F}} = push!(points, (F(x), F(y)))
-push_point!(points::AbstractVector{T}, x, y) where {F<:Number,T<:AbstractVector{F}} = push!(points, F[x, y])
-push_point!(points::AbstractMatrix{T}, x, y) where {T<:Number} = append!(points, (x, y)) # ElasticArrays 
+push_point!(points::AbstractVector{T}, x, y) where {F, T <: NTuple{2, F}} = push!(points, (F(x), F(y)))
+push_point!(points::AbstractVector{T}, x, y) where {F <: Number, T <: AbstractVector{F}} = push!(points, F[x, y])
+push_point!(points::AbstractMatrix{T}, x, y) where {T <: Number} = append!(points, (x, y)) # ElasticArrays 
 push_point!(points, p) = push_point!(points, getx(p), gety(p))
 
 @doc """
@@ -456,7 +456,7 @@ julia> (1.0 + 17.3)/2, (2.0 + 5.3)/2
 (9.15, 3.65)
 ```
 """
-function mean_points(points, vertices=each_point_index(points))
+function mean_points(points, vertices = each_point_index(points))
     F = number_type(points)
     x = zero(F)
     y = zero(F)
@@ -540,7 +540,7 @@ Returns a `Dict` of `points` that maps each duplicate point to a `Vector` of the
 function find_duplicate_points(points)
     T = number_type(points)
     n = num_points(points)
-    dup_seen = Dict{NTuple{2,T},Vector{Int}}()
+    dup_seen = Dict{NTuple{2, T}, Vector{Int}}()
     sizehint!(dup_seen, n)
     for i in each_point_index(points)
         p = get_point(points, i)

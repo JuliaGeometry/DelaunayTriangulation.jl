@@ -12,14 +12,14 @@ The map taking edges `(u, v)` to `w` such that `(u, v, w)` is a positively orien
     Adjacent{IntegerType, EdgeType}()
     Adjacent(adjacent::Dict{EdgeType, IntegerType})
 """
-struct Adjacent{I,E}
-  adjacent::Dict{E,I}
+struct Adjacent{I, E}
+    adjacent::Dict{E, I}
 end
-Adjacent{I,E}() where {I,E} = Adjacent{I,E}(Dict{E,I}())
+Adjacent{I, E}() where {I, E} = Adjacent{I, E}(Dict{E, I}())
 Base.:(==)(adj::Adjacent, adj2::Adjacent) = get_adjacent(adj) == get_adjacent(adj2)
-function Base.show(io::IO, m::MIME"text/plain", adj::Adjacent{I,E}) where {I,E}
-  println(io, "Adjacent{$I, $E}, with map:")
-  show(io, m, get_adjacent(adj))
+function Base.show(io::IO, m::MIME"text/plain", adj::Adjacent{I, E}) where {I, E}
+    println(io, "Adjacent{$I, $E}, with map:")
+    show(io, m, get_adjacent(adj))
 end
 Base.sizehint!(adj::Adjacent, n) = sizehint!(get_adjacent(adj), n)
 
@@ -89,13 +89,13 @@ julia> get_adjacent(adj, (1, 6))
 0
 ```
 """
-function get_adjacent(adj::Adjacent{I,E}, uv::E) where {I,E}
-  dict = get_adjacent(adj)
-  return get(dict, uv, I(∅))
+function get_adjacent(adj::Adjacent{I, E}, uv::E) where {I, E}
+    dict = get_adjacent(adj)
+    return get(dict, uv, I(∅))
 end
-function get_adjacent(adj::Adjacent{I,E}, u, v) where {I,E}
-  e = construct_edge(E, u, v)
-  return get_adjacent(adj, e)
+function get_adjacent(adj::Adjacent{I, E}, u, v) where {I, E}
+    e = construct_edge(E, u, v)
+    return get_adjacent(adj, e)
 end
 
 
@@ -131,13 +131,13 @@ Dict{Tuple{Int64, Int64}, Int64} with 3 entries:
 ```
 """
 function add_adjacent!(adj::Adjacent, uv, w)
-  dict = get_adjacent(adj)
-  dict[uv] = w
-  return adj
+    dict = get_adjacent(adj)
+    dict[uv] = w
+    return adj
 end
-function add_adjacent!(adj::Adjacent{I,E}, u, v, w) where {I,E}
-  e = construct_edge(E, u, v)
-  return add_adjacent!(adj, e, w)
+function add_adjacent!(adj::Adjacent{I, E}, u, v, w) where {I, E}
+    e = construct_edge(E, u, v)
+    return add_adjacent!(adj, e, w)
 end
 
 """
@@ -178,13 +178,13 @@ Dict{Tuple{Int64, Int64}, Int64} with 3 entries:
 ```
 """
 function delete_adjacent!(adj::Adjacent, uv)
-  dict = get_adjacent(adj)
-  delete!(dict, uv)
-  return adj
+    dict = get_adjacent(adj)
+    delete!(dict, uv)
+    return adj
 end
-function delete_adjacent!(adj::Adjacent{I,E}, u, v) where {I,E}
-  e = construct_edge(E, u, v)
-  return delete_adjacent!(adj, e)
+function delete_adjacent!(adj::Adjacent{I, E}, u, v) where {I, E}
+    e = construct_edge(E, u, v)
+    return delete_adjacent!(adj, e)
 end
 
 """
@@ -218,10 +218,10 @@ Dict{Tuple{Int32, Int32}, Int32} with 6 entries:
 ```
 """
 function add_triangle!(adj::Adjacent, u::Integer, v::Integer, w::Integer) # method ambiguity
-  add_adjacent!(adj, u, v, w)
-  add_adjacent!(adj, v, w, u)
-  add_adjacent!(adj, w, u, v)
-  return adj
+    add_adjacent!(adj, u, v, w)
+    add_adjacent!(adj, v, w, u)
+    add_adjacent!(adj, w, u, v)
+    return adj
 end
 add_triangle!(adj::Adjacent, T) = add_triangle!(adj, geti(T), getj(T), getk(T))
 
@@ -264,15 +264,15 @@ Dict{Tuple{Int32, Int32}, Int32}()
 ```
 """
 function delete_triangle!(adj::Adjacent, u::Integer, v::Integer, w::Integer) # method ambiguity
-  for (i, j) in triangle_edges(u, v, w)
-    delete_adjacent!(adj, i, j)
-  end
-  return adj
+    for (i, j) in triangle_edges(u, v, w)
+        delete_adjacent!(adj, i, j)
+    end
+    return adj
 end
 delete_triangle!(adj::Adjacent, T) = delete_triangle!(adj, geti(T), getj(T), getk(T))
 
 function Base.empty!(adj::Adjacent)
-  dict = get_adjacent(adj)
-  empty!(dict)
-  return adj
+    dict = get_adjacent(adj)
+    empty!(dict)
+    return adj
 end

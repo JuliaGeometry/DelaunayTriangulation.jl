@@ -145,7 +145,7 @@ A constant for representing an invalid rectangle, i.e. a rectangle with `NaN` en
 """
 const InvalidBoundingBox = BoundingBox(InvalidBoundingInterval, InvalidBoundingInterval)
 BoundingBox(a, b, c, d) = BoundingBox(BoundingInterval(a, b), BoundingInterval(c, d))
-BoundingBox(p::NTuple{2,<:Number}) = BoundingBox(getx(p), getx(p), gety(p), gety(p))
+BoundingBox(p::NTuple{2, <:Number}) = BoundingBox(getx(p), getx(p), gety(p), gety(p))
 
 """
     hspan(r::BoundingBox) -> Float64
@@ -224,7 +224,7 @@ Base.in(r1::BoundingBox, r2::BoundingBox) = (r1.x ∈ r2.x) && (r1.y ∈ r2.y)
 
 Tests whether `p` is in `r`.
 """
-Base.in(p::NTuple{2,<:Number}, r::BoundingBox) = BoundingBox(p) ∈ r
+Base.in(p::NTuple{2, <:Number}, r::BoundingBox) = BoundingBox(p) ∈ r
 
 """
     is_touching(r1::BoundingBox, r2::BoundingBox) -> Bool
@@ -263,7 +263,7 @@ end
 
 Returns the bounding box of the circle `(center, radius)`.
 """
-function bounding_box(center::NTuple{2,<:Number}, radius::Number)
+function bounding_box(center::NTuple{2, <:Number}, radius::Number)
     cx, cy = getxy(center)
     return BoundingBox(cx - radius, cx + radius, cy - radius, cy + radius)
 end
@@ -293,7 +293,7 @@ end
 
 Expands the bounding box `box` by a factor `perc` in each direction.
 """
-function expand(box::BoundingBox, perc=0.10)
+function expand(box::BoundingBox, perc = 0.1)
     x = box.x
     y = box.y
     a, b = x.a, x.b
@@ -328,7 +328,7 @@ Type for representing a bounding box generated from an edge's diametral circle.
 """
 struct DiametralBoundingBox
     bounding_box::BoundingBox
-    edge::NTuple{2,Int}
+    edge::NTuple{2, Int}
 end
 
 """
@@ -493,7 +493,7 @@ Type for representing a leaf node in an R-tree.
     Leaf(parent::Union{Branch,Nothing}=nothing) = Leaf{Branch}(parent, InvalidBoundingBox, DiametralBoundingBox[])
 """
 mutable struct Leaf{Branch} <: AbstractNode
-    parent::Union{Branch,Nothing}
+    parent::Union{Branch, Nothing}
     bounding_box::BoundingBox
     children::Vector{DiametralBoundingBox} # would do const, but for compat reasons I don't
     Leaf(parent::Branch, bounding_box, children) where {Branch} = new{Branch}(parent, bounding_box, children)
@@ -524,13 +524,13 @@ Type for representing a branch node in an R-tree.
     Branch(parent::Union{Branch,Nothing}=nothing, ::Type{C}=Branch) where {C<:AbstractNode} = new(parent, InvalidBoundingBox, C[], 1)
 """
 mutable struct Branch <: AbstractNode
-    parent::Union{Branch,Nothing}
+    parent::Union{Branch, Nothing}
     bounding_box::BoundingBox
-    children::Union{Vector{Branch},Vector{Leaf{Branch}}} # if we do e.g. Branch{C}, it makes resolving some of the other types a bit difficult, especially Leaf{Branch}. (Also: would do const, but for compat reasons I don't)
+    children::Union{Vector{Branch}, Vector{Leaf{Branch}}} # if we do e.g. Branch{C}, it makes resolving some of the other types a bit difficult, especially Leaf{Branch}. (Also: would do const, but for compat reasons I don't)
     level::Int
 end
-Branch(parent::Union{Branch,Nothing}=nothing, ::Type{C}=Branch) where {C<:AbstractNode} = Branch(parent, InvalidBoundingBox, C[], 1)
-Leaf(parent::Union{Branch,Nothing}=nothing) = Leaf{Branch}(parent, InvalidBoundingBox, DiametralBoundingBox[])
+Branch(parent::Union{Branch, Nothing} = nothing, ::Type{C} = Branch) where {C <: AbstractNode} = Branch(parent, InvalidBoundingBox, C[], 1)
+Leaf(parent::Union{Branch, Nothing} = nothing) = Leaf{Branch}(parent, InvalidBoundingBox, DiametralBoundingBox[])
 
 function Base.:(==)(branch1::Branch, branch2::Branch)
     xor(isnothing(branch1), isnothing(branch1)) && return false # if we test get_parent(branch1) ≠ get_parent(branch2), then we get a StackOverflowError
@@ -605,13 +605,13 @@ Type for representing a cache of nodes whose children are of type `Child`. This 
     
     NodeCache{Node,Child}(size_limit::Int) where {Node,Child} = new{Node,Child}(Node[], size_limit)
 """
-struct NodeCache{Node,Child} # similar to why we use TriangulationCache. Think of it like implementing some CapacityVector that fails to push if it's full.
+struct NodeCache{Node, Child} # similar to why we use TriangulationCache. Think of it like implementing some CapacityVector that fails to push if it's full.
     cache::Vector{Node}
     size_limit::Int
-    function NodeCache{Node,Child}(size_limit::Int) where {Node,Child}
+    function NodeCache{Node, Child}(size_limit::Int) where {Node, Child}
         cache = Node[]
         sizehint!(cache, size_limit)
-        return new{Node,Child}(cache, size_limit)
+        return new{Node, Child}(cache, size_limit)
     end
 end
 
@@ -620,21 +620,21 @@ end
 
 Type for representing a cache of branch nodes.
 """
-const BranchCache = NodeCache{Branch,Branch}
+const BranchCache = NodeCache{Branch, Branch}
 
 """
     TwigCache
 
 Type for representing a cache of twig nodes, i.e. branch nodes at level 2.
 """
-const TwigCache = NodeCache{Branch,Leaf{Branch}}
+const TwigCache = NodeCache{Branch, Leaf{Branch}}
 
 """
     LeafCache
 
 Type for representing a cache of leaf nodes.
 """
-const LeafCache = NodeCache{Leaf{Branch},DiametralBoundingBox}
+const LeafCache = NodeCache{Leaf{Branch}, DiametralBoundingBox}
 
 """
     length(cache::NodeCache) -> Int
@@ -752,16 +752,16 @@ Type for representing an R-tree with linear splitting.
 The `size_limit` is the node capacity. All node types have the same capacity.
 """
 mutable struct RTree # linear
-    root::Union{Branch,Leaf{Branch}}
+    root::Union{Branch, Leaf{Branch}}
     num_elements::Int
     branch_cache::BranchCache # would do const, but for compat reasons I don't
     twig_cache::TwigCache # would do const, but for compat reasons I don't
     leaf_cache::LeafCache # would do const, but for compat reasons I don't
     fill_factor::Float64 # would do const, but for compat reasons I don't
     free_cache::BitVector # would do const, but for compat reasons I don't
-    detached_cache::Vector{Union{Branch,Leaf{Branch}}} # would do const, but for compat reasons I don't
-    intersection_cache::NTuple{2,RTreeIntersectionCache} # would do const, but for compat reasons I don't
-    function RTree(; size_limit=100, fill_factor=0.7) # https://en.wikipedia.org/wiki/R-tree: "however best performance has been experienced with a minimum fill of 30%–40%)
+    detached_cache::Vector{Union{Branch, Leaf{Branch}}} # would do const, but for compat reasons I don't
+    intersection_cache::NTuple{2, RTreeIntersectionCache} # would do const, but for compat reasons I don't
+    function RTree(; size_limit = 100, fill_factor = 0.7) # https://en.wikipedia.org/wiki/R-tree: "however best performance has been experienced with a minimum fill of 30%–40%)
         branch_cache = BranchCache(size_limit)
         twig_cache = TwigCache(size_limit)
         leaf_cache = LeafCache(size_limit)
@@ -769,7 +769,7 @@ mutable struct RTree # linear
         num_elements = 0
         free_cache = BitVector()
         sizehint!(free_cache, size_limit)
-        detached_cache = Vector{Union{Branch,Leaf{Branch}}}()
+        detached_cache = Vector{Union{Branch, Leaf{Branch}}}()
         sizehint!(detached_cache, size_limit)
         cache1, cache2 = RTreeIntersectionCache(), RTreeIntersectionCache()
         sizehint!(cache1, ceil(Int, log2(size_limit)))
@@ -783,7 +783,7 @@ mutable struct RTree # linear
             fill_factor,
             free_cache,
             detached_cache,
-            (cache1, cache2)
+            (cache1, cache2),
         )
     end
 end
@@ -1127,7 +1127,7 @@ end
 Returns an [`RTreeIntersectionIterator`](@ref) over the elements in `tree` that intersect with the diametral circle of the edge between `i` and `j`.
 `cache_id` must be `1` or `2`, and determines what cache to use for the intersection query.
 """
-function get_intersections(tree::BoundaryRTree, i, j; cache_id=1)
+function get_intersections(tree::BoundaryRTree, i, j; cache_id = 1)
     bbox = bounding_box(tree, i, j)
     return get_intersections(tree.tree, get_bounding_box(bbox); cache_id)
 end
@@ -1138,7 +1138,7 @@ end
 Returns an [`RTreeIntersectionIterator`](@ref) over the elements in `tree` that intersect with the bounding box of the triangle `(i, j, k)`.
 `cache_id` must be `1` or `2`, and determines what cache to use for the intersection query.
 """
-function get_intersections(tree::BoundaryRTree, i, j, k; cache_id=1)
+function get_intersections(tree::BoundaryRTree, i, j, k; cache_id = 1)
     points = tree.points
     p, q, r = get_point(points, i, j, k)
     bbox = bounding_box(p, q, r)
@@ -1151,7 +1151,7 @@ end
 Returns an [`RTreeIntersectionIterator`](@ref) over the elements in `tree` that intersect with the `i`th vertex.
 `cache_id` must be `1` or `2`, and determines what cache to use for the intersection query.
 """
-function get_intersections(tree::BoundaryRTree, i; cache_id=1)
+function get_intersections(tree::BoundaryRTree, i; cache_id = 1)
     p = get_point(tree.points, i)
     return get_intersections(tree.tree, p; cache_id)
 end
@@ -1162,6 +1162,6 @@ end
 Returns an [`RTreeIntersectionIterator`](@ref) over the elements in `tree` that intersect with `bbox`.
 `cache_id` must be `1` or `2`, and determines what cache to use for the intersection query.
 """
-function get_intersections(tree::BoundaryRTree, bbox::BoundingBox; cache_id=1)
+function get_intersections(tree::BoundaryRTree, bbox::BoundingBox; cache_id = 1)
     return get_intersections(tree.tree, bbox; cache_id)
 end
