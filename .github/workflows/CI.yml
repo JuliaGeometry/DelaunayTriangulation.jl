@@ -20,7 +20,8 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - '1'
+          - '1.10'
+          - 'pre'
           - 'lts'
         os:
           - ubuntu-latest
@@ -80,6 +81,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: |
           julia --project=docs -e '
+            using Pkg
+            Pkg.develop(PackageSpec(path=pwd()))
+            Pkg.instantiate()
             using Documenter: DocMeta, doctest
             using DelaunayTriangulation
             DocMeta.setdocmeta!(DelaunayTriangulation, :DocTestSetup, :(using DelaunayTriangulation); recursive=true)

@@ -212,9 +212,8 @@ tri = triangulate(points;
     EdgesType=CustomSegments,
     TrianglesType=CustomTriangles,
     rng)
-vorn = voronoi(tri; clip=true, rng)
-vorn_cs = centroidal_smooth(vorn; rng)
-fig, ax, sc = voronoiplot(vorn_cs)
+vorn = voronoi(tri; clip=true, smooth=true, rng)
+fig, ax, sc = voronoiplot(vorn)
 fig
 ````
 
@@ -372,9 +371,8 @@ tri = triangulate(points;
     EdgesType=CustomSegments,
     TrianglesType=CustomTriangles,
     rng)
-vorn = voronoi(tri; clip=true, rng)
-vorn_cs = centroidal_smooth(vorn; rng)
-fig, ax, sc = voronoiplot(vorn_cs)
+vorn = voronoi(tri; clip=true, smooth=true, rng)
+fig, ax, sc = voronoiplot(vorn)
 fig
 ```
 

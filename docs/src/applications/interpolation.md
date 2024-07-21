@@ -274,6 +274,7 @@ end
 This function gives our $\boldsymbol\lambda$ vector. Notice that, in the computation of these coordinates,
 we need needed to have $\mathcal V(X)$ directly or make use of the data $z_i$.
 
+## Evaluating the Sibsonian interpolant
 Now we can evaluate our Sibson interpolant. The following function does this for us.
 
 ````@example interpolation
@@ -448,8 +449,6 @@ function compute_sibson_coordinates(tri::Triangulation, envelope_vertices, point
     coordinates ./= w
     return coordinates
 end
-
-### Evaluating the Sibsonian interpolant
 
 function evaluate_sibson_interpolant(tri::Triangulation, z, point)
     envelope_vertices, _ = compute_envelope(tri, point)

@@ -59,7 +59,7 @@ V = find_triangle(tri, q, m=10)
 ````
 
 means that we get a sample of size 10, and start at whichever point is the closest.
-(For technical reasons, this sample is with replacement, so it is possible that the same point is sampled more than once.)
+(For technical reasons, this sampling is with replacement, so it is possible that the same point is sampled more than once.)
 You could also instead specify the point to start at using the `k` keyword argument, in which case no points are sampled.
 For example,
 
@@ -159,13 +159,7 @@ the triangle found for `(1.2, 1.6)` is
 Vs[end]
 ````
 
-but the point `(1.2, 1.6)` is actually inside the triangulation. We can even see
-this if we run `find_triangle` again:
-
-````@example point_location
-V = find_triangle(tri, (1.2, 1.6); rng)
-````
-
+but the point `(1.2, 1.6)` is actually inside the triangulation.
 To protect against this, you need to use `concavity_protection=true`, which
 will enable a check to be made that the point is actually outside the triangulation whenever
 a ghost triangle is to be returned. If the check finds this to not be the case, it
@@ -324,8 +318,6 @@ fig
 Vs = [find_triangle(tri, q; rng) for q in qs]
 
 Vs[end]
-
-V = find_triangle(tri, (1.2, 1.6); rng)
 
 Vs = [find_triangle(tri, q; rng, concavity_protection=true) for q in qs]
 

@@ -17,8 +17,8 @@ Constructs a [`PolygonTree`](@ref) with `parent`, `index`, and `height`, and no 
 """
 mutable struct PolygonTree{I}
     parent::Union{Nothing,PolygonTree{I}}
-    children::Set{PolygonTree{I}} # would do const, but for compat reasons I don't. can't seem to fix this with @static either
-    index::I # would do const, but for compat reasons I don't
+    @const children::Set{PolygonTree{I}} 
+    @const index::I
     height::Int
 end
 PolygonTree{I}(parent::Union{Nothing,PolygonTree{I}}, index, height) where {I} = PolygonTree{I}(parent, Set{PolygonTree{I}}(), index, height)

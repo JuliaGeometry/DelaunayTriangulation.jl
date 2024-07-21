@@ -76,7 +76,7 @@ ax1 = Axis(fig[1, 1], xlabel="x", ylabel=L"y",
     title="(a): Unconstrained", titlealign=:left,
     width=300, height=300)
 ax2 = Axis(fig[1, 2], xlabel="x", ylabel=L"y",
-    title="(b): Unconstrained", titlealign=:left,
+    title="(b): Constrained", titlealign=:left,
     width=300, height=300)
 triplot!(ax1, tri)
 triplot!(ax2, cons_tri, show_constrained_edges=true, show_convex_hull=true)
@@ -220,7 +220,7 @@ ax1 = Axis(fig[1, 1], xlabel="x", ylabel=L"y",
     title="(a): Unconstrained", titlealign=:left,
     width=300, height=300)
 ax2 = Axis(fig[1, 2], xlabel="x", ylabel=L"y",
-    title="(b): Unconstrained", titlealign=:left,
+    title="(b): Constrained", titlealign=:left,
     width=300, height=300)
 triplot!(ax1, tri)
 triplot!(ax2, cons_tri, show_constrained_edges=true, show_convex_hull=true)

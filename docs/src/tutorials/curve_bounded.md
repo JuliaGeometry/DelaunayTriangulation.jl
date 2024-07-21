@@ -62,7 +62,7 @@ Here, the syntax is `CircularArc(first_point, last_point, centre)`. Since the ci
 use `p` for both `first_point` and `last_point`. Notice that the `arc` is a function. In particular,
 
 ````@example curve_bounded
-typeof(arc) |> supertype
+typeof(arc) |> supertype |> supertype
 ````
 
 If we wanted to look at this circle, we would need to evaluate it at a set of $t \in [0, 1]$.
@@ -187,13 +187,13 @@ t = LinRange(0, 1, 1000)
 fig
 fig = Figure()
 ax = Axis(fig[1, 1])
-lines!(ax, [get_point(tri, curve[1][1]...)...], color=:red, label="(1, 2, 3)")
+lines!(ax, [get_point(points, curve[1][1]...)...], color=:red, label="(1, 2, 3)")
 lines!(ax, curve[1][2][1].(t), color=:red, linestyle=:dashdot, label="EllipticalArc")
 lines!(ax, curve[2][1][1].(t), color=:green, label="BSpline")
-lines!(ax, [get_point(tri, curve[3][1]...)...], color=:blue, label="(4, 5, 6, 7, 4)")
+lines!(ax, [get_point(points, curve[3][1]...)...], color=:blue, label="(4, 5, 6, 7, 4)")
 lines!(ax, curve[4][1][1].(t), color=:purple, label="BezierCurve")
 lines!(ax, curve[4][2][1].(t), color=:purple, linestyle=:dashdot, label="CatmullRomSpline")
-lines!(ax, [get_point(tri, curve[5][1]...)...], color=:orange, label="(12, 11, 10, 12)")
+lines!(ax, [get_point(points, curve[5][1]...)...], color=:orange, label="(12, 11, 10, 12)")
 lines!(ax, curve[6][1][1].(t), color=:black, label="CircularArc")
 fig[1, 2] = Legend(fig, ax, "Curve")
 fig
@@ -351,7 +351,7 @@ p = (xc + r, yc)
 c = (xc, yc)
 arc = CircularArc(p, p, c)
 
-typeof(arc) |> supertype
+typeof(arc) |> supertype |> supertype
 
 t = LinRange(0, 1, 2500)
 points = arc.(t)
@@ -417,13 +417,13 @@ t = LinRange(0, 1, 1000)
 fig
 fig = Figure()
 ax = Axis(fig[1, 1])
-lines!(ax, [get_point(tri, curve[1][1]...)...], color=:red, label="(1, 2, 3)")
+lines!(ax, [get_point(points, curve[1][1]...)...], color=:red, label="(1, 2, 3)")
 lines!(ax, curve[1][2][1].(t), color=:red, linestyle=:dashdot, label="EllipticalArc")
 lines!(ax, curve[2][1][1].(t), color=:green, label="BSpline")
-lines!(ax, [get_point(tri, curve[3][1]...)...], color=:blue, label="(4, 5, 6, 7, 4)")
+lines!(ax, [get_point(points, curve[3][1]...)...], color=:blue, label="(4, 5, 6, 7, 4)")
 lines!(ax, curve[4][1][1].(t), color=:purple, label="BezierCurve")
 lines!(ax, curve[4][2][1].(t), color=:purple, linestyle=:dashdot, label="CatmullRomSpline")
-lines!(ax, [get_point(tri, curve[5][1]...)...], color=:orange, label="(12, 11, 10, 12)")
+lines!(ax, [get_point(points, curve[5][1]...)...], color=:orange, label="(12, 11, 10, 12)")
 lines!(ax, curve[6][1][1].(t), color=:black, label="CircularArc")
 fig[1, 2] = Legend(fig, ax, "Curve")
 fig

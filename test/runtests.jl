@@ -1,9 +1,9 @@
 # setup LocalPreferences.toml 
-using Preferences 
+using Preferences
 PREDICATES = get(ENV, "PREDICATES", "EXACT")
 if PREDICATES == "EXACT"
     set_preferences!("DelaunayTriangulation", "PREDICATES" => "EXACT")
-elseif PREDICATES == "INEXACT" 
+elseif PREDICATES == "INEXACT"
     set_preferences!("DelaunayTriangulation", "PREDICATES" => "INEXACT")
 elseif PREDICATES != "DEFAULT"
     throw("Invalid PREDICATES setting, $PREDICATES.")
@@ -44,13 +44,17 @@ using StructEquality
 using Aqua
 using Test
 
+if isdefined(Docs, :undocumented_names)
+    @test isempty(Docs.undocumented_names(DelaunayTriangulation))
+end
+
 const ALL_TEST_SCRIPTS = Set{String}()
 const NON_TEST_SCRIPTS = Set{String}(["helper_functions.jl", "triangulation_validation.jl", "runtests.jl", "triangulation\\weighted.jl", "triangulation/weighted.jl"])
 include("helper_functions.jl")
 using .HelperFunctions
 
 ct() = Dates.format(now(), "HH:MM:SS")
-function safe_include(filename; name=filename, push=true, verbose = true) # Workaround for not being able to interpolate into SafeTestset test names
+function safe_include(filename; name=filename, push=true, verbose=true) # Workaround for not being able to interpolate into SafeTestset test names
     push && push!(ALL_TEST_SCRIPTS, normpath(filename))
     mod = @eval module $(gensym()) end
     @info "[$(ct())] Testing $name"
@@ -63,9 +67,9 @@ end
 
 @testset verbose = true "DelaunayTriangulation.jl" begin
     @testset verbose = true "Aqua" begin
-        Aqua.test_all(DelaunayTriangulation; ambiguities=false, project_extras=false, stale_deps = !USE_INEXACTPREDICATES) # don't care about julia < 1.2
+        Aqua.test_all(DelaunayTriangulation; ambiguities=false, project_extras=false, stale_deps=!USE_INEXACTPREDICATES) # don't care about julia < 1.2
         Aqua.test_ambiguities(DelaunayTriangulation) # don't pick up Base and Core...
-    end    
+    end
 
     @testset verbose = true "Triangulation" begin
         safe_include("triangulation/rectangle.jl")
@@ -102,7 +106,7 @@ end
         safe_include("data_structures/curves.jl")
         safe_include("data_structures/rtree.jl")
         safe_include("data_structures/bst.jl")
-        safe_include("data_structures/polygon_hierarchy.jl", verbose = false)
+        safe_include("data_structures/polygon_hierarchy.jl", verbose=false)
     end
 
     @testset verbose = true "Predicates" begin
@@ -167,7 +171,7 @@ end
             mp4_path = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "cell_simulation.mp4")
             isfile(mp4_path) && rm(mp4_path)
         end
-    
+
         @testset verbose = true "Test the tutorials" begin
             tut_dir = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "docs", "src", "literate_tutorials")
             tut_files = readdir(tut_dir)
@@ -175,11 +179,11 @@ end
                 safe_include(joinpath(tut_dir, file); push=false)
             end
         end
-    
+
         @testset verbose = true "Test the readme example" begin
             safe_include("readme_example.jl")
         end
-    
+
         @testset "All script files are included somewhere" begin
             missing_set = String[]
             test_dir = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "test", "")

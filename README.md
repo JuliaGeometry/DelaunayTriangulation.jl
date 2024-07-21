@@ -105,6 +105,8 @@ Contributions are very welcome. If you encounter any issues or would like to mak
 
 The issues tab also lists features that would be nice to have in the package. If you would like to contribute towards any of those features, or towards any other significant enhancements, you are recommended to first post on that issue about your ideas before committing towards a complete implementation. 
 
+If you want to use a function from the package that isn't public (meaning it is not listed in the API section of the documentation), you are welcome to make an issue proposing that it be made public, mentioning your need for it.
+
 ### Writing a Pull Request 
 
 When contributing in the form of a pull request, there are a few important features that should be present, listed below. The point of these requirements is not to make you concerned about the amount of work needed to fulfill them, but to ensure that your contribution can be accepted more readily without the reviewer and yourself needing to go back-and-forth to meet the package's standards. If you do not meet them, you may still be fine depending on what you are contributing. You can always ask for help.

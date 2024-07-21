@@ -59,7 +59,7 @@ ax1 = Axis(fig[1, 1], xlabel="x", ylabel=L"y",
     title="(a): Unconstrained", titlealign=:left,
     width=300, height=300)
 ax2 = Axis(fig[1, 2], xlabel="x", ylabel=L"y",
-    title="(b): Unconstrained", titlealign=:left,
+    title="(b): Constrained", titlealign=:left,
     width=300, height=300)
 triplot!(ax1, tri)
 triplot!(ax2, cons_tri, show_constrained_edges = true)
@@ -83,6 +83,7 @@ but in the case of a triangulation with constrained
 boundaries, it will also include the boundary segments
 whereas `get_interior_segments` will not; this is
 demonstrated in the later tutorials.
+
 ## Just the code
 An uncommented version of this example is given below.
 You can view the source code for this file [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/constrained_edges.jl).
@@ -115,7 +116,7 @@ ax1 = Axis(fig[1, 1], xlabel="x", ylabel=L"y",
     title="(a): Unconstrained", titlealign=:left,
     width=300, height=300)
 ax2 = Axis(fig[1, 2], xlabel="x", ylabel=L"y",
-    title="(b): Unconstrained", titlealign=:left,
+    title="(b): Constrained", titlealign=:left,
     width=300, height=300)
 triplot!(ax1, tri)
 triplot!(ax2, cons_tri, show_constrained_edges = true)

@@ -8,7 +8,7 @@ model here, allowing only diffusion and proliferation. The point here is to just
 in a `Triangulation` to perform this type of simulation. A good paper discussing these types of simulations is the paper
 [_Comparing individual-based approaches to modelling the self-organization of multicellular tissues_](https://doi.org/10.1371/journal.pcbi.1005387) by Osborne et al. (2017).
 
-[^1]: If you are interested in hwot ehse ideas are applied in one dimension, see also [EpithelialDynamics1D.jl](https://github.com/DanielVandH/EpithelialDynamics1D.jl).
+[^1]: If you are interested in how these ideas are applied in one dimension, see also [EpithelialDynamics1D.jl](https://github.com/DanielVandH/EpithelialDynamics1D.jl).
 
 ## Cell model
 Let us consider a domain $\Omega$, and suppose we have an initial
@@ -52,17 +52,17 @@ using StableRNGs
 using LinearAlgebra
 using StatsBase
 using CairoMakie
-@kwdef mutable struct CellModel
-    tri::Triangulation
+Base.@kwdef mutable struct CellModel{P}
+    tri::Triangulation{P}
     new_r_cache::Vector{NTuple{2,Float64}} # for r(t + Δt)
-    const α::Float64
-    const s::Float64
-    const Δt::Float64
-    const rng::StableRNGs.LehmerRNG
-    const final_time::Float64
-    const β::Float64
-    const K::Float64
-    const ϵ::Float64
+    α::Float64
+    s::Float64
+    Δt::Float64
+    rng::StableRNGs.LehmerRNG
+    final_time::Float64
+    β::Float64
+    K::Float64
+    ϵ::Float64
 end
 ````
 
@@ -229,17 +229,17 @@ using StableRNGs
 using LinearAlgebra
 using StatsBase
 using CairoMakie
-@kwdef mutable struct CellModel
-    tri::Triangulation
+Base.@kwdef mutable struct CellModel{P}
+    tri::Triangulation{P}
     new_r_cache::Vector{NTuple{2,Float64}} # for r(t + Δt)
-    const α::Float64
-    const s::Float64
-    const Δt::Float64
-    const rng::StableRNGs.LehmerRNG
-    const final_time::Float64
-    const β::Float64
-    const K::Float64
-    const ϵ::Float64
+    α::Float64
+    s::Float64
+    Δt::Float64
+    rng::StableRNGs.LehmerRNG
+    final_time::Float64
+    β::Float64
+    K::Float64
+    ϵ::Float64
 end
 
 function migrate_cells!(cells::CellModel) # a more efficient way would be to loop over edges rather than vertices

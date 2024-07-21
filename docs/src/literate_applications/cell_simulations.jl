@@ -4,7 +4,7 @@
 # in a `Triangulation` to perform this type of simulation. A good paper discussing these types of simulations is the paper 
 # [_Comparing individual-based approaches to modelling the self-organization of multicellular tissues_](https://doi.org/10.1371/journal.pcbi.1005387) by Osborne et al. (2017).
 #
-# [^1]: If you are interested in hwot ehse ideas are applied in one dimension, see also [EpithelialDynamics1D.jl](https://github.com/DanielVandH/EpithelialDynamics1D.jl).
+# [^1]: If you are interested in how these ideas are applied in one dimension, see also [EpithelialDynamics1D.jl](https://github.com/DanielVandH/EpithelialDynamics1D.jl).
 #
 # ## Cell model 
 # Let us consider a domain $\Omega$, and suppose we have an initial 

@@ -201,14 +201,16 @@ Here is the second method.
 
 ````@example point_in_polygon
 tri = triangulate(points; boundary_nodes=nodes)
-is_inside_2 = [DelaunayTriangulation.dist(tri, q) > 0 for q in query_points]
+is_inside_2 = [DelaunayTriangulation.dist(tri, q) > 0 for q in query_points];
+nothing #hide
 ````
 
 The third method is to use [`find_polygon`](@ref) to find the polygon containing the point. If no such polygon exists, `find_polygon` returns
 `0`, so this is what we use to determine if a point is inside or outside the polygon.
 
 ````@example point_in_polygon
-is_inside_3 = [find_polygon(tri, q) ≠ 0 for q in query_points]
+is_inside_3 = [find_polygon(tri, q) ≠ 0 for q in query_points];
+nothing #hide
 ````
 
 This test is not exactly the same as the previous one (with a difference of about five points) due to points near the boundary.
@@ -216,7 +218,8 @@ The fourth method is:
 
 ````@example point_in_polygon
 hierarchy = DelaunayTriangulation.construct_polygon_hierarchy(points, nodes)
-is_inside_4 = [find_polygon(hierarchy, points, nodes, q) ≠ 0 for q in query_points]
+is_inside_4 = [find_polygon(hierarchy, points, nodes, q) ≠ 0 for q in query_points];
+nothing #hide
 ````
 
 ## Just the code
@@ -400,12 +403,12 @@ scatter!(ax, query_points[.!is_inside], color=:red)
 fig
 
 tri = triangulate(points; boundary_nodes=nodes)
-is_inside_2 = [DelaunayTriangulation.dist(tri, q) > 0 for q in query_points]
+is_inside_2 = [DelaunayTriangulation.dist(tri, q) > 0 for q in query_points];
 
-is_inside_3 = [find_polygon(tri, q) ≠ 0 for q in query_points]
+is_inside_3 = [find_polygon(tri, q) ≠ 0 for q in query_points];
 
 hierarchy = DelaunayTriangulation.construct_polygon_hierarchy(points, nodes)
-is_inside_4 = [find_polygon(hierarchy, points, nodes, q) ≠ 0 for q in query_points]
+is_inside_4 = [find_polygon(hierarchy, points, nodes, q) ≠ 0 for q in query_points];
 ```
 
 ---

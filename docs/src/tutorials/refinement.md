@@ -27,7 +27,7 @@ Let us start with a simple example, refining an unconstrained triangulation.
 We will constrain the triangulation such that the minimum angle is
 30 degrees, and the maximum area of a triangulation is 1% of the triangulation's
 total area. Note that below we need to make sure `points` is mutable, else
-it is not possible to push points into the triangulation. Here we use a tuple, but you
+it is not possible to push points into the triangulation. Here we use a vector, but you
 could also use e.g. an `ElasticMatrix` from [ElasticArrays.jl](https://github.com/JuliaArrays/ElasticArrays.jl).
 
 ````@example refinement
@@ -62,7 +62,7 @@ fig
 ````
 
 The triangulation is now much finer. There are still some parts with
-many more triangles than other regions, but this is most nearly a boundary
+many more triangles than other regions, but these are mostly near a boundary
 or where was a cluster of random points. If we wanted, we could refine again
 to try and improve this.
 

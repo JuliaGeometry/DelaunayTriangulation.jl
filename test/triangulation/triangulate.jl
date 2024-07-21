@@ -35,11 +35,13 @@ end
     @test tri == _tri && !DelaunayTriangulation.has_vertex(_tri, 5) && validate_triangulation(_tri)
 end
 
-@testset "Lots of collinearity" begin
-    _tri = triangulate_rectangle(-3.0, 2.0, 5.0, 17.3, 23, 57; single_boundary=true)
-    @test validate_triangulation(_tri)
-    for _ in 1:10
-        tri = triangulate(_tri.points)
-        @test validate_triangulation(tri)
+if !USE_INEXACTPREDICATES
+    @testset "Lots of collinearity" begin
+        _tri = triangulate_rectangle(-3.0, 2.0, 5.0, 17.3, 23, 57; single_boundary=true)
+        @test validate_triangulation(_tri)
+        for _ in 1:10
+            tri = triangulate(_tri.points)
+            @test validate_triangulation(tri)
+        end
     end
 end
