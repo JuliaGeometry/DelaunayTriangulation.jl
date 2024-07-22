@@ -265,6 +265,6 @@
             distance_to_polygon,
             number_type,
             pole_of_inaccessibility,
-            is_point2, 
+            is_point2
     """))
 end
