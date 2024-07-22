@@ -264,6 +264,7 @@
             construct_polygon_hierarchy,
             distance_to_polygon,
             number_type,
-            pole_of_inaccessibility
+            pole_of_inaccessibility,
+            is_point2
     """))
 end

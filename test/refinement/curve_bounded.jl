@@ -1467,6 +1467,9 @@ end
         point_sets = deepcopy.([points_I_extra, points_II_extra, points_III_extra, points_IV_extra, points_V_extra, points_VI_extra, points_VII_extra, points_VIII_extra, points_IX_extra, points_X_extra, points_XI_extra, points_XII_extra])
         curve_sets = deepcopy.([curve_I, curve_II, curve_III, curve_IV, curve_V, curve_VI, curve_VII, curve_VIII, curve_IX, curve_X, curve_XI, curve_XII])
         for i in eachindex(point_sets, curve_sets)
+            if USE_INEXACTPREDICATES && i == 4 
+                continue 
+            end
             points, curve = deepcopy(point_sets[i]), deepcopy(curve_sets[i])
             tri = triangulate(points; boundary_nodes=curve, enrich=i ≤ 3)
             @test validate_triangulation(tri)
@@ -1482,6 +1485,9 @@ end
         curve_sets = deepcopy.([curve_I, curve_II, curve_III, curve_IV])
         segment_sets = deepcopy.([segments_I, segments_II, segments_III, segments_IV])
         for i in eachindex(point_sets, curve_sets, segment_sets)
+            if USE_INEXACTPREDICATES && i == 4 
+                continue 
+            end
             points, curve, segments = deepcopy(point_sets[i]), deepcopy(curve_sets[i]), deepcopy(segment_sets[i])
             tri = triangulate(points; boundary_nodes=curve, segments=segments, enrich=i ≤ 3)
             @test validate_triangulation(tri)

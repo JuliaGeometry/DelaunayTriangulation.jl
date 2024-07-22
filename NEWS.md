@@ -14,7 +14,8 @@
 - The `.md` files for tutorials and applications in the docs have been properly updated to match their literate counterparts. See [#140](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/140).
 - We now use a workflow to enforce changes to `NEWS.md` for any PRs. See [#140](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/140).
 - Improved the error message for an incorrect orientation. See [#144](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/144).
-- Added a CONTRIBUTING.md file and issue/PR templates. See [#160](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/160).
+- Added a CONTRIBUTING.md file and issue templates. See [#160](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/160).
+- Added `is_point2` and `is_point3` to detect if a given input is a point. This allows vector coordinates to be passed to `convert_boundary_points_to_indices`. See [#161](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/161).
 
 ## v1.0.5 
 

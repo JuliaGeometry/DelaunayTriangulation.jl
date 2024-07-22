@@ -267,3 +267,21 @@ end
     @test DT.getxyz(t) === (5.0, 13.0, -5.0)
     @test DT._getxyz(t) === (5.0, 13.0, -5.0)
 end
+
+@testset "is_point2/is_point3" begin 
+    @test DT.is_point2((1.0,2.0))
+    @test !DT.is_point2((1.0,2.0,3.0))
+    @test !DT.is_point2((1.0,))
+    @test DT.is_point2([1.0,2.0])
+    @test !DT.is_point2([1.0,2.0,3.0])
+    @test DT.is_point2(SVector{2,Float64}(1.0,2.0))
+    @test DT.is_point2(Point2f(1.0,2.0))
+    @test !DT.is_point2([[1.0,1.0]])
+    @test !DT.is_point2([[1.0,2.0],[1.0,2.0]])
+    
+    @test DT.is_point3((1.0,2.0,3.0))
+    @test DT.is_point3([1.0,2.0,3.0])
+    @test !DT.is_point3([[1.0,2.0,3.0],[3.0,4.0,5.0],[1.0,2.0,3.0]])
+    @test DT.is_point3(SVector{3,Float64}(1.0,2.0,3.0))
+end
+
