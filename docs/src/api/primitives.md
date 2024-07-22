@@ -10,6 +10,7 @@ CurrentModule = DelaunayTriangulation
 getx
 gety
 getxy
+is_point2 
 getpoint
 push_point!
 pop_point!

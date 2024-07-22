@@ -143,6 +143,24 @@ Given a three-dimemsional `p`, returns its coordinates as a `Tuple` of `Float64`
 """
 _getxyz(p) = (_getx(p), _gety(p), _getz(p))
 
+"""
+    is_point2(p) -> Bool 
+
+Tests if `p` represents a point in the plane. By default, this returns the result of 
+
+    eltype(p) <: Number && length(p) == 2 
+"""
+is_point2(p) = eltype(p) <: Number && length(p) == 2 
+
+"""
+    is_point3(p) -> Bool 
+
+Tests if `p` represents a point in space. By default, this returns the result of 
+
+    eltype(p) <: Number && length(p) == 3 
+"""
+is_point3(p) = eltype(p) <: Number && length(p) == 3
+
 @doc """
     getpoint(points, vertex) -> NTuple{2, Number}
 

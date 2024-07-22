@@ -1,6 +1,7 @@
 using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using LinearAlgebra
+using CairoMakie
 using BenchmarkTools
 using StableRNGs
 
@@ -988,6 +989,19 @@ end
                   (6.7, 9.9), (2.0, 1.1), (1.0, 2.5), (1.2, 2.7), (1.3, 9.9), (1.4, 2.0), (1.5, 3.5),
                   (9.5, 2.5), (13.7, 11.7), (3.3, 3.9), (5.5, 1.0)]
       )
+
+      boundary_points = [[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0], [0.0, 0.0]]
+      nodes, _pts = convert_boundary_points_to_indices(boundary_points)
+      @test nodes == [1, 2, 3, 4, 1]
+      @test _pts == [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
+
+      points = rand(Makie.Point2{Float64}, 10)
+      _pt = copy(points)
+      _boundary_points = decompose(Point2f, Rect2{Float64}(0, 0, 1, 1))
+      boundary_points = push!(copy(_boundary_points), [0.0, 0.0])
+      boundary_nodes, pts = convert_boundary_points_to_indices(boundary_points; existing_points=points)
+      @test boundary_nodes == [11, 12, 13, 14, 11]
+      @test pts == append!(_pt, _boundary_points)
 end
 
 @testset "get_ordinal_suffix" begin

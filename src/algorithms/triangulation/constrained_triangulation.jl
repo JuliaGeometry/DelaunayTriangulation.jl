@@ -269,19 +269,20 @@ function convert_boundary_points_to_indices(x::A, y::A; existing_points=NTuple{2
     adjust && push!(nodes, nodes[begin])
     return nodes, existing_points
 end
-function convert_boundary_points_to_indices(xy::A; existing_points=NTuple{2,Float64}[], check_args=true, adjust=true) where {F,A<:AbstractVector{F}}
-    x = [getx(xy[i]) for i in eachindex(xy)]
-    y = [gety(xy[i]) for i in eachindex(xy)]
-    return convert_boundary_points_to_indices(x, y; existing_points=existing_points, check_args=check_args, adjust=adjust)
-end
-function convert_boundary_points_to_indices(xy::AA; existing_points=NTuple{2,Float64}[], check_args=true, adjust=true) where {F,A<:AbstractVector{F},AA<:AbstractVector{A}}
-    x = [[getx(xy[i][j]) for j in eachindex(xy[i])] for i in eachindex(xy)]
-    y = [[gety(xy[i][j]) for j in eachindex(xy[i])] for i in eachindex(xy)]
-    return convert_boundary_points_to_indices(x, y; existing_points=existing_points, check_args=check_args, adjust=adjust)
-end
-function convert_boundary_points_to_indices(xy::AAA; existing_points=NTuple{2,Float64}[], check_args=true, adjust=true) where {F,A<:AbstractVector{F},AA<:AbstractVector{A},AAA<:AbstractVector{AA}}
-    x = [[[getx(xy[i][j][k]) for k in eachindex(xy[i][j])] for j in eachindex(xy[i])] for i in eachindex(xy)]
-    y = [[[gety(xy[i][j][k]) for k in eachindex(xy[i][j])] for j in eachindex(xy[i])] for i in eachindex(xy)]
+
+function convert_boundary_points_to_indices(xy; existing_points=NTuple{2,Float64}[], check_args=true, adjust=true)
+    if is_point2(xy[1])
+        x = [getx(xy[i]) for i in eachindex(xy)]
+        y = [gety(xy[i]) for i in eachindex(xy)]
+    elseif is_point2(xy[1][1])
+        x = [[getx(xy[i][j]) for j in eachindex(xy[i])] for i in eachindex(xy)]
+        y = [[gety(xy[i][j]) for j in eachindex(xy[i])] for i in eachindex(xy)]
+    elseif is_point2(xy[1][1][1])
+        x = [[[getx(xy[i][j][k]) for k in eachindex(xy[i][j])] for j in eachindex(xy[i])] for i in eachindex(xy)]
+        y = [[[gety(xy[i][j][k]) for k in eachindex(xy[i][j])] for j in eachindex(xy[i])] for i in eachindex(xy)]
+    else
+        throw(ArgumentError("Invalid boundary coordinates provided. Please provide either a (1) vector of numbers, (2) vector of vector of numbers, or (3) a vector of vector of vector of numbers."))
+    end
     return convert_boundary_points_to_indices(x, y; existing_points=existing_points, check_args=check_args, adjust=adjust)
 end
 
