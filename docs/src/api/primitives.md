@@ -12,6 +12,7 @@ gety
 getxy
 is_point2 
 getpoint
+get_point
 push_point!
 pop_point!
 set_point!
