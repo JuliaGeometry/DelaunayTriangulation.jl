@@ -116,13 +116,19 @@ has_vertex(G::Graph, u) = u ∈ get_vertices(G)
 
 Adds the vertices `u...` to `G`.
 """
-function add_vertex!(G::Graph{I}, u...) where {I}
+function add_vertex!(G::Graph{I}, v) where {I}
+    has_vertex(G, v) && return G 
     V = get_vertices(G)
+    push!(V, v) 
     N = get_neighbours(G)
-    for v in u
-        has_vertex(G, v) && continue
-        push!(V, v)
-        !haskey(N, v) && (N[v] = Set{I}())
+    get!(N, v) do 
+        Set{I}() # in case N is empty, let's add it here 
+    end
+    return G
+end
+function add_vertex!(G::Graph{I}, u...) where {I}
+    foreach(u) do v 
+        add_vertex!(G, v)
     end
     return G
 end
@@ -167,7 +173,7 @@ function add_neighbour!(G::Graph{I}, u, v) where {I}
     return G
 end
 function add_neighbour!(G::Graph{I}, u, v...) where {I}
-    for w in v
+    foreach(v) do w
         add_neighbour!(G, u, w)
     end
     return G
@@ -188,7 +194,7 @@ function delete_neighbour!(G::Graph{I}, u, v) where {I}
     return G
 end
 function delete_neighbour!(G::Graph{I}, u, v...) where {I}
-    for w in v
+    foreach(v) do w
         delete_neighbour!(G, u, w)
     end
     return G
@@ -229,7 +235,7 @@ Deletes the vertices `u...` from `G`.
 function delete_vertex!(G::Graph{I}, u) where {I}
     N = get_neighbours(G)
     u_N = get!(Set{I}, N, u)
-    for v in u_N
+    foreach(u_N) do v
         v_N = get!(Set{I}, N, v)
         delete!(v_N, u) # don't use delete_neighbour! because it will delete u_N[v] as well
     end
@@ -239,7 +245,7 @@ function delete_vertex!(G::Graph{I}, u) where {I}
     return G
 end
 function delete_vertex!(G::Graph, u...)
-    for v in u
+    foreach(u) do v
         delete_vertex!(G, v)
     end
     return G
@@ -276,7 +282,7 @@ Deletes all empty vertices from `G`.
 """
 function clear_empty_vertices!(G::Graph)
     V = get_vertices(G)
-    for i in V
+    foreach(V) do i
         n = num_neighbours(G, i)
         iszero(n) && delete_vertex!(G, i)
     end
