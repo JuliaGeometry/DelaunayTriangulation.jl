@@ -2281,4 +2281,9 @@ export test_adjacent_map_matches_adjacent2vertex_map
 export test_each_edge_has_two_incident_triangles
 export test_triangle_orientation
 export test_iterators
+export get_weighted_example
+export get_nearest_power_point
+export NUM_WEGT
+export NUM_CWEGT 
+export get_convex_polygon_weighted_example
 end
