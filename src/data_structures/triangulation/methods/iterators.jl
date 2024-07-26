@@ -112,7 +112,7 @@ function Base.iterate(itr::EachSolidVertex, state...)
 end
 Base.iterate(itr::EachGhostVertex, state...) = has_ghost_vertices(itr.tri) ? Base.iterate(itr.vertices, state...) : nothing
 
-function Random.rand(rng::AbstractRNG, v::Random.SamplerTrivial{<:EachSolidVertex})
+function Random.rand(rng::Random.AbstractRNG, v::Random.SamplerTrivial{<:EachSolidVertex})
     itr = v[]
     verts = itr.vertices
     r = rand(rng, verts)
@@ -121,7 +121,7 @@ function Random.rand(rng::AbstractRNG, v::Random.SamplerTrivial{<:EachSolidVerte
     end
     return r
 end
-function Random.rand(rng::AbstractRNG, v::Random.SamplerTrivial{<:EachGhostVertex})
+function Random.rand(rng::Random.AbstractRNG, v::Random.SamplerTrivial{<:EachGhostVertex})
     itr = v[]
     verts = itr.vertices
     r = rand(rng, verts)
@@ -228,7 +228,7 @@ function Base.iterate(itr::EachGhostTriangle, state...)
     return tri, state
 end
 
-function Random.rand(rng::AbstractRNG, v::Random.SamplerTrivial{<:EachSolidTriangle})
+function Random.rand(rng::Random.AbstractRNG, v::Random.SamplerTrivial{<:EachSolidTriangle})
     itr = v[]
     tris = itr.triangles
     V = rand(rng, tris)
@@ -237,7 +237,7 @@ function Random.rand(rng::AbstractRNG, v::Random.SamplerTrivial{<:EachSolidTrian
     end
     return V
 end
-function Random.rand(rng::AbstractRNG, v::Random.SamplerTrivial{<:EachGhostTriangle})
+function Random.rand(rng::Random.AbstractRNG, v::Random.SamplerTrivial{<:EachGhostTriangle})
     itr = v[]
     tris = itr.triangles
     V = rand(rng, tris)
@@ -344,7 +344,7 @@ function Base.iterate(itr::EachGhostEdge, state...)
     return edges, state
 end
 
-function Random.rand(rng::AbstractRNG, v::Random.SamplerTrivial{<:EachSolidEdge})
+function Random.rand(rng::Random.AbstractRNG, v::Random.SamplerTrivial{<:EachSolidEdge})
     itr = v[]
     edges = itr.edges
     e = rand(rng, edges)
@@ -353,7 +353,7 @@ function Random.rand(rng::AbstractRNG, v::Random.SamplerTrivial{<:EachSolidEdge}
     end
     return e
 end
-function Random.rand(rng::AbstractRNG, v::Random.SamplerTrivial{<:EachGhostEdge})
+function Random.rand(rng::Random.AbstractRNG, v::Random.SamplerTrivial{<:EachGhostEdge})
     itr = v[]
     edges = itr.edges
     e = rand(rng, edges)

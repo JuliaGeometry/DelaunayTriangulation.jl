@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 jobs:
   test:
-    name: Julia ${{ matrix.version }} - ${{ matrix.arch }} - ${{ github.event_name }} - ExactPredicates ${{ matrix.preferences }} - ${{ matrix.os }}
+    name: Julia ${{ matrix.version }} - ${{ matrix.arch }} - ${{ github.event_name }} - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     env:
       JULIA_NUM_THREADS: ${{ matrix.julia-threads }}
@@ -27,10 +27,6 @@ jobs:
           - ubuntu-latest
         arch:
           - x64
-        preferences:
-          - 'DEFAULT'
-          - 'EXACT'
-          - 'INEXACT'
     steps:
       - name: Checkout repository for access
         uses: actions/checkout@v4

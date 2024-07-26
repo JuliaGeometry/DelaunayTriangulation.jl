@@ -128,14 +128,16 @@ See also [`check_delete_point_args`](@ref).
 - `vertex`: The vertex to delete.
 
 # Keyword Arguments
+- `predicates::AbstractPredicateType=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 - `store_event_history=Val(false)`: Whether to store the event history of the triangulation from deleting the point. 
 - `event_history=nothing`: The event history of the triangulation from deleting the point. Only updated if `store_event_history` is true, in which case it needs to be an [`InsertionEventHistory`](@ref) object.
-- `rng::AbstractRNG=Random.default_rng()`: The random number generator to use for the triangulation.
+- `rng::Random.AbstractRNG=Random.default_rng()`: The random number generator to use for the triangulation.
 """
 function delete_point!(tri::Triangulation, vertex;
+    predicates::AbstractPredicateType=def_alg222(),
     store_event_history=Val(false),
     event_history=nothing,
-    rng::AbstractRNG=Random.default_rng())
+    rng::Random.AbstractRNG=Random.default_rng())
     cache = get_cache(tri)
     empty!(cache)
     convex_tri = get_triangulation(cache)
@@ -148,7 +150,7 @@ function delete_point!(tri::Triangulation, vertex;
         delete_triangle!(tri, vertex, u, v; protect_boundary=true)
         is_true(store_event_history) && delete_triangle!(event_history, construct_triangle(trit, vertex, u, v))
     end
-    triangulate_convex!(convex_tri, S; rng) # fill in the cavity
+    triangulate_convex!(convex_tri, S; predicates, rng) # fill in the cavity
     for T in each_solid_triangle(convex_tri)
         u, v, w = triangle_vertices(T)
         add_triangle!(tri, u, v, w; protect_boundary=true, update_ghost_edges=false)

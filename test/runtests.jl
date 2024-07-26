@@ -1,17 +1,3 @@
-# setup LocalPreferences.toml 
-using Preferences
-PREDICATES = get(ENV, "PREDICATES", "EXACT")
-if PREDICATES == "EXACT"
-    set_preferences!("DelaunayTriangulation", "PREDICATES" => "EXACT")
-elseif PREDICATES == "INEXACT"
-    set_preferences!("DelaunayTriangulation", "PREDICATES" => "INEXACT")
-elseif PREDICATES != "DEFAULT"
-    throw("Invalid PREDICATES setting, $PREDICATES.")
-end # if PREDICATES == "default", do nothing
-
-@info "Testing with PREDICATES = $PREDICATES"
-
-# get all the compilation out of the way
 using BenchmarkTools
 using CairoMakie
 using ColorSchemes

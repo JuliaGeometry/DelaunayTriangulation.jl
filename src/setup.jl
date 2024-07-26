@@ -47,52 +47,6 @@ By default, this warning is enabled.
 """
 toggle_inf_warn!() = (INF_WARN[] = !INF_WARN[])
 
-@static if VERSION ≥ v"1.6"
-    using Preferences
-end
-
-@static if VERSION ≥ v"1.6"
-    const PREDICATES = @load_preference("PREDICATES", "EXACT")::String # This default is not guaranteed to be consistent between versions
-else 
-    const PREDICATES = "EXACT"
-end
-@static if PREDICATES ∉ ("EXACT", "INEXACT")
-    throw("You have set the PREDICATES option to PREDICATES = $PREDICATES. This is not allowed, only EXACT or INEXACT are possible choices.")
-end
-
-@doc """
-    PREDICATES 
-
-Type of predicates to use. This can be either 
-
-- `PREDICATES = "EXACT"`: Use ExactPredicates.jl.
-- `PREDICATES = "INEXACT"`: Compute the predicates numerically without any extra checks.
-
-(In the future, this may include `"ADAPTIVE"`.) By default this is assumed to be 
-`"EXACT"`, but this default is not guaranteed to be the same across versions. 
-You can change this setting using Preferences.jl. For example, to 
-use inexact predicates, do
-```julia-repl
-julia> using Preferences: set_preferences!
-
-julia> set_preferences!("DelaunayTriangulation", "PREDICATES" => "INEXACT")
-
-julia> using DelaunayTriangulation # load only after setting the preference
-
-julia> DelaunayTriangulation.PREDICATES
-"INEXACT"
-```
-
-!!! note "Precision"
-
-    Regardless of the setting, all coordinates are computed to `Float64` before 
-    computing any predicates.
-"""
-PREDICATES
-
-const USE_EXACTPREDICATES = PREDICATES == "EXACT"
-const USE_INEXACTPREDICATES = PREDICATES == "INEXACT"
-
 @eval macro $(Symbol("const"))(field)
     if VERSION >= v"1.8.0-DEV.1148"
         return Expr(:const, esc(field))

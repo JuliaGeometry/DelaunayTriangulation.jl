@@ -200,7 +200,8 @@ end
         segment_intersections,
         boundary_sites,
         exterior_circumcenters,
-        equal_circumcenter_mapping) -> Point 
+        equal_circumcenter_mapping,
+        predicates::AbstractPredicateType=def_alg222()) -> Point 
 
 Process the intersection of the Voronoi polygon's edge `(u, v)` with the edge `e` of the boundary, returning the coordinates of the intersection and updating via [`add_segment_intersection!`](@ref).
 
@@ -215,6 +216,7 @@ Process the intersection of the Voronoi polygon's edge `(u, v)` with the edge `e
 - `boundary_sites`: A mapping from boundary sites to the indices of the segment intersections that are incident to the boundary site.
 - `exterior_circumcenters`: The list of circumcenters of sites that are outside the boundary.
 - `equal_circumcenter_mapping`: A mapping from the indices of the segment intersections that are equal to the circumcenter of a site to the index of the site.
+- `predicates::AbstractPredicateType=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs
 - `p`: The coordinates of the intersection. If there is no intersection, this is `(NaN, NaN)`.
@@ -231,12 +233,13 @@ function process_segment_intersection!(
     segment_intersections,
     boundary_sites,
     exterior_circumcenters,
-    equal_circumcenter_mapping)
+    equal_circumcenter_mapping,
+    predicates::AbstractPredicateType=def_alg222())
     e = convert_to_edge_adjoining_ghost_vertex(vorn, e)
     a, b = edge_vertices(e)
     p, q = get_generator(vorn, a, b)
     r, s = get_polygon_point(vorn, u, v)
-    intersection_cert, cert_u, cert_v, intersection_coordinates = classify_and_compute_segment_intersection(p, q, r, s)
+    intersection_cert, cert_u, cert_v, intersection_coordinates = classify_and_compute_segment_intersection(predicates, p, q, r, s)
     F = number_type(vorn)
     if is_none(intersection_cert) || is_touching(intersection_cert)
         if is_left(cert_u) && is_left(cert_v)
@@ -309,15 +312,17 @@ Enqueue the edge `e` of the boundary to be processed.
 - `polygon_edge_queue`: The queue of edges that are to be processed.
 - `vorn`: The [`VoronoiTessellation`](@ref).
 - `e`: The edge to be processed.
+- `rng::AbstractRNG=Random.default_rng()`: Random number generator. Needed for [`get_nearest_neighbour`](@ref).
+- `predicates::AbstractPredicateType=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods. Needed for [`get_nearest_neighbour`](@ref).
 
 # Outputs
 There are no outputs, as `polygon_edge_queue` is modified in-place.
 """
-function enqueue_new_edge!(polygon_edge_queue, vorn::VoronoiTessellation, e)
+function enqueue_new_edge!(polygon_edge_queue, vorn::VoronoiTessellation, e, rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateType=def_alg222())
     u, v = edge_vertices(e)
     p, q = get_generator(vorn, u, v)
     m = midpoint(p, q)
-    incident_polygon = get_nearest_neighbour(vorn, m; k=u)
+    incident_polygon = get_nearest_neighbour(vorn, m; rng, predicates,k=u)
     push!(polygon_edge_queue, (e, incident_polygon))
     return polygon_edge_queue
 end
@@ -362,7 +367,8 @@ is_finite_segment(u, v) = !is_ghost_vertex(u) && !is_ghost_vertex(v)
         boundary_sites,
         incident_polygon,
         equal_circumcenter_mapping,
-        intersected_edge_cache)
+        intersected_edge_cache,
+        predicates::AbstractPredicateType=def_alg222())
 
 Process the intersection of the ray from the ghost site `u` to the site `v` with the edges `e`, `left_edge` and `right_edge`.
 
@@ -379,6 +385,7 @@ Process the intersection of the ray from the ghost site `u` to the site `v` with
 - `incident_polygon`: The index of the polygon that contains the intersection of the ray from `u` to `v` with the boundary.
 - `equal_circumcenter_mapping`: A mapping from the indices of the segment intersections that are equal to the circumcenter of a site to the index of the site.
 - `intersected_edge_cache`: A cache of the edges that have been intersected by the ray from `u` to `v`.
+- `predicates::AbstractPredicateType=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs
 There are no outputs, but [`add_segment_intersection!`](@ref) and [`add_to_intersected_edge_cache!`](@ref) are used to update the intersection objects.
@@ -394,7 +401,8 @@ function process_ray_intersection_with_other_edges!(vorn::VoronoiTessellation,
     boundary_sites,
     incident_polygon,
     equal_circumcenter_mapping,
-    intersected_edge_cache)
+    intersected_edge_cache,
+    predicates::AbstractPredicateType=def_alg222())
     if !any(isnan, r)
         E = edge_type(vorn)
         u_tri = get_circumcenter_to_triangle(vorn, u)
@@ -405,7 +413,7 @@ function process_ray_intersection_with_other_edges!(vorn::VoronoiTessellation,
             if !compare_unoriented_edges(intersected_edge, _e)
                 i, j = edge_vertices(_e)
                 p, q = get_generator(vorn, i, j)
-                intersection_cert, cert_u, cert_v, intersection_coordinates = classify_and_compute_segment_intersection(p, q, r, s)
+                intersection_cert, cert_u, cert_v, intersection_coordinates = classify_and_compute_segment_intersection(predicates, p, q, r, s)
                 if !(is_none(intersection_cert) || is_touching(intersection_cert))
                     idx = add_segment_intersection!(segment_intersections, boundary_sites, intersection_coordinates, incident_polygon)
                     if intersection_coordinates == s # don't need to check r, since it would have been checked in process_ray_intersection! already
@@ -420,7 +428,7 @@ function process_ray_intersection_with_other_edges!(vorn::VoronoiTessellation,
 end
 
 """
-    process_polygon!(vorn::VoronoiTessellation, e, incident_polygon, boundary_sites, segment_intersections, intersected_edge_cache, exterior_circumcenters, equal_circumcenter_mapping) -> (Edge, Edge, Edge)
+    process_polygon!(vorn::VoronoiTessellation, e, incident_polygon, boundary_sites, segment_intersections, intersected_edge_cache, exterior_circumcenters, equal_circumcenter_mapping, predicates::AbstractPredicateType=def_alg222()) -> (Edge, Edge, Edge)
 
 Processes the polygon `incident_polygon` for all of its intersections based on the boundary edge `e`.
 
@@ -433,6 +441,7 @@ Processes the polygon `incident_polygon` for all of its intersections based on t
 - `intersected_edge_cache`: A cache of the edges that have been intersected by the ray from `u` to `v`.
 - `exterior_circumcenters`: A list of the circumcenters of the sites that are outside the convex hull of the sites on the boundary.
 - `equal_circumcenter_mapping`: A mapping from the indices of the segment intersections that are equal to the circumcenter of a site to the index of the site.
+- `predicates::AbstractPredicateType=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs
 - `left_edge`: The edge to the left of `e` on the boundary.
@@ -452,7 +461,7 @@ This function works as follows:
    the intersection. We apply this function with each of `e`, `left_edge`, and `right_edge` to check for all intersections.
 3. The function is done once each of the polygon edges has been considered.
 """
-function process_polygon!(vorn, e, incident_polygon, boundary_sites, segment_intersections, intersected_edge_cache, exterior_circumcenters, equal_circumcenter_mapping)
+function process_polygon!(vorn, e, incident_polygon, boundary_sites, segment_intersections, intersected_edge_cache, exterior_circumcenters, equal_circumcenter_mapping, predicates::AbstractPredicateType=def_alg222())
     left_edge, right_edge = get_neighbouring_boundary_edges(vorn, e)
     polygon_vertices = get_polygon(vorn, incident_polygon)
     nedges = num_boundary_edges(polygon_vertices)
@@ -466,13 +475,13 @@ function process_polygon!(vorn, e, incident_polygon, boundary_sites, segment_int
             # It's possible for an infinite ray to also intersect other boundary edges, e.g. look at 
             #   points = [0.290978 0.830755 0.0139574; 0.386411 0.630008 0.803881]
             # So, let's just look for intersections with other edges.
-            process_ray_intersection_with_other_edges!(vorn, u, v, e, left_edge, right_edge, r, segment_intersections, boundary_sites, incident_polygon, equal_circumcenter_mapping, intersected_edge_cache)
+            process_ray_intersection_with_other_edges!(vorn, u, v, e, left_edge, right_edge, r, segment_intersections, boundary_sites, incident_polygon, equal_circumcenter_mapping, intersected_edge_cache, predicates)
         elseif is_ray_going_out(u, v)
             r = process_ray_intersection!(vorn, v, u, incident_polygon, intersected_edge_cache, segment_intersections, boundary_sites, exterior_circumcenters, equal_circumcenter_mapping)
-            process_ray_intersection_with_other_edges!(vorn, v, u, e, left_edge, right_edge, r, segment_intersections, boundary_sites, incident_polygon, equal_circumcenter_mapping, intersected_edge_cache)
+            process_ray_intersection_with_other_edges!(vorn, v, u, e, left_edge, right_edge, r, segment_intersections, boundary_sites, incident_polygon, equal_circumcenter_mapping, intersected_edge_cache, predicates)
         elseif is_finite_segment(u, v)
             for _e in (e, left_edge, right_edge)
-                process_segment_intersection!(vorn, u, v, _e, incident_polygon, intersected_edge_cache, segment_intersections, boundary_sites, exterior_circumcenters, equal_circumcenter_mapping)
+                process_segment_intersection!(vorn, u, v, _e, incident_polygon, intersected_edge_cache, segment_intersections, boundary_sites, exterior_circumcenters, equal_circumcenter_mapping, predicates)
             end
         end
     end
@@ -596,7 +605,8 @@ end
 """
     dequeue_and_process!(vorn, polygon_edge_queue, edges_to_process,
         intersected_edge_cache, left_edge_intersectors, right_edge_intersectors, current_edge_intersectors,
-        processed_pairs, boundary_sites, segment_intersections, exterior_circumcenters, equal_circumcenter_mapping)
+        processed_pairs, boundary_sites, segment_intersections, exterior_circumcenters, equal_circumcenter_mapping,
+        rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateType=def_alg222())
 
 Dequeue an edge from `polygon_edge_queue` and process it. If `polygon_edge_queue` is empty, then we process the first edge in `edges_to_process`.
 
@@ -613,6 +623,8 @@ Dequeue an edge from `polygon_edge_queue` and process it. If `polygon_edge_queue
 - `segment_intersections`: A dictionary of segment intersections.
 - `exterior_circumcenters`: A dictionary of exterior circumcenters.
 - `equal_circumcenter_mapping`: A mapping from the indices of the segment intersections that are equal to the circumcenter of a site to the index of the site.
+- `rng::Random.AbstractRNG=Random.default_rng()`: The random number generator. 
+- `predicates::AbstractPredicateType=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs
 There are no outputs. Instead, the caches and queues are updated in-place.
@@ -630,10 +642,11 @@ This function works as follows:
 """
 function dequeue_and_process!(vorn, polygon_edge_queue, edges_to_process,
     intersected_edge_cache, left_edge_intersectors, right_edge_intersectors, current_edge_intersectors,
-    processed_pairs, boundary_sites, segment_intersections, exterior_circumcenters, equal_circumcenter_mapping)
+    processed_pairs, boundary_sites, segment_intersections, exterior_circumcenters, equal_circumcenter_mapping,
+    rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateType=def_alg222())
     if isempty(polygon_edge_queue)
         e = convert_to_edge_adjoining_ghost_vertex(vorn, first(edges_to_process))
-        enqueue_new_edge!(polygon_edge_queue, vorn, e)
+        enqueue_new_edge!(polygon_edge_queue, vorn, e, rng, predicates)
     end
     e, incident_polygon = popfirst!(polygon_edge_queue)
     if (e, incident_polygon) ∈ processed_pairs || (reverse_edge(e), incident_polygon) ∈ processed_pairs
@@ -657,12 +670,16 @@ function dequeue_and_process!(vorn, polygon_edge_queue, edges_to_process,
 end
 
 """
-    find_all_intersections(vorn::VoronoiTessellation) -> (Dict, Vector, Set, Dict)
+    find_all_intersections(vorn::VoronoiTessellation; rng=Random.default_rng(), predicates::AbstractPredicateType=def_alg222()) -> (Dict, Vector, Set, Dict)
 
 Find all intersections between the edges of the Voronoi tessellation and the boundary of the polygon.
 
 # Arguments
 - `vorn`: The [`VoronoiTessellation`](@ref).
+
+# Keyword Arguments 
+- `rng::Random.AbstractRNG=Random.default_rng()`: The random number generator.
+- `predicates::AbstractPredicateType=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs
 - `boundary_sites`: A dictionary of boundary sites.
@@ -679,7 +696,7 @@ This algorithm works as follows:
 4. In the special case that there is just a single triangle in the underlying triangulation, we process the intersections using [`add_segment_intersection!`](@ref) directly.
 5. We then return.
 """
-function find_all_intersections(vorn::VoronoiTessellation)
+function find_all_intersections(vorn::VoronoiTessellation; rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateType=def_alg222())
     edges_to_process,
     polygon_edge_queue,
     boundary_sites,
@@ -692,11 +709,12 @@ function find_all_intersections(vorn::VoronoiTessellation)
     current_edge_intersectors,
     equal_circumcenter_mapping = initialise_clipping_arrays(vorn)
     e = convert_to_edge_adjoining_ghost_vertex(vorn, first(edges_to_process))
-    enqueue_new_edge!(polygon_edge_queue, vorn, e)
+    enqueue_new_edge!(polygon_edge_queue, vorn, e, rng, predicates)
     while !isempty(edges_to_process) || !isempty(polygon_edge_queue)
         dequeue_and_process!(vorn, polygon_edge_queue, edges_to_process,
             intersected_edge_cache, left_edge_intersectors, right_edge_intersectors, current_edge_intersectors,
-            processed_pairs, boundary_sites, segment_intersections, exterior_circumcenters, equal_circumcenter_mapping)
+            processed_pairs, boundary_sites, segment_intersections, exterior_circumcenters, equal_circumcenter_mapping,
+            rng, predicates)
     end
     if num_polygon_vertices(vorn) == 1 # 1 triangle 
         for i in each_generator(vorn)
@@ -806,7 +824,7 @@ function add_all_boundary_polygons!(vorn::VoronoiTessellation, boundary_sites)
 end
 
 """
-    clip_voronoi_tessellation!(vorn::VoronoiTessellation, is_convex=true)
+    clip_voronoi_tessellation!(vorn::VoronoiTessellation, is_convex=true; rng=Random.default_rng(), predicates::AbstractPredicateType=def_alg222())
 
 Clip the Voronoi tessellation `vorn` to the convex hull of the generators in `vorn`. 
 
@@ -814,11 +832,15 @@ Clip the Voronoi tessellation `vorn` to the convex hull of the generators in `vo
 - `vorn`: The [`VoronoiTessellation`](@ref).
 - `is_convex`: Whether the boundary is convex or not. Not currently used.
 
+# Keyword Arguments
+- `rng::Random.AbstractRNG=Random.default_rng()`: The random number generator.
+- `predicates::AbstractPredicateType=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+
 # Outputs 
 There are no outputs, but the Voronoi tessellation is clipped in-place.
 """
-function clip_voronoi_tessellation!(vorn::VoronoiTessellation, is_convex=true)
-    boundary_sites, segment_intersections, exterior_circumcenters, equal_circumcenter_mapping = find_all_intersections(vorn)
+function clip_voronoi_tessellation!(vorn::VoronoiTessellation, is_convex=true; rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateType=def_alg222())
+    boundary_sites, segment_intersections, exterior_circumcenters, equal_circumcenter_mapping = find_all_intersections(vorn; rng, predicates)
     n = add_intersection_points!(vorn, segment_intersections)
     clip_all_polygons!(vorn, n, boundary_sites, exterior_circumcenters, equal_circumcenter_mapping, is_convex)
     add_all_boundary_polygons!(vorn, boundary_sites)

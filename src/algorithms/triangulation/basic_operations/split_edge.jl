@@ -95,7 +95,7 @@ function split_edge!(tri::Triangulation, i, j, r, store_event_history=Val(false)
 end
 
 """
-    legalise_split_edge!(tri::Triangulation, i, j, k, r, store_event_history=Val(false), event_history=nothing)
+    legalise_split_edge!(tri::Triangulation, i, j, k, r, store_event_history=Val(false), event_history=nothing; predicates::AbstractPredicateType=def_alg222())
 
 Legalises the newly added edges in `tri` after the edge `(i, j)` was split using [`split_edge!`](@ref).
 
@@ -110,17 +110,20 @@ See also [`complete_split_edge_and_legalise!`](@ref).
 - `store_event_history=Val(false)`: Whether to store the event history of the flip.
 - `event_history=nothing`: The event history. Only updated if `store_event_history` is true, in which case it needs to be an [`InsertionEventHistory`](@ref) object.
 
+# Keyword Arguments
+- `predicates::AbstractPredicateType=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+
 # Outputs
 There is no output, as `tri` is updated in-place.
 """
-function legalise_split_edge!(tri::Triangulation, i, j, k, r, store_event_history=Val(false), event_history=nothing)
-    legalise_edge!(tri, j, k, r, store_event_history, event_history)
-    legalise_edge!(tri, k, i, r, store_event_history, event_history)
+function legalise_split_edge!(tri::Triangulation, i, j, k, r, store_event_history=Val(false), event_history=nothing; predicates::AbstractPredicateType=def_alg222())
+    legalise_edge!(tri, j, k, r, store_event_history, event_history; predicates)
+    legalise_edge!(tri, k, i, r, store_event_history, event_history; predicates)
     return tri
 end
 
 """
-    complete_split_edge_and_legalise!(tri::Triangulation, i, j, r, store_event_history=Val(false), event_history=nothing)
+    complete_split_edge_and_legalise!(tri::Triangulation, i, j, r, store_event_history=Val(false), event_history=nothing; predicates::AbstractPredicateType=def_alg222())
 
 Given a triangulation `tri`, an edge `(i, j)`, and a point `r`, splits both `(i, j)` and `(j, i)` at `r` using [`split_edge!`](@ref) and then subsequently legalises the new edges with [`legalise_split_edge!`](@ref).
 
@@ -132,16 +135,19 @@ Given a triangulation `tri`, an edge `(i, j)`, and a point `r`, splits both `(i,
 - `store_event_history=Val(false)`: Whether to store the event history of the flip.
 - `event_history=nothing`: The event history. Only updated if `store_event_history` is true, in which case it needs to be an [`InsertionEventHistory`](@ref) object.
 
+# Keyword Arguments 
+- `predicates::AbstractPredicateType=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+
 # Outputs
 There is no output, as `tri` is updated in-place.
 """
-function complete_split_edge_and_legalise!(tri::Triangulation, i, j, r, store_event_history=Val(false), event_history=nothing)
+function complete_split_edge_and_legalise!(tri::Triangulation, i, j, r, store_event_history=Val(false), event_history=nothing; predicates::AbstractPredicateType=def_alg222())
     k = get_adjacent(tri, i, j)
     ℓ = get_adjacent(tri, j, i)
     split_edge!(tri, i, j, r, store_event_history, event_history)
     split_edge!(tri, j, i, r, store_event_history, event_history)
-    legalise_split_edge!(tri, i, j, k, r, store_event_history, event_history)
-    legalise_split_edge!(tri, j, i, ℓ, r, store_event_history, event_history)
+    legalise_split_edge!(tri, i, j, k, r, store_event_history, event_history; predicates)
+    legalise_split_edge!(tri, j, i, ℓ, r, store_event_history, event_history; predicates)
     if is_true(store_event_history)
         # The deleted_triangles in event_history will contain triangles with the vertex r, which didn't actually appear 
         # initially. So, we need to deal any triangles with r as a vertex from event_history.deleted_triangles.

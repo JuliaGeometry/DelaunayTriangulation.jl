@@ -1,5 +1,5 @@
 """
-    RefinementArguments{Q,C,H,I,E,T,R}
+    RefinementArguments{Q,C,H,I,E,T,R,P<:AbstractPredicateType}
 
 A struct for storing arguments for mesh refinement.
 
@@ -19,6 +19,7 @@ A struct for storing arguments for mesh refinement.
 - `had_ghosts::Bool`: Whether the triangulation initially had ghost triangles or not.
 - `rng::R`: The random number generator.
 - `concavity_protection::Bool`: Whether to use concavity protection or not for [`find_triangle`](@ref). Most likely not needed, but may help in pathological cases.
+- `predicates::P<:AbstractPredicateType`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Constructors 
 In addition to the default constructor, we provide 
@@ -28,7 +29,7 @@ In addition to the default constructor, we provide
 for constructing this struct. This constructor will lock the convex hull and add ghost triangles to `tri` if
 needed ([`refine!`](@ref) will undo these changes once the refinement is finished))
 """
-struct RefinementArguments{Q,C,H,I,E,R,T}
+struct RefinementArguments{Q,C,H,I,E,R,T,P<:AbstractPredicateType}
     queue::Q
     constraints::C
     events::H
@@ -44,6 +45,7 @@ struct RefinementArguments{Q,C,H,I,E,R,T}
     had_ghosts::Bool
     rng::R
     concavity_protection::Bool
+    predicates::P
 end
 
 """
@@ -61,7 +63,7 @@ match those from [`refine!`](@ref).
 function RefinementArguments(tri::Triangulation;
     min_angle=30.0,
     max_angle=180.0,
-    min_area=get_area(tri) / 1e9,
+    min_area=number_type(tri)(get_area(tri) / 1e9),
     max_area=typemax(number_type(tri)),
     max_points=max(1_000, num_solid_vertices(tri))^2,
     seditious_angle=20.0,
@@ -70,14 +72,15 @@ function RefinementArguments(tri::Triangulation;
     use_lens=true,
     steiner_scale=0.999,
     rng=Random.default_rng(),
-    concavity_protection=false)
+    concavity_protection=false,
+    predicates::AbstractPredicateType=def_alg222())
     if !use_circumcenter
         throw(ArgumentError("Generalised Steiner points are not yet implemented."))
     end
     has_ghosts = has_ghost_triangles(tri)
     !has_ghosts && add_ghost_triangles!(tri)
     lock_convex_hull = !has_boundary_nodes(tri)
-    lock_convex_hull && lock_convex_hull!(tri)
+    lock_convex_hull && lock_convex_hull!(tri; rng, predicates)
     constraints = RefinementConstraints(;
         min_angle,
         max_angle,
@@ -119,7 +122,8 @@ function RefinementArguments(tri::Triangulation;
         lock_convex_hull,
         has_ghosts,
         rng,
-        concavity_protection
+        concavity_protection,
+        predicates
     )
 end
 

@@ -2,6 +2,7 @@
     triangulate_curve_bounded(points::P;
     segments=nothing,
     boundary_nodes=nothing,
+    predicates::AbstractPredicateType=def_alg222(),
     IntegerType::Type{I}=Int,
     polygonise_n=4096,
     coarse_n=0,
@@ -9,7 +10,7 @@
     delete_ghosts=false,
     delete_empty_features=true,
     recompute_representative_points=true,
-    rng::AbstractRNG=Random.default_rng(),
+    rng::Random.AbstractRNG=Random.default_rng(),
     insertion_order=nothing, 
     kwargs...) where {P,I} -> Triangulation
 
@@ -35,6 +36,7 @@ See also [`BoundaryEnricher`](@ref) and [`enrich_boundary!`](@ref).
 function triangulate_curve_bounded(points::P;
     segments=nothing,
     boundary_nodes=nothing,
+    predicates::AbstractPredicateType=def_alg222(),
     IntegerType::Type{I}=Int,
     polygonise_n=4096,
     coarse_n=0,
@@ -42,11 +44,12 @@ function triangulate_curve_bounded(points::P;
     delete_ghosts=false,
     delete_empty_features=true,
     recompute_representative_points=true,
-    rng::AbstractRNG=Random.default_rng(),
+    rng::Random.AbstractRNG=Random.default_rng(),
     insertion_order=nothing, # use this so that it gets ignored by the kwargs
     kwargs...) where {P,I}
     enricher = BoundaryEnricher(points, boundary_nodes, segments; IntegerType, n=polygonise_n, coarse_n)
     return _triangulate_curve_bounded(points, enricher;
+        predicates,
         IntegerType,
         check_arguments,
         delete_ghosts,
@@ -57,16 +60,17 @@ function triangulate_curve_bounded(points::P;
         kwargs...)
 end
 function _triangulate_curve_bounded(points::P, enricher;
+    predicates::AbstractPredicateType=def_alg222(),
     IntegerType::Type{I}=Int,
     check_arguments=true,
     delete_ghosts=false,
     delete_empty_features=true,
     recompute_representative_points=true,
-    rng::AbstractRNG=Random.default_rng(),
+    rng::Random.AbstractRNG=Random.default_rng(),
     insertion_order=nothing, # use this so that it gets ignored by the kwargs
     kwargs...) where {P,I}
     check_arguments && check_args(enricher)
-    enrich_boundary!(enricher)
+    enrich_boundary!(enricher; predicates)
     new_boundary_nodes = get_boundary_nodes(enricher)
     new_segments = get_segments(enricher)
     full_polygon_hierarchy = get_polygon_hierarchy(enricher)
@@ -75,6 +79,7 @@ function _triangulate_curve_bounded(points::P, enricher;
         IntegerType,
         segments=new_segments,
         boundary_nodes=new_boundary_nodes,
+        predicates,
         full_polygon_hierarchy,
         boundary_curves,
         boundary_enricher=enricher,
@@ -166,22 +171,26 @@ function _coarse_discretisation_contiguous!(points, boundary_nodes, boundary_cur
 end
 
 """
-    enrich_boundary!(enricher::BoundaryEnricher)
+    enrich_boundary!(enricher::BoundaryEnricher; predicates::AbstractPredicateType=def_alg222())
 
 Enriches the initial boundary defined inside `enricher`, implementing the algorithm of Gosselin and Ollivier-Gooch (2007).
 At the termination of the algorithm, all edges will contain no other points inside their 
 diametral circles.
+
+The `predicates` argument determines how predicates are computed, and should be 
+one of [`Exact`](@ref), [`Fast`](@ref), and [`Adaptive`](@ref) (the default).
+See the documentation for more information about these choices.
 """
-function enrich_boundary!(enricher::BoundaryEnricher)
+function enrich_boundary!(enricher::BoundaryEnricher; predicates::AbstractPredicateType=def_alg222())
     queue = get_queue(enricher)
     points = get_points(enricher)
     enqueue_all!(queue, each_point_index(points))
     while !isempty(queue)
-        _enrich_boundary_itr!(enricher)
+        _enrich_boundary_itr!(enricher, predicates)
     end
     return enricher
 end
-function _enrich_boundary_itr!(enricher::BoundaryEnricher)
+function _enrich_boundary_itr!(enricher::BoundaryEnricher, predicates::AbstractPredicateType=def_alg222())
     queue = get_queue(enricher)
     points = get_points(enricher)
     spatial_tree = get_spatial_tree(enricher)
@@ -193,11 +202,11 @@ function _enrich_boundary_itr!(enricher::BoundaryEnricher)
         i, j = get_edge(bbox)
         i, j = reorient_edge(enricher, i, j)
         p, q = get_point(points, i, j)
-        in_cert = point_position_relative_to_diametral_circle(p, q, r)
+        in_cert = point_position_relative_to_diametral_circle(predicates, p, q, r)
         if is_inside(in_cert)
-            vis_cert = test_visibility(enricher, i, j, v)
+            vis_cert = test_visibility(predicates, enricher, i, j, v)
             if is_visible(vis_cert)
-                has_precision_issues = split_subcurve!(enricher, i, j)
+                has_precision_issues = split_subcurve!(enricher, i, j, predicates)
                 has_precision_issues && continue
                 !requeued && push!(queue, v)
                 requeued = true
@@ -208,23 +217,27 @@ function _enrich_boundary_itr!(enricher::BoundaryEnricher)
 end
 
 """
-    split_subcurve!(enricher::BoundaryEnricher, i, j) -> Bool
+    split_subcurve!(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateType=def_alg222()) -> Bool
 
 Splits the curve associated with the edge `(i, j)` into two subcurves by inserting a point `r` between `(i, j)` such that the 
 total variation of the subcurve is equal on `(i, r)` and `(r, j)`. The returned value is a `flag` that is `true` 
 if there was a precision issue, and `false` otherwise.
+
+The `predicate` argument determines how predicates are computed, and should be 
+one of [`Exact`](@ref), [`Fast`](@ref), and [`Adaptive`](@ref) (the default).
+See the documentation for more information about these choices.
 """
-function split_subcurve!(enricher::BoundaryEnricher, i, j)
+function split_subcurve!(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateType=def_alg222())
     flag, apex, complex_id, _ = is_small_angle_complex_member(enricher, i, j)
     if !flag
-        return _split_subcurve_standard!(enricher, i, j)
+        return _split_subcurve_standard!(enricher, i, j, predicates)
     else
         return _split_subcurve_complex!(enricher, apex, complex_id)
     end
 end
-function _split_subcurve_standard!(enricher::BoundaryEnricher, i, j)
+function _split_subcurve_standard!(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateType=def_alg222())
     points = get_points(enricher)
-    t, Δθ, ct = compute_split_position(enricher, i, j)
+    t, Δθ, ct = compute_split_position(enricher, i, j, predicates)
     if isnan(Δθ)
         return true
     end
@@ -264,7 +277,7 @@ function _split_subcurve_complex!(enricher::BoundaryEnricher, apex, complex_id)
 end
 
 """
-    compute_split_position(enricher::BoundaryEnricher, i, j) -> (Float64, Float64, NTuple{2,Float64})
+    compute_split_position(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateType=def_alg222(0)) -> (Float64, Float64, NTuple{2,Float64})
 
 Gets the point to split the edge `(i, j)` at.
 
@@ -272,14 +285,15 @@ Gets the point to split the edge `(i, j)` at.
 - `enricher::BoundaryEnricher`: The enricher.
 - `i`: The first point of the edge.
 - `j`: The second point of the edge.
+- `predicates::AbstractPredicateType=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs
 - `t`: The parameter value of the split point.
 - `Δθ`: The total variation of the subcurve `(i, t)`. If a split was created due to a small angle, this will be set to zero.
 - `ct`: The point to split the edge at.
 """
-function compute_split_position(enricher::BoundaryEnricher, i, j)
-    num_adjoin, adjoin_vert = has_acute_neighbouring_angles(enricher, i, j)
+function compute_split_position(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateType=def_alg222())
+    num_adjoin, adjoin_vert = has_acute_neighbouring_angles(predicates, enricher, i, j)
     if num_adjoin == 0
         t, Δθ, ct = _compute_split_position_standard(enricher, i, j)
     else
@@ -287,6 +301,7 @@ function compute_split_position(enricher::BoundaryEnricher, i, j)
     end
     points = get_points(enricher)
     p, q = get_point(points, i, j)
+    T = number_type(points)
     if check_split_subsegment_precision(getx(ct), gety(ct), p, q)
         #=
         This happens when the points p and q are so close to each other, that the interval 
@@ -302,8 +317,8 @@ function compute_split_position(enricher::BoundaryEnricher, i, j)
         t₂ = get_inverse(curve, q)
         which gives t₁ == t₂.
         =#
-        t = NaN
-        Δθ = NaN
+        t = T(NaN)
+        Δθ = T(NaN)
     end
     return t, Δθ, ct
 end
@@ -386,7 +401,7 @@ function _compute_split_position_complex(enricher::BoundaryEnricher, apex, membe
 end
 
 """
-    has_acute_neighbouring_angles(enricher::BoundaryEnricher, i, j) -> Int, Vertex
+    has_acute_neighbouring_angles(predicates::AbstractPredicateType, enricher::BoundaryEnricher, i, j) -> Int, Vertex
 
 Given a boundary edge `(i, j)`, tests if the neighbouring angles are acute. The first returned value 
 is the number of angles adjoining `(i, j)` that are acute (0, 1, or 2). The second returned value is the
@@ -395,7 +410,7 @@ returned vertex is `$∅`.
 
 (The purpose of this function is similar to [`segment_vertices_adjoin_other_segments_at_acute_angle`](@ref).)
 """
-function has_acute_neighbouring_angles(enricher::BoundaryEnricher{P,B,C,I}, i, j) where {P,B,C,I}
+function has_acute_neighbouring_angles(predicates::AbstractPredicateType, enricher::BoundaryEnricher{P,B,C,I}, i, j) where {P,B,C,I}
     is_segment(enricher, i, j) && return 0, I(∅)
     points = get_points(enricher)
     p, q = get_point(points, i, j)
@@ -406,8 +421,8 @@ function has_acute_neighbouring_angles(enricher::BoundaryEnricher{P,B,C,I}, i, j
     (idx == 1 || idx == n) && return 0, I(∅)
     u, v = get_boundary_nodes(section_nodes, idx - 1), get_boundary_nodes(section_nodes, idx + 2) # j is at idx + 1 
     r, s = get_point(points, u), get_point(points, v)
-    angle_pqr = opposite_angle(r, q, p)
-    angle_qsp = opposite_angle(p, s, q)
+    angle_pqr = opposite_angle(predicates, r, q, p)
+    angle_qsp = opposite_angle(predicates, p, s, q)
     num_adjoin = is_acute(angle_pqr) + is_acute(angle_qsp)
     if num_adjoin == 0 || num_adjoin == 2
         return num_adjoin, I(∅)
@@ -417,7 +432,7 @@ function has_acute_neighbouring_angles(enricher::BoundaryEnricher{P,B,C,I}, i, j
 end
 
 """
-    test_visibility(enricher::BoundaryEnricher, i, j, k) -> Certificate
+    test_visibility(predicates::AbstractPredicateType, enricher::BoundaryEnricher, i, j, k) -> Certificate
 
 Tests if the vertex `k` is visible from the edge `(i, j)`. Returns a [`Certificate`](@ref) which is
 
@@ -434,7 +449,7 @@ boundary edges, or there is a hole between `(i, j)` and `k`.
     This is not the same definition used in defining constrained Delaunay triangulations, 
     where visibility means visible from ANY point on the edge instead of only from the endpoints.
 """
-function test_visibility(enricher::BoundaryEnricher, i, j, k)
+function test_visibility(predicates::AbstractPredicateType, enricher::BoundaryEnricher, i, j, k)
     parent_curve_index = get_parent(enricher, i, j)
     points = get_points(enricher)
     boundary_nodes = get_boundary_nodes(enricher)
@@ -442,15 +457,15 @@ function test_visibility(enricher::BoundaryEnricher, i, j, k)
     spatial_tree = get_spatial_tree(enricher)
     curve_index_map = get_curve_index_map(enricher)
     polygon_hierarchy = get_polygon_hierarchy(enricher)
-    return test_visibility(points, boundary_nodes, boundary_curves, parent_curve_index, spatial_tree, curve_index_map, polygon_hierarchy, i, j, k)
+    return test_visibility(predicates, points, boundary_nodes, boundary_curves, parent_curve_index, spatial_tree, curve_index_map, polygon_hierarchy, i, j, k)
 end
-function test_visibility(points, boundary_nodes, boundary_curves, parent_curve_index, spatial_tree, curve_index_map, polygon_hierarchy, i, j, k)
+function test_visibility(predicates::AbstractPredicateType, points, boundary_nodes, boundary_curves, parent_curve_index, spatial_tree, curve_index_map, polygon_hierarchy, i, j, k)
     p, q, a = get_point(points, i, j, k)
     if parent_curve_index ≠ ∅ # interior segments don't bound holes, so this first check is useless
-        side_e = point_position_relative_to_line(p, q, a)
+        side_e = point_position_relative_to_line(predicates, p, q, a)
         is_pl = is_piecewise_linear(boundary_curves, parent_curve_index)
         if !is_pl
-            side_c = point_position_relative_to_curve(boundary_curves, parent_curve_index, a)
+            side_c = point_position_relative_to_curve(predicates, boundary_curves, parent_curve_index, a)
         else
             # Two possibilities: 
             #   If side_e == Cert.Right, then yes the point is outside of the domain.
@@ -495,11 +510,11 @@ function test_visibility(points, boundary_nodes, boundary_curves, parent_curve_i
         !edges_are_disjoint((i, j), (u, v)) && continue
         p′, q′ = get_point(points, u, v)
         if !int₁
-            cert = line_segment_intersection_type(p, a, p′, q′)
+            cert = line_segment_intersection_type(predicates, p, a, p′, q′)
             int₁ = !has_no_intersections(cert) && !is_touching(cert)
         end
         if !int₂
-            cert = line_segment_intersection_type(a, q, p′, q′)
+            cert = line_segment_intersection_type(predicates, a, q, p′, q′)
             int₂ = !has_no_intersections(cert) && !is_touching(cert)
         end
         int₁ && int₂ && return Cert.Invisible

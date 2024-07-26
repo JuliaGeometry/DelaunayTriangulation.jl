@@ -31,6 +31,7 @@ See the documentation for more information about mesh refinement, e.g. convergen
 - `steiner_scale=0.999`: The perturbation factor to use for generalised Steiner points if `use_circumcenter=false`. (Not currently used - see above.)
 - `rng=Random.default_rng()`: The random number generator to use in case it is needed during point location.
 - `concavity_protection=false`: Whether to use concavity protection or not for [`find_triangle`](@ref). Most likely not needed, but may help in pathological cases.
+- `predicates::AbstractPredicateType=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Output 
 The triangulation is refined in-place.
@@ -152,9 +153,9 @@ function split_triangle!(tri::Triangulation, args::RefinementArguments, T)
     check_steiner_point_precision(tri, V′, c) && return Cert.PrecisionFailure
     push_point!(tri, c′)
     new_point = num_points(tri)
-    segment_flag = check_for_steiner_point_on_segment(tri, V, V′, new_point, flag)
+    segment_flag = check_for_steiner_point_on_segment(tri, V, V′, new_point, flag, args.predicates)
     segment_flag && push!(args.offcenter_split_list, new_point)
-    add_point_bowyer_watson_and_process_after_found_triangle!(tri, new_point, V′, c′, flag, false, Val(true), args.events, Val(false))
+    add_point_bowyer_watson_and_process_after_found_triangle!(tri, new_point, V′, c′, flag, false, Val(true), args.events, Val(false), args.predicates)
     any_encroached = enqueue_newly_encroached_segments!(args, tri)
     if any_encroached
         segment_flag && pop!(args.offcenter_split_list, new_point)
@@ -249,11 +250,11 @@ Locates the Steiner point `c` of a triangle `T` of `tri` in [`get_steiner_point`
 - `flag`: A [`Certificate`](@ref) which is `Cert.On` if the Steiner point is on the boundary of `V`, `Cert.Outside` if the Steiner point is outside of `V`, and `Cert.Inside` if the Steiner point is inside of `V`.
 """
 function locate_steiner_point(tri::Triangulation, args::RefinementArguments, T, c)
-    flag = point_position_relative_to_triangle(tri, T, c)
+    flag = point_position_relative_to_triangle(args.predicates, tri, T, c)
     !is_outside(flag) && return T, flag # T is never a ghost triangle, so don't worry about checking is_on(flag) here
     init = get_init_for_steiner_point(tri, T)
-    V, _ = find_triangle(tri, c; m=nothing, point_indices=nothing, try_points=nothing, k=init, args.rng, args.concavity_protection, use_barriers=Val(true))
-    flag = point_position_relative_to_triangle(tri, V, c)
+    V, _ = find_triangle(tri, c; predicates=args.predicates, m=nothing, point_indices=nothing, try_points=nothing, k=init, args.rng, args.concavity_protection, use_barriers=Val(true))
+    flag = point_position_relative_to_triangle(args.predicates, tri, V, c)
     if is_ghost_triangle(V) && is_on(flag)
         V = replace_ghost_triangle_with_boundary_triangle(tri, V)
     end
@@ -290,7 +291,7 @@ function check_for_invisible_steiner_point(tri::Triangulation, V, T, flag, c)
 end
 
 """
-    check_for_steiner_point_on_segment(tri::Triangulation, V, V′, new_point, flag) -> Bool
+    check_for_steiner_point_on_segment(tri::Triangulation, V, V′, new_point, flag, predicates::AbstractPredicateType) -> Bool
 
 Checks if the Steiner point with vertex `new_point` is on a segment. If so, then its vertex is pushed into the offcenter-split list from `args`,
 indicating that it should no longer be regarded as a free vertex (see [`is_free`](@ref)).
@@ -301,14 +302,15 @@ indicating that it should no longer be regarded as a free vertex (see [`is_free`
 - `V′`: The triangle that the Steiner point is in.
 - `new_point`: The vertex associated with the Steiner point.
 - `flag`: A [`Certificate`](@ref) which is `Cert.On` if the Steiner point is on the boundary of `V`, `Cert.Outside` if the Steiner point is outside of `V`, and `Cert.Inside` if the Steiner point is inside of `V`.
+- `predicates::AbstractPredicateType`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Output
 - `onflag`: Whether the Steiner point is on a segment or not.
 """
-function check_for_steiner_point_on_segment(tri::Triangulation, V, V′, new_point, flag)
+function check_for_steiner_point_on_segment(tri::Triangulation, V, V′, new_point, flag, predicates::AbstractPredicateType)
     !compare_triangles(V, V′) && return false # the point is a centroid, so it won't be on a segment
     if is_on(flag)
-        e = find_edge(tri, V, new_point)
+        e = find_edge(predicates, tri, V, new_point)
         u, v = edge_vertices(e)
         contains_segment(tri, u, v) && return true
     end
@@ -489,7 +491,7 @@ Determines if the vertices of a segment `e` of `tri` adjoin other segments at an
 - `num_adjoin`: The number of vertices of `e` that adjoin other segments at an acute angle.
 - `adjoin_vert`: The vertex of `e` that adjoins another segment at an acute angle if `num_adjoin == 1`, and `∅` otherwise.
 """
-function segment_vertices_adjoin_other_segments_at_acute_angle(tri::Triangulation, e)
+function segment_vertices_adjoin_other_segments_at_acute_angle(tri::Triangulation, e, predicates::AbstractPredicateType=def_alg222())
     u, v = edge_vertices(e)
     p, q = get_point(tri, u, v)
     I = integer_type(tri)
@@ -498,7 +500,7 @@ function segment_vertices_adjoin_other_segments_at_acute_angle(tri::Triangulatio
     for w in get_neighbours(tri, u)
         if w ≠ v && contains_segment(tri, u, w)
             r = get_point(tri, w)
-            angle = opposite_angle(r, q, p)
+            angle = opposite_angle(predicates, r, q, p)
             if is_acute(angle)
                 other_segments = (w, I(∅))
                 break
@@ -509,7 +511,7 @@ function segment_vertices_adjoin_other_segments_at_acute_angle(tri::Triangulatio
     for w in get_neighbours(tri, v)
         if w ≠ u && w ≠ other_segments[1] && contains_segment(tri, v, w) # should be adjoining OTHER segments, not both the same segment. This case is just a triangle anyway. For the case of a triangle nestled in the corner of a small input angle, see is_triangle_nestled
             r = get_point(tri, w)
-            angle = opposite_angle(r, p, q)
+            angle = opposite_angle(predicates, r, p, q)
             if is_acute(angle)
                 other_segments = (other_segments[1], w)
                 break
@@ -558,7 +560,7 @@ See also [`point_position_relative_to_diametral_circle`](@ref) and [`point_posit
 """
 function encroaches_upon(p, q, r, args::RefinementArguments)
     if !args.use_lens
-        d = point_position_relative_to_diametral_circle(p, q, r)
+        d = point_position_relative_to_diametral_circle(args.predicates, p, q, r)
     else
         d = point_position_relative_to_diametral_lens(p, q, r, args.constraints.min_angle)
     end
@@ -614,7 +616,7 @@ function _split_subsegment_piecewise_linear!(tri::Triangulation, args::Refinemen
     push_point!(tri, mx, my)
     I = integer_type(tri)
     r = I(num_points(tri))
-    complete_split_edge_and_legalise!(tri, u, v, r, Val(true), args.events)
+    complete_split_edge_and_legalise!(tri, u, v, r, Val(true), args.events; predicates=args.predicates)
     assess_added_triangles!(args, tri)
     return tri
 end
@@ -653,7 +655,7 @@ function _split_subsegment_curve_bounded_standard!(tri::Triangulation, args::Ref
         I = integer_type(tri)
         r = I(num_points(tri))
         is_interior = is_segment(enricher, i, j)
-        complete_split_edge_and_legalise!(tri, i, j, r, Val(true), args.events)
+        complete_split_edge_and_legalise!(tri, i, j, r, Val(true), args.events; predicates=args.predicates)
         split_edge!(enricher, i, j, r, Val(false), Val(false), is_interior) 
         assess_added_triangles!(args, tri)
         push!(args.midpoint_split_list, r)
@@ -686,7 +688,7 @@ function _split_subsegment_curve_bounded_small_angle!(tri::Triangulation, args::
         e′ = construct_edge(E, i, j)
         delete_free_vertices_around_subsegment!(tri, args, e′)
         is_interior = is_segment(enricher, i, j)
-        complete_split_edge_and_legalise!(tri, i, j, r, Val(true), args.events)
+        complete_split_edge_and_legalise!(tri, i, j, r, Val(true), args.events; predicates=args.predicates)
         split_edge!(enricher, i, j, r, Val(false), Val(false), is_interior)
         replace_next_edge!(enricher, apex, complex_id, member_id, r)
         assess_added_triangles!(args, tri)
@@ -714,8 +716,8 @@ function delete_free_vertices_around_subsegment!(tri::Triangulation, args::Refin
         p, q = get_point(tri, u, v)
         w = get_adjacent(tri, e′)
         r = get_point(tri, w)
-        while is_free(args, w) && !is_outside(point_position_relative_to_diametral_circle(p, q, r))
-            delete_point!(tri, w; store_event_history=Val(true), event_history=args.events, args.rng)
+        while is_free(args, w) && !is_outside(point_position_relative_to_diametral_circle(args.predicates, p, q, r))
+            delete_point!(tri, w; store_event_history=Val(true), event_history=args.events, rng=args.rng, predicates=args.predicates)
             w = get_adjacent(tri, e′)
             r = get_point(tri, w)
         end

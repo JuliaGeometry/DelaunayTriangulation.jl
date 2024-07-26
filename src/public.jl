@@ -265,6 +265,16 @@
             distance_to_polygon,
             number_type,
             pole_of_inaccessibility,
-            is_point2
+            is_point2,
+            AbstractPredicateType,
+            Fast,
+            Exact,
+            Adaptive,
+            orient_predicate,
+            incircle_predicate,
+            parallelorder_predicate,
+            angle_is_acute_predicate,
+            sameside_predicate,
+            meet_predicate
     """))
 end

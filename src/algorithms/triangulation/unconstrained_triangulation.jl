@@ -9,7 +9,7 @@ Gets the insertion order for points into a triangulation.
 - `randomise`: If `true`, then the insertion order is randomised. Otherwise, the insertion order is the same as the order of the points.
 - `skip_points`: The points to skip.
 - `I::Type{I}`: The type of the vertices.
-- `rng::AbstractRNG`: The random number generator to use.
+- `rng::Random.AbstractRNG`: The random number generator to use.
 
 # Output 
 - `order`: The order to insert the points in.
@@ -21,7 +21,7 @@ Gets the insertion order for points into a triangulation.
 function get_insertion_order(points, randomise, skip_points, ::Type{I}, rng) where {I}
     point_indices = each_point_index(points)
     collected_point_indices = convert(Vector{I}, point_indices)
-    randomise && shuffle!(rng, collected_point_indices)
+    randomise && Random.shuffle!(rng, collected_point_indices)
     setdiff!(collected_point_indices, skip_points)
     return collected_point_indices
 end
@@ -37,17 +37,18 @@ Gets the initial triangle for the Bowyer-Watson algorithm.
 # Arguments 
 - `tri`: The triangulation.
 - `insertion_order`: The insertion order of the points. See [`get_insertion_order`](@ref).
+- `predicates::AbstractPredicateType=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 - `itr=0`: To avoid issues with degenerate triangles and infinite loops, this counts the number of times `insertion_order` had to be shifted using `circshift!` to find an initial non-degenerate triangle.
 
 # Output
 - `initial_triangle`: The initial triangle.
 """
-function get_initial_triangle(tri::Triangulation, insertion_order, itr=0)
+function get_initial_triangle(tri::Triangulation, insertion_order, predicates::AbstractPredicateType=def_alg222(), itr=0)
     i, j, k = @view insertion_order[1:3] # insertion_order got converted into a Vector, so indexing is safe 
-    initial_triangle = construct_positively_oriented_triangle(tri, i, j, k)
+    initial_triangle = construct_positively_oriented_triangle(tri, i, j, k, predicates)
     i, j, k = triangle_vertices(initial_triangle)
     p, q, r = get_point(tri, i, j, k)
-    degenerate_cert = triangle_orientation(p, q, r)
+    degenerate_cert = triangle_orientation(predicates, p, q, r)
     if length(insertion_order) > 3 && (is_degenerate(degenerate_cert) || check_precision(triangle_area(p, q, r))) && itr ≤ length(insertion_order) # Do not get stuck in an infinite loop if there are just three points, the three of them being collinear. The itr ≤ length(insertion_order) is needed because, if all the points are collinear, the loop could go on forever 
         @static if VERSION ≥ v"1.8.1"
             circshift!(insertion_order, -1)
@@ -55,26 +56,27 @@ function get_initial_triangle(tri::Triangulation, insertion_order, itr=0)
             _insertion_order = circshift(insertion_order, -1)
             copyto!(insertion_order, _insertion_order)
         end
-        return get_initial_triangle(tri, insertion_order, itr + 1)
+        return get_initial_triangle(tri, insertion_order, predicates, itr + 1)
     end
     return initial_triangle
 end
 
 """
-    initialise_bowyer_watson!(tri::Triangulation, insertion_order) -> Triangulation
+    initialise_bowyer_watson!(tri::Triangulation, insertion_order, predicates::AbstractPredicateType=def_alg222()) -> Triangulation
 
 Initialises the Bowyer-Watson algorithm.
 
 # Arguments
 - `tri`: The triangulation.
 - `insertion_order`: The insertion order of the points. See [`get_insertion_order`](@ref).
+- `predicates::AbstractPredicateType=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Output
 `tri` is updated in place to contain the initial triangle from which the Bowyer-Watson algorithm starts.
 """
-function initialise_bowyer_watson!(tri::Triangulation, insertion_order)
+function initialise_bowyer_watson!(tri::Triangulation, insertion_order, predicates::AbstractPredicateType=def_alg222())
     I = integer_type(tri)
-    initial_triangle = get_initial_triangle(tri, insertion_order)
+    initial_triangle = get_initial_triangle(tri, insertion_order, predicates)
     add_triangle!(tri, initial_triangle; update_ghost_edges=true)
     new_representative_point!(tri, I(1))
     for i in triangle_vertices(initial_triangle)
@@ -95,7 +97,7 @@ For a given iteration of the Bowyer-Watson algorithm, finds the point to start t
 - `new_point`: The point to insert.
 - `insertion_order`: The insertion order of the points. See [`get_insertion_order`](@ref).
 - `num_sample_rule::F`: The rule to use to determine the number of points to sample. See [`default_num_samples`](@ref) for the default. 
-- `rng::AbstractRNG`: The random number generator to use.
+- `rng::Random.AbstractRNG`: The random number generator to use.
 - `try_last_inserted_point`: If `true`, then the last inserted point is also considered as the start point. 
 
 # Output
@@ -112,7 +114,7 @@ function get_initial_search_point(tri::Triangulation, num_points, new_point, ins
 end
 
 """
-    add_point_bowyer_watson!(tri::Triangulation, new_point, initial_search_point::I, rng::AbstractRNG=Random.default_rng(), update_representative_point=true, store_event_history=Val(false), event_history=nothing, peek::P=Val(false)) -> Triangle 
+    add_point_bowyer_watson!(tri::Triangulation, new_point, initial_search_point::I, rng::Random.AbstractRNG=Random.default_rng(), update_representative_point=true, store_event_history=Val(false), event_history=nothing, peek::P=Val(false), predicates::AbstractPredicateType=def_alg222()) -> Triangle 
 
 Adds `new_point` into `tri`. 
 
@@ -120,7 +122,8 @@ Adds `new_point` into `tri`.
 - `tri`: The triangulation.
 - `new_point`: The point to insert.
 - `initial_search_point::I`: The vertex to start the point location with [`find_triangle`](@ref) at. See [`get_initial_search_point`](@ref).
-- `rng::AbstractRNG`: The random number generator to use.
+- `rng::Random.AbstractRNG`: The random number generator to use.
+- `predicates::AbstractPredicateType=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 - `update_representative_point=true`: If `true`, then the representative point is updated. See [`update_centroid_after_addition!`](@ref).
 - `store_event_history=Val(false)`: If `true`, then the event history from the insertion is stored. 
 - `event_history=nothing`: The event history to store the event history in. Should be an [`InsertionEventHistory`](@ref) if `store_event_history` is `true`, and `false` otherwise.
@@ -140,48 +143,48 @@ This function works as follows:
 
 The function [`add_point_bowyer_watson_dig_cavities!`](@ref) is the main workhorse of this function from `add_point_bowyer_watson_after_found_triangle`. See its docstring for the details. 
 """
-function add_point_bowyer_watson!(tri::Triangulation, new_point, initial_search_point::I, rng::AbstractRNG=Random.default_rng(), update_representative_point=true, store_event_history=Val(false), event_history=nothing, peek::P=Val(false)) where {I,P}
+function add_point_bowyer_watson!(tri::Triangulation, new_point, initial_search_point::I, rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateType=def_alg222(), update_representative_point=true, store_event_history=Val(false), event_history=nothing, peek::P=Val(false)) where {I,P}
     _new_point = is_true(peek) ? new_point : I(new_point)
     q = get_point(tri, _new_point)
-    V = find_triangle(tri, q; m=nothing, point_indices=nothing, try_points=nothing, k=initial_search_point, rng)
+    V = find_triangle(tri, q; predicates, m=nothing, point_indices=nothing, try_points=nothing, k=initial_search_point, rng)
     if is_weighted(tri)
         #=
         This part here is why the Bowyer-Watson algorithm is not implemented for weighted triangulations yet. I don't understand why it sometimes 
         fails here for submerged points. Need to look into it some more.
         =#
-        cert = point_position_relative_to_circumcircle(tri, V, _new_point) # redirects to point_position_relative_to_witness_plane
+        cert = point_position_relative_to_circumcircle(predicates, tri, V, _new_point) # redirects to point_position_relative_to_witness_plane
         is_outside(cert) && return V # If the point is submerged, then we don't add it
     end
-    flag = point_position_relative_to_triangle(tri, V, q)
-    add_point_bowyer_watson_and_process_after_found_triangle!(tri, _new_point, V, q, flag, update_representative_point, store_event_history, event_history, peek)
+    flag = point_position_relative_to_triangle(predicates, tri, V, q)
+    add_point_bowyer_watson_and_process_after_found_triangle!(tri, _new_point, V, q, flag, update_representative_point, store_event_history, event_history, peek, predicates)
     return V
 end
 
-function add_point_bowyer_watson_and_process_after_found_triangle!(tri::Triangulation, new_point, V, q, flag, update_representative_point=true, store_event_history=Val(false), event_history=nothing, peek::P=Val(false)) where {P}
+function add_point_bowyer_watson_and_process_after_found_triangle!(tri::Triangulation, new_point, V, q, flag, update_representative_point=true, store_event_history=Val(false), event_history=nothing, peek::P=Val(false), predicates::AbstractPredicateType=def_alg222()) where {P}
     I = integer_type(tri)
     _new_point = is_true(peek) ? new_point : I(new_point)
-    add_point_bowyer_watson_after_found_triangle!(tri, _new_point, V, q, flag, update_representative_point, store_event_history, event_history, peek)
-    add_point_bowyer_watson_onto_segment!(tri, _new_point, V, q, flag, update_representative_point, store_event_history, event_history, peek)
+    add_point_bowyer_watson_after_found_triangle!(tri, _new_point, V, q, flag, update_representative_point, store_event_history, event_history, peek, predicates)
+    add_point_bowyer_watson_onto_segment!(tri, _new_point, V, q, flag, update_representative_point, store_event_history, event_history, peek, predicates)
     return V
 end
 
-function add_point_bowyer_watson_after_found_triangle!(tri::Triangulation, new_point, V, q, flag, update_representative_point=true, store_event_history=Val(false), event_history=nothing, peek::P=Val(false)) where {P}
+function add_point_bowyer_watson_after_found_triangle!(tri::Triangulation, new_point, V, q, flag, update_representative_point=true, store_event_history=Val(false), event_history=nothing, peek::P=Val(false), predicates::AbstractPredicateType=def_alg222()) where {P}
     if is_ghost_triangle(V) && is_constrained(tri)
         # When we have a constrained boundary edge, we don't want to walk into its interior. So let's just check this case now.
         V = sort_triangle(V)
         u, v, w = triangle_vertices(V) # w is the ghost vertex
         if !contains_boundary_edge(tri, v, u)
-            return add_point_bowyer_watson_dig_cavities!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history, peek)
+            return add_point_bowyer_watson_dig_cavities!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history, peek, predicates)
         else
             return tri
         end
     else
-        return add_point_bowyer_watson_dig_cavities!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history, peek)
+        return add_point_bowyer_watson_dig_cavities!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history, peek, predicates)
     end
 end
 
 """
-    add_point_bowyer_watson_dig_cavities!(tri::Triangulation, new_point::N, V, q, flag, update_representative_point=true, store_event_history=Val(false), event_history=nothing, peek::F=Val(false)) where {N,F} 
+    add_point_bowyer_watson_dig_cavities!(tri::Triangulation, new_point::N, V, q, flag, update_representative_point=true, store_event_history=Val(false), event_history=nothing, peek::F=Val(false), predicates::AbstractPredicateType=def_alg222()) where {N,F} 
 
 Deletes all the triangles in `tri` whose circumcircle contains `new_point`. This leaves behind a polygonal cavity, whose boundary edges are then connected to `new_point`, restoring the Delaunay property from `new_point`'s insertion.
 
@@ -195,6 +198,7 @@ Deletes all the triangles in `tri` whose circumcircle contains `new_point`. This
 - `store_event_history=Val(false)`: If `true`, then the event history from the insertion is stored.
 - `event_history=nothing`: The event history to store the event history in. Should be an [`InsertionEventHistory`](@ref) if `store_event_history` is `true`, and `false` otherwise.
 - `peek=Val(false)`: Whether to actually add `new_point` into `tri`, or just record into `event_history` all the changes that would occur from its insertion.
+- `predicates::AbstractPredicateType=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Output
 There are no changes, but `tri` is updated in-place.
@@ -210,7 +214,7 @@ This function works as follows:
    will fix this case. The need for `is_ghost_triangle(V) && !is_boundary_node(tri, new_point)[1]` is in case the ghost edges were already correctly added. Nothing happens if the edge of `V` that `new_point` 
    is on is not the boundary edge.
 """
-function add_point_bowyer_watson_dig_cavities!(tri::Triangulation, new_point::N, V, q, flag, update_representative_point=true, store_event_history=Val(false), event_history=nothing, peek::F=Val(false)) where {N,F}
+function add_point_bowyer_watson_dig_cavities!(tri::Triangulation, new_point::N, V, q, flag, update_representative_point=true, store_event_history=Val(false), event_history=nothing, peek::F=Val(false), predicates::AbstractPredicateType=def_alg222()) where {N,F}
     _new_point = is_true(peek) ? num_points(tri) + 1 : new_point # If we are peeking, then we need to use the number of points in the triangulation as the index for the new point since we don't actually insert the point
     i, j, k = triangle_vertices(V)
     ℓ₁ = get_adjacent(tri, j, i)
@@ -218,14 +222,14 @@ function add_point_bowyer_watson_dig_cavities!(tri::Triangulation, new_point::N,
     ℓ₃ = get_adjacent(tri, i, k)
     !is_true(peek) && delete_triangle!(tri, V; protect_boundary=true, update_ghost_edges=false)
     is_true(store_event_history) && delete_triangle!(event_history, V)
-    dig_cavity!(tri, new_point, i, j, ℓ₁, flag, V, store_event_history, event_history, peek)
-    dig_cavity!(tri, new_point, j, k, ℓ₂, flag, V, store_event_history, event_history, peek)
-    dig_cavity!(tri, new_point, k, i, ℓ₃, flag, V, store_event_history, event_history, peek)
+    dig_cavity!(tri, new_point, i, j, ℓ₁, flag, V, store_event_history, event_history, peek, predicates)
+    dig_cavity!(tri, new_point, j, k, ℓ₂, flag, V, store_event_history, event_history, peek, predicates)
+    dig_cavity!(tri, new_point, k, i, ℓ₃, flag, V, store_event_history, event_history, peek, predicates)
     if is_on(flag) && (is_boundary_triangle(tri, V) || is_ghost_triangle(V) && !is_boundary_node(tri, new_point)[1])
         # ^ Need to fix the ghost edges if the point is added onto an existing boundary edge. Note that the last 
         #   condition is in case the ghost edges were already correctly added.
         # This isn't done using split_edge! since there are some special cases to consider with constraints, and also because we need to use peek here.
-        e = find_edge(tri, V, new_point)
+        e = find_edge(predicates, tri, V, new_point)
         u, v = edge_vertices(e)
         is_bnd = is_boundary_edge(tri, u, v) || is_boundary_edge(tri, v, u)
         if is_bnd # If the edge is not itself a boundary edge, no need to worry.
@@ -275,7 +279,7 @@ function add_point_bowyer_watson_dig_cavities!(tri::Triangulation, new_point::N,
 end
 
 """
-    dig_cavity!(tri::Triangulation, r, i, j, ℓ, flag, V, store_event_history=Val(false), event_history=nothing, peek::F=Val(false)) where {F}
+    dig_cavity!(tri::Triangulation, r, i, j, ℓ, flag, V, store_event_history=Val(false), event_history=nothing, peek::F=Val(false), predicates::AbstractPredicateType=def_alg222()) where {F}
 
 Excavates the cavity in `tri` through the edge `(i, j)`, stepping towards the adjacent triangles to excavate the cavity recursively, eliminating all 
 triangles containing `r` in their circumcircle. 
@@ -291,6 +295,7 @@ triangles containing `r` in their circumcircle.
 - `store_event_history=Val(false)`: If `true`, then the event history from the insertion is stored.
 - `event_history=nothing`: The event history to store the event history in. Should be an [`InsertionEventHistory`](@ref) if `store_event_history` is `true`, and `false` otherwise.
 - `peek=Val(false)`: Whether to actually add `new_point` into `tri`, or just record into `event_history` all the changes that would occur from its insertion.
+- `predicates::AbstractPredicateType=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Output
 There are no changes, but `tri` is updated in-place.
@@ -306,18 +311,18 @@ This function works as follows:
    `(i, j)` is a segment, then the situation is more complicated. In particular, `r` being on an edge of `V` might imply that we are going to add a degenerate triangle `(r, i, j)` into `tri`, 
    and so this needs to be avoided. So, we check if `is_on(flag) && contains_segment(tri, i, j)` and, if the edge that `r` is on is `(i, j)`, we add the triangle `(r, i, j)`. Otherwise, we do nothing.
 """
-function dig_cavity!(tri::Triangulation, r, i, j, ℓ, flag, V, store_event_history=Val(false), event_history=nothing, peek::F=Val(false)) where {F}
+function dig_cavity!(tri::Triangulation, r, i, j, ℓ, flag, V, store_event_history=Val(false), event_history=nothing, peek::F=Val(false), predicates::AbstractPredicateType=def_alg222()) where {F}
     if !edge_exists(ℓ)
         # The triangle has already been deleted in this case.
         return tri
     end
     _r = is_true(peek) ? num_points(tri) + 1 : r # If we are peeking, then we need to use the number of points in the triangulation as the index for the new point since we don't actually insert the point
-    if !contains_segment(tri, i, j) && !is_ghost_vertex(ℓ) && is_inside(point_position_relative_to_circumcircle(tri, r, i, j, ℓ))
+    if !contains_segment(tri, i, j) && !is_ghost_vertex(ℓ) && is_inside(point_position_relative_to_circumcircle(predicates, tri, r, i, j, ℓ))
         ℓ₁ = get_adjacent(tri, ℓ, i)
         ℓ₂ = get_adjacent(tri, j, ℓ)
         !is_true(peek) && delete_triangle!(tri, j, i, ℓ; protect_boundary=true, update_ghost_edges=false)
-        dig_cavity!(tri, r, i, ℓ, ℓ₁, flag, V, store_event_history, event_history, peek)
-        dig_cavity!(tri, r, ℓ, j, ℓ₂, flag, V, store_event_history, event_history, peek)
+        dig_cavity!(tri, r, i, ℓ, ℓ₁, flag, V, store_event_history, event_history, peek, predicates)
+        dig_cavity!(tri, r, ℓ, j, ℓ₂, flag, V, store_event_history, event_history, peek, predicates)
         if is_true(store_event_history)
             trit = triangle_type(tri)
             delete_triangle!(event_history, construct_triangle(trit, j, i, ℓ))
@@ -330,7 +335,7 @@ function dig_cavity!(tri::Triangulation, r, i, j, ℓ, flag, V, store_event_hist
             # we can run into an issue where we add a degenerate triangle (i, j, r). We need to 
             # check this. There is probably a much smarter way to do this, but this should only 
             # be done very rarely anyway, so I'm not too concerned about the performance hit here. 
-            e = find_edge(tri, V, r)
+            e = find_edge(predicates, tri, V, r)
             u, v = edge_vertices(e)
             if u == i && v == j
                 return tri
@@ -352,12 +357,12 @@ function dig_cavity!(tri::Triangulation, r, i, j, ℓ, flag, V, store_event_hist
     return tri
 end
 
-function add_point_bowyer_watson_onto_segment!(tri::Triangulation, new_point, V, q, flag, update_representative_point=true, store_event_history=Val(false), event_history=nothing, peek::P=Val(false)) where {P}
+function add_point_bowyer_watson_onto_segment!(tri::Triangulation, new_point, V, q, flag, update_representative_point=true, store_event_history=Val(false), event_history=nothing, peek::P=Val(false), predicates::AbstractPredicateType=def_alg222()) where {P}
     _new_point = is_true(peek) ? num_points(tri) + 1 : new_point # If we are peeking, then we need to use the number of points in the triangulation as the index for the new point since we don't actually insert the point
     if is_on(flag) && is_constrained(tri)
         # If the point we are adding appears on a segment, then we perform the depth-first search 
         # on each side the segment. We also need to update the segment lists.
-        e = find_edge(tri, V, new_point)
+        e = find_edge(predicates, tri, V, new_point)
         u, v = edge_vertices(e)
         if contains_segment(tri, u, v)
             is_bnd = (contains_boundary_edge(tri, u, v) || contains_boundary_edge(tri, v, u))
@@ -365,7 +370,7 @@ function add_point_bowyer_watson_onto_segment!(tri::Triangulation, new_point, V,
             w = get_adjacent(tri, v, u)
             T = triangle_type(tri)
             V = construct_triangle(T, v, u, w)
-            add_point_bowyer_watson_dig_cavities!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history, peek)
+            add_point_bowyer_watson_dig_cavities!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history, peek, predicates)
             # Now, we need to replace the segment by this new segment.
             E = edge_type(tri)
             interior_segments = get_interior_segments(tri)
@@ -403,28 +408,30 @@ Computes the unconstrained Delaunay triangulation of the points in `tri`.
 - `tri`: The triangulation.
 
 # Keyword Arguments 
+- `predicates::AbstractPredicateType=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 - `randomise=true`: If `true`, then the insertion order is randomised. Otherwise, the insertion order is the same as the order of the points.
 - `skip_points=()`: The vertices to skip. 
 - `num_sample_rule::M=default_num_samples`: The rule to use to determine the number of points to sample. See [`default_num_samples`](@ref) for the default.
-- `rng::AbstractRNG=Random.default_rng()`: The random number generator to use.
+- `rng::Random.AbstractRNG=Random.default_rng()`: The random number generator to use.
 - `insertion_order=get_insertion_order(tri, randomise, skip_points, rng)`: The insertion order of the points. See [`get_insertion_order`](@ref).
 
 # Outputs 
 There is no output, but `tri` is updated in-place.
 """
 function unconstrained_triangulation!(tri::Triangulation;
+    predicates::AbstractPredicateType=def_alg222(),
     randomise=true,
     try_last_inserted_point=true,
     skip_points=(),
     num_sample_rule::M=default_num_samples,
-    rng::AbstractRNG=Random.default_rng(),
+    rng::Random.AbstractRNG=Random.default_rng(),
     insertion_order=get_insertion_order(tri, randomise, skip_points, rng)) where {M}
-    initialise_bowyer_watson!(tri, insertion_order)
+    initialise_bowyer_watson!(tri, insertion_order, predicates)
     remaining_points = @view insertion_order[(begin+3):end]
     for (num_points, new_point) in enumerate(remaining_points)
         initial_search_point = get_initial_search_point(tri, num_points, new_point, insertion_order, num_sample_rule, rng, try_last_inserted_point)
-        add_point_bowyer_watson!(tri, new_point, initial_search_point, rng)
+        add_point_bowyer_watson!(tri, new_point, initial_search_point, rng, predicates)
     end
-    convex_hull!(tri; reconstruct=false)
+    convex_hull!(tri; predicates, reconstruct=false)
     return tri
 end

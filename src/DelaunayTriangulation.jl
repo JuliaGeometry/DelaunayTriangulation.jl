@@ -19,15 +19,16 @@ module DelaunayTriangulation
 
 include("setup.jl")
 
-@static if USE_EXACTPREDICATES
-    using ExactPredicates
-end
-using EnumX
-using Random
+import ExactPredicates as EP
+import AdaptivePredicates as AP
+import EnumX
+import Random
+
+abstract type AbstractPredicateType end # needs to be defined early for use in data_structures.jl
 
 include("data_structures.jl")
-include("geometric_primitives.jl")
 include("predicates.jl")
+include("geometric_primitives.jl")
 include("utils.jl")
 include("algorithms.jl")
 include("validation.jl")

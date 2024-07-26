@@ -59,8 +59,8 @@ function add_segment_to_list!(tri::Triangulation, e)
 end
 
 """
-    add_segment!(tri::Triangulation, segment; rng::AbstractRNG=Random.default_rng())
-    add_segment!(tri::Triangulation, i, j; rng::AbstractRNG=Random.default_rng())
+    add_segment!(tri::Triangulation, segment; predicates::AbstractPredicateType=def_alg222(), rng::Random.AbstractRNG=Random.default_rng())
+    add_segment!(tri::Triangulation, i, j; predicates::AbstractPredicateType=def_alg222(), rng::Random.AbstractRNG=Random.default_rng())
 
 Adds `segment = (i, j)` to `tri`.
 
@@ -68,16 +68,19 @@ Adds `segment = (i, j)` to `tri`.
 - `tri::Triangulation`: The [`Triangulation`](@ref).
 - `segment`: The segment to add. The second method uses `(i, j)` to represent the segment instead.
 
+# Keyword Arguments
+- `predicates::AbstractPredicateType=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `rng::AbstractRNG=Random.default_rng()`: The RNG object.
 # Outputs 
 There is no output, but `tri` will be updated so that it now contains `segment`.
 """
-function add_segment!(tri::Triangulation, segment; rng::AbstractRNG=Random.default_rng())
+function add_segment!(tri::Triangulation, segment; predicates::AbstractPredicateType=def_alg222(), rng::Random.AbstractRNG=Random.default_rng())
     e = optimise_edge_order(tri, segment)
     fix_edge_order_after_rotation!(tri, segment, e)
     add_segment_to_list!(tri, e)
     unoriented_edge_exists(tri, e) && return tri # Don't need to add edges that already appear
-    intersecting_triangles, collinear_segments, left_cavity, right_cavity = locate_intersecting_triangles(tri, e, !contains_boundary_edge(tri, segment), rng)
-    flag = process_collinear_segments!(tri, e, collinear_segments; rng)
+    intersecting_triangles, collinear_segments, left_cavity, right_cavity = locate_intersecting_triangles(tri, e, !contains_boundary_edge(tri, segment), rng, predicates)
+    flag = process_collinear_segments!(tri, e, collinear_segments; predicates, rng)
     flag && return tri
     delete_intersected_triangles!(tri, intersecting_triangles)
     cache = get_cache(tri)
@@ -87,9 +90,9 @@ function add_segment!(tri::Triangulation, segment; rng::AbstractRNG=Random.defau
         tri_fan = get_triangulation_2(cache)
         marked_vertices = get_marked_vertices(cache)
         fan_triangles = get_fan_triangles(cache)
-        triangulate_cavity_cdt!(tri_cavity, cavity, tri_fan, marked_vertices, fan_triangles; rng)
+        triangulate_cavity_cdt!(tri_cavity, cavity, tri_fan, marked_vertices, fan_triangles; rng, predicates)
         add_new_triangles!(tri, tri_cavity)
     end
     return tri
 end
-add_segment!(tri::Triangulation, i, j; rng=Random.default_rng()) = add_segment!(tri, construct_edge(edge_type(tri), i, j); rng)
+add_segment!(tri::Triangulation, i, j; predicates::AbstractPredicateType=def_alg222(), rng=Random.default_rng()) = add_segment!(tri, construct_edge(edge_type(tri), i, j); predicates, rng)

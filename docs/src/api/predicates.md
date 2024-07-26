@@ -36,7 +36,17 @@ is_below
 
 ## Predicates 
 
-```@docs 
+```@docs
+AbstractPredicateType 
+Fast 
+Exact 
+Adaptive
+orient_predicate 
+incircle_predicate 
+parallelorder_predicate
+angle_is_acute_predicate 
+sameside_predicate
+meet_predicate
 triangle_orientation
 point_position_relative_to_circle
 point_position_relative_to_line
