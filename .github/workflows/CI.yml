@@ -46,8 +46,6 @@ jobs:
 
       - name: Run the tests
         uses: julia-actions/julia-runtest@v1
-        env:
-          PREDICATES: ${{ matrix.preferences }}
 
       - name: Process the coverage
         if: always()

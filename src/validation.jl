@@ -38,7 +38,7 @@ struct TriangleOrientationState <: AbstractTriangulationState
     bad_triangle::NTuple{3,Int}
     triangle_orientation::Symbol
 end
-TriangleOrientationState(tri; predicates::AbstractPredicateType=def_alg222()) = test_triangle_orientation(tri; predicates)
+TriangleOrientationState(tri; predicates::AbstractPredicateType=Exact()) = test_triangle_orientation(tri; predicates)
 function Base.summary(state::TriangleOrientationState)
     if test_state(state)
         return "All the triangles have positive orientation."
@@ -46,7 +46,7 @@ function Base.summary(state::TriangleOrientationState)
         return "The triangle $(state.bad_triangle) is $(state.triangle_orientation) oriented."
     end
 end
-function test_triangle_orientation(tri; predicates::AbstractPredicateType=def_alg222())
+function test_triangle_orientation(tri; predicates::AbstractPredicateType=Exact())
     for T in each_solid_triangle(tri)
         cert = triangle_orientation(predicates, tri, T)
         flag = is_positively_oriented(cert)
@@ -61,7 +61,7 @@ struct DelaunayCriterionState <: AbstractTriangulationState
     bad_triangle::NTuple{3,Int}
     bad_vertex::Int
 end
-DelaunayCriterionState(tri; predicates::AbstractPredicateType=def_alg222()) = test_delaunay_criterion(tri; predicates)
+DelaunayCriterionState(tri; predicates::AbstractPredicateType=Exact()) = test_delaunay_criterion(tri; predicates)
 function Base.summary(state::DelaunayCriterionState)
     if test_state(state)
         return "All the triangles are Delaunay."
@@ -73,7 +73,7 @@ function Base.summary(state::DelaunayCriterionState)
         end
     end
 end
-function test_delaunay_criterion(tri; predicates::AbstractPredicateType=def_alg222())
+function test_delaunay_criterion(tri; predicates::AbstractPredicateType=Exact())
     try
         points = get_points(tri)
         triangle_tree = BoundaryRTree(points)
@@ -189,7 +189,7 @@ function test_visibility(method::AbstractPredicateType, tri::Triangulation, segm
     end
     return all(flags) ? Cert.Invisible : Cert.Visible
 end
-test_visibility(tri::Triangulation, segment_tree, i, j, k, centroid=nothing) = test_visibility(def_alg222(), tri, segment_tree, i, j, k, centroid)
+test_visibility(tri::Triangulation, segment_tree, i, j, k, centroid=nothing) = test_visibility(Exact(), tri, segment_tree, i, j, k, centroid)
 
 struct EdgesHaveTwoIncidentTrianglesState <: AbstractTriangulationState
     flag::Bool
@@ -864,7 +864,7 @@ struct TriangulationState <: AbstractTriangulationState
     ghost_edge_iterator_state::IteratorState
 end
 
-function TriangulationState(tri::Triangulation; predicates::AbstractPredicateType=def_alg222())
+function TriangulationState(tri::Triangulation; predicates::AbstractPredicateType=Exact())
     has_ghosts = has_ghost_triangles(tri)
     delete_ghost_triangles!(tri)
     add_ghost_triangles!(tri)
@@ -913,7 +913,7 @@ function Base.show(io::IO, triangulation_state::TriangulationState)
 end
 
 """
-    validate_triangulation(tri::Triangulation; print_result=true, predicates::AbstractPredicateType=def_alg222()) -> Bool 
+    validate_triangulation(tri::Triangulation; print_result=true, predicates::AbstractPredicateType=Exact()) -> Bool 
 
 Tests if `tri` is a valid `Triangulation`. Returns `true` if so, 
 and `false` otherwise. If `print_result=true` and `tri` is not a 
@@ -923,7 +923,7 @@ Use the `predicates` keyword argument to control the method used for computing p
 Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). 
 See the documentation for a further discussion of these methods.
 """
-function validate_triangulation(tri::Triangulation; print_result=true, predicates::AbstractPredicateType=Adaptive())
+function validate_triangulation(tri::Triangulation; print_result=true, predicates::AbstractPredicateType=Exact())
     state = TriangulationState(tri; predicates)
     print_result && !test_state(state) && println(state)
     return test_state(state)

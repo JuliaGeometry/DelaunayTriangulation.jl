@@ -1,5 +1,5 @@
 """
-    clip_polygon(vertices, points, clip_vertices, clip_points; predicates::AbstractPredicateType=def_alg222()) -> Vector
+    clip_polygon(vertices, points, clip_vertices, clip_points; predicates::AbstractPredicateType=Adaptive()) -> Vector
 
 Clip a polygon defined by `(vertices, points)` to a convex clip polygon defined by `(clip_vertices, clip_points)` with the Sutherland-Hodgman algorithm.
 The polygons should be defined in counter-clockwise order.
@@ -11,12 +11,12 @@ The polygons should be defined in counter-clockwise order.
 - `clip_points`: The underlying point set that the clipping vertices are defined over.
 
 # Keyword Arguments 
-- `predicates::AbstractPredicateType=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateType=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Output 
 - `clipped_polygon`: The coordinates of the clipped polygon, given in counter-clockwise order and `clipped_polygon[begin] == clipped_polygon[end]`.
 """
-function clip_polygon(vertices, points, clip_vertices, clip_points; predicates::AbstractPredicateType=def_alg222())
+function clip_polygon(vertices, points, clip_vertices, clip_points; predicates::AbstractPredicateType=Adaptive())
     return clip_polygon(Polygon(vertices, points), Polygon(clip_vertices, clip_points); predicates)
 end
 
@@ -55,7 +55,7 @@ function clip_polygon_to_edge(input_list, q, p, predicates::AbstractPredicateTyp
     return output_list
 end
 
-function clip_polygon(poly::Polygon{T}, clip_poly::Polygon; predicates::AbstractPredicateType=def_alg222()) where {T}
+function clip_polygon(poly::Polygon{T}, clip_poly::Polygon; predicates::AbstractPredicateType=Adaptive()) where {T}
     output_list = poly
     q = clip_poly[end]
     for p in clip_poly

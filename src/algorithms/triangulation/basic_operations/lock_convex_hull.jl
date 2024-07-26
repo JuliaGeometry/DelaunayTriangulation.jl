@@ -1,5 +1,5 @@
 """
-    lock_convex_hull!(tri::Triangulation; rng=Random.default_rng(), predicates::AbstractPredicateType=def_alg222())
+    lock_convex_hull!(tri::Triangulation; rng=Random.default_rng(), predicates::AbstractPredicateType=Adaptive())
 
 Locks the convex hull of the unconstrained triangulation `tri` so that it is now treated as a constrained triangulation 
 with boundary given by its convex hull.
@@ -13,7 +13,7 @@ and similarly for `predicates`.
     then this edge will be deleted from `tri.interior_segments`; this will be undone from `unlock_convex_hull!`, 
     possibly splitting the segments in case they were split before unlocking.
 """
-function lock_convex_hull!(tri::Triangulation; rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateType=def_alg222())
+function lock_convex_hull!(tri::Triangulation; rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateType=Adaptive())
     if has_boundary_nodes(tri)
         throw(ArgumentError("Cannot lock the convex hull of a triangulation with boundary nodes."))
     end

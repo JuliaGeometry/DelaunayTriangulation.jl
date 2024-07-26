@@ -19,7 +19,7 @@ contains_triangle(tri::Triangulation, T) = contains_triangle(T, get_triangles(tr
 contains_triangle(tri::Triangulation, i, j, k) = contains_triangle(i, j, k, get_triangles(tri))
 
 """
-    construct_triangle(tri::Triangulation, i, j, k, predicates::AbstractPredicateType=def_alg222()) -> Triangle
+    construct_triangle(tri::Triangulation, i, j, k, predicates::AbstractPredicateType=Adaptive()) -> Triangle
 
 Returns a triangle in `tri` from the vertices `i`, `j`, and `k` such that the triangle is positively oriented.
 
@@ -27,7 +27,7 @@ You can use the `predicates` argument to determine how the orientation predicate
 [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for more discussion on these 
 choices.
 """
-function construct_positively_oriented_triangle(tri::Triangulation, i, j, k, predicates::AbstractPredicateType=def_alg222()) 
+function construct_positively_oriented_triangle(tri::Triangulation, i, j, k, predicates::AbstractPredicateType=Adaptive()) 
     return construct_positively_oriented_triangle(triangle_type(tri), i, j, k, get_points(tri), predicates)
 end
 

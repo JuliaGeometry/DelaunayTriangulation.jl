@@ -38,7 +38,7 @@ Triangulates the rectangle `[a, b] × [c, d]`.
 end
 @inline function _triangulate_rectangle(a, b, c, d, nx, ny,
     ::Type{I}, ::Type{E}, ::Type{V}, ::Type{Es}, ::Type{Ts},
-    single_boundary, delete_ghosts, predicates::AbstractPredicateType=def_alg222()) where {I,E,V,Es,Ts}
+    single_boundary, delete_ghosts, predicates::AbstractPredicateType=Adaptive()) where {I,E,V,Es,Ts}
     T, sub2ind = get_lattice_triangles(nx, ny, Ts, V)
     points = get_lattice_points(a, b, c, d, nx, ny, sub2ind)
     boundary_nodes = get_lattice_boundary(nx, ny, sub2ind, Val(single_boundary), I)

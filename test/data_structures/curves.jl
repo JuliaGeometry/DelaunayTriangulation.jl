@@ -5,7 +5,7 @@ using LinearAlgebra
 EllipticalArc = DT.EllipticalArc # shadow
 using CairoMakie
 using StableRNGs
-using Preferences
+
 using StructEquality
 using ForwardDiff
 using ReferenceTests
@@ -1979,38 +1979,36 @@ end
     end
 
     ## Closest point 
-    if !USE_INEXACTPREDICATES
-        for spl in (spl, pspl)
-            for _ in 1:500
-                p = randn(2) * 30 |> Tuple
-                t′, q = DT.get_closest_point(spl, p)
-                @test q ⪧ spl(t′)
-                _t, _q = closest_point_on_curve(spl, p)
-                if !(spl == pspl)
-                    @test _t ≈ t′ rtol = 1e-1 atol = 1e-1
-                elseif t ≠ 0 && t ≠ 1 && t′ ≠ 0 && t′ ≠ 1
-                    @test _t ≈ t′ rtol = 1e-1 atol = 1e-1
-                end
-                @test q ⪧ _q rtol = 1e-1 atol = 1e-1
-                @test DT.dist(p, _q) ≈ DT.dist(p, q) rtol = 1e-1 atol = 1e-1
+    for spl in (spl, pspl)
+        for _ in 1:500
+            p = randn(2) * 30 |> Tuple
+            t′, q = DT.get_closest_point(spl, p)
+            @test q ⪧ spl(t′)
+            _t, _q = closest_point_on_curve(spl, p)
+            if !(spl == pspl)
+                @test _t ≈ t′ rtol = 1e-1 atol = 1e-1
+            elseif t ≠ 0 && t ≠ 1 && t′ ≠ 0 && t′ ≠ 1
+                @test _t ≈ t′ rtol = 1e-1 atol = 1e-1
             end
-            for t in LinRange(0, 1, 150)
-                p = spl(t)
-                t′, q = DT.get_closest_point(spl, p)
-                @test q ⪧ spl(t′)
-                if !(spl == pspl)
-                    @test t ≈ t′ rtol = 1e-1 atol = 1e-1
-                elseif t ≠ 0 && t ≠ 1
-                    @test t ≈ t′ rtol = 1e-1 atol = 1e-1
-                end
-                @test p ⪧ q rtol = 1e-1 atol = 1e-1
+            @test q ⪧ _q rtol = 1e-1 atol = 1e-1
+            @test DT.dist(p, _q) ≈ DT.dist(p, q) rtol = 1e-1 atol = 1e-1
+        end
+        for t in LinRange(0, 1, 150)
+            p = spl(t)
+            t′, q = DT.get_closest_point(spl, p)
+            @test q ⪧ spl(t′)
+            if !(spl == pspl)
+                @test t ≈ t′ rtol = 1e-1 atol = 1e-1
+            elseif t ≠ 0 && t ≠ 1
+                @test t ≈ t′ rtol = 1e-1 atol = 1e-1
             end
-            @test DT.get_closest_point(spl, spl.control_points[1]) == (0.0, spl.control_points[1])
-            if spl ≠ pspl
-                @test DT.get_closest_point(spl, spl.control_points[end]) == (1.0, spl.control_points[end])
-            else
-                @test DT.get_closest_point(spl, spl.control_points[end]) == (0.0, spl.control_points[end])
-            end
+            @test p ⪧ q rtol = 1e-1 atol = 1e-1
+        end
+        @test DT.get_closest_point(spl, spl.control_points[1]) == (0.0, spl.control_points[1])
+        if spl ≠ pspl
+            @test DT.get_closest_point(spl, spl.control_points[end]) == (1.0, spl.control_points[end])
+        else
+            @test DT.get_closest_point(spl, spl.control_points[end]) == (0.0, spl.control_points[end])
         end
     end
 

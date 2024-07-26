@@ -13,4 +13,4 @@ This section gives a manual for certain parts of the package. Little code will b
 - [Geometrical Predicates](predicates.md): How geometric predicates are defined in this package.
 - [Triangulation Output](triangulation_output.md): How the output of a triangulation is defined.
 - [Voronoi Tessellation Output](voronoi_output.md): How the output of a Voronoi tessellation is defined.
-- [Disabling Robust Predicates](disabling_ea.md): How to disable the use of robust predicates.
+- [Predicate Kernels](predicate_kernels.md): The methods available for computing geometric predicates.

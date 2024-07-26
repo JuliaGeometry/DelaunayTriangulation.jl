@@ -1,7 +1,7 @@
 using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using CairoMakie
-using Preferences
+
 
 @testset "Shewchuk Example: A small example with some collinearities" begin
     tri = shewchuk_example_constrained()
@@ -279,8 +279,8 @@ end
     end
 end
 
-if !USE_INEXACTPREDICATES
-    @testset "A previously broken example" begin
+@testset "A previously broken example" begin
+    for PT in (DT.Exact, DT.Adaptive)
         for m in 1:100
             a = -0.1
             b = 0.1
@@ -288,17 +288,17 @@ if !USE_INEXACTPREDICATES
             d = 0.01
             nx = 25
             ny = 25
-            tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true)
-            tri = triangulate(get_points(tri))
+            tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true, predicates=PT())
+            tri = triangulate(get_points(tri), predicates=PT())
             for i in 2:24
-                add_segment!(tri, i, 600 + i)
+                add_segment!(tri, i, 600 + i, predicates=PT())
             end
-            tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true)
-            tri = triangulate(get_points(tri))
+            tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true, predicates=PT())
+            tri = triangulate(get_points(tri), predicates=PT())
             e = (23, 71)
             history = DT.PointLocationHistory{NTuple{3,Int},NTuple{2,Int},Int}()
             find_triangle(tri, get_point(tri, 71);
-                m=nothing, k=23, store_history=true, history=history)
+                m=nothing, k=23, store_history=true, history=history, predicates=PT())
             collinear_segments = history.collinear_segments
             DT.connect_segments!(collinear_segments)
             DT.extend_segments!(collinear_segments, e)
@@ -308,25 +308,27 @@ if !USE_INEXACTPREDICATES
 end
 
 @testset "Some other previously broken examples, dealing with segments going through points without passing through segments" begin
-    tri = triangulate_rectangle(0, 5, 0, 10, 6, 11; delete_ghosts=false)
-    e = (14, 40)
-    history = DT.PointLocationHistory{NTuple{3,Int},NTuple{2,Int},Int}()
-    find_triangle(tri, get_point(tri, 40);
-        m=nothing, k=14, store_history=true, history=history)
-    collinear_segments = history.collinear_segments
-    DT.fix_segments!(collinear_segments, history.collinear_point_indices)
-    DT.connect_segments!(collinear_segments)
-    DT.extend_segments!(collinear_segments, e)
-    @test collinear_segments == [(14, 27), (27, 40)]
+    for PT in subtypes(DT.AbstractPredicateType)
+        tri = triangulate_rectangle(0, 5, 0, 10, 6, 11; delete_ghosts=false, predicates=PT())
+        e = (14, 40)
+        history = DT.PointLocationHistory{NTuple{3,Int},NTuple{2,Int},Int}()
+        find_triangle(tri, get_point(tri, 40);
+            m=nothing, k=14, store_history=true, history=history, predicates=PT())
+        collinear_segments = history.collinear_segments
+        DT.fix_segments!(collinear_segments, history.collinear_point_indices)
+        DT.connect_segments!(collinear_segments)
+        DT.extend_segments!(collinear_segments, e)
+        @test collinear_segments == [(14, 27), (27, 40)]
 
-    e = (2, 54)
-    history = DT.PointLocationHistory{NTuple{3,Int},NTuple{2,Int},Int}()
-    find_triangle(tri, get_point(tri, 54);
-        m=nothing, k=2, store_history=true, history=history)
-    collinear_segments = history.collinear_segments
-    bad_indices = history.collinear_point_indices
-    DT.fix_segments!(collinear_segments, bad_indices)
-    DT.connect_segments!(collinear_segments)
-    DT.extend_segments!(collinear_segments, e)
-    @test collinear_segments == [(2, 15), (15, 28), (28, 41), (41, 54)]
+        e = (2, 54)
+        history = DT.PointLocationHistory{NTuple{3,Int},NTuple{2,Int},Int}()
+        find_triangle(tri, get_point(tri, 54);
+            m=nothing, k=2, store_history=true, history=history, predicates=PT())
+        collinear_segments = history.collinear_segments
+        bad_indices = history.collinear_point_indices
+        DT.fix_segments!(collinear_segments, bad_indices)
+        DT.connect_segments!(collinear_segments)
+        DT.extend_segments!(collinear_segments, e)
+        @test collinear_segments == [(2, 15), (15, 28), (28, 41), (41, 54)]
+    end
 end

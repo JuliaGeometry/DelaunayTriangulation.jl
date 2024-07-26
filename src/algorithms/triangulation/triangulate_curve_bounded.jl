@@ -2,7 +2,7 @@
     triangulate_curve_bounded(points::P;
     segments=nothing,
     boundary_nodes=nothing,
-    predicates::AbstractPredicateType=def_alg222(),
+    predicates::AbstractPredicateType=Adaptive(),
     IntegerType::Type{I}=Int,
     polygonise_n=4096,
     coarse_n=0,
@@ -36,7 +36,7 @@ See also [`BoundaryEnricher`](@ref) and [`enrich_boundary!`](@ref).
 function triangulate_curve_bounded(points::P;
     segments=nothing,
     boundary_nodes=nothing,
-    predicates::AbstractPredicateType=def_alg222(),
+    predicates::AbstractPredicateType=Adaptive(),
     IntegerType::Type{I}=Int,
     polygonise_n=4096,
     coarse_n=0,
@@ -60,7 +60,7 @@ function triangulate_curve_bounded(points::P;
         kwargs...)
 end
 function _triangulate_curve_bounded(points::P, enricher;
-    predicates::AbstractPredicateType=def_alg222(),
+    predicates::AbstractPredicateType=Adaptive(),
     IntegerType::Type{I}=Int,
     check_arguments=true,
     delete_ghosts=false,
@@ -171,7 +171,7 @@ function _coarse_discretisation_contiguous!(points, boundary_nodes, boundary_cur
 end
 
 """
-    enrich_boundary!(enricher::BoundaryEnricher; predicates::AbstractPredicateType=def_alg222())
+    enrich_boundary!(enricher::BoundaryEnricher; predicates::AbstractPredicateType=Adaptive())
 
 Enriches the initial boundary defined inside `enricher`, implementing the algorithm of Gosselin and Ollivier-Gooch (2007).
 At the termination of the algorithm, all edges will contain no other points inside their 
@@ -181,7 +181,7 @@ The `predicates` argument determines how predicates are computed, and should be
 one of [`Exact`](@ref), [`Fast`](@ref), and [`Adaptive`](@ref) (the default).
 See the documentation for more information about these choices.
 """
-function enrich_boundary!(enricher::BoundaryEnricher; predicates::AbstractPredicateType=def_alg222())
+function enrich_boundary!(enricher::BoundaryEnricher; predicates::AbstractPredicateType=Adaptive())
     queue = get_queue(enricher)
     points = get_points(enricher)
     enqueue_all!(queue, each_point_index(points))
@@ -190,7 +190,7 @@ function enrich_boundary!(enricher::BoundaryEnricher; predicates::AbstractPredic
     end
     return enricher
 end
-function _enrich_boundary_itr!(enricher::BoundaryEnricher, predicates::AbstractPredicateType=def_alg222())
+function _enrich_boundary_itr!(enricher::BoundaryEnricher, predicates::AbstractPredicateType=Adaptive())
     queue = get_queue(enricher)
     points = get_points(enricher)
     spatial_tree = get_spatial_tree(enricher)
@@ -217,7 +217,7 @@ function _enrich_boundary_itr!(enricher::BoundaryEnricher, predicates::AbstractP
 end
 
 """
-    split_subcurve!(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateType=def_alg222()) -> Bool
+    split_subcurve!(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateType=Adaptive()) -> Bool
 
 Splits the curve associated with the edge `(i, j)` into two subcurves by inserting a point `r` between `(i, j)` such that the 
 total variation of the subcurve is equal on `(i, r)` and `(r, j)`. The returned value is a `flag` that is `true` 
@@ -227,7 +227,7 @@ The `predicate` argument determines how predicates are computed, and should be
 one of [`Exact`](@ref), [`Fast`](@ref), and [`Adaptive`](@ref) (the default).
 See the documentation for more information about these choices.
 """
-function split_subcurve!(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateType=def_alg222())
+function split_subcurve!(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateType=Adaptive())
     flag, apex, complex_id, _ = is_small_angle_complex_member(enricher, i, j)
     if !flag
         return _split_subcurve_standard!(enricher, i, j, predicates)
@@ -235,7 +235,7 @@ function split_subcurve!(enricher::BoundaryEnricher, i, j, predicates::AbstractP
         return _split_subcurve_complex!(enricher, apex, complex_id)
     end
 end
-function _split_subcurve_standard!(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateType=def_alg222())
+function _split_subcurve_standard!(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateType=Adaptive())
     points = get_points(enricher)
     t, Δθ, ct = compute_split_position(enricher, i, j, predicates)
     if isnan(Δθ)
@@ -277,7 +277,7 @@ function _split_subcurve_complex!(enricher::BoundaryEnricher, apex, complex_id)
 end
 
 """
-    compute_split_position(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateType=def_alg222()) -> (Float64, Float64, NTuple{2,Float64})
+    compute_split_position(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateType=Adaptive()) -> (Float64, Float64, NTuple{2,Float64})
 
 Gets the point to split the edge `(i, j)` at.
 
@@ -285,14 +285,14 @@ Gets the point to split the edge `(i, j)` at.
 - `enricher::BoundaryEnricher`: The enricher.
 - `i`: The first point of the edge.
 - `j`: The second point of the edge.
-- `predicates::AbstractPredicateType=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateType=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs
 - `t`: The parameter value of the split point.
 - `Δθ`: The total variation of the subcurve `(i, t)`. If a split was created due to a small angle, this will be set to zero.
 - `ct`: The point to split the edge at.
 """
-function compute_split_position(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateType=def_alg222())
+function compute_split_position(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateType=Adaptive())
     num_adjoin, adjoin_vert = has_acute_neighbouring_angles(predicates, enricher, i, j)
     if num_adjoin == 0
         t, Δθ, ct = _compute_split_position_standard(enricher, i, j)

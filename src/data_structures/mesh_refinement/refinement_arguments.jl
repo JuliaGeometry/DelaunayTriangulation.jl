@@ -73,7 +73,7 @@ function RefinementArguments(tri::Triangulation;
     steiner_scale=0.999,
     rng=Random.default_rng(),
     concavity_protection=false,
-    predicates::AbstractPredicateType=def_alg222())
+    predicates::AbstractPredicateType=Adaptive())
     if !use_circumcenter
         throw(ArgumentError("Generalised Steiner points are not yet implemented."))
     end

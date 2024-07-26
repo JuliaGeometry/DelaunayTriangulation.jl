@@ -4,7 +4,6 @@ using Random
 using StableRNGs
 using CairoMakie
 using DataStructures
-using Preferences
 
 @testset "Getting the correct order" begin
     points = rand(2, 50)

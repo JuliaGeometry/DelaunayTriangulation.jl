@@ -10,7 +10,7 @@ using Test
 using StructEquality
 using DelimitedFiles
 using StableRNGs
-using Preferences
+
 const SACM = DT.SmallAngleComplexMember
 const SAC = DT.SmallAngleComplex
 
@@ -1447,57 +1447,53 @@ end
 
 @testset "triangulate_curve_bounded" begin
     @testset "triangulate_curve_bounded (no points or extra segments)" begin
-        point_sets = deepcopy.([points_I, points_II, points_III, points_IV, points_V, points_VI, points_VII, points_VIII, points_IX, points_X, points_XI, points_XII])
-        curve_sets = deepcopy.([curve_I, curve_II, curve_III, curve_IV, curve_V, curve_VI, curve_VII, curve_VIII, curve_IX, curve_X, curve_XI, curve_XII])
-        for i in eachindex(point_sets, curve_sets)
-            if USE_INEXACTPREDICATES && i == 4 
-                continue 
+        for PT in (DT.Exact, DT.Adaptive)
+            point_sets = deepcopy.([points_I, points_II, points_III, points_IV, points_V, points_VI, points_VII, points_VIII, points_IX, points_X, points_XI, points_XII])
+            curve_sets = deepcopy.([curve_I, curve_II, curve_III, curve_IV, curve_V, curve_VI, curve_VII, curve_VIII, curve_IX, curve_X, curve_XI, curve_XII])
+            for i in eachindex(point_sets, curve_sets)
+                points, curve = deepcopy(point_sets[i]), deepcopy(curve_sets[i])
+                tri = triangulate(points; boundary_nodes=curve, enrich=i ≤ 3, predicates=PT())
+                @test validate_triangulation(tri)
+                @test is_conformal(tri)
+                @test DT.get_boundary_enricher(tri) == DT.enrich_boundary!(DT.BoundaryEnricher(deepcopy(point_sets[i]), deepcopy(curve_sets[i])), predicates=PT())
+                i > 3 && @test DT.is_curve_bounded(tri)
+                i ≤ 3 && @test !DT.is_curve_bounded(tri)
             end
-            points, curve = deepcopy(point_sets[i]), deepcopy(curve_sets[i])
-            tri = triangulate(points; boundary_nodes=curve, enrich=i ≤ 3)
-            @test validate_triangulation(tri)
-            @test is_conformal(tri)
-            @test DT.get_boundary_enricher(tri) == DT.enrich_boundary!(DT.BoundaryEnricher(deepcopy(point_sets[i]), deepcopy(curve_sets[i])))
-            i > 3 && @test DT.is_curve_bounded(tri)
-            i ≤ 3 && @test !DT.is_curve_bounded(tri)
         end
     end
 
     @testset "triangulate_curve_bounded (extra points, no segments)" begin
-        point_sets = deepcopy.([points_I_extra, points_II_extra, points_III_extra, points_IV_extra, points_V_extra, points_VI_extra, points_VII_extra, points_VIII_extra, points_IX_extra, points_X_extra, points_XI_extra, points_XII_extra])
-        curve_sets = deepcopy.([curve_I, curve_II, curve_III, curve_IV, curve_V, curve_VI, curve_VII, curve_VIII, curve_IX, curve_X, curve_XI, curve_XII])
-        for i in eachindex(point_sets, curve_sets)
-            if USE_INEXACTPREDICATES && i == 4 
-                continue 
+        for PT in (DT.Exact, DT.Adaptive)
+            point_sets = deepcopy.([points_I_extra, points_II_extra, points_III_extra, points_IV_extra, points_V_extra, points_VI_extra, points_VII_extra, points_VIII_extra, points_IX_extra, points_X_extra, points_XI_extra, points_XII_extra])
+            curve_sets = deepcopy.([curve_I, curve_II, curve_III, curve_IV, curve_V, curve_VI, curve_VII, curve_VIII, curve_IX, curve_X, curve_XI, curve_XII])
+            for i in eachindex(point_sets, curve_sets)
+                points, curve = deepcopy(point_sets[i]), deepcopy(curve_sets[i])
+                tri = triangulate(points; boundary_nodes=curve, enrich=i ≤ 3, predicates=PT())
+                @test validate_triangulation(tri)
+                @test is_conformal(tri)
+                i ∉ (2, 11) && @test DT.get_boundary_enricher(tri) == DT.enrich_boundary!(DT.BoundaryEnricher(deepcopy(point_sets[i]), deepcopy(curve_sets[i])), predicates=PT()) # i ≠ 2 since we deliberately included some boundary points in the extra points, which triangulate then sees and mutates
+                i > 3 && @test DT.is_curve_bounded(tri)
+                i ≤ 3 && @test !DT.is_curve_bounded(tri)
             end
-            points, curve = deepcopy(point_sets[i]), deepcopy(curve_sets[i])
-            tri = triangulate(points; boundary_nodes=curve, enrich=i ≤ 3)
-            @test validate_triangulation(tri)
-            @test is_conformal(tri)
-            i ∉ (2, 11) && @test DT.get_boundary_enricher(tri) == DT.enrich_boundary!(DT.BoundaryEnricher(deepcopy(point_sets[i]), deepcopy(curve_sets[i]))) # i ≠ 2 since we deliberately included some boundary points in the extra points, which triangulate then sees and mutates
-            i > 3 && @test DT.is_curve_bounded(tri)
-            i ≤ 3 && @test !DT.is_curve_bounded(tri)
         end
     end
 
     @testset "triangulate_curve_bounded (extra points, extra segments)" begin
+        for PT in (DT.Exact, DT.Adaptive)
         point_sets = deepcopy.([points_I_extra_segments, points_II_extra_segments, points_III_extra_segments, points_IV_extra_segments])
         curve_sets = deepcopy.([curve_I, curve_II, curve_III, curve_IV])
         segment_sets = deepcopy.([segments_I, segments_II, segments_III, segments_IV])
         for i in eachindex(point_sets, curve_sets, segment_sets)
-            if USE_INEXACTPREDICATES && i == 4 
-                continue 
-            end
             points, curve, segments = deepcopy(point_sets[i]), deepcopy(curve_sets[i]), deepcopy(segment_sets[i])
-            tri = triangulate(points; boundary_nodes=curve, segments=segments, enrich=i ≤ 3)
+            tri = triangulate(points; boundary_nodes=curve, segments=segments, enrich=i ≤ 3, predicates=PT())
             @test validate_triangulation(tri)
             @test is_conformal(tri)
-            i ≠ 2 && @test DT.get_boundary_enricher(tri) == DT.enrich_boundary!(DT.BoundaryEnricher(deepcopy(point_sets[i]), deepcopy(curve_sets[i]), deepcopy(segment_sets[i])))
+            i ≠ 2 && @test DT.get_boundary_enricher(tri) == DT.enrich_boundary!(DT.BoundaryEnricher(deepcopy(point_sets[i]), deepcopy(curve_sets[i]), deepcopy(segment_sets[i])), predicates=PT())
             i > 3 && @test DT.is_curve_bounded(tri)
             i ≤ 3 && @test !DT.is_curve_bounded(tri)
         end
     end
-end
+end end
 
 @testset "refine_curve_bounded with circumcenters" begin
     point_sets_no_extra = deepcopy.([points_I, points_II, points_III, points_IV, points_V, points_VI, points_VII, points_VIII, points_IX, points_X, points_XI, points_XII])
@@ -1508,61 +1504,60 @@ end
     curve_sets = deepcopy.([curve_I, curve_II, curve_III, curve_IV, curve_V, curve_VI, curve_VII, curve_VIII, curve_IX, curve_X, curve_XI, curve_XII])
     point_names = ("default", "extra_points", "extra_segments")
     _rng_num(idx1,
-     idx2, idx3, idx4, idx5, curve_idx, point_idx) = 2^idx1 * 3^idx2 * 5^idx3 * 7^idx4 * 11^idx5 * 13^curve_idx * 17^point_idx
+        idx2, idx3, idx4, idx5, curve_idx, point_idx) = 2^idx1 * 3^idx2 * 5^idx3 * 7^idx4 * 11^idx5 * 13^curve_idx * 17^point_idx
 
     @testset "all_examples" begin
-        max_area_opts = [
-            (1e-2, 1e-3),
-            (1e-2, 1e-3),
-            (1e-2, 1e-3),
-            (1e-2, 1e-3),
-            (1e-2, 1e-3),
-            (1e-1, 1e-2),
-            (1e-1, 1e-2),
-            (1e-1, 1e-2),
-            (1e-2, 1e-3),
-            (1e-1, 1e-2),
-            (1e-1, 1e-2),
-            (1e-1, 1e-2)
-        ]
-        for curve_idx in 4:lastindex(curve_sets)
-            if curve_idx ∈ (4, 6, 12) && !!USE_INEXACTPREDICATES
-                continue 
-            end
-            for point_idx in 1:3
-                point_idx == 3 && curve_idx ≥ 5 && continue # no extra segments for curves ≥ 5
-                for (idx1, use_lens) in enumerate((false, true))
-                    for (idx2, min_angle) in enumerate((20.0, 27.5, 30.0))
-                        for (idx3, min_area) in enumerate((1e-12,))
-                            for (idx4, max_area) in enumerate(max_area_opts[curve_idx])
-                                for (idx5, seditious_angle) in enumerate((10.0, 20.0))
-                                    @info "Testing curve-bounded refinement with circumcenters. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle; curve: $curve_idx; point set: $point_idx"
-                                    rng = StableRNG(abs(_rng_num(idx1, idx2, idx3, idx4, idx5, curve_idx, point_idx)))
-                                    points, curve = deepcopy(point_sets[point_idx][curve_idx]), deepcopy(curve_sets[curve_idx])
-                                    if point_idx ≤ 2
-                                        tri = triangulate(points; boundary_nodes=curve, enrich=curve_idx ≤ 3, rng)
-                                    else
-                                        segments = deepcopy(segment_sets[curve_idx])
-                                        tri = triangulate(points; boundary_nodes=curve, segments=segments, enrich=curve_idx ≤ 3, rng)
+        for PT in (DT.Exact, DT.Adaptive)
+            max_area_opts = [
+                (1e-2, 1e-3),
+                (1e-2, 1e-3),
+                (1e-2, 1e-3),
+                (1e-2, 1e-3),
+                (1e-2, 1e-3),
+                (1e-1, 1e-2),
+                (1e-1, 1e-2),
+                (1e-1, 1e-2),
+                (1e-2, 1e-3),
+                (1e-1, 1e-2),
+                (1e-1, 1e-2),
+                (1e-1, 1e-2)
+            ]
+            for curve_idx in 4:lastindex(curve_sets)
+                for point_idx in 1:3
+                    point_idx == 3 && curve_idx ≥ 5 && continue # no extra segments for curves ≥ 5
+                    for (idx1, use_lens) in enumerate((false, true))
+                        for (idx2, min_angle) in enumerate((20.0, 27.5, 30.0))
+                            for (idx3, min_area) in enumerate((1e-12,))
+                                for (idx4, max_area) in enumerate(max_area_opts[curve_idx])
+                                    for (idx5, seditious_angle) in enumerate((10.0, 20.0))
+                                        @info "Testing curve-bounded refinement with circumcenters. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle; curve: $curve_idx; point set: $point_idx"
+                                        rng = StableRNG(abs(_rng_num(idx1, idx2, idx3, idx4, idx5, curve_idx, point_idx)))
+                                        points, curve = deepcopy(point_sets[point_idx][curve_idx]), deepcopy(curve_sets[curve_idx])
+                                        if point_idx ≤ 2
+                                            tri = triangulate(points; boundary_nodes=curve, enrich=curve_idx ≤ 3, rng, predicates=PT())
+                                        else
+                                            segments = deepcopy(segment_sets[curve_idx])
+                                            tri = triangulate(points; boundary_nodes=curve, segments=segments, enrich=curve_idx ≤ 3, rng, predicates=PT())
+                                        end
+                                        custom_constraint = (_tri, T) -> curve_idx ≠ 5 ? false : begin
+                                            i, j, k = triangle_vertices(T)
+                                            p, q, r = get_point(_tri, i, j, k)
+                                            c = (p .+ q .+ r) ./ 3
+                                            x, y = getxy(c)
+                                            return (x + y^2 < 1 / 4) && DT.triangle_area(p, q, r) > 1e-4 / 2
+                                        end
+                                        refine!(tri; min_angle, min_area, max_area, custom_constraint, seditious_angle, use_circumcenter=true, use_lens, rng, predicates=PT())
+                                        args = DT.RefinementArguments(tri; min_angle, min_area, max_area, seditious_angle, custom_constraint, use_circumcenter=true, use_lens, predicates=PT())
+                                        @test validate_refinement(tri, args, warn=false)
+                                        if _rng_num(idx1, idx2, idx3, idx4, idx5, curve_idx, point_idx) == _rng_num(1, 3, 1, 2, 2, curve_idx, point_idx)
+                                            fig, ax, sc = triplot(tri)
+                                            @test_reference "refine_curve_bounded_example_$(curve_idx)_$(names[curve_idx])_$(point_names[point_idx])_$(abs(_rng_num(1, 3, 1, 2, 2, curve_idx, point_idx))).png" fig by = psnr_equality(9)
+                                        elseif _rng_num(idx1, idx2, idx3, idx4, idx5, curve_idx, point_idx) == _rng_num(2, 3, 1, 2, 2, curve_idx, point_idx)
+                                            fig, ax, sc = triplot(tri)
+                                            @test_reference "refine_curve_bounded_example_$(curve_idx)_$(names[curve_idx])_$(point_names[point_idx])_$(abs(_rng_num(2, 3, 1, 2, 2, curve_idx, point_idx))).png" fig by = psnr_equality(9)
+                                        end
+                                        @test tri.boundary_enricher.boundary_edge_map == tri.boundary_edge_map
                                     end
-                                    custom_constraint = (_tri, T) -> curve_idx ≠ 5 ? false : begin
-                                        i, j, k = triangle_vertices(T)
-                                        p, q, r = get_point(_tri, i, j, k)
-                                        c = (p .+ q .+ r) ./ 3
-                                        x, y = getxy(c)
-                                        return (x + y^2 < 1 / 4) && DT.triangle_area(p, q, r) > 1e-4 / 2
-                                    end
-                                    refine!(tri; min_angle, min_area, max_area, custom_constraint, seditious_angle, use_circumcenter=true, use_lens, rng)
-                                    args = DT.RefinementArguments(tri; min_angle, min_area, max_area, seditious_angle, custom_constraint, use_circumcenter=true, use_lens)
-                                    @test validate_refinement(tri, args, warn=false)
-                                    if _rng_num(idx1, idx2, idx3, idx4, idx5, curve_idx, point_idx) == _rng_num(1, 3, 1, 2, 2, curve_idx, point_idx)
-                                        fig, ax, sc = triplot(tri)
-                                        @test_reference "refine_curve_bounded_example_$(curve_idx)_$(names[curve_idx])_$(point_names[point_idx])_$(abs(_rng_num(1, 3, 1, 2, 2, curve_idx, point_idx))).png" fig by = psnr_equality(9)
-                                    elseif _rng_num(idx1, idx2, idx3, idx4, idx5, curve_idx, point_idx) == _rng_num(2, 3, 1, 2, 2, curve_idx, point_idx)
-                                        fig, ax, sc = triplot(tri)
-                                        @test_reference "refine_curve_bounded_example_$(curve_idx)_$(names[curve_idx])_$(point_names[point_idx])_$(abs(_rng_num(2, 3, 1, 2, 2, curve_idx, point_idx))).png" fig by = psnr_equality(9)
-                                    end
-                                    @test tri.boundary_enricher.boundary_edge_map == tri.boundary_edge_map
                                 end
                             end
                         end

@@ -7,7 +7,7 @@
 - `new_point`: The point to be added to the triangulation. The second method uses `(x, y)` to represent the new point instead. If `new_point` is an integer, then the point added is `get_point(tri, new_point)`.
 
 # Keyword Arguments 
-- `predicates::AbstractPredicateType=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateType=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 - `point_indices=each_solid_vertex(tri)`: The indices of the points to be used in the [`find_triangle`](@ref) algorithm for selecting the initial point.
 - `m=default_num_samples(length(point_indices))`: The number of samples (without replacement) to be used in the [`find_triangle`](@ref) algorithm for selecting the initial point.
 - `try_points=()`: Additional points to try for selecting the initial point, in addition to the `m` sampled.
@@ -36,7 +36,7 @@ The triangulation is updated in-place, but we do return
     the `convex_hull` field of `tri` will no longer be accurate. You can use [`convex_hull!`](@ref) to fix it.
 """
 function add_point!(tri::Triangulation, new_point;
-    predicates::AbstractPredicateType=def_alg222(),
+    predicates::AbstractPredicateType=Adaptive(),
     point_indices=each_solid_vertex(tri),
     m=default_num_samples(length(point_indices)),
     try_points=(),
@@ -74,7 +74,7 @@ function add_point!(tri::Triangulation, new_point;
 end
 
 function add_point!(tri::Triangulation, new_point_x, new_point_y;
-    predicates::AbstractPredicateType=def_alg222(),
+    predicates::AbstractPredicateType=Adaptive(),
     point_indices=get_vertices(tri),
     m=default_num_samples(length(point_indices)),
     try_points=(),

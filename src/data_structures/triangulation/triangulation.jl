@@ -444,7 +444,7 @@ Returns the `Triangulation` corresponding to the triangulation of `points` with 
 - `boundary_nodes`: The boundary nodes of the triangulation. These should match the specification given in the documentation or in [`check_args`](@ref).
 
 # Keyword Arguments 
-- `predicates::AbstractPredicateType=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateType=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 - `IntegerType=Int`: The integer type to use for the triangulation. This is used for representing vertices.
 - `EdgeType=isnothing(segments) ? NTuple{2,IntegerType} : (edge_type ∘ typeof)(segments)`: The edge type to use for the triangulation. 
 - `TriangleType=NTuple{3,IntegerType}`: The triangle type to use for the triangulation.
@@ -464,14 +464,14 @@ Returns the `Triangulation` corresponding to the triangulation of `points` with 
     TrianglesType::Type{Ts}=Set{TriangleType},
     weights=ZeroWeight(),
     delete_ghosts=false,
-    predicates::AbstractPredicateType=def_alg222()) where {P,T,BN,I,E,V,Es,Ts}
+    predicates::AbstractPredicateType=Adaptive()) where {P,T,BN,I,E,V,Es,Ts}
     _bn = copy(boundary_nodes)
     tri = Triangulation(points; boundary_nodes=_bn, weights, IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType)
     return build_triangulation_from_data!(tri, triangles, _bn, delete_ghosts, predicates)
 end
 
 """
-    build_triangulation_from_data!(tri::Triangulation, triangles, boundary_nodes, delete_ghosts, predicates::AbstractPredicateType=def_alg222())
+    build_triangulation_from_data!(tri::Triangulation, triangles, boundary_nodes, delete_ghosts, predicates::AbstractPredicateType=Adaptive())
 
 Given an empty `triangulation`, `tri`, adds all the `triangles` and `boundary_nodes` into it. Use 
 `delete_ghosts=true` if you want to have all ghost triangles deleted afterwards.
@@ -480,7 +480,7 @@ The `method` argument determines how predicates are computed, and should be
 one of [`Exact`](@ref), [`Fast`](@ref), and [`Adaptive`](@ref) (the default).
 See the documentation for more information about these choices.
 """
-@inline function build_triangulation_from_data!(tri::Triangulation, triangles, boundary_nodes, delete_ghosts, predicates::AbstractPredicateType=def_alg222())
+@inline function build_triangulation_from_data!(tri::Triangulation, triangles, boundary_nodes, delete_ghosts, predicates::AbstractPredicateType=Adaptive())
     Es = edges_type(tri)
     points = get_points(tri)
     polygon_hierarchy = get_polygon_hierarchy(tri)

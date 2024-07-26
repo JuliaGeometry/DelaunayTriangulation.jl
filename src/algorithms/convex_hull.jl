@@ -1,5 +1,5 @@
 """
-    convex_hull(points; predicates::AbstractPredicateType=def_alg222(), IntegerType::Type{I}=Int) where {I} -> ConvexHull 
+    convex_hull(points; predicates::AbstractPredicateType=Adaptive(), IntegerType::Type{I}=Int) where {I} -> ConvexHull 
 
 Computes the convex hull of `points`. The monotone chain algorithm is used.
 
@@ -8,19 +8,19 @@ Computes the convex hull of `points`. The monotone chain algorithm is used.
 
 # Keyword Arguments 
 - `IntegerType=Int`: The integer type to use for the vertices.
-- `predicates::AbstractPredicateType=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateType=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Output
 - `ch`: The [`ConvexHull`](@ref). 
 """
-function convex_hull(points; predicates::AbstractPredicateType=def_alg222(), IntegerType::Type{I}=Int) where {I}
+function convex_hull(points; predicates::AbstractPredicateType=Adaptive(), IntegerType::Type{I}=Int) where {I}
     ch = ConvexHull(points, I[])
     sizehint!(ch, num_points(points))
     return convex_hull!(ch; predicates)
 end
 
 """
-    convex_hull!(ch::ConvexHull{P,I}; predicates::AbstractPredicateType=def_alg222()) where {P,I}
+    convex_hull!(ch::ConvexHull{P,I}; predicates::AbstractPredicateType=Adaptive()) where {P,I}
 
 Using the points in `ch`, computes the convex hull in-place. 
 
@@ -30,7 +30,7 @@ See the documentation for more information about these choices.
 
 See also [`convex_hull`](@ref).
 """
-function convex_hull!(ch::ConvexHull{P,I}; predicates::AbstractPredicateType=def_alg222()) where {P,I}
+function convex_hull!(ch::ConvexHull{P,I}; predicates::AbstractPredicateType=Adaptive()) where {P,I}
     indices = get_vertices(ch)
     points = get_points(ch)
     empty!(indices)

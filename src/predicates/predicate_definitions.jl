@@ -89,7 +89,7 @@ See the documentation for more information about these choices.
 @inline function orient_predicate(method::AbstractPredicateType, p, q, r)
     return orient(method, getxy(p), getxy(q), getxy(r))
 end
-@inline orient_predicate(p, q, r) = orient_predicate(def_alg222(), p, q, r)
+@inline orient_predicate(p, q, r) = orient_predicate(Adaptive(), p, q, r)
 
 @inline orient(::Fast, p, q, r) = sgn(AP.orient2fast(p, q, r))
 @inline orient(::Exact, p, q, r) = EP.orient(_getxy(p), _getxy(q), _getxy(r))
@@ -130,7 +130,7 @@ See the documentation for more information about these choices.
 @inline function orient_predicate(method::AbstractPredicateType, p, q, r, s)
     return orient(method, getxyz(p), getxyz(q), getxyz(r), getxyz(s))
 end
-@inline orient_predicate(p, q, r, s) = orient_predicate(def_alg222(), p, q, r, s)
+@inline orient_predicate(p, q, r, s) = orient_predicate(Adaptive(), p, q, r, s)
 
 @inline orient(::Fast, p, q, r, s) = sgn(AP.orient3fast(p, q, r, s))
 @inline orient(::Exact, p, q, r, s) = EP.orient(_getxyz(p), _getxyz(q), _getxyz(r), _getxyz(s))
@@ -152,7 +152,7 @@ See the documentation for more information about these choices.
 @inline function incircle_predicate(method::AbstractPredicateType, a, b, c, p)
     return incircle(method, getxy(a), getxy(b), getxy(c), getxy(p))
 end
-@inline incircle_predicate(a, b, c, p) = incircle_predicate(def_alg222(), a, b, c, p)
+@inline incircle_predicate(a, b, c, p) = incircle_predicate(Adaptive(), a, b, c, p)
 
 @inline incircle(::Fast, a, b, c, p) = sgn(AP.incirclefast(a, b, c, p))
 @inline incircle(::Exact, a, b, c, p) = EP.incircle(_getxy(a), _getxy(b), _getxy(c), _getxy(p))
@@ -174,7 +174,7 @@ See the documentation for more information about these choices.
 @inline function parallelorder_predicate(method::AbstractPredicateType, a, b, p, q)
     return parallelorder(method, getxy(a), getxy(b), getxy(p), getxy(q))
 end
-@inline parallelorder_predicate(a, b, p, q) = parallelorder(def_alg222(), a, b, p, q)
+@inline parallelorder_predicate(a, b, p, q) = parallelorder(Adaptive(), a, b, p, q)
 
 @inline function parallelorder(::Fast, a, b, p, q)
     ax, ay = getxy(a)
@@ -205,7 +205,7 @@ See the documentation for more information about these choices.
 @inline function angle_is_acute_predicate(method::AbstractPredicateType, p, q, r)
     return angle_is_acute(method, getxy(p), getxy(q), getxy(r))
 end
-@inline angle_is_acute_predicate(p, q, r) = angle_is_acute_predicate(def_alg222(), p, q, r)
+@inline angle_is_acute_predicate(p, q, r) = angle_is_acute_predicate(Adaptive(), p, q, r)
 
 EP.Codegen.@genpredicate function _angle_is_acute(p::2, q::2, r::2)
     pr = p - r
@@ -287,4 +287,4 @@ See the documentation for more information about these choices.
         return 0
     end
 end
-@inline meet_predicate(p, q, a, b) = meet_predicate(def_alg222(), p, q, a, b)
+@inline meet_predicate(p, q, a, b) = meet_predicate(Adaptive(), p, q, a, b)

@@ -786,7 +786,7 @@ end
 
 
 ## TODO: Implement a brute-force DT.VoronoiTessellation that we can compare with
-function validate_tessellation(vorn::DT.VoronoiTessellation; check_convex=true, check_adjacent=true, predicates::DT.AbstractPredicateType=DT.def_alg222())
+function validate_tessellation(vorn::DT.VoronoiTessellation; check_convex=true, check_adjacent=true, predicates::DT.AbstractPredicateType=DT.Adaptive())
     tri = DT.get_triangulation(vorn)
     for (i, p) in DT.get_generators(vorn)
         flag = get_point(tri, i) == get_generator(vorn, i) == p
@@ -2209,8 +2209,6 @@ using DelaunayTriangulation:
 rt() = rand((DT.Fast(), DT.Exact(), DT.Adaptive()))
 
 export validate_triangulation
-export USE_INEXACTPREDICATES
-export USE_EXACTPREDICATES
 export @_adj
 export _make_graph_from_adjacency
 export get_random_convex_polygon

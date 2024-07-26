@@ -20,7 +20,7 @@ should be used, avoiding adaptivity and exact arithmetic.
 struct Fast <: AbstractPredicateType end 
 
 """
-    def_alg222()
+    Adaptive()
 
 Pass this to predicates to use ExactPredicates.jl for computing predicates.
 """
@@ -32,8 +32,6 @@ struct Exact <: AbstractPredicateType end
 Pass this to predicates to use AdaptivePredicates.jl for computing predicates.
 """
 struct Adaptive <: AbstractPredicateType end 
-
-def_alg222() = throw("...")
 
 include("predicates/certificate.jl")
 include("predicates/predicate_definitions.jl")
