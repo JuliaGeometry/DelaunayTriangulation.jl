@@ -277,7 +277,7 @@ function _split_subcurve_complex!(enricher::BoundaryEnricher, apex, complex_id)
 end
 
 """
-    compute_split_position(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateType=def_alg222(0)) -> (Float64, Float64, NTuple{2,Float64})
+    compute_split_position(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateType=def_alg222()) -> (Float64, Float64, NTuple{2,Float64})
 
 Gets the point to split the edge `(i, j)` at.
 

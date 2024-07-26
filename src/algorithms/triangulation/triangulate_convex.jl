@@ -29,8 +29,8 @@ function triangulate_convex(points, S;
     predicates::AbstractPredicateType=def_alg222(),
     kwargs...)
     tri = Triangulation(points; kwargs...)
-    triangulate_convex!(tri, S; rng)
-    postprocess_triangulate_convex!(tri, S; delete_ghosts, delete_empty_features, predicates)
+    triangulate_convex!(tri, S; predicates, rng)
+    postprocess_triangulate_convex!(tri, S; delete_ghosts, delete_empty_features)
     return tri
 end
 

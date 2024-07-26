@@ -53,7 +53,7 @@ function reset!(list::ShuffledPolygonLinkedList; rng::Random.AbstractRNG=Random.
         list.next[i] = mod1(i+1, list.k)
         list.prev[i] = mod1(i-1, list.k)
     end
-    shuffle!(rng, list.shuffled_indices)
+    Random.shuffle!(rng, list.shuffled_indices)
     return list
 end
 

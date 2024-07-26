@@ -119,7 +119,7 @@ Here are some warnings to consider for some of the arguments.
 function triangulate(points::P;
     segments=nothing,
     boundary_nodes=nothing,
-    predicates::AbstractPredicateType=def_alg222(),
+    predicates::AbstractPredicateType=Adaptive(),
     weights=ZeroWeight(),
     IntegerType::Type{I}=Int,
     EdgeType::Type{E}=isnothing(segments) ? NTuple{2,IntegerType} : (edge_type ∘ typeof)(segments),

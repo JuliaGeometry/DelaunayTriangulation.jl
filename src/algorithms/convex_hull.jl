@@ -45,7 +45,7 @@ function convex_hull!(ch::ConvexHull{P,I}; predicates::AbstractPredicateType=def
         push!(indices, insertion_order[begin], insertion_order[begin+1], insertion_order[begin])
         return ch
     elseif n == 3
-        i, j, k = construct_positively_oriented_triangle(predicates,NTuple{3,I}, insertion_order[begin], insertion_order[begin+1], insertion_order[begin+2], points)
+        i, j, k = construct_positively_oriented_triangle(NTuple{3,I}, insertion_order[begin], insertion_order[begin+1], insertion_order[begin+2], points, predicates)
         push!(indices, i, j, k, i)
         return ch
     end
@@ -54,13 +54,13 @@ function convex_hull!(ch::ConvexHull{P,I}; predicates::AbstractPredicateType=def
     sizehint!(lower, max(4, floor(I, cbrt(n))))
     sizehint!(upper, max(4, floor(I, cbrt(n))))
     for i in eachindex(insertion_order)
-        while length(upper) ≥ 2 && is_left(point_position_relative_to_line(predicates,get_point(points, upper[end-1]), get_point(points, upper[end]), get_point(points, insertion_order[i])))
+        while length(upper) ≥ 2 && is_left(point_position_relative_to_line(predicates, get_point(points, upper[end-1]), get_point(points, upper[end]), get_point(points, insertion_order[i])))
             pop!(upper)
         end
         push!(upper, insertion_order[i])
     end
     for i in lastindex(insertion_order):-1:firstindex(insertion_order)
-        while length(lower) ≥ 2 && is_left(point_position_relative_to_line(predicates,get_point(points, lower[end-1]), get_point(points, lower[end]), get_point(points, insertion_order[i])))
+        while length(lower) ≥ 2 && is_left(point_position_relative_to_line(predicates, get_point(points, lower[end-1]), get_point(points, lower[end]), get_point(points, insertion_order[i])))
             pop!(lower)
         end
         push!(lower, insertion_order[i])

@@ -143,7 +143,8 @@ end
         segment_intersections,
         boundary_sites,
         exterior_circumcenters,
-        equal_circumcenter_mapping) -> Point
+        equal_circumcenter_mapping,
+        predicates::AbstractPredicateType=def_alg222()) -> Point
 
 Process the intersection of the Voronoi polygon of the site `u` with the ray emanating from the circumcenter of the site `v`.
 
@@ -157,6 +158,7 @@ Process the intersection of the Voronoi polygon of the site `u` with the ray ema
 - `boundary_sites`: A mapping from boundary sites to the indices of the segment intersections that are incident to the boundary site.
 - `exterior_circumcenters`: The list of circumcenters of sites that are outside the boundary.
 - `equal_circumcenter_mapping`: A mapping from the indices of the segment intersections that are equal to the circumcenter of a site to the index of the site.
+- `predicates::AbstractPredicateType=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs 
 - `p`: The coordinates of the intersection. 
@@ -172,13 +174,14 @@ function process_ray_intersection!(
     segment_intersections,
     boundary_sites,
     exterior_circumcenters,
-    equal_circumcenter_mapping)
+    equal_circumcenter_mapping,
+    predicates::AbstractPredicateType=def_alg222())
     u_tri = get_circumcenter_to_triangle(vorn, u)
     a = geti(u_tri)
     b = getj(u_tri)
     p, q = get_generator(vorn, a, b)
     r = get_polygon_point(vorn, v)
-    _, intersection_coordinates = intersection_of_edge_and_bisector_ray(p, q, r)
+    _, intersection_coordinates = intersection_of_edge_and_bisector_ray(predicates, p, q, r)
     F = number_type(vorn)
     any(isnan, intersection_coordinates) && (push!(exterior_circumcenters, v); return (F(NaN), F(NaN)))
     idx = add_segment_intersection!(segment_intersections, boundary_sites, intersection_coordinates, incident_polygon)
@@ -471,13 +474,13 @@ function process_polygon!(vorn, e, incident_polygon, boundary_sites, segment_int
         if is_segment_between_two_ghosts(u, v)
             continue
         elseif is_ray_going_in(u, v)
-            r = process_ray_intersection!(vorn, u, v, incident_polygon, intersected_edge_cache, segment_intersections, boundary_sites, exterior_circumcenters, equal_circumcenter_mapping)
+            r = process_ray_intersection!(vorn, u, v, incident_polygon, intersected_edge_cache, segment_intersections, boundary_sites, exterior_circumcenters, equal_circumcenter_mapping, predicates)
             # It's possible for an infinite ray to also intersect other boundary edges, e.g. look at 
             #   points = [0.290978 0.830755 0.0139574; 0.386411 0.630008 0.803881]
             # So, let's just look for intersections with other edges.
             process_ray_intersection_with_other_edges!(vorn, u, v, e, left_edge, right_edge, r, segment_intersections, boundary_sites, incident_polygon, equal_circumcenter_mapping, intersected_edge_cache, predicates)
         elseif is_ray_going_out(u, v)
-            r = process_ray_intersection!(vorn, v, u, incident_polygon, intersected_edge_cache, segment_intersections, boundary_sites, exterior_circumcenters, equal_circumcenter_mapping)
+            r = process_ray_intersection!(vorn, v, u, incident_polygon, intersected_edge_cache, segment_intersections, boundary_sites, exterior_circumcenters, equal_circumcenter_mapping, predicates)
             process_ray_intersection_with_other_edges!(vorn, v, u, e, left_edge, right_edge, r, segment_intersections, boundary_sites, incident_polygon, equal_circumcenter_mapping, intersected_edge_cache, predicates)
         elseif is_finite_segment(u, v)
             for _e in (e, left_edge, right_edge)
@@ -656,7 +659,7 @@ function dequeue_and_process!(vorn, polygon_edge_queue, edges_to_process,
     for cache in (intersected_edge_cache, left_edge_intersectors, right_edge_intersectors, current_edge_intersectors)
         empty!(cache)
     end
-    left_edge, right_edge, e = process_polygon!(vorn, e, incident_polygon, boundary_sites, segment_intersections, intersected_edge_cache, exterior_circumcenters, equal_circumcenter_mapping)
+    left_edge, right_edge, e = process_polygon!(vorn, e, incident_polygon, boundary_sites, segment_intersections, intersected_edge_cache, exterior_circumcenters, equal_circumcenter_mapping, predicates)
     classify_intersections!(intersected_edge_cache, left_edge_intersectors, right_edge_intersectors, current_edge_intersectors, left_edge, right_edge, e)
     process_intersection_points!(polygon_edge_queue, vorn, incident_polygon,
         left_edge_intersectors, right_edge_intersectors, current_edge_intersectors,

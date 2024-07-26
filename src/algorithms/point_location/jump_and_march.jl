@@ -254,10 +254,10 @@ function fix_initial_collinear_edge_for_interior_vertex(tri::Triangulation, k, q
     while is_collinear(line_cert_j) || is_collinear(line_cert_i)
         if is_collinear(line_cert_j)
             opposing_idx = j
-            on_edge_cert = point_position_on_line_segment(predicates, p, pⱼ, q)
+            on_edge_cert = point_position_on_line_segment(p, pⱼ, q)
         else
             opposing_idx = i
-            on_edge_cert = point_position_on_line_segment(predicates, p, pᵢ, q)
+            on_edge_cert = point_position_on_line_segment(p, pᵢ, q)
         end
         # We want q to be in the direction of of ppᵢ or ppⱼ, which just means not left
         # For example, suppose we have 
@@ -289,7 +289,7 @@ function fix_initial_collinear_edge_for_interior_vertex(tri::Triangulation, k, q
             end
         else
             # If we haven't yet found the edge, let's just pick another one
-            i, j, pᵢ, pⱼ, line_cert_i, line_cert_j = prepare_initial_edge(tri, neighbouring_edges, p, q, rng)
+            i, j, pᵢ, pⱼ, line_cert_i, line_cert_j = prepare_initial_edge(tri, neighbouring_edges, p, q, rng, predicates)
         end
     end
     return false, p, i, j, pᵢ, pⱼ, line_cert_i, line_cert_j
@@ -327,14 +327,14 @@ function check_for_intersections_with_adjacent_boundary_edges(tri::Triangulation
     flipped_left_cert = point_position_relative_to_line(predicates, p, pleft, q) # Useful for the returned value, but we use left_cert below to get a good value for direction_cert
     !is_collinear(right_cert) && !is_collinear(left_cert) && return (Cert.Outside, Cert.Outside, k, right_cert, flipped_left_cert)
     if is_collinear(right_cert)
-        direction_cert = point_position_on_line_segment(predicates, p, pright, q)
+        direction_cert = point_position_on_line_segment(p, pright, q)
         if !is_left(direction_cert)
             return (Cert.Right, direction_cert, right, right_cert, flipped_left_cert)
         elseif is_left(direction_cert) && !is_collinear(left_cert)
             return (Cert.Outside, Cert.Outside, k, right_cert, flipped_left_cert)
         end
     end
-    direction_cert = point_position_on_line_segment(predicates, pleft, p, q)
+    direction_cert = point_position_on_line_segment(pleft, p, q)
     if !is_right(direction_cert)
         return (Cert.Left, direction_cert, left, right_cert, flipped_left_cert)
     else
@@ -407,7 +407,7 @@ function search_right_down_adjacent_boundary_edges(tri::Triangulation, q, q_pos,
         end
         pⱼ = get_point(tri, j)
         right_cert = point_position_relative_to_line(predicates, pᵢ, pⱼ, q)
-        q_pos = !is_collinear(right_cert) ? Cert.Outside : point_position_on_line_segment(predicates,pᵢ, pⱼ, q)
+        q_pos = !is_collinear(right_cert) ? Cert.Outside : point_position_on_line_segment(pᵢ, pⱼ, q)
     end
     if is_outside(q_pos)
         return (true, Cert.Outside, j, i, get_adjacent(tri, j, i))
@@ -433,7 +433,7 @@ function search_left_down_adjacent_boundary_edges(tri::Triangulation, q, q_pos, 
         end
         pⱼ = get_point(tri, j)
         left_cert = point_position_relative_to_line(predicates, pᵢ, pⱼ, q)
-        q_pos = !is_collinear(left_cert) ? Cert.Outside : point_position_on_line_segment(predicates, pⱼ, pᵢ, q)
+        q_pos = !is_collinear(left_cert) ? Cert.Outside : point_position_on_line_segment(pⱼ, pᵢ, q)
     end
     if is_outside(q_pos)
         return (true, Cert.Outside, i, j, get_adjacent(tri, i, j))
@@ -546,7 +546,7 @@ function check_for_intersections_with_single_interior_edge_adjacent_to_boundary_
     # If we do not have the condition above, it is still possible that q is on the edge.
     if is_collinear(certⱼ)
         # First, let us check if q is on the edge. 
-        q_cert = point_position_on_line_segment(predicates, p, pⱼ, q)
+        q_cert = point_position_on_line_segment(p, pⱼ, q)
         if is_on(q_cert) || is_degenerate(q_cert)
             # Here, q is on the edge, so we consider it as being inside the triangle.
             if is_true(store_history)
@@ -1048,9 +1048,9 @@ function find_triangle_across_triangle(tri::Triangulation, q, k, predicates::Abs
             # last_changed ≠ 0 path is a lot more common (> 99%).
             if is_collinear(point_position_relative_to_line(predicates, tri, original_k, q, last_changed == i ? j : i))
                 add_edge!(history, last_changed == i ? j : i, k)
-            elseif edge_exists(last_changed) && is_collinear(predicates, point_position_relative_to_line(tri, original_k, q, last_changed))
+            elseif edge_exists(last_changed) && is_collinear(point_position_relative_to_line(predicates, tri, original_k, q, last_changed))
                 add_edge!(history, last_changed, k)
-            elseif k ≠ original_k && pₖ ≠ q && is_collinear(predicates, point_position_relative_to_line(tri, k, original_k, q))
+            elseif k ≠ original_k && pₖ ≠ q && is_collinear(point_position_relative_to_line(predicates, tri, k, original_k, q))
                 # This case is needed in case we have a collinearity, but only because we pass through a point 
                 # rather than because we pass through a collinear segment. We will sort through these later using 
                 # fix_segments!.
@@ -1060,11 +1060,11 @@ function find_triangle_across_triangle(tri::Triangulation, q, k, predicates::Abs
                 # This case here is a lot less likely. 
                 if pₖ == q
                     prev = get_adjacent(tri, j, i)
-                    if is_collinear(predicates, point_position_relative_to_line(tri, i, p, q))
+                    if is_collinear(point_position_relative_to_line(predicates, tri, i, p, q))
                         add_edge!(history, i, k)
-                    elseif is_collinear(predicates, point_position_relative_to_line(tri, j, p, q))
+                    elseif is_collinear(point_position_relative_to_line(predicates, tri, j, p, q))
                         add_edge!(history, j, k)
-                    elseif prev ≠ original_k && is_collinear(predicates, point_position_relative_to_line(tri, prev, p, q)) # prev ≠ original_k because otherwise we'll say the line segment we started with is collinear with itself, which is true but we don't need that case.
+                    elseif prev ≠ original_k && is_collinear(point_position_relative_to_line(predicates, tri, prev, p, q)) # prev ≠ original_k because otherwise we'll say the line segment we started with is collinear with itself, which is true but we don't need that case.
                         add_edge!(history, prev, k)
                     end
                 end

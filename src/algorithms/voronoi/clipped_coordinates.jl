@@ -37,7 +37,7 @@ function is_last_ghost_vertex(cell, i)
 end
 
 """
-    get_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box=nothing) -> Vector{NTuple{2,Number}}
+    get_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box=nothing; predicates::AbstractPredicateType=def_alg222()) -> Vector{NTuple{2,Number}}
 
 Returns the coordinates of the polygon with index `i` in `vorn`. If `bounding_box` is provided, then the polygon is clipped to the bounding box. If the polygon is unbounded, then `bounding_box` must be provided.
 
@@ -48,19 +48,22 @@ See also [`get_unbounded_polygon_coordinates`](@ref) and [`get_bounded_polygon_c
 - `i`: The index of the polygon.
 - `bounding_box=nothing`: The bounding box to clip the polygon to. If `nothing`, then the polygon is not clipped. If the polygon is unbounded, then `bounding_box` must be provided.
 
+# Keyword Arguments 
+- `predicates::AbstractPredicateType=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+
 # Outputs
 - `coords`: The coordinates of the polygon. This is a circular vector.
 """
-function get_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box=nothing)
+function get_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box=nothing; predicates::AbstractPredicateType=def_alg222())
     if !isnothing(bounding_box)
         a, b, c, d = bounding_box
         @assert a < b && c < d "The bounding box must be of the form (xmin, xmax, ymin, ymax) with xmin < xmax and ymin < ymax."
     end
     if i ∈ get_unbounded_polygons(vorn)
         isnothing(bounding_box) && throw(ArgumentError("The polygon is unbounded, so a bounding box must be provided. See DelaunayTriangulation.polygon_bounds for a reasonable default."))
-        return get_unbounded_polygon_coordinates(vorn, i, bounding_box)
+        return get_unbounded_polygon_coordinates(vorn, i, bounding_box; predicates)
     else
-        return get_bounded_polygon_coordinates(vorn, i, bounding_box)
+        return get_bounded_polygon_coordinates(vorn, i, bounding_box; predicates)
     end
 end
 
@@ -90,7 +93,7 @@ function get_clipping_poly_structs(vorn::VoronoiTessellation, i, bounding_box)
 end
 
 """
-    clip_bounded_polygon_to_bounding_box(vorn::VoronoiTessellation, i, bounding_box) -> Vector{NTuple{2,Number}}
+    clip_bounded_polygon_to_bounding_box(vorn::VoronoiTessellation, i, bounding_box; predicates::AbstractPredicateType=def_alg222()) -> Vector{NTuple{2,Number}}
 
 Clips the `i`th polygon of `vorn` to `bounding_box`.
 
@@ -101,12 +104,15 @@ See also [`clip_polygon`](@ref).
 - `i`: The index of the polygon.
 - `bounding_box`: The bounding box to clip the polygon to.
 
+# Keyword Arguments 
+- `predicates::AbstractPredicateType=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+
 # Outputs
 - `coords`: The coordinates of the clipped polygon. This is a circular vector.
 """
-function clip_bounded_polygon_to_bounding_box(vorn::VoronoiTessellation, i, bounding_box)
+function clip_bounded_polygon_to_bounding_box(vorn::VoronoiTessellation, i, bounding_box; predicates::AbstractPredicateType=def_alg222())
     poly, clip_poly = get_clipping_poly_structs(vorn, i, bounding_box)
-    return clip_polygon(poly, clip_poly)
+    return clip_polygon(poly, clip_poly; predicates)
 end
 
 """
@@ -290,11 +296,14 @@ function get_new_polygon_indices(vorn, vertices)
 end
 
 """
-    get_bounded_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box) -> Vector{NTuple{2,Number}}
+    get_bounded_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box; predicates::AbstractPredicateType=def_alg222()) -> Vector{NTuple{2,Number}}
 
 Returns the coordinates of the `i`th polygon of `vorn`, clipped to `bounding_box`.
+
+Use the keyword arguments `predicates` to determine how predicates are computed. Should be one of [`Exact`](@ref),
+[`Adaptive`](@ref), and [`Fast`](@ref). See the documentation for more information about these choices.
 """
-function get_bounded_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box)
+function get_bounded_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box; predicates::AbstractPredicateType=def_alg222())
     if isnothing(bounding_box)
         C = get_polygon(vorn, i)
         F = number_type(vorn)
@@ -304,28 +313,34 @@ function get_bounded_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_
         end
         return coords
     else
-        return clip_bounded_polygon_to_bounding_box(vorn, i, bounding_box)
+        return clip_bounded_polygon_to_bounding_box(vorn, i, bounding_box; predicates)
     end
 end
 
 """
-    get_unbounded_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box) -> Vector{NTuple{2,Number}}
+    get_unbounded_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box; predicates::AbstractPredicateType=def_alg222()) -> Vector{NTuple{2,Number}}
 
 Returns the coordinates of the `i`th polygon of `vorn`, clipped to `bounding_box`. The polygon is assumed to be unbounded.
+
+Use the keyword arguments `predicates` to determine how predicates are computed. Should be one of [`Exact`](@ref),
+[`Adaptive`](@ref), and [`Fast`](@ref). See the documentation for more information about these choices.
 """
-function get_unbounded_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box)
-    return clip_unbounded_polygon_to_bounding_box(vorn, i, bounding_box)
+function get_unbounded_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box; predicates::AbstractPredicateType=def_alg222())
+    return clip_unbounded_polygon_to_bounding_box(vorn, i, bounding_box; predicates)
 end
 
 """
-    clip_unbounded_polygon_to_bounding_box(vorn::VoronoiTessellation, i, bounding_box) -> Vector{NTuple{2,Number}}
+    clip_unbounded_polygon_to_bounding_box(vorn::VoronoiTessellation, i, bounding_box; predicates::AbsractPredicateType=def_alg222()) -> Vector{NTuple{2,Number}}
 
 Clips the `i`th polygon of `vorn` to `bounding_box`. The polygon is assumed to be unbounded. See also [`clip_polygon`](@ref).
+
+Use the keyword arguments `predicates` to determine how predicates are computed. Should be one of [`Exact`](@ref),
+[`Adaptive`](@ref), and [`Fast`](@ref). See the documentation for more information about these choices.
 """
-function clip_unbounded_polygon_to_bounding_box(vorn::VoronoiTessellation, i, bounding_box)
-    new_vertices, new_points = grow_polygon_outside_of_box(vorn, i, bounding_box)
+function clip_unbounded_polygon_to_bounding_box(vorn::VoronoiTessellation, i, bounding_box; predicates::AbstractPredicateType=def_alg222())
+    new_vertices, new_points = grow_polygon_outside_of_box(vorn, i, bounding_box, predicates)
     clip_vertices = (1, 2, 3, 4)
     a, b, c, d = bounding_box
     clip_points = ((a, c), (b, c), (b, d), (a, d))
-    return clip_polygon(new_vertices, new_points, clip_vertices, clip_points)
+    return clip_polygon(new_vertices, new_points, clip_vertices, clip_points; predicates)
 end

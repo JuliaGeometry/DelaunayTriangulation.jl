@@ -53,7 +53,7 @@ end
 
 @testset verbose = true "DelaunayTriangulation.jl" begin
     @testset verbose = true "Aqua" begin
-        Aqua.test_all(DelaunayTriangulation; ambiguities=false, project_extras=false, stale_deps=!USE_INEXACTPREDICATES) # don't care about julia < 1.2
+        Aqua.test_all(DelaunayTriangulation; ambiguities=false, project_extras=false) # don't care about julia < 1.2
         Aqua.test_ambiguities(DelaunayTriangulation) # don't pick up Base and Core...
     end
 
@@ -64,6 +64,7 @@ end
         safe_include("triangulation/convex_triangulation.jl")
         safe_include("triangulation/constrained.jl")
         safe_include("triangulation/check_args.jl")
+        
         # Needs to be setup properly before we do more testing of it. Please see the 
         # comments at the end of the weighted.jl file (the one included in the comment below).
         # safe_include("triangulation/weighted.jl")

@@ -386,7 +386,7 @@ function _compute_split_position_piecewise_linear(tri::Triangulation, args::Refi
         # Split at the midpoint when splitting for the first time
         return mx, my
     else
-        num_adjoin, adjoin_vert = segment_vertices_adjoin_other_segments_at_acute_angle(tri, e)
+        num_adjoin, adjoin_vert = segment_vertices_adjoin_other_segments_at_acute_angle(tri, e, args.predicates)
         if num_adjoin == 2
             # In this case, t is always ≤ 1/2. We can choose the vertex that this split is relative 
             # to arbitrarily, but just leaving this t as it is means that we get different results for e and reverse_edge(e).

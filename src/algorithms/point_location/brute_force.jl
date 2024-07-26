@@ -29,7 +29,7 @@ See also [`find_triangle`](@ref).
 # Output 
 - `V`: The triangle containing the point `q`.
 """
-function brute_force_search(tri::Triangulation, q; itr=each_triangle(tri), predicates::AbstractPredicateType=def_alg222())
+function brute_force_search(tri::Triangulation, q; itr=each_triangle(tri), predicates::AbstractPredicateType=Adaptive())
     for V in itr
         cert = point_position_relative_to_triangle(predicates, tri, V, q)
         !is_outside(cert) && return V

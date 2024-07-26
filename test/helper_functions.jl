@@ -7,6 +7,7 @@ using Random
 using DataStructures
 using DelimitedFiles
 using OrderedCollections
+using InteractiveUtils
 using Test
 using DelaunayTriangulation
 import SpatialIndexing as SI
@@ -127,7 +128,7 @@ function simple_geometry()
     index_map = Dict(["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "ℓ",
         "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "z", "a1",
         "b1"] .=> DT.each_point_index(pts))
-    return DT.Triangulation(pts, T, boundary_nodes, delete_ghosts=true), label_map, index_map
+    return DT.Triangulation(pts, T, boundary_nodes, delete_ghosts=true, predicates=DT.Exact()), label_map, index_map
 end
 
 macro _adj(i, j, k)
@@ -236,7 +237,7 @@ function example_with_special_corners()
     r = [3.0, 8.0]
     pts = [a, b, c, d, e, f, g, h, i, j, k, ℓ, m, n, o, p, q, r]
     rng = StableRNG(29292929292)
-    tri = triangulate(pts; rng, delete_ghosts=false, randomise=false)
+    tri = triangulate(pts; rng, delete_ghosts=false, randomise=false, predicates=DT.Exact())
     return tri
 end
 
@@ -272,7 +273,7 @@ function fixed_shewchuk_example_constrained()
     k = [8.0, 2.5]
     pts = [a, b, c, d, e, f, g, h, i, j, k]
     rng = StableRNG(213)
-    tri = triangulate(pts; rng, delete_ghosts=false, randomise=false)
+    tri = triangulate(pts; rng, delete_ghosts=false, randomise=false, predicates=DT.Exact())
     return tri
 end
 
@@ -345,7 +346,7 @@ function get_random_vertices_and_constrained_edges(nverts1, nverts2, nedges, rng
     ## To generate a random set of constrained edges, we get a random small triangulation, 
     ## and we just take the edges from that triangulation.
     points = [Tuple(rand(rng, 2)) for _ in 1:nverts1]
-    tri = triangulate(points; rng)
+    tri = triangulate(points; predicates=DT.Fast(), rng)
     edges = Set{NTuple{2,Int}}()
     all_edges = collect(each_solid_edge(tri))
     iter = 0
@@ -785,7 +786,7 @@ end
 
 
 ## TODO: Implement a brute-force DT.VoronoiTessellation that we can compare with
-function validate_tessellation(vorn::DT.VoronoiTessellation; check_convex=true, check_adjacent=true)
+function validate_tessellation(vorn::DT.VoronoiTessellation; check_convex=true, check_adjacent=true, predicates::DT.AbstractPredicateType=DT.def_alg222())
     tri = DT.get_triangulation(vorn)
     for (i, p) in DT.get_generators(vorn)
         flag = get_point(tri, i) == get_generator(vorn, i) == p
@@ -894,7 +895,7 @@ function validate_tessellation(vorn::DT.VoronoiTessellation; check_convex=true, 
             end
             if check_convex
                 _pts = unique(poly_points)
-                ch = convex_hull(_pts)
+                ch = convex_hull(_pts; predicates)
                 _poly_points = _pts[DT.get_vertices(ch)]
                 flag = DT.circular_equality(collect.(poly_points), collect.(_poly_points), ≈)
                 if !flag
@@ -1072,7 +1073,7 @@ function get_points_in_diametral_lens(p, q, lens_angle)
 end
 
 function get_random_convex_polygon(points)
-    tri = triangulate(points)
+    tri = triangulate(points; predicates=DT.Exact())
     S = get_convex_hull_vertices(tri)
     pop!(S) # Want S[begin] ≠ S[end]
     return S
@@ -1452,7 +1453,7 @@ function why_not_equal(tri1, tri2)
     for i in 1:DT.num_curves(tri1)
         p1 = DT.get_representative_point_coordinates(tri1, i)
         p2 = DT.get_representative_point_coordinates(tri2, i)
-        !([getx(p1), gety(p1)] ≈ [getx(p2), gety(p2)]) && println("!([getx(p1), gety(p1)] ≈ [getx(p2), gety(p2)]) for $i")
+        !([getx(p1), gety(p1)] ≈ [getx(p2), gety(p2)]) && println("!([getx(p1), gety(p1)] ≈ [getx(p2), gety(p2)]) for curve $i")
     end
     DT.get_polygon_hierarchy(tri1) ≠ DT.get_polygon_hierarchy(tri2) && println("get_polygon_hierarchy(tri1) ≠ get_polygon_hierarchy(tri2)")
     DT.get_boundary_nodes(tri1) ≠ DT.get_boundary_nodes(tri2) && println("get_boundary_nodes(tri1) ≠ get_boundary_nodes(tri2)")
@@ -2203,15 +2204,9 @@ using DelaunayTriangulation:
     test_adjacent_map_matches_adjacent2vertex_map,
     test_each_edge_has_two_incident_triangles,
     test_triangle_orientation,
-    test_iterators,
-    USE_INEXACTPREDICATES,
-    USE_EXACTPREDICATES
-using Preferences
-if USE_INEXACTPREDICATES 
-    @test load_preference(DelaunayTriangulation, "PREDICATES", "EXACT") == "INEXACT"
-elseif USE_EXACTPREDICATES 
-    @test load_preference(DelaunayTriangulation, "PREDICATES", "EXACT") == "EXACT"
-end
+    test_iterators
+
+rt() = rand((DT.Fast(), DT.Exact(), DT.Adaptive()))
 
 export validate_triangulation
 export USE_INEXACTPREDICATES
@@ -2286,4 +2281,6 @@ export get_nearest_power_point
 export NUM_WEGT
 export NUM_CWEGT 
 export get_convex_polygon_weighted_example
+export rt
+export subtypes
 end

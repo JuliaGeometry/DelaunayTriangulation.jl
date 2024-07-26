@@ -20,6 +20,7 @@ Triangulates the rectangle `[a, b] × [c, d]`.
 - `TriangleType::Type{V}=NTuple{3,IntegerType}`: The type of the triangles.
 - `EdgesType::Type{Es}=Set{EdgeType}`: The type of the edges container.
 - `TrianglesType::Type{Ts}=Set{TriangleType}`: The type of the triangles container.
+- `predicates::AbstractPredicateType=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs 
 - `tri`: The triangulation of the rectangle.
@@ -31,16 +32,17 @@ Triangulates the rectangle `[a, b] × [c, d]`.
     EdgeType::Type{E}=NTuple{2,IntegerType},
     TriangleType::Type{V}=NTuple{3,IntegerType},
     EdgesType::Type{Es}=Set{EdgeType},
-    TrianglesType::Type{Ts}=Set{TriangleType}) where {I,E,V,Es,Ts}
-    return _triangulate_rectangle(a, b, c, d, nx, ny, I, E, V, Es, Ts, single_boundary, delete_ghosts)
+    TrianglesType::Type{Ts}=Set{TriangleType},
+    predicates::AbstractPredicateType=Adaptive()) where {I,E,V,Es,Ts}
+    return _triangulate_rectangle(a, b, c, d, nx, ny, I, E, V, Es, Ts, single_boundary, delete_ghosts, predicates)
 end
 @inline function _triangulate_rectangle(a, b, c, d, nx, ny,
     ::Type{I}, ::Type{E}, ::Type{V}, ::Type{Es}, ::Type{Ts},
-    single_boundary, delete_ghosts) where {I,E,V,Es,Ts}
+    single_boundary, delete_ghosts, predicates::AbstractPredicateType=def_alg222()) where {I,E,V,Es,Ts}
     T, sub2ind = get_lattice_triangles(nx, ny, Ts, V)
     points = get_lattice_points(a, b, c, d, nx, ny, sub2ind)
     boundary_nodes = get_lattice_boundary(nx, ny, sub2ind, Val(single_boundary), I)
-    tri = Triangulation(points, T, boundary_nodes; IntegerType=I, EdgeType=E, TriangleType=V, EdgesType=Es, TrianglesType=Ts, delete_ghosts)
+    tri = Triangulation(points, T, boundary_nodes; predicates, IntegerType=I, EdgeType=E, TriangleType=V, EdgesType=Es, TrianglesType=Ts, delete_ghosts)
     compute_representative_points!(tri)
     return tri
 end
@@ -63,7 +65,7 @@ See [`triangulate_rectangle`](@ref).
 - `T`: The collection of triangles.
 - `sub2ind`: A map that takes cartesian indices `(i, j)` into the associated linear index along the lattice. See `LinearIndices`.
 """
-@inline function get_lattice_triangles(nx, ny, ::Type{Ts}, ::Type{V}) where {Ts, V}
+@inline function get_lattice_triangles(nx, ny, ::Type{Ts}, ::Type{V}) where {Ts,V}
     T = Ts()
     sub2ind = LinearIndices((1:nx, 1:ny))
     for j in 1:(ny-1)
@@ -135,7 +137,7 @@ See [`triangulate_rectangle`](@ref).
 # Outputs 
 - `boundary_nodes`: The boundary nodes, returned according to `single_boundary` as described above.
 """
-@inline function get_lattice_boundary(nx, ny, sub2ind, single_boundary::Val{B}, ::Type{I}) where {B, I}
+@inline function get_lattice_boundary(nx, ny, sub2ind, single_boundary::Val{B}, ::Type{I}) where {B,I}
     b1 = Vector{I}(undef, nx)
     b2 = Vector{I}(undef, ny)
     b3 = Vector{I}(undef, nx)

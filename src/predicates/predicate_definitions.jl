@@ -29,7 +29,7 @@ SOFTWARE.
 Computes `ExactPredicates.ext((ux, uy), (vx, vy))`, i.e. 
 returns `ux * vy - uy * vx`.
 """
-ext(ux, uy, vx, vy) = ux * vy - uy * vx
+@inline ext(ux, uy, vx, vy) = ux * vy - uy * vx
 
 """
     inp(ux, uy, vx, vy)
@@ -37,7 +37,7 @@ ext(ux, uy, vx, vy) = ux * vy - uy * vx
 Computes `ExactPredicates.inp((ux, uy), (vx, vy))`, i.e.
 returns `ux * vx + uy * vy`.
 """
-inp(ux, uy, vx, vy) = ux * vx + uy * vy
+@inline inp(ux, uy, vx, vy) = ux * vx + uy * vy
 
 """
     det(a, b, c, d)
@@ -45,7 +45,7 @@ inp(ux, uy, vx, vy) = ux * vx + uy * vy
 Computes `ExactPredicates.det(a, b, c, d)`,
 i.e. returns `a*d - b*c`.
 """
-det(a, b, c, d) = a * d - b * c
+@inline det(a, b, c, d) = a * d - b * c
 
 """
     det(a, b, c, d, e, f, g, h, i)
@@ -56,7 +56,7 @@ i.e. returns the determinant of
 \\det \\begin{bmatrix} a & b & c \\\\ d & e & f \\\\ g & h & i \\end{bmatrix}
 ```
 """
-det(a, b, c, d, e, f, g, h, i) = a * det(e, f, h, i) - d * det(b, c, h, i) + g * det(b, c, e, f)
+@inline det(a, b, c, d, e, f, g, h, i) = a * det(e, f, h, i) - d * det(b, c, h, i) + g * det(b, c, e, f)
 
 """
     opposite_signs(x, y) -> Bool
@@ -64,14 +64,14 @@ det(a, b, c, d, e, f, g, h, i) = a * det(e, f, h, i) - d * det(b, c, h, i) + g *
 From ExactPredicates.jl, returns `true` if `x` and `y` have opposite signs, and `false` otherwise.
 Assumes that `x` and `y` are in `[-1, 0, 1]`.
 """
-opposite_signs(x, y) = xor(x, y) == -2
+@inline opposite_signs(x, y) = xor(x, y) == -2
 
 """
     sgn(x) -> Int 
 
 Returns `Int(sign(x))`.
-""" 
-sgn(x) = Int(sign(x))
+"""
+@inline sgn(x) = Int(sign(x))
 
 """
     orient_predicate([method::AbstractPredicateType,] p, q, r) -> Integer 
@@ -86,14 +86,14 @@ The `method` argument determines how this result is computed, and should be
 one of [`Exact`](@ref), [`Fast`](@ref), and [`Adaptive`](@ref) (the default).
 See the documentation for more information about these choices.
 """
-function orient_predicate(method::AbstractPredicateType, p, q, r) 
+@inline function orient_predicate(method::AbstractPredicateType, p, q, r)
     return orient(method, getxy(p), getxy(q), getxy(r))
 end
-orient_predicate(p, q, r) = orient_predicate(def_alg222(), p, q, r)
+@inline orient_predicate(p, q, r) = orient_predicate(def_alg222(), p, q, r)
 
-orient(::Fast, p, q, r) = sgn(AP.orient2fast(p, q, r))
-orient(::Exact, p, q, r) = EP.orient(_getxy(p), _getxy(q), _getxy(r))
-orient(::Adaptive, p, q, r) = AP.orient2p(p, q, r)
+@inline orient(::Fast, p, q, r) = sgn(AP.orient2fast(p, q, r))
+@inline orient(::Exact, p, q, r) = EP.orient(_getxy(p), _getxy(q), _getxy(r))
+@inline orient(::Adaptive, p, q, r) = AP.orient2p(p, q, r)
 
 """
     orient_predicate([method::AbstractPredicateType,] p, q, r) -> Integer
@@ -127,14 +127,14 @@ The `method` argument determines how this result is computed, and should be
 one of [`Exact`](@ref), [`Fast`](@ref), and [`Adaptive`](@ref) (the default).
 See the documentation for more information about these choices.
 """
-function orient_predicate(method::AbstractPredicateType, p, q, r, s) 
-    return orient(method, getxy(p), getxy(q), getxy(r), getxy(s))
+@inline function orient_predicate(method::AbstractPredicateType, p, q, r, s)
+    return orient(method, getxyz(p), getxyz(q), getxyz(r), getxyz(s))
 end
-orient_predicate(p, q, r, s) = orient_predicate(def_alg222(), p, q, r, s)
+@inline orient_predicate(p, q, r, s) = orient_predicate(def_alg222(), p, q, r, s)
 
-orient(::Fast, p, q, r, s) = sgn(AP.orient3fast(p, q, r, s))
-orient(::Exact, p, q, r, s) = EP.orient(_getxy(p), _getxy(q), _getxy(r), _getxy(s))
-orient(::Adaptive, p, q, r, s) = AP.orient3(p, q, r, s)
+@inline orient(::Fast, p, q, r, s) = sgn(AP.orient3fast(p, q, r, s))
+@inline orient(::Exact, p, q, r, s) = EP.orient(_getxyz(p), _getxyz(q), _getxyz(r), _getxyz(s))
+@inline orient(::Adaptive, p, q, r, s) = AP.orient3p(p, q, r, s)
 
 """
     incircle_predicate([method::AbstractPredicateType,] a, b, c, p) -> Integer
@@ -149,14 +149,14 @@ The `method` argument determines how this result is computed, and should be
 one of [`Exact`](@ref), [`Fast`](@ref), and [`Adaptive`](@ref) (the default).
 See the documentation for more information about these choices.
 """
-function incircle_predicate(method::AbstractPredicateType, a, b, c, p) 
-    return incircle(method, getxy(p), getxy(b), getxy(c), getxy(p))
+@inline function incircle_predicate(method::AbstractPredicateType, a, b, c, p)
+    return incircle(method, getxy(a), getxy(b), getxy(c), getxy(p))
 end
-incircle_predicate(a, b, c, p) = incircle_predicate(def_alg222(), a, b, c, p)
+@inline incircle_predicate(a, b, c, p) = incircle_predicate(def_alg222(), a, b, c, p)
 
-incircle(::Fast, a, b, c, p) = sgn(AP.incirclefast(a, b, c, p))
-incircle(::Exact, a, b, c, p) = EP.incircle(_getxy(a), _getxy(b), _getxy(c), _getxy(p))
-incircle(::Adaptive, a, b, c, p) = AP.incirclep(a, b, c, p)
+@inline incircle(::Fast, a, b, c, p) = sgn(AP.incirclefast(a, b, c, p))
+@inline incircle(::Exact, a, b, c, p) = EP.incircle(_getxy(a), _getxy(b), _getxy(c), _getxy(p))
+@inline incircle(::Adaptive, a, b, c, p) = AP.incirclep(a, b, c, p)
 
 """
     parallelorder_predicate([method::AbstractPredicateType,] a, b, p, q) -> Integer
@@ -171,22 +171,22 @@ The `method` argument determines how this result is computed, and should be
 one of [`Exact`](@ref), [`Fast`](@ref), and [`Adaptive`](@ref) (the default).
 See the documentation for more information about these choices.
 """
-function parallelorder_predicate(method::AbstractPredicateType, a, b, p, q)
+@inline function parallelorder_predicate(method::AbstractPredicateType, a, b, p, q)
     return parallelorder(method, getxy(a), getxy(b), getxy(p), getxy(q))
 end
-parallelorder_predicate(a, b, p, q) = parallelorder(def_alg222(), a, b, p, q)
+@inline parallelorder_predicate(a, b, p, q) = parallelorder(def_alg222(), a, b, p, q)
 
-function parallelorder(::Fast, a, b, p, q)
-    ax, ay = getxy(a) 
+@inline function parallelorder(::Fast, a, b, p, q)
+    ax, ay = getxy(a)
     bx, by = getxy(b)
-    px, py = getxy(p) 
-    qx, qy = getxy(q) 
-    bax, bay = bx - ax, by - ay 
-    qpx, qpy = qx - px, qy - py 
+    px, py = getxy(p)
+    qx, qy = getxy(q)
+    bax, bay = bx - ax, by - ay
+    qpx, qpy = qx - px, qy - py
     return sgn(ext(bax, bay, qpx, qpy))
 end
-parallelorder(::Exact, a, b, p, q) =  EP.parallelorder(_getxy(a), _getxy(b), _getxy(p), _getxy(q))
-parallelorder(::Adaptive, a, b, p, q) = parallelorder(def_alg222(), a, b, p, q) # not implemented yet 
+@inline parallelorder(::Exact, a, b, p, q) = EP.parallelorder(_getxy(a), _getxy(b), _getxy(p), _getxy(q))
+@inline parallelorder(::Adaptive, a, b, p, q) = parallelorder(Exact(), a, b, p, q) # not implemented yet 
 
 """
     angle_is_acute([method::AbstractPredicateType,] p, q, r)
@@ -202,10 +202,10 @@ The `method` argument determines how this result is computed, and should be
 one of [`Exact`](@ref), [`Fast`](@ref), and [`Adaptive`](@ref) (the default).
 See the documentation for more information about these choices.
 """
-function angle_is_acute_predicate(method::AbstractPredicateType, p, q, r) 
+@inline function angle_is_acute_predicate(method::AbstractPredicateType, p, q, r)
     return angle_is_acute(method, getxy(p), getxy(q), getxy(r))
 end
-angle_is_acute_predicate(p, q, r) = angle_is_acute_predicate(def_alg222(), p, q, r)
+@inline angle_is_acute_predicate(p, q, r) = angle_is_acute_predicate(def_alg222(), p, q, r)
 
 EP.Codegen.@genpredicate function _angle_is_acute(p::2, q::2, r::2)
     pr = p - r
@@ -214,16 +214,16 @@ EP.Codegen.@genpredicate function _angle_is_acute(p::2, q::2, r::2)
     EP.Codegen.group!(qr...)
     return pr[1] * qr[1] + pr[2] * qr[2]
 end
-function angle_is_acute(::Fast, p, q, r)
+@inline function angle_is_acute(::Fast, p, q, r)
     px, py = getxy(p)
-    qx, qy = getxy(q) 
-    rx, ry = getxy(r) 
-    prx, pry = px - rx, py - ry 
-    qrx, qry = qx - rx, qy - ry 
+    qx, qy = getxy(q)
+    rx, ry = getxy(r)
+    prx, pry = px - rx, py - ry
+    qrx, qry = qx - rx, qy - ry
     return sgn(inp(prx, pry, qrx, qry))
 end
-angle_is_acute(::Exact, p, q, r) = _angle_is_acute(_getxy(p), _getxy(q), _getxy(r))
-angle_is_acute(::Adaptive, p, q, r) = angle_is_acute(def_alg222(), p, q, r) # not implemented yet 
+@inline angle_is_acute(::Exact, p, q, r) = _angle_is_acute(_getxy(p), _getxy(q), _getxy(r))
+@inline angle_is_acute(::Adaptive, p, q, r) = angle_is_acute(Exact(), p, q, r) # not implemented yet 
 
 """
     sameside_predicate(a, b, p) -> Integer
@@ -239,7 +239,7 @@ Assuming all of `a, b, p` are collinear, returns
     The difference in the argument order to ExactPredicates.jl is to match the convention that the 
     main point being tested is the last argument.
 """
-function sameside_predicate(a, b, p)
+@inline function sameside_predicate(a, b, p)
     _p = getxy(p)
     _a = getxy(a)
     _b = getxy(b)
@@ -265,7 +265,7 @@ The `method` argument determines how this result is computed, and should be
 one of [`Exact`](@ref), [`Fast`](@ref), and [`Adaptive`](@ref) (the default).
 See the documentation for more information about these choices.
 """
-function meet_predicate(method::AbstractPredicateType, p, q, a, b)
+@inline function meet_predicate(method::AbstractPredicateType, p, q, a, b)
     pqa = orient_predicate(method, p, q, a)
     pqb = orient_predicate(method, p, q, b)
     abp = orient_predicate(method, a, b, p)
@@ -287,4 +287,4 @@ function meet_predicate(method::AbstractPredicateType, p, q, a, b)
         return 0
     end
 end
-meet_predicate(p, q, a, b) = meet_predicate(def_alg222(), p, q, a, b)
+@inline meet_predicate(p, q, a, b) = meet_predicate(def_alg222(), p, q, a, b)

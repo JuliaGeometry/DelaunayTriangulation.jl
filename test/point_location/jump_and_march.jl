@@ -4,7 +4,6 @@ using LinearAlgebra
 using Random
 using StableRNGs
 using StatsBase
-using Preferences
 
 @test find_triangle === jump_and_march
 
@@ -63,20 +62,20 @@ boundary_nodes = get_boundary_nodes(tri)
     for _ in 1:36
         for k in DT.each_point_index(pts)
             for i in eachindex(allq)
-                T1 = jump_and_march(tri, allq[i]; k)
+                T1 = jump_and_march(tri, allq[i]; k, predicates=rt())
                 T2 = jump_and_march(tri, allq[i])
-                @test DT.is_positively_oriented(DT.triangle_orientation(tri, T1))
+                @test DT.is_positively_oriented(DT.triangle_orientation(rt(), tri, T1))
                 @test DT.is_positively_oriented(DT.triangle_orientation(tri, T2))
-                @inferred jump_and_march(tri, allq[i]; k)
-                @inferred jump_and_march(tri, allq[i])
+                @inferred jump_and_march(tri, allq[i]; k, predicates=rt())
+                @inferred jump_and_march(tri, allq[i]; predicates=rt())
                 for V in [T1, T2]
                     if length(allV[i]) == 1
                         @test DT.compare_triangles(V, allV[i][1]) && DT.is_inside(DT.point_position_relative_to_triangle(tri, V, allq[i]))
                     elseif length(allV[i]) == 2
-                        @test (DT.compare_triangles(V, allV[i][1]) || DT.compare_triangles(V, allV[i][2])) && (DT.is_on(DT.point_position_relative_to_triangle(tri, V, allq[i])) || (DT.is_ghost_triangle(V) && DT.is_inside(DT.point_position_relative_to_triangle(tri, V, allq[i]))))
+                        @test (DT.compare_triangles(V, allV[i][1]) || DT.compare_triangles(V, allV[i][2])) && (DT.is_on(DT.point_position_relative_to_triangle(tri, V, allq[i])) || (DT.is_ghost_triangle(V) && DT.is_inside(DT.point_position_relative_to_triangle(rt(),tri, V, allq[i]))))
                     else
                         bool1 = any(j -> DT.compare_triangles(V, allV[i][j]), eachindex(allV[i]))
-                        bool2 = (DT.is_on(DT.point_position_relative_to_triangle(tri, V, allq[i])) || (DT.is_ghost_triangle(V) && DT.is_inside(DT.point_position_relative_to_triangle(tri, V, allq[i]))))
+                        bool2 = (DT.is_on(DT.point_position_relative_to_triangle(rt(), tri, V, allq[i])) || (DT.is_ghost_triangle(V) && DT.is_inside(DT.point_position_relative_to_triangle(tri, V, allq[i]))))
                         @test bool1 && bool2
                     end
                 end
