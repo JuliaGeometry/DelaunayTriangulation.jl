@@ -197,7 +197,7 @@ for p in clip_poly
     lines!(ax, extended_line, color = :blue)
     input_list = output_list 
     isempty(output_list) && break
-    output_list = DelaunayTriangulation.clip_polygon_to_edge(input_list, q, p)
+    output_list = DelaunayTriangulation.clip_polygon_to_edge(input_list, q, p, DelaunayTriangulation.Exact())
     lines!(ax, [output_list; output_list[1]], color = :black, linewidth = 3)
     xlims!(ax, -6, 5)
     ylims!(ax, -4, 8)

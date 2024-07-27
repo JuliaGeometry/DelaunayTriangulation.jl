@@ -2392,9 +2392,9 @@ end
                                 (7.0, 7.8), (7.0, 7.4)]
                             boundary_nodes, points = convert_boundary_points_to_indices(curves; existing_points=points)
                             tri = triangulate(points; boundary_nodes, rng)
-                            max_area = max_area * get_area(tri)
-                            refine!(tri; min_angle, min_area, max_area, use_circumcenter=true, seditious_angle, use_lens, rng)
-                            @test validate_refinement(tri; min_angle, min_area, max_area, use_circumcenter=true, seditious_angle, use_lens, check_conformal=false)
+                            _max_area = max_area * get_area(tri)
+                            refine!(tri; min_angle, min_area, max_area=_max_area, use_circumcenter=true, seditious_angle, use_lens, rng)
+                            @test validate_refinement(tri; min_angle, min_area, max_area=_max_area, use_circumcenter=true, seditious_angle, use_lens, check_conformal=false)
                             if _rng_num(idx1, idx2, idx3, idx4, idx5) == _rng_num(1, 3, 1, 3, 1)
                                 fig, ax, sc = triplot(tri)
                                 @test_reference "a_constrained_triangulation_with_multiple_holes_circle.png" fig by = psnr_equality(15)
@@ -2557,7 +2557,7 @@ end
     end
 
     @testset "Refining disjoint sets" begin
-        @info "Testing the refinement of disjoint sets" 
+        @info "Testing the refinement of disjoint sets"
         θ = LinRange(0, 2π, 30) |> collect
         θ[end] = 0
         xy = Vector{Vector{Vector{NTuple{2,Float64}}}}()
@@ -2812,58 +2812,59 @@ end
 
     @testset "Test that nothing is breaking for Float32 inputs" begin
         for PT in (DT.Exact, DT.Adaptive)
-        for i in 1:25
-            p1 = (0.0f0, 0.0f0)
-            p2 = (1.0f0, 0.0f0)
-            p3 = (0.0f0, 1.0f0)
-            p4 = (1.0f0, 1.0f0)
-            pts = [p1, p2, p3, p4]
-            tri = triangulate(pts; delete_ghosts=false, predicates=PT())
-            validate_statistics(tri)
-            refine!(tri; max_area=0.001, max_points=25_000, use_circumcenter=true, predicates=PT())
-            stats = statistics(tri)
-            @inferred statistics(tri)
-            @test DT.get_smallest_angle(stats) ≥ deg2rad(30.0)
-            @test DT.get_largest_area(stats) ≤ 0.001f0
-            @test !DT.is_constrained(tri)
-            @test DT.convex_hull(tri).vertices == DT.convex_hull(tri.points).vertices
-            @test validate_triangulation(tri)
-            @test validate_refinement(tri; max_area=0.001, max_points=25_000, use_circumcenter=true)
-        end
+            for i in 1:25
+                p1 = (0.0f0, 0.0f0)
+                p2 = (1.0f0, 0.0f0)
+                p3 = (0.0f0, 1.0f0)
+                p4 = (1.0f0, 1.0f0)
+                pts = [p1, p2, p3, p4]
+                tri = triangulate(pts; delete_ghosts=false, predicates=PT())
+                validate_statistics(tri)
+                refine!(tri; max_area=0.001, max_points=25_000, use_circumcenter=true, predicates=PT())
+                stats = statistics(tri)
+                @inferred statistics(tri)
+                @test DT.get_smallest_angle(stats) ≥ deg2rad(30.0)
+                @test DT.get_largest_area(stats) ≤ 0.001f0
+                @test !DT.is_constrained(tri)
+                @test DT.convex_hull(tri).vertices == DT.convex_hull(tri.points).vertices
+                @test validate_triangulation(tri)
+                @test validate_refinement(tri; max_area=0.001, max_points=25_000, use_circumcenter=true)
+            end
 
-        for _ in 1:5
-            rng = StableRNG(123)
-            p1 = (0.0f0, 0.0f0)
-            p2 = (1.0f0, 0.0f0)
-            p3 = (1.0f0, 1.0f0)
-            p4 = (0.0f0, 1.0f0)
-            p5 = (0.4f0, 0.4f0)
-            p6 = (0.6f0, 0.4f0)
-            p7 = (0.6f0, 0.6f0)
-            p8 = (0.4f0, 0.6f0)
-            pts = [p1, p2, p3, p4, p5, p6, p7, p8]
-            boundary_nodes = [[[1, 2, 3, 4, 1]], [[8, 7, 6, 5, 8]]]
-            tri = triangulate(pts; rng, boundary_nodes=boundary_nodes, delete_ghosts=false, predicates=PT())
-            add_point!(tri, 0.1f0, 0.8f0, predicates=PT())
-            add_point!(tri, 0.3f0, 0.2f0, predicates=PT())
-            add_point!(tri, 0.7f0, 0.2f0, predicates=PT())
-            add_point!(tri, 0.9, 0.8, predicates=PT())
-            add_segment!(tri, 9, 10, predicates=PT())
-            add_segment!(tri, 11, 12, predicates=PT())
-            add_segment!(tri, 9, 12, predicates=PT())
-            add_segment!(tri, 10, 11, predicates=PT())
-            refine!(tri; rng, max_area=0.001f0, max_points=25000, min_angle=24.0f0, min_area=0.0, use_circumcenter=true, predicates=PT())
-            stats = statistics(tri)
-            @test DT.get_smallest_angle(stats) ≥ deg2rad(24.0f0)
-            @test DT.get_largest_area(stats) ≤ 0.001f0
-            @test DT.is_constrained(tri)
-            @test DT.convex_hull(tri).vertices == DT.convex_hull(tri.points).vertices
-            @test validate_refinement(tri; max_area=0.001, max_points=25000, min_angle=24.0f0, min_area=0.0, use_circumcenter=true)
+            for _ in 1:5
+                rng = StableRNG(123)
+                p1 = (0.0f0, 0.0f0)
+                p2 = (1.0f0, 0.0f0)
+                p3 = (1.0f0, 1.0f0)
+                p4 = (0.0f0, 1.0f0)
+                p5 = (0.4f0, 0.4f0)
+                p6 = (0.6f0, 0.4f0)
+                p7 = (0.6f0, 0.6f0)
+                p8 = (0.4f0, 0.6f0)
+                pts = [p1, p2, p3, p4, p5, p6, p7, p8]
+                boundary_nodes = [[[1, 2, 3, 4, 1]], [[8, 7, 6, 5, 8]]]
+                tri = triangulate(pts; rng, boundary_nodes=boundary_nodes, delete_ghosts=false, predicates=PT())
+                add_point!(tri, 0.1f0, 0.8f0, predicates=PT())
+                add_point!(tri, 0.3f0, 0.2f0, predicates=PT())
+                add_point!(tri, 0.7f0, 0.2f0, predicates=PT())
+                add_point!(tri, 0.9, 0.8, predicates=PT())
+                add_segment!(tri, 9, 10, predicates=PT())
+                add_segment!(tri, 11, 12, predicates=PT())
+                add_segment!(tri, 9, 12, predicates=PT())
+                add_segment!(tri, 10, 11, predicates=PT())
+                refine!(tri; rng, max_area=0.001f0, max_points=25000, min_angle=24.0f0, min_area=0.0, use_circumcenter=true, predicates=PT())
+                stats = statistics(tri)
+                @test DT.get_smallest_angle(stats) ≥ deg2rad(24.0f0)
+                @test DT.get_largest_area(stats) ≤ 0.001f0
+                @test DT.is_constrained(tri)
+                @test DT.convex_hull(tri).vertices == DT.convex_hull(tri.points).vertices
+                @test validate_refinement(tri; max_area=0.001, max_points=25000, min_angle=24.0f0, min_area=0.0, use_circumcenter=true)
+            end
         end
-    end end
- 
+    end
+
     @testset "Custom refinement example" begin
-        @info "Testing refinement with custom constraints" 
+        @info "Testing refinement with custom constraints"
         rng = StableRNG(123)
         points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
         tri = triangulate(points; rng)
