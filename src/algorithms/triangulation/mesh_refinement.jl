@@ -183,8 +183,7 @@ Computes the Steiner point for a triangle `T` of `tri` to improve its quality in
 function get_steiner_point(tri::Triangulation, args::RefinementArguments, T)
     i, j, k = triangle_vertices(T)
     p, q, r = get_point(tri, i, j, k)
-    A² = squared_triangle_area(p, q, r)
-    A = max(zero(A²), sqrt(A²))
+    A = triangle_area(p, q, r)
     check_precision(A) && return Cert.PrecisionFailure, q # the point q is just for type stability with the return 
     c = triangle_circumcenter(p, q, r, A)
     if !args.use_circumcenter
@@ -859,9 +858,7 @@ function assess_triangle_quality(tri::Triangulation, args::RefinementArguments, 
     u, v, w = triangle_vertices(T)
     p, q, r = get_point(tri, u, v, w)
     ℓmin², ℓmed², ℓmax², idx = squared_triangle_lengths_and_smallest_index(p, q, r)
-    # A² = squared_triangle_area(ℓmin², ℓmed², ℓmax²)
-    A² = squared_triangle_area(p, q, r) # Don't want to use the above approach since we want to allow for squared_triangle_area to try and consider more accurate methods if necessary
-    A = sqrt(A²)
+    A = triangle_area(p, q, r)
     cr = triangle_circumradius(A, ℓmin², ℓmed², ℓmax²)
     ρ = triangle_radius_edge_ratio(cr, sqrt(ℓmin²))
     # Next, check the area constraints.

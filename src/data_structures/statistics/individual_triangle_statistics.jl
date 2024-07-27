@@ -1,5 +1,4 @@
 # Some formulas in this file come from https://perso.uclouvain.be/jean-francois.remacle/LMECA2170/robnotes.pdf.
-# Unfortunately, I can't use the robust forms of the formulas because we don't have implementations for them (only the versions that take the sign of the orient predicate).
 
 """
     IndividualTriangleStatistics{T}
@@ -67,7 +66,7 @@ function IndividualTriangleStatistics(p, q, r, sink=(NaN, NaN))
     F = number_type(p)
     ℓmin², ℓmed², ℓmax² = squared_triangle_lengths(p, q, r)
     ℓmin, ℓmed, ℓmax = sqrt(ℓmin²), sqrt(ℓmed²), sqrt(ℓmax²)
-    A = triangle_area(ℓmin², ℓmed², ℓmax²)
+    A = triangle_area(p, q, r)
     circumcenter = triangle_circumcenter(p, q, r, A)
     circumradius = triangle_circumradius(A, ℓmin², ℓmed², ℓmax²)
     radius_edge_ratio = triangle_radius_edge_ratio(circumradius, ℓmin)
@@ -96,49 +95,32 @@ function IndividualTriangleStatistics(p, q, r, sink=(NaN, NaN))
     )
 end
 
-## We could simplify some of this even further, e.g. keeping some more things as their square temporarily.
-## Is it really worth the effort, though?
-
 """
-    triangle_area(ℓ₁², ℓ₂², ℓ₃²) -> Number
+    triangle_area(p, q, r) -> Number 
 
-Compute the area of a triangle given the squares of its edge lengths. If there are precision issues that cause the area to be negative, then the area is set to zero.
-
-See also [`squared_triangle_area`](@ref).
+Returns the signed area of a triangle `(p, q, r)`. The area is positive if `(p, q, r)`
+is positively oriented.
 """
-function triangle_area(ℓ₁²::Number, ℓ₂²::Number, ℓ₃²::Number)
-    A² = squared_triangle_area(ℓ₁², ℓ₂², ℓ₃²)
-    A = A² < 0.0 ? zero(A²) : sqrt(A²) # needed e.g. if A² is like -1.084020e-19
-    return A
+function triangle_area(p, q, r)
+    return AdaptivePredicates.orient2(getxy(p), getxy(q), getxy(r)) / 2
 end
 
-@doc raw"""
-    squared_triangle_area(ℓ₁², ℓ₂², ℓ₃²) -> Number
-
-Compute the squared area of a triangle given the squares of its edge lengths. Heron's formula is used, so that the squared area is 
-
-```math 
-A^2 = \dfrac{1}{16}\left[4\ell_1^2\ell_2^2 - \left(\ell_1^2 + \ell_2^2 - \ell_3^2\right)^2\right]..
-```
-
-See also [`squared_triangle_area_v2`](@ref).
 """
-squared_triangle_area(ℓ₁²::Number, ℓ₂²::Number, ℓ₃²::Number) = (4ℓ₁² * ℓ₂² - (ℓ₁² + ℓ₂² - ℓ₃²)^2) / 16 # Heron's formula
+    triangle_area(ℓ₁²::Number, ℓ₂²::Number, ℓ₃²::Number) -> Number 
 
-@doc raw"""
-    squared_triangle_area_v2(ℓ₁², ℓ₂², ℓ₃²) -> Number
-
-Compute the squared area of a triangle given the squares of its edge lengths, given in sorted order so that `ℓ₁² ≤ ℓ₂² ≤ ℓ₃²`. This is a more numerically stable version of [`squared_triangle_area`](@ref) using 
-the formula from [Kahan (2014)](https://people.eecs.berkeley.edu/~wkahan/Triangle.pdf):
-
-```math 
-A^2 = \dfrac{1}{16}\left\{\left[\ell_3 + \left(\ell_2 + \ell_1\right)\right]\left[\ell_1 - \left(\ell_3 - \ell_2\right)\right]\left[\ell_1 + \left(\ell_3 - \ell_2\right)\right]\left[\ell_3 + \left(\ell_2 - \ell_1\right)\right]\right\}.
-```
+Compute the area of a triangle given the squares of its edge lengths. The edges should be sorted so that 
+`ℓ₁² ≤ ℓ₂² ≤ ℓ₃²`. If there are precision issues that cause the area to be negative, then the area is set to zero.
 """
-squared_triangle_area_v2(ℓ₁²::Number, ℓ₂²::Number, ℓ₃²::Number) =
-    let a = sqrt(ℓ₃²), b = sqrt(ℓ₂²), c = sqrt(ℓ₁²)
-        return (a + (b + c)) * (c - (a - b)) * (c + (a - b)) * (a + (b - c)) / 16 # https://people.eecs.berkeley.edu/~wkahan/Triangle.pdf
+function triangle_area(ℓ₁²::Number, ℓ₂²::Number, ℓ₃²::Number)
+    A² = (4ℓ₁² * ℓ₂² - (ℓ₁² + ℓ₂² - ℓ₃²)^2) / 16 # Herons' formula
+    if A² < zero(A²)
+        A² = let a = sqrt(ℓ₃²), b = sqrt(ℓ₂²), c = sqrt(ℓ₁²)
+            (a + (b + c)) * (c - (a - b)) * (c + (a - b)) * (a + (b - c)) / 16 # https://people.eecs.berkeley.edu/~wkahan/Triangle.pdf
+        end
     end
+    A² < zero(A²) && return zero(A²)
+    return sqrt(A²)
+end
 
 @doc raw"""
     triangle_circumradius(A, ℓmin², ℓmed², ℓmax²) -> Number
@@ -220,8 +202,7 @@ Computes the angles of a triangle with vertices `p`, `q`, and `r`. The formula f
 where `A` is the area of the triangle. The angles are returned in sorted order.
 """
 function triangle_angles(p, q, r)
-    ℓ₁², ℓ₂², ℓ₃² = squared_triangle_lengths(p, q, r)
-    A = triangle_area(ℓ₁², ℓ₂², ℓ₃²)
+    A = triangle_area(p, q, r)
     px, py = getxy(p)
     qx, qy = getxy(q)
     rx, ry = getxy(r)
@@ -260,43 +241,6 @@ function triangle_angles(p, q, r)
     end
     θ₁, θ₂, θ₃ = min_med_max(θ₁, θ₂, θ₃)
     return θ₁, θ₂, θ₃
-end
-
-"""
-    squared_triangle_area(p, q, r) -> Number
-
-Computes the squared area of the triangle with coordinates `p`, `q`, `r`. Initially, `squared_triangle_area` is used for this, unless the squared area 
-is found to be negative due to precision issues, in which case [`squared_triangle_area_v2`](@ref) is used instead.
-
-!!! note "Precision"
-
-    All coordinates are converted into Float64, but the returned area is converted back into the original precision.
-"""
-function squared_triangle_area(_p, _q, _r)
-    p, q, r = _getxy(_p), _getxy(_q), _getxy(_r)
-    ℓ₁², ℓ₂², ℓ₃² = squared_triangle_lengths(p, q, r)
-    A² = squared_triangle_area(ℓ₁², ℓ₂², ℓ₃²)
-    if A² ≤ zero(A²)
-        A² = squared_triangle_area_v2(ℓ₁², ℓ₂², ℓ₃²)
-    end
-    if A² ≤ zero(A²)
-        A² = zero(A²)
-    end
-    return number_type(_p)(A²)
-end
-
-"""
-    triangle_area(p, q, r) -> Number
-
-Computes the area of the triangle with coordinates `p`, `q`, `r`.
-
-!!! note "Precision"
-
-    All coordinates are converted into Float64, but the returned area is converted back into the original precision.
-"""
-function triangle_area(p, q, r)
-    A² = squared_triangle_area(p, q, r)
-    return A² < zero(A²) ? zero(A²) : sqrt(A²)
 end
 
 """
@@ -348,14 +292,8 @@ c_x = r_x + \dfrac{d_{11}d_{22} - d_{12}d_{21}}{4A}, \quad c_y = r_y + \dfrac{e_
 ```
 where ``d_{11} = \|p - r\|_2^2``, ``d_{12} = p_y - r_y``, ``d_{21} = \|q - r\|_2^2``, ``d_{22} = q_y - r_y``, ``e_{11} = p_x - r_x``
 ``e_{12} = d_{11}``, ``e_{21} = q_x - r_x``, and ``e_{22} = d_{21}``.
-
-!!! note "Precision"
-
-    All coordinates are converted into Float64, but the returned area is converted back into the original precision.
 """
-function triangle_circumcenter(_p, _q, _r, _A=triangle_area(_p, _q, _r))
-    p, q, r = _getxy(_p), _getxy(_q), _getxy(_r)
-    A = Float64(_A)
+function triangle_circumcenter(p, q, r, A=triangle_area(p, q, r))
     px, py = getxy(p)
     qx, qy = getxy(q)
     rx, ry = getxy(r)
@@ -369,8 +307,7 @@ function triangle_circumcenter(_p, _q, _r, _A=triangle_area(_p, _q, _r))
     e21 = qx - rx
     e22 = d21
     oy = ry + (e11 * e22 - e12 * e21) / (4A)
-    F = number_type(_p)
-    return (F(ox), F(oy))
+    return (ox, oy)
 end
 
 """
@@ -391,7 +328,7 @@ Computes the circumradius of the triangle with coordinates `(p, q, r)`.
 """
 function triangle_circumradius(p, q, r)
     ℓ₁², ℓ₂², ℓ₃² = squared_triangle_lengths(p, q, r)
-    A = triangle_area(ℓ₁², ℓ₂², ℓ₃²)
+    A = triangle_area(p, q, r)
     return triangle_circumradius(A, ℓ₁², ℓ₂², ℓ₃²)
 end
 
@@ -561,7 +498,7 @@ Computes the inradius of the triangle with coordinates `(p, q, r)`.
 function triangle_inradius(p, q, r)
     ℓmin², ℓmed², ℓmax² = squared_triangle_lengths(p, q, r)
     ℓmin, ℓmed, ℓmax = sqrt(ℓmin²), sqrt(ℓmed²), sqrt(ℓmax²)
-    A = triangle_area(ℓmin², ℓmed², ℓmax²)
+    A = triangle_area(p, q, r)
     perimeter = triangle_perimeter(ℓmin, ℓmed, ℓmax)
     return triangle_inradius(A, perimeter)
 end
@@ -574,7 +511,7 @@ Computes the aspect ratio of the triangle with coordinates `(p, q, r)`.
 function triangle_aspect_ratio(p, q, r)
     ℓmin², ℓmed², ℓmax² = squared_triangle_lengths(p, q, r)
     ℓmin, ℓmed, ℓmax = sqrt(ℓmin²), sqrt(ℓmed²), sqrt(ℓmax²)
-    A = triangle_area(ℓmin², ℓmed², ℓmax²)
+    A = triangle_area(p, q, r)
     perimeter = triangle_perimeter(ℓmin, ℓmed, ℓmax)
     inradius = triangle_inradius(A, perimeter)
     circumradius = triangle_circumradius(A, ℓmin², ℓmed², ℓmax²)
@@ -589,7 +526,7 @@ Computes the radius-edge ratio of the triangle with coordinates `(p, q, r)`.
 function triangle_radius_edge_ratio(p, q, r)
     ℓmin², ℓmed², ℓmax² = squared_triangle_lengths(p, q, r)
     ℓmin = sqrt(ℓmin²)
-    A = triangle_area(ℓmin², ℓmed², ℓmax²)
+    A = triangle_area(p, q, r)
     circumradius = triangle_circumradius(A, ℓmin², ℓmed², ℓmax²)
     return triangle_radius_edge_ratio(circumradius, ℓmin)
 end
@@ -616,9 +553,10 @@ function min_med_max(a, b, c)
 end
 
 """
-    triangle_sink(p, q, r, tri::Triangulation) -> (Number, Number)
+    triangle_sink(tri::Triangulation, T; predicates::AbstractPredicateKernel=Adaptive()) -> (Number, Number)
 
-Computes the sink of each triangle in `tri`. See [this paper](https://doi.org/10.1145/378583.378644) for more information.
+Computes the sink of the triangle `T` in `tri`. See [this paper](https://doi.org/10.1145/378583.378644) for more information.
+Use the `predicates` argument to control how predicates are computed.
 
 # Extended help 
 Sinks were introduced in [this paper](https://doi.org/10.1145/378583.378644). For a given triangle `T`, the sink of 
@@ -632,17 +570,19 @@ Sinks were introduced in [this paper](https://doi.org/10.1145/378583.378644). Fo
 In cases where the triangulation has holes, this definition can lead to loops. In such a case, we just pick one of the triangles 
 in the loop as the sink triangle.
 """
-function triangle_sink(tri::Triangulation, T, prev_T=construct_triangle(triangle_type(tri), integer_type(tri)(∅), integer_type(tri)(∅), integer_type(tri)(∅)))
+function triangle_sink(tri::Triangulation, T, prev_T=construct_triangle(triangle_type(tri), integer_type(tri)(∅), integer_type(tri)(∅), integer_type(tri)(∅)); predicates::AbstractPredicateKernel=Adaptive())
     # TODO: This function would be faster if we just always search away from the largest angle.
     T = sort_triangle(T)
     c = triangle_circumcenter(tri, T)
     is_boundary_triangle(tri, T) && return c
     !has_ghost_triangles(tri) && any(e -> !edge_exists(tri, reverse_edge(e)), triangle_edges(T)) && return c
-    flag = point_position_relative_to_triangle(tri, T, c)
+    flag = point_position_relative_to_triangle(predicates, tri, T, c)
     !is_outside(flag) && return c
     i, j, k = triangle_vertices(T)
     p, q, r = get_point(tri, i, j, k)
     #=
+    TODO: This comment below might be outdated now that we use adaptive arithmetic for computing triangle areas.
+
     This function needs to be a bit slower than I'd like. Unfortunately, since we do not have a good 
     robust function for computing the circumcenter, it is possible for a circumcenter to be on an edge 
     but not recognisable as being on that triangle or on the adjoining triangle - no triangle contains 
@@ -657,13 +597,13 @@ function triangle_sink(tri::Triangulation, T, prev_T=construct_triangle(triangle
     _, _, θ₃ = triangle_angles(p, q, r)
     θ₃ ≤ π / 2 + ε && return c
     m = triangle_centroid(p, q, r)
-    if !is_none(line_segment_intersection_type(p, q, m, c)) && !is_left(point_position_relative_to_line(p, q, c))
+    if !is_none(line_segment_intersection_type(predicates, p, q, m, c)) && !is_left(point_position_relative_to_line(predicates, p, q, c))
         next_T = construct_triangle(triangle_type(tri), j, i, get_adjacent(tri, j, i))
-    elseif !is_none(line_segment_intersection_type(q, r, m, c)) && !is_left(point_position_relative_to_line(q, r, c))
+    elseif !is_none(line_segment_intersection_type(predicates, q, r, m, c)) && !is_left(point_position_relative_to_line(predicates, q, r, c))
         next_T = construct_triangle(triangle_type(tri), k, j, get_adjacent(tri, k, j))
     else # Must intersect the edge ki instead then 
         next_T = construct_triangle(triangle_type(tri), i, k, get_adjacent(tri, i, k))
     end
     sort_triangle(next_T) == prev_T && return c
-    return triangle_sink(tri, next_T, T)
+    return triangle_sink(tri, next_T, T; predicates)
 end
