@@ -112,7 +112,7 @@ function classify_and_compute_segment_intersection(kernel::AbstractPredicateKern
         return cert, cert_c, cert_d, (F(NaN), F(NaN))
     end
 end
-classify_and_compute_segment_intersections(a, b, c, p) = classify_and_compute_segment_intersections(Adaptive(), a, b, c, p)
+classify_and_compute_segment_intersection(a, b, c, p) = classify_and_compute_segment_intersection(Adaptive(), a, b, c, p)
 
 """
     polygon_features(points, boundary_nodes) -> (Number, NTuple{2, Number})

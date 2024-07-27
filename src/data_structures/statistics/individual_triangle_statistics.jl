@@ -411,7 +411,7 @@ Computes the off-center of the triangle `(p, q, r)`.
 
 !!! danger "Difference in definitions" 
 
-    In the original [this paper](https://doi.org/10.1016/j.comgeo.2008.06.002), the off-center is defined to instead 
+    In the original [paper](https://doi.org/10.1016/j.comgeo.2008.06.002), the off-center is defined to instead 
     be the circumcenter if it the triangle `pqc₁` has radius-edge ratio less than `β`. Here, we just let the off-center
     be the point `c` so that `pqc` has radius-edge ratio of exactly `β`.
 """

@@ -14,7 +14,7 @@ Returns the counter-clockwise sequence of neighbours of `u` in `tri`.
 - `S`: The surrounding polygon. This will not be circular, meaning `S[begin] ≠ S[end]`.
    In case `u` is an exterior ghost vertex, the returned polygon is a clockwise list of vertices for 
    the associated boundary curve. If you do not have ghost triangles and you try to get the surrounding polygon
-   of a boundary vertex, then this function may return an invalid polygon.
+   of a ghost vertex, then this function may return an invalid polygon.
 """
 function get_surrounding_polygon(tri::Triangulation, u; skip_ghost_vertices=false)
     return copy(get_surrounding_polygon!(tri, u; skip_ghost_vertices))

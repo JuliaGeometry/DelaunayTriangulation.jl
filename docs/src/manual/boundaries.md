@@ -7,7 +7,7 @@ CurrentModule = DelaunayTriangulation
 Here we will give a description of how we represent boundaries when considering constrained triangulations. There are three possible types of boundaries that can be considered:
 
 1. A contiguous boundary with no holes. For example, a circle.
-2. A single boundary with no holes, but the boundary is split into multiple sections that can be identified separately via ghost vertices (ghost vertices are described in the [next section](ghost_triangles.md)). For example, a square with a different boundary vertex for each side.
+2. A single boundary with no holes, but the boundary is split into multiple sections that can be identified separately via ghost vertices (ghost vertices are described in the [next section](ghost_triangles.md)). For example, a square with a different ghost vertex for each side.
 3. A boundary comprising multiple disjoint curves and possibly disjoint domains. For example, a square with a circular hole inside and a separate circular domain.
 
 The way to represent boundaries can be customised as needed, but any such interface for the boundaries must conform to the following specifications; these specifications are what we use in the `convert_boundary_points_to_indices` function.

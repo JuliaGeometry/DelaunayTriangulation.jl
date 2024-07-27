@@ -781,4 +781,4 @@ function test_visibility(kernel::AbstractPredicateKernel, tri::Triangulation, u,
     end
     return Cert.Invisible
 end
-test_visibility(tri::Triangulation, u, v, i; shift=0.0, attractor=get_point(tri, i)) = test_visiblity(Adaptive(), tri, u, v, i; shift, attractor)
+test_visibility(tri::Triangulation, u, v, i; shift=0.0, attractor=get_point(tri, i)) = test_visibility(Adaptive(), tri, u, v, i; shift, attractor)

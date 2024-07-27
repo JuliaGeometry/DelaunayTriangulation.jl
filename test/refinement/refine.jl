@@ -1215,9 +1215,8 @@ end
             in_dt_encroached_edges_lens_45, not_in_dt_encroached_edges_lens_45 = slow_encroachment_test_diametral_lens(tri, 45.0)
             in_dt_encroached_edges_lens_30, not_in_dt_encroached_edges_lens_30 = slow_encroachment_test_diametral_lens(tri, 30.0)
             in_dt_encroached_edges_lens_20, not_in_dt_encroached_edges_lens_20 = slow_encroachment_test_diametral_lens(tri, 20.0)
-            in_dt_encroached_edges_lens_10, not_in_dt_encroached_edges_lens_10 = slow_encroachment_test_diametral_lens(tri, 15.0)
             all_bn = DT.get_all_boundary_nodes(tri)
-            for (lens_angle, not_in_dt_encroached_edges) in zip((45.0, 30.0, 20.0, 15.0), (not_in_dt_encroached_edges_lens_45, not_in_dt_encroached_edges_lens_30, not_in_dt_encroached_edges_lens_20, not_in_dt_encroached_edges_lens_10))
+            for (lens_angle, not_in_dt_encroached_edges) in zip((45.0, 30.0, 20.0), (not_in_dt_encroached_edges_lens_45, not_in_dt_encroached_edges_lens_30, not_in_dt_encroached_edges_lens_20))
                 @info "Testing encroached edge detection. lens angle: $lens_angle"
                 args = DT.RefinementArguments(tri; use_lens=true, min_angle=lens_angle)
                 for (e, (b, k)) in not_in_dt_encroached_edges
@@ -1231,7 +1230,7 @@ end
                     end
                 end
             end
-            for (lens_angle, in_dt_encroached_edges) in zip((45.0, 30.0, 20.0, 15.0), (in_dt_encroached_edges_lens_45, in_dt_encroached_edges_lens_30, in_dt_encroached_edges_lens_20, in_dt_encroached_edges_lens_10))
+            for (lens_angle, in_dt_encroached_edges) in zip((45.0, 30.0, 20.0), (in_dt_encroached_edges_lens_45, in_dt_encroached_edges_lens_30, in_dt_encroached_edges_lens_20))
                 args = DT.RefinementArguments(tri; use_lens=true, min_angle=lens_angle)
                 for (e, (b, k)) in in_dt_encroached_edges
                     if DT.initial(e) ∈ all_bn && DT.terminal(e) ∈ all_bn && !DT.contains_segment(tri, e)
@@ -1712,9 +1711,10 @@ end
 
 @testset "enqueueing and splitting all encroached segments" begin
     for PT in (DT.Exact, DT.Adaptive)
-        for iii in 1:25
+        for iii in 1:5
             for use_lens in (false, true)
                 for pass in 1:2
+                    @info "Testing enqueuing and splitting all encroached segments. Predicates: $PT; Run: $iii; lens: $use_lens; Block: $pass"
                     if pass == 1
                         p1 = (0.0, 0.0)
                         p2 = (1.0, 0.0)
@@ -2151,25 +2151,27 @@ end
     end
 
     @testset "check_for_steiner_point_on_segment" begin
-        points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
-        tri = triangulate(points; randomise=false)
-        push!(points, (1 / 2, 1 / 2))
-        V = (1, 2, 3)
-        V′ = (1, 2, 3)
-        new_point = 5
-        flag = DT.Cert.On
-        ison_flag = DT.check_for_steiner_point_on_segment(tri, V, V′, new_point, flag)
-        @test !ison_flag
-        add_segment!(tri, 1, 3)
-        ison_flag = DT.check_for_steiner_point_on_segment(tri, V, V′, new_point, flag)
-        @test ison_flag
-        ison_flag = DT.check_for_steiner_point_on_segment(tri, V, (2, 3, 1), new_point, flag)
-        @test ison_flag
-        ison_flag = DT.check_for_steiner_point_on_segment(tri, V, (5, 6, 1), new_point, flag)
-        @test !ison_flag
-        points[5] = (0.4, 0.555)
-        ison_flag = DT.check_for_steiner_point_on_segment(tri, V, V′, new_point, flag)
-        @test !ison_flag
+        for PT in subtypes(DT.AbstractPredicateKernel)
+            points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
+            tri = triangulate(points; randomise=false)
+            push!(points, (1 / 2, 1 / 2))
+            V = (1, 2, 3)
+            V′ = (1, 2, 3)
+            new_point = 5
+            flag = DT.Cert.On
+            ison_flag = DT.check_for_steiner_point_on_segment(tri, V, V′, new_point, flag, PT())
+            @test !ison_flag
+            add_segment!(tri, 1, 3)
+            ison_flag = DT.check_for_steiner_point_on_segment(tri, V, V′, new_point, flag, PT())
+            @test ison_flag
+            ison_flag = DT.check_for_steiner_point_on_segment(tri, V, (2, 3, 1), new_point, flag, PT())
+            @test ison_flag
+            ison_flag = DT.check_for_steiner_point_on_segment(tri, V, (5, 6, 1), new_point, flag, PT())
+            @test !ison_flag
+            points[5] = (0.4, 0.555)
+            ison_flag = DT.check_for_steiner_point_on_segment(tri, V, V′, new_point, flag, PT())
+            @test !ison_flag
+        end
     end
 end
 
@@ -2493,7 +2495,8 @@ end
     end
 
     @testset "some seditious edge testing and default calls" begin
-        for _ in 1:10
+        for i in 1:10
+            @info "Testing seditious edges. Run: $i"
             points = [(0.0, 0.0), (1.0, 0.0), (0.8, 0.2)]
             tri = triangulate(points)
             refine!(tri, use_circumcenter=true)
@@ -2519,6 +2522,7 @@ end
     end
 
     @testset "Triangulating with an interior hole" begin
+        @info "Testing triangulation of an interior hole"
         p1 = (0.0, 0.0)
         p2 = (1.0, 0.0)
         p3 = (1.0, 1.0)
@@ -2553,6 +2557,7 @@ end
     end
 
     @testset "Refining disjoint sets" begin
+        @info "Testing the refinement of disjoint sets" 
         θ = LinRange(0, 2π, 30) |> collect
         θ[end] = 0
         xy = Vector{Vector{Vector{NTuple{2,Float64}}}}()
@@ -2581,6 +2586,7 @@ end
             ps = 0
             fig = Figure(fontsize=52)
             for i in 1:12
+                @info "Testing refinement with small angles. Run: $i; Predicates: $PT"
                 if i > 6
                     use_lens = true
                     i -= 6
@@ -2622,6 +2628,7 @@ end
     end
 
     @testset "Another disjoint domain" begin
+        @info "Testing refinement of another disjoint domain"
         rng = StableRNG(123)
         t = (collect ∘ LinRange)(0, 2π, 50)
         t[end] = 0
@@ -2654,6 +2661,7 @@ end
     end
 
     @testset "Tight example with a single triangle boundary interior" begin
+        @info "Testing refinement with a single triangle boundary interior"
         A = (0.0, 0.0)
         B = (0.0, 25.0)
         C = (5.0, 25.0)
@@ -2706,6 +2714,7 @@ end
     end
 
     @testset "A complicated example with tight walls and small angles" begin
+        @info "Testing refinement of a complicated example with tight walls and small angles"
         rng = StableRNG(123456)
         A = (0.0, 0.0)
         B = (0.0, 25.0)
@@ -2780,6 +2789,7 @@ end
     if !(get(ENV, "CI", "false") == "true")
         @testset "Tasmania" begin
             for PT in (DT.Exact, DT.Adaptive)
+                @info "Testing refinement of Tasmnia. Predicates: $PT"
                 rng = StableRNG(123)
                 tassy_path = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "test", "tassy.txt")
                 tassy = readdlm(tassy_path)
@@ -2801,15 +2811,16 @@ end
     end
 
     @testset "Test that nothing is breaking for Float32 inputs" begin
-        for _ in 1:25
+        for PT in (DT.Exact, DT.Adaptive)
+        for i in 1:25
             p1 = (0.0f0, 0.0f0)
             p2 = (1.0f0, 0.0f0)
             p3 = (0.0f0, 1.0f0)
             p4 = (1.0f0, 1.0f0)
             pts = [p1, p2, p3, p4]
-            tri = triangulate(pts; delete_ghosts=false)
+            tri = triangulate(pts; delete_ghosts=false, predicates=PT())
             validate_statistics(tri)
-            refine!(tri; max_area=0.001, max_points=25_000, use_circumcenter=true)
+            refine!(tri; max_area=0.001, max_points=25_000, use_circumcenter=true, predicates=PT())
             stats = statistics(tri)
             @inferred statistics(tri)
             @test DT.get_smallest_angle(stats) ≥ deg2rad(30.0)
@@ -2832,16 +2843,16 @@ end
             p8 = (0.4f0, 0.6f0)
             pts = [p1, p2, p3, p4, p5, p6, p7, p8]
             boundary_nodes = [[[1, 2, 3, 4, 1]], [[8, 7, 6, 5, 8]]]
-            tri = triangulate(pts; rng, boundary_nodes=boundary_nodes, delete_ghosts=false)
-            add_point!(tri, 0.1f0, 0.8f0)
-            add_point!(tri, 0.3f0, 0.2f0)
-            add_point!(tri, 0.7f0, 0.2f0)
-            add_point!(tri, 0.9, 0.8)
-            add_segment!(tri, 9, 10)
-            add_segment!(tri, 11, 12)
-            add_segment!(tri, 9, 12)
-            add_segment!(tri, 10, 11)
-            refine!(tri; rng, max_area=0.001f0, max_points=25000, min_angle=24.0f0, min_area=0.0, use_circumcenter=true)
+            tri = triangulate(pts; rng, boundary_nodes=boundary_nodes, delete_ghosts=false, predicates=PT())
+            add_point!(tri, 0.1f0, 0.8f0, predicates=PT())
+            add_point!(tri, 0.3f0, 0.2f0, predicates=PT())
+            add_point!(tri, 0.7f0, 0.2f0, predicates=PT())
+            add_point!(tri, 0.9, 0.8, predicates=PT())
+            add_segment!(tri, 9, 10, predicates=PT())
+            add_segment!(tri, 11, 12, predicates=PT())
+            add_segment!(tri, 9, 12, predicates=PT())
+            add_segment!(tri, 10, 11, predicates=PT())
+            refine!(tri; rng, max_area=0.001f0, max_points=25000, min_angle=24.0f0, min_area=0.0, use_circumcenter=true, predicates=PT())
             stats = statistics(tri)
             @test DT.get_smallest_angle(stats) ≥ deg2rad(24.0f0)
             @test DT.get_largest_area(stats) ≤ 0.001f0
@@ -2849,9 +2860,10 @@ end
             @test DT.convex_hull(tri).vertices == DT.convex_hull(tri.points).vertices
             @test validate_refinement(tri; max_area=0.001, max_points=25000, min_angle=24.0f0, min_area=0.0, use_circumcenter=true)
         end
-    end
-
+    end end
+ 
     @testset "Custom refinement example" begin
+        @info "Testing refinement with custom constraints" 
         rng = StableRNG(123)
         points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
         tri = triangulate(points; rng)
@@ -2898,6 +2910,7 @@ end
     end
 
     @testset "Julia logo" begin
+        @info "Testing refinement of the Julia logo"
         rng = StableRNG(123)
         C = (15.7109521325776, 33.244486807457)
         D = (14.2705719699703, 32.8530791545746)

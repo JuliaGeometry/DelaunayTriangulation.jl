@@ -1,32 +1,5 @@
-using BenchmarkTools
-using CairoMakie
-using ColorSchemes
-using DataStructures
 using Dates
 using DelaunayTriangulation
-using DelimitedFiles
-using Documenter
-using DocumenterTools
-using Downloads
-using ElasticArrays
-using ExactPredicates
-using FastGaussQuadrature
-using ForwardDiff
-using GeometryBasics
-using InteractiveUtils
-using LinearAlgebra
-using OrderedCollections
-using Random
-using ReferenceTests
-using SafeTestsets
-using Setfield
-using SimpleGraphs: SimpleGraphs
-using SpatialIndexing
-using StableRNGs
-using StaticArrays
-using StaticArraysCore
-using StatsBase
-using StructEquality
 using Aqua
 using Test
 

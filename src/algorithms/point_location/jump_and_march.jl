@@ -606,7 +606,7 @@ Given a query point `q` outside of the triangulation, find the ghost triangle co
 
 # Arguments
 - `tri`: The [`Triangulation`](@ref).
-- `k`: The exterior boundary vertex to start from.
+- `k`: The exterior ghost vertex to start from.
 - `q`: The query point. 
 - `ghost_vertex=𝒢`: The ghost vertex corresponding to the boundary that `k` resides on.
 - `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
