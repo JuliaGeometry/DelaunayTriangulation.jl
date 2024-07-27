@@ -9,6 +9,7 @@ using Random
 using StaticArrays
 using LinearAlgebra
 using StructEquality
+using GeometryBasics
 @struct_equal DT.Queue
 
 @testset "Unconstrained test" begin
@@ -1237,4 +1238,44 @@ end
     @test !DT.INF_WARN[]
     DT.toggle_inf_warn!()
     @test DT.INF_WARN[]
+end
+
+@testset "Issue #72" begin
+    function is_point_in_polygon(point::Point, polygon::Polygon)
+        # Check if the point is on the boundary of the polygon
+        point in polygon && return false
+    
+        n = length(coordinates(polygon))
+        inside = false
+        p1 = polygon[1]
+        for i in 2:n+1
+            p2 = polygon[mod1(i, n)]
+            if ((p1[2] > point[2]) != (p2[2] > point[2])) && (point[1] < (p2[1] - p1[1]) * (point[2] - p1[2]) / (p2[2] - p1[2]) + p1[1])
+                inside = !inside
+            end
+            p1 = copy(p2)
+        end
+        return inside
+    end
+    b_vec = reverse([Point(0.0, 0.0), Point(0.0, 1.0), Point(1.0, 1.0), Point(1.0, 0.0), Point(0.5, 0.5)])
+    p = Polygon(b_vec)
+    p2 = coordinates(p)
+    push!(p2,p2[1])
+    boundary_nodes, points2 = convert_boundary_points_to_indices(getxy.(p2))
+    triangulation = triangulate(points2; boundary_nodes)
+    minx, miny = extrema(p2)[1]
+    maxx, maxy = extrema(p2)[2]
+    for i in range(minx + 0.05, maxx - 0.05, step=0.05)
+        for j in range(maxy - 0.05, miny + 0.05, step=-0.05)
+            if is_point_in_polygon(Point(i, j), p)
+                try
+                    add_point!(triangulation, (i, j))
+                catch
+                    @warn "There was a problem adding this point."
+                end
+            end
+        end
+    end
+    vorn = voronoi(triangulation, clip = false)
+    @test validate_tessellation(vorn, check_convex=false)
 end
