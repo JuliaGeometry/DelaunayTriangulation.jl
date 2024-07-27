@@ -189,7 +189,32 @@ Computes the centroid of a triangle with vertices `p`, `q`, and `r`, given by
 c = \dfrac{p + q + r}{3}.
 ```
 """
-triangle_centroid(p, q, r) = ((getx(p) + getx(q) + getx(r)) / 3, (gety(p) + gety(q) + gety(r)) / 3)
+function triangle_centroid(p, q, r) 
+    px, py = getxy(p)
+    qx, qy = getxy(q)
+    rx, ry = getxy(r)
+    qx′, qy′ = qx - px, qy - py
+    rx′, ry′ = rx - px, ry - py
+    cx′, cy′ = 2midpoint(qx′, rx′) / 3, 2midpoint(qy′, ry′) / 3
+    cx, cy = cx′ + px, cy′ + py
+    return cx, cy
+    #=
+    A = triangle_area(PP, QQ, RR) 
+    isixA = inv(6A)
+    px′, py′ = zero(px), zero(py)
+    qx′, qy′ = qx - px, qy - py 
+    rx′, ry′ = rx - px, ry - py
+    cx1 = (px′ + qx′) * ((px′ * qy′) - (qx′ * py′))
+    cx2 = (qx′ + rx′) * ((qx′ * ry′) - (rx′ * qy′))
+    cx3 = (rx′ + px′) * ((rx′ * py′) - (px′ * ry′))
+    cx = px + (cx1 + cx2 + cx3) * isixA 
+    cy1 = (py′ + qy′) * ((px′ * qy′) - (qx′ * py′))
+    cy2 = (qy′ + ry′) * ((qx′ * ry′) - (rx′ * qy′))
+    cy3 = (ry′ + py′) * ((rx′ * py′) - (px′ * ry′))
+    cy = py + (cy1 + cy2 + cy3) * isixA
+    return cx, cy
+    =#
+end
 
 @doc raw"""
     triangle_angles(p, q, r) -> (Number, Number, Number)
@@ -595,7 +620,7 @@ function triangle_sink(tri::Triangulation, T, prev_T=construct_triangle(triangle
     circumcenter is outside of the triangle.
     =#
     _, _, θ₃ = triangle_angles(p, q, r)
-    θ₃ ≤ π / 2 + ε && return c
+    θ₃ ≤ π / 2 + ε(θ₃) && return c
     m = triangle_centroid(p, q, r)
     if !is_none(line_segment_intersection_type(predicates, p, q, m, c)) && !is_left(point_position_relative_to_line(predicates, p, q, c))
         next_T = construct_triangle(triangle_type(tri), j, i, get_adjacent(tri, j, i))

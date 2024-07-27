@@ -1655,3 +1655,8 @@ end
       @test DT._to_val(2) == Val(2)
       @test DT._to_val(Val(2)) == Val(2)
 end
+
+@testset "ε" begin
+      @test DT.ε(Float64) == DT.ε(1.0) == sqrt(eps(Float64))
+      @test DT.ε(Float32) == DT.ε(1.0f0) == sqrt(eps(Float32))
+end

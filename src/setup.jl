@@ -30,13 +30,14 @@ Alias for [`𝒢`](@ref).
 const 𝒢 = GhostVertex
 
 """
-    ε = sqrt(eps(Float64))
+    ε(x) = sqrt(eps(number_type(x)))
 
 Number used as a tolerance in certain functions, e.g. 
 for mesh refinement when using [`check_precision`](@ref) to 
 avoid degenerate circumcenters.
 """
-const ε = sqrt(eps(Float64))
+ε(::Type{T}) where {T} = sqrt(eps(T))
+ε(x) = ε(number_type(x)) 
 
 const INF_WARN = Ref(true)
 """

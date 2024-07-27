@@ -401,9 +401,9 @@ midpoint(tri::Triangulation, e) = midpoint(tri, initial(e), terminal(e))
 """
     check_precision(x) -> Bool 
 
-Returns `true` if `abs(x)` is less than or equal to `sqrt(eps(Float64))`.
+Returns `true` if `abs(x)` is less than or equal to `sqrt(eps(number_type(eps)))`.
 """
-check_precision(x) = abs(x) ≤ ε
+check_precision(x) = abs(x) ≤ ε(x)
 
 """
     check_absolute_precision(x, y) -> Bool

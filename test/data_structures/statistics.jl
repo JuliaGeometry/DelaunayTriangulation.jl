@@ -275,3 +275,11 @@ end
         _validate_offcenter(p, q, r, 1.0)
     end
 end
+
+@testset "Previously broken centroid" begin
+    p = (1.25, -0.8947368421052633)
+    q=(1.6666666666666667, 1.2105263157894735)
+    r=(2.0833333333333335, 3.3157894736842106)
+    c = DT.triangle_centroid(p, q, r)
+    @test DT.is_on(DT.point_position_relative_to_triangle(p, q, r, c))
+end

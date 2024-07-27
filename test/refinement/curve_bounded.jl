@@ -412,7 +412,7 @@ end
         @test DT.get_boundary_curves(enricher) == _boundary_curves
         hierarchy = DT.get_polygon_hierarchy(enricher)
         _hierarchy = DT.construct_polygon_hierarchy(points, _boundary_nodes, _boundary_curves)
-        DT.expand_bounds!(_hierarchy, DT.ε)
+        DT.expand_bounds!(_hierarchy, DT.ε(Float64))
         @test compare_trees(hierarchy, _hierarchy)
         for i in eachindex(_boundary_curves)
             @test DT.get_boundary_curve(enricher, i) == _boundary_curves[i]

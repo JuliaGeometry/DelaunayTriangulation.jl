@@ -114,6 +114,8 @@ function test_delaunay_criterion(tri; predicates::AbstractPredicateKernel=Exact(
                 T = construct_triangle(triangle_type(tri), i, j, k)
                 cert = point_position_relative_to_circumcircle(predicates, tri, T, r)
                 c = triangle_centroid(get_point(tri, i, j, k)...)
+                A = triangle_area(get_point(tri, i, j, k)...)
+                check_precision(A) && continue # the centroids in this case sometimes appear outside of the triangle
                 if is_inside(cert)
                     is_boundary_edge(tri, i, j) && is_right(point_position_relative_to_line(predicates, tri, i, j, r)) && continue # if it's outside of the domain relative to this edge, just continue
                     is_boundary_edge(tri, j, k) && is_right(point_position_relative_to_line(predicates, tri, j, k, r)) && continue

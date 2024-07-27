@@ -382,7 +382,7 @@ function BoundaryEnricher(points::P, boundary_nodes::B, segments=nothing; Intege
     return _construct_boundary_enricher(points, new_boundary_nodes, boundary_curves,  polygon_hierarchy, segments, n, coarse_n, IntegerType)
 end
 function _construct_boundary_enricher(points, boundary_nodes, boundary_curves, polygon_hierarchy, segments, n, coarse_n, ::Type{I}) where {I}
-    expand_bounds!(polygon_hierarchy, ε)
+    expand_bounds!(polygon_hierarchy, ε(number_type(points)))
     coarse_discretisation!(points, boundary_nodes, boundary_curves; n=coarse_n)
     boundary_edge_map = construct_boundary_edge_map(boundary_nodes, I)
     parent_map = Dict{NTuple{2,I},I}()
