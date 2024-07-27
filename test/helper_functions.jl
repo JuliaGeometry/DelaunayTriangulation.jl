@@ -499,22 +499,22 @@ function validate_statistics(tri::DT.Triangulation, stats=statistics(tri))
     sort!(all_vertices)
     sort!(solid_vertices)
     sort!(ghost_vertices)
-
+    NT = DT.number_type(tri)
     ## Build up the individual statistics 
-    areas = Dict{T,Float64}()
-    lengths = Dict{T,NTuple{3,Float64}}()
-    circumcenters = Dict{T,NTuple{2,Float64}}()
-    circumradii = Dict{T,Float64}()
-    angles = Dict{T,NTuple{3,Float64}}()
-    radius_edge_ratio = Dict{T,Float64}()
-    edge_midpoints = Dict{T,NTuple{3,NTuple{2,Float64}}}()
-    aspect_ratio = Dict{T,Float64}()
-    inradius = Dict{T,Float64}()
-    perimeter = Dict{T,Float64}()
-    centroid = Dict{T,NTuple{2,Float64}}()
-    offcenters = Dict{T,NTuple{2,Float64}}()
-    sinks = Dict{T,NTuple{2,Float64}}()
-    total_A = 0.0
+    areas = Dict{T,NT}()
+    lengths = Dict{T,NTuple{3,NT}}()
+    circumcenters = Dict{T,NTuple{2,NT}}()
+    circumradii = Dict{T,NT}()
+    angles = Dict{T,NTuple{3,NT}}()
+    radius_edge_ratio = Dict{T,NT}()
+    edge_midpoints = Dict{T,NTuple{3,NTuple{2,NT}}}()
+    aspect_ratio = Dict{T,NT}()
+    inradius = Dict{T,NT}()
+    perimeter = Dict{T,NT}()
+    centroid = Dict{T,NTuple{2,NT}}()
+    offcenters = Dict{T,NTuple{2,NT}}()
+    sinks = Dict{T,NTuple{2,NT}}()
+    total_A = zero(NT)
     for T in each_solid_triangle(tri)
         u, v, w = DT.triangle_vertices(T)
         p, q, r = get_point(tri, u, v, w)
@@ -588,6 +588,26 @@ function validate_statistics(tri::DT.Triangulation, stats=statistics(tri))
     @test stats.individual_statistics == DT.get_individual_statistics(stats)
     @test stats.area ≈ DT.get_area(stats) rtol = 1e-4 atol = 1e-4
     @test stats.area ≈ total_A rtol = 1e-4 atol = 1e-4
+
+    ## Inference 
+    for _ in 1:5
+        T = rand(DT.each_solid_triangle(tri))
+        p, q, r = @inferred DT.get_point(tri, DT.triangle_vertices(T)...)
+        ℓmin², ℓmed², ℓmax² = @inferred DT.squared_triangle_lengths(p, q, r)
+        ℓmin, ℓmed, ℓmax = sqrt(ℓmin²), sqrt(ℓmed²), sqrt(ℓmax²)
+        A = @inferred DT.triangle_area(p, q, r)
+        circumcenter = @inferred DT.triangle_circumcenter(p, q, r, A)
+        circumradius = @inferred DT.triangle_circumradius(A, ℓmin², ℓmed², ℓmax²)
+        radius_edge_ratio = @inferred DT.triangle_radius_edge_ratio(circumradius, ℓmin)
+        edge_midpoints = @inferred DT.triangle_edge_midpoints(p, q, r)
+        perimeter = @inferred DT.triangle_perimeter(ℓmin, ℓmed, ℓmax)
+        inradius = @inferred DT.triangle_inradius(A, perimeter)
+        aspect_ratio = @inferred DT.triangle_aspect_ratio(inradius, circumradius)
+        centroid = @inferred DT.triangle_centroid(p, q, r)
+        angles = @inferred DT.triangle_angles(p, q, r)
+        offcenter = @inferred DT.triangle_offcenter(p, q, r, circumcenter)
+        sink = @inferred DT.triangle_sink(tri, T)
+    end
 
     ## Test the number statistics 
     @test DT.num_vertices(stats) == length(all_vertices) == stats.num_vertices
@@ -1341,8 +1361,8 @@ function validate_refinement(tri, args; check_conformal=true, warn=true)
             minθ = min(minθ, t1, t2, t3)
             maxθ = max(maxθ, t1, t2, t3)
         end
-        V = find_triangle(tri, steiner_point;predicates=DT.Exact())
-        flag = DT.point_position_relative_to_triangle(DT.Exact(),tri, V, steiner_point)
+        V = find_triangle(tri, steiner_point; predicates=DT.Exact())
+        flag = DT.point_position_relative_to_triangle(DT.Exact(), tri, V, steiner_point)
         if DT.is_on(flag) && DT.is_ghost_triangle(V)
             V = DT.replace_ghost_triangle_with_boundary_triangle(tri, V)
         end
@@ -1397,7 +1417,7 @@ function validate_refinement(tri, args; check_conformal=true, warn=true)
         end
     end
     if !args.use_lens && check_conformal
-        flag = is_conformal(tri;predicates=DT.Exact())
+        flag = is_conformal(tri; predicates=DT.Exact())
         if !flag
             println("The triangulation is not conformal.")
             return false
@@ -2277,7 +2297,7 @@ export test_iterators
 export get_weighted_example
 export get_nearest_power_point
 export NUM_WEGT
-export NUM_CWEGT 
+export NUM_CWEGT
 export get_convex_polygon_weighted_example
 export rt
 export subtypes
