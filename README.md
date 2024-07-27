@@ -38,16 +38,16 @@ using DelaunayTriangulation, CairoMakie
 
 # Unconstrained 
 points = rand(2, 50)
-tri1 = triangulate(points)
+tri1 = triangulate(points) # default predicate kernel is Adaptive()
 
 # Voronoi example 
 vorn2 = voronoi(tri1)
 
 # Clipped Voronoi 
-vorn3 = voronoi(tri1, clip=true)
+vorn3 = voronoi(tri1, clip=true, predicates = DelaunayTriangulation.Exact())
 
 # Smoothed Voronoi 
-vorn4 = centroidal_smooth(vorn3)
+vorn4 = centroidal_smooth(vorn3, predicates = DelaunayTriangulation.Fast())
 
 # Constrained example with refinement 
 boundary_points = [(0.0, 0.0), (1.0, 0.0), (1.0, 0.3), (0.5, 0.3),

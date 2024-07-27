@@ -16,6 +16,8 @@ AbstractPredicateKernel
 
 Pass this to predicates to declare that determinant definitions of predicates
 should be used, avoiding adaptivity and exact arithmetic.
+
+See also [`Exact`](@ref) and [`Adaptive`](@ref).
 """
 struct Fast <: AbstractPredicateKernel end 
 
@@ -23,6 +25,8 @@ struct Fast <: AbstractPredicateKernel end
     Exact()
 
 Pass this to predicates to use ExactPredicates.jl for computing predicates.
+
+See also [`Fast`](@ref) and [`Adaptive`](@ref).
 """
 struct Exact <: AbstractPredicateKernel end 
 
@@ -30,6 +34,8 @@ struct Exact <: AbstractPredicateKernel end
     Adaptive()
 
 Pass this to predicates to use AdaptivePredicates.jl for computing predicates.
+
+See also [`Fast`](@ref) and [`Exact`](@ref).
 """
 struct Adaptive <: AbstractPredicateKernel end 
 
