@@ -41,7 +41,8 @@ end
       @test DT.sort_triangle((DT.𝒢 - 10, 5, 3)) == (5, 3, DT.𝒢 - 10)
 end
 
-const _POINTS = [ # Don't know why the points on 1.10 get slightly changed, e.g. with 357 replacing 363 and 363 replacing 357, so this is needed to make the next set of tests more robust. This is NOT some hack to force the test to pass when it shouldn't, it just makes sure the point order matches the hard-coded node numbers below.
+const _POINTS = [ 
+      ## Don't know why the points on 1.10 get slightly changed, e.g. with 357 replacing 363 and 363 replacing 357, so this is needed to make the next set of tests more robust. This is NOT some hack to force the test to pass when it shouldn't, it just makes sure the point order matches the hard-coded node numbers below.
       0.0 0.0
       0.6666666666666666 0.0
       1.3333333333333333 0.0
