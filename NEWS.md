@@ -4,7 +4,7 @@
 
 There are a lot of changes in this release, most of them irrelevant for the user. The most important change is the following:
 
-- We now support a choice between fast, exact, and adaptive predicates via `Fast()`, `Exact()`, and `Adaptive()`, respectively. The default is now `Adaptive()`. See [#165](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/165).
+- We now support a choice between fast, exact, and adaptive predicates via `Fast()`, `Exact()`, and `Adaptive()`, respectively. The default is now `Adaptive()`. Moreover, triangle areas are now computed using the adaptive `orient` predicate to be more robust. See [#165](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/165).
 
 Previously, ExactPredicates.jl was used everywhere, which can be slow and not necessary for certain point sets. The `Fast()` option 
 has no exact or adaptive arithmetic and so should be used with caution. The documentation discusses these choices in more detail. 
