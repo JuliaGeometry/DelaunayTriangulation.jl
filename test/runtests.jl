@@ -2,6 +2,7 @@ using Dates
 using DelaunayTriangulation
 using Aqua
 using Test
+using Random
 
 if isdefined(Docs, :undocumented_names)
     @test isempty(Docs.undocumented_names(DelaunayTriangulation))
@@ -18,6 +19,7 @@ function safe_include(filename; name=filename, push=true, verbose=true) # Workar
     mod = @eval module $(gensym()) end
     @info "[$(ct())] Testing $name"
     @testset verbose = verbose "$(basename(name))" begin
+        Random.seed!(0)
         @eval mod using ..HelperFunctions
         @eval mod using ..Test
         Base.include(mod, filename)
