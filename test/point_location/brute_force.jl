@@ -32,7 +32,7 @@ global tri, label_map, index_map = simple_geometry()
     e1_i = length(pts) - 3
     d1_i = length(pts) - 4
     c1_i = length(pts) - 5
-    for pred in (DT.Fast(), DT.Exact(), DT.def_alg222())
+    for pred in (DT.Fast(), DT.Exact(), DT.Adaptive())
         @test DT.compare_triangles(DT.brute_force_search(tri, c1_i; predicates=pred), (index_map["g"], index_map["f"], DT.𝒢))
         @test DT.compare_triangles(DT.brute_force_search(tri, d1_i; predicates=pred), (index_map["f"], index_map["e"], DT.𝒢))
         @test DT.compare_triangles(DT.brute_force_search(tri, e1_i), (index_map["k"], index_map["ℓ"], DT.𝒢 - 1))

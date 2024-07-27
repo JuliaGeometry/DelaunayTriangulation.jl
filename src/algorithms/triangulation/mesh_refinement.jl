@@ -31,7 +31,7 @@ See the documentation for more information about mesh refinement, e.g. convergen
 - `steiner_scale=0.999`: The perturbation factor to use for generalised Steiner points if `use_circumcenter=false`. (Not currently used - see above.)
 - `rng=Random.default_rng()`: The random number generator to use in case it is needed during point location.
 - `concavity_protection=false`: Whether to use concavity protection or not for [`find_triangle`](@ref). Most likely not needed, but may help in pathological cases.
-- `predicates::AbstractPredicateKernel=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Output 
 The triangulation is refined in-place.
@@ -491,7 +491,7 @@ Determines if the vertices of a segment `e` of `tri` adjoin other segments at an
 - `num_adjoin`: The number of vertices of `e` that adjoin other segments at an acute angle.
 - `adjoin_vert`: The vertex of `e` that adjoins another segment at an acute angle if `num_adjoin == 1`, and `∅` otherwise.
 """
-function segment_vertices_adjoin_other_segments_at_acute_angle(tri::Triangulation, e, predicates::AbstractPredicateKernel=def_alg222())
+function segment_vertices_adjoin_other_segments_at_acute_angle(tri::Triangulation, e, predicates::AbstractPredicateKernel=Adaptive())
     u, v = edge_vertices(e)
     p, q = get_point(tri, u, v)
     I = integer_type(tri)

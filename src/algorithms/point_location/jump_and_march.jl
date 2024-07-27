@@ -110,7 +110,7 @@ function select_random_edge(tri::Triangulation, edges, rng::Random.AbstractRNG=R
 end
 
 """
-    prepare_initial_edge(tri::Triangulation, edges, p, q, rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateKernel=def_alg222()) -> (Vertex, Vertex, Point, Point, Certificate, Certificate)
+    prepare_initial_edge(tri::Triangulation, edges, p, q, rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateKernel=Adaptive()) -> (Vertex, Vertex, Point, Point, Certificate, Certificate)
 
 Selects a random edge from the set of edges `edges` and computes the certificates for the points corresponding to the initial and terminal vertices of the edge.
 
@@ -120,7 +120,7 @@ Selects a random edge from the set of edges `edges` and computes the certificate
 - `p`: The initial point.
 - `q`: The query point.
 - `rng::Random.AbstractRNG=Random.default_rng()`: The random number generator to use.
-- `predicates::AbstractPredicateKernel=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs
 - `i`: The initial vertex of the edge.
@@ -130,7 +130,7 @@ Selects a random edge from the set of edges `edges` and computes the certificate
 - `line_cert_i`: The [`Certificate`](@ref) for `pᵢ`'s position relative to the oriented line `pq`.
 - `line_cert_j`: The [`Certificate`](@ref) for `pⱼ`'s position relative to the oriented line `pq`.
 """
-function prepare_initial_edge(tri::Triangulation, edges, p, q, rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateKernel=def_alg222())
+function prepare_initial_edge(tri::Triangulation, edges, p, q, rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateKernel=Adaptive())
     i, j, pᵢ, pⱼ = select_random_edge(tri, edges, rng)
     line_cert_i = point_position_relative_to_line(predicates, p, q, pᵢ)
     line_cert_j = point_position_relative_to_line(predicates,p, q, pⱼ)
@@ -141,7 +141,7 @@ end
     select_initial_triangle_interior_vertex(tri::Triangulation, 
         k, 
         q, 
-        predicates::AbstractPredicateKernel=def_alg222(),
+        predicates::AbstractPredicateKernel=Adaptive(),
         store_history=Val(false), 
         history=nothing, 
         rng::Random.AbstractRNG=Random.default_rng()) -> (Point, Vertex, Vertex, Point, Point)
@@ -152,11 +152,11 @@ Selects the initial triangle for [`find_triangle`](@ref) to start from, for the 
 - `tri::Triangulation`: The [`Triangulation`](@ref).
 - `k`: The vertex to start from.
 - `q`: The query point.
-- `predicates::AbstractPredicateKernel=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 - `store_history=Val(false)`: Whether to store the history of the algorithm.
 - `history=nothing`: The history of the algorithm. If `store_history`, then this should be a [`PointLocationHistory`](@ref) object.
 - `rng::Random.AbstractRNG=Random.default_rng()`: The random number generator to use.
-- `predicates::AbstractPredicateKernel=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs
 - `p`: The point corresponding to `k`.
@@ -181,7 +181,7 @@ respectively.
 In case the initial edge is collinear with the line `pq`, where `p = get_point(tri, q)`, then `fix_initial_collinear_edge_for_interior_vertex` to find a 
 non-collinear edge resample more edges from [`prepare_initial_edge`](@ref) if necessary.
 """
-function select_initial_triangle_interior_vertex(tri::Triangulation, k, q, predicates::AbstractPredicateKernel=def_alg222(), store_history::F=Val(false), history=nothing, rng::Random.AbstractRNG=Random.default_rng()) where {F}
+function select_initial_triangle_interior_vertex(tri::Triangulation, k, q, predicates::AbstractPredicateKernel=Adaptive(), store_history::F=Val(false), history=nothing, rng::Random.AbstractRNG=Random.default_rng()) where {F}
     p = get_point(tri, k)
     ## Select the initial edge to rotate about
     neighbouring_edges = get_adjacent2vertex(tri, k)
@@ -201,7 +201,7 @@ function select_initial_triangle_interior_vertex(tri::Triangulation, k, q, predi
     pᵢ, pⱼ = pⱼ, pᵢ # pᵢ is left of pq, pⱼ is right of pq 
     return p, i, j, pᵢ, pⱼ
 end
-function select_initial_triangle_clockwise(tri::Triangulation, p, q, pᵢ, pⱼ, i, j, k, predicates::AbstractPredicateKernel=def_alg222(), store_history::F=Val(false), history=nothing) where {F}
+function select_initial_triangle_clockwise(tri::Triangulation, p, q, pᵢ, pⱼ, i, j, k, predicates::AbstractPredicateKernel=Adaptive(), store_history::F=Val(false), history=nothing) where {F}
     line_cert_i = point_position_relative_to_line(predicates, p, q, pᵢ)
     if is_true(store_history) && is_collinear(line_cert_i)
         add_edge!(history, k, i)
@@ -226,7 +226,7 @@ function select_initial_triangle_clockwise(tri::Triangulation, p, q, pᵢ, pⱼ,
         return i, j, pᵢ, pⱼ
     end
 end
-function select_initial_triangle_counterclockwise(tri::Triangulation, line_cert_j, p, q, pᵢ, pⱼ, i, j, k, predicates::AbstractPredicateKernel=def_alg222(), store_history::F=Val(false), history=nothing) where {F}
+function select_initial_triangle_counterclockwise(tri::Triangulation, line_cert_j, p, q, pᵢ, pⱼ, i, j, k, predicates::AbstractPredicateKernel=Adaptive(), store_history::F=Val(false), history=nothing) where {F}
     if is_true(store_history) && is_collinear(line_cert_j)
         add_edge!(history, k, j)
     end
@@ -296,7 +296,7 @@ function fix_initial_collinear_edge_for_interior_vertex(tri::Triangulation, k, q
 end
 
 """
-    check_for_intersections_with_adjacent_boundary_edges(tri::Triangulation, k, q, ghost_vertex=𝒢, predicates::AbstractPredicateKernel=def_alg222()) -> (Certificate, Certificate, Vertex, Certificate, Certificate)
+    check_for_intersections_with_adjacent_boundary_edges(tri::Triangulation, k, q, ghost_vertex=𝒢, predicates::AbstractPredicateKernel=Adaptive()) -> (Certificate, Certificate, Vertex, Certificate, Certificate)
 
 Given a boundary vertex `k`, find a triangle adjacent to `k` to locate a triangle or edge containing `q`.
 
@@ -308,7 +308,7 @@ straight boundary in case `q` is collinear with it.
 - `k`: The boundary vertex to start from.
 - `q`: The query point.
 - `ghost_vertex=𝒢`: The ghost vertex corresponding to the boundary that `k` resides on.
-- `predicates::AbstractPredicateKernel=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs 
 - `direction_cert`: The direction of `q` relative to the vertex `k` along the boundary, given as a [`Certificate`](@ref) `Left`, `Right`, or `Outside`. If `is_outside(direction_cert)`, then `q` is not collinear with either of the adjacent boundary edges.
@@ -317,7 +317,7 @@ straight boundary in case `q` is collinear with it.
 - `right_cert`: The [`Certificate`](@ref) for the position of `q` relative to the boundary edge right of `k`.
 - `left_cert`: The [`Certificate`](@ref) for the position of `q` relative to the boundary edge left of `k`.
 """
-function check_for_intersections_with_adjacent_boundary_edges(tri::Triangulation{P,T,BN,W,I}, k, q, ghost_vertex=I(𝒢), predicates::AbstractPredicateKernel=def_alg222()) where {P,T,BN,W,I}
+function check_for_intersections_with_adjacent_boundary_edges(tri::Triangulation{P,T,BN,W,I}, k, q, ghost_vertex=I(𝒢), predicates::AbstractPredicateKernel=Adaptive()) where {P,T,BN,W,I}
     p = get_point(tri, k)
     right = get_right_boundary_node(tri, k, ghost_vertex)
     left = get_left_boundary_node(tri, k, ghost_vertex)
@@ -343,7 +343,7 @@ function check_for_intersections_with_adjacent_boundary_edges(tri::Triangulation
 end
 
 """
-    search_down_adjacent_boundary_edges(tri::Triangulation, k, q, direction_cert, q_pos_cert, next_vertex, predicates::AbstractPredicateKernel=def_alg222(), store_history=Val(false), history=nothing, ghost_vertex=𝒢) -> (Bool, Certificate, Vertex, Vertex, Vertex)
+    search_down_adjacent_boundary_edges(tri::Triangulation, k, q, direction_cert, q_pos_cert, next_vertex, predicates::AbstractPredicateKernel=Adaptive(), store_history=Val(false), history=nothing, ghost_vertex=𝒢) -> (Bool, Certificate, Vertex, Vertex, Vertex)
 
 Starting at the boundary vertex `k`, walks down the boundary in the direction of `q` until finding `q` or finding that it is outside of the triangulation.
 
@@ -356,7 +356,7 @@ See also [`check_for_intersections_with_adjacent_boundary_edges`](@ref), which u
 - `direction_cert`: The direction of `q` relative to the vertex `k` along the boundary, defined from [`check_for_intersections_with_adjacent_boundary_edges`](@ref).
 - `q_pos_cert`: The position of `q` relative to the vertex `k` along the boundary, defined from [`check_for_intersections_with_adjacent_boundary_edges`](@ref).
 - `next_vertex`: The next vertex along the boundary in the direction of `q`, defined from [`check_for_intersections_with_adjacent_boundary_edges`](@ref).
-- `predicates::AbstractPredicateKernel=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 - `store_history=Val(false)`: Whether to store the history of the algorithm.
 - `history=nothing`: The history of the algorithm. If `store_history`, then this should be a [`PointLocationHistory`](@ref) object.
 - `ghost_vertex=𝒢`: The ghost vertex corresponding to the boundary that `k` resides on.
@@ -379,7 +379,7 @@ This function works by stepping along vertices on the boundaries in the directio
 if `is_right(direction_cert)` and `search_left_down_adjacent_boundary_edges` otherwise. In these functions, a `while` loop is used to keep stepping until `q_pos_cert`,
 which is updated at each iteration, changes value.
 """
-function search_down_adjacent_boundary_edges(tri::Triangulation, k, q, direction, q_pos, next_vertex, predicates::AbstractPredicateKernel=def_alg222(), store_history::F=Val(false), history=nothing, ghost_vertex=integer_type(tri)(𝒢)) where {F}
+function search_down_adjacent_boundary_edges(tri::Triangulation, k, q, direction, q_pos, next_vertex, predicates::AbstractPredicateKernel=Adaptive(), store_history::F=Val(false), history=nothing, ghost_vertex=integer_type(tri)(𝒢)) where {F}
     i = k
     j = next_vertex
     pⱼ = get_point(tri, j)
@@ -445,7 +445,7 @@ function search_left_down_adjacent_boundary_edges(tri::Triangulation, q, q_pos, 
 end
 
 """
-    check_for_intersections_with_interior_edges_adjacent_to_boundary_vertex(tri::Triangulation, k, q, right_cert, left_cert, predicates::AbstractPredicateKernel=def_alg222(), store_history=Val(false), history=nothing, ghost_vertex=𝒢) -> (Bool, Vertex, Vertex, Certificate, Certificate)
+    check_for_intersections_with_interior_edges_adjacent_to_boundary_vertex(tri::Triangulation, k, q, right_cert, left_cert, predicates::AbstractPredicateKernel=Adaptive(), store_history=Val(false), history=nothing, ghost_vertex=𝒢) -> (Bool, Vertex, Vertex, Certificate, Certificate)
 
 Checks for intersections between the line `pq`, where `p = get_point(tri, k)`, and the edges neighbouring `p`, assuming `k` is a boundary node. This function should only be used 
 after using [`check_for_intersections_with_adjacent_boundary_edges`](@ref).
@@ -456,7 +456,7 @@ after using [`check_for_intersections_with_adjacent_boundary_edges`](@ref).
 - `q`: The query point.
 - `right_cert`: The [`Certificate`](@ref) for the position of `q` relative to the boundary edge right of `k`, coming from [`check_for_intersections_with_adjacent_boundary_edges`](@ref).
 - `left_cert`: The [`Certificate`](@ref) for the position of `q` relative to the boundary edge left of `k`, coming from [`check_for_intersections_with_adjacent_boundary_edges`](@ref).
-- `predicates::AbstractPredicateKernel=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 - `store_history=Val(false)`: Whether to store the history of the algorithm.
 - `history=nothing`: The history of the algorithm. If `store_history`, then this should be a [`PointLocationHistory`](@ref) object.
 - `ghost_vertex=𝒢`: The ghost vertex corresponding to the boundary that `k` resides on.
@@ -479,7 +479,7 @@ the vertex `k`, rotating counter-clockwise until we find an intersection or reac
 the vertex `k`. By keeping track of the positions of `pq` relative to the current vertex and the previous, we can identify when an intersection is found. If no intersection is found before 
 reaching the boundary edge left of `k`, then `check_for_intersections_with_triangle_left_to_boundary_vertex` is used to check the remaining triangle.
 """
-function check_for_intersections_with_interior_edges_adjacent_to_boundary_vertex(tri::Triangulation, k, q, right_cert, left_cert, predicates::AbstractPredicateKernel=def_alg222(), store_history::F=Val(false), history=nothing, ghost_vertex=integer_type(tri)(𝒢)) where {F}
+function check_for_intersections_with_interior_edges_adjacent_to_boundary_vertex(tri::Triangulation, k, q, right_cert, left_cert, predicates::AbstractPredicateKernel=Adaptive(), store_history::F=Val(false), history=nothing, ghost_vertex=integer_type(tri)(𝒢)) where {F}
     I = integer_type(tri)
     p = get_point(tri, k)
     other_boundary_node = get_left_boundary_node(tri, k, ghost_vertex)
@@ -600,7 +600,7 @@ function check_for_intersections_with_triangle_left_to_boundary_vertex(tri::Tria
 end
 
 """
-    exterior_find_triangle(tri::Triangulation, k, q, ghost_vertex=𝒢, predicates::AbstractPredicateKernel=def_alg222()) -> (Vertex, Vertex)
+    exterior_find_triangle(tri::Triangulation, k, q, ghost_vertex=𝒢, predicates::AbstractPredicateKernel=Adaptive()) -> (Vertex, Vertex)
 
 Given a query point `q` outside of the triangulation, find the ghost triangle containing `q`.
 
@@ -609,7 +609,7 @@ Given a query point `q` outside of the triangulation, find the ghost triangle co
 - `k`: The exterior boundary vertex to start from.
 - `q`: The query point. 
 - `ghost_vertex=𝒢`: The ghost vertex corresponding to the boundary that `k` resides on.
-- `predicates::AbstractPredicateKernel=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs
 - `i`: The first vertex of the edge on the boundary adjoining the positively oriented ghost triangle. 
@@ -627,7 +627,7 @@ left of the line using `exterior_find_triangle_rotate_left` and clockwise otherw
 By keeping track of the current position of `q` and its position relative to the next ghost edge, we can identify when `q` 
 resides inside a ghost triangle.
 """
-function exterior_find_triangle(tri::Triangulation, k, q, ghost_vertex=integer_type(tri)(𝒢), predicates::AbstractPredicateKernel=def_alg222())
+function exterior_find_triangle(tri::Triangulation, k, q, ghost_vertex=integer_type(tri)(𝒢), predicates::AbstractPredicateKernel=Adaptive())
     pₘ, pᵢ = get_point(tri, ghost_vertex, k)
     i = k
     q_position = point_position_relative_to_line(predicates, pₘ, pᵢ, q)
@@ -747,7 +747,7 @@ Some notes about the output:
     of the algorithm assume that the geometry is convex, and so the algorithm may have to restart many times at new initial vertices `k`.
 """
 function find_triangle(tri::Triangulation, _q;
-    predicates::AbstractPredicateKernel=def_alg222(),
+    predicates::AbstractPredicateKernel=Adaptive(),
     point_indices=each_solid_vertex(tri),
     m=default_num_samples(num_vertices(point_indices)),
     try_points=(),
@@ -885,7 +885,7 @@ function initialise_find_triangle_boundary_vertex(tri::Triangulation, _q, k, pre
 end
 
 """
-    find_triangle_return_on_vertex(tri::Triangulation, q, k, p, pᵢ, pⱼ, i, j, predicates::AbstractPredicateKernel=def_alg222()) -> (Bool, Bool, Triangle)
+    find_triangle_return_on_vertex(tri::Triangulation, q, k, p, pᵢ, pⱼ, i, j, predicates::AbstractPredicateKernel=Adaptive()) -> (Bool, Bool, Triangle)
 
 Check if `q` is one of the vertices of the triangle `(i, j, k)` and return if needed.
 
@@ -898,7 +898,7 @@ Check if `q` is one of the vertices of the triangle `(i, j, k)` and return if ne
 - `pⱼ`: The point corresponding to the vertex `j`.
 - `i`: The first vertex of the triangle adjoining `k` to start from.
 - `j`: The second vertex of the triangle adjoining `k` to start from.
-- `predicates::AbstractPredicateKernel=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs
 - `restart_flag`: Whether the algorithm needs to be restarted.
@@ -1208,7 +1208,7 @@ function _find_triangle(tri::Triangulation, q, k, store_history::F, history, rng
 end
 
 """
-    concavity_protection_check(tri::Triangulation, concavity_protection, V, q, predicates::AbstractPredicateKernel=def_alg222()) -> Bool
+    concavity_protection_check(tri::Triangulation, concavity_protection, V, q, predicates::AbstractPredicateKernel=Adaptive()) -> Bool
 
 Check whether the [`find_triangle`](@ref) algorithm needs to restart. This is only needed if `tri` is not convex.
 
@@ -1217,7 +1217,7 @@ Check whether the [`find_triangle`](@ref) algorithm needs to restart. This is on
 - `concavity_protection`: Whether this check is needed.
 - `V`: The triangle that the algorithm has found.
 - `q`: The query point.
-- `predicates::AbstractPredicateKernel=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs 
 - `need_to_restart`: Whether the algorithm needs to restart. Will also be `false` if `concavity_protection`.
@@ -1228,7 +1228,7 @@ and also checks the position of `q` relative to `V` via [`point_position_relativ
 then `need_to_restart = true`. If `q` is inside this triangle, then issues can still arise due to overlapping ghost triangles from the non-convexity. Thus, 
 depending on the result from [`dist`](@ref) and whether `V` is a ghost triangle, `need_to_restart` will be set accordingly.
 """
-function concavity_protection_check(tri::Triangulation, concavity_protection, V, q, predicates::AbstractPredicateKernel=def_alg222())
+function concavity_protection_check(tri::Triangulation, concavity_protection, V, q, predicates::AbstractPredicateKernel=Adaptive())
     !concavity_protection && return false
     cert = point_position_relative_to_triangle(predicates, tri, V, q)
     is_outside(cert) && return true

@@ -95,7 +95,7 @@ function split_edge!(tri::Triangulation, i, j, r, store_event_history=Val(false)
 end
 
 """
-    legalise_split_edge!(tri::Triangulation, i, j, k, r, store_event_history=Val(false), event_history=nothing; predicates::AbstractPredicateKernel=def_alg222())
+    legalise_split_edge!(tri::Triangulation, i, j, k, r, store_event_history=Val(false), event_history=nothing; predicates::AbstractPredicateKernel=Adaptive())
 
 Legalises the newly added edges in `tri` after the edge `(i, j)` was split using [`split_edge!`](@ref).
 
@@ -111,19 +111,19 @@ See also [`complete_split_edge_and_legalise!`](@ref).
 - `event_history=nothing`: The event history. Only updated if `store_event_history` is true, in which case it needs to be an [`InsertionEventHistory`](@ref) object.
 
 # Keyword Arguments
-- `predicates::AbstractPredicateKernel=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs
 There is no output, as `tri` is updated in-place.
 """
-function legalise_split_edge!(tri::Triangulation, i, j, k, r, store_event_history=Val(false), event_history=nothing; predicates::AbstractPredicateKernel=def_alg222())
+function legalise_split_edge!(tri::Triangulation, i, j, k, r, store_event_history=Val(false), event_history=nothing; predicates::AbstractPredicateKernel=Adaptive())
     legalise_edge!(tri, j, k, r, store_event_history, event_history; predicates)
     legalise_edge!(tri, k, i, r, store_event_history, event_history; predicates)
     return tri
 end
 
 """
-    complete_split_edge_and_legalise!(tri::Triangulation, i, j, r, store_event_history=Val(false), event_history=nothing; predicates::AbstractPredicateKernel=def_alg222())
+    complete_split_edge_and_legalise!(tri::Triangulation, i, j, r, store_event_history=Val(false), event_history=nothing; predicates::AbstractPredicateKernel=Adaptive())
 
 Given a triangulation `tri`, an edge `(i, j)`, and a point `r`, splits both `(i, j)` and `(j, i)` at `r` using [`split_edge!`](@ref) and then subsequently legalises the new edges with [`legalise_split_edge!`](@ref).
 
@@ -136,12 +136,12 @@ Given a triangulation `tri`, an edge `(i, j)`, and a point `r`, splits both `(i,
 - `event_history=nothing`: The event history. Only updated if `store_event_history` is true, in which case it needs to be an [`InsertionEventHistory`](@ref) object.
 
 # Keyword Arguments 
-- `predicates::AbstractPredicateKernel=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs
 There is no output, as `tri` is updated in-place.
 """
-function complete_split_edge_and_legalise!(tri::Triangulation, i, j, r, store_event_history=Val(false), event_history=nothing; predicates::AbstractPredicateKernel=def_alg222())
+function complete_split_edge_and_legalise!(tri::Triangulation, i, j, r, store_event_history=Val(false), event_history=nothing; predicates::AbstractPredicateKernel=Adaptive())
     k = get_adjacent(tri, i, j)
     ℓ = get_adjacent(tri, j, i)
     split_edge!(tri, i, j, r, store_event_history, event_history)

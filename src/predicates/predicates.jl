@@ -1,7 +1,7 @@
 @doc """
-    triangle_orientation([kernel::AbstractPredicateKernel=def_alg222(),] tri::Triangulation, i, j, k) -> Certificate 
-    triangle_orientation([kernel::AbstractPredicateKernel=def_alg222(),] tri::Triangulation, T) -> Certificate
-    triangle_orientation([kernel::AbstractPredicateKernel=def_alg222(),] p, q, r) -> Certificate
+    triangle_orientation([kernel::AbstractPredicateKernel=Adaptive(),] tri::Triangulation, i, j, k) -> Certificate 
+    triangle_orientation([kernel::AbstractPredicateKernel=Adaptive(),] tri::Triangulation, T) -> Certificate
+    triangle_orientation([kernel::AbstractPredicateKernel=Adaptive(),] p, q, r) -> Certificate
 
 Computes the orientation of the triangle `T = (i, j, k)` with correspondig coordinates `(p, q, r)`. The returned value is a [`Certificate`](@ref), which is one of:
 
@@ -19,7 +19,7 @@ function triangle_orientation(kernel::AbstractPredicateKernel, p, q, r)
     return convert_certificate(cert, Cert.NegativelyOriented, Cert.Degenerate,
         Cert.PositivelyOriented)
 end
-triangle_orientation(p, q, r) = triangle_orientation(def_alg222(), p, q, r)
+triangle_orientation(p, q, r) = triangle_orientation(Adaptive(), p, q, r)
 function triangle_orientation(kernel::AbstractPredicateKernel, tri::Triangulation, i, j, k)
     if is_exterior_ghost_triangle(tri, i, j, k)
         i, j, k = k, j, i
@@ -27,12 +27,12 @@ function triangle_orientation(kernel::AbstractPredicateKernel, tri::Triangulatio
     p, q, r = get_point(tri, i, j, k)
     return triangle_orientation(kernel, p, q, r)
 end
-triangle_orientation(tri::Triangulation, i, j, k) = triangle_orientation(def_alg222(), tri, i, j, k)
+triangle_orientation(tri::Triangulation, i, j, k) = triangle_orientation(Adaptive(), tri, i, j, k)
 triangle_orientation(kernel::AbstractPredicateKernel, tri::Triangulation, T) = triangle_orientation(kernel, tri, geti(T), getj(T), getk(T))
-triangle_orientation(tri::Triangulation, T) = triangle_orientation(def_alg222(), tri, T)
+triangle_orientation(tri::Triangulation, T) = triangle_orientation(Adaptive(), tri, T)
 
 """
-    point_position_relative_to_circle([kernel::AbstractPredicateKernel=def_alg222(),] a, b, c, p) -> Certificate
+    point_position_relative_to_circle([kernel::AbstractPredicateKernel=Adaptive(),] a, b, c, p) -> Certificate
 
 Given a circle through the coordinates `(a, b, c)`, assumed to be positively oriented,
 computes the position of `p` relative to the circle. Returns a [`Certificate`](@ref), which is one of:
@@ -49,11 +49,11 @@ function point_position_relative_to_circle(kernel::AbstractPredicateKernel, a, b
     cert = incircle_predicate(kernel, a, b, c, p)
     return convert_certificate(cert, Cert.Outside, Cert.On, Cert.Inside)
 end
-point_position_relative_to_circle(a, b, c, p) = point_position_relative_to_circle(def_alg222(), a, b, c, p)
+point_position_relative_to_circle(a, b, c, p) = point_position_relative_to_circle(Adaptive(), a, b, c, p)
 
 @doc """
-    point_position_relative_to_line([kernel::AbstractPredicateKernel=def_alg222(),] a, b, p) -> Certificate
-    point_position_relative_to_line([kernel::AbstractPredicateKernel=def_alg222(),] tri::Triangulation, i, j, u) -> Certificate
+    point_position_relative_to_line([kernel::AbstractPredicateKernel=Adaptive(),] a, b, p) -> Certificate
+    point_position_relative_to_line([kernel::AbstractPredicateKernel=Adaptive(),] tri::Triangulation, i, j, u) -> Certificate
 
 Tests the position of `p` (or the vertex `u` of `tri`) relative to the edge `(a, b)` (or the edge with vertices `(i, j)` of `tri`), returning 
 a [`Certificate`](@ref) which is one of:
@@ -71,7 +71,7 @@ function point_position_relative_to_line(kernel::AbstractPredicateKernel, a, b, 
     cert = orient_predicate(kernel, a, b, p)
     return convert_certificate(cert, Cert.Right, Cert.Collinear, Cert.Left)
 end
-point_position_relative_to_line(a, b, p) = point_position_relative_to_line(def_alg222(), a, b, p)
+point_position_relative_to_line(a, b, p) = point_position_relative_to_line(Adaptive(), a, b, p)
 function point_position_relative_to_line(kernel::AbstractPredicateKernel, tri::Triangulation, i, j, u)
     a, b, p = get_point(tri, i, j, u)
     if is_exterior_ghost_edge(tri, i, j)
@@ -80,11 +80,11 @@ function point_position_relative_to_line(kernel::AbstractPredicateKernel, tri::T
         return point_position_relative_to_line(kernel, a, b, p)
     end
 end
-point_position_relative_to_line(tri::Triangulation, i, j, u) = point_position_relative_to_line(def_alg222(), tri, i, j, u)
+point_position_relative_to_line(tri::Triangulation, i, j, u) = point_position_relative_to_line(Adaptive(), tri, i, j, u)
 
 @doc """
-    point_closest_to_line([kernel::AbstractPredicateKernel=def_alg222(),] a, b, p, q) -> Certificate
-    point_closest_to_line([kernel::AbstractPredicateKernel=def_alg222(),] tri::Triangulation, i, j, u, v) -> Certificate
+    point_closest_to_line([kernel::AbstractPredicateKernel=Adaptive(),] a, b, p, q) -> Certificate
+    point_closest_to_line([kernel::AbstractPredicateKernel=Adaptive(),] tri::Triangulation, i, j, u, v) -> Certificate
 
 Given a line `ℓ` through `(a, b)` (or through the vertices `(i, j)`), tests if `p` (or the vertex `u`) is closer to `ℓ`
 than `q` (or the vertex `v`), assuming that `p` and `q` are to the left of `ℓ`, returning a [`Certificate`](@ref) which is one of:
@@ -102,12 +102,12 @@ function point_closest_to_line(kernel::AbstractPredicateKernel, a, b, p, q)
     cert = parallelorder_predicate(kernel, a, b, q, p)
     return convert_certificate(cert, Cert.Closer, Cert.Equidistant, Cert.Further)
 end
-point_closest_to_line(a, b, p, q) = point_closest_to_line(def_alg222(), a, b, p, q)
+point_closest_to_line(a, b, p, q) = point_closest_to_line(Adaptive(), a, b, p, q)
 function point_closest_to_line(kernel::AbstractPredicateKernel, tri::Triangulation, i, j, u, v)
     a, b, p, q = get_point(tri, i, j, u, v)
     return point_closest_to_line(kernel, a, b, p, q)
 end
-point_closest_to_line(tri::Triangulation, i, j, u, v) = point_closest_to_line(def_alg222(), tri, i, j, u, v)
+point_closest_to_line(tri::Triangulation, i, j, u, v) = point_closest_to_line(Adaptive(), tri, i, j, u, v)
 
 @doc """
     point_position_on_line_segment(a, b, p) -> Certificate
@@ -139,8 +139,8 @@ function point_position_on_line_segment(tri::Triangulation, i, j, u)
 end
 
 @doc """
-    line_segment_intersection_type([kernel::AbstractPredicateKernel=def_alg222(),] p, q, a, b) -> Certificate 
-    line_segment_intersection_type([kernel::AbstractPredicateKernel=def_alg222(),] tri::Triangulation, u, v, i, j) -> Certificate
+    line_segment_intersection_type([kernel::AbstractPredicateKernel=Adaptive(),] p, q, a, b) -> Certificate 
+    line_segment_intersection_type([kernel::AbstractPredicateKernel=Adaptive(),] tri::Triangulation, u, v, i, j) -> Certificate
 
 Given the coordinates `(p, q)` (or vertices `(u, v)`) and `(a, b)` (or vertices `(i, j)`) defining two line segments,
 tests the number of intersections between the two segments. The returned value is a [`Certificate`](@ref), which is one of:
@@ -192,17 +192,17 @@ function line_segment_intersection_type(kernel::AbstractPredicateKernel, p, q, a
     end
     return converted_cert
 end
-line_segment_intersection_type(p, q, a, b) = line_segment_intersection_type(def_alg222(), p, q, a, b)
+line_segment_intersection_type(p, q, a, b) = line_segment_intersection_type(Adaptive(), p, q, a, b)
 function line_segment_intersection_type(kernel::AbstractPredicateKernel, tri::Triangulation, u, v, i, j)
     p, q, a, b = get_point(tri, u, v, i, j)
     return line_segment_intersection_type(kernel, p, q, a, b)
 end
-line_segment_intersection_type(tri::Triangulation, u, v, i, j) = line_segment_intersection_type(def_alg222(), tri, u, v, i, j)
+line_segment_intersection_type(tri::Triangulation, u, v, i, j) = line_segment_intersection_type(Adaptive(), tri, u, v, i, j)
 
 @doc """
-    point_position_relative_to_triangle([kernel::AbstractPredicateKernel=def_alg222(),] a, b, c, p) -> Certificate
-    point_position_relative_to_triangle([kernel::AbstractPredicateKernel=def_alg222(),] tri::Triangulation, i, j, k, u) -> Certificate
-    point_position_relative_to_triangle([kernel::AbstractPredicateKernel=def_alg222(),] tri::Triangulation, T, u) -> Certificate
+    point_position_relative_to_triangle([kernel::AbstractPredicateKernel=Adaptive(),] a, b, c, p) -> Certificate
+    point_position_relative_to_triangle([kernel::AbstractPredicateKernel=Adaptive(),] tri::Triangulation, i, j, k, u) -> Certificate
+    point_position_relative_to_triangle([kernel::AbstractPredicateKernel=Adaptive(),] tri::Triangulation, T, u) -> Certificate
 
 Given a positively oriented triangle with coordinates `(a, b, c)` (or triangle `T = (i, j, k)` of `tri`), computes the
 position of `p` (or vertex `u`) relative to the triangle. The returned value is a [`Certificate`](@ref), which is one of:
@@ -238,7 +238,7 @@ function point_position_relative_to_triangle(kernel::AbstractPredicateKernel, a,
     all(is_left, all_edge_certs) && return Cert.Inside
     return Cert.Outside
 end
-point_position_relative_to_triangle(a, b, c, p) = point_position_relative_to_triangle(def_alg222(), a, b, c, p)
+point_position_relative_to_triangle(a, b, c, p) = point_position_relative_to_triangle(Adaptive(), a, b, c, p)
 function point_position_relative_to_triangle(kernel::AbstractPredicateKernel, tri::Triangulation, i, j, k, u)
     if !is_exterior_ghost_triangle(tri, i, j, k)
         a, b, c, p = get_point(tri, i, j, k, u)
@@ -265,12 +265,12 @@ function point_position_relative_to_triangle(kernel::AbstractPredicateKernel, tr
         # there's no point distinguishing between the two adjacent ghost triangles in that case.
     end
 end
-point_position_relative_to_triangle(tri::Triangulation, i, j, k, u) = point_position_relative_to_triangle(def_alg222(), tri, i, j, k, u)
+point_position_relative_to_triangle(tri::Triangulation, i, j, k, u) = point_position_relative_to_triangle(Adaptive(), tri, i, j, k, u)
 point_position_relative_to_triangle(kernel::AbstractPredicateKernel, tri::Triangulation, T, u) = point_position_relative_to_triangle(kernel, tri, geti(T), getj(T), getk(T), u)
-point_position_relative_to_triangle(tri::Triangulation, T, u) = point_position_relative_to_triangle(def_alg222(), tri, T, u)
+point_position_relative_to_triangle(tri::Triangulation, T, u) = point_position_relative_to_triangle(Adaptive(), tri, T, u)
 
 """
-    point_position_relative_to_oriented_outer_halfplane([kernel::AbstractPredicateKernel=def_alg222(),] a, b, p) -> Certificate 
+    point_position_relative_to_oriented_outer_halfplane([kernel::AbstractPredicateKernel=Adaptive(),] a, b, p) -> Certificate 
 
 Given an edge with coordinates `(a, b)` and a point `p`, 
 tests the position of `p` relative to the oriented outer halfplane defined
@@ -302,11 +302,11 @@ function point_position_relative_to_oriented_outer_halfplane(kernel::AbstractPre
         return Cert.Outside
     end
 end
-point_position_relative_to_oriented_outer_halfplane(a, b, p) = point_position_relative_to_oriented_outer_halfplane(def_alg222(), a, b, p)
+point_position_relative_to_oriented_outer_halfplane(a, b, p) = point_position_relative_to_oriented_outer_halfplane(Adaptive(), a, b, p)
 
 @doc """
-    is_legal([kernel::AbstractPredicateKernel=def_alg222(),] tri::Triangulation, i, j) -> Certificate 
-    is_legal([kernel::AbstractPredicateKernel=def_alg222(),] p, q, r, s) -> Certificate
+    is_legal([kernel::AbstractPredicateKernel=Adaptive(),] tri::Triangulation, i, j) -> Certificate 
+    is_legal([kernel::AbstractPredicateKernel=Adaptive(),] p, q, r, s) -> Certificate
 
 Tests if the edge `(p, q)` (or the edge `(i, j)` of `tri`) is legal, where the edge `(p, q)`
 is incident to two triangles `(p, q, r)` and `(q, p, s)`. In partiuclar, tests that `s` is not inside 
@@ -330,7 +330,7 @@ function is_legal(kernel::AbstractPredicateKernel, p, q, r, s)
         return Cert.Legal
     end
 end
-is_legal(p, q, r, s) = is_legal(def_alg222(), p, q, r, s)
+is_legal(p, q, r, s) = is_legal(Adaptive(), p, q, r, s)
 
 function is_legal(kernel::AbstractPredicateKernel, tri::Triangulation, i, j)
     if contains_segment(tri, i, j) ||
@@ -346,11 +346,11 @@ function is_legal(kernel::AbstractPredicateKernel, tri::Triangulation, i, j)
         return cert
     end
 end
-is_legal(tri::Triangulation, i, j) = is_legal(def_alg222(), tri, i, j)
+is_legal(tri::Triangulation, i, j) = is_legal(Adaptive(), tri, i, j)
 
 @doc """
-    triangle_line_segment_intersection([kernel::AbstractPredicateKernel=def_alg222(),] p, q, r, a, b) -> Certificate 
-    triangle_line_segment_intersection([kernel::AbstractPredicateKernel=def_alg222(),] tri::Triangulation, i, j, k, u, v) -> Certificate
+    triangle_line_segment_intersection([kernel::AbstractPredicateKernel=Adaptive(),] p, q, r, a, b) -> Certificate 
+    triangle_line_segment_intersection([kernel::AbstractPredicateKernel=Adaptive(),] tri::Triangulation, i, j, k, u, v) -> Certificate
 
 Classifies the intersection of the line segment `(a, b)` (or the edge `(u, v)` of `tri`) with the triangle `(p, q, r)` (or the triangle `(i, j, k)` of `tri`).
 The returned value is a [`Certificate`](@ref), which is one of:
@@ -501,15 +501,15 @@ function triangle_line_segment_intersection(kernel::AbstractPredicateKernel, p, 
         end
     end
 end
-triangle_line_segment_intersection_type(p, q, r, a, b) = triangle_line_segment_intersection_type(def_alg222(), p, q, r, a, b)
+triangle_line_segment_intersection_type(p, q, r, a, b) = triangle_line_segment_intersection_type(Adaptive(), p, q, r, a, b)
 function triangle_line_segment_intersection(kernel::AbstractPredicateKernel, tri::Triangulation, i, j, k, u, v)
     p, q, r, a, b = get_point(tri, i, j, k, u, v)
     return triangle_line_segment_intersection(kernel, p, q, r, a, b)
 end
-triangle_line_segment_intersection(tri::Triangulation, i, j, k, u, v) = triangle_line_segment_intersection(def_alg222(), tri, i, j, k, u, v)
+triangle_line_segment_intersection(tri::Triangulation, i, j, k, u, v) = triangle_line_segment_intersection(Adaptive(), tri, i, j, k, u, v)
 
 """
-    find_edge([kernel::AbstractPredicateKernel=def_alg222(),] tri::Triangulation, T, ℓ) -> Edge 
+    find_edge([kernel::AbstractPredicateKernel=Adaptive(),] tri::Triangulation, T, ℓ) -> Edge 
 
 Given a triangle `T = (i, j, k)` of `tri` and a vertex `ℓ` of `tri`, returns the edge of `T` that contains `ℓ`. 
 If no such edge exists, the edge `(k, i)` is returned. You can control the method for computing predicates 
@@ -528,11 +528,11 @@ function find_edge(kernel::AbstractPredicateKernel, tri::Triangulation, T, ℓ)
         return construct_edge(E, k, i)
     end
 end
-find_edge(tri::Triangulation, T, ℓ) = find_edge(def_alg222(), tri, T, ℓ)
+find_edge(tri::Triangulation, T, ℓ) = find_edge(Adaptive(), tri, T, ℓ)
 
 @doc """
-    point_position_relative_to_circumcircle([kernel::AbstractPredicateKernel=def_alg222(),] tri::Triangulation, i, j, k, ℓ) -> Certificate
-    point_position_relative_to_circumcircle([kernel::AbstractPredicateKernel=def_alg222(),] tri::Triangulation, T, ℓ) -> Certificate
+    point_position_relative_to_circumcircle([kernel::AbstractPredicateKernel=Adaptive(),] tri::Triangulation, i, j, k, ℓ) -> Certificate
+    point_position_relative_to_circumcircle([kernel::AbstractPredicateKernel=Adaptive(),] tri::Triangulation, T, ℓ) -> Certificate
 
 Tests the position of the vertex `ℓ` of `tri` relative to the circumcircle of the triangle `T = (i, j, k)`. The returned value is a [`Certificate`](@ref), which is one of:
 
@@ -577,12 +577,12 @@ function point_position_relative_to_circumcircle(kernel::AbstractPredicateKernel
                Cert.On
     end
 end
-point_position_relative_to_circumcircle(tri::Triangulation, i, j, k, ℓ) = point_position_relative_to_circumcircle(def_alg222(), tri, i, j, k, ℓ)
+point_position_relative_to_circumcircle(tri::Triangulation, i, j, k, ℓ) = point_position_relative_to_circumcircle(Adaptive(), tri, i, j, k, ℓ)
 point_position_relative_to_circumcircle(kernel::AbstractPredicateKernel, tri::Triangulation, T, ℓ) = point_position_relative_to_circumcircle(kernel, tri, geti(T), getj(T), getk(T), ℓ)
-point_position_relative_to_circumcircle(tri::Triangulation, T, ℓ) = point_position_relative_to_circumcircle(def_alg222(), tri, geti(T), getj(T), getk(T), ℓ)
+point_position_relative_to_circumcircle(tri::Triangulation, T, ℓ) = point_position_relative_to_circumcircle(Adaptive(), tri, geti(T), getj(T), getk(T), ℓ)
 
 """
-    point_position_relative_to_witness_plane([kernel::AbstractPredicateKernel=def_alg222(),] tri::Triangulation, i, j, k, ℓ) -> Certificate
+    point_position_relative_to_witness_plane([kernel::AbstractPredicateKernel=Adaptive(),] tri::Triangulation, i, j, k, ℓ) -> Certificate
 
 Given a positively oriented triangle `T = (i, j, k)` of `tri` and a vertex `ℓ` of `tri`, returns the position of `ℓ` relative to the witness plane of `T`. The returned value is a [`Certificate`](@ref), which is one of:
 
@@ -606,10 +606,10 @@ function point_position_relative_to_witness_plane(kernel::AbstractPredicateKerne
     cert = orient_predicate(kernel, p⁺, q⁺, r⁺, a⁺)
     return convert_certificate(cert, Cert.Above, Cert.On, Cert.Below)
 end
-point_position_relative_to_witness_plane(tri::Triangulation, i, j, k, ℓ) = point_position_relative_to_witness_plane(def_alg222(), i, j, k, ℓ)
+point_position_relative_to_witness_plane(tri::Triangulation, i, j, k, ℓ) = point_position_relative_to_witness_plane(Adaptive(), i, j, k, ℓ)
 
 """
-    opposite_angle([kernel::AbstractPredicateKernel=def_alg222(),] p, q, r) -> Certificate
+    opposite_angle([kernel::AbstractPredicateKernel=Adaptive(),] p, q, r) -> Certificate
 
 Tests the angle opposite to the edge `(p, q)` in the triangle `(p, q, r)`, meaning `∠prq`. The returned value is a 
 [`Certificate`](@ref), which is one of:
@@ -631,10 +631,10 @@ function opposite_angle(kernel::AbstractPredicateKernel, p, q, r) # https://math
     cert = angle_is_acute(kernel, p, q, r)
     return convert_certificate(cert, Certificate.Obtuse, Certificate.Right, Certificate.Acute)
 end
-opposite_angle(p, q, r) = opposite_angle(def_alg222(), p, q, r)
+opposite_angle(p, q, r) = opposite_angle(Adaptive(), p, q, r)
 
 """
-    point_position_relative_to_diametral_circle([kernel::AbstractPredicateKernel=def_alg222(),] p, q, r) -> Certificate
+    point_position_relative_to_diametral_circle([kernel::AbstractPredicateKernel=Adaptive(),] p, q, r) -> Certificate
 
 Given an edge `(p, q)` and a point `r`, returns the position of `r` relative to the diametral circle of `(p, q)`. The returned value 
 is a [`Certificate`](@ref), which is one of:
@@ -660,7 +660,7 @@ function point_position_relative_to_diametral_circle(kernel::AbstractPredicateKe
         return Certificate.Outside
     end
 end
-point_position_relative_to_diametral_circle(p, q, r) = point_position_relative_to_diametral_circle(def_alg222(), p, q, r)
+point_position_relative_to_diametral_circle(p, q, r) = point_position_relative_to_diametral_circle(Adaptive(), p, q, r)
 
 """
     point_position_relative_to_diametral_lens(p, q, r, lens_angle=30.0) -> Certificate 
@@ -722,13 +722,13 @@ function point_position_relative_to_diametral_lens(p, q, r, lens_angle=30.0)
 end
 
 """
-    test_visibility([kernel::AbstractPredicateKernel = def_alg222(),] tri::Triangulation, q, i) -> Certificate 
+    test_visibility([kernel::AbstractPredicateKernel = Adaptive(),] tri::Triangulation, q, i) -> Certificate 
 
 Tests if the vertex `i` and the point `q` can see each other. Here, visibility means that the line segment joining 
 the two does not intersect any segments.
 
 # Arguments 
-- `kernel::AbstractPredicateKernel = def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref) (the default), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `kernel::AbstractPredicateKernel = Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref) (the default), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 - `tri`: The [`Triangulation`](@ref).
 - `q`: The point from which we are testing visibility.
 - `i`: The vertex we are testing visibility of.
@@ -744,16 +744,16 @@ function test_visibility(kernel::AbstractPredicateKernel, tri::Triangulation, q,
         return Certificate.Visible
     end
 end
-test_visibility(tri::Triangulation, q, i) = test_visibility(def_alg222(), tri, q, i)
+test_visibility(tri::Triangulation, q, i) = test_visibility(Adaptive(), tri, q, i)
 
 """
-    test_visibility([kernel::AbstractPredicateKernel=def_alg222(),] tri::Triangulation, u, v, i; shift=0.0, attractor=get_point(tri,i)) -> Certificate 
+    test_visibility([kernel::AbstractPredicateKernel=Adaptive(),] tri::Triangulation, u, v, i; shift=0.0, attractor=get_point(tri,i)) -> Certificate 
 
 Tests if the edge `(u, v)` and the point `i` can see each other. Here, visibility means that any point in the interior 
 of `(u, v)` can see `i`. To test this, we only check `10` points equally spaced between `u` and `v`, excluding `u` and `v`.
 
 # Arguments 
-- `kernel::AbstractPredicateKernel=def_alg222()`: How predicates are computed. See the documentation for information on the choices between [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref).
+- `kernel::AbstractPredicateKernel=Adaptive()`: How predicates are computed. See the documentation for information on the choices between [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref).
 - `tri`: The [`Triangulation`](@ref).
 - `u`: The first vertex of the edge.
 - `v`: The second vertex of the edge.
@@ -762,7 +762,7 @@ of `(u, v)` can see `i`. To test this, we only check `10` points equally spaced 
 # Keyword Arguments 
 - `shift=0.0`: The amount by which to shift each point on the edge towards `attractor`, i.e. if `p` is a point on the edge, then `p .+ shift .* (attractor - p)` is the point used to test visibility rather than `p` itself.
 - `attractor=get_point(tri,i)`: Related to `shift`; see above. 
-- `predicates::AbstractPredicateKernel=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs
 - `cert`: A [`Certificate`](@ref). This will be `Visible` if `i` is visible from `(u, v)`, and `Invisible` otherwise.
@@ -781,4 +781,4 @@ function test_visibility(kernel::AbstractPredicateKernel, tri::Triangulation, u,
     end
     return Cert.Invisible
 end
-test_visibility(tri::Triangulation, u, v, i; shift=0.0, attractor=get_point(tri, i)) = test_visiblity(def_alg222(), tri, u, v, i; shift, attractor)
+test_visibility(tri::Triangulation, u, v, i; shift=0.0, attractor=get_point(tri, i)) = test_visiblity(Adaptive(), tri, u, v, i; shift, attractor)

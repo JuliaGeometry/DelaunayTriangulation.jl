@@ -27,7 +27,7 @@ Pass this to predicates to use ExactPredicates.jl for computing predicates.
 struct Exact <: AbstractPredicateKernel end 
 
 """
-    def_alg222()
+    Adaptive()
 
 Pass this to predicates to use AdaptivePredicates.jl for computing predicates.
 """

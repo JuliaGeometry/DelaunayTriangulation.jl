@@ -24,7 +24,7 @@ function split_triangle!(tri::Triangulation, i, j, k, r)
 end
 
 """
-    legalise_split_triangle!(tri::Triangulation, i, j, k, r; predicates::AbstractPredicateKernel=def_alg222())
+    legalise_split_triangle!(tri::Triangulation, i, j, k, r; predicates::AbstractPredicateKernel=Adaptive())
 
 Legalises the newly added edges in `tri` after the triangle `(i, j, k)` was split using [`split_triangle!`](@ref).
 
@@ -38,12 +38,12 @@ See also [`complete_split_triangle_and_legalise!`](@ref).
 - `r`: The vertex to split the triangle at.
 
 # Keyword Arguments 
-- `predicates::AbstractPredicateKernel=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs
 There is no output, as `tri` is updated in-place.
 """
-function legalise_split_triangle!(tri::Triangulation, i, j, k, r; predicates::AbstractPredicateKernel=def_alg222())
+function legalise_split_triangle!(tri::Triangulation, i, j, k, r; predicates::AbstractPredicateKernel=Adaptive())
     legalise_edge!(tri, i, j, r; predicates)
     legalise_edge!(tri, j, k, r; predicates)
     legalise_edge!(tri, k, i, r; predicates)
@@ -65,7 +65,7 @@ Splits the triangle `(i, j, k)` at the vertex `r`, assumed to be inside the tria
 # Outputs
 There is no output, as `tri` is updated in-place.
 """
-function complete_split_triangle_and_legalise!(tri::Triangulation, i, j, k, r; predicates::AbstractPredicateKernel=def_alg222())
+function complete_split_triangle_and_legalise!(tri::Triangulation, i, j, k, r; predicates::AbstractPredicateKernel=Adaptive())
     split_triangle!(tri, i, j, k, r)
     legalise_split_triangle!(tri, i, j, k, r; predicates)
     return tri

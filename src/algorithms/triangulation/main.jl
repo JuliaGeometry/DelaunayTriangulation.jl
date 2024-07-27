@@ -29,7 +29,7 @@ For the keyword arguments below, you may like to review the extended help as som
 - `boundary_nodes=nothing`: The boundary nodes to include in the triangulation. If `nothing`, then no boundary nodes are included, and the convex hull of `points` remains as the triangulation. These boundary nodes 
    should match the specification given in [`check_args`](@ref) if a boundary is provided as a set of vertices, meaning the boundary is a piecewise linear curve. To specify a curve-bounded domain, you should 
    follow the same specification, but use [`AbstractParametricCurve`](@ref)s to fill out the vector, and any piecewise linear section should still be provided as a sequence of vertices. 
-- `predicates::AbstractPredicateKernel=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 - `weights=ZeroWeight()`: NOT CURRENTLY IMPLEMENTED. The weights to use for the triangulation. By default, the triangulation is unweighted. The weights can also be provided as a vector, with the `i`th weight referring to the `i`th vertex, or more generally any object that defines [`get_weight`](@ref). The weights should be `Float64`.
 - `IntegerType=Int`: The integer type to use for the triangulation. This is used for representing vertices.
 - `EdgeType=isnothing(segments) ? NTuple{2,IntegerType} : (edge_type ∘ typeof)(segments)`: The edge type to use for the triangulation. 
@@ -119,7 +119,7 @@ Here are some warnings to consider for some of the arguments.
 function triangulate(points::P;
     segments=nothing,
     boundary_nodes=nothing,
-    predicates::AbstractPredicateKernel=def_alg222(),
+    predicates::AbstractPredicateKernel=Adaptive(),
     weights=ZeroWeight(),
     IntegerType::Type{I}=Int,
     EdgeType::Type{E}=isnothing(segments) ? NTuple{2,IntegerType} : (edge_type ∘ typeof)(segments),

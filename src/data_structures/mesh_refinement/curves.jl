@@ -434,7 +434,7 @@ function marked_total_variation(b::AbstractParametricCurve, t₁, t₂)
 end
 
 """
-    point_position_relative_to_curve([kernel::AbstractPredicateKernel=def_alg222(),] e::AbstractParametricCurve, p) -> Certificate 
+    point_position_relative_to_curve([kernel::AbstractPredicateKernel=Adaptive(),] e::AbstractParametricCurve, p) -> Certificate 
 
 Returns the position of the point `p` relative to the curve `c`. This function returns a [`Certificate`]:
 
@@ -454,7 +454,7 @@ function point_position_relative_to_curve(kernel::AbstractPredicateKernel, b::Ab
     τx, τy = qx + q′x, qy + q′y
     return point_position_relative_to_curve(kernel, LineSegment(q, (τx, τy)), p)
 end
-point_position_relative_to_curve(b::AbstractParametricCurve, p) = point_position_relative_to_curve(def_alg222(), b, p)
+point_position_relative_to_curve(b::AbstractParametricCurve, p) = point_position_relative_to_curve(Adaptive(), b, p)
 
 """
     convert_lookup_idx(b::AbstractParametricCurve, i) -> Float64
@@ -1059,7 +1059,7 @@ total_variation(::LineSegment) = 0.0
 total_variation(::LineSegment, t₁, t₂) = 0.0
 
 """
-    point_position_relative_to_curve([kernel::AbstractPredicateKernel=def_alg222(),] L::LineSegment, p) -> Certificate
+    point_position_relative_to_curve([kernel::AbstractPredicateKernel=Adaptive(),] L::LineSegment, p) -> Certificate
 
 Returns the position of `p` relative to `L`, returning a [`Certificate`](@ref):
 

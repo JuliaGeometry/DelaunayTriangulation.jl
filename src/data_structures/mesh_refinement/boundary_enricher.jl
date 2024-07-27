@@ -775,7 +775,7 @@ end
 end
 
 """
-    point_position_relative_to_curve([kernel::AbstractPredicateKernel=def_alg222(),] enricher::BoundaryEnricher, curve_index, p) -> Certificate
+    point_position_relative_to_curve([kernel::AbstractPredicateKernel=Adaptive(),] enricher::BoundaryEnricher, curve_index, p) -> Certificate
 
 Returns a [`Certificate`](@ref) which is 
 
@@ -791,11 +791,11 @@ See the documentation for more information about these choices.
     boundary_curves = get_boundary_curves(enricher)
     return point_position_relative_to_curve(kernel, boundary_curves, curve_index, p)
 end
-@inline point_position_relative_to_curve(enricher::BoundaryEnricher, curve_index, p) = point_position_relative_to_curve(def_alg222(), enricher, curve_index, p)
+@inline point_position_relative_to_curve(enricher::BoundaryEnricher, curve_index, p) = point_position_relative_to_curve(Adaptive(), enricher, curve_index, p)
 @inline function point_position_relative_to_curve(kernel::AbstractPredicateKernel, boundary_curves::C, curve_index, p) where {C<:Tuple}
     return eval_fnc_at_het_tuple_element_with_arg_and_prearg(point_position_relative_to_curve, boundary_curves, kernel, (p,), curve_index)
 end
-@inline point_position_relative_to_curve(boundary_curves::C, curve_index, p) where {C<:Tuple} = point_position_relative_to_curve(def_alg222(),boundary_curves,curve_index,p)
+@inline point_position_relative_to_curve(boundary_curves::C, curve_index, p) where {C<:Tuple} = point_position_relative_to_curve(Adaptive(),boundary_curves,curve_index,p)
 
 """
     angle_between(enricher::BoundaryEnricher, curve_index1, curve_index2) -> Float64 

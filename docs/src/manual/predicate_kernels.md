@@ -7,13 +7,13 @@ CurrentModule = DelaunayTriangulation
 By default, this package uses adaptive arithmetic via [AdaptivePredicates.jl](https://github.com/JuliaGeometry/AdaptivePredicates.jl) for computing predicates.
 In total, there are three different kernels offered for computing predicates:
 - `Fast()`: Predicates will be computed without any adaptive or exact arithmetic. 
-- `def_alg222()`: Predicates will be computed using adaptive arithmetic via [AdaptivePredicates.jl](https://github.com/JuliaGeometry/AdaptivePredicates.jl).
+- `Adaptive()`: Predicates will be computed using adaptive arithmetic via [AdaptivePredicates.jl](https://github.com/JuliaGeometry/AdaptivePredicates.jl).
 - `Exact()`: Predicates will be computed using exact arithmetic via [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl). 
 
 There are clear strengths and weaknesses to each of these choices. To summarise them, here is when each kernel should be considered:
-- `Fast()`: This kernel can be safely used when you know that there are no collinear points or cocircular points in your data set. It may still work even in those cases, but it can not be safely relied upon. If you trust that there are no issues, this should be the kernel you use as it is the fastest. If you run into issues while using this kernel, please use try `def_alg222()`.
-- `def_alg222()`: This is the kernel we use by default. It has performance that is reasonably close to what is offered by `Fast()`, except it also guarantees that predicates will return the correct result even with collinear points or cocircular points, or in other degenerate cases where one typically expects predicates to be problematic. If you are using `Fast()` and run into issues, this should be the next kernel you try.
-- `Exact()`: This is the slowest kernel, but it is the safest. This kernel works on a much wider range of numbers than `def_alg222()`, and is guaranteed to satisfy certain combinatorial properties such as `orient(a, b, c) == orient(b, c, a) == orient(c, a, b)`. I have not seen any examples  where `def_alg222()` fails but `Exact()` works, though, so you should only consider using this kernel if you do actually encounter such a case, i.e. treat this kernel as a fallback for `def_alg222()`.
+- `Fast()`: This kernel can be safely used when you know that there are no collinear points or cocircular points in your data set. It may still work even in those cases, but it can not be safely relied upon. If you trust that there are no issues, this should be the kernel you use as it is the fastest. If you run into issues while using this kernel, please use try `Adaptive()`.
+- `Adaptive()`: This is the kernel we use by default. It has performance that is reasonably close to what is offered by `Fast()`, except it also guarantees that predicates will return the correct result even with collinear points or cocircular points, or in other degenerate cases where one typically expects predicates to be problematic. If you are using `Fast()` and run into issues, this should be the next kernel you try.
+- `Exact()`: This is the slowest kernel, but it is the safest. This kernel works on a much wider range of numbers than `Adaptive()`, and is guaranteed to satisfy certain combinatorial properties such as `orient(a, b, c) == orient(b, c, a) == orient(c, a, b)`. I have not seen any examples  where `Adaptive()` fails but `Exact()` works, though, so you should only consider using this kernel if you do actually encounter such a case, i.e. treat this kernel as a fallback for `Adaptive()`.
 
 We give a discussion below about why robust arithmetic is actually important, to help you understand these choices. A key point is that it is highly advised that you do not use `Fast()`.
 
@@ -56,11 +56,11 @@ although this is less problematic due to the design of the adaptive predicates; 
 
 ## Will disabling exact predicates give me better performance?
 
-It is also not even the case that using inexact predicates will give you better performance than if you were to use robust predicates. `def_alg222()`'s performance is typically similar to `Fast()`, with the exception of queries on collinear points. This exception is irrelevant, though, as `Fast()` is not even 
+It is also not even the case that using inexact predicates will give you better performance than if you were to use robust predicates. `Adaptive()`'s performance is typically similar to `Fast()`, with the exception of queries on collinear points. This exception is irrelevant, though, as `Fast()` is not even 
 reliable when used on collinear points. `Exact()` is a bit slower, but its performance is still not terrible compared to `Fast()` since ExactPredicates.jl
-uses clever filters that typically do as much work as `Fast()` or `def_alg222()` would. Thus, the only cases where performance is improved significantly using `Fast()` is exactly in the cases where you do not want to be using `Fast()`.
+uses clever filters that typically do as much work as `Fast()` or `Adaptive()` would. Thus, the only cases where performance is improved significantly using `Fast()` is exactly in the cases where you do not want to be using `Fast()`.
 
-You should always benchmark your problems to see if using `Fast()` over the robust kernels `def_alg222()` or `Exact()`, if you choose to do, will actually give you better performance.
+You should always benchmark your problems to see if using `Fast()` over the robust kernels `Adaptive()` or `Exact()`, if you choose to do, will actually give you better performance.
 
 ## Can I check if my computed triangulation is valid?
 

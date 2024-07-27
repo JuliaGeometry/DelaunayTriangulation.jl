@@ -786,7 +786,7 @@ end
 
 
 ## TODO: Implement a brute-force DT.VoronoiTessellation that we can compare with
-function validate_tessellation(vorn::DT.VoronoiTessellation; check_convex=true, check_adjacent=true, predicates::DT.AbstractPredicateKernel=DT.def_alg222())
+function validate_tessellation(vorn::DT.VoronoiTessellation; check_convex=true, check_adjacent=true, predicates::DT.AbstractPredicateKernel=DT.Adaptive())
     tri = DT.get_triangulation(vorn)
     for (i, p) in DT.get_generators(vorn)
         flag = get_point(tri, i) == get_generator(vorn, i) == p
@@ -1193,7 +1193,7 @@ function compare_triangle_queues(args::DT.RefinementArguments, manual_enqueue)
     _compare_pairs(_manual_enqueue_pairs, _args_queue_triangle_pairs)
 end
 
-function is_conformal(tri::Triangulation; predicates::DT.AbstractPredicateKernel=DT.def_alg222())
+function is_conformal(tri::Triangulation; predicates::DT.AbstractPredicateKernel=DT.Adaptive())
     points = get_points(tri)
     segment_tree = DT.BoundaryRTree(points)
     for e in each_segment(tri)

@@ -60,7 +60,7 @@ function segment_intersection_coordinates(a, b, c, d)
 end
 
 """
-    intersection_of_edge_and_bisector_ray([kernel::AbstractPredicateKernel=def_alg222(),] a, b, c) -> (Certificate, NTuple{2, Number})
+    intersection_of_edge_and_bisector_ray([kernel::AbstractPredicateKernel=Adaptive(),] a, b, c) -> (Certificate, NTuple{2, Number})
 
 Given an edge `(a, b)` and a ray emanating from `c` perpendicular
 with the edge and collinear with its midpoint, tests if `c` intersects the edge. The returned value is `(cert, p)`, where:
@@ -84,7 +84,7 @@ function intersection_of_edge_and_bisector_ray(kernel::AbstractPredicateKernel, 
         return cert, (F(NaN), F(NaN))
     end
 end
-intersection_of_edge_and_bisector_ray(a, b, c) = intersection_of_edge_and_bisector_ray(def_alg222(), a, b, c)
+intersection_of_edge_and_bisector_ray(a, b, c) = intersection_of_edge_and_bisector_ray(Adaptive(), a, b, c)
 
 """
     classify_and_compute_segment_intersection([kernel::AbstractPredicateKernel,] a, b, c, d) -> (Certificate, Certificate, Certificate, NTuple{2, Number})
@@ -112,7 +112,7 @@ function classify_and_compute_segment_intersection(kernel::AbstractPredicateKern
         return cert, cert_c, cert_d, (F(NaN), F(NaN))
     end
 end
-classify_and_compute_segment_intersections(a, b, c, p) = classify_and_compute_segment_intersections(def_alg222(), a, b, c, p)
+classify_and_compute_segment_intersections(a, b, c, p) = classify_and_compute_segment_intersections(Adaptive(), a, b, c, p)
 
 """
     polygon_features(points, boundary_nodes) -> (Number, NTuple{2, Number})
