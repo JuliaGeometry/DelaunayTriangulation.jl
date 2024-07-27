@@ -102,7 +102,8 @@ Returns the signed area of a triangle `(p, q, r)`. The area is positive if `(p, 
 is positively oriented.
 """
 function triangle_area(p, q, r)
-    return AP.orient2(getxy(p), getxy(q), getxy(r)) / 2
+    A = AP.orient2(getxy(p), getxy(q), getxy(r)) / 2
+    return A
 end
 
 """

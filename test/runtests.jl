@@ -143,25 +143,25 @@ end
         @testset verbose = true "Test the readme example" begin
             safe_include("readme_example.jl")
         end
+    end
 
-        @testset "All script files are included somewhere" begin
-            missing_set = String[]
-            test_dir = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "test", "")
-            for (root, dir, files) in walkdir(test_dir)
-                for file in files
-                    filename = normpath(replace(joinpath(root, file), test_dir => ""))
-                    if endswith(filename, ".jl") && filename ∉ ALL_TEST_SCRIPTS && filename ∉ NON_TEST_SCRIPTS
-                        push!(missing_set, filename)
-                    end
+    @testset "All script files are included somewhere" begin
+        missing_set = String[]
+        test_dir = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "test", "")
+        for (root, dir, files) in walkdir(test_dir)
+            for file in files
+                filename = normpath(replace(joinpath(root, file), test_dir => ""))
+                if endswith(filename, ".jl") && filename ∉ ALL_TEST_SCRIPTS && filename ∉ NON_TEST_SCRIPTS
+                    push!(missing_set, filename)
                 end
             end
-            if !isempty(missing_set)
-                @info "There were some test scripts that were not included. These are printed below."
-                for script in missing_set
-                    @info "     $script"
-                end
-            end
-            @test isempty(missing_set)
         end
+        if !isempty(missing_set)
+            @info "There were some test scripts that were not included. These are printed below."
+            for script in missing_set
+                @info "     $script"
+            end
+        end
+        @test isempty(missing_set)
     end
 end
