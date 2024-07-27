@@ -8,7 +8,7 @@ See also [`ConvexHull`](@ref).
 get_convex_hull_vertices(tri::Triangulation) = (get_vertices ∘ get_convex_hull)(tri)
 
 """
-    convex_hull!(tri::Triangulation; reconstruct=has_boundary_nodes(tri), predicates::AbstractPredicateType=Adaptive())
+    convex_hull!(tri::Triangulation; reconstruct=has_boundary_nodes(tri), predicates::AbstractPredicateKernel=def_alg222())
 
 Updates the `convex_hull` field of `tri` to match the current triangulation. 
 
@@ -18,9 +18,9 @@ Updates the `convex_hull` field of `tri` to match the current triangulation.
 # Keyword Arguments
 - `reconstruct=has_boundary_nodes(tri)`: If `true`, then the convex hull is reconstructed from scratch, using [`convex_hull`](@ref) on the points. Otherwise,
    computes the convex hull using the ghost triangles of `tri`. If there are no ghost triangles but `reconstruct=true`, then the convex hull is reconstructed from scratch.
-- `predicates::AbstractPredicateType=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 """
-function convex_hull!(tri::Triangulation; reconstruct=has_boundary_nodes(tri), predicates::AbstractPredicateType=Adaptive())
+function convex_hull!(tri::Triangulation; reconstruct=has_boundary_nodes(tri), predicates::AbstractPredicateKernel=def_alg222())
     I = integer_type(tri)
     if reconstruct
         convex_hull!(get_convex_hull(tri); predicates)

@@ -1593,6 +1593,63 @@ end
       @test all(iszero, a .- 16) || all(iszero, a)
 end
 
+@testset "eval_fnc_at_het_tuple_element_with_arg" begin
+      global fft
+      global basic_defft
+      fft(x, y, z, w) = objectid(x) + objectid(y) + objectid(z) + objectid(w)
+      tup = (1, 2.0, "string", [1 2 3], [5, 7, 9], 0x00, 'A')
+      basic_defft(f, tup, arg, idx) = f(tup[idx], arg...)
+      DT.eval_fnc_at_het_tuple_element_with_arg(fft, tup, ((2.0, 3.0), -1.0, "5"), 1)
+      DT.eval_fnc_at_het_tuple_element_with_arg(fft, tup, ((2.0, 3.0), -1.0, "5"), 2)
+      DT.eval_fnc_at_het_tuple_element_with_arg(fft, tup, ((2.0, 3.0), -1.0, "5"), 3)
+      DT.eval_fnc_at_het_tuple_element_with_arg(fft, tup, ((2.0, 3.0), -1.0, "5"), 4)
+      basic_defft(fft, tup, ((2.0, 3.0), -1.0, "5"), 1)
+      basic_defft(fft, tup, ((2.0, 3.0), -1.0, "5"), 2)
+      basic_defft(fft, tup, ((2.0, 3.0), -1.0, "5"), 3)
+      basic_defft(fft, tup, ((2.0, 3.0), -1.0, "5"), 4)
+      a = zeros(length(tup))
+      b = similar(a)
+      arg = ((2.0, 3.0), -1.0, "5")
+      for i in eachindex(tup)
+            global fft
+            global basic_defft
+            a[i] = @allocated DT.eval_fnc_at_het_tuple_element_with_arg(fft, tup, arg, i)
+            b[i] = @allocated basic_defft(fft, tup, arg, i)
+            @test DT.eval_fnc_at_het_tuple_element_with_arg(fft, tup, arg, i) == basic_defft(fft, tup, arg, i)
+            @inferred DT.eval_fnc_at_het_tuple_element_with_arg(fft, tup, arg, i)
+      end
+      @test all(iszero, a .- 16) || all(iszero, a)
+end
+
+@testset "eval_fnc_at_het_tuple_element_with_arg_and_prearg" begin
+      global fft
+      global basic_defft
+      fft(x, y, z, w) = objectid(x) + objectid(y) + objectid(z) + objectid(w)
+      tup = (1, 2.0, "string", [1 2 3], [5, 7, 9], 0x00, 'A')
+      basic_defft(f, tup, prearg, arg, idx) = f(prearg, tup[idx], arg...)
+      DT.eval_fnc_at_het_tuple_element_with_arg_and_prearg(fft, tup, -3.0, ((2.0, 3.0), "5"), 1)
+      DT.eval_fnc_at_het_tuple_element_with_arg_and_prearg(fft, tup, -3.0, ((2.0, 3.0), "5"), 2)
+      DT.eval_fnc_at_het_tuple_element_with_arg_and_prearg(fft, tup, -3.0, ((2.0, 3.0), "5"), 3)
+      DT.eval_fnc_at_het_tuple_element_with_arg_and_prearg(fft, tup,-3.0,  ((2.0, 3.0), "5"), 4)
+      basic_defft(fft, tup, -3.0, ((2.0, 3.0), "5"), 1)
+      basic_defft(fft, tup, -3.0, ((2.0, 3.0), "5"), 2)
+      basic_defft(fft, tup, -3.0, ((2.0, 3.0), "5"), 3)
+      basic_defft(fft, tup, -3.0, ((2.0, 3.0), "5"), 4)
+      a = zeros(length(tup))
+      b = similar(a)
+      arg = ((2.0, 3.0), "5")
+      prearg = -3.0
+      for i in eachindex(tup)
+            global fft
+            global basic_defft
+            a[i] = @allocated DT.eval_fnc_at_het_tuple_element_with_arg_and_prearg(fft, tup,prearg, arg, i)
+            b[i] = @allocated basic_defft(fft, tup,prearg, arg, i)
+            @test DT.eval_fnc_at_het_tuple_element_with_arg_and_prearg(fft, tup,prearg, arg, i) == basic_defft(fft, tup,prearg, arg, i)
+            @inferred DT.eval_fnc_at_het_tuple_element_with_arg_and_prearg(fft, tup,prearg, arg, i)
+      end
+      @test all(iszero, a .- 16) || all(iszero, a)
+end
+
 @testset "_to_val" begin
       @test DT._to_val(2) == Val(2)
       @test DT._to_val(Val(2)) == Val(2)

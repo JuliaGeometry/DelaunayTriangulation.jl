@@ -8,7 +8,7 @@ using ReferenceTests
 using StatsBase
 
 @testset "Triangulating random convex polygons" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         for n in Iterators.flatten([3:20, 25:50:1000])
             points = rand(2, n)
             S = get_random_convex_polygon(points)
@@ -44,7 +44,7 @@ using StatsBase
 end
 
 @testset "Triangulating a small polygon with some collinearities" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         for T in (Float64, Float32)
             p1 = T[8.0, 4.0]
             p2 = T[10.0, 4.0]
@@ -68,7 +68,7 @@ end
 end
 
 @testset "Triangulating more random polygons, smaller size" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         for _ in 1:1500
             pts = rand(2, 50)
             p1 = [0.0, 0.0]

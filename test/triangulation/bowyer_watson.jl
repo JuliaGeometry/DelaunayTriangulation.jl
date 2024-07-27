@@ -91,7 +91,7 @@ end
 end
 
 @testset "A random triangulation" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         pts = randn(2, 500)
         tri = DT.triangulate(pts; predicates=PT(), delete_ghosts=false)
         @test validate_triangulation(tri; predicates=PT())
@@ -110,7 +110,7 @@ end
 end
 
 @testset "A detailed example" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         for _ in 1:100
             T = Set{NTuple{3,Int}}(((2, 9, 8),
                 (2, 8, 6),
@@ -302,7 +302,7 @@ end
 end
 
 @testset "Issue #94" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         i = 265
         rng = StableRNG(i)
         points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.5, 0.5), (0.2, 0.8), (0.1, 0.785)]

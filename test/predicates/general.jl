@@ -59,25 +59,25 @@ end
             p, q, r = eachcol(rand(2, 3))
             @test DT.orient_predicate(DT.Exact(), p, q, r) === ExactPredicates.orient(p, q, r)
             @test DT.orient_predicate(DT.Fast(), p, q, r) === Int(sign(AdaptivePredicates.orient2fast(p, q, r))) === ExactPredicates.orient(p, q, r)
-            @test DT.orient_predicate(DT.Adaptive(), p, q, r) === AdaptivePredicates.orient2p(p, q, r) === ExactPredicates.orient(p, q, r)
+            @test DT.orient_predicate(DT.def_alg222(), p, q, r) === AdaptivePredicates.orient2p(p, q, r) === ExactPredicates.orient(p, q, r)
             @inferred DT.orient_predicate(rt(), p, q, r)
 
             p, q, r, s = eachcol(rand(3, 4))
             @test DT.orient_predicate(DT.Exact(), p, q, r, s) === ExactPredicates.orient(p, q, r, s)
             @test DT.orient_predicate(DT.Fast(), p, q, r, s) === Int(sign(AdaptivePredicates.orient3fast(p, q, r, s))) === ExactPredicates.orient(p, q, r, s)
-            @test DT.orient_predicate(DT.Adaptive(), p, q, r, s) === AdaptivePredicates.orient3p(p, q, r, s) === ExactPredicates.orient(p, q, r, s)
+            @test DT.orient_predicate(DT.def_alg222(), p, q, r, s) === AdaptivePredicates.orient3p(p, q, r, s) === ExactPredicates.orient(p, q, r, s)
             @inferred DT.orient_predicate(rt(), p, q, r, s)
 
             a, b, c, p = eachcol(rand(2, 4))
             @test DT.incircle_predicate(DT.Exact(), a, b, c, p) === ExactPredicates.incircle(a, b, c, p)
             @test DT.incircle_predicate(DT.Fast(), a, b, c, p) === Int(sign(AdaptivePredicates.incirclefast(a, b, c, p))) === ExactPredicates.incircle(a, b, c, p)
-            @test DT.incircle_predicate(DT.Adaptive(), a, b, c, p) === AdaptivePredicates.incirclep(a, b, c, p) === ExactPredicates.incircle(a, b, c, p)
+            @test DT.incircle_predicate(DT.def_alg222(), a, b, c, p) === AdaptivePredicates.incirclep(a, b, c, p) === ExactPredicates.incircle(a, b, c, p)
             @inferred DT.incircle_predicate(rt(), a, b, c, p)
 
             a, b, p, q = eachcol(rand(2, 4))
             @test DT.parallelorder_predicate(DT.Exact(), a, b, p, q) === ExactPredicates.parallelorder(a, b, p, q)
             @test DT.parallelorder_predicate(DT.Fast(), a, b, p, q) === DT.parallelorder(DT.Fast(), a, b, p, q) === ExactPredicates.parallelorder(a, b, p, q)
-            @test DT.parallelorder_predicate(DT.Adaptive(), a, b, p, q) === ExactPredicates.parallelorder(a, b, p, q) === ExactPredicates.parallelorder(a, b, p, q)
+            @test DT.parallelorder_predicate(DT.def_alg222(), a, b, p, q) === ExactPredicates.parallelorder(a, b, p, q) === ExactPredicates.parallelorder(a, b, p, q)
             @inferred DT.parallelorder_predicate(rt(), a, b, p, q)
 
             p, a, b = eachcol(rand(2, 3))
@@ -87,7 +87,7 @@ end
             p, q, a, b = eachcol(rand(2, 4))
             @test DT.meet_predicate(DT.Exact(), p, q, a, b) === ExactPredicates.meet(p, q, a, b)
             @test DT.meet_predicate(DT.Fast(), p, q, a, b) === ExactPredicates.meet(p, q, a, b)
-            @test DT.meet_predicate(DT.Adaptive(), p, q, a, b) === ExactPredicates.meet(p, q, a, b)
+            @test DT.meet_predicate(DT.def_alg222(), p, q, a, b) === ExactPredicates.meet(p, q, a, b)
             @inferred DT.meet_predicate(rt(), p, q, a, b)
         end
     end
@@ -105,16 +105,16 @@ end
             b = (rand(x), rand(y))
             c = (rand(x), rand(y))
             @test DT.orient_predicate(DT.Exact(), p, q, r) === ExactPredicates.orient(p, q, r)
-            @test DT.orient_predicate(DT.Adaptive(), p, q, r) === DT.orient_predicate(DT.Fast(), p, q, r) === AdaptivePredicates.orient2p(p, q, r) === ExactPredicates.orient(p, q, r) === Int(sign(AdaptivePredicates.orient2fast(p, q, r)))
+            @test DT.orient_predicate(DT.def_alg222(), p, q, r) === DT.orient_predicate(DT.Fast(), p, q, r) === AdaptivePredicates.orient2p(p, q, r) === ExactPredicates.orient(p, q, r) === Int(sign(AdaptivePredicates.orient2fast(p, q, r)))
             @test DT.incircle_predicate(DT.Exact(), a, b, c, p) === ExactPredicates.incircle(a, b, c, p)
-            @test DT.incircle_predicate(DT.Adaptive(), a, b, c, p) === DT.incircle_predicate(DT.Fast(), a, b, c, p) === AdaptivePredicates.incirclep(a, b, c, p) === ExactPredicates.incircle(a, b, c, p) === Int(sign(AdaptivePredicates.incirclefast(a, b, c, p)))
+            @test DT.incircle_predicate(DT.def_alg222(), a, b, c, p) === DT.incircle_predicate(DT.Fast(), a, b, c, p) === AdaptivePredicates.incirclep(a, b, c, p) === ExactPredicates.incircle(a, b, c, p) === Int(sign(AdaptivePredicates.incirclefast(a, b, c, p)))
             @test DT.sameside_predicate(a, b, p) == ExactPredicates.sameside(p, a, b)
             @test DT.meet_predicate(rt(), p, q, a, b) === ExactPredicates.meet(p, q, a, b)
             p = (rand(x), rand(y), rand(z))
             q = (rand(x), rand(y), rand(z))
             r = (rand(x), rand(y), rand(z))
             s = (rand(x), rand(y), rand(z))
-            @test DT.orient_predicate(DT.Exact(), p, q, r, s) == ExactPredicates.orient(p, q, r, s) === DT.orient_predicate(DT.Adaptive(), p, q, r, s) === DT.orient_predicate(DT.Fast(), p, q, r, s)
+            @test DT.orient_predicate(DT.Exact(), p, q, r, s) == ExactPredicates.orient(p, q, r, s) === DT.orient_predicate(DT.def_alg222(), p, q, r, s) === DT.orient_predicate(DT.Fast(), p, q, r, s)
         end
     end
 
@@ -122,16 +122,16 @@ end
         p₁ = [5.7044025422189, 1.801603986463]
         p₂ = [8.3797127128527, 5.8924221838871]
         p₃ = [2.8875415689061, 6.2038339497809]
-        @test DT.orient_predicate(DT.Exact(), p₁, p₂, p₃) === DT.orient_predicate(DT.Fast(), p₁, p₂, p₃) === DT.orient_predicate(DT.Adaptive(), p₁, p₂, p₃) === 1
-        @test DT.orient_predicate(DT.Exact(), p₁, p₂, [10.0, 4.0]) === DT.orient_predicate(DT.Fast(), p₁, p₂, [10.0, 4.0]) === DT.orient_predicate(DT.Adaptive(), p₁, p₂, [10.0, 4.0]) === -1
+        @test DT.orient_predicate(DT.Exact(), p₁, p₂, p₃) === DT.orient_predicate(DT.Fast(), p₁, p₂, p₃) === DT.orient_predicate(DT.def_alg222(), p₁, p₂, p₃) === 1
+        @test DT.orient_predicate(DT.Exact(), p₁, p₂, [10.0, 4.0]) === DT.orient_predicate(DT.Fast(), p₁, p₂, [10.0, 4.0]) === DT.orient_predicate(DT.def_alg222(), p₁, p₂, [10.0, 4.0]) === -1
         p₁ = [5.0, 1.0]
         p₂ = [5.0, 6.0]
-        @test DT.orient_predicate(DT.Exact(), p₁, p₂, [5.0, 5.0]) === DT.orient_predicate(DT.Fast(), p₁, p₂, [5.0, 5.0]) === DT.orient_predicate(DT.Adaptive(), p₁, p₂, [5.0, 5.0]) === 0
-        @test DT.orient_predicate(DT.Exact(), p₁, p₂, [5.0, 2.0]) === DT.orient_predicate(DT.Fast(), p₁, p₂, [5.0, 2.0]) === DT.orient_predicate(DT.Adaptive(), p₁, p₂, [5.0, 2.0]) === 0
-        @test DT.orient_predicate(DT.Exact(), p₂, p₁, [5.0, 2.0]) === DT.orient_predicate(DT.Fast(), p₂, p₁, [5.0, 2.0]) === DT.orient_predicate(DT.Adaptive(), p₂, p₁, [5.0, 2.0]) === 0
+        @test DT.orient_predicate(DT.Exact(), p₁, p₂, [5.0, 5.0]) === DT.orient_predicate(DT.Fast(), p₁, p₂, [5.0, 5.0]) === DT.orient_predicate(DT.def_alg222(), p₁, p₂, [5.0, 5.0]) === 0
+        @test DT.orient_predicate(DT.Exact(), p₁, p₂, [5.0, 2.0]) === DT.orient_predicate(DT.Fast(), p₁, p₂, [5.0, 2.0]) === DT.orient_predicate(DT.def_alg222(), p₁, p₂, [5.0, 2.0]) === 0
+        @test DT.orient_predicate(DT.Exact(), p₂, p₁, [5.0, 2.0]) === DT.orient_predicate(DT.Fast(), p₂, p₁, [5.0, 2.0]) === DT.orient_predicate(DT.def_alg222(), p₂, p₁, [5.0, 2.0]) === 0
         p, q, r, s = (-4.16, -2.84, 0.0), (-4.65, -5.83, 0.0), (-1.12, -5.61, 0.0), (-7.83, 0.27, 4.6)
-        @test DT.orient_predicate(DT.Exact(), p, q, r, s) === DT.orient_predicate(DT.Fast(), p, q, r, s) === DT.orient_predicate(DT.Adaptive(), p, q, r, s) === -1
-        @test DT.orient_predicate(DT.Exact(), p, r, q, s) === DT.orient_predicate(DT.Fast(), p, r, q, s) === DT.orient_predicate(DT.Adaptive(), p, r, q, s) === 1
+        @test DT.orient_predicate(DT.Exact(), p, q, r, s) === DT.orient_predicate(DT.Fast(), p, q, r, s) === DT.orient_predicate(DT.def_alg222(), p, q, r, s) === -1
+        @test DT.orient_predicate(DT.Exact(), p, r, q, s) === DT.orient_predicate(DT.Fast(), p, r, q, s) === DT.orient_predicate(DT.def_alg222(), p, r, q, s) === 1
     end
 end
 
@@ -152,7 +152,7 @@ global pqr = ((p1, q1, r1), (p2, q2, r2), (p3, q3, r3),
         Certificate.Degenerate,
         Certificate.Degenerate,
         Certificate.PositivelyOriented]
-    for T in subtypes(DT.AbstractPredicateType)
+    for T in subtypes(DT.AbstractPredicateKernel)
         for ((p, q, r), result) in zip(pqr, results)
             @test DT.triangle_orientation(T(), p, q, r) == result
             @inferred DT.triangle_orientation(T(), p, q, r)
@@ -165,7 +165,7 @@ global pqr = ((p1, q1, r1), (p2, q2, r2), (p3, q3, r3),
 end
 
 @testset "point_position_relative_to_circle" begin
-    for T in subtypes(DT.AbstractPredicateType)
+    for T in subtypes(DT.AbstractPredicateKernel)
         R = 5
         a, b, c = (0.0, 5.0), (-3.0, -4.0), (3.0, 4.0)
         p1, p2, p3, p4, p5 = [(0.0, -5.0),
@@ -235,7 +235,7 @@ end
 end
 
 @testset "point_position_relative_to_line" begin
-    for T in subtypes(DT.AbstractPredicateType)
+    for T in subtypes(DT.AbstractPredicateKernel)
         results = [Certificate.Left,
             Certificate.Right,
             Certificate.Right,
@@ -291,7 +291,7 @@ end
 end
 
 @testset "point_position_on_line_segment" begin
-    for T in subtypes(DT.AbstractPredicateType)
+    for T in subtypes(DT.AbstractPredicateKernel)
         p, q = (3.0, 3.0), (5.0, 3.0)
         c1, c2, c3 = (4.0, 3.0), (2.0, 3.0), (6.0, 3.0) # in, out, out 
         @test DT.is_on(DT.point_position_on_line_segment(p, q, c1))
@@ -319,7 +319,7 @@ end
 end
 
 @testset "line_segment_intersection_type" begin
-    for T in subtypes(DT.AbstractPredicateType)
+    for T in subtypes(DT.AbstractPredicateKernel)
         p1, q1, a1, b1 = (3.192, 5.59), (5.2, 3.6), (8.2, 5.39), (2.19, 4.34)   # one point 
         p2, q2, a2, b2 = (3.192, 5.59), (5.2, 3.6), (8.2, 5.39), (3.5, 7.0)     # no point 
         p3, q3, a3, b3 = (8.0, 4.5), (8.0, 2.5), (8.0, 5.0), (8.0, 7.5)         # no point 
@@ -358,7 +358,7 @@ end
 end
 
 @testset "point_position_relative_to_triangle" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         p, q, r = (2.0, 1.0), (5.0, 1.0), (2.0, 5.0)
         c1, c2, c3, c4 = (2.57, 3.35), (2.45, 2.51), (3.11, 2.43), (3.33, 1.83) # inside 
         d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12 = (1.76, 4.06), (1.24, 4.109),
@@ -629,7 +629,7 @@ end
 end
 
 @testset "point_position_relative_to_oriented_outer_halfplane" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         p, q = (3.0, 4.0), (6.0, 4.0)
         c, d, e, f, g, h, i, j, k, ℓ = (2.0, 4.0), (7.0, 4.0), (5.0, 5.0),
         (4.0, 6.0), (6.0, 7.0), (4.0, 4.0), (5.0, 4.0),
@@ -686,7 +686,7 @@ end
         p8 = [23.7055438911111, 19.1906513812123]
         p9 = [31.7813088302274, -22.9759380718838]
         pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9]
-        for PT in subtypes(DT.AbstractPredicateType)
+        for PT in subtypes(DT.AbstractPredicateKernel)
             tri = triangulate(pts; predicates=PT())
             @test all(DT.is_legal(DT.is_legal(PT(), tri, i, j)) for (i, j) in
                       ((1, 3), (3, 2), (2, 1), (1, 4), (4, 3), (3, 1), (3, 4), (4, 5), (5, 3), (3, 5), (5, 2), (2, 3))
@@ -695,7 +695,7 @@ end
     end
 
     @testset "Boundary edges" begin
-        for PT in subtypes(DT.AbstractPredicateType)
+        for PT in subtypes(DT.AbstractPredicateKernel)
             tri = example_triangulation()
             DT.add_triangle!(tri, 6, 2, 3)
             DT.split_triangle!(tri, 1, 3, 5, 7)
@@ -707,14 +707,14 @@ end
     end
 
     @testset "Poor edges" begin
-        for PT in subtypes(DT.AbstractPredicateType)
+        for PT in subtypes(DT.AbstractPredicateKernel)
             tri = poor_triangulation_example()
             @test !DT.is_legal(DT.is_legal(PT(), tri, 2, 6))
         end
     end
 
     @testset "Constrained triangulations" begin
-        for PT in subtypes(DT.AbstractPredicateType)
+        for PT in subtypes(DT.AbstractPredicateKernel)
             tri = fixed_shewchuk_example_constrained()
             add_segment!(tri, 2, 7; predicates=PT())
             for e in each_edge(tri)
@@ -726,7 +726,7 @@ end
 end
 
 @testset "triangle_line_segment_intersection" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         p = [0.0, 0.0]
         q = [5.0, 0.0]
         r = [3.0, 6.0]
@@ -792,7 +792,7 @@ end
 end
 
 @testset "point_closest_to_line" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         a = [4.0, 3.0]
         b = [8.0, 3.0]
         p = [5.0, 6.0]
@@ -861,7 +861,7 @@ end
 end
 
 @testset "opposite_angle" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         p, q, r = (0.0, 0.0), (1.0, 0.0), (0.0, 1.0)
         cert = DT.opposite_angle(PT(), q, r, p)
         @inferred DT.opposite_angle(PT(), q, r, p)
@@ -880,7 +880,7 @@ end
 end
 
 @testset "point_position_relative_to_witness_plane" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         a, b, c, d = (-1.26, 1.0), (0.0, -1.0), (3.24, 3.34), (-0.58, 2.25)
         points = [a, b, c, d]
         weights = [0.1, 2.2, -1.5, -4.9]

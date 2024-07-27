@@ -24,7 +24,7 @@ import AdaptivePredicates as AP
 import EnumX
 import Random
 
-abstract type AbstractPredicateType end # needs to be defined early for use in data_structures.jl
+abstract type AbstractPredicateKernel end # needs to be defined early for use in data_structures.jl
 
 include("data_structures.jl")
 include("predicates.jl")

@@ -37,7 +37,7 @@ is_below
 ## Predicates 
 
 ```@docs
-AbstractPredicateType 
+AbstractPredicateKernel 
 Fast 
 Exact 
 Adaptive

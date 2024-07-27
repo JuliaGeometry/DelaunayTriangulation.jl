@@ -308,7 +308,7 @@ end
 end
 
 @testset "Some other previously broken examples, dealing with segments going through points without passing through segments" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         tri = triangulate_rectangle(0, 5, 0, 10, 6, 11; delete_ghosts=false, predicates=PT())
         e = (14, 40)
         history = DT.PointLocationHistory{NTuple{3,Int},NTuple{2,Int},Int}()

@@ -31,7 +31,7 @@ See the documentation for more information about mesh refinement, e.g. convergen
 - `steiner_scale=0.999`: The perturbation factor to use for generalised Steiner points if `use_circumcenter=false`. (Not currently used - see above.)
 - `rng=Random.default_rng()`: The random number generator to use in case it is needed during point location.
 - `concavity_protection=false`: Whether to use concavity protection or not for [`find_triangle`](@ref). Most likely not needed, but may help in pathological cases.
-- `predicates::AbstractPredicateType=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Output 
 The triangulation is refined in-place.
@@ -291,7 +291,7 @@ function check_for_invisible_steiner_point(tri::Triangulation, V, T, flag, c)
 end
 
 """
-    check_for_steiner_point_on_segment(tri::Triangulation, V, V′, new_point, flag, predicates::AbstractPredicateType) -> Bool
+    check_for_steiner_point_on_segment(tri::Triangulation, V, V′, new_point, flag, predicates::AbstractPredicateKernel) -> Bool
 
 Checks if the Steiner point with vertex `new_point` is on a segment. If so, then its vertex is pushed into the offcenter-split list from `args`,
 indicating that it should no longer be regarded as a free vertex (see [`is_free`](@ref)).
@@ -302,12 +302,12 @@ indicating that it should no longer be regarded as a free vertex (see [`is_free`
 - `V′`: The triangle that the Steiner point is in.
 - `new_point`: The vertex associated with the Steiner point.
 - `flag`: A [`Certificate`](@ref) which is `Cert.On` if the Steiner point is on the boundary of `V`, `Cert.Outside` if the Steiner point is outside of `V`, and `Cert.Inside` if the Steiner point is inside of `V`.
-- `predicates::AbstractPredicateType`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Output
 - `onflag`: Whether the Steiner point is on a segment or not.
 """
-function check_for_steiner_point_on_segment(tri::Triangulation, V, V′, new_point, flag, predicates::AbstractPredicateType)
+function check_for_steiner_point_on_segment(tri::Triangulation, V, V′, new_point, flag, predicates::AbstractPredicateKernel)
     !compare_triangles(V, V′) && return false # the point is a centroid, so it won't be on a segment
     if is_on(flag)
         e = find_edge(predicates, tri, V, new_point)
@@ -491,7 +491,7 @@ Determines if the vertices of a segment `e` of `tri` adjoin other segments at an
 - `num_adjoin`: The number of vertices of `e` that adjoin other segments at an acute angle.
 - `adjoin_vert`: The vertex of `e` that adjoins another segment at an acute angle if `num_adjoin == 1`, and `∅` otherwise.
 """
-function segment_vertices_adjoin_other_segments_at_acute_angle(tri::Triangulation, e, predicates::AbstractPredicateType=Adaptive())
+function segment_vertices_adjoin_other_segments_at_acute_angle(tri::Triangulation, e, predicates::AbstractPredicateKernel=def_alg222())
     u, v = edge_vertices(e)
     p, q = get_point(tri, u, v)
     I = integer_type(tri)
@@ -642,7 +642,7 @@ end
 function _split_subsegment_curve_bounded_standard!(tri::Triangulation, args::RefinementArguments, e)
     enricher = get_boundary_enricher(tri)
     i, j = edge_vertices(e)
-    t, Δθ, ct = compute_split_position(enricher, i, j)
+    t, Δθ, ct = compute_split_position(enricher, i, j, args.predicates)
     cx, cy = getxy(ct)
     p, q = get_point(tri, i, j)
     precision_flag = check_split_subsegment_precision(cx, cy, p, q) || isnan(Δθ)

@@ -575,6 +575,22 @@ end
 end
 
 """
+    eval_fnc_at_het_tuple_element_with_arg_and_prearg(f, tup, prearg, arg, idx)
+
+Evaluates `f(prearg, tup[idx], arg...)` in a type-stable way. If `idx > length(tup)`, then `f` is evaluated on the last element of `tup`.
+"""
+@inline function eval_fnc_at_het_tuple_element_with_arg_and_prearg(f::F, tup::T, prearg, arg, idx) where {F,T}
+    return _eval_fnc_at_het_tuple_element_with_arg_and_prearg(f, idx, prearg, arg, tup...)
+end
+@inline function _eval_fnc_at_het_tuple_element_with_arg_and_prearg(f::F, idx, prearg, arg, el::E, tup...) where {F,E}
+    idx == 1 && return _eval_fnc_at_het_tuple_element_with_arg_and_prearg(f, 1, prearg,  arg, el)
+    return _eval_fnc_at_het_tuple_element_with_arg_and_prearg(f, idx - 1, prearg, arg, tup...)
+end
+@inline function _eval_fnc_at_het_tuple_element_with_arg_and_prearg(f::F, idx, prearg, arg, el::E) where {F,E}
+    return f(prearg, el, arg...)
+end
+
+"""
     eval_fnc_in_het_tuple(tup, arg, idx)
 
 Evaluates `tup[idx](arg...)` in a type-stable way. If `idx > length(tup)`, then `tup[end](arg...)` is evaluated.

@@ -5,9 +5,9 @@ using Random
 using StableRNGs
 
 @testset "Random constrained Delaunay triangulations" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         for i in 1:8
-            @info "Testing random constrained Delaunay triangulations. Run: $i; Block: 1."
+            @info "Testing random constrained Delaunay triangulations. Run: $i; Block: 1; Predicates: $PT"
             rng = StableRNG(i)
             points, edges, mat_edges = get_random_vertices_and_constrained_edges(40, 100, 20, rng)
             # Need to deepcopy edges below, else it gets changed and updated on the first call to tri, which changes the insertion order of the segments and thus comparing tri to _tri might not work
@@ -22,7 +22,7 @@ using StableRNGs
             @test !validate_triangulation(tri; predicates=PT(), print_result=false)
         end
         for i in 1:4
-            @info "Testing random constrained Delaunay triangulations. Run: $i; Block: 2."
+            @info "Testing random constrained Delaunay triangulations. Run: $i; Block: 2; Predicates: $PT"
             rng = StableRNG(i^5)
             points, edges, mat_edges = get_random_vertices_and_constrained_edges(200, 500, 100, rng)
             tri = triangulate(points; segments=edges, rng, predicates=PT())
@@ -35,7 +35,7 @@ end
 
 @testset "Testing Shewchuk's PSLG example" begin
     pts, C = second_shewchuk_example_constrained()
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         for i in 1:500
             rng = StableRNG(i^6)
             tri = triangulate(pts; segments=C, rng, predicates=PT())
@@ -66,7 +66,7 @@ end
 end
 
 @testset "Random collection of straight lines" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         for i in 1:4
             @info "Testing random collection of straight lines. Run: $i. Predicates: $PT"
             rng = StableRNG(i)
@@ -179,7 +179,7 @@ end
 end
 
 @testset "Triangulating with a deleted exterior" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         for i in 1:20
             @info "Testing triangulation of a domain with a hole: Run $i. Predicates: $PT"
             rng = StableRNG(i)
@@ -230,7 +230,7 @@ end
 end
 
 @testset "Adding points into a constrained triangulation; no collinearities" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         for L in 1:4
             @info "Testing the addition of points into a constrained triangulation. Run: $L. Predicates: $PT"
             pts, C = example_for_testing_add_point_on_constrained_triangulation()
@@ -326,7 +326,7 @@ end
 end
 
 @testset "Adding points into a constrained triangulation; interior segment collinearities" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         for m in 1:3
             @info "Testing the addition of points into a constrained triangulation with interior segment collinearities. Run: $m. Predicates: $PT"
             pts, C = example_for_testing_add_point_on_constrained_triangulation()
@@ -529,7 +529,7 @@ end
 end
 
 @testset "Adding a point onto a single boundary edge" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         for i in 1:8
             tri = triangulate_rectangle(0, 10, 0, 20, 11, 21; delete_ghosts=false, predicates=PT())
             add_point!(tri, 1.5, 0.0; initial_search_point=i, predicates=PT())
@@ -547,7 +547,7 @@ end
 end
 
 @testset "Adding a point onto multiple boundary edges with multiple ghost indices" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         for _ in 1:8
             tri = triangulate_rectangle(0, 4, 0, 8, 5, 9; delete_ghosts=false, predicates=PT())
             add_point!(tri, 1.5, 0.0, predicates=PT())
@@ -575,7 +575,7 @@ end
 end
 
 @testset "Handling only a single boundary index" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         for _ in 1:8
             tri = triangulate_rectangle(0, 4, 0, 8, 5, 9; delete_ghosts=false, single_boundary=true, predicates=PT())
             for x in [0.2, 0.3, 1.5, 2.3, 2.8, 3.5]
@@ -600,7 +600,7 @@ end
 
 @testset "Starting with a thin set of boundary nodes, and filling them in with automatic collinearity detection" begin
     @testset "Contiguous boundary" begin
-        for PT in subtypes(DT.AbstractPredicateType)
+        for PT in subtypes(DT.AbstractPredicateKernel)
             for _ in 1:8
                 tri = triangulate_rectangle(0, 4, 0, 8, 5, 9; delete_ghosts=false, predicates=PT())
                 pts = get_points(tri)
@@ -739,7 +739,7 @@ end
     end
 
     @testset "Multiple segments" begin
-        for PT in subtypes(DT.AbstractPredicateType)
+        for PT in subtypes(DT.AbstractPredicateKernel)
             for _ in 1:8
                 tri = triangulate_rectangle(0, 4, 0, 8, 5, 9; delete_ghosts=false, predicates=PT())
                 pts = get_points(tri)
@@ -879,7 +879,7 @@ end
 end
 
 @testset "Adding points and segments into a multiply-connected domain" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         tri = triangulate_rectangle(0, 4, 0, 8, 5, 9; delete_ghosts=false, predicates=PT())
         boundary_nodes = [[
                 [1, 5, 45], [45, 41], [41, 1]

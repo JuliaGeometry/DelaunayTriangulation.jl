@@ -266,7 +266,7 @@
             number_type,
             pole_of_inaccessibility,
             is_point2,
-            AbstractPredicateType,
+            AbstractPredicateKernel,
             Fast,
             Exact,
             Adaptive,

@@ -33,5 +33,4 @@ DefaultAdjacentValue
 GhostVertex
 ε
 ∅
-PREDICATES
 ```

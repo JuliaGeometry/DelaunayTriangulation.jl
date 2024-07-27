@@ -7,7 +7,7 @@ using StatsBase
 using ElasticArrays
 using ..DelaunayTriangulation: Certificate
 
-for PT in subtypes(DT.AbstractPredicateType)
+for PT in subtypes(DT.AbstractPredicateKernel)
     global x, y = complicated_geometry()
     boundary_nodes, points = convert_boundary_points_to_indices(x, y; existing_points=ElasticMatrix{Float64}(undef, 2, 0))
     _tri = triangulate(points; boundary_nodes, delete_ghosts=false, predicates=PT())

@@ -434,22 +434,27 @@ function marked_total_variation(b::AbstractParametricCurve, t₁, t₂)
 end
 
 """
-    point_position_relative_to_curve(e::AbstractParametricCurve, p) -> Certificate 
+    point_position_relative_to_curve([kernel::AbstractPredicateKernel=def_alg222(),] e::AbstractParametricCurve, p) -> Certificate 
 
 Returns the position of the point `p` relative to the curve `c`. This function returns a [`Certificate`]:
 
 - `Left`: `p` is to the left of `c`.
 - `Right`: `p` is to the right of `c`.
 - `On`: `p` is on `c`.
+
+The `kernel` argument determines how this result is computed, and should be 
+one of [`Exact`](@ref), [`Fast`](@ref), and [`Adaptive`](@ref) (the default).
+See the documentation for more information about these choices.
 """
-function point_position_relative_to_curve(b::AbstractParametricCurve, p)
+function point_position_relative_to_curve(kernel::AbstractPredicateKernel, b::AbstractParametricCurve, p)
     t, q = get_closest_point(b, p)
     qx, qy = getxy(q)
     q′ = differentiate(b, t)
     q′x, q′y = getxy(q′)
     τx, τy = qx + q′x, qy + q′y
-    return point_position_relative_to_curve(LineSegment(q, (τx, τy)), p)
+    return point_position_relative_to_curve(kernel, LineSegment(q, (τx, τy)), p)
 end
+point_position_relative_to_curve(b::AbstractParametricCurve, p) = point_position_relative_to_curve(def_alg222(), b, p)
 
 """
     convert_lookup_idx(b::AbstractParametricCurve, i) -> Float64
@@ -1054,7 +1059,7 @@ total_variation(::LineSegment) = 0.0
 total_variation(::LineSegment, t₁, t₂) = 0.0
 
 """
-    point_position_relative_to_curve(L::LineSegment, p) -> Certificate
+    point_position_relative_to_curve([kernel::AbstractPredicateKernel=def_alg222(),] L::LineSegment, p) -> Certificate
 
 Returns the position of `p` relative to `L`, returning a [`Certificate`](@ref):
 
@@ -1063,9 +1068,13 @@ Returns the position of `p` relative to `L`, returning a [`Certificate`](@ref):
 - `On`: `p` is on `L`.
 
 See also [`point_position_relative_to_line`](@ref).
+
+The `kernel` argument determines how this result is computed, and should be 
+one of [`Exact`](@ref), [`Fast`](@ref), and [`Adaptive`](@ref) (the default).
+See the documentation for more information about these choices.
 """
-function point_position_relative_to_curve(L::LineSegment, p)
-    cert = point_position_relative_to_line(L.first, L.last, p)
+function point_position_relative_to_curve(kernel::AbstractPredicateKernel, L::LineSegment, p)
+    cert = point_position_relative_to_line(kernel, L.first, L.last, p)
     if is_collinear(cert)
         return Cert.On
     else
@@ -1297,9 +1306,9 @@ function twice_differentiate(c::CircularArc, t)
     return (x * Δθ^2, y * Δθ^2)
 end
 
-function point_position_relative_to_curve(c::CircularArc, p)
+function point_position_relative_to_curve(kernel::AbstractPredicateKernel, c::CircularArc, p)
     a, b, c = c.pqr
-    cert = point_position_relative_to_circle(a, b, c, p)
+    cert = point_position_relative_to_circle(kernel, a, b, c, p)
     if is_outside(cert)
         return Cert.Right
     elseif is_inside(cert)
@@ -1468,7 +1477,7 @@ function total_variation(e::EllipticalArc, t₁, t₂)
     return θ
 end
 
-function point_position_relative_to_curve(e::EllipticalArc, p)
+function point_position_relative_to_curve(kernel::AbstractPredicateKernel, e::EllipticalArc, p)
     x, y = getxy(p)
     c, α, β, (sinθ, cosθ), Δθ = e.center, e.horz_radius, e.vert_radius, e.rotation_scales, e.sector_angle
     cx, cy = getxy(c)
@@ -1484,7 +1493,7 @@ function point_position_relative_to_curve(e::EllipticalArc, p)
     else
         a, b, c = (1.0, 0.0), (0.0, -1.0), (-1.0, 0.0)
     end
-    cert = point_position_relative_to_circle(a, b, c, (x′′′, y′′′))
+    cert = point_position_relative_to_circle(kernel, a, b, c, (x′′′, y′′′))
     if is_outside(cert)
         return Cert.Right
     elseif is_inside(cert)

@@ -11,7 +11,7 @@ using StructEquality
 @struct_equal DT.Queue
 
 @testset "Unconstrained test" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         for _ in 1:10
             A = (-1.0, 7.0)
             B = (4.0, 4.0)
@@ -96,7 +96,7 @@ using StructEquality
 end
 
 @testset "Smaller example, checking ray coordinates" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         for _ in 1:10
             tri = example_triangulation()
             tri = triangulate(get_points(tri))
@@ -172,7 +172,7 @@ end
 end
 
 @testset "delete/add_polygon_adjacencies" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         for _ in 1:10
             A = (-1.0, 7.0)
             B = (4.0, 4.0)
@@ -200,7 +200,7 @@ end
 end
 
 @testset "Voronoi point location" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         A = (-1.0, 7.0) .+ (1e-6rand(), 1e-6rand()) # perturb to allow the tests to work even without ExactPredicates
         B = (4.0, 4.0) .+ (1e-6rand(), 1e-6rand())
         C = (-2.0, -1.0) .+ (1e-6rand(), 1e-6rand())
@@ -260,7 +260,7 @@ end
 end
 
 @testset "Clipping a simple VoronoiTessellation" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         for _ in 1:333
             A = (-1.0, 7.0)
             B = (4.0, 4.0)
@@ -338,7 +338,7 @@ end
 end
 
 @testset "Another example" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         for _ in 1:100
             tri = fixed_shewchuk_example_constrained()
             vorn = voronoi(tri; clip=false, predicates=PT())
@@ -512,7 +512,7 @@ end
 end
 
 @testset "initialise_clipping_arrays" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         a = (4.0, 3.0)
         b = (0.0, 3.0)
         c = (0.0, 0.0)
@@ -547,7 +547,7 @@ end
 end
 
 @testset "enqueue_new_edge" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         for _ in 1:180
             a = (3.0, 3.0)
             b = (0.0, 3.0)
@@ -605,7 +605,7 @@ end
 end
 
 @testset "More detailed test with a tessellation that has a finite edge going completely through the interior" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         a = (3.0, 3.0)
         b = (0.0, 3.0)
         c = (0.0, 0.0)
@@ -750,7 +750,7 @@ end
 end
 
 @testset "Single triangle" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         for _ in 1:333
             points = [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]
             tri = triangulate(points)
@@ -799,7 +799,7 @@ end
 end
 
 @testset "Another previously broken example with a non-boundary generator's intersecting edges not being previously detected" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         for _ in 1:43
             a = (0.0, 0.0)
             b = (6.0, 0.0)
@@ -864,7 +864,7 @@ end
 end
 
 @testset "Varying size" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         for n in 3:4:200
             for j in 1:15:250
                 rng = StableRNG(2^(isqrt(n)) * 3^(isqrt(n)))
@@ -882,7 +882,7 @@ end
 end
 
 @testset "Centroidal tessellation" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         flag = 0
         tot = 0
         for i in 1:25
@@ -935,7 +935,7 @@ end
 end
 
 @testset "Example that used to previously break: Plotting a Voronoi tile with unbounded edges intersecting over non-neighbouring sides" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         pts = [0.508812 0.656662 0.785124 0.63427 0.444969 0.609253 0.0826304 0.265388 0.830807 0.658346
             0.647732 0.482994 0.809909 0.482046 0.0170022 0.821742 0.835057 0.591724 0.881006 0.97652]
         tri = triangulate(pts)
@@ -953,7 +953,7 @@ end
 end
 
 @testset "Example that used to previously break: Plotting a Voronoi tile with unbounded edges intersecting over non-neighbouring sides, needing THREE corners" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         pts = [0.279402 0.874842 0.163028
             0.274178 0.831658 0.223709]
         tri = triangulate(pts, predicates=PT())
@@ -970,7 +970,7 @@ end
 end
 
 @testset "Issue #72" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         points = [
             Float32[0.32965052, 0.7966664],
             Float32[0.015137732, 0.31555605],
@@ -1044,7 +1044,7 @@ end
 end
 
 @testset "grow_polygon_outside_of_box" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         A = (-3.0, 7.0)
         B = (1.0, 6.0)
         C = (-1.0, 3.0)
@@ -1106,7 +1106,7 @@ end
 end
 
 @testset "Clipping polygons to arbitrary bounding box" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         A = (-3.0, 7.0)
         B = (1.0, 6.0)
         C = (-1.0, 3.0)
@@ -1218,7 +1218,7 @@ end
 end
 
 @testset "Previously broken example" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         # The points were duplicated from refine and not included in tri, but 
         # retriangulate kept trying to use them
         points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]

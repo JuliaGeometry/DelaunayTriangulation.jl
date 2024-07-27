@@ -74,7 +74,7 @@ Returns `Int(sign(x))`.
 @inline sgn(x) = Int(sign(x))
 
 """
-    orient_predicate([method::AbstractPredicateType,] p, q, r) -> Integer 
+    orient_predicate([kernel::AbstractPredicateKernel,] p, q, r) -> Integer 
 
 Returns 
 
@@ -82,21 +82,21 @@ Returns
 - `0`: `(p, q, r)` is collinear / degenerate.
 - `-1`: `(p, q, r)` is negatively oriented.
 
-The `method` argument determines how this result is computed, and should be 
+The `kernel` argument determines how this result is computed, and should be 
 one of [`Exact`](@ref), [`Fast`](@ref), and [`Adaptive`](@ref) (the default).
 See the documentation for more information about these choices.
 """
-@inline function orient_predicate(method::AbstractPredicateType, p, q, r)
-    return orient(method, getxy(p), getxy(q), getxy(r))
+@inline function orient_predicate(kernel::AbstractPredicateKernel, p, q, r)
+    return orient(kernel, getxy(p), getxy(q), getxy(r))
 end
-@inline orient_predicate(p, q, r) = orient_predicate(Adaptive(), p, q, r)
+@inline orient_predicate(p, q, r) = orient_predicate(def_alg222(), p, q, r)
 
 @inline orient(::Fast, p, q, r) = sgn(AP.orient2fast(p, q, r))
 @inline orient(::Exact, p, q, r) = EP.orient(_getxy(p), _getxy(q), _getxy(r))
 @inline orient(::Adaptive, p, q, r) = AP.orient2p(p, q, r)
 
 """
-    orient_predicate([method::AbstractPredicateType,] p, q, r) -> Integer
+    orient_predicate([kernel::AbstractPredicateKernel,] p, q, r) -> Integer
 
 Returns 
 
@@ -123,21 +123,21 @@ Here, a positively oriented tetrahedron `(p, q, r, s)` takes the form
                                'r       
                                  '\\.    
 
-The `method` argument determines how this result is computed, and should be 
+The `kernel` argument determines how this result is computed, and should be 
 one of [`Exact`](@ref), [`Fast`](@ref), and [`Adaptive`](@ref) (the default).
 See the documentation for more information about these choices.
 """
-@inline function orient_predicate(method::AbstractPredicateType, p, q, r, s)
-    return orient(method, getxyz(p), getxyz(q), getxyz(r), getxyz(s))
+@inline function orient_predicate(kernel::AbstractPredicateKernel, p, q, r, s)
+    return orient(kernel, getxyz(p), getxyz(q), getxyz(r), getxyz(s))
 end
-@inline orient_predicate(p, q, r, s) = orient_predicate(Adaptive(), p, q, r, s)
+@inline orient_predicate(p, q, r, s) = orient_predicate(def_alg222(), p, q, r, s)
 
 @inline orient(::Fast, p, q, r, s) = sgn(AP.orient3fast(p, q, r, s))
 @inline orient(::Exact, p, q, r, s) = EP.orient(_getxyz(p), _getxyz(q), _getxyz(r), _getxyz(s))
 @inline orient(::Adaptive, p, q, r, s) = AP.orient3p(p, q, r, s)
 
 """
-    incircle_predicate([method::AbstractPredicateType,] a, b, c, p) -> Integer
+    incircle_predicate([kernel::AbstractPredicateKernel,] a, b, c, p) -> Integer
 
 Assuming that `(a, b, c)` is a positively oriented triangle, returns
 
@@ -145,21 +145,21 @@ Assuming that `(a, b, c)` is a positively oriented triangle, returns
 - `0`: If `p` is on the circle defined by `(a, b, c)`.
 - `-1`: If `p` is outside the circle defined by `(a, b, c)`.
 
-The `method` argument determines how this result is computed, and should be 
+The `kernel` argument determines how this result is computed, and should be 
 one of [`Exact`](@ref), [`Fast`](@ref), and [`Adaptive`](@ref) (the default).
 See the documentation for more information about these choices.
 """
-@inline function incircle_predicate(method::AbstractPredicateType, a, b, c, p)
-    return incircle(method, getxy(a), getxy(b), getxy(c), getxy(p))
+@inline function incircle_predicate(kernel::AbstractPredicateKernel, a, b, c, p)
+    return incircle(kernel, getxy(a), getxy(b), getxy(c), getxy(p))
 end
-@inline incircle_predicate(a, b, c, p) = incircle_predicate(Adaptive(), a, b, c, p)
+@inline incircle_predicate(a, b, c, p) = incircle_predicate(def_alg222(), a, b, c, p)
 
 @inline incircle(::Fast, a, b, c, p) = sgn(AP.incirclefast(a, b, c, p))
 @inline incircle(::Exact, a, b, c, p) = EP.incircle(_getxy(a), _getxy(b), _getxy(c), _getxy(p))
 @inline incircle(::Adaptive, a, b, c, p) = AP.incirclep(a, b, c, p)
 
 """
-    parallelorder_predicate([method::AbstractPredicateType,] a, b, p, q) -> Integer
+    parallelorder_predicate([kernel::AbstractPredicateKernel,] a, b, p, q) -> Integer
 
 Returns
 
@@ -167,14 +167,14 @@ Returns
 - `0`: `p` and `q` are equidistant from the line `(a, b)`.
 - `-1`: `p` is closer to the line `(a, b)` than `q`.
 
-The `method` argument determines how this result is computed, and should be 
+The `kernel` argument determines how this result is computed, and should be 
 one of [`Exact`](@ref), [`Fast`](@ref), and [`Adaptive`](@ref) (the default).
 See the documentation for more information about these choices.
 """
-@inline function parallelorder_predicate(method::AbstractPredicateType, a, b, p, q)
-    return parallelorder(method, getxy(a), getxy(b), getxy(p), getxy(q))
+@inline function parallelorder_predicate(kernel::AbstractPredicateKernel, a, b, p, q)
+    return parallelorder(kernel, getxy(a), getxy(b), getxy(p), getxy(q))
 end
-@inline parallelorder_predicate(a, b, p, q) = parallelorder(Adaptive(), a, b, p, q)
+@inline parallelorder_predicate(a, b, p, q) = parallelorder(def_alg222(), a, b, p, q)
 
 @inline function parallelorder(::Fast, a, b, p, q)
     ax, ay = getxy(a)
@@ -189,7 +189,7 @@ end
 @inline parallelorder(::Adaptive, a, b, p, q) = parallelorder(Exact(), a, b, p, q) # not implemented yet 
 
 """
-    angle_is_acute([method::AbstractPredicateType,] p, q, r)
+    angle_is_acute([kernel::AbstractPredicateKernel,] p, q, r)
 
 Tests if the angle opposite `(p, q)` in the triangle `(p, q, r)`, 
 meaning `∠prq`, is acute, returning:
@@ -198,14 +198,14 @@ meaning `∠prq`, is acute, returning:
 - `0`: `∠prq` is a right angle.
 - `-1`: `∠prq` is obtuse.
 
-The `method` argument determines how this result is computed, and should be 
+The `kernel` argument determines how this result is computed, and should be 
 one of [`Exact`](@ref), [`Fast`](@ref), and [`Adaptive`](@ref) (the default).
 See the documentation for more information about these choices.
 """
-@inline function angle_is_acute_predicate(method::AbstractPredicateType, p, q, r)
-    return angle_is_acute(method, getxy(p), getxy(q), getxy(r))
+@inline function angle_is_acute_predicate(kernel::AbstractPredicateKernel, p, q, r)
+    return angle_is_acute(kernel, getxy(p), getxy(q), getxy(r))
 end
-@inline angle_is_acute_predicate(p, q, r) = angle_is_acute_predicate(Adaptive(), p, q, r)
+@inline angle_is_acute_predicate(p, q, r) = angle_is_acute_predicate(def_alg222(), p, q, r)
 
 EP.Codegen.@genpredicate function _angle_is_acute(p::2, q::2, r::2)
     pr = p - r
@@ -253,7 +253,7 @@ Assuming all of `a, b, p` are collinear, returns
 end
 
 """
-    meet_predicate([method::AbstractPredicateType], p, q, a, b) -> Integer
+    meet_predicate([kernel::AbstractPredicateKernel], p, q, a, b) -> Integer
 
 Returns
 
@@ -261,15 +261,15 @@ Returns
 - `0`: The closed line segments `[p, q]` and `[a, b]` meet in one or several points. 
 - `-1`: Otherwise.
 
-The `method` argument determines how this result is computed, and should be 
+The `kernel` argument determines how this result is computed, and should be 
 one of [`Exact`](@ref), [`Fast`](@ref), and [`Adaptive`](@ref) (the default).
 See the documentation for more information about these choices.
 """
-@inline function meet_predicate(method::AbstractPredicateType, p, q, a, b)
-    pqa = orient_predicate(method, p, q, a)
-    pqb = orient_predicate(method, p, q, b)
-    abp = orient_predicate(method, a, b, p)
-    abq = orient_predicate(method, a, b, q)
+@inline function meet_predicate(kernel::AbstractPredicateKernel, p, q, a, b)
+    pqa = orient_predicate(kernel, p, q, a)
+    pqb = orient_predicate(kernel, p, q, b)
+    abp = orient_predicate(kernel, a, b, p)
+    abq = orient_predicate(kernel, a, b, q)
     if opposite_signs(pqa, pqb) && opposite_signs(abp, abq)
         return 1
     elseif (pqa ≠ 0 && pqa == pqb) || (abq ≠ 0 && abp == abq)
@@ -287,4 +287,4 @@ See the documentation for more information about these choices.
         return 0
     end
 end
-@inline meet_predicate(p, q, a, b) = meet_predicate(Adaptive(), p, q, a, b)
+@inline meet_predicate(p, q, a, b) = meet_predicate(def_alg222(), p, q, a, b)

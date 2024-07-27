@@ -786,7 +786,7 @@ end
 
 
 ## TODO: Implement a brute-force DT.VoronoiTessellation that we can compare with
-function validate_tessellation(vorn::DT.VoronoiTessellation; check_convex=true, check_adjacent=true, predicates::DT.AbstractPredicateType=DT.Adaptive())
+function validate_tessellation(vorn::DT.VoronoiTessellation; check_convex=true, check_adjacent=true, predicates::DT.AbstractPredicateKernel=DT.def_alg222())
     tri = DT.get_triangulation(vorn)
     for (i, p) in DT.get_generators(vorn)
         flag = get_point(tri, i) == get_generator(vorn, i) == p
@@ -1193,7 +1193,7 @@ function compare_triangle_queues(args::DT.RefinementArguments, manual_enqueue)
     _compare_pairs(_manual_enqueue_pairs, _args_queue_triangle_pairs)
 end
 
-function is_conformal(tri::Triangulation)
+function is_conformal(tri::Triangulation; predicates::DT.AbstractPredicateKernel=DT.def_alg222())
     points = get_points(tri)
     segment_tree = DT.BoundaryRTree(points)
     for e in each_segment(tri)
@@ -1207,10 +1207,10 @@ function is_conformal(tri::Triangulation)
             i, j = DT.get_edge(box)
             any(==(r), (i, j)) && continue
             a, b = get_point(tri, i, j)
-            flag = DT.is_inside(DT.point_position_relative_to_diametral_circle(a, b, c))
+            flag = DT.is_inside(DT.point_position_relative_to_diametral_circle(predicates, a, b, c))
             if flag
                 #cert = test_visibility(tri, segment_tree, i, j, r)
-                cert = DT.test_visibility(tri, i, j, r)
+                cert = DT.test_visibility(predicates, tri, i, j, r)
                 flag = DT.is_visible(cert)
             end
             if flag
@@ -1341,8 +1341,8 @@ function validate_refinement(tri, args; check_conformal=true, warn=true)
             minθ = min(minθ, t1, t2, t3)
             maxθ = max(maxθ, t1, t2, t3)
         end
-        V = find_triangle(tri, steiner_point)
-        flag = DT.point_position_relative_to_triangle(tri, V, steiner_point)
+        V = find_triangle(tri, steiner_point;predicates=DT.Exact())
+        flag = DT.point_position_relative_to_triangle(DT.Exact(),tri, V, steiner_point)
         if DT.is_on(flag) && DT.is_ghost_triangle(V)
             V = DT.replace_ghost_triangle_with_boundary_triangle(tri, V)
         end
@@ -1397,7 +1397,7 @@ function validate_refinement(tri, args; check_conformal=true, warn=true)
         end
     end
     if !args.use_lens && check_conformal
-        flag = is_conformal(tri)
+        flag = is_conformal(tri;predicates=DT.Exact())
         if !flag
             println("The triangulation is not conformal.")
             return false
@@ -1431,7 +1431,7 @@ function validate_refinement(tri, args; check_conformal=true, warn=true)
     end
     return true
 end
-validate_refinement(tri; check_conformal=true, warn=true, kwargs...) = validate_refinement(tri, DT.RefinementArguments(tri; kwargs...); warn, check_conformal)
+validate_refinement(tri; check_conformal=true, warn=true, predicates=DT.Exact(), kwargs...) = validate_refinement(tri, DT.RefinementArguments(tri; predicates, kwargs...); warn, check_conformal)
 
 function why_not_equal(tri1, tri2)
     !DT.has_ghost_triangles(tri1) && DT.has_ghost_triangles(tri2) && println("!has_ghost_triangles(tri1) && has_ghost_triangles(tri2)")
@@ -2139,11 +2139,11 @@ function all_diametral_circles_are_empty(enricher::DT.BoundaryEnricher)
             u, v = DT.get_edge(box)
             u, v = DT.reorient_edge(enricher, u, v)
             (u == i || v == i) && continue
-            cert = DT.point_position_relative_to_diametral_circle(get_point(points, u, v, i)...)
-            flag = DT.is_inside(cert) && DT.is_visible(DT.test_visibility(enricher, u, v, i))
+            cert = DT.point_position_relative_to_diametral_circle(DT.Exact(), get_point(points, u, v, i)...)
+            flag = DT.is_inside(cert) && DT.is_visible(DT.test_visibility(DT.Exact(), enricher, u, v, i))
             if flag
                 p, q = get_point(points, u, v)
-                t, Δθ, ct = DT.compute_split_position(enricher, u, v)
+                t, Δθ, ct = DT.compute_split_position(enricher, u, v, DT.Exact())
                 flag = flag && !isnan(Δθ)
             end
             rat -= flag

@@ -128,13 +128,13 @@ See also [`check_delete_point_args`](@ref).
 - `vertex`: The vertex to delete.
 
 # Keyword Arguments
-- `predicates::AbstractPredicateType=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 - `store_event_history=Val(false)`: Whether to store the event history of the triangulation from deleting the point. 
 - `event_history=nothing`: The event history of the triangulation from deleting the point. Only updated if `store_event_history` is true, in which case it needs to be an [`InsertionEventHistory`](@ref) object.
 - `rng::Random.AbstractRNG=Random.default_rng()`: The random number generator to use for the triangulation.
 """
 function delete_point!(tri::Triangulation, vertex;
-    predicates::AbstractPredicateType=Adaptive(),
+    predicates::AbstractPredicateKernel=def_alg222(),
     store_event_history=Val(false),
     event_history=nothing,
     rng::Random.AbstractRNG=Random.default_rng())

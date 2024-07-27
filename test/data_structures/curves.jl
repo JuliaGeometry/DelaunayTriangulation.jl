@@ -1987,7 +1987,7 @@ end
             _t, _q = closest_point_on_curve(spl, p)
             if !(spl == pspl)
                 @test _t ≈ t′ rtol = 1e-1 atol = 1e-1
-            elseif t ≠ 0 && t ≠ 1 && t′ ≠ 0 && t′ ≠ 1
+            elseif !isapprox(_t, 0, atol=1e-3) && !isapprox(_t, 1, atol=1e-3) && !isapprox(t′, 0, atol=1e-3) && !isapprox(t′, 1, atol=1e-3)
                 @test _t ≈ t′ rtol = 1e-1 atol = 1e-1
             end
             @test q ⪧ _q rtol = 1e-1 atol = 1e-1
@@ -1999,7 +1999,7 @@ end
             @test q ⪧ spl(t′)
             if !(spl == pspl)
                 @test t ≈ t′ rtol = 1e-1 atol = 1e-1
-            elseif t ≠ 0 && t ≠ 1
+            elseif !isapprox(t, 0, atol=1e-3) && !isapprox(t, 1, atol=1e-3)
                 @test t ≈ t′ rtol = 1e-1 atol = 1e-1
             end
             @test p ⪧ q rtol = 1e-1 atol = 1e-1

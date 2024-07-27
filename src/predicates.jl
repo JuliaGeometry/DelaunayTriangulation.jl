@@ -1,5 +1,5 @@
 @doc """
-    abstract type AbstractPredicateType 
+    abstract type AbstractPredicateKernel 
 
 Abstract type for defining a method for computing predicates. The subtypes are:
 
@@ -9,7 +9,7 @@ Abstract type for defining a method for computing predicates. The subtypes are:
 
 Please see the documentation for more information on the differences between these predicate types.
 """
-AbstractPredicateType
+AbstractPredicateKernel
 
 """
     Fast()
@@ -17,21 +17,21 @@ AbstractPredicateType
 Pass this to predicates to declare that determinant definitions of predicates
 should be used, avoiding adaptivity and exact arithmetic.
 """
-struct Fast <: AbstractPredicateType end 
+struct Fast <: AbstractPredicateKernel end 
 
 """
-    Adaptive()
+    Exact()
 
 Pass this to predicates to use ExactPredicates.jl for computing predicates.
 """
-struct Exact <: AbstractPredicateType end 
+struct Exact <: AbstractPredicateKernel end 
 
 """
-    Adaptive()
+    def_alg222()
 
 Pass this to predicates to use AdaptivePredicates.jl for computing predicates.
 """
-struct Adaptive <: AbstractPredicateType end 
+struct Adaptive <: AbstractPredicateKernel end 
 
 include("predicates/certificate.jl")
 include("predicates/predicate_definitions.jl")

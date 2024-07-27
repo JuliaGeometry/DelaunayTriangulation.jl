@@ -1,5 +1,5 @@
 """
-    convex_hull(points; predicates::AbstractPredicateType=Adaptive(), IntegerType::Type{I}=Int) where {I} -> ConvexHull 
+    convex_hull(points; predicates::AbstractPredicateKernel=def_alg222(), IntegerType::Type{I}=Int) where {I} -> ConvexHull 
 
 Computes the convex hull of `points`. The monotone chain algorithm is used.
 
@@ -8,29 +8,29 @@ Computes the convex hull of `points`. The monotone chain algorithm is used.
 
 # Keyword Arguments 
 - `IntegerType=Int`: The integer type to use for the vertices.
-- `predicates::AbstractPredicateType=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=def_alg222()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
 
 # Output
 - `ch`: The [`ConvexHull`](@ref). 
 """
-function convex_hull(points; predicates::AbstractPredicateType=Adaptive(), IntegerType::Type{I}=Int) where {I}
+function convex_hull(points; predicates::AbstractPredicateKernel=def_alg222(), IntegerType::Type{I}=Int) where {I}
     ch = ConvexHull(points, I[])
     sizehint!(ch, num_points(points))
     return convex_hull!(ch; predicates)
 end
 
 """
-    convex_hull!(ch::ConvexHull{P,I}; predicates::AbstractPredicateType=Adaptive()) where {P,I}
+    convex_hull!(ch::ConvexHull{P,I}; predicates::AbstractPredicateKernel=def_alg222()) where {P,I}
 
 Using the points in `ch`, computes the convex hull in-place. 
 
-The `predicates` keywrod argument determines how predicates are computed, and should be 
+The `predicates` keyword argument determines how predicates are computed, and should be 
 one of [`Exact`](@ref), [`Fast`](@ref), and [`Adaptive`](@ref) (the default).
 See the documentation for more information about these choices.
 
 See also [`convex_hull`](@ref).
 """
-function convex_hull!(ch::ConvexHull{P,I}; predicates::AbstractPredicateType=Adaptive()) where {P,I}
+function convex_hull!(ch::ConvexHull{P,I}; predicates::AbstractPredicateKernel=def_alg222()) where {P,I}
     indices = get_vertices(ch)
     points = get_points(ch)
     empty!(indices)

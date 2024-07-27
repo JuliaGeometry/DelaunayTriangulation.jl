@@ -6,7 +6,7 @@ using DataStructures
 using CairoMakie
 
 @testset "Random tests" begin
-    for PT in subtypes(DT.AbstractPredicateType)
+    for PT in subtypes(DT.AbstractPredicateKernel)
         for _ in 1:100
             pts = rand(2, 38)
             tri = triangulate(pts; predicates=PT())
