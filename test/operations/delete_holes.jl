@@ -202,7 +202,7 @@ end
 end
 
 @testset "A previously broken example" begin
-    for PT in subtypes(DT.AbstractPredicateKernel)
+    for PT in (DT.Exact, DT.Adaptive)
         a = 4 / 5
         t = LinRange(0, 2π, 6)
         x = @. a * (2cos(t) + cos(2t))

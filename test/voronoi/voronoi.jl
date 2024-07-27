@@ -5,6 +5,7 @@ using ColorSchemes
 using DataStructures
 using StableRNGs
 import GeometryBasics: Point2f
+using Random
 using StaticArrays
 using LinearAlgebra
 using StructEquality
@@ -1150,9 +1151,9 @@ end
         tri = triangulate(points)
         vorn = voronoi(tri, predicates=PT())
         bb = (-1.0, 0.0, -1.0, 2.0)
-        coord1 = get_polygon_coordinates(vorn, 1, bb, PT())
-        coord2 = get_polygon_coordinates(vorn, 2, bb, PT())
-        coord3 = get_polygon_coordinates(vorn, 3, bb, PT())
+        coord1 = get_polygon_coordinates(vorn, 1, bb;predicates= PT())
+        coord2 = get_polygon_coordinates(vorn, 2, bb;predicates= PT())
+        coord3 = get_polygon_coordinates(vorn, 3, bb;predicates= PT())
         _coord1 = [(0.0, 2.0), (0.0, 2.0), (-1.0, 1.0), (-1.0, 0.0), (0.0, -1.0), (0.0, 2.0)]
         _coord2 = [(-1.0, 2.0), (-1.0, 1.0), (0.0, 2.0), (-1.0, 2.0)]
         _coord3 = [(-1.0, -1.0), (0.0, -1.0), (0.0, -1.0), (-1.0, 0.0), (-1.0, -1.0)]

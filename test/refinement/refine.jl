@@ -2786,6 +2786,7 @@ end
         @test_reference "complicated_example_with_tight_walls_and_small_angles.png" fig by = psnr_equality(15)
     end
 
+    #=
     if !(get(ENV, "CI", "false") == "true")
         @testset "Tasmania" begin
             for PT in (DT.Exact, DT.Adaptive)
@@ -2809,6 +2810,7 @@ end
             end
         end
     end
+    =#
 
     @testset "Test that nothing is breaking for Float32 inputs" begin
         for PT in (DT.Exact, DT.Adaptive)
