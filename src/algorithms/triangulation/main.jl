@@ -143,7 +143,7 @@ function triangulate(points::P;
     polygonise_n=4096,
     coarse_n=0,
     enrich=false) where {P,I,E,V,Es,Ts,M,H}
-    check_config(points, weights, segments, boundary_nodes)
+    check_config(points, weights, segments, boundary_nodes, predicates)
     if enrich || (isempty(boundary_curves) && is_curve_bounded(boundary_nodes)) # If boundary_curves is not empty, then we are coming from triangulate_curve_bounded
         return triangulate_curve_bounded(points; segments, boundary_nodes, predicates, weights, IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType, randomise, delete_ghosts, delete_empty_features, try_last_inserted_point, skip_points, num_sample_rule, rng, insertion_order, recompute_representative_points, delete_holes, check_arguments, polygonise_n, coarse_n)
     end
@@ -156,8 +156,8 @@ function triangulate(points::P;
         recompute_representative_points, delete_holes, full_polygon_hierarchy, delete_ghosts, delete_empty_features)
 end
 
-function check_config(points, weights, segments, boundary_nodes)
-    number_type(points) == Float64 || @warn "Using non-Float64 coordinates may cause issues. If you run into problems, consider using Float64 coordinates." maxlog=1
+function check_config(points, weights, segments, boundary_nodes, kernel)
+    (number_type(points) == Float32 && kernel != Adaptive()) && @warn "Using non-Float64 coordinates may cause issues. If you run into problems, consider using Float64 coordinates." maxlog=1
     is_weighted(weights) && throw(ArgumentError("Weighted triangulations are not yet fully implemented."))
     is_constrained = !(isnothing(segments) || isempty(segments)) || !(isnothing(boundary_nodes) || !has_boundary_nodes(boundary_nodes))
     is_weighted(weights) && is_constrained && throw(ArgumentError("You cannot compute a constrained triangulation with weighted points."))

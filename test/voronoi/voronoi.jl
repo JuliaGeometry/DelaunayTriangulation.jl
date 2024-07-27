@@ -1185,7 +1185,7 @@ end
         # For _pg: This case used to be broken because the initial unbounded ray did not touch the bounding box, 
         # but then later it does! So just using the Liang-Barsky algorithm by itself is not sufficient.
         # To fix this, I added the stuff about maximum_distance_to_box inside grow_polygon_outside_of_box
-        _ph = get_polygon_coordinates(vorn, 8, bounding_box, PT())
+        _ph = get_polygon_coordinates(vorn, 8, bounding_box; predicates = PT())
         pa = NTuple{2,Float64}[]
         pb = [(0.0, 4.499999999999998), (2.357142857142857, 2.9285714285714284), (3.1, 5.9), (0.0, 9.000000000000002), (0.0, 4.499999999999998)]
         pc = [(0.0, -0.3000000000000007), (2.710526315789474, 1.868421052631579), (2.357142857142857, 2.9285714285714284), (0.0, 4.499999999999998), (0.0, -0.3000000000000007)]
