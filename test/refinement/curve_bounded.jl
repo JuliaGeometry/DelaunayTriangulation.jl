@@ -1455,7 +1455,7 @@ end
 
 @testset "triangulate_curve_bounded" begin
     @testset "triangulate_curve_bounded (no points or extra segments)" begin
-        for PT in (DT.Exact, DT.Adaptive)
+        for PT in (DT.ExactKernel, DT.AdaptiveKernel)
             point_sets = deepcopy.([points_I, points_II, points_III, points_IV, points_V, points_VI, points_VII, points_VIII, points_IX, points_X, points_XI, points_XII])
             curve_sets = deepcopy.([curve_I, curve_II, curve_III, curve_IV, curve_V, curve_VI, curve_VII, curve_VIII, curve_IX, curve_X, curve_XI, curve_XII])
             for i in eachindex(point_sets, curve_sets)
@@ -1471,7 +1471,7 @@ end
     end
 
     @testset "triangulate_curve_bounded (extra points, no segments)" begin
-        for PT in (DT.Exact, DT.Adaptive)
+        for PT in (DT.ExactKernel, DT.AdaptiveKernel)
             point_sets = deepcopy.([points_I_extra, points_II_extra, points_III_extra, points_IV_extra, points_V_extra, points_VI_extra, points_VII_extra, points_VIII_extra, points_IX_extra, points_X_extra, points_XI_extra, points_XII_extra])
             curve_sets = deepcopy.([curve_I, curve_II, curve_III, curve_IV, curve_V, curve_VI, curve_VII, curve_VIII, curve_IX, curve_X, curve_XI, curve_XII])
             for i in eachindex(point_sets, curve_sets)
@@ -1487,7 +1487,7 @@ end
     end
 
     @testset "triangulate_curve_bounded (extra points, extra segments)" begin
-        for PT in (DT.Exact, DT.Adaptive)
+        for PT in (DT.ExactKernel, DT.AdaptiveKernel)
             point_sets = deepcopy.([points_I_extra_segments, points_II_extra_segments, points_III_extra_segments, points_IV_extra_segments])
             curve_sets = deepcopy.([curve_I, curve_II, curve_III, curve_IV])
             segment_sets = deepcopy.([segments_I, segments_II, segments_III, segments_IV])
@@ -1516,7 +1516,7 @@ end
         idx2, idx3, idx4, idx5, curve_idx, point_idx) = 2^idx1 * 3^idx2 * 5^idx3 * 7^idx4 * 11^idx5 * 13^curve_idx * 17^point_idx
 
     @testset "all_examples" begin
-        for PT in (DT.Exact, DT.Adaptive)
+        for PT in (DT.ExactKernel, DT.AdaptiveKernel)
             max_area_opts = [
                 (1e-2, 1e-3),
                 (1e-2, 1e-3),
@@ -1577,7 +1577,7 @@ end
     end
 
     @testset "algorithm_terminates appropriately" begin
-        for PT in (DT.Exact, DT.Adaptive)
+        for PT in (DT.ExactKernel, DT.AdaptiveKernel)
             curve_idx = 12
             point_idx = 2
             points, curve = deepcopy(point_sets[point_idx][curve_idx]), deepcopy(curve_sets[curve_idx])

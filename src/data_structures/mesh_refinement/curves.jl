@@ -434,7 +434,7 @@ function marked_total_variation(b::AbstractParametricCurve, t₁, t₂)
 end
 
 """
-    point_position_relative_to_curve([kernel::AbstractPredicateKernel=Adaptive(),] e::AbstractParametricCurve, p) -> Certificate 
+    point_position_relative_to_curve([kernel::AbstractPredicateKernel=AdaptiveKernel(),] e::AbstractParametricCurve, p) -> Certificate 
 
 Returns the position of the point `p` relative to the curve `c`. This function returns a [`Certificate`]:
 
@@ -443,7 +443,7 @@ Returns the position of the point `p` relative to the curve `c`. This function r
 - `On`: `p` is on `c`.
 
 The `kernel` argument determines how this result is computed, and should be 
-one of [`Exact`](@ref), [`Fast`](@ref), and [`Adaptive`](@ref) (the default).
+one of [`ExactKernel`](@ref), [`FastKernel`](@ref), and [`AdaptiveKernel`](@ref) (the default).
 See the documentation for more information about these choices.
 """
 function point_position_relative_to_curve(kernel::AbstractPredicateKernel, b::AbstractParametricCurve, p)
@@ -454,7 +454,7 @@ function point_position_relative_to_curve(kernel::AbstractPredicateKernel, b::Ab
     τx, τy = qx + q′x, qy + q′y
     return point_position_relative_to_curve(kernel, LineSegment(q, (τx, τy)), p)
 end
-point_position_relative_to_curve(b::AbstractParametricCurve, p) = point_position_relative_to_curve(Adaptive(), b, p)
+point_position_relative_to_curve(b::AbstractParametricCurve, p) = point_position_relative_to_curve(AdaptiveKernel(), b, p)
 
 """
     convert_lookup_idx(b::AbstractParametricCurve, i) -> Float64
@@ -1059,7 +1059,7 @@ total_variation(::LineSegment) = 0.0
 total_variation(::LineSegment, t₁, t₂) = 0.0
 
 """
-    point_position_relative_to_curve([kernel::AbstractPredicateKernel=Adaptive(),] L::LineSegment, p) -> Certificate
+    point_position_relative_to_curve([kernel::AbstractPredicateKernel=AdaptiveKernel(),] L::LineSegment, p) -> Certificate
 
 Returns the position of `p` relative to `L`, returning a [`Certificate`](@ref):
 
@@ -1070,7 +1070,7 @@ Returns the position of `p` relative to `L`, returning a [`Certificate`](@ref):
 See also [`point_position_relative_to_line`](@ref).
 
 The `kernel` argument determines how this result is computed, and should be 
-one of [`Exact`](@ref), [`Fast`](@ref), and [`Adaptive`](@ref) (the default).
+one of [`ExactKernel`](@ref), [`FastKernel`](@ref), and [`AdaptiveKernel`](@ref) (the default).
 See the documentation for more information about these choices.
 """
 function point_position_relative_to_curve(kernel::AbstractPredicateKernel, L::LineSegment, p)

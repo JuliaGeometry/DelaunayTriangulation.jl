@@ -37,13 +37,13 @@ Gets the initial triangle for the Bowyer-Watson algorithm.
 # Arguments 
 - `tri`: The triangulation.
 - `insertion_order`: The insertion order of the points. See [`get_insertion_order`](@ref).
-- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 - `itr=0`: To avoid issues with degenerate triangles and infinite loops, this counts the number of times `insertion_order` had to be shifted using `circshift!` to find an initial non-degenerate triangle.
 
 # Output
 - `initial_triangle`: The initial triangle.
 """
-function get_initial_triangle(tri::Triangulation, insertion_order, predicates::AbstractPredicateKernel=Adaptive(), itr=0)
+function get_initial_triangle(tri::Triangulation, insertion_order, predicates::AbstractPredicateKernel=AdaptiveKernel(), itr=0)
     i, j, k = @view insertion_order[1:3] # insertion_order got converted into a Vector, so indexing is safe 
     initial_triangle = construct_positively_oriented_triangle(tri, i, j, k, predicates)
     i, j, k = triangle_vertices(initial_triangle)
@@ -62,19 +62,19 @@ function get_initial_triangle(tri::Triangulation, insertion_order, predicates::A
 end
 
 """
-    initialise_bowyer_watson!(tri::Triangulation, insertion_order, predicates::AbstractPredicateKernel=Adaptive()) -> Triangulation
+    initialise_bowyer_watson!(tri::Triangulation, insertion_order, predicates::AbstractPredicateKernel=AdaptiveKernel()) -> Triangulation
 
 Initialises the Bowyer-Watson algorithm.
 
 # Arguments
 - `tri`: The triangulation.
 - `insertion_order`: The insertion order of the points. See [`get_insertion_order`](@ref).
-- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
 # Output
 `tri` is updated in place to contain the initial triangle from which the Bowyer-Watson algorithm starts.
 """
-function initialise_bowyer_watson!(tri::Triangulation, insertion_order, predicates::AbstractPredicateKernel=Adaptive())
+function initialise_bowyer_watson!(tri::Triangulation, insertion_order, predicates::AbstractPredicateKernel=AdaptiveKernel())
     I = integer_type(tri)
     initial_triangle = get_initial_triangle(tri, insertion_order, predicates)
     add_triangle!(tri, initial_triangle; update_ghost_edges=true)
@@ -114,7 +114,7 @@ function get_initial_search_point(tri::Triangulation, num_points, new_point, ins
 end
 
 """
-    add_point_bowyer_watson!(tri::Triangulation, new_point, initial_search_point::I, rng::Random.AbstractRNG=Random.default_rng(), update_representative_point=true, store_event_history=Val(false), event_history=nothing, peek::P=Val(false), predicates::AbstractPredicateKernel=Adaptive()) -> Triangle 
+    add_point_bowyer_watson!(tri::Triangulation, new_point, initial_search_point::I, rng::Random.AbstractRNG=Random.default_rng(), update_representative_point=true, store_event_history=Val(false), event_history=nothing, peek::P=Val(false), predicates::AbstractPredicateKernel=AdaptiveKernel()) -> Triangle 
 
 Adds `new_point` into `tri`. 
 
@@ -123,7 +123,7 @@ Adds `new_point` into `tri`.
 - `new_point`: The point to insert.
 - `initial_search_point::I`: The vertex to start the point location with [`find_triangle`](@ref) at. See [`get_initial_search_point`](@ref).
 - `rng::Random.AbstractRNG`: The random number generator to use.
-- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 - `update_representative_point=true`: If `true`, then the representative point is updated. See [`update_centroid_after_addition!`](@ref).
 - `store_event_history=Val(false)`: If `true`, then the event history from the insertion is stored. 
 - `event_history=nothing`: The event history to store the event history in. Should be an [`InsertionEventHistory`](@ref) if `store_event_history` is `true`, and `false` otherwise.
@@ -143,7 +143,7 @@ This function works as follows:
 
 The function [`add_point_bowyer_watson_dig_cavities!`](@ref) is the main workhorse of this function from `add_point_bowyer_watson_after_found_triangle`. See its docstring for the details. 
 """
-function add_point_bowyer_watson!(tri::Triangulation, new_point, initial_search_point::I, rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateKernel=Adaptive(), update_representative_point=true, store_event_history=Val(false), event_history=nothing, peek::P=Val(false)) where {I,P}
+function add_point_bowyer_watson!(tri::Triangulation, new_point, initial_search_point::I, rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateKernel=AdaptiveKernel(), update_representative_point=true, store_event_history=Val(false), event_history=nothing, peek::P=Val(false)) where {I,P}
     _new_point = is_true(peek) ? new_point : I(new_point)
     q = get_point(tri, _new_point)
     V = find_triangle(tri, q; predicates, m=nothing, point_indices=nothing, try_points=nothing, k=initial_search_point, rng)
@@ -160,7 +160,7 @@ function add_point_bowyer_watson!(tri::Triangulation, new_point, initial_search_
     return V
 end
 
-function add_point_bowyer_watson_and_process_after_found_triangle!(tri::Triangulation, new_point, V, q, flag, update_representative_point=true, store_event_history=Val(false), event_history=nothing, peek::P=Val(false), predicates::AbstractPredicateKernel=Adaptive()) where {P}
+function add_point_bowyer_watson_and_process_after_found_triangle!(tri::Triangulation, new_point, V, q, flag, update_representative_point=true, store_event_history=Val(false), event_history=nothing, peek::P=Val(false), predicates::AbstractPredicateKernel=AdaptiveKernel()) where {P}
     I = integer_type(tri)
     _new_point = is_true(peek) ? new_point : I(new_point)
     add_point_bowyer_watson_after_found_triangle!(tri, _new_point, V, q, flag, update_representative_point, store_event_history, event_history, peek, predicates)
@@ -168,7 +168,7 @@ function add_point_bowyer_watson_and_process_after_found_triangle!(tri::Triangul
     return V
 end
 
-function add_point_bowyer_watson_after_found_triangle!(tri::Triangulation, new_point, V, q, flag, update_representative_point=true, store_event_history=Val(false), event_history=nothing, peek::P=Val(false), predicates::AbstractPredicateKernel=Adaptive()) where {P}
+function add_point_bowyer_watson_after_found_triangle!(tri::Triangulation, new_point, V, q, flag, update_representative_point=true, store_event_history=Val(false), event_history=nothing, peek::P=Val(false), predicates::AbstractPredicateKernel=AdaptiveKernel()) where {P}
     if is_ghost_triangle(V) && is_constrained(tri)
         # When we have a constrained boundary edge, we don't want to walk into its interior. So let's just check this case now.
         V = sort_triangle(V)
@@ -184,7 +184,7 @@ function add_point_bowyer_watson_after_found_triangle!(tri::Triangulation, new_p
 end
 
 """
-    add_point_bowyer_watson_dig_cavities!(tri::Triangulation, new_point::N, V, q, flag, update_representative_point=true, store_event_history=Val(false), event_history=nothing, peek::F=Val(false), predicates::AbstractPredicateKernel=Adaptive()) where {N,F} 
+    add_point_bowyer_watson_dig_cavities!(tri::Triangulation, new_point::N, V, q, flag, update_representative_point=true, store_event_history=Val(false), event_history=nothing, peek::F=Val(false), predicates::AbstractPredicateKernel=AdaptiveKernel()) where {N,F} 
 
 Deletes all the triangles in `tri` whose circumcircle contains `new_point`. This leaves behind a polygonal cavity, whose boundary edges are then connected to `new_point`, restoring the Delaunay property from `new_point`'s insertion.
 
@@ -198,7 +198,7 @@ Deletes all the triangles in `tri` whose circumcircle contains `new_point`. This
 - `store_event_history=Val(false)`: If `true`, then the event history from the insertion is stored.
 - `event_history=nothing`: The event history to store the event history in. Should be an [`InsertionEventHistory`](@ref) if `store_event_history` is `true`, and `false` otherwise.
 - `peek=Val(false)`: Whether to actually add `new_point` into `tri`, or just record into `event_history` all the changes that would occur from its insertion.
-- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
 # Output
 There are no changes, but `tri` is updated in-place.
@@ -214,7 +214,7 @@ This function works as follows:
    will fix this case. The need for `is_ghost_triangle(V) && !is_boundary_node(tri, new_point)[1]` is in case the ghost edges were already correctly added. Nothing happens if the edge of `V` that `new_point` 
    is on is not the boundary edge.
 """
-function add_point_bowyer_watson_dig_cavities!(tri::Triangulation, new_point::N, V, q, flag, update_representative_point=true, store_event_history=Val(false), event_history=nothing, peek::F=Val(false), predicates::AbstractPredicateKernel=Adaptive()) where {N,F}
+function add_point_bowyer_watson_dig_cavities!(tri::Triangulation, new_point::N, V, q, flag, update_representative_point=true, store_event_history=Val(false), event_history=nothing, peek::F=Val(false), predicates::AbstractPredicateKernel=AdaptiveKernel()) where {N,F}
     _new_point = is_true(peek) ? num_points(tri) + 1 : new_point # If we are peeking, then we need to use the number of points in the triangulation as the index for the new point since we don't actually insert the point
     i, j, k = triangle_vertices(V)
     ℓ₁ = get_adjacent(tri, j, i)
@@ -279,7 +279,7 @@ function add_point_bowyer_watson_dig_cavities!(tri::Triangulation, new_point::N,
 end
 
 """
-    dig_cavity!(tri::Triangulation, r, i, j, ℓ, flag, V, store_event_history=Val(false), event_history=nothing, peek::F=Val(false), predicates::AbstractPredicateKernel=Adaptive()) where {F}
+    dig_cavity!(tri::Triangulation, r, i, j, ℓ, flag, V, store_event_history=Val(false), event_history=nothing, peek::F=Val(false), predicates::AbstractPredicateKernel=AdaptiveKernel()) where {F}
 
 Excavates the cavity in `tri` through the edge `(i, j)`, stepping towards the adjacent triangles to excavate the cavity recursively, eliminating all 
 triangles containing `r` in their circumcircle. 
@@ -295,7 +295,7 @@ triangles containing `r` in their circumcircle.
 - `store_event_history=Val(false)`: If `true`, then the event history from the insertion is stored.
 - `event_history=nothing`: The event history to store the event history in. Should be an [`InsertionEventHistory`](@ref) if `store_event_history` is `true`, and `false` otherwise.
 - `peek=Val(false)`: Whether to actually add `new_point` into `tri`, or just record into `event_history` all the changes that would occur from its insertion.
-- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
 # Output
 There are no changes, but `tri` is updated in-place.
@@ -311,7 +311,7 @@ This function works as follows:
    `(i, j)` is a segment, then the situation is more complicated. In particular, `r` being on an edge of `V` might imply that we are going to add a degenerate triangle `(r, i, j)` into `tri`, 
    and so this needs to be avoided. So, we check if `is_on(flag) && contains_segment(tri, i, j)` and, if the edge that `r` is on is `(i, j)`, we add the triangle `(r, i, j)`. Otherwise, we do nothing.
 """
-function dig_cavity!(tri::Triangulation, r, i, j, ℓ, flag, V, store_event_history=Val(false), event_history=nothing, peek::F=Val(false), predicates::AbstractPredicateKernel=Adaptive()) where {F}
+function dig_cavity!(tri::Triangulation, r, i, j, ℓ, flag, V, store_event_history=Val(false), event_history=nothing, peek::F=Val(false), predicates::AbstractPredicateKernel=AdaptiveKernel()) where {F}
     if !edge_exists(ℓ)
         # The triangle has already been deleted in this case.
         return tri
@@ -357,7 +357,7 @@ function dig_cavity!(tri::Triangulation, r, i, j, ℓ, flag, V, store_event_hist
     return tri
 end
 
-function add_point_bowyer_watson_onto_segment!(tri::Triangulation, new_point, V, q, flag, update_representative_point=true, store_event_history=Val(false), event_history=nothing, peek::P=Val(false), predicates::AbstractPredicateKernel=Adaptive()) where {P}
+function add_point_bowyer_watson_onto_segment!(tri::Triangulation, new_point, V, q, flag, update_representative_point=true, store_event_history=Val(false), event_history=nothing, peek::P=Val(false), predicates::AbstractPredicateKernel=AdaptiveKernel()) where {P}
     _new_point = is_true(peek) ? num_points(tri) + 1 : new_point # If we are peeking, then we need to use the number of points in the triangulation as the index for the new point since we don't actually insert the point
     if is_on(flag) && is_constrained(tri)
         # If the point we are adding appears on a segment, then we perform the depth-first search 
@@ -408,7 +408,7 @@ Computes the unconstrained Delaunay triangulation of the points in `tri`.
 - `tri`: The triangulation.
 
 # Keyword Arguments 
-- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 - `randomise=true`: If `true`, then the insertion order is randomised. Otherwise, the insertion order is the same as the order of the points.
 - `skip_points=()`: The vertices to skip. 
 - `num_sample_rule::M=default_num_samples`: The rule to use to determine the number of points to sample. See [`default_num_samples`](@ref) for the default.
@@ -419,7 +419,7 @@ Computes the unconstrained Delaunay triangulation of the points in `tri`.
 There is no output, but `tri` is updated in-place.
 """
 function unconstrained_triangulation!(tri::Triangulation;
-    predicates::AbstractPredicateKernel=Adaptive(),
+    predicates::AbstractPredicateKernel=AdaptiveKernel(),
     randomise=true,
     try_last_inserted_point=true,
     skip_points=(),

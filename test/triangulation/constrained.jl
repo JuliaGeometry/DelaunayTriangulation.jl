@@ -45,7 +45,7 @@ end
 end
 
 @testset "Random parabolas" begin
-    for PT in (DT.Exact, DT.Adaptive)
+    for PT in (DT.ExactKernel, DT.AdaptiveKernel)
         for i in 1:5
             @info "Testing random parabolas. Run: $i. Predicates: $PT"
             rng = StableRNG(i)
@@ -99,7 +99,7 @@ end
 end
 
 @testset "Lattice" begin
-    for PT in (DT.Exact, DT.Adaptive)
+    for PT in (DT.ExactKernel, DT.AdaptiveKernel)
         for m in 1:2
             @info "Testing dense lattice. Run: $m. Predicates: $PT"
             rng = StableRNG(m)
@@ -197,7 +197,7 @@ end
 end
 
 @testset "Triangulation with two curves" begin
-    for PT in (DT.Exact, DT.Adaptive)
+    for PT in (DT.ExactKernel, DT.AdaptiveKernel)
         for i in 1:5
             @info "Testing triangulation of a domain with two curves: Run $i. Predicates: $PT"
             rng = StableRNG(i)

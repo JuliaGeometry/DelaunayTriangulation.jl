@@ -398,7 +398,7 @@ end
         end
 
         @testset "Testing how add_point! handles points on existing boundary segments" begin
-            for PT in (DT.Exact, DT.Adaptive)
+            for PT in (DT.ExactKernel, DT.AdaptiveKernel)
                 for _ in 1:5
                     points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
                     tri = triangulate(points; boundary_nodes=[1, 2, 3, 4, 1], randomise=false, predicates=PT())
@@ -1710,7 +1710,7 @@ end
 end
 
 @testset "enqueueing and splitting all encroached segments" begin
-    for PT in (DT.Exact, DT.Adaptive)
+    for PT in (DT.ExactKernel, DT.AdaptiveKernel)
         for iii in 1:5
             for use_lens in (false, true)
                 for pass in 1:2
@@ -2582,7 +2582,7 @@ end
     end
 
     @testset "Small angles" begin
-        for PT in (DT.Exact, DT.Adaptive)
+        for PT in (DT.ExactKernel, DT.AdaptiveKernel)
             ps = 0
             fig = Figure(fontsize=52)
             for i in 1:12
@@ -2789,7 +2789,7 @@ end
     #=
     if !(get(ENV, "CI", "false") == "true")
         @testset "Tasmania" begin
-            for PT in (DT.Exact, DT.Adaptive)
+            for PT in (DT.ExactKernel, DT.AdaptiveKernel)
                 @info "Testing refinement of Tasmnia. Predicates: $PT"
                 rng = StableRNG(123)
                 tassy_path = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "test", "tassy.txt")
@@ -2813,7 +2813,7 @@ end
     =#
 
     @testset "Test that nothing is breaking for Float32 inputs" begin
-        for PT in (DT.Exact, DT.Adaptive)
+        for PT in (DT.ExactKernel, DT.AdaptiveKernel)
             for i in 1:25
                 p1 = (0.0f0, 0.0f0)
                 p2 = (1.0f0, 0.0f0)

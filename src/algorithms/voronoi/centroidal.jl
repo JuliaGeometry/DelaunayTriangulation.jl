@@ -40,7 +40,7 @@ function default_displacement_tolerance(vorn::VoronoiTessellation)
 end
 
 """
-    _centroidal_smooth_itr(vorn::VoronoiTessellation, set_of_boundary_nodes, points, rng, predicates::AbstractPredicateKernel=Adaptive(); kwargs...) -> (VoronoiTessellation, Number)
+    _centroidal_smooth_itr(vorn::VoronoiTessellation, set_of_boundary_nodes, points, rng, predicates::AbstractPredicateKernel=AdaptiveKernel(); kwargs...) -> (VoronoiTessellation, Number)
 
 Performs a single iteration of the centroidal smoothing algorithm. 
 
@@ -49,7 +49,7 @@ Performs a single iteration of the centroidal smoothing algorithm.
 - `set_of_boundary_nodes`: The set of boundary nodes in the underlying triangulation.
 - `points`: The underlying point set. This is a `deepcopy` of the points of the underlying triangulation.
 - `rng`: The random number generator.
-- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
 # Keyword Arguments
 - `kwargs...`: Extra keyword arguments passed to [`retriangulate`](@ref).
@@ -58,7 +58,7 @@ Performs a single iteration of the centroidal smoothing algorithm.
 - `vorn`: The updated [`VoronoiTessellation`](@ref).
 - `max_dist`: The maximum distance moved by any generator.
 """
-function _centroidal_smooth_itr(vorn::VoronoiTessellation, set_of_boundary_nodes, points, rng, predicates::AbstractPredicateKernel=Adaptive(); kwargs...)
+function _centroidal_smooth_itr(vorn::VoronoiTessellation, set_of_boundary_nodes, points, rng, predicates::AbstractPredicateKernel=AdaptiveKernel(); kwargs...)
     F = number_type(vorn)
     max_dist = zero(F)
     for i in each_generator(vorn)
@@ -73,7 +73,7 @@ function _centroidal_smooth_itr(vorn::VoronoiTessellation, set_of_boundary_nodes
 end
 
 """
-    centroidal_smooth(vorn::VoronoiTessellation; maxiters=1000, tol=default_displacement_tolerance(vorn), rng=Random.default_rng(), predicates::AbstractPredicateKernel=Adaptive(), kwargs...) -> VoronoiTessellation
+    centroidal_smooth(vorn::VoronoiTessellation; maxiters=1000, tol=default_displacement_tolerance(vorn), rng=Random.default_rng(), predicates::AbstractPredicateKernel=AdaptiveKernel(), kwargs...) -> VoronoiTessellation
 
 Smooths `vorn` into a centroidal tessellation so that the new tessellation is of a set of generators whose associated Voronoi polygon is that polygon's centroid.
 
@@ -84,7 +84,7 @@ Smooths `vorn` into a centroidal tessellation so that the new tessellation is of
 - `maxiters=1000`: The maximum number of iterations.
 - `tol=default_displacement_tolerance(vorn)`: The displacement tolerance. See [`default_displacement_tolerance`](@ref) for the default. 
 - `rng=Random.default_rng()`: The random number generator.
-- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 - `kwargs...`: Extra keyword arguments passed to [`retriangulate`](@ref).
 
 # Outputs 
@@ -94,7 +94,7 @@ Smooths `vorn` into a centroidal tessellation so that the new tessellation is of
 The algorithm is simple. We iteratively smooth the generators, moving them to the centroid of their associated Voronoi polygon for the current tessellation, 
 continuing until the maximum distance moved of any generator is less than `tol`. Boundary generators are not moved.
 """
-function centroidal_smooth(vorn::VoronoiTessellation; maxiters=1000, tol=default_displacement_tolerance(vorn), rng=Random.default_rng(), predicates::AbstractPredicateKernel=Adaptive(), kwargs...) 
+function centroidal_smooth(vorn::VoronoiTessellation; maxiters=1000, tol=default_displacement_tolerance(vorn), rng=Random.default_rng(), predicates::AbstractPredicateKernel=AdaptiveKernel(), kwargs...) 
     iter = 0
     F = number_type(vorn)
     max_dist = typemax(F)

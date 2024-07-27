@@ -19,7 +19,7 @@ A struct for storing arguments for mesh refinement.
 - `had_ghosts::Bool`: Whether the triangulation initially had ghost triangles or not.
 - `rng::R`: The random number generator.
 - `concavity_protection::Bool`: Whether to use concavity protection or not for [`find_triangle`](@ref). Most likely not needed, but may help in pathological cases.
-- `predicates::P<:AbstractPredicateKernel`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::P<:AbstractPredicateKernel`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
 # Constructors 
 In addition to the default constructor, we provide 
@@ -73,7 +73,7 @@ function RefinementArguments(tri::Triangulation;
     steiner_scale=0.999,
     rng=Random.default_rng(),
     concavity_protection=false,
-    predicates::AbstractPredicateKernel=Adaptive())
+    predicates::AbstractPredicateKernel=AdaptiveKernel())
     if !use_circumcenter
         throw(ArgumentError("Generalised Steiner points are not yet implemented."))
     end

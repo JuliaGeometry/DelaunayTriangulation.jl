@@ -29,7 +29,7 @@ For the keyword arguments below, you may like to review the extended help as som
 - `boundary_nodes=nothing`: The boundary nodes to include in the triangulation. If `nothing`, then no boundary nodes are included, and the convex hull of `points` remains as the triangulation. These boundary nodes 
    should match the specification given in [`check_args`](@ref) if a boundary is provided as a set of vertices, meaning the boundary is a piecewise linear curve. To specify a curve-bounded domain, you should 
    follow the same specification, but use [`AbstractParametricCurve`](@ref)s to fill out the vector, and any piecewise linear section should still be provided as a sequence of vertices. 
-- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 - `weights=ZeroWeight()`: NOT CURRENTLY IMPLEMENTED. The weights to use for the triangulation. By default, the triangulation is unweighted. The weights can also be provided as a vector, with the `i`th weight referring to the `i`th vertex, or more generally any object that defines [`get_weight`](@ref). The weights should be `Float64`.
 - `IntegerType=Int`: The integer type to use for the triangulation. This is used for representing vertices.
 - `EdgeType=isnothing(segments) ? NTuple{2,IntegerType} : (edge_type ∘ typeof)(segments)`: The edge type to use for the triangulation. 
@@ -119,7 +119,7 @@ Here are some warnings to consider for some of the arguments.
 function triangulate(points::P;
     segments=nothing,
     boundary_nodes=nothing,
-    predicates::AbstractPredicateKernel=Adaptive(),
+    predicates::AbstractPredicateKernel=AdaptiveKernel(),
     weights=ZeroWeight(),
     IntegerType::Type{I}=Int,
     EdgeType::Type{E}=isnothing(segments) ? NTuple{2,IntegerType} : (edge_type ∘ typeof)(segments),
@@ -157,7 +157,7 @@ function triangulate(points::P;
 end
 
 function check_config(points, weights, segments, boundary_nodes, kernel)
-    (number_type(points) == Float32 && kernel != Adaptive()) && @warn "Using non-Float64 coordinates may cause issues. If you run into problems, consider using Float64 coordinates." maxlog=1
+    (number_type(points) == Float32 && kernel != AdaptiveKernel()) && @warn "Using non-Float64 coordinates may cause issues. If you run into problems, consider using Float64 coordinates." maxlog=1
     is_weighted(weights) && throw(ArgumentError("Weighted triangulations are not yet fully implemented."))
     is_constrained = !(isnothing(segments) || isempty(segments)) || !(isnothing(boundary_nodes) || !has_boundary_nodes(boundary_nodes))
     is_weighted(weights) && is_constrained && throw(ArgumentError("You cannot compute a constrained triangulation with weighted points."))

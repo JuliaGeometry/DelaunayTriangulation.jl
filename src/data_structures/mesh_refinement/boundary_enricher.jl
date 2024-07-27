@@ -775,7 +775,7 @@ end
 end
 
 """
-    point_position_relative_to_curve([kernel::AbstractPredicateKernel=Adaptive(),] enricher::BoundaryEnricher, curve_index, p) -> Certificate
+    point_position_relative_to_curve([kernel::AbstractPredicateKernel=AdaptiveKernel(),] enricher::BoundaryEnricher, curve_index, p) -> Certificate
 
 Returns a [`Certificate`](@ref) which is 
 
@@ -784,18 +784,18 @@ Returns a [`Certificate`](@ref) which is
 - `On`: If `p` is on the `curve_index`th curve.
 
 The `kernel` argument determines how this result is computed, and should be 
-one of [`Exact`](@ref), [`Fast`](@ref), and [`Adaptive`](@ref) (the default).
+one of [`ExactKernel`](@ref), [`FastKernel`](@ref), and [`AdaptiveKernel`](@ref) (the default).
 See the documentation for more information about these choices.
 """
 @inline function point_position_relative_to_curve(kernel::AbstractPredicateKernel, enricher::BoundaryEnricher, curve_index, p)
     boundary_curves = get_boundary_curves(enricher)
     return point_position_relative_to_curve(kernel, boundary_curves, curve_index, p)
 end
-@inline point_position_relative_to_curve(enricher::BoundaryEnricher, curve_index, p) = point_position_relative_to_curve(Adaptive(), enricher, curve_index, p)
+@inline point_position_relative_to_curve(enricher::BoundaryEnricher, curve_index, p) = point_position_relative_to_curve(AdaptiveKernel(), enricher, curve_index, p)
 @inline function point_position_relative_to_curve(kernel::AbstractPredicateKernel, boundary_curves::C, curve_index, p) where {C<:Tuple}
     return eval_fnc_at_het_tuple_element_with_arg_and_prearg(point_position_relative_to_curve, boundary_curves, kernel, (p,), curve_index)
 end
-@inline point_position_relative_to_curve(boundary_curves::C, curve_index, p) where {C<:Tuple} = point_position_relative_to_curve(Adaptive(),boundary_curves,curve_index,p)
+@inline point_position_relative_to_curve(boundary_curves::C, curve_index, p) where {C<:Tuple} = point_position_relative_to_curve(AdaptiveKernel(),boundary_curves,curve_index,p)
 
 """
     angle_between(enricher::BoundaryEnricher, curve_index1, curve_index2) -> Float64 

@@ -31,7 +31,7 @@ See the documentation for more information about mesh refinement, e.g. convergen
 - `steiner_scale=0.999`: The perturbation factor to use for generalised Steiner points if `use_circumcenter=false`. (Not currently used - see above.)
 - `rng=Random.default_rng()`: The random number generator to use in case it is needed during point location.
 - `concavity_protection=false`: Whether to use concavity protection or not for [`find_triangle`](@ref). Most likely not needed, but may help in pathological cases.
-- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
 # Output 
 The triangulation is refined in-place.
@@ -301,7 +301,7 @@ indicating that it should no longer be regarded as a free vertex (see [`is_free`
 - `V′`: The triangle that the Steiner point is in.
 - `new_point`: The vertex associated with the Steiner point.
 - `flag`: A [`Certificate`](@ref) which is `Cert.On` if the Steiner point is on the boundary of `V`, `Cert.Outside` if the Steiner point is outside of `V`, and `Cert.Inside` if the Steiner point is inside of `V`.
-- `predicates::AbstractPredicateKernel`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
 # Output
 - `onflag`: Whether the Steiner point is on a segment or not.
@@ -490,7 +490,7 @@ Determines if the vertices of a segment `e` of `tri` adjoin other segments at an
 - `num_adjoin`: The number of vertices of `e` that adjoin other segments at an acute angle.
 - `adjoin_vert`: The vertex of `e` that adjoins another segment at an acute angle if `num_adjoin == 1`, and `∅` otherwise.
 """
-function segment_vertices_adjoin_other_segments_at_acute_angle(tri::Triangulation, e, predicates::AbstractPredicateKernel=Adaptive())
+function segment_vertices_adjoin_other_segments_at_acute_angle(tri::Triangulation, e, predicates::AbstractPredicateKernel=AdaptiveKernel())
     u, v = edge_vertices(e)
     p, q = get_point(tri, u, v)
     I = integer_type(tri)

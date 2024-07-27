@@ -1,5 +1,5 @@
 """
-    triangulate_convex(points, S; delete_ghosts=false, delete_empty_features=true, rng=Random.default_rng(), predicates::AbstractPredicateKernel=Adaptive(), kwargs...) -> Triangulation
+    triangulate_convex(points, S; delete_ghosts=false, delete_empty_features=true, rng=Random.default_rng(), predicates::AbstractPredicateKernel=AdaptiveKernel(), kwargs...) -> Triangulation
 
 Triangulates the convex polygon `S`.
 
@@ -11,7 +11,7 @@ Triangulates the convex polygon `S`.
 - `delete_ghosts=false`: If `true`, the ghost triangles are deleted after triangulation. 
 - `delete_empty_features=true`: If `true`, the empty features are deleted after triangulation.
 - `rng=Random.default_rng()`: The random number generator used to shuffle the vertices of `S` before triangulation.
-- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 - `kwargs...`: Additional keyword arguments passed to `Triangulation`.
 
 !!! note "Weighted triangulations"
@@ -26,7 +26,7 @@ function triangulate_convex(points, S;
     rng::Random.AbstractRNG=Random.default_rng(),
     delete_ghosts=false,
     delete_empty_features=true,
-    predicates::AbstractPredicateKernel=Adaptive(),
+    predicates::AbstractPredicateKernel=AdaptiveKernel(),
     kwargs...)
     tri = Triangulation(points; kwargs...)
     triangulate_convex!(tri, S; predicates, rng)
@@ -35,7 +35,7 @@ function triangulate_convex(points, S;
 end
 
 """
-    triangulate_convex!(tri::Triangulation, S; rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateKernel=Adaptive())
+    triangulate_convex!(tri::Triangulation, S; rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateKernel=AdaptiveKernel())
 
 Triangulates the convex polygon `S` in-place into `tri`.
 
@@ -45,13 +45,13 @@ Triangulates the convex polygon `S` in-place into `tri`.
 
 # Keyword Arguments
 - `rng=Random.default_rng()`: The random number generator used to shuffle the vertices of `S` before triangulation.
-- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs 
 There is no output, as `tri` is updated in-place. This function does not do any post-processing, e.g. deleting any ghost triangles. This is done by 
 [`triangulate_convex`](@ref) or [`postprocess_triangulate_convex!`](@ref).
 """
-function triangulate_convex!(tri::Triangulation, S; rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateKernel=Adaptive())
+function triangulate_convex!(tri::Triangulation, S; rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateKernel=AdaptiveKernel())
     list = ShuffledPolygonLinkedList(S; rng)
     delete_vertices_in_random_order!(list, tri, rng, predicates)
     u, v, w = get_triplet(list, 1)
@@ -74,7 +74,7 @@ collinear, then the deletion is attempted again after reshuffling the vertices.
 - `list::ShuffledPolygonLinkedList`: The linked list representing the polygon to be deleted.
 - `tri::Triangulation`: The [`Triangulation`](@ref). 
 - `rng::Random.AbstractRNG`: The random number generator used to shuffle the vertices of `S`. 
-- `predicates::AbstractPredicateKernel`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs
 There is no output, as `list` is modified in-place.
@@ -97,7 +97,7 @@ function delete_vertices_in_random_order!(list::ShuffledPolygonLinkedList, tri::
 end
 
 """
-    add_point_convex_triangulation!(tri::Triangulation, u, v, w, S, predicates::AbstractPredicateKernel=Adaptive())
+    add_point_convex_triangulation!(tri::Triangulation, u, v, w, S, predicates::AbstractPredicateKernel=AdaptiveKernel())
 
 Adds the point `u` into the triangulation `tri`.
 
@@ -107,7 +107,7 @@ Adds the point `u` into the triangulation `tri`.
 - `v`: The vertex next to `u`.
 - `w`: The vertex previous to `u`.
 - `S`: The set of vertices of the polygon.
-- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs
 There is no output, as `tri` is modified in-place.
@@ -122,7 +122,7 @@ to make.
 2. For this method to be efficient, the set `x ∈ S` must be `O(1)` time. This is why we use a `Set` type for `S`.
 3. The algorithm is recursive, recursively digging further through the polygon to find non-Delaunay edges to adjoins with `u`.
 """
-function add_point_convex_triangulation!(tri::Triangulation, u, v, w, S, predicates::AbstractPredicateKernel=Adaptive())
+function add_point_convex_triangulation!(tri::Triangulation, u, v, w, S, predicates::AbstractPredicateKernel=AdaptiveKernel())
     x = get_adjacent(tri, w, v)
     if edge_exists(x) && is_inside(point_position_relative_to_circumcircle(predicates, tri, u, v, w, x))
         # uvw and wvx are not Delaunay 

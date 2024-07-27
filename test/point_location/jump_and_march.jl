@@ -122,7 +122,7 @@ rep[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
         end
 
         @testset "Test that we can find a point in every triangle" begin
-            for PT in (DT.Exact, DT.Adaptive)
+            for PT in (DT.ExactKernel, DT.AdaptiveKernel)
                 for run in 1:6
                     for V in each_triangle(tri.triangles)
                         rand() < 0.25 && continue # skip 75%
@@ -161,7 +161,7 @@ rep[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
     end
 
     @testset "Test that we don't break for points already in the triangulation" begin
-        for PT in (DT.Exact, DT.Adaptive)
+        for PT in (DT.ExactKernel, DT.AdaptiveKernel)
             for _ in 1:6
                 for k in DT.each_solid_vertex(tri)
                     rand() < 1 / 3 && continue

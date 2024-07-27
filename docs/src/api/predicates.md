@@ -38,9 +38,9 @@ is_below
 
 ```@docs
 AbstractPredicateKernel 
-Fast 
-Exact 
-Adaptive
+FastKernel 
+ExactKernel 
+AdaptiveKernel
 orient_predicate 
 incircle_predicate 
 parallelorder_predicate

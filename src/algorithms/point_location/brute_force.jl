@@ -11,7 +11,7 @@ function Base.showerror(io::IO, e::PointNotFoundError)
 end
 
 """
-    brute_force_search(tri::Triangulation, q; itr = each_triangle(tri), predicates::AbstractPredicateKernel=Adaptive())
+    brute_force_search(tri::Triangulation, q; itr = each_triangle(tri), predicates::AbstractPredicateKernel=AdaptiveKernel())
 
 Searches for the triangle containing the point `q` by brute force. An exception will be 
 raised if no triangle contains the point.
@@ -24,12 +24,12 @@ See also [`find_triangle`](@ref).
 
 # Keyword Arguments 
 - `itr = each_triangle(tri)`: The iterator over the triangles of the triangulation.
-- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
 # Output 
 - `V`: The triangle containing the point `q`.
 """
-function brute_force_search(tri::Triangulation, q; itr=each_triangle(tri), predicates::AbstractPredicateKernel=Adaptive())
+function brute_force_search(tri::Triangulation, q; itr=each_triangle(tri), predicates::AbstractPredicateKernel=AdaptiveKernel())
     for V in itr
         cert = point_position_relative_to_triangle(predicates, tri, V, q)
         !is_outside(cert) && return V
@@ -38,14 +38,14 @@ function brute_force_search(tri::Triangulation, q; itr=each_triangle(tri), predi
 end
 
 """
-    brute_force_search_enclosing_circumcircle(tri::Triangulation, i, predicates::AbstractPredicateKernel=Adaptive()) -> Triangle 
+    brute_force_search_enclosing_circumcircle(tri::Triangulation, i, predicates::AbstractPredicateKernel=AdaptiveKernel()) -> Triangle 
 
 Searches for a triangle in `tri` containing the vertex `i` in its circumcircle using brute force. If 
 `tri` is a weighted Delaunay triangulation, the triangle returned instead has the lifted vertex `i` 
 below its witness plane. If no such triangle exists, `($∅, $∅, $∅)` is returned. You can control 
 the method used for computing predicates via the `predicates` argument.
 """
-function brute_force_search_enclosing_circumcircle(tri::Triangulation, i, predicates::AbstractPredicateKernel=Adaptive())
+function brute_force_search_enclosing_circumcircle(tri::Triangulation, i, predicates::AbstractPredicateKernel=AdaptiveKernel())
     for V in each_triangle(tri)
         cert = point_position_relative_to_circumcircle(predicates, tri, V, i)
         !is_outside(cert) && return V

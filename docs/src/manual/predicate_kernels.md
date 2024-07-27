@@ -6,16 +6,16 @@ CurrentModule = DelaunayTriangulation
 
 By default, this package uses adaptive arithmetic via [AdaptivePredicates.jl](https://github.com/JuliaGeometry/AdaptivePredicates.jl) for computing predicates.
 In total, there are three different kernels offered for computing predicates:
-- `Fast()`: Predicates will be computed without any adaptive or exact arithmetic. 
-- `Adaptive()`: Predicates will be computed using adaptive arithmetic via [AdaptivePredicates.jl](https://github.com/JuliaGeometry/AdaptivePredicates.jl).
-- `Exact()`: Predicates will be computed using exact arithmetic via [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl). 
+- `FastKernel()`: Predicates will be computed without any adaptive or exact arithmetic. 
+- `AdaptiveKernel()`: Predicates will be computed using adaptive arithmetic via [AdaptivePredicates.jl](https://github.com/JuliaGeometry/AdaptivePredicates.jl).
+- `ExactKernel()`: Predicates will be computed using exact arithmetic via [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl). 
 
 There are clear strengths and weaknesses to each of these choices. To summarise them, here is when each kernel should be considered:
-- `Fast()`: This kernel can be safely used when you know that there are no collinear points or cocircular points in your data set. It may still work even in those cases, but it can not be safely relied upon. If you trust that there are no issues, this should be the kernel you use as it is the fastest. If you run into issues while using this kernel, please use try `Adaptive()`.
-- `Adaptive()`: This is the kernel we use by default. It has performance that is reasonably close to what is offered by `Fast()`, except it also guarantees that predicates will return the correct result even with collinear points or cocircular points, or in other degenerate cases where one typically expects predicates to be problematic. If you are using `Fast()` and run into issues, this should be the next kernel you try.
-- `Exact()`: This is the slowest kernel, but it is the safest. This kernel works on a much wider range of numbers than `Adaptive()`, and is guaranteed to satisfy certain combinatorial properties such as `orient(a, b, c) == orient(b, c, a) == orient(c, a, b)`. I have not seen any examples  where `Adaptive()` fails but `Exact()` works, though, so you should only consider using this kernel if you do actually encounter such a case, i.e. treat this kernel as a fallback for `Adaptive()`.
+- `FastKernel()`: This kernel can be safely used when you know that there are no collinear points or cocircular points in your data set. It may still work even in those cases, but it can not be safely relied upon. If you trust that there are no issues, this should be the kernel you use as it is the fastest. If you run into issues while using this kernel, please use try `AdaptiveKernel()`.
+- `AdaptiveKernel()`: This is the kernel we use by default. It has performance that is reasonably close to what is offered by `FastKernel()`, except it also guarantees that predicates will return the correct result even with collinear points or cocircular points, or in other degenerate cases where one typically expects predicates to be problematic. If you are using `FastKernel()` and run into issues, this should be the next kernel you try.
+- `ExactKernel()`: This is the slowest kernel, but it is the safest. This kernel works on a much wider range of numbers than `AdaptiveKernel()`, and is guaranteed to satisfy certain combinatorial properties such as `orient(a, b, c) == orient(b, c, a) == orient(c, a, b)`. I have not seen any examples  where `AdaptiveKernel()` fails but `ExactKernel()` works, though, so you should only consider using this kernel if you do actually encounter such a case, i.e. treat this kernel as a fallback for `AdaptiveKernel()`.
 
-We give a discussion below about why robust arithmetic is actually important, to help you understand these choices. A key point is that it is highly advised that you do not use `Fast()`.
+We give a discussion below about why robust arithmetic is actually important, to help you understand these choices. A key point is that it is highly advised that you do not use `FastKernel()`.
 
 ## Why use robust predicates?
 
@@ -56,15 +56,15 @@ although this is less problematic due to the design of the adaptive predicates; 
 
 ## Will disabling exact predicates give me better performance?
 
-It is also not even the case that using inexact predicates will give you better performance than if you were to use robust predicates. `Adaptive()`'s performance is typically similar to `Fast()`, with the exception of queries on collinear points. This exception is irrelevant, though, as `Fast()` is not even 
-reliable when used on collinear points. `Exact()` is a bit slower, but its performance is still not terrible compared to `Fast()` since ExactPredicates.jl
-uses clever filters that typically do as much work as `Fast()` or `Adaptive()` would. Thus, the only cases where performance is improved significantly using `Fast()` is exactly in the cases where you do not want to be using `Fast()`.
+It is also not even the case that using inexact predicates will give you better performance than if you were to use robust predicates. `AdaptiveKernel()`'s performance is typically similar to `FastKernel()`, with the exception of queries on collinear points. This exception is irrelevant, though, as `FastKernel()` is not even 
+reliable when used on collinear points. `ExactKernel()` is a bit slower, but its performance is still not terrible compared to `FastKernel()` since ExactPredicates.jl
+uses clever filters that typically do as much work as `FastKernel()` or `AdaptiveKernel()` would. Thus, the only cases where performance is improved significantly using `FastKernel()` is exactly in the cases where you do not want to be using `FastKernel()`.
 
-You should always benchmark your problems to see if using `Fast()` over the robust kernels `Adaptive()` or `Exact()`, if you choose to do, will actually give you better performance.
+You should always benchmark your problems to see if using `FastKernel()` over the robust kernels `AdaptiveKernel()` or `ExactKernel()`, if you choose to do, will actually give you better performance.
 
 ## Can I check if my computed triangulation is valid?
 
-When you are not using robust predicates, you may want to check if your computed triangulation is actually a valid Delaunay triangulation. We provide the function `DelaunayTriangulation.validate_triangulation` for this purpose. This functionality is quite slow to use and is not currently optimised or well-documented (contributions towards addressing these issues are welcome), but it will work. One important note is that this check does actually use predicates in certain areas, so this check is still not guaranteed to be 100% accurate without robust predicates (by default, `validate_triangulation` will use the `Exact()` kernel). Here is an example of its use.
+When you are not using robust predicates, you may want to check if your computed triangulation is actually a valid Delaunay triangulation. We provide the function `DelaunayTriangulation.validate_triangulation` for this purpose. This functionality is quite slow to use and is not currently optimised or well-documented (contributions towards addressing these issues are welcome), but it will work. One important note is that this check does actually use predicates in certain areas, so this check is still not guaranteed to be 100% accurate without robust predicates (by default, `validate_triangulation` will use the `ExactKernel()` kernel). Here is an example of its use.
 
 ```julia
 using DelaunayTriangulation

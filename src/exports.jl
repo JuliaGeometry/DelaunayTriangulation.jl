@@ -100,4 +100,7 @@ export
     get_boundary_curves,
     map_ghost_vertex,
     polygon_bounds,
-    num_neighbours
+    num_neighbours,
+    FastKernel,
+    AdaptiveKernel,
+    ExactKernel

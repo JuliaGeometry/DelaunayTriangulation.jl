@@ -578,7 +578,7 @@ function min_med_max(a, b, c)
 end
 
 """
-    triangle_sink(tri::Triangulation, T; predicates::AbstractPredicateKernel=Adaptive()) -> (Number, Number)
+    triangle_sink(tri::Triangulation, T; predicates::AbstractPredicateKernel=AdaptiveKernel()) -> (Number, Number)
 
 Computes the sink of the triangle `T` in `tri`. See [this paper](https://doi.org/10.1145/378583.378644) for more information.
 Use the `predicates` argument to control how predicates are computed.
@@ -595,7 +595,7 @@ Sinks were introduced in [this paper](https://doi.org/10.1145/378583.378644). Fo
 In cases where the triangulation has holes, this definition can lead to loops. In such a case, we just pick one of the triangles 
 in the loop as the sink triangle.
 """
-function triangle_sink(tri::Triangulation, T, prev_T=construct_triangle(triangle_type(tri), integer_type(tri)(∅), integer_type(tri)(∅), integer_type(tri)(∅)); predicates::AbstractPredicateKernel=Adaptive())
+function triangle_sink(tri::Triangulation, T, prev_T=construct_triangle(triangle_type(tri), integer_type(tri)(∅), integer_type(tri)(∅), integer_type(tri)(∅)); predicates::AbstractPredicateKernel=AdaptiveKernel())
     # TODO: This function would be faster if we just always search away from the largest angle.
     T = sort_triangle(T)
     c = triangle_circumcenter(tri, T)

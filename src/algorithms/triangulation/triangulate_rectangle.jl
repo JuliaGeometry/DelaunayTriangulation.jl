@@ -20,7 +20,7 @@ Triangulates the rectangle `[a, b] × [c, d]`.
 - `TriangleType::Type{V}=NTuple{3,IntegerType}`: The type of the triangles.
 - `EdgesType::Type{Es}=Set{EdgeType}`: The type of the edges container.
 - `TrianglesType::Type{Ts}=Set{TriangleType}`: The type of the triangles container.
-- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs 
 - `tri`: The triangulation of the rectangle.
@@ -33,12 +33,12 @@ Triangulates the rectangle `[a, b] × [c, d]`.
     TriangleType::Type{V}=NTuple{3,IntegerType},
     EdgesType::Type{Es}=Set{EdgeType},
     TrianglesType::Type{Ts}=Set{TriangleType},
-    predicates::AbstractPredicateKernel=Adaptive()) where {I,E,V,Es,Ts}
+    predicates::AbstractPredicateKernel=AdaptiveKernel()) where {I,E,V,Es,Ts}
     return _triangulate_rectangle(a, b, c, d, nx, ny, I, E, V, Es, Ts, single_boundary, delete_ghosts, predicates)
 end
 @inline function _triangulate_rectangle(a, b, c, d, nx, ny,
     ::Type{I}, ::Type{E}, ::Type{V}, ::Type{Es}, ::Type{Ts},
-    single_boundary, delete_ghosts, predicates::AbstractPredicateKernel=Adaptive()) where {I,E,V,Es,Ts}
+    single_boundary, delete_ghosts, predicates::AbstractPredicateKernel=AdaptiveKernel()) where {I,E,V,Es,Ts}
     T, sub2ind = get_lattice_triangles(nx, ny, Ts, V)
     points = get_lattice_points(a, b, c, d, nx, ny, sub2ind)
     boundary_nodes = get_lattice_boundary(nx, ny, sub2ind, Val(single_boundary), I)

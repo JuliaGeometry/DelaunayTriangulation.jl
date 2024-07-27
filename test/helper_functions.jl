@@ -128,7 +128,7 @@ function simple_geometry()
     index_map = Dict(["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "ℓ",
         "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "z", "a1",
         "b1"] .=> DT.each_point_index(pts))
-    return DT.Triangulation(pts, T, boundary_nodes, delete_ghosts=true, predicates=DT.Exact()), label_map, index_map
+    return DT.Triangulation(pts, T, boundary_nodes, delete_ghosts=true, predicates=DT.ExactKernel()), label_map, index_map
 end
 
 macro _adj(i, j, k)
@@ -237,7 +237,7 @@ function example_with_special_corners()
     r = [3.0, 8.0]
     pts = [a, b, c, d, e, f, g, h, i, j, k, ℓ, m, n, o, p, q, r]
     rng = StableRNG(29292929292)
-    tri = triangulate(pts; rng, delete_ghosts=false, randomise=false, predicates=DT.Exact())
+    tri = triangulate(pts; rng, delete_ghosts=false, randomise=false, predicates=DT.ExactKernel())
     return tri
 end
 
@@ -273,7 +273,7 @@ function fixed_shewchuk_example_constrained()
     k = [8.0, 2.5]
     pts = [a, b, c, d, e, f, g, h, i, j, k]
     rng = StableRNG(213)
-    tri = triangulate(pts; rng, delete_ghosts=false, randomise=false, predicates=DT.Exact())
+    tri = triangulate(pts; rng, delete_ghosts=false, randomise=false, predicates=DT.ExactKernel())
     return tri
 end
 
@@ -346,7 +346,7 @@ function get_random_vertices_and_constrained_edges(nverts1, nverts2, nedges, rng
     ## To generate a random set of constrained edges, we get a random small triangulation, 
     ## and we just take the edges from that triangulation.
     points = [Tuple(rand(rng, 2)) for _ in 1:nverts1]
-    tri = triangulate(points; predicates=DT.Fast(), rng)
+    tri = triangulate(points; predicates=DT.FastKernel(), rng)
     edges = Set{NTuple{2,Int}}()
     all_edges = collect(each_solid_edge(tri))
     iter = 0
@@ -806,7 +806,7 @@ end
 
 
 ## TODO: Implement a brute-force DT.VoronoiTessellation that we can compare with
-function validate_tessellation(vorn::DT.VoronoiTessellation; check_convex=true, check_adjacent=true, predicates::DT.AbstractPredicateKernel=DT.Adaptive())
+function validate_tessellation(vorn::DT.VoronoiTessellation; check_convex=true, check_adjacent=true, predicates::DT.AbstractPredicateKernel=DT.AdaptiveKernel())
     tri = DT.get_triangulation(vorn)
     for (i, p) in DT.get_generators(vorn)
         flag = get_point(tri, i) == get_generator(vorn, i) == p
@@ -1093,7 +1093,7 @@ function get_points_in_diametral_lens(p, q, lens_angle)
 end
 
 function get_random_convex_polygon(points)
-    tri = triangulate(points; predicates=DT.Exact())
+    tri = triangulate(points; predicates=DT.ExactKernel())
     S = get_convex_hull_vertices(tri)
     pop!(S) # Want S[begin] ≠ S[end]
     return S
@@ -1213,7 +1213,7 @@ function compare_triangle_queues(args::DT.RefinementArguments, manual_enqueue)
     _compare_pairs(_manual_enqueue_pairs, _args_queue_triangle_pairs)
 end
 
-function is_conformal(tri::Triangulation; predicates::DT.AbstractPredicateKernel=DT.Adaptive())
+function is_conformal(tri::Triangulation; predicates::DT.AbstractPredicateKernel=DT.AdaptiveKernel())
     points = get_points(tri)
     segment_tree = DT.BoundaryRTree(points)
     for e in each_segment(tri)
@@ -1361,8 +1361,8 @@ function validate_refinement(tri, args; check_conformal=true, warn=true)
             minθ = min(minθ, t1, t2, t3)
             maxθ = max(maxθ, t1, t2, t3)
         end
-        V = find_triangle(tri, steiner_point; predicates=DT.Exact())
-        flag = DT.point_position_relative_to_triangle(DT.Exact(), tri, V, steiner_point)
+        V = find_triangle(tri, steiner_point; predicates=DT.ExactKernel())
+        flag = DT.point_position_relative_to_triangle(DT.ExactKernel(), tri, V, steiner_point)
         if DT.is_on(flag) && DT.is_ghost_triangle(V)
             V = DT.replace_ghost_triangle_with_boundary_triangle(tri, V)
         end
@@ -1417,7 +1417,7 @@ function validate_refinement(tri, args; check_conformal=true, warn=true)
         end
     end
     if !args.use_lens && check_conformal
-        flag = is_conformal(tri; predicates=DT.Exact())
+        flag = is_conformal(tri; predicates=DT.ExactKernel())
         if !flag
             println("The triangulation is not conformal.")
             return false
@@ -1451,7 +1451,7 @@ function validate_refinement(tri, args; check_conformal=true, warn=true)
     end
     return true
 end
-validate_refinement(tri; check_conformal=true, warn=true, predicates=DT.Exact(), kwargs...) = validate_refinement(tri, DT.RefinementArguments(tri; predicates, kwargs...); warn, check_conformal)
+validate_refinement(tri; check_conformal=true, warn=true, predicates=DT.ExactKernel(), kwargs...) = validate_refinement(tri, DT.RefinementArguments(tri; predicates, kwargs...); warn, check_conformal)
 
 function why_not_equal(tri1, tri2)
     !DT.has_ghost_triangles(tri1) && DT.has_ghost_triangles(tri2) && println("!has_ghost_triangles(tri1) && has_ghost_triangles(tri2)")
@@ -2159,11 +2159,11 @@ function all_diametral_circles_are_empty(enricher::DT.BoundaryEnricher)
             u, v = DT.get_edge(box)
             u, v = DT.reorient_edge(enricher, u, v)
             (u == i || v == i) && continue
-            cert = DT.point_position_relative_to_diametral_circle(DT.Exact(), get_point(points, u, v, i)...)
-            flag = DT.is_inside(cert) && DT.is_visible(DT.test_visibility(DT.Exact(), enricher, u, v, i))
+            cert = DT.point_position_relative_to_diametral_circle(DT.ExactKernel(), get_point(points, u, v, i)...)
+            flag = DT.is_inside(cert) && DT.is_visible(DT.test_visibility(DT.ExactKernel(), enricher, u, v, i))
             if flag
                 p, q = get_point(points, u, v)
-                t, Δθ, ct = DT.compute_split_position(enricher, u, v, DT.Exact())
+                t, Δθ, ct = DT.compute_split_position(enricher, u, v, DT.ExactKernel())
                 flag = flag && !isnan(Δθ)
             end
             rat -= flag
@@ -2226,7 +2226,7 @@ using DelaunayTriangulation:
     test_triangle_orientation,
     test_iterators
 
-rt() = rand((DT.Fast(), DT.Exact(), DT.Adaptive()))
+rt() = rand((DT.FastKernel(), DT.ExactKernel(), DT.AdaptiveKernel()))
 
 export validate_triangulation
 export @_adj

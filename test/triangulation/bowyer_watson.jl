@@ -99,7 +99,7 @@ end
 end
 
 @testset "Lots of collinearity" begin
-    for PT in (DT.Exact, DT.Adaptive)
+    for PT in (DT.ExactKernel, DT.AdaptiveKernel)
         _tri = triangulate_rectangle(-3.0, 2.0, 5.0, 17.3, 23, 57; single_boundary=true)
         @test validate_triangulation(_tri; predicates=PT())
         for _ in 1:25

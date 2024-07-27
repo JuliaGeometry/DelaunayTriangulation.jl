@@ -38,7 +38,7 @@ struct TriangleOrientationState <: AbstractTriangulationState
     bad_triangle::NTuple{3,Int}
     triangle_orientation::Symbol
 end
-TriangleOrientationState(tri; predicates::AbstractPredicateKernel=Exact()) = test_triangle_orientation(tri; predicates)
+TriangleOrientationState(tri; predicates::AbstractPredicateKernel=ExactKernel()) = test_triangle_orientation(tri; predicates)
 function Base.summary(state::TriangleOrientationState)
     if test_state(state)
         return "All the triangles have positive orientation."
@@ -46,7 +46,7 @@ function Base.summary(state::TriangleOrientationState)
         return "The triangle $(state.bad_triangle) is $(state.triangle_orientation) oriented."
     end
 end
-function test_triangle_orientation(tri; predicates::AbstractPredicateKernel=Exact())
+function test_triangle_orientation(tri; predicates::AbstractPredicateKernel=ExactKernel())
     for T in each_solid_triangle(tri)
         cert = triangle_orientation(predicates, tri, T)
         flag = is_positively_oriented(cert)
@@ -61,7 +61,7 @@ struct DelaunayCriterionState <: AbstractTriangulationState
     bad_triangle::NTuple{3,Int}
     bad_vertex::Int
 end
-DelaunayCriterionState(tri; predicates::AbstractPredicateKernel=Exact()) = test_delaunay_criterion(tri; predicates)
+DelaunayCriterionState(tri; predicates::AbstractPredicateKernel=ExactKernel()) = test_delaunay_criterion(tri; predicates)
 function Base.summary(state::DelaunayCriterionState)
     if test_state(state)
         return "All the triangles are Delaunay."
@@ -73,7 +73,7 @@ function Base.summary(state::DelaunayCriterionState)
         end
     end
 end
-function test_delaunay_criterion(tri; predicates::AbstractPredicateKernel=Exact())
+function test_delaunay_criterion(tri; predicates::AbstractPredicateKernel=ExactKernel())
     try
         points = get_points(tri)
         triangle_tree = BoundaryRTree(points)
@@ -191,7 +191,7 @@ function test_visibility(kernel::AbstractPredicateKernel, tri::Triangulation, se
     end
     return all(flags) ? Cert.Invisible : Cert.Visible
 end
-test_visibility(tri::Triangulation, segment_tree, i, j, k, centroid=nothing) = test_visibility(Exact(), tri, segment_tree, i, j, k, centroid)
+test_visibility(tri::Triangulation, segment_tree, i, j, k, centroid=nothing) = test_visibility(ExactKernel(), tri, segment_tree, i, j, k, centroid)
 
 struct EdgesHaveTwoIncidentTrianglesState <: AbstractTriangulationState
     flag::Bool
@@ -866,7 +866,7 @@ struct TriangulationState <: AbstractTriangulationState
     ghost_edge_iterator_state::IteratorState
 end
 
-function TriangulationState(tri::Triangulation; predicates::AbstractPredicateKernel=Exact())
+function TriangulationState(tri::Triangulation; predicates::AbstractPredicateKernel=ExactKernel())
     has_ghosts = has_ghost_triangles(tri)
     delete_ghost_triangles!(tri)
     add_ghost_triangles!(tri)
@@ -915,17 +915,17 @@ function Base.show(io::IO, triangulation_state::TriangulationState)
 end
 
 """
-    validate_triangulation(tri::Triangulation; print_result=true, predicates::AbstractPredicateKernel=Exact()) -> Bool 
+    validate_triangulation(tri::Triangulation; print_result=true, predicates::AbstractPredicateKernel=ExactKernel()) -> Bool 
 
 Tests if `tri` is a valid `Triangulation`. Returns `true` if so, 
 and `false` otherwise. If `print_result=true` and `tri` is not a 
 valid triangulation, all the issues with `tri` will be printed.
 
 Use the `predicates` keyword argument to control the method used for computing predicates. 
-Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). 
+Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). 
 See the documentation for a further discussion of these methods.
 """
-function validate_triangulation(tri::Triangulation; print_result=true, predicates::AbstractPredicateKernel=Exact())
+function validate_triangulation(tri::Triangulation; print_result=true, predicates::AbstractPredicateKernel=ExactKernel())
     state = TriangulationState(tri; predicates)
     print_result && !test_state(state) && println(state)
     return test_state(state)

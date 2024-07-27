@@ -400,8 +400,8 @@ function replace_ghost_vertex_information(tri::Triangulation, ghost_vertex_map, 
 end
 
 """
-    is_vertex_closer_than_neighbours([predicates::AbstractPredicateKernel=Adaptive(),] tri::Triangulation, u, v, jᵢ, jᵢ₋₁, jᵢ₊₁) -> Bool
-    is_vertex_closer_than_neighbours([predicates::AbstractPredicateKernel=Adaptive(),] tri::Triangulation, list::ShuffledPolygonLinkedList, u, v, j) -> Bool
+    is_vertex_closer_than_neighbours([predicates::AbstractPredicateKernel=AdaptiveKernel(),] tri::Triangulation, u, v, jᵢ, jᵢ₋₁, jᵢ₊₁) -> Bool
+    is_vertex_closer_than_neighbours([predicates::AbstractPredicateKernel=AdaptiveKernel(),] tri::Triangulation, list::ShuffledPolygonLinkedList, u, v, j) -> Bool
 
 Tests if the vertex `jᵢ` is closer to the line `(u, v)` than its neighbours `jᵢ₋₁` and `jᵢ₊₁`, assuming all these 
 vertices are to the left of the line.
@@ -409,7 +409,7 @@ vertices are to the left of the line.
 See also [`point_closest_to_line`](@ref).
 
 # Arguments 
-- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 - `tri::Triangulation`: The [`Triangulation`](@ref).
 - `u`, `v`: The vertices of the line. 
 - `jᵢ`, `jᵢ₋₁`, `jᵢ₊₁`: The vertices to compare. 
@@ -430,8 +430,8 @@ function is_vertex_closer_than_neighbours(predicates::AbstractPredicateKernel, t
     jᵢ, jᵢ₋₁, jᵢ₊₁ = get_triplet(list, j)
     return is_vertex_closer_than_neighbours(predicates, tri, u, v, jᵢ, jᵢ₋₁, jᵢ₊₁)
 end
-is_vertex_closer_than_neighbours(tri::Triangulation, u, v, jᵢ, jᵢ₋₁, jᵢ₊₁) = is_vertex_closer_than_neighbours(Adaptive(), tri::Triangulation, u, v, jᵢ, jᵢ₋₁, jᵢ₊₁)
-is_vertex_closer_than_neighbours(tri::Triangulation, list::ShuffledPolygonLinkedList, u, v, j) = is_vertex_closer_than_neighbours(Adaptive(), tri::Triangulation, list::ShuffledPolygonLinkedList, u, v, j)
+is_vertex_closer_than_neighbours(tri::Triangulation, u, v, jᵢ, jᵢ₋₁, jᵢ₊₁) = is_vertex_closer_than_neighbours(AdaptiveKernel(), tri::Triangulation, u, v, jᵢ, jᵢ₋₁, jᵢ₊₁)
+is_vertex_closer_than_neighbours(tri::Triangulation, list::ShuffledPolygonLinkedList, u, v, j) = is_vertex_closer_than_neighbours(AdaptiveKernel(), tri::Triangulation, list::ShuffledPolygonLinkedList, u, v, j)
 
 """
     select_random_vertex(tri::Triangulation, list::ShuffledPolygonLinkedList, u, v, range, rng) -> Vertex 
@@ -444,7 +444,7 @@ Selects a random vertex that is not closer to the line `(u, v)` than both of its
 - `u`, `v`: The vertices of the line.
 - `range`: The range of indices of the vertices to select from.
 - `rng::Random.AbstractRNG`: The random number generator to use.
-- `predicates::AbstractPredicateKernel`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs
 - `j`: The selected vertex.
@@ -493,7 +493,7 @@ Deletes vertices from the polygon defined by `list` in a random order.
 - `tri::Triangulation`: The [`Triangulation`](@ref).
 - `u`, `v`: The vertices of the segment `(u, v)` that was inserted in order to define the polygon `V = list.S`.
 - `rng::Random.AbstractRNG`: The random number generator to use.
-- `predicates::AbstractPredicateKernel`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs
 There is no output, but `list` is updated in-place.
@@ -509,7 +509,7 @@ function delete_polygon_vertices_in_random_order!(list::ShuffledPolygonLinkedLis
 end
 
 """
-    setup_cavity_cdt(tri::Triangulation, V; rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateKernel=Adaptive()) -> ShuffledPolygonLinkedList
+    setup_cavity_cdt(tri::Triangulation, V; rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateKernel=AdaptiveKernel()) -> ShuffledPolygonLinkedList
 
 Prepares the linked list required for triangulating a cavity excavated by segment insertion in a constrained triangulation.
 
@@ -521,12 +521,12 @@ See also [`prepare_vertex_linked_list`](@ref) and [`delete_polygon_vertices_in_r
 
 # Keyword Arguments
 - `rng::Random.AbstractRNG=Random.default_rng()`: The random number generator to use.
-- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs
 - `list::ShuffledPolygonLinkedList`: The linked list of polygon vertices representing the cavity.
 """
-function setup_cavity_cdt(tri::Triangulation, V; rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateKernel=Adaptive())
+function setup_cavity_cdt(tri::Triangulation, V; rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateKernel=AdaptiveKernel())
     v = V[begin]
     u = V[end]
     list = prepare_vertex_linked_list(V)
@@ -535,7 +535,7 @@ function setup_cavity_cdt(tri::Triangulation, V; rng::Random.AbstractRNG=Random.
 end
 
 """
-    triangulate_cavity_cdt!(tri::Triangulation, V, marked_vertices; rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateKernel=Adaptive())
+    triangulate_cavity_cdt!(tri::Triangulation, V, marked_vertices; rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateKernel=AdaptiveKernel())
 
 Triangulates the cavity `V` left behind when deleting triangles intersected in a triangulation by an edge, updating `tri` to do so.
 
@@ -548,12 +548,12 @@ Triangulates the cavity `V` left behind when deleting triangles intersected in a
 
 # Keyword Arguments
 - `rng::Random.AbstractRNG=Random.default_rng()`: The random number generator to use or [`setup_cavity_cdt`](@ref).
-- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs 
 There is no output, but `tri` is updated in-place.
 """
-function triangulate_cavity_cdt!(tri::Triangulation, V, tri_fan::Triangulation, marked_vertices, fan_triangles; rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateKernel=Adaptive())
+function triangulate_cavity_cdt!(tri::Triangulation, V, tri_fan::Triangulation, marked_vertices, fan_triangles; rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateKernel=AdaptiveKernel())
     list = setup_cavity_cdt(tri, V; rng, predicates)
     add_triangle!(tri, V[begin], V[list.shuffled_indices[2]], V[end]; protect_boundary=true, update_ghost_edges=false)
     for i in 3:(list.k-1)
@@ -574,14 +574,14 @@ function triangulate_cavity_cdt!(tri::Triangulation, V, tri_fan::Triangulation, 
 end
 
 """
-    retriangulate_fan!(tri::Triangulation, tri_fan::Triangulation, fan, fan_triangles; predicates::AbstractPredicateKernel=Adaptive(), rng::Random.AbstractRNG=Random.default_rng())
+    retriangulate_fan!(tri::Triangulation, tri_fan::Triangulation, fan, fan_triangles; predicates::AbstractPredicateKernel=AdaptiveKernel(), rng::Random.AbstractRNG=Random.default_rng())
 
 Given a sorted set of vertices `fan` in a fan of triangles associated with `fan_triangles`, retriangulates the fan, updating `tri` to do so and 
 using `tri_fan` as a temporary triangulation. (This implements Lines 17--19 and Line 28 of the algorithms in [this paper](http://dx.doi.org/10.1016/j.comgeo.2015.04.006).)
 
-The `predicates` argument defines the method for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+The `predicates` argument defines the method for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 """
-function retriangulate_fan!(tri::Triangulation, tri_fan::Triangulation, fan, fan_triangles; predicates::AbstractPredicateKernel=Adaptive(), rng::Random.AbstractRNG=Random.default_rng())
+function retriangulate_fan!(tri::Triangulation, tri_fan::Triangulation, fan, fan_triangles; predicates::AbstractPredicateKernel=AdaptiveKernel(), rng::Random.AbstractRNG=Random.default_rng())
     for T in each_triangle(fan_triangles)
         u, v, w = triangle_vertices(T)
         delete_triangle!(tri, u, v, w; protect_boundary=true)
@@ -643,7 +643,7 @@ Adds a point to the cavity `V` left behind when deleting triangles intersected i
 # Outputs
 There is no output, but `tri` is updated in-place, as is `marked_vertices` if necessary.
 """
-function add_point_cavity_cdt!(tri::Triangulation, u, v, w, marked_vertices, predicates::AbstractPredicateKernel=Adaptive())
+function add_point_cavity_cdt!(tri::Triangulation, u, v, w, marked_vertices, predicates::AbstractPredicateKernel=AdaptiveKernel())
     (u == v || v == w || u == w) && return tri # For some pathological cases, the found cavities double back on itself, e.g. a right cavity [6, 22, 124, 96, 135, 96, 124, 26] is possible. (Take i = 2567; rng = StableRNG(i); points, edges, mat_edges = get_random_vertices_and_constrained_edges(40, 200, 20, rng); tri = triangulate(points; segments=edges, rng=StableRNG(i)))
     x = get_adjacent(tri, w, v)
     if !edge_exists(x)
@@ -680,7 +680,7 @@ function add_new_triangles!(tri_original::Triangulation, tris)
 end
 
 """
-    locate_intersecting_triangles(tri::Triangulation, e, rotate=Val(true), rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateKernel=Adaptive()) -> (Vector, Vector, Vector, Vector)
+    locate_intersecting_triangles(tri::Triangulation, e, rotate=Val(true), rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateKernel=AdaptiveKernel()) -> (Vector, Vector, Vector, Vector)
 
 Find all the triangles intersected by an edge `e`.
 
@@ -691,7 +691,7 @@ See also [`find_triangle`](@ref).
 - `e`: The edge going through the triangulation.
 - `rotate=Val(true)`: Whether to rotate the edge so that the minimum degree vertex of `e` is first.
 - `rng::Random.AbstractRNG=Random.default_rng()`: The random number generator to use.
-- `predicates::AbstractPredicateKernel=Adaptive()`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs
 - `intersecting_triangles`: The intersected triangles. 
@@ -699,7 +699,7 @@ See also [`find_triangle`](@ref).
 - `left_vertices`: The vertices of the intersected triangles that are left of `e`.
 - `right_vertices`: The vertices of the intersected triangles that are right of `e`.
 """
-function locate_intersecting_triangles(tri::Triangulation, e, rotate=Val(true), rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateKernel=Adaptive())
+function locate_intersecting_triangles(tri::Triangulation, e, rotate=Val(true), rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateKernel=AdaptiveKernel())
     V = triangle_type(tri)
     E = edge_type(tri)
     I = integer_type(tri)
@@ -739,17 +739,17 @@ function delete_intersected_triangles!(tri, triangles) # don't really _need_ thi
 end
 
 """
-    process_intersecting_triangles!(tri::Triangulation, e, collinear_segments; predicates::AbstractPredicateKernel=Adaptive(), rng::Random.AbstractRNG=Random.default_rng()) -> Bool
+    process_intersecting_triangles!(tri::Triangulation, e, collinear_segments; predicates::AbstractPredicateKernel=AdaptiveKernel(), rng::Random.AbstractRNG=Random.default_rng()) -> Bool
 
 Given segments in `collinear_segments` that are collinear with an edge `e`, updates `tri` so that this edge `e` is instead 
 split so that it is instead represented by `collinear_segments`. These new segments will be placed into the triangulation using 
 [`add_segment!`](@ref).
 
-The `predicates::AbstractPredicateKernel` argument defines the method for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+The `predicates::AbstractPredicateKernel` argument defines the method for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
 See also [`connect_segments!`](@ref), [`extend_segments!`](@ref), [`split_segment!`](@ref) and [`split_boundary_edge_at_collinear_segments!`](@ref).
 """
-function process_collinear_segments!(tri::Triangulation, e, collinear_segments; predicates::AbstractPredicateKernel=Adaptive(), rng::Random.AbstractRNG=Random.default_rng())
+function process_collinear_segments!(tri::Triangulation, e, collinear_segments; predicates::AbstractPredicateKernel=AdaptiveKernel(), rng::Random.AbstractRNG=Random.default_rng())
     isempty(collinear_segments) && return false
     all_segments = get_all_segments(tri) # the difference between all_segments and segments is important since we need to be careful about what segments are already in the triangulation 
     delete_edge!(all_segments, e)
@@ -809,7 +809,7 @@ to accommodate the changed types.
 - `tri::Triangulation`: The [`Triangulation`](@ref).
 - `segments`: The interior segments to add to the triangulation.
 - `boundary_nodes`: The boundary nodes to add to the triangulation.
-- `predicates::AbstractPredicateKernel`: Method to use for computing predicates. Can be one of [`Fast`](@ref), [`Exact`](@ref), and [`Adaptive`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 - `full_polygon_hierarchy`: The [`PolygonHierarchy`](@ref) defining the boundary. This will get copied into the existing polygon hierarchy.
 
 # Keyword Arguments

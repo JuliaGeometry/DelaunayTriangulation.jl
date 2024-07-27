@@ -51,7 +51,7 @@ using StaticArrays
     end
 
     @testset "Lattice with a single boundary index" begin
-        for PT in (DT.Exact, DT.Adaptive)
+        for PT in (DT.ExactKernel, DT.AdaptiveKernel)
             for j in 1:10
                 rng1 = StableRNG(j)
                 a, b = sort(10randn(rng1, 2))
@@ -80,7 +80,7 @@ using StaticArrays
         end
     end
     @testset "Lattice with multiple boundary indices" begin
-        for PT in (DT.Exact, DT.Adaptive)
+        for PT in (DT.ExactKernel, DT.AdaptiveKernel)
             for j in 1:10
                 rng1 = StableRNG(j)
                 a, b = sort(10randn(rng1, 2))

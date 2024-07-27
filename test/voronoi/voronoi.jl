@@ -229,7 +229,7 @@ end
             @test findmin(all_dists)[2] == u
         end
 
-        if PT() != DT.Fast()
+        if PT() != DT.FastKernel()
             points = [
                 (0.0, 0.0), (-1.0, 1.0), (-0.5, 1.0), (0.0, 1.0), (0.5, 1.0), (1.0, 1.0),
                 (1.0, 0.8), (1.0, 0.0), (1.0, -0.5), (1.0, -1.0),
@@ -924,7 +924,7 @@ end
 end
 
 @testset "Lattice" begin
-    for PT in (DT.Exact, DT.Adaptive)
+    for PT in (DT.ExactKernel, DT.AdaptiveKernel)
         for _ in 1:50
             tri = triangulate_rectangle(0, 1, 0, 1, 11, 11, delete_ghosts=false, predicates=PT())
             tri = triangulate(tri.points, predicates=PT())

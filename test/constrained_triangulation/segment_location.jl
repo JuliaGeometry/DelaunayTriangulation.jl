@@ -280,7 +280,7 @@ end
 end
 
 @testset "A previously broken example" begin
-    for PT in (DT.Exact, DT.Adaptive)
+    for PT in (DT.ExactKernel, DT.AdaptiveKernel)
         for m in 1:100
             a = -0.1
             b = 0.1

@@ -143,7 +143,7 @@ end
 end
 
 @testset "Interior holes that were already triangles" begin
-    for PT in (DT.Exact, DT.Adaptive)
+    for PT in (DT.ExactKernel, DT.AdaptiveKernel)
         p1 = (0.0, 0.0)
         p2 = (1.0, 0.0)
         p3 = (1.0, 1.0)
@@ -202,7 +202,7 @@ end
 end
 
 @testset "A previously broken example" begin
-    for PT in (DT.Exact, DT.Adaptive)
+    for PT in (DT.ExactKernel, DT.AdaptiveKernel)
         a = 4 / 5
         t = LinRange(0, 2π, 6)
         x = @. a * (2cos(t) + cos(2t))
