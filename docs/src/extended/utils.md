@@ -18,7 +18,7 @@ Pages = ["src/utils/geometry_utils.jl"]
 
 ```@autodocs 
 Modules = [DelaunayTriangulation]
-Pages = ["src/predicates/exactpredicates_definitions.jl"]
+Pages = ["src/predicates/predicate_definitions.jl"]
 ```
 
 ```@autodocs 
