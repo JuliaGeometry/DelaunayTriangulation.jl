@@ -33,22 +33,25 @@ See also [`BoundaryEnricher`](@ref) and [`enrich_boundary!`](@ref).
     To refine the mesh further beyond its initial coarse discretisation, as produced from this function, 
     please see [`refine!`](@ref).
 """
-function triangulate_curve_bounded(points::P;
-    segments=nothing,
-    boundary_nodes=nothing,
-    predicates::AbstractPredicateKernel=AdaptiveKernel(),
-    IntegerType::Type{I}=Int,
-    polygonise_n=4096,
-    coarse_n=0,
-    check_arguments=true,
-    delete_ghosts=false,
-    delete_empty_features=true,
-    recompute_representative_points=true,
-    rng::Random.AbstractRNG=Random.default_rng(),
-    insertion_order=nothing, # use this so that it gets ignored by the kwargs
-    kwargs...) where {P,I}
-    enricher = BoundaryEnricher(points, boundary_nodes, segments; IntegerType, n=polygonise_n, coarse_n)
-    return _triangulate_curve_bounded(points, enricher;
+function triangulate_curve_bounded(
+        points::P;
+        segments = nothing,
+        boundary_nodes = nothing,
+        predicates::AbstractPredicateKernel = AdaptiveKernel(),
+        IntegerType::Type{I} = Int,
+        polygonise_n = 4096,
+        coarse_n = 0,
+        check_arguments = true,
+        delete_ghosts = false,
+        delete_empty_features = true,
+        recompute_representative_points = true,
+        rng::Random.AbstractRNG = Random.default_rng(),
+        insertion_order = nothing, # use this so that it gets ignored by the kwargs
+        kwargs...,
+    ) where {P, I}
+    enricher = BoundaryEnricher(points, boundary_nodes, segments; IntegerType, n = polygonise_n, coarse_n)
+    return _triangulate_curve_bounded(
+        points, enricher;
         predicates,
         IntegerType,
         check_arguments,
@@ -57,36 +60,41 @@ function triangulate_curve_bounded(points::P;
         recompute_representative_points,
         rng,
         insertion_order,
-        kwargs...)
+        kwargs...,
+    )
 end
-function _triangulate_curve_bounded(points::P, enricher;
-    predicates::AbstractPredicateKernel=AdaptiveKernel(),
-    IntegerType::Type{I}=Int,
-    check_arguments=true,
-    delete_ghosts=false,
-    delete_empty_features=true,
-    recompute_representative_points=true,
-    rng::Random.AbstractRNG=Random.default_rng(),
-    insertion_order=nothing, # use this so that it gets ignored by the kwargs
-    kwargs...) where {P,I}
+function _triangulate_curve_bounded(
+        points::P, enricher;
+        predicates::AbstractPredicateKernel = AdaptiveKernel(),
+        IntegerType::Type{I} = Int,
+        check_arguments = true,
+        delete_ghosts = false,
+        delete_empty_features = true,
+        recompute_representative_points = true,
+        rng::Random.AbstractRNG = Random.default_rng(),
+        insertion_order = nothing, # use this so that it gets ignored by the kwargs
+        kwargs...,
+    ) where {P, I}
     check_arguments && check_args(enricher)
     enrich_boundary!(enricher; predicates)
     new_boundary_nodes = get_boundary_nodes(enricher)
     new_segments = get_segments(enricher)
     full_polygon_hierarchy = get_polygon_hierarchy(enricher)
     boundary_curves = get_boundary_curves(enricher)
-    tri = triangulate(points;
+    tri = triangulate(
+        points;
         IntegerType,
-        segments=new_segments,
-        boundary_nodes=new_boundary_nodes,
+        segments = new_segments,
+        boundary_nodes = new_boundary_nodes,
         predicates,
         full_polygon_hierarchy,
         boundary_curves,
-        boundary_enricher=enricher,
-        check_arguments=false,
-        delete_ghosts=false,
+        boundary_enricher = enricher,
+        check_arguments = false,
+        delete_ghosts = false,
         rng,
-        kwargs...)
+        kwargs...,
+    )
     postprocess_triangulate!(tri; delete_ghosts, delete_empty_features, recompute_representative_points)
     return tri
 end
@@ -101,7 +109,7 @@ come from [`convert_boundary_curves!`](@ref). The argument `n` is the amount of 
 If non-zero, this should be a power of two (otherwise it will be rounded up to the next power of two). If it is 
 zero, then the splitting will continue until the maximum total variation over any subcurve is less than π/2.
 """
-function coarse_discretisation!(points, boundary_nodes, boundary_curves; n::I=0) where {I}
+function coarse_discretisation!(points, boundary_nodes, boundary_curves; n::I = 0) where {I}
     !is_curve_bounded(boundary_curves) && return points, boundary_nodes
     if n > 0
         n = max(n, I(4))
@@ -181,7 +189,7 @@ The `predicates` argument determines how predicates are computed, and should be
 one of [`ExactKernel`](@ref), [`FastKernel`](@ref), and [`AdaptiveKernel`](@ref) (the default).
 See the documentation for more information about these choices.
 """
-function enrich_boundary!(enricher::BoundaryEnricher; predicates::AbstractPredicateKernel=AdaptiveKernel())
+function enrich_boundary!(enricher::BoundaryEnricher; predicates::AbstractPredicateKernel = AdaptiveKernel())
     queue = get_queue(enricher)
     points = get_points(enricher)
     enqueue_all!(queue, each_point_index(points))
@@ -190,13 +198,13 @@ function enrich_boundary!(enricher::BoundaryEnricher; predicates::AbstractPredic
     end
     return enricher
 end
-function _enrich_boundary_itr!(enricher::BoundaryEnricher, predicates::AbstractPredicateKernel=AdaptiveKernel())
+function _enrich_boundary_itr!(enricher::BoundaryEnricher, predicates::AbstractPredicateKernel = AdaptiveKernel())
     queue = get_queue(enricher)
     points = get_points(enricher)
     spatial_tree = get_spatial_tree(enricher)
     v = popfirst!(queue)
     r = get_point(points, v)
-    intersections = get_intersections(spatial_tree, v; cache_id=1)
+    intersections = get_intersections(spatial_tree, v; cache_id = 1)
     requeued = false
     for bbox in intersections
         i, j = get_edge(bbox)
@@ -227,7 +235,7 @@ The `predicate` argument determines how predicates are computed, and should be
 one of [`ExactKernel`](@ref), [`FastKernel`](@ref), and [`AdaptiveKernel`](@ref) (the default).
 See the documentation for more information about these choices.
 """
-function split_subcurve!(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateKernel=AdaptiveKernel())
+function split_subcurve!(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateKernel = AdaptiveKernel())
     flag, apex, complex_id, _ = is_small_angle_complex_member(enricher, i, j)
     if !flag
         return _split_subcurve_standard!(enricher, i, j, predicates)
@@ -235,7 +243,7 @@ function split_subcurve!(enricher::BoundaryEnricher, i, j, predicates::AbstractP
         return _split_subcurve_complex!(enricher, apex, complex_id)
     end
 end
-function _split_subcurve_standard!(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateKernel=AdaptiveKernel())
+function _split_subcurve_standard!(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateKernel = AdaptiveKernel())
     points = get_points(enricher)
     t, Δθ, ct = compute_split_position(enricher, i, j, predicates)
     if isnan(Δθ)
@@ -292,7 +300,7 @@ Gets the point to split the edge `(i, j)` at.
 - `Δθ`: The total variation of the subcurve `(i, t)`. If a split was created due to a small angle, this will be set to zero.
 - `ct`: The point to split the edge at.
 """
-function compute_split_position(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateKernel=AdaptiveKernel())
+function compute_split_position(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateKernel = AdaptiveKernel())
     num_adjoin, adjoin_vert = has_acute_neighbouring_angles(predicates, enricher, i, j)
     if num_adjoin == 0
         t, Δθ, ct = _compute_split_position_standard(enricher, i, j)
@@ -410,7 +418,7 @@ returned vertex is `$∅`.
 
 (The purpose of this function is similar to [`segment_vertices_adjoin_other_segments_at_acute_angle`](@ref).)
 """
-function has_acute_neighbouring_angles(predicates::AbstractPredicateKernel, enricher::BoundaryEnricher{P,B,C,I}, i, j) where {P,B,C,I}
+function has_acute_neighbouring_angles(predicates::AbstractPredicateKernel, enricher::BoundaryEnricher{P, B, C, I}, i, j) where {P, B, C, I}
     is_segment(enricher, i, j) && return 0, I(∅)
     points = get_points(enricher)
     p, q = get_point(points, i, j)
@@ -504,7 +512,7 @@ function test_visibility(predicates::AbstractPredicateKernel, points, boundary_n
     end
     int₁ = false
     int₂ = false
-    intersections = get_intersections(spatial_tree, i, j, k; cache_id=2)
+    intersections = get_intersections(spatial_tree, i, j, k; cache_id = 2)
     for box in intersections
         u, v = get_edge(box)
         !edges_are_disjoint((i, j), (u, v)) && continue

@@ -20,7 +20,7 @@ points = [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]
 p = (0.2, 0.5)
 tri = triangulate(points)
 fig, ax, sc = triplot(tri)
-scatter!(ax, [p], markersize=14)
+scatter!(ax, [p], markersize = 14)
 fig
 ````
 
@@ -42,6 +42,7 @@ fig
 See the [`legalise_edge!` tutorial](operations_legalise_edge.md) for more discussion
 about restoring the Delaunay property of the triangulation after using
 `split_triangle!`.
+
 ## Just the code
 An uncommented version of this example is given below.
 You can view the source code for this file [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/operations_split_triangle.jl).
@@ -54,7 +55,7 @@ points = [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]
 p = (0.2, 0.5)
 tri = triangulate(points)
 fig, ax, sc = triplot(tri)
-scatter!(ax, [p], markersize=14)
+scatter!(ax, [p], markersize = 14)
 fig
 
 push!(points, p)

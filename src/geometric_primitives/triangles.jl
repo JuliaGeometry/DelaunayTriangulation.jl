@@ -18,9 +18,9 @@ julia> DelaunayTriangulation.construct_triangle(Vector{Int32}, 1, 2, 3)
 ```
 """
 construct_triangle
-construct_triangle(::Type{NTuple{3,I}}, i, j, k) where {I} = (I(i), I(j), I(k))
+construct_triangle(::Type{NTuple{3, I}}, i, j, k) where {I} = (I(i), I(j), I(k))
 construct_triangle(::Type{Vector{I}}, i, j, k) where {I} = I[i, j, k]
-construct_triangle(::Type{A}, i, j, k) where {I,A<:AbstractVector{I}} = A(I[i, j, k])
+construct_triangle(::Type{A}, i, j, k) where {I, A <: AbstractVector{I}} = A(I[i, j, k])
 
 """
     geti(T) -> Vertex
@@ -190,7 +190,7 @@ julia> DelaunayTriangulation.rotate_triangle(T, 3)
 (1, 2, 3)
 ```
 """
-function rotate_triangle(T::V, ::Val{N}) where {N,V}
+function rotate_triangle(T::V, ::Val{N}) where {N, V}
     i, j, k = triangle_vertices(T)
     N < 0 && throw(ArgumentError("Cannot rotate triangle $T by a negative amount."))
     if N == 0
@@ -256,7 +256,7 @@ julia> DelaunayTriangulation.construct_positively_oriented_triangle(Vector{Int},
  3
 ```
 """
-function construct_positively_oriented_triangle(::Type{V}, i, j, k, points, predicates::AbstractPredicateKernel=AdaptiveKernel()) where {V}
+function construct_positively_oriented_triangle(::Type{V}, i, j, k, points, predicates::AbstractPredicateKernel = AdaptiveKernel()) where {V}
     p, q, r = get_point(points, i, j, k)
     orientation = triangle_orientation(predicates, p, q, r)
     if is_negatively_oriented(orientation)
@@ -302,8 +302,8 @@ function compare_triangles(T, V)
     i, j, k = triangle_vertices(T)
     u, v, w = triangle_vertices(V)
     return (i, j, k) == (u, v, w) ||
-           (i, j, k) == (v, w, u) ||
-           (i, j, k) == (w, u, v)
+        (i, j, k) == (v, w, u) ||
+        (i, j, k) == (w, u, v)
 end
 
 @doc """
@@ -338,7 +338,7 @@ julia> DelaunayTriangulation.contains_triangle(9, 7, 8, V)
 ```
 """
 contains_triangle
-function contains_triangle(T::F, V::S) where {F,S}
+function contains_triangle(T::F, V::S) where {F, S}
     if F ≠ triangle_type(S)
         i, j, k = triangle_vertices(T)
         Tfix = construct_triangle(triangle_type(S), i, j, k)
@@ -433,7 +433,7 @@ Set{Tuple{Int64, Int64, Int64}} with 4 elements:
   (-1, 3, 6)
 ```
 """
-function add_to_triangles!(T::Ts, V::VT) where {Ts,VT}
+function add_to_triangles!(T::Ts, V::VT) where {Ts, VT}
     if VT ≠ triangle_type(Ts)
         i, j, k = triangle_vertices(V)
         U = construct_triangle(triangle_type(Ts), i, j, k)

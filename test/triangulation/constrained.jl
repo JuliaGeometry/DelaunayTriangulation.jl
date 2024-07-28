@@ -11,24 +11,24 @@ using StableRNGs
             rng = StableRNG(i)
             points, edges, mat_edges = get_random_vertices_and_constrained_edges(40, 100, 20, rng)
             # Need to deepcopy edges below, else it gets changed and updated on the first call to tri, which changes the insertion order of the segments and thus comparing tri to _tri might not work
-            tri = triangulate(points; segments=deepcopy(edges), rng=StableRNG(i), predicates=PT())
+            tri = triangulate(points; segments = deepcopy(edges), rng = StableRNG(i), predicates = PT())
             if i % 5 == 0
-                _tri = retriangulate(tri; segments=deepcopy(edges), rng=StableRNG(i), predicates=PT())
-                @inferred retriangulate(tri; segments=deepcopy(edges), rng=StableRNG(i), predicates=PT())
+                _tri = retriangulate(tri; segments = deepcopy(edges), rng = StableRNG(i), predicates = PT())
+                @inferred retriangulate(tri; segments = deepcopy(edges), rng = StableRNG(i), predicates = PT())
                 @test tri == _tri
             end
-            @test validate_triangulation(tri; predicates=PT())
+            @test validate_triangulation(tri; predicates = PT())
             empty!(get_all_segments(tri))
-            @test !validate_triangulation(tri; predicates=PT(), print_result=false)
+            @test !validate_triangulation(tri; predicates = PT(), print_result = false)
         end
         for i in 1:4
             @info "Testing random constrained Delaunay triangulations. Run: $i; Block: 2; Predicates: $PT"
             rng = StableRNG(i^5)
             points, edges, mat_edges = get_random_vertices_and_constrained_edges(200, 500, 100, rng)
-            tri = triangulate(points; segments=edges, rng, predicates=PT())
-            @test validate_triangulation(tri; predicates=PT())
+            tri = triangulate(points; segments = edges, rng, predicates = PT())
+            @test validate_triangulation(tri; predicates = PT())
             empty!(get_all_segments(tri))
-            @test !validate_triangulation(tri; predicates=PT(), print_result=false)
+            @test !validate_triangulation(tri; predicates = PT(), print_result = false)
         end
     end
 end
@@ -38,8 +38,8 @@ end
     for PT in subtypes(DT.AbstractPredicateKernel)
         for i in 1:500
             rng = StableRNG(i^6)
-            tri = triangulate(pts; segments=C, rng, predicates=PT())
-            @test validate_triangulation(tri; predicates=PT())
+            tri = triangulate(pts; segments = C, rng, predicates = PT())
+            @test validate_triangulation(tri; predicates = PT())
         end
     end
 end
@@ -53,14 +53,14 @@ end
             pts = [(2rand(rng) - 1, rand(rng)) for _ in 1:100]
             x = LinRange(-1, 1, 26)
             a = 10.0 .^ (LinRange(0, log10(2), 20)) .- 1
-            C = Set{NTuple{2,Int}}()
+            C = Set{NTuple{2, Int}}()
             for i in eachindex(a)
                 y = a[i] * x .^ 2
                 append!(pts, zip(x, y))
-                push!(C, [(j, j + 1) for j in (np+nx*(i-1)+1):(np+nx*(i-1)+(nx-1))]...)
+                push!(C, [(j, j + 1) for j in (np + nx * (i - 1) + 1):(np + nx * (i - 1) + (nx - 1))]...)
             end
-            tri = triangulate(pts; segments=C, rng, predicates=PT())
-            @test validate_triangulation(tri; predicates=PT())
+            tri = triangulate(pts; segments = C, rng, predicates = PT())
+            @test validate_triangulation(tri; predicates = PT())
         end
     end
 end
@@ -70,8 +70,8 @@ end
         for i in 1:4
             @info "Testing random collection of straight lines. Run: $i. Predicates: $PT"
             rng = StableRNG(i)
-            pts = NTuple{2,Float64}[]
-            C = Set{NTuple{2,Int}}()
+            pts = NTuple{2, Float64}[]
+            C = Set{NTuple{2, Int}}()
             j = 1
             for i in 1:10
                 push!(pts, (2i / 11 - 1, 2rand(rng) - 1))
@@ -79,21 +79,21 @@ end
                 push!(C, (j, j + 1))
                 j += 2
             end
-            x1 = LinRange(-1, 1 - 1e-12, 10)
+            x1 = LinRange(-1, 1 - 1.0e-12, 10)
             y1 = LinRange(-1, -1, 10)
             x2 = LinRange(1, 1, 10)
-            y2 = LinRange(-1, 1 - 1e-12, 10)
-            x3 = LinRange(1, -1 + 1e-12, 10)
+            y2 = LinRange(-1, 1 - 1.0e-12, 10)
+            x3 = LinRange(1, -1 + 1.0e-12, 10)
             y3 = LinRange(1, 1, 10)
             x4 = LinRange(-1, -1, 10)
-            y4 = LinRange(1, -1 + 1e-12, 10)
+            y4 = LinRange(1, -1 + 1.0e-12, 10)
             append!(pts, zip(x1, y1), zip(x2, y2), zip(x3, y3), zip(x4, y4))
             push!(C, [(j, j + 1) for j in 21:29]...)
             push!(C, [(j, j + 1) for j in 31:39]...)
             push!(C, [(j, j + 1) for j in 41:49]...)
             push!(C, [(j, j + 1) for j in 51:59]...)
-            tri = triangulate(pts; segments=C, rng, predicates=PT())
-            @test validate_triangulation(tri; predicates=PT())
+            tri = triangulate(pts; segments = C, rng, predicates = PT())
+            @test validate_triangulation(tri; predicates = PT())
         end
     end
 end
@@ -109,16 +109,16 @@ end
             d = 7.0
             nx = 13
             ny = 20
-            tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true, predicates=PT())
-            add_segment!(tri, 56, 162; rng, predicates=PT())
+            tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts = false, single_boundary = true, predicates = PT())
+            add_segment!(tri, 56, 162; rng, predicates = PT())
             for e in [(1, 249), (1, 250), (1, 251), (1, 26), (1, 39), (1, 52)]
-                add_segment!(tri, e; rng, predicates=PT())
+                add_segment!(tri, e; rng, predicates = PT())
             end
-            add_segment!(tri, 190, 99; rng, predicates=PT())
+            add_segment!(tri, 190, 99; rng, predicates = PT())
             for e in [(99, 113), (113, 101), (101, 115)]
-                add_segment!(tri, e; rng, predicates=PT())
+                add_segment!(tri, e; rng, predicates = PT())
             end
-            @test validate_triangulation(tri; predicates=PT())
+            @test validate_triangulation(tri; predicates = PT())
 
             a = -0.1
             b = 0.1
@@ -126,21 +126,21 @@ end
             d = 0.01
             nx = 25
             ny = 25
-            tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true, predicates=PT())
-            tri = triangulate(get_points(tri); predicates=PT())
+            tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts = false, single_boundary = true, predicates = PT())
+            tri = triangulate(get_points(tri); predicates = PT())
             for i in 2:24
-                add_segment!(tri, i, 600 + i; rng, predicates=PT())
+                add_segment!(tri, i, 600 + i; rng, predicates = PT())
             end
-            @test validate_triangulation(tri; predicates=PT())
-            tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true, predicates=PT())
-            tri = triangulate(get_points(tri); rng, predicates=PT())
+            @test validate_triangulation(tri; predicates = PT())
+            tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts = false, single_boundary = true, predicates = PT())
+            tri = triangulate(get_points(tri); rng, predicates = PT())
             for e in [(1, 28), (28, 103), (103, 180), (180, 625), (625, 523)]
-                add_segment!(tri, e; rng, predicates=PT())
+                add_segment!(tri, e; rng, predicates = PT())
             end
             for e in [(437, 614), (527, 602), (528, 603), (555, 605)]
-                add_segment!(tri, e; rng, predicates=PT())
+                add_segment!(tri, e; rng, predicates = PT())
             end
-            @test validate_triangulation(tri; predicates=PT())
+            @test validate_triangulation(tri; predicates = PT())
         end
         for m in 1:10
             rng = StableRNG(m)
@@ -151,9 +151,9 @@ end
             d = 1.0
             nx = 2
             ny = 2
-            tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true, predicates=PT())
-            add_segment!(tri, 1, 4; rng, predicates=PT())
-            @test validate_triangulation(tri; predicates=PT())
+            tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts = false, single_boundary = true, predicates = PT())
+            add_segment!(tri, 1, 4; rng, predicates = PT())
+            @test validate_triangulation(tri; predicates = PT())
 
             a = 0
             b = 1
@@ -161,19 +161,19 @@ end
             d = 5
             nx = 25
             ny = 3
-            tri = triangulate_rectangle(a, b, c, d, nx, ny; predicates=PT(), delete_ghosts=false, single_boundary=true)
-            tri = triangulate(get_points(tri); rng, predicates=PT())
-            for i in 1:(nx-1)
+            tri = triangulate_rectangle(a, b, c, d, nx, ny; predicates = PT(), delete_ghosts = false, single_boundary = true)
+            tri = triangulate(get_points(tri); rng, predicates = PT())
+            for i in 1:(nx - 1)
                 u = i
                 v = 2nx
-                add_segment!(tri, u, v; rng, predicates=PT())
+                add_segment!(tri, u, v; rng, predicates = PT())
             end
             for i in 51:75
                 u = i
                 v = 26
-                add_segment!(tri, u, v; rng, predicates=PT())
+                add_segment!(tri, u, v; rng, predicates = PT())
             end
-            @test validate_triangulation(tri; predicates=PT())
+            @test validate_triangulation(tri; predicates = PT())
         end
     end
 end
@@ -187,10 +187,10 @@ end
             bnd_pts = [(0.3cos(θ), 0.3sin(θ)) .+ 0.5 for θ in LinRange(0, 2π - 1 / 250, 25)]
             bnd_id = [(51:75)..., 51]
             append!(pts, bnd_pts)
-            tri = triangulate(pts; boundary_nodes=bnd_id, rng, predicates=PT())
-            @test validate_triangulation(tri; predicates=PT())
-            _tri = retriangulate(tri; predicates=PT())
-            @inferred retriangulate(tri; predicates=PT())
+            tri = triangulate(pts; boundary_nodes = bnd_id, rng, predicates = PT())
+            @test validate_triangulation(tri; predicates = PT())
+            _tri = retriangulate(tri; predicates = PT())
+            @inferred retriangulate(tri; predicates = PT())
             @test tri == _tri
         end
     end
@@ -222,9 +222,9 @@ end
             inner_circle_y = [last.(circ_pts)]
             x = [outer_square_x, inner_circle_x]
             y = [outer_square_y, inner_circle_y]
-            nodes, pts = convert_boundary_points_to_indices(x, y; existing_points=pts)
-            tri = triangulate(pts; boundary_nodes=nodes, rng, predicates=PT())
-            @test validate_triangulation(tri; predicates=PT())
+            nodes, pts = convert_boundary_points_to_indices(x, y; existing_points = pts)
+            tri = triangulate(pts; boundary_nodes = nodes, rng, predicates = PT())
+            @test validate_triangulation(tri; predicates = PT())
         end
     end
 end
@@ -234,12 +234,12 @@ end
         for L in 1:4
             @info "Testing the addition of points into a constrained triangulation. Run: $L. Predicates: $PT"
             pts, C = example_for_testing_add_point_on_constrained_triangulation()
-            tri = triangulate(pts; segments=C, delete_ghosts=false, predicates=PT())
-            @test validate_triangulation(tri; predicates=PT())
+            tri = triangulate(pts; segments = C, delete_ghosts = false, predicates = PT())
+            @test validate_triangulation(tri; predicates = PT())
             DT.push_point!(tri, 2, 1.8)
-            add_point!(tri, 15; predicates=PT())
+            add_point!(tri, 15; predicates = PT())
             DT.push_point!(tri, 1.57, 1.778)
-            add_point!(tri, 16; predicates=PT())
+            add_point!(tri, 16; predicates = PT())
             T = [
                 (1, 10, 11)
                 (10, 6, 11)
@@ -273,10 +273,10 @@ end
                 (6, 4, DT.𝒢)
             ]
             @test DT.compare_triangle_collections(get_triangles(tri), T)
-            @test validate_triangulation(tri; predicates=PT())
+            @test validate_triangulation(tri; predicates = PT())
             (x, y) = (2.3258217552204066, 1.4540267924574883) # a while loop was used to find this point that broke the triangulation (fixed now, obviously)
             DT.push_point!(tri, x, y)
-            add_point!(tri, DT.num_points(tri); predicates=PT())
+            add_point!(tri, DT.num_points(tri); predicates = PT())
             T = [
                 (1, 10, 11)
                 (10, 6, 11)
@@ -312,13 +312,13 @@ end
                 (6, 4, DT.𝒢)
             ]
             @test DT.compare_triangle_collections(get_triangles(tri), T)
-            @test validate_triangulation(tri; predicates=PT())
+            @test validate_triangulation(tri; predicates = PT())
             for i in 1:25
                 x = 4rand()
                 y = 5rand()
                 DT.push_point!(tri, x, y)
-                add_point!(tri, DT.num_points(tri); predicates=PT())
-                @test validate_triangulation(tri; predicates=PT())
+                add_point!(tri, DT.num_points(tri); predicates = PT())
+                @test validate_triangulation(tri; predicates = PT())
                 @test DT.edge_exists(tri, 1, 2) && DT.edge_exists(tri, 2, 1)
             end
         end
@@ -331,19 +331,19 @@ end
             @info "Testing the addition of points into a constrained triangulation with interior segment collinearities. Run: $m. Predicates: $PT"
             pts, C = example_for_testing_add_point_on_constrained_triangulation()
             push!(C, (1, 12))
-            tri = triangulate(pts; segments=C, delete_ghosts=false, predicates=PT())
+            tri = triangulate(pts; segments = C, delete_ghosts = false, predicates = PT())
             new_points = [
                 (1.0, 3.0),
                 (2.0, 3.0),
                 (3.0, 3.0),
-                (4.0, 3.0)
+                (4.0, 3.0),
             ]
 
             DT.push_point!(tri, new_points[1])
-            add_point!(tri, DT.num_points(tri), predicates=PT())
+            add_point!(tri, DT.num_points(tri), predicates = PT())
             @test sort_edge_vector(collect(get_interior_segments(tri))) ==
-                  sort_edge_vector(collect(Set([(1, 2), (1, 15), (15, 12)]))) ==
-                  sort_edge_vector(collect(get_interior_segments(tri)))
+                sort_edge_vector(collect(Set([(1, 2), (1, 15), (15, 12)]))) ==
+                sort_edge_vector(collect(get_interior_segments(tri)))
             T = [
                 (1, 15, 5)
                 (10, 6, 11)
@@ -375,13 +375,13 @@ end
                 (6, 4, DT.𝒢)
             ]
             @test DT.compare_triangle_collections(get_triangles(tri), T)
-            @test validate_triangulation(tri, predicates=PT())
+            @test validate_triangulation(tri, predicates = PT())
 
             DT.push_point!(tri, new_points[2])
-            add_point!(tri, DT.num_points(tri), predicates=PT())
+            add_point!(tri, DT.num_points(tri), predicates = PT())
             @test sort_edge_vector(collect(get_interior_segments(tri))) ==
-                  sort_edge_vector(collect(Set([(1, 2), (1, 15), (15, 16), (16, 12)]))) ==
-                  sort_edge_vector(collect(get_interior_segments(tri)))
+                sort_edge_vector(collect(Set([(1, 2), (1, 15), (15, 16), (16, 12)]))) ==
+                sort_edge_vector(collect(get_interior_segments(tri)))
             T = [
                 (16, 9, 15)
                 (1, 10, 11)
@@ -415,13 +415,13 @@ end
                 (6, 4, DT.𝒢)
             ]
             @test DT.compare_triangle_collections(get_triangles(tri), T)
-            @test validate_triangulation(tri, predicates=PT())
+            @test validate_triangulation(tri, predicates = PT())
 
             DT.push_point!(tri, new_points[3])
-            add_point!(tri, DT.num_points(tri), predicates=PT())
+            add_point!(tri, DT.num_points(tri), predicates = PT())
             @test sort_edge_vector(collect(get_interior_segments(tri))) ==
-                  sort_edge_vector(collect(Set([(1, 2), (1, 15), (15, 16), (16, 17), (17, 12)]))) ==
-                  sort_edge_vector(collect(get_interior_segments(tri)))
+                sort_edge_vector(collect(Set([(1, 2), (1, 15), (15, 16), (16, 17), (17, 12)]))) ==
+                sort_edge_vector(collect(get_interior_segments(tri)))
             T = [
                 (13, 16, 14)
                 (15, 1, 14)
@@ -457,13 +457,13 @@ end
                 (6, 4, DT.𝒢)
             ]
             @test DT.compare_triangle_collections(get_triangles(tri), T)
-            @test validate_triangulation(tri, predicates=PT())
+            @test validate_triangulation(tri, predicates = PT())
 
             DT.push_point!(tri, new_points[4])
-            add_point!(tri, DT.num_points(tri), predicates=PT())
+            add_point!(tri, DT.num_points(tri), predicates = PT())
             @test sort_edge_vector(collect(get_interior_segments(tri))) ==
-                  sort_edge_vector(collect(Set([(1, 2), (1, 15), (15, 16), (16, 17), (17, 18), (18, 12)]))) ==
-                  sort_edge_vector(collect(get_interior_segments(tri)))
+                sort_edge_vector(collect(Set([(1, 2), (1, 15), (15, 16), (16, 17), (17, 18), (18, 12)]))) ==
+                sort_edge_vector(collect(get_interior_segments(tri)))
             T = [
                 (13, 16, 14)
                 (15, 1, 14)
@@ -501,17 +501,17 @@ end
                 (6, 4, DT.𝒢)
             ]
             @test DT.compare_triangle_collections(get_triangles(tri), T)
-            @test validate_triangulation(tri, predicates=PT())
+            @test validate_triangulation(tri, predicates = PT())
 
-            add_segment!(tri, 6, 10, predicates=PT())
-            @test validate_triangulation(tri, predicates=PT())
+            add_segment!(tri, 6, 10, predicates = PT())
+            @test validate_triangulation(tri, predicates = PT())
             new_points = LinRange(-1.8, 2.8, 25)
             new_points = collect(new_points)
             shuffle!(new_points)
             foreach(new_points) do p
                 DT.push_point!(tri, -3.0, p)
-                add_point!(tri, DT.num_points(tri), predicates=PT())
-                @test validate_triangulation(tri, predicates=PT())
+                add_point!(tri, DT.num_points(tri), predicates = PT())
+                @test validate_triangulation(tri, predicates = PT())
             end
             @test length(get_interior_segments(tri)) == 32
             @test length(get_all_segments(tri)) == 32
@@ -521,8 +521,8 @@ end
             shuffle!(new_points)
             foreach(new_points) do p
                 DT.push_point!(tri, p, 3.0)
-                add_point!(tri, DT.num_points(tri), predicates=PT())
-                @test validate_triangulation(tri, predicates=PT())
+                add_point!(tri, DT.num_points(tri), predicates = PT())
+                @test validate_triangulation(tri, predicates = PT())
             end
         end
     end
@@ -531,9 +531,9 @@ end
 @testset "Adding a point onto a single boundary edge" begin
     for PT in subtypes(DT.AbstractPredicateKernel)
         for i in 1:8
-            tri = triangulate_rectangle(0, 10, 0, 20, 11, 21; delete_ghosts=false, predicates=PT())
-            add_point!(tri, 1.5, 0.0; initial_search_point=i, predicates=PT())
-            @test validate_triangulation(tri, predicates=PT())
+            tri = triangulate_rectangle(0, 10, 0, 20, 11, 21; delete_ghosts = false, predicates = PT())
+            add_point!(tri, 1.5, 0.0; initial_search_point = i, predicates = PT())
+            @test validate_triangulation(tri, predicates = PT())
             @test tri.boundary_nodes[1] == [1, 2, 232, 3, 4, 5, 6, 7, 8, 9, 10, 11]
             @test isempty(tri.interior_segments)
             @test (2, 232) ∈ get_all_segments(tri) || (232, 2) ∈ get_all_segments(tri)
@@ -549,27 +549,27 @@ end
 @testset "Adding a point onto multiple boundary edges with multiple ghost indices" begin
     for PT in subtypes(DT.AbstractPredicateKernel)
         for _ in 1:8
-            tri = triangulate_rectangle(0, 4, 0, 8, 5, 9; delete_ghosts=false, predicates=PT())
-            add_point!(tri, 1.5, 0.0, predicates=PT())
-            add_segment!(tri, 1, 45, predicates=PT())
-            add_point!(tri, 4.0, 2.5, predicates=PT())
-            add_point!(tri, 4.0, 2.6, predicates=PT())
-            add_point!(tri, 4.0, 7.3, predicates=PT())
-            add_point!(tri, 2.5, 8.0, predicates=PT())
-            add_point!(tri, 1.3, 8.0, predicates=PT())
-            add_point!(tri, 0.0, 6.7, predicates=PT())
-            add_point!(tri, 0.0, 2.5, predicates=PT())
-            add_segment!(tri, 11, 43, predicates=PT())
-            add_segment!(tri, 4, 34, predicates=PT())
-            add_segment!(tri, 4, 23, predicates=PT())
-            add_segment!(tri, 45, 27, predicates=PT())
+            tri = triangulate_rectangle(0, 4, 0, 8, 5, 9; delete_ghosts = false, predicates = PT())
+            add_point!(tri, 1.5, 0.0, predicates = PT())
+            add_segment!(tri, 1, 45, predicates = PT())
+            add_point!(tri, 4.0, 2.5, predicates = PT())
+            add_point!(tri, 4.0, 2.6, predicates = PT())
+            add_point!(tri, 4.0, 7.3, predicates = PT())
+            add_point!(tri, 2.5, 8.0, predicates = PT())
+            add_point!(tri, 1.3, 8.0, predicates = PT())
+            add_point!(tri, 0.0, 6.7, predicates = PT())
+            add_point!(tri, 0.0, 2.5, predicates = PT())
+            add_segment!(tri, 11, 43, predicates = PT())
+            add_segment!(tri, 4, 34, predicates = PT())
+            add_segment!(tri, 4, 23, predicates = PT())
+            add_segment!(tri, 45, 27, predicates = PT())
             @test DT.get_boundary_nodes(tri) == [
                 [1, 2, 46, 3, 4, 5],
                 [5, 10, 15, 47, 48, 20, 25, 30, 35, 40, 49, 45],
                 [45, 44, 50, 43, 51, 42, 41],
-                [41, 36, 52, 31, 26, 21, 16, 53, 11, 6, 1]
+                [41, 36, 52, 31, 26, 21, 16, 53, 11, 6, 1],
             ]
-            @test validate_triangulation(tri, predicates=PT())
+            @test validate_triangulation(tri, predicates = PT())
         end
     end
 end
@@ -577,23 +577,25 @@ end
 @testset "Handling only a single boundary index" begin
     for PT in subtypes(DT.AbstractPredicateKernel)
         for _ in 1:8
-            tri = triangulate_rectangle(0, 4, 0, 8, 5, 9; delete_ghosts=false, single_boundary=true, predicates=PT())
+            tri = triangulate_rectangle(0, 4, 0, 8, 5, 9; delete_ghosts = false, single_boundary = true, predicates = PT())
             for x in [0.2, 0.3, 1.5, 2.3, 2.8, 3.5]
-                add_point!(tri, x, 0.0, predicates=PT())
+                add_point!(tri, x, 0.0, predicates = PT())
             end
             for y in [0.2, 0.4, 1.6, 4.5, 6.7, 7.5]
-                add_point!(tri, 4.0, y, predicates=PT())
+                add_point!(tri, 4.0, y, predicates = PT())
             end
             for x in [0.4, 1.5, 1.8, 2.3, 2.5, 3.9]
-                add_point!(tri, x, 8.0, predicates=PT())
+                add_point!(tri, x, 8.0, predicates = PT())
             end
             for y in [7.5, 5.9, 3.4, 1.9, 0.1]
-                add_point!(tri, 0.0, y, predicates=PT())
+                add_point!(tri, 0.0, y, predicates = PT())
             end
-            @test DT.get_boundary_nodes(tri) == [1, 46, 47, 2, 48, 3, 49, 50, 4, 51, 5, 52, 53,
+            @test DT.get_boundary_nodes(tri) == [
+                1, 46, 47, 2, 48, 3, 49, 50, 4, 51, 5, 52, 53,
                 10, 54, 15, 20, 25, 55, 30, 35, 56, 40, 57, 45, 63, 44, 62, 61, 43, 60, 59, 42, 58,
-                41, 64, 36, 31, 65, 26, 21, 66, 16, 11, 67, 6, 68, 1]
-            @test validate_triangulation(tri, predicates=PT())
+                41, 64, 36, 31, 65, 26, 21, 66, 16, 11, 67, 6, 68, 1,
+            ]
+            @test validate_triangulation(tri, predicates = PT())
         end
     end
 end
@@ -602,38 +604,40 @@ end
     @testset "Contiguous boundary" begin
         for PT in subtypes(DT.AbstractPredicateKernel)
             for _ in 1:8
-                tri = triangulate_rectangle(0, 4, 0, 8, 5, 9; delete_ghosts=false, predicates=PT())
+                tri = triangulate_rectangle(0, 4, 0, 8, 5, 9; delete_ghosts = false, predicates = PT())
                 pts = get_points(tri)
                 boundary_nodes = [1, 5, 45, 41, 1]
-                tri = triangulate(pts; boundary_nodes, randomise=false, delete_ghosts=false, predicates=PT())
+                tri = triangulate(pts; boundary_nodes, randomise = false, delete_ghosts = false, predicates = PT())
                 flip_edge!(tri, 1, 7)
                 flip_edge!(tri, 2, 8)
-                @test sort_edge_vector(collect(get_all_segments(tri))) == sort_edge_vector([
-                    (1, 2)
-                    (2, 3)
-                    (3, 4)
-                    (4, 5)
-                    (5, 10)
-                    (6, 1)
-                    (10, 15)
-                    (11, 6)
-                    (15, 20)
-                    (16, 11)
-                    (20, 25)
-                    (21, 16)
-                    (25, 30)
-                    (26, 21)
-                    (30, 35)
-                    (31, 26)
-                    (35, 40)
-                    (36, 31)
-                    (40, 45)
-                    (41, 36)
-                    (42, 41)
-                    (43, 42)
-                    (44, 43)
-                    (45, 44)
-                ])
+                @test sort_edge_vector(collect(get_all_segments(tri))) == sort_edge_vector(
+                    [
+                        (1, 2)
+                        (2, 3)
+                        (3, 4)
+                        (4, 5)
+                        (5, 10)
+                        (6, 1)
+                        (10, 15)
+                        (11, 6)
+                        (15, 20)
+                        (16, 11)
+                        (20, 25)
+                        (21, 16)
+                        (25, 30)
+                        (26, 21)
+                        (30, 35)
+                        (31, 26)
+                        (35, 40)
+                        (36, 31)
+                        (40, 45)
+                        (41, 36)
+                        (42, 41)
+                        (43, 42)
+                        (44, 43)
+                        (45, 44)
+                    ],
+                )
                 T = [
                     (11, 7, 12)
                     (22, 27, 26)
@@ -725,15 +729,17 @@ end
                     (2, 1, DT.𝒢)
                 ]
                 @test DT.compare_triangle_collections(get_triangles(tri), T)
-                @test get_boundary_nodes(tri) == [1, 2, 3, 4, 5,
+                @test get_boundary_nodes(tri) == [
+                    1, 2, 3, 4, 5,
                     10, 15, 20, 25, 30, 35, 40, 45,
                     44, 43, 42, 41, 36, 31, 26,
-                    21, 16, 11, 6, 1]
-                @test validate_triangulation(tri, predicates=PT())
-                add_segment!(tri, 1, 45, predicates=PT())
-                add_segment!(tri, 6, 44, predicates=PT())
-                add_segment!(tri, 34, 4, predicates=PT())
-                @test validate_triangulation(tri, predicates=PT())
+                    21, 16, 11, 6, 1,
+                ]
+                @test validate_triangulation(tri, predicates = PT())
+                add_segment!(tri, 1, 45, predicates = PT())
+                add_segment!(tri, 6, 44, predicates = PT())
+                add_segment!(tri, 34, 4, predicates = PT())
+                @test validate_triangulation(tri, predicates = PT())
             end
         end
     end
@@ -741,38 +747,40 @@ end
     @testset "Multiple segments" begin
         for PT in subtypes(DT.AbstractPredicateKernel)
             for _ in 1:8
-                tri = triangulate_rectangle(0, 4, 0, 8, 5, 9; delete_ghosts=false, predicates=PT())
+                tri = triangulate_rectangle(0, 4, 0, 8, 5, 9; delete_ghosts = false, predicates = PT())
                 pts = get_points(tri)
                 boundary_nodes = [[1, 5], [5, 45], [45, 41], [41, 1]]
-                tri = triangulate(pts; boundary_nodes, randomise=false, delete_ghosts=false, predicates=PT())
+                tri = triangulate(pts; boundary_nodes, randomise = false, delete_ghosts = false, predicates = PT())
                 flip_edge!(tri, 1, 7)
                 flip_edge!(tri, 2, 8)
-                @test sort_edge_vector(collect(get_all_segments(tri))) == sort_edge_vector([
-                    (1, 2)
-                    (2, 3)
-                    (3, 4)
-                    (4, 5)
-                    (5, 10)
-                    (6, 1)
-                    (10, 15)
-                    (11, 6)
-                    (15, 20)
-                    (16, 11)
-                    (20, 25)
-                    (21, 16)
-                    (25, 30)
-                    (26, 21)
-                    (30, 35)
-                    (31, 26)
-                    (35, 40)
-                    (36, 31)
-                    (40, 45)
-                    (41, 36)
-                    (42, 41)
-                    (43, 42)
-                    (44, 43)
-                    (45, 44)
-                ])
+                @test sort_edge_vector(collect(get_all_segments(tri))) == sort_edge_vector(
+                    [
+                        (1, 2)
+                        (2, 3)
+                        (3, 4)
+                        (4, 5)
+                        (5, 10)
+                        (6, 1)
+                        (10, 15)
+                        (11, 6)
+                        (15, 20)
+                        (16, 11)
+                        (20, 25)
+                        (21, 16)
+                        (25, 30)
+                        (26, 21)
+                        (30, 35)
+                        (31, 26)
+                        (35, 40)
+                        (36, 31)
+                        (40, 45)
+                        (41, 36)
+                        (42, 41)
+                        (43, 42)
+                        (44, 43)
+                        (45, 44)
+                    ],
+                )
                 T = [
                     (11, 7, 12)
                     (22, 27, 26)
@@ -864,15 +872,17 @@ end
                     (2, 1, DT.𝒢)
                 ]
                 @test DT.compare_triangle_collections(get_triangles(tri), T)
-                @test get_boundary_nodes(tri) == [[1, 2, 3, 4, 5],
+                @test get_boundary_nodes(tri) == [
+                    [1, 2, 3, 4, 5],
                     [5, 10, 15, 20, 25, 30, 35, 40, 45],
                     [45, 44, 43, 42, 41],
-                    [41, 36, 31, 26, 21, 16, 11, 6, 1]]
-                @test validate_triangulation(tri, predicates=PT())
-                add_segment!(tri, 1, 45, predicates=PT())
-                add_segment!(tri, 6, 44, predicates=PT())
-                add_segment!(tri, 34, 4, predicates=PT())
-                @test validate_triangulation(tri, predicates=PT())
+                    [41, 36, 31, 26, 21, 16, 11, 6, 1],
+                ]
+                @test validate_triangulation(tri, predicates = PT())
+                add_segment!(tri, 1, 45, predicates = PT())
+                add_segment!(tri, 6, 44, predicates = PT())
+                add_segment!(tri, 34, 4, predicates = PT())
+                @test validate_triangulation(tri, predicates = PT())
             end
         end
     end
@@ -880,15 +890,16 @@ end
 
 @testset "Adding points and segments into a multiply-connected domain" begin
     for PT in subtypes(DT.AbstractPredicateKernel)
-        tri = triangulate_rectangle(0, 4, 0, 8, 5, 9; delete_ghosts=false, predicates=PT())
-        boundary_nodes = [[
-                [1, 5, 45], [45, 41], [41, 1]
+        tri = triangulate_rectangle(0, 4, 0, 8, 5, 9; delete_ghosts = false, predicates = PT())
+        boundary_nodes = [
+            [
+                [1, 5, 45], [45, 41], [41, 1],
             ],
-            [[12, 32, 34], [34, 14, 12]]
+            [[12, 32, 34], [34, 14, 12]],
         ]
         points = get_points(tri)
         rng = StableRNG(19119)
-        tri = triangulate(points; boundary_nodes, delete_ghosts=false, randomise=false, rng, predicates=PT())
+        tri = triangulate(points; boundary_nodes, delete_ghosts = false, randomise = false, rng, predicates = PT())
         flip_edge!(tri, 1, 7)
         flip_edge!(tri, 2, 8)
         T = [
@@ -1017,106 +1028,111 @@ end
         ]
         @test sort_edge_vector(collect(get_all_segments(tri))) == sort_edge_vector(C)
         @test DT.compare_triangle_collections(get_triangles(tri), T)
-        @test validate_triangulation(tri, predicates=PT())
-        @test get_boundary_nodes(tri) == [[
-                [1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45], [45, 44, 43, 42, 41], [41, 36, 31, 26, 21, 16, 11, 6, 1]
+        @test validate_triangulation(tri, predicates = PT())
+        @test get_boundary_nodes(tri) == [
+            [
+                [1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45], [45, 44, 43, 42, 41], [41, 36, 31, 26, 21, 16, 11, 6, 1],
             ],
-            [[12, 17, 22, 27, 32, 33, 34], [34, 29, 24, 19, 14, 13, 12]]
+            [[12, 17, 22, 27, 32, 33, 34], [34, 29, 24, 19, 14, 13, 12]],
         ]
-        add_point!(tri, 1.5, 0.0; rng, predicates=PT())
-        @test validate_triangulation(tri, predicates=PT())
-        add_point!(tri, 2.5, 0.0; rng, predicates=PT())
-        @test validate_triangulation(tri, predicates=PT())
-        add_point!(tri, 4.0, 2.5; rng, predicates=PT())
-        @test validate_triangulation(tri, predicates=PT())
-        add_point!(tri, 4.0, 7.5; rng, predicates=PT())
-        add_point!(tri, 2.5, 8.0; rng, predicates=PT())
-        add_point!(tri, 0.0, 5.5; rng, predicates=PT())
-        add_point!(tri, 0.5, 2.2; rng, predicates=PT())
-        add_segment!(tri, 21, 27; rng, predicates=PT())
-        add_segment!(tri, 14, 45; rng, predicates=PT())
-        add_point!(tri, 1.0, 2.5; rng, predicates=PT())
-        add_point!(tri, 1.0, 5.5; rng, predicates=PT())
-        @test validate_triangulation(tri, predicates=PT())
-        add_point!(tri, 2.5, 2.0; rng, predicates=PT())
-        @test validate_triangulation(tri, predicates=PT())
-        add_point!(tri, 3.0, 5.5; rng, predicates=PT())
-        @test validate_triangulation(tri, predicates=PT())
-        add_point!(tri, 2.5, 6.0; rng, predicates=PT())
-        add_segment!(tri, 12, 5, predicates=PT())
-        add_segment!(tri, 2, 52, predicates=PT())
-        add_segment!(tri, 53, 21, predicates=PT())
-        @test validate_triangulation(tri, predicates=PT())
-        @test get_boundary_nodes(tri) == [[
+        add_point!(tri, 1.5, 0.0; rng, predicates = PT())
+        @test validate_triangulation(tri, predicates = PT())
+        add_point!(tri, 2.5, 0.0; rng, predicates = PT())
+        @test validate_triangulation(tri, predicates = PT())
+        add_point!(tri, 4.0, 2.5; rng, predicates = PT())
+        @test validate_triangulation(tri, predicates = PT())
+        add_point!(tri, 4.0, 7.5; rng, predicates = PT())
+        add_point!(tri, 2.5, 8.0; rng, predicates = PT())
+        add_point!(tri, 0.0, 5.5; rng, predicates = PT())
+        add_point!(tri, 0.5, 2.2; rng, predicates = PT())
+        add_segment!(tri, 21, 27; rng, predicates = PT())
+        add_segment!(tri, 14, 45; rng, predicates = PT())
+        add_point!(tri, 1.0, 2.5; rng, predicates = PT())
+        add_point!(tri, 1.0, 5.5; rng, predicates = PT())
+        @test validate_triangulation(tri, predicates = PT())
+        add_point!(tri, 2.5, 2.0; rng, predicates = PT())
+        @test validate_triangulation(tri, predicates = PT())
+        add_point!(tri, 3.0, 5.5; rng, predicates = PT())
+        @test validate_triangulation(tri, predicates = PT())
+        add_point!(tri, 2.5, 6.0; rng, predicates = PT())
+        add_segment!(tri, 12, 5, predicates = PT())
+        add_segment!(tri, 2, 52, predicates = PT())
+        add_segment!(tri, 53, 21, predicates = PT())
+        @test validate_triangulation(tri, predicates = PT())
+        @test get_boundary_nodes(tri) == [
+            [
                 [1, 2, 46, 3, 47, 4, 5, 10, 15, 48, 20, 25, 30, 35, 40, 49, 45],
                 [45, 44, 50, 43, 42, 41],
-                [41, 36, 31, 51, 26, 21, 16, 11, 6, 1]
+                [41, 36, 31, 51, 26, 21, 16, 11, 6, 1],
             ],
             [
                 [12, 53, 17, 22, 27, 54, 32, 33, 57, 34],
-                [34, 56, 29, 24, 19, 14, 55, 13, 12]
-            ]
+                [34, 56, 29, 24, 19, 14, 55, 13, 12],
+            ],
         ]
-        @test validate_triangulation(tri, predicates=PT())
-        add_point!(tri, 0.5, 4.4, predicates=PT())
-        add_point!(tri, 0.5, 4.6, predicates=PT())
-        add_point!(tri, 0.5, 4.5, predicates=PT())
-        @test validate_triangulation(tri, predicates=PT())
+        @test validate_triangulation(tri, predicates = PT())
+        add_point!(tri, 0.5, 4.4, predicates = PT())
+        add_point!(tri, 0.5, 4.6, predicates = PT())
+        add_point!(tri, 0.5, 4.5, predicates = PT())
+        @test validate_triangulation(tri, predicates = PT())
 
         for L in 1:3
-            tri = triangulate_rectangle(0, 4, 0, 8, 5, 9; delete_ghosts=false, predicates=PT())
-            boundary_nodes = [[
-                    [1, 5, 45], [45, 41], [41, 1]
+            tri = triangulate_rectangle(0, 4, 0, 8, 5, 9; delete_ghosts = false, predicates = PT())
+            boundary_nodes = [
+                [
+                    [1, 5, 45], [45, 41], [41, 1],
                 ],
-                [[12, 32, 34], [34, 14, 12]]
+                [[12, 32, 34], [34, 14, 12]],
             ]
             points = get_points(tri)
-            tri = triangulate(points; boundary_nodes, delete_ghosts=false, predicates=PT())
-            @test validate_triangulation(tri, predicates=PT())
-            @test get_boundary_nodes(tri) == [[
-                    [1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45], [45, 44, 43, 42, 41], [41, 36, 31, 26, 21, 16, 11, 6, 1]
+            tri = triangulate(points; boundary_nodes, delete_ghosts = false, predicates = PT())
+            @test validate_triangulation(tri, predicates = PT())
+            @test get_boundary_nodes(tri) == [
+                [
+                    [1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45], [45, 44, 43, 42, 41], [41, 36, 31, 26, 21, 16, 11, 6, 1],
                 ],
-                [[12, 17, 22, 27, 32, 33, 34], [34, 29, 24, 19, 14, 13, 12]]
+                [[12, 17, 22, 27, 32, 33, 34], [34, 29, 24, 19, 14, 13, 12]],
             ]
-            add_point!(tri, 1.5, 0.0, predicates=PT())
-            add_point!(tri, 2.5, 0.0, predicates=PT())
-            @test validate_triangulation(tri, predicates=PT())
-            add_point!(tri, 4.0, 2.5, predicates=PT())
-            add_point!(tri, 4.0, 7.5, predicates=PT())
-            add_point!(tri, 2.5, 8.0, predicates=PT())
-            add_point!(tri, 0.0, 5.5, predicates=PT())
-            add_point!(tri, 0.5, 2.2, predicates=PT())
-            add_segment!(tri, 21, 27, predicates=PT())
-            @test validate_triangulation(tri, predicates=PT())
-            add_segment!(tri, 14, 45, predicates=PT())
-            @test validate_triangulation(tri, predicates=PT())
-            add_point!(tri, 1.0, 2.5, predicates=PT())
-            @test validate_triangulation(tri, predicates=PT())
-            add_point!(tri, 1.0, 5.5, predicates=PT())
-            @test validate_triangulation(tri, predicates=PT())
-            add_point!(tri, 2.5, 2.0, predicates=PT())
-            add_point!(tri, 3.0, 5.5, predicates=PT())
-            @test validate_triangulation(tri, predicates=PT())
-            add_point!(tri, 2.5, 6.0, predicates=PT())
-            add_segment!(tri, 12, 5, predicates=PT())
-            add_segment!(tri, 2, 52, predicates=PT())
-            add_segment!(tri, 53, 21, predicates=PT())
-            @test validate_triangulation(tri, predicates=PT())
-            @test get_boundary_nodes(tri) == [[
+            add_point!(tri, 1.5, 0.0, predicates = PT())
+            add_point!(tri, 2.5, 0.0, predicates = PT())
+            @test validate_triangulation(tri, predicates = PT())
+            add_point!(tri, 4.0, 2.5, predicates = PT())
+            add_point!(tri, 4.0, 7.5, predicates = PT())
+            add_point!(tri, 2.5, 8.0, predicates = PT())
+            add_point!(tri, 0.0, 5.5, predicates = PT())
+            add_point!(tri, 0.5, 2.2, predicates = PT())
+            add_segment!(tri, 21, 27, predicates = PT())
+            @test validate_triangulation(tri, predicates = PT())
+            add_segment!(tri, 14, 45, predicates = PT())
+            @test validate_triangulation(tri, predicates = PT())
+            add_point!(tri, 1.0, 2.5, predicates = PT())
+            @test validate_triangulation(tri, predicates = PT())
+            add_point!(tri, 1.0, 5.5, predicates = PT())
+            @test validate_triangulation(tri, predicates = PT())
+            add_point!(tri, 2.5, 2.0, predicates = PT())
+            add_point!(tri, 3.0, 5.5, predicates = PT())
+            @test validate_triangulation(tri, predicates = PT())
+            add_point!(tri, 2.5, 6.0, predicates = PT())
+            add_segment!(tri, 12, 5, predicates = PT())
+            add_segment!(tri, 2, 52, predicates = PT())
+            add_segment!(tri, 53, 21, predicates = PT())
+            @test validate_triangulation(tri, predicates = PT())
+            @test get_boundary_nodes(tri) == [
+                [
                     [1, 2, 46, 3, 47, 4, 5, 10, 15, 48, 20, 25, 30, 35, 40, 49, 45],
                     [45, 44, 50, 43, 42, 41],
-                    [41, 36, 31, 51, 26, 21, 16, 11, 6, 1]
+                    [41, 36, 31, 51, 26, 21, 16, 11, 6, 1],
                 ],
                 [
                     [12, 53, 17, 22, 27, 54, 32, 33, 57, 34],
-                    [34, 56, 29, 24, 19, 14, 55, 13, 12]
-                ]
+                    [34, 56, 29, 24, 19, 14, 55, 13, 12],
+                ],
             ]
-            @test validate_triangulation(tri, predicates=PT())
-            add_point!(tri, 0.5, 4.4, predicates=PT())
-            add_point!(tri, 0.5, 4.6, predicates=PT())
-            add_point!(tri, 0.5, 4.5, predicates=PT())
-            @test validate_triangulation(tri, predicates=PT())
+            @test validate_triangulation(tri, predicates = PT())
+            add_point!(tri, 0.5, 4.4, predicates = PT())
+            add_point!(tri, 0.5, 4.6, predicates = PT())
+            add_point!(tri, 0.5, 4.5, predicates = PT())
+            @test validate_triangulation(tri, predicates = PT())
         end
     end
 end

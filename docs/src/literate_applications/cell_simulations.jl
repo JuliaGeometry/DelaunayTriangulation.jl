@@ -48,7 +48,7 @@ using StatsBase
 using CairoMakie
 Base.@kwdef mutable struct CellModel{P}
     tri::Triangulation{P}
-    new_r_cache::Vector{NTuple{2,Float64}} # for r(t + Δt)
+    new_r_cache::Vector{NTuple{2, Float64}} # for r(t + Δt)
     α::Float64
     s::Float64
     Δt::Float64
@@ -91,7 +91,7 @@ function polygon_area(points) # this is the same function from the Interpolation
     rx, ry = getxy(r)
     sx, sy = getxy(s)
     area = px * (qy - ry) + rx * (py - sy)
-    for i in 2:(n-1)
+    for i in 2:(n - 1)
         p, q, r = get_point(points, i, i + 1, i - 1)
         px, py = getxy(p)
         qx, qy = getxy(q)
@@ -101,7 +101,7 @@ function polygon_area(points) # this is the same function from the Interpolation
     return area / 2
 end
 function get_voronoi_area(tri::Triangulation, i)
-    points = NTuple{2,Float64}[]
+    points = NTuple{2, Float64}[]
     !DelaunayTriangulation.has_vertex(tri, i) && return (0.0, points) # might not be included anymore due to retriangulation
     DelaunayTriangulation.is_boundary_node(tri, i)[1] && return (0.0, points) # to prevent boundary cells from proliferating
     N = get_neighbours(tri, i)
@@ -142,7 +142,7 @@ function proliferate_cells!(cells::CellModel)
         δ = DelaunayTriangulation.distance_to_polygon(p, get_points(tri), poly)
         s, c = sincos(θ)
         q = p .+ (δ * cells.ϵ) .* (c, s)
-        add_point!(tri, q; rng=cells.rng)
+        add_point!(tri, q; rng = cells.rng)
         push!(cells.new_r_cache, q)
     end
     return nothing
@@ -156,7 +156,7 @@ function perform_step!(cells::CellModel)
 end
 function simulate_cells(cells::CellModel)
     t = 0.0
-    all_points = Vector{Vector{NTuple{2,Float64}}}()
+    all_points = Vector{Vector{NTuple{2, Float64}}}()
     push!(all_points, deepcopy(get_points(cells.tri)))
     while t < cells.final_time
         perform_step!(cells)
@@ -173,23 +173,27 @@ end
 rng = StableRNG(123444)
 a, b, c, d = -2.0, 2.0, -5.0, 5.0
 points = [(a + (b - a) * rand(rng), c + (d - c) * rand(rng)) for _ in 1:10]
-tri = triangulate(points; rng=rng)
-cells = CellModel(; tri=tri, new_r_cache=similar(points), α=5.0, s=2.0, Δt=1e-3,
-    β=0.25, K=100.0^2, rng, final_time=25.0, ϵ=0.5)
+tri = triangulate(points; rng = rng)
+cells = CellModel(;
+    tri = tri, new_r_cache = similar(points), α = 5.0, s = 2.0, Δt = 1.0e-3,
+    β = 0.25, K = 100.0^2, rng, final_time = 25.0, ϵ = 0.5,
+)
 results = simulate_cells(cells);
 
-fig = Figure(fontsize=26)
+fig = Figure(fontsize = 26)
 title_obs = Observable(L"t = %$(0.0)")
-ax1 = Axis(fig[1, 1], width=1200, height=400, title=title_obs, titlealign=:left)
+ax1 = Axis(fig[1, 1], width = 1200, height = 400, title = title_obs, titlealign = :left)
 Δt = cells.Δt
 i = Observable(1)
-voronoiplot!(ax1, @lift(voronoi(triangulate(results[$i]; rng), clip=true, rng=rng)),
-    color=:darkgreen, strokecolor=:black, strokewidth=2, show_generators=false)
+voronoiplot!(
+    ax1, @lift(voronoi(triangulate(results[$i]; rng), clip = true, rng = rng)),
+    color = :darkgreen, strokecolor = :black, strokewidth = 2, show_generators = false,
+)
 xlims!(ax1, -12, 12)
 ylims!(ax1, -12, 12)
 resize_to_layout!(fig)
 t = 0:Δt:cells.final_time
-record(fig, "cell_simulation.mp4", 1:10:length(t); framerate=60) do ii
+record(fig, "cell_simulation.mp4", 1:10:length(t); framerate = 60) do ii
     i[] = ii
     title_obs[] = L"t = %$(((ii-1) * Δt))"
 end;

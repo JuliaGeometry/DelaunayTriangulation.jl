@@ -15,8 +15,10 @@ using CairoMakie
 Let us now define our initial triangulation.
 
 ````@example operations_segment_insertion
-points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0),
-(0.9, 0.9), (0.5, 0.5), (0.2, 0.5), (0.5, 0.8)]
+points = [
+    (0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0),
+    (0.9, 0.9), (0.5, 0.5), (0.2, 0.5), (0.5, 0.8),
+]
 tri = triangulate(points)
 fig, ax, sc = triplot(tri)
 fig
@@ -63,6 +65,7 @@ fig
 ````
 
 The other constrained edge was partially removed.
+
 ## Just the code
 An uncommented version of this example is given below.
 You can view the source code for this file [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/operations_segment_insertion.jl).
@@ -71,8 +74,10 @@ You can view the source code for this file [here](https://github.com/JuliaGeomet
 using DelaunayTriangulation
 using CairoMakie
 
-points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0),
-(0.9, 0.9), (0.5, 0.5), (0.2, 0.5), (0.5, 0.8)]
+points = [
+    (0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0),
+    (0.9, 0.9), (0.5, 0.5), (0.2, 0.5), (0.5, 0.8),
+]
 tri = triangulate(points)
 fig, ax, sc = triplot(tri)
 fig

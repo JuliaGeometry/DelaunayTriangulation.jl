@@ -34,7 +34,7 @@ Float64
 """
 number_type
 number_type(x) = number_type(typeof(x))
-number_type(::Type{T}) where {T<:AbstractArray} = number_type(eltype(T))
+number_type(::Type{T}) where {T <: AbstractArray} = number_type(eltype(T))
 number_type(x::Type{<:NTuple{N}}) where {N} = eltype(x)
 number_type(::Type{Tuple{}}) = Any
 number_type(::Type{T}) where {T} = T
@@ -133,12 +133,12 @@ is_circular(A) = isempty(A) || (A[begin] == A[end])
 Compares the two circular vectors `A` and `B` for equality up to circular rotation, 
 using `by` to compare individual elements.
 """
-function circular_equality(A, B, by=isequal)
+function circular_equality(A, B, by = isequal)
     @assert is_circular(A) && is_circular(B) "A and B must be circular"
     length(A) ≠ length(B) && return false
     isempty(A) && return true # isempty(B) is true as well because of the previous assertion 
-    _A = @views A[begin:(end-1)]
-    _B = @views B[begin:(end-1)]
+    _A = @views A[begin:(end - 1)]
+    _B = @views B[begin:(end - 1)]
     same_idx = findfirst(by(_A[begin]), _B)
     same_idx === nothing && return false
     n = length(_A)
@@ -505,7 +505,7 @@ end
 Returns the unique elements of `A` up to tolerance `tol`. We say that two values `x` and `y` are within tolerance if `abs(u - v) ≤ M*tol`, where `M = maximum(abs.(A))`. It 
 is assumed that `A` is sorted - this is NOT checked.
 """
-function uniquetol(A::Vector{Float64}; tol=1e-12)
+function uniquetol(A::Vector{Float64}; tol = 1.0e-12)
     isempty(A) && return Float64[]
     M = max(abs(A[begin]), abs(A[end])) # assuming A is sorted
     intol = (x, y) -> abs(x - y) ≤ M * tol
@@ -524,14 +524,14 @@ end
 
 Evaluates `f(tup[idx])` in a type-stable way. If `idx > length(tup)`, then `f` is evaluated on the last element of `tup`.
 """
-@inline function eval_fnc_at_het_tuple_element(f::F, tup::T, idx) where {F,T}
+@inline function eval_fnc_at_het_tuple_element(f::F, tup::T, idx) where {F, T}
     return _eval_fnc_at_het_tuple_element(f, idx, tup...)
 end
-@inline function _eval_fnc_at_het_tuple_element(f::F, idx, el::E, tup...) where {F,E}
+@inline function _eval_fnc_at_het_tuple_element(f::F, idx, el::E, tup...) where {F, E}
     idx == 1 && return _eval_fnc_at_het_tuple_element(f, 1, el)
     return _eval_fnc_at_het_tuple_element(f, idx - 1, tup...)
 end
-@inline function _eval_fnc_at_het_tuple_element(f::F, idx, el::E) where {F,E}
+@inline function _eval_fnc_at_het_tuple_element(f::F, idx, el::E) where {F, E}
     return f(el)
 end
 
@@ -540,21 +540,21 @@ end
 
 Evaluates `f(tup[idx1], tup[idx2])` in a type-stable way. 
 """
-@inline function eval_fnc_at_het_tuple_two_elements(f::F, tup::T, idx1, idx2) where {F,T<:Tuple}
+@inline function eval_fnc_at_het_tuple_two_elements(f::F, tup::T, idx1, idx2) where {F, T <: Tuple}
     return _eval_fnc_at_het_tuple_two_elements(f, idx2, tup, idx1, tup...)
 end
-@inline function _eval_fnc_at_het_tuple_two_elements(f::F, idx2, next_tup::T, idx1, el::E, tup...) where {F,E,T<:Tuple}
+@inline function _eval_fnc_at_het_tuple_two_elements(f::F, idx2, next_tup::T, idx1, el::E, tup...) where {F, E, T <: Tuple}
     idx1 == 1 && return _eval_fnc_at_het_tuple_two_elements(f, idx2, next_tup, 1, el)
     return _eval_fnc_at_het_tuple_two_elements(f, idx2, next_tup, idx1 - 1, tup...)
 end
-@inline function _eval_fnc_at_het_tuple_two_elements(f::F, idx2, next_tup::T, idx1, el::E) where {F,E,T<:Tuple}
+@inline function _eval_fnc_at_het_tuple_two_elements(f::F, idx2, next_tup::T, idx1, el::E) where {F, E, T <: Tuple}
     return _eval_fnc_at_het_tuple_two_elements(f, idx2, el, next_tup...)
 end
-@inline function _eval_fnc_at_het_tuple_two_elements(f::F, idx2, el::E, el2::V, tup...) where {F,E,V}
+@inline function _eval_fnc_at_het_tuple_two_elements(f::F, idx2, el::E, el2::V, tup...) where {F, E, V}
     idx2 == 1 && return _eval_fnc_at_het_tuple_two_elements(f, 1, el, el2)
     return _eval_fnc_at_het_tuple_two_elements(f, idx2 - 1, el, tup...)
 end
-@inline function _eval_fnc_at_het_tuple_two_elements(f::F, idx2, el::E, el2::V) where {F,E,V}
+@inline function _eval_fnc_at_het_tuple_two_elements(f::F, idx2, el::E, el2::V) where {F, E, V}
     return f(el, el2)
 end
 
@@ -563,14 +563,14 @@ end
 
 Evaluates `f(tup[idx], arg...)` in a type-stable way. If `idx > length(tup)`, then `f` is evaluated on the last element of `tup`.
 """
-@inline function eval_fnc_at_het_tuple_element_with_arg(f::F, tup::T, arg, idx) where {F,T}
+@inline function eval_fnc_at_het_tuple_element_with_arg(f::F, tup::T, arg, idx) where {F, T}
     return _eval_fnc_at_het_tuple_element_with_arg(f, idx, arg, tup...)
 end
-@inline function _eval_fnc_at_het_tuple_element_with_arg(f::F, idx, arg, el::E, tup...) where {F,E}
+@inline function _eval_fnc_at_het_tuple_element_with_arg(f::F, idx, arg, el::E, tup...) where {F, E}
     idx == 1 && return _eval_fnc_at_het_tuple_element_with_arg(f, 1, arg, el)
     return _eval_fnc_at_het_tuple_element_with_arg(f, idx - 1, arg, tup...)
 end
-@inline function _eval_fnc_at_het_tuple_element_with_arg(f::F, idx, arg, el::E) where {F,E}
+@inline function _eval_fnc_at_het_tuple_element_with_arg(f::F, idx, arg, el::E) where {F, E}
     return f(el, arg...)
 end
 
@@ -579,14 +579,14 @@ end
 
 Evaluates `f(prearg, tup[idx], arg...)` in a type-stable way. If `idx > length(tup)`, then `f` is evaluated on the last element of `tup`.
 """
-@inline function eval_fnc_at_het_tuple_element_with_arg_and_prearg(f::F, tup::T, prearg, arg, idx) where {F,T}
+@inline function eval_fnc_at_het_tuple_element_with_arg_and_prearg(f::F, tup::T, prearg, arg, idx) where {F, T}
     return _eval_fnc_at_het_tuple_element_with_arg_and_prearg(f, idx, prearg, arg, tup...)
 end
-@inline function _eval_fnc_at_het_tuple_element_with_arg_and_prearg(f::F, idx, prearg, arg, el::E, tup...) where {F,E}
-    idx == 1 && return _eval_fnc_at_het_tuple_element_with_arg_and_prearg(f, 1, prearg,  arg, el)
+@inline function _eval_fnc_at_het_tuple_element_with_arg_and_prearg(f::F, idx, prearg, arg, el::E, tup...) where {F, E}
+    idx == 1 && return _eval_fnc_at_het_tuple_element_with_arg_and_prearg(f, 1, prearg, arg, el)
     return _eval_fnc_at_het_tuple_element_with_arg_and_prearg(f, idx - 1, prearg, arg, tup...)
 end
-@inline function _eval_fnc_at_het_tuple_element_with_arg_and_prearg(f::F, idx, prearg, arg, el::E) where {F,E}
+@inline function _eval_fnc_at_het_tuple_element_with_arg_and_prearg(f::F, idx, prearg, arg, el::E) where {F, E}
     return f(prearg, el, arg...)
 end
 
@@ -595,7 +595,7 @@ end
 
 Evaluates `tup[idx](arg...)` in a type-stable way. If `idx > length(tup)`, then `tup[end](arg...)` is evaluated.
 """
-@inline function eval_fnc_in_het_tuple(tup::T, arg::A, idx) where {T,A}
+@inline function eval_fnc_in_het_tuple(tup::T, arg::A, idx) where {T, A}
     return eval_fnc_at_het_tuple_element_with_arg(self_eval, tup, arg, idx)
 end
 

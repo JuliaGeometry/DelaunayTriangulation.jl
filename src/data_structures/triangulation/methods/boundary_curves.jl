@@ -51,7 +51,7 @@ end
         return (PiecewiseLinear(points, boundary_nodes),)
     end
 end
-@inline function _to_boundary_curves_multiple_sections(points, boundary_nodes, section=1, boundary_curves=())
+@inline function _to_boundary_curves_multiple_sections(points, boundary_nodes, section = 1, boundary_curves = ())
     if section > num_sections(boundary_nodes)
         return boundary_curves
     else
@@ -60,7 +60,7 @@ end
         return _to_boundary_curves_multiple_sections(points, boundary_nodes, section + 1, (boundary_curves..., new_boundary_curves...))
     end
 end
-@inline function _to_boundary_curves_multiple_curves(points, boundary_nodes, curve=1, boundary_curves=())
+@inline function _to_boundary_curves_multiple_curves(points, boundary_nodes, curve = 1, boundary_curves = ())
     if curve > num_curves(boundary_nodes)
         return boundary_curves
     else
@@ -90,7 +90,7 @@ triangulation. In particular:
 - `boundary_curves`: The boundary curves associated with `boundary_nodes`.
 - `boundary_nodes`: The modified boundary nodes.
 """
-@inline function convert_boundary_curves!(points, boundary_nodes, ::Type{I}) where {I<:Integer}
+@inline function convert_boundary_curves!(points, boundary_nodes, ::Type{I}) where {I <: Integer}
     boundary_curves = to_boundary_curves(points, boundary_nodes)
     !is_curve_bounded(boundary_curves) && return boundary_curves, boundary_nodes
     new_boundary_nodes = get_skeleton(boundary_nodes, I)
@@ -106,7 +106,7 @@ end
 @inline function _convert_boundary_curves_multiple_curves!(points, boundary_nodes, boundary_curves, new_boundary_nodes)
     ctr = 1
     for curve_index in 1:num_curves(boundary_nodes)
-        curve_nodes =get_boundary_nodes(boundary_nodes, curve_index)
+        curve_nodes = get_boundary_nodes(boundary_nodes, curve_index)
         new_curve_nodes = get_boundary_nodes(new_boundary_nodes, curve_index)
         for section_index in 1:num_sections(curve_nodes)
             section_nodes = get_boundary_nodes(curve_nodes, section_index)
@@ -128,7 +128,7 @@ end
 @inline function _convert_boundary_curves_contiguous!(points, boundary_nodes, boundary_curves, curve_index, new_boundary_nodes)
     if is_piecewise_linear(boundary_curves, curve_index)
         n = num_boundary_edges(boundary_nodes)
-        for i in 1:(n+1)
+        for i in 1:(n + 1)
             v = get_boundary_nodes(boundary_nodes, i)
             insert_boundary_node!(new_boundary_nodes, (new_boundary_nodes, i), v)
         end
@@ -147,4 +147,3 @@ end
     end
     return nothing
 end
-

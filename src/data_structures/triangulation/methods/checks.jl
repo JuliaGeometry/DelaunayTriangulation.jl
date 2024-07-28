@@ -6,9 +6,9 @@ Tests if the edge `(i, j)` is in `tri`, returning `true` if so and `false` other
 
 See also [`unoriented_edge_exists`](@ref).
 """
-edge_exists(i::I) where {I<:Integer} = i ≠ I(∅)
-edge_exists(tri::Triangulation, ij) = edge_exists(get_adjacent(tri,ij))
-edge_exists(tri::Triangulation, i, j) = edge_exists(get_adjacent(tri,i,j))
+edge_exists(i::I) where {I <: Integer} = i ≠ I(∅)
+edge_exists(tri::Triangulation, ij) = edge_exists(get_adjacent(tri, ij))
+edge_exists(tri::Triangulation, i, j) = edge_exists(get_adjacent(tri, i, j))
 
 """
     unoriented_edge_exists(tri::Triangulation, ij) -> Bool 
@@ -59,9 +59,9 @@ has_multiple_sections(tri::Triangulation) = has_multiple_sections(get_boundary_n
 
 Returns `true` if `tri` has boundary nodes, and `false` otherwise.
 """
-function has_boundary_nodes(boundary_nodes) 
+function has_boundary_nodes(boundary_nodes)
     return has_multiple_sections(boundary_nodes) || num_boundary_edges(boundary_nodes) ≠ 0 || eltype(boundary_nodes) <: AbstractParametricCurve
-end 
+end
 has_boundary_nodes(tri::Triangulation) = has_boundary_nodes(get_boundary_nodes(tri))
 has_boundary_nodes(::Nothing) = false
 

@@ -124,7 +124,7 @@ Finalises the triangulation after refinement, e.g. by deleting ghost triangles a
 """
 function finalise!(tri::Triangulation, args::RefinementArguments)
     !args.had_ghosts && delete_ghost_triangles!(tri)
-    args.locked_convex_hull && unlock_convex_hull!(tri; reconstruct=true)
+    args.locked_convex_hull && unlock_convex_hull!(tri; reconstruct = true)
     return tri
 end
 
@@ -252,7 +252,7 @@ function locate_steiner_point(tri::Triangulation, args::RefinementArguments, T, 
     flag = point_position_relative_to_triangle(args.predicates, tri, T, c)
     !is_outside(flag) && return T, flag # T is never a ghost triangle, so don't worry about checking is_on(flag) here
     init = get_init_for_steiner_point(tri, T)
-    V, _ = find_triangle(tri, c; predicates=args.predicates, m=nothing, point_indices=nothing, try_points=nothing, k=init, args.rng, args.concavity_protection, use_barriers=Val(true))
+    V, _ = find_triangle(tri, c; predicates = args.predicates, m = nothing, point_indices = nothing, try_points = nothing, k = init, args.rng, args.concavity_protection, use_barriers = Val(true))
     flag = point_position_relative_to_triangle(args.predicates, tri, V, c)
     if is_ghost_triangle(V) && is_on(flag)
         V = replace_ghost_triangle_with_boundary_triangle(tri, V)
@@ -342,7 +342,7 @@ function enqueue_newly_encroached_segments!(args::RefinementArguments, tri::Tria
     return any_encroached
 end
 
-const MIDPOINT_TOLERANCE = 1e-6
+const MIDPOINT_TOLERANCE = 1.0e-6
 
 """
     compute_split_position(tri::Triangulation, args::RefinementArguments, e) -> NTuple{2, Float}
@@ -490,7 +490,7 @@ Determines if the vertices of a segment `e` of `tri` adjoin other segments at an
 - `num_adjoin`: The number of vertices of `e` that adjoin other segments at an acute angle.
 - `adjoin_vert`: The vertex of `e` that adjoins another segment at an acute angle if `num_adjoin == 1`, and `∅` otherwise.
 """
-function segment_vertices_adjoin_other_segments_at_acute_angle(tri::Triangulation, e, predicates::AbstractPredicateKernel=AdaptiveKernel())
+function segment_vertices_adjoin_other_segments_at_acute_angle(tri::Triangulation, e, predicates::AbstractPredicateKernel = AdaptiveKernel())
     u, v = edge_vertices(e)
     p, q = get_point(tri, u, v)
     I = integer_type(tri)
@@ -578,7 +578,7 @@ function check_split_subsegment_precision(mx, my, p, q)
     abs_err_flag_1 = check_absolute_precision(mx, px) && check_absolute_precision(my, py)
     abs_err_flag_2 = check_absolute_precision(mx, qx) && check_absolute_precision(my, qy)
     abs_err_flag = abs_err_flag_1 || abs_err_flag_2
-    return abs_err_flag 
+    return abs_err_flag
 end
 
 """
@@ -615,7 +615,7 @@ function _split_subsegment_piecewise_linear!(tri::Triangulation, args::Refinemen
     push_point!(tri, mx, my)
     I = integer_type(tri)
     r = I(num_points(tri))
-    complete_split_edge_and_legalise!(tri, u, v, r, Val(true), args.events; predicates=args.predicates)
+    complete_split_edge_and_legalise!(tri, u, v, r, Val(true), args.events; predicates = args.predicates)
     assess_added_triangles!(args, tri)
     return tri
 end
@@ -654,8 +654,8 @@ function _split_subsegment_curve_bounded_standard!(tri::Triangulation, args::Ref
         I = integer_type(tri)
         r = I(num_points(tri))
         is_interior = is_segment(enricher, i, j)
-        complete_split_edge_and_legalise!(tri, i, j, r, Val(true), args.events; predicates=args.predicates)
-        split_edge!(enricher, i, j, r, Val(false), Val(false), is_interior) 
+        complete_split_edge_and_legalise!(tri, i, j, r, Val(true), args.events; predicates = args.predicates)
+        split_edge!(enricher, i, j, r, Val(false), Val(false), is_interior)
         assess_added_triangles!(args, tri)
         push!(args.midpoint_split_list, r)
         return tri
@@ -687,7 +687,7 @@ function _split_subsegment_curve_bounded_small_angle!(tri::Triangulation, args::
         e′ = construct_edge(E, i, j)
         delete_free_vertices_around_subsegment!(tri, args, e′)
         is_interior = is_segment(enricher, i, j)
-        complete_split_edge_and_legalise!(tri, i, j, r, Val(true), args.events; predicates=args.predicates)
+        complete_split_edge_and_legalise!(tri, i, j, r, Val(true), args.events; predicates = args.predicates)
         split_edge!(enricher, i, j, r, Val(false), Val(false), is_interior)
         replace_next_edge!(enricher, apex, complex_id, member_id, r)
         assess_added_triangles!(args, tri)
@@ -716,7 +716,7 @@ function delete_free_vertices_around_subsegment!(tri::Triangulation, args::Refin
         w = get_adjacent(tri, e′)
         r = get_point(tri, w)
         while is_free(args, w) && !is_outside(point_position_relative_to_diametral_circle(args.predicates, p, q, r))
-            delete_point!(tri, w; store_event_history=Val(true), event_history=args.events, rng=args.rng, predicates=args.predicates)
+            delete_point!(tri, w; store_event_history = Val(true), event_history = args.events, rng = args.rng, predicates = args.predicates)
             w = get_adjacent(tri, e′)
             r = get_point(tri, w)
         end

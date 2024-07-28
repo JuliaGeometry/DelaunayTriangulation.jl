@@ -50,17 +50,21 @@ tri = triangulate(pts)
 ````
 
 ````@example constrained_edges
-cons_tri = triangulate(pts; segments=C)
+cons_tri = triangulate(pts; segments = C)
 ````
 
 ````@example constrained_edges
 fig = Figure()
-ax1 = Axis(fig[1, 1], xlabel="x", ylabel=L"y",
-    title="(a): Unconstrained", titlealign=:left,
-    width=300, height=300)
-ax2 = Axis(fig[1, 2], xlabel="x", ylabel=L"y",
-    title="(b): Constrained", titlealign=:left,
-    width=300, height=300)
+ax1 = Axis(
+    fig[1, 1], xlabel = "x", ylabel = L"y",
+    title = "(a): Unconstrained", titlealign = :left,
+    width = 300, height = 300,
+)
+ax2 = Axis(
+    fig[1, 2], xlabel = "x", ylabel = L"y",
+    title = "(b): Constrained", titlealign = :left,
+    width = 300, height = 300,
+)
 triplot!(ax1, tri)
 triplot!(ax2, cons_tri, show_constrained_edges = true)
 resize_to_layout!(fig)
@@ -109,15 +113,19 @@ C = Set([(2, 1), (2, 11), (2, 7), (2, 5)])
 
 tri = triangulate(pts)
 
-cons_tri = triangulate(pts; segments=C)
+cons_tri = triangulate(pts; segments = C)
 
 fig = Figure()
-ax1 = Axis(fig[1, 1], xlabel="x", ylabel=L"y",
-    title="(a): Unconstrained", titlealign=:left,
-    width=300, height=300)
-ax2 = Axis(fig[1, 2], xlabel="x", ylabel=L"y",
-    title="(b): Constrained", titlealign=:left,
-    width=300, height=300)
+ax1 = Axis(
+    fig[1, 1], xlabel = "x", ylabel = L"y",
+    title = "(a): Unconstrained", titlealign = :left,
+    width = 300, height = 300,
+)
+ax2 = Axis(
+    fig[1, 2], xlabel = "x", ylabel = L"y",
+    title = "(b): Constrained", titlealign = :left,
+    width = 300, height = 300,
+)
 triplot!(ax1, tri)
 triplot!(ax2, cons_tri, show_constrained_edges = true)
 resize_to_layout!(fig)

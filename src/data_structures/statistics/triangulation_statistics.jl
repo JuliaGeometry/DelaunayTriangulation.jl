@@ -29,7 +29,7 @@ A struct containing statistics about a triangulation.
 # Constructors
 To construct these statistics, use [`statistics`](@ref), which you call as `statistics(tri::Triangulation)`.
 """
-struct TriangulationStatistics{T,V,I}
+struct TriangulationStatistics{T, V, I}
     num_vertices::I
     num_solid_vertices::I
     num_ghost_vertices::I
@@ -50,7 +50,7 @@ struct TriangulationStatistics{T,V,I}
     smallest_radius_edge_ratio::V
     largest_radius_edge_ratio::V
     area::V
-    individual_statistics::Dict{T,IndividualTriangleStatistics{V}}
+    individual_statistics::Dict{T, IndividualTriangleStatistics{V}}
 end
 function Base.show(io::IO, ::MIME"text/plain", stats::TriangulationStatistics)
     println(io, "Delaunay Triangulation Statistics.")
@@ -102,7 +102,7 @@ function statistics(tri::Triangulation)
     nsegments = num_edges(segments)
     convex_hull_vertices = get_convex_hull_vertices(tri)
     nconvex_hull_vertices = max(0, length(convex_hull_vertices) - 1) # -1 because the last index is the same as the first 
-    individual_statistics = Dict{V,IndividualTriangleStatistics{F}}()
+    individual_statistics = Dict{V, IndividualTriangleStatistics{F}}()
     sizehint!(individual_statistics, nsolid_tris)
     smallest_angle = typemax(F)
     largest_angle = typemin(F)
@@ -144,7 +144,7 @@ function statistics(tri::Triangulation)
         smallest_radius_edge_ratio,
         largest_radius_edge_ratio,
         total_area,
-        individual_statistics
+        individual_statistics,
     )
 end
 for n in fieldnames(TriangulationStatistics)
@@ -176,10 +176,10 @@ for n in fieldnames(IndividualTriangleStatistics)
     Returns the $($name) field from the individual triangle statistics for the triangle `T` in the [`TriangulationStatistics`](@ref) `stats`.
     """ ($(Symbol("get_$n")))(stats::TriangulationStatistics, T) =
             let indiv_stats = get_individual_statistics(stats)
-                T = contains_triangle(T, keys(indiv_stats))
-                !T[2] && throw(BoundsError(indiv_stats, T))
-                return indiv_stats[T[1]].$n
-            end
+            T = contains_triangle(T, keys(indiv_stats))
+            !T[2] && throw(BoundsError(indiv_stats, T))
+            return indiv_stats[T[1]].$n
+        end
     end
 end
 

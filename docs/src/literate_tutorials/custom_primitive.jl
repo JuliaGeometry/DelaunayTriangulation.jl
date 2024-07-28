@@ -48,7 +48,7 @@ struct CustomPolygon
     segments::Vector{CustomPolygonSegment}
 end
 struct CustomPolygons{N}
-    polygons::NTuple{N,CustomPolygon}
+    polygons::NTuple{N, CustomPolygon}
 end
 
 # Now, depending on your application you might not need to define all possible methods. For example, if you just want an unconstrained triangulation, all you need are `CustomPoint` 
@@ -102,8 +102,8 @@ DT.num_sections(poly::CustomPolygon) = length(poly.segments)
 DT.num_boundary_edges(seg::CustomPolygonSegment) = length(seg.segments)
 DT.get_boundary_nodes(poly::CustomPolygons, m::Integer) = poly.polygons[m] # go down to the mth polygon 
 DT.get_boundary_nodes(poly::CustomPolygon, m::Integer) = poly.segments[m] # go down to the mth segment
-DT.get_boundary_nodes(seg::CustomPolygonSegment, m::Integer) = m > length(seg.segments) ? DT.terminal(seg.segments[m-1]) : DT.initial(seg.segments[m]) # go down to the mth edge and extract the left node 
-DT.get_boundary_nodes(poly::CustomPolygons, (m, n)::NTuple{2,Int32}) = DT.get_boundary_nodes(DT.get_boundary_nodes(poly, m), n)
+DT.get_boundary_nodes(seg::CustomPolygonSegment, m::Integer) = m > length(seg.segments) ? DT.terminal(seg.segments[m - 1]) : DT.initial(seg.segments[m]) # go down to the mth edge and extract the left node 
+DT.get_boundary_nodes(poly::CustomPolygons, (m, n)::NTuple{2, Int32}) = DT.get_boundary_nodes(DT.get_boundary_nodes(poly, m), n)
 
 # We now have all that we need for defining our custom primitives for constrained triangulations. We can go further and define methods 
 # for working with Voronoi tessellations and centroidal Voronoi tessellations. For these methods, note that these only apply to unconstrained 
@@ -125,9 +125,9 @@ DT.contains_edge(e::CustomSegment, Es::CustomSegments) = e ∈ Es.segments
 Base.empty!(triangles::CustomTriangles) = empty!(triangles.triangles)
 
 function Base.insert!(seg::CustomPolygonSegment, index, node)
-    cur_segment = seg.segments[index-1]
+    cur_segment = seg.segments[index - 1]
     u, v = edge_vertices(cur_segment)
-    seg.segments[index-1] = CustomSegment(u, node)
+    seg.segments[index - 1] = CustomSegment(u, node)
     insert!(seg.segments, index, CustomSegment(node, v))
     return seg
 end
@@ -144,26 +144,31 @@ p8 = CustomPoint(0.75, 0.75)
 p9 = CustomPoint(0.25, 0.75)
 points = CustomPoints([p1, p2, p3, p4, p5, p6, p7, p8, p9])
 segments = CustomSegments(Set{CustomSegment}((CustomSegment(2, 7), CustomSegment(8, 3))))
-outer_polygon = CustomPolygon([
-    CustomPolygonSegment([CustomSegment(1, 2), CustomSegment(2, 3)]),
-    CustomPolygonSegment([CustomSegment(3, 4), CustomSegment(4, 1)]),
-])
-inner_polygon = CustomPolygon([
-    CustomPolygonSegment([CustomSegment(6, 9), CustomSegment(9, 8), CustomSegment(8, 7), CustomSegment(7, 6)]),
-])
+outer_polygon = CustomPolygon(
+    [
+        CustomPolygonSegment([CustomSegment(1, 2), CustomSegment(2, 3)]),
+        CustomPolygonSegment([CustomSegment(3, 4), CustomSegment(4, 1)]),
+    ],
+)
+inner_polygon = CustomPolygon(
+    [
+        CustomPolygonSegment([CustomSegment(6, 9), CustomSegment(9, 8), CustomSegment(8, 7), CustomSegment(7, 6)]),
+    ],
+)
 polygons = CustomPolygons((outer_polygon, inner_polygon));
 
 # Now we triangulate and refine.
 rng = StableRNG(123)
-tri = triangulate(points; boundary_nodes=polygons, segments,
-    IntegerType=Int32,
-    EdgeType=CustomSegment,
-    TriangleType=CustomTriangle,
-    EdgesType=CustomSegments,
-    TrianglesType=CustomTriangles,
-    rng
+tri = triangulate(
+    points; boundary_nodes = polygons, segments,
+    IntegerType = Int32,
+    EdgeType = CustomSegment,
+    TriangleType = CustomTriangle,
+    EdgesType = CustomSegments,
+    TrianglesType = CustomTriangles,
+    rng,
 )
-refine!(tri; max_area=1e-3, rng)
+refine!(tri; max_area = 1.0e-3, rng)
 fig, ax, sc = triplot(tri)
 fig
 @test_reference joinpath(fig_path, "custom_structs_ex_1.png") fig by = psnr_equality(5.0) #src
@@ -172,14 +177,16 @@ fig
 # this all works. 
 rng = StableRNG(123)
 points = CustomPoints([p1, p2, p3, p4, p5, p6, p7, p8, p9])
-tri = triangulate(points;
-    IntegerType=Int32,
-    EdgeType=CustomSegment,
-    TriangleType=CustomTriangle,
-    EdgesType=CustomSegments,
-    TrianglesType=CustomTriangles,
-    rng)
-vorn = voronoi(tri; clip=true, smooth=true, rng)
+tri = triangulate(
+    points;
+    IntegerType = Int32,
+    EdgeType = CustomSegment,
+    TriangleType = CustomTriangle,
+    EdgesType = CustomSegments,
+    TrianglesType = CustomTriangles,
+    rng,
+)
+vorn = voronoi(tri; clip = true, smooth = true, rng)
 fig, ax, sc = voronoiplot(vorn)
 fig
 @test_reference joinpath(fig_path, "custom_structs_ex_2.png") fig by = psnr_equality(5.0) #src

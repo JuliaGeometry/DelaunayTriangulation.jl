@@ -14,13 +14,15 @@ edge. First, let us consider the following triangulation.
 using DelaunayTriangulation
 using CairoMakie
 
-points = [(0.0, 0.0), (0.0, 4.0), (2.0, 3.0), (-2.0, 3.0),
+points = [
+    (0.0, 0.0), (0.0, 4.0), (2.0, 3.0), (-2.0, 3.0),
     (-2.0, 7.0), (3.0, 6.0), (2.0, -2.0), (-4.0, 1.0),
-    (1.0, 5.0)]
+    (1.0, 5.0),
+]
 p = (0.0, 3.0)
 tri = triangulate(points)
 fig, ax, sc = triplot(tri)
-scatter!(ax, [p], markersize=14)
+scatter!(ax, [p], markersize = 14)
 fig
 ````
 
@@ -61,6 +63,7 @@ legalise_edge!(tri, k, j, r)
 
 These steps, in particular the steps of splitting both sides of the edge and then
 legalising, are also implemented in [`DelaunayTriangulation.complete_split_edge_and_legalise!`](@ref).
+
 ## Just the code
 An uncommented version of this example is given below.
 You can view the source code for this file [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/operations_split_edge.jl).
@@ -69,13 +72,15 @@ You can view the source code for this file [here](https://github.com/JuliaGeomet
 using DelaunayTriangulation
 using CairoMakie
 
-points = [(0.0, 0.0), (0.0, 4.0), (2.0, 3.0), (-2.0, 3.0),
+points = [
+    (0.0, 0.0), (0.0, 4.0), (2.0, 3.0), (-2.0, 3.0),
     (-2.0, 7.0), (3.0, 6.0), (2.0, -2.0), (-4.0, 1.0),
-    (1.0, 5.0)]
+    (1.0, 5.0),
+]
 p = (0.0, 3.0)
 tri = triangulate(points)
 fig, ax, sc = triplot(tri)
-scatter!(ax, [p], markersize=14)
+scatter!(ax, [p], markersize = 14)
 fig
 
 push!(points, p)

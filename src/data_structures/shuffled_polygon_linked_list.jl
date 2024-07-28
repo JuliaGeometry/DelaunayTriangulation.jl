@@ -19,20 +19,20 @@ To construct this, use
 
 The argument `rng` is used for shuffling the `shuffled_indices` vector.
 """
-struct ShuffledPolygonLinkedList{I,T}
+struct ShuffledPolygonLinkedList{I, T}
     next::Vector{I}
     prev::Vector{I}
     shuffled_indices::Vector{I}
     k::I
     S::T
-    function ShuffledPolygonLinkedList(next::Vector{I}, prev::Vector{I}, shuffled_indices::Vector{I}, k::I, S::T) where {I,T}
+    function ShuffledPolygonLinkedList(next::Vector{I}, prev::Vector{I}, shuffled_indices::Vector{I}, k::I, S::T) where {I, T}
         Base.require_one_based_indexing(S)
         @assert !is_circular(S) "S must not be circular."
         @assert length(next) == length(prev) == length(shuffled_indices) == k == length(S) "The lengths of next, prev, shuffled_indices, and S must be equal."
         new{I, T}(next, prev, shuffled_indices, k, S)
     end
 end
-function ShuffledPolygonLinkedList(S::AbstractVector{I}; rng::Random.AbstractRNG=Random.default_rng()) where {I} 
+function ShuffledPolygonLinkedList(S::AbstractVector{I}; rng::Random.AbstractRNG = Random.default_rng()) where {I}
     k = I(length(S))
     shuffled_indices = collect(I, eachindex(S))
     next = zeros(I, k)
@@ -48,10 +48,10 @@ end
 Resets the linked `list`, so that `list.next[i] = mod1(i+1, list.k)` and `list.prev[i] = mod1(i-1, list.k)`,
 and also reshuffles the `list.shuffled_indices` vector.
 """
-function reset!(list::ShuffledPolygonLinkedList; rng::Random.AbstractRNG=Random.default_rng())
-    for i in 1:list.k 
-        list.next[i] = mod1(i+1, list.k)
-        list.prev[i] = mod1(i-1, list.k)
+function reset!(list::ShuffledPolygonLinkedList; rng::Random.AbstractRNG = Random.default_rng())
+    for i in 1:list.k
+        list.next[i] = mod1(i + 1, list.k)
+        list.prev[i] = mod1(i - 1, list.k)
     end
     Random.shuffle!(rng, list.shuffled_indices)
     return list
@@ -83,7 +83,7 @@ we perform
 which is the same as removing `S[πᵢ]` from the linked `list`.
 """
 function delete_vertex!(list::ShuffledPolygonLinkedList, i)
-    πᵢ = list.shuffled_indices[i] 
+    πᵢ = list.shuffled_indices[i]
     list.next[list.prev[πᵢ]] = list.next[πᵢ]
     list.prev[list.next[πᵢ]] = list.prev[πᵢ]
     return list

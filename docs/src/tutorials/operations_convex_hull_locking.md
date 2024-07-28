@@ -48,6 +48,7 @@ isn't actually equal to the convex hull.
 Note that this locking/unlocking doesn't actually change anything about the triangulation,
 it just adds information into `tri` to treat it as if you had provided
 the convex hull as a constrained boundary to start with.
+
 ## Just the code
 An uncommented version of this example is given below.
 You can view the source code for this file [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/operations_convex_hull_locking.jl).

@@ -22,7 +22,7 @@ and then passing that triangulation into `voronoi`.
 points = [
     (-3.0, 7.0), (1.0, 6.0), (-1.0, 3.0),
     (-2.0, 4.0), (3.0, -2.0), (5.0, 5.0),
-    (-4.0, -3.0), (3.0, 8.0)
+    (-4.0, -3.0), (3.0, 8.0),
 ]
 rng = StableRNG(123)
 tri = triangulate(points; rng)
@@ -33,7 +33,7 @@ To visualise the tessellation, you can use `voronoiplot`. Here,
 we also compare the tessellation with its dual triangulation.
 
 ````@example voronoi
-fig, ax, sc = voronoiplot(vorn, markersize=13, colormap=:matter, strokecolor=:white, strokewidth=5)
+fig, ax, sc = voronoiplot(vorn, markersize = 13, colormap = :matter, strokecolor = :white, strokewidth = 5)
 triplot!(ax, tri)
 fig
 ````
@@ -179,7 +179,7 @@ function get_polygon_area(vorn, i)
     vⱼ = vertices[begin]
     pⱼ = get_polygon_point(vorn, vⱼ)
     xⱼ, yⱼ = getxy(pⱼ)
-    for j in (firstindex(vertices)+1):lastindex(vertices) # same as 2:length(vertices)
+    for j in (firstindex(vertices) + 1):lastindex(vertices) # same as 2:length(vertices)
         vⱼ₊₁ = vertices[j]
         pⱼ₊₁ = get_polygon_point(vorn, vⱼ₊₁)
         xⱼ₊₁, yⱼ₊₁ = getxy(pⱼ₊₁)
@@ -262,13 +262,13 @@ using StableRNGs
 points = [
     (-3.0, 7.0), (1.0, 6.0), (-1.0, 3.0),
     (-2.0, 4.0), (3.0, -2.0), (5.0, 5.0),
-    (-4.0, -3.0), (3.0, 8.0)
+    (-4.0, -3.0), (3.0, 8.0),
 ]
 rng = StableRNG(123)
 tri = triangulate(points; rng)
 vorn = voronoi(tri)
 
-fig, ax, sc = voronoiplot(vorn, markersize=13, colormap=:matter, strokecolor=:white, strokewidth=5)
+fig, ax, sc = voronoiplot(vorn, markersize = 13, colormap = :matter, strokecolor = :white, strokewidth = 5)
 triplot!(ax, tri)
 fig
 
@@ -322,7 +322,7 @@ function get_polygon_area(vorn, i)
     vⱼ = vertices[begin]
     pⱼ = get_polygon_point(vorn, vⱼ)
     xⱼ, yⱼ = getxy(pⱼ)
-    for j in (firstindex(vertices)+1):lastindex(vertices) # same as 2:length(vertices)
+    for j in (firstindex(vertices) + 1):lastindex(vertices) # same as 2:length(vertices)
         vⱼ₊₁ = vertices[j]
         pⱼ₊₁ = get_polygon_point(vorn, vⱼ₊₁)
         xⱼ₊₁, yⱼ₊₁ = getxy(pⱼ₊₁)

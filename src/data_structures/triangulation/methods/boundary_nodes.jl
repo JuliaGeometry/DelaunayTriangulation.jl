@@ -25,9 +25,9 @@ There are several forms for the methods:
 """
 @inline get_boundary_nodes(tri::Triangulation, mnℓ...) = get_boundary_nodes(get_boundary_nodes(tri), mnℓ...)
 @inline get_boundary_nodes(tri::Triangulation, m::Integer) = get_boundary_nodes(get_boundary_nodes(tri), m) # method ambiguity
-@inline get_boundary_nodes(tri::Triangulation, (m, n)::NTuple{2,Integer}) = get_boundary_nodes(get_boundary_nodes(tri), (m, n)) # method ambiguity
+@inline get_boundary_nodes(tri::Triangulation, (m, n)::NTuple{2, Integer}) = get_boundary_nodes(get_boundary_nodes(tri), (m, n)) # method ambiguity
 @inline get_boundary_nodes(tri::Triangulation, m::Integer, n::Integer) = get_boundary_nodes(get_boundary_nodes(tri), m, n) # method ambiguity
-@inline get_boundary_nodes(tri::A, ::A) where {A<:Triangulation} = get_boundary_nodes(tri) # ambiguity. method doesn't really make sense 
+@inline get_boundary_nodes(tri::A, ::A) where {A <: Triangulation} = get_boundary_nodes(tri) # ambiguity. method doesn't really make sense 
 
 """
     get_right_boundary_node(tri::Triangulation, k, ghost_vertex) -> Vertex
@@ -191,7 +191,7 @@ function split_boundary_edge_at_collinear_segments!(tri::Triangulation, collinea
     #   u -- r₁ -- r₂ -- r₃ -- r₄ -------- v -> split(r₃, v, r₄)
     #   u -- r₁ -- r₂ -- r₃ -- r₄ -- r₅ -- v -> split(r₄, v, r₅)
     v = terminal(last(collinear_segments))
-    for k in (firstindex(collinear_segments)):(lastindex(collinear_segments)-1)
+    for k in (firstindex(collinear_segments)):(lastindex(collinear_segments) - 1)
         segment = collinear_segments[k]
         rₖ₋₁, rₖ = edge_vertices(segment)
         split_boundary_edge!(tri, rₖ₋₁, v, rₖ)
@@ -216,7 +216,7 @@ function get_all_boundary_nodes(tri::Triangulation)
         for section_index in boundary_sections
             bn_nodes = get_boundary_nodes(tri, section_index)
             nedges = num_boundary_edges(bn_nodes)
-            for node_idx in 1:(nedges+1)
+            for node_idx in 1:(nedges + 1)
                 vᵢ = get_boundary_nodes(bn_nodes, node_idx)
                 push!(all_nodes, vᵢ)
             end

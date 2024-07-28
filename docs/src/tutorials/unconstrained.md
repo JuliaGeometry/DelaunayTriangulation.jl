@@ -28,7 +28,7 @@ as a keyword argument, but again if you are not concerned about the RNG (or
 set the seed using `Random.seed!`) then you can ignore this.
 
 ````@example unconstrained
-tri = triangulate(points; rng=rng)
+tri = triangulate(points; rng = rng)
 ````
 
 ````@example unconstrained
@@ -225,7 +225,7 @@ using LinearAlgebra # used for computing norms later
 rng = StableRNG(123)
 points = rand(rng, 2, 500) # just do rand(2, 500) if you are not concerned about the RNG
 
-tri = triangulate(points; rng=rng)
+tri = triangulate(points; rng = rng)
 
 fig, ax, sc = triplot(tri)
 fig

@@ -26,29 +26,29 @@ using CairoMakie #hide
 A, B, C, D, E, F, G, H = (0.3, 1.1), (-0.1, 0.8), (0.2, 0.3), (0.6, 0.2), (0.8, 0.8), (0.3, 0.9), (0.5503600264347, 0.6814266789918), (1.1, 0.5) #hide
 G2 = (0.5496217775447, 0.7146478790414) #hide
 fig = Figure() #hide
-ax = Axis(fig[1, 1], width=400, height=400, title="Original") #hide
+ax = Axis(fig[1, 1], width = 400, height = 400, title = "Original") #hide
 xlims!(ax, -0.2, 1.3) #hide
 ylims!(ax, 0.1, 1.2) #hide
 points = [A, B, C, D, E, F, G, H] #hide
-triplot!(ax, points, show_points=true) #hide
-scatter!(ax, [G], color=:red, markersize=14) #hide
+triplot!(ax, points, show_points = true) #hide
+scatter!(ax, [G], color = :red, markersize = 14) #hide
 hidedecorations!(ax) #hide
-ax2 = Axis(fig[2, 1], width=400, height=400) #hide
-voronoiplot!(ax2, points, clip=(-0.2, 1.3, 0.1, 1.2)) #hide
+ax2 = Axis(fig[2, 1], width = 400, height = 400) #hide
+voronoiplot!(ax2, points, clip = (-0.2, 1.3, 0.1, 1.2)) #hide
 xlims!(ax2, -0.2, 1.3) #hide
 ylims!(ax2, 0.1, 1.2) #hide
-scatter!(ax2, [G], color=:red, markersize=14) #hide
+scatter!(ax2, [G], color = :red, markersize = 14) #hide
 hidedecorations!(ax2) #hide
-ax3 = Axis(fig[1, 2], width=400, height=400, title="Perturbed") #hide
+ax3 = Axis(fig[1, 2], width = 400, height = 400, title = "Perturbed") #hide
 points = [A, B, C, D, E, F, G2, H] #hide
-triplot!(ax3, points, show_points=true) #hide
+triplot!(ax3, points, show_points = true) #hide
 hidedecorations!(ax3) #hide
 xlims!(ax3, -0.2, 1.3) #hide
 ylims!(ax3, 0.1, 1.2) #hide
-scatter!(ax3, [G2], color=:red, markersize=14) #hide
-ax4 = Axis(fig[2, 2], width=400, height=400) #hide
-voronoiplot!(ax4, points, clip=(-0.2, 1.3, 0.1, 1.2)) #hide
-scatter!(ax4, [G2], color=:red, markersize=14) #hide
+scatter!(ax3, [G2], color = :red, markersize = 14) #hide
+ax4 = Axis(fig[2, 2], width = 400, height = 400) #hide
+voronoiplot!(ax4, points, clip = (-0.2, 1.3, 0.1, 1.2)) #hide
+scatter!(ax4, [G2], color = :red, markersize = 14) #hide
 xlims!(ax4, -0.2, 1.3) #hide
 ylims!(ax4, 0.1, 1.2) #hide
 hidedecorations!(ax4) #hide
@@ -126,13 +126,13 @@ points = ElasticMatrix(randn(rng, 2, 50)) # so that the points are mutable
 tri = triangulate(points; rng)
 envelope_vertices, envelope_points = compute_envelope(tri, (0.5, 0.5))
 
-fig = Figure(fontsize=24)
-ax = Axis(fig[1, 1], width=400, height=400)
-triplot!(ax, tri, show_points=true)
-ax2 = Axis(fig[1, 2], width=400, height=400)
+fig = Figure(fontsize = 24)
+ax = Axis(fig[1, 1], width = 400, height = 400)
+triplot!(ax, tri, show_points = true)
+ax2 = Axis(fig[1, 2], width = 400, height = 400)
 add_point!(tri, 0.5, 0.5)
-triplot!(ax2, tri, show_points=true)
-poly!(ax2, envelope_points, color=(:red, 0.2))
+triplot!(ax2, tri, show_points = true)
+poly!(ax2, envelope_points, color = (:red, 0.2))
 resize_to_layout!(fig)
 fig
 ````
@@ -155,25 +155,25 @@ envelope is unchanged. If we included the entire area, then the area that we sub
 would just cancel it out anyway. Let's zoom in on the envelope and consider a specific example of how we can do this computation.
 
 ````@example interpolation
-fig = Figure(fontsize=24)
-ax = Axis(fig[1, 1], width=400, height=400)
-triplot!(ax, tri, show_points=true)
-lines!(ax, envelope_points, color=:red)
+fig = Figure(fontsize = 24)
+ax = Axis(fig[1, 1], width = 400, height = 400)
+triplot!(ax, tri, show_points = true)
+lines!(ax, envelope_points, color = :red)
 j = 7 # example vertex
 v = envelope_vertices[j]
-scatter!(ax, [get_point(tri, v)], color=:blue)
-first_neighbour = envelope_vertices[j-1]
+scatter!(ax, [get_point(tri, v)], color = :blue)
+first_neighbour = envelope_vertices[j - 1]
 next_triangle = get_adjacent(tri, first_neighbour, v)
-next_triangle_2 = get_adjacent(tri, v, envelope_vertices[j+1])
-last_neighbour = envelope_vertices[j+1]
+next_triangle_2 = get_adjacent(tri, v, envelope_vertices[j + 1])
+last_neighbour = envelope_vertices[j + 1]
 polygon_points = [
     get_point(tri, v),
     (get_point(tri, v) .+ get_point(tri, last_neighbour)) ./ 2,
-    DelaunayTriangulation.triangle_circumcenter(tri, (v, envelope_vertices[j+1], next_triangle_2)),
+    DelaunayTriangulation.triangle_circumcenter(tri, (v, envelope_vertices[j + 1], next_triangle_2)),
     DelaunayTriangulation.triangle_circumcenter(tri, (first_neighbour, v, next_triangle)),
-    (get_point(tri, v) .+ get_point(tri, first_neighbour)) ./ 2
+    (get_point(tri, v) .+ get_point(tri, first_neighbour)) ./ 2,
 ]
-poly!(ax, polygon_points, color=(:blue, 0.5), strokecolor=:blue, strokewidth=2)
+poly!(ax, polygon_points, color = (:blue, 0.5), strokecolor = :blue, strokewidth = 2)
 xlims!(ax, -0.5, 1.4)
 ylims!(ax, -0.15, 1.4)
 resize_to_layout!(fig)
@@ -193,7 +193,7 @@ function polygon_area(points) # this is the first formula in the "Other formulae
     rx, ry = getxy(r)
     sx, sy = getxy(s)
     area = px * (qy - ry) + rx * (py - sy)
-    for i in 2:(n-1)
+    for i in 2:(n - 1)
         p, q, r = get_point(points, i, i + 1, i - 1)
         px, py = getxy(p)
         qx, qy = getxy(q)
@@ -203,7 +203,7 @@ function polygon_area(points) # this is the first formula in the "Other formulae
     return area / 2
 end
 function pre_insertion_area(tri::Triangulation, i, envelope_vertices) # area from the envelope[i]th generator
-    poly_points = NTuple{2,Float64}[]
+    poly_points = NTuple{2, Float64}[]
     u = envelope_vertices[i]
     prev_index = i == 1 ? length(envelope_vertices) - 1 : i - 1
     next_index = i == length(envelope_vertices) ? 1 : i + 1
@@ -257,7 +257,7 @@ Now that we can compute the pre- and post-insertion areas, we can start computin
 function compute_sibson_coordinates(tri::Triangulation, envelope_vertices, point)
     coordinates = zeros(length(envelope_vertices) - 1)
     w = 0.0
-    for i in firstindex(envelope_vertices):(lastindex(envelope_vertices)-1)
+    for i in firstindex(envelope_vertices):(lastindex(envelope_vertices) - 1)
         pre = max(0.0, pre_insertion_area(tri, i, envelope_vertices))
         post = max(0.0, post_insertion_area(tri, i, envelope_vertices, point))
         if isnan(post) # need to return the the vector λ = [1] since we are exactly at a data site
@@ -304,9 +304,9 @@ zz = [f(x, y) for (x, y) in DelaunayTriangulation.each_point(trit)]
 xx = LinRange(0.001, 0.999, 20) # handling points on the boundary requires more care than we have discussed here
 yy = LinRange(0.001, 0.999, 20)
 fig = Figure(fontsize = 24)
-ax = Axis(fig[1, 1], xlabel=L"x", ylabel=L"y", title="True function", titlealign=:left, width=400, height=400)
+ax = Axis(fig[1, 1], xlabel = L"x", ylabel = L"y", title = "True function", titlealign = :left, width = 400, height = 400)
 contourf!(ax, xx, yy, f.(xx, yy'))
-ax2 = Axis(fig[1, 2], xlabel=L"x", ylabel=L"y", title="Interpolant", titlealign=:left, width=400, height=400)
+ax2 = Axis(fig[1, 2], xlabel = L"x", ylabel = L"y", title = "Interpolant", titlealign = :left, width = 400, height = 400)
 zi = [evaluate_sibson_interpolant(trit, zz, (xᵢ, yᵢ)) for xᵢ in xx, yᵢ in yy]
 contourf!(ax2, xx, yy, zi)
 resize_to_layout!(fig)
@@ -314,6 +314,7 @@ fig
 ````
 
 Works perfectly!
+
 ## Just the code
 An uncommented version of this example is given below.
 You can view the source code for this file [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_applications/interpolation.jl).
@@ -340,35 +341,35 @@ points = ElasticMatrix(randn(rng, 2, 50)) # so that the points are mutable
 tri = triangulate(points; rng)
 envelope_vertices, envelope_points = compute_envelope(tri, (0.5, 0.5))
 
-fig = Figure(fontsize=24)
-ax = Axis(fig[1, 1], width=400, height=400)
-triplot!(ax, tri, show_points=true)
-ax2 = Axis(fig[1, 2], width=400, height=400)
+fig = Figure(fontsize = 24)
+ax = Axis(fig[1, 1], width = 400, height = 400)
+triplot!(ax, tri, show_points = true)
+ax2 = Axis(fig[1, 2], width = 400, height = 400)
 add_point!(tri, 0.5, 0.5)
-triplot!(ax2, tri, show_points=true)
-poly!(ax2, envelope_points, color=(:red, 0.2))
+triplot!(ax2, tri, show_points = true)
+poly!(ax2, envelope_points, color = (:red, 0.2))
 resize_to_layout!(fig)
 fig
 
-fig = Figure(fontsize=24)
-ax = Axis(fig[1, 1], width=400, height=400)
-triplot!(ax, tri, show_points=true)
-lines!(ax, envelope_points, color=:red)
+fig = Figure(fontsize = 24)
+ax = Axis(fig[1, 1], width = 400, height = 400)
+triplot!(ax, tri, show_points = true)
+lines!(ax, envelope_points, color = :red)
 j = 7 # example vertex
 v = envelope_vertices[j]
-scatter!(ax, [get_point(tri, v)], color=:blue)
-first_neighbour = envelope_vertices[j-1]
+scatter!(ax, [get_point(tri, v)], color = :blue)
+first_neighbour = envelope_vertices[j - 1]
 next_triangle = get_adjacent(tri, first_neighbour, v)
-next_triangle_2 = get_adjacent(tri, v, envelope_vertices[j+1])
-last_neighbour = envelope_vertices[j+1]
+next_triangle_2 = get_adjacent(tri, v, envelope_vertices[j + 1])
+last_neighbour = envelope_vertices[j + 1]
 polygon_points = [
     get_point(tri, v),
     (get_point(tri, v) .+ get_point(tri, last_neighbour)) ./ 2,
-    DelaunayTriangulation.triangle_circumcenter(tri, (v, envelope_vertices[j+1], next_triangle_2)),
+    DelaunayTriangulation.triangle_circumcenter(tri, (v, envelope_vertices[j + 1], next_triangle_2)),
     DelaunayTriangulation.triangle_circumcenter(tri, (first_neighbour, v, next_triangle)),
-    (get_point(tri, v) .+ get_point(tri, first_neighbour)) ./ 2
+    (get_point(tri, v) .+ get_point(tri, first_neighbour)) ./ 2,
 ]
-poly!(ax, polygon_points, color=(:blue, 0.5), strokecolor=:blue, strokewidth=2)
+poly!(ax, polygon_points, color = (:blue, 0.5), strokecolor = :blue, strokewidth = 2)
 xlims!(ax, -0.5, 1.4)
 ylims!(ax, -0.15, 1.4)
 resize_to_layout!(fig)
@@ -382,7 +383,7 @@ function polygon_area(points) # this is the first formula in the "Other formulae
     rx, ry = getxy(r)
     sx, sy = getxy(s)
     area = px * (qy - ry) + rx * (py - sy)
-    for i in 2:(n-1)
+    for i in 2:(n - 1)
         p, q, r = get_point(points, i, i + 1, i - 1)
         px, py = getxy(p)
         qx, qy = getxy(q)
@@ -392,7 +393,7 @@ function polygon_area(points) # this is the first formula in the "Other formulae
     return area / 2
 end
 function pre_insertion_area(tri::Triangulation, i, envelope_vertices) # area from the envelope[i]th generator
-    poly_points = NTuple{2,Float64}[]
+    poly_points = NTuple{2, Float64}[]
     u = envelope_vertices[i]
     prev_index = i == 1 ? length(envelope_vertices) - 1 : i - 1
     next_index = i == length(envelope_vertices) ? 1 : i + 1
@@ -437,7 +438,7 @@ end
 function compute_sibson_coordinates(tri::Triangulation, envelope_vertices, point)
     coordinates = zeros(length(envelope_vertices) - 1)
     w = 0.0
-    for i in firstindex(envelope_vertices):(lastindex(envelope_vertices)-1)
+    for i in firstindex(envelope_vertices):(lastindex(envelope_vertices) - 1)
         pre = max(0.0, pre_insertion_area(tri, i, envelope_vertices))
         post = max(0.0, post_insertion_area(tri, i, envelope_vertices, point))
         if isnan(post) # need to return the the vector λ = [1] since we are exactly at a data site
@@ -472,9 +473,9 @@ zz = [f(x, y) for (x, y) in DelaunayTriangulation.each_point(trit)]
 xx = LinRange(0.001, 0.999, 20) # handling points on the boundary requires more care than we have discussed here
 yy = LinRange(0.001, 0.999, 20)
 fig = Figure(fontsize = 24)
-ax = Axis(fig[1, 1], xlabel=L"x", ylabel=L"y", title="True function", titlealign=:left, width=400, height=400)
+ax = Axis(fig[1, 1], xlabel = L"x", ylabel = L"y", title = "True function", titlealign = :left, width = 400, height = 400)
 contourf!(ax, xx, yy, f.(xx, yy'))
-ax2 = Axis(fig[1, 2], xlabel=L"x", ylabel=L"y", title="Interpolant", titlealign=:left, width=400, height=400)
+ax2 = Axis(fig[1, 2], xlabel = L"x", ylabel = L"y", title = "Interpolant", titlealign = :left, width = 400, height = 400)
 zi = [evaluate_sibson_interpolant(trit, zz, (xᵢ, yᵢ)) for xᵢ in xx, yᵢ in yy]
 contourf!(ax2, xx, yy, zi)
 resize_to_layout!(fig)

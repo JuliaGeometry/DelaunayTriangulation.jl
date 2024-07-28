@@ -1,6 +1,7 @@
 @static if VERSION >= v"1.11.0-DEV.469"
-    eval(Meta.parse(
-        """
+    eval(
+        Meta.parse(
+            """
         public Adjacent,
             Adjacent2Vertex,
             ConvexHull,
@@ -276,5 +277,7 @@
             angle_is_acute_predicate,
             sameside_predicate,
             meet_predicate
-    """))
+    """,
+        ),
+    )
 end

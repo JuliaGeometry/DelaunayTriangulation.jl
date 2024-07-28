@@ -16,8 +16,10 @@ See the documentation for more information about these choices.
 triangle_orientation
 function triangle_orientation(kernel::AbstractPredicateKernel, p, q, r)
     cert = orient_predicate(kernel, p, q, r)
-    return convert_certificate(cert, Cert.NegativelyOriented, Cert.Degenerate,
-        Cert.PositivelyOriented)
+    return convert_certificate(
+        cert, Cert.NegativelyOriented, Cert.Degenerate,
+        Cert.PositivelyOriented,
+    )
 end
 triangle_orientation(p, q, r) = triangle_orientation(AdaptiveKernel(), p, q, r)
 function triangle_orientation(kernel::AbstractPredicateKernel, tri::Triangulation, i, j, k)
@@ -334,9 +336,9 @@ is_legal(p, q, r, s) = is_legal(AdaptiveKernel(), p, q, r, s)
 
 function is_legal(kernel::AbstractPredicateKernel, tri::Triangulation, i, j)
     if contains_segment(tri, i, j) ||
-       is_boundary_edge(tri, j, i) || is_boundary_edge(tri, i, j) ||
-       !edge_exists(tri, i, j) || !edge_exists(tri, j, i) ||
-       is_ghost_edge(i, j)
+            is_boundary_edge(tri, j, i) || is_boundary_edge(tri, i, j) ||
+            !edge_exists(tri, i, j) || !edge_exists(tri, j, i) ||
+            is_ghost_edge(i, j)
         return Cert.Legal
     else
         k = get_adjacent(tri, i, j)
@@ -573,8 +575,8 @@ function point_position_relative_to_circumcircle(kernel::AbstractPredicateKernel
     else
         cert = point_position_relative_to_witness_plane(kernel, tri, i, j, k, ℓ)
         return is_above(cert) ? Cert.Outside :
-               is_below(cert) ? Cert.Inside :
-               Cert.On
+            is_below(cert) ? Cert.Inside :
+            Cert.On
     end
 end
 point_position_relative_to_circumcircle(tri::Triangulation, i, j, k, ℓ) = point_position_relative_to_circumcircle(AdaptiveKernel(), tri, i, j, k, ℓ)
@@ -698,7 +700,7 @@ To test if a point `r` is inside the diametral lens with lens angle `θ°`, we s
 at that point, i.e. the angle at `r` in the triangle `pqr`. If this angle is greater than `180° - 2θ°`, then `r` is inside of the lens. This result 
 comes from [Shewchuk (2002)](https://doi.org/10.1016/S0925-7721(01)00047-5). Note that this is the same as a diametral circle in the case `θ° = 45°`. 
 """
-function point_position_relative_to_diametral_lens(p, q, r, lens_angle=30.0)
+function point_position_relative_to_diametral_lens(p, q, r, lens_angle = 30.0)
     px, py = getxy(p)
     qx, qy = getxy(q)
     rx, ry = getxy(r)
@@ -737,7 +739,7 @@ the two does not intersect any segments.
 - `cert`: A [`Certificate`](@ref). This will be `Visible` if `i` is visible from `q`, and `Invisible` otherwise.
 """
 function test_visibility(kernel::AbstractPredicateKernel, tri::Triangulation, q, i)
-    V, invisible_flag = find_triangle(tri, q; use_barriers=Val(true), k=i, concavity_protection=true, predicates=kernel)
+    V, invisible_flag = find_triangle(tri, q; use_barriers = Val(true), k = i, concavity_protection = true, predicates = kernel)
     if invisible_flag
         return Certificate.Invisible
     else
@@ -767,7 +769,7 @@ of `(u, v)` can see `i`. To test this, we only check `10` points equally spaced 
 # Outputs
 - `cert`: A [`Certificate`](@ref). This will be `Visible` if `i` is visible from `(u, v)`, and `Invisible` otherwise.
 """
-function test_visibility(kernel::AbstractPredicateKernel, tri::Triangulation, u, v, i; shift=0.0, attractor=get_point(tri, i))
+function test_visibility(kernel::AbstractPredicateKernel, tri::Triangulation, u, v, i; shift = 0.0, attractor = get_point(tri, i))
     pu, pv = get_point(tri, u, v)
     pux, puy = getxy(pu)
     pvx, pvy = getxy(pv)
@@ -781,4 +783,4 @@ function test_visibility(kernel::AbstractPredicateKernel, tri::Triangulation, u,
     end
     return Cert.Invisible
 end
-test_visibility(tri::Triangulation, u, v, i; shift=0.0, attractor=get_point(tri, i)) = test_visibility(AdaptiveKernel(), tri, u, v, i; shift, attractor)
+test_visibility(tri::Triangulation, u, v, i; shift = 0.0, attractor = get_point(tri, i)) = test_visibility(AdaptiveKernel(), tri, u, v, i; shift, attractor)

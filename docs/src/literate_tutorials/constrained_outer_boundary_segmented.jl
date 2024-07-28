@@ -16,7 +16,7 @@ fig_path = joinpath(@__DIR__, "../figures") #src
 # Now, we define some of the points we will be triangulating.
 points = [
     (2.0, 8.0), (6.0, 4.0), (2.0, 6.0),
-    (2.0, 4.0), (8.0, 2.0)
+    (2.0, 4.0), (8.0, 2.0),
 ]
 
 # We now want to define our boundary. The method for providing a boundary to be 
@@ -33,14 +33,14 @@ boundary_points = [section_1, section_2, section_3]
 # [`convert_boundary_points_to_indices`](@ref), and then we triangulate. 
 # We also add a constrained edge.
 E = Set(((6, 9),)) # (0, 0) → (4, 6)
-boundary_nodes, points = convert_boundary_points_to_indices(boundary_points; existing_points=points)
-tri = triangulate(points; boundary_nodes, segments=E)
+boundary_nodes, points = convert_boundary_points_to_indices(boundary_points; existing_points = points)
+tri = triangulate(points; boundary_nodes, segments = E)
 
 #-
-fig, ax, sc = triplot(tri, show_constrained_edges=true, constrained_edge_linewidth=6)
-lines!(ax, section_1, color=:red, linewidth=6)
-lines!(ax, section_2, color=:green, linewidth=6)
-lines!(ax, section_3, color=:blue, linewidth=6)
+fig, ax, sc = triplot(tri, show_constrained_edges = true, constrained_edge_linewidth = 6)
+lines!(ax, section_1, color = :red, linewidth = 6)
+lines!(ax, section_2, color = :green, linewidth = 6)
+lines!(ax, section_3, color = :blue, linewidth = 6)
 fig
 @test_reference joinpath(fig_path, "constrained_ex_4.png") fig #src
 
@@ -128,7 +128,7 @@ get_adjacent2vertex(tri, -3)
 function compute_sum_2(tri)
     edges = get_adjacent2vertex(tri, -2)
     s = 0.0
-    for e in edges 
+    for e in edges
         u, v = edge_vertices(e)
         p, q = get_point(tri, u, v)
         px, py = getxy(p)

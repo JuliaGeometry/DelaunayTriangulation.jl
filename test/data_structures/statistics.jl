@@ -4,33 +4,32 @@ using CairoMakie
 using ReferenceTests
 
 
-
 @testset "Computing statistics" begin
     _x, _y = complicated_geometry()
     x = _x
     y = _y
     boundary_nodes, points = convert_boundary_points_to_indices(x, y)
-    tri_1 = triangulate(points; boundary_nodes, delete_ghosts=false)
+    tri_1 = triangulate(points; boundary_nodes, delete_ghosts = false)
     A = get_area(tri_1) # 2356
-    refine!(tri_1; max_area=1e-3A, use_circumcenter=true)
+    refine!(tri_1; max_area = 1.0e-3A, use_circumcenter = true)
     boundary_nodes, points = convert_boundary_points_to_indices(x[1], y[1])
-    tri_2 = triangulate(points; boundary_nodes, delete_ghosts=false)
+    tri_2 = triangulate(points; boundary_nodes, delete_ghosts = false)
     A = get_area(tri_2)
-    refine!(tri_2; max_area=1e-3A, use_circumcenter=true)
+    refine!(tri_2; max_area = 1.0e-3A, use_circumcenter = true)
     boundary_nodes, points = convert_boundary_points_to_indices([0.0, 2.0, 2.0, 0.0, 0.0], [0.0, 0.0, 2.0, 2.0, 0.0])
-    tri_3 = triangulate(points; boundary_nodes, delete_ghosts=false)
+    tri_3 = triangulate(points; boundary_nodes, delete_ghosts = false)
     A = get_area(tri_3)
-    refine!(tri_3; max_area=1e-3A, use_circumcenter=true)
+    refine!(tri_3; max_area = 1.0e-3A, use_circumcenter = true)
     boundary_nodes, points = convert_boundary_points_to_indices(reverse(reverse.(x[2])), reverse(reverse.(y[2])))
-    tri_4 = triangulate(points; boundary_nodes, delete_ghosts=false)
+    tri_4 = triangulate(points; boundary_nodes, delete_ghosts = false)
     A = get_area(tri_4)
-    refine!(tri_4; max_area=1e-3A, use_circumcenter=true)
+    refine!(tri_4; max_area = 1.0e-3A, use_circumcenter = true)
     a, b = 0.0, 5.0
     c, d = 3.0, 7.0
     nx = 3
     ny = 3
-    tri_5 = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=false)
-    tri_6 = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts=false, single_boundary=true)
+    tri_5 = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts = false, single_boundary = false)
+    tri_6 = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts = false, single_boundary = true)
     for (i, tri) in enumerate((tri_1, tri_2, tri_3, tri_4, tri_5, tri_6))
         validate_statistics(tri)
         @inferred statistics(tri)
@@ -49,18 +48,18 @@ using ReferenceTests
         (10.92, 0.23), (9.9, 7.39), (8.14, 4.77), (13.4, 8.61),
         (7.4, 12.27), (2.2, 13.85), (-3.48, 10.21), (-4.56, 7.35),
         (3.44, 8.99), (3.74, 5.87), (-2.0, 8.0), (-2.52, 4.81),
-        (1.34, 6.77), (1.24, 4.15)
+        (1.34, 6.77), (1.24, 4.15),
     ]
     boundary_points = [
         (0.0, 0.0), (2.0, 1.0), (3.98, 2.85), (6.0, 5.0),
         (7.0, 7.0), (7.0, 9.0), (6.0, 11.0), (4.0, 12.0),
         (2.0, 12.0), (1.0, 11.0), (0.0, 9.13), (-1.0, 11.0),
         (-2.0, 12.0), (-4.0, 12.0), (-6.0, 11.0), (-7.0, 9.0),
-        (-6.94, 7.13), (-6.0, 5.0), (-4.0, 3.0), (-2.0, 1.0), (0.0, 0.0)
+        (-6.94, 7.13), (-6.0, 5.0), (-4.0, 3.0), (-2.0, 1.0), (0.0, 0.0),
     ]
-    boundary_nodes, pts = convert_boundary_points_to_indices(boundary_points; existing_points=pts)
-    uncons_tri = triangulate(pts, delete_ghosts=false)
-    cons_tri = triangulate(pts; boundary_nodes, delete_ghosts=false)
+    boundary_nodes, pts = convert_boundary_points_to_indices(boundary_points; existing_points = pts)
+    uncons_tri = triangulate(pts, delete_ghosts = false)
+    cons_tri = triangulate(pts; boundary_nodes, delete_ghosts = false)
     add_point!(cons_tri, 0.0, 5.0)
     add_segment!(cons_tri, 40, 26)
     add_segment!(cons_tri, 39, 27)
@@ -184,13 +183,13 @@ end
     boundary_nodes, points = convert_boundary_points_to_indices(x, y)
     tri = triangulate(points; boundary_nodes)
     stats = statistics(tri)
-    interior_sinks = NTuple{2,Float64}[]
+    interior_sinks = NTuple{2, Float64}[]
     for T in each_solid_triangle(tri)
         is_interior_sink(tri, T) && push!(interior_sinks, DT.get_sink(stats, T))
     end
     @test length(interior_sinks) == 1 == count(T -> is_interior_sink(tri, T), each_solid_triangle(tri))
     fig, ax, sc = scatter(get_all_stat(stats, :sink))
-    scatter!(ax, interior_sinks, color=:red)
+    scatter!(ax, interior_sinks, color = :red)
     triplot!(ax, tri)
     fig
     @test_reference "sink_figures.png" fig
@@ -278,8 +277,8 @@ end
 
 @testset "Previously broken centroid" begin
     p = (1.25, -0.8947368421052633)
-    q=(1.6666666666666667, 1.2105263157894735)
-    r=(2.0833333333333335, 3.3157894736842106)
+    q = (1.6666666666666667, 1.2105263157894735)
+    r = (2.0833333333333335, 3.3157894736842106)
     c = DT.triangle_centroid(p, q, r)
     @test DT.is_on(DT.point_position_relative_to_triangle(p, q, r, c))
 end

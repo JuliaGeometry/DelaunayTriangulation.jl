@@ -37,7 +37,7 @@ fig_path = joinpath(@__DIR__, "../figures") #src
 n = 50
 r = 2.0
 xc, yc = 1 / 2, 2.0
-θ = range(0, 2π, length=n + 1) |> collect;
+θ = range(0, 2π, length = n + 1) |> collect;
 θ[end] = θ[begin];
 x = xc .+ r * cos.(θ)
 y = yc .+ r * sin.(θ);
@@ -61,9 +61,9 @@ fig, ax, sc = lines(points)
 
 # Let's now triangulate this domain. We need to put the arc into its own vector, and we still need to pass a set of 
 # points into `triangulate`:
-points = NTuple{2,Float64}[]
+points = NTuple{2, Float64}[]
 rng = StableRNG(123)
-tri = triangulate(points; boundary_nodes=[arc], rng)
+tri = triangulate(points; boundary_nodes = [arc], rng)
 
 #-
 fig, ax, sc = triplot(tri)
@@ -78,7 +78,7 @@ fig
 #
 # This is probably not what we actually want, though. Instead, we need to refine the domain using mesh refinement.
 # The syntax for this is the same as in the [refinement tutorial](../tutorials/refinement.md):
-refine!(tri; max_area=1e-1, rng)
+refine!(tri; max_area = 1.0e-1, rng)
 fig, ax, sc = triplot(tri)
 fig
 @test_reference joinpath(fig_path, "triangulate_curve_bounded_ex_2.png") fig #src
@@ -113,53 +113,55 @@ fig
 # to the origin to be smaller than those outside of it.
 curve = [[arc], [bspl], pce]
 rng = StableRNG(123)
-tri = triangulate(points; boundary_nodes=curve, rng)
-refine!(tri; max_area=1e-2, rng, custom_constraint=(_tri, T) -> begin
-    i, j, k = triangle_vertices(T)
-    p, q, r = get_point(_tri, i, j, k)
-    c = (p .+ q .+ r) ./ 3
-    return norm(c) < 1 / 2 && DelaunayTriangulation.triangle_area(p, q, r) > 1e-3
-end)
+tri = triangulate(points; boundary_nodes = curve, rng)
+refine!(
+    tri; max_area = 1.0e-2, rng, custom_constraint = (_tri, T) -> begin
+        i, j, k = triangle_vertices(T)
+        p, q, r = get_point(_tri, i, j, k)
+        c = (p .+ q .+ r) ./ 3
+        return norm(c) < 1 / 2 && DelaunayTriangulation.triangle_area(p, q, r) > 1.0e-3
+    end,
+)
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "triangulate_curve_bounded_ex_3.png") fig by=psnr_equality(8) #src
+@test_reference joinpath(fig_path, "triangulate_curve_bounded_ex_3.png") fig by = psnr_equality(8) #src
 
 # ## A Complicated Multiply-Connected Disjoint Domain 
 # For our last example, we take a complicated case with a domain that is disjoint, and where the individual 
 # domains are multiply-connected. Let us give the domain followed by an explanation of how it is defined:
 curve = [
     [
-        [1, 2, 3], [EllipticalArc((2.0, 0.0), (-2.0, 0.0), (0.0, 0.0), 2, 1 / 2, 0.0)]
+        [1, 2, 3], [EllipticalArc((2.0, 0.0), (-2.0, 0.0), (0.0, 0.0), 2, 1 / 2, 0.0)],
     ],
     [
-        [BSpline([(0.0, 0.4), (1.0, 0.2), (0.0, 0.1), (-1.0, 0.2), (0.0, 0.4)])]
+        [BSpline([(0.0, 0.4), (1.0, 0.2), (0.0, 0.1), (-1.0, 0.2), (0.0, 0.4)])],
     ],
     [
-        [4, 5, 6, 7, 4]
+        [4, 5, 6, 7, 4],
     ],
     [
-        [BezierCurve([(0.0, -2.0), (0.0, -2.5), (-1.0, -2.5), (-1.0, -3.0)])], [CatmullRomSpline([(-1.0, -3.0), (0.0, -4.0), (1.0, -3.0), (0.0, -2.0)])]
+        [BezierCurve([(0.0, -2.0), (0.0, -2.5), (-1.0, -2.5), (-1.0, -3.0)])], [CatmullRomSpline([(-1.0, -3.0), (0.0, -4.0), (1.0, -3.0), (0.0, -2.0)])],
     ],
     [
-        [12, 11, 10, 12]
+        [12, 11, 10, 12],
     ],
     [
-        [CircularArc((1.1, -3.0), (1.1, -3.0), (0.0, -3.0), positive=false)]
-    ]
+        [CircularArc((1.1, -3.0), (1.1, -3.0), (0.0, -3.0), positive = false)],
+    ],
 ]
 points = [(-2.0, 0.0), (0.0, 0.0), (2.0, 0.0), (-2.0, -5.0), (2.0, -5.0), (2.0, -1 / 10), (-2.0, -1 / 10), (-1.0, -3.0), (0.0, -4.0), (0.0, -2.3), (-0.5, -3.5), (0.9, -3.0)]
 t = LinRange(0, 1, 1000)
 fig
 fig = Figure()
 ax = Axis(fig[1, 1])
-lines!(ax, [get_point(points, curve[1][1]...)...], color=:red, label="(1, 2, 3)")
-lines!(ax, curve[1][2][1].(t), color=:red, linestyle=:dashdot, label="EllipticalArc")
-lines!(ax, curve[2][1][1].(t), color=:green, label="BSpline")
-lines!(ax, [get_point(points, curve[3][1]...)...], color=:blue, label="(4, 5, 6, 7, 4)")
-lines!(ax, curve[4][1][1].(t), color=:purple, label="BezierCurve")
-lines!(ax, curve[4][2][1].(t), color=:purple, linestyle=:dashdot, label="CatmullRomSpline")
-lines!(ax, [get_point(points, curve[5][1]...)...], color=:orange, label="(12, 11, 10, 12)")
-lines!(ax, curve[6][1][1].(t), color=:black, label="CircularArc")
+lines!(ax, [get_point(points, curve[1][1]...)...], color = :red, label = "(1, 2, 3)")
+lines!(ax, curve[1][2][1].(t), color = :red, linestyle = :dashdot, label = "EllipticalArc")
+lines!(ax, curve[2][1][1].(t), color = :green, label = "BSpline")
+lines!(ax, [get_point(points, curve[3][1]...)...], color = :blue, label = "(4, 5, 6, 7, 4)")
+lines!(ax, curve[4][1][1].(t), color = :purple, label = "BezierCurve")
+lines!(ax, curve[4][2][1].(t), color = :purple, linestyle = :dashdot, label = "CatmullRomSpline")
+lines!(ax, [get_point(points, curve[5][1]...)...], color = :orange, label = "(12, 11, 10, 12)")
+lines!(ax, curve[6][1][1].(t), color = :black, label = "CircularArc")
 fig[1, 2] = Legend(fig, ax, "Curve")
 fig
 
@@ -182,11 +184,11 @@ fig
 #
 # Let's now triangulate.
 rng = StableRNG(123)
-tri = triangulate(copy(points); boundary_nodes=curve, rng) # copying so that we don't mutate for the next section
-refine!(tri; max_area=1e-2)
+tri = triangulate(copy(points); boundary_nodes = curve, rng) # copying so that we don't mutate for the next section
+refine!(tri; max_area = 1.0e-2)
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "triangulate_curve_bounded_ex_4.png") fig by=psnr_equality(15) #src
+@test_reference joinpath(fig_path, "triangulate_curve_bounded_ex_4.png") fig by = psnr_equality(15) #src
 
 # ### Using Custom Constraints to Control Refinement 
 # Let's give another example of using custom constraints to better control the refinement within different domains. Referencing the 
@@ -205,18 +207,18 @@ poly_constraint = (_tri, T) -> begin
         return true
     end
     max_area = if idx == 1 # coarse 
-        1e-1
+        1.0e-1
     elseif idx == 3 # medium
-        1e-2
+        1.0e-2
     else # dense
-        1e-3
+        1.0e-3
     end
     area = DelaunayTriangulation.triangle_area(p, q, r)
     return area > max_area
 end
 rng = StableRNG(123)
-tri = triangulate(points; boundary_nodes=curve, rng)
-refine!(tri; custom_constraint=poly_constraint, rng)
+tri = triangulate(points; boundary_nodes = curve, rng)
+refine!(tri; custom_constraint = poly_constraint, rng)
 fig, ax, sc = triplot(tri)
 fig
 @test_reference joinpath(fig_path, "triangulate_curve_bounded_ex_5.png") fig #src
@@ -240,7 +242,7 @@ fig
 #
 # Let's now meet these requirements.
 struct Astroid <: DelaunayTriangulation.AbstractParametricCurve
-    lookup_table::Vector{NTuple{2,Float64}}
+    lookup_table::Vector{NTuple{2, Float64}}
 end
 function (c::Astroid)(t)
     if t == 0.0 || t == 1.0
@@ -268,7 +270,7 @@ end
 
 # Let's now define an astroid curve and triangulate it. 
 function Astroid(n::Int)
-    lookup_table = Vector{NTuple{2,Float64}}(undef, n)
+    lookup_table = Vector{NTuple{2, Float64}}(undef, n)
     c = Astroid(lookup_table)
     for i in 1:n
         lookup_table[i] = c((i - 1) / (n - 1))
@@ -277,8 +279,8 @@ function Astroid(n::Int)
 end
 rng = StableRNG(123)
 curve = Astroid(1000)
-tri = triangulate(NTuple{2,Float64}[]; boundary_nodes=[curve], rng)
-refine!(tri; max_area=1e-2)
+tri = triangulate(NTuple{2, Float64}[]; boundary_nodes = [curve], rng)
+refine!(tri; max_area = 1.0e-2)
 fig, ax, sc = triplot(tri)
-fig 
+fig
 @test_reference joinpath(fig_path, "triangulate_curve_bounded_ex_6.png") fig #src

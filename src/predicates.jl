@@ -19,7 +19,7 @@ should be used, avoiding adaptivity and exact arithmetic.
 
 See also [`ExactKernel`](@ref) and [`AdaptiveKernel`](@ref).
 """
-struct FastKernel <: AbstractPredicateKernel end 
+struct FastKernel <: AbstractPredicateKernel end
 
 """
     ExactKernel()
@@ -28,7 +28,7 @@ Pass this to predicates to use ExactPredicates.jl for computing predicates.
 
 See also [`FastKernel`](@ref) and [`AdaptiveKernel`](@ref).
 """
-struct ExactKernel <: AbstractPredicateKernel end 
+struct ExactKernel <: AbstractPredicateKernel end
 
 """
     AdaptiveKernel()
@@ -37,7 +37,7 @@ Pass this to predicates to use AdaptivePredicates.jl for computing predicates.
 
 See also [`FastKernel`](@ref) and [`ExactKernel`](@ref).
 """
-struct AdaptiveKernel <: AbstractPredicateKernel end 
+struct AdaptiveKernel <: AbstractPredicateKernel end
 
 include("predicates/certificate.jl")
 include("predicates/predicate_definitions.jl")

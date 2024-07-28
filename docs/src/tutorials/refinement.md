@@ -38,7 +38,7 @@ points = tuple.(x, y)
 tri = triangulate(points; rng)
 orig_tri = deepcopy(tri)
 A = get_area(tri)
-refine!(tri; min_angle=30.0, max_area=0.01A, rng)
+refine!(tri; min_angle = 30.0, max_area = 0.01A, rng)
 ````
 
 The [`refine!`](@ref) function operates on `tri` in-place. If we wanted to review the
@@ -55,8 +55,8 @@ which is about 0.0067. Moreover, the smallest angle is indeed greater than 30.
 Let us compare the triangulation pre- and post-refinement.
 
 ````@example refinement
-fig, ax, sc = triplot(orig_tri, axis=(title="Pre-refinement",))
-ax = Axis(fig[1, 2], title="Post-refinement")
+fig, ax, sc = triplot(orig_tri, axis = (title = "Pre-refinement",))
+ax = Axis(fig[1, 2], title = "Post-refinement")
 triplot!(ax, tri)
 fig
 ````
@@ -67,7 +67,7 @@ or where was a cluster of random points. If we wanted, we could refine again
 to try and improve this.
 
 ````@example refinement
-refine!(tri; min_angle=30.0, max_area=0.001A, rng) # 0.1% instead of 1%
+refine!(tri; min_angle = 30.0, max_area = 0.001A, rng) # 0.1% instead of 1%
 fig, ax, sc = triplot(tri)
 fig
 ````
@@ -80,7 +80,7 @@ number of points.
 
 ````@example refinement
 test_tri = deepcopy(tri)
-refine!(test_tri; min_angle=35.0, max_area=0.001A, max_points = 5_000, rng) # 20_000 so that it doesn't just keep going
+refine!(test_tri; min_angle = 35.0, max_area = 0.001A, max_points = 5_000, rng) # 20_000 so that it doesn't just keep going
 statistics(test_tri)
 ````
 
@@ -101,14 +101,14 @@ these as follows:
 
 ````@example refinement
 stats = statistics(tri)
-fig = Figure(fontsize=33)
+fig = Figure(fontsize = 33)
 areas = get_all_stat(stats, :area) ./ A
 angles = first.(get_all_stat(stats, :angles)) # the first is the smallest
-ax = Axis(fig[1, 1], xlabel="A/A(Ω)", ylabel="Count", title="Area histogram", width=400, height=400, titlealign=:left)
-hist!(ax, areas, bins=0:0.0001:0.0005)
-ax = Axis(fig[1, 2], xlabel="θₘᵢₙ", ylabel="Count", title="Angle histogram", width=400, height=400, titlealign=:left)
-hist!(ax, rad2deg.(angles), bins=20:2:60)
-vlines!(ax, [30.0], color=:red)
+ax = Axis(fig[1, 1], xlabel = "A/A(Ω)", ylabel = "Count", title = "Area histogram", width = 400, height = 400, titlealign = :left)
+hist!(ax, areas, bins = 0:0.0001:0.0005)
+ax = Axis(fig[1, 2], xlabel = "θₘᵢₙ", ylabel = "Count", title = "Angle histogram", width = 400, height = 400, titlealign = :left)
+hist!(ax, rad2deg.(angles), bins = 20:2:60)
+vlines!(ax, [30.0], color = :red)
 resize_to_layout!(fig)
 fig
 ````
@@ -146,7 +146,7 @@ Let us now refine this triangulation.
 
 ````@example refinement
 A = get_area(tri)
-refine!(tri; min_angle=27.3, max_area=0.01A, rng)
+refine!(tri; min_angle = 27.3, max_area = 0.01A, rng)
 fig, ax, sc = triplot(tri)
 fig
 ````
@@ -159,7 +159,7 @@ the same amount of time as if we had refined it with these
 constraints in the first place.
 
 ````@example refinement
-refine!(tri; min_angle=33.9, max_area=0.001A, rng)
+refine!(tri; min_angle = 33.9, max_area = 0.001A, rng)
 fig, ax, sc = triplot(tri)
 fig
 ````
@@ -203,7 +203,7 @@ the new results.
 boundary_nodes, points = convert_boundary_points_to_indices(x, y)
 rng = StableRNG(456)
 tri = triangulate(points; boundary_nodes, rng)
-refine!(tri; min_angle=30.0, custom_constraint=area_constraint, rng)
+refine!(tri; min_angle = 30.0, custom_constraint = area_constraint, rng)
 fig, ax, sc = triplot(tri)
 fig
 ````
@@ -249,7 +249,7 @@ using Downloads
 using DelimitedFiles
 boundary_url = "https://gist.githubusercontent.com/DanielVandH/13687b0918e45a416a5c93cd52c91449/raw/a8da6cdc94859fd66bcff85a2307f0f9cd57a18c/boundary.txt"
 boundary_dir = Downloads.download(boundary_url)
-boundary = readdlm(boundary_dir, skipstart=6)
+boundary = readdlm(boundary_dir, skipstart = 6)
 boundary_points = [(boundary[i, 1], boundary[i, 2]) for i in axes(boundary, 1)]
 reverse!(boundary_points)
 ````
@@ -268,7 +268,7 @@ Now let's refine.
 
 ````@example refinement
 A = get_area(tri)
-refine!(tri; min_angle=30.0, max_area=0.001A, rng)
+refine!(tri; min_angle = 30.0, max_area = 0.001A, rng)
 ````
 
 ````@example refinement
@@ -297,7 +297,7 @@ but there are still some that do not. Here is another set of results with a lowe
 boundary_nodes, points = convert_boundary_points_to_indices(boundary_points)
 rng = StableRNG(789)
 tri = triangulate(points; boundary_nodes, rng)
-refine!(tri; min_angle=18.73, max_area=0.001A, rng)
+refine!(tri; min_angle = 18.73, max_area = 0.001A, rng)
 fig = Figure(fontsize = 43)
 ax = Axis(fig[1, 1], width = 600, height = 400)
 triplot!(tri)
@@ -312,6 +312,7 @@ fig
 
 In this case, all the triangles satisfy the constraint, of course
 at the expense of some other triangles having lesser quality.
+
 ## Just the code
 An uncommented version of this example is given below.
 You can view the source code for this file [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/refinement.jl).
@@ -328,35 +329,35 @@ points = tuple.(x, y)
 tri = triangulate(points; rng)
 orig_tri = deepcopy(tri)
 A = get_area(tri)
-refine!(tri; min_angle=30.0, max_area=0.01A, rng)
+refine!(tri; min_angle = 30.0, max_area = 0.01A, rng)
 
 statistics(tri)
 
-fig, ax, sc = triplot(orig_tri, axis=(title="Pre-refinement",))
-ax = Axis(fig[1, 2], title="Post-refinement")
+fig, ax, sc = triplot(orig_tri, axis = (title = "Pre-refinement",))
+ax = Axis(fig[1, 2], title = "Post-refinement")
 triplot!(ax, tri)
 fig
 
-refine!(tri; min_angle=30.0, max_area=0.001A, rng) # 0.1% instead of 1%
+refine!(tri; min_angle = 30.0, max_area = 0.001A, rng) # 0.1% instead of 1%
 fig, ax, sc = triplot(tri)
 fig
 
 test_tri = deepcopy(tri)
-refine!(test_tri; min_angle=35.0, max_area=0.001A, max_points = 5_000, rng) # 20_000 so that it doesn't just keep going
+refine!(test_tri; min_angle = 35.0, max_area = 0.001A, max_points = 5_000, rng) # 20_000 so that it doesn't just keep going
 statistics(test_tri)
 
 fig, ax, sc = triplot(test_tri)
 fig
 
 stats = statistics(tri)
-fig = Figure(fontsize=33)
+fig = Figure(fontsize = 33)
 areas = get_all_stat(stats, :area) ./ A
 angles = first.(get_all_stat(stats, :angles)) # the first is the smallest
-ax = Axis(fig[1, 1], xlabel="A/A(Ω)", ylabel="Count", title="Area histogram", width=400, height=400, titlealign=:left)
-hist!(ax, areas, bins=0:0.0001:0.0005)
-ax = Axis(fig[1, 2], xlabel="θₘᵢₙ", ylabel="Count", title="Angle histogram", width=400, height=400, titlealign=:left)
-hist!(ax, rad2deg.(angles), bins=20:2:60)
-vlines!(ax, [30.0], color=:red)
+ax = Axis(fig[1, 1], xlabel = "A/A(Ω)", ylabel = "Count", title = "Area histogram", width = 400, height = 400, titlealign = :left)
+hist!(ax, areas, bins = 0:0.0001:0.0005)
+ax = Axis(fig[1, 2], xlabel = "θₘᵢₙ", ylabel = "Count", title = "Angle histogram", width = 400, height = 400, titlealign = :left)
+hist!(ax, rad2deg.(angles), bins = 20:2:60)
+vlines!(ax, [30.0], color = :red)
 resize_to_layout!(fig)
 fig
 
@@ -379,11 +380,11 @@ fig, ax, sc = triplot(tri)
 fig
 
 A = get_area(tri)
-refine!(tri; min_angle=27.3, max_area=0.01A, rng)
+refine!(tri; min_angle = 27.3, max_area = 0.01A, rng)
 fig, ax, sc = triplot(tri)
 fig
 
-refine!(tri; min_angle=33.9, max_area=0.001A, rng)
+refine!(tri; min_angle = 33.9, max_area = 0.001A, rng)
 fig, ax, sc = triplot(tri)
 fig
 
@@ -407,7 +408,7 @@ end
 boundary_nodes, points = convert_boundary_points_to_indices(x, y)
 rng = StableRNG(456)
 tri = triangulate(points; boundary_nodes, rng)
-refine!(tri; min_angle=30.0, custom_constraint=area_constraint, rng)
+refine!(tri; min_angle = 30.0, custom_constraint = area_constraint, rng)
 fig, ax, sc = triplot(tri)
 fig
 
@@ -431,7 +432,7 @@ using Downloads
 using DelimitedFiles
 boundary_url = "https://gist.githubusercontent.com/DanielVandH/13687b0918e45a416a5c93cd52c91449/raw/a8da6cdc94859fd66bcff85a2307f0f9cd57a18c/boundary.txt"
 boundary_dir = Downloads.download(boundary_url)
-boundary = readdlm(boundary_dir, skipstart=6)
+boundary = readdlm(boundary_dir, skipstart = 6)
 boundary_points = [(boundary[i, 1], boundary[i, 2]) for i in axes(boundary, 1)]
 reverse!(boundary_points)
 
@@ -442,7 +443,7 @@ fig, ax, sc = triplot(tri)
 fig
 
 A = get_area(tri)
-refine!(tri; min_angle=30.0, max_area=0.001A, rng)
+refine!(tri; min_angle = 30.0, max_area = 0.001A, rng)
 
 fig, ax, sc = triplot(tri)
 fig
@@ -456,7 +457,7 @@ fig
 boundary_nodes, points = convert_boundary_points_to_indices(boundary_points)
 rng = StableRNG(789)
 tri = triangulate(points; boundary_nodes, rng)
-refine!(tri; min_angle=18.73, max_area=0.001A, rng)
+refine!(tri; min_angle = 18.73, max_area = 0.001A, rng)
 fig = Figure(fontsize = 43)
 ax = Axis(fig[1, 1], width = 600, height = 400)
 triplot!(tri)

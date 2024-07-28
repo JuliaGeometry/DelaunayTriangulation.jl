@@ -11,13 +11,15 @@ using ReferenceTests #src
 using Test #src
 fig_path = joinpath(@__DIR__, "../figures") #src
 
-points = [(0.0, 0.0), (0.0, 4.0), (2.0, 3.0), (-2.0, 3.0),
+points = [
+    (0.0, 0.0), (0.0, 4.0), (2.0, 3.0), (-2.0, 3.0),
     (-2.0, 7.0), (3.0, 6.0), (2.0, -2.0), (-4.0, 1.0),
-    (1.0, 5.0)]
+    (1.0, 5.0),
+]
 p = (0.0, 3.0)
 tri = triangulate(points)
 fig, ax, sc = triplot(tri)
-scatter!(ax, [p], markersize=14)
+scatter!(ax, [p], markersize = 14)
 fig
 @test_reference joinpath(fig_path, "triangulation_operations_17.png") fig #src
 
@@ -28,7 +30,7 @@ r = length(points)
 i, j = 1, 2
 split_edge!(tri, i, j, r)
 fig, ax, sc = triplot(tri)
-fig 
+fig
 @test_reference joinpath(fig_path, "triangulation_operations_18.png") fig #src
 
 # Notice that this has only split the edge in one direction. This is because the 
@@ -36,7 +38,7 @@ fig
 # direction, we simply swap the indices.
 split_edge!(tri, j, i, r)
 fig, ax, sc = triplot(tri)
-fig 
+fig
 @test_reference joinpath(fig_path, "triangulation_operations_19.png") fig #src
 
 # If you also want to restore the Delaunay property of the triangulation 

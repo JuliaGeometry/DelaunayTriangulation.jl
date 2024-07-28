@@ -27,7 +27,7 @@ using StableRNGs
 points = [
     (-3.0, 6.0), (5.0, 1.0), (-5.0, 3.0), (2.0, -3.0),
     (5.0, 8.0), (0.0, 0.0), (2.0, 5.0), (-3.0, 1.0),
-    (-2.0, -1.0), (-1.0, 4.0)
+    (-2.0, -1.0), (-1.0, 4.0),
 ]
 tri = triangulate(points)
 q = (3.0, 3.0)
@@ -55,7 +55,7 @@ and then start at the point that is closest to `q` out of those sampled, then ma
 until `q` is found. This number of samples can be changed using the `m` keyword argument. For example,
 
 ````@example point_location
-V = find_triangle(tri, q, m=10)
+V = find_triangle(tri, q, m = 10)
 ````
 
 means that we get a sample of size 10, and start at whichever point is the closest.
@@ -64,7 +64,7 @@ You could also instead specify the point to start at using the `k` keyword argum
 For example,
 
 ````@example point_location
-V = find_triangle(tri, q, k=6)
+V = find_triangle(tri, q, k = 6)
 ````
 
 starts the algorithm at the point `6`.
@@ -94,7 +94,7 @@ start at a central point of the triangulation. (The index `-1` is just the ghost
 be visualised.
 
 ````@example point_location
-fig, ax, sc = triplot(tri, show_ghost_edges=true)
+fig, ax, sc = triplot(tri, show_ghost_edges = true)
 scatter!(ax, q)
 fig
 ````
@@ -119,7 +119,7 @@ inner = [[r, z, v, u, w, t, s, r]]
 boundary_nodes, points = convert_boundary_points_to_indices([outer, inner])
 rng = StableRNG(125123)
 tri = triangulate(points; rng, boundary_nodes)
-refine!(tri; max_area=0.01get_area(tri), rng);
+refine!(tri; max_area = 0.01get_area(tri), rng);
 nothing #hide
 ````
 
@@ -127,7 +127,7 @@ The issue with concavity is that the ghost triangles can no longer be sensibly d
 To demonstrate this, see the following plot:
 
 ````@example point_location
-fig, ax, sc = triplot(tri, show_ghost_edges=true)
+fig, ax, sc = triplot(tri, show_ghost_edges = true)
 fig
 ````
 
@@ -139,10 +139,10 @@ qs = [
     (4.0, 5.0), (1.0, 5.6), (0.2, 5.0),
     (0.0, -1.0), (0.5, 3.5), (2.5, 1.5),
     (1.0, 2.0), (4.5, 1.0), (6.0, 1.5),
-    (0.5, 8.5), (1.0, 7.5), (1.2, 1.6)
+    (0.5, 8.5), (1.0, 7.5), (1.2, 1.6),
 ]
-fig, ax, sc = triplot(tri, show_ghost_edges=false)
-scatter!(ax, qs, color=:blue, markersize=16)
+fig, ax, sc = triplot(tri, show_ghost_edges = false)
+scatter!(ax, qs, color = :blue, markersize = 16)
 fig
 ````
 
@@ -166,7 +166,7 @@ a ghost triangle is to be returned. If the check finds this to not be the case, 
 restarts. With these results, we now compute:
 
 ````@example point_location
-Vs = [find_triangle(tri, q; rng, concavity_protection=true) for q in qs]
+Vs = [find_triangle(tri, q; rng, concavity_protection = true) for q in qs]
 ````
 
 Here is how we can actually test that these results are now correct. We cannot directly
@@ -207,26 +207,26 @@ v₁, w₁ = (5.0, 3.0), (4.0, 3.0)
 new_domain₁ = [[m₁, q₁, o₁, p₁, r₁, s₁, n₁, m₁]]
 new_domain₂ = [[t₁, w₁, v₁, u₁, t₁]]
 boundary_nodes, points = convert_boundary_points_to_indices(
-    [outer, inner, new_domain₁, new_domain₂]
+    [outer, inner, new_domain₁, new_domain₂],
 )
 rng = StableRNG(125123)
 tri = triangulate(points; rng, boundary_nodes)
-refine!(tri; max_area=0.001get_area(tri), rng)
+refine!(tri; max_area = 0.001get_area(tri), rng)
 qs = [
     (0.6, 6.4), (1.4, 0.8), (3.1, 2.9),
     (6.3, 4.9), (4.6, 3.5), (7.0, 7.0),
     (8.9, 5.1), (5.8, 0.8), (1.0, 1.5),
-    (1.5, 2.0), (8.15, 6.0)
+    (1.5, 2.0), (8.15, 6.0),
 ]
 fig, ax, sc = triplot(tri)
-scatter!(ax, qs, color=:blue, markersize=16)
+scatter!(ax, qs, color = :blue, markersize = 16)
 fig
 ````
 
 Here are the `find_triangle` results.
 
 ````@example point_location
-Vs = [find_triangle(tri, q; rng, concavity_protection=true) for q in qs]
+Vs = [find_triangle(tri, q; rng, concavity_protection = true) for q in qs]
 ````
 
 Again, we can verify that these are all correct as follows. Without `concavity_protection=true`,
@@ -260,7 +260,7 @@ using StableRNGs
 points = [
     (-3.0, 6.0), (5.0, 1.0), (-5.0, 3.0), (2.0, -3.0),
     (5.0, 8.0), (0.0, 0.0), (2.0, 5.0), (-3.0, 1.0),
-    (-2.0, -1.0), (-1.0, 4.0)
+    (-2.0, -1.0), (-1.0, 4.0),
 ]
 tri = triangulate(points)
 q = (3.0, 3.0)
@@ -272,9 +272,9 @@ V = find_triangle(tri, q)
 
 DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)
 
-V = find_triangle(tri, q, m=10)
+V = find_triangle(tri, q, m = 10)
 
-V = find_triangle(tri, q, k=6)
+V = find_triangle(tri, q, k = 6)
 
 q = (-5.0, 8.0)
 fig, ax, sc = triplot(tri)
@@ -283,7 +283,7 @@ fig
 
 V = find_triangle(tri, q)
 
-fig, ax, sc = triplot(tri, show_ghost_edges=true)
+fig, ax, sc = triplot(tri, show_ghost_edges = true)
 scatter!(ax, q)
 fig
 
@@ -300,26 +300,26 @@ inner = [[r, z, v, u, w, t, s, r]]
 boundary_nodes, points = convert_boundary_points_to_indices([outer, inner])
 rng = StableRNG(125123)
 tri = triangulate(points; rng, boundary_nodes)
-refine!(tri; max_area=0.01get_area(tri), rng);
+refine!(tri; max_area = 0.01get_area(tri), rng);
 
-fig, ax, sc = triplot(tri, show_ghost_edges=true)
+fig, ax, sc = triplot(tri, show_ghost_edges = true)
 fig
 
 qs = [
     (4.0, 5.0), (1.0, 5.6), (0.2, 5.0),
     (0.0, -1.0), (0.5, 3.5), (2.5, 1.5),
     (1.0, 2.0), (4.5, 1.0), (6.0, 1.5),
-    (0.5, 8.5), (1.0, 7.5), (1.2, 1.6)
+    (0.5, 8.5), (1.0, 7.5), (1.2, 1.6),
 ]
-fig, ax, sc = triplot(tri, show_ghost_edges=false)
-scatter!(ax, qs, color=:blue, markersize=16)
+fig, ax, sc = triplot(tri, show_ghost_edges = false)
+scatter!(ax, qs, color = :blue, markersize = 16)
 fig
 
 Vs = [find_triangle(tri, q; rng) for q in qs]
 
 Vs[end]
 
-Vs = [find_triangle(tri, q; rng, concavity_protection=true) for q in qs]
+Vs = [find_triangle(tri, q; rng, concavity_protection = true) for q in qs]
 
 δs = [DelaunayTriangulation.dist(tri, q) for q in qs]
 results = Vector{Bool}(undef, length(qs))
@@ -342,22 +342,22 @@ v₁, w₁ = (5.0, 3.0), (4.0, 3.0)
 new_domain₁ = [[m₁, q₁, o₁, p₁, r₁, s₁, n₁, m₁]]
 new_domain₂ = [[t₁, w₁, v₁, u₁, t₁]]
 boundary_nodes, points = convert_boundary_points_to_indices(
-    [outer, inner, new_domain₁, new_domain₂]
+    [outer, inner, new_domain₁, new_domain₂],
 )
 rng = StableRNG(125123)
 tri = triangulate(points; rng, boundary_nodes)
-refine!(tri; max_area=0.001get_area(tri), rng)
+refine!(tri; max_area = 0.001get_area(tri), rng)
 qs = [
     (0.6, 6.4), (1.4, 0.8), (3.1, 2.9),
     (6.3, 4.9), (4.6, 3.5), (7.0, 7.0),
     (8.9, 5.1), (5.8, 0.8), (1.0, 1.5),
-    (1.5, 2.0), (8.15, 6.0)
+    (1.5, 2.0), (8.15, 6.0),
 ]
 fig, ax, sc = triplot(tri)
-scatter!(ax, qs, color=:blue, markersize=16)
+scatter!(ax, qs, color = :blue, markersize = 16)
 fig
 
-Vs = [find_triangle(tri, q; rng, concavity_protection=true) for q in qs]
+Vs = [find_triangle(tri, q; rng, concavity_protection = true) for q in qs]
 
 δs = [DelaunayTriangulation.dist(tri, q) for q in qs]
 results = Vector{Bool}(undef, length(qs))

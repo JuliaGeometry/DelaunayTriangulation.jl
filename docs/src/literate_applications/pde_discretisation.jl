@@ -30,11 +30,11 @@ rng = StableRNG(123)
 R₁ = 1.0
 R₂ = 2.0
 outer_circle = CircularArc((R₂, 0.0), (R₂, 0.0), (0.0, 0.0))
-inner_circle = CircularArc((R₁, 0.0), (R₁, 0.0), (0.0, 0.0), positive=false)
-points = NTuple{2,Float64}[]
-tri = triangulate(points; rng, boundary_nodes=[[[outer_circle]], [[inner_circle]]])
+inner_circle = CircularArc((R₁, 0.0), (R₁, 0.0), (0.0, 0.0), positive = false)
+points = NTuple{2, Float64}[]
+tri = triangulate(points; rng, boundary_nodes = [[[outer_circle]], [[inner_circle]]])
 A = 2π * (R₂^2 - R₁^2)
-refine!(tri; max_area=2e-3A, min_angle=33.0, rng)
+refine!(tri; max_area = 2.0e-3A, min_angle = 33.0, rng)
 fig, ax, sc = triplot(tri)
 fig
 
@@ -42,14 +42,14 @@ fig
 # Now let's determine how we can use the discretisation above to solve the PDE. Central to this approach is the idea of a _control volume_ around 
 # each point. In particular, connect the centroids of each triangle to the midpoints of the edges of the triangle. This defines a collection of polygons 
 # $\Omega_i$ around each point $\vb x_i$, as shown below in blue.
-points = NTuple{2,Float64}[] #hide
+points = NTuple{2, Float64}[] #hide
 for T in each_solid_triangle(tri) #hide
     u, v, w = triangle_vertices(T) #hide
     p, q, r = get_point(tri, u, v, w) #hide
     c = DelaunayTriangulation.triangle_centroid(p, q, r) #hide
     push!(points, c, (p .+ q) ./ 2, c, (q .+ r) ./ 2, c, (r .+ p) ./ 2) #hide
 end #hide
-linesegments!(ax, points, color=:blue) #hide
+linesegments!(ax, points, color = :blue) #hide
 fig #hide
 
 # Consider a particular control volume $\Omega_i$. We integrate our PDE over this domain, writing 
@@ -113,8 +113,8 @@ using SparseArrays
 function solve_met_problem(tri::Triangulation, D)
     ## To start, we need to build a map that takes the vertices from tri 
     ## into a range of consecutive integers, since not all vertices are used. 
-    vertex_map = Dict{Int,Int}()
-    inverse_vertex_map = Dict{Int,Int}()
+    vertex_map = Dict{Int, Int}()
+    inverse_vertex_map = Dict{Int, Int}()
     cur_idx = 1
     for i in DelaunayTriangulation.each_point_index(tri)
         if DelaunayTriangulation.has_vertex(tri, i)
@@ -128,10 +128,10 @@ function solve_met_problem(tri::Triangulation, D)
     nt = num_solid_triangles(tri)
     cv_volumes = zeros(nv)
     Ttype = DelaunayTriangulation.triangle_type(tri)
-    shape_function_coefficients = Dict{Ttype,NTuple{9,Float64}}()
-    cv_edge_midpoints = Dict{Ttype,NTuple{3,NTuple{2,Float64}}}()
-    cv_edge_normals = Dict{Ttype,NTuple{3,NTuple{2,Float64}}}()
-    cv_edge_lengths = Dict{Ttype,NTuple{3,Float64}}()
+    shape_function_coefficients = Dict{Ttype, NTuple{9, Float64}}()
+    cv_edge_midpoints = Dict{Ttype, NTuple{3, NTuple{2, Float64}}}()
+    cv_edge_normals = Dict{Ttype, NTuple{3, NTuple{2, Float64}}}()
+    cv_edge_lengths = Dict{Ttype, NTuple{3, Float64}}()
     sizehint!.((cv_volumes, shape_function_coefficients, cv_edge_midpoints, cv_edge_normals, cv_edge_lengths), nt)
     for T in each_solid_triangle(tri)
         u, v, w = triangle_vertices(T)
@@ -199,9 +199,11 @@ function solve_met_problem(tri::Triangulation, D)
             nx, ny = cv_edge_normals[T][edge_index]
             ℓ = cv_edge_lengths[T][edge_index]
             Dℓ = D * ℓ
-            a123 = (Dℓ * (s₁₁ * nx + s₂₁ * ny),
+            a123 = (
+                Dℓ * (s₁₁ * nx + s₂₁ * ny),
                 Dℓ * (s₁₂ * nx + s₂₂ * ny),
-                Dℓ * (s₁₃ * nx + s₂₃ * ny))
+                Dℓ * (s₁₃ * nx + s₂₃ * ny),
+            )
             e1_is_bnd = DelaunayTriangulation.is_boundary_node(tri, e₁)[1]
             e2_is_bnd = DelaunayTriangulation.is_boundary_node(tri, e₂)[1]
             for vert in 1:3
@@ -233,5 +235,5 @@ end
 # Let's now solve this problem, taking $D = 6.25 \times 10^{-4}$.
 D = 6.25e-4
 T = solve_met_problem(tri, D)
-fig, ax, sc = tricontourf(tri, T, levels=0:5:200, extendhigh=:auto)
+fig, ax, sc = tricontourf(tri, T, levels = 0:5:200, extendhigh = :auto)
 fig

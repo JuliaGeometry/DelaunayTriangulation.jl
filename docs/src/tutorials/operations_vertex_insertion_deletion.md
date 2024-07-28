@@ -54,9 +54,9 @@ adding a point outside of the triangulation would not work. Here is an example o
 ````@example operations_vertex_insertion_deletion
 delete_ghost_triangles!(tri)
 try #hide
-add_point!(tri, 2.0, 1.5)
+    add_point!(tri, 2.0, 1.5)
 catch e #hide
-println(e) #hide
+    println(e) #hide
 end #hide
 ````
 
@@ -90,7 +90,7 @@ If we do want to fix the convex hull, we can use [`convex_hull!(tri)`](@ref).
 
 ````@example operations_vertex_insertion_deletion
 convex_hull!(tri)
-fig, ax, sc = triplot(tri, show_convex_hull=true)
+fig, ax, sc = triplot(tri, show_convex_hull = true)
 fig
 ````
 
@@ -129,6 +129,7 @@ fig
 Note that in this situation, `points` still contains those points that we have now deleted.
 This is the reason to be careful about using, say, [`DelaunayTriangulation.each_point`](@ref) rather than [`each_solid_vertex`](@ref).
 This triangulation is also still Delaunay.
+
 ## Just the code
 An uncommented version of this example is given below.
 You can view the source code for this file [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/operations_vertex_insertion_deletion.jl).
@@ -152,7 +153,7 @@ fig, ax, sc = triplot(tri)
 fig
 
 delete_ghost_triangles!(tri)
-add_point!(tri, 2.0, 1.5)
+    add_point!(tri, 2.0, 1.5)
 
 DelaunayTriangulation.has_ghost_triangles(tri)
 
@@ -163,7 +164,7 @@ DelaunayTriangulation.has_ghost_triangles(tri)
 get_convex_hull_vertices(tri)
 
 convex_hull!(tri)
-fig, ax, sc = triplot(tri, show_convex_hull=true)
+fig, ax, sc = triplot(tri, show_convex_hull = true)
 fig
 
 rng = StableRNG(123)

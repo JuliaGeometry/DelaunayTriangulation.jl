@@ -14,10 +14,10 @@ using StatsBase
             S = get_random_convex_polygon(points)
             skip_points = setdiff(axes(points, 2), S)
             for delete_ghosts in (false, true)
-                tri_bowyer = triangulate(points; skip_points, delete_ghosts, predicates=PT())
-                tri_chew = triangulate_convex(points, S; delete_ghosts, predicates=PT())
-                @test validate_triangulation(tri_bowyer; predicates=PT())
-                @test validate_triangulation(tri_chew; predicates=PT())
+                tri_bowyer = triangulate(points; skip_points, delete_ghosts, predicates = PT())
+                tri_chew = triangulate_convex(points, S; delete_ghosts, predicates = PT())
+                @test validate_triangulation(tri_bowyer; predicates = PT())
+                @test validate_triangulation(tri_chew; predicates = PT())
                 @test DT.compare_triangle_collections(get_triangles(tri_bowyer), get_triangles(tri_chew))
                 for (ij, k) in get_adjacent(tri_chew).adjacent
                     if DT.edge_exists(k)
@@ -60,8 +60,8 @@ end
             p12 = T[8.0, 6.0]
             pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12]
             for _ in 1:100
-                tri_chew = triangulate_convex(pts, 1:12; predicates=PT())
-                @test validate_triangulation(tri_chew; predicates=PT())
+                tri_chew = triangulate_convex(pts, 1:12; predicates = PT())
+                @test validate_triangulation(tri_chew; predicates = PT())
             end
         end
     end
@@ -78,16 +78,16 @@ end
             pts[:, 27] .= p2
             pts[:, 5] .= p3
             S = [11, 27, 5, 11]
-            @test_throws AssertionError("S must not be circular.") triangulate_convex(pts, S; predicates=PT())
+            @test_throws AssertionError("S must not be circular.") triangulate_convex(pts, S; predicates = PT())
             pop!(S)
-            tri_chew = triangulate_convex(pts, S; predicates=PT())
-            tri_bowyer = triangulate(pts; skip_points=setdiff(1:50, [11, 27, 5]), predicates=PT(), delete_ghosts=false)
+            tri_chew = triangulate_convex(pts, S; predicates = PT())
+            tri_bowyer = triangulate(pts; skip_points = setdiff(1:50, [11, 27, 5]), predicates = PT(), delete_ghosts = false)
             @test tri_chew == tri_bowyer
 
             pts[:, 28] .= [1.01, 1.01]
             S = [11, 27, 28, 5]
-            tri_chew = triangulate_convex(pts, S; predicates=PT())
-            tri_bowyer = triangulate(pts; skip_points=setdiff(1:50, [11, 27, 5, 28]), predicates=PT(), delete_ghosts=false)
+            tri_chew = triangulate_convex(pts, S; predicates = PT())
+            tri_bowyer = triangulate(pts; skip_points = setdiff(1:50, [11, 27, 5, 28]), predicates = PT(), delete_ghosts = false)
             @test get_convex_hull(tri_chew) == get_convex_hull(tri_bowyer)
             @test DT.compare_triangle_collections(get_triangles(tri_chew), get_triangles(tri_bowyer))
             @test (get_adjacent ∘ get_adjacent)(tri_chew) == (get_adjacent ∘ get_adjacent)(tri_bowyer)

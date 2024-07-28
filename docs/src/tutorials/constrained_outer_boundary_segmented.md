@@ -22,7 +22,7 @@ Now, we define some of the points we will be triangulating.
 ````@example constrained_outer_boundary_segmented
 points = [
     (2.0, 8.0), (6.0, 4.0), (2.0, 6.0),
-    (2.0, 4.0), (8.0, 2.0)
+    (2.0, 4.0), (8.0, 2.0),
 ]
 ````
 
@@ -45,15 +45,15 @@ We also add a constrained edge.
 
 ````@example constrained_outer_boundary_segmented
 E = Set(((6, 9),)) # (0, 0) → (4, 6)
-boundary_nodes, points = convert_boundary_points_to_indices(boundary_points; existing_points=points)
-tri = triangulate(points; boundary_nodes, segments=E)
+boundary_nodes, points = convert_boundary_points_to_indices(boundary_points; existing_points = points)
+tri = triangulate(points; boundary_nodes, segments = E)
 ````
 
 ````@example constrained_outer_boundary_segmented
-fig, ax, sc = triplot(tri, show_constrained_edges=true, constrained_edge_linewidth=6)
-lines!(ax, section_1, color=:red, linewidth=6)
-lines!(ax, section_2, color=:green, linewidth=6)
-lines!(ax, section_3, color=:blue, linewidth=6)
+fig, ax, sc = triplot(tri, show_constrained_edges = true, constrained_edge_linewidth = 6)
+lines!(ax, section_1, color = :red, linewidth = 6)
+lines!(ax, section_2, color = :green, linewidth = 6)
+lines!(ax, section_3, color = :blue, linewidth = 6)
 fig
 ````
 
@@ -185,6 +185,7 @@ get_ghost_vertex_map(tri)
 
 In this case, the `i`th section just has the ghost vertex `-i`, but this is typically used
 to deal with the case of multiple boundaries so that we know where a ghost vertex belongs.
+
 ## Just the code
 An uncommented version of this example is given below.
 You can view the source code for this file [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/constrained_outer_boundary_segmented.jl).
@@ -195,7 +196,7 @@ using CairoMakie
 
 points = [
     (2.0, 8.0), (6.0, 4.0), (2.0, 6.0),
-    (2.0, 4.0), (8.0, 2.0)
+    (2.0, 4.0), (8.0, 2.0),
 ]
 
 section_1 = [(0.0, 0.0), (14.0, 0.0)]
@@ -204,13 +205,13 @@ section_3 = [(0.0, 14.0), (0.0, 0.0)]
 boundary_points = [section_1, section_2, section_3]
 
 E = Set(((6, 9),)) # (0, 0) → (4, 6)
-boundary_nodes, points = convert_boundary_points_to_indices(boundary_points; existing_points=points)
-tri = triangulate(points; boundary_nodes, segments=E)
+boundary_nodes, points = convert_boundary_points_to_indices(boundary_points; existing_points = points)
+tri = triangulate(points; boundary_nodes, segments = E)
 
-fig, ax, sc = triplot(tri, show_constrained_edges=true, constrained_edge_linewidth=6)
-lines!(ax, section_1, color=:red, linewidth=6)
-lines!(ax, section_2, color=:green, linewidth=6)
-lines!(ax, section_3, color=:blue, linewidth=6)
+fig, ax, sc = triplot(tri, show_constrained_edges = true, constrained_edge_linewidth = 6)
+lines!(ax, section_1, color = :red, linewidth = 6)
+lines!(ax, section_2, color = :green, linewidth = 6)
+lines!(ax, section_3, color = :blue, linewidth = 6)
 fig
 
 get_interior_segments(tri)

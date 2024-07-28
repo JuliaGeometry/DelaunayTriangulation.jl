@@ -5,7 +5,6 @@ using Random
 using StatsBase
 
 
-
 tri, label_map, index_map = simple_geometry()
 add_ghost_triangles!(tri)
 DT.compute_representative_points!(tri)
@@ -122,7 +121,7 @@ end
         if DT.is_exterior_boundary_node(tri, k)
             i, j = DT.exterior_find_triangle(tri, k, get_point(tri, k))
             @test k ∈ (i, j) &&
-                  DT.is_exterior_ghost_triangle(tri, i, j, get_adjacent(tri, i, j))
+                DT.is_exterior_ghost_triangle(tri, i, j, get_adjacent(tri, i, j))
             @test DT.is_on(DT.point_position_relative_to_triangle(tri, i, j, k, k))
         end
     end

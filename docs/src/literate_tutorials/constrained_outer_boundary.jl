@@ -19,7 +19,7 @@ pts = [
     (10.92, 0.23), (9.9, 7.39), (8.14, 4.77), (13.4, 8.61),
     (7.4, 12.27), (2.2, 13.85), (-3.48, 10.21), (-4.56, 7.35),
     (3.44, 8.99), (3.74, 5.87), (-2.0, 8.0), (-2.52, 4.81),
-    (1.34, 6.77), (1.24, 4.15)
+    (1.34, 6.77), (1.24, 4.15),
 ]
 
 # To define a boundary, we need to provide a counter-clockwise sequence 
@@ -35,9 +35,9 @@ boundary_points = [
     (7.0, 7.0), (7.0, 9.0), (6.0, 11.0), (4.0, 12.0),
     (2.0, 12.0), (1.0, 11.0), (0.0, 9.13), (-1.0, 11.0),
     (-2.0, 12.0), (-4.0, 12.0), (-6.0, 11.0), (-7.0, 9.0),
-    (-6.94, 7.13), (-6.0, 5.0), (-4.0, 3.0), (-2.0, 1.0), (0.0, 0.0)
+    (-6.94, 7.13), (-6.0, 5.0), (-4.0, 3.0), (-2.0, 1.0), (0.0, 0.0),
 ]
-boundary_nodes, pts = convert_boundary_points_to_indices(boundary_points; existing_points=pts);
+boundary_nodes, pts = convert_boundary_points_to_indices(boundary_points; existing_points = pts);
 
 # The keyword argument `existing_points` is so that the points in `boundary_points` get appended (in-place) to 
 # `pts`, as we see:
@@ -53,14 +53,18 @@ cons_tri = triangulate(pts; boundary_nodes)
 
 #- 
 fig = Figure()
-ax1 = Axis(fig[1, 1], xlabel="x", ylabel=L"y",
-    title="(a): Unconstrained", titlealign=:left,
-    width=300, height=300)
-ax2 = Axis(fig[1, 2], xlabel="x", ylabel=L"y",
-    title="(b): Constrained", titlealign=:left,
-    width=300, height=300)
+ax1 = Axis(
+    fig[1, 1], xlabel = "x", ylabel = L"y",
+    title = "(a): Unconstrained", titlealign = :left,
+    width = 300, height = 300,
+)
+ax2 = Axis(
+    fig[1, 2], xlabel = "x", ylabel = L"y",
+    title = "(b): Constrained", titlealign = :left,
+    width = 300, height = 300,
+)
 triplot!(ax1, tri)
-triplot!(ax2, cons_tri, show_constrained_edges=true, show_convex_hull=true)
+triplot!(ax2, cons_tri, show_constrained_edges = true, show_convex_hull = true)
 resize_to_layout!(fig)
 fig
 @test_reference joinpath(fig_path, "constrained_ex_2.png") fig #src
@@ -71,8 +75,8 @@ fig
 # no longer contains every point in `pts`, as by default all triangles away 
 # from the boundary are deleted, so that we do actually have a boundary. If for 
 # some reason you do not want this behaviour, use `delete_holes = false`:
-full_tri = triangulate(pts; boundary_nodes, delete_holes=false)
-fig, ax, sc = triplot(full_tri, show_constrained_edges=true, show_convex_hull=true)
+full_tri = triangulate(pts; boundary_nodes, delete_holes = false)
+fig, ax, sc = triplot(full_tri, show_constrained_edges = true, show_convex_hull = true)
 @test_reference joinpath(fig_path, "constrained_ex_3.png") fig #src
 
 # This default behaviour does mean you need to be careful if you use [`DelaunayTriangulation.each_point`](@ref) 
@@ -83,7 +87,7 @@ fig, ax, sc = triplot(full_tri, show_constrained_edges=true, show_convex_hull=tr
 # There are multiple methods available for working directly 
 # with the boundary nodes. You can get the boundary nodes 
 # using `get_boundary_nodes(tri)`:
-get_boundary_nodes(cons_tri) 
+get_boundary_nodes(cons_tri)
 
 # Later tutorials also consider other methods for working with the boundary 
 # where care needs to be taken with the boundary, or part of the boundary, 
@@ -98,15 +102,15 @@ function shoelace_area(tri)
     bn = get_boundary_nodes(tri)
     n = num_boundary_edges(bn) # length(bn) - 1 in this case since bn[1] = bn[end]
     A = 0.0
-    for i in 1:n 
+    for i in 1:n
         vᵢ = get_boundary_nodes(bn, i)
-        vᵢ₊₁ = get_boundary_nodes(bn, i+1)
+        vᵢ₊₁ = get_boundary_nodes(bn, i + 1)
         pᵢ, pᵢ₊₁ = get_point(tri, vᵢ, vᵢ₊₁)
         xᵢ, yᵢ = getxy(pᵢ)
         xᵢ₊₁, yᵢ₊₁ = getxy(pᵢ₊₁)
-        A += (yᵢ + yᵢ₊₁)*(xᵢ - xᵢ₊₁)
+        A += (yᵢ + yᵢ₊₁) * (xᵢ - xᵢ₊₁)
     end
-    return A/2
+    return A / 2
 end
 shoelace_area(cons_tri)
 @test shoelace_area(cons_tri) ≈ get_area(cons_tri) #src
@@ -127,8 +131,8 @@ bn = get_boundary_nodes(cons_tri, I) # same as boundary_nodes for this problem; 
 bn_j = get_boundary_nodes(bn, J)
 
 # This returns `23`, which is the start of the edge `e`. The full edge is given by 
-get_boundary_nodes.(Ref(bn), (J, J+1)) # Ref to not broadcast over bn
-@test e == get_boundary_nodes.(Ref(bn), (J, J+1)) #src
+get_boundary_nodes.(Ref(bn), (J, J + 1)) # Ref to not broadcast over bn
+@test e == get_boundary_nodes.(Ref(bn), (J, J + 1)) #src
 
 # To give an example, here's how we compute the perimeter of the triangulation. This only 
 # needs the edges, so we only consider the `keys` of the map.
@@ -142,5 +146,5 @@ function get_perimeter(tri)
     end
     return ℓ
 end
-get_perimeter(cons_tri)     
-@test get_perimeter(cons_tri) ≈ sum(norm(get_point(cons_tri, boundary_nodes[i+1]) .- get_point(cons_tri, boundary_nodes[i])) for i in 1:(length(boundary_nodes)-1)) #src
+get_perimeter(cons_tri)
+@test get_perimeter(cons_tri) ≈ sum(norm(get_point(cons_tri, boundary_nodes[i + 1]) .- get_point(cons_tri, boundary_nodes[i])) for i in 1:(length(boundary_nodes) - 1)) #src

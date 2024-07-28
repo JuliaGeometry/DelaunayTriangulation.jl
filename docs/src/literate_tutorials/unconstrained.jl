@@ -21,7 +21,7 @@ points = rand(rng, 2, 500) # just do rand(2, 500) if you are not concerned about
 # We now triangulate these points by using [`triangulate`](@ref). We pass the `rng` 
 # as a keyword argument, but again if you are not concerned about the RNG (or 
 # set the seed using `Random.seed!`) then you can ignore this.
-tri = triangulate(points; rng=rng)
+tri = triangulate(points; rng = rng)
 
 #-
 fig, ax, sc = triplot(tri)
@@ -43,7 +43,7 @@ function compute_centroid(tri)
     return s
 end
 s = compute_centroid(tri)
-@test s ≈ [sum(points[1, :]) / 500, sum(points[2, :]) / 500] atol = 1e-10 #src
+@test s ≈ [sum(points[1, :]) / 500, sum(points[2, :]) / 500] atol = 1.0e-10 #src
 
 # We need to use the `solid` identifier because triangulations are made up of both _solid_ 
 # and _ghost_ vertices/edges/triangles, for reasons described in the [manual](../manual/ghost_triangles.md).

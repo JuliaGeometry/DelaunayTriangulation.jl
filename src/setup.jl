@@ -37,7 +37,7 @@ for mesh refinement when using [`check_precision`](@ref) to
 avoid degenerate circumcenters.
 """
 ε(::Type{T}) where {T} = sqrt(eps(T))
-ε(x) = ε(number_type(x)) 
+ε(x) = ε(number_type(x))
 
 const INF_WARN = Ref(true)
 """

@@ -27,7 +27,7 @@ You can use the `predicates` argument to determine how the orientation predicate
 [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for more discussion on these 
 choices.
 """
-function construct_positively_oriented_triangle(tri::Triangulation, i, j, k, predicates::AbstractPredicateKernel=AdaptiveKernel()) 
+function construct_positively_oriented_triangle(tri::Triangulation, i, j, k, predicates::AbstractPredicateKernel = AdaptiveKernel())
     return construct_positively_oriented_triangle(triangle_type(tri), i, j, k, get_points(tri), predicates)
 end
 

@@ -54,7 +54,7 @@ See also [`get_unbounded_polygon_coordinates`](@ref) and [`get_bounded_polygon_c
 # Outputs
 - `coords`: The coordinates of the polygon. This is a circular vector.
 """
-function get_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box=nothing; predicates::AbstractPredicateKernel=AdaptiveKernel())
+function get_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box = nothing; predicates::AbstractPredicateKernel = AdaptiveKernel())
     if !isnothing(bounding_box)
         a, b, c, d = bounding_box
         @assert a < b && c < d "The bounding box must be of the form (xmin, xmax, ymin, ymax) with xmin < xmax and ymin < ymax."
@@ -110,7 +110,7 @@ See also [`clip_polygon`](@ref).
 # Outputs
 - `coords`: The coordinates of the clipped polygon. This is a circular vector.
 """
-function clip_bounded_polygon_to_bounding_box(vorn::VoronoiTessellation, i, bounding_box; predicates::AbstractPredicateKernel=AdaptiveKernel())
+function clip_bounded_polygon_to_bounding_box(vorn::VoronoiTessellation, i, bounding_box; predicates::AbstractPredicateKernel = AdaptiveKernel())
     poly, clip_poly = get_clipping_poly_structs(vorn, i, bounding_box)
     return clip_polygon(poly, clip_poly; predicates)
 end
@@ -131,7 +131,7 @@ here means that `get_polygon(vorn, i)[ghost_vertex]` is a ghost vertex.
 - `p`: The first point of the ray.
 - `q`: A second point of the ray, so that `pq` gives the direction of the ray (which extends to infinity).
 """
-function _get_ray(vorn::VoronoiTessellation, i, ghost_vertex, predicates::AbstractPredicateKernel=AdaptiveKernel())
+function _get_ray(vorn::VoronoiTessellation, i, ghost_vertex, predicates::AbstractPredicateKernel = AdaptiveKernel())
     C = get_polygon(vorn, i)
     ghost_tri = get_circumcenter_to_triangle(vorn, C[ghost_vertex])
     u, v, _ = triangle_vertices(ghost_tri) # w is the ghost vertex
@@ -216,7 +216,7 @@ Truncates the unbounded edges of the `i`th polygon of `vorn` so that the line co
 - `new_vertices`: The new vertices of the polygon. This is not a circular vector.
 - `new_points`: The new points of the polygon. This is not a circular vector.
 """
-function grow_polygon_outside_of_box(vorn::VoronoiTessellation, i, bounding_box, predicates::AbstractPredicateKernel=AdaptiveKernel())
+function grow_polygon_outside_of_box(vorn::VoronoiTessellation, i, bounding_box, predicates::AbstractPredicateKernel = AdaptiveKernel())
     a, b, c, d = bounding_box
     vertices = get_polygon(vorn, i)
     new_vertices, new_points, ghost_vertices = get_new_polygon_indices(vorn, vertices)
@@ -272,11 +272,11 @@ Returns the new vertices and points of the polygon, as well as the indices of th
 - `ghost_vertices`: The indices of the ghost vertices in `new_vertices`.
 """
 function get_new_polygon_indices(vorn, vertices)
-    new_points = NTuple{2,Float64}[]
+    new_points = NTuple{2, Float64}[]
     sizehint!(new_points, length(vertices))
     new_vertices = similar(vertices, length(vertices) - 1)
     ghost_vertices = (0, 0)
-    for i in firstindex(vertices):(lastindex(vertices)-1)
+    for i in firstindex(vertices):(lastindex(vertices) - 1)
         v = vertices[i]
         if is_ghost_vertex(v)
             is_first = is_first_ghost_vertex(vertices, i)
@@ -303,11 +303,11 @@ Returns the coordinates of the `i`th polygon of `vorn`, clipped to `bounding_box
 Use the keyword arguments `predicates` to determine how predicates are computed. Should be one of [`ExactKernel`](@ref),
 [`AdaptiveKernel`](@ref), and [`FastKernel`](@ref). See the documentation for more information about these choices.
 """
-function get_bounded_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box; predicates::AbstractPredicateKernel=AdaptiveKernel())
+function get_bounded_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box; predicates::AbstractPredicateKernel = AdaptiveKernel())
     if isnothing(bounding_box)
         C = get_polygon(vorn, i)
         F = number_type(vorn)
-        coords = Vector{NTuple{2,F}}(undef, length(C))
+        coords = Vector{NTuple{2, F}}(undef, length(C))
         for j in eachindex(C)
             coords[j] = get_polygon_point(vorn, C[j])
         end
@@ -325,7 +325,7 @@ Returns the coordinates of the `i`th polygon of `vorn`, clipped to `bounding_box
 Use the keyword arguments `predicates` to determine how predicates are computed. Should be one of [`ExactKernel`](@ref),
 [`AdaptiveKernel`](@ref), and [`FastKernel`](@ref). See the documentation for more information about these choices.
 """
-function get_unbounded_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box; predicates::AbstractPredicateKernel=AdaptiveKernel())
+function get_unbounded_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box; predicates::AbstractPredicateKernel = AdaptiveKernel())
     return clip_unbounded_polygon_to_bounding_box(vorn, i, bounding_box; predicates)
 end
 
@@ -337,7 +337,7 @@ Clips the `i`th polygon of `vorn` to `bounding_box`. The polygon is assumed to b
 Use the keyword arguments `predicates` to determine how predicates are computed. Should be one of [`ExactKernel`](@ref),
 [`AdaptiveKernel`](@ref), and [`FastKernel`](@ref). See the documentation for more information about these choices.
 """
-function clip_unbounded_polygon_to_bounding_box(vorn::VoronoiTessellation, i, bounding_box; predicates::AbstractPredicateKernel=AdaptiveKernel())
+function clip_unbounded_polygon_to_bounding_box(vorn::VoronoiTessellation, i, bounding_box; predicates::AbstractPredicateKernel = AdaptiveKernel())
     new_vertices, new_points = grow_polygon_outside_of_box(vorn, i, bounding_box, predicates)
     clip_vertices = (1, 2, 3, 4)
     a, b, c, d = bounding_box

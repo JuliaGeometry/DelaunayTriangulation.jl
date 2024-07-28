@@ -151,16 +151,16 @@ This field stores the adjacent map, mapping each edge `(u, v)` in the triangulat
 get_adjacent(tri)
 ```
 
-For example, the mapping `(1079, 1416) => 1926` implies that the triangle `(1079, 1416, 1926)` is in the triangulation and is positively oriented, which we can verify:
+For example, the mapping `(2019, 2020) => 985` implies that the triangle `(2019, 2020, 985)` is in the triangulation and is positively oriented, which we can verify:
 
 ```@example curvout 
-DelaunayTriangulation.contains_triangle(tri, 1079, 1416, 1926)
+DelaunayTriangulation.contains_triangle(tri, 2019, 2020, 985)
 ```
 
 It is important to note that, for any triangle `(u, v, w)`, the mappings `(u, v) => w`, `(v, w) => u`, and `(w, u) => v` will all appear in the adjacent map. For example:
 
 ```@example curvout 
-get_adjacent(tri, 1079, 1416), get_adjacent(tri, 1416, 1926), get_adjacent(tri, 1926, 1079)
+get_adjacent(tri, 2019, 2020), get_adjacent(tri, 2020, 985), get_adjacent(tri, 985, 2019)
 ```
 
 You can use `get_adjacent(tri, u, v)` to find this vertex `w`, as we demonstrated above. For cases where the edge does not exist, you will get `0`:
@@ -172,10 +172,10 @@ get_adjacent(tri, 1, 2)
 One last thing to notice is that some of the vertices `w` will be ghost vertices, and similarly some of the edges `(u, v)` will be ghost edges. For example,
 
 ```@example curvout 
-get_adjacent(tri, 423, 97)
+get_adjacent(tri, 1690, 853)
 ```
 
-This vertex `-3` means that `(423, 97)` is an edge of the boundary associated with the ghost vertex `-3`.
+This vertex `-8` means that `(1690, 853)` is an edge of the boundary associated with the ghost vertex `-8`.
 
 ### [`get_adjacent2vertex(tri)`](@ref get_adjacent2vertex)
 
@@ -188,10 +188,10 @@ get_adjacent2vertex(tri)
 An example of this mapping is:
 
 ```@example curvout 
-get_adjacent2vertex(tri, 719)
+get_adjacent2vertex(tri, 700)
 ```
 
-This output means that `(1632, 1656, 719)`, `(1055, 1687, 719)`, `(1687, 2056, 719)`, `(1162, 1055, 719)`, `(2056, 1632, 719)`, and `(1656, 1162, 719)` are all positively oriented triangles in the triangulation, and these are the only triangles that contain the vertex `719`. In contrast to `get_adjacent`, calling `get_adjacent2vertex` on a vertex not in the triangulation will throw a `KeyError`. For ghost vertices, you will get the set of all edges on the boundary associated with that vertex, for example
+This output means that `(700, 1583, 933)`, `(700, 1445, 1986)`, `(700, 1986, 2017)`, `(700, 1581, 1583)`, `(700, 1604, 1445)`, `(700, 2017, 1581)`, and `(700, 933, 1604)` are all positively oriented triangles in the triangulation, and these are the only triangles that contain the vertex `700`. In contrast to `get_adjacent`, calling `get_adjacent2vertex` on a vertex not in the triangulation will throw a `KeyError`. For ghost vertices, you will get the set of all edges on the boundary associated with that vertex, for example
 
 ```@example curvout 
 get_adjacent2vertex(tri, -1)
@@ -257,7 +257,7 @@ This mapping shows the neighbours for each vertex in the triangulation. For exam
 get_neighbours(tri, 1)
 ```
 
-shows that the vertices of `1` are `-1`, `18`, `524`, and `-2`. These two ghost vertices, `-1` and `-2`, imply that `1` is on the boundary of the triangulation and is also at the corner of the two sections of the boundary associated with the ghost vertices `-1` and `-2`. Similarly,
+shows that the vertices sharing edge with `1` are `-1`, `18`, `483`, and `-2`. These two ghost vertices, `-1` and `-2`, imply that `1` is on the boundary of the triangulation and is also at the corner of the two sections of the boundary associated with the ghost vertices `-1` and `-2`. Similarly,
 
 ```@example curvout
 get_neighbours(tri, -2)
@@ -301,10 +301,10 @@ get_boundary_edge_map(tri)
 Since our domain has multiple curves, the `pos` values are `Tuple`s of the form `(m, n)`, where `m` is the curve and `n` is the section of that curve. So, for example, we have
 
 ```@example curvout
-pos, ℓ = get_boundary_edge_map(tri, 1245, 1402)
+pos, ℓ = get_boundary_edge_map(tri, 853, 1690)
 ```
 
-This means that `(1245, 1402)` is the `7`th edge of the first section on the third boundary:
+This means that `(853, 1690)` is the `2`nd edge of the first section on the sixth boundary:
 
 ```@example curvout
 bn = get_boundary_nodes(tri, pos) # notice that we can pass Tuples (m, n) as a single argument

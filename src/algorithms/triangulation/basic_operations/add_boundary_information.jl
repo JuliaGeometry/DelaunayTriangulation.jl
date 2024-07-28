@@ -5,7 +5,7 @@ Updates `tri` so that the ghost triangle information defined by the boundary nod
 """
 function add_boundary_information!(tri::Triangulation)
     I = integer_type(tri)
-    ghost_vertex= I(𝒢)
+    ghost_vertex = I(𝒢)
     bn = get_boundary_nodes(tri)
     if has_multiple_curves(tri)
         add_boundary_curve_information!(tri, bn, ghost_vertex)

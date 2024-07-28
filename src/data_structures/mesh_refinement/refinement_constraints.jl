@@ -23,13 +23,14 @@ struct RefinementConstraints{F}
     seditious_angle::Float64
     custom_constraint::F
     function RefinementConstraints(;
-        min_angle=0.0,
-        max_angle=180.0,
-        min_area=0.0,
-        max_area=Inf,
-        max_points=typemax(Int),
-        seditious_angle=20.0,
-        custom_constraint=(tri, triangle) -> false)
+            min_angle = 0.0,
+            max_angle = 180.0,
+            min_area = 0.0,
+            max_area = Inf,
+            max_points = typemax(Int),
+            seditious_angle = 20.0,
+            custom_constraint = (tri, triangle) -> false,
+        )
         max_radius_edge_ratio = cscd(min_angle) / 2
         min_angle, max_angle, min_area, max_area, max_radius_edge_ratio, seditious_angle = convert.(Float64, (min_angle, max_angle, min_area, max_area, max_radius_edge_ratio, seditious_angle))
         F = typeof(custom_constraint)

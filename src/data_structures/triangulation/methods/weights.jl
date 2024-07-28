@@ -127,7 +127,7 @@ Using a greedy search, finds the closest vertex in `tri` to the vertex `i` (whic
 measuring distance in lifted space (i.e., using the power distance - see [`get_power_distance`](@ref)). 
 The search starts from the vertex `j` which should be in `tri`. 
 """
-function get_weighted_nearest_neighbour(tri::Triangulation, i, j=rand(each_solid_vertex(tri)))
+function get_weighted_nearest_neighbour(tri::Triangulation, i, j = rand(each_solid_vertex(tri)))
     if has_vertex(tri, i)
         return i
     else
@@ -170,7 +170,7 @@ function is_submerged(tri::Triangulation, i)
     V = find_triangle(tri, q)
     return is_submerged(tri, i, V)
 end
-function is_submerged(tri::Triangulation, i, V) 
+function is_submerged(tri::Triangulation, i, V)
     is_ghost_vertex(i) && return false
     cert = point_position_relative_to_circumcircle(tri, V, i)
     return is_outside(cert)

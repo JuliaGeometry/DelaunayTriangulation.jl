@@ -105,8 +105,8 @@ get_members(complex::SmallAngleComplex) = complex.members
 
 Returns a map from an apex vertex to a list of all curves that define a small angle complex associated with that apex vertex.
 """
-function get_small_angle_complexes(points, boundary_nodes, boundary_curves, segments=nothing; IntegerType=Int)
-    d = Dict{IntegerType,Vector{SmallAngleComplex{IntegerType}}}()
+function get_small_angle_complexes(points, boundary_nodes, boundary_curves, segments = nothing; IntegerType = Int)
+    d = Dict{IntegerType, Vector{SmallAngleComplex{IntegerType}}}()
     if has_multiple_curves(boundary_nodes)
         _get_small_angle_complexes_multiple_curves!(d, boundary_nodes, boundary_curves, IntegerType)
     elseif has_multiple_sections(boundary_nodes)
@@ -208,7 +208,7 @@ Segments are stored twice. The vertices associated with a vertex are sorted coun
 to define the coordinates.
 """
 function construct_segment_map(segments, points, ::Type{I}) where {I}
-    segment_map = Dict{I,Vector{I}}()
+    segment_map = Dict{I, Vector{I}}()
     for e in each_edge(segments)
         i, j = edge_vertices(e)
         iset = get!(Vector{I}, segment_map, i)
@@ -224,12 +224,14 @@ function construct_segment_map(segments, points, ::Type{I}) where {I}
         px, py = getxy(p)
         qx, qy = getxy(q)
         base = (qx - px, qy - py)
-        sort!(vertices, by=_vertex -> begin
+        sort!(
+            vertices, by = _vertex -> begin
                 _q = get_point(points, _vertex)
                 _qx, _qy = getxy(_q)
                 next_base = (_qx - px, _qy - py)
                 return angle_between(base, next_base)
-            end, rev=false)
+            end, rev = false,
+        )
     end
     return segment_map
 end
@@ -248,12 +250,14 @@ function sort_members!(complex::SmallAngleComplex, points)
     px, py = getxy(p)
     qx, qy = getxy(q)
     base = (qx - px, qy - py)
-    sort!(members, by=member -> begin
+    sort!(
+        members, by = member -> begin
             _q = get_point(points, get_next_edge(member))
             _qx, _qy = getxy(_q)
             next_base = (_qx - px, _qy - py)
             return angle_between(base, next_base)
-        end, rev=false)
+        end, rev = false,
+    )
     return complex
 end
 
@@ -363,34 +367,34 @@ field will no longer aliased with the input `boundary_nodes`, although `points` 
 The argument `n` is used in [`polygonise`](@ref) for filling out the boundary temporarily in order to construct the [`PolygonHierarchy`](@ref). The argument `coarse_n` defines the initial coarse discretisation 
 through [`coarse_discretisation!`](@ref); the default `n=0` means that the coarse discretisation will be performed until the maximum total variation of a subcurve is less than π/2.
 """
-struct BoundaryEnricher{P,B,C,I,BM,S}
+struct BoundaryEnricher{P, B, C, I, BM, S}
     points::P
     boundary_nodes::B
     segments::S
     boundary_curves::C
     polygon_hierarchy::PolygonHierarchy{I}
-    parent_map::Dict{NTuple{2,I},I}
-    curve_index_map::Dict{I,I}
+    parent_map::Dict{NTuple{2, I}, I}
+    curve_index_map::Dict{I, I}
     boundary_edge_map::BM
     spatial_tree::BoundaryRTree{P}
     queue::Queue{I}
-    small_angle_complexes::Dict{I,Vector{SmallAngleComplex{I}}}
+    small_angle_complexes::Dict{I, Vector{SmallAngleComplex{I}}}
 end
-function BoundaryEnricher(points::P, boundary_nodes::B, segments=nothing; IntegerType=Int, n=4096, coarse_n=0) where {P,B}
+function BoundaryEnricher(points::P, boundary_nodes::B, segments = nothing; IntegerType = Int, n = 4096, coarse_n = 0) where {P, B}
     boundary_curves, new_boundary_nodes = convert_boundary_curves!(points, boundary_nodes, IntegerType)
     polygon_hierarchy = construct_polygon_hierarchy(points, new_boundary_nodes, boundary_curves; IntegerType, n)
-    return _construct_boundary_enricher(points, new_boundary_nodes, boundary_curves,  polygon_hierarchy, segments, n, coarse_n, IntegerType)
+    return _construct_boundary_enricher(points, new_boundary_nodes, boundary_curves, polygon_hierarchy, segments, n, coarse_n, IntegerType)
 end
 function _construct_boundary_enricher(points, boundary_nodes, boundary_curves, polygon_hierarchy, segments, n, coarse_n, ::Type{I}) where {I}
     expand_bounds!(polygon_hierarchy, ε(number_type(points)))
-    coarse_discretisation!(points, boundary_nodes, boundary_curves; n=coarse_n)
+    coarse_discretisation!(points, boundary_nodes, boundary_curves; n = coarse_n)
     boundary_edge_map = construct_boundary_edge_map(boundary_nodes, I)
-    parent_map = Dict{NTuple{2,I},I}()
-    curve_index_map = Dict{I,I}()
+    parent_map = Dict{NTuple{2, I}, I}()
+    curve_index_map = Dict{I, I}()
     spatial_tree = BoundaryRTree(points)
     queue = Queue{I}()
-    small_angle_complexes = get_small_angle_complexes(points, boundary_nodes, boundary_curves, segments; IntegerType=I)
-    _segments = isnothing(segments) ? Set{NTuple{2,I}}() : segments
+    small_angle_complexes = get_small_angle_complexes(points, boundary_nodes, boundary_curves, segments; IntegerType = I)
+    _segments = isnothing(segments) ? Set{NTuple{2, I}}() : segments
     enricher = BoundaryEnricher(points, boundary_nodes, _segments, boundary_curves, polygon_hierarchy, parent_map, curve_index_map, boundary_edge_map, spatial_tree, queue, small_angle_complexes)
     construct_parent_map!(enricher)
     construct_curve_index_map!(enricher)
@@ -570,7 +574,7 @@ end
 
 Returns the parent of the edge `(i, j)` in `boundary_enricher`. If the edge is not in the parent map, then `$∅` is returned.
 """
-get_parent(boundary_enricher::BoundaryEnricher{P,B,C,I}, i, j) where {P,B,C,I} = get(get_parent_map(boundary_enricher), (i, j), I(∅))
+get_parent(boundary_enricher::BoundaryEnricher{P, B, C, I}, i, j) where {P, B, C, I} = get(get_parent_map(boundary_enricher), (i, j), I(∅))
 
 """
     set_parent!(boundary_enricher::BoundaryEnricher, i, j, k)
@@ -645,7 +649,7 @@ function _construct_parent_map_multiple_curves!(enricher::BoundaryEnricher)
     end
     return enricher
 end
-function _construct_parent_map_multiple_sections!(enricher::BoundaryEnricher, boundary_nodes=get_boundary_nodes(enricher), ctr=1)
+function _construct_parent_map_multiple_sections!(enricher::BoundaryEnricher, boundary_nodes = get_boundary_nodes(enricher), ctr = 1)
     ns = num_sections(boundary_nodes)
     for i in 1:ns
         section_nodes = get_boundary_nodes(boundary_nodes, i)
@@ -654,7 +658,7 @@ function _construct_parent_map_multiple_sections!(enricher::BoundaryEnricher, bo
     end
     return enricher
 end
-function _construct_parent_map_contiguous!(enricher::BoundaryEnricher, boundary_nodes=get_boundary_nodes(enricher), ctr=1)
+function _construct_parent_map_contiguous!(enricher::BoundaryEnricher, boundary_nodes = get_boundary_nodes(enricher), ctr = 1)
     n = num_boundary_edges(boundary_nodes)
     for i in 1:n
         u = get_boundary_nodes(boundary_nodes, i)
@@ -716,7 +720,7 @@ Returns `true` if the `curve_index`th curve in `enricher` is piecewise linear, a
     boundary_curves = get_boundary_curves(enricher)
     return is_piecewise_linear(boundary_curves, curve_index)
 end
-@inline function is_piecewise_linear(boundary_curves::C, curve_index) where {C<:Tuple}
+@inline function is_piecewise_linear(boundary_curves::C, curve_index) where {C <: Tuple}
     isempty(boundary_curves) && return true
     return eval_fnc_at_het_tuple_element(is_piecewise_linear, boundary_curves, curve_index)
 end
@@ -730,7 +734,7 @@ Returns the inverse of the `curve_index`th curve at `q`.
     boundary_curves = get_boundary_curves(enricher)
     return get_inverse(boundary_curves, curve_index, q)
 end
-@inline function get_inverse(boundary_curves::C, curve_index, q) where {C<:Tuple}
+@inline function get_inverse(boundary_curves::C, curve_index, q) where {C <: Tuple}
     return eval_fnc_at_het_tuple_element_with_arg(get_inverse, boundary_curves, (q,), curve_index)
 end
 
@@ -743,7 +747,7 @@ Returns the equivariation split of the `curve_index`th curve between `t₁` and 
     boundary_curves = get_boundary_curves(enricher)
     return get_equivariation_split(boundary_curves, curve_index, t₁, t₂)
 end
-@inline function get_equivariation_split(boundary_curves::C, curve_index, t₁, t₂) where {C<:Tuple}
+@inline function get_equivariation_split(boundary_curves::C, curve_index, t₁, t₂) where {C <: Tuple}
     return eval_fnc_at_het_tuple_element_with_arg(get_equivariation_split, boundary_curves, (t₁, t₂), curve_index)
 end
 
@@ -756,7 +760,7 @@ Returns the equidistant split of the `curve_index`th curve between `t₁` and `t
     boundary_curves = get_boundary_curves(enricher)
     return get_equidistant_split(boundary_curves, curve_index, t₁, t₂)
 end
-@inline function get_equidistant_split(boundary_curves::C, curve_index, t₁, t₂) where {C<:Tuple}
+@inline function get_equidistant_split(boundary_curves::C, curve_index, t₁, t₂) where {C <: Tuple}
     return eval_fnc_at_het_tuple_element_with_arg(get_equidistant_split, boundary_curves, (t₁, t₂), curve_index)
 end
 
@@ -770,7 +774,7 @@ Returns the `curve_index`th boundary curve at `t`.
     boundary_curves = get_boundary_curves(enricher)
     return eval_boundary_curve(boundary_curves, curve_index, t)
 end
-@inline function eval_boundary_curve(boundary_curves::C, curve_index, t) where {C<:Tuple}
+@inline function eval_boundary_curve(boundary_curves::C, curve_index, t) where {C <: Tuple}
     return eval_fnc_in_het_tuple(boundary_curves, t, curve_index)
 end
 
@@ -792,10 +796,10 @@ See the documentation for more information about these choices.
     return point_position_relative_to_curve(kernel, boundary_curves, curve_index, p)
 end
 @inline point_position_relative_to_curve(enricher::BoundaryEnricher, curve_index, p) = point_position_relative_to_curve(AdaptiveKernel(), enricher, curve_index, p)
-@inline function point_position_relative_to_curve(kernel::AbstractPredicateKernel, boundary_curves::C, curve_index, p) where {C<:Tuple}
+@inline function point_position_relative_to_curve(kernel::AbstractPredicateKernel, boundary_curves::C, curve_index, p) where {C <: Tuple}
     return eval_fnc_at_het_tuple_element_with_arg_and_prearg(point_position_relative_to_curve, boundary_curves, kernel, (p,), curve_index)
 end
-@inline point_position_relative_to_curve(boundary_curves::C, curve_index, p) where {C<:Tuple} = point_position_relative_to_curve(AdaptiveKernel(),boundary_curves,curve_index,p)
+@inline point_position_relative_to_curve(boundary_curves::C, curve_index, p) where {C <: Tuple} = point_position_relative_to_curve(AdaptiveKernel(), boundary_curves, curve_index, p)
 
 """
     angle_between(enricher::BoundaryEnricher, curve_index1, curve_index2) -> Float64 
@@ -851,7 +855,7 @@ Fills out a set of points for a curve-bounded domain for use with [`PolygonHiera
     If the boundary is not curve bounded, then `new_points` and `new_boundary_nodes` remain aliased 
     with the input `points` and `boundary_nodes`.
 """
-function polygonise(points, boundary_nodes, boundary_curves; n=4096)
+function polygonise(points, boundary_nodes, boundary_curves; n = 4096)
     new_points = deepcopy(points)
     new_boundary_nodes = deepcopy(boundary_nodes)
     coarse_discretisation!(new_points, new_boundary_nodes, boundary_curves; n)
@@ -902,7 +906,7 @@ Updates the fields of `enricher` after splitting a boundary edge `(i, j)` at the
 can be used to avoid inserting an additional boundary node when `boundary_nodes` was already updated somewhere else (e.g., we need this for 
 mesh refinement which already updates the `boundary_nodes` which is aliased with the same field in the enricher).
 """
-function split_boundary_edge!(enricher::BoundaryEnricher, i, j, r, update_boundary_nodes=Val(true))
+function split_boundary_edge!(enricher::BoundaryEnricher, i, j, r, update_boundary_nodes = Val(true))
     boundary_nodes = get_boundary_nodes(enricher)
     boundary_edge_map = get_boundary_edge_map(enricher)
     spatial_tree = get_spatial_tree(enricher)
@@ -922,7 +926,7 @@ Updates the fields of `enricher` after splitting an interior segment `(i, j)` at
 The `update_segments` argument can be used to avoid inserting an additional segment when `segments` was already updated somewhere else (e.g., we need this for
 mesh refinement which already updates the `interior_segments` which is aliased with the `segments` field in the enricher).
 """
-function split_interior_segment!(enricher::BoundaryEnricher, i, j, r, update_segments=Val(true))
+function split_interior_segment!(enricher::BoundaryEnricher, i, j, r, update_segments = Val(true))
     segments = get_segments(enricher)
     spatial_tree = get_spatial_tree(enricher)
     E = edge_type(segments)
@@ -948,7 +952,7 @@ The `is_interior` argument can be used to specify whether the edge is an interio
 
 See also [`split_boundary_edge!`](@ref) and [`split_interior_segment!`](@ref).
 """
-function split_edge!(enricher::BoundaryEnricher, i, j, r, update_boundary_nodes=Val(true), update_segments=Val(true), is_interior=is_segment(enricher, i, j))
+function split_edge!(enricher::BoundaryEnricher, i, j, r, update_boundary_nodes = Val(true), update_segments = Val(true), is_interior = is_segment(enricher, i, j))
     if is_interior
         split_interior_segment!(enricher, i, j, r, update_segments)
     else

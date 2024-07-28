@@ -5,7 +5,6 @@ using Random
 using StableRNGs
 
 
-
 global tri, label_map, index_map = simple_geometry()
 add_ghost_triangles!(tri)
 DT.compute_representative_points!(tri)
@@ -35,12 +34,18 @@ end
     current_idx = 1
     for i in DT.each_point_index(pts)
         if i ≠ 5
-            current_dist, current_idx = DT.compare_distance(current_dist, current_idx, tri, i,
-                qx, qy)
-            @inferred DT.compare_distance(current_dist, current_idx, tri, i,
-                qx, qy)
-            @inferred DT.compare_distance(current_dist, current_idx, pts, i,
-                qx, qy)
+            current_dist, current_idx = DT.compare_distance(
+                current_dist, current_idx, tri, i,
+                qx, qy,
+            )
+            @inferred DT.compare_distance(
+                current_dist, current_idx, tri, i,
+                qx, qy,
+            )
+            @inferred DT.compare_distance(
+                current_dist, current_idx, pts, i,
+                qx, qy,
+            )
         end
     end
     cd, ci = findmin([[norm(p .- (qx, qy))^2 + (p == pts[5]) * Inf] for p in pts])
@@ -83,14 +88,14 @@ end
             q = (20rand(rng), 20rand(rng))
             ci = tried_idx[argmin([norm(pts[i] .- q) for i in tried_idx])]
             rng = StableRNG(s)
-            ci2 = DT.select_initial_point(tri, q; m, rng, point_indices=(1, 5, 8, 19, 20))
-            @inferred DT.select_initial_point(tri, q; m, rng, point_indices=(1, 5, 8, 19, 20))
+            ci2 = DT.select_initial_point(tri, q; m, rng, point_indices = (1, 5, 8, 19, 20))
+            @inferred DT.select_initial_point(tri, q; m, rng, point_indices = (1, 5, 8, 19, 20))
             @test ci == ci2
             @test ci2 ∈ (1, 5, 8, 19, 20)
         end
 
         for k in DT.each_point_index(pts)
-            @test DT.select_initial_point(tri, k; try_points=k) == k
+            @test DT.select_initial_point(tri, k; try_points = k) == k
         end
     end
 end

@@ -37,7 +37,7 @@ the tessellation to.
 ````@example clipped_rectangle
 fig, ax, sc = voronoiplot(vorn)
 a, b, c, d = -2.0, 3.0, 0.0, 7.0
-lines!(ax, [(a,c),(b,c),(b,d),(a,d),(a,c)], color = :black, linewidth = 4)
+lines!(ax, [(a, c), (b, c), (b, d), (a, d), (a, c)], color = :black, linewidth = 4)
 fig
 ````
 
@@ -53,7 +53,7 @@ You can obtain some reasonable defaults for this bounding box using
 The coordinates for each polygon clipped to this box can be obtained as follows.
 
 ````@example clipped_rectangle
-clipped_coords = Vector{Vector{NTuple{2,Float64}}}(undef, num_polygons(vorn))
+clipped_coords = Vector{Vector{NTuple{2, Float64}}}(undef, num_polygons(vorn))
 for i in each_polygon_index(vorn)
     clipped_coords[i] = get_polygon_coordinates(vorn, i, bounding_box)
 end
@@ -70,6 +70,7 @@ fig
 As we can see, the polygons have been clipped to the rectangle.
 Note that if you just want this for plotting, you can also call `voronoiplot` with the
 `bounding_box` keyword argument.
+
 ## Just the code
 An uncommented version of this example is given below.
 You can view the source code for this file [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/clipped_rectangle.jl).
@@ -91,12 +92,12 @@ vorn = voronoi(tri)
 
 fig, ax, sc = voronoiplot(vorn)
 a, b, c, d = -2.0, 3.0, 0.0, 7.0
-lines!(ax, [(a,c),(b,c),(b,d),(a,d),(a,c)], color = :black, linewidth = 4)
+lines!(ax, [(a, c), (b, c), (b, d), (a, d), (a, c)], color = :black, linewidth = 4)
 fig
 
 bounding_box = (a, b, c, d)
 
-clipped_coords = Vector{Vector{NTuple{2,Float64}}}(undef, num_polygons(vorn))
+clipped_coords = Vector{Vector{NTuple{2, Float64}}}(undef, num_polygons(vorn))
 for i in each_polygon_index(vorn)
     clipped_coords[i] = get_polygon_coordinates(vorn, i, bounding_box)
 end

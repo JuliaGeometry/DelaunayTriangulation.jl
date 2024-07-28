@@ -20,10 +20,10 @@ The map taking vertices `u` to the set of all `v` such that `(u, v)` is an edge 
 """
 struct Graph{I}
     vertices::Set{I}
-    edges::Set{NTuple{2,I}}
-    neighbours::Dict{I,Set{I}}
+    edges::Set{NTuple{2, I}}
+    neighbours::Dict{I, Set{I}}
 end
-Graph{I}() where {I} = Graph(Set{I}(), Set{NTuple{2,I}}(), Dict{I,Set{I}}())
+Graph{I}() where {I} = Graph(Set{I}(), Set{NTuple{2, I}}(), Dict{I, Set{I}}())
 function Base.show(io::IO, ::MIME"text/plain", graph::Graph)
     println(io, "Graph")
     println(io, "    Number of edges: ", num_edges(graph))
@@ -117,17 +117,17 @@ has_vertex(G::Graph, u) = u ∈ get_vertices(G)
 Adds the vertices `u...` to `G`.
 """
 function add_vertex!(G::Graph{I}, v) where {I}
-    has_vertex(G, v) && return G 
+    has_vertex(G, v) && return G
     V = get_vertices(G)
-    push!(V, v) 
+    push!(V, v)
     N = get_neighbours(G)
-    get!(N, v) do 
+    get!(N, v) do
         Set{I}() # in case N is empty, let's add it here 
     end
     return G
 end
 function add_vertex!(G::Graph{I}, u...) where {I}
-    foreach(u) do v 
+    foreach(u) do v
         add_vertex!(G, v)
     end
     return G

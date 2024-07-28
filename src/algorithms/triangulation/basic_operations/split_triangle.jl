@@ -16,10 +16,10 @@ See also [`legalise_split_triangle!`](@ref) and [`complete_split_triangle_and_le
 There is no output, but `tri` will be updated so that it now contains the triangles `(i, j, r)`, `(j, k, r)`, and `(k, i, r)`.
 """
 function split_triangle!(tri::Triangulation, i, j, k, r)
-    delete_triangle!(tri, i, j, k; protect_boundary=true, update_ghost_edges=false)
-    add_triangle!(tri, i, j, r; protect_boundary=true, update_ghost_edges=false)
-    add_triangle!(tri, j, k, r; protect_boundary=true, update_ghost_edges=false)
-    add_triangle!(tri, k, i, r; protect_boundary=true, update_ghost_edges=false)
+    delete_triangle!(tri, i, j, k; protect_boundary = true, update_ghost_edges = false)
+    add_triangle!(tri, i, j, r; protect_boundary = true, update_ghost_edges = false)
+    add_triangle!(tri, j, k, r; protect_boundary = true, update_ghost_edges = false)
+    add_triangle!(tri, k, i, r; protect_boundary = true, update_ghost_edges = false)
     return tri
 end
 
@@ -43,7 +43,7 @@ See also [`complete_split_triangle_and_legalise!`](@ref).
 # Outputs
 There is no output, as `tri` is updated in-place.
 """
-function legalise_split_triangle!(tri::Triangulation, i, j, k, r; predicates::AbstractPredicateKernel=AdaptiveKernel())
+function legalise_split_triangle!(tri::Triangulation, i, j, k, r; predicates::AbstractPredicateKernel = AdaptiveKernel())
     legalise_edge!(tri, i, j, r; predicates)
     legalise_edge!(tri, j, k, r; predicates)
     legalise_edge!(tri, k, i, r; predicates)
@@ -65,7 +65,7 @@ Splits the triangle `(i, j, k)` at the vertex `r`, assumed to be inside the tria
 # Outputs
 There is no output, as `tri` is updated in-place.
 """
-function complete_split_triangle_and_legalise!(tri::Triangulation, i, j, k, r; predicates::AbstractPredicateKernel=AdaptiveKernel())
+function complete_split_triangle_and_legalise!(tri::Triangulation, i, j, k, r; predicates::AbstractPredicateKernel = AdaptiveKernel())
     split_triangle!(tri, i, j, k, r)
     legalise_split_triangle!(tri, i, j, k, r; predicates)
     return tri

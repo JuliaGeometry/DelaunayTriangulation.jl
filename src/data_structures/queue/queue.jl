@@ -7,11 +7,11 @@ Struct for a first-in first-out queue.
 
     Under the hood, `Queue` simply uses a `Vector`. This may not be as optimised compared to other implementations,
     e.g. DataStructure.jl's block-based approach with a `Dequeue`.
-""" 
+"""
 struct Queue{T}
     data::Vector{T}
 end
-Queue{T}() where T = Queue{T}(T[])
+Queue{T}() where {T} = Queue{T}(T[])
 Base.:(==)(q1::Queue, q2::Queue) = q1.data == q2.data
 
 """
@@ -55,4 +55,3 @@ Base.popfirst!(queue::Queue) = popfirst!(queue.data)
 Adds all `data` to the end of the `queue`.
 """
 enqueue_all!(queue::Queue, data) = append!(queue.data, data)
-

@@ -35,11 +35,11 @@ end
 @testset "is_weighted" begin
     tri = Triangulation(rand(2, 10))
     @test !DT.is_weighted(tri)
-    tri = Triangulation(rand(2, 10); weights=rand(10))
+    tri = Triangulation(rand(2, 10); weights = rand(10))
     @test DT.is_weighted(tri)
-    tri = Triangulation(rand(2, 10); weights=DT.ZeroWeight())
+    tri = Triangulation(rand(2, 10); weights = DT.ZeroWeight())
     @test !DT.is_weighted(tri)
-    tri = Triangulation(rand(2, 10); weights=zeros(10))
+    tri = Triangulation(rand(2, 10); weights = zeros(10))
     @test DT.is_weighted(tri)
 end
 
@@ -116,15 +116,15 @@ end
     _weights[58] = weights[2]
     _weights[498] = weights[3]
     _weights[5] = weights[4]
-    tri = Triangulation(_points; weights=_weights)
+    tri = Triangulation(_points; weights = _weights)
     d = DT.get_distance_to_witness_plane(tri, 5, (137, 58, 498))
     @test d ≈ -2.129523129725314
     @test DT.get_distance_to_witness_plane(tri, 5, (137, 58, 498)) ≈
-          DT.get_distance_to_witness_plane(tri, 5, (58, 137, 498)) ≈
-          DT.get_distance_to_witness_plane(tri, 5, (498, 58, 137)) ≈
-          DT.get_distance_to_witness_plane(tri, 5, (137, 498, 58)) ≈
-          DT.get_distance_to_witness_plane(tri, 5, (58, 498, 137)) ≈
-          DT.get_distance_to_witness_plane(tri, 5, (498, 137, 58))
+        DT.get_distance_to_witness_plane(tri, 5, (58, 137, 498)) ≈
+        DT.get_distance_to_witness_plane(tri, 5, (498, 58, 137)) ≈
+        DT.get_distance_to_witness_plane(tri, 5, (137, 498, 58)) ≈
+        DT.get_distance_to_witness_plane(tri, 5, (58, 498, 137)) ≈
+        DT.get_distance_to_witness_plane(tri, 5, (498, 137, 58))
     _points[5] = (-3.9, 2.01)
     _weights[5] = -15.0
     d = DT.get_distance_to_witness_plane(tri, 5, (137, 58, 498))
@@ -208,7 +208,7 @@ end
         for i in 3:10
             for j in 3:10
                 tri = triangulate_rectangle(0, 10, 0, 10, i, j)
-                tri = triangulate(get_points(tri); weights=zeros(i * j))
+                tri = triangulate(get_points(tri); weights = zeros(i * j))
                 # @test validate_triangulation(tri) # Why is this failing sometimes? Is validate not branching at weighted triangulations?
             end
         end
@@ -226,7 +226,7 @@ end
         for i in 3:10
             for j in 3:10
                 tri = triangulate_rectangle(0, 10, 0, 10, i, j)
-                tri = triangulate(get_points(tri); weights=10randn() * ones(i * j))
+                tri = triangulate(get_points(tri); weights = 10randn() * ones(i * j))
                 # @test validate_triangulation(tri) # Why is this failing sometimes? Is validate not branching at weighted triangulations?
             end
         end

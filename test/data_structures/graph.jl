@@ -7,19 +7,21 @@ using DataStructures
     g1 = DT.Graph{Int64}()
     g2 = DT.Graph{Int32}()
     @test g1.vertices == Set{Int64}()
-    @test g1.edges == Set{NTuple{2,Int64}}()
-    @test g1.neighbours == Dict{Int64,Set{Int64}}()
+    @test g1.edges == Set{NTuple{2, Int64}}()
+    @test g1.neighbours == Dict{Int64, Set{Int64}}()
     @test g2.vertices == Set{Int32}()
-    @test g2.edges == Set{NTuple{2,Int32}}()
-    @test g2.neighbours == Dict{Int32,Set{Int32}}()
+    @test g2.edges == Set{NTuple{2, Int32}}()
+    @test g2.neighbours == Dict{Int32, Set{Int32}}()
 end
 
-global sg = [0 0 0 1 0 1
+global sg = [
+    0 0 0 1 0 1
     0 0 1 1 0 0
     0 1 0 1 0 1
     1 1 1 0 1 1
     0 0 0 1 0 0
-    1 0 1 1 0 0]
+    1 0 1 1 0 0
+]
 global g = _make_graph_from_adjacency(sg)
 
 @testset "Getting graph and getting statistics" begin
@@ -100,15 +102,17 @@ end
     DT.add_vertex!(g, bidx, bidx - 1, bidx - 2, bidx - 3, bidx - 4)
     DT.delete_ghost_vertices_from_graph!(g)
     @test bidx ∉ g.vertices && bidx - 1 ∉ g.vertices && bidx - 2 ∉ g.vertices && bidx - 3 ∉ g.vertices &&
-          bidx - 4 ∉ g.vertices
+        bidx - 4 ∉ g.vertices
 end
 
-global sg = [0 0 0 1 0 1
+global sg = [
+    0 0 0 1 0 1
     0 0 1 1 0 0
     0 1 0 1 0 1
     1 1 1 0 1 1
     0 0 0 1 0 0
-    1 0 1 1 0 0]
+    1 0 1 1 0 0
+]
 global g = _make_graph_from_adjacency(sg)
 
 @testset "Removing empty parts" begin

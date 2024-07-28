@@ -276,9 +276,9 @@ See the documentation for more information about these choices.
         return -1
     elseif pqa == 0 && pqb == 0
         if sameside_predicate(a, b, p) == 1 &&
-           sameside_predicate(a, b, q) == 1 &&
-           sameside_predicate(p, q, a) == 1 &&
-           sameside_predicate(p, q, b) == 1
+                sameside_predicate(a, b, q) == 1 &&
+                sameside_predicate(p, q, a) == 1 &&
+                sameside_predicate(p, q, b) == 1
             return -1
         else
             return 0
