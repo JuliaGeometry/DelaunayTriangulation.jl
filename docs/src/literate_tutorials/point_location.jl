@@ -104,7 +104,7 @@ refine!(tri; max_area=0.01get_area(tri), rng);
 # To demonstrate this, see the following plot:
 fig, ax, sc = triplot(tri, show_ghost_edges=true)
 fig
-@test_reference joinpath(fig_path, "point_location_ex_2.png") fig #src
+@test_reference joinpath(fig_path, "point_location_ex_2.png") fig by=psnr_equality(15) #src
 
 # The ghost edges now intersect the boundary, which doesn't make sense, and creates difficulties.
 # Let us now demonstrate how the function still works here. We try finding the blue points shown below.

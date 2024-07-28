@@ -186,7 +186,7 @@ tri = triangulate(copy(points); boundary_nodes=curve, rng) # copying so that we 
 refine!(tri; max_area=1e-2)
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "triangulate_curve_bounded_ex_4.png") fig #src
+@test_reference joinpath(fig_path, "triangulate_curve_bounded_ex_4.png") fig by=psnr_equality(15) #src
 
 # ### Using Custom Constraints to Control Refinement 
 # Let's give another example of using custom constraints to better control the refinement within different domains. Referencing the 

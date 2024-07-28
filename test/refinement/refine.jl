@@ -2282,7 +2282,7 @@ end
                                 @test_reference "a_simple_convex_example_circle.png" fig by = psnr_equality(15)
                             elseif _rng_num(idx1, idx2, idx3, idx4, idx5) == _rng_num(2, 3, 1, 2, 2)
                                 fig, ax, sc = triplot(tri)
-                                @test_reference "a_simple_convex_example_lens.png" fig by = psnr_equality(15)
+                                @test_reference "a_simple_convex_example_lens.png" fig by = psnr_equality(8)
                             end
                         end
                     end

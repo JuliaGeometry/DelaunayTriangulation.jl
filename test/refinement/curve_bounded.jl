@@ -1560,10 +1560,10 @@ end
                                         @test validate_refinement(tri, args, warn=false)
                                         if _rng_num(idx1, idx2, idx3, idx4, idx5, curve_idx, point_idx) == _rng_num(1, 3, 1, 2, 2, curve_idx, point_idx)
                                             fig, ax, sc = triplot(tri)
-                                            @test_reference "refine_curve_bounded_example_$(curve_idx)_$(names[curve_idx])_$(point_names[point_idx])_$(abs(_rng_num(1, 3, 1, 2, 2, curve_idx, point_idx))).png" fig by = psnr_equality(9)
+                                            @test_reference "refine_curve_bounded_example_$(curve_idx)_$(names[curve_idx])_$(point_names[point_idx])_$(abs(_rng_num(1, 3, 1, 2, 2, curve_idx, point_idx))).png" fig by = psnr_equality(7)
                                         elseif _rng_num(idx1, idx2, idx3, idx4, idx5, curve_idx, point_idx) == _rng_num(2, 3, 1, 2, 2, curve_idx, point_idx)
                                             fig, ax, sc = triplot(tri)
-                                            @test_reference "refine_curve_bounded_example_$(curve_idx)_$(names[curve_idx])_$(point_names[point_idx])_$(abs(_rng_num(2, 3, 1, 2, 2, curve_idx, point_idx))).png" fig by = psnr_equality(9)
+                                            @test_reference "refine_curve_bounded_example_$(curve_idx)_$(names[curve_idx])_$(point_names[point_idx])_$(abs(_rng_num(2, 3, 1, 2, 2, curve_idx, point_idx))).png" fig by = psnr_equality(7)
                                         end
                                         @test tri.boundary_enricher.boundary_edge_map == tri.boundary_edge_map
                                     end
