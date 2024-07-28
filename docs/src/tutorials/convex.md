@@ -15,7 +15,7 @@ using CairoMakie
 points = [
     (10.0, 12.0), (7.0, 11.0), (8.0, 6.0),
     (10.0, 3.0), (14.0, 5.0), (15.0, 10.0),
-    (13.0, 12.0)
+    (13.0, 12.0),
 ]
 S = 1:7
 tri = triangulate_convex(points, 1:7)
@@ -66,6 +66,7 @@ using BenchmarkTools
 
 For the smaller example that we started with above, `triangulate_convex` is also
 faster, although not by much (≈15.10 μs versus ≈10.7 μs).
+
 ## Just the code
 An uncommented version of this example is given below.
 You can view the source code for this file [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/convex.jl).
@@ -77,7 +78,7 @@ using CairoMakie
 points = [
     (10.0, 12.0), (7.0, 11.0), (8.0, 6.0),
     (10.0, 3.0), (14.0, 5.0), (15.0, 10.0),
-    (13.0, 12.0)
+    (13.0, 12.0),
 ]
 S = 1:7
 tri = triangulate_convex(points, 1:7)

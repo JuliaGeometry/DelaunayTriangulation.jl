@@ -27,7 +27,7 @@ lattice manually and `triangulate` those. Here's a comparison of the times.
 ````@example lattice
 using BenchmarkTools
 points = get_points(tri)
-@benchmark triangulate($points; randomise=$false) # randomise=false because points are already in lattice order, i.e. spatially sorted
+@benchmark triangulate($points; randomise = $false) # randomise=false because points are already in lattice order, i.e. spatially sorted
 ````
 
 ````@example lattice
@@ -55,7 +55,7 @@ tri
 You can opt into not having these by using `delete_ghosts=true`:
 
 ````@example lattice
-tri = triangulate_rectangle(a, b, c, d, nx, ny; single_boundary=true, delete_ghosts=true)
+tri = triangulate_rectangle(a, b, c, d, nx, ny; single_boundary = true, delete_ghosts = true)
 tri
 ````
 
@@ -83,7 +83,7 @@ fig
 
 using BenchmarkTools
 points = get_points(tri)
-@benchmark triangulate($points; randomise=$false) # randomise=false because points are already in lattice order, i.e. spatially sorted
+@benchmark triangulate($points; randomise = $false) # randomise=false because points are already in lattice order, i.e. spatially sorted
 
 @benchmark triangulate_rectangle($a, $b, $c, $d, $nx, $ny)
 
@@ -91,7 +91,7 @@ get_boundary_nodes(tri)
 
 tri
 
-tri = triangulate_rectangle(a, b, c, d, nx, ny; single_boundary=true, delete_ghosts=true)
+tri = triangulate_rectangle(a, b, c, d, nx, ny; single_boundary = true, delete_ghosts = true)
 tri
 
 get_boundary_nodes(tri)

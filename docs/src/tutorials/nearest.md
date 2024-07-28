@@ -24,13 +24,13 @@ shown are the points that we will query.
 points = [
     (-3.0, 7.0), (2.0, 6.0), (0.0, 3.0),
     (0.0, 0.0), (-5.0, 5.0), (-3.0, 1.0),
-    (2.0, -3.0), (5.0, 5.0), (-4.0, 3.0)
+    (2.0, -3.0), (5.0, 5.0), (-4.0, 3.0),
 ]
 tri = triangulate(points)
 vorn = voronoi(tri)
 p, q = (-2.0, 7.5), (0.0, 4.0)
-fig, ax, sc = voronoiplot(vorn, markersize=14)
-scatter!(ax,[p,q],color=:white,strokecolor=:black,strokewidth=2,markersize=14)
+fig, ax, sc = voronoiplot(vorn, markersize = 14)
+scatter!(ax, [p, q], color = :white, strokecolor = :black, strokewidth = 2, markersize = 14)
 fig
 ````
 
@@ -57,6 +57,7 @@ nq_tri = get_nearest_neighbour(tri, q)
 ````
 
 Both methods lead to the same results because they use the same algorithm.
+
 ## Just the code
 An uncommented version of this example is given below.
 You can view the source code for this file [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/nearest.jl).
@@ -68,13 +69,13 @@ using CairoMakie
 points = [
     (-3.0, 7.0), (2.0, 6.0), (0.0, 3.0),
     (0.0, 0.0), (-5.0, 5.0), (-3.0, 1.0),
-    (2.0, -3.0), (5.0, 5.0), (-4.0, 3.0)
+    (2.0, -3.0), (5.0, 5.0), (-4.0, 3.0),
 ]
 tri = triangulate(points)
 vorn = voronoi(tri)
 p, q = (-2.0, 7.5), (0.0, 4.0)
-fig, ax, sc = voronoiplot(vorn, markersize=14)
-scatter!(ax,[p,q],color=:white,strokecolor=:black,strokewidth=2,markersize=14)
+fig, ax, sc = voronoiplot(vorn, markersize = 14)
+scatter!(ax, [p, q], color = :white, strokecolor = :black, strokewidth = 2, markersize = 14)
 fig
 
 np = get_nearest_neighbour(vorn, p)

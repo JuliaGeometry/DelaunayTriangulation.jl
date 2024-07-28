@@ -35,12 +35,12 @@ points = [
     (-1.0, 2.0), (4.0, 6.0), (4.0, 3.0), (-3.0, 7.0),
     (-6.0, -1.0), (9.0, 5.0), (5.0, -5.0), (-6.0, 7.0),
     (0.0, 0.0), (-3.0, 4.0), (-5.0, 5.0), (-3.0, -4.0),
-    (5.0, -1.0), (2.0, -2.0)
+    (5.0, -1.0), (2.0, -2.0),
 ]
 p = (3.0, 2.0)
 tri = triangulate(points)
 fig, ax, sc = triplot(tri)
-scatter!(ax, [p], markersize=14)
+scatter!(ax, [p], markersize = 14)
 fig
 ````
 
@@ -63,7 +63,7 @@ This splitting introduces some new illegal edges, shown in red below.
 
 ````@example operations_legalise_edge
 function get_all_illegal_edges(tri) #hide
-    T = NTuple{2,Float64}[] #hide
+    T = NTuple{2, Float64}[] #hide
     for E in each_edge(tri) #hide
         cert = DelaunayTriangulation.is_legal(tri, E...) #hide
         if DelaunayTriangulation.is_illegal(cert) #hide
@@ -74,7 +74,7 @@ function get_all_illegal_edges(tri) #hide
 end #hide
 fig, ax, sc = triplot(tri) #hide
 T = get_all_illegal_edges(tri) #hide
-linesegments!(ax, T, color=:red, linewidth=3) #hide
+linesegments!(ax, T, color = :red, linewidth = 3) #hide
 fig #hide
 ````
 
@@ -92,6 +92,7 @@ fig
 ````
 
 The triangulation is now Delaunay, and there are no more illegal edges.
+
 ## Just the code
 An uncommented version of this example is given below.
 You can view the source code for this file [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/operations_legalise_edge.jl).
@@ -104,12 +105,12 @@ points = [
     (-1.0, 2.0), (4.0, 6.0), (4.0, 3.0), (-3.0, 7.0),
     (-6.0, -1.0), (9.0, 5.0), (5.0, -5.0), (-6.0, 7.0),
     (0.0, 0.0), (-3.0, 4.0), (-5.0, 5.0), (-3.0, -4.0),
-    (5.0, -1.0), (2.0, -2.0)
+    (5.0, -1.0), (2.0, -2.0),
 ]
 p = (3.0, 2.0)
 tri = triangulate(points)
 fig, ax, sc = triplot(tri)
-scatter!(ax, [p], markersize=14)
+scatter!(ax, [p], markersize = 14)
 fig
 
 push!(points, p)

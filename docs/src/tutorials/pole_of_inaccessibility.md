@@ -48,24 +48,26 @@ points = [
     2.12497 9.42582
     7.27436 2.7979
     3.0 4.0
-    5.33697 1.88019]'
-outer_boundary = [ # split into segments for demonstration purposes
+    5.33697 1.88019
+]'
+outer_boundary = [
+    # split into segments for demonstration purposes
     [1, 4, 3, 2],
     [2, 9, 10, 11, 8, 7, 12],
     [12, 6, 13, 5, 14, 15, 16, 17, 16],
-    [16, 17, 18, 19, 20, 21, 22, 23, 1]
+    [16, 17, 18, 19, 20, 21, 22, 23, 1],
 ]
 inner_1 = [
-    [26, 25, 24], [24, 28, 27, 26]
+    [26, 25, 24], [24, 28, 27, 26],
 ]
 inner_2 = [
-    [29, 30, 31, 29]
+    [29, 30, 31, 29],
 ]
 boundary_nodes = [outer_boundary, inner_1, inner_2]
 fig = Figure()
 ax = Axis(fig[1, 1])
 for i in eachindex(boundary_nodes)
-    lines!(ax, points[:, reduce(vcat, boundary_nodes[i])], color=:red)
+    lines!(ax, points[:, reduce(vcat, boundary_nodes[i])], color = :red)
 end
 fig
 ````
@@ -77,7 +79,7 @@ pole = DelaunayTriangulation.pole_of_inaccessibility(points, boundary_nodes)
 ````
 
 ````@example pole_of_inaccessibility
-scatter!(ax, pole, color=:blue, markersize=16)
+scatter!(ax, pole, color = :blue, markersize = 16)
 fig
 ````
 
@@ -91,7 +93,7 @@ we get the triangulation.
 ````@example pole_of_inaccessibility
 θ = LinRange(0, 2π, 20) |> collect
 θ[end] = 0 # need to make sure that 2π gives the exact same coordinates as 0
-xy = Vector{Vector{Vector{NTuple{2,Float64}}}}()
+xy = Vector{Vector{Vector{NTuple{2, Float64}}}}()
 cx = 0.0
 for i in 1:2
     global cx
@@ -102,7 +104,7 @@ for i in 1:2
     cx += 3.0
 end
 boundary_nodes, points = convert_boundary_points_to_indices(xy)
-tri = triangulate(points; boundary_nodes=boundary_nodes)
+tri = triangulate(points; boundary_nodes = boundary_nodes)
 ````
 
 To see the poles, called representative points, we use
@@ -115,12 +117,12 @@ The keys of the `Dict` refer to the curve index, and the values contain
 the coordinates.
 
 ````@example pole_of_inaccessibility
-fig, ax, sc = triplot(tri, show_ghost_edges=true)
+fig, ax, sc = triplot(tri, show_ghost_edges = true)
 colors = (:red, :blue, :darkgreen, :purple)
 for i in eachindex(boundary_nodes)
-    lines!(ax, points[reduce(vcat, boundary_nodes[i])], color=colors[i], linewidth=6)
+    lines!(ax, points[reduce(vcat, boundary_nodes[i])], color = colors[i], linewidth = 6)
     coords = DelaunayTriangulation.get_representative_point_coordinates(tri, i)
-    scatter!(ax, coords, color=colors[i], markersize=16)
+    scatter!(ax, coords, color = colors[i], markersize = 16)
 end
 fig
 ````
@@ -129,6 +131,7 @@ Note that the green and purple boundaries have the same pole of inaccessibility.
 first curve, the red curve, is the only one that has the pole of inaccessibility computed
 with respect to all other boundaries. You can also see that indeed the ghost edges are all
 oriented relative to the representative points.
+
 ## Just the code
 An uncommented version of this example is given below.
 You can view the source code for this file [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/pole_of_inaccessibility.jl).
@@ -168,35 +171,37 @@ points = [
     2.12497 9.42582
     7.27436 2.7979
     3.0 4.0
-    5.33697 1.88019]'
-outer_boundary = [ # split into segments for demonstration purposes
+    5.33697 1.88019
+]'
+outer_boundary = [
+    # split into segments for demonstration purposes
     [1, 4, 3, 2],
     [2, 9, 10, 11, 8, 7, 12],
     [12, 6, 13, 5, 14, 15, 16, 17, 16],
-    [16, 17, 18, 19, 20, 21, 22, 23, 1]
+    [16, 17, 18, 19, 20, 21, 22, 23, 1],
 ]
 inner_1 = [
-    [26, 25, 24], [24, 28, 27, 26]
+    [26, 25, 24], [24, 28, 27, 26],
 ]
 inner_2 = [
-    [29, 30, 31, 29]
+    [29, 30, 31, 29],
 ]
 boundary_nodes = [outer_boundary, inner_1, inner_2]
 fig = Figure()
 ax = Axis(fig[1, 1])
 for i in eachindex(boundary_nodes)
-    lines!(ax, points[:, reduce(vcat, boundary_nodes[i])], color=:red)
+    lines!(ax, points[:, reduce(vcat, boundary_nodes[i])], color = :red)
 end
 fig
 
 pole = DelaunayTriangulation.pole_of_inaccessibility(points, boundary_nodes)
 
-scatter!(ax, pole, color=:blue, markersize=16)
+scatter!(ax, pole, color = :blue, markersize = 16)
 fig
 
 θ = LinRange(0, 2π, 20) |> collect
 θ[end] = 0 # need to make sure that 2π gives the exact same coordinates as 0
-xy = Vector{Vector{Vector{NTuple{2,Float64}}}}()
+xy = Vector{Vector{Vector{NTuple{2, Float64}}}}()
 cx = 0.0
 for i in 1:2
     global cx
@@ -207,16 +212,16 @@ for i in 1:2
     cx += 3.0
 end
 boundary_nodes, points = convert_boundary_points_to_indices(xy)
-tri = triangulate(points; boundary_nodes=boundary_nodes)
+tri = triangulate(points; boundary_nodes = boundary_nodes)
 
 DelaunayTriangulation.get_representative_point_list(tri)
 
-fig, ax, sc = triplot(tri, show_ghost_edges=true)
+fig, ax, sc = triplot(tri, show_ghost_edges = true)
 colors = (:red, :blue, :darkgreen, :purple)
 for i in eachindex(boundary_nodes)
-    lines!(ax, points[reduce(vcat, boundary_nodes[i])], color=colors[i], linewidth=6)
+    lines!(ax, points[reduce(vcat, boundary_nodes[i])], color = colors[i], linewidth = 6)
     coords = DelaunayTriangulation.get_representative_point_coordinates(tri, i)
-    scatter!(ax, coords, color=colors[i], markersize=16)
+    scatter!(ax, coords, color = colors[i], markersize = 16)
 end
 fig
 ```

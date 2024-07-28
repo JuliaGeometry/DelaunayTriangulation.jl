@@ -19,15 +19,15 @@ T4 = points[[2, 3, 4]] #hide
 fig = Figure() #hide
 ax1 = Axis(fig[1, 1], width = 600, height = 400) #hide
 ax2 = Axis(fig[1, 2], width = 600, height = 400) #hide
-poly!(ax1, [T1; T2], color=(:white, 0.0), strokewidth=3) #hide
-poly!(ax2, [T3; T4], color=(:white, 0.0), strokewidth=3) #hide
+poly!(ax1, [T1; T2], color = (:white, 0.0), strokewidth = 3) #hide
+poly!(ax2, [T3; T4], color = (:white, 0.0), strokewidth = 3) #hide
 for ax in (ax1, ax2) #hide
     hidedecorations!(ax) #hide
     hidespines!(ax) #hide
-    text!(ax, [(0.05, -1.1)]; text=[L"p_j"], fontsize=43) #hide
-    text!(ax, [(0.9, 0.1)]; text=[L"p_k"], fontsize=43) #hide
-    text!(ax, [(0.05, 1.0)]; text=[L"p_i"], fontsize=43) #hide
-    text!(ax, [(-1.05, 0.05)]; text=[L"p_\ell"], fontsize=43) #hide
+    text!(ax, [(0.05, -1.1)]; text = [L"p_j"], fontsize = 43) #hide
+    text!(ax, [(0.9, 0.1)]; text = [L"p_k"], fontsize = 43) #hide
+    text!(ax, [(0.05, 1.0)]; text = [L"p_i"], fontsize = 43) #hide
+    text!(ax, [(-1.05, 0.05)]; text = [L"p_\ell"], fontsize = 43) #hide
     xlims!(ax, -1.1, 1.1) #hide
     ylims!(ax, -1.3, 1.3) #hide
 end #hide
@@ -71,6 +71,7 @@ As simple as that. Note that no checks are made for whether the edge is actually
 triangulation, on the boundary, or if the associated quadrilateral is convex. It is
 up to you to check this if needed; one way to check would be to use [`DelaunayTriangulation.is_legal`](@ref),
 as is done inside [`legalise_edge!`](@ref) -- see the [next tutorial](operations_legalise_edge.md).
+
 ## Just the code
 An uncommented version of this example is given below.
 You can view the source code for this file [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/operations_flip_edge.jl).
