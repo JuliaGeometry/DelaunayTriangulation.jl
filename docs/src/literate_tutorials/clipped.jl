@@ -27,10 +27,10 @@ clipped_vorn = voronoi(tri, clip = true)
 # Note that the clipping has put more polygon vertices in. We compare 
 # the clipped tessellations below. 
 fig = Figure()
-ax1 = Axis(fig[1, 1], title="Unclipped", width=600, height=400)
-ax2 = Axis(fig[1, 2], title="Clipped", width=600, height=400)
-voronoiplot!(ax1, vorn, show_generators=false, colormap=:matter, strokewidth=4)
-voronoiplot!(ax2, clipped_vorn, show_generators=false, colormap=:matter, strokewidth=4)
+ax1 = Axis(fig[1, 1], title = "Unclipped", width = 600, height = 400)
+ax2 = Axis(fig[1, 2], title = "Clipped", width = 600, height = 400)
+voronoiplot!(ax1, vorn, show_generators = false, colormap = :matter, strokewidth = 4)
+voronoiplot!(ax2, clipped_vorn, show_generators = false, colormap = :matter, strokewidth = 4)
 resize_to_layout!(fig)
 fig
 @test_reference joinpath(fig_path, "voronoi_ex_2.png") fig #src

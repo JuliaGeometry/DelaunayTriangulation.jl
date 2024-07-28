@@ -66,7 +66,7 @@ end
 end
 
 @testset "empty!" begin
-    tri = triangulate(rand(2,50))
+    tri = triangulate(rand(2, 50))
     ch = get_convex_hull(tri)
     @test !isempty(DT.get_vertices(ch))
     empty!(ch)

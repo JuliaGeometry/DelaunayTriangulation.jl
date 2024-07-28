@@ -37,7 +37,7 @@ There is no output, as `tri` is updated in-place.
 
     The triangulation will only be updated as if `(i, j)` has been split rather than also `(j, i)`. You will need to call `split_edge!` again with `(j, i)` if you want to split that edge as well.
 """
-function split_edge!(tri::Triangulation, i, j, r, store_event_history=Val(false), event_history=nothing)
+function split_edge!(tri::Triangulation, i, j, r, store_event_history = Val(false), event_history = nothing)
     if is_constrained(tri) && contains_segment(tri, i, j)
         is_bnd = contains_boundary_edge(tri, i, j) || contains_boundary_edge(tri, j, i)
         eᵢⱼ, eⱼᵢ, eᵢᵣ, eᵣᵢ, eᵣⱼ, eⱼᵣ = get_edges_for_split_edge(tri, i, j, r)
@@ -79,9 +79,9 @@ function split_edge!(tri::Triangulation, i, j, r, store_event_history=Val(false)
         end
     end
     k = get_adjacent(tri, i, j)
-    delete_triangle!(tri, i, j, k; protect_boundary=true, update_ghost_edges=false)
-    add_triangle!(tri, i, r, k; protect_boundary=true, update_ghost_edges=false)
-    add_triangle!(tri, r, j, k; protect_boundary=true, update_ghost_edges=false)
+    delete_triangle!(tri, i, j, k; protect_boundary = true, update_ghost_edges = false)
+    add_triangle!(tri, i, r, k; protect_boundary = true, update_ghost_edges = false)
+    add_triangle!(tri, r, j, k; protect_boundary = true, update_ghost_edges = false)
     if is_true(store_event_history)
         trit = triangle_type(tri)
         Tᵢⱼₖ = construct_triangle(trit, i, j, k)
@@ -116,7 +116,7 @@ See also [`complete_split_edge_and_legalise!`](@ref).
 # Outputs
 There is no output, as `tri` is updated in-place.
 """
-function legalise_split_edge!(tri::Triangulation, i, j, k, r, store_event_history=Val(false), event_history=nothing; predicates::AbstractPredicateKernel=AdaptiveKernel())
+function legalise_split_edge!(tri::Triangulation, i, j, k, r, store_event_history = Val(false), event_history = nothing; predicates::AbstractPredicateKernel = AdaptiveKernel())
     legalise_edge!(tri, j, k, r, store_event_history, event_history; predicates)
     legalise_edge!(tri, k, i, r, store_event_history, event_history; predicates)
     return tri
@@ -141,7 +141,7 @@ Given a triangulation `tri`, an edge `(i, j)`, and a point `r`, splits both `(i,
 # Outputs
 There is no output, as `tri` is updated in-place.
 """
-function complete_split_edge_and_legalise!(tri::Triangulation, i, j, r, store_event_history=Val(false), event_history=nothing; predicates::AbstractPredicateKernel=AdaptiveKernel())
+function complete_split_edge_and_legalise!(tri::Triangulation, i, j, r, store_event_history = Val(false), event_history = nothing; predicates::AbstractPredicateKernel = AdaptiveKernel())
     k = get_adjacent(tri, i, j)
     ℓ = get_adjacent(tri, j, i)
     split_edge!(tri, i, j, r, store_event_history, event_history)
@@ -151,9 +151,11 @@ function complete_split_edge_and_legalise!(tri::Triangulation, i, j, r, store_ev
     if is_true(store_event_history)
         # The deleted_triangles in event_history will contain triangles with the vertex r, which didn't actually appear 
         # initially. So, we need to deal any triangles with r as a vertex from event_history.deleted_triangles.
-        filter!(T -> let r = r
-            r ∉ triangle_vertices(T)
-        end, event_history.deleted_triangles)
+        filter!(
+            T -> let r = r
+                r ∉ triangle_vertices(T)
+            end, event_history.deleted_triangles,
+        )
     end
     return tri
 end

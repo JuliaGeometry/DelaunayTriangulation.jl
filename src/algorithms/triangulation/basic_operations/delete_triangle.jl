@@ -16,8 +16,10 @@ so that its non-existence in the triangulation is known.
 # Outputs 
 There are no outputs as `tri` is updated in-place.
 """
-function delete_triangle!(tri::Ts, u::Integer, v::Integer, w::Integer;
-    protect_boundary=false, update_ghost_edges=false) where {Ts<:Triangulation}
+function delete_triangle!(
+        tri::Ts, u::Integer, v::Integer, w::Integer;
+        protect_boundary = false, update_ghost_edges = false,
+    ) where {Ts <: Triangulation}
     adj = get_adjacent(tri)
     adj2v = get_adjacent2vertex(tri)
     graph = get_graph(tri)
@@ -48,13 +50,13 @@ function delete_triangle!(tri::Ts, u::Integer, v::Integer, w::Integer;
     end
     return nothing
 end
-function delete_triangle!(tri::Triangulation, T; protect_boundary=false, update_ghost_edges=false)
+function delete_triangle!(tri::Triangulation, T; protect_boundary = false, update_ghost_edges = false)
     u, v, w = triangle_vertices(T)
     delete_triangle!(tri, u, v, w; protect_boundary, update_ghost_edges)
     return nothing
 end
 
-function delete_boundary_edges_single!(u, v, w, vu_bnd, uw_bnd, wv_bnd, triangles, adj::Adjacent{I,E}, adj2v, graph, update_ghost_edges) where {I,E}
+function delete_boundary_edges_single!(u, v, w, vu_bnd, uw_bnd, wv_bnd, triangles, adj::Adjacent{I, E}, adj2v, graph, update_ghost_edges) where {I, E}
     g = I(𝒢)
     u, v, w = choose_uvw(vu_bnd, wv_bnd, uw_bnd, u, v, w)
     delete_adjacent!(adj, v, u)
@@ -85,7 +87,7 @@ function delete_boundary_edges_single!(u, v, w, vu_bnd, uw_bnd, wv_bnd, triangle
     return nothing
 end
 
-function delete_boundary_edges_double!(u, v, w, vu_bnd, uw_bnd, wv_bnd, triangles, adj::Adjacent{I,E}, adj2v, graph, update_ghost_edges) where {I,E}
+function delete_boundary_edges_double!(u, v, w, vu_bnd, uw_bnd, wv_bnd, triangles, adj::Adjacent{I, E}, adj2v, graph, update_ghost_edges) where {I, E}
     g = I(𝒢)
     u, v, w = choose_uvw(!vu_bnd, !wv_bnd, !uw_bnd, u, v, w)
     delete_adjacent!(adj, u, w)
@@ -116,7 +118,7 @@ function delete_boundary_edges_double!(u, v, w, vu_bnd, uw_bnd, wv_bnd, triangle
     return nothing
 end
 
-function delete_boundary_edges_triple!(u, v, w, triangles, adj::Adjacent{I,E}, adj2v, graph, update_ghost_edges) where {I,E}
+function delete_boundary_edges_triple!(u, v, w, triangles, adj::Adjacent{I, E}, adj2v, graph, update_ghost_edges) where {I, E}
     g = I(𝒢)
     delete_adjacent!(adj, w, v)
     delete_adjacent!(adj, v, u)

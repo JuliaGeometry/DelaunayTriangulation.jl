@@ -24,16 +24,16 @@ See also [`voronoi`](@ref).
 - `boundary_polygons::Set{I}`: A `Set` of indices of the polygons that are on the boundary of the tessellation. Only relevant for clipped 
    tessellations, otherwise see `unbounded_polygons`.
 """
-struct VoronoiTessellation{Tr<:Triangulation,P,I,T,S,E}
+struct VoronoiTessellation{Tr <: Triangulation, P, I, T, S, E}
     triangulation::Tr
-    generators::Dict{I,P}
+    generators::Dict{I, P}
     polygon_points::Vector{P} # not guaranteed to be unique if a circumcenter appears on the boundary, but the vertices (below) do handle this automatically
-    polygons::Dict{I,Vector{I}}
-    circumcenter_to_triangle::Dict{I,T}
-    triangle_to_circumcenter::Dict{T,I}
+    polygons::Dict{I, Vector{I}}
+    circumcenter_to_triangle::Dict{I, T}
+    triangle_to_circumcenter::Dict{T, I}
     unbounded_polygons::Set{I}
     cocircular_circumcenters::S
-    adjacent::Adjacent{I,E}
+    adjacent::Adjacent{I, E}
     boundary_polygons::Set{I}
 end
 
@@ -127,28 +127,28 @@ end
 
 Type used for representing individual edges in the Voronoi tessellation.
 """
-edge_type(::VoronoiTessellation{Tr,P,I,T,S,E}) where {Tr,P,I,T,S,E} = E
+edge_type(::VoronoiTessellation{Tr, P, I, T, S, E}) where {Tr, P, I, T, S, E} = E
 
 """
     number_type(vorn::VoronoiTessellation) -> DataType
 
 Type used for representing individual coordinates in the Voronoi tessellation.
 """
-number_type(::VoronoiTessellation{Tr,P}) where {Tr,P} = number_type(P)
+number_type(::VoronoiTessellation{Tr, P}) where {Tr, P} = number_type(P)
 
 """
     integer_type(vorn::VoronoiTessellation) -> DataType
 
 Type used for representing indices in the Voronoi tessellation.
 """
-integer_type(::VoronoiTessellation{Tr,P,I}) where {Tr,P,I} = I
+integer_type(::VoronoiTessellation{Tr, P, I}) where {Tr, P, I} = I
 
 """
     triangle_type(vorn::VoronoiTessellation) -> DataType
 
 Type used for representing individual triangles in the Voronoi tessellation.
 """
-triangle_type(::VoronoiTessellation{Tr,P,I,T}) where {Tr,P,I,T} = T
+triangle_type(::VoronoiTessellation{Tr, P, I, T}) where {Tr, P, I, T} = T
 
 """
     get_generator(vor::VoronoiTessellation, i) -> NTuple{2, Number}
@@ -410,7 +410,7 @@ Gets the bounding box for the Voronoi tessellation `vorn`.
 - `ymin`: Given by `ymin′ - unbounded_extension_factor * (ymin′ - ymin′)`, where `ymin′` is the original minimum `y`-coordinate of the computed bounding box and similarly for `ymax′`.
 - `ymax`: Given by `ymax′ + unbounded_extension_factor * (ymax′ - ymax′)`, where `ymax′` is the original maximum `y`-coordinate of the computed bounding box and similarly for `ymin′`.
 """
-function polygon_bounds(vorn::VoronoiTessellation, unbounded_extension_factor=0.0; include_polygon_vertices=true)
+function polygon_bounds(vorn::VoronoiTessellation, unbounded_extension_factor = 0.0; include_polygon_vertices = true)
     F = number_type(vorn)
     xmin = typemax(F)
     xmax = typemin(F)

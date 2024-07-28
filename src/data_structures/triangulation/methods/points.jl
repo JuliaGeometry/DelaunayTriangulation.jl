@@ -17,7 +17,7 @@ function get_point(tri::Triangulation, i)
         return c
     end
 end
-get_point(tri::Triangulation, i::Vararg{Any,N}) where {N} = ntuple(j -> get_point(tri, i[j]), Val(N))
+get_point(tri::Triangulation, i::Vararg{Any, N}) where {N} = ntuple(j -> get_point(tri, i[j]), Val(N))
 
 """
     num_points(tri::Triangulation) -> Integer

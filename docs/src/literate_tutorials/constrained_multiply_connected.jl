@@ -6,7 +6,7 @@
 # load the packages. 
 using DelaunayTriangulation
 using CairoMakie
-using StableRNGs 
+using StableRNGs
 using ReferenceTests #src
 using Test #src
 fig_path = joinpath(@__DIR__, "../figures") #src
@@ -23,29 +23,29 @@ fig_path = joinpath(@__DIR__, "../figures") #src
 # that neighbouring segments must connect.
 curve_1 = [
     ## first segment
-    [ 
+    [
         (0.0, 0.0), (4.0, 0.0), (8.0, 0.0), (12.0, 0.0), (12.0, 4.0),
         (12.0, 8.0), (14.0, 10.0), (16.0, 12.0), (16.0, 16.0),
-        (14.0, 18.0), (12.0, 20.0), (12.0, 24.0), (12.0, 28.0)
+        (14.0, 18.0), (12.0, 20.0), (12.0, 24.0), (12.0, 28.0),
     ],
     ## second segment
-    [ 
+    [
         (12.0, 28.0), (8.0, 28.0), (4.0, 28.0), (0.0, 28.0), (-2.0, 26.0), (0.0, 22.0),
         (0.0, 18.0), (0.0, 10.0), (0.0, 8.0), (0.0, 4.0), (-4.0, 4.0),
         (-4.0, 0.0), (0.0, 0.0),
-    ]
+    ],
 ] # outer: counter-clockwise
 curve_2 = [
     ## first segment
-    [ 
+    [
         (4.0, 26.0), (8.0, 26.0), (10.0, 26.0), (10.0, 24.0),
-        (10.0, 22.0), (10.0, 20.0)
+        (10.0, 22.0), (10.0, 20.0),
     ],
     ## second segment
-    [ 
+    [
         (10.0, 20.0), (8.0, 20.0), (6.0, 20.0),
-        (4.0, 20.0), (4.0, 22.0), (4.0, 24.0), (4.0, 26.0)
-    ]
+        (4.0, 20.0), (4.0, 22.0), (4.0, 24.0), (4.0, 26.0),
+    ],
 ] # inner: clockwise
 curve_3 = [[(4.0, 16.0), (12.0, 16.0), (12.0, 14.0), (4.0, 14.0), (4.0, 16.0)]] # inner: clockwise
 curve_4 = [[(4.0, 8.0), (10.0, 8.0), (8.0, 6.0), (6.0, 6.0), (4.0, 8.0)]] # inner: clockwise
@@ -61,8 +61,9 @@ points = [
     (-4.0, 22.0), (-4.0, 26.0), (-2.0, 28.0), (6.0, 15.0), (7.0, 15.0),
     (8.0, 15.0), (9.0, 15.0), (10.0, 15.0), (6.2, 7.8),
     (5.6, 7.8), (5.6, 7.6), (5.6, 7.4), (6.2, 7.4), (6.0, 7.6),
-    (7.0, 7.8), (7.0, 7.4)]
-boundary_nodes, points = convert_boundary_points_to_indices(curves; existing_points=points);
+    (7.0, 7.8), (7.0, 7.4),
+]
+boundary_nodes, points = convert_boundary_points_to_indices(curves; existing_points = points);
 
 # Notice that `curve_1` and `curve_2` are split up into multiple segments. For `curve_3`
 # and `curve_4`, note that we have to wrap the entire vector in a vector, essentially 
@@ -71,7 +72,7 @@ boundary_nodes, points = convert_boundary_points_to_indices(curves; existing_poi
 # Now let us triangulate.
 rng = StableRNG(123) # the triangulation is not unique due to cocircular points
 tri = triangulate(points; boundary_nodes, rng)
-fig, ax, sc = triplot(tri, show_constrained_edges=true, show_convex_hull=true)
+fig, ax, sc = triplot(tri, show_constrained_edges = true, show_convex_hull = true)
 fig
 @test_reference joinpath(fig_path, "constrained_ex_5.png") fig #src
 
@@ -110,25 +111,25 @@ DelaunayTriangulation.get_all_boundary_nodes(tri)
 # for demonstration). For this, the order of the boundary edges is appropriate, so we must iterate 
 # in a way that respects the ordering. 
 function get_triangulation_area(tri)
-    A = 0.0 
+    A = 0.0
     nc = DelaunayTriangulation.num_curves(tri)
-    for curve_index in 1:nc 
+    for curve_index in 1:nc
         bn = get_boundary_nodes(tri, curve_index)
         ns = DelaunayTriangulation.num_sections(bn)
-        for segment_index in 1:ns 
+        for segment_index in 1:ns
             bnn = get_boundary_nodes(bn, segment_index)
             ne = num_boundary_edges(bnn)
             for i in 1:ne
                 vᵢ = get_boundary_nodes(bnn, i)
-                vᵢ₊₁ = get_boundary_nodes(bnn, i+1)
+                vᵢ₊₁ = get_boundary_nodes(bnn, i + 1)
                 pᵢ, pᵢ₊₁ = get_point(tri, vᵢ, vᵢ₊₁)
                 xᵢ, yᵢ = getxy(pᵢ)
                 xᵢ₊₁, yᵢ₊₁ = getxy(pᵢ₊₁)
-                A += (yᵢ + yᵢ₊₁)*(xᵢ - xᵢ₊₁)
+                A += (yᵢ + yᵢ₊₁) * (xᵢ - xᵢ₊₁)
             end
         end
     end
-    return A/2
+    return A / 2
 end
 A = get_triangulation_area(tri)
 @test A ≈ get_area(tri) #src
@@ -142,7 +143,7 @@ function get_perimeters(tri)
     total_perimeter = 0.0
     nc = DelaunayTriangulation.num_curves(tri)
     curve_perimeters = zeros(nc) # curve_index => perimeter
-    segment_perimeters = Dict{NTuple{2,Int},Float64}() # (curve_index, segment_index) => perimeter
+    segment_perimeters = Dict{NTuple{2, Int}, Float64}() # (curve_index, segment_index) => perimeter
     for (e, ((curve_index, section_index), node_index)) in get_boundary_edge_map(tri)
         u, v = edge_vertices(e)
         p, q = get_point(tri, u, v)
@@ -156,7 +157,7 @@ function get_perimeters(tri)
         end
     end
     return total_perimeter, curve_perimeters, segment_perimeters
-end 
+end
 ℓ, cℓ, sℓ = get_perimeters(tri)
 @test ℓ ≈ sum(cℓ) #src
 @test ℓ ≈ sum(sum.(values(sℓ))) #src

@@ -18,13 +18,13 @@ using Test #src
 points = [
     (-3.0, 7.0), (2.0, 6.0), (0.0, 3.0),
     (0.0, 0.0), (-5.0, 5.0), (-3.0, 1.0),
-    (2.0, -3.0), (5.0, 5.0), (-4.0, 3.0)
+    (2.0, -3.0), (5.0, 5.0), (-4.0, 3.0),
 ]
 tri = triangulate(points)
 vorn = voronoi(tri)
 p, q = (-2.0, 7.5), (0.0, 4.0)
-fig, ax, sc = voronoiplot(vorn, markersize=14)
-scatter!(ax,[p,q],color=:white,strokecolor=:black,strokewidth=2,markersize=14)
+fig, ax, sc = voronoiplot(vorn, markersize = 14)
+scatter!(ax, [p, q], color = :white, strokecolor = :black, strokewidth = 2, markersize = 14)
 fig
 
 # To get the nearest neighbour of a point, we use [`get_nearest_neighbour`](@ref). 

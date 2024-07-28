@@ -23,7 +23,7 @@ fig
 # lattice manually and `triangulate` those. Here's a comparison of the times. 
 using BenchmarkTools
 points = get_points(tri)
-@benchmark triangulate($points; randomise=$false) # randomise=false because points are already in lattice order, i.e. spatially sorted
+@benchmark triangulate($points; randomise = $false) # randomise=false because points are already in lattice order, i.e. spatially sorted
 
 #-
 @benchmark triangulate_rectangle($a, $b, $c, $d, $nx, $ny)
@@ -44,7 +44,7 @@ tri
 @test DelaunayTriangulation.has_ghost_triangles(tri) #src
 
 # You can opt into not having these by using `delete_ghosts=true`:
-tri = triangulate_rectangle(a, b, c, d, nx, ny; single_boundary=true, delete_ghosts=true)
+tri = triangulate_rectangle(a, b, c, d, nx, ny; single_boundary = true, delete_ghosts = true)
 tri
 
 #-

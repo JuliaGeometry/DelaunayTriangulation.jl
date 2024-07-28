@@ -16,7 +16,7 @@ The polygons should be defined in counter-clockwise order.
 # Output 
 - `clipped_polygon`: The coordinates of the clipped polygon, given in counter-clockwise order and `clipped_polygon[begin] == clipped_polygon[end]`.
 """
-function clip_polygon(vertices, points, clip_vertices, clip_points; predicates::AbstractPredicateKernel=AdaptiveKernel())
+function clip_polygon(vertices, points, clip_vertices, clip_points; predicates::AbstractPredicateKernel = AdaptiveKernel())
     return clip_polygon(Polygon(vertices, points), Polygon(clip_vertices, clip_points); predicates)
 end
 
@@ -55,11 +55,11 @@ function clip_polygon_to_edge(input_list, q, p, predicates::AbstractPredicateKer
     return output_list
 end
 
-function clip_polygon(poly::Polygon{T}, clip_poly::Polygon; predicates::AbstractPredicateKernel=AdaptiveKernel()) where {T}
+function clip_polygon(poly::Polygon{T}, clip_poly::Polygon; predicates::AbstractPredicateKernel = AdaptiveKernel()) where {T}
     output_list = poly
     q = clip_poly[end]
     for p in clip_poly
-        input_list = output_list 
+        input_list = output_list
         isempty(output_list) && break
         output_list = clip_polygon_to_edge(input_list, q, p, predicates)
         q = p

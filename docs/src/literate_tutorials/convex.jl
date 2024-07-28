@@ -13,14 +13,14 @@ fig_path = joinpath(@__DIR__, "../figures") #src
 points = [
     (10.0, 12.0), (7.0, 11.0), (8.0, 6.0),
     (10.0, 3.0), (14.0, 5.0), (15.0, 10.0),
-    (13.0, 12.0)
+    (13.0, 12.0),
 ]
 S = 1:7
 tri = triangulate_convex(points, 1:7)
 
 #-
 fig, ax, sc = triplot(tri)
-fig 
+fig
 @test_reference joinpath(fig_path, "convex_ex_1.png") fig #src
 
 # This `tri` is our triangulation of the convex polygon. 
@@ -33,7 +33,7 @@ fig
 
 # Let us give a larger example. For simplicity, we triangulate a  
 # a discretised circle. 
-θ = LinRange(0, 2π, 5000) |> collect 
+θ = LinRange(0, 2π, 5000) |> collect
 pop!(θ)
 x = cos.(θ)
 y = sin.(θ)
@@ -43,16 +43,16 @@ tri = triangulate_convex(points, S)
 
 #-
 fig, ax, sc = triplot(tri)
-fig 
+fig
 @test_reference joinpath(fig_path, "convex_ex_2.png") fig #src
 
 # Here is a comparison of the time it takes to triangulate this 
 # using `triangulate_convex` or `triangulate`.
-using BenchmarkTools 
-@benchmark triangulate_convex($points, $S) 
+using BenchmarkTools
+@benchmark triangulate_convex($points, $S)
 
 #-
-@benchmark triangulate($points) 
+@benchmark triangulate($points)
 
 # For the smaller example that we started with above, `triangulate_convex` is also 
 # faster, although not by much (≈15.10 μs versus ≈10.7 μs).

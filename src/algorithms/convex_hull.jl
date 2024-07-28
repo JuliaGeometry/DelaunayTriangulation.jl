@@ -13,7 +13,7 @@ Computes the convex hull of `points`. The monotone chain algorithm is used.
 # Output
 - `ch`: The [`ConvexHull`](@ref). 
 """
-function convex_hull(points; predicates::AbstractPredicateKernel=AdaptiveKernel(), IntegerType::Type{I}=Int) where {I}
+function convex_hull(points; predicates::AbstractPredicateKernel = AdaptiveKernel(), IntegerType::Type{I} = Int) where {I}
     ch = ConvexHull(points, I[])
     sizehint!(ch, num_points(points))
     return convex_hull!(ch; predicates)
@@ -30,7 +30,7 @@ See the documentation for more information about these choices.
 
 See also [`convex_hull`](@ref).
 """
-function convex_hull!(ch::ConvexHull{P,I}; predicates::AbstractPredicateKernel=AdaptiveKernel()) where {P,I}
+function convex_hull!(ch::ConvexHull{P, I}; predicates::AbstractPredicateKernel = AdaptiveKernel()) where {P, I}
     indices = get_vertices(ch)
     points = get_points(ch)
     empty!(indices)
@@ -42,10 +42,10 @@ function convex_hull!(ch::ConvexHull{P,I}; predicates::AbstractPredicateKernel=A
         push!(indices, insertion_order[begin])
         return ch
     elseif n == 2
-        push!(indices, insertion_order[begin], insertion_order[begin+1], insertion_order[begin])
+        push!(indices, insertion_order[begin], insertion_order[begin + 1], insertion_order[begin])
         return ch
     elseif n == 3
-        i, j, k = construct_positively_oriented_triangle(NTuple{3,I}, insertion_order[begin], insertion_order[begin+1], insertion_order[begin+2], points, predicates)
+        i, j, k = construct_positively_oriented_triangle(NTuple{3, I}, insertion_order[begin], insertion_order[begin + 1], insertion_order[begin + 2], points, predicates)
         push!(indices, i, j, k, i)
         return ch
     end
@@ -54,13 +54,13 @@ function convex_hull!(ch::ConvexHull{P,I}; predicates::AbstractPredicateKernel=A
     sizehint!(lower, max(4, floor(I, cbrt(n))))
     sizehint!(upper, max(4, floor(I, cbrt(n))))
     for i in eachindex(insertion_order)
-        while length(upper) ≥ 2 && is_left(point_position_relative_to_line(predicates, get_point(points, upper[end-1]), get_point(points, upper[end]), get_point(points, insertion_order[i])))
+        while length(upper) ≥ 2 && is_left(point_position_relative_to_line(predicates, get_point(points, upper[end - 1]), get_point(points, upper[end]), get_point(points, insertion_order[i])))
             pop!(upper)
         end
         push!(upper, insertion_order[i])
     end
     for i in lastindex(insertion_order):-1:firstindex(insertion_order)
-        while length(lower) ≥ 2 && is_left(point_position_relative_to_line(predicates, get_point(points, lower[end-1]), get_point(points, lower[end]), get_point(points, insertion_order[i])))
+        while length(lower) ≥ 2 && is_left(point_position_relative_to_line(predicates, get_point(points, lower[end - 1]), get_point(points, lower[end]), get_point(points, insertion_order[i])))
             pop!(lower)
         end
         push!(lower, insertion_order[i])

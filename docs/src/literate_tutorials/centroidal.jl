@@ -16,7 +16,7 @@ fig_path = joinpath(@__DIR__, "../figures") #src
 rng = StableRNG(123)
 points = 25randn(rng, 2, 500)
 tri = triangulate(points; rng)
-vorn = voronoi(tri, clip=true)
+vorn = voronoi(tri, clip = true)
 
 # To now compute the centroidal tessellation, use [`centroidal_smooth`](@ref). (
 # If you want to straight from a triangulation to a centroidal tessellation, you 
@@ -25,10 +25,10 @@ smooth_vorn = centroidal_smooth(vorn; rng)
 
 # Let us now compare the two tessellations.
 fig = Figure()
-ax1 = Axis(fig[1, 1], title="Original", width=600, height=400)
-ax2 = Axis(fig[1, 2], title="Smoothed", width=600, height=400)
-voronoiplot!(ax1, vorn, colormap=:matter, strokewidth=2)
-voronoiplot!(ax2, smooth_vorn, colormap=:matter, strokewidth=2)
+ax1 = Axis(fig[1, 1], title = "Original", width = 600, height = 400)
+ax2 = Axis(fig[1, 2], title = "Smoothed", width = 600, height = 400)
+voronoiplot!(ax1, vorn, colormap = :matter, strokewidth = 2)
+voronoiplot!(ax2, smooth_vorn, colormap = :matter, strokewidth = 2)
 resize_to_layout!(fig)
 fig
 @test_reference joinpath(fig_path, "voronoi_ex_5.png") fig #src

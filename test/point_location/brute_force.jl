@@ -3,7 +3,6 @@ const DT = DelaunayTriangulation
 using StatsBase
 
 
-
 global tri, label_map, index_map = simple_geometry()
 
 @testset "Finding points in ghost triangles" begin
@@ -33,15 +32,15 @@ global tri, label_map, index_map = simple_geometry()
     d1_i = length(pts) - 4
     c1_i = length(pts) - 5
     for pred in (DT.FastKernel(), DT.ExactKernel(), DT.AdaptiveKernel())
-        @test DT.compare_triangles(DT.brute_force_search(tri, c1_i; predicates=pred), (index_map["g"], index_map["f"], DT.𝒢))
-        @test DT.compare_triangles(DT.brute_force_search(tri, d1_i; predicates=pred), (index_map["f"], index_map["e"], DT.𝒢))
+        @test DT.compare_triangles(DT.brute_force_search(tri, c1_i; predicates = pred), (index_map["g"], index_map["f"], DT.𝒢))
+        @test DT.compare_triangles(DT.brute_force_search(tri, d1_i; predicates = pred), (index_map["f"], index_map["e"], DT.𝒢))
         @test DT.compare_triangles(DT.brute_force_search(tri, e1_i), (index_map["k"], index_map["ℓ"], DT.𝒢 - 1))
         @test DT.compare_triangles(DT.brute_force_search(tri, f1_i), (index_map["ℓ"], index_map["k"], index_map["w"]))
-        @test DT.compare_triangles(DT.brute_force_search(tri, g1_i; predicates=pred), (index_map["b"], index_map["c"], index_map["p"]))
-        @test DT.compare_triangles(DT.brute_force_search(tri, h1_i; predicates=pred), (index_map["m"], index_map["n"], DT.𝒢 - 3))
-        @inferred DT.brute_force_search(tri, c1_i; predicates=pred)
-        @inferred DT.brute_force_search(tri, d1_i; predicates=pred)
-        @inferred DT.brute_force_search(tri, e1_i; predicates=pred)
+        @test DT.compare_triangles(DT.brute_force_search(tri, g1_i; predicates = pred), (index_map["b"], index_map["c"], index_map["p"]))
+        @test DT.compare_triangles(DT.brute_force_search(tri, h1_i; predicates = pred), (index_map["m"], index_map["n"], DT.𝒢 - 3))
+        @inferred DT.brute_force_search(tri, c1_i; predicates = pred)
+        @inferred DT.brute_force_search(tri, d1_i; predicates = pred)
+        @inferred DT.brute_force_search(tri, e1_i; predicates = pred)
     end
 end
 
@@ -65,7 +64,7 @@ end
         for i in triangle_vertices(T)
             if i ≠ DT.𝒢
                 p = get_point(tri, i)
-                V = DT.brute_force_search(tri, p; predicates=rt())
+                V = DT.brute_force_search(tri, p; predicates = rt())
                 @inferred DT.brute_force_search(tri, p)
                 if !DT.is_ghost_triangle(T)
                     @test i ∈ V

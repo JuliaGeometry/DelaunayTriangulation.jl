@@ -8,7 +8,7 @@ global i = 17
 global j = 5
 global e1 = (i, j)
 global e2 = [i, j]
-global e3 = SVector{2,Int32}((i, j))
+global e3 = SVector{2, Int32}((i, j))
 
 @testset "Individual edges" begin
     @testset "Constructing an edge" begin
@@ -45,11 +45,15 @@ end
 
 global es1 = Set{typeof(e1)}(((1, 3), (4, 1), (10, 1), (3, 9), (5, 3)))
 global es2 = Set{typeof(e2)}(([1, 3], [4, 1], [10, 1], [3, 9], [5, 3]))
-global es3 = Set{typeof(e3)}((SVector{2,Int32}((1, 3)),
-    SVector{2,Int32}((4, 1)),
-    SVector{2,Int32}((10, 1)),
-    SVector{2,Int32}((3, 9)),
-    SVector{2,Int32}((5, 3))))
+global es3 = Set{typeof(e3)}(
+    (
+        SVector{2, Int32}((1, 3)),
+        SVector{2, Int32}((4, 1)),
+        SVector{2, Int32}((10, 1)),
+        SVector{2, Int32}((3, 9)),
+        SVector{2, Int32}((5, 3)),
+    ),
+)
 
 @testset "Collection of edges" begin
     @testset "Getting the type of edges in a collection" begin
@@ -57,7 +61,7 @@ global es3 = Set{typeof(e3)}((SVector{2,Int32}((1, 3)),
             F = eltype(es)
             @test DT.edge_type(typeof(es)) == F
         end
-        @test DT.edge_type(Vector{NTuple{2,Int}}) == NTuple{2,Int}
+        @test DT.edge_type(Vector{NTuple{2, Int}}) == NTuple{2, Int}
     end
 
     @testset "Number of edges" begin

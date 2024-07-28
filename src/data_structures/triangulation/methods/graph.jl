@@ -68,7 +68,7 @@ add_neighbour!(tri::Triangulation, u, v...) = add_neighbour!(get_graph(tri), u, 
     delete_neighbour!(tri::Triangulation, u, v...)
 
 Deletes the neighbours `v...` from `u` in the graph of `tri`.
-""" 
+"""
 delete_neighbour!(tri::Triangulation, u, v...) = delete_neighbour!(get_graph(tri), u, v...)
 
 """

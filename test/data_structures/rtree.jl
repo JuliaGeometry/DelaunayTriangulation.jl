@@ -9,7 +9,7 @@ const SI = SpatialIndexing
 
 @testset "Expanding a BoundingBox" begin
     bbox = DT.BoundingBox(2, 5, 13, 20)
-    tol = 0.10
+    tol = 0.1
     bbox2 = DT.expand(bbox, tol)
     @test bbox2 == DT.BoundingBox(2 - 0.3, 5 + 0.3, 13 - 0.7, 20 + 0.7)
 end
@@ -107,7 +107,7 @@ end
         for _ in 1:50
             n = rand(1:1001)
             points = 5 .* randn(2, n)
-            tree_si = SI.RTree{Float64,2}(Int, NTuple{2,Int}; variant=SI.RTreeLinear)
+            tree_si = SI.RTree{Float64, 2}(Int, NTuple{2, Int}; variant = SI.RTreeLinear)
             tree = DT.RTree()
             for idx in axes(points, 2) |> shuffle
                 x, y = get_point(points, idx)
@@ -118,7 +118,7 @@ end
 
                 for _ in 1:20
                     p = Tuple(10 .* randn(2))
-                    ints = DT.get_intersections(tree, p; cache_id=rand(1:2))
+                    ints = DT.get_intersections(tree, p; cache_id = rand(1:2))
                     ints_si = SI.intersects_with(tree_si, SI.Rect(SI.Point(p)))
                     @test ints == ints_si
                     @inferred collect(ints)
@@ -147,7 +147,7 @@ end
         for _ in 1:25
             n = rand(1:250)
             points = 5 .* randn(2, n)
-            tree_si = SI.RTree{Float64,2}(Int, NTuple{2,Int}; variant=SI.RTreeLinear)
+            tree_si = SI.RTree{Float64, 2}(Int, NTuple{2, Int}; variant = SI.RTreeLinear)
             tree = DT.BoundaryRTree(points)
             ctr = 1
             range1 = rand(axes(points, 2), max(isqrt(n), 5))
@@ -168,7 +168,7 @@ end
                         c, d = minmax(c, d)
                         rect = DT.BoundingBox(a, b, c, d)
                         rect_si = SI.Rect((a, c), (b, d))
-                        int = DT.get_intersections(tree, rect; cache_id=rand(1:2))
+                        int = DT.get_intersections(tree, rect; cache_id = rand(1:2))
                         int_si = SI.intersects_with(tree_si, rect_si)
                         @test int == int_si
 
@@ -186,7 +186,7 @@ end
                         @test int == int_si
 
                         i, j, k = rand(1:n, 3)
-                        int = DT.get_intersections(tree, i, j, k; cache_id=rand(1:2))
+                        int = DT.get_intersections(tree, i, j, k; cache_id = rand(1:2))
                         bbox = DT.bounding_box(get_point(points, i, j, k)...)
                         bbox_si = SI.Rect((bbox.x.a, bbox.y.a), (bbox.x.b, bbox.y.b))
                         int_si = SI.intersects_with(tree_si, bbox_si)

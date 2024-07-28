@@ -35,29 +35,31 @@ The triangulation is updated in-place, but we do return
     In cases where `(x, y)` is outside of the triangulation, it will be added successfully but note that 
     the `convex_hull` field of `tri` will no longer be accurate. You can use [`convex_hull!`](@ref) to fix it.
 """
-function add_point!(tri::Triangulation, new_point;
-    predicates::AbstractPredicateKernel=AdaptiveKernel(),
-    point_indices=each_solid_vertex(tri),
-    m=default_num_samples(length(point_indices)),
-    try_points=(),
-    rng::Random.AbstractRNG=Random.default_rng(),
-    initial_search_point=integer_type(tri)(select_initial_point(tri, new_point; point_indices, m, try_points, rng)),
-    update_representative_point=false,
-    store_event_history=Val(false),
-    event_history=nothing,
-    concavity_protection=false,
-    V=find_triangle(
-        tri,
-        get_point(tri, new_point);
-        m=nothing,
-        point_indices=nothing,
-        try_points=nothing,
-        k=initial_search_point,
-        concavity_protection,
-        predicates,
-        rng
-    ),
-    peek::P=Val(false)) where {P}
+function add_point!(
+        tri::Triangulation, new_point;
+        predicates::AbstractPredicateKernel = AdaptiveKernel(),
+        point_indices = each_solid_vertex(tri),
+        m = default_num_samples(length(point_indices)),
+        try_points = (),
+        rng::Random.AbstractRNG = Random.default_rng(),
+        initial_search_point = integer_type(tri)(select_initial_point(tri, new_point; point_indices, m, try_points, rng)),
+        update_representative_point = false,
+        store_event_history = Val(false),
+        event_history = nothing,
+        concavity_protection = false,
+        V = find_triangle(
+            tri,
+            get_point(tri, new_point);
+            m = nothing,
+            point_indices = nothing,
+            try_points = nothing,
+            k = initial_search_point,
+            concavity_protection,
+            predicates,
+            rng,
+        ),
+        peek::P = Val(false),
+    ) where {P}
     int_flag = new_point isa Integer
     if !int_flag && !is_true(peek)
         push_point!(tri, new_point)
@@ -73,44 +75,47 @@ function add_point!(tri::Triangulation, new_point;
     return V
 end
 
-function add_point!(tri::Triangulation, new_point_x, new_point_y;
-    predicates::AbstractPredicateKernel=AdaptiveKernel(),
-    point_indices=get_vertices(tri),
-    m=default_num_samples(length(point_indices)),
-    try_points=(),
-    rng::Random.AbstractRNG=Random.default_rng(),
-    initial_search_point=integer_type(tri)(select_initial_point(tri, (new_point_x, new_point_y); point_indices, m, try_points, rng)),
-    update_representative_point=false,
-    store_event_history=Val(false),
-    event_history=nothing,
-    concavity_protection=false,
-    V=find_triangle(
-        tri,
-        (new_point_x, new_point_y);
-        m=nothing,
-        point_indices=nothing,
-        try_points=nothing,
-        k=initial_search_point,
-        concavity_protection,
-        predicates,
-        rng
-    ),
-    peek::P=Val(false)) where {P}
+function add_point!(
+        tri::Triangulation, new_point_x, new_point_y;
+        predicates::AbstractPredicateKernel = AdaptiveKernel(),
+        point_indices = get_vertices(tri),
+        m = default_num_samples(length(point_indices)),
+        try_points = (),
+        rng::Random.AbstractRNG = Random.default_rng(),
+        initial_search_point = integer_type(tri)(select_initial_point(tri, (new_point_x, new_point_y); point_indices, m, try_points, rng)),
+        update_representative_point = false,
+        store_event_history = Val(false),
+        event_history = nothing,
+        concavity_protection = false,
+        V = find_triangle(
+            tri,
+            (new_point_x, new_point_y);
+            m = nothing,
+            point_indices = nothing,
+            try_points = nothing,
+            k = initial_search_point,
+            concavity_protection,
+            predicates,
+            rng,
+        ),
+        peek::P = Val(false),
+    ) where {P}
     !is_true(peek) && push_point!(tri, new_point_x, new_point_y)
     VV = add_point!(
         tri,
         is_true(peek) ? (new_point_x, new_point_y) : num_points(tri);
         predicates,
-        point_indices=point_indices,
-        m=m,
-        try_points=try_points,
-        rng=rng,
-        initial_search_point=initial_search_point,
-        update_representative_point=update_representative_point,
-        store_event_history=store_event_history,
-        event_history=event_history,
+        point_indices = point_indices,
+        m = m,
+        try_points = try_points,
+        rng = rng,
+        initial_search_point = initial_search_point,
+        update_representative_point = update_representative_point,
+        store_event_history = store_event_history,
+        event_history = event_history,
         V,
-        peek)
+        peek,
+    )
     return VV
 end
 

@@ -10,15 +10,15 @@ Struct for a max priority queue.
 - `data::Vector{Pair{K, V}}`: The data of the queue, stored in a vector of key-value pairs mapping elements to their priority.
 - `map::Dict{K, Int}`: A dictionary mapping elements to their index in the data vector.
 """
-struct MaxPriorityQueue{K,V} <: AbstractDict{K,V}
-    data::Vector{Pair{K,V}}
-    map::Dict{K,Int}
+struct MaxPriorityQueue{K, V} <: AbstractDict{K, V}
+    data::Vector{Pair{K, V}}
+    map::Dict{K, Int}
 end
-function MaxPriorityQueue{K,V}() where {K,V}
-    return MaxPriorityQueue{K,V}(Pair{K,V}[], Dict{K,Int}())
+function MaxPriorityQueue{K, V}() where {K, V}
+    return MaxPriorityQueue{K, V}(Pair{K, V}[], Dict{K, Int}())
 end
-function MaxPriorityQueue(data::Dict{K,V}) where {K,V}
-    queue = MaxPriorityQueue{K,V}()
+function MaxPriorityQueue(data::Dict{K, V}) where {K, V}
+    queue = MaxPriorityQueue{K, V}()
     for pair in data
         push!(queue, pair)
     end
@@ -163,8 +163,8 @@ end
 
 Sets the priority of the element with key `key` in a `queue` to `priority`, or adds the element to the `queue` if it is not already present.
 """
-function Base.setindex!(queue::MaxPriorityQueue{K,V}, priority, key) where {K,V}
-    new_pair = Pair{K,V}(key, priority)
+function Base.setindex!(queue::MaxPriorityQueue{K, V}, priority, key) where {K, V}
+    new_pair = Pair{K, V}(key, priority)
     if haskey(queue, key)
         idx = queue.map[key]
         orig_priority = queue.data[idx].second

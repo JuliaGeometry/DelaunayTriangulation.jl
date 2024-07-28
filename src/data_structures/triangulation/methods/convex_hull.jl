@@ -20,7 +20,7 @@ Updates the `convex_hull` field of `tri` to match the current triangulation.
    computes the convex hull using the ghost triangles of `tri`. If there are no ghost triangles but `reconstruct=true`, then the convex hull is reconstructed from scratch.
 - `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 """
-function convex_hull!(tri::Triangulation; reconstruct=has_boundary_nodes(tri), predicates::AbstractPredicateKernel=AdaptiveKernel())
+function convex_hull!(tri::Triangulation; reconstruct = has_boundary_nodes(tri), predicates::AbstractPredicateKernel = AdaptiveKernel())
     I = integer_type(tri)
     if reconstruct
         convex_hull!(get_convex_hull(tri); predicates)
@@ -43,7 +43,7 @@ function convex_hull!(tri::Triangulation; reconstruct=has_boundary_nodes(tri), p
         return tri
     else
         add_ghost_triangles!(tri)
-        convex_hull!(tri; predicates, reconstruct=false)
+        convex_hull!(tri; predicates, reconstruct = false)
         delete_ghost_triangles!(tri)
     end
     return tri

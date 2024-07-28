@@ -22,12 +22,14 @@ Triangulates the convex polygon `S`.
 # Output 
 - `tri::Triangulation`: The triangulated polygon. 
 """
-function triangulate_convex(points, S;
-    rng::Random.AbstractRNG=Random.default_rng(),
-    delete_ghosts=false,
-    delete_empty_features=true,
-    predicates::AbstractPredicateKernel=AdaptiveKernel(),
-    kwargs...)
+function triangulate_convex(
+        points, S;
+        rng::Random.AbstractRNG = Random.default_rng(),
+        delete_ghosts = false,
+        delete_empty_features = true,
+        predicates::AbstractPredicateKernel = AdaptiveKernel(),
+        kwargs...,
+    )
     tri = Triangulation(points; kwargs...)
     triangulate_convex!(tri, S; predicates, rng)
     postprocess_triangulate_convex!(tri, S; delete_ghosts, delete_empty_features)
@@ -51,11 +53,11 @@ Triangulates the convex polygon `S` in-place into `tri`.
 There is no output, as `tri` is updated in-place. This function does not do any post-processing, e.g. deleting any ghost triangles. This is done by 
 [`triangulate_convex`](@ref) or [`postprocess_triangulate_convex!`](@ref).
 """
-function triangulate_convex!(tri::Triangulation, S; rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateKernel=AdaptiveKernel())
+function triangulate_convex!(tri::Triangulation, S; rng::Random.AbstractRNG = Random.default_rng(), predicates::AbstractPredicateKernel = AdaptiveKernel())
     list = ShuffledPolygonLinkedList(S; rng)
     delete_vertices_in_random_order!(list, tri, rng, predicates)
     u, v, w = get_triplet(list, 1)
-    add_triangle!(tri, u, v, w; protect_boundary=true, update_ghost_edges=false)
+    add_triangle!(tri, u, v, w; protect_boundary = true, update_ghost_edges = false)
     for i in 4:list.k
         u, v, w = get_triplet(list, i)
         add_point_convex_triangulation!(tri, u, v, w, S, predicates)
@@ -122,16 +124,16 @@ to make.
 2. For this method to be efficient, the set `x ∈ S` must be `O(1)` time. This is why we use a `Set` type for `S`.
 3. The algorithm is recursive, recursively digging further through the polygon to find non-Delaunay edges to adjoins with `u`.
 """
-function add_point_convex_triangulation!(tri::Triangulation, u, v, w, S, predicates::AbstractPredicateKernel=AdaptiveKernel())
+function add_point_convex_triangulation!(tri::Triangulation, u, v, w, S, predicates::AbstractPredicateKernel = AdaptiveKernel())
     x = get_adjacent(tri, w, v)
     if edge_exists(x) && is_inside(point_position_relative_to_circumcircle(predicates, tri, u, v, w, x))
         # uvw and wvx are not Delaunay 
-        delete_triangle!(tri, w, v, x; protect_boundary=true, update_ghost_edges=false)
+        delete_triangle!(tri, w, v, x; protect_boundary = true, update_ghost_edges = false)
         add_point_convex_triangulation!(tri, u, v, x, S, predicates)
         add_point_convex_triangulation!(tri, u, x, w, S, predicates)
     else
         # vw is a Delaunay edge 
-        add_triangle!(tri, u, v, w; protect_boundary=true, update_ghost_edges=false)
+        add_triangle!(tri, u, v, w; protect_boundary = true, update_ghost_edges = false)
     end
     return tri
 end
@@ -162,9 +164,9 @@ function postprocess_triangulate_convex!(tri::Triangulation, S; delete_ghosts, d
     append!(hull, S)
     push!(hull, S[begin])
     I = integer_type(tri)
-    for i in firstindex(S):(lastindex(S)-1)
+    for i in firstindex(S):(lastindex(S) - 1)
         u = S[i]
-        v = S[i+1]
+        v = S[i + 1]
         if !delete_ghosts
             add_triangle!(tri, v, u, I(𝒢))
         else

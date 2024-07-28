@@ -37,7 +37,7 @@ end
 struct InsufficientPointsError{P} <: Exception
     points::P
 end
-struct InconsistentConnectionError{I,J} <: Exception
+struct InconsistentConnectionError{I, J} <: Exception
     curve_index::I
     segment_index₁::I
     segment_index₂::I
@@ -71,7 +71,7 @@ function Base.showerror(io::IO, err::InsufficientPointsError)
     print(io, "InsufficientPointsError: The provided point set has ", num_points(points), " points, but triangulations require at least three points.")
     return io
 end
-function Base.showerror(io::IO, err::InconsistentConnectionError) 
+function Base.showerror(io::IO, err::InconsistentConnectionError)
     print(io, "InconsistentConnectionError: ")
     if !iszero(err.segment_index₁) && !(isone(err.segment_index₁) && isone(err.segment_index₂))
         print(io, "Segment ", err.segment_index₁)
@@ -95,11 +95,11 @@ function Base.showerror(io::IO, err::InconsistentOrientationError)
         # It's hard to detect if the curve is indeed defined by an AbstractParametricCurve since the curve could be defined 
         # by a combination of multiple AbstractParametricCurves and possibly a PiecewiseLinear part. Thus, the above advice
         # might nto be wrong.
-        str2 = "\nIf this curve is defined by an AbstractParametricCurve, you may instead need to reverse the order of the control points defining" * 
-        " the sections of the curve; the `positive` keyword may also be of interest for CircularArcs and EllipticalArcs."
-        str *= str2 
+        str2 = "\nIf this curve is defined by an AbstractParametricCurve, you may instead need to reverse the order of the control points defining" *
+            " the sections of the curve; the `positive` keyword may also be of interest for CircularArcs and EllipticalArcs."
+        str *= str2
     end
-    sign = err.should_be_positive ? "positive" : "negative" 
+    sign = err.should_be_positive ? "positive" : "negative"
     sign2 = err.should_be_positive ? "negative" : "positive"
     print(io, "The orientation of the boundary curve with index ", err.index, " should be $sign, but it is $sign2.", str)
     return io
@@ -157,7 +157,7 @@ function has_consistent_connections_multiple_curves(boundary_nodes)
     end
     return true
 end
-function has_consistent_connections_multiple_sections(boundary_nodes, curve_index=0)
+function has_consistent_connections_multiple_sections(boundary_nodes, curve_index = 0)
     ns = num_sections(boundary_nodes)
     segmentⱼ₋₁ = get_boundary_nodes(boundary_nodes, 1)
     nn = num_boundary_edges(segmentⱼ₋₁) + 1

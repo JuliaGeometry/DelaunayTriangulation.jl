@@ -13,7 +13,7 @@ fig_path = joinpath(@__DIR__, "../figures") #src
 
 θ = LinRange(0, 2π, 20) |> collect
 θ[end] = 0 # need to make sure that 2π gives the exact same coordinates as 0
-xy = Vector{Vector{Vector{NTuple{2,Float64}}}}()
+xy = Vector{Vector{Vector{NTuple{2, Float64}}}}()
 cx = 0.0
 for i in 1:2
     global cx
@@ -24,7 +24,7 @@ for i in 1:2
     cx += 3.0
 end
 boundary_nodes, points = convert_boundary_points_to_indices(xy)
-tri = triangulate(points; boundary_nodes=boundary_nodes)
+tri = triangulate(points; boundary_nodes = boundary_nodes)
 fig, ax, sc = triplot(tri)
 fig
 @test_reference joinpath(fig_path, "constrained_ex_7.png") fig #src
@@ -174,10 +174,13 @@ J_curve = [[C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, C]]
 U_curve = [[T, U, V, W, Z, A1, B1, C1, D1, E1, F1, G1, H1, I1, J1, K1, L1, M1, N1, O1, T]]
 L_curve = [[P1, Q1, R1, S1, P1]]
 I_curve = [[T1, U1, V1, W1, T1]]
-A_curve_outline = [[
-    K5, W3, Z3, A4, B4, C4, D4, E4, F4, G4, H4, I4, J4, K4, L4, M4, N4,
-    O4, P4, Q4, R4, S4, T4, U4, V4, W4, Z4, A5, B5, C5, D5, E5, F5, G5,
-    H5, I5, J5, K5]]
+A_curve_outline = [
+    [
+        K5, W3, Z3, A4, B4, C4, D4, E4, F4, G4, H4, I4, J4, K4, L4, M4, N4,
+        O4, P4, Q4, R4, S4, T4, U4, V4, W4, Z4, A5, B5, C5, D5, E5, F5, G5,
+        H5, I5, J5, K5,
+    ],
+]
 A_curve_hole = [[L5, M5, N5, O5, P5, Q5, R5, S5, T5, U5, L5]]
 dot_1 = [[Z1, A2, B2, C2, D2, E2, F2, G2, H2, I2, J2, Z1]]
 dot_2 = [[Z2, A3, B3, C3, D3, E3, F3, G3, H3, I3, J3, Z2]]
@@ -185,7 +188,7 @@ dot_3 = [[K2, L2, M2, N2, O2, P2, Q2, R2, S2, T2, U2, V2, W2, K2]]
 dot_4 = [[K3, L3, M3, N3, O3, P3, Q3, R3, S3, T3, U3, V3, K3]]
 curves = [J_curve, U_curve, L_curve, I_curve, A_curve_outline, A_curve_hole, dot_1, dot_2, dot_3, dot_4]
 nodes, points = convert_boundary_points_to_indices(curves)
-tri = triangulate(points; boundary_nodes=nodes)
+tri = triangulate(points; boundary_nodes = nodes)
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "constrained_ex_8.png") fig by=psnr_equality(12) #src
+@test_reference joinpath(fig_path, "constrained_ex_8.png") fig by = psnr_equality(12) #src

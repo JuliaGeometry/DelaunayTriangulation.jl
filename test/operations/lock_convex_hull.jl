@@ -29,7 +29,7 @@ using StaticArrays
             add_segment!(tri, e)
         end
         lock_convex_hull!(tri2)
-        tri3 = triangulate(pts; boundary_nodes=bn)
+        tri3 = triangulate(pts; boundary_nodes = bn)
         @test tri2.boundary_nodes == tri3.boundary_nodes == bn
         @test tri2.ghost_vertex_map == tri3.ghost_vertex_map == bn_map
         @test tri2.boundary_edge_map == tri3.boundary_edge_map == bnn_map
@@ -42,7 +42,7 @@ using StaticArrays
     p3 = (1.0, 1.0)
     p4 = (0.0, 1.0)
     pts = [p1, p2, p3, p4]
-    tri = triangulate(pts; boundary_nodes=[1, 2, 3, 4, 1])
+    tri = triangulate(pts; boundary_nodes = [1, 2, 3, 4, 1])
     @test_throws ArgumentError("Cannot lock the convex hull of a triangulation with boundary nodes.") lock_convex_hull!(tri)
 end
 
@@ -77,7 +77,7 @@ end
 @testset "Fixing interior segments that happen to be on the convex hull" begin
     for _ in 1:10
         points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.25, 0.5), (0.75, 0.5)]
-        tri = triangulate(points; segments=Set([(1, 2), (2, 3), (5, 6)]))
+        tri = triangulate(points; segments = Set([(1, 2), (2, 3), (5, 6)]))
         lock_convex_hull!(tri)
         @test DT.compare_unoriented_edge_collections(get_interior_segments(tri), Set([(5, 6)]))
         @test DT.compare_unoriented_edge_collections(tri.cache.interior_segments_on_hull, Set([(1, 2), (2, 3)]))
@@ -88,7 +88,7 @@ end
         DT.complete_split_edge_and_legalise!(tri, 7, 2, 8)
         DT.complete_split_edge_and_legalise!(tri, 7, 8, 9)
         @test validate_triangulation(tri)
-        unlock_convex_hull!(tri; reconstruct=true)
+        unlock_convex_hull!(tri; reconstruct = true)
         @test validate_triangulation(tri)
         @test DT.compare_unoriented_edge_collections(get_interior_segments(tri), Set([(5, 6), (1, 7), (7, 9), (9, 8), (8, 2), (2, 3)]))
         @test isempty(tri.cache.interior_segments_on_hull)
@@ -97,7 +97,7 @@ end
         validate_statistics(tri)
 
         points = [(0.0, 0.0), (9.0, 0.0), (9.0, 7.0)]
-        tri = triangulate(points; segments=Set([(1, 2), (1, 3)]))
+        tri = triangulate(points; segments = Set([(1, 2), (1, 3)]))
         lock_convex_hull!(tri)
         orig_tri = deepcopy(tri)
         orig_points = copy(orig_tri.points)
@@ -105,7 +105,7 @@ end
         DT.complete_split_edge_and_legalise!(tri, 1, 2, 4)
         @test validate_triangulation(tri)
         @test collect(get_point(tri, 4)) ≈ [4.5, 0.0]
-        unlock_convex_hull!(tri; reconstruct=true)
-        @test tri == triangulate([orig_points; get_point(tri, 4)]; segments=Set([(1, 4), (4, 2), (1, 3)]))
+        unlock_convex_hull!(tri; reconstruct = true)
+        @test tri == triangulate([orig_points; get_point(tri, 4)]; segments = Set([(1, 4), (4, 2), (1, 3)]))
     end
 end

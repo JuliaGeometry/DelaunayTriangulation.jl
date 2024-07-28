@@ -36,7 +36,7 @@ of the bounding box of the underlying point set.
 function default_displacement_tolerance(vorn::VoronoiTessellation)
     xmin, xmax, ymin, ymax = polygon_bounds(vorn)
     max_extent = max(xmax - xmin, ymax - ymin)
-    return oftype(max_extent, max_extent / 1e4)
+    return oftype(max_extent, max_extent / 1.0e4)
 end
 
 """
@@ -58,7 +58,7 @@ Performs a single iteration of the centroidal smoothing algorithm.
 - `vorn`: The updated [`VoronoiTessellation`](@ref).
 - `max_dist`: The maximum distance moved by any generator.
 """
-function _centroidal_smooth_itr(vorn::VoronoiTessellation, set_of_boundary_nodes, points, rng, predicates::AbstractPredicateKernel=AdaptiveKernel(); kwargs...)
+function _centroidal_smooth_itr(vorn::VoronoiTessellation, set_of_boundary_nodes, points, rng, predicates::AbstractPredicateKernel = AdaptiveKernel(); kwargs...)
     F = number_type(vorn)
     max_dist = zero(F)
     for i in each_generator(vorn)
@@ -68,7 +68,7 @@ function _centroidal_smooth_itr(vorn::VoronoiTessellation, set_of_boundary_nodes
         end
     end
     _tri = retriangulate(get_triangulation(vorn), points; rng, predicates, kwargs...)
-    vorn = voronoi(_tri, clip=true; rng, predicates)
+    vorn = voronoi(_tri, clip = true; rng, predicates)
     return vorn, max_dist
 end
 
@@ -94,7 +94,7 @@ Smooths `vorn` into a centroidal tessellation so that the new tessellation is of
 The algorithm is simple. We iteratively smooth the generators, moving them to the centroid of their associated Voronoi polygon for the current tessellation, 
 continuing until the maximum distance moved of any generator is less than `tol`. Boundary generators are not moved.
 """
-function centroidal_smooth(vorn::VoronoiTessellation; maxiters=1000, tol=default_displacement_tolerance(vorn), rng=Random.default_rng(), predicates::AbstractPredicateKernel=AdaptiveKernel(), kwargs...) 
+function centroidal_smooth(vorn::VoronoiTessellation; maxiters = 1000, tol = default_displacement_tolerance(vorn), rng = Random.default_rng(), predicates::AbstractPredicateKernel = AdaptiveKernel(), kwargs...)
     iter = 0
     F = number_type(vorn)
     max_dist = typemax(F)

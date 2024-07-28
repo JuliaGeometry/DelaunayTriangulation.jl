@@ -49,20 +49,20 @@ The relevant functions used for computing these statistics are
 """
 struct IndividualTriangleStatistics{T}
     area::T
-    lengths::NTuple{3,T}
-    circumcenter::NTuple{2,T}
+    lengths::NTuple{3, T}
+    circumcenter::NTuple{2, T}
     circumradius::T
-    angles::NTuple{3,T}
+    angles::NTuple{3, T}
     radius_edge_ratio::T
-    edge_midpoints::NTuple{3,NTuple{2,T}}
+    edge_midpoints::NTuple{3, NTuple{2, T}}
     aspect_ratio::T
     inradius::T
     perimeter::T
-    centroid::NTuple{2,T}
-    offcenter::NTuple{2,T}
-    sink::NTuple{2,T}
+    centroid::NTuple{2, T}
+    offcenter::NTuple{2, T}
+    sink::NTuple{2, T}
 end
-function IndividualTriangleStatistics(p, q, r, sink=(NaN, NaN))
+function IndividualTriangleStatistics(p, q, r, sink = (NaN, NaN))
     F = number_type(p)
     ℓmin², ℓmed², ℓmax² = squared_triangle_lengths(p, q, r)
     ℓmin, ℓmed, ℓmax = sqrt(ℓmin²), sqrt(ℓmed²), sqrt(ℓmax²)
@@ -190,7 +190,7 @@ Computes the centroid of a triangle with vertices `p`, `q`, and `r`, given by
 c = \dfrac{p + q + r}{3}.
 ```
 """
-function triangle_centroid(p, q, r) 
+function triangle_centroid(p, q, r)
     px, py = getxy(p)
     qx, qy = getxy(q)
     rx, ry = getxy(r)
@@ -319,7 +319,7 @@ c_x = r_x + \dfrac{d_{11}d_{22} - d_{12}d_{21}}{4A}, \quad c_y = r_y + \dfrac{e_
 where ``d_{11} = \|p - r\|_2^2``, ``d_{12} = p_y - r_y``, ``d_{21} = \|q - r\|_2^2``, ``d_{22} = q_y - r_y``, ``e_{11} = p_x - r_x``
 ``e_{12} = d_{11}``, ``e_{21} = q_x - r_x``, and ``e_{22} = d_{21}``.
 """
-function triangle_circumcenter(p, q, r, A=triangle_area(p, q, r))
+function triangle_circumcenter(p, q, r, A = triangle_area(p, q, r))
     px, py = getxy(p)
     qx, qy = getxy(q)
     rx, ry = getxy(r)
@@ -378,7 +378,7 @@ Computes the off-center of the triangle `(p, q, r)`.
     be the circumcenter if it the triangle `pqc₁` has radius-edge ratio less than `β`. Here, we just let the off-center
     be the point `c` so that `pqc` has radius-edge ratio of exactly `β`.
 """
-function triangle_offcenter(p, q, r, c₁=triangle_circumcenter(p, q, r), β=1.0)
+function triangle_offcenter(p, q, r, c₁ = triangle_circumcenter(p, q, r), β = 1.0)
     ℓ₁², ℓ₂², _, idx = squared_triangle_lengths_and_smallest_index(p, q, r)
     ℓ₁ = sqrt(ℓ₁²)
     p, q, r = make_shortest_edge_first(p, q, r, idx)
@@ -596,7 +596,7 @@ Sinks were introduced in [this paper](https://doi.org/10.1145/378583.378644). Fo
 In cases where the triangulation has holes, this definition can lead to loops. In such a case, we just pick one of the triangles 
 in the loop as the sink triangle.
 """
-function triangle_sink(tri::Triangulation, T, prev_T=construct_triangle(triangle_type(tri), integer_type(tri)(∅), integer_type(tri)(∅), integer_type(tri)(∅)); predicates::AbstractPredicateKernel=AdaptiveKernel())
+function triangle_sink(tri::Triangulation, T, prev_T = construct_triangle(triangle_type(tri), integer_type(tri)(∅), integer_type(tri)(∅), integer_type(tri)(∅)); predicates::AbstractPredicateKernel = AdaptiveKernel())
     # TODO: This function would be faster if we just always search away from the largest angle.
     T = sort_triangle(T)
     c = triangle_circumcenter(tri, T)

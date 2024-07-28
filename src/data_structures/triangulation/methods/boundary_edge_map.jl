@@ -23,7 +23,7 @@ each_boundary_edge(tri::Triangulation) = keys(get_boundary_edge_map(tri))
 After splitting an edge starting at `pos` on the boundary, updates the `boundary_edge_map` to reflect the new
 boundary edges. See [`split_boundary_edge!`](@ref).
 """
-function split_boundary_edge_map!(boundary_edge_map::Dict{E,T}, boundary_nodes, pos, i, j) where {E,T}
+function split_boundary_edge_map!(boundary_edge_map::Dict{E, T}, boundary_nodes, pos, i, j) where {E, T}
     e = construct_edge(E, i, j)
     delete!(boundary_edge_map, e)
     nodes = get_boundary_nodes(boundary_nodes, pos[1])

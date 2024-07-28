@@ -9,8 +9,10 @@ using Test #src
 fig_path = joinpath(@__DIR__, "../figures") #src
 
 # Let us now define our initial triangulation.
-points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), 
-(0.9, 0.9), (0.5, 0.5), (0.2, 0.5), (0.5, 0.8)]
+points = [
+    (0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0),
+    (0.9, 0.9), (0.5, 0.5), (0.2, 0.5), (0.5, 0.8),
+]
 tri = triangulate(points)
 fig, ax, sc = triplot(tri)
 fig
@@ -23,7 +25,7 @@ add_segment!(tri, 1, 3)
 fig, ax, sc = triplot(tri, show_constrained_edges = true)
 fig
 @test_reference joinpath(fig_path, "triangulation_operations_9.png") fig #src
- 
+
 # Of course, this changed nothing since the segment was already there. We do note,
 # though, that if we look at the constrained edges
 get_interior_segments(tri)
@@ -44,7 +46,7 @@ fig
 # if we do this:
 add_segment!(tri, 8, 2)
 fig, ax, sc = triplot(tri)
-fig 
+fig
 @test_reference joinpath(fig_path, "triangulation_operations_11.png") fig #src
 
 # The other constrained edge was partially removed.

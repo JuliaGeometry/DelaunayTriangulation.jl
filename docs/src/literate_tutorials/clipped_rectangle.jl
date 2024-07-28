@@ -11,7 +11,7 @@
 
 # Let us now demonstrate. First, we construct a tessellation of 
 # some example point set.
-using DelaunayTriangulation 
+using DelaunayTriangulation
 using CairoMakie
 using ReferenceTests #src
 using Test #src
@@ -32,7 +32,7 @@ vorn = voronoi(tri)
 # the tessellation to. 
 fig, ax, sc = voronoiplot(vorn)
 a, b, c, d = -2.0, 3.0, 0.0, 7.0
-lines!(ax, [(a,c),(b,c),(b,d),(a,d),(a,c)], color = :black, linewidth = 4)
+lines!(ax, [(a, c), (b, c), (b, d), (a, d), (a, c)], color = :black, linewidth = 4)
 fig
 @test_reference joinpath(fig_path, "voronoi_ex_3.png") fig #src
 
@@ -43,11 +43,11 @@ bounding_box = (a, b, c, d)
 # You can obtain some reasonable defaults for this bounding box using 
 # [DelaunayTriangulation.polygon_bounds(vorn)](@ref polygon_bounds).
 # The coordinates for each polygon clipped to this box can be obtained as follows.
-clipped_coords = Vector{Vector{NTuple{2,Float64}}}(undef, num_polygons(vorn))
+clipped_coords = Vector{Vector{NTuple{2, Float64}}}(undef, num_polygons(vorn))
 for i in each_polygon_index(vorn)
     clipped_coords[i] = get_polygon_coordinates(vorn, i, bounding_box)
 end
-clipped_coords 
+clipped_coords
 
 # Now let's plot these. 
 fig, ax, sc = poly(clipped_coords, color = :white, strokewidth = 4)

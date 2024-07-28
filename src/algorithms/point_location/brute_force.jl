@@ -1,4 +1,4 @@
-struct PointNotFoundError{T,P} <: Exception
+struct PointNotFoundError{T, P} <: Exception
     tri::T
     q::P
 end
@@ -29,7 +29,7 @@ See also [`find_triangle`](@ref).
 # Output 
 - `V`: The triangle containing the point `q`.
 """
-function brute_force_search(tri::Triangulation, q; itr=each_triangle(tri), predicates::AbstractPredicateKernel=AdaptiveKernel())
+function brute_force_search(tri::Triangulation, q; itr = each_triangle(tri), predicates::AbstractPredicateKernel = AdaptiveKernel())
     for V in itr
         cert = point_position_relative_to_triangle(predicates, tri, V, q)
         !is_outside(cert) && return V
@@ -45,12 +45,12 @@ Searches for a triangle in `tri` containing the vertex `i` in its circumcircle u
 below its witness plane. If no such triangle exists, `($∅, $∅, $∅)` is returned. You can control 
 the method used for computing predicates via the `predicates` argument.
 """
-function brute_force_search_enclosing_circumcircle(tri::Triangulation, i, predicates::AbstractPredicateKernel=AdaptiveKernel())
+function brute_force_search_enclosing_circumcircle(tri::Triangulation, i, predicates::AbstractPredicateKernel = AdaptiveKernel())
     for V in each_triangle(tri)
         cert = point_position_relative_to_circumcircle(predicates, tri, V, i)
         !is_outside(cert) && return V
     end
-    tri_type=triangle_type(tri)
+    tri_type = triangle_type(tri)
     V = construct_triangle(tri_type, ∅, ∅, ∅)
     return V
 end

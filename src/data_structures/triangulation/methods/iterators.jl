@@ -52,7 +52,7 @@ An iterator over all solid vertices in a triangulation.
 - `vertices::V`: The iterator over all vertices in the triangulation.
 - `tri::T`: The triangulation.
 """
-struct EachSolidVertex{V,T} <: AbstractEachVertex{V}
+struct EachSolidVertex{V, T} <: AbstractEachVertex{V}
     vertices::V
     tri::T
 end
@@ -66,7 +66,7 @@ An iterator over all ghost vertices in a triangulation.
 - `vertices::V`: The iterator over all vertices in the triangulation.
 - `tri::T`: The triangulation.
 """
-struct EachGhostVertex{V,T} <: AbstractEachVertex{V}
+struct EachGhostVertex{V, T} <: AbstractEachVertex{V}
     vertices::V
     tri::T
 end
@@ -157,7 +157,7 @@ An iterator over all solid triangles in a triangulation.
 - `triangles::V`: The iterator over all triangles in the triangulation.
 - `tri::T`: The triangulation.
 """
-struct EachSolidTriangle{V,T} <: AbstractEachTriangle{V}
+struct EachSolidTriangle{V, T} <: AbstractEachTriangle{V}
     triangles::V
     tri::T
 end
@@ -171,7 +171,7 @@ An iterator over all ghost triangles in a triangulation.
 - `triangles::V`: The iterator over all triangles in the triangulation.
 - `tri::T`: The triangulation.
 """
-struct EachGhostTriangle{V,T} <: AbstractEachTriangle{V}
+struct EachGhostTriangle{V, T} <: AbstractEachTriangle{V}
     triangles::V
     tri::T
 end
@@ -273,7 +273,7 @@ An iterator over all solid edges in a triangulation.
 - `edges::E`: The iterator over all edges in the triangulation.
 - `tri::T`: The triangulation.
 """
-struct EachSolidEdge{E,T} <: AbstractEachEdge{E}
+struct EachSolidEdge{E, T} <: AbstractEachEdge{E}
     edges::E
     tri::T
 end
@@ -287,7 +287,7 @@ An iterator over all ghost edges in a triangulation.
 - `edges::E`: The iterator over all edges in the triangulation.
 - `tri::T`: The triangulation.
 """
-struct EachGhostEdge{E,T} <: AbstractEachEdge{E}
+struct EachGhostEdge{E, T} <: AbstractEachEdge{E}
     edges::E
     tri::T
 end

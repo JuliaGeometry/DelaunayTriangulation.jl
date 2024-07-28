@@ -32,12 +32,12 @@ points = [
     (-1.0, 2.0), (4.0, 6.0), (4.0, 3.0), (-3.0, 7.0),
     (-6.0, -1.0), (9.0, 5.0), (5.0, -5.0), (-6.0, 7.0),
     (0.0, 0.0), (-3.0, 4.0), (-5.0, 5.0), (-3.0, -4.0),
-    (5.0, -1.0), (2.0, -2.0)
+    (5.0, -1.0), (2.0, -2.0),
 ]
 p = (3.0, 2.0)
 tri = triangulate(points)
 fig, ax, sc = triplot(tri)
-scatter!(ax, [p], markersize=14)
+scatter!(ax, [p], markersize = 14)
 fig
 @test_reference joinpath(fig_path, "triangulation_operations_13.png") fig #src
 
@@ -56,7 +56,7 @@ fig
 
 # This splitting introduces some new illegal edges, shown in red below.
 function get_all_illegal_edges(tri) #hide 
-    T = NTuple{2,Float64}[] #hide 
+    T = NTuple{2, Float64}[] #hide 
     for E in each_edge(tri) #hide 
         cert = DelaunayTriangulation.is_legal(tri, E...) #hide
         if DelaunayTriangulation.is_illegal(cert) #hide 
@@ -67,7 +67,7 @@ function get_all_illegal_edges(tri) #hide
 end #hide 
 fig, ax, sc = triplot(tri) #hide 
 T = get_all_illegal_edges(tri) #hide 
-linesegments!(ax, T, color=:red, linewidth=3) #hide
+linesegments!(ax, T, color = :red, linewidth = 3) #hide
 fig #hide 
 @test_reference joinpath(fig_path, "triangulation_operations_15.png") fig #src
 

@@ -25,7 +25,7 @@ fig_path = joinpath(@__DIR__, "../figures") #src
 points = [
     (-3.0, 6.0), (5.0, 1.0), (-5.0, 3.0), (2.0, -3.0),
     (5.0, 8.0), (0.0, 0.0), (2.0, 5.0), (-3.0, 1.0),
-    (-2.0, -1.0), (-1.0, 4.0)
+    (-2.0, -1.0), (-1.0, 4.0),
 ]
 tri = triangulate(points)
 q = (3.0, 3.0)
@@ -45,14 +45,14 @@ DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)
 # sample some number of points (defaults to $\lceil \sqrt[3]{n}\rceil$, where $n$ is the number of points),
 # and then start at the point that is closest to `q` out of those sampled, then marching along the triangulation
 # until `q` is found. This number of samples can be changed using the `m` keyword argument. For example,
-V = find_triangle(tri, q, m=10)
+V = find_triangle(tri, q, m = 10)
 @test DelaunayTriangulation.is_inside(DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)) #src
 
 # means that we get a sample of size 10, and start at whichever point is the closest.
 # (For technical reasons, this sampling is with replacement, so it is possible that the same point is sampled more than once.)
 # You could also instead specify the point to start at using the `k` keyword argument, in which case no points are sampled.
 # For example, 
-V = find_triangle(tri, q, k=6)
+V = find_triangle(tri, q, k = 6)
 @test DelaunayTriangulation.is_inside(DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)) #src
 
 # starts the algorithm at the point `6`.
@@ -75,7 +75,7 @@ V = find_triangle(tri, q)
 # this can be interpreted as meaning that `q` is between the two lines through the points `1` and `5` that 
 # start at a central point of the triangulation. (The index `-1` is just the ghost vertex.) This can 
 # be visualised.
-fig, ax, sc = triplot(tri, show_ghost_edges=true)
+fig, ax, sc = triplot(tri, show_ghost_edges = true)
 scatter!(ax, q)
 fig
 @test_reference joinpath(fig_path, "point_location_ex_1.png") fig #src
@@ -98,13 +98,13 @@ inner = [[r, z, v, u, w, t, s, r]]
 boundary_nodes, points = convert_boundary_points_to_indices([outer, inner])
 rng = StableRNG(125123)
 tri = triangulate(points; rng, boundary_nodes)
-refine!(tri; max_area=0.01get_area(tri), rng);
+refine!(tri; max_area = 0.01get_area(tri), rng);
 
 # The issue with concavity is that the ghost triangles can no longer be sensibly defined. 
 # To demonstrate this, see the following plot:
-fig, ax, sc = triplot(tri, show_ghost_edges=true)
+fig, ax, sc = triplot(tri, show_ghost_edges = true)
 fig
-@test_reference joinpath(fig_path, "point_location_ex_2.png") fig by=psnr_equality(15) #src
+@test_reference joinpath(fig_path, "point_location_ex_2.png") fig by = psnr_equality(15) #src
 
 # The ghost edges now intersect the boundary, which doesn't make sense, and creates difficulties.
 # Let us now demonstrate how the function still works here. We try finding the blue points shown below.
@@ -112,12 +112,12 @@ qs = [
     (4.0, 5.0), (1.0, 5.6), (0.2, 5.0),
     (0.0, -1.0), (0.5, 3.5), (2.5, 1.5),
     (1.0, 2.0), (4.5, 1.0), (6.0, 1.5),
-    (0.5, 8.5), (1.0, 7.5), (1.2, 1.6)
+    (0.5, 8.5), (1.0, 7.5), (1.2, 1.6),
 ]
-fig, ax, sc = triplot(tri, show_ghost_edges=false)
-scatter!(ax, qs, color=:blue, markersize=16)
+fig, ax, sc = triplot(tri, show_ghost_edges = false)
+scatter!(ax, qs, color = :blue, markersize = 16)
 fig
-@test_reference joinpath(fig_path, "point_location_ex_3.png") fig by=psnr_equality(15) #src
+@test_reference joinpath(fig_path, "point_location_ex_3.png") fig by = psnr_equality(15) #src
 
 # Now let's find the triangles.
 Vs = [find_triangle(tri, q; rng) for q in qs]
@@ -131,7 +131,7 @@ Vs[end]
 # will enable a check to be made that the point is actually outside the triangulation whenever 
 # a ghost triangle is to be returned. If the check finds this to not be the case, it 
 # restarts. With these results, we now compute:
-Vs = [find_triangle(tri, q; rng, concavity_protection=true) for q in qs]
+Vs = [find_triangle(tri, q; rng, concavity_protection = true) for q in qs]
 
 # Here is how we can actually test that these results are now correct. We cannot directly 
 # use [`DelaunayTriangulation.point_position_relative_to_triangle`](@ref) because it does not
@@ -167,24 +167,24 @@ v₁, w₁ = (5.0, 3.0), (4.0, 3.0)
 new_domain₁ = [[m₁, q₁, o₁, p₁, r₁, s₁, n₁, m₁]]
 new_domain₂ = [[t₁, w₁, v₁, u₁, t₁]]
 boundary_nodes, points = convert_boundary_points_to_indices(
-    [outer, inner, new_domain₁, new_domain₂]
+    [outer, inner, new_domain₁, new_domain₂],
 )
 rng = StableRNG(125123)
 tri = triangulate(points; rng, boundary_nodes)
-refine!(tri; max_area=0.001get_area(tri), rng)
+refine!(tri; max_area = 0.001get_area(tri), rng)
 qs = [
     (0.6, 6.4), (1.4, 0.8), (3.1, 2.9),
     (6.3, 4.9), (4.6, 3.5), (7.0, 7.0),
     (8.9, 5.1), (5.8, 0.8), (1.0, 1.5),
-    (1.5, 2.0), (8.15, 6.0)
+    (1.5, 2.0), (8.15, 6.0),
 ]
 fig, ax, sc = triplot(tri)
-scatter!(ax, qs, color=:blue, markersize=16)
+scatter!(ax, qs, color = :blue, markersize = 16)
 fig
-@test_reference joinpath(fig_path, "point_location_ex_4.png") fig by=psnr_equality(10) #src
+@test_reference joinpath(fig_path, "point_location_ex_4.png") fig by = psnr_equality(10) #src
 
 # Here are the `find_triangle` results. 
-Vs = [find_triangle(tri, q; rng, concavity_protection=true) for q in qs]
+Vs = [find_triangle(tri, q; rng, concavity_protection = true) for q in qs]
 
 # Again, we can verify that these are all correct as follows. Without `concavity_protection=true`, 
 # these would not be all correct.

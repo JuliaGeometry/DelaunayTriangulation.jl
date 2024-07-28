@@ -61,14 +61,14 @@ end
             @test DT.orient_predicate(DT.FastKernel(), p, q, r) === Int(sign(AdaptivePredicates.orient2fast(p, q, r))) === ExactPredicates.orient(p, q, r)
             @test DT.orient_predicate(DT.AdaptiveKernel(), p, q, r) === AdaptivePredicates.orient2p(p, q, r) === ExactPredicates.orient(p, q, r)
             @inferred DT.orient_predicate(rt(), p, q, r)
-            @test DT.orient_predicate(DT.AdaptiveKernel(), p, q, r) === DT.orient_predicate(p, q, r) 
+            @test DT.orient_predicate(DT.AdaptiveKernel(), p, q, r) === DT.orient_predicate(p, q, r)
 
             p, q, r, s = eachcol(rand(3, 4))
             @test DT.orient_predicate(DT.ExactKernel(), p, q, r, s) === ExactPredicates.orient(p, q, r, s)
             @test DT.orient_predicate(DT.FastKernel(), p, q, r, s) === Int(sign(AdaptivePredicates.orient3fast(p, q, r, s))) === ExactPredicates.orient(p, q, r, s)
             @test DT.orient_predicate(DT.AdaptiveKernel(), p, q, r, s) === AdaptivePredicates.orient3p(p, q, r, s) === ExactPredicates.orient(p, q, r, s)
             @inferred DT.orient_predicate(rt(), p, q, r, s)
-            @test DT.orient_predicate(DT.AdaptiveKernel(), p, q, r) === DT.orient_predicate(p, q, r) 
+            @test DT.orient_predicate(DT.AdaptiveKernel(), p, q, r) === DT.orient_predicate(p, q, r)
 
             a, b, c, p = eachcol(rand(2, 4))
             @test DT.incircle_predicate(DT.ExactKernel(), a, b, c, p) === ExactPredicates.incircle(a, b, c, p)
@@ -82,7 +82,7 @@ end
             @test DT.parallelorder_predicate(DT.FastKernel(), a, b, p, q) === DT.parallelorder(DT.FastKernel(), a, b, p, q) === ExactPredicates.parallelorder(a, b, p, q)
             @test DT.parallelorder_predicate(DT.AdaptiveKernel(), a, b, p, q) === ExactPredicates.parallelorder(a, b, p, q) === ExactPredicates.parallelorder(a, b, p, q)
             @inferred DT.parallelorder_predicate(rt(), a, b, p, q)
-            @test DT.parallelorder_predicate(DT.AdaptiveKernel(), a, b, p, q) ===DT.parallelorder_predicate(a, b, p, q)
+            @test DT.parallelorder_predicate(DT.AdaptiveKernel(), a, b, p, q) === DT.parallelorder_predicate(a, b, p, q)
 
             p, a, b = eachcol(rand(2, 3))
             @test DT.sameside_predicate(a, b, p) === ExactPredicates.sameside(p, a, b)
@@ -120,7 +120,7 @@ end
             r = (rand(x), rand(y), rand(z))
             s = (rand(x), rand(y), rand(z))
             @test DT.orient_predicate(DT.ExactKernel(), p, q, r, s) == ExactPredicates.orient(p, q, r, s) === DT.orient_predicate(DT.AdaptiveKernel(), p, q, r, s) === DT.orient_predicate(DT.FastKernel(), p, q, r, s)
-            @test DT.orient_predicate(DT.AdaptiveKernel(), p, q, r, s) == DT.orient_predicate(p, q, r, s) 
+            @test DT.orient_predicate(DT.AdaptiveKernel(), p, q, r, s) == DT.orient_predicate(p, q, r, s)
         end
     end
 
@@ -147,17 +147,21 @@ global p3, q3, r3 = (2.8, 1.4), (2.8, 2.4), (4.6, 1.4) # -
 global p4, q4, r4 = (2.8, 1.4), (3.8, 1.4), (4.6, 1.4) # 0 
 global p5, q5, r5 = (5.0, 1.4), (3.8, 1.4), (4.6, 1.4) # 0 
 global p6, q6, r6 = (5.0, 1.4), (3.8, 1.4), (4.4, 0.8) # +
-global pqr = ((p1, q1, r1), (p2, q2, r2), (p3, q3, r3),
+global pqr = (
+    (p1, q1, r1), (p2, q2, r2), (p3, q3, r3),
     (p4, q4, r4), (p5, q5, r5), (p6, q6, r6),
-    (p4, q4, r4), (p5, q5, r5), (p6, q6, r6))
+    (p4, q4, r4), (p5, q5, r5), (p6, q6, r6),
+)
 
 @testset "triangle_orientation" begin
-    results = [Certificate.PositivelyOriented,
+    results = [
+        Certificate.PositivelyOriented,
         Certificate.NegativelyOriented,
         Certificate.NegativelyOriented,
         Certificate.Degenerate,
         Certificate.Degenerate,
-        Certificate.PositivelyOriented]
+        Certificate.PositivelyOriented,
+    ]
     for T in subtypes(DT.AbstractPredicateKernel)
         for ((p, q, r), result) in zip(pqr, results)
             @test DT.triangle_orientation(T(), p, q, r) == result
@@ -174,11 +178,13 @@ end
     for T in subtypes(DT.AbstractPredicateKernel)
         R = 5
         a, b, c = (0.0, 5.0), (-3.0, -4.0), (3.0, 4.0)
-        p1, p2, p3, p4, p5 = [(0.0, -5.0),
+        p1, p2, p3, p4, p5 = [
+            (0.0, -5.0),
             (5.0, 0.0),
             (-5.0, 0.0),
             (-3.0, 4.0),
-            (3.0, -4.0)]
+            (3.0, -4.0),
+        ]
         for p in (p1, p2, p3, p4, p5)
             cert = DT.point_position_relative_to_circle(T(), a, b, c, p)
             @test DT.is_on(cert)
@@ -245,12 +251,14 @@ end
 
 @testset "point_position_relative_to_line" begin
     for T in subtypes(DT.AbstractPredicateKernel)
-        results = [Certificate.Left,
+        results = [
+            Certificate.Left,
             Certificate.Right,
             Certificate.Right,
             Certificate.Collinear,
             Certificate.Collinear,
-            Certificate.Left]
+            Certificate.Left,
+        ]
         for ((p, q, r), result) in zip(pqr, results)
             @test DT.point_position_relative_to_line(T(), p, q, r) == result
             @inferred DT.point_position_relative_to_line(T(), p, q, r)
@@ -309,9 +317,9 @@ end
         @inferred DT.is_right(DT.point_position_on_line_segment(p, q, c3))
         @test DT.is_degenerate(DT.point_position_on_line_segment(p, q, p))
         @test DT.is_degenerate(DT.point_position_on_line_segment(p, q, q))
-        p, q = (4.0, 5.0), (4.0, 1.50)
+        p, q = (4.0, 5.0), (4.0, 1.5)
         c1, c2, c3, c4, c5, c6, c7, c8 = (4.0, 3.0), (4.0, 2.5), (4.0, 4.0), (4.0, 4.5), (4.0, 1.0),
-        (4.0, 6.0), (4.0, 6.5), (4.0, 0.5)
+            (4.0, 6.0), (4.0, 6.5), (4.0, 0.5)
         (4.0, 6.0), (4.0, 6.5), (4.0, 0.5)
         @test DT.is_on(DT.point_position_on_line_segment(p, q, c1))
         @test DT.is_on(DT.point_position_on_line_segment(p, q, c2))
@@ -342,7 +350,8 @@ end
         p11, q11, a11, b11 = (6.0, 6.5), (8.0, 5.5), (8.0, 5.0), (8.0, 7.5)     # on point
         p12, q12, a12, b12 = (6.0, 6.5), (9.947, 8.137), (8.0, 5.0), (8.0, 7.5) # one point
         p13, q13, a13, b13 = (6.0, 6.5), (9.947, 8.137), (8.0, 5.0), (6.0, 7.0) # one point
-        results = [Certificate.Single,
+        results = [
+            Certificate.Single,
             Certificate.None,
             Certificate.None,
             Certificate.Multiple,
@@ -354,11 +363,14 @@ end
             Certificate.Touching,
             Certificate.Touching,
             Certificate.Single,
-            Certificate.Single]
-        pqab = ((p1, q1, a1, b1), (p2, q2, a2, b2), (p3, q3, a3, b3), (p4, q4, a4, b4),
+            Certificate.Single,
+        ]
+        pqab = (
+            (p1, q1, a1, b1), (p2, q2, a2, b2), (p3, q3, a3, b3), (p4, q4, a4, b4),
             (p5, q5, a5, b5), (p6, q6, a6, b6), (p7, q7, a7, b7), (p8, q8, a8, b8),
             (p9, q9, a9, b9), (p10, q10, a10, b10), (p11, q11, a11, b11), (p12, q12, a12, b12),
-            (p13, q13, a13, b13))
+            (p13, q13, a13, b13),
+        )
         for ((p, q, a, b), result) in zip(pqab, results)
             @test DT.line_segment_intersection_type(T(), p, q, a, b) == result
             @inferred DT.line_segment_intersection_type(T(), p, q, a, b)
@@ -372,18 +384,18 @@ end
         p, q, r = (2.0, 1.0), (5.0, 1.0), (2.0, 5.0)
         c1, c2, c3, c4 = (2.57, 3.35), (2.45, 2.51), (3.11, 2.43), (3.33, 1.83) # inside 
         d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12 = (1.76, 4.06), (1.24, 4.109),
+            (2.589, 0.505), (3.19, -0.186),
+            (3.875, 4.53), (4.8, 2.698), (2.0, 6.5),
+            (2.0, 0.0),
+            (0.5, 1.0), (6.0, 1.0), (6.0, 0.0),
+            (1.0, 6.0) # outside
         (2.589, 0.505), (3.19, -0.186),
-        (3.875, 4.53), (4.8, 2.698), (2.0, 6.5),
-        (2.0, 0.0),
-        (0.5, 1.0), (6.0, 1.0), (6.0, 0.0),
-        (1.0, 6.0) # outside
-        (2.589, 0.505), (3.19, -0.186),
-        (3.875, 4.53), (4.8, 2.698), (2.0, 6.5),
-        (2.0, 0.0),
-        (0.5, 1.0), (6.0, 1.0), (6.0, 0.0),
-        (1.0, 6.0) # outside
+            (3.875, 4.53), (4.8, 2.698), (2.0, 6.5),
+            (2.0, 0.0),
+            (0.5, 1.0), (6.0, 1.0), (6.0, 0.0),
+            (1.0, 6.0) # outside
         e1, e2, e3, e4, e5, e6, e7, e8, e9, e10 = (2.0, 3.0), (2.0, 2.5), (2.0, 4.5), (2.0, 1.5),
-        (2.5, 1.0), (3.5, 1.0), (4.5, 1.0), p, q, r # on 
+            (2.5, 1.0), (3.5, 1.0), (4.5, 1.0), p, q, r # on 
         (2.5, 1.0), (3.5, 1.0), (4.5, 1.0), p, q, r # on 
         for c in (c1, c2, c3, c4)
             @test DT.point_position_relative_to_triangle(PT(), p, q, r, c) == Certificate.Inside
@@ -408,126 +420,126 @@ end
         p8 = Float64[4, -1]
         p9 = Float64[-1, 4]
         pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9]
-        T1 = DT.construct_triangle(NTuple{3,Int}, 4, 1, 6)
-        T2 = DT.construct_triangle(NTuple{3,Int}, 4, 2, 1)
-        T3 = DT.construct_triangle(NTuple{3,Int}, 3, 2, 4)
-        T4 = DT.construct_triangle(NTuple{3,Int}, 8, 1, 2)
-        T5 = DT.construct_triangle(NTuple{3,Int}, 8, 2, 3)
-        T6 = DT.construct_triangle(NTuple{3,Int}, 8, 3, 5)
-        T7 = DT.construct_triangle(NTuple{3,Int}, 5, 3, 7)
-        T8 = DT.construct_triangle(NTuple{3,Int}, 3, 4, 7)
-        T9 = DT.construct_triangle(NTuple{3,Int}, 5, 7, 9)
-        T10 = DT.construct_triangle(NTuple{3,Int}, 7, 6, 9)
-        T11 = DT.construct_triangle(NTuple{3,Int}, 7, 4, 6)
+        T1 = DT.construct_triangle(NTuple{3, Int}, 4, 1, 6)
+        T2 = DT.construct_triangle(NTuple{3, Int}, 4, 2, 1)
+        T3 = DT.construct_triangle(NTuple{3, Int}, 3, 2, 4)
+        T4 = DT.construct_triangle(NTuple{3, Int}, 8, 1, 2)
+        T5 = DT.construct_triangle(NTuple{3, Int}, 8, 2, 3)
+        T6 = DT.construct_triangle(NTuple{3, Int}, 8, 3, 5)
+        T7 = DT.construct_triangle(NTuple{3, Int}, 5, 3, 7)
+        T8 = DT.construct_triangle(NTuple{3, Int}, 3, 4, 7)
+        T9 = DT.construct_triangle(NTuple{3, Int}, 5, 7, 9)
+        T10 = DT.construct_triangle(NTuple{3, Int}, 7, 6, 9)
+        T11 = DT.construct_triangle(NTuple{3, Int}, 7, 4, 6)
         T = [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11]
         pt1 = (
-            A=(3.9551298987095, 4.7489988803935),
-            B=(3.2585303811361, 4.3003415639903),
-            C=(2.69180534989, 4.4066025073489),
-            D=(3.2231100666833, 4.6781582514877),
-            E=(2.0424329182538, 4.8198395092992)
+            A = (3.9551298987095, 4.7489988803935),
+            B = (3.2585303811361, 4.3003415639903),
+            C = (2.69180534989, 4.4066025073489),
+            D = (3.2231100666833, 4.6781582514877),
+            E = (2.0424329182538, 4.8198395092992),
         )
         pt2 = (
-            A=(3.5, 3.5),
-            B=(3.8384340736083, 3.2777159548861),
-            C=(4.173119090818, 3.0606229707501),
-            D=(4.0736181397556, 3.8475850382431),
-            E=(4.390212074954, 3.6938108411468),
-            F=(4.390212074954, 4.2546343834981),
-            G=(4.7520337151806, 4.2998620885264),
-            H=(4.7520337151806, 4.661683728753)
+            A = (3.5, 3.5),
+            B = (3.8384340736083, 3.2777159548861),
+            C = (4.173119090818, 3.0606229707501),
+            D = (4.0736181397556, 3.8475850382431),
+            E = (4.390212074954, 3.6938108411468),
+            F = (4.390212074954, 4.2546343834981),
+            G = (4.7520337151806, 4.2998620885264),
+            H = (4.7520337151806, 4.661683728753),
         )
         pt3 = (
-            A=(3.114790793155, 2.9520764786821),
-            B=(3.3952025643307, 2.8163933635972),
-            C=(3.3137926952797, 2.4545717233705),
-            D=(2.951971055053, 2.3098430672799),
-            E=(2.9157888910304, 2.4726628053818),
-            F=(3.0786086291324, 2.6535736254952),
-            G=(3.901752860648, 2.6626191665008),
-            H=(3.0, 2.0),
-            I=(2.7258325299114, 1.8213838529739)
+            A = (3.114790793155, 2.9520764786821),
+            B = (3.3952025643307, 2.8163933635972),
+            C = (3.3137926952797, 2.4545717233705),
+            D = (2.951971055053, 2.3098430672799),
+            E = (2.9157888910304, 2.4726628053818),
+            F = (3.0786086291324, 2.6535736254952),
+            G = (3.901752860648, 2.6626191665008),
+            H = (3.0, 2.0),
+            I = (2.7258325299114, 1.8213838529739),
         )
         pt4 = (
-            A=(4.5781396673455, 2.7004728027825),
-            B=(4.6264236360138, 2.9231155471972),
-            C=(4.6693427192745, 3.1618529478347),
-            D=(4.70153203172, 3.3871781349531),
-            E=(4.5325381413811, 2.437593417811),
-            F=(4.4708419591939, 2.1988560171735),
-            G=(4.4520648602673, 2.0352270122422),
-            H=(4.3501320375233, 1.3082850395147)
+            A = (4.5781396673455, 2.7004728027825),
+            B = (4.6264236360138, 2.9231155471972),
+            C = (4.6693427192745, 3.1618529478347),
+            D = (4.70153203172, 3.3871781349531),
+            E = (4.5325381413811, 2.437593417811),
+            F = (4.4708419591939, 2.1988560171735),
+            G = (4.4520648602673, 2.0352270122422),
+            H = (4.3501320375233, 1.3082850395147),
         )
         pt5 = (
-            A=(3.433718968984, 1.1294534677817),
-            B=(3.7382811110409, 1.4137114670348),
-            C=(3.8499538964617, 0.9162599683419),
-            D=(3.6875207540314, 0.5304812550699),
-            E=(3.0377881843101, 1.2614303960064),
-            F=(3.7484331824428, -0.0481868148381),
-            G=(4.0, 2.0)
+            A = (3.433718968984, 1.1294534677817),
+            B = (3.7382811110409, 1.4137114670348),
+            C = (3.8499538964617, 0.9162599683419),
+            D = (3.6875207540314, 0.5304812550699),
+            E = (3.0377881843101, 1.2614303960064),
+            F = (3.7484331824428, -0.0481868148381),
+            G = (4.0, 2.0),
         )
         pt6 = (
-            A=(2.8956591846836, 0.4086563982472),
-            B=(2.4286639001964, 0.90610789694),
-            C=(2.0936455439339, 1.2309741818007),
-            D=(1.5149774740259, 1.4035593956329),
-            E=(0.824636618697, 1.586296680867),
-            F=(1.3322401887918, 1.2715824674082),
-            G=(1.6063461166429, 1.0177806823609),
-            H=(2.0225810441206, 0.713218540304),
-            I=(2.3169911147756, 0.4391126124529),
-            J=(2.6317053282343, 0.1954628988074),
-            K=(3.1697651125348, -0.1395554574552)
+            A = (2.8956591846836, 0.4086563982472),
+            B = (2.4286639001964, 0.90610789694),
+            C = (2.0936455439339, 1.2309741818007),
+            D = (1.5149774740259, 1.4035593956329),
+            E = (0.824636618697, 1.586296680867),
+            F = (1.3322401887918, 1.2715824674082),
+            G = (1.6063461166429, 1.0177806823609),
+            H = (2.0225810441206, 0.713218540304),
+            I = (2.3169911147756, 0.4391126124529),
+            J = (2.6317053282343, 0.1954628988074),
+            K = (3.1697651125348, -0.1395554574552),
         )
         pt7 = (
-            A=(1.0581342609406, 2.2766375361959),
-            B=(0.9363094041178, 2.550743464047),
-            C=(1.2916319031842, 2.3070937504015),
-            D=(1.7281709734657, 1.9923795369428),
-            E=(1.0, 2.0),
-            F=(0.5809869050515, 2.1142043937655)
+            A = (1.0581342609406, 2.2766375361959),
+            B = (0.9363094041178, 2.550743464047),
+            C = (1.2916319031842, 2.3070937504015),
+            D = (1.7281709734657, 1.9923795369428),
+            E = (1.0, 2.0),
+            F = (0.5809869050515, 2.1142043937655),
         )
         pt8 = (
-            A=(1.5454336882315, 2.845153534702),
-            B=(1.9921248299149, 2.5405913926451),
-            C=(2.1545579723453, 2.936522177319),
-            D=(2.1951662579528, 2.4187665358224),
-            E=(2.4185118287945, 2.8756097489077),
-            F=(2.4185118287945, 2.5101351784394),
-            G=(2.4489680430002, 2.0431398939523),
-            H=(2.6317053282343, 2.9162180345153)
+            A = (1.5454336882315, 2.845153534702),
+            B = (1.9921248299149, 2.5405913926451),
+            C = (2.1545579723453, 2.936522177319),
+            D = (2.1951662579528, 2.4187665358224),
+            E = (2.4185118287945, 2.8756097489077),
+            F = (2.4185118287945, 2.5101351784394),
+            G = (2.4489680430002, 2.0431398939523),
+            H = (2.6317053282343, 2.9162180345153),
         )
         pt9 = (
-            A=(-0.5458930205588, 3.5557985328346),
-            B=(0.0733833349568, 3.2512363907778),
-            C=(0.3170330486022, 2.9771304629266),
-            D=(0.0835354063587, 2.6421121066641),
-            E=(0.0, 2.4187665358224),
-            F=(0.3576413342098, 2.4695268928319),
-            G=(-0.2210267356982, 2.9872825343285),
-            H=(-0.4849805921475, 3.2410843193759),
-            I=(0.5099224052383, 2.9162180345153)
+            A = (-0.5458930205588, 3.5557985328346),
+            B = (0.0733833349568, 3.2512363907778),
+            C = (0.3170330486022, 2.9771304629266),
+            D = (0.0835354063587, 2.6421121066641),
+            E = (0.0, 2.4187665358224),
+            F = (0.3576413342098, 2.4695268928319),
+            G = (-0.2210267356982, 2.9872825343285),
+            H = (-0.4849805921475, 3.2410843193759),
+            I = (0.5099224052383, 2.9162180345153),
         )
         pt10 = (
-            A=(0.3576413342098, 4.1649228169483),
-            B=(0.0, 4.0),
-            C=(0.4794661910326, 3.6573192468536),
-            D=(0.7028117618743, 3.3527571047967),
-            E=(0.6520514048648, 4.4796370304071),
-            F=(-0.3530036639228, 4.1243145313408),
-            G=(0.0, 3.7689920322744)
+            A = (0.3576413342098, 4.1649228169483),
+            B = (0.0, 4.0),
+            C = (0.4794661910326, 3.6573192468536),
+            D = (0.7028117618743, 3.3527571047967),
+            E = (0.6520514048648, 4.4796370304071),
+            F = (-0.3530036639228, 4.1243145313408),
+            G = (0.0, 3.7689920322744),
         )
         pt11 = (
-            A=(1.3931526172031, 4.0735541743313),
-            B=(2.0022769013168, 3.718231675265),
-            C=(1.3931526172031, 3.5354943900309),
-            D=(2.1444059009434, 3.4339736760119),
-            E=(1.3017839745861, 4.3172038879768),
-            F=(1.3017839745861, 4.5507015302204),
-            G=(1.7992354732789, 3.9923376031161),
-            H=(1.6875626878581, 3.5151902472271),
-            I=(1.4337609028107, 3.809600317882)
+            A = (1.3931526172031, 4.0735541743313),
+            B = (2.0022769013168, 3.718231675265),
+            C = (1.3931526172031, 3.5354943900309),
+            D = (2.1444059009434, 3.4339736760119),
+            E = (1.3017839745861, 4.3172038879768),
+            F = (1.3017839745861, 4.5507015302204),
+            G = (1.7992354732789, 3.9923376031161),
+            H = (1.6875626878581, 3.5151902472271),
+            I = (1.4337609028107, 3.809600317882),
         )
         test_pts = [pt1, pt2, pt3, pt4, pt5, pt6, pt7, pt8, pt9, pt10, pt11]
         for i in eachindex(T)
@@ -554,9 +566,9 @@ end
         @test DT.is_outside(DT.point_position_relative_to_triangle(PT(), get_point(pts, i, j, k, ℓ)...))
         p1, p2, p3 = ([2.858866215272096, -2.220975375945989], [0.25559192484080395, -0.37340906332046214], [1.3855904656897817, -2.47947044705479])
         pts = [p1, p2, p3]
-        τ1 = DT.construct_triangle(NTuple{3,Int}, 1, 2, 3)
-        τ2 = DT.construct_triangle(NTuple{3,Int}, 2, 3, 1)
-        τ3 = DT.construct_triangle(NTuple{3,Int}, 3, 1, 2)
+        τ1 = DT.construct_triangle(NTuple{3, Int}, 1, 2, 3)
+        τ2 = DT.construct_triangle(NTuple{3, Int}, 2, 3, 1)
+        τ3 = DT.construct_triangle(NTuple{3, Int}, 3, 1, 2)
         e = Vector{Any}(undef, 9)
         e[1] = DT.point_position_relative_to_triangle(PT(), get_point(pts, τ1..., 1)...)
         e[2] = DT.point_position_relative_to_triangle(PT(), get_point(pts, τ2..., 2)...)
@@ -571,17 +583,17 @@ end
         for _ in 1:5000
             local pts, i, j, k
             n = rand(3:5000)
-            pts = rand(SVector{2,Float64}, n)
+            pts = rand(SVector{2, Float64}, n)
             i, j, k = rand(1:n, 3)
             while length(unique((i, j, k))) < 3
                 i, j, k = rand(1:n, 3)
             end
             local τ1, τ2, τ3, e
-            τ = DT.construct_positively_oriented_triangle(NTuple{3,Int}, i, j, k, pts, PT())
+            τ = DT.construct_positively_oriented_triangle(NTuple{3, Int}, i, j, k, pts, PT())
             i, j, k = triangle_vertices(τ)
-            τ1 = DT.construct_triangle(NTuple{3,Int}, i, j, k)
-            τ2 = DT.construct_triangle(NTuple{3,Int}, j, k, i)
-            τ3 = DT.construct_triangle(NTuple{3,Int}, k, i, j)
+            τ1 = DT.construct_triangle(NTuple{3, Int}, i, j, k)
+            τ2 = DT.construct_triangle(NTuple{3, Int}, j, k, i)
+            τ3 = DT.construct_triangle(NTuple{3, Int}, k, i, j)
             e = Vector{Any}(undef, 9)
             e[1] = DT.point_position_relative_to_triangle(PT(), get_point(pts, τ1..., i)...)
             e[2] = DT.point_position_relative_to_triangle(PT(), get_point(pts, τ2..., i)...)
@@ -606,11 +618,11 @@ end
                 while length(unique((i, j, k))) < 3
                     i, j, k = rand(1:n, 3)
                 end
-                τ = DT.construct_positively_oriented_triangle(NTuple{3,Int}, i, j, k, pts, PT())
+                τ = DT.construct_positively_oriented_triangle(NTuple{3, Int}, i, j, k, pts, PT())
                 i, j, k = triangle_vertices(τ)
-                τ1 = DT.construct_triangle(NTuple{3,Int}, i, j, k)
-                τ2 = DT.construct_triangle(NTuple{3,Int}, j, k, i)
-                τ3 = DT.construct_triangle(NTuple{3,Int}, k, i, j)
+                τ1 = DT.construct_triangle(NTuple{3, Int}, i, j, k)
+                τ2 = DT.construct_triangle(NTuple{3, Int}, j, k, i)
+                τ3 = DT.construct_triangle(NTuple{3, Int}, k, i, j)
                 e = Vector{Any}(undef, 9)
                 e[1] = DT.point_position_relative_to_triangle(PT(), get_point(pts, τ1..., i)...)
                 e[2] = DT.point_position_relative_to_triangle(PT(), get_point(pts, τ2..., i)...)
@@ -642,10 +654,10 @@ end
     for PT in subtypes(DT.AbstractPredicateKernel)
         p, q = (3.0, 4.0), (6.0, 4.0)
         c, d, e, f, g, h, i, j, k, ℓ = (2.0, 4.0), (7.0, 4.0), (5.0, 5.0),
+            (4.0, 6.0), (6.0, 7.0), (4.0, 4.0), (5.0, 4.0),
+            (3.0, 2.0), (5.0, 3.0), (6.0, 1.0)
         (4.0, 6.0), (6.0, 7.0), (4.0, 4.0), (5.0, 4.0),
-        (3.0, 2.0), (5.0, 3.0), (6.0, 1.0)
-        (4.0, 6.0), (6.0, 7.0), (4.0, 4.0), (5.0, 4.0),
-        (3.0, 2.0), (5.0, 3.0), (6.0, 1.0)
+            (3.0, 2.0), (5.0, 3.0), (6.0, 1.0)
         @test DT.is_outside(DT.point_position_relative_to_oriented_outer_halfplane(PT(), p, q, c))
         @test DT.is_outside(DT.point_position_relative_to_oriented_outer_halfplane(PT(), p, q, d))
         @test DT.is_inside(DT.point_position_relative_to_oriented_outer_halfplane(PT(), p, q, e))
@@ -662,12 +674,12 @@ end
         @inferred DT.is_outside(DT.point_position_relative_to_oriented_outer_halfplane(PT(), p, q, ℓ))
         p, q = (3.0, 4.0), (6.0, 7.0)
         c, d, e, f, g, h, i, j, k, ℓ = (3.0, 5.0), (3.0, 7.0), (4.0, 8.0),
+            (2.0, 3.0), (5.787, 3.774), (4.128, 1.626),
+            (6.95784, 7.715), (4.0, 5.0), (5.0, 6.0),
+            (4.143, 6.57)
         (2.0, 3.0), (5.787, 3.774), (4.128, 1.626),
-        (6.95784, 7.715), (4.0, 5.0), (5.0, 6.0),
-        (4.143, 6.57)
-        (2.0, 3.0), (5.787, 3.774), (4.128, 1.626),
-        (6.95784, 7.715), (4.0, 5.0), (5.0, 6.0),
-        (4.143, 6.57)
+            (6.95784, 7.715), (4.0, 5.0), (5.0, 6.0),
+            (4.143, 6.57)
         @test DT.is_inside(DT.point_position_relative_to_oriented_outer_halfplane(PT(), p, q, c))
         @test DT.is_inside(DT.point_position_relative_to_oriented_outer_halfplane(PT(), p, q, d))
         @test DT.is_inside(DT.point_position_relative_to_oriented_outer_halfplane(PT(), p, q, e))
@@ -700,7 +712,7 @@ end
         p9 = [31.7813088302274, -22.9759380718838]
         pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9]
         for PT in subtypes(DT.AbstractPredicateKernel)
-            tri = triangulate(pts; predicates=PT())
+            tri = triangulate(pts; predicates = PT())
             for (i, j) in ((1, 3), (3, 2), (2, 1), (1, 4), (4, 3), (3, 1), (3, 4), (4, 5), (5, 3), (3, 5), (5, 2), (2, 3))
                 @test DT.is_legal(AdaptiveKernel(), tri, i, j) == DT.is_legal(tri, i, j)
                 @test DT.is_legal(DT.is_legal(PT(), tri, i, j))
@@ -730,7 +742,7 @@ end
     @testset "Constrained triangulations" begin
         for PT in subtypes(DT.AbstractPredicateKernel)
             tri = fixed_shewchuk_example_constrained()
-            add_segment!(tri, 2, 7; predicates=PT())
+            add_segment!(tri, 2, 7; predicates = PT())
             for e in each_edge(tri)
                 i, j = DT.edge_vertices(e)
                 @test DT.is_legal(DT.is_legal(PT(), tri, i, j))
@@ -772,7 +784,7 @@ end
             (a11, b11),
             (a12, b12),
             (a13, b13),
-            (a14, b14)
+            (a14, b14),
         ]
         flags = [DT.triangle_line_segment_intersection(PT(), p, q, r, a, b) for (a, b) in ab]
         true_flags = [
@@ -789,18 +801,18 @@ end
             Certificate.Touching,
             Certificate.Inside,
             Certificate.Outside,
-            Certificate.Inside
+            Certificate.Inside,
         ]
         @test isempty(findall(flags .≠ true_flags))
         for i in eachindex(flags)
             a, b = ab[i]
             @test DT.triangle_line_segment_intersection(PT(), p, q, r, a, b) ==
-                  DT.triangle_line_segment_intersection(PT(), p, q, r, b, a) ==
-                  DT.triangle_line_segment_intersection(PT(), q, r, p, a, b) ==
-                  DT.triangle_line_segment_intersection(PT(), q, r, p, b, a) ==
-                  DT.triangle_line_segment_intersection(PT(), r, p, q, a, b) ==
-                  DT.triangle_line_segment_intersection(PT(), r, p, q, b, a) ==
-                  true_flags[i]
+                DT.triangle_line_segment_intersection(PT(), p, q, r, b, a) ==
+                DT.triangle_line_segment_intersection(PT(), q, r, p, a, b) ==
+                DT.triangle_line_segment_intersection(PT(), q, r, p, b, a) ==
+                DT.triangle_line_segment_intersection(PT(), r, p, q, a, b) ==
+                DT.triangle_line_segment_intersection(PT(), r, p, q, b, a) ==
+                true_flags[i]
             @test DT.triangle_line_segment_intersection(AdaptiveKernel(), p, q, r, a, b) == DT.triangle_line_segment_intersection(p, q, r, a, b)
         end
     end
@@ -925,7 +937,7 @@ end
         cert = DT.point_position_relative_to_witness_plane(PT(), tri, 1, 2, 3, 4)
         @test DT.is_above(cert)
         @test DT.is_outside(DT.point_position_relative_to_circumcircle(PT(), tri, 1, 2, 3, 4))
-        tri = Triangulation(points; weights=zeros(4))
+        tri = Triangulation(points; weights = zeros(4))
         cert = DT.point_position_relative_to_witness_plane(PT(), tri, 1, 2, 3, 4)
         @test DT.is_above(cert)
         @test DT.is_outside(DT.point_position_relative_to_circumcircle(PT(), tri, 1, 2, 3, 4))
@@ -936,7 +948,7 @@ end
 
         points = [(2.0, 0.0), (1.0, 1.0), (0.0, 0.0), (1.0, 0.0)]
         weights = [2.0, -1.0, -1.0, -1 / 2]
-        tri = Triangulation(points; weights=weights)
+        tri = Triangulation(points; weights = weights)
         cert = DT.point_position_relative_to_witness_plane(PT(), tri, 1, 2, 3, 4)
         @test DT.point_position_relative_to_witness_plane(tri, 1, 2, 3, 4) == DT.point_position_relative_to_witness_plane(AdaptiveKernel(), tri, 1, 2, 3, 4)
         @test DT.is_on(cert)
@@ -946,7 +958,7 @@ end
         a, b, c = (0.0, -6.0), (6.0, 2.0), (-7.0, 7.0)
         points = [a, b, c]
         weights = DT.ZeroWeight()
-        tri = triangulate(points; weights, predicates=PT())
+        tri = triangulate(points; weights, predicates = PT())
         d = (3.18, 7.62)
         push!(points, d)
         cert = DT.point_position_relative_to_circumcircle(PT(), tri, 3, 1, 2, 4)

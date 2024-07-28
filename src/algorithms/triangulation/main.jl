@@ -7,7 +7,7 @@ Postprocesses the triangulation `tri` after it has been constructed using [`tria
 - Clearing empty features using [`clear_empty_features!`](@ref) if `delete_empty_features` is `true`.
 - Recomputing the representative points using [`compute_representative_points!`](@ref) if `recompute_representative_points` is `true`.
 """
-function postprocess_triangulate!(tri; delete_ghosts=false, delete_empty_features=true, recompute_representative_points=true)
+function postprocess_triangulate!(tri; delete_ghosts = false, delete_empty_features = true, recompute_representative_points = true)
     delete_ghosts && delete_ghost_triangles!(tri)
     delete_empty_features && clear_empty_features!(tri)
     recompute_representative_points && compute_representative_points!(tri)
@@ -116,33 +116,35 @@ Here are some warnings to consider for some of the arguments.
     Weighted triangulations are not yet fully implemented due to certain bugs with the implementation.
 
 """
-function triangulate(points::P;
-    segments=nothing,
-    boundary_nodes=nothing,
-    predicates::AbstractPredicateKernel=AdaptiveKernel(),
-    weights=ZeroWeight(),
-    IntegerType::Type{I}=Int,
-    EdgeType::Type{E}=isnothing(segments) ? NTuple{2,IntegerType} : (edge_type ∘ typeof)(segments),
-    TriangleType::Type{V}=NTuple{3,IntegerType},
-    EdgesType::Type{Es}=isnothing(segments) ? Set{EdgeType} : typeof(segments),
-    TrianglesType::Type{Ts}=Set{TriangleType},
-    randomise=true,
-    delete_ghosts=false,
-    delete_empty_features=true,
-    try_last_inserted_point=true,
-    skip_points=(),
-    num_sample_rule::M=default_num_samples,
-    rng::Random.AbstractRNG=Random.default_rng(),
-    insertion_order::Vector=get_insertion_order(points, randomise, skip_points, IntegerType, rng),
-    recompute_representative_points=true,
-    delete_holes=true,
-    check_arguments=true,
-    full_polygon_hierarchy::H=nothing,
-    boundary_enricher=nothing,
-    boundary_curves=(),
-    polygonise_n=4096,
-    coarse_n=0,
-    enrich=false) where {P,I,E,V,Es,Ts,M,H}
+function triangulate(
+        points::P;
+        segments = nothing,
+        boundary_nodes = nothing,
+        predicates::AbstractPredicateKernel = AdaptiveKernel(),
+        weights = ZeroWeight(),
+        IntegerType::Type{I} = Int,
+        EdgeType::Type{E} = isnothing(segments) ? NTuple{2, IntegerType} : (edge_type ∘ typeof)(segments),
+        TriangleType::Type{V} = NTuple{3, IntegerType},
+        EdgesType::Type{Es} = isnothing(segments) ? Set{EdgeType} : typeof(segments),
+        TrianglesType::Type{Ts} = Set{TriangleType},
+        randomise = true,
+        delete_ghosts = false,
+        delete_empty_features = true,
+        try_last_inserted_point = true,
+        skip_points = (),
+        num_sample_rule::M = default_num_samples,
+        rng::Random.AbstractRNG = Random.default_rng(),
+        insertion_order::Vector = get_insertion_order(points, randomise, skip_points, IntegerType, rng),
+        recompute_representative_points = true,
+        delete_holes = true,
+        check_arguments = true,
+        full_polygon_hierarchy::H = nothing,
+        boundary_enricher = nothing,
+        boundary_curves = (),
+        polygonise_n = 4096,
+        coarse_n = 0,
+        enrich = false,
+    ) where {P, I, E, V, Es, Ts, M, H}
     check_config(points, weights, segments, boundary_nodes, predicates)
     if enrich || (isempty(boundary_curves) && is_curve_bounded(boundary_nodes)) # If boundary_curves is not empty, then we are coming from triangulate_curve_bounded
         return triangulate_curve_bounded(points; segments, boundary_nodes, predicates, weights, IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType, randomise, delete_ghosts, delete_empty_features, try_last_inserted_point, skip_points, num_sample_rule, rng, insertion_order, recompute_representative_points, delete_holes, check_arguments, polygonise_n, coarse_n)
@@ -152,20 +154,24 @@ function triangulate(points::P;
     end
     check_arguments && check_args(points, boundary_nodes, full_polygon_hierarchy, boundary_curves)
     tri = Triangulation(points; IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType, weights, boundary_curves, boundary_enricher, build_cache = Val(true))
-    return _triangulate!(tri, segments, boundary_nodes, predicates, randomise, try_last_inserted_point, skip_points, num_sample_rule, rng, insertion_order,
-        recompute_representative_points, delete_holes, full_polygon_hierarchy, delete_ghosts, delete_empty_features)
+    return _triangulate!(
+        tri, segments, boundary_nodes, predicates, randomise, try_last_inserted_point, skip_points, num_sample_rule, rng, insertion_order,
+        recompute_representative_points, delete_holes, full_polygon_hierarchy, delete_ghosts, delete_empty_features,
+    )
 end
 
 function check_config(points, weights, segments, boundary_nodes, kernel)
-    (number_type(points) == Float32 && kernel != AdaptiveKernel()) && @warn "Using non-Float64 coordinates may cause issues. If you run into problems, consider using Float64 coordinates." maxlog=1
+    (number_type(points) == Float32 && kernel != AdaptiveKernel()) && @warn "Using non-Float64 coordinates may cause issues. If you run into problems, consider using Float64 coordinates." maxlog = 1
     is_weighted(weights) && throw(ArgumentError("Weighted triangulations are not yet fully implemented."))
     is_constrained = !(isnothing(segments) || isempty(segments)) || !(isnothing(boundary_nodes) || !has_boundary_nodes(boundary_nodes))
     is_weighted(weights) && is_constrained && throw(ArgumentError("You cannot compute a constrained triangulation with weighted points."))
     return nothing
 end
 
-function _triangulate!(tri::Triangulation, segments, boundary_nodes, predicates, randomise, try_last_inserted_point, skip_points, num_sample_rule, rng, insertion_order,
-    recompute_representative_points, delete_holes, full_polygon_hierarchy, delete_ghosts, delete_empty_features)
+function _triangulate!(
+        tri::Triangulation, segments, boundary_nodes, predicates, randomise, try_last_inserted_point, skip_points, num_sample_rule, rng, insertion_order,
+        recompute_representative_points, delete_holes, full_polygon_hierarchy, delete_ghosts, delete_empty_features,
+    )
     unconstrained_triangulation!(tri; predicates, randomise, try_last_inserted_point, skip_points, num_sample_rule, rng, insertion_order)
     _tri = if !(isnothing(segments) || isempty(segments)) || !(isnothing(boundary_nodes) || !has_boundary_nodes(boundary_nodes))
         constrained_triangulation!(tri, segments, boundary_nodes, predicates, full_polygon_hierarchy; rng, delete_holes)
@@ -190,23 +196,25 @@ Retriangulates the triangulation `tri` using the points `points`, returning a ne
 - `kwargs...`: Extra keyword arguments passed to `triangulate`. Other keyword arguments, like `segments` and `boundary_nodes`, 
    are automatically passed from the fields of `tri`, but may be overridden by passing the corresponding keyword arguments.
 """
-function retriangulate(tri::T, points=get_points(tri);
-    segments=get_interior_segments(tri),
-    boundary_nodes=get_boundary_nodes(tri),
-    skip_points = Set(filter(i -> !has_vertex(tri, i), each_point_index(tri))),
-    kwargs...) where {T<:Triangulation}
+function retriangulate(
+        tri::T, points = get_points(tri);
+        segments = get_interior_segments(tri),
+        boundary_nodes = get_boundary_nodes(tri),
+        skip_points = Set(filter(i -> !has_vertex(tri, i), each_point_index(tri))),
+        kwargs...,
+    ) where {T <: Triangulation}
     return triangulate(
         points;
         segments,
         boundary_nodes,
-        weights=get_weights(tri),
-        IntegerType=integer_type(tri),
-        EdgeType=edge_type(tri),
-        TriangleType=triangle_type(tri),
-        EdgesType=edges_type(tri),
-        TrianglesType=triangles_type(tri),
-        check_arguments=false,
+        weights = get_weights(tri),
+        IntegerType = integer_type(tri),
+        EdgeType = edge_type(tri),
+        TriangleType = triangle_type(tri),
+        EdgesType = edges_type(tri),
+        TrianglesType = triangles_type(tri),
+        check_arguments = false,
         skip_points,
-        kwargs...
+        kwargs...,
     )::T
 end

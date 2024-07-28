@@ -10,13 +10,13 @@ rng = StableRNG(8888)
 @testset "Adding a point" begin
     for _ in 1:150
         pts = tuple.(rand(50), rand(50))
-        tri = DT.triangulate(pts, delete_ghosts=false, skip_points=4:50)
+        tri = DT.triangulate(pts, delete_ghosts = false, skip_points = 4:50)
         for i in setdiff(DT.each_point_index(pts), DT.get_vertices(tri))
-            add_point!(tri, i; predicates=rt())
+            add_point!(tri, i; predicates = rt())
             @test validate_triangulation(tri)
         end
         @test num_solid_vertices(tri) == DT.num_points(tri)
-        DT.convex_hull!(tri; reconstruct=false)
+        DT.convex_hull!(tri; reconstruct = false)
         DT.clear_empty_features!(tri)
         _tri = triangulate(pts; rng)
         DT.compute_representative_points!(tri)
@@ -45,7 +45,7 @@ end
         tri = triangulate(pts)
         _tri = deepcopy(tri)
         history = DT.InsertionEventHistory(tri)
-        add_point!(tri, 0.4, 0.4, store_event_history=Val(true), event_history=history, peek=Val(true))
+        add_point!(tri, 0.4, 0.4, store_event_history = Val(true), event_history = history, peek = Val(true))
         @test DT.compare_triangle_collections(get_triangles(_tri), get_triangles(tri))
         DT.clear_empty_features!(tri)
         @test get_adjacent(tri) == get_adjacent(_tri)
@@ -62,20 +62,22 @@ end
         end
         @test get_points(tri) == get_points(_tri)
 
-        tri = triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 11, 6, delete_ghosts=false)
+        tri = triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 11, 6, delete_ghosts = false)
         _tri = deepcopy(tri)
         history = DT.InsertionEventHistory(tri)
-        for (x, y) in [(0.0, 0.23), (0.0, 0.8), (1.0, 1.0), (0.0, 0.0), (0.0, 1.0), (1.0, 0.0), (0.39881, 0.0), (0.5, 1.0), (0.0, 0.4), (1.0, 0.881),
-            [(0.0, rand()) for _ in 1:50]..., [(rand(), 0.0) for _ in 1:50]..., [(rand(), 1.0) for _ in 1:50]..., [(1.0, rand()) for _ in 1:50]...,
-            [(rand(), rand()) for _ in 1:500]...]
+        for (x, y) in [
+                (0.0, 0.23), (0.0, 0.8), (1.0, 1.0), (0.0, 0.0), (0.0, 1.0), (1.0, 0.0), (0.39881, 0.0), (0.5, 1.0), (0.0, 0.4), (1.0, 0.881),
+                [(0.0, rand()) for _ in 1:50]..., [(rand(), 0.0) for _ in 1:50]..., [(rand(), 1.0) for _ in 1:50]..., [(1.0, rand()) for _ in 1:50]...,
+                [(rand(), rand()) for _ in 1:500]...,
+            ]
             empty!(history)
             if rand() < 1 / 2
-                add_point!(tri, x, y, store_event_history=Val(true), event_history=history, peek=Val(true))
+                add_point!(tri, x, y, store_event_history = Val(true), event_history = history, peek = Val(true))
             else
-                add_point!(tri, (x, y), store_event_history=Val(true), event_history=history, peek=Val(true))
+                add_point!(tri, (x, y), store_event_history = Val(true), event_history = history, peek = Val(true))
             end
             DT.clear_empty_features!(tri)
-          @test tri ==_tri
+            @test tri == _tri
             @test length(history.added_triangles) > 0
             @test length(history.deleted_triangles) > 0
             for T in DT.each_added_triangle(history)
@@ -91,10 +93,10 @@ end
 
 @testset "Peeking concurrency" begin
     pts = [(rand(), rand()) for _ in 1:50]
-    tri = triangulate(pts, delete_ghosts=false)
+    tri = triangulate(pts, delete_ghosts = false)
     Base.Threads.@threads for _ in 1:500
         history = DT.InsertionEventHistory(tri)
-        add_point!(tri, rand(2), store_event_history=Val(true), event_history=history, peek=Val(true))
+        add_point!(tri, rand(2), store_event_history = Val(true), event_history = history, peek = Val(true))
     end
     @test DT.num_points(tri) == 50
 end
