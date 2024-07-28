@@ -12,7 +12,7 @@ rng = StableRNG(8888)
         pts = tuple.(rand(50), rand(50))
         tri = DT.triangulate(pts, delete_ghosts=false, skip_points=4:50)
         for i in setdiff(DT.each_point_index(pts), DT.get_vertices(tri))
-            add_point!(tri, i)
+            add_point!(tri, i; predicates=rt())
             @test validate_triangulation(tri)
         end
         @test num_solid_vertices(tri) == DT.num_points(tri)

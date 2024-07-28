@@ -58,7 +58,7 @@ function select_initial_point(tri::Triangulation, _q;
     m=default_num_samples(num_vertices(point_indices)),
     try_points=(),
     allow_boundary_points=!is_disjoint(tri),
-    rng::AbstractRNG=Random.default_rng())
+    rng::Random.AbstractRNG=Random.default_rng())
     F = number_type(tri)
     I = integer_type(tri)
     current_dist = typemax(F)
@@ -82,19 +82,19 @@ function select_initial_point(tri::Triangulation, q::Integer;
     m=default_num_samples(num_vertices(tri)),
     allow_boundary_points=!is_disjoint(tri),
     try_points=(),
-    rng::AbstractRNG=Random.default_rng())
+    rng::Random.AbstractRNG=Random.default_rng())
     return select_initial_point(tri, get_point(tri, q); point_indices, m, try_points, allow_boundary_points, rng)
 end
 
 """
-    select_random_edge(tri::Triangulation, edges, rng::AbstractRNG=Random.default_rng()) -> (Vertex, Vertex, Point, Point)
+    select_random_edge(tri::Triangulation, edges, rng::Random.AbstractRNG=Random.default_rng()) -> (Vertex, Vertex, Point, Point)
 
 Selects a random edge from the set of edges `edges`.
 
 # Arguments 
 - `tri::Triangulation`: The [`Triangulation`](@ref).
 - `edges`: The set of edges to sample from.
-- `rng::AbstractRNG=Random.default_rng()`: The random number generator to use.
+- `rng::Random.AbstractRNG=Random.default_rng()`: The random number generator to use.
 
 # Outputs
 - `i`: The initial vertex of the edge.
@@ -102,7 +102,7 @@ Selects a random edge from the set of edges `edges`.
 - `pᵢ`: The point corresponding to `i`.
 - `pⱼ`: The point corresponding to `j`.
 """
-function select_random_edge(tri::Triangulation, edges, rng::AbstractRNG=Random.default_rng())
+function select_random_edge(tri::Triangulation, edges, rng::Random.AbstractRNG=Random.default_rng())
     edge = random_edge(rng, edges)
     i, j = edge_vertices(edge)
     pᵢ, pⱼ = get_point(tri, i, j)
@@ -110,7 +110,7 @@ function select_random_edge(tri::Triangulation, edges, rng::AbstractRNG=Random.d
 end
 
 """
-    prepare_initial_edge(tri::Triangulation, edges, p, q, rng::AbstractRNG=Random.default_rng()) -> (Vertex, Vertex, Point, Point, Certificate, Certificate)
+    prepare_initial_edge(tri::Triangulation, edges, p, q, rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateKernel=AdaptiveKernel()) -> (Vertex, Vertex, Point, Point, Certificate, Certificate)
 
 Selects a random edge from the set of edges `edges` and computes the certificates for the points corresponding to the initial and terminal vertices of the edge.
 
@@ -119,7 +119,8 @@ Selects a random edge from the set of edges `edges` and computes the certificate
 - `edges`: The set of edges to sample from.
 - `p`: The initial point.
 - `q`: The query point.
-- `rng::AbstractRNG=Random.default_rng()`: The random number generator to use.
+- `rng::Random.AbstractRNG=Random.default_rng()`: The random number generator to use.
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs
 - `i`: The initial vertex of the edge.
@@ -129,15 +130,21 @@ Selects a random edge from the set of edges `edges` and computes the certificate
 - `line_cert_i`: The [`Certificate`](@ref) for `pᵢ`'s position relative to the oriented line `pq`.
 - `line_cert_j`: The [`Certificate`](@ref) for `pⱼ`'s position relative to the oriented line `pq`.
 """
-function prepare_initial_edge(tri::Triangulation, edges, p, q, rng::AbstractRNG=Random.default_rng())
+function prepare_initial_edge(tri::Triangulation, edges, p, q, rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateKernel=AdaptiveKernel())
     i, j, pᵢ, pⱼ = select_random_edge(tri, edges, rng)
-    line_cert_i = point_position_relative_to_line(p, q, pᵢ)
-    line_cert_j = point_position_relative_to_line(p, q, pⱼ)
+    line_cert_i = point_position_relative_to_line(predicates, p, q, pᵢ)
+    line_cert_j = point_position_relative_to_line(predicates,p, q, pⱼ)
     return i, j, pᵢ, pⱼ, line_cert_i, line_cert_j
 end
 
 """
-    select_initial_triangle_interior_vertex(tri::Triangulation, k, q, store_history=Val(false), history=nothing, rng::AbstractRNG=Random.default_rng()) -> (Point, Vertex, Vertex, Point, Point)
+    select_initial_triangle_interior_vertex(tri::Triangulation, 
+        k, 
+        q, 
+        predicates::AbstractPredicateKernel=AdaptiveKernel(),
+        store_history=Val(false), 
+        history=nothing, 
+        rng::Random.AbstractRNG=Random.default_rng()) -> (Point, Vertex, Vertex, Point, Point)
 
 Selects the initial triangle for [`find_triangle`](@ref) to start from, for the case where `k` is an interior vertex.
 
@@ -145,9 +152,11 @@ Selects the initial triangle for [`find_triangle`](@ref) to start from, for the 
 - `tri::Triangulation`: The [`Triangulation`](@ref).
 - `k`: The vertex to start from.
 - `q`: The query point.
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 - `store_history=Val(false)`: Whether to store the history of the algorithm.
 - `history=nothing`: The history of the algorithm. If `store_history`, then this should be a [`PointLocationHistory`](@ref) object.
-- `rng::AbstractRNG=Random.default_rng()`: The random number generator to use.
+- `rng::Random.AbstractRNG=Random.default_rng()`: The random number generator to use.
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs
 - `p`: The point corresponding to `k`.
@@ -172,28 +181,28 @@ respectively.
 In case the initial edge is collinear with the line `pq`, where `p = get_point(tri, q)`, then `fix_initial_collinear_edge_for_interior_vertex` to find a 
 non-collinear edge resample more edges from [`prepare_initial_edge`](@ref) if necessary.
 """
-function select_initial_triangle_interior_vertex(tri::Triangulation, k, q, store_history::F=Val(false), history=nothing, rng::AbstractRNG=Random.default_rng()) where {F}
+function select_initial_triangle_interior_vertex(tri::Triangulation, k, q, predicates::AbstractPredicateKernel=AdaptiveKernel(), store_history::F=Val(false), history=nothing, rng::Random.AbstractRNG=Random.default_rng()) where {F}
     p = get_point(tri, k)
     ## Select the initial edge to rotate about
     neighbouring_edges = get_adjacent2vertex(tri, k)
-    i, j, pᵢ, pⱼ, line_cert_i, line_cert_j = prepare_initial_edge(tri, neighbouring_edges, p, q, rng)
+    i, j, pᵢ, pⱼ, line_cert_i, line_cert_j = prepare_initial_edge(tri, neighbouring_edges, p, q, rng, predicates)
     p == q && return p, j, i, pⱼ, pᵢ
     ## Take care for collinear edges
-    return_flag, p, i, j, pᵢ, pⱼ, line_cert_i, line_cert_j = fix_initial_collinear_edge_for_interior_vertex(tri, k, q, store_history, history, rng, p, neighbouring_edges, i, j, pᵢ, pⱼ, line_cert_i, line_cert_j)
+    return_flag, p, i, j, pᵢ, pⱼ, line_cert_i, line_cert_j = fix_initial_collinear_edge_for_interior_vertex(tri, k, q, predicates, store_history, history, rng, p, neighbouring_edges, i, j, pᵢ, pⱼ, line_cert_i, line_cert_j)
     return_flag && return p, i, j, pᵢ, pⱼ
     ## Now rotate around to find a triangle that the line pq intersects through 
     if is_left(line_cert_j)
-        i, j, pᵢ, pⱼ = select_initial_triangle_clockwise(tri, p, q, pᵢ, pⱼ, i, j, k, store_history, history)
+        i, j, pᵢ, pⱼ = select_initial_triangle_clockwise(tri, p, q, pᵢ, pⱼ, i, j, k, predicates, store_history, history)
     else
-        i, j, pᵢ, pⱼ = select_initial_triangle_counterclockwise(tri, line_cert_j, p, q, pᵢ, pⱼ, i, j, k, store_history, history)
+        i, j, pᵢ, pⱼ = select_initial_triangle_counterclockwise(tri, line_cert_j, p, q, pᵢ, pⱼ, i, j, k, predicates, store_history, history)
     end
     ## Swap values and return
     i, j = j, i
     pᵢ, pⱼ = pⱼ, pᵢ # pᵢ is left of pq, pⱼ is right of pq 
     return p, i, j, pᵢ, pⱼ
 end
-function select_initial_triangle_clockwise(tri::Triangulation, p, q, pᵢ, pⱼ, i, j, k, store_history::F=Val(false), history=nothing) where {F}
-    line_cert_i = point_position_relative_to_line(p, q, pᵢ)
+function select_initial_triangle_clockwise(tri::Triangulation, p, q, pᵢ, pⱼ, i, j, k, predicates::AbstractPredicateKernel=AdaptiveKernel(), store_history::F=Val(false), history=nothing) where {F}
+    line_cert_i = point_position_relative_to_line(predicates, p, q, pᵢ)
     if is_true(store_history) && is_collinear(line_cert_i)
         add_edge!(history, k, i)
     end
@@ -205,7 +214,7 @@ function select_initial_triangle_clockwise(tri::Triangulation, p, q, pᵢ, pⱼ,
         pⱼ = pᵢ
         i = get_adjacent(tri, i, k)
         pᵢ = get_point(tri, i)
-        line_cert_i = point_position_relative_to_line(p, q, pᵢ)
+        line_cert_i = point_position_relative_to_line(predicates, p, q, pᵢ)
         if is_true(store_history) && is_collinear(line_cert_i)
             add_edge!(history, k, i)
         end
@@ -217,7 +226,7 @@ function select_initial_triangle_clockwise(tri::Triangulation, p, q, pᵢ, pⱼ,
         return i, j, pᵢ, pⱼ
     end
 end
-function select_initial_triangle_counterclockwise(tri::Triangulation, line_cert_j, p, q, pᵢ, pⱼ, i, j, k, store_history::F=Val(false), history=nothing) where {F}
+function select_initial_triangle_counterclockwise(tri::Triangulation, line_cert_j, p, q, pᵢ, pⱼ, i, j, k, predicates::AbstractPredicateKernel=AdaptiveKernel(), store_history::F=Val(false), history=nothing) where {F}
     if is_true(store_history) && is_collinear(line_cert_j)
         add_edge!(history, k, j)
     end
@@ -229,7 +238,7 @@ function select_initial_triangle_counterclockwise(tri::Triangulation, line_cert_
         pᵢ = pⱼ
         j = get_adjacent(tri, k, j)
         pⱼ = get_point(tri, j)
-        line_cert_j = point_position_relative_to_line(p, q, pⱼ)
+        line_cert_j = point_position_relative_to_line(predicates, p, q, pⱼ)
         if is_true(store_history) && is_collinear(line_cert_j)
             add_edge!(history, k, j)
         end
@@ -241,7 +250,7 @@ function select_initial_triangle_counterclockwise(tri::Triangulation, line_cert_
         return i, j, pᵢ, pⱼ
     end
 end
-function fix_initial_collinear_edge_for_interior_vertex(tri::Triangulation, k, q, store_history, history, rng, p, neighbouring_edges, i, j, pᵢ, pⱼ, line_cert_i, line_cert_j)
+function fix_initial_collinear_edge_for_interior_vertex(tri::Triangulation, k, q, predicates::AbstractPredicateKernel, store_history, history, rng, p, neighbouring_edges, i, j, pᵢ, pⱼ, line_cert_i, line_cert_j)
     while is_collinear(line_cert_j) || is_collinear(line_cert_i)
         if is_collinear(line_cert_j)
             opposing_idx = j
@@ -269,7 +278,7 @@ function fix_initial_collinear_edge_for_interior_vertex(tri::Triangulation, k, q
                 is_true(store_history) && add_edge!(history, k, opposing_idx)
                 return true, p, j, i, pⱼ, pᵢ, line_cert_i, line_cert_j
             else
-                pos_cert = point_position_relative_to_line(p, q, pᵢ)
+                pos_cert = point_position_relative_to_line(predicates, p, q, pᵢ)
                 if is_left(pos_cert)
                     is_true(store_history) && add_edge!(history, k, opposing_idx)
                     return true, p, i, j, pᵢ, pⱼ, line_cert_i, line_cert_j
@@ -280,14 +289,14 @@ function fix_initial_collinear_edge_for_interior_vertex(tri::Triangulation, k, q
             end
         else
             # If we haven't yet found the edge, let's just pick another one
-            i, j, pᵢ, pⱼ, line_cert_i, line_cert_j = prepare_initial_edge(tri, neighbouring_edges, p, q, rng)
+            i, j, pᵢ, pⱼ, line_cert_i, line_cert_j = prepare_initial_edge(tri, neighbouring_edges, p, q, rng, predicates)
         end
     end
     return false, p, i, j, pᵢ, pⱼ, line_cert_i, line_cert_j
 end
 
 """
-    check_for_intersections_with_adjacent_boundary_edges(tri::Triangulation, k, q, ghost_vertex=𝒢) -> (Certificate, Certificate, Vertex, Certificate, Certificate)
+    check_for_intersections_with_adjacent_boundary_edges(tri::Triangulation, k, q, ghost_vertex=𝒢, predicates::AbstractPredicateKernel=AdaptiveKernel()) -> (Certificate, Certificate, Vertex, Certificate, Certificate)
 
 Given a boundary vertex `k`, find a triangle adjacent to `k` to locate a triangle or edge containing `q`.
 
@@ -299,6 +308,7 @@ straight boundary in case `q` is collinear with it.
 - `k`: The boundary vertex to start from.
 - `q`: The query point.
 - `ghost_vertex=𝒢`: The ghost vertex corresponding to the boundary that `k` resides on.
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs 
 - `direction_cert`: The direction of `q` relative to the vertex `k` along the boundary, given as a [`Certificate`](@ref) `Left`, `Right`, or `Outside`. If `is_outside(direction_cert)`, then `q` is not collinear with either of the adjacent boundary edges.
@@ -307,14 +317,14 @@ straight boundary in case `q` is collinear with it.
 - `right_cert`: The [`Certificate`](@ref) for the position of `q` relative to the boundary edge right of `k`.
 - `left_cert`: The [`Certificate`](@ref) for the position of `q` relative to the boundary edge left of `k`.
 """
-function check_for_intersections_with_adjacent_boundary_edges(tri::Triangulation{P,T,BN,W,I}, k, q, ghost_vertex=I(𝒢)) where {P,T,BN,W,I}
+function check_for_intersections_with_adjacent_boundary_edges(tri::Triangulation{P,T,BN,W,I}, k, q, ghost_vertex=I(𝒢), predicates::AbstractPredicateKernel=AdaptiveKernel()) where {P,T,BN,W,I}
     p = get_point(tri, k)
     right = get_right_boundary_node(tri, k, ghost_vertex)
     left = get_left_boundary_node(tri, k, ghost_vertex)
     pright, pleft = get_point(tri, right, left)
-    right_cert = point_position_relative_to_line(p, pright, q)
-    left_cert = point_position_relative_to_line(pleft, p, q)
-    flipped_left_cert = point_position_relative_to_line(p, pleft, q) # Useful for the returned value, but we use left_cert below to get a good value for direction_cert
+    right_cert = point_position_relative_to_line(predicates, p, pright, q)
+    left_cert = point_position_relative_to_line(predicates, pleft, p, q)
+    flipped_left_cert = point_position_relative_to_line(predicates, p, pleft, q) # Useful for the returned value, but we use left_cert below to get a good value for direction_cert
     !is_collinear(right_cert) && !is_collinear(left_cert) && return (Cert.Outside, Cert.Outside, k, right_cert, flipped_left_cert)
     if is_collinear(right_cert)
         direction_cert = point_position_on_line_segment(p, pright, q)
@@ -333,7 +343,7 @@ function check_for_intersections_with_adjacent_boundary_edges(tri::Triangulation
 end
 
 """
-    search_down_adjacent_boundary_edges(tri::Triangulation, k, q, direction_cert, q_pos_cert, next_vertex, store_history=Val(false), history=nothing, ghost_vertex=𝒢) -> (Bool, Certificate, Vertex, Vertex, Vertex)
+    search_down_adjacent_boundary_edges(tri::Triangulation, k, q, direction_cert, q_pos_cert, next_vertex, predicates::AbstractPredicateKernel=AdaptiveKernel(), store_history=Val(false), history=nothing, ghost_vertex=𝒢) -> (Bool, Certificate, Vertex, Vertex, Vertex)
 
 Starting at the boundary vertex `k`, walks down the boundary in the direction of `q` until finding `q` or finding that it is outside of the triangulation.
 
@@ -346,6 +356,7 @@ See also [`check_for_intersections_with_adjacent_boundary_edges`](@ref), which u
 - `direction_cert`: The direction of `q` relative to the vertex `k` along the boundary, defined from [`check_for_intersections_with_adjacent_boundary_edges`](@ref).
 - `q_pos_cert`: The position of `q` relative to the vertex `k` along the boundary, defined from [`check_for_intersections_with_adjacent_boundary_edges`](@ref).
 - `next_vertex`: The next vertex along the boundary in the direction of `q`, defined from [`check_for_intersections_with_adjacent_boundary_edges`](@ref).
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 - `store_history=Val(false)`: Whether to store the history of the algorithm.
 - `history=nothing`: The history of the algorithm. If `store_history`, then this should be a [`PointLocationHistory`](@ref) object.
 - `ghost_vertex=𝒢`: The ghost vertex corresponding to the boundary that `k` resides on.
@@ -368,19 +379,19 @@ This function works by stepping along vertices on the boundaries in the directio
 if `is_right(direction_cert)` and `search_left_down_adjacent_boundary_edges` otherwise. In these functions, a `while` loop is used to keep stepping until `q_pos_cert`,
 which is updated at each iteration, changes value.
 """
-function search_down_adjacent_boundary_edges(tri::Triangulation, k, q, direction, q_pos, next_vertex, store_history::F=Val(false), history=nothing, ghost_vertex=integer_type(tri)(𝒢)) where {F}
+function search_down_adjacent_boundary_edges(tri::Triangulation, k, q, direction, q_pos, next_vertex, predicates::AbstractPredicateKernel=AdaptiveKernel(), store_history::F=Val(false), history=nothing, ghost_vertex=integer_type(tri)(𝒢)) where {F}
     i = k
     j = next_vertex
     pⱼ = get_point(tri, j)
     if is_right(direction)
-        return_flag, cert, i, j, k = search_right_down_adjacent_boundary_edges(tri, q, q_pos, store_history, history, ghost_vertex, i, j, pⱼ)
+        return_flag, cert, i, j, k = search_right_down_adjacent_boundary_edges(tri, q, q_pos, predicates, store_history, history, ghost_vertex, i, j, pⱼ)
     else
-        return_flag, cert, i, j, k = search_left_down_adjacent_boundary_edges(tri, q, q_pos, store_history, history, ghost_vertex, i, j, pⱼ)
+        return_flag, cert, i, j, k = search_left_down_adjacent_boundary_edges(tri, q, q_pos, predicates, store_history, history, ghost_vertex, i, j, pⱼ)
     end
     return_flag && return cert, i, j, k
     throw(PointNotFoundError(tri, q))
 end
-function search_right_down_adjacent_boundary_edges(tri::Triangulation, q, q_pos, store_history::F, history, ghost_vertex, i, j, pⱼ) where {F}
+function search_right_down_adjacent_boundary_edges(tri::Triangulation, q, q_pos, predicates::AbstractPredicateKernel, store_history::F, history, ghost_vertex, i, j, pⱼ) where {F}
     if is_true(store_history) # in case we don't enter the loop
         k′ = get_adjacent(tri, i, j)
         add_triangle!(history, i, j, k′)
@@ -395,7 +406,7 @@ function search_right_down_adjacent_boundary_edges(tri::Triangulation, q, q_pos,
             add_edge!(history, i, j)
         end
         pⱼ = get_point(tri, j)
-        right_cert = point_position_relative_to_line(pᵢ, pⱼ, q)
+        right_cert = point_position_relative_to_line(predicates, pᵢ, pⱼ, q)
         q_pos = !is_collinear(right_cert) ? Cert.Outside : point_position_on_line_segment(pᵢ, pⱼ, q)
     end
     if is_outside(q_pos)
@@ -406,7 +417,7 @@ function search_right_down_adjacent_boundary_edges(tri::Triangulation, q, q_pos,
     end
     return (false, Cert.Outside, i, j, k)
 end
-function search_left_down_adjacent_boundary_edges(tri::Triangulation, q, q_pos, store_history::F, history, ghost_vertex, i, j, pⱼ) where {F}
+function search_left_down_adjacent_boundary_edges(tri::Triangulation, q, q_pos, predicates::AbstractPredicateKernel, store_history::F, history, ghost_vertex, i, j, pⱼ) where {F}
     if is_true(store_history) # in case we don't enter the loop
         k′ = get_adjacent(tri, j, i)
         add_triangle!(history, j, i, k′)
@@ -421,7 +432,7 @@ function search_left_down_adjacent_boundary_edges(tri::Triangulation, q, q_pos, 
             add_edge!(history, i, j)
         end
         pⱼ = get_point(tri, j)
-        left_cert = point_position_relative_to_line(pᵢ, pⱼ, q)
+        left_cert = point_position_relative_to_line(predicates, pᵢ, pⱼ, q)
         q_pos = !is_collinear(left_cert) ? Cert.Outside : point_position_on_line_segment(pⱼ, pᵢ, q)
     end
     if is_outside(q_pos)
@@ -434,7 +445,7 @@ function search_left_down_adjacent_boundary_edges(tri::Triangulation, q, q_pos, 
 end
 
 """
-    check_for_intersections_with_interior_edges_adjacent_to_boundary_vertex(tri::Triangulation, k, q, right_cert, left_cert, store_history=Val(false), history=nothing, ghost_vertex=𝒢) -> (Bool, Vertex, Vertex, Certificate, Certificate)
+    check_for_intersections_with_interior_edges_adjacent_to_boundary_vertex(tri::Triangulation, k, q, right_cert, left_cert, predicates::AbstractPredicateKernel=AdaptiveKernel(), store_history=Val(false), history=nothing, ghost_vertex=𝒢) -> (Bool, Vertex, Vertex, Certificate, Certificate)
 
 Checks for intersections between the line `pq`, where `p = get_point(tri, k)`, and the edges neighbouring `p`, assuming `k` is a boundary node. This function should only be used 
 after using [`check_for_intersections_with_adjacent_boundary_edges`](@ref).
@@ -445,6 +456,7 @@ after using [`check_for_intersections_with_adjacent_boundary_edges`](@ref).
 - `q`: The query point.
 - `right_cert`: The [`Certificate`](@ref) for the position of `q` relative to the boundary edge right of `k`, coming from [`check_for_intersections_with_adjacent_boundary_edges`](@ref).
 - `left_cert`: The [`Certificate`](@ref) for the position of `q` relative to the boundary edge left of `k`, coming from [`check_for_intersections_with_adjacent_boundary_edges`](@ref).
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 - `store_history=Val(false)`: Whether to store the history of the algorithm.
 - `history=nothing`: The history of the algorithm. If `store_history`, then this should be a [`PointLocationHistory`](@ref) object.
 - `ghost_vertex=𝒢`: The ghost vertex corresponding to the boundary that `k` resides on.
@@ -467,7 +479,7 @@ the vertex `k`, rotating counter-clockwise until we find an intersection or reac
 the vertex `k`. By keeping track of the positions of `pq` relative to the current vertex and the previous, we can identify when an intersection is found. If no intersection is found before 
 reaching the boundary edge left of `k`, then `check_for_intersections_with_triangle_left_to_boundary_vertex` is used to check the remaining triangle.
 """
-function check_for_intersections_with_interior_edges_adjacent_to_boundary_vertex(tri::Triangulation, k, q, right_cert, left_cert, store_history::F=Val(false), history=nothing, ghost_vertex=integer_type(tri)(𝒢)) where {F}
+function check_for_intersections_with_interior_edges_adjacent_to_boundary_vertex(tri::Triangulation, k, q, right_cert, left_cert, predicates::AbstractPredicateKernel=AdaptiveKernel(), store_history::F=Val(false), history=nothing, ghost_vertex=integer_type(tri)(𝒢)) where {F}
     I = integer_type(tri)
     p = get_point(tri, k)
     other_boundary_node = get_left_boundary_node(tri, k, ghost_vertex)
@@ -481,21 +493,21 @@ function check_for_intersections_with_interior_edges_adjacent_to_boundary_vertex
         # If we just had 1:num_interior_neighbours, then nothing would happen in this loop 
         # since num_interior_neighbours = 0, but we still need to make sure we check the edge 
         # connecting the two boundary neighbours
-        return_flag, _i, _j, edge_cert, triangle_cert, i, pᵢ, certᵢ = check_for_intersections_with_single_interior_edge_adjacent_to_boundary_vertex(tri, k, q, store_history, history, p, i, pᵢ, certᵢ)
+        return_flag, _i, _j, edge_cert, triangle_cert, i, pᵢ, certᵢ = check_for_intersections_with_single_interior_edge_adjacent_to_boundary_vertex(tri, k, q, predicates, store_history, history, p, i, pᵢ, certᵢ)
         return_flag && return _i, _j, edge_cert, triangle_cert
     end
     # Now, we've made it to this point, but we still need to check the triangle that contains the boundary vertex to the left of p. 
     # This case is kept separate so that we can reuse left_cert
-    return_flag, _i, _j, edge_cert, triangle_cert = check_for_intersections_with_triangle_left_to_boundary_vertex(tri, k, q, left_cert, store_history, history, p, other_boundary_node, num_interior_neighbours, i, pᵢ, certᵢ)
+    return_flag, _i, _j, edge_cert, triangle_cert = check_for_intersections_with_triangle_left_to_boundary_vertex(tri, k, q,  left_cert, predicates, store_history, history, p, other_boundary_node, num_interior_neighbours, i, pᵢ, certᵢ)
     return_flag && return _i, _j, edge_cert, triangle_cert
     # If we've made it to this point in the algorithm, then the point is outside of the triangulation. Again, 
     # this is using the assumption that the geometry is convex.
     return zero(I), zero(I), Cert.None, Cert.Outside
 end
-function check_for_intersections_with_single_interior_edge_adjacent_to_boundary_vertex(tri::Triangulation, k, q, store_history::F, history, p, i, pᵢ, certᵢ) where {F}
+function check_for_intersections_with_single_interior_edge_adjacent_to_boundary_vertex(tri::Triangulation, k, q, predicates::AbstractPredicateKernel, store_history::F, history, p, i, pᵢ, certᵢ) where {F}
     j = get_adjacent(tri, k, i)
     pⱼ = get_point(tri, j)
-    certⱼ = point_position_relative_to_line(p, pⱼ, q)
+    certⱼ = point_position_relative_to_line(predicates, p, pⱼ, q)
     I = integer_type(tri)
     # Start by checking if pq intersects the edge pᵢpⱼ, meaning q is left or right of pᵢ, but the opposite of pⱼ
     if (is_left(certᵢ) && is_right(certⱼ)) || (is_right(certᵢ) && is_left(certⱼ))
@@ -503,7 +515,7 @@ function check_for_intersections_with_single_interior_edge_adjacent_to_boundary_
         # an intersection, which we check by counting the intersections of pq with pᵢpⱼ. 
         # Note that we have to check this in this case since q could be behind the edge - this is not 
         # checked for interior nodes since we can completely rotate around an interior node.
-        intersection_cert = line_segment_intersection_type(p, q, pᵢ, pⱼ)
+        intersection_cert = line_segment_intersection_type(predicates, p, q, pᵢ, pⱼ)
         if has_one_intersection(intersection_cert)
             # q is not in the triangle, but we still have an intersection. 
             # In the returned value, we switch i and j so that pᵢ is left of pq and pⱼ is right of pq
@@ -518,8 +530,8 @@ function check_for_intersections_with_single_interior_edge_adjacent_to_boundary_
             return true, i, j, Cert.On, Cert.Inside, i, pᵢ, certᵢ
         end
         # There may be no intersection, but it could be inside the triangle. 
-        pⱼp_edge = point_position_relative_to_line(pⱼ, p, q)
-        ppᵢ_edge = point_position_relative_to_line(p, pᵢ, q)
+        pⱼp_edge = point_position_relative_to_line(predicates, pⱼ, p, q)
+        ppᵢ_edge = point_position_relative_to_line(predicates, p, pᵢ, q)
         if is_left(pⱼp_edge) && is_left(ppᵢ_edge)
             if is_true(store_history)
                 add_triangle!(history, i, j, k)
@@ -558,22 +570,22 @@ function check_for_intersections_with_single_interior_edge_adjacent_to_boundary_
     # If we still have not returned, then let us rotate onto the next triangle.
     return false, zero(I), zero(I), Cert.None, Cert.None, j, pⱼ, certⱼ
 end
-function check_for_intersections_with_triangle_left_to_boundary_vertex(tri::Triangulation, k, q, left_cert, store_history::F, history, p, other_boundary_node, num_interior_neighbours, i, pᵢ, certᵢ) where {F}
+function check_for_intersections_with_triangle_left_to_boundary_vertex(tri::Triangulation, k, q, left_cert, predicates::AbstractPredicateKernel, store_history::F, history, p, other_boundary_node, num_interior_neighbours, i, pᵢ, certᵢ) where {F}
     I = integer_type(tri)
     if num_interior_neighbours > 0 # It is possible that there are actually no interior nodes around the point k 
         j = other_boundary_node
         pⱼ = get_point(tri, j)
         certⱼ = left_cert
         if (is_left(certᵢ) && is_right(certⱼ)) || (is_right(certᵢ) && is_left(certⱼ))
-            intersection_cert = line_segment_intersection_type(p, q, pᵢ, pⱼ)
+            intersection_cert = line_segment_intersection_type(predicates, p, q, pᵢ, pⱼ)
             if has_one_intersection(intersection_cert)
                 if is_true(store_history)
                     add_triangle!(history, i, j, k)
                 end
                 return true, j, i, Cert.Single, Cert.Outside
             end
-            pⱼp_edge = point_position_relative_to_line(pⱼ, p, q)
-            ppᵢ_edge = point_position_relative_to_line(p, pᵢ, q)
+            pⱼp_edge = point_position_relative_to_line(predicates, pⱼ, p, q)
+            ppᵢ_edge = point_position_relative_to_line(predicates, p, pᵢ, q)
             if is_left(pⱼp_edge) && is_left(ppᵢ_edge)
                 if is_true(store_history)
                     add_triangle!(history, i, j, k)
@@ -588,15 +600,16 @@ function check_for_intersections_with_triangle_left_to_boundary_vertex(tri::Tria
 end
 
 """
-    exterior_find_triangle(tri::Triangulation, k, q, ghost_vertex=𝒢) -> (Vertex, Vertex)
+    exterior_find_triangle(tri::Triangulation, k, q, ghost_vertex=𝒢, predicates::AbstractPredicateKernel=AdaptiveKernel()) -> (Vertex, Vertex)
 
 Given a query point `q` outside of the triangulation, find the ghost triangle containing `q`.
 
 # Arguments
 - `tri`: The [`Triangulation`](@ref).
-- `k`: The exterior boundary vertex to start from.
+- `k`: The exterior ghost vertex to start from.
 - `q`: The query point. 
 - `ghost_vertex=𝒢`: The ghost vertex corresponding to the boundary that `k` resides on.
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs
 - `i`: The first vertex of the edge on the boundary adjoining the positively oriented ghost triangle. 
@@ -614,37 +627,37 @@ left of the line using `exterior_find_triangle_rotate_left` and clockwise otherw
 By keeping track of the current position of `q` and its position relative to the next ghost edge, we can identify when `q` 
 resides inside a ghost triangle.
 """
-function exterior_find_triangle(tri::Triangulation, k, q, ghost_vertex=integer_type(tri)(𝒢))
+function exterior_find_triangle(tri::Triangulation, k, q, ghost_vertex=integer_type(tri)(𝒢), predicates::AbstractPredicateKernel=AdaptiveKernel())
     pₘ, pᵢ = get_point(tri, ghost_vertex, k)
     i = k
-    q_position = point_position_relative_to_line(pₘ, pᵢ, q)
+    q_position = point_position_relative_to_line(predicates, pₘ, pᵢ, q)
     if is_left(q_position) # q is left of the ghost edge through pᵢ, so rotate left 
-        return exterior_find_triangle_rotate_left(tri, q, i, pₘ, ghost_vertex)
+        return exterior_find_triangle_rotate_left(tri, q, i, pₘ, ghost_vertex, predicates)
     else # rotate right 
-        return exterior_find_triangle_rotate_right(tri, q, i, pₘ, ghost_vertex)
+        return exterior_find_triangle_rotate_right(tri, q, i, pₘ, ghost_vertex, predicates)
     end
 end
-function exterior_find_triangle_rotate_left(tri, q, i, pₘ, ghost_vertex)
+function exterior_find_triangle_rotate_left(tri, q, i, pₘ, ghost_vertex, predicates)
     j = get_right_boundary_node(tri, i, ghost_vertex)
     pⱼ = get_point(tri, j)
-    new_q_pos = point_position_relative_to_line(pₘ, pⱼ, q)
+    new_q_pos = point_position_relative_to_line(predicates, pₘ, pⱼ, q)
     while is_left(new_q_pos)
         i = j
         j = get_right_boundary_node(tri, i, ghost_vertex)
         pⱼ = get_point(tri, j)
-        new_q_pos = point_position_relative_to_line(pₘ, pⱼ, q)
+        new_q_pos = point_position_relative_to_line(predicates, pₘ, pⱼ, q)
     end
     return j, i  # Swap the orientation so that i, j is a boundary edge 
 end
-function exterior_find_triangle_rotate_right(tri, q, i, pₘ, ghost_vertex)
+function exterior_find_triangle_rotate_right(tri, q, i, pₘ, ghost_vertex, predicates)
     j = get_left_boundary_node(tri, i, ghost_vertex)
     pⱼ = get_point(tri, j)
-    new_q_pos = point_position_relative_to_line(pₘ, pⱼ, q)
+    new_q_pos = point_position_relative_to_line(predicates, pₘ, pⱼ, q)
     while is_right(new_q_pos)
         i = j
         j = get_left_boundary_node(tri, i, ghost_vertex)
         pⱼ = get_point(tri, j)
-        new_q_pos = point_position_relative_to_line(pₘ, pⱼ, q)
+        new_q_pos = point_position_relative_to_line(predicates, pₘ, pⱼ, q)
     end
     return i, j
 end
@@ -654,11 +667,20 @@ end
 
 Find the triangle in the triangulation `tri` containing the query point `q` using the jump-and-march algorithm.
 
+!!! danger "Ghost triangles"
+
+    For this function to work best, the triangulation should have ghost triangles, which you can add using `add_ghost_triangles!` in case `tri` does not already have them. 
+    Without ghost triangles, the function may not be able to find the correct triangle containing `q`.
+
+For the variables defined below, you may want to refer to the extended help which also gives 
+some warnings and notes.
+
 # Arguments
 - `tri`: The [`Triangulation`](@ref).
 - `q`: The query point.
 
 # Keyword Arguments 
+- `predicates::AbstractPredicateKernel=ExactKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 - `point_indices=each_solid_vertex(tri)`: The indices of the vertices to consider as possible starting points for the algorithm.
 - `m=default_num_samples(num_vertices(point_indices))`: The number of samples to use when selecting the initial point.
 - `try_points=()`: A list of points to try as the initial point in addition to the `m` sampled.
@@ -667,51 +689,15 @@ Find the triangle in the triangulation `tri` containing the query point `q` usin
 - `store_history=Val(false)`: Whether to store the history of the algorithm.
 - `history=nothing`: The history of the algorithm. If `store_history`, then this should be a [`PointLocationHistory`](@ref) object.
 - `maxiters=2 + num_exterior_curves(tri) - num_solid_vertices(tri) + num_solid_edges(tri)`: The maximum number of iterations to perform before restarting the algorithm with [`restart_find_triangle`](@ref).
-
-!!! note "Restarting the algorithm"
-
-    If the algorithm restarts, then the initial point `k` is selected again using [`select_initial_point`](@ref), and the algorithm is restarted from there. 
-    This is done if the algorithm gets stuck in a loop, or if the algorithm is not able to find the correct triangle containing `q` after `maxiters` iterations. For a convex 
-    geometry, `maxiters` can be safely ignored, as the sequence of triangles visited is acyclic [see H. Edelsbrunner, An acyclicity theorem for cell complexes in d dimensions, Combinatorica 10 (1990) 251-260.)].
-    
 - `concavity_protection=false`: Whether to use concavity protection. See [`concavity_protection_check`](@ref). This is only needed if your triangulation is not convex. 
 - `use_barriers::Val{U}=Val(false)`: Whether to stop searching beyond any segments in the triangulation. 
-
-!!! warning "Found triangles with barriers"
-
-    If you are using barriers, it will be your responsibility to verify that any found triangle from this function actually 
-    contains the triangle. This can be verified using the returned `flag` (see below), although the point might still be on the triangle's 
-    boundary.
-
-!!! warning "Walking past vertices of barriers"
-
-    If you are using barriers, it is possible that the algorithm can walk past vertices of barriers. One way this can happen is if 
-    the initial search line intersects a vertex, in which case the segment might not be considered. Another way this can happen is if you 
-    start the algorithm directly on a segment vertex, in which case the algorithm can go past it (e.g. this means that it is possible that a 
-    ghost triangle might still be returned if you start the algorithm on a boundary node).
 
 # Output
 - `V`: The triangle containing `q`, with type given by `triangle_type(tri)`.
 
-!!! danger "Hitting barriers"
-
-    If a barrier is hit before any initial triangle is properly identified, the returned triangle is 
-    `($∅, $∅, $∅)`; this is only possible if `use_barriers == Val(true)`. Moreover, if `use_barriers == Val(true)`, 
-    the final triangle may not even be valid if `invisible_flag == true` (defined below).
-
 If you have `use_barriers == Val(true)`, then we also return 
 
 - `invisible_flag`: `false` if the triangle was found without hitting a barrier, and `true` otherwise.
-
-!!! warning "Non-convex geometries"
-
-    While this function does still work for non-convex geometries, it may be significantly slower than for convex geometries, as most of the details 
-    of the algorithm assume that the geometry is convex, and so the algorithm may have to restart many times at new initial vertices `k`.
-
-!!! warning "Ghost triangles"
-
-    For this function to work best, the triangulation should have ghost triangles, which you can add using `add_ghost_triangles!` in case `tri` does not already have them. 
-    Without ghost triangles, the function may not be able to find the correct triangle containing `q`.
 
 # Extended help 
 The algorithm underlying this function is complicated and broken into many parts. Here, we describe a brief overview of the algorithm, but note that the 
@@ -725,12 +711,47 @@ The algorithm underlying this function is complicated and broken into many parts
      positively oriented. So, while the triangle is positively oriented, we step according to [`find_triangle_across_triangle`](@ref).
 4. If we have not yet returned and the triangle is no longer positively oriented, we check if the triangle is degenerate using [`find_triangle_degenerate_arrangement`](@ref)
      and reinitialise the algorithm if needed. Otherwise, we have found the triangle containing `q` and return the triangle.
+
+Here are some additional warnings and notes for the variables defined in this function.
+
+!!! note "Restarting the algorithm"
+
+    If the algorithm restarts, then the initial point `k` is selected again using [`select_initial_point`](@ref), and the algorithm is restarted from there. 
+    This is done if the algorithm gets stuck in a loop, or if the algorithm is not able to find the correct triangle containing `q` after `maxiters` iterations. For a convex 
+    geometry, `maxiters` can be safely ignored, as the sequence of triangles visited is acyclic [see H. Edelsbrunner, An acyclicity theorem for cell complexes in d dimensions, Combinatorica 10 (1990) 251-260.)].
+    
+!!! warning "Found triangles with barriers"
+
+    If you are using barriers, it will be your responsibility to verify that any found triangle from this function actually 
+    contains the triangle. This can be verified using the returned `flag` (see below), although the point might still be on the triangle's 
+    boundary.
+
+!!! warning "Walking past vertices of barriers"
+
+    If you are using barriers, it is possible that the algorithm can walk past vertices of barriers. One way this can happen is if 
+    the initial search line intersects a vertex, in which case the segment might not be considered. Another way this can happen is if you 
+    start the algorithm directly on a segment vertex, in which case the algorithm can go past it (e.g. this means that it is possible that a 
+    ghost triangle might still be returned if you start the algorithm on a boundary node).
+
+Some notes about the output:
+
+!!! danger "Hitting barriers"
+
+    If a barrier is hit before any initial triangle is properly identified, the returned triangle is 
+    `($∅, $∅, $∅)`; this is only possible if `use_barriers == Val(true)`. Moreover, if `use_barriers == Val(true)`, 
+    the final triangle may not even be valid if `invisible_flag == true` (defined below).
+
+!!! warning "Non-convex geometries"
+
+    While this function does still work for non-convex geometries, it may be significantly slower than for convex geometries, as most of the details 
+    of the algorithm assume that the geometry is convex, and so the algorithm may have to restart many times at new initial vertices `k`.
 """
 function find_triangle(tri::Triangulation, _q;
+    predicates::AbstractPredicateKernel=AdaptiveKernel(),
     point_indices=each_solid_vertex(tri),
     m=default_num_samples(num_vertices(point_indices)),
     try_points=(),
-    rng::AbstractRNG=Random.default_rng(),
+    rng::Random.AbstractRNG=Random.default_rng(),
     k=select_initial_point(tri, _q; point_indices, m, try_points, rng),
     store_history::F=Val(false),
     history=nothing,
@@ -742,11 +763,11 @@ function find_triangle(tri::Triangulation, _q;
     G = number_type(tri)
     _qx, _qy = getxy(_q)
     q = (G(_qx), G(_qy))
-    return _find_triangle(tri, q, I(k), store_history, history, rng, maxiters, zero(maxiters), concavity_protection, zero(maxiters), use_barriers)
+    return _find_triangle(tri, q, I(k), store_history, history, rng, maxiters, zero(maxiters), concavity_protection, zero(maxiters), use_barriers, predicates)
 end
 
 """
-    initialise_find_triangle_interior_vertex(tri::Triangulation, q, k, store_history::F, history, rng) -> (Bool, Point, Vertex, Vertex, Point, Point)
+    initialise_find_triangle_interior_vertex(tri::Triangulation, q, k, predicates::AbstractPredicateKernel, store_history::F, history, rng) -> (Bool, Point, Vertex, Vertex, Point, Point)
 
 Initialise the jump-and-march algorithm for an interior vertex `k`.
 
@@ -754,6 +775,7 @@ Initialise the jump-and-march algorithm for an interior vertex `k`.
 - `tri::Triangulation`: The [`Triangulation`](@ref).
 - `q`: The query point.
 - `k`: The interior vertex to start from.
+- `predicates::AbstractPredicateKernel`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 - `store_history`: Whether to store the history of the algorithm.
 - `history`: The history of the algorithm. If `store_history`, then this should be a [`PointLocationHistory`](@ref) object.
 - `rng`: The random number generator to use.
@@ -770,11 +792,11 @@ Initialise the jump-and-march algorithm for an interior vertex `k`.
 This function works by simply using [`select_initial_triangle_interior_vertex`](@ref) to find the initial triangle to start from. A check is made 
 to see if the edge `(i, j)` refers to a non-existent edge `($∅, $∅)`, in which case the algorithm needs to be restarted.
 """
-function initialise_find_triangle_interior_vertex(tri::Triangulation, q, k, store_history::F, history, rng) where {F}
+function initialise_find_triangle_interior_vertex(tri::Triangulation, q, k, predicates::AbstractPredicateKernel, store_history::F, history, rng) where {F}
     # If k is not a boundary node, then we can rotate around the point k to find an initial triangle 
     # to start the search. Additionally, if there are no ghost triangles, we can only hope that q 
     # is inside the interior, meaning we should only search for the initial triangle here anyway.
-    p, i, j, pᵢ, pⱼ = select_initial_triangle_interior_vertex(tri, k, q, store_history, history, rng)
+    p, i, j, pᵢ, pⱼ = select_initial_triangle_interior_vertex(tri, k, q, predicates, store_history, history, rng)
     if !edge_exists(i) && !edge_exists(j) # When we find a possible infinite loop, we use i==j==∅. Let's reinitialise. 
         return true, p, i, j, pᵢ, pⱼ # true is the restart_flag
     end
@@ -783,7 +805,7 @@ function initialise_find_triangle_interior_vertex(tri::Triangulation, q, k, stor
 end
 
 """
-    initialise_find_triangle_boundary_vertex(tri::Triangulation, q, k, store_history:, history, ghost_vertex, concavity_protection) -> (Bool, Bool, Triangle, Point, Vertex, Vertex, Point, Point)
+    initialise_find_triangle_boundary_vertex(tri::Triangulation, q, k, predicates::AbstractPredicateKernel, store_history, history, ghost_vertex, concavity_protection) -> (Bool, Bool, Triangle, Point, Vertex, Vertex, Point, Point)
 
 Initialise the jump-and-march algorithm for a boundary vertex `k`.
 
@@ -791,6 +813,7 @@ Initialise the jump-and-march algorithm for a boundary vertex `k`.
 - `tri::Triangulation`: The [`Triangulation`](@ref).
 - `q`: The query point.
 - `k`: The boundary vertex to start from.
+- `predicates::AbstractPredicateKernel`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 - `store_history`: Whether to store the history of the algorithm.
 - `history`: The history of the algorithm. If `store_history`, then this should be a [`PointLocationHistory`](@ref) object.
 - `ghost_vertex`: The ghost vertex corresponding to the boundary that `k` resides on.
@@ -820,21 +843,21 @@ There are multiple stages to this initialisation, starting from [`check_for_inte
    is used on the found ghost triangle if needed. If there is an intersection, then we return the triangle containing the intersection point that we can start the algorithm from, 
    and its associated vertices and points. 
 """
-function initialise_find_triangle_boundary_vertex(tri::Triangulation, _q, k, store_history::F, history, ghost_vertex, concavity_protection) where {F}
+function initialise_find_triangle_boundary_vertex(tri::Triangulation, _q, k, predicates::AbstractPredicateKernel, store_history::F, history, ghost_vertex, concavity_protection) where {F}
     q = getxy(_q) # type stability in case e.g. a user provides a vector into jump and march
     direction, q_pos, next_vertex, right_cert, left_cert =
-        check_for_intersections_with_adjacent_boundary_edges(tri, k, q, ghost_vertex)
+        check_for_intersections_with_adjacent_boundary_edges(tri, k, q, ghost_vertex, predicates)
     Ttype = triangle_type(tri)
     if !is_outside(direction)
         # q is collinear with one of the edges, so let's jump down these edges and try to find q
-        q_pos, u, v, w = search_down_adjacent_boundary_edges(tri, k, q, direction, q_pos, next_vertex, store_history, history, ghost_vertex)
+        q_pos, u, v, w = search_down_adjacent_boundary_edges(tri, k, q, direction, q_pos, next_vertex, predicates, store_history, history, ghost_vertex)
         if is_on(q_pos)
             return false, true, construct_triangle(Ttype, u, v, w), q, k, k, q, q # false is the restart_flag, true is the return_flag. We return q, q, q just to get type stability with all returns
         else
-            u, v = exterior_find_triangle(tri, u, q, ghost_vertex)
+            u, v = exterior_find_triangle(tri, u, q, ghost_vertex, predicates)
             w = get_adjacent(tri, u, v)
             V = construct_triangle(Ttype, u, v, w) # Can't just use I(𝒢) here since there could be multiple - just use get_adjacent
-            if concavity_protection_check(tri, concavity_protection, V, q)
+            if concavity_protection_check(tri, concavity_protection, V, q, predicates)
                 return true, false, V, q, k, k, q, q # the extra returns are just for type stability
             else
                 return false, true, V, q, k, k, q, q
@@ -843,14 +866,14 @@ function initialise_find_triangle_boundary_vertex(tri::Triangulation, _q, k, sto
     end
     # If we did not find anything from the neighbouring boundary edges, we can search the neighbouring interior edges
     i, j, edge_cert, triangle_cert =
-        check_for_intersections_with_interior_edges_adjacent_to_boundary_vertex(tri, k, q, right_cert, left_cert, store_history, history, ghost_vertex)
+        check_for_intersections_with_interior_edges_adjacent_to_boundary_vertex(tri, k, q, right_cert, left_cert, predicates, store_history, history, ghost_vertex)
     if is_inside(triangle_cert)
         return false, true, construct_triangle(Ttype, i, j, k), q, i, j, q, q
     elseif is_none(edge_cert)
-        u, v = exterior_find_triangle(tri, k, q, ghost_vertex)
+        u, v = exterior_find_triangle(tri, k, q, ghost_vertex, predicates)
         w = get_adjacent(tri, u, v)
         V = construct_triangle(Ttype, u, v, w)
-        if concavity_protection_check(tri, concavity_protection, V, q)
+        if concavity_protection_check(tri, concavity_protection, V, q, predicates)
             return true, false, V, q, i, j, q, q
         else
             return false, true, V, q, i, j, q, q
@@ -862,7 +885,7 @@ function initialise_find_triangle_boundary_vertex(tri::Triangulation, _q, k, sto
 end
 
 """
-    find_triangle_return_on_vertex(tri::Triangulation, q, k, p, pᵢ, pⱼ, i, j) -> (Bool, Bool, Triangle)
+    find_triangle_return_on_vertex(tri::Triangulation, q, k, p, pᵢ, pⱼ, i, j, predicates::AbstractPredicateKernel=AdaptiveKernel()) -> (Bool, Bool, Triangle)
 
 Check if `q` is one of the vertices of the triangle `(i, j, k)` and return if needed.
 
@@ -875,6 +898,7 @@ Check if `q` is one of the vertices of the triangle `(i, j, k)` and return if ne
 - `pⱼ`: The point corresponding to the vertex `j`.
 - `i`: The first vertex of the triangle adjoining `k` to start from.
 - `j`: The second vertex of the triangle adjoining `k` to start from.
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs
 - `restart_flag`: Whether the algorithm needs to be restarted.
@@ -885,7 +909,7 @@ Check if `q` is one of the vertices of the triangle `(i, j, k)` and return if ne
 An extra check is made in this algorithm for the case that the point that `q` is equal to is one of the points corresponding to a ghost vertex, 
 so it may be for example that `q == pᵢ` but `is_ghost_vertex(i)`, in which case the algorithm would need to restart.
 """
-function find_triangle_return_on_vertex(tri::Triangulation, q, k, p, pᵢ, pⱼ, i, j)
+function find_triangle_return_on_vertex(tri::Triangulation, q, k, p, pᵢ, pⱼ, i, j, predicates)
     # Just return where we currently are. We do need to be careful, though: 
     # If k was a ghost vertex, then one of pᵢ or pⱼ could come from the 
     # representative point list, which could mean that q is equal to one of the 
@@ -895,7 +919,7 @@ function find_triangle_return_on_vertex(tri::Triangulation, q, k, p, pᵢ, pⱼ,
                    (q == pᵢ && !is_ghost_vertex(i)) ||
                    (q == pⱼ && !is_ghost_vertex(j))
     if safety_check
-        orientation = triangle_orientation(pᵢ, pⱼ, p)
+        orientation = triangle_orientation(predicates, pᵢ, pⱼ, p)
         if is_positively_oriented(orientation)
             return false, true, construct_triangle(triangle_type(tri), i, j, k)
         else
@@ -907,7 +931,7 @@ function find_triangle_return_on_vertex(tri::Triangulation, q, k, p, pᵢ, pⱼ,
 end
 
 """
-    find_triangle_across_triangle(tri::Triangulation, q, k, store_history, history, maxiters, cur_iter, concavity_protection, arrangement, original_k, last_changed, p, i, j, pᵢ, pⱼ) -> (Bool, Bool, Bool, Triangle, Integer, Certificate, Vertex, Vertex, Vertex, Point, Point, Integer, Integer)
+    find_triangle_across_triangle(tri::Triangulation, q, k, predicates, store_history, history, maxiters, cur_iter, concavity_protection, arrangement, original_k, last_changed, p, i, j, pᵢ, pⱼ) -> (Bool, Bool, Bool, Triangle, Integer, Certificate, Vertex, Vertex, Vertex, Point, Point, Integer, Integer)
 
 Walks across the current triangle past the edge `(i, j)`. progressing the [`find_triangle`](@ref) algorithm.
 
@@ -915,6 +939,7 @@ Walks across the current triangle past the edge `(i, j)`. progressing the [`find
 - `tri::Triangulation`: The [`Triangulation`](@ref).
 - `q`: The query point.
 - `k`: The vertex that the algorithm started from.
+- `predicates::AbstractPredicateKernel`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 - `store_history`: Whether to store the history of the algorithm.
 - `history`: The history of the algorithm. If `store_history`, then this should be a [`PointLocationHistory`](@ref) object.
 - `maxiters`: The maximum number of iterations to perform before restarting the algorithm with [`restart_find_triangle`](@ref).
@@ -954,17 +979,18 @@ and note that the documentation contains a much more detailed description.
    then the algorithm should need to be reinitialised since `q` should not be outside of the triangulation, and so we return with `reinitialise_flag = true`.
 2. Now we consider the case where `k` is not an exterior ghost vertex. We move forward by updating the value of `k` so that `k = get_adjacent(tri, i, j)`, and then consider where `pₖ` is relative 
    to the line `pq`.
+2a. If `pₖ` is to the right of `pq`, then we should update `j` by `j = k`, ensuring that `j` is always to the right of `pq`.
 
-        2a. If `pₖ` is to the right of `pq`, then we should update `j` by `j = k`, ensuring that `j` is always to the right of `pq`.
-        2b. If `pₖ` is to the left of `pq`, then we should update `i` by `i = k`, ensuring that `i` is always to the left of `pq`.
-        2c. The alternative to 2a and 2b is that `pₖ` is collinear with the edge of `pq`, which could mean that `q` is in the current triangle or it is in a triangle further away. We compute a 
-            [`Certificate`](@ref) that determines where `q` is relative to the triangle `pᵢpⱼpₖ`. If `q` is inside or on this triangle, then we return, restarting if necessary according to 
-            `concavity_protection` and [`concavity_protection_check`](@ref). If we do not yet need to return, then we need to make a decision as to which of `i` and `j` to update, noting that 
-            we want `i` to be left of `pq` and `j` to be right of `pq`, but this is no longer unambiguous since `pₖ` is collinear with `pq`. We make this decision according to `last_changed`:
-            If `last_changed = i`, then moving left is what caused us to find this collinear edge, and so we send `k` left by letting `i = k`. Otherwise, we send `k` right by letting `j = k`.
+2b. If `pₖ` is to the left of `pq`, then we should update `i` by `i = k`, ensuring that `i` is always to the left of `pq`.
+
+2c. The alternative to 2a and 2b is that `pₖ` is collinear with the edge of `pq`, which could mean that `q` is in the current triangle or it is in a triangle further away. We compute a 
+    [`Certificate`](@ref) that determines where `q` is relative to the triangle `pᵢpⱼpₖ`. If `q` is inside or on this triangle, then we return, restarting if necessary according to 
+    `concavity_protection` and [`concavity_protection_check`](@ref). If we do not yet need to return, then we need to make a decision as to which of `i` and `j` to update, noting that 
+    we want `i` to be left of `pq` and `j` to be right of `pq`, but this is no longer unambiguous since `pₖ` is collinear with `pq`. We make this decision according to `last_changed`:
+    If `last_changed = i`, then moving left is what caused us to find this collinear edge, and so we send `k` left by letting `i = k`. Otherwise, we send `k` right by letting `j = k`.
 3. Now having stepped forward, we recompute the [`Certificate`](@ref) for arrangement and return, setting `restart_flag = true` if `cur_iters ≥ maxiters`.
 """
-function find_triangle_across_triangle(tri::Triangulation, q, k, store_history::F, history, maxiters, cur_iter, concavity_protection, arrangement, original_k, last_changed, p, i, j, pᵢ, pⱼ) where {F}
+function find_triangle_across_triangle(tri::Triangulation, q, k, predicates::AbstractPredicateKernel, store_history::F, history, maxiters, cur_iter, concavity_protection, arrangement, original_k, last_changed, p, i, j, pᵢ, pⱼ) where {F}
     cur_iter += 1
     if is_true(store_history)
         if last_changed == i
@@ -979,9 +1005,9 @@ function find_triangle_across_triangle(tri::Triangulation, q, k, store_history::
         # ghost triangles, though, we just restart the search. Note that interior boundary indices do not matter since the ghost 
         # triangles there have the same orientation, so we can find them as normal.
         if has_ghost_triangles(tri)
-            i, j = exterior_find_triangle(tri, last_changed == i ? j : i, q, k) # use last_changed to ensure we get the boundary point
+            i, j = exterior_find_triangle(tri, last_changed == i ? j : i, q, k, predicates) # use last_changed to ensure we get the boundary point
             V = construct_triangle(triangle_type(tri), i, j, get_adjacent(tri, i, j))
-            if concavity_protection_check(tri, concavity_protection, V, q)
+            if concavity_protection_check(tri, concavity_protection, V, q, predicates)
                 return true, false, false, V, cur_iter, arrangement, k, last_changed, original_k, pᵢ, pⱼ, i, j # restart_flag, return_flag, reinitialise_flag, V
             else
                 return false, true, false, V, cur_iter, arrangement, k, last_changed, original_k, pᵢ, pⱼ, i, j
@@ -993,7 +1019,7 @@ function find_triangle_across_triangle(tri::Triangulation, q, k, store_history::
     # Now we can move forward.
     k = get_adjacent(tri, i, j)
     pₖ = get_point(tri, k)
-    pₖ_pos = point_position_relative_to_line(p, q, pₖ)
+    pₖ_pos = point_position_relative_to_line(predicates, p, q, pₖ)
     if is_right(pₖ_pos)
         if is_true(store_history)
             add_triangle!(history, i, j, k)
@@ -1008,7 +1034,7 @@ function find_triangle_across_triangle(tri::Triangulation, q, k, store_history::
         last_changed = i
     else
         # pₖ is collinear with pq. We will first check if q is already in the current triangle
-        in_cert = point_position_relative_to_triangle(pᵢ, pⱼ, pₖ, q) # ... Maybe there is a better way to compute this, reusing previous certificates? Not sure. ...
+        in_cert = point_position_relative_to_triangle(predicates, pᵢ, pⱼ, pₖ, q) # ... Maybe there is a better way to compute this, reusing previous certificates? Not sure. ...
         if is_true(store_history)
             # We need to be careful about whether or not we want to add another 
             # collinear segment in this case, since e.g. q might just be on the triangle 
@@ -1020,11 +1046,11 @@ function find_triangle_across_triangle(tri::Triangulation, q, k, store_history::
             # the edge last_changed == i ? j : i, but not always... We split this 
             # into two cases, one where last_changed ≠ 0 and otherwise. This is because 
             # last_changed ≠ 0 path is a lot more common (> 99%).
-            if is_collinear(point_position_relative_to_line(tri, original_k, q, last_changed == i ? j : i))
+            if is_collinear(point_position_relative_to_line(predicates, tri, original_k, q, last_changed == i ? j : i))
                 add_edge!(history, last_changed == i ? j : i, k)
-            elseif edge_exists(last_changed) && is_collinear(point_position_relative_to_line(tri, original_k, q, last_changed))
+            elseif edge_exists(last_changed) && is_collinear(point_position_relative_to_line(predicates, tri, original_k, q, last_changed))
                 add_edge!(history, last_changed, k)
-            elseif k ≠ original_k && pₖ ≠ q && is_collinear(point_position_relative_to_line(tri, k, original_k, q))
+            elseif k ≠ original_k && pₖ ≠ q && is_collinear(point_position_relative_to_line(predicates, tri, k, original_k, q))
                 # This case is needed in case we have a collinearity, but only because we pass through a point 
                 # rather than because we pass through a collinear segment. We will sort through these later using 
                 # fix_segments!.
@@ -1034,11 +1060,11 @@ function find_triangle_across_triangle(tri::Triangulation, q, k, store_history::
                 # This case here is a lot less likely. 
                 if pₖ == q
                     prev = get_adjacent(tri, j, i)
-                    if is_collinear(point_position_relative_to_line(tri, i, p, q))
+                    if is_collinear(point_position_relative_to_line(predicates, tri, i, p, q))
                         add_edge!(history, i, k)
-                    elseif is_collinear(point_position_relative_to_line(tri, j, p, q))
+                    elseif is_collinear(point_position_relative_to_line(predicates, tri, j, p, q))
                         add_edge!(history, j, k)
-                    elseif prev ≠ original_k && is_collinear(point_position_relative_to_line(tri, prev, p, q)) # prev ≠ original_k because otherwise we'll say the line segment we started with is collinear with itself, which is true but we don't need that case.
+                    elseif prev ≠ original_k && is_collinear(point_position_relative_to_line(predicates, tri, prev, p, q)) # prev ≠ original_k because otherwise we'll say the line segment we started with is collinear with itself, which is true but we don't need that case.
                         add_edge!(history, prev, k)
                     end
                 end
@@ -1047,7 +1073,7 @@ function find_triangle_across_triangle(tri::Triangulation, q, k, store_history::
         end
         if !is_outside(in_cert)
             V = construct_triangle(triangle_type(tri), i, j, k)
-            if concavity_protection_check(tri, concavity_protection, V, q)
+            if concavity_protection_check(tri, concavity_protection, V, q, predicates)
                 return true, false, false, V, cur_iter, arrangement, k, last_changed, original_k, pᵢ, pⱼ, i, j # restart_flag, return_flag, reinitialise_flag, V
             else
                 # return V
@@ -1065,12 +1091,12 @@ function find_triangle_across_triangle(tri::Triangulation, q, k, store_history::
             last_changed = j
         end
     end
-    arrangement = triangle_orientation(pᵢ, pⱼ, q)
+    arrangement = triangle_orientation(predicates, pᵢ, pⱼ, q)
     return cur_iter ≥ maxiters, false, false, construct_triangle(triangle_type(tri), i, j, k), cur_iter, arrangement, k, last_changed, original_k, pᵢ, pⱼ, i, j
 end
 
 """
-    find_triangle_degenerate_arrangement(tri::Triangulation, q, k, store_history::F, history, pᵢ, pⱼ, i, j) -> Bool
+    find_triangle_degenerate_arrangement(tri::Triangulation, q, k, predicates::AbstractPredicateKernel, store_history::F, history, pᵢ, pⱼ, i, j) -> Bool
 
 Given a degenerate arrangement `pᵢpⱼq`, reinitialise the jump and march algorithm.
 
@@ -1078,6 +1104,7 @@ Given a degenerate arrangement `pᵢpⱼq`, reinitialise the jump and march algo
 - `tri::Triangulation`: The [`Triangulation`](@ref).
 - `q`: The query point.
 - `k`: The vertex that the algorithm started from.
+- `predicates::AbstractPredicateKernel`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 - `store_history`: Whether to store the history of the algorithm.
 - `history`: The history of the algorithm. If `store_history`, then this should be a [`PointLocationHistory`](@ref) object.
 - `pᵢ`: The point corresponding to the vertex `i`.
@@ -1088,9 +1115,9 @@ Given a degenerate arrangement `pᵢpⱼq`, reinitialise the jump and march algo
 # Outputs
 - `Bool`: Whether the algorithm needs to be restarted.
 """
-function find_triangle_degenerate_arrangement(tri::Triangulation, q, k, store_history::F, history, pᵢ, pⱼ, i, j) where {F}
+function find_triangle_degenerate_arrangement(tri::Triangulation, q, k, predicates::AbstractPredicateKernel, store_history::F, history, pᵢ, pⱼ, i, j) where {F}
     pₖ = get_point(tri, k) # Need to have this here in case we skip the entire loop, above, meaning pₖ won't exist
-    in_cert = point_position_relative_to_triangle(pᵢ, pⱼ, pₖ, q) # ... Maybe there is a better way to compute this, reusing previous certificates? Not sure. ...
+    in_cert = point_position_relative_to_triangle(predicates, pᵢ, pⱼ, pₖ, q) # ... Maybe there is a better way to compute this, reusing previous certificates? Not sure. ...
     if is_true(store_history)
         k′ = get_adjacent(tri, i, j)
         add_triangle!(history, i, j, k′)
@@ -1100,31 +1127,31 @@ function find_triangle_degenerate_arrangement(tri::Triangulation, q, k, store_hi
     return is_outside(in_cert) # if outside, we need to reinitialise. Otherwise, we're all good.
 end
 
-function _find_triangle(tri::Triangulation, q, k, store_history::F, history, rng::AbstractRNG, maxiters, cur_iter, concavity_protection, num_restarts, use_barriers::Val{U}) where {F,U}
+function _find_triangle(tri::Triangulation, q, k, store_history::F, history, rng::Random.AbstractRNG, maxiters, cur_iter, concavity_protection, num_restarts, use_barriers::Val{U}, predicates::AbstractPredicateKernel) where {F,U}
     is_bnd, ghost_vertex = is_boundary_node(tri, k)
     I = integer_type(tri)
     trit = triangle_type(tri)
     if !(is_bnd && is_exterior_ghost_vertex(tri, ghost_vertex)) || !has_ghost_triangles(tri)
-        restart_flag, p, i, j, pᵢ, pⱼ = initialise_find_triangle_interior_vertex(tri, q, k, store_history, history, rng)
+        restart_flag, p, i, j, pᵢ, pⱼ = initialise_find_triangle_interior_vertex(tri, q, k, predicates, store_history, history, rng)
         if restart_flag && (!(is_bnd && is_interior_ghost_vertex(tri, ghost_vertex)) || !is_true(use_barriers)) # if we are not at an interior boundary node, then we should not have reached a barrier yet. but if we are at such a node, then the only reason to restart is if we have reached a barrier.
-            return restart_find_triangle(tri, q, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts + 1, use_barriers)
+            return restart_find_triangle(tri, q, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts + 1, use_barriers, predicates)
         elseif restart_flag && is_true(use_barriers)
             V = construct_triangle(trit, I(∅), I(∅), I(∅))
             return V, true
         end
     else
-        restart_flag, return_flag, V, p, i, j, pᵢ, pⱼ = initialise_find_triangle_boundary_vertex(tri, q, k, store_history, history, ghost_vertex, concavity_protection)
-        if restart_flag && !is_true(use_barriers) 
-            return restart_find_triangle(tri, q, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts + 1, use_barriers)
+        restart_flag, return_flag, V, p, i, j, pᵢ, pⱼ = initialise_find_triangle_boundary_vertex(tri, q, k, predicates, store_history, history, ghost_vertex, concavity_protection)
+        if restart_flag && !is_true(use_barriers)
+            return restart_find_triangle(tri, q, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts + 1, use_barriers, predicates)
         elseif restart_flag && is_true(use_barriers)
             return V, true
         end
         return_flag && return is_true(use_barriers) ? (V, is_ghost_triangle(V)) : V
     end
     if q == p || q == pᵢ || q == pⱼ
-        restart_flag, return_flag, V = find_triangle_return_on_vertex(tri, q, k, p, pᵢ, pⱼ, i, j)
-        if restart_flag && !is_true(use_barriers) 
-            return restart_find_triangle(tri, q, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts + 1, use_barriers)
+        restart_flag, return_flag, V = find_triangle_return_on_vertex(tri, q, k, p, pᵢ, pⱼ, i, j, predicates)
+        if restart_flag && !is_true(use_barriers)
+            return restart_find_triangle(tri, q, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts + 1, use_barriers, predicates)
         elseif restart_flag && is_true(use_barriers)
             return V, true
         end
@@ -1137,7 +1164,7 @@ function _find_triangle(tri::Triangulation, q, k, store_history::F, history, rng
     ## Now let us do the straight line search 
     # The idea is to keep jumping until pᵢpⱼ goes past q, meaning pᵢpⱼq is no longer a positively oriented triangle
     original_k = k
-    arrangement = triangle_orientation(pᵢ, pⱼ, q)
+    arrangement = triangle_orientation(predicates, pᵢ, pⱼ, q)
     local last_changed # Need this for deciding which variable to use when we hit a collinear point 
     I = integer_type(tri)
     last_changed = I(∅) # just an initial value
@@ -1147,22 +1174,22 @@ function _find_triangle(tri::Triangulation, q, k, store_history::F, history, rng
         add_right_vertex!(history, j)
     end
     while is_positively_oriented(arrangement) && !reached_barrier
-        restart_flag, return_flag, reinitialise_flag, V, cur_iter, arrangement, k, last_changed, original_k, pᵢ, pⱼ, i, j = find_triangle_across_triangle(tri, q, k, store_history, history, maxiters, cur_iter, concavity_protection, arrangement, original_k, last_changed, p, i, j, pᵢ, pⱼ)
-        if restart_flag && !is_true(use_barriers) 
-            return restart_find_triangle(tri, q, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts + 1, use_barriers)
+        restart_flag, return_flag, reinitialise_flag, V, cur_iter, arrangement, k, last_changed, original_k, pᵢ, pⱼ, i, j = find_triangle_across_triangle(tri, q, k, predicates, store_history, history, maxiters, cur_iter, concavity_protection, arrangement, original_k, last_changed, p, i, j, pᵢ, pⱼ)
+        if restart_flag && !is_true(use_barriers)
+            return restart_find_triangle(tri, q, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts + 1, use_barriers, predicates)
         elseif restart_flag && is_true(use_barriers)
             return V, true
         end
         return_flag && return is_true(use_barriers) ? (V, reached_barrier) : V
-        reinitialise_flag && return _find_triangle(tri, q, k, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts + 1, use_barriers)
+        reinitialise_flag && return _find_triangle(tri, q, k, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts + 1, use_barriers, predicates)
         reached_barrier = is_true(use_barriers) && is_positively_oriented(arrangement) && contains_segment(tri, i, j) # check the arrangement cert since, if it is now negative, then we don't care about the next edge (i, j) because we have reached the triangle
     end
     # We can finish the above loop even if q is not in the triangle, in which case pᵢpⱼq was a straight line. 
     # To clear this up, let us just restart. 
     if is_degenerate(arrangement)
-        reinitialise_flag = find_triangle_degenerate_arrangement(tri, q, k, store_history, history, pᵢ, pⱼ, i, j)
-        if reinitialise_flag && !is_true(use_barriers) 
-            return _find_triangle(tri, q, last_changed == I(∅) ? i : last_changed, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts + 1, use_barriers)
+        reinitialise_flag = find_triangle_degenerate_arrangement(tri, q, k, predicates, store_history, history, pᵢ, pⱼ, i, j)
+        if reinitialise_flag && !is_true(use_barriers)
+            return _find_triangle(tri, q, last_changed == I(∅) ? i : last_changed, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts + 1, use_barriers, predicates)
         elseif reinitialise_flag && is_true(use_barriers)
             return V, true
         end
@@ -1170,8 +1197,8 @@ function _find_triangle(tri::Triangulation, q, k, store_history::F, history, rng
     # Swap the orientation to get a positively oriented triangle, remembering that we kept pᵢ on the left of pq and pⱼ on the right 
     k = get_adjacent(tri, j, i)
     V = construct_triangle(trit, j, i, k)
-    if !reached_barrier && concavity_protection_check(tri, concavity_protection, V, q)
-        return restart_find_triangle(tri, q, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts + 1, use_barriers)
+    if !reached_barrier && concavity_protection_check(tri, concavity_protection, V, q, predicates)
+        return restart_find_triangle(tri, q, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts + 1, use_barriers, predicates)
     end
     if is_true(use_barriers)
         return V, reached_barrier
@@ -1181,7 +1208,7 @@ function _find_triangle(tri::Triangulation, q, k, store_history::F, history, rng
 end
 
 """
-    concavity_protection_check(tri::Triangulation, concavity_protection, V, q) -> Bool
+    concavity_protection_check(tri::Triangulation, concavity_protection, V, q, predicates::AbstractPredicateKernel=AdaptiveKernel()) -> Bool
 
 Check whether the [`find_triangle`](@ref) algorithm needs to restart. This is only needed if `tri` is not convex.
 
@@ -1190,6 +1217,7 @@ Check whether the [`find_triangle`](@ref) algorithm needs to restart. This is on
 - `concavity_protection`: Whether this check is needed.
 - `V`: The triangle that the algorithm has found.
 - `q`: The query point.
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs 
 - `need_to_restart`: Whether the algorithm needs to restart. Will also be `false` if `concavity_protection`.
@@ -1200,9 +1228,9 @@ and also checks the position of `q` relative to `V` via [`point_position_relativ
 then `need_to_restart = true`. If `q` is inside this triangle, then issues can still arise due to overlapping ghost triangles from the non-convexity. Thus, 
 depending on the result from [`dist`](@ref) and whether `V` is a ghost triangle, `need_to_restart` will be set accordingly.
 """
-function concavity_protection_check(tri::Triangulation, concavity_protection, V, q)
+function concavity_protection_check(tri::Triangulation, concavity_protection, V, q, predicates::AbstractPredicateKernel=AdaptiveKernel())
     !concavity_protection && return false
-    cert = point_position_relative_to_triangle(tri, V, q)
+    cert = point_position_relative_to_triangle(predicates, tri, V, q)
     is_outside(cert) && return true
     δ = dist(tri, q)
     is_ghost = is_ghost_triangle(V)
@@ -1212,7 +1240,7 @@ end
 
 const RESTART_LIMIT = 25
 """
-    restart_find_triangle(tri::Triangulation, q, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts, use_barriers) -> Triangle[, Bool]
+    restart_find_triangle(tri::Triangulation, q, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts, use_barriers, predicates::AbstractPredicateKernel) -> Triangle[, Bool]
 
 Restart the [`find_triangle`](@ref) algorithm, or use [`brute_force_search`](@ref) to find `q` if `num_restarts ≥ $RESTART_LIMIT`.
 
@@ -1227,26 +1255,27 @@ Restart the [`find_triangle`](@ref) algorithm, or use [`brute_force_search`](@re
 - `concavity_protection`: Whether to use concavity protection. See [`concavity_protection_check`](@ref). This is only needed if your triangulation is not convex.
 - `num_restarts`: The number of times the algorithm has been restarted. 
 - `use_barriers`: Whether to use barriers, stopping the algorithm at any segment.
+- `predicates::AbstractPredicateKernel`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs
 - `V`: The triangle containing `q`.
 
 In addition, if `use_barriers = Val(true)`, then a second output is returned, which is a boolean indicating whether the algorithm reached a barrier (`true`) or not (`false`).
 """
-function restart_find_triangle(tri, q, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts, use_barriers)
+function restart_find_triangle(tri, q, store_history, history, rng, maxiters, cur_iter, concavity_protection, num_restarts, use_barriers, predicates::AbstractPredicateKernel)
     if num_restarts < RESTART_LIMIT
         m = num_solid_vertices(tri)
         point_indices = each_solid_vertex(tri)
         k = select_initial_point(tri, q; m=(m >> 1) + 1, point_indices, rng) # don't want to try all points, still want to give the algorithm a chance
-        return _find_triangle(tri, q, k, store_history, history, rng, maxiters, zero(cur_iter), concavity_protection, num_restarts, use_barriers)
+        return _find_triangle(tri, q, k, store_history, history, rng, maxiters, zero(cur_iter), concavity_protection, num_restarts, use_barriers, predicates)
     else
-        V = brute_force_search(tri, q)
-        V_is_bad = concavity_protection_check(tri, concavity_protection, V, q)
+        V = brute_force_search(tri, q;predicates)
+        V_is_bad = concavity_protection_check(tri, concavity_protection, V, q, predicates)
         if V_is_bad
             if is_ghost_triangle(V)
-                V = brute_force_search(tri, q; itr=each_solid_triangle(tri))
+                V = brute_force_search(tri, q; itr=each_solid_triangle(tri), predicates)
             else
-                V = brute_force_search(tri, q; itr=each_ghost_triangle(tri))
+                V = brute_force_search(tri, q; itr=each_ghost_triangle(tri), predicates)
             end
         end
         if is_true(use_barriers)

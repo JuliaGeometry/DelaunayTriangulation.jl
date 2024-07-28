@@ -1,48 +1,8 @@
-# setup LocalPreferences.toml 
-using Preferences
-PREDICATES = get(ENV, "PREDICATES", "EXACT")
-if PREDICATES == "EXACT"
-    set_preferences!("DelaunayTriangulation", "PREDICATES" => "EXACT")
-elseif PREDICATES == "INEXACT"
-    set_preferences!("DelaunayTriangulation", "PREDICATES" => "INEXACT")
-elseif PREDICATES != "DEFAULT"
-    throw("Invalid PREDICATES setting, $PREDICATES.")
-end # if PREDICATES == "default", do nothing
-
-@info "Testing with PREDICATES = $PREDICATES"
-
-# get all the compilation out of the way
-using BenchmarkTools
-using CairoMakie
-using ColorSchemes
-using DataStructures
 using Dates
 using DelaunayTriangulation
-using DelimitedFiles
-using Documenter
-using DocumenterTools
-using Downloads
-using ElasticArrays
-using ExactPredicates
-using FastGaussQuadrature
-using ForwardDiff
-using GeometryBasics
-using InteractiveUtils
-using LinearAlgebra
-using OrderedCollections
-using Random
-using ReferenceTests
-using SafeTestsets
-using Setfield
-using SimpleGraphs: SimpleGraphs
-using SpatialIndexing
-using StableRNGs
-using StaticArrays
-using StaticArraysCore
-using StatsBase
-using StructEquality
 using Aqua
 using Test
+using Random
 
 if isdefined(Docs, :undocumented_names)
     @test isempty(Docs.undocumented_names(DelaunayTriangulation))
@@ -59,6 +19,7 @@ function safe_include(filename; name=filename, push=true, verbose=true) # Workar
     mod = @eval module $(gensym()) end
     @info "[$(ct())] Testing $name"
     @testset verbose = verbose "$(basename(name))" begin
+        Random.seed!(0)
         @eval mod using ..HelperFunctions
         @eval mod using ..Test
         Base.include(mod, filename)
@@ -67,7 +28,7 @@ end
 
 @testset verbose = true "DelaunayTriangulation.jl" begin
     @testset verbose = true "Aqua" begin
-        Aqua.test_all(DelaunayTriangulation; ambiguities=false, project_extras=false, stale_deps=!USE_INEXACTPREDICATES) # don't care about julia < 1.2
+        Aqua.test_all(DelaunayTriangulation; ambiguities=false, project_extras=false) # don't care about julia < 1.2
         Aqua.test_ambiguities(DelaunayTriangulation) # don't pick up Base and Core...
     end
 
@@ -78,6 +39,7 @@ end
         safe_include("triangulation/convex_triangulation.jl")
         safe_include("triangulation/constrained.jl")
         safe_include("triangulation/check_args.jl")
+        
         # Needs to be setup properly before we do more testing of it. Please see the 
         # comments at the end of the weighted.jl file (the one included in the comment below).
         # safe_include("triangulation/weighted.jl")
@@ -183,25 +145,25 @@ end
         @testset verbose = true "Test the readme example" begin
             safe_include("readme_example.jl")
         end
+    end
 
-        @testset "All script files are included somewhere" begin
-            missing_set = String[]
-            test_dir = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "test", "")
-            for (root, dir, files) in walkdir(test_dir)
-                for file in files
-                    filename = normpath(replace(joinpath(root, file), test_dir => ""))
-                    if endswith(filename, ".jl") && filename ∉ ALL_TEST_SCRIPTS && filename ∉ NON_TEST_SCRIPTS
-                        push!(missing_set, filename)
-                    end
+    @testset "All script files are included somewhere" begin
+        missing_set = String[]
+        test_dir = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "test", "")
+        for (root, dir, files) in walkdir(test_dir)
+            for file in files
+                filename = normpath(replace(joinpath(root, file), test_dir => ""))
+                if endswith(filename, ".jl") && filename ∉ ALL_TEST_SCRIPTS && filename ∉ NON_TEST_SCRIPTS
+                    push!(missing_set, filename)
                 end
             end
-            if !isempty(missing_set)
-                @info "There were some test scripts that were not included. These are printed below."
-                for script in missing_set
-                    @info "     $script"
-                end
-            end
-            @test isempty(missing_set)
         end
+        if !isempty(missing_set)
+            @info "There were some test scripts that were not included. These are printed below."
+            for script in missing_set
+                @info "     $script"
+            end
+        end
+        @test isempty(missing_set)
     end
 end

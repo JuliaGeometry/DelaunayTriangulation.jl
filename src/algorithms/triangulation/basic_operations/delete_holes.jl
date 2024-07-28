@@ -118,8 +118,6 @@ and consider if it needs to be added into `points_to_process` according to its d
 We then call [`find_all_points_to_delete!`](@ref) recursively again on the new seed.
 """
 function find_all_points_to_delete!(points_to_process, tri::Triangulation, seed, all_bn)
-    points = get_points(tri)
-    complete_boundary_nodes = get_boundary_nodes(tri)
     for new_seed in get_neighbours(tri, seed)
         q = get_point(tri, new_seed)
         δ = dist(tri, q)
@@ -167,8 +165,6 @@ function find_all_triangles_to_delete(tri::Triangulation, points_to_process)
     end
     ## Now process the boundary nodes
     all_bn = get_all_boundary_nodes(tri)
-    points = get_points(tri)
-    complete_boundary_nodes = get_boundary_nodes(tri)
     for node in all_bn
         S = get_adjacent2vertex(tri, node)
         for e in each_edge(S)
@@ -178,7 +174,6 @@ function find_all_triangles_to_delete(tri::Triangulation, points_to_process)
                 p, q, r = get_point(tri, u, v, node)
                 c = triangle_centroid(p, q, r)
                 δ = dist(tri, c)
-                # δ = distance_to_polygon(c, points, complete_boundary_nodes)
                 if δ < zero(δ)
                     add_triangle!(triangles_to_delete, V)
                 end

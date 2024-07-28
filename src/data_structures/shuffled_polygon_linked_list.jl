@@ -15,7 +15,7 @@ descriptions below, `π` is used to denote the `shuffled_indices` vector.
 # Constructor 
 To construct this, use 
 
-    ShuffledPolygonLinkedList(S::Vector; rng::AbstractRNG=Random.default_rng())
+    ShuffledPolygonLinkedList(S::Vector; rng::Random.AbstractRNG=Random.default_rng())
 
 The argument `rng` is used for shuffling the `shuffled_indices` vector.
 """
@@ -32,7 +32,7 @@ struct ShuffledPolygonLinkedList{I,T}
         new{I, T}(next, prev, shuffled_indices, k, S)
     end
 end
-function ShuffledPolygonLinkedList(S::AbstractVector{I}; rng::AbstractRNG=Random.default_rng()) where {I} 
+function ShuffledPolygonLinkedList(S::AbstractVector{I}; rng::Random.AbstractRNG=Random.default_rng()) where {I} 
     k = I(length(S))
     shuffled_indices = collect(I, eachindex(S))
     next = zeros(I, k)
@@ -43,17 +43,17 @@ function ShuffledPolygonLinkedList(S::AbstractVector{I}; rng::AbstractRNG=Random
 end
 
 """
-    reset!(list::ShuffledPolygonLinkedList; rng::AbstractRNG=Random.default_rng())
+    reset!(list::ShuffledPolygonLinkedList; rng::Random.AbstractRNG=Random.default_rng())
 
 Resets the linked `list`, so that `list.next[i] = mod1(i+1, list.k)` and `list.prev[i] = mod1(i-1, list.k)`,
 and also reshuffles the `list.shuffled_indices` vector.
 """
-function reset!(list::ShuffledPolygonLinkedList; rng::AbstractRNG=Random.default_rng())
+function reset!(list::ShuffledPolygonLinkedList; rng::Random.AbstractRNG=Random.default_rng())
     for i in 1:list.k 
         list.next[i] = mod1(i+1, list.k)
         list.prev[i] = mod1(i-1, list.k)
     end
-    shuffle!(rng, list.shuffled_indices)
+    Random.shuffle!(rng, list.shuffled_indices)
     return list
 end
 

@@ -69,7 +69,8 @@ end
     DT.triangulate_cavity_cdt!(_tri_1.triangulation, R, _tri_1.triangulation_2, _tri_1.marked_vertices,_tri_1.fan_triangles)
     DT.add_new_triangles!(tri, _tri_1.triangulation)
     empty!(_tri_1)
-    true_tri = ([ # two triangles to account for the cocircular points (2, 9, 3, 10)
+    true_tri = ([ 
+        ## two triangles to account for the cocircular points (2, 9, 3, 10)
             (1, 4, 2)
             (8, 11, 10)
             (8, 7, 11)

@@ -111,7 +111,7 @@ function get_next_triangle_for_voronoi_polygon(vorn::VoronoiTessellation, i, k, 
     T = triangle_type(vorn)
     j = k
     k = S[m]
-    V = (sort_triangle ∘ construct_triangle)(T, i, j, k)
+    V = sort_triangle(construct_triangle(T, i, j, k))
     ci = get_triangle_to_circumcenter(vorn, V)
     return ci, k
 end

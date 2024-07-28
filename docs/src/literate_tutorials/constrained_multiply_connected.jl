@@ -22,23 +22,27 @@ fig_path = joinpath(@__DIR__, "../figures") #src
 # of the interiors relative to the boundaries are consistent. Note again 
 # that neighbouring segments must connect.
 curve_1 = [
-    [ # first segment
+    ## first segment
+    [ 
         (0.0, 0.0), (4.0, 0.0), (8.0, 0.0), (12.0, 0.0), (12.0, 4.0),
         (12.0, 8.0), (14.0, 10.0), (16.0, 12.0), (16.0, 16.0),
         (14.0, 18.0), (12.0, 20.0), (12.0, 24.0), (12.0, 28.0)
     ],
-    [ # second segment
+    ## second segment
+    [ 
         (12.0, 28.0), (8.0, 28.0), (4.0, 28.0), (0.0, 28.0), (-2.0, 26.0), (0.0, 22.0),
         (0.0, 18.0), (0.0, 10.0), (0.0, 8.0), (0.0, 4.0), (-4.0, 4.0),
         (-4.0, 0.0), (0.0, 0.0),
     ]
 ] # outer: counter-clockwise
 curve_2 = [
-    [ # first segment
+    ## first segment
+    [ 
         (4.0, 26.0), (8.0, 26.0), (10.0, 26.0), (10.0, 24.0),
         (10.0, 22.0), (10.0, 20.0)
     ],
-    [ # second segment
+    ## second segment
+    [ 
         (10.0, 20.0), (8.0, 20.0), (6.0, 20.0),
         (4.0, 20.0), (4.0, 22.0), (4.0, 24.0), (4.0, 26.0)
     ]

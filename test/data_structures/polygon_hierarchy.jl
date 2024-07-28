@@ -346,8 +346,8 @@ for _ in 1:20 # Run many times to make sure the segfault is gone
         @test points == orig_points # check that the original points are not modified
         @test boundary_nodes == orig_boundary_nodes # check that the original boundary nodes are not modified
         hierarchy = DT.construct_polygon_hierarchy(points, nnew_boundary_nodes, boundary_curves)
-        DT.expand_bounds!(hierarchy, DT.ε)
-        @test DT.get_bounding_boxes(hierarchy) ⊢ [DT.BoundingBox(-1 - 2DT.ε, 1 + 2DT.ε, -1 - 2DT.ε, 1 + 2DT.ε)] &&
+        DT.expand_bounds!(hierarchy, DT.ε(Float64))
+        @test DT.get_bounding_boxes(hierarchy) ⊢ [DT.BoundingBox(-1 - 2DT.ε(Float64), 1 + 2DT.ε(Float64), -1 - 2DT.ε(Float64), 1 + 2DT.ε(Float64))] &&
               DT.get_polygon_orientations(hierarchy) ⊢ BitVector([1])
         trees = DT.get_trees(hierarchy)
         @test length(trees) == 1

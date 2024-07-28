@@ -2,7 +2,18 @@
 
 ## Main (upcoming v.1.1.0)
 
-- Added the option to disable ExactPredicates.jl using Preferences.jl. See [#131](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/131) and [#137](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/137).
+There are a lot of changes in this release, most of them irrelevant for the user. The most important change is the following:
+
+- We now support a choice between fast, exact, and adaptive predicates via `FastKernel()`, `ExactKernel()`, and `AdaptiveKernel()`, respectively. The default is now `AdaptiveKernel()`. Moreover, triangle areas are now computed using the adaptive `orient` predicate to be more robust. See [#165](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/165).
+
+Previously, ExactPredicates.jl was used everywhere, which can be slow and not necessary for certain point sets. The `FastKernel()` option 
+has no exact or adaptive arithmetic and so should be used with caution. The documentation discusses these choices in more detail. 
+
+To actually configure the choice of predicate, you can e.g. in `triangulate` use the `predicates` keyword argument and pass one of 
+`DelaunayTriangulation.FastKernel()`, `DelaunayTriangulation.ExactKernel()`, or `DelaunayTriangulation.AdaptiveKernel()`. If you are computing a predicate manually, then the predicate is instead passed as the first argument.
+
+Some other changes: 
+
 - Added `DelauanyTriangulation.validate_triangulation` for validating triangulations. See [#131](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/131).
 - Fixed a bug with the currently unused `orient(p, q, r, s)` predicate. See [#131](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/131).
 - Added private functions `getz`, `_getz`, `getxyz`, and `_getxyz`. See [#131](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/131).
@@ -17,6 +28,7 @@
 - Added a CONTRIBUTING.md file and issue templates. See [#160](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/160).
 - Added `is_point2` and `is_point3` to detect if a given input is a point. This allows vector coordinates to be passed to `convert_boundary_points_to_indices`. See [#161](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/161).
 - Removed an allocation from `add_vertex!`. See [#163](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/163).
+- Fixed an issue with the user-supplied `rng` not being passed to `lock_convex_hull!`.
 
 ## v1.0.5 
 

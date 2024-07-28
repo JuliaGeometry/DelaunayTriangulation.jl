@@ -38,7 +38,7 @@ struct TriangleOrientationState <: AbstractTriangulationState
     bad_triangle::NTuple{3,Int}
     triangle_orientation::Symbol
 end
-TriangleOrientationState(tri) = test_triangle_orientation(tri)
+TriangleOrientationState(tri; predicates::AbstractPredicateKernel=ExactKernel()) = test_triangle_orientation(tri; predicates)
 function Base.summary(state::TriangleOrientationState)
     if test_state(state)
         return "All the triangles have positive orientation."
@@ -46,9 +46,9 @@ function Base.summary(state::TriangleOrientationState)
         return "The triangle $(state.bad_triangle) is $(state.triangle_orientation) oriented."
     end
 end
-function test_triangle_orientation(tri)
+function test_triangle_orientation(tri; predicates::AbstractPredicateKernel=ExactKernel())
     for T in each_solid_triangle(tri)
-        cert = triangle_orientation(tri, T)
+        cert = triangle_orientation(predicates, tri, T)
         flag = is_positively_oriented(cert)
         orientation = is_positively_oriented(cert) ? :positively : is_negatively_oriented(cert) ? :negatively : :degenerately
         !flag && return TriangleOrientationState(flag, Int.(triangle_vertices(T)), orientation)
@@ -61,7 +61,7 @@ struct DelaunayCriterionState <: AbstractTriangulationState
     bad_triangle::NTuple{3,Int}
     bad_vertex::Int
 end
-DelaunayCriterionState(tri) = test_delaunay_criterion(tri)
+DelaunayCriterionState(tri; predicates::AbstractPredicateKernel=ExactKernel()) = test_delaunay_criterion(tri; predicates)
 function Base.summary(state::DelaunayCriterionState)
     if test_state(state)
         return "All the triangles are Delaunay."
@@ -73,7 +73,7 @@ function Base.summary(state::DelaunayCriterionState)
         end
     end
 end
-function test_delaunay_criterion(tri)
+function test_delaunay_criterion(tri; predicates::AbstractPredicateKernel=ExactKernel())
     try
         points = get_points(tri)
         triangle_tree = BoundaryRTree(points)
@@ -104,7 +104,7 @@ function test_delaunay_criterion(tri)
             dbx = DiametralBoundingBox(bbox, (i, j))
             insert!(segment_tree.tree, dbx)
         end
-        for r in shuffle(collect(each_solid_vertex(tri)))
+        for r in Random.shuffle(collect(each_solid_vertex(tri)))
             !isempty(failures) && break
             intersects = get_intersections(triangle_tree, r, cache_id=1) # can't use multithreading here
             for box in intersects
@@ -112,18 +112,20 @@ function test_delaunay_criterion(tri)
                 k = get_adjacent(tri, i, j)
                 any(==(r), (i, j, k)) && continue
                 T = construct_triangle(triangle_type(tri), i, j, k)
-                cert = point_position_relative_to_circumcircle(tri, T, r)
+                cert = point_position_relative_to_circumcircle(predicates, tri, T, r)
                 c = triangle_centroid(get_point(tri, i, j, k)...)
+                A = triangle_area(get_point(tri, i, j, k)...)
+                check_precision(A) && continue # the centroids in this case sometimes appear outside of the triangle
                 if is_inside(cert)
-                    is_boundary_edge(tri, i, j) && is_right(point_position_relative_to_line(tri, i, j, r)) && continue # if it's outside of the domain relative to this edge, just continue
-                    is_boundary_edge(tri, j, k) && is_right(point_position_relative_to_line(tri, j, k, r)) && continue
-                    is_boundary_edge(tri, k, i) && is_right(point_position_relative_to_line(tri, k, i, r)) && continue
+                    is_boundary_edge(tri, i, j) && is_right(point_position_relative_to_line(predicates, tri, i, j, r)) && continue # if it's outside of the domain relative to this edge, just continue
+                    is_boundary_edge(tri, j, k) && is_right(point_position_relative_to_line(predicates, tri, j, k, r)) && continue
+                    is_boundary_edge(tri, k, i) && is_right(point_position_relative_to_line(predicates, tri, k, i, r)) && continue
                     for (i, j) in triangle_edges(i, j, k)
                         contains_segment(tri, i, j) && continue # visibility is defined according to the relative interior of the simplex, which means that it's fine if a segment can see the vertex
                         if rand() < 1 / 2 # just testing both
-                            cert = test_visibility(tri, i, j, r, shift=0.01, attractor=c)
+                            cert = test_visibility(predicates, tri, i, j, r, shift=0.01, attractor=c)
                         else
-                            cert = test_visibility(tri, segment_tree, i, j, r, c)
+                            cert = test_visibility(predicates, tri, segment_tree, i, j, r, c)
                         end
                         flag = is_visible(cert)
                         flag && push!(failures, (T, r))
@@ -142,13 +144,13 @@ function test_delaunay_criterion(tri)
         rethrow(e)
     end
 end
-function test_visibility(tri::Triangulation, segment_tree, i, j, k, centroid=nothing)
+function test_visibility(kernel::AbstractPredicateKernel, tri::Triangulation, segment_tree, i, j, k, centroid=nothing)
     if is_boundary_edge(tri, j, i)
         i, j = j, i
     end
     p, q, a = get_point(tri, i, j, k)
     if is_boundary_edge(tri, i, j)
-        side_e = point_position_relative_to_line(p, q, a)
+        side_e = point_position_relative_to_line(kernel, p, q, a)
         is_right(side_e) && return Cert.Invisible
     end
     # Need to see if i or j is a boundary node without the other being a boundary node.
@@ -157,10 +159,10 @@ function test_visibility(tri::Triangulation, segment_tree, i, j, k, centroid=not
         flag, g = is_boundary_node(tri, u)
         if flag
             ℓ = get_left_boundary_node(tri, u, g)
-            cert = point_position_relative_to_line(tri, ℓ, u, k)
+            cert = point_position_relative_to_line(kernel, tri, ℓ, u, k)
             is_right(cert) && return Cert.Invisible
             ℓ = get_right_boundary_node(tri, u, g)
-            cert = point_position_relative_to_line(tri, u, ℓ, k)
+            cert = point_position_relative_to_line(kernel, tri, u, ℓ, k)
             is_right(cert) && return Cert.Invisible
         end
     end
@@ -182,13 +184,14 @@ function test_visibility(tri::Triangulation, segment_tree, i, j, k, centroid=not
         for box in intersections
             u, v = get_edge(box)
             p′, q′ = get_point(tri, u, v)
-            cert = line_segment_intersection_type(m, a, p′, q′)
+            cert = line_segment_intersection_type(kernel, m, a, p′, q′)
             flags[idx] = !has_no_intersections(cert) && !is_touching(cert)
             flags[idx] && break
         end
     end
     return all(flags) ? Cert.Invisible : Cert.Visible
 end
+test_visibility(tri::Triangulation, segment_tree, i, j, k, centroid=nothing) = test_visibility(ExactKernel(), tri, segment_tree, i, j, k, centroid)
 
 struct EdgesHaveTwoIncidentTrianglesState <: AbstractTriangulationState
     flag::Bool
@@ -863,7 +866,7 @@ struct TriangulationState <: AbstractTriangulationState
     ghost_edge_iterator_state::IteratorState
 end
 
-function TriangulationState(tri::Triangulation)
+function TriangulationState(tri::Triangulation; predicates::AbstractPredicateKernel=ExactKernel())
     has_ghosts = has_ghost_triangles(tri)
     delete_ghost_triangles!(tri)
     add_ghost_triangles!(tri)
@@ -876,14 +879,14 @@ function TriangulationState(tri::Triangulation)
         AdjacentMapState(tri),
         BoundaryEdgeMapBoundaryNodesState(tri),
         BoundaryNodesBoundaryEdgeMapState(tri),
-        DelaunayCriterionState(tri),
+        DelaunayCriterionState(tri; predicates),
         DuplicateSegmentsState(tri),
         EdgesHaveTwoIncidentTrianglesState(tri),
         GraphAdjacentMapState(tri),
         GraphState(tri),
         GraphTrianglesState(tri),
         SegmentState(tri),
-        TriangleOrientationState(tri),
+        TriangleOrientationState(tri; predicates),
         test_iterators(tri)...
     )
     !has_ghosts && delete_ghost_triangles!(tri)
@@ -912,14 +915,18 @@ function Base.show(io::IO, triangulation_state::TriangulationState)
 end
 
 """
-    validate_triangulation(tri::Triangulation; print_result=true) -> Bool 
+    validate_triangulation(tri::Triangulation; print_result=true, predicates::AbstractPredicateKernel=ExactKernel()) -> Bool 
 
 Tests if `tri` is a valid `Triangulation`. Returns `true` if so, 
 and `false` otherwise. If `print_result=true` and `tri` is not a 
 valid triangulation, all the issues with `tri` will be printed.
+
+Use the `predicates` keyword argument to control the method used for computing predicates. 
+Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). 
+See the documentation for a further discussion of these methods.
 """
-function validate_triangulation(tri::Triangulation; print_result=true)
-    state = TriangulationState(tri)
+function validate_triangulation(tri::Triangulation; print_result=true, predicates::AbstractPredicateKernel=ExactKernel())
+    state = TriangulationState(tri; predicates)
     print_result && !test_state(state) && println(state)
     return test_state(state)
 end

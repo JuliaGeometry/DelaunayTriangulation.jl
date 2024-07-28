@@ -3,16 +3,16 @@ using DelaunayTriangulation, CairoMakie, ReferenceTests, StableRNGs
 # Unconstrained 
 rng = StableRNG(123)
 points = rand(rng, 2, 50)
-tri1 = triangulate(points; rng)
+tri1 = triangulate(points; rng) # default predicate kernel is AdaptiveKernel()
 
 # Voronoi example 
 vorn2 = voronoi(tri1; rng)
 
 # Clipped Voronoi 
-vorn3 = voronoi(tri1, clip=true; rng)
+vorn3 = voronoi(tri1, clip=true; rng, predicates = ExactKernel()) # you can change the predicate kernel
 
 # Smoothed Voronoi 
-vorn4 = centroidal_smooth(vorn3; rng)
+vorn4 = centroidal_smooth(vorn3; rng, predicates = FastKernel())
 
 # Constrained example with refinement 
 boundary_points = [(0.0, 0.0), (1.0, 0.0), (1.0, 0.3), (0.5, 0.3),

@@ -141,7 +141,7 @@ Now we can finally discuss the full algorithm for enriching the boundary to prep
 
 #### Coarse discretisation
 
-The first step is to obtain a coarse discretisation of the boundary. For each curve, we compute a coarse discretisation by, starting with the two endpoints, computing equivariation curves between each pair of points until the total variation across any subcurve is less than $\pi/2$. In this package, this is the default, but we also provide an option to simply add a specified number of equivariation splits rather than taking care of the total variation.
+The first step is to obtain a coarse discretisation of the boundary. For each curve, we compute a coarse discretisation by, starting with the two endpoints, computing equivariation curves between each pair of points until the total variation across any subcurve is less than $\pi/2$. In this package this is the default, but we also provide an option to simply add a specified number of equivariation splits rather than taking care of the total variation.
 
 #### Spatial indexing
 

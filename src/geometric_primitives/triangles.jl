@@ -256,9 +256,9 @@ julia> DelaunayTriangulation.construct_positively_oriented_triangle(Vector{Int},
  3
 ```
 """
-function construct_positively_oriented_triangle(::Type{V}, i, j, k, points) where {V}
+function construct_positively_oriented_triangle(::Type{V}, i, j, k, points, predicates::AbstractPredicateKernel=AdaptiveKernel()) where {V}
     p, q, r = get_point(points, i, j, k)
-    orientation = triangle_orientation(p, q, r)
+    orientation = triangle_orientation(predicates, p, q, r)
     if is_negatively_oriented(orientation)
         return construct_triangle(V, j, i, k)
     else

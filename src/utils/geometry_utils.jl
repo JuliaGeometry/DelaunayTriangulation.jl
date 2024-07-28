@@ -60,16 +60,20 @@ function segment_intersection_coordinates(a, b, c, d)
 end
 
 """
-    intersection_of_edge_and_bisector_ray(a, b, c) -> (Certificate, NTuple{2, Number})
+    intersection_of_edge_and_bisector_ray([kernel::AbstractPredicateKernel=AdaptiveKernel(),] a, b, c) -> (Certificate, NTuple{2, Number})
 
 Given an edge `(a, b)` and a ray emanating from `c` perpendicular
 with the edge and collinear with its midpoint, tests if `c` intersects the edge. The returned value is `(cert, p)`, where:
 
 - `cert`: A [`Certificate`](@ref) indicating the position of `c` relative to the line through `(a, b)`.
 - `p`: The intersection point (which is the midpoint) if `c` intersects the edge, `(NaN, NaN)` otherwise.
+
+The `kernel` argument determines how this result is computed, and should be 
+one of [`ExactKernel`](@ref), [`FastKernel`](@ref), and [`AdaptiveKernel`](@ref) (the default).
+See the documentation for more information about these choices.
 """
-function intersection_of_edge_and_bisector_ray(a, b, c)
-    cert = point_position_relative_to_line(a, b, c)
+function intersection_of_edge_and_bisector_ray(kernel::AbstractPredicateKernel, a, b, c)
+    cert = point_position_relative_to_line(kernel, a, b, c)
     if !is_left(cert)
         ax, ay = getxy(a)
         bx, by = getxy(b)
@@ -80,9 +84,10 @@ function intersection_of_edge_and_bisector_ray(a, b, c)
         return cert, (F(NaN), F(NaN))
     end
 end
+intersection_of_edge_and_bisector_ray(a, b, c) = intersection_of_edge_and_bisector_ray(AdaptiveKernel(), a, b, c)
 
 """
-    classify_and_compute_segment_intersection(a, b, c, d) -> (Certificate, Certificate, Certificate, NTuple{2, Number})
+    classify_and_compute_segment_intersection([kernel::AbstractPredicateKernel,] a, b, c, d) -> (Certificate, Certificate, Certificate, NTuple{2, Number})
 
 Given two line segments `(a, b)` and `(c, d)`, classifies the intersection of the two segments. The returned value is `(cert, cert_c, cert_d, p)`, where:
 
@@ -91,14 +96,14 @@ Given two line segments `(a, b)` and `(c, d)`, classifies the intersection of th
 - `cert_d`: A [`Certificate`](@ref) indicating the position of `d` relative to the line through `(a, b)`.
 - `p`: The intersection point if `cert` is `Cert.Single` or `Cert.Touching`, and `(NaN, NaN)` otherwise.
 """
-function classify_and_compute_segment_intersection(a, b, c, d)
+function classify_and_compute_segment_intersection(kernel::AbstractPredicateKernel, a, b, c, d)
     F = number_type(a)
     if any(!isfinite, getxy(a)) || any(!isfinite, getxy(b)) || any(!isfinite, getxy(c)) || any(!isfinite, getxy(d))
         return Cert.None, Cert.None, Cert.None, (F(NaN), F(NaN))
     end
-    cert = line_segment_intersection_type(a, b, c, d)
-    cert_c = point_position_relative_to_line(a, b, c)
-    cert_d = point_position_relative_to_line(a, b, d)
+    cert = line_segment_intersection_type(kernel, a, b, c, d)
+    cert_c = point_position_relative_to_line(kernel, a, b, c)
+    cert_d = point_position_relative_to_line(kernel, a, b, d)
     if !is_none(cert)
         p = segment_intersection_coordinates(a, b, c, d)
         return cert, cert_c, cert_d, p
@@ -107,6 +112,7 @@ function classify_and_compute_segment_intersection(a, b, c, d)
         return cert, cert_c, cert_d, (F(NaN), F(NaN))
     end
 end
+classify_and_compute_segment_intersection(a, b, c, p) = classify_and_compute_segment_intersection(AdaptiveKernel(), a, b, c, p)
 
 """
     polygon_features(points, boundary_nodes) -> (Number, NTuple{2, Number})
@@ -342,7 +348,7 @@ assumed that the vertices are not circular, i.e. `vertices[begin] ≠ vertices[e
 function sort_convex_polygon!(vertices, points)
     cx, cy = mean_points(points, vertices)
     to_angle = p -> atan(gety(p) - cy, getx(p) - cx)
-    vert_to_angle = v -> (to_angle ∘ get_point)(points, v)
+    vert_to_angle = v -> to_angle(get_point(points, v))
     sort!(vertices, by=vert_to_angle)
     return vertices
 end

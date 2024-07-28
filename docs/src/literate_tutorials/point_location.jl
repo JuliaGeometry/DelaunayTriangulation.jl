@@ -21,7 +21,6 @@ using StableRNGs
 using Test #src
 using ReferenceTests #src
 fig_path = joinpath(@__DIR__, "../figures") #src
-using Preferences #src
 
 points = [
     (-3.0, 6.0), (5.0, 1.0), (-5.0, 3.0), (2.0, -3.0),
@@ -79,7 +78,7 @@ V = find_triangle(tri, q)
 fig, ax, sc = triplot(tri, show_ghost_edges=true)
 scatter!(ax, q)
 fig
-!USE_INEXACTPREDICATES && @test_reference joinpath(fig_path, "point_location_ex_1.png") fig #src
+@test_reference joinpath(fig_path, "point_location_ex_1.png") fig #src
 
 # ## Region with concave boundaries and holes 
 # Now we give an example of point location for a reason with holes. Since the 
@@ -105,7 +104,7 @@ refine!(tri; max_area=0.01get_area(tri), rng);
 # To demonstrate this, see the following plot:
 fig, ax, sc = triplot(tri, show_ghost_edges=true)
 fig
-!USE_INEXACTPREDICATES && @test_reference joinpath(fig_path, "point_location_ex_2.png") fig #src
+@test_reference joinpath(fig_path, "point_location_ex_2.png") fig by=psnr_equality(15) #src
 
 # The ghost edges now intersect the boundary, which doesn't make sense, and creates difficulties.
 # Let us now demonstrate how the function still works here. We try finding the blue points shown below.
@@ -118,7 +117,7 @@ qs = [
 fig, ax, sc = triplot(tri, show_ghost_edges=false)
 scatter!(ax, qs, color=:blue, markersize=16)
 fig
-!USE_INEXACTPREDICATES && @test_reference joinpath(fig_path, "point_location_ex_3.png") fig #src
+@test_reference joinpath(fig_path, "point_location_ex_3.png") fig by=psnr_equality(15) #src
 
 # Now let's find the triangles.
 Vs = [find_triangle(tri, q; rng) for q in qs]
@@ -182,7 +181,7 @@ qs = [
 fig, ax, sc = triplot(tri)
 scatter!(ax, qs, color=:blue, markersize=16)
 fig
-!USE_INEXACTPREDICATES && @test_reference joinpath(fig_path, "point_location_ex_4.png") fig by=psnr_equality(10) #src
+@test_reference joinpath(fig_path, "point_location_ex_4.png") fig by=psnr_equality(10) #src
 
 # Here are the `find_triangle` results. 
 Vs = [find_triangle(tri, q; rng, concavity_protection=true) for q in qs]

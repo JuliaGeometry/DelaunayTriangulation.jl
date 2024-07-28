@@ -382,7 +382,7 @@ function BoundaryEnricher(points::P, boundary_nodes::B, segments=nothing; Intege
     return _construct_boundary_enricher(points, new_boundary_nodes, boundary_curves,  polygon_hierarchy, segments, n, coarse_n, IntegerType)
 end
 function _construct_boundary_enricher(points, boundary_nodes, boundary_curves, polygon_hierarchy, segments, n, coarse_n, ::Type{I}) where {I}
-    expand_bounds!(polygon_hierarchy, ε)
+    expand_bounds!(polygon_hierarchy, ε(number_type(points)))
     coarse_discretisation!(points, boundary_nodes, boundary_curves; n=coarse_n)
     boundary_edge_map = construct_boundary_edge_map(boundary_nodes, I)
     parent_map = Dict{NTuple{2,I},I}()
@@ -775,21 +775,27 @@ end
 end
 
 """
-    point_position_relative_to_curve(enricher::BoundaryEnricher, curve_index, p) -> Certificate
+    point_position_relative_to_curve([kernel::AbstractPredicateKernel=AdaptiveKernel(),] enricher::BoundaryEnricher, curve_index, p) -> Certificate
 
 Returns a [`Certificate`](@ref) which is 
 
 - `Left`: If `p` is to the left of the `curve_index`th curve.
 - `Right`: If `p` is to the right of the `curve_index`th curve.
 - `On`: If `p` is on the `curve_index`th curve.
+
+The `kernel` argument determines how this result is computed, and should be 
+one of [`ExactKernel`](@ref), [`FastKernel`](@ref), and [`AdaptiveKernel`](@ref) (the default).
+See the documentation for more information about these choices.
 """
-@inline function point_position_relative_to_curve(enricher::BoundaryEnricher, curve_index, p)
+@inline function point_position_relative_to_curve(kernel::AbstractPredicateKernel, enricher::BoundaryEnricher, curve_index, p)
     boundary_curves = get_boundary_curves(enricher)
-    return point_position_relative_to_curve(boundary_curves, curve_index, p)
+    return point_position_relative_to_curve(kernel, boundary_curves, curve_index, p)
 end
-@inline function point_position_relative_to_curve(boundary_curves::C, curve_index, p) where {C<:Tuple}
-    return eval_fnc_at_het_tuple_element_with_arg(point_position_relative_to_curve, boundary_curves, (p,), curve_index)
+@inline point_position_relative_to_curve(enricher::BoundaryEnricher, curve_index, p) = point_position_relative_to_curve(AdaptiveKernel(), enricher, curve_index, p)
+@inline function point_position_relative_to_curve(kernel::AbstractPredicateKernel, boundary_curves::C, curve_index, p) where {C<:Tuple}
+    return eval_fnc_at_het_tuple_element_with_arg_and_prearg(point_position_relative_to_curve, boundary_curves, kernel, (p,), curve_index)
 end
+@inline point_position_relative_to_curve(boundary_curves::C, curve_index, p) where {C<:Tuple} = point_position_relative_to_curve(AdaptiveKernel(),boundary_curves,curve_index,p)
 
 """
     angle_between(enricher::BoundaryEnricher, curve_index1, curve_index2) -> Float64 
