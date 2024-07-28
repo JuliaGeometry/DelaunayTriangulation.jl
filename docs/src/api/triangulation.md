@@ -45,7 +45,6 @@ get_section_index
 map_ghost_vertex
 get_ghost_vertex_range
 all_ghost_vertices
-get_point
 num_points
 get_representative_point_coordinates
 compute_representative_points!
