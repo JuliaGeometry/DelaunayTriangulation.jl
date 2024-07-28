@@ -61,24 +61,28 @@ end
             @test DT.orient_predicate(DT.FastKernel(), p, q, r) === Int(sign(AdaptivePredicates.orient2fast(p, q, r))) === ExactPredicates.orient(p, q, r)
             @test DT.orient_predicate(DT.AdaptiveKernel(), p, q, r) === AdaptivePredicates.orient2p(p, q, r) === ExactPredicates.orient(p, q, r)
             @inferred DT.orient_predicate(rt(), p, q, r)
+            @test DT.orient_predicate(DT.AdaptiveKernel(), p, q, r) === DT.orient_predicate(p, q, r) 
 
             p, q, r, s = eachcol(rand(3, 4))
             @test DT.orient_predicate(DT.ExactKernel(), p, q, r, s) === ExactPredicates.orient(p, q, r, s)
             @test DT.orient_predicate(DT.FastKernel(), p, q, r, s) === Int(sign(AdaptivePredicates.orient3fast(p, q, r, s))) === ExactPredicates.orient(p, q, r, s)
             @test DT.orient_predicate(DT.AdaptiveKernel(), p, q, r, s) === AdaptivePredicates.orient3p(p, q, r, s) === ExactPredicates.orient(p, q, r, s)
             @inferred DT.orient_predicate(rt(), p, q, r, s)
+            @test DT.orient_predicate(DT.AdaptiveKernel(), p, q, r) === DT.orient_predicate(p, q, r) 
 
             a, b, c, p = eachcol(rand(2, 4))
             @test DT.incircle_predicate(DT.ExactKernel(), a, b, c, p) === ExactPredicates.incircle(a, b, c, p)
             @test DT.incircle_predicate(DT.FastKernel(), a, b, c, p) === Int(sign(AdaptivePredicates.incirclefast(a, b, c, p))) === ExactPredicates.incircle(a, b, c, p)
             @test DT.incircle_predicate(DT.AdaptiveKernel(), a, b, c, p) === AdaptivePredicates.incirclep(a, b, c, p) === ExactPredicates.incircle(a, b, c, p)
             @inferred DT.incircle_predicate(rt(), a, b, c, p)
+            @test DT.incircle_predicate(DT.AdaptiveKernel(), a, b, c, p) === DT.incircle_predicate(a, b, c, p)
 
             a, b, p, q = eachcol(rand(2, 4))
             @test DT.parallelorder_predicate(DT.ExactKernel(), a, b, p, q) === ExactPredicates.parallelorder(a, b, p, q)
             @test DT.parallelorder_predicate(DT.FastKernel(), a, b, p, q) === DT.parallelorder(DT.FastKernel(), a, b, p, q) === ExactPredicates.parallelorder(a, b, p, q)
             @test DT.parallelorder_predicate(DT.AdaptiveKernel(), a, b, p, q) === ExactPredicates.parallelorder(a, b, p, q) === ExactPredicates.parallelorder(a, b, p, q)
             @inferred DT.parallelorder_predicate(rt(), a, b, p, q)
+            @test DT.parallelorder_predicate(DT.AdaptiveKernel(), a, b, p, q) ===DT.parallelorder_predicate(a, b, p, q)
 
             p, a, b = eachcol(rand(2, 3))
             @test DT.sameside_predicate(a, b, p) === ExactPredicates.sameside(p, a, b)
@@ -89,6 +93,7 @@ end
             @test DT.meet_predicate(DT.FastKernel(), p, q, a, b) === ExactPredicates.meet(p, q, a, b)
             @test DT.meet_predicate(DT.AdaptiveKernel(), p, q, a, b) === ExactPredicates.meet(p, q, a, b)
             @inferred DT.meet_predicate(rt(), p, q, a, b)
+            @test DT.meet_predicate(DT.AdaptiveKernel(), p, q, a, b) === DT.meet_predicate(p, q, a, b)
         end
     end
 
@@ -115,6 +120,7 @@ end
             r = (rand(x), rand(y), rand(z))
             s = (rand(x), rand(y), rand(z))
             @test DT.orient_predicate(DT.ExactKernel(), p, q, r, s) == ExactPredicates.orient(p, q, r, s) === DT.orient_predicate(DT.AdaptiveKernel(), p, q, r, s) === DT.orient_predicate(DT.FastKernel(), p, q, r, s)
+            @test DT.orient_predicate(DT.AdaptiveKernel(), p, q, r, s) == DT.orient_predicate(p, q, r, s) 
         end
     end
 
@@ -177,6 +183,7 @@ end
             cert = DT.point_position_relative_to_circle(T(), a, b, c, p)
             @test DT.is_on(cert)
             @inferred DT.point_position_relative_to_circle(T(), a, b, c, p)
+            @test DT.point_position_relative_to_circle(a, b, c, p) == DT.point_position_relative_to_circle(AdaptiveKernel(), a, b, c, p)
         end
         a, b, c = (3.0, 2.5), (7.5, 2.5), (3.0, 4.5)
         p1, p2, p3 = (4.6438, 4.921), (4.48162, 4.2045), (6.078, 3.17) # in 
@@ -186,12 +193,14 @@ end
             cert = DT.point_position_relative_to_circle(T(), a, b, c, p)
             @test DT.is_inside(cert)
             @inferred DT.point_position_relative_to_circle(T(), a, b, c, p)
+            @test DT.point_position_relative_to_circle(a, b, c, p) == DT.point_position_relative_to_circle(AdaptiveKernel(), a, b, c, p)
         end
         for p in (p4, p5, p6)
             cert = DT.point_position_relative_to_circle(T(), a, b, c, p)
             @test DT.is_outside(cert)
             @inferred DT.point_position_relative_to_circle(T(), a, b, c, p)
             @inferred DT.is_outside(cert)
+            @test DT.point_position_relative_to_circle(a, b, c, p) == DT.point_position_relative_to_circle(AdaptiveKernel(), a, b, c, p)
         end
         cert = DT.point_position_relative_to_circle(T(), a, b, c, p7)
         @test DT.is_on(cert)
@@ -353,6 +362,7 @@ end
         for ((p, q, a, b), result) in zip(pqab, results)
             @test DT.line_segment_intersection_type(T(), p, q, a, b) == result
             @inferred DT.line_segment_intersection_type(T(), p, q, a, b)
+            @test DT.line_segment_intersection_type(p, q, a, b) == DT.line_segment_intersection_type(AdaptiveKernel(), p, q, a, b)
         end
     end
 end
@@ -648,6 +658,7 @@ end
         @test DT.is_outside(DT.point_position_relative_to_oriented_outer_halfplane(PT(), p, q, ℓ))
         @test DT.is_on(DT.point_position_relative_to_oriented_outer_halfplane(PT(), p, q, p))
         @test DT.is_on(DT.point_position_relative_to_oriented_outer_halfplane(PT(), p, q, q))
+        @test DT.point_position_relative_to_oriented_outer_halfplane(p, q, q) == DT.point_position_relative_to_oriented_outer_halfplane(AdaptiveKernel(), p, q, q)
         @inferred DT.is_outside(DT.point_position_relative_to_oriented_outer_halfplane(PT(), p, q, ℓ))
         p, q = (3.0, 4.0), (6.0, 7.0)
         c, d, e, f, g, h, i, j, k, ℓ = (3.0, 5.0), (3.0, 7.0), (4.0, 8.0),
@@ -661,12 +672,14 @@ end
         @test DT.is_inside(DT.point_position_relative_to_oriented_outer_halfplane(PT(), p, q, d))
         @test DT.is_inside(DT.point_position_relative_to_oriented_outer_halfplane(PT(), p, q, e))
         @test DT.is_outside(DT.point_position_relative_to_oriented_outer_halfplane(PT(), p, q, f))
+        @test DT.point_position_relative_to_oriented_outer_halfplane(p, q, f) == DT.point_position_relative_to_oriented_outer_halfplane(AdaptiveKernel(), p, q, f)
         @test DT.is_outside(DT.point_position_relative_to_oriented_outer_halfplane(PT(), p, q, f))
         @test DT.is_outside(DT.point_position_relative_to_oriented_outer_halfplane(PT(), p, q, h))
         @test DT.is_outside(DT.point_position_relative_to_oriented_outer_halfplane(PT(), p, q, i))
         @test DT.is_on(DT.point_position_relative_to_oriented_outer_halfplane(PT(), p, q, j))
         @test DT.is_on(DT.point_position_relative_to_oriented_outer_halfplane(PT(), p, q, k))
         @test DT.is_inside(DT.point_position_relative_to_oriented_outer_halfplane(PT(), p, q, ℓ))
+        @test DT.point_position_relative_to_oriented_outer_halfplane(p, q, ℓ) == DT.point_position_relative_to_oriented_outer_halfplane(AdaptiveKernel(), p, q, ℓ)
         @test DT.is_on(DT.point_position_relative_to_oriented_outer_halfplane(PT(), p, q, p))
         @test DT.is_on(DT.point_position_relative_to_oriented_outer_halfplane(PT(), p, q, q))
         @inferred DT.is_outside(DT.point_position_relative_to_oriented_outer_halfplane(PT(), p, q, ℓ))
@@ -688,9 +701,10 @@ end
         pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9]
         for PT in subtypes(DT.AbstractPredicateKernel)
             tri = triangulate(pts; predicates=PT())
-            @test all(DT.is_legal(DT.is_legal(PT(), tri, i, j)) for (i, j) in
-                      ((1, 3), (3, 2), (2, 1), (1, 4), (4, 3), (3, 1), (3, 4), (4, 5), (5, 3), (3, 5), (5, 2), (2, 3))
-            )
+            for (i, j) in ((1, 3), (3, 2), (2, 1), (1, 4), (4, 3), (3, 1), (3, 4), (4, 5), (5, 3), (3, 5), (5, 2), (2, 3))
+                @test DT.is_legal(AdaptiveKernel(), tri, i, j) == DT.is_legal(tri, i, j)
+                @test DT.is_legal(DT.is_legal(PT(), tri, i, j))
+            end
         end
     end
 
@@ -787,6 +801,7 @@ end
                   DT.triangle_line_segment_intersection(PT(), r, p, q, a, b) ==
                   DT.triangle_line_segment_intersection(PT(), r, p, q, b, a) ==
                   true_flags[i]
+            @test DT.triangle_line_segment_intersection(AdaptiveKernel(), p, q, r, a, b) == DT.triangle_line_segment_intersection(p, q, r, a, b)
         end
     end
 end
@@ -799,12 +814,14 @@ end
         q = [8.0, 7.0]
         cert = DT.point_closest_to_line(PT(), a, b, p, q)
         @test DT.is_closer(cert)
+        @test DT.point_closest_to_line(a, b, p, q) == DT.point_closest_to_line(AdaptiveKernel(), a, b, p, q)
         cert = DT.point_closest_to_line(PT(), a, b, q, p)
         @test DT.is_further(cert)
         q = [8.0, 6.0]
         cert = DT.point_closest_to_line(PT(), a, b, p, q)
         @test DT.is_equidistant(cert)
         cert = DT.point_closest_to_line(PT(), a, b, q, p)
+        @test DT.point_closest_to_line(a, b, q, p) == DT.point_closest_to_line(AdaptiveKernel(), a, b, q, p)
         @test DT.is_equidistant(cert)
         p = [5.0, 2.0]
         cert = DT.point_closest_to_line(PT(), a, b, p, q)
@@ -813,6 +830,7 @@ end
         @test DT.is_further(cert)
         p = [12.0, 2.0]
         cert = DT.point_closest_to_line(PT(), a, b, p, q)
+        @test DT.point_closest_to_line(a, b, p, q) == DT.point_closest_to_line(AdaptiveKernel(), a, b, p, q)
         @test DT.is_closer(cert)
         cert = DT.point_closest_to_line(PT(), a, b, q, p)
         @test DT.is_further(cert)
@@ -840,6 +858,7 @@ end
         p = [8.0, 6.0]
         q = [4.0, 2.0]
         cert = DT.point_closest_to_line(PT(), a, b, p, q)
+        @test DT.point_closest_to_line(a, b, p, q) == DT.point_closest_to_line(AdaptiveKernel(), a, b, p, q)
         @test DT.is_equidistant(cert)
         cert = DT.point_closest_to_line(PT(), a, b, q, p)
         @test DT.is_equidistant(cert)
@@ -867,11 +886,13 @@ end
         @inferred DT.opposite_angle(PT(), q, r, p)
         @test DT.is_right(cert)
         cert = DT.opposite_angle(PT(), r, p, q)
+        @test DT.opposite_angle(AdaptiveKernel(), r, p, q) == DT.opposite_angle(r, p, q)
         @test DT.is_acute(cert)
         cert = DT.opposite_angle(PT(), p, q, r)
         @test DT.is_acute(cert)
         p, q, r = (-1.0, 0.0), (0.0, -0.1), (1.0, 0.0)
         cert = DT.opposite_angle(PT(), p, r, q)
+        @test DT.opposite_angle(AdaptiveKernel(), p, r, q) == DT.opposite_angle(p, r, q)
         @test DT.is_obtuse(cert)
         @inferred DT.opposite_angle(PT(), p, r, q)
         cert = DT.opposite_angle(PT(), p, q, r)
@@ -886,8 +907,10 @@ end
         weights = [0.1, 2.2, -1.5, -4.9]
         tri = Triangulation(points; weights)
         cert = DT.point_position_relative_to_witness_plane(PT(), tri, 1, 2, 3, 4)
+        @test DT.point_position_relative_to_witness_plane(tri, 1, 2, 3, 4) == DT.point_position_relative_to_witness_plane(AdaptiveKernel(), tri, 1, 2, 3, 4)
         @test DT.is_above(cert)
         @test DT.is_outside(DT.point_position_relative_to_circumcircle(PT(), tri, 1, 2, 3, 4))
+        @test DT.point_position_relative_to_circumcircle(tri, 1, 2, 3, 4) == DT.point_position_relative_to_circumcircle(AdaptiveKernel(), tri, 1, 2, 3, 4)
         weights[4] = -2.5
         cert = DT.point_position_relative_to_witness_plane(PT(), tri, 1, 2, 3, 4)
         @test DT.is_below(cert)
@@ -915,6 +938,7 @@ end
         weights = [2.0, -1.0, -1.0, -1 / 2]
         tri = Triangulation(points; weights=weights)
         cert = DT.point_position_relative_to_witness_plane(PT(), tri, 1, 2, 3, 4)
+        @test DT.point_position_relative_to_witness_plane(tri, 1, 2, 3, 4) == DT.point_position_relative_to_witness_plane(AdaptiveKernel(), tri, 1, 2, 3, 4)
         @test DT.is_on(cert)
         @test DT.is_on(DT.point_position_relative_to_circumcircle(PT(), tri, 1, 2, 3, 4))
 

@@ -560,13 +560,16 @@ function validate_statistics(tri::DT.Triangulation, stats=statistics(tri))
     ## Now compare the statistics 
     for T in each_solid_triangle(tri)
         @test areas[triangle_vertices(T)] ≈ DT.get_area(stats, T) rtol = 1e-4 atol = 1e-4
+        @test areas[triangle_vertices(T)] ≈ DT.triangle_area((lengths[triangle_vertices(T)].^2)...) rtol=1e-4 atol=1e-4
         @test collect(lengths[triangle_vertices(T)]) ≈ collect(DT.get_lengths(stats, T)) rtol = 1e-4 atol = 1e-4
         @test collect(circumcenters[triangle_vertices(T)]) ≈ collect(DT.get_circumcenter(stats, T)) rtol = 1e-4 atol = 1e-4
         @test circumradii[triangle_vertices(T)] ≈ DT.get_circumradius(stats, T) rtol = 1e-4 atol = 1e-4
         @test radius_edge_ratio[triangle_vertices(T)] ≈ DT.get_radius_edge_ratio(stats, T) rtol = 1e-4 atol = 1e-4
         @test collect(collect.(edge_midpoints[triangle_vertices(T)])) ≈ collect(collect.(DT.get_edge_midpoints(stats, T))) rtol = 1e-4 atol = 1e-4
         @test aspect_ratio[triangle_vertices(T)] ≈ DT.get_aspect_ratio(stats, T) rtol = 1e-4 atol = 1e-4
+        @test aspect_ratio[triangle_vertices(T)] ≈ DT.triangle_aspect_ratio(get_point(tri, triangle_vertices(T)...)...) rtol = 1e-4 atol = 1e-4
         @test inradius[triangle_vertices(T)] ≈ DT.get_inradius(stats, T) rtol = 1e-4 atol = 1e-4
+        @test inradius[triangle_vertices(T)] ≈ DT.triangle_inradius(get_point(tri, triangle_vertices(T)...)...) rtol = 1e-4 atol = 1e-4
         @test perimeter[triangle_vertices(T)] ≈ DT.get_perimeter(stats, T) rtol = 1e-4 atol = 1e-4
         @test radius_edge_ratio[triangle_vertices(T)] ≈ 1 / (2sin(angles[triangle_vertices(T)][1])) rtol = 1e-4 atol = 1e-4
         @test (2sin(DT.get_minimum_angle(stats, T) / 2)^2 - 0.1 ≤ DT.get_aspect_ratio(stats, T) ≤ 2tan(DT.get_minimum_angle(stats, T) / 2) + 0.1)

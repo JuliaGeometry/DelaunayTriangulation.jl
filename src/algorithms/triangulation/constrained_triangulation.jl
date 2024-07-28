@@ -430,8 +430,8 @@ function is_vertex_closer_than_neighbours(predicates::AbstractPredicateKernel, t
     jᵢ, jᵢ₋₁, jᵢ₊₁ = get_triplet(list, j)
     return is_vertex_closer_than_neighbours(predicates, tri, u, v, jᵢ, jᵢ₋₁, jᵢ₊₁)
 end
-is_vertex_closer_than_neighbours(tri::Triangulation, u, v, jᵢ, jᵢ₋₁, jᵢ₊₁) = is_vertex_closer_than_neighbours(AdaptiveKernel(), tri::Triangulation, u, v, jᵢ, jᵢ₋₁, jᵢ₊₁)
-is_vertex_closer_than_neighbours(tri::Triangulation, list::ShuffledPolygonLinkedList, u, v, j) = is_vertex_closer_than_neighbours(AdaptiveKernel(), tri::Triangulation, list::ShuffledPolygonLinkedList, u, v, j)
+is_vertex_closer_than_neighbours(tri::Triangulation, u, v, jᵢ, jᵢ₋₁, jᵢ₊₁) = is_vertex_closer_than_neighbours(AdaptiveKernel(), tri, u, v, jᵢ, jᵢ₋₁, jᵢ₊₁)
+is_vertex_closer_than_neighbours(tri::Triangulation, list::ShuffledPolygonLinkedList, u, v, j) = is_vertex_closer_than_neighbours(AdaptiveKernel(), tri, list, u, v, j)
 
 """
     select_random_vertex(tri::Triangulation, list::ShuffledPolygonLinkedList, u, v, range, rng) -> Vertex 

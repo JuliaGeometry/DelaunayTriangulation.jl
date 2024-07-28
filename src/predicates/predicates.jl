@@ -501,7 +501,7 @@ function triangle_line_segment_intersection(kernel::AbstractPredicateKernel, p, 
         end
     end
 end
-triangle_line_segment_intersection_type(p, q, r, a, b) = triangle_line_segment_intersection_type(AdaptiveKernel(), p, q, r, a, b)
+triangle_line_segment_intersection(p, q, r, a, b) = triangle_line_segment_intersection(AdaptiveKernel(), p, q, r, a, b)
 function triangle_line_segment_intersection(kernel::AbstractPredicateKernel, tri::Triangulation, i, j, k, u, v)
     p, q, r, a, b = get_point(tri, i, j, k, u, v)
     return triangle_line_segment_intersection(kernel, p, q, r, a, b)
@@ -606,7 +606,7 @@ function point_position_relative_to_witness_plane(kernel::AbstractPredicateKerne
     cert = orient_predicate(kernel, p⁺, q⁺, r⁺, a⁺)
     return convert_certificate(cert, Cert.Above, Cert.On, Cert.Below)
 end
-point_position_relative_to_witness_plane(tri::Triangulation, i, j, k, ℓ) = point_position_relative_to_witness_plane(AdaptiveKernel(), i, j, k, ℓ)
+point_position_relative_to_witness_plane(tri::Triangulation, i, j, k, ℓ) = point_position_relative_to_witness_plane(AdaptiveKernel(), tri, i, j, k, ℓ)
 
 """
     opposite_angle([kernel::AbstractPredicateKernel=AdaptiveKernel(),] p, q, r) -> Certificate
@@ -628,7 +628,7 @@ See the documentation for more information about these choices.
     then you should use `opposite_angle(r, q, p) = (r - p) ⋅ (q - p)`.
 """
 function opposite_angle(kernel::AbstractPredicateKernel, p, q, r) # https://math.stackexchange.com/a/701682/861404 
-    cert = angle_is_acute(kernel, p, q, r)
+    cert = angle_is_acute_predicate(kernel, p, q, r)
     return convert_certificate(cert, Certificate.Obtuse, Certificate.Right, Certificate.Acute)
 end
 opposite_angle(p, q, r) = opposite_angle(AdaptiveKernel(), p, q, r)

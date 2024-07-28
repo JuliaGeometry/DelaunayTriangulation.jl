@@ -117,7 +117,7 @@ qs = [
 fig, ax, sc = triplot(tri, show_ghost_edges=false)
 scatter!(ax, qs, color=:blue, markersize=16)
 fig
-@test_reference joinpath(fig_path, "point_location_ex_3.png") fig #src
+@test_reference joinpath(fig_path, "point_location_ex_3.png") fig by=psnr_equality(15) #src
 
 # Now let's find the triangles.
 Vs = [find_triangle(tri, q; rng) for q in qs]

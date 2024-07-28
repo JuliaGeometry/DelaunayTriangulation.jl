@@ -864,6 +864,7 @@ end
     curve = enricher_IV.boundary_curves[1]
     p = (10randn(), 10randn())
     @test DT.point_position_relative_to_curve(rt(), enricher_IV, 1, p) == DT.point_position_relative_to_curve(rt(), curve, p)
+    @test DT.point_position_relative_to_curve(enricher_IV, 1, p) == DT.point_position_relative_to_curve(AdaptiveKernel(), curve, p)
     @inferred DT.point_position_relative_to_curve(rt(), enricher_IV, 1, p)
     curve = enricher_XI.boundary_curves[2]
     p = (10randn(), 10randn())
@@ -877,6 +878,7 @@ end
     p = (10randn(), 10randn())
     @test DT.point_position_relative_to_curve(rt(), enricher_X, 3, p) == DT.point_position_relative_to_curve(rt(), curve, p)
     @inferred DT.point_position_relative_to_curve(rt(), enricher_X, 3, p)
+    @test DT.point_position_relative_to_curve(DT.get_boundary_curves(enricher_X), 3, p) == DT.point_position_relative_to_curve(AdaptiveKernel(), DT.get_boundary_curves(enricher_X), 3, p)
 
     curve = enricher_IV.boundary_curves[1]
     t₁, t₂, r = rand(3)
