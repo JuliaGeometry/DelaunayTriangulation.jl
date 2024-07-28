@@ -1,6 +1,6 @@
 # Changelog
 
-## Main (upcoming v.1.1.0)
+## v.1.1.0
 
 There are a lot of changes in this release, most of them irrelevant for the user. The most important change is the following:
 
