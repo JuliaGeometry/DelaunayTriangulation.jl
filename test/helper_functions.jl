@@ -1531,6 +1531,7 @@ the relationship between the convex hull of the lifting map and the Delaunay tri
 
 For computing these triangulations, we first define the MATLAB functions:
 
+    ```matlab
     function [cells, lifted] = LiftingMap(points,weights)
     num = size(points, 1);
     lifted = zeros(num, 3);
@@ -1552,9 +1553,9 @@ For computing these triangulations, we first define the MATLAB functions:
     % and the triangles are in res((res(1)+1):end, :).
     writematrix(res, fullfile(pwd, 'tempmats', strcat(string(n), '.txt')));
     end
-
+    ```
 Then, for the random triangulations, we use:
-
+    ```matlab
     digits(16)
     rng(123)
     ctr = 1;
@@ -1585,9 +1586,9 @@ Then, for the random triangulations, we use:
             ctr = ctr + 1;
         end
     end
-
+    ```
 The triangulations of convex polygons are computed with the code:
-
+    ```matlab
     digits(16)
     rng(123)
     ctr = 79;
@@ -1634,6 +1635,7 @@ The triangulations of convex polygons are computed with the code:
             ctr = ctr + 1;
         end
     end
+    ```
 =#
 const WGT_DIR = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "test", "triangulation", "weighted_delaunay_mats")
 const NUM_WEGT = length(readdir(WGT_DIR))
