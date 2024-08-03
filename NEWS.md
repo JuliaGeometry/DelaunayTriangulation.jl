@@ -6,7 +6,7 @@
 
 ## v1.1.1
 
-- Fixed issue on nightly with symbolics being marked as both public and exported. See [#168](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/168).
+- Fixed issue on nightly with symbols being marked as both public and exported. See [#168](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/168).
 
 ## v.1.1.0
 
