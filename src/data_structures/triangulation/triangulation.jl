@@ -35,7 +35,8 @@ This is similar to `segments`, except this includes both the interior segments a
 - `weights::W`
 
 The weights of the triangulation. If you are not using a weighted triangulation, this will be given by `ZeroWeight()`. Otherwise, 
-the weights must be such that `get_weight(weights, i)` is the weight for the `i`th vertex. The weights should be `Float64`.
+the weights must be such that `get_weight(weights, i)` is the weight for the `i`th vertex. The weights should have the same type as the 
+coordinates in `points`.
 - `adjacent::Adjacent{I,E}`
 
 The [`Adjacent`](@ref) map of the triangulation. This maps edges `(u, v)` to vertices `w` such that `(u, v, w)` is a positively 
