@@ -3,6 +3,13 @@
 
 Struct representing a triangulation, as constructed by [`triangulate`](@ref).
 
+!!! note "Field access"
+
+    Accessing the fields themselves using e.g. `tri.field` is not recommended and is not intended 
+    to be in the public API. You should be using the 
+    accessor functions, e.g. instead of `tri.points` do `get_points(tri)`. Similarly, for the iterators,
+    e.g. `tri.triangles`, `each_triangle(tri)` is recommended instead.
+
 # Fields 
 - `points::P`
 
