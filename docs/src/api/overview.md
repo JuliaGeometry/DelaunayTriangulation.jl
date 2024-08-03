@@ -17,6 +17,9 @@ This section provides docstrings for all functions in the public API, split into
 
 We emphasise that a function having a docstring does **NOT** guarantee it being in the public API - only it being listed here will guarantee this.
 
+We also note that, for more structs such as `Triangulation` and `VoronoiTessellations`, their fields are not intended to be in the public API. Rather, their 
+associated accessor functions are intended to be used, e.g. prefer `get_X(tri)` instead of `tri.X` for `tri::Triangulation`.
+
 Each section will first start with the list of all functions to be listed, and then the docstrings of those functions will be given. There will be some docstrings that fit into multiple categories, in which case one is chosen. Here is an index of all the functions listed in the above pages.
 
 ```@index 

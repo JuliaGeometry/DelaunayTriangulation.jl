@@ -5,6 +5,13 @@ Struct for representing a Voronoi tessellation.
 
 See also [`voronoi`](@ref).
 
+!!! note "Field access"
+
+    Accessing the fields themselves using e.g. `vorn.field` is not recommended and is not intended 
+    to be in the public API. You should be using the 
+    accessor functions, e.g. instead of `vorn.adjacent` do `get_adjacent(vorn)`. Similarly, for the iterators,
+    e.g. `vorn.generators`, `each_generators(vorn)` is recommended instead.
+
 # Fields 
 - `triangulation::Tr`: The underlying triangulation. The tessellation is dual to this triangulation, 
    although if the underlying triangulation is constrained then this is no longer the case (but it is 

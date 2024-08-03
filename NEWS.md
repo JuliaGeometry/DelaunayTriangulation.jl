@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.1.2
+
+- Clarified type stability of `triangulate` in docstring, and notes about field access and public API. See [#171](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/171).
+
+## v1.1.1
+
+- Fixed issue on nightly with symbolics being marked as both public and exported. See [#168](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/168).
+
 ## v.1.1.0
 
 There are a lot of changes in this release, most of them irrelevant for the user. The most important change is the following:

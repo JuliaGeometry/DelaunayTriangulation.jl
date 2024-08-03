@@ -3,6 +3,13 @@
 
 Struct representing a triangulation, as constructed by [`triangulate`](@ref).
 
+!!! note "Field access"
+
+    Accessing the fields themselves using e.g. `tri.field` is not recommended and is not intended 
+    to be in the public API. You should be using the 
+    accessor functions, e.g. instead of `tri.points` do `get_points(tri)`. Similarly, for the iterators,
+    e.g. `tri.triangles`, `each_triangle(tri)` is recommended instead.
+
 # Fields 
 - `points::P`
 
@@ -12,7 +19,7 @@ each vertex in the triangulation.
 - `triangles::T`
 
 The triangles in the triangulation. Each triangle is oriented counter-clockwise. If your triangulation has ghost triangles,
-some of these triangles will contain ghost vertices (i.e., vertices negative indices). Solid triangles can be iterated over using 
+some of these triangles will contain ghost vertices (i.e., vertices with negative indices). Solid triangles can be iterated over using 
 [`each_solid_triangle`](@ref).
 - `boundary_nodes::BN`
 
@@ -28,7 +35,8 @@ This is similar to `segments`, except this includes both the interior segments a
 - `weights::W`
 
 The weights of the triangulation. If you are not using a weighted triangulation, this will be given by `ZeroWeight()`. Otherwise, 
-the weights must be such that `get_weight(weights, i)` is the weight for the `i`th vertex. The weights should be `Float64`.
+the weights must be such that `get_weight(weights, i)` is the weight for the `i`th vertex. The weights should have the same type as the 
+coordinates in `points`.
 - `adjacent::Adjacent{I,E}`
 
 The [`Adjacent`](@ref) map of the triangulation. This maps edges `(u, v)` to vertices `w` such that `(u, v, w)` is a positively 

@@ -54,6 +54,12 @@ For the keyword arguments below, you may like to review the extended help as som
 # Outputs
 - `tri::Triangulation`: The triangulation.
 
+!!! note "Type stability"
+
+    The output from this function is currently not type stable. In particular, the inferred type is only `Triangulation` without any other information.
+    If you are depending on the output from `triangulate` inside some other function, you should consider putting the output behind a function barrier;
+    information about using function barriers is given [here](https://docs.julialang.org/en/v1/manual/performance-tips/#kernel-functions).
+
 # Extended help
 
 Here are some warnings to consider for some of the arguments.
