@@ -19,7 +19,7 @@ each vertex in the triangulation.
 - `triangles::T`
 
 The triangles in the triangulation. Each triangle is oriented counter-clockwise. If your triangulation has ghost triangles,
-some of these triangles will contain ghost vertices (i.e., vertices negative indices). Solid triangles can be iterated over using 
+some of these triangles will contain ghost vertices (i.e., vertices with negative indices). Solid triangles can be iterated over using 
 [`each_solid_triangle`](@ref).
 - `boundary_nodes::BN`
 
