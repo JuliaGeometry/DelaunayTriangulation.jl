@@ -47,6 +47,7 @@ getk
 triangle_vertices
 triangle_type
 triangle_edges
+sort_triangle
 compare_triangles
 add_to_triangles!
 delete_from_triangles!

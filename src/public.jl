@@ -181,7 +181,8 @@
                 parallelorder_predicate,
                 angle_is_acute_predicate,
                 sameside_predicate,
-                meet_predicate
+                meet_predicate,
+                sort_triangle
     """,
         ),
     )
