@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.1.3
+
+- `sort_triangle` is now public. 
+
 ## v1.1.2
 
 - Clarified type stability of `triangulate` in docstring, and notes about field access and public API. See [#171](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/171).
