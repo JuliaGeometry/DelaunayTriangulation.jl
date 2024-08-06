@@ -29,6 +29,8 @@ adaptive arithmetic for all geometric predicates in this package. This choice ca
 
 Some examples are below (and in the documentation), but if you would also like to see how DelaunayTriangulation.jl is used in other packages, see [FiniteVolumeMethod.jl](https://github.com/SciML/FiniteVolumeMethod.jl) (solving 2D PDEs) and [NaturalNeighbours.jl](https://github.com/DanielVandH/NaturalNeighbours.jl) (scattered data interpolation).
 
+If you would like to make an issue or contribute, please see the [CONTRIBUTING.md](CONTRIBUTING.md) file. For feature requests, please see the discussions tab.
+
 ## Example Usage 
 Here is a quick example of some ways the package can be used. As mentioned, see the docs for many examples.
 
