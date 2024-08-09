@@ -25,7 +25,7 @@ const GhostVertex = -1
 """
     𝒢 = GhostVertex
 
-Alias for [`𝒢`](@ref).
+Alias for [`GhostVertex`](@ref).
 """
 const 𝒢 = GhostVertex
 
