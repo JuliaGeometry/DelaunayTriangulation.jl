@@ -1,8 +1,12 @@
 # Changelog
 
+## v1.1.4
+
+- Fixed a bug with curve-bounded refinement with custom edge(s) structs. See [#175](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/175).
+
 ## v1.1.3
 
-- `sort_triangle` is now public. 
+- `sort_triangle` is now public. See [#174](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/174).
 
 ## v1.1.2
 
