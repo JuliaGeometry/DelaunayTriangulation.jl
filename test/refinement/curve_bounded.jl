@@ -1641,13 +1641,13 @@ end
     # Used to be a broken example
     DT = DelaunayTriangulation
     struct Custom2Points
-        points::Vector{NTuple{2,Float64}}
+        points::Vector{NTuple{2, Float64}}
     end
     struct Custom2Segments
-        segments::Set{NTuple{2,Int}}
+        segments::Set{NTuple{2, Int}}
     end
     struct Custom2Triangles
-        triangles::Set{NTuple{3,Int}}
+        triangles::Set{NTuple{3, Int}}
     end
     Base.eachindex(points::Custom2Points) = Base.eachindex(points.points)
     Base.iterate(points::Custom2Points, state...) = Base.iterate(points.points, state...)
@@ -1656,24 +1656,24 @@ end
     DT.number_type(::Type{Custom2Points}) = Float64
     Base.iterate(triangles::Custom2Triangles, state...) = Base.iterate(triangles.triangles, state...)
     Base.sizehint!(triangles::Custom2Triangles, n) = sizehint!(triangles.triangles, n)
-    Base.eltype(::Type{Custom2Triangles}) = NTuple{3,Int}
+    Base.eltype(::Type{Custom2Triangles}) = NTuple{3, Int}
     Base.length(triangles::Custom2Triangles) = length(triangles.triangles)
-    Custom2Triangles() = Custom2Triangles(Set{NTuple{3,Int}}())
+    Custom2Triangles() = Custom2Triangles(Set{NTuple{3, Int}}())
     Base.iterate(segments::Custom2Segments, state...) = Base.iterate(segments.segments, state...)
-    Base.eltype(::Type{Custom2Segments}) = NTuple{2,Int}
+    Base.eltype(::Type{Custom2Segments}) = NTuple{2, Int}
     Base.rand(rng::AbstractRNG, segments::Custom2Segments) = rand(rng, segments.segments)
     Base.length(segments::Custom2Segments) = length(segments.segments)
-    Custom2Segments() = Custom2Segments(Set{NTuple{2,Int}}())
-    DT.contains_edge(e::NTuple{2,Int}, Es::Custom2Segments) = e ∈ Es.segments
+    Custom2Segments() = Custom2Segments(Set{NTuple{2, Int}}())
+    DT.contains_edge(e::NTuple{2, Int}, Es::Custom2Segments) = e ∈ Es.segments
     Base.empty!(triangles::Custom2Triangles) = empty!(triangles.triangles)
     Base.empty!(segments::Custom2Segments) = empty!(segments.segments)
-    Base.push!(segments::Custom2Segments, e::NTuple{2,Int}) = push!(segments.segments, e)
-    Base.delete!(segments::Custom2Segments, e::NTuple{2,Int}) = delete!(segments.segments, e)
+    Base.push!(segments::Custom2Segments, e::NTuple{2, Int}) = push!(segments.segments, e)
+    Base.delete!(segments::Custom2Segments, e::NTuple{2, Int}) = delete!(segments.segments, e)
     Base.pop!(points::Custom2Points) = pop!(points.points)
     DT.push_point!(points::Custom2Points, x, y) = push!(points.points, (x, y))
-    Base.delete!(triangles::Custom2Triangles, T::NTuple{3,Int}) = delete!(triangles.triangles, T)
+    Base.delete!(triangles::Custom2Triangles, T::NTuple{3, Int}) = delete!(triangles.triangles, T)
     DT.set_point!(points::Custom2Segments, i, x, y) = points.points[i] = (x, y)
-    Base.push!(triangles::Custom2Triangles, T::NTuple{3,Int}) = push!(triangles.triangles, T)
+    Base.push!(triangles::Custom2Triangles, T::NTuple{3, Int}) = push!(triangles.triangles, T)
     points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
     append!(points, [(clamp(0.5 + randn(), -2, 2), clamp(0.5 + randn(), -2, 2)) for _ in 1:100])
     inner_circle = CircularArc((0.5, 0.25), (0.5, 0.25), (0.5, 0.5), positive = false)

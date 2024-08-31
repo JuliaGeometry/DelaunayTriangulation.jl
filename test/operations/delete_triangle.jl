@@ -432,9 +432,9 @@ end
         DT.add_triangle!(tri, i, j, k; update_ghost_edges = true)
     end
     [
-        DT.delete_triangle!(tri, i, j, k; update_ghost_edges = true) for (i, j, k) in (
-            (1, 8, 9), (9, 8, 10), (10, 11, 5), (5, 7, 4), (4, 6, 3), (3, 6, 2), (2, 6, 1),
-        )
+    DT.delete_triangle!(tri, i, j, k; update_ghost_edges = true) for (i, j, k) in (
+        (1, 8, 9), (9, 8, 10), (10, 11, 5), (5, 7, 4), (4, 6, 3), (3, 6, 2), (2, 6, 1),
+    )
     ]
     true_T = Set{NTuple{3, Int}}(
         [

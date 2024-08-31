@@ -380,11 +380,12 @@ struct BoundaryEnricher{P, B, C, I, BM, S, E}
     queue::Queue{I}
     small_angle_complexes::Dict{I, Vector{SmallAngleComplex{I}}}
 end
-function BoundaryEnricher(points::P, boundary_nodes::B, segments = nothing; n = 4096, coarse_n = 0,
-    IntegerType::Type{I} = Int,
-    EdgeType::Type{E} = isnothing(segments) ? NTuple{2, IntegerType} : (edge_type ∘ typeof)(segments),
-    EdgesType::Type{Es} = isnothing(segments) ? Set{EdgeType} : typeof(segments)
- ) where {P, B, I, E, Es}
+function BoundaryEnricher(
+        points::P, boundary_nodes::B, segments = nothing; n = 4096, coarse_n = 0,
+        IntegerType::Type{I} = Int,
+        EdgeType::Type{E} = isnothing(segments) ? NTuple{2, IntegerType} : (edge_type ∘ typeof)(segments),
+        EdgesType::Type{Es} = isnothing(segments) ? Set{EdgeType} : typeof(segments),
+    ) where {P, B, I, E, Es}
     boundary_curves, new_boundary_nodes = convert_boundary_curves!(points, boundary_nodes, I)
     polygon_hierarchy = construct_polygon_hierarchy(points, new_boundary_nodes, boundary_curves; IntegerType, n)
     return _construct_boundary_enricher(points, new_boundary_nodes, boundary_curves, polygon_hierarchy, segments, n, coarse_n, I, E, Es)

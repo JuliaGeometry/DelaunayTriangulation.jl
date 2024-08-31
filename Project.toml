@@ -8,6 +8,7 @@ AdaptivePredicates = "35492f91-a3bd-45ad-95db-fcad7dcfedb7"
 EnumX = "4e289a0a-7415-4d19-859d-a7e5c4648b56"
 ExactPredicates = "429591f6-91af-11e9-00e2-59fbe8cec110"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+Runic = "62bfec6d-59d7-401d-8490-b29ee721c001"
 
 [compat]
 AdaptivePredicates = "1"
