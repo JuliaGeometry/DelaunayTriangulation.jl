@@ -146,7 +146,7 @@ function triangulate(
         check_arguments = true,
         full_polygon_hierarchy::H = nothing,
         boundary_enricher = nothing,
-        boundary_curves = (),
+        boundary_curves = (), 
         polygonise_n = 4096,
         coarse_n = 0,
         enrich = false,
