@@ -337,7 +337,7 @@ function get_minimum_edge_length(complex::SmallAngleComplex, points)
 end
 
 """
-    BoundaryEnricher{P,B,C,I,BM,S}
+    BoundaryEnricher{P,B,C,I,BM,S,E}
 
 Struct used for performing boundary enrichment on a curve-bounded boundary. 
 
@@ -367,34 +367,39 @@ field will no longer aliased with the input `boundary_nodes`, although `points` 
 The argument `n` is used in [`polygonise`](@ref) for filling out the boundary temporarily in order to construct the [`PolygonHierarchy`](@ref). The argument `coarse_n` defines the initial coarse discretisation 
 through [`coarse_discretisation!`](@ref); the default `n=0` means that the coarse discretisation will be performed until the maximum total variation of a subcurve is less than π/2.
 """
-struct BoundaryEnricher{P, B, C, I, BM, S}
+struct BoundaryEnricher{P, B, C, I, BM, S, E}
     points::P
     boundary_nodes::B
     segments::S
     boundary_curves::C
     polygon_hierarchy::PolygonHierarchy{I}
-    parent_map::Dict{NTuple{2, I}, I}
+    parent_map::Dict{E, I}
     curve_index_map::Dict{I, I}
     boundary_edge_map::BM
     spatial_tree::BoundaryRTree{P}
     queue::Queue{I}
     small_angle_complexes::Dict{I, Vector{SmallAngleComplex{I}}}
 end
-function BoundaryEnricher(points::P, boundary_nodes::B, segments = nothing; IntegerType = Int, n = 4096, coarse_n = 0) where {P, B}
-    boundary_curves, new_boundary_nodes = convert_boundary_curves!(points, boundary_nodes, IntegerType)
+function BoundaryEnricher(
+        points::P, boundary_nodes::B, segments = nothing; n = 4096, coarse_n = 0,
+        IntegerType::Type{I} = Int,
+        EdgeType::Type{E} = isnothing(segments) ? NTuple{2, IntegerType} : (edge_type ∘ typeof)(segments),
+        EdgesType::Type{Es} = isnothing(segments) ? Set{EdgeType} : typeof(segments),
+    ) where {P, B, I, E, Es}
+    boundary_curves, new_boundary_nodes = convert_boundary_curves!(points, boundary_nodes, I)
     polygon_hierarchy = construct_polygon_hierarchy(points, new_boundary_nodes, boundary_curves; IntegerType, n)
-    return _construct_boundary_enricher(points, new_boundary_nodes, boundary_curves, polygon_hierarchy, segments, n, coarse_n, IntegerType)
+    return _construct_boundary_enricher(points, new_boundary_nodes, boundary_curves, polygon_hierarchy, segments, n, coarse_n, I, E, Es)
 end
-function _construct_boundary_enricher(points, boundary_nodes, boundary_curves, polygon_hierarchy, segments, n, coarse_n, ::Type{I}) where {I}
+function _construct_boundary_enricher(points, boundary_nodes, boundary_curves, polygon_hierarchy, segments, n, coarse_n, ::Type{I}, ::Type{E}, ::Type{Es}) where {I, E, Es}
     expand_bounds!(polygon_hierarchy, ε(number_type(points)))
     coarse_discretisation!(points, boundary_nodes, boundary_curves; n = coarse_n)
     boundary_edge_map = construct_boundary_edge_map(boundary_nodes, I)
-    parent_map = Dict{NTuple{2, I}, I}()
+    parent_map = Dict{E, I}()
     curve_index_map = Dict{I, I}()
     spatial_tree = BoundaryRTree(points)
     queue = Queue{I}()
     small_angle_complexes = get_small_angle_complexes(points, boundary_nodes, boundary_curves, segments; IntegerType = I)
-    _segments = isnothing(segments) ? Set{NTuple{2, I}}() : segments
+    _segments = isnothing(segments) ? Es() : segments
     enricher = BoundaryEnricher(points, boundary_nodes, _segments, boundary_curves, polygon_hierarchy, parent_map, curve_index_map, boundary_edge_map, spatial_tree, queue, small_angle_complexes)
     construct_parent_map!(enricher)
     construct_curve_index_map!(enricher)

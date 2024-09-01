@@ -39,6 +39,8 @@ function triangulate_curve_bounded(
         boundary_nodes = nothing,
         predicates::AbstractPredicateKernel = AdaptiveKernel(),
         IntegerType::Type{I} = Int,
+        EdgeType::Type{E} = isnothing(segments) ? NTuple{2, IntegerType} : (edge_type ∘ typeof)(segments),
+        EdgesType::Type{Es} = isnothing(segments) ? Set{EdgeType} : typeof(segments),
         polygonise_n = 4096,
         coarse_n = 0,
         check_arguments = true,
@@ -48,12 +50,14 @@ function triangulate_curve_bounded(
         rng::Random.AbstractRNG = Random.default_rng(),
         insertion_order = nothing, # use this so that it gets ignored by the kwargs
         kwargs...,
-    ) where {P, I}
-    enricher = BoundaryEnricher(points, boundary_nodes, segments; IntegerType, n = polygonise_n, coarse_n)
+    ) where {P, I, E, Es}
+    enricher = BoundaryEnricher(points, boundary_nodes, segments; IntegerType, EdgeType, EdgesType, n = polygonise_n, coarse_n)
     return _triangulate_curve_bounded(
         points, enricher;
         predicates,
         IntegerType,
+        EdgeType,
+        EdgesType,
         check_arguments,
         delete_ghosts,
         delete_empty_features,
@@ -67,6 +71,8 @@ function _triangulate_curve_bounded(
         points::P, enricher;
         predicates::AbstractPredicateKernel = AdaptiveKernel(),
         IntegerType::Type{I} = Int,
+        EdgeType::Type{E},
+        EdgesType::Type{Es},
         check_arguments = true,
         delete_ghosts = false,
         delete_empty_features = true,
@@ -74,7 +80,7 @@ function _triangulate_curve_bounded(
         rng::Random.AbstractRNG = Random.default_rng(),
         insertion_order = nothing, # use this so that it gets ignored by the kwargs
         kwargs...,
-    ) where {P, I}
+    ) where {P, I, E, Es}
     check_arguments && check_args(enricher)
     enrich_boundary!(enricher; predicates)
     new_boundary_nodes = get_boundary_nodes(enricher)
@@ -84,6 +90,8 @@ function _triangulate_curve_bounded(
     tri = triangulate(
         points;
         IntegerType,
+        EdgeType,
+        EdgesType,
         segments = new_segments,
         boundary_nodes = new_boundary_nodes,
         predicates,
