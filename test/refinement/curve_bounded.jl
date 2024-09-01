@@ -1676,6 +1676,7 @@ end
     Base.push!(triangles::Custom2Triangles, T::NTuple{3, Int}) = push!(triangles.triangles, T)
     points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
     append!(points, [(clamp(0.5 + randn(), -2, 2), clamp(0.5 + randn(), -2, 2)) for _ in 1:100])
+    unique!(points)
     inner_circle = CircularArc((0.5, 0.25), (0.5, 0.25), (0.5, 0.5), positive = false)
     boundary_nodes = [[[1, 2, 3, 4, 1]], [[inner_circle]]]
     points = Custom2Points(points)
