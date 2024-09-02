@@ -175,6 +175,7 @@
                 number_type,
                 pole_of_inaccessibility,
                 is_point2,
+                is_planar,
                 AbstractPredicateKernel,
                 orient_predicate,
                 incircle_predicate,

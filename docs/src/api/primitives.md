@@ -16,6 +16,7 @@ get_point
 push_point!
 pop_point!
 set_point!
+is_planar
 ```
 
 ## Edges 
