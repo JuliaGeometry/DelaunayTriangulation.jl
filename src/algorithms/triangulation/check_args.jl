@@ -110,7 +110,7 @@ end
 function check_dimension(points)
     valid = is_planar(points) 
     if !valid 
-        @warn "The provided points are not in the plane. All but the first two coordinates will be ignored." maxlog=1
+        @warn "The provided points are not in the plane. All but the first two coordinates of each point will be ignored." maxlog=1
     end
     return valid
 end
