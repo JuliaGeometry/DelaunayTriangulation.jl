@@ -12,7 +12,7 @@ _test_throws(e1, e2 = e1) = @static VERSION ≥ v"1.9" ? e1 : e2
     points = rand(3, 50) 
     boundary_nodes = nothing
     hierarchy = DT.construct_polygon_hierarchy(points)
-    @test_warn "The provided points are not in the plane. All but the first two coordinates of each point will be ignored." DT.check_args(points, boundary_nodes, hierarchy)
+    @test_logs (:warn, "The provided points are not in the plane. All but the first two coordinates of each point will be ignored.") DT.check_args(points, boundary_nodes, hierarchy)
 end
 
 @testset "A simple case" begin
