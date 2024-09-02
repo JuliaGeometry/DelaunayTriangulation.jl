@@ -4,6 +4,7 @@
 Check that the arguments `points` and `boundary_nodes` to [`triangulate`](@ref), and a constructed 
 [`PolygonHierarchy`](@ref) given by `hierarchy`, are valid. In particular, the function checks:
 
+- The dimension of the points. If the points are not 2D, a warning is thrown.
 - The points are all unique. If they are not, a `DuplicatePointsError` is thrown.
 - There are at least three points. If there are not, an `InsufficientPointsError` is thrown.
 
@@ -21,6 +22,7 @@ If `boundary_nodes` are provided, meaning [`has_boundary_nodes`](@ref), then the
     interior self-intersections. This is NOT checked. Similarly, segments should not intersect in their interior, which is not checked.
 """
 function check_args(points, boundary_nodes, hierarchy, boundary_curves = ())
+    check_dimension(points)
     has_unique_points(points)
     has_enough_points(points)
     has_bnd = has_boundary_nodes(boundary_nodes)
@@ -103,6 +105,14 @@ function Base.showerror(io::IO, err::InconsistentOrientationError)
     sign2 = err.should_be_positive ? "negative" : "positive"
     print(io, "The orientation of the boundary curve with index ", err.index, " should be $sign, but it is $sign2.", str)
     return io
+end
+
+function check_dimension(points)
+    valid = is_planar(points) 
+    if !valid 
+        @warn "The provided points are not in the plane. All but the first two coordinates will be ignored." maxlog=1
+    end
+    return valid
 end
 
 function has_unique_points(points)

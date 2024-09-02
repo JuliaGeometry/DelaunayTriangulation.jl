@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.2.0
+
+- Warnings are now thrown when you try and triangulate point sets not in the plane. The `is_planar` function has been introduced for this. See [#178](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/178).
+
 ## v1.1.4
 
 - Fixed a bug with curve-bounded refinement with custom edge(s) structs. See [#175](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/175).

@@ -62,6 +62,7 @@ Base.iterate(points::CustomPoints, state...) = Base.iterate(points.points, state
 Base.length(points::CustomPoints) = length(points.points)
 Base.getindex(points::CustomPoints, i) = points.points[i]
 DT.number_type(::Type{CustomPoints}) = Float64
+DT.is_planar(::CustomPoints) = true
 
 DT.geti(T::CustomTriangle) = T.i
 DT.getj(T::CustomTriangle) = T.j

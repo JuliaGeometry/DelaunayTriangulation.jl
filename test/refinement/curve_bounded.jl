@@ -1649,6 +1649,7 @@ end
     struct Custom2Triangles
         triangles::Set{NTuple{3, Int}}
     end
+    DT.is_planar(::Custom2Points) = true
     Base.eachindex(points::Custom2Points) = Base.eachindex(points.points)
     Base.iterate(points::Custom2Points, state...) = Base.iterate(points.points, state...)
     Base.length(points::Custom2Points) = length(points.points)

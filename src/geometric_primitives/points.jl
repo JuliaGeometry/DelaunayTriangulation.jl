@@ -531,7 +531,7 @@ julia> points
 set_point!
 set_point!(points::AbstractVector, i, x, y) = points[i] = (x, y)
 set_point!(points::AbstractVector{<:Vector}, i, x, y) = points[i] = [x, y]
-set_point!(points::AbstractMatrix, i, x, y) = (points[1, i] = x; points[2, i] = y)
+set_point!(points::AbstractMatrix, i, x, y) = (points[1, i] = x; points[2, i] = y; view(points, :, i))
 set_point!(points, i, p) = set_point!(points, i, getx(p), gety(p))
 
 """
@@ -570,3 +570,12 @@ function find_duplicate_points(points)
     end
     return dup_seen
 end
+
+"""
+    is_planar(points) -> Bool
+
+Returns `true` if all points in `points` are two-dimensional. The default definition is simply 
+`all(is_point2, each_point(points))`.
+"""
+is_planar(points) = all(is_point2, each_point(points))
+
