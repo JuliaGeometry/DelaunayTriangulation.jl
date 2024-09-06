@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.1
+
+- Weighted triangulations have now been implemented. This is not a minor version bump since the API was already in place for this, but it was not implemented. See [#180](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/180).
+
 ## v1.2.0
 
 - Warnings are now thrown when you try and triangulate point sets not in the plane. The `is_planar` function has been introduced for this. See [#178](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/178).
