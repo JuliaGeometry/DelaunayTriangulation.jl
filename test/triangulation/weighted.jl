@@ -9,6 +9,9 @@ using ..DelaunayTriangulation: add_weight!, get_weight, get_weights
     zw = DT.ZeroWeight()
     @inferred DT.ZeroWeight()
     @test get_weight(zw, 1) ⊢ 0.0
+
+    @test zw == zeros(10)
+    @test zeros(10) == zw
 end
 
 @testset "get_weight" begin

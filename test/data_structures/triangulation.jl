@@ -194,7 +194,7 @@ end
         @test all(∈(tri.graph.neighbours[28371]), (50912, 271, 501))
         DT.delete_neighbour!(tri, 28371, 50912)
         DT.delete_neighbour!(tri, 28371, 271, 501)
-        @test all(∉(tri.graph.neighbours[28371]), (50912, 271, 501))
+        @test !haskey(tri.graph.neighbours, 28371)
         DT.delete_vertex!(tri, 19998)
         DT.delete_vertex!(tri, 28371, 3)
         @test all(∉(tri.graph.vertices), (19998, 28371, 3))

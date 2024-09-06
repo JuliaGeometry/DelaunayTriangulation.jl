@@ -180,6 +180,7 @@ const _PAGES = [
         "Mesh Refinement" => "math/refinement.md",
         "Curves" => "math/curves.md",
         "Triangulating Curve-Bounded Domains" => "math/curve_bounded.md",
+        "Weighted Delaunay Triangulations" => "math/weighted.md",
         "Voronoi Tessellations" => "math/voronoi.md",
         "Clipped Voronoi Tessellations" => "math/clipped.md",
         "Centroidal Voronoi Tessellations" => "math/centroidal.md",

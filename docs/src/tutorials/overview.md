@@ -25,6 +25,7 @@ The tutorials that we consider are as follows:
 - [Triangulating Rectangular Regions](lattice.md): A simple example of how rectangular regions in the plane can be triangulated quickly.
 - [Triangulating Convex Polygons](convex.md): How triangulations of convex polygons can be computed.
 - [Triangulation Curve-Bounded Domains](curve_bounded.md): How triangulations of curve-bounded domains can be computed.
+- [Weighted Triangulations](weighted.md): How weighted Delaunay triangulations can be computed.
 - [Voronoi Tessellations](voronoi.md): How Voronoi tessellations can be computed. We also give examples of how you can iterate over the edges and generators in the tessellation, and other features.
 - [Clipped Voronoi Tessellations](clipped.md): How to compute a Voronoi tessellation of a point set such that the polygons are [clipped to the point set's convex hull](clipped.md), or [to an arbitrary rectangle](clipped_rectangle.md).
 - [Centroidal Voronoi Tessellation](centroidal.md): How to compute centroidal Voronoi tessellations, in particular how to shift a given set of points so that each point's associated Voronoi tile is that tile's centroid.

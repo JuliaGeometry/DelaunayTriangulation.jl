@@ -21,6 +21,16 @@ Struct used for indicating that a triangulation has zero weights. The weights ar
 struct ZeroWeight end
 get_weight(::ZeroWeight, i) = zero(Float64)
 
+function Base.:(==)(w₁::ZeroWeight, w₂::ZeroWeight)
+    return true
+end
+function Base.:(==)(w₁::ZeroWeight, w₂)
+    return all(iszero, w₂)
+end
+function Base.:(==)(w₁, w₂::ZeroWeight)
+    return all(iszero, w₁)
+end
+
 """
     add_weight!(tri::Triangulation, w)
 
