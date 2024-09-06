@@ -9,7 +9,7 @@ if isdefined(Docs, :undocumented_names)
 end
 
 const ALL_TEST_SCRIPTS = Set{String}()
-const NON_TEST_SCRIPTS = Set{String}(["helper_functions.jl", "runtests.jl", "triangulation\\weighted.jl", "triangulation/weighted.jl"])
+const NON_TEST_SCRIPTS = Set{String}(["helper_functions.jl", "runtests.jl"])
 include("helper_functions.jl")
 using .HelperFunctions
 
@@ -39,11 +39,7 @@ end
         safe_include("triangulation/convex_triangulation.jl")
         safe_include("triangulation/constrained.jl")
         safe_include("triangulation/check_args.jl")
-
-        # Needs to be setup properly before we do more testing of it. Please see the 
-        # comments at the end of the weighted.jl file (the one included in the comment below).
-        # safe_include("triangulation/weighted.jl")
-        # There is also some testing for weighted triangulations at the end of test/predicates/general.jl (search for witness plane).
+        safe_include("triangulation/weighted.jl")
     end
 
     @testset verbose = true "Interfaces" begin
