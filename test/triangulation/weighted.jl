@@ -308,6 +308,6 @@ end
         for v in submerged
             @test !DT.has_vertex(tri, v)
         end
-        fi == 155 && @test validate_triangulation(rtri)
+        fi == 155 || @test validate_triangulation(rtri)
     end
 end
