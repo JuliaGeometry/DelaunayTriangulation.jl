@@ -143,7 +143,6 @@ function Base.:(==)(tri1::Triangulation, tri2::Triangulation)
     end
     get_polygon_hierarchy(tri1) ≠ get_polygon_hierarchy(tri2) && return false
     get_boundary_nodes(tri1) ≠ get_boundary_nodes(tri2) && return false
-    get_weights(tri1) ≠ get_weights(tri2) && return false
     return true
 end
 
