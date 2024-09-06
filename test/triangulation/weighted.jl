@@ -209,7 +209,7 @@ end
             for j in 3:10
                 tri = triangulate_rectangle(0, 10, 0, 10, i, j)
                 tri = triangulate(get_points(tri); weights = zeros(i * j))
-                # @test validate_triangulation(tri) # Why is this failing sometimes? Is validate not branching at weighted triangulations?
+                @test validate_triangulation(tri) 
             end
         end
     end
@@ -227,7 +227,7 @@ end
             for j in 3:10
                 tri = triangulate_rectangle(0, 10, 0, 10, i, j)
                 tri = triangulate(get_points(tri); weights = 10randn() * ones(i * j))
-                # @test validate_triangulation(tri) # Why is this failing sometimes? Is validate not branching at weighted triangulations?
+                @test validate_triangulation(tri) # Why is this failing sometimes? Is validate not branching at weighted triangulations?
             end
         end
     end
@@ -259,7 +259,17 @@ end
         tri, submerged, nonsubmerged, weights, S = get_convex_polygon_weighted_example(fi)
         ctri = triangulate_convex(get_points(tri), S; weights)
         @test tri == ctri
-        fi < 77 && @test validate_triangulation(ctri) # THIS GETS STUCK IN A LOOP FOR FI == 77 ?!
+        fi == 77 || @test validate_triangulation(ctri) # takes ways too long for fi == 77
+    end
+end
+
+@testset "Random" begin
+    for fi in 1:NUM_WEGT 
+        @info "Testing triangulation of a random weighted set: $fi"
+        tri, submerged, nonsubmerged, weights = get_weighted_example(fi)
+        rtri = triangulate(get_points(tri); weights)
+        @test tri == rtri
+        @test validate_triangulation(rtri)
     end
 end
 

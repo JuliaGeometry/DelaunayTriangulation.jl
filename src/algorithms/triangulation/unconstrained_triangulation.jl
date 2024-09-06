@@ -279,6 +279,32 @@ function add_point_bowyer_watson_dig_cavities!(tri::Triangulation, new_point::N,
 end
 
 """
+    enter_cavity(tri::Triangulation, r, i, j, ℓ, predicates::AbstractPredicateKernel=AdaptiveKernel()) -> Bool
+
+Determines whether to enter the cavity in `tri` through the edge `(i, j)` when inserting `r` into the triangulation.
+
+# Arguments 
+- `tri`: The [`Triangulation`](@ref).
+- `r`: The new point being inserted.
+- `i`: The first vertex of the edge `(i, j)`.
+- `j`: The second vertex of the edge `(i, j)`.
+- `ℓ`: The vertex adjacent to `(j, i)`, so that the triangle being stepped into is `(j, i, ℓ)`.
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
+
+# Output
+- `true` if the cavity should be entered, and `false` otherwise. See also [`dig_cavity!`](@ref) and [`point_position_relative_to_circumcircle`](@ref).
+"""
+function enter_cavity(tri::Triangulation, r, i, j, ℓ, predicates::AbstractPredicateKernel = AdaptiveKernel())
+    contains_segment(tri, i, j)  && return false 
+    if is_ghost_vertex(ℓ)
+        cert = point_position_relative_to_circumcircle(tri, j, i, ℓ, r)
+    else 
+        cert = point_position_relative_to_circumcircle(tri, r, i, j, ℓ)
+    end
+    return is_inside(cert)
+end
+
+"""
     dig_cavity!(tri::Triangulation, r, i, j, ℓ, flag, V, store_event_history=Val(false), event_history=nothing, peek::F=Val(false), predicates::AbstractPredicateKernel=AdaptiveKernel()) where {F}
 
 Excavates the cavity in `tri` through the edge `(i, j)`, stepping towards the adjacent triangles to excavate the cavity recursively, eliminating all 
@@ -317,7 +343,7 @@ function dig_cavity!(tri::Triangulation, r, i, j, ℓ, flag, V, store_event_hist
         return tri
     end
     _r = is_true(peek) ? num_points(tri) + 1 : r # If we are peeking, then we need to use the number of points in the triangulation as the index for the new point since we don't actually insert the point
-    if !contains_segment(tri, i, j) && !is_ghost_vertex(ℓ) && is_inside(point_position_relative_to_circumcircle(predicates, tri, r, i, j, ℓ))
+    if enter_cavity(tri, r, i, j, ℓ, predicates)
         ℓ₁ = get_adjacent(tri, ℓ, i)
         ℓ₂ = get_adjacent(tri, j, ℓ)
         !is_true(peek) && delete_triangle!(tri, j, i, ℓ; protect_boundary = true, update_ghost_edges = false)
@@ -434,6 +460,6 @@ function unconstrained_triangulation!(
         initial_search_point = get_initial_search_point(tri, num_points, new_point, insertion_order, num_sample_rule, rng, try_last_inserted_point)
         add_point_bowyer_watson!(tri, new_point, initial_search_point, rng, predicates)
     end
-    convex_hull!(tri; predicates, reconstruct = false)
+    convex_hull!(tri; predicates, reconstruct = is_weighted(tri))
     return tri
 end

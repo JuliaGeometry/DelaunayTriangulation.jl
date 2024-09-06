@@ -168,7 +168,6 @@ end
 
 function check_config(points, weights, segments, boundary_nodes, kernel)
     (number_type(points) == Float32 && kernel != AdaptiveKernel()) && @warn "Using non-Float64 coordinates may cause issues. If you run into problems, consider using Float64 coordinates." maxlog = 1
-    is_weighted(weights) && throw(ArgumentError("Weighted triangulations are not yet fully implemented."))
     is_constrained = !(isnothing(segments) || isempty(segments)) || !(isnothing(boundary_nodes) || !has_boundary_nodes(boundary_nodes))
     is_weighted(weights) && is_constrained && throw(ArgumentError("You cannot compute a constrained triangulation with weighted points."))
     return nothing

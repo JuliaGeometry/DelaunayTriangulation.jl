@@ -564,6 +564,7 @@ function point_position_relative_to_circumcircle(kernel::AbstractPredicateKernel
         cert = point_position_relative_to_oriented_outer_halfplane(kernel, a, b, p)
         if is_on(cert) && is_weighted(tri)
             u′, v′, w′ = replace_ghost_triangle_with_boundary_triangle(tri, (u, v, w))
+            !edge_exists(w′) && return Cert.Inside # needed for the case tri = triangulate(get_points(triangulate_rectangle(0, 10, 0, 10, 3, 3)), weights = zeros(9), insertion_order = [9, 7, 6, 8, 4, 5, 3, 1, 2]) 
             sub_cert = point_position_relative_to_witness_plane(kernel, tri, u′, v′, w′, ℓ)
             is_above(sub_cert) && return Cert.Outside
             return cert
