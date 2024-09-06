@@ -30,7 +30,7 @@ Deletes all the triangles in the set `triangles` from the triangulation `tri`.
 """
 function delete_all_exterior_triangles!(tri::Triangulation, triangles)
     for T in each_triangle(triangles)
-        delete_triangle!(tri, T; protect_boundary = true)
+        delete_triangle!(tri, T; protect_boundary = true, update_ghost_edges = false)
     end
     return tri
 end

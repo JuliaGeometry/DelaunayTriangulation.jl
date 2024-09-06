@@ -149,7 +149,7 @@ function delete_point!(
     trit = triangle_type(tri)
     for uv in each_edge(neighbouring_edges) # note that we are mutating this iterator during iteration
         u, v = edge_vertices(uv)
-        delete_triangle!(tri, vertex, u, v; protect_boundary = true)
+        delete_triangle!(tri, vertex, u, v; protect_boundary = true, update_ghost_edges = false)
         is_true(store_event_history) && delete_triangle!(event_history, construct_triangle(trit, vertex, u, v))
     end
     triangulate_convex!(convex_tri, S; predicates, rng) # fill in the cavity

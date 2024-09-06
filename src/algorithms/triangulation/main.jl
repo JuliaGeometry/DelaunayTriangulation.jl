@@ -129,7 +129,7 @@ function triangulate(
         predicates::AbstractPredicateKernel = AdaptiveKernel(),
         weights = ZeroWeight(),
         IntegerType::Type{I} = Int,
-        EdgeType::Type{E} = isnothing(segments) ? NTuple{2, IntegerType} : (edge_type ∘ typeof)(segments),
+        EdgeType::Type{E} = isnothing(segments) ? NTuple{2, IntegerType} : edge_type(typeof(segments)),
         TriangleType::Type{V} = NTuple{3, IntegerType},
         EdgesType::Type{Es} = isnothing(segments) ? Set{EdgeType} : typeof(segments),
         TrianglesType::Type{Ts} = Set{TriangleType},

@@ -20,6 +20,7 @@ function add_triangle!(
         tri::Ts, u::Integer, v::Integer, w::Integer;
         protect_boundary = false, update_ghost_edges = false,
     ) where {Ts <: Triangulation}
+    # TODO: Completely remove protect_boundary and update_ghost_Edge as an option
     ## Add the necessary triangles
     adj = get_adjacent(tri)
     adj2v = get_adjacent2vertex(tri)

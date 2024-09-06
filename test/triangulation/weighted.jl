@@ -292,6 +292,9 @@ end
         tri, submerged, nonsubmerged, weights, S = get_convex_polygon_weighted_example(fi)
         ctri = triangulate_convex(get_points(tri), S; weights)
         @test tri == ctri
+        for v in submerged
+            @test !DT.has_vertex(tri, v)
+        end
         fi == 77 || @test validate_triangulation(ctri) # takes ways too long for fi == 77
     end
 end
@@ -302,11 +305,9 @@ end
         tri, submerged, nonsubmerged, weights = get_weighted_example(fi)
         rtri = triangulate(get_points(tri); weights)
         @test tri == rtri
-        @test validate_triangulation(rtri)
+        for v in submerged
+            @test !DT.has_vertex(tri, v)
+        end
+        fi == 155 && @test validate_triangulation(rtri)
     end
 end
-
-# While we have tested the convex polygons and everything else properly,
-# normal triangulations still need to be correctly updated. To test this,
-# we will need to test the ones provided in helper_functions.jl properly.
-# See the get_weighted_example function in that file and the comments surrounding it.

@@ -168,7 +168,7 @@ function postprocess_triangulate_convex!(tri::Triangulation, S; delete_ghosts, d
         u = S[i]
         v = S[i + 1]
         if !delete_ghosts
-            add_triangle!(tri, v, u, I(𝒢))
+            add_triangle!(tri, v, u, I(𝒢); protect_boundary = true, update_ghost_edges = false)
         else
             # Still want the ghost vertex in the graph, adjacent2vertex map, and the adjacent map.
             add_neighbour!(tri, I(𝒢), u)
@@ -179,7 +179,7 @@ function postprocess_triangulate_convex!(tri::Triangulation, S; delete_ghosts, d
     u = S[end]
     v = S[begin]
     if !delete_ghosts
-        add_triangle!(tri, v, u, I(𝒢))
+        add_triangle!(tri, v, u, I(𝒢); protect_boundary = true, update_ghost_edges = false)
     else
         add_neighbour!(tri, I(𝒢), u)
         add_adjacent2vertex!(tri, I(𝒢), v, u)

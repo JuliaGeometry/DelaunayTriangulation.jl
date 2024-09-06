@@ -77,7 +77,12 @@ Initialises the Bowyer-Watson algorithm.
 function initialise_bowyer_watson!(tri::Triangulation, insertion_order, predicates::AbstractPredicateKernel = AdaptiveKernel())
     I = integer_type(tri)
     initial_triangle = get_initial_triangle(tri, insertion_order, predicates)
-    add_triangle!(tri, initial_triangle; update_ghost_edges = true)
+    u, v, w = triangle_vertices(initial_triangle)
+    g = I(𝒢)
+    add_triangle!(tri, u, v, w; protect_boundary = true, update_ghost_edges = true)
+    add_triangle!(tri, v, u, g; protect_boundary = true, update_ghost_edges = true)
+    add_triangle!(tri, w, v, g; protect_boundary = true, update_ghost_edges = true)
+    add_triangle!(tri, u, w, g; protect_boundary = true, update_ghost_edges = true)
     new_representative_point!(tri, I(1))
     for i in triangle_vertices(initial_triangle)
         p = get_point(tri, i)
@@ -106,9 +111,9 @@ For a given iteration of the Bowyer-Watson algorithm, finds the point to start t
 function get_initial_search_point(tri::Triangulation, num_points, new_point, insertion_order, num_sample_rule::F, rng, try_last_inserted_point) where {F}
     num_currently_inserted = num_points + 3 - 1     # + 3 for the points already inserted
     last_inserted_point_index = insertion_order[num_currently_inserted]
-    currently_inserted_points = each_solid_vertex(tri)
+    currently_inserted_points = each_solid_vertex(tri) # We can't just do something like insertion_order[1:num_currently_inserted] because, for weighted triangulations, not all previous points may still be in the triangulation if they are submerged
     m = num_sample_rule(num_currently_inserted)
-    try_points = try_last_inserted_point ? (last_inserted_point_index,) : (∅,)
+    try_points = try_last_inserted_point ? (last_inserted_point_index,) : (oftype(last_inserted_point_index, ∅),)
     initial_search_point = select_initial_point(tri, new_point; m, point_indices = currently_inserted_points, rng, try_points)
     return initial_search_point
 end
@@ -240,8 +245,8 @@ function add_point_bowyer_watson_dig_cavities!(tri::Triangulation, new_point::N,
             if !is_true(peek)
                 delete_triangle!(tri, v, u, new_point; protect_boundary = true, update_ghost_edges = false)
                 delete_triangle!(tri, u, v, g; protect_boundary = true, update_ghost_edges = false)
-                add_triangle!(tri, new_point, v, g; update_ghost_edges = false)
-                add_triangle!(tri, u, new_point, g; update_ghost_edges = false)
+                add_triangle!(tri, new_point, v, g; protect_boundary = true, update_ghost_edges = true)
+                add_triangle!(tri, u, new_point, g; protect_boundary = true, update_ghost_edges = true)
             end
             if is_true(store_event_history)
                 trit = triangle_type(tri)
@@ -366,14 +371,14 @@ function dig_cavity!(tri::Triangulation, r, i, j, ℓ, flag, V, store_event_hist
             if u == i && v == j
                 return tri
             else
-                !is_true(peek) && add_triangle!(tri, r, i, j; update_ghost_edges = false)
+                !is_true(peek) && add_triangle!(tri, r, i, j; protect_boundary = true, update_ghost_edges = true)
                 if is_true(store_event_history)
                     trit = triangle_type(tri)
                     add_triangle!(event_history, construct_triangle(trit, _r, i, j))
                 end
             end
         else
-            !is_true(peek) && add_triangle!(tri, r, i, j; update_ghost_edges = false)
+            !is_true(peek) && add_triangle!(tri, r, i, j; protect_boundary = true, update_ghost_edges = false)
             if is_true(store_event_history)
                 trit = triangle_type(tri)
                 add_triangle!(event_history, construct_triangle(trit, _r, i, j))

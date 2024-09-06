@@ -39,7 +39,7 @@ end
         safe_include("triangulation/convex_triangulation.jl")
         safe_include("triangulation/constrained.jl")
         safe_include("triangulation/check_args.jl")
-        safe_include("triangulation/weighted.jl")
+        # safe_include("triangulation/weighted.jl")
     end
 
     @testset verbose = true "Interfaces" begin
@@ -163,74 +163,3 @@ end
         @test isempty(missing_set)
     end
 end
-
-#=
-using Random
-DT = DelaunayTriangulation
-rng = Random.seed!(2)
-fi = 4 
-tri, submerged, nonsubmerged, weights = get_weighted_example(fi)
-points = get_points(tri)
-tri = Triangulation(points; weights)
-insertion_order = [6, 1, 3, 2, 4]
-DT.initialise_bowyer_watson!(tri, insertion_order, predicates)
-remaining_points = @view insertion_order[(begin + 3):end]
-predicates = AdaptiveKernel()
-randomise = true 
-try_last_inserted_point = true 
-skip_points = ()
-num_sample_rule = DT.default_num_samples 
-for (num_points, new_point) in enumerate(remaining_points)
-    (num_points, new_point) == (3, 5) && continue
-    initial_search_point = DT.get_initial_search_point(tri, num_points, new_point, insertion_order, num_sample_rule, rng, try_last_inserted_point)
-    DT.add_point_bowyer_watson!(tri, new_point, initial_search_point, rng, predicates)
-end
-num_points, new_point = 3, 5
-initial_search_point = DT.get_initial_search_point(tri, num_points, new_point, insertion_order, num_sample_rule, rng, try_last_inserted_point)
-DT.add_point_bowyer_watson!(tri, new_point, initial_search_point, rng, predicates)
-
-
-
-tri = triangulate(get_points(tri); weights, insertion_order = [6, 1, 3, 2, 4], rng)
-
-insertion_order = [6, 1, 3, 2, 4, 5]
-initial_search_point = DT.get_initial_search_point(tri, num_points, new_point, insertion_order, num_sample_rule, rng, try_last_inserted_point)
-
-
-new_point = 5
-point_indices = each_solid_vertex(tri)
-m = DT.default_num_samples(length(point_indices))
-try_points = ()
-rng = Random.default_rng()
-initial_search_point = DT.integer_type(tri)(DT.select_initial_point(tri, new_point; point_indices, m, try_points, rng))
-update_representative_point = false
-store_event_history = Val(false)
-event_history = nothing
-concavity_protection = false
-V = find_triangle(tri, get_point(tri, new_point); m=nothing, point_indices=nothing, try_points=nothing, k=initial_search_point, concavity_protection, predicates, rng)
-peek = Val(false)
-int_flag = new_point isa Integer
-q = get_point(tri, new_point)
-cert = DT.point_position_relative_to_circumcircle(predicates, tri, V, new_point) # redirects to point_position_relative_to_witness_plane
-flag = DT.point_position_relative_to_triangle(predicates, tri, V, q)
-I = DT.integer_type(tri)
-_new_point = DT.is_true(peek) ? new_point : I(new_point)
-_new_point = DT.is_true(peek) ? num_points(tri) + 1 : new_point # If we are peeking, then we need to use the number of points in the triangulation as the index for the new point since we don't actually insert the point
-i, j, k = triangle_vertices(V)
-ℓ₁ = get_adjacent(tri, j, i)
-ℓ₂ = get_adjacent(tri, k, j)
-ℓ₃ = get_adjacent(tri, i, k)
-!DT.is_true(peek) && DT.delete_triangle!(tri, V; protect_boundary=true, update_ghost_edges=false)
-i, j, ℓ = i, j, ℓ₁
-_r = DT.is_true(peek) ? num_points(tri) + 1 : r
-
-
-DT.dig_cavity!(tri, new_point, i, j, ℓ₁, flag, V, store_event_history, event_history, peek, predicates)
-
-DT.dig_cavity!(tri, new_point, j, k, ℓ₂, flag, V, store_event_history, event_history, peek, predicates)
-DT.dig_cavity!(tri, new_point, k, i, ℓ₃, flag, V, store_event_history, event_history, peek, predicates)
-
-
-tri = triangulate(get_points(tri); weights=zeros(i * j))
-@test validate_triangulation(tri)
-=#

@@ -326,7 +326,7 @@ function Base.summary(state::Adjacent2VertexMapAdjacentMapState)
         if !state.in_adjacent2vertex
             return "The adjacent2vertex map is inconsistent with the adjacent map. The edge $(state.bad_edge) is mapped to $(state.bad_vertex) but $(state.bad_vertex) is not a key in the adjacent2vertex map."
         else
-            return "The adjacent2vertex map is inconsistent with the adjacent map. The edge $(state.bad_edge) is mapped to $(state.bad_vertex) but $(status.bad_edge) is not in the edge set that $(state.bad_vertex) maps to in the adjacent2vertex map."
+            return "The adjacent2vertex map is inconsistent with the adjacent map. The edge $(state.bad_edge) is mapped to $(state.bad_vertex) but $(state.bad_edge) is not in the edge set that $(state.bad_vertex) maps to in the adjacent2vertex map."
         end
     end
 end

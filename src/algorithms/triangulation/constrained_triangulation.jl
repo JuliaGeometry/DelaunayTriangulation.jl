@@ -586,7 +586,7 @@ The `predicates` argument defines the method for computing predicates. Can be on
 function retriangulate_fan!(tri::Triangulation, tri_fan::Triangulation, fan, fan_triangles; predicates::AbstractPredicateKernel = AdaptiveKernel(), rng::Random.AbstractRNG = Random.default_rng())
     for T in each_triangle(fan_triangles)
         u, v, w = triangle_vertices(T)
-        delete_triangle!(tri, u, v, w; protect_boundary = true)
+        delete_triangle!(tri, u, v, w; protect_boundary = true, update_ghost_edges = false)
     end
     triangulate_convex!(tri_fan, fan; predicates, rng)
     for T in each_solid_triangle(tri_fan)
@@ -736,7 +736,7 @@ Deletes the triangles in `triangles` from `tri`.
 """
 function delete_intersected_triangles!(tri, triangles) # don't really _need_ this method, but maybe it makes the code a bit clearer?
     for τ in each_triangle(triangles)
-        delete_triangle!(tri, τ; protect_boundary = true)
+        delete_triangle!(tri, τ; protect_boundary = true, update_ghost_edges = false)
     end
     return tri
 end
