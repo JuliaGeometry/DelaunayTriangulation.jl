@@ -126,6 +126,7 @@ const _PAGES = [
         "Triangulating Rectangular Regions" => "tutorials/lattice.md",
         "Triangulating Convex Polygons" => "tutorials/convex.md",
         "Triangulating Curve-Bounded Domains" => "tutorials/curve_bounded.md",
+        "Weighted Triangulations" => "tutorials/weighted.md",
         "Voronoi Tessellations" => "tutorials/voronoi.md",
         "Clipped Voronoi Tessellations" => [
             "Clipping to the Convex Hull" => "tutorials/clipped.md",

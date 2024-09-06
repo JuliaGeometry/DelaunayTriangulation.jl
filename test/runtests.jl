@@ -39,7 +39,7 @@ end
         safe_include("triangulation/convex_triangulation.jl")
         safe_include("triangulation/constrained.jl")
         safe_include("triangulation/check_args.jl")
-        # safe_include("triangulation/weighted.jl")
+        safe_include("triangulation/weighted.jl")
     end
 
     @testset verbose = true "Interfaces" begin

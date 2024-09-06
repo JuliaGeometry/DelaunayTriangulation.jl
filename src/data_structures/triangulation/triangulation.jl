@@ -133,17 +133,17 @@ function Base.:(==)(tri1::Triangulation, tri2::Triangulation)
     get_boundary_edge_map(tri1) ≠ get_boundary_edge_map(tri2) && return false
     get_ghost_vertex_map(tri1) ≠ get_ghost_vertex_map(tri2) && return false
     get_ghost_vertex_ranges(tri1) ≠ get_ghost_vertex_ranges(tri2) && return false
-    # get_convex_hull(tri1) ≠ get_convex_hull(tri2) && return false
     rep1 = get_representative_point_list(tri1)
     rep2 = get_representative_point_list(tri2)
     length(rep1) ≠ length(rep2) && return false
     for i in 1:length(rep1)
         p1 = get_representative_point_coordinates(tri1, i)
         p2 = get_representative_point_coordinates(tri2, i)
-        !([getx(p1), gety(p1)] ≈ [getx(p2), gety(p2)]) && return false
+        !isapprox([getx(p1), gety(p1)], [getx(p2), gety(p2)], atol=1e-10) && return false
     end
     get_polygon_hierarchy(tri1) ≠ get_polygon_hierarchy(tri2) && return false
     get_boundary_nodes(tri1) ≠ get_boundary_nodes(tri2) && return false
+    get_weights(tri1) ≠ get_weights(tri2) && return false
     return true
 end
 
