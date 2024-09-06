@@ -253,6 +253,39 @@ end
     end
 end
 
+@testset "Point location" begin
+    for fi in 1:NUM_CWEGT 
+        tri, submerged, nonsubmerged, weights, S = get_convex_polygon_weighted_example(fi)
+        for i in each_solid_vertex(tri) 
+            V = find_triangle(tri, get_point(tri, i))
+            cert = DT.point_position_relative_to_triangle(tri, V, i)
+            @test DT.is_on(cert)
+        end
+        for V in each_solid_triangle(tri)
+            p, q, r  = get_point(tri, triangle_vertices(V)...)
+            c = DT.triangle_centroid(p, q, r)
+            T = find_triangle(tri, c)
+            cert = DT.point_position_relative_to_triangle(tri, T, c)
+            @test DT.is_inside(cert)
+        end
+    end
+    for fi in 1:NUM_WEGT
+        tri, submerged, nonsubmerged, weights = get_weighted_example(fi)
+        for i in each_solid_vertex(tri)
+            V = find_triangle(tri, get_point(tri, i))
+            cert = DT.point_position_relative_to_triangle(tri, V, i)
+            @test DT.is_on(cert)
+        end
+        for V in each_solid_triangle(tri)
+            p, q, r  = get_point(tri, triangle_vertices(V)...)
+            c = DT.triangle_centroid(p, q, r)
+            T = find_triangle(tri, c)
+            cert = DT.point_position_relative_to_triangle(tri, T, c)
+            @test DT.is_inside(cert)
+        end
+    end
+end
+
 @testset "Convex polygons" begin
     for fi in 1:NUM_CWEGT
         @info "Testing triangulation of a weighted convex polygon: $fi"

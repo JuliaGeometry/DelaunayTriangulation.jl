@@ -106,7 +106,7 @@ For a given iteration of the Bowyer-Watson algorithm, finds the point to start t
 function get_initial_search_point(tri::Triangulation, num_points, new_point, insertion_order, num_sample_rule::F, rng, try_last_inserted_point) where {F}
     num_currently_inserted = num_points + 3 - 1     # + 3 for the points already inserted
     last_inserted_point_index = insertion_order[num_currently_inserted]
-    currently_inserted_points = @view insertion_order[begin:num_currently_inserted]
+    currently_inserted_points = each_solid_vertex(tri)
     m = num_sample_rule(num_currently_inserted)
     try_points = try_last_inserted_point ? (last_inserted_point_index,) : (∅,)
     initial_search_point = select_initial_point(tri, new_point; m, point_indices = currently_inserted_points, rng, try_points)
