@@ -901,7 +901,11 @@ function validate_tessellation(vorn::DT.VoronoiTessellation; check_convex = true
         c = get_polygon_point(vorn, c)
         i, j, k = triangle_vertices(V)
         p, q, r = get_point(DT.get_triangulation(vorn), i, j, k)
-        cx, cy = DT.triangle_circumcenter(p, q, r)
+        if DT.is_weighted(tri)
+            cx, cy = DT.triangle_orthocenter(tri, V)
+        else
+            cx, cy = DT.triangle_circumcenter(p, q, r)
+        end
         flag = cx == c[1] && cy == c[2]
         if !flag
             println("Circumcenter of $V is not correct, mapped to $c.")

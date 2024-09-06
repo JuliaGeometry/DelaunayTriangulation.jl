@@ -465,6 +465,6 @@ function unconstrained_triangulation!(
         initial_search_point = get_initial_search_point(tri, num_points, new_point, insertion_order, num_sample_rule, rng, try_last_inserted_point)
         add_point_bowyer_watson!(tri, new_point, initial_search_point, rng, predicates)
     end
-    convex_hull!(tri; predicates, reconstruct = is_weighted(tri))
+    convex_hull!(tri; predicates, reconstruct = false)
     return tri
 end
