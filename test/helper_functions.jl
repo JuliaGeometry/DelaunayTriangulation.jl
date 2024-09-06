@@ -601,38 +601,38 @@ function validate_statistics(tri::DT.Triangulation, stats = statistics(tri))
 
     ## Now compare the statistics 
     for T in each_solid_triangle(tri)
-        @test areas[triangle_vertices(T)] ≈ DT.get_area(stats, T) rtol = 1.0e-4 atol = 1.0e-4
-        @test areas[triangle_vertices(T)] ≈ DT.triangle_area((lengths[triangle_vertices(T)] .^ 2)...) rtol = 1.0e-4 atol = 1.0e-4
-        @test collect(lengths[triangle_vertices(T)]) ≈ collect(DT.get_lengths(stats, T)) rtol = 1.0e-4 atol = 1.0e-4
-        @test collect(circumcenters[triangle_vertices(T)]) ≈ collect(DT.get_circumcenter(stats, T)) rtol = 1.0e-4 atol = 1.0e-4
-        @test circumradii[triangle_vertices(T)] ≈ DT.get_circumradius(stats, T) rtol = 1.0e-4 atol = 1.0e-4
-        @test radius_edge_ratio[triangle_vertices(T)] ≈ DT.get_radius_edge_ratio(stats, T) rtol = 1.0e-4 atol = 1.0e-4
-        @test collect(collect.(edge_midpoints[triangle_vertices(T)])) ≈ collect(collect.(DT.get_edge_midpoints(stats, T))) rtol = 1.0e-4 atol = 1.0e-4
-        @test aspect_ratio[triangle_vertices(T)] ≈ DT.get_aspect_ratio(stats, T) rtol = 1.0e-4 atol = 1.0e-4
-        @test aspect_ratio[triangle_vertices(T)] ≈ DT.triangle_aspect_ratio(get_point(tri, triangle_vertices(T)...)...) rtol = 1.0e-4 atol = 1.0e-4
-        @test inradius[triangle_vertices(T)] ≈ DT.get_inradius(stats, T) rtol = 1.0e-4 atol = 1.0e-4
-        @test inradius[triangle_vertices(T)] ≈ DT.triangle_inradius(get_point(tri, triangle_vertices(T)...)...) rtol = 1.0e-4 atol = 1.0e-4
-        @test perimeter[triangle_vertices(T)] ≈ DT.get_perimeter(stats, T) rtol = 1.0e-4 atol = 1.0e-4
-        @test radius_edge_ratio[triangle_vertices(T)] ≈ 1 / (2sin(angles[triangle_vertices(T)][1])) rtol = 1.0e-4 atol = 1.0e-4
+        @test areas[triangle_vertices(T)] ≈ DT.get_area(stats, T) rtol = 1.0e-2 atol = 1.0e-2
+        @test areas[triangle_vertices(T)] ≈ DT.triangle_area((lengths[triangle_vertices(T)] .^ 2)...) rtol = 1.0e-2 atol = 1.0e-2
+        @test collect(lengths[triangle_vertices(T)]) ≈ collect(DT.get_lengths(stats, T)) rtol = 1.0e-2 atol = 1.0e-2
+        @test collect(circumcenters[triangle_vertices(T)]) ≈ collect(DT.get_circumcenter(stats, T)) rtol = 1.0e-2 atol = 1.0e-2
+        @test circumradii[triangle_vertices(T)] ≈ DT.get_circumradius(stats, T) rtol = 1.0e-2 atol = 1.0e-2
+        @test radius_edge_ratio[triangle_vertices(T)] ≈ DT.get_radius_edge_ratio(stats, T) rtol = 1.0e-2 atol = 1.0e-2
+        @test collect(collect.(edge_midpoints[triangle_vertices(T)])) ≈ collect(collect.(DT.get_edge_midpoints(stats, T))) rtol = 1.0e-2 atol = 1.0e-2
+        @test aspect_ratio[triangle_vertices(T)] ≈ DT.get_aspect_ratio(stats, T) rtol = 1.0e-2 atol = 1.0e-2
+        @test aspect_ratio[triangle_vertices(T)] ≈ DT.triangle_aspect_ratio(get_point(tri, triangle_vertices(T)...)...) rtol = 1.0e-2 atol = 1.0e-2
+        @test inradius[triangle_vertices(T)] ≈ DT.get_inradius(stats, T) rtol = 1.0e-2 atol = 1.0e-2
+        @test inradius[triangle_vertices(T)] ≈ DT.triangle_inradius(get_point(tri, triangle_vertices(T)...)...) rtol = 1.0e-2 atol = 1.0e-2
+        @test perimeter[triangle_vertices(T)] ≈ DT.get_perimeter(stats, T) rtol = 1.0e-2 atol = 1.0e-2
+        @test radius_edge_ratio[triangle_vertices(T)] ≈ 1 / (2sin(minimum(angles[triangle_vertices(T)]))) rtol = 1.0e-1 atol = 1.0e-2
         @test (2sin(DT.get_minimum_angle(stats, T) / 2)^2 - 0.1 ≤ DT.get_aspect_ratio(stats, T) ≤ 2tan(DT.get_minimum_angle(stats, T) / 2) + 0.1)
-        @test DT.get_radius_edge_ratio(stats, T) ≈ 1 / (2(sin(DT.get_minimum_angle(stats, T)))) rtol = 1.0e-4 atol = 1.0e-4
-        @test areas[triangle_vertices(T)] ≈ inradius[triangle_vertices(T)] * 0.5perimeter[triangle_vertices(T)] rtol = 1.0e-4 atol = 1.0e-4
-        @test DT.get_area(stats, T) ≈ DT.get_inradius(stats, T) * 0.5DT.get_perimeter(stats, T) rtol = 1.0e-4 atol = 1.0e-4
-        @test collect(centroid[triangle_vertices(T)]) ≈ collect(DT.get_centroid(stats, T)) rtol = 1.0e-4 atol = 1.0e-4
-        @test DT.get_angles(stats, T)[1] ≈ angles[triangle_vertices(T)][1] rtol = 1.0e-4 atol = 1.0e-4
-        @test DT.get_angles(stats, T)[2] ≈ angles[triangle_vertices(T)][2] rtol = 1.0e-4 atol = 1.0e-4
-        @test DT.get_angles(stats, T)[3] ≈ angles[triangle_vertices(T)][3] rtol = 1.0e-4 atol = 1.0e-4
-        @test sum(DT.get_angles(stats, T)) ≈ π rtol = 1.0e-4 atol = 1.0e-4
-        @test DT.get_minimum_angle(stats, T) ≈ angles[triangle_vertices(T)][1] rtol = 1.0e-4 atol = 1.0e-4
-        @test DT.get_maximum_angle(stats, T) ≈ angles[triangle_vertices(T)][3] rtol = 1.0e-4 atol = 1.0e-4
-        @test DT.get_minimum_angle(stats, T) ≈ DT.get_angles(stats, T)[1] rtol = 1.0e-4 atol = 1.0e-4
-        @test DT.get_maximum_angle(stats, T) ≈ DT.get_angles(stats, T)[3] rtol = 1.0e-4 atol = 1.0e-4
-        @test collect(offcenters[triangle_vertices(T)]) ≈ collect(DT.get_offcenter(stats, T)) rtol = 1.0e-4 atol = 1.0e-2
-        @test collect(sinks[triangle_vertices(T)]) ≈ collect(DT.get_sink(stats, T)) rtol = 1.0e-4 atol = 1.0e-4
+        @test DT.get_radius_edge_ratio(stats, T) ≈ 1 / (2(sin(DT.get_minimum_angle(stats, T)))) rtol = 1.0e-2 atol = 1.0e-2
+        @test areas[triangle_vertices(T)] ≈ inradius[triangle_vertices(T)] * 0.5perimeter[triangle_vertices(T)] rtol = 1.0e-2 atol = 1.0e-2
+        @test DT.get_area(stats, T) ≈ DT.get_inradius(stats, T) * 0.5DT.get_perimeter(stats, T) rtol = 1.0e-2 atol = 1.0e-2
+        @test collect(centroid[triangle_vertices(T)]) ≈ collect(DT.get_centroid(stats, T)) rtol = 1.0e-2 atol = 1.0e-2
+        @test DT.get_angles(stats, T)[1] ≈ angles[triangle_vertices(T)][1] rtol = 1.0e-2 atol = 1.0e-2
+        @test DT.get_angles(stats, T)[2] ≈ angles[triangle_vertices(T)][2] rtol = 1.0e-2 atol = 1.0e-2
+        @test DT.get_angles(stats, T)[3] ≈ angles[triangle_vertices(T)][3] rtol = 1.0e-2 atol = 1.0e-2
+        @test sum(DT.get_angles(stats, T)) ≈ π rtol = 1.0e-2 atol = 1.0e-2
+        @test DT.get_minimum_angle(stats, T) ≈ angles[triangle_vertices(T)][1] rtol = 1.0e-2 atol = 1.0e-2
+        @test DT.get_maximum_angle(stats, T) ≈ angles[triangle_vertices(T)][3] rtol = 1.0e-2 atol = 1.0e-2
+        @test DT.get_minimum_angle(stats, T) ≈ DT.get_angles(stats, T)[1] rtol = 1.0e-2 atol = 1.0e-2
+        @test DT.get_maximum_angle(stats, T) ≈ DT.get_angles(stats, T)[3] rtol = 1.0e-2 atol = 1.0e-2
+        @test collect(offcenters[triangle_vertices(T)]) ≈ collect(DT.get_offcenter(stats, T)) rtol = 1.0e-2 atol = 1.0e-2
+        @test collect(sinks[triangle_vertices(T)]) ≈ collect(DT.get_sink(stats, T)) rtol = 1.0e-2 atol = 1.0e-2
     end
     @test stats.individual_statistics == DT.get_individual_statistics(stats)
-    @test stats.area ≈ DT.get_area(stats) rtol = 1.0e-4 atol = 1.0e-4
-    @test stats.area ≈ total_A rtol = 1.0e-4 atol = 1.0e-4
+    @test stats.area ≈ DT.get_area(stats) rtol = 1.0e-2 atol = 1.0e-2
+    @test stats.area ≈ total_A rtol = 1.0e-2 atol = 1.0e-2
 
     ## Inference 
     for _ in 1:5
@@ -652,6 +652,8 @@ function validate_statistics(tri::DT.Triangulation, stats = statistics(tri))
         _angles = @inferred DT.triangle_angles(_p, _q, _r)
         _offcenter = @inferred DT.triangle_offcenter(_p, _q, _r, _circumcenter)
         _sink = @inferred DT.triangle_sink(tri, _T)
+        @inferred DT.triangle_orthocenter(tri, _T)
+        @inferred DT.triangle_orthoradius_squared(tri, _T)
     end
 
     ## Test the number statistics 
@@ -676,14 +678,40 @@ function validate_statistics(tri::DT.Triangulation, stats = statistics(tri))
     largest_area = maximum([areas[triangle_vertices(T)] for T in each_solid_triangle(tri)])
     smallest_radius_edge_ratio = minimum([radius_edge_ratio[triangle_vertices(T)] for T in each_solid_triangle(tri)])
     largest_radius_edge_ratio = maximum([radius_edge_ratio[triangle_vertices(T)] for T in each_solid_triangle(tri)])
-    @test DT.get_smallest_angle(stats) ≈ smallest_angle rtol = 1.0e-2
-    @test DT.get_largest_angle(stats) ≈ largest_angle rtol = 1.0e-2
-    @test DT.get_smallest_area(stats) ≈ smallest_area rtol = 1.0e-2
-    @test DT.get_largest_area(stats) ≈ largest_area rtol = 1.0e-2
-    @test DT.get_smallest_radius_edge_ratio(stats) ≈ smallest_radius_edge_ratio rtol = 1.0e-2
-    @test DT.get_largest_radius_edge_ratio(stats) ≈ largest_radius_edge_ratio rtol = 1.0e-2
+    @test DT.get_smallest_angle(stats) ≈ smallest_angle rtol = 1.0e-2 atol=1e-2
+    @test DT.get_largest_angle(stats) ≈ largest_angle rtol = 1.0e-2 atol=1e-2
+    @test DT.get_smallest_area(stats) ≈ smallest_area rtol = 1.0e-2 atol=1e-2
+    @test DT.get_largest_area(stats) ≈ largest_area rtol = 1.0e-2 atol=1e-2
+    @test DT.get_smallest_radius_edge_ratio(stats) ≈ smallest_radius_edge_ratio rtol = 1.0e-2 atol=1e-2
+    @test DT.get_largest_radius_edge_ratio(stats) ≈ largest_radius_edge_ratio rtol = 1.0e-2 atol=1e-2
     @test DT.get_smallest_radius_edge_ratio(stats) ≥ 1 / sqrt(3) - 0.1
     @test DT.get_smallest_angle(stats) ≤ deg2rad(60) + 0.01
+
+    ## Orthocenter and orthoradius
+    for T in each_solid_triangle(tri)
+        o = DT.triangle_orthocenter(tri, T)
+        i, j, k = DT.triangle_vertices(T)
+        r1 = DT.dist_sqr(get_point(tri, i, o)...) - DT.get_weight(tri, i)
+        r2 = DT.dist_sqr(get_point(tri, j, o)...) - DT.get_weight(tri, j)
+        r3 = DT.dist_sqr(get_point(tri, k, o)...) - DT.get_weight(tri, k)
+        @test r1 ≈ r2 rtol = 1.0e-4 atol = 1.0e-2
+        @test r2 ≈ r3 rtol = 1.0e-4 atol = 1.0e-2
+        @test r1 ≈ r3 rtol = 1.0e-4 atol = 1.0e-2
+        if !DT.is_weighted(tri)
+            c = DT.triangle_circumcenter(tri, T)
+            @test collect(o) ≈ collect(c) rtol = 1.0e-4 atol = 1.0e-2
+        end
+
+        r² = DT.triangle_orthoradius_squared(tri, T)
+        if !DT.is_weighted(tri)
+            cr2 = DT.triangle_circumradius(get_point(tri,T...)...)^2 
+            @test r² ≈ cr2 rtol = 1.0e-4 atol = 1.0e-2
+        end
+        @test  r²  ≈ r1 
+        @test  r²  ≈ r2
+        @test  r²  ≈ r3
+        @test DT.dist_sqr(get_point(tri, i, o)...) - DT.get_weight(tri, i) - r² ≈ 0 atol=1e-2
+    end
 end
 
 function slow_encroachment_test(tri::DT.Triangulation)

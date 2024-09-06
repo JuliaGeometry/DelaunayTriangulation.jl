@@ -323,9 +323,9 @@ function triangle_circumcenter(p, q, r, A = triangle_area(p, q, r))
     px, py = getxy(p)
     qx, qy = getxy(q)
     rx, ry = getxy(r)
-    d11 = (px - rx)^2 + (py - ry)^2
+    d11 = dist_sqr(p, r)
     d12 = py - ry
-    d21 = (qx - rx)^2 + (qy - ry)^2
+    d21 = dist_sqr(q, r)
     d22 = qy - ry
     ox = rx + (d11 * d22 - d12 * d21) / (4A)
     e11 = px - rx
@@ -632,4 +632,64 @@ function triangle_sink(tri::Triangulation, T, prev_T = construct_triangle(triang
     end
     sort_triangle(next_T) == prev_T && return c
     return triangle_sink(tri, next_T, T; predicates)
+end
+
+"""
+    triangle_orthocenter(tri::Triangulation, T) -> NTuple{2, Number}
+
+Finds the triangle orthocenter of `T`. In particular, the point `(ox, oy)` equidistant from each of the 
+points of `T` with respect to the power distance.
+"""
+function triangle_orthocenter(tri::Triangulation, T)
+    i, j, k = triangle_vertices(T)
+    p, q, r = get_point(tri, i, j, k)
+    a, b, c = get_weight(tri, i), get_weight(tri, j), get_weight(tri, k)
+    return triangle_orthocenter(p, q, r, a, b, c)
+end
+function triangle_orthocenter(p, q, r, a, b, c)
+    A = triangle_area(p, q, r)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
+    rx, ry = getxy(r)
+    d11 = dist_sqr(p, r) + c - a 
+    d12 = py - ry 
+    d21 = dist_sqr(q, r) + c - b 
+    d22 = qy - ry 
+    ox = rx + (d11 * d22 - d12 * d21) / (4A)
+    e11 = px - rx
+    e12 = d11
+    e21 = qx - rx
+    e22 = d21
+    oy = ry + (e11 * e22 - e12 * e21) / (4A)
+    return ox, oy
+end
+
+"""
+    triangle_orthoradius_squared(p, q, r, a, b, c) -> Number
+
+Computes the squared orthoradius of the triangle `(p, q, r)` with weights `a`, `b`, and `c`. 
+Note that this number may be negative.
+"""
+function triangle_orthoradius_squared(tri::Triangulation, T)
+    i, j, k = triangle_vertices(T)
+    p, q, r = get_point(tri, i, j, k)
+    a, b, c = get_weight(tri, i), get_weight(tri, j), get_weight(tri, k)
+    return triangle_orthoradius_squared(p, q, r, a, b, c)
+end
+function triangle_orthoradius_squared(p, q, r, a, b, c)
+    A = triangle_area(p, q, r)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
+    rx, ry = getxy(r)
+    d11 = dist_sqr(p, r) + c - a
+    d21 = dist_sqr(q, r) + c - b
+    d12 = py - ry
+    d22 = qy - ry
+    e11 = px - rx
+    e21 = qx - rx
+    e12 = d11
+    e22 = d21
+    t1 = d11 * d22 - d12 * d21
+    t2 = e11 * e22 - e12 * e21
+    return (t1^2 + t2^2)/(16A^2) - c
 end

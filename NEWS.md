@@ -1,8 +1,8 @@
 # Changelog
 
-## 1.2.1
+## 1.3.0
 
-- Weighted triangulations have now been implemented. This is not a minor version bump since the API was already in place for this, but it was not implemented. See [#180](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/180).
+- Weighted triangulations have now been implemented, as have power diagrams. The weights are also no longer restricted to `Float64` type. See [#180](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/180).
 
 ## v1.2.0
 

@@ -9,7 +9,9 @@ using ..DelaunayTriangulation: add_weight!, get_weight, get_weights
     zw = DT.ZeroWeight()
     @inferred DT.ZeroWeight()
     @test get_weight(zw, 1) ⊢ 0.0
-
+    zw = DT.ZeroWeight{Float32}()
+    @inferred DT.ZeroWeight{Float32}()
+    @test get_weight(zw, 1) ⊢ 0.0f0
     @test zw == zeros(10)
     @test zeros(10) == zw
 end
@@ -23,7 +25,10 @@ end
     @test get_weight(tri, 5) == weights[5]
     @test DT.get_weights(tri) == weights
     weights = rand(Float32, 10)
-    @test get_weight(weights, 2) ⊢ Float64(weights[2])
+    @test get_weight(weights, 2) ⊢ weights[2]
+    tri = Triangulation(rand(Float32, 2, 10); weights)
+    @test get_weight(tri, 2) ⊢ weights[2]
+    @test DT.get_weights(tri) == weights
 end
 
 @testset "add_weight!" begin
@@ -42,7 +47,7 @@ end
     @test DT.is_weighted(tri)
     tri = Triangulation(rand(2, 10); weights = DT.ZeroWeight())
     @test !DT.is_weighted(tri)
-    tri = Triangulation(rand(2, 10); weights = zeros(10))
+    tri = Triangulation(rand(2, 10); weights = zeros(Float32, 10))
     @test DT.is_weighted(tri)
 end
 
@@ -207,30 +212,35 @@ end
             tri2 = triangulate(points; weights)
             @test tri1 == tri2
             @test validate_triangulation(tri2)
+            validate_statistics(tri2)
         end
         for i in 3:10
             for j in 3:10
                 tri = triangulate_rectangle(0, 10, 0, 10, i, j)
                 tri = triangulate(get_points(tri); weights = zeros(i * j))
                 @test validate_triangulation(tri) 
+                validate_statistics(tri)
             end
         end
     end
 
     @testset "Triangulation with identical weights" begin
-        for n in 3:500
+        for n in Iterators.flatten((3:20, 25:5:250))
             points = rand(2, n)
             w = randn()
             weights = w * ones(size(points, 2))
-            tri1 = triangulate(points; weights)
+            tri1 = triangulate(points)
             tri2 = triangulate(points; weights)
-            @test tri1 == tri2
+            @test validate_triangulation(tri2)
+            @test DT.compare_triangle_collections(each_triangle(tri1), each_triangle(tri2))
+            validate_statistics(tri2)
         end
         for i in 3:10
             for j in 3:10
                 tri = triangulate_rectangle(0, 10, 0, 10, i, j)
                 tri = triangulate(get_points(tri); weights = 10randn() * ones(i * j))
                 @test validate_triangulation(tri) # Why is this failing sometimes? Is validate not branching at weighted triangulations?
+                (i == j == 10) || validate_statistics(tri)
             end
         end
     end
@@ -300,6 +310,7 @@ end
         end
         fi == 77 || @test validate_triangulation(ctri) # takes ways too long for fi == 77
         @test DT.is_weighted(ctri)
+        fi == 77 || validate_statistics(ctri)
     end
 end
 
@@ -315,6 +326,7 @@ end
         fi == 155 || @test validate_triangulation(rtri)
         @test DT.is_weighted(rtri)
         @test DT.is_weighted(DT.get_triangulation(DT.get_cache(rtri)))
+        validate_statistics(rtri)
     end
 end
 

@@ -1,7 +1,7 @@
 """
     voronoi(tri::Triangulation; clip=false, smooth=false, kwargs...) -> VoronoiTessellation
 
-Computes the Voronoi tessellation dual to a triangulation.
+Computes the Voronoi tessellation dual to a triangulation. If the triangulation is weighted, this computes the power diagram.
 
 # Arguments
 - `tri`: The triangulation.

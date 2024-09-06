@@ -6,20 +6,22 @@ Pushes the weight `w` into `weights`. The default definition for this is `push!(
 add_weight!(weights, w) = push!(weights, w)
 
 """
-    get_weight(weights, i) -> Float64
+    get_weight(weights, i) -> Number
 
 Gets the `i`th weight from `weights`. The default definition for this is `weights[i]`,
 but this can be extended - e.g., [`ZeroWeight`](@ref) uses `get_weight(weights, i) = 0.0`.
 """
-get_weight(weights, i) = Float64(weights[i])
+get_weight(weights, i) = weights[i]
 
 """
-    ZeroWeight
+    ZeroWeight{T}()
 
-Struct used for indicating that a triangulation has zero weights. The weights are `Float64`.
+Struct used for indicating that a triangulation has zero weights. The weights have type `T`,
+which is `Float64` by default.
 """
-struct ZeroWeight end
-get_weight(::ZeroWeight, i) = zero(Float64)
+struct ZeroWeight{T} end
+ZeroWeight() = ZeroWeight{Float64}()
+get_weight(weights::ZeroWeight{T}, i) where {T} = zero(T)
 
 function Base.:(==)(w₁::ZeroWeight, w₂::ZeroWeight)
     return true
@@ -63,7 +65,7 @@ is_weighted(weights::ZeroWeight) = false
 is_weighted(weights) = true
 
 """
-    get_lifted_point(p, w) -> Tuple{Float64, Float64, Float64}
+    get_lifted_point(p, w) -> NTuple{3, Number}
 
 Returns the lifted companion of the point `p`, in particular `(x, y, x^2 + y^2 - w)`, where `(x, y)` is `p`.
 """
@@ -73,7 +75,7 @@ function get_lifted_point(p, w)
 end
 
 """
-    get_lifted_point(tri::Triangulation, i) -> Tuple{Float64, Float64, Float64}
+    get_lifted_point(tri::Triangulation, i) -> NTuple{3, Number}
 
 Returns the lifted companion of the `i`th vertex of `tri`, in particular `(x, y, x^2 + y^2 - w)`, where `w` is the
 `i`th weight of `tri` and `(x, y)` is the `i`th point of `tri`.
@@ -85,7 +87,7 @@ function get_lifted_point(tri::Triangulation, i)
 end
 
 """
-    get_power_distance(tri::Triangulation, i, j) -> Float64
+    get_power_distance(tri::Triangulation, i, j) -> Number
 
 Returns the power distance between vertices `i` and `j`, defined by 
 `||pᵢ - pⱼ||^2 - wᵢ - wⱼ`, where `wᵢ` and `wⱼ` are the respective weights.
@@ -98,7 +100,7 @@ function get_power_distance(tri::Triangulation, i, j)
 end
 
 """"
-    get_distance_to_witness_plane(tri::Triangulation, i, V) -> Float64 
+    get_distance_to_witness_plane(tri::Triangulation, i, V) -> Number
 
 Computes the distance between the lifted companion of the vertex `i` and the witness plane to the triangle `V`. If `V` is a ghost triangle 
 and `i` is not on its solid edge, then the distance is `-Inf` if it is below the ghost triangle's witness plane and `Inf` if it is above. If `V` is a ghost triangle and `i` 

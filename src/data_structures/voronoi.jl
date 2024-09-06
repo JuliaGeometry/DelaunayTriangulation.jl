@@ -12,6 +12,11 @@ See also [`voronoi`](@ref).
     accessor functions, e.g. instead of `vorn.adjacent` do `get_adjacent(vorn)`. Similarly, for the iterators,
     e.g. `vorn.generators`, `each_generators(vorn)` is recommended instead.
 
+!!! note "Power diagram"
+
+    In the case that the underlying triangulation is weighted, then this struct represents the power diagram, 
+    and instead of circumcenters the points are orthocenters computed with [`triangle_orthocenter`](@ref).
+
 # Fields 
 - `triangulation::Tr`: The underlying triangulation. The tessellation is dual to this triangulation, 
    although if the underlying triangulation is constrained then this is no longer the case (but it is 

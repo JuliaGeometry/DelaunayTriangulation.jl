@@ -30,7 +30,7 @@ For the keyword arguments below, you may like to review the extended help as som
    should match the specification given in [`check_args`](@ref) if a boundary is provided as a set of vertices, meaning the boundary is a piecewise linear curve. To specify a curve-bounded domain, you should 
    follow the same specification, but use [`AbstractParametricCurve`](@ref)s to fill out the vector, and any piecewise linear section should still be provided as a sequence of vertices. 
 - `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
-- `weights=ZeroWeight()`: NOT CURRENTLY IMPLEMENTED. The weights to use for the triangulation. By default, the triangulation is unweighted. The weights can also be provided as a vector, with the `i`th weight referring to the `i`th vertex, or more generally any object that defines [`get_weight`](@ref). The weights should be `Float64`.
+- `weights=ZeroWeight{number_type(points)}()`: The weights to use for the triangulation. By default, the triangulation is unweighted. The weights can also be provided as a vector, with the `i`th weight referring to the `i`th vertex, or more generally any object that defines [`get_weight`](@ref). 
 - `IntegerType=Int`: The integer type to use for the triangulation. This is used for representing vertices.
 - `EdgeType=isnothing(segments) ? NTuple{2,IntegerType} : (edge_type ∘ typeof)(segments)`: The edge type to use for the triangulation. 
 - `TriangleType=NTuple{3,IntegerType}`: The triangle type to use for the triangulation.
@@ -127,7 +127,7 @@ function triangulate(
         segments = nothing,
         boundary_nodes = nothing,
         predicates::AbstractPredicateKernel = AdaptiveKernel(),
-        weights = ZeroWeight(),
+        weights = ZeroWeight{number_type(P)}(),
         IntegerType::Type{I} = Int,
         EdgeType::Type{E} = isnothing(segments) ? NTuple{2, IntegerType} : edge_type(typeof(segments)),
         TriangleType::Type{V} = NTuple{3, IntegerType},
