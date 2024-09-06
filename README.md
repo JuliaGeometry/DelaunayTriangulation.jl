@@ -6,7 +6,7 @@
 [![DOI](https://zenodo.org/badge/540660309.svg)](https://zenodo.org/badge/latestdoi/540660309)
 [![Aqua QA](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
 
-This is a package for constructing Delaunay triangulations and Voronoi tessellations of planar point sets. Supports unconstrained and constrained triangulations, weighted triangulations, mesh refinement, triangulation of curve bounded domains, Voronoi tessellations, and clipped and centroidal Voronoi tessellations. To install the package, do
+This is a package for constructing Delaunay triangulations and Voronoi tessellations of planar point sets. Supports unconstrained and constrained triangulations, weighted triangulations, mesh refinement, triangulation of curve bounded domains, Voronoi tessellations, power diagrams, and clipped and centroidal Voronoi tessellations. To install the package, do
 
 ```julia
 julia>] add DelaunayTriangulation
@@ -17,6 +17,7 @@ Many features are available, some of these being:
 - Unconstrained and constrained Delaunay triangulations, supporting many types of domains.
 - Weighted Delaunay triangulations.
 - Computation of Voronoi tessellations, clipped Voronoi tessellations where the Voronoi tiles get clipped to the convex hull, and centroidal Voronoi tessellations where each Voronoi tile's generator is the tile's centroid.
+- Power diagrams.
 - Mesh refinement, with support for custom angle and area constraints, as well as refinement of curve-bounded domains.
 - Dynamic point insertion, point deletion, and segment insertion, amongst many other operations.
 - Computation of convex hulls.

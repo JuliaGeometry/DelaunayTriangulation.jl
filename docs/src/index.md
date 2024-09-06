@@ -11,6 +11,7 @@ This is a package for computing Delaunay triangulations and Voronoi tessellation
 - Unconstrained and constrained Delaunay triangulations, supporting many types of domains.
 - Weighted Delaunay triangulations.
 - Computation of Voronoi tessellations, clipped Voronoi tessellations where the Voronoi tiles get clipped to the convex hull, and centroidal Voronoi tessellations where each Voronoi tile's generator is the tile's centroid.
+- Power diagrams.
 - Mesh refinement, with support for custom angle and area constraints, as well as refinement of curve-bounded domains.
 - Dynamic point insertion, point deletion, and segment insertion, amongst many other operations.
 - Computation of convex hulls.
