@@ -46,7 +46,7 @@ end
     pts[:, v] .= [1.0, 0.0]
     pts[:, w] .= [0.0, 1.0]
     tri = Triangulation(pts)
-    DT.add_triangle!(tri, (u, v, w); update_ghost_edges = false)
+    DT.add_triangle!(tri, (u, v, w); update_ghost_edges = true)
     BI = DT.𝒢
     @test get_triangles(tri) == Set(((u, v, w), (w, v, BI), (v, u, BI), (u, w, BI)))
     @test get_adjacent(get_adjacent(tri)) == Dict(
@@ -291,7 +291,7 @@ end
     p3 = @SVector[0.0, 1.0]
     pts = [p1, p2, p3]
     tri = Triangulation(pts)
-    DT.add_triangle!(tri, 1, 2, 3; update_ghost_edges = false)
+    DT.add_triangle!(tri, 1, 2, 3; update_ghost_edges = true)
     true_T = Set{NTuple{3, Int}}(
         [
             (1, 2, 3),
@@ -327,7 +327,7 @@ end
     @test get_graph(tri) == true_DG
     p4 = @SVector[1.7, 1.7]
     push!(pts, p4)
-    DT.add_triangle!(tri, 3, 2, 4; update_ghost_edges = false)
+    DT.add_triangle!(tri, 3, 2, 4; update_ghost_edges = true)
     true_T = Set{NTuple{3, Int}}(
         [
             (1, 2, 3),
@@ -370,8 +370,8 @@ end
     p5 = @SVector[1.0, 3.0]
     p6 = @SVector[3.0, 1.0]
     push!(pts, p5, p6)
-    DT.add_triangle!(tri, 3, 4, 5; update_ghost_edges = false)
-    DT.add_triangle!(tri, 4, 2, 6; update_ghost_edges = false)
+    DT.add_triangle!(tri, 3, 4, 5; update_ghost_edges = true)
+    DT.add_triangle!(tri, 4, 2, 6; update_ghost_edges = true)
     true_T = Set{NTuple{3, Int}}(
         [
             (1, 2, 3),
@@ -423,7 +423,7 @@ end
     @test (get_adjacent ∘ get_adjacent)(tri) == true_adj.adjacent
     @test (get_adjacent2vertex ∘ get_adjacent2vertex)(tri) == true_adj2v.adjacent2vertex
     @test get_graph(tri) == true_DG
-    DT.add_triangle!(tri, 5, 4, 6; update_ghost_edges = false)
+    DT.add_triangle!(tri, 5, 4, 6; update_ghost_edges = true)
     true_T = Set{NTuple{3, Int}}(
         [
             (1, 2, 3),
@@ -509,7 +509,7 @@ end
             (11, 7, 5),
             (10, 11, 5),
         )
-        DT.add_triangle!(tri, i, j, k; update_ghost_edges = false)
+        DT.add_triangle!(tri, i, j, k; update_ghost_edges = true)
     end
     true_T = Set{NTuple{3, Int}}(
         [

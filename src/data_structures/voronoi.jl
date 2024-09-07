@@ -131,7 +131,8 @@ function Base.show(io::IO, ::MIME"text/plain", vor::VoronoiTessellation)
     println(io, "Voronoi Tessellation.")
     println(io, "    Number of generators: $(num_generators(vor))")
     println(io, "    Number of polygon vertices: $(num_polygon_vertices(vor))")
-    print(io, "    Number of polygons: $(num_polygons(vor))")
+    println(io, "    Number of polygons: $(num_polygons(vor))")
+    print(io, "    Weighted: $(is_weighted(vor))")
 end
 
 """
@@ -473,3 +474,10 @@ Returns the edge `e` if it is not a boundary edge, and the edge `reverse(e)` if 
 See also [`is_boundary_edge`](@ref).
 """
 convert_to_edge_adjoining_ghost_vertex(vorn::VoronoiTessellation, e) = convert_to_edge_adjoining_ghost_vertex(get_triangulation(vorn), e)
+
+"""
+    is_weighted(vorn::VoronoiTessellation) -> Bool
+
+Returns `true` if the Voronoi tessellation `vorn` is weighted, and `false` otherwise.
+"""
+is_weighted(vorn::VoronoiTessellation) = is_weighted(get_triangulation(vorn))

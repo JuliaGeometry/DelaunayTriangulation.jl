@@ -139,7 +139,7 @@ function circular_equality(A, B, by = isequal)
     isempty(A) && return true # isempty(B) is true as well because of the previous assertion 
     _A = @views A[begin:(end - 1)]
     _B = @views B[begin:(end - 1)]
-    same_idx = findfirst(by(_A[begin]), _B)
+    same_idx = findfirst(Base.Fix1(by, _A[begin]), _B)
     same_idx === nothing && return false
     n = length(_A)
     for (i, a) in pairs(_A)

@@ -253,17 +253,17 @@ end
     p3 = @SVector[0.0, 1.0]
     pts = [p1, p2, p3]
     tri = Triangulation(pts)
-    DT.add_triangle!(tri, 1, 2, 3; update_ghost_edges = false)
+    DT.add_triangle!(tri, 1, 2, 3; update_ghost_edges = true)
     p4 = @SVector[1.7, 1.7]
     push!(pts, p4)
-    DT.add_triangle!(tri, 3, 2, 4; update_ghost_edges = false)
+    DT.add_triangle!(tri, 3, 2, 4; update_ghost_edges = true)
     p5 = @SVector[1.0, 3.0]
     p6 = @SVector[3.0, 1.0]
     push!(pts, p5, p6)
-    DT.add_triangle!(tri, 3, 4, 5; update_ghost_edges = false)
-    DT.add_triangle!(tri, 4, 2, 6; update_ghost_edges = false)
-    DT.add_triangle!(tri, 5, 4, 6; update_ghost_edges = false)
-    DT.delete_triangle!(tri, 5, 4, 6; update_ghost_edges = false)
+    DT.add_triangle!(tri, 3, 4, 5; update_ghost_edges = true)
+    DT.add_triangle!(tri, 4, 2, 6; update_ghost_edges = true)
+    DT.add_triangle!(tri, 5, 4, 6; update_ghost_edges = true)
+    DT.delete_triangle!(tri, 5, 4, 6; update_ghost_edges = true)
     true_T = Set{NTuple{3, Int}}(
         [
             (1, 2, 3),
@@ -315,8 +315,8 @@ end
     @test (get_adjacent ∘ get_adjacent)(tri) == true_adj.adjacent
     @test (get_adjacent2vertex ∘ get_adjacent2vertex)(tri) == true_adj2v.adjacent2vertex
     @test get_graph(tri) == true_DG
-    DT.delete_triangle!(tri, 4, 2, 6; update_ghost_edges = false)
-    DT.delete_triangle!(tri, 3, 4, 5; update_ghost_edges = false)
+    DT.delete_triangle!(tri, 4, 2, 6; update_ghost_edges = true)
+    DT.delete_triangle!(tri, 3, 4, 5; update_ghost_edges = true)
     true_T = Set{NTuple{3, Int}}(
         [
             (1, 2, 3),
@@ -357,7 +357,7 @@ end
     @test (get_adjacent ∘ get_adjacent)(tri) == true_adj.adjacent
     @test (get_adjacent2vertex ∘ get_adjacent2vertex)(tri) == true_adj2v.adjacent2vertex
     @test get_graph(tri) == true_DG
-    DT.delete_triangle!(tri, 3, 2, 4; update_ghost_edges = false)
+    DT.delete_triangle!(tri, 3, 2, 4; update_ghost_edges = true)
     true_T = Set{NTuple{3, Int}}(
         [
             (1, 2, 3),
@@ -392,7 +392,7 @@ end
     @test (get_adjacent ∘ get_adjacent)(tri) == true_adj.adjacent
     @test (get_adjacent2vertex ∘ get_adjacent2vertex)(tri) == true_adj2v.adjacent2vertex
     @test get_graph(tri) == true_DG
-    DT.delete_triangle!(tri, 1, 2, 3; update_ghost_edges = false)
+    DT.delete_triangle!(tri, 1, 2, 3; update_ghost_edges = true)
     true_T = Set{NTuple{3, Int}}()
     true_adj = DT.Adjacent{Int, NTuple{2, Int}}()
     true_adj2v = DT.Adjacent2Vertex{Int, Set{NTuple{2, Int}}}()
@@ -433,10 +433,10 @@ end
             (11, 7, 5),
             (10, 11, 5),
         )
-        DT.add_triangle!(tri, i, j, k; update_ghost_edges = false)
+        DT.add_triangle!(tri, i, j, k; update_ghost_edges = true)
     end
     [
-    DT.delete_triangle!(tri, i, j, k; update_ghost_edges = false) for (i, j, k) in (
+    DT.delete_triangle!(tri, i, j, k; update_ghost_edges = true) for (i, j, k) in (
         (1, 8, 9), (9, 8, 10), (10, 11, 5), (5, 7, 4), (4, 6, 3), (3, 6, 2), (2, 6, 1),
     )
     ]

@@ -117,6 +117,7 @@ end
 
     @testset verbose = true "Voronoi" begin
         safe_include("voronoi/voronoi.jl")
+        safe_include("voronoi/power.jl")
     end
 
     @testset verbose = true "Run the documentation examples" begin

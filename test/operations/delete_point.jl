@@ -137,7 +137,7 @@ end
         5 4 1
     ]
     for T in eachrow(true_T)
-        add_triangle!(_tri, T; update_ghost_edges = false)
+        add_triangle!(_tri, T; update_ghost_edges = true)
     end
     convex_hull!(tri)
     DT.compute_representative_points!(tri)

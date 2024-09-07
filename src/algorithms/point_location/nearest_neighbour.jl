@@ -3,6 +3,8 @@
 
 Get the index of the nearest neighbour of `q` in `tri_or_vor`. 
 
+Note that even for power diagrams, the metric used is the Euclidean metric instead of the metric induced by the power distance.
+
 # Arguments 
 - `tri_or_vor`: A [`Triangulation`](@ref) or [`VoronoiTessellation`](@ref).
 - `q`: The point to be located.
