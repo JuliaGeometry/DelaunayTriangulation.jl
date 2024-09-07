@@ -10,8 +10,11 @@ add_weight!(weights, w) = push!(weights, w)
 
 Gets the `i`th weight from `weights`. The default definition for this is `weights[i]`,
 but this can be extended - e.g., [`ZeroWeight`](@ref) uses `get_weight(weights, i) = 0.0`.
+
+If `i` is not an integer, then the default definition is `is_point3(i) ? i[3] : zero(number_type(weights))`.
 """
-get_weight(weights, i) = weights[i]
+get_weight(weights, i::Integer) = weights[i]
+get_weight(weights, i) = is_point3(i) ? i[3] : zero(number_type(weights))
 
 """
     ZeroWeight{T}()
@@ -21,7 +24,8 @@ which is `Float64` by default.
 """
 struct ZeroWeight{T} end
 ZeroWeight() = ZeroWeight{Float64}()
-get_weight(weights::ZeroWeight{T}, i) where {T} = zero(T)
+get_weight(weights::ZeroWeight{T}, i) where {T} = is_point3(i) ? i[3] : zero(T)
+get_weight(weights::ZeroWeight{T}, i::Integer) where {T} = zero(T)
 
 """
     add_weight!(tri::Triangulation, w)
@@ -40,6 +44,10 @@ end
 Gets the `i`th weight from `tri`.
 """
 function get_weight(tri::Triangulation, i)
+    weights = get_weights(tri)
+    return get_weight(weights, i)
+end
+function get_weight(tri::Triangulation, i::Integer) # ambiguity
     weights = get_weights(tri)
     return get_weight(weights, i)
 end

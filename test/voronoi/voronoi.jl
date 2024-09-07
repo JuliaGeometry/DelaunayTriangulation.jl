@@ -266,7 +266,7 @@ end
             end
         end
         for p in p
-            u = get_nearest_neighbour(vor, p; predicates = PT())
+            u = get_nearest_neighbour(vor, p; power=rand(Bool), predicates = PT())
             all_dists = [norm(p .- get_generator(vor, i)) for i in sort(collect(each_generator(vor)))]
             @test findmin(all_dists)[2] == u
         end
@@ -289,13 +289,13 @@ end
             y = vec([y for _ in xg, y in yg])
             for (ξ, η) in zip(x, y)
                 p = (ξ, η)
-                u = get_nearest_neighbour(vorn, p; predicates = PT())
-                @inferred get_nearest_neighbour(vorn, p; predicates = PT())
+                u = get_nearest_neighbour(vorn, p; power = rand(Bool), predicates = PT())
+                @inferred get_nearest_neighbour(vorn, p; power = rand(Bool), predicates = PT())
                 all_dists = [norm(p .- get_generator(vorn, i)) for i in sort(collect(each_generator(vorn)))]
                 k = findmin(all_dists)[2]
                 @test k == u
                 for m in DT.each_point_index(tri)
-                    u = get_nearest_neighbour(vorn, p, try_points = m; predicates = PT())
+                    u = get_nearest_neighbour(vorn, p, try_points = m; power = rand(Bool), predicates = PT())
                     @test u == k
                 end
             end

@@ -60,31 +60,33 @@ function segment_intersection_coordinates(a, b, c, d)
 end
 
 """
-    intersection_of_edge_and_bisector_ray([kernel::AbstractPredicateKernel=AdaptiveKernel(),] a, b, c) -> (Certificate, NTuple{2, Number})
+    intersection_of_edge_and_bisector_ray([kernel::AbstractPredicateKernel=AdaptiveKernel(),] a, b, c; project=false) -> (Certificate, NTuple{2, Number})
 
 Given an edge `(a, b)` and a ray emanating from `c` perpendicular
-with the edge and collinear with its midpoint, tests if `c` intersects the edge. The returned value is `(cert, p)`, where:
+with the edge and collinear with its midpoint (or, if `project=true`, the projection of `c` onto the edge), tests if `c` intersects the edge. The returned value is `(cert, p)`, where:
 
 - `cert`: A [`Certificate`](@ref) indicating the position of `c` relative to the line through `(a, b)`.
-- `p`: The intersection point (which is the midpoint) if `c` intersects the edge, `(NaN, NaN)` otherwise.
+- `p`: The intersection point if `c` intersects the edge, `(NaN, NaN)` otherwise.
 
 The `kernel` argument determines how this result is computed, and should be 
 one of [`ExactKernel`](@ref), [`FastKernel`](@ref), and [`AdaptiveKernel`](@ref) (the default).
 See the documentation for more information about these choices.
 """
-function intersection_of_edge_and_bisector_ray(kernel::AbstractPredicateKernel, a, b, c)
+function intersection_of_edge_and_bisector_ray(kernel::AbstractPredicateKernel, a, b, c; project = false)
     cert = point_position_relative_to_line(kernel, a, b, c)
     if !is_left(cert)
-        ax, ay = getxy(a)
-        bx, by = getxy(b)
-        m = midpoint((ax, ay), (bx, by))
+        if project 
+            m = project_onto_line(a, b, c)
+        else
+            m = midpoint(a, b)
+        end
         return cert, m
     else
         F = number_type(a)
         return cert, (F(NaN), F(NaN))
     end
 end
-intersection_of_edge_and_bisector_ray(a, b, c) = intersection_of_edge_and_bisector_ray(AdaptiveKernel(), a, b, c)
+intersection_of_edge_and_bisector_ray(a, b, c; project = false) = intersection_of_edge_and_bisector_ray(AdaptiveKernel(), a, b, c; project)
 
 """
     classify_and_compute_segment_intersection([kernel::AbstractPredicateKernel,] a, b, c, d) -> (Certificate, Certificate, Certificate, NTuple{2, Number})
@@ -445,7 +447,7 @@ function get_distance_to_plane(a::Tuple, b::Tuple, c::Tuple, p::Tuple)
 end
 
 """
-    angle_between(p, q) -> Float64
+    angle_between(p, q) -> Number
 
 Returns the angle between the vectors `p` and `q` in radians, treating `q`
 as the base. See [this article](https://straypixels.net/angle-between-vectors/).
@@ -456,5 +458,25 @@ function angle_between(p, q)
     qx, qy = getxy(q)
     a = px * qx + py * qy
     b = px * -qy + py * qx
-    return mod(atan(b, a), 2π)
+    return mod2pi(atan(b, a))
+end
+
+"""
+    project_onto_line(p, q, r) -> NTuple{2, Number}
+
+Projects the point `r` onto the line through `p` and `q`. It is possible that 
+the projected point is not on the line segment `[p, q]`.
+"""
+function project_onto_line(p, q, r)
+    # Projects r onto the line through p and q. This is taken from the function 
+    # two_point_interpolate from https://github.com/DanielVandH/NaturalNeighbours.jl/blob/13b807d4a0f733719d67dfd120a67d7c7cc8ce0a/src/interpolation/extrapolation.jl
+    px, py = getxy(p)
+    qx, qy = getxy(q)
+    rx, ry = getxy(r)
+    ℓ² = dist_sqr(p, q)
+    t = (rx - px) * (qx - px) + (ry - py) * (qy - py)
+    t /= ℓ²
+    cx = px + t * (qx - px)
+    cy = py + t * (qy - py)
+    return cx, cy
 end

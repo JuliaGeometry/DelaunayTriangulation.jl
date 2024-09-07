@@ -27,6 +27,19 @@ end
     tri = Triangulation(rand(Float32, 2, 10); weights)
     @test get_weight(tri, 2) ⊢ weights[2]
     @test DT.get_weights(tri) == weights
+
+    w1 = randn(10)
+    w2 = randn(Float32, 5)
+    w3 = DT.ZeroWeight()
+    @test DT.get_weight(w1, 1) == w1[1]
+    @test DT.get_weight(w1, ()) == 0.0
+    @test DT.get_weight(w1, (1.0, 3.0, 4.0)) == 4.0 
+    @test DT.get_weight(w2, 1) == w2[1]
+    @test DT.get_weight(w2, ()) === 0.0f0
+    @test DT.get_weight(w2, (1.0, 3.0, 4.0)) == 4.0f0
+    @test DT.get_weight(w3, 1) === 0.0
+    @test DT.get_weight(w3, ()) === 0.0
+    @test DT.get_weight(w3, (1.0, 3.0, 4.0)) === 4.0
 end
 
 @testset "add_weight!" begin

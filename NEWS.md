@@ -3,6 +3,9 @@
 ## 1.3.0
 
 - Weighted triangulations have now been implemented, as have power diagrams. The weights are also no longer restricted to `Float64` type. See [#180](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/180).
+- `intersection_of_edge_and_bisector_ray` now accepts a `project` keyword argument. See [#180](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/180).
+- `get_nearest_neighbour` now accepts a `power` keyword argument. See [#180](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/180).
+- `get_weight(w, i)` now returns, when `i` is not an integer, either `i[3]` if it represents a point in space or `0`. See [#180](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/180).
 
 ## v1.2.0
 

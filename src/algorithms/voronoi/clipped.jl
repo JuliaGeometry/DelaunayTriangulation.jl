@@ -182,7 +182,7 @@ function process_ray_intersection!(
     b = getj(u_tri)
     p, q = get_generator(vorn, a, b)
     r = get_polygon_point(vorn, v)
-    _, intersection_coordinates = intersection_of_edge_and_bisector_ray(predicates, p, q, r)
+    _, intersection_coordinates = intersection_of_edge_and_bisector_ray(predicates, p, q, r; project = is_weighted(vorn))
     F = number_type(vorn)
     any(isnan, intersection_coordinates) && (push!(exterior_circumcenters, v); return (F(NaN), F(NaN)))
     idx = add_segment_intersection!(segment_intersections, boundary_sites, intersection_coordinates, incident_polygon)
