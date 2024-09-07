@@ -108,9 +108,9 @@ In our case, there are no such segments, but there would be if we had used `segm
 
 ```@example curvout 
 r = DelaunayTriangulation.num_points(tri)
-add_point!(tri, -3/2, -4.0, concavity_protection = true)
-add_point!(tri, -3/2, -1.0, concavity_protection = true)
-add_segment!(tri, r + 1, r + 2)
+add_point!(tri, -3/2, -4.0, concavity_protection = true; rng)
+add_point!(tri, -3/2, -1.0, concavity_protection = true; rng)
+add_segment!(tri, r + 1, r + 2; rng)
 ```
 
 Now we see that we have some segments:
@@ -133,11 +133,13 @@ Just as for the interior segments, only one of `(i, j)` or `(j, i)` will appear 
 
 ### [`get_weights(tri)`](@ref get_weights)
 
-This field stores the weights associated with each point in the triangulation. Currently, this field is not used properly anywhere and should not be inspected until weighted triangulations are fully implemented. By default, you will see a [`ZeroWeight()`](@ref ZeroWeight):
+This field stores the weights associated with each point in the triangulation. By default, you will see a [`ZeroWeight()`](@ref ZeroWeight):
 
 ```@example curvout 
 get_weights(tri)
 ```
+
+If you do provide weights, this will return those.
 
 ## Topology Fields 
 
@@ -151,16 +153,17 @@ This field stores the adjacent map, mapping each edge `(u, v)` in the triangulat
 get_adjacent(tri)
 ```
 
-For example, the mapping `(2019, 2020) => 985` implies that the triangle `(2019, 2020, 985)` is in the triangulation and is positively oriented, which we can verify:
+For example, the mapping `(697, 967) => 968` implies that the triangle `(697, 967, 968)` is in the triangulation and is positively oriented, which we can verify:
 
 ```@example curvout 
-DelaunayTriangulation.contains_triangle(tri, 2019, 2020, 985)
+u, v, w = 697, 967, 968
+DelaunayTriangulation.contains_triangle(tri, u, v, w)
 ```
 
 It is important to note that, for any triangle `(u, v, w)`, the mappings `(u, v) => w`, `(v, w) => u`, and `(w, u) => v` will all appear in the adjacent map. For example:
 
 ```@example curvout 
-get_adjacent(tri, 2019, 2020), get_adjacent(tri, 2020, 985), get_adjacent(tri, 985, 2019)
+get_adjacent(tri, u, v), get_adjacent(tri, v, w), get_adjacent(tri, w, u)
 ```
 
 You can use `get_adjacent(tri, u, v)` to find this vertex `w`, as we demonstrated above. For cases where the edge does not exist, you will get `0`:
@@ -172,10 +175,10 @@ get_adjacent(tri, 1, 2)
 One last thing to notice is that some of the vertices `w` will be ghost vertices, and similarly some of the edges `(u, v)` will be ghost edges. For example,
 
 ```@example curvout 
-get_adjacent(tri, 1690, 853)
+get_adjacent(tri, 73, 36)
 ```
 
-This vertex `-8` means that `(1690, 853)` is an edge of the boundary associated with the ghost vertex `-8`.
+This vertex `-6` means that `(73, 36)` is an edge of the boundary associated with the ghost vertex `-6`.
 
 ### [`get_adjacent2vertex(tri)`](@ref get_adjacent2vertex)
 
@@ -191,7 +194,7 @@ An example of this mapping is:
 get_adjacent2vertex(tri, 700)
 ```
 
-This output means that `(700, 1583, 933)`, `(700, 1445, 1986)`, `(700, 1986, 2017)`, `(700, 1581, 1583)`, `(700, 1604, 1445)`, `(700, 2017, 1581)`, and `(700, 933, 1604)` are all positively oriented triangles in the triangulation, and these are the only triangles that contain the vertex `700`. In contrast to `get_adjacent`, calling `get_adjacent2vertex` on a vertex not in the triangulation will throw a `KeyError`. For ghost vertices, you will get the set of all edges on the boundary associated with that vertex, for example
+This output means that `(700, 792, 1936)`, `(700, 790, 787)`, `(700, 789, 1693)`, `(700, 1693, 792)`, `(700, 1936, 790)`, and `(700, 787, 789)` are all positively oriented triangles in the triangulation, and these are the only triangles that contain the vertex `700`. In contrast to `get_adjacent`, calling `get_adjacent2vertex` on a vertex not in the triangulation will throw a `KeyError`. For ghost vertices, you will get the set of all edges on the boundary associated with that vertex, for example
 
 ```@example curvout 
 get_adjacent2vertex(tri, -1)
@@ -257,7 +260,7 @@ This mapping shows the neighbours for each vertex in the triangulation. For exam
 get_neighbours(tri, 1)
 ```
 
-shows that the vertices sharing edge with `1` are `-1`, `18`, `483`, and `-2`. These two ghost vertices, `-1` and `-2`, imply that `1` is on the boundary of the triangulation and is also at the corner of the two sections of the boundary associated with the ghost vertices `-1` and `-2`. Similarly,
+shows that the vertices sharing edge with `1` are `-1`, `18`, `487`, and `-2`. These two ghost vertices, `-1` and `-2`, imply that `1` is on the boundary of the triangulation and is also at the corner of the two sections of the boundary associated with the ghost vertices `-1` and `-2`. Similarly,
 
 ```@example curvout
 get_neighbours(tri, -2)
@@ -301,10 +304,10 @@ get_boundary_edge_map(tri)
 Since our domain has multiple curves, the `pos` values are `Tuple`s of the form `(m, n)`, where `m` is the curve and `n` is the section of that curve. So, for example, we have
 
 ```@example curvout
-pos, ℓ = get_boundary_edge_map(tri, 853, 1690)
+pos, ℓ = get_boundary_edge_map(tri, 913, 950)
 ```
 
-This means that `(853, 1690)` is the `2`nd edge of the first section on the sixth boundary:
+This means that `(913, 950)` is the `37`th edge of the first section on the third boundary:
 
 ```@example curvout
 bn = get_boundary_nodes(tri, pos) # notice that we can pass Tuples (m, n) as a single argument

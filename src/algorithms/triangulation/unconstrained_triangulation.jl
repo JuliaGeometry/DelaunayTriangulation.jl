@@ -79,10 +79,10 @@ function initialise_bowyer_watson!(tri::Triangulation, insertion_order, predicat
     initial_triangle = get_initial_triangle(tri, insertion_order, predicates)
     u, v, w = triangle_vertices(initial_triangle)
     g = I(𝒢)
-    add_triangle!(tri, u, v, w; protect_boundary = true, update_ghost_edges = true)
-    add_triangle!(tri, v, u, g; protect_boundary = true, update_ghost_edges = true)
-    add_triangle!(tri, w, v, g; protect_boundary = true, update_ghost_edges = true)
-    add_triangle!(tri, u, w, g; protect_boundary = true, update_ghost_edges = true)
+    add_triangle!(tri, u, v, w; protect_boundary = true, update_ghost_edges = false)
+    add_triangle!(tri, v, u, g; protect_boundary = true, update_ghost_edges = false)
+    add_triangle!(tri, w, v, g; protect_boundary = true, update_ghost_edges = false)
+    add_triangle!(tri, u, w, g; protect_boundary = true, update_ghost_edges = false)
     new_representative_point!(tri, I(1))
     for i in triangle_vertices(initial_triangle)
         p = get_point(tri, i)
@@ -245,8 +245,8 @@ function add_point_bowyer_watson_dig_cavities!(tri::Triangulation, new_point::N,
             if !is_true(peek)
                 delete_triangle!(tri, v, u, new_point; protect_boundary = true, update_ghost_edges = false)
                 delete_triangle!(tri, u, v, g; protect_boundary = true, update_ghost_edges = false)
-                add_triangle!(tri, new_point, v, g; protect_boundary = true, update_ghost_edges = true)
-                add_triangle!(tri, u, new_point, g; protect_boundary = true, update_ghost_edges = true)
+                add_triangle!(tri, new_point, v, g; protect_boundary = true, update_ghost_edges = false)
+                add_triangle!(tri, u, new_point, g; protect_boundary = true, update_ghost_edges = false)
             end
             if is_true(store_event_history)
                 trit = triangle_type(tri)
@@ -371,7 +371,7 @@ function dig_cavity!(tri::Triangulation, r, i, j, ℓ, flag, V, store_event_hist
             if u == i && v == j
                 return tri
             else
-                !is_true(peek) && add_triangle!(tri, r, i, j; protect_boundary = true, update_ghost_edges = true)
+                !is_true(peek) && add_triangle!(tri, r, i, j; protect_boundary = true, update_ghost_edges = false)
                 if is_true(store_event_history)
                     trit = triangle_type(tri)
                     add_triangle!(event_history, construct_triangle(trit, _r, i, j))
