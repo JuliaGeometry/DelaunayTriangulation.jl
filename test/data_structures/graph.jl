@@ -75,17 +75,30 @@ end
     DT.delete_triangle!(g, T2)
     DT.delete_triangle!.(Ref(g), (T3, T4, T5))
     for ((i, j, k)) in (T1, T2, T3, T4, T5)
-        @test !(i ∈ g.neighbours[j] && i ∈ g.neighbours[k])
-        @test !(j ∈ g.neighbours[i] && j ∈ g.neighbours[k])
-        @test !(k ∈ get_neighbours(g, i) && k ∈ get_neighbours(g, j))
+        i_in_j = haskey(g.neighbours, j) && i ∈ g.neighbours[j] && i ∈ get_neighbours(g, j)
+        i_in_k = haskey(g.neighbours, k) && i ∈ g.neighbours[k] && i ∈ get_neighbours(g, k)
+        j_in_i = haskey(g.neighbours, i) && j ∈ g.neighbours[i] && j ∈ get_neighbours(g, i)
+        j_in_k = haskey(g.neighbours, k) && j ∈ g.neighbours[k] && j ∈ get_neighbours(g, k)
+        k_in_i = haskey(g.neighbours, i) && k ∈ g.neighbours[i] && k ∈ get_neighbours(g, i)
+        k_in_j = haskey(g.neighbours, j) && k ∈ g.neighbours[j] && k ∈ get_neighbours(g, j)
+        @test !(i_in_j || i_in_k)
+        @test !(j_in_i || j_in_k)
+        @test !(k_in_i || k_in_j)
     end
 end
 
 @testset "Deleting neighbours" begin
-    DT.delete_neighbour!(g, 30, 50)
-    @test 50 ∉ get_neighbours(g, 30) && 30 ∉ get_neighbours(g, 50)
-    DT.delete_neighbour!(g, 51, 52, 53)
-    @test 52 ∉ get_neighbours(g, 51) && 53 ∉ get_neighbours(g, 51)
+    DT.delete_neighbour!(g, 3, 6)
+    @test 3 ∉ get_neighbours(g, 6) && 6 ∉ get_neighbours(g, 3)
+    DT.delete_neighbour!(g, 4, 6, 2, 3, 1)
+    @test 4 ∉ get_neighbours(g, 6) && 6 ∉ get_neighbours(g, 4)
+    @test 4 ∉ get_neighbours(g, 2) && 2 ∉ get_neighbours(g, 4)
+    @test 4 ∉ get_neighbours(g, 3) && 3 ∉ get_neighbours(g, 4)
+    @test 4 ∉ get_neighbours(g, 1) && 1 ∉ get_neighbours(g, 4)
+    DT.delete_neighbour!(g, 10, 15, 21)
+    @test !haskey(g.neighbours, 10) && !haskey(g.neighbours, 15) && !haskey(g.neighbours, 21)
+    DT.delete_neighbour!(g, 1, 6)
+    @test haskey(g.neighbours, 1) && !haskey(g.neighbours, 6) && 6 ∉ get_neighbours(g, 1)
 end
 
 @testset "Deleting vertices" begin
@@ -119,7 +132,8 @@ global g = _make_graph_from_adjacency(sg)
     clean_dg = deepcopy(g)
     DT.add_vertex!(g, 13, 5)
     @test g ≠ clean_dg
-    DT.delete_neighbour!(g, 13, 5)
+    empty!(g.neighbours[13])
+    delete!(g.neighbours[5], 13)
     @test g ≠ clean_dg
     DT.clear_empty_vertices!(g)
     @test g == clean_dg

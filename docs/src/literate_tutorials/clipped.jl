@@ -4,8 +4,8 @@
 
 # One issue that may arise when dealing with Voronoi tessellations is the 
 # presence of unbounded polygons occurring on the boundary. One way to deal with this 
-# is to clip polygons to the convex hull of the tessellation. (Arbitrary clipping boundaries 
-# are on the to-do list, but they are not yet implemented.)
+# is to clip polygons to the convex hull of the tessellation. We describe how to also clip
+# the tessellation to a generic convex polygon, instead of just the convex hull, in [this tutorial](clipped_polygon.md).
 
 # In the example below, we clip the tessellation to the convex hull of the point set by using `clip=true`
 # in the keyword arguments.

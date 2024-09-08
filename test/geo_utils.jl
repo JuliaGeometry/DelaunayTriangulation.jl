@@ -853,6 +853,14 @@ end
     @test DT.is_collinear(DT.intersection_of_edge_and_bisector_ray(a, b, c)[1])
     c = (-5.0, 4.5)
     @test DT.intersection_of_edge_and_bisector_ray(a, b, c)[2] == (-5.0, 5.0)
+
+    a, b, c = (-7.0, 3.0), (-5.0, 7.0), (-4.0, 4.0)
+    cert, m = DT.intersection_of_edge_and_bisector_ray(a, b, c; project=true)
+    @test m == (-6.0, 5.0)
+    c = (-3.0, 5.0)
+    cert, m = DT.intersection_of_edge_and_bisector_ray(a, b, c; project=true)
+    @test m == (-5.4, 6.2)
+    @test dot(b .- a, m .- c) ≈ 0.0 atol=1e-4
 end
 
 @testset "classify_and_compute_segment_intersection" begin
@@ -1269,4 +1277,43 @@ end
     @test rad2deg(θ) ≈ 356.8841517402107 rtol = 1.0e-4
     θ = DT.angle_between(q, p)
     @test rad2deg(θ) ≈ 3.1158482597894 rtol = 1.0e-4
+end
+
+@testset "project_onto_line" begin
+    p, q = (-6.0, 4.0), (-3.0, 2.0)
+    r = (-3.0, 4.0)
+    c = DT.project_onto_line(p, q, r)
+    @test dot(p .- q, r .- c) ≈ 0.0 atol=1e-4
+    @test c ⪧ (-3.9230769230769234, 2.6153846153846154)
+    cc = DT.project_onto_line(q, p, r)
+    @test c ⪧ (-3.9230769230769234, 2.6153846153846154)
+    cc = DT.project_onto_line(p, q, c)
+    @test c ⪧ cc 
+    cc = DT.project_onto_line(p, q, p)
+    @test p ⪧ cc
+    cc = DT.project_onto_line(p, q, q)
+    @test q ⪧ cc
+    p, q = (-6.0, 4.0), (-2.5, 4.0)
+    r = (-3.0, 5.0)
+    c = DT.project_onto_line(p, q, r)
+    @test dot(p .- q, r .- c) ≈ 0.0 atol=1e-4
+    @test c ⪧ (-3.0, 4.0)
+
+    p, q, r = (-7.0, 7.0), (-8.0, 5.5), (-6.0, 5.0)
+    cc = DT.triangle_circumcenter(p, q, r)
+    e1, e2, e3 = DT.triangle_edge_midpoints(p, q, r)
+    c = DT.project_onto_line(p, q, cc)
+    @test c ⪧ e1
+    c = DT.project_onto_line(q, r, cc)
+    @test c ⪧ e2
+    c = DT.project_onto_line(r, p, cc)
+    @test c ⪧ e3
+    r = (-5.5, 6.5)
+    cc = DT.triangle_circumcenter(p, q, r)
+    e1, e2, e3 = DT.triangle_edge_midpoints(p, q, r)
+    c = DT.project_onto_line(p, q, cc)
+    @test c ⪧ e1
+    c = DT.project_onto_line(q, r, cc)
+    @test c ⪧ e2
+    c = DT.project_onto_line(r, p, cc)
 end

@@ -19,6 +19,8 @@ end
     @test DT.number_type((1.0, 5.0)) == Float64
     @test DT.number_type([(1.0f0, 2.0f0), (1.7f0, 2.5f0)]) == Float32
     @test DT.number_type(2.4) == Float64
+    @test DT.number_type(((1.0,2.0),(2.0,3.0))) == Float64 
+    @test DT.number_type(((1.0f0,2.0f0),(2.0f0,3.0f0))) == Float32
 end
 
 @testset "get_ghost_vertex" begin

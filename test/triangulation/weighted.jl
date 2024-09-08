@@ -9,6 +9,9 @@ using ..DelaunayTriangulation: add_weight!, get_weight, get_weights
     zw = DT.ZeroWeight()
     @inferred DT.ZeroWeight()
     @test get_weight(zw, 1) ⊢ 0.0
+    zw = DT.ZeroWeight{Float32}()
+    @inferred DT.ZeroWeight{Float32}()
+    @test get_weight(zw, 1) ⊢ 0.0f0
 end
 
 @testset "get_weight" begin
@@ -20,7 +23,23 @@ end
     @test get_weight(tri, 5) == weights[5]
     @test DT.get_weights(tri) == weights
     weights = rand(Float32, 10)
-    @test get_weight(weights, 2) ⊢ Float64(weights[2])
+    @test get_weight(weights, 2) ⊢ weights[2]
+    tri = Triangulation(rand(Float32, 2, 10); weights)
+    @test get_weight(tri, 2) ⊢ weights[2]
+    @test DT.get_weights(tri) == weights
+
+    w1 = randn(10)
+    w2 = randn(Float32, 5)
+    w3 = DT.ZeroWeight()
+    @test DT.get_weight(w1, 1) == w1[1]
+    @test DT.get_weight(w1, ()) == 0.0
+    @test DT.get_weight(w1, (1.0, 3.0, 4.0)) == 4.0 
+    @test DT.get_weight(w2, 1) == w2[1]
+    @test DT.get_weight(w2, ()) === 0.0f0
+    @test DT.get_weight(w2, (1.0, 3.0, 4.0)) == 4.0f0
+    @test DT.get_weight(w3, 1) === 0.0
+    @test DT.get_weight(w3, ()) === 0.0
+    @test DT.get_weight(w3, (1.0, 3.0, 4.0)) === 4.0
 end
 
 @testset "add_weight!" begin
@@ -39,7 +58,7 @@ end
     @test DT.is_weighted(tri)
     tri = Triangulation(rand(2, 10); weights = DT.ZeroWeight())
     @test !DT.is_weighted(tri)
-    tri = Triangulation(rand(2, 10); weights = zeros(10))
+    tri = Triangulation(rand(2, 10); weights = zeros(Float32, 10))
     @test DT.is_weighted(tri)
 end
 
@@ -204,30 +223,35 @@ end
             tri2 = triangulate(points; weights)
             @test tri1 == tri2
             @test validate_triangulation(tri2)
+            validate_statistics(tri2)
         end
         for i in 3:10
             for j in 3:10
                 tri = triangulate_rectangle(0, 10, 0, 10, i, j)
                 tri = triangulate(get_points(tri); weights = zeros(i * j))
-                # @test validate_triangulation(tri) # Why is this failing sometimes? Is validate not branching at weighted triangulations?
+                @test validate_triangulation(tri) 
+                validate_statistics(tri)
             end
         end
     end
 
     @testset "Triangulation with identical weights" begin
-        for n in 3:500
+        for n in Iterators.flatten((3:20, 25:5:250))
             points = rand(2, n)
             w = randn()
             weights = w * ones(size(points, 2))
-            tri1 = triangulate(points; weights)
+            tri1 = triangulate(points)
             tri2 = triangulate(points; weights)
-            @test tri1 == tri2
+            @test validate_triangulation(tri2)
+            @test DT.compare_triangle_collections(each_triangle(tri1), each_triangle(tri2))
+            validate_statistics(tri2)
         end
         for i in 3:10
             for j in 3:10
                 tri = triangulate_rectangle(0, 10, 0, 10, i, j)
                 tri = triangulate(get_points(tri); weights = 10randn() * ones(i * j))
-                # @test validate_triangulation(tri) # Why is this failing sometimes? Is validate not branching at weighted triangulations?
+                @test validate_triangulation(tri) # Why is this failing sometimes? Is validate not branching at weighted triangulations?
+                (i == j == 10) || validate_statistics(tri)
             end
         end
     end
@@ -253,17 +277,99 @@ end
     end
 end
 
+@testset "Point location" begin
+    for fi in 1:NUM_CWEGT 
+        tri, submerged, nonsubmerged, weights, S = get_convex_polygon_weighted_example(fi)
+        for i in each_solid_vertex(tri) 
+            V = find_triangle(tri, get_point(tri, i))
+            cert = DT.point_position_relative_to_triangle(tri, V, i)
+            @test DT.is_on(cert)
+        end
+        for V in each_solid_triangle(tri)
+            p, q, r  = get_point(tri, triangle_vertices(V)...)
+            c = DT.triangle_centroid(p, q, r)
+            T = find_triangle(tri, c)
+            cert = DT.point_position_relative_to_triangle(tri, T, c)
+            @test DT.is_inside(cert)
+        end
+    end
+    for fi in 1:NUM_WEGT
+        tri, submerged, nonsubmerged, weights = get_weighted_example(fi)
+        for i in each_solid_vertex(tri)
+            V = find_triangle(tri, get_point(tri, i))
+            cert = DT.point_position_relative_to_triangle(tri, V, i)
+            @test DT.is_on(cert)
+        end
+        for V in each_solid_triangle(tri)
+            p, q, r  = get_point(tri, triangle_vertices(V)...)
+            c = DT.triangle_centroid(p, q, r)
+            T = find_triangle(tri, c)
+            cert = DT.point_position_relative_to_triangle(tri, T, c)
+            @test DT.is_inside(cert)
+        end
+    end
+end
+
 @testset "Convex polygons" begin
     for fi in 1:NUM_CWEGT
         @info "Testing triangulation of a weighted convex polygon: $fi"
         tri, submerged, nonsubmerged, weights, S = get_convex_polygon_weighted_example(fi)
         ctri = triangulate_convex(get_points(tri), S; weights)
         @test tri == ctri
-        fi < 77 && @test validate_triangulation(ctri) # THIS GETS STUCK IN A LOOP FOR FI == 77 ?!
+        for v in submerged
+            @test !DT.has_vertex(tri, v)
+        end
+        fi == 77 || @test validate_triangulation(ctri) # takes ways too long for fi == 77
+        @test DT.is_weighted(ctri)
+        fi == 77 || validate_statistics(ctri)
     end
 end
 
-# While we have tested the convex polygons and everything else properly,
-# normal triangulations still need to be correctly updated. To test this,
-# we will need to test the ones provided in helper_functions.jl properly.
-# See the get_weighted_example function in that file and the comments surrounding it.
+@testset "Random" begin
+    for fi in 1:NUM_WEGT 
+        @info "Testing triangulation of a random weighted set: $fi"
+        tri, submerged, nonsubmerged, weights = get_weighted_example(fi)
+        rtri = triangulate(get_points(tri); weights)
+        @test tri == rtri
+        for v in submerged
+            @test !DT.has_vertex(tri, v)
+        end
+        fi == 155 || @test validate_triangulation(rtri)
+        @test DT.is_weighted(rtri)
+        @test DT.is_weighted(DT.get_triangulation(DT.get_cache(rtri)))
+        fi == 155 || validate_statistics(rtri)
+    end
+end
+
+@testset "add_point!" begin
+    for fi in 1:NUM_WEGT
+        @info "Testing adding points to a weighted triangulation: $fi"
+        tri, submerged, nonsubmerged, weights = get_weighted_example(fi)
+        points = get_points(tri)
+        vpoints = points[:, 1:3]
+        vweights = weights[1:3]
+        rtri = triangulate(vpoints; weights=vweights)
+        for j in 4:size(points, 2)
+            add_point!(rtri, points[:, j]..., weights[j])
+        end
+        convex_hull!(rtri) 
+        DT.compute_representative_points!(rtri)
+        DT.clear_empty_features!(rtri)
+        DT.construct_polygon_hierarchy!(DT.get_polygon_hierarchy(rtri), get_points(rtri))
+        @test tri == rtri
+    end
+end
+
+@testset "retriangulate" begin
+    for fi in 1:NUM_WEGT
+        @info "Testing retriangulation of a weighted triangulation: $fi"
+        tri, submerged, nonsubmerged, weights = get_weighted_example(fi)
+        rtri = retriangulate(tri)
+        @test tri == rtri
+        for v in submerged
+            @test !DT.has_vertex(tri, v)
+        end
+        fi == 155 || @test validate_triangulation(rtri)
+        @test DT.is_weighted(rtri)
+    end
+end

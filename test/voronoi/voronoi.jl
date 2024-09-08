@@ -23,13 +23,13 @@ using GeometryBasics
             F = (1.0, 4.0)
             G = (-3.0, 5.0)
             pts = [A, B, C, D, E, F, G]
-            tri = triangulate(pts; delete_ghosts = false, randomise = false)
+            tri = triangulate(pts; delete_ghosts=false, randomise=false)
 
-            vorn = voronoi(tri; predicates = PT())
+            vorn = voronoi(tri; predicates=PT())
             for (i, p) in DT.get_generators(vorn)
                 @test get_point(tri, i) == get_generator(vorn, i) == p
             end
-            @test validate_tessellation(vorn; predicates = PT())
+            @test validate_tessellation(vorn; predicates=PT())
             @test DT.get_triangulation(vorn) == tri
             circumcenter_to_triangle = DT.get_circumcenter_to_triangle(vorn)
             triangle_to_circumcenter = DT.get_triangle_to_circumcenter(vorn)
@@ -116,17 +116,17 @@ end
         for _ in 1:10
             tri = example_triangulation()
             tri = triangulate(get_points(tri))
-            vorn = voronoi(tri; predicates = PT())
-            @test validate_tessellation(vorn; predicates = PT())
+            vorn = voronoi(tri; predicates=PT())
+            @test validate_tessellation(vorn; predicates=PT())
             bbox = DT.polygon_bounds(vorn, 0.1)
             xmin, xmax, ymin, ymax = bbox
-            c1 = DT.get_polygon_coordinates(vorn, 1, bbox, predicates = PT())
-            c2 = DT.get_polygon_coordinates(vorn, 2, bbox, predicates = PT())
-            c3 = DT.get_polygon_coordinates(vorn, 3, bbox, predicates = PT())
-            c4 = DT.get_polygon_coordinates(vorn, 4, bbox, predicates = PT())
-            c5 = DT.get_polygon_coordinates(vorn, 5, bbox, predicates = PT())
-            c6 = DT.get_polygon_coordinates(vorn, 6, bbox, predicates = PT())
-            c7 = DT.get_polygon_coordinates(vorn, 7, bbox, predicates = PT())
+            c1 = DT.get_polygon_coordinates(vorn, 1, bbox, predicates=PT())
+            c2 = DT.get_polygon_coordinates(vorn, 2, bbox, predicates=PT())
+            c3 = DT.get_polygon_coordinates(vorn, 3, bbox, predicates=PT())
+            c4 = DT.get_polygon_coordinates(vorn, 4, bbox, predicates=PT())
+            c5 = DT.get_polygon_coordinates(vorn, 5, bbox, predicates=PT())
+            c6 = DT.get_polygon_coordinates(vorn, 6, bbox, predicates=PT())
+            c7 = DT.get_polygon_coordinates(vorn, 7, bbox, predicates=PT())
             @test all(DT.is_circular, (c1, c2, c3, c4, c5, c6, c7))
             @test DT.circular_equality(
                 collect.(c1), collect.(
@@ -226,19 +226,19 @@ end
             F = (1.0, 4.0)
             G = (-3.0, 5.0)
             pts = [A, B, C, D, E, F, G]
-            tri = triangulate(pts; delete_ghosts = false, randomise = false)
-            vorn = voronoi(tri; predicates = PT())
+            tri = triangulate(pts; delete_ghosts=false, randomise=false)
+            vorn = voronoi(tri; predicates=PT())
             @test get_adjacent(vorn, 1, -2) == get_adjacent(vorn, -2, -1) ==
-                get_adjacent(vorn, -1, 7) == get_adjacent(vorn, 7, 3) == get_adjacent(vorn, 3, 1) ==
-                5
+                  get_adjacent(vorn, -1, 7) == get_adjacent(vorn, 7, 3) == get_adjacent(vorn, 3, 1) ==
+                  5
             DT.delete_polygon_adjacent!(vorn, 5)
             @test get_adjacent(vorn, 1, -2) == get_adjacent(vorn, -2, -1) ==
-                get_adjacent(vorn, -1, 7) == get_adjacent(vorn, 7, 3) == get_adjacent(vorn, 3, 1) ==
-                DT.∅
+                  get_adjacent(vorn, -1, 7) == get_adjacent(vorn, 7, 3) == get_adjacent(vorn, 3, 1) ==
+                  DT.∅
             DT.add_polygon_adjacent!(vorn, 5)
             @test get_adjacent(vorn, 1, -2) == get_adjacent(vorn, -2, -1) ==
-                get_adjacent(vorn, -1, 7) == get_adjacent(vorn, 7, 3) == get_adjacent(vorn, 3, 1) ==
-                5
+                  get_adjacent(vorn, -1, 7) == get_adjacent(vorn, 7, 3) == get_adjacent(vorn, 3, 1) ==
+                  5
         end
     end
 end
@@ -253,11 +253,11 @@ end
         F = (1.0, 4.0) .+ (1.0e-6rand(), 1.0e-6rand())
         G = (-3.0, 5.0) .+ (1.0e-6rand(), 1.0e-6rand())
         pts = [A, B, C, D, E, F, G]
-        tri = triangulate(pts; delete_ghosts = false, randomise = false)
-        vor = voronoi(tri, predicates = PT())
-        @test validate_tessellation(vor, predicates = PT())
+        tri = triangulate(pts; delete_ghosts=false, randomise=false)
+        vor = voronoi(tri, predicates=PT())
+        @test validate_tessellation(vor, predicates=PT())
         xmin, xmax, ymin, ymax = DT.polygon_bounds(get_points(tri), get_convex_hull_vertices(tri))
-        p = NTuple{2, Float64}[]
+        p = NTuple{2,Float64}[]
         n = 10000
         while length(p) ≤ n # only going to test points that are inside the polygon
             pt = (xmin + rand() * (xmax - xmin), ymin + rand() * (ymax - ymin))
@@ -266,7 +266,7 @@ end
             end
         end
         for p in p
-            u = get_nearest_neighbour(vor, p; predicates = PT())
+            u = get_nearest_neighbour(vor, p; predicates=PT())
             all_dists = [norm(p .- get_generator(vor, i)) for i in sort(collect(each_generator(vor)))]
             @test findmin(all_dists)[2] == u
         end
@@ -280,22 +280,22 @@ end
                 (-0.1, -0.8), (0.2, -0.8),
                 (-0.6, -0.4), (0.9, 0.0), (-0.5, 0.5), (-0.4, 0.6), (-0.1, 0.8),
             ]
-            tri = triangulate(points, delete_ghosts = false)
-            vorn = voronoi(tri, predicates = PT())
-            @test validate_tessellation(vorn, predicates = PT())
+            tri = triangulate(points, delete_ghosts=false)
+            vorn = voronoi(tri, predicates=PT())
+            @test validate_tessellation(vorn, predicates=PT())
             xg = LinRange(-1, 1, 50)
             yg = LinRange(-1, 1, 50)
             x = vec([x for x in xg, _ in yg])
             y = vec([y for _ in xg, y in yg])
             for (ξ, η) in zip(x, y)
                 p = (ξ, η)
-                u = get_nearest_neighbour(vorn, p; predicates = PT())
-                @inferred get_nearest_neighbour(vorn, p; predicates = PT())
+                u = get_nearest_neighbour(vorn, p; predicates=PT())
+                @inferred get_nearest_neighbour(vorn, p; predicates=PT())
                 all_dists = [norm(p .- get_generator(vorn, i)) for i in sort(collect(each_generator(vorn)))]
                 k = findmin(all_dists)[2]
                 @test k == u
                 for m in DT.each_point_index(tri)
-                    u = get_nearest_neighbour(vorn, p, try_points = m; predicates = PT())
+                    u = get_nearest_neighbour(vorn, p, try_points=m; predicates=PT())
                     @test u == k
                 end
             end
@@ -314,9 +314,9 @@ end
             F = (1.0, 4.0)
             G = (-3.0, 5.0)
             pts = [A, B, C, D, E, F, G]
-            tri = triangulate(pts; delete_ghosts = false, randomise = true)
+            tri = triangulate(pts; delete_ghosts=false, randomise=true)
             #lock_convex_hull!(tri)
-            vorn = voronoi(tri; clip = true, predicates = PT())
+            vorn = voronoi(tri; clip=true, predicates=PT())
             for (i, p) in DT.get_generators(vorn)
                 @test get_point(tri, i) == get_generator(vorn, i) == p
             end
@@ -363,7 +363,7 @@ end
                     (-1.0, 7.0)
                 ],
             )
-            @test validate_tessellation(vorn, predicates = PT())
+            @test validate_tessellation(vorn, predicates=PT())
             @test isempty(DT.get_unbounded_polygons(vorn))
             @test all([0 ≤ get_area(vorn, i) < Inf for i in each_polygon_index(vorn)])
             @test DT.circular_equality(collect.(get_polygon_point.(Ref(vorn), get_polygon(vorn, 5))), getindex.(Ref(orig_pt), [8, 10, 9, 7, 3, 1, 8]), ≈)
@@ -375,12 +375,14 @@ end
             @test DT.circular_equality(collect.(get_polygon_point.(Ref(vorn), get_polygon(vorn, 1))), getindex.(Ref(orig_pt), [5, 6, 14, 19, 15, 5]), ≈)
             @test allunique(DT.get_polygon_points(vorn))
             for i in DT.each_polygon_index(vorn)
+                @test DT.has_polygon(vorn, i)
                 C = get_polygon(vorn, i)
                 for (j, v) in pairs(C)
                     δ = DT.distance_to_polygon(get_polygon_point(vorn, v), get_points(tri), get_convex_hull_vertices(tri))
                     @test δ ≥ -1.0e-15
                 end
             end
+            @test !DT.has_polygon(vorn, 200)
         end
     end
 end
@@ -389,8 +391,8 @@ end
     for PT in subtypes(DT.AbstractPredicateKernel)
         for _ in 1:100
             tri = fixed_shewchuk_example_constrained()
-            vorn = voronoi(tri; clip = false, predicates = PT())
-            @test validate_tessellation(vorn, predicates = PT())
+            vorn = voronoi(tri; clip=false, predicates=PT())
+            @test validate_tessellation(vorn, predicates=PT())
             for (i, p) in DT.get_generators(vorn)
                 @test get_point(tri, i) == get_generator(vorn, i) == p
             end
@@ -496,8 +498,8 @@ end
                 ),
             )
 
-            _vorn = voronoi(tri; clip = true, predicates = PT())
-            @test validate_tessellation(_vorn, predicates = PT())
+            _vorn = voronoi(tri; clip=true, predicates=PT())
+            @test validate_tessellation(_vorn, predicates=PT())
             for (i, p) in DT.get_generators(_vorn)
                 @test get_point(tri, i) == get_generator(_vorn, i) == p
             end
@@ -587,30 +589,30 @@ end
         d = (4.0, 0.0)
         e = (2.0, 1.5)
         pts = [a, b, c, d, e]
-        tri = triangulate(pts, delete_ghosts = false, randomise = false)
-        vorn = voronoi(tri, predicates = PT())
-        lock_convex_hull!(tri; predicates = PT())
+        tri = triangulate(pts, delete_ghosts=false, randomise=false)
+        vorn = voronoi(tri, predicates=PT())
+        lock_convex_hull!(tri; predicates=PT())
         edges_to_process,
-            polygon_edge_queue,
-            boundary_sites,
-            segment_intersections,
-            processed_pairs,
-            intersected_edge_cache,
-            exterior_circumcenters,
-            left_edge_intersectors,
-            right_edge_intersectors,
-            current_edge_intersectors,
-            equal_circumcenter_mapping = DT.initialise_clipping_arrays(vorn)
+        polygon_edge_queue,
+        boundary_sites,
+        segment_intersections,
+        processed_pairs,
+        intersected_edge_cache,
+        exterior_circumcenters,
+        left_edge_intersectors,
+        right_edge_intersectors,
+        current_edge_intersectors,
+        equal_circumcenter_mapping = DT.initialise_clipping_arrays(vorn)
         @test edges_to_process == Set(((1, 2), (4, 1), (3, 4), (2, 3)))
-        @test polygon_edge_queue == DT.Queue{Tuple{NTuple{2, Int}, Int}}()
-        @test boundary_sites == Dict{Int, Set{Int}}()
-        @test segment_intersections == NTuple{2, Int}[]
-        @test processed_pairs == Set{Tuple{NTuple{2, Int}, Int}}()
-        @test intersected_edge_cache == Pair{NTuple{2, Int}, NTuple{2, Int}}[]
-        @test left_edge_intersectors == Set{NTuple{2, Int}}()
-        @test right_edge_intersectors == Set{NTuple{2, Int}}()
-        @test current_edge_intersectors == Set{NTuple{2, Int}}()
-        @test equal_circumcenter_mapping == Dict{Int, Int}()
+        @test polygon_edge_queue == DT.Queue{Tuple{NTuple{2,Int},Int}}()
+        @test boundary_sites == Dict{Int,Set{Int}}()
+        @test segment_intersections == NTuple{2,Int}[]
+        @test processed_pairs == Set{Tuple{NTuple{2,Int},Int}}()
+        @test intersected_edge_cache == Pair{NTuple{2,Int},NTuple{2,Int}}[]
+        @test left_edge_intersectors == Set{NTuple{2,Int}}()
+        @test right_edge_intersectors == Set{NTuple{2,Int}}()
+        @test current_edge_intersectors == Set{NTuple{2,Int}}()
+        @test equal_circumcenter_mapping == Dict{Int,Int}()
     end
 end
 
@@ -623,9 +625,9 @@ end
             d = (4.0, 0.0)
             e = (1.0, 1.5)
             pts = [a, b, c, d, e]
-            tri = triangulate(pts, delete_ghosts = false)
-            vorn = voronoi(tri; predicates = PT())
-            lock_convex_hull!(tri; predicates = PT())
+            tri = triangulate(pts, delete_ghosts=false)
+            vorn = voronoi(tri; predicates=PT())
+            lock_convex_hull!(tri; predicates=PT())
             edges_to_process, polygon_edge_queue = DT.initialise_clipping_arrays(vorn)
             e = (1, 2)
             DT.enqueue_new_edge!(polygon_edge_queue, vorn, e, Random.default_rng(), PT())
@@ -664,7 +666,7 @@ end
 
 @testset "add_to_intersected_edge_cache" begin
     u, v, a, b = 1, 7, 5, 9
-    intersected_edge_cache = Pair{NTuple{2, Int}, NTuple{2, Int}}[]
+    intersected_edge_cache = Pair{NTuple{2,Int},NTuple{2,Int}}[]
     DT.add_to_intersected_edge_cache!(intersected_edge_cache, u, v, a, b)
     @test intersected_edge_cache == [(u, v) => (a, b)]
     u, v, a, b = -2, 5, 10, 17
@@ -680,20 +682,20 @@ end
         d = (4.0, 0.0)
         e = (1.0, 1.5)
         pts = [a, b, c, d, e]
-        tri = triangulate(pts, delete_ghosts = false, randomise = false)
-        vorn = voronoi(tri, predicates = PT())
-        lock_convex_hull!(tri, predicates = PT())
+        tri = triangulate(pts, delete_ghosts=false, randomise=false)
+        vorn = voronoi(tri, predicates=PT())
+        lock_convex_hull!(tri, predicates=PT())
         edges_to_process,
-            polygon_edge_queue,
-            boundary_sites,
-            segment_intersections,
-            processed_pairs,
-            intersected_edge_cache,
-            exterior_circumcenters,
-            left_edge_intersectors,
-            right_edge_intersectors,
-            current_edge_intersectors,
-            equal_circumcenter_mapping = DT.initialise_clipping_arrays(vorn)
+        polygon_edge_queue,
+        boundary_sites,
+        segment_intersections,
+        processed_pairs,
+        intersected_edge_cache,
+        exterior_circumcenters,
+        left_edge_intersectors,
+        right_edge_intersectors,
+        current_edge_intersectors,
+        equal_circumcenter_mapping = DT.initialise_clipping_arrays(vorn)
         e = DT.convert_to_edge_adjoining_ghost_vertex(vorn, first(edges_to_process))
         DT.enqueue_new_edge!(polygon_edge_queue, vorn, e, Random.default_rng(), PT())
 
@@ -742,7 +744,7 @@ end
         @test intersected_edge_cache == [(-3, 3) => e, (u, v) => right_edge]
 
         DT.classify_intersections!(intersected_edge_cache, left_edge_intersectors, right_edge_intersectors, current_edge_intersectors, left_edge, right_edge, e)
-        @test left_edge_intersectors == Set{NTuple{2, Int}}()
+        @test left_edge_intersectors == Set{NTuple{2,Int}}()
         @test right_edge_intersectors == Set([(u, v)])
         @test current_edge_intersectors == Set([(-3, 3)])
 
@@ -752,7 +754,7 @@ end
             left_edge, right_edge, e, processed_pairs, segment_intersections, boundary_sites,
         )
 
-        _queue = DT.Queue{Tuple{NTuple{2, Int}, Int}}()
+        _queue = DT.Queue{Tuple{NTuple{2,Int},Int}}()
         push!(_queue, ((3, 2), 3))
         push!(_queue, ((3, 2), 2))
         push!(_queue, ((3, 2), 5))
@@ -765,10 +767,10 @@ end
         d = (4.0, 0.0)
         e = (1.0, 1.5)
         pts = [a, b, c, d, e]
-        tri = triangulate(pts, delete_ghosts = false, randomise = false)
-        vorn = voronoi(tri; predicates = PT())
-        lock_convex_hull!(tri; predicates = PT())
-        boundary_sites, segment_intersections, exterior_circumcenters = DT.find_all_intersections(vorn, predicates = PT())
+        tri = triangulate(pts, delete_ghosts=false, randomise=false)
+        vorn = voronoi(tri; predicates=PT())
+        lock_convex_hull!(tri; predicates=PT())
+        boundary_sites, segment_intersections, exterior_circumcenters = DT.find_all_intersections(vorn, predicates=PT())
         @test collect.(segment_intersections) ≈ collect.(
             [
                 (1.5, 3.0)
@@ -790,9 +792,9 @@ end
         @test boundary_sites[5] == Set((5, 4, 7, 2))
         @test exterior_circumcenters == Set((2, 1))
 
-        DT.clip_voronoi_tessellation!(vorn, predicates = PT())
+        DT.clip_voronoi_tessellation!(vorn, predicates=PT())
         @test isempty(vorn.unbounded_polygons)
-        @test validate_tessellation(vorn, predicates = PT())
+        @test validate_tessellation(vorn, predicates=PT())
         @test DT.points_are_unique(vorn.polygon_points)
         @test collect.(DT.get_polygon_points(vorn)) ≈ collect.(
             [
@@ -828,11 +830,11 @@ end
         for _ in 1:333
             points = [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]
             tri = triangulate(points)
-            vorn = voronoi(tri, predicates = PT())
-            @test validate_tessellation(vorn, predicates = PT())
-            vorn = voronoi(tri, clip = true, predicates = PT())
-            @test validate_tessellation(vorn, predicates = PT())
-            @test vorn.polygon_points == [
+            vorn = voronoi(tri, predicates=PT())
+            @test validate_tessellation(vorn, predicates=PT())
+            vorn = voronoi(tri, clip=true, predicates=PT())
+            @test validate_tessellation(vorn, predicates=PT())
+            @test sort(unique(vorn.polygon_points)) == sort(unique([
                 (0.5, 0.5),
                 (0.5, 0.5),
                 (0.5, 0.0),
@@ -840,7 +842,10 @@ end
                 (1.0, 0.0),
                 (0.0, 1.0),
                 (0.0, 0.0),
-            ]
+            ]))
+            @test DT.circular_equality(collect.(vorn.polygon_points[vorn.polygons[2]]), [[1.0, 0.0], [0.5, 0.5], [0.5, 0.0], [1.0, 0.0]])
+            @test DT.circular_equality(collect.(vorn.polygon_points[vorn.polygons[1]]), [[0.0, 0.0], [0.5, 0.0], [0.5, 0.5], [0.0, 0.5], [0.0, 0.0]])
+            @test DT.circular_equality(collect.(vorn.polygon_points[vorn.polygons[3]]), [[0.0, 1.0], [0.0, 0.5], [0.5, 0.5], [0.0, 1.0]])
         end
 
         for _ in 1:100
@@ -848,20 +853,21 @@ end
                 0.290978 0.830755 0.0139574
                 0.386411 0.630008 0.803881
             ]
-            tri = triangulate(points, delete_ghosts = false)
-            vorn = voronoi(tri, clip = true, predicates = PT())
-            @test validate_tessellation(vorn, predicates = PT())
-            @test collect.(sort(vorn.polygon_points)) ≈ collect.(
+            tri = triangulate(points, delete_ghosts=false)
+            vorn = voronoi(tri, clip=true, predicates=PT())
+            @test validate_tessellation(vorn, predicates=PT())
+            @test unique(collect.(sort(vorn.polygon_points))) ≈ collect.(
                 sort(
                     [
-                        (0.43655799581398663, 0.7836598194374879)
+                        (0.4365579958139866, 0.7836598194374877)
+                        (0.013957399999999976, 0.803881)
+                        (0.15246769999999996, 0.5951460000000001)
+                        (0.3569879785117299, 0.7308595369379514)
+                        (0.29097799999999996, 0.386411)
                         (0.5608665, 0.5082095)
-                        (0.4713751999728193, 0.7065097477648392)
-                        (0.1524677, 0.595146)
-                        (0.35698797851173, 0.7308595369379512)
-                        (0.830755, 0.630008)
-                        (0.0139574, 0.803881)
-                        (0.290978, 0.386411)
+                        (0.47137519997281924, 0.7065097477648392)
+                        (0.15246769999999998, 0.595146)
+                        (0.8307550000000001, 0.6300080000000001)
                     ],
                 ),
             )
@@ -870,8 +876,8 @@ end
         for _ in 1:1000
             pts = rand(2, 3)
             tri = triangulate(pts)
-            vorn = voronoi(tri, clip = true, predicates = PT())
-            @test validate_tessellation(vorn, predicates = PT())
+            vorn = voronoi(tri, clip=true, predicates=PT())
+            @test validate_tessellation(vorn, predicates=PT())
         end
     end
 end
@@ -889,10 +895,10 @@ end
             h = (0.2, 0.1)
             pts = [a, b, c, d, e, f, g, h]
             tri = triangulate(pts)
-            vorn = voronoi(tri, predicates = PT())
-            _vorn = voronoi(tri, clip = true, predicates = PT())
-            @test validate_tessellation(vorn, predicates = PT())
-            @test validate_tessellation(_vorn, predicates = PT())
+            vorn = voronoi(tri, predicates=PT())
+            _vorn = voronoi(tri, clip=true, predicates=PT())
+            @test validate_tessellation(vorn, predicates=PT())
+            @test validate_tessellation(_vorn, predicates=PT())
             orig_pt = [
                 (3.1112716763005785, 0.703757225433526)
                 (3.000000000000019, -5.750000000000036)
@@ -948,10 +954,10 @@ end
                 rng = StableRNG(2^(isqrt(n)) * 3^(isqrt(n)))
                 pts = rand(rng, 2, n)
                 tri = triangulate(pts; rng)
-                vorn = voronoi(tri, predicates = PT())
-                flag1 = validate_tessellation(vorn, predicates = PT())
-                vorn = voronoi(tri, clip = true, predicates = PT())
-                flag2 = validate_tessellation(vorn, predicates = PT())
+                vorn = voronoi(tri, predicates=PT())
+                flag1 = validate_tessellation(vorn, predicates=PT())
+                vorn = voronoi(tri, clip=true, predicates=PT())
+                flag2 = validate_tessellation(vorn, predicates=PT())
                 @test flag1
                 @test flag2
             end
@@ -966,21 +972,21 @@ end
         for i in 1:25
             @info "Testing centroidal tessellation: Run: $i"
             p1 = randn(2, 50)
-            p2 = rand(SVector{2, Float64}, 30)
+            p2 = rand(SVector{2,Float64}, 30)
             p3 = rand(Point2f, 250)
             p4 = randn(Float32, 2, 70)
             p5 = randn(2, 4)
-            p6 = rand(SVector{2, Float64}, 7)
+            p6 = rand(SVector{2,Float64}, 7)
             p7 = rand(Point2f, 5)
             p8 = randn(Float32, 2, 15)
             _pts = (p1, p2, p3, p4, p5, p6, p7, p8)
             for jj in eachindex(_pts)
                 points = _pts[jj]
-                tri = triangulate(points, predicates = PT())
-                vorn = voronoi(tri, clip = true, predicates = PT())
-                @test validate_tessellation(vorn, check_convex = !(jj ∈ (3, 4, 7, 8)), predicates = PT())
-                for smooth_vorn in (centroidal_smooth(vorn, maxiters = 5000, predicates = PT()), voronoi(tri, clip = true, smooth = true, maxiters = 5000, predicates = PT()))
-                    @test validate_tessellation(smooth_vorn, check_convex = !(jj ∈ (3, 4, 7, 8)), predicates = PT())
+                tri = triangulate(points, predicates=PT())
+                vorn = voronoi(tri, clip=true, predicates=PT())
+                @test validate_tessellation(vorn, check_convex=!(jj ∈ (3, 4, 7, 8)), predicates=PT())
+                for smooth_vorn in (centroidal_smooth(vorn, maxiters=5000, predicates=PT()), voronoi(tri, clip=true, smooth=true, maxiters=5000, predicates=PT()))
+                    @test validate_tessellation(smooth_vorn, check_convex=!(jj ∈ (3, 4, 7, 8)), predicates=PT())
                     for i in each_polygon_index(smooth_vorn)
                         p = get_generator(smooth_vorn, i)
                         c = DT.get_centroid(smooth_vorn, i)
@@ -1002,12 +1008,12 @@ end
 @testset "Lattice" begin
     for PT in (DT.ExactKernel, DT.AdaptiveKernel)
         for _ in 1:50
-            tri = triangulate_rectangle(0, 1, 0, 1, 11, 11, delete_ghosts = false, predicates = PT())
-            tri = triangulate(tri.points, predicates = PT())
-            vorn = voronoi(tri, predicates = PT())
-            @test validate_tessellation(vorn; check_convex = false, predicates = PT())
-            vorn = voronoi(tri, clip = true, predicates = PT())
-            @test validate_tessellation(vorn; check_convex = false, check_adjacent = false, predicates = PT())
+            tri = triangulate_rectangle(0, 1, 0, 1, 11, 11, delete_ghosts=false, predicates=PT())
+            tri = triangulate(tri.points, predicates=PT())
+            vorn = voronoi(tri, predicates=PT())
+            @test validate_tessellation(vorn; check_convex=false, predicates=PT())
+            vorn = voronoi(tri, clip=true, predicates=PT())
+            @test validate_tessellation(vorn; check_convex=false, check_adjacent=false, predicates=PT())
         end
     end
 end
@@ -1019,8 +1025,8 @@ end
             0.647732 0.482994 0.809909 0.482046 0.0170022 0.821742 0.835057 0.591724 0.881006 0.97652
         ]
         tri = triangulate(pts)
-        vorn = voronoi(tri, predicates = PT())
-        clip = DT.get_polygon_coordinates(vorn, 9, DT.polygon_bounds(vorn, 0.1), predicates = PT())
+        vorn = voronoi(tri, predicates=PT())
+        clip = DT.get_polygon_coordinates(vorn, 9, DT.polygon_bounds(vorn, 0.1), predicates=PT())
         @test DT.circular_equality(
             collect.(clip), collect.(
                 [
@@ -1042,9 +1048,9 @@ end
             0.279402 0.874842 0.163028
             0.274178 0.831658 0.223709
         ]
-        tri = triangulate(pts, predicates = PT())
-        vorn = voronoi(tri, predicates = PT())
-        clip = DT.get_polygon_coordinates(vorn, 2, DT.polygon_bounds(vorn, 2.0), predicates = PT())
+        tri = triangulate(pts, predicates=PT())
+        vorn = voronoi(tri, predicates=PT())
+        clip = DT.get_polygon_coordinates(vorn, 2, DT.polygon_bounds(vorn, 2.0), predicates=PT())
         @test DT.circular_equality(
             collect.(clip), collect.(
                 [
@@ -1089,8 +1095,8 @@ end
             Float32[0.18311942, 0.8367877],
         ]
         tri = triangulate(points)
-        vorn = voronoi(tri, predicates = PT())
-        @test validate_tessellation(vorn, predicates = PT())
+        vorn = voronoi(tri, predicates=PT())
+        @test validate_tessellation(vorn, predicates=PT())
 
         points = [
             [0.01877582f0, 0.33188105f0],
@@ -1115,16 +1121,16 @@ end
             [0.6525599f0, 0.6425986f0],
         ]
         tri = triangulate(points)
-        vorn = voronoi(tri, predicates = PT())
-        @test validate_tessellation(vorn, predicates = PT())
+        vorn = voronoi(tri, predicates=PT())
+        @test validate_tessellation(vorn, predicates=PT())
     end
 end
 
 @testset "Polygon bounds with generators only" begin
     points = rand(2, 50)
     tri = triangulate(points)
-    vorn = voronoi(tri, predicates = rt())
-    xmin, xmax, ymin, ymax = DT.polygon_bounds(vorn, 0.1; include_polygon_vertices = false)
+    vorn = voronoi(tri, predicates=rt())
+    xmin, xmax, ymin, ymax = DT.polygon_bounds(vorn, 0.1; include_polygon_vertices=false)
     _xmin, _xmax = extrema(points[1, :])
     _ymin, _ymax = extrema(points[2, :])
     @test xmin == _xmin - 0.1(_xmax - _xmin)
@@ -1145,7 +1151,7 @@ end
         H = (3.0, 8.0)
         points = [A, B, C, D, E, F, G, H]
         tri = triangulate(points)
-        vorn = voronoi(tri, predicates = PT())
+        vorn = voronoi(tri, predicates=PT())
         a, b, c, d = -4.0, 6.0, -2.0, 4.0
         bounding_box = (a, b, c, d)
         new_vertices, new_points = DT.grow_polygon_outside_of_box(vorn, 1, bounding_box, PT())
@@ -1217,25 +1223,25 @@ end
         H = (3.0, 8.0)
         points = [A, B, C, D, E, F, G, H]
         tri = triangulate(points)
-        vorn = voronoi(tri, predicates = PT())
+        vorn = voronoi(tri, predicates=PT())
         a, b, c, d = -4.0, 6.0, -2.0, 4.0
         bounding_box = (a, b, c, d)
-        _pa = get_polygon_coordinates(vorn, 1, bounding_box; predicates = PT())
-        _pb = get_polygon_coordinates(vorn, 2, bounding_box; predicates = PT())
-        _pc = get_polygon_coordinates(vorn, 3, bounding_box; predicates = PT())
-        _pd = get_polygon_coordinates(vorn, 4, bounding_box; predicates = PT())
-        _pe = get_polygon_coordinates(vorn, 5, bounding_box; predicates = PT())
-        _pf = get_polygon_coordinates(vorn, 6, bounding_box; predicates = PT())
-        _pg = get_polygon_coordinates(vorn, 7, bounding_box; predicates = PT())
-        _ph = get_polygon_coordinates(vorn, 8, bounding_box; predicates = PT())
-        pa = NTuple{2, Float64}[]
+        _pa = get_polygon_coordinates(vorn, 1, bounding_box; predicates=PT())
+        _pb = get_polygon_coordinates(vorn, 2, bounding_box; predicates=PT())
+        _pc = get_polygon_coordinates(vorn, 3, bounding_box; predicates=PT())
+        _pd = get_polygon_coordinates(vorn, 4, bounding_box; predicates=PT())
+        _pe = get_polygon_coordinates(vorn, 5, bounding_box; predicates=PT())
+        _pf = get_polygon_coordinates(vorn, 6, bounding_box; predicates=PT())
+        _pg = get_polygon_coordinates(vorn, 7, bounding_box; predicates=PT())
+        _ph = get_polygon_coordinates(vorn, 8, bounding_box; predicates=PT())
+        pa = NTuple{2,Float64}[]
         pb = [(0.75, 4.0), (2.357142857142857, 2.9285714285714284), (2.625, 4.0), (0.75, 4.0)]
         pc = [(2.710526315789474, 1.868421052631579), (2.357142857142857, 2.9285714285714284), (0.75, 4.0), (-1.0, 4.0), (-4.0, 1.0), (-4.0, 0.75), (-0.7307692307692308, -0.8846153846153846), (2.710526315789474, 1.868421052631579)]
         pd = [(-4.0, 4.0), (-4.0, 1.0), (-1.0, 4.0), (-4.0, 4.0)]
         pe = [(6.0, 0.9285714285714279), (2.710526315789474, 1.868421052631579), (-0.7307692307692308, -0.8846153846153846), (-0.5714285714285712, -2.0), (6.0, -2.0), (6.0, 0.9285714285714279)]
         pf = [(6.0, 0.9285714285714284), (6.0, 4.0), (2.625, 4.0), (2.357142857142857, 2.9285714285714284), (2.710526315789474, 1.868421052631579), (6.0, 0.9285714285714284)]
         pg = [(-0.5714285714285721, -2.0), (-0.7307692307692308, -0.8846153846153846), (-4.0, 0.75), (-4.0, -2.0), (-0.5714285714285721, -2.0)]
-        ph = NTuple{2, Float64}[]
+        ph = NTuple{2,Float64}[]
         @test DT.circular_equality(collect.(pa), collect.(_pa), ≈)
         @test DT.circular_equality(collect.(pb), collect.(_pb), ≈)
         @test DT.circular_equality(collect.(pc), collect.(_pc), ≈)
@@ -1248,11 +1254,11 @@ end
         # test a small example 
         points = [(0.0, 1.0), (-1.0, 2.0), (-2.0, -1.0)]
         tri = triangulate(points)
-        vorn = voronoi(tri, predicates = PT())
+        vorn = voronoi(tri, predicates=PT())
         bb = (-1.0, 0.0, -1.0, 2.0)
-        coord1 = get_polygon_coordinates(vorn, 1, bb; predicates = PT())
-        coord2 = get_polygon_coordinates(vorn, 2, bb; predicates = PT())
-        coord3 = get_polygon_coordinates(vorn, 3, bb; predicates = PT())
+        coord1 = get_polygon_coordinates(vorn, 1, bb; predicates=PT())
+        coord2 = get_polygon_coordinates(vorn, 2, bb; predicates=PT())
+        coord3 = get_polygon_coordinates(vorn, 3, bb; predicates=PT())
         _coord1 = [(0.0, 2.0), (0.0, 2.0), (-1.0, 1.0), (-1.0, 0.0), (0.0, -1.0), (0.0, 2.0)]
         _coord2 = [(-1.0, 2.0), (-1.0, 1.0), (0.0, 2.0), (-1.0, 2.0)]
         _coord3 = [(-1.0, -1.0), (0.0, -1.0), (0.0, -1.0), (-1.0, 0.0), (-1.0, -1.0)]
@@ -1272,23 +1278,23 @@ end
         H = (3.0, 8.0)
         points = [A, B, C, D, E, F, G, H]
         tri = triangulate(points)
-        vorn = voronoi(tri, predicates = PT())
+        vorn = voronoi(tri, predicates=PT())
         bounding_box = (0.0, 5.0, -15.0, 15.0)
-        _pa = get_polygon_coordinates(vorn, 1, bounding_box; predicates = PT())
-        _pb = get_polygon_coordinates(vorn, 2, bounding_box; predicates = PT())
-        _pc = get_polygon_coordinates(vorn, 3, bounding_box; predicates = PT())
-        _pd = get_polygon_coordinates(vorn, 4, bounding_box; predicates = PT())
-        _pe = get_polygon_coordinates(vorn, 5, bounding_box; predicates = PT())
-        _pf = get_polygon_coordinates(vorn, 6, bounding_box; predicates = PT())
-        _pg = get_polygon_coordinates(vorn, 7, bounding_box; predicates = PT())
+        _pa = get_polygon_coordinates(vorn, 1, bounding_box; predicates=PT())
+        _pb = get_polygon_coordinates(vorn, 2, bounding_box; predicates=PT())
+        _pc = get_polygon_coordinates(vorn, 3, bounding_box; predicates=PT())
+        _pd = get_polygon_coordinates(vorn, 4, bounding_box; predicates=PT())
+        _pe = get_polygon_coordinates(vorn, 5, bounding_box; predicates=PT())
+        _pf = get_polygon_coordinates(vorn, 6, bounding_box; predicates=PT())
+        _pg = get_polygon_coordinates(vorn, 7, bounding_box; predicates=PT())
         # For _pg: This case used to be broken because the initial unbounded ray did not touch the bounding box, 
         # but then later it does! So just using the Liang-Barsky algorithm by itself is not sufficient.
         # To fix this, I added the stuff about maximum_distance_to_box inside grow_polygon_outside_of_box
-        _ph = get_polygon_coordinates(vorn, 8, bounding_box; predicates = PT())
-        pa = NTuple{2, Float64}[]
+        _ph = get_polygon_coordinates(vorn, 8, bounding_box; predicates=PT())
+        pa = NTuple{2,Float64}[]
         pb = [(0.0, 4.499999999999998), (2.357142857142857, 2.9285714285714284), (3.1, 5.9), (0.0, 9.000000000000002), (0.0, 4.499999999999998)]
         pc = [(0.0, -0.3000000000000007), (2.710526315789474, 1.868421052631579), (2.357142857142857, 2.9285714285714284), (0.0, 4.499999999999998), (0.0, -0.3000000000000007)]
-        pd = NTuple{2, Float64}[]
+        pd = NTuple{2,Float64}[]
         pe = [(5.0, 1.2142857142857117), (2.710526315789474, 1.868421052631579), (0.0, -0.3000000000000007), (0.0, -6.0), (1.2857142857142865, -15.0), (5.0, -15.0), (5.0, 1.2142857142857117)]
         pf = [(5.0, 1.2142857142857153), (5.0, 7.166666666666664), (3.1, 5.9), (2.357142857142857, 2.9285714285714284), (2.710526315789474, 1.868421052631579), (5.0, 1.2142857142857153)]
         pg = [(1.2857142857142865, -15.0), (0.0, -6.0), (0.0, -15.0), (1.2857142857142865, -15.0)]
@@ -1322,11 +1328,11 @@ end
         # The points were duplicated from refine and not included in tri, but 
         # retriangulate kept trying to use them
         points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
-        tri = triangulate(points; boundary_nodes = [1, 2, 3, 4, 1], predicates = PT())
-        refine!(tri; max_area = 1.0e-2, min_angle = 29.871, predicates = PT())
-        vorn = voronoi(tri, predicates = PT())
-        smooth_vorn = centroidal_smooth(vorn; maxiters = 250, predicates = PT())
-        @test validate_tessellation(smooth_vorn, predicates = PT())
+        tri = triangulate(points; boundary_nodes=[1, 2, 3, 4, 1], predicates=PT())
+        refine!(tri; max_area=1.0e-2, min_angle=29.871, predicates=PT())
+        vorn = voronoi(tri, predicates=PT())
+        smooth_vorn = centroidal_smooth(vorn; maxiters=250, predicates=PT())
+        @test validate_tessellation(smooth_vorn, predicates=PT())
     end
 end
 
@@ -1346,7 +1352,7 @@ end
         n = length(coordinates(polygon))
         inside = false
         p1 = polygon[1]
-        for i in 2:(n + 1)
+        for i in 2:(n+1)
             p2 = polygon[mod1(i, n)]
             if ((p1[2] > point[2]) != (p2[2] > point[2])) && (point[1] < (p2[1] - p1[1]) * (point[2] - p1[2]) / (p2[2] - p1[2]) + p1[1])
                 inside = !inside
@@ -1363,8 +1369,8 @@ end
     triangulation = triangulate(points2; boundary_nodes)
     minx, miny = extrema(p2)[1]
     maxx, maxy = extrema(p2)[2]
-    for i in range(minx + 0.05, maxx - 0.05, step = 0.05)
-        for j in range(maxy - 0.05, miny + 0.05, step = -0.05)
+    for i in range(minx + 0.05, maxx - 0.05, step=0.05)
+        for j in range(maxy - 0.05, miny + 0.05, step=-0.05)
             if is_point_in_polygon(Point(i, j), p)
                 try
                     add_point!(triangulation, (i, j))
@@ -1374,6 +1380,337 @@ end
             end
         end
     end
-    vorn = voronoi(triangulation, clip = false)
-    @test validate_tessellation(vorn, check_convex = false)
+    vorn = voronoi(triangulation, clip=false)
+    @test validate_tessellation(vorn, check_convex=false)
+end
+
+@testset "Clipping to a generic convex polygon" begin 
+    a, b, c, d, e, f, g, h, i = (-5.0, 7.0),
+    (-8.0, 6.0), (-7.0, 4.0), (-4.0, 3.0), (-6.0, 6.0),
+    (-1.0, 6.0), (-4.0, 6.0), (-3.0, 5.0), (-2.0, 8.0)
+    points = [a, b, c, d, e, f, g, h, i]
+    J, K, L, M = (-10.0, 2.0), (2.0, 2.0), (2.0, 12.0), (-10.0, 12.0)
+    clip_points = (J, K, L, M)
+    clip_vertices = (1, 2, 3, 4, 1)
+    clip_polygon = (clip_points, clip_vertices)
+    rng = StableRNG(123)
+    tri = triangulate(points; rng)
+    @test_logs (:warn, "Clip polygon provided but clip = false. Ignoring clip polygon.") voronoi(tri, clip_polygon=clip_polygon)
+    vorn = voronoi(tri, clip=false, clip_polygon=clip_polygon, rng=rng)
+    @test DT.find_all_exterior_circumcenters(vorn, clip_polygon...) == Set{Int}()
+    int, ints = DT.find_all_intersecting_polygons(vorn, clip_polygon..., DT.find_all_exterior_circumcenters(vorn, clip_polygon...))
+    @test int == Set((5, 7, 8))
+    @test ints == Set((4, 6, 2, 9, 3, 1))
+    vorn = voronoi(tri, clip=true, clip_polygon=clip_polygon, rng=rng)
+    pt1 = [
+        (-5.0, 6.0)
+        (-3.5, 7.5)
+        (-5.0, 12.0)
+        (-8.333333333333334, 12.0)
+        (-7.0, 8.0)
+        (-5.0, 6.0)
+    ]
+    pt2 = [
+        (-7.0, 8.0)
+        (-8.333333333333334, 12.0)
+        (-10.0, 12.0)
+        (-10.0, 3.75)
+        (-7.0, 5.25)
+        (-7.0, 8.0)
+    ]
+    pt3 = [
+        (-7.0, 5.25)
+        (-10.0, 3.75)
+        (-10.0, 2.0)
+        (-6.0, 2.0)
+        (-5.214285714285714, 4.357142857142857)
+        (-7.0, 5.25)
+    ]
+    pt4 = [
+        (-5.214285714285714, 4.357142857142857)
+        (-6.0, 2.0)
+        (0.0, 2.0)
+        (-0.5, 2.5)
+        (-4.5, 4.5)
+        (-5.0, 4.5)
+        (-5.214285714285714, 4.357142857142857)
+    ]
+    pt5 = [
+        (-5.0, 4.5)
+        (-5.0, 6.0)
+        (-7.0, 8.0)
+        (-7.0, 5.25)
+        (-5.214285714285714, 4.357142857142857)
+        (-5.0, 4.5)
+    ]
+    pt6 = [
+        (0.0, 2.0)
+        (2.0, 2.0)
+        (2.0, 8.75)
+        (-2.5, 6.5)
+        (-0.5, 2.5)
+        (0.0, 2.0)
+    ]
+    pt7 = [
+        (-5.0, 4.5)
+        (-4.5, 4.5)
+        (-2.5, 6.5)
+        (-3.5, 7.5)
+        (-5.0, 6.0)
+        (-5.0, 4.5)
+    ]
+    pt8 = [
+        (-0.5, 2.5)
+        (-2.5, 6.5)
+        (-4.5, 4.5)
+        (-0.5, 2.5)
+    ]
+    pt9 = [
+        (2.0, 8.75)
+        (2.0, 12.0)
+        (-5.0, 12.0)
+        (-3.5, 7.5)
+        (-2.5, 6.5)
+        (2.0, 8.75)
+    ]
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[1]...), pt1, ⪧)
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[2]...), pt2, ⪧)
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[3]...), pt3, ⪧)
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[4]...), pt4, ⪧)
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[5]...), pt5, ⪧)
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[6]...), pt6, ⪧)
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[7]...), pt7, ⪧)
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[8]...), pt8, ⪧)
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[9]...), pt9, ⪧)
+    @test validate_tessellation(vorn; check_area = false)
+    @test isempty(vorn.unbounded_polygons)
+    @test vorn.boundary_polygons == Set((4, 6, 2, 9, 3, 1))
+
+    vorn = voronoi(tri, clip=true, clip_polygon=clip_polygon, rng=rng, smooth = true)
+    pt1 = [
+        (-5.1590315116169645, 8.028359015649276)
+        (-2.0329830757675342, 9.155154224395774)
+        (-1.5930583264171334, 12.0)
+        (-6.067362675362922, 12.0)
+        (-6.059020473726599, 8.97155876785828)
+        (-5.1590315116169645, 8.028359015649276)
+    ]
+    pt2 = [
+        (-10.0, 12.0)
+        (-10.0, 8.234478977169747)
+        (-6.059020473726599, 8.97155876785828)
+        (-6.067362675362922, 12.0)
+        (-10.0, 12.0)
+    ]
+    pt3 = [
+        (-10.0, 5.764961735169299)
+        (-10.0, 2.0)
+        (-6.066696497738481, 2.0)
+        (-6.058578287005368, 5.028158005937482)
+        (-10.0, 5.764961735169299)
+    ]
+    pt4 = [
+        (-6.058578287005368, 5.028158005937482)
+        (-6.066696497738481, 2.0)
+        (-1.592374540035335, 2.0)
+        (-2.032629690319553, 4.8454051776002)
+        (-5.158841519410821, 5.971443006049375)
+        (-6.058578287005368, 5.028158005937482)
+    ]
+    pt5 = [
+        (-5.158841519410821, 5.971443006049375)
+        (-5.1590315116169645, 8.028359015649276)
+        (-6.059020473726599, 8.97155876785828)
+        (-10.0, 8.234478977169747)
+        (-10.0, 5.764961735169299)
+        (-6.058578287005368, 5.028158005937482)
+        (-5.158841519410821, 5.971443006049375)
+    ]
+    pt6 = [
+        (-1.592374540035335, 2.0)
+        (2.0, 2.0)
+        (2.0, 7.000229455337406)
+        (-0.15539885081025462, 7.000135534420414)
+        (-2.032629690319553, 4.8454051776002)
+        (-1.592374540035335, 2.0)
+    ]
+    pt7 = [
+        (-5.158841519410821, 5.971443006049375)
+        (-2.032629690319553, 4.8454051776002)
+        (-0.15539885081025462, 7.000135534420414)
+        (-2.0329830757675342, 9.155154224395774)
+        (-5.1590315116169645, 8.028359015649276)
+        (-5.158841519410821, 5.971443006049375)
+    ]
+    @test !DT.has_polygon(vorn, 8)
+    pt9 = [
+        (2.0, 7.000229455337406)
+        (2.0, 12.0)
+        (-1.5930583264171334, 12.0)
+        (-2.0329830757675342, 9.155154224395774)
+        (-0.15539885081025462, 7.000135534420414)
+        (2.0, 7.000229455337406)
+    ]
+    @test validate_tessellation(vorn; check_area = false)
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[1]...), pt1, ⪧)
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[2]...), pt2, ⪧)
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[3]...), pt3, ⪧)
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[4]...), pt4, ⪧)
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[5]...), pt5, ⪧)
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[6]...), pt6, ⪧)
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[7]...), pt7, ⪧)
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[9]...), pt9, ⪧)
+    for index in each_polygon_index(vorn)
+        c = DT.get_centroid(vorn, index)
+        @test c ⪧ get_generator(vorn, index) rtol=1e-2 atol=1e-4
+    end
+
+    J, K, L, M = (-2.0, 12.0), (-8.0, 4.0), (-4.0, 2.0), (-2.0, 10.0)
+    clip_points = (J, K, L, M)
+    clip_vertices = (1, 2, 3, 4, 1)
+    clip_polygon = (clip_points, clip_vertices)
+    rng = StableRNG(123)
+    tri = triangulate(points; rng)
+    vorn = voronoi(tri, clip=false, clip_polygon=clip_polygon, rng=rng)
+    ext = DT.find_all_exterior_circumcenters(vorn, clip_polygon...)
+    @test ext == Set((7, 2, 1))
+    int, ints = DT.find_all_intersecting_polygons(vorn, clip_polygon..., ext)
+    @test int == Set()
+    @test ints == Set((5, 4, 7, 2, 9, 8, 3, 6, 1))
+    vorn = voronoi(tri, clip=true, clip_polygon=clip_polygon, rng=rng)
+    @test validate_tessellation(vorn; check_area=false)
+    pt1 = [
+        (-5.857142857142858, 6.857142857142857)
+        (-5.0, 6.0)
+        (-3.5, 7.5)
+        (-4.076923076923077, 9.23076923076923)
+        (-5.857142857142858, 6.857142857142857)
+    ]
+    pt2 = [
+        (-7.0, 5.333333333333333)
+        (-7.1, 5.2)
+        (-7.0, 5.25)
+        (-7.0, 5.333333333333333)
+    ]
+    pt3 = [
+        (-7.0, 5.25)
+        (-7.1, 5.2)
+        (-8.0, 4.0)
+        (-5.7142857142857135, 2.8571428571428568)
+        (-5.214285714285714, 4.357142857142857)
+        (-7.0, 5.25)
+    ]
+    pt4 = [
+        (-5.214285714285714, 4.357142857142857)
+        (-5.7142857142857135, 2.8571428571428568)
+        (-4.0, 2.0)
+        (-3.5, 4.0)
+        (-4.5, 4.5)
+        (-5.0, 4.5)
+        (-5.214285714285714, 4.357142857142857)
+    ]
+    pt5 = [
+        (-5.0, 4.5)
+        (-5.0, 6.0)
+        (-5.857142857142858, 6.857142857142857)
+        (-7.0, 5.333333333333333)
+        (-7.0, 5.25)
+        (-5.214285714285714, 4.357142857142857)
+        (-5.0, 4.5)
+    ]
+    pt7 = [
+        (-5.0, 4.5)
+        (-4.5, 4.5)
+        (-3.0, 6.0)
+        (-2.8, 6.8)
+        (-3.5, 7.5)
+        (-5.0, 6.0)
+        (-5.0, 4.5)
+    ]
+    pt8 = [
+        (-3.5, 4.0)
+        (-3.0, 6.0)
+        (-4.5, 4.5)
+        (-3.5, 4.0)
+    ]
+    pt9 = [
+        (-2.0, 10.0)
+        (-2.0, 12.0)
+        (-4.076923076923077, 9.23076923076923)
+        (-3.5, 7.5)
+        (-2.8, 6.8)
+        (-2.0, 10.0)
+    ]
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[1]...), pt1, ⪧)
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[2]...), pt2, ⪧)
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[3]...), pt3, ⪧)
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[4]...), pt4, ⪧)
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[5]...), pt5, ⪧)
+    @test !DT.has_polygon(vorn, 6)
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[7]...), pt7, ⪧)
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[8]...), pt8, ⪧)
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[9]...), pt9, ⪧)
+    @test vorn.boundary_polygons == Set((5, 4, 7, 2, 9, 8, 3, 1))
+    @test isempty(vorn.unbounded_polygons)
+
+    vorn = voronoi(tri, clip=true, clip_polygon=clip_polygon, rng=rng, smooth=true)
+    pt1 = [
+        (-2.364836958330981, 8.540652166676075)
+        (-4.029198089942065, 9.294402546743912)
+        (-5.173208375837535, 7.7690554988832865)
+        (-4.17127917698101, 6.722638795624013)
+        (-2.855277812679444, 6.578888749282224)
+        (-2.364836958330981, 8.540652166676075)
+    ]
+    pt2 = [
+        (-6.659997738183602, 5.786669682421865)
+        (-5.185697692423832, 4.903140482793648)
+        (-4.17127917698101, 6.722638795624013)
+        (-5.173208375837535, 7.7690554988832865)
+        (-6.659997738183602, 5.786669682421865)
+    ]
+    pt3 = [
+        (-8.0, 4.0)
+        (-6.026707081932514, 3.013353540966257)
+        (-5.120548573308532, 4.754263677601372)
+        (-5.185697692423832, 4.903140482793648)
+        (-6.659997738183602, 5.786669682421865)
+        (-8.0, 4.0)
+    ]
+    pt4 = [
+        (-4.0, 2.0)
+        (-3.4550765743281895, 4.179693702687242)
+        (-5.120548573308532, 4.754263677601372)
+        (-6.026707081932514, 3.013353540966257)
+        (-4.0, 2.0)
+    ]
+    @test !DT.has_polygon(vorn, 5)
+    @test !DT.has_polygon(vorn, 6)
+    @test !DT.has_polygon(vorn, 7)
+    pt8 = [
+        (-3.4550765743281895, 4.179693702687242)
+        (-2.855277812679444, 6.578888749282224)
+        (-4.17127917698101, 6.722638795624013)
+        (-5.185697692423832, 4.903140482793648)
+        (-5.120548573308532, 4.754263677601372)
+        (-3.4550765743281895, 4.179693702687242)
+    ]
+    pt9 = [
+        (-2.0, 10.0)
+        (-2.0, 12.0)
+        (-4.029198089942065, 9.294402546743912)
+        (-2.364836958330981, 8.540652166676075)
+        (-2.0, 10.0)
+    ]
+    @test validate_tessellation(vorn; check_area=false)
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[1]...), pt1, ⪧)
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[2]...), pt2, ⪧)
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[3]...), pt3, ⪧)
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[4]...), pt4, ⪧)
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[8]...), pt8, ⪧)
+    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[9]...), pt9, ⪧)
+    for index in each_polygon_index(vorn)
+        c = DT.get_centroid(vorn, index)
+        @test c ⪧ get_generator(vorn, index) rtol=1e-2 atol=1e-4
+    end
 end

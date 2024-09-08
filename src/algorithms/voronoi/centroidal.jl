@@ -40,35 +40,37 @@ function default_displacement_tolerance(vorn::VoronoiTessellation)
 end
 
 """
-    _centroidal_smooth_itr(vorn::VoronoiTessellation, set_of_boundary_nodes, points, rng, predicates::AbstractPredicateKernel=AdaptiveKernel(); kwargs...) -> (VoronoiTessellation, Number)
+    _centroidal_smooth_itr(vorn::VoronoiTessellation, points, rng, predicates::AbstractPredicateKernel=AdaptiveKernel(); kwargs...) -> (VoronoiTessellation, Number)
 
 Performs a single iteration of the centroidal smoothing algorithm. 
 
 # Arguments 
 - `vorn`: The [`VoronoiTessellation`](@ref).
-- `set_of_boundary_nodes`: The set of boundary nodes in the underlying triangulation.
 - `points`: The underlying point set. This is a `deepcopy` of the points of the underlying triangulation.
 - `rng`: The random number generator.
 - `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
 # Keyword Arguments
+- `clip_polygon=nothing`: If `clip=true`, then this is the polygon to clip the Voronoi tessellation to. If `nothing`, the convex hull of the triangulation is used. The polygon should be defined as a `Tuple` of the form `(points, boundary_nodes)` where the `boundary_nodes` are vertices mapping to coordinates in `points`, adhering to the usual conventions for defining boundaries.
 - `kwargs...`: Extra keyword arguments passed to [`retriangulate`](@ref).
 
 # Outputs 
 - `vorn`: The updated [`VoronoiTessellation`](@ref).
 - `max_dist`: The maximum distance moved by any generator.
 """
-function _centroidal_smooth_itr(vorn::VoronoiTessellation, set_of_boundary_nodes, points, rng, predicates::AbstractPredicateKernel = AdaptiveKernel(); kwargs...)
+function _centroidal_smooth_itr(vorn::VoronoiTessellation, points, rng, predicates::AbstractPredicateKernel = AdaptiveKernel(); clip_polygon = nothing, kwargs...)
     F = number_type(vorn)
     max_dist = zero(F)
-    for i in each_generator(vorn)
-        if i ∉ set_of_boundary_nodes
+    point_set = Set(get_polygon_points(vorn))
+    tri = get_triangulation(vorn)
+    for i in each_polygon_index(vorn)
+        if !is_boundary_node(tri, i)[1] || (!isnothing(clip_polygon) && !(get_generator(vorn, i) ∈ point_set))
             dist = move_generator_to_centroid!(points, vorn, i)
             max_dist = max(max_dist, dist)::F
         end
     end
-    _tri = retriangulate(get_triangulation(vorn), points; rng, predicates, kwargs...)
-    vorn = voronoi(_tri, clip = true; rng, predicates)
+    _tri = retriangulate(tri, points; rng, predicates, kwargs...)
+    vorn = voronoi(_tri; clip = true, clip_polygon, rng, predicates)
     return vorn, max_dist
 end
 
@@ -82,6 +84,7 @@ Smooths `vorn` into a centroidal tessellation so that the new tessellation is of
 
 # Keyword Arguments 
 - `maxiters=1000`: The maximum number of iterations.
+- `clip_polygon=nothing`: If `clip=true`, then this is the polygon to clip the Voronoi tessellation to. If `nothing`, the convex hull of the triangulation is used. The polygon should be defined as a `Tuple` of the form `(points, boundary_nodes)` where the `boundary_nodes` are vertices mapping to coordinates in `points`, adhering to the usual conventions for defining boundaries. Must be a convex polygon. 
 - `tol=default_displacement_tolerance(vorn)`: The displacement tolerance. See [`default_displacement_tolerance`](@ref) for the default. 
 - `rng=Random.default_rng()`: The random number generator.
 - `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
@@ -94,7 +97,7 @@ Smooths `vorn` into a centroidal tessellation so that the new tessellation is of
 The algorithm is simple. We iteratively smooth the generators, moving them to the centroid of their associated Voronoi polygon for the current tessellation, 
 continuing until the maximum distance moved of any generator is less than `tol`. Boundary generators are not moved.
 """
-function centroidal_smooth(vorn::VoronoiTessellation; maxiters = 1000, tol = default_displacement_tolerance(vorn), rng = Random.default_rng(), predicates::AbstractPredicateKernel = AdaptiveKernel(), kwargs...)
+function centroidal_smooth(vorn::VoronoiTessellation; clip_polygon = nothing, maxiters = 1000, tol = default_displacement_tolerance(vorn), rng = Random.default_rng(), predicates::AbstractPredicateKernel = AdaptiveKernel(), kwargs...)
     iter = 0
     F = number_type(vorn)
     max_dist = typemax(F)
@@ -103,10 +106,9 @@ function centroidal_smooth(vorn::VoronoiTessellation; maxiters = 1000, tol = def
     !has_ghost && add_ghost_triangles!(tri)
     has_bnds = has_boundary_nodes(tri)
     !has_bnds && lock_convex_hull!(tri; rng, predicates)
-    set_of_boundary_nodes = get_all_boundary_nodes(tri)
     points = deepcopy(get_points(tri))
     while iter < maxiters && max_dist > tol
-        vorn, max_dist = _centroidal_smooth_itr(vorn, set_of_boundary_nodes, points, rng, predicates; kwargs...)
+        vorn, max_dist = _centroidal_smooth_itr(vorn, points, rng, predicates; clip_polygon, kwargs...)
         iter += 1
     end
     !has_bnds && unlock_convex_hull!(tri)

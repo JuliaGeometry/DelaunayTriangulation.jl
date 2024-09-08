@@ -28,7 +28,7 @@ resize_to_layout!(fig)
 fig # hide
 ```
 
-At the end of this section, we also discuss the intersection of $\mathcal V(\mathcal P)$ with a rectangle.
+At the end of this section, we also discuss the intersection of $\mathcal V(\mathcal P)$ with a rectangle, and then discuss clipping $\mathcal V(\mathcal P)$ more generically to a given convex polygon.
 
 ## Computing intersections of the Voronoi polygons and the convex hull
 
@@ -352,3 +352,13 @@ resize_to_layout!(fig)
 ```@example suthodg
 fig # hide
 ```
+
+## Computing the intersection of the Voronoi tessellation with a convex polygon
+
+We also provide support for clipping Voronoi tessellations to convex polygons. The mathematical details are not too complex in this case. To summarise, we simply, letting $\mathcal C$ denote the convex polygon,
+
+1. Find a bounding box for $\mathcal C$, say $[a, b] \times [c, d]$.
+2. Using the approach in the previous section, clip all Voronoi polygons to $[a, b] \times [c, d]$.
+3. Then, using the Sutherland-Hodgman algorithm (this is why the polygon must be convex), clip all these newly clipped Voronoi polygons to $\mathcal C$.
+
+The second approach is used because we need to ensure that we grow the unbounded polygons appropriately to guarantee that the third step is correct.

@@ -109,6 +109,7 @@ end
         @test get_triangles(tri) == true_T
         @test (get_adjacent ∘ get_adjacent)(tri) == true_adj
         @test (get_adjacent2vertex ∘ get_adjacent2vertex)(tri) == true_adj2v
+        DT.clear_empty_vertices!(true_DG)
         @test get_graph(tri) == true_DG
     end
 
@@ -163,6 +164,7 @@ end
             @test get_triangles(_tri) == true_T
             @test (get_adjacent ∘ get_adjacent)(_tri) == true_adj
             @test (get_adjacent2vertex ∘ get_adjacent2vertex)(_tri) == true_adj2v
+            DT.clear_empty_vertices!(true_DG)
             @test get_graph(_tri) == true_DG
         end
         i, j, k = 5, 2, 8
@@ -219,6 +221,7 @@ end
             @test get_triangles(_tri) == true_T
             @test (get_adjacent ∘ get_adjacent)(_tri) == true_adj
             @test (get_adjacent2vertex ∘ get_adjacent2vertex)(_tri) == true_adj2v
+            DT.clear_empty_vertices!(true_DG)
             @test get_graph(_tri) == true_DG
         end
     end
@@ -240,6 +243,7 @@ end
     @test get_triangles(tri) == true_T
     @test (get_adjacent ∘ get_adjacent)(tri) == true_adj
     @test (get_adjacent2vertex ∘ get_adjacent2vertex)(tri) == true_adj2v
+    DT.clear_empty_vertices!(true_DG)
     @test get_graph(tri) == true_DG
 end
 

@@ -137,8 +137,6 @@ function _get_ray(vorn::VoronoiTessellation, i, ghost_vertex, predicates::Abstra
     u, v, _ = triangle_vertices(ghost_tri) # w is the ghost vertex
     p, q = get_generator(vorn, u, v)
     qx, qy = getxy(q)
-    mx, my = midpoint(p, q)
-    m = (mx, my)
     is_first = is_first_ghost_vertex(C, ghost_vertex)
     if is_first
         prev_index = previndex_circular(C, ghost_vertex)
@@ -147,6 +145,12 @@ function _get_ray(vorn::VoronoiTessellation, i, ghost_vertex, predicates::Abstra
         next_index = nextindex_circular(C, ghost_vertex)
         r = get_polygon_point(vorn, C[next_index])
     end
+    if is_weighted(vorn)
+        m = project_onto_line(p, q, r)
+    else 
+        m = midpoint(p, q)
+    end
+    mx, my = getxy(m)
     if r == m # It's possible for the circumcenter to lie on the edge and exactly at the midpoint (e.g. [(0.0,1.0),(-1.0,2.0),(-2.0,-1.0)]). In this case, just rotate 
         dx, dy = qx - mx, qy - my
         if is_right(point_position_relative_to_line(predicates, p, q, r))
@@ -305,8 +309,9 @@ Use the keyword arguments `predicates` to determine how predicates are computed.
 """
 function get_bounded_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box; predicates::AbstractPredicateKernel = AdaptiveKernel())
     if isnothing(bounding_box)
-        C = get_polygon(vorn, i)
         F = number_type(vorn)
+        !has_polygon(vorn, i) && return Vector{NTuple{2,F}}()
+        C = get_polygon(vorn, i)
         coords = Vector{NTuple{2, F}}(undef, length(C))
         for j in eachindex(C)
             coords[j] = get_polygon_point(vorn, C[j])

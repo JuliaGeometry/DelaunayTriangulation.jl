@@ -183,7 +183,9 @@
                 angle_is_acute_predicate,
                 sameside_predicate,
                 meet_predicate,
-                sort_triangle
+                sort_triangle,
+                triangle_orthocenter,
+                triangle_orthoradius_squared
     """,
         ),
     )

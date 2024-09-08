@@ -35,7 +35,8 @@ Float64
 number_type
 number_type(x) = number_type(typeof(x))
 number_type(::Type{T}) where {T <: AbstractArray} = number_type(eltype(T))
-number_type(x::Type{<:NTuple{N}}) where {N} = eltype(x)
+number_type(::Type{<:NTuple{N, T}}) where {N, T} = number_type(T)
+number_type(::Type{<:NTuple{0}}) = Any
 number_type(::Type{Tuple{}}) = Any
 number_type(::Type{T}) where {T} = T
 
@@ -133,13 +134,13 @@ is_circular(A) = isempty(A) || (A[begin] == A[end])
 Compares the two circular vectors `A` and `B` for equality up to circular rotation, 
 using `by` to compare individual elements.
 """
-function circular_equality(A, B, by = isequal)
+function circular_equality(A, B, by::F = isequal) where {F}
     @assert is_circular(A) && is_circular(B) "A and B must be circular"
     length(A) ≠ length(B) && return false
     isempty(A) && return true # isempty(B) is true as well because of the previous assertion 
     _A = @views A[begin:(end - 1)]
     _B = @views B[begin:(end - 1)]
-    same_idx = findfirst(by(_A[begin]), _B)
+    same_idx = findfirst(Base.Fix1(by, _A[begin]), _B)
     same_idx === nothing && return false
     n = length(_A)
     for (i, a) in pairs(_A)

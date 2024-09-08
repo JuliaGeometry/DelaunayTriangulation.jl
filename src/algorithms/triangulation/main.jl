@@ -30,7 +30,7 @@ For the keyword arguments below, you may like to review the extended help as som
    should match the specification given in [`check_args`](@ref) if a boundary is provided as a set of vertices, meaning the boundary is a piecewise linear curve. To specify a curve-bounded domain, you should 
    follow the same specification, but use [`AbstractParametricCurve`](@ref)s to fill out the vector, and any piecewise linear section should still be provided as a sequence of vertices. 
 - `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
-- `weights=ZeroWeight()`: NOT CURRENTLY IMPLEMENTED. The weights to use for the triangulation. By default, the triangulation is unweighted. The weights can also be provided as a vector, with the `i`th weight referring to the `i`th vertex, or more generally any object that defines [`get_weight`](@ref). The weights should be `Float64`.
+- `weights=ZeroWeight{number_type(points)}()`: The weights to use for the triangulation. By default, the triangulation is unweighted. The weights can also be provided as a vector, with the `i`th weight referring to the `i`th vertex, or more generally any object that defines [`get_weight`](@ref). 
 - `IntegerType=Int`: The integer type to use for the triangulation. This is used for representing vertices.
 - `EdgeType=isnothing(segments) ? NTuple{2,IntegerType} : (edge_type ∘ typeof)(segments)`: The edge type to use for the triangulation. 
 - `TriangleType=NTuple{3,IntegerType}`: The triangle type to use for the triangulation.
@@ -114,22 +114,15 @@ Here are some warnings to consider for some of the arguments.
     For curve-bounded domains, note that the triangulation produced from this function is really just an initial coarse discretisation of the true curved boundaries. You will need to 
     refine further, via [`refine!`](@ref), to improve the discretisation, or increase `coarse_n` below. See also [`polygonise`](@ref) for a more direct approach to discretising a boundary (which 
     might not give as high-quality meshes as you can obtain from [`refine!`](@ref) though, note).
-
-- `weights`
-
-!!! danger "Weighted triangulations"
-
-    Weighted triangulations are not yet fully implemented due to certain bugs with the implementation.
-
 """
 function triangulate(
         points::P;
         segments = nothing,
         boundary_nodes = nothing,
         predicates::AbstractPredicateKernel = AdaptiveKernel(),
-        weights = ZeroWeight(),
+        weights = ZeroWeight{number_type(P)}(),
         IntegerType::Type{I} = Int,
-        EdgeType::Type{E} = isnothing(segments) ? NTuple{2, IntegerType} : (edge_type ∘ typeof)(segments),
+        EdgeType::Type{E} = isnothing(segments) ? NTuple{2, IntegerType} : edge_type(typeof(segments)),
         TriangleType::Type{V} = NTuple{3, IntegerType},
         EdgesType::Type{Es} = isnothing(segments) ? Set{EdgeType} : typeof(segments),
         TrianglesType::Type{Ts} = Set{TriangleType},
@@ -168,9 +161,9 @@ end
 
 function check_config(points, weights, segments, boundary_nodes, kernel)
     (number_type(points) == Float32 && kernel != AdaptiveKernel()) && @warn "Using non-Float64 coordinates may cause issues. If you run into problems, consider using Float64 coordinates." maxlog = 1
-    is_weighted(weights) && throw(ArgumentError("Weighted triangulations are not yet fully implemented."))
     is_constrained = !(isnothing(segments) || isempty(segments)) || !(isnothing(boundary_nodes) || !has_boundary_nodes(boundary_nodes))
-    is_weighted(weights) && is_constrained && throw(ArgumentError("You cannot compute a constrained triangulation with weighted points."))
+    # is_weighted(weights) && is_constrained && throw(ArgumentError("You cannot compute a constrained triangulation with weighted points."))
+    # The above is still not implemented, but it errors when someone uses lock_convex_hull! (like in centroidal_smooth). So, just ignore it for now I guess.
     return nothing
 end
 

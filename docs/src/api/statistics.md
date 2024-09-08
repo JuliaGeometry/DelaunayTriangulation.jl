@@ -19,6 +19,8 @@ triangle_circumcenter
 triangle_offcenter
 triangle_edge_midpoints
 triangle_sink
+triangle_orthocenter
+triangle_orthoradius_squared
 TriangulationStatistics
 statistics
 num_boundary_segments

@@ -14,11 +14,6 @@ Triangulates the convex polygon `S`.
 - `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 - `kwargs...`: Additional keyword arguments passed to `Triangulation`.
 
-!!! note "Weighted triangulations"
-
-    While weighted triangulations are not yet supported from `triangulate` directly, they are supported through this `triangulate_convex`. In particular,
-    you can use the `weights` keyword argument to pass the weights of the vertices in `points`.
-
 # Output 
 - `tri::Triangulation`: The triangulated polygon. 
 """
@@ -168,7 +163,7 @@ function postprocess_triangulate_convex!(tri::Triangulation, S; delete_ghosts, d
         u = S[i]
         v = S[i + 1]
         if !delete_ghosts
-            add_triangle!(tri, v, u, I(𝒢))
+            add_triangle!(tri, v, u, I(𝒢); protect_boundary = true, update_ghost_edges = false)
         else
             # Still want the ghost vertex in the graph, adjacent2vertex map, and the adjacent map.
             add_neighbour!(tri, I(𝒢), u)
@@ -179,7 +174,7 @@ function postprocess_triangulate_convex!(tri::Triangulation, S; delete_ghosts, d
     u = S[end]
     v = S[begin]
     if !delete_ghosts
-        add_triangle!(tri, v, u, I(𝒢))
+        add_triangle!(tri, v, u, I(𝒢); protect_boundary = true, update_ghost_edges = false)
     else
         add_neighbour!(tri, I(𝒢), u)
         add_adjacent2vertex!(tri, I(𝒢), v, u)

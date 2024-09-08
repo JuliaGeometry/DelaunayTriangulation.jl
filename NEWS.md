@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.3.0
+
+This release finally introduces weighted triangulations and power diagrams, and also allows for users to provide a generic convex polygon to for clipping a Voronoi tessellation instead of only the convex hull.
+
+- Weighted triangulations have now been implemented, as have power diagrams. The weights are also no longer restricted to `Float64` type. See [#180](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/180).
+- `intersection_of_edge_and_bisector_ray` now accepts a `project` keyword argument. See [#180](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/180).
+- `get_weight(w, i)` now returns, when `i` is not an integer, either `i[3]` if it represents a point in space or `0`. See [#180](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/180).
+- Define `project_onto_line(p, q, r)` for projecting a point `r` onto the line defined by `p` and `q`. See [#180](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/180).
+- Fixed a bug with clipping Voronoi tessellations in cases where there are no intersections of any Voronoi polygon with the convex hull. See [#180](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/180).
+- `voronoi` now accepts an optional `clip_polygon` keyword argument, defaulting to `nothing` (corresponding to the convex hull), allowing for a convex clip polygon to be used instead of the convex hull. The `clip_polygon` should be a `Tuple` of the form `(points, boundary_nodes)` where the `boundary_nodes` give vertices of `points` adhering to the usual convention. Note that this could be used as an alternative to looping over `get_polygon_coordinates` for clipping to a rectangle. See [#180](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/180).
+- `centroidal_smooth` now accepts `clip_points` and `clip_vertices` as keyword arguments, defaulting to `nothing` (corresponding to the convex hull), to accommodate the new `clip_polygon` keyword argument in `voronoi`. See [#180](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/180).
+- `has_multiple_curves`, `has_multiple_sections`, and `num_boundary_edges` now have methods for `Tuple`s of integers. A bug was also fixed with `number_type` of a `Tuple` of `Tuple`s of coordinates returning the `Tuple` type instead of the coordinate type. See [#180](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/180).
+
 ## v1.2.0
 
 - Warnings are now thrown when you try and triangulate point sets not in the plane. The `is_planar` function has been introduced for this. See [#178](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/178).

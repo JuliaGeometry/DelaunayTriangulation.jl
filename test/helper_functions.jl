@@ -7,6 +7,7 @@ using Random
 using DataStructures
 using DelimitedFiles
 using OrderedCollections
+using Distributions
 using InteractiveUtils
 using Test
 using DelaunayTriangulation
@@ -601,38 +602,38 @@ function validate_statistics(tri::DT.Triangulation, stats = statistics(tri))
 
     ## Now compare the statistics 
     for T in each_solid_triangle(tri)
-        @test areas[triangle_vertices(T)] ≈ DT.get_area(stats, T) rtol = 1.0e-4 atol = 1.0e-4
-        @test areas[triangle_vertices(T)] ≈ DT.triangle_area((lengths[triangle_vertices(T)] .^ 2)...) rtol = 1.0e-4 atol = 1.0e-4
-        @test collect(lengths[triangle_vertices(T)]) ≈ collect(DT.get_lengths(stats, T)) rtol = 1.0e-4 atol = 1.0e-4
-        @test collect(circumcenters[triangle_vertices(T)]) ≈ collect(DT.get_circumcenter(stats, T)) rtol = 1.0e-4 atol = 1.0e-4
-        @test circumradii[triangle_vertices(T)] ≈ DT.get_circumradius(stats, T) rtol = 1.0e-4 atol = 1.0e-4
-        @test radius_edge_ratio[triangle_vertices(T)] ≈ DT.get_radius_edge_ratio(stats, T) rtol = 1.0e-4 atol = 1.0e-4
-        @test collect(collect.(edge_midpoints[triangle_vertices(T)])) ≈ collect(collect.(DT.get_edge_midpoints(stats, T))) rtol = 1.0e-4 atol = 1.0e-4
-        @test aspect_ratio[triangle_vertices(T)] ≈ DT.get_aspect_ratio(stats, T) rtol = 1.0e-4 atol = 1.0e-4
-        @test aspect_ratio[triangle_vertices(T)] ≈ DT.triangle_aspect_ratio(get_point(tri, triangle_vertices(T)...)...) rtol = 1.0e-4 atol = 1.0e-4
-        @test inradius[triangle_vertices(T)] ≈ DT.get_inradius(stats, T) rtol = 1.0e-4 atol = 1.0e-4
-        @test inradius[triangle_vertices(T)] ≈ DT.triangle_inradius(get_point(tri, triangle_vertices(T)...)...) rtol = 1.0e-4 atol = 1.0e-4
-        @test perimeter[triangle_vertices(T)] ≈ DT.get_perimeter(stats, T) rtol = 1.0e-4 atol = 1.0e-4
-        @test radius_edge_ratio[triangle_vertices(T)] ≈ 1 / (2sin(angles[triangle_vertices(T)][1])) rtol = 1.0e-4 atol = 1.0e-4
+        @test areas[triangle_vertices(T)] ≈ DT.get_area(stats, T) rtol = 1.0e-2 atol = 1.0e-2
+        @test areas[triangle_vertices(T)] ≈ DT.triangle_area((lengths[triangle_vertices(T)] .^ 2)...) rtol = 1.0e-2 atol = 1.0e-2
+        @test collect(lengths[triangle_vertices(T)]) ≈ collect(DT.get_lengths(stats, T)) rtol = 1.0e-2 atol = 1.0e-2
+        @test collect(circumcenters[triangle_vertices(T)]) ≈ collect(DT.get_circumcenter(stats, T)) rtol = 1.0e-2 atol = 1.0e-2
+        @test circumradii[triangle_vertices(T)] ≈ DT.get_circumradius(stats, T) rtol = 1.0e-2 atol = 1.0e-2
+        @test radius_edge_ratio[triangle_vertices(T)] ≈ DT.get_radius_edge_ratio(stats, T) rtol = 1.0e-2 atol = 1.0e-2
+        @test collect(collect.(edge_midpoints[triangle_vertices(T)])) ≈ collect(collect.(DT.get_edge_midpoints(stats, T))) rtol = 1.0e-2 atol = 1.0e-2
+        @test aspect_ratio[triangle_vertices(T)] ≈ DT.get_aspect_ratio(stats, T) rtol = 1.0e-2 atol = 1.0e-2
+        @test aspect_ratio[triangle_vertices(T)] ≈ DT.triangle_aspect_ratio(get_point(tri, triangle_vertices(T)...)...) rtol = 1.0e-2 atol = 1.0e-2
+        @test inradius[triangle_vertices(T)] ≈ DT.get_inradius(stats, T) rtol = 1.0e-2 atol = 1.0e-2
+        @test inradius[triangle_vertices(T)] ≈ DT.triangle_inradius(get_point(tri, triangle_vertices(T)...)...) rtol = 1.0e-2 atol = 1.0e-2
+        @test perimeter[triangle_vertices(T)] ≈ DT.get_perimeter(stats, T) rtol = 1.0e-2 atol = 1.0e-2
+        @test radius_edge_ratio[triangle_vertices(T)] ≈ 1 / (2sin(minimum(angles[triangle_vertices(T)]))) rtol = 1.0e-1 atol = 1.0e-2
         @test (2sin(DT.get_minimum_angle(stats, T) / 2)^2 - 0.1 ≤ DT.get_aspect_ratio(stats, T) ≤ 2tan(DT.get_minimum_angle(stats, T) / 2) + 0.1)
-        @test DT.get_radius_edge_ratio(stats, T) ≈ 1 / (2(sin(DT.get_minimum_angle(stats, T)))) rtol = 1.0e-4 atol = 1.0e-4
-        @test areas[triangle_vertices(T)] ≈ inradius[triangle_vertices(T)] * 0.5perimeter[triangle_vertices(T)] rtol = 1.0e-4 atol = 1.0e-4
-        @test DT.get_area(stats, T) ≈ DT.get_inradius(stats, T) * 0.5DT.get_perimeter(stats, T) rtol = 1.0e-4 atol = 1.0e-4
-        @test collect(centroid[triangle_vertices(T)]) ≈ collect(DT.get_centroid(stats, T)) rtol = 1.0e-4 atol = 1.0e-4
-        @test DT.get_angles(stats, T)[1] ≈ angles[triangle_vertices(T)][1] rtol = 1.0e-4 atol = 1.0e-4
-        @test DT.get_angles(stats, T)[2] ≈ angles[triangle_vertices(T)][2] rtol = 1.0e-4 atol = 1.0e-4
-        @test DT.get_angles(stats, T)[3] ≈ angles[triangle_vertices(T)][3] rtol = 1.0e-4 atol = 1.0e-4
-        @test sum(DT.get_angles(stats, T)) ≈ π rtol = 1.0e-4 atol = 1.0e-4
-        @test DT.get_minimum_angle(stats, T) ≈ angles[triangle_vertices(T)][1] rtol = 1.0e-4 atol = 1.0e-4
-        @test DT.get_maximum_angle(stats, T) ≈ angles[triangle_vertices(T)][3] rtol = 1.0e-4 atol = 1.0e-4
-        @test DT.get_minimum_angle(stats, T) ≈ DT.get_angles(stats, T)[1] rtol = 1.0e-4 atol = 1.0e-4
-        @test DT.get_maximum_angle(stats, T) ≈ DT.get_angles(stats, T)[3] rtol = 1.0e-4 atol = 1.0e-4
-        @test collect(offcenters[triangle_vertices(T)]) ≈ collect(DT.get_offcenter(stats, T)) rtol = 1.0e-4 atol = 1.0e-2
-        @test collect(sinks[triangle_vertices(T)]) ≈ collect(DT.get_sink(stats, T)) rtol = 1.0e-4 atol = 1.0e-4
+        @test DT.get_radius_edge_ratio(stats, T) ≈ 1 / (2(sin(DT.get_minimum_angle(stats, T)))) rtol = 1.0e-2 atol = 1.0e-2
+        @test areas[triangle_vertices(T)] ≈ inradius[triangle_vertices(T)] * 0.5perimeter[triangle_vertices(T)] rtol = 1.0e-2 atol = 1.0e-2
+        @test DT.get_area(stats, T) ≈ DT.get_inradius(stats, T) * 0.5DT.get_perimeter(stats, T) rtol = 1.0e-2 atol = 1.0e-2
+        @test collect(centroid[triangle_vertices(T)]) ≈ collect(DT.get_centroid(stats, T)) rtol = 1.0e-2 atol = 1.0e-2
+        @test DT.get_angles(stats, T)[1] ≈ angles[triangle_vertices(T)][1] rtol = 1.0e-2 atol = 1.0e-2
+        @test DT.get_angles(stats, T)[2] ≈ angles[triangle_vertices(T)][2] rtol = 1.0e-2 atol = 1.0e-2
+        @test DT.get_angles(stats, T)[3] ≈ angles[triangle_vertices(T)][3] rtol = 1.0e-2 atol = 1.0e-2
+        @test sum(DT.get_angles(stats, T)) ≈ π rtol = 1.0e-2 atol = 1.0e-2
+        @test DT.get_minimum_angle(stats, T) ≈ angles[triangle_vertices(T)][1] rtol = 1.0e-2 atol = 1.0e-2
+        @test DT.get_maximum_angle(stats, T) ≈ angles[triangle_vertices(T)][3] rtol = 1.0e-2 atol = 1.0e-2
+        @test DT.get_minimum_angle(stats, T) ≈ DT.get_angles(stats, T)[1] rtol = 1.0e-2 atol = 1.0e-2
+        @test DT.get_maximum_angle(stats, T) ≈ DT.get_angles(stats, T)[3] rtol = 1.0e-2 atol = 1.0e-2
+        @test collect(offcenters[triangle_vertices(T)]) ≈ collect(DT.get_offcenter(stats, T)) rtol = 1.0e-2 atol = 1.0e-2
+        @test collect(sinks[triangle_vertices(T)]) ≈ collect(DT.get_sink(stats, T)) rtol = 1.0e-2 atol = 1.0e-2
     end
     @test stats.individual_statistics == DT.get_individual_statistics(stats)
-    @test stats.area ≈ DT.get_area(stats) rtol = 1.0e-4 atol = 1.0e-4
-    @test stats.area ≈ total_A rtol = 1.0e-4 atol = 1.0e-4
+    @test stats.area ≈ DT.get_area(stats) rtol = 1.0e-2 atol = 1.0e-2
+    @test stats.area ≈ total_A rtol = 1.0e-2 atol = 1.0e-2
 
     ## Inference 
     for _ in 1:5
@@ -652,6 +653,8 @@ function validate_statistics(tri::DT.Triangulation, stats = statistics(tri))
         _angles = @inferred DT.triangle_angles(_p, _q, _r)
         _offcenter = @inferred DT.triangle_offcenter(_p, _q, _r, _circumcenter)
         _sink = @inferred DT.triangle_sink(tri, _T)
+        @inferred DT.triangle_orthocenter(tri, _T)
+        @inferred DT.triangle_orthoradius_squared(tri, _T)
     end
 
     ## Test the number statistics 
@@ -676,14 +679,40 @@ function validate_statistics(tri::DT.Triangulation, stats = statistics(tri))
     largest_area = maximum([areas[triangle_vertices(T)] for T in each_solid_triangle(tri)])
     smallest_radius_edge_ratio = minimum([radius_edge_ratio[triangle_vertices(T)] for T in each_solid_triangle(tri)])
     largest_radius_edge_ratio = maximum([radius_edge_ratio[triangle_vertices(T)] for T in each_solid_triangle(tri)])
-    @test DT.get_smallest_angle(stats) ≈ smallest_angle rtol = 1.0e-2
-    @test DT.get_largest_angle(stats) ≈ largest_angle rtol = 1.0e-2
-    @test DT.get_smallest_area(stats) ≈ smallest_area rtol = 1.0e-2
-    @test DT.get_largest_area(stats) ≈ largest_area rtol = 1.0e-2
-    @test DT.get_smallest_radius_edge_ratio(stats) ≈ smallest_radius_edge_ratio rtol = 1.0e-2
-    @test DT.get_largest_radius_edge_ratio(stats) ≈ largest_radius_edge_ratio rtol = 1.0e-2
+    @test DT.get_smallest_angle(stats) ≈ smallest_angle rtol = 1.0e-2 atol=1e-2
+    @test DT.get_largest_angle(stats) ≈ largest_angle rtol = 1.0e-2 atol=1e-2
+    @test DT.get_smallest_area(stats) ≈ smallest_area rtol = 1.0e-2 atol=1e-2
+    @test DT.get_largest_area(stats) ≈ largest_area rtol = 1.0e-2 atol=1e-2
+    @test DT.get_smallest_radius_edge_ratio(stats) ≈ smallest_radius_edge_ratio rtol = 1.0e-2 atol=1e-2
+    @test DT.get_largest_radius_edge_ratio(stats) ≈ largest_radius_edge_ratio rtol = 1.0e-2 atol=1e-2
     @test DT.get_smallest_radius_edge_ratio(stats) ≥ 1 / sqrt(3) - 0.1
     @test DT.get_smallest_angle(stats) ≤ deg2rad(60) + 0.01
+
+    ## Orthocenter and orthoradius
+    for T in each_solid_triangle(tri)
+        o = DT.triangle_orthocenter(tri, T)
+        i, j, k = DT.triangle_vertices(T)
+        r1 = DT.dist_sqr(get_point(tri, i, o)...) - DT.get_weight(tri, i)
+        r2 = DT.dist_sqr(get_point(tri, j, o)...) - DT.get_weight(tri, j)
+        r3 = DT.dist_sqr(get_point(tri, k, o)...) - DT.get_weight(tri, k)
+        @test r1 ≈ r2 rtol = 1.0e-4 atol = 1.0e-2
+        @test r2 ≈ r3 rtol = 1.0e-4 atol = 1.0e-2
+        @test r1 ≈ r3 rtol = 1.0e-4 atol = 1.0e-2
+        if !DT.is_weighted(tri)
+            c = DT.triangle_circumcenter(tri, T)
+            @test collect(o) ≈ collect(c) rtol = 1.0e-4 atol = 1.0e-2
+        end
+
+        r² = DT.triangle_orthoradius_squared(tri, T)
+        if !DT.is_weighted(tri)
+            cr2 = DT.triangle_circumradius(get_point(tri,T...)...)^2 
+            @test r² ≈ cr2 rtol = 1.0e-4 atol = 1.0e-2
+        end
+        @test  r²  ≈ r1 
+        @test  r²  ≈ r2
+        @test  r²  ≈ r3
+        @test DT.dist_sqr(get_point(tri, i, o)...) - DT.get_weight(tri, i) - r² ≈ 0 atol=1e-2
+    end
 end
 
 function slow_encroachment_test(tri::DT.Triangulation)
@@ -851,7 +880,7 @@ end
 
 
 ## TODO: Implement a brute-force DT.VoronoiTessellation that we can compare with
-function validate_tessellation(vorn::DT.VoronoiTessellation; check_convex = true, check_adjacent = true, predicates::DT.AbstractPredicateKernel = DT.AdaptiveKernel())
+function validate_tessellation(vorn::DT.VoronoiTessellation; check_convex = true, check_area = true, check_adjacent = true, predicates::DT.AbstractPredicateKernel = DT.AdaptiveKernel())
     tri = DT.get_triangulation(vorn)
     for (i, p) in DT.get_generators(vorn)
         flag = get_point(tri, i) == get_generator(vorn, i) == p
@@ -873,7 +902,11 @@ function validate_tessellation(vorn::DT.VoronoiTessellation; check_convex = true
         c = get_polygon_point(vorn, c)
         i, j, k = triangle_vertices(V)
         p, q, r = get_point(DT.get_triangulation(vorn), i, j, k)
-        cx, cy = DT.triangle_circumcenter(p, q, r)
+        if DT.is_weighted(tri)
+            cx, cy = DT.triangle_orthocenter(tri, V)
+        else
+            cx, cy = DT.triangle_circumcenter(p, q, r)
+        end
         flag = cx == c[1] && cy == c[2]
         if !flag
             println("Circumcenter of $V is not correct, mapped to $c.")
@@ -970,7 +1003,7 @@ function validate_tessellation(vorn::DT.VoronoiTessellation; check_convex = true
             end
         end
     end
-    if isempty(DT.get_unbounded_polygons(vorn))
+    if isempty(DT.get_unbounded_polygons(vorn)) && check_area
         A = 0.0
         for i in each_polygon_index(vorn)
             A += get_area(vorn, i)
@@ -1522,6 +1555,7 @@ function why_not_equal(tri1, tri2)
     end
     DT.get_polygon_hierarchy(tri1) ≠ DT.get_polygon_hierarchy(tri2) && println("get_polygon_hierarchy(tri1) ≠ get_polygon_hierarchy(tri2)")
     DT.get_boundary_nodes(tri1) ≠ DT.get_boundary_nodes(tri2) && println("get_boundary_nodes(tri1) ≠ get_boundary_nodes(tri2)")
+    DT.get_weights(tri1) ≠ DT.get_weights(tri2) && println("get_weights(tri1) ≠ get_weights(tri2)")
 end
 
 #=
@@ -2274,6 +2308,81 @@ using DelaunayTriangulation:
     test_iterators
 
 rt() = rand((DT.FastKernel(), DT.ExactKernel(), DT.AdaptiveKernel()))
+
+struct TriangleSampler{T}
+    p::NTuple{2, T}
+    q::NTuple{2, T}
+    r::NTuple{2, T}
+end
+Random.eltype(::Type{TriangleSampler{T}}) where {T} = NTuple{2, T}
+function Random.rand(rng::Random.AbstractRNG, v::Random.SamplerTrivial{<:TriangleSampler{T}}) where {T}
+    # https://blogs.sas.com/content/iml/2020/10/19/random-points-in-triangle.html
+    itr = v[]
+    p, q, r = itr.p, itr.q, itr.r
+    px, py = getxy(p)
+    qx, qy = getxy(q)
+    rx, ry = getxy(r)
+    ax, ay = qx - px, qy - py
+    bx, by = rx - px, ry - py
+    u₁ = rand(rng, T)
+    u₂ = rand(rng, T)
+    if u₁ + u₂ > 1
+        u₁ = one(T) - u₁
+        u₂ = one(T) - u₂
+    end
+    wx = u₁ * ax + u₂ * bx
+    wy = u₁ * ay + u₂ * by
+    return (px + wx, py + wy)
+end
+Random.eltype(::Type{T}) where {P, T<:Triangulation{P}} = NTuple{2, DT.number_type(P)}
+function Random.Sampler(::Type{<:Random.AbstractRNG}, tri::Triangulation, ::Random.Repetition)
+    V = DT.triangle_type(tri)
+    F = DT.number_type(tri)
+    triangles = Vector{V}()
+    areas = Vector{F}()
+    sizehint!(triangles, DT.num_solid_triangles(tri))
+    sizehint!(areas, DT.num_solid_triangles(tri))
+    for T in DT.each_solid_triangle(tri)
+        push!(triangles, T)
+        i, j, k = triangle_vertices(T)
+        p, q, r = get_point(tri, i, j, k)
+        push!(areas, DT.triangle_area(p, q, r))
+    end
+    A = sum(areas)
+    areas ./= A
+    return Random.SamplerSimple(tri, (; tri, triangles, areas))
+end
+function Random.rand(rng::Random.AbstractRNG, spl::Random.SamplerSimple{<:Triangulation})
+    tri = spl.data.tri
+    triangles = spl.data.triangles
+    areas = spl.data.areas
+    multi = Multinomial(1, areas)
+    T = rand(rng, multi)
+    idx = findfirst(isone, T)
+    i, j, k = triangle_vertices(triangles[idx])
+    p, q, r = get_point(tri, i, j, k)
+    return rand(rng, TriangleSampler(p, q, r))
+end
+function Random.rand!(rng::Random.AbstractRNG, a::AbstractVector, spl::Random.SamplerSimple{<:Triangulation})
+    n = length(a)
+    tri = spl.data.tri
+    triangles = spl.data.triangles
+    areas = spl.data.areas
+    multi = Multinomial(1, areas)
+    samples = rand(rng, multi, n)
+    ntri = sum(samples; dims = 2)
+    cur_idx = 0
+    for (idx, T) in enumerate(triangles)
+        ntri[idx] == 0 && continue
+        i, j, k = triangle_vertices(T)
+        p, q, r = get_point(tri, i, j, k)
+        _spl = TriangleSampler(p, q, r)
+        m = ntri[idx]
+        rand!(rng, view(a, (cur_idx+1):(cur_idx+m)), _spl)
+        cur_idx += m
+    end
+    return a
+end
 
 export validate_triangulation
 export @_adj

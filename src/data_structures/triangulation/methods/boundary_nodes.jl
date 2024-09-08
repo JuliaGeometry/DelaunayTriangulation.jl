@@ -209,7 +209,7 @@ end
 Returns the set of all boundary vertices in `tri`, in no specific order.
 """
 function get_all_boundary_nodes(tri::Triangulation)
-    boundary_sections = (values ∘ get_ghost_vertex_map)(tri)
+    boundary_sections = values(get_ghost_vertex_map(tri))
     I = integer_type(tri)
     all_nodes = Set{I}()
     if has_boundary_nodes(tri)

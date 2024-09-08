@@ -41,6 +41,7 @@ function has_multiple_curves(boundary_nodes::AV)
         return false
     end
 end
+has_multiple_curves(::NTuple{N, <:Integer}) where {N} = false
 
 @doc """
     has_multiple_sections(boundary_nodes) -> Bool
@@ -78,6 +79,7 @@ function has_multiple_sections(boundary_nodes::AV)
         return false
     end
 end
+has_multiple_sections(::NTuple{N, <:Integer}) where {N} = false
 
 """
     num_curves(boundary_nodes) -> Integer
@@ -140,6 +142,7 @@ Get the number of boundary edges in `boundary_nodes`, assuming that `boundary_no
 boundary with only one curve and a single section.
 """
 num_boundary_edges(boundary_nodes::AV) = max(0, length(boundary_nodes) - 1)
+num_boundary_edges(boundary_nodes::NTuple{N, <:Integer}) where {N} = max(0, N - 1)
 
 @doc """
     get_boundary_nodes(boundary_nodes, mnℓ...) 

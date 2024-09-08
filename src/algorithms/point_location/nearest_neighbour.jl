@@ -3,6 +3,8 @@
 
 Get the index of the nearest neighbour of `q` in `tri_or_vor`. 
 
+For power diagrams, distance is measured using [`get_power_distance`](@ref) (with `q` being assigned zero weight).
+
 # Arguments 
 - `tri_or_vor`: A [`Triangulation`](@ref) or [`VoronoiTessellation`](@ref).
 - `q`: The point to be located.
@@ -26,11 +28,11 @@ function jump_to_voronoi_polygon(tri::Triangulation, q; kwargs...)
     V = sort_triangle(V)
     i, j, k = triangle_vertices(V)
     a, b = get_point(tri, i, j)
-    daq² = dist_sqr(a, q)
-    dbq² = dist_sqr(b, q)
+    daq² = is_weighted(tri) ? get_power_distance(tri, i, q) : dist_sqr(a, q)
+    dbq² = is_weighted(tri) ? get_power_distance(tri, j, q) : dist_sqr(b, q)
     if !is_ghost_vertex(k)
         c = get_point(tri, k)
-        dcq² = dist_sqr(c, q)
+        dcq² = is_weighted(tri) ? get_power_distance(tri, k, q) : dist_sqr(c, q)
     else
         dcq² = typemax(number_type(tri))
     end
@@ -45,7 +47,14 @@ function jump_to_voronoi_polygon(tri::Triangulation, q; kwargs...)
     points = get_points(tri)
     v = first(neighbouring_vertices)
     if !is_ghost_vertex(v)
-        current_dist, current_idx = compare_distance(current_dist, current_idx, points, v, qx, qy)
+        # current_dist, current_idx = compare_distance(current_dist, current_idx, points, v, qx, qy)
+        # Can't use compare_distance it only uses the Euclidean distance
+        r = get_point(tri, v)
+        pv_dist = is_weighted(tri) ? get_power_distance(tri, v, q) : dist_sqr(r, q)
+        if pv_dist < current_dist
+            current_dist = pv_dist
+            current_idx = v
+        end
     end
     k = num_neighbours(tri, u)
     nbnd = count(is_ghost_vertex, neighbouring_vertices)
@@ -55,7 +64,14 @@ function jump_to_voronoi_polygon(tri::Triangulation, q; kwargs...)
     for i in 2:k
         v = get_adjacent(tri, u, v)
         if !is_ghost_vertex(v)
-            current_dist, current_idx = compare_distance(current_dist, current_idx, points, v, qx, qy)
+            # current_dist, current_idx = compare_distance(current_dist, current_idx, points, v, qx, qy)
+            # Can't use compare_distance it only uses the Euclidean distance
+            r = get_point(tri, v)
+            pv_dist = is_weighted(tri) ? get_power_distance(tri, v, q) : dist_sqr(r, q)
+            if pv_dist < current_dist
+                current_dist = pv_dist
+                current_idx = v
+            end
         end
     end
     return current_idx

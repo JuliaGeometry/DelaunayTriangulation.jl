@@ -28,9 +28,13 @@ function initialise_voronoi_tessellation(tri::Tr) where {Tr <: Triangulation}
         V = sort_triangle(V)
         if !is_ghost_triangle(V)
             u, v, w = triangle_vertices(V)
-            p, q, r = get_point(tri, u, v, w)
-            A = triangle_area(p, q, r)
-            cx, cy = triangle_circumcenter(p, q, r, A)
+            if !is_weighted(tri)
+                p, q, r = get_point(tri, u, v, w)
+                A = triangle_area(p, q, r)
+                cx, cy = triangle_circumcenter(p, q, r, A)
+            else 
+                cx, cy = triangle_orthocenter(tri, V)
+            end
             if any(isinf, (cx, cy)) && INF_WARN[]
                 @warn "The triangle $((u, v, w)) has a degenerate circumcenter, $((cx, cy)). You may encounter issues with this tessellation. You can disable this warning using toggle_inf_warn!()."
             end

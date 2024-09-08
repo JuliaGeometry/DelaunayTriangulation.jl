@@ -77,7 +77,12 @@ Initialises the Bowyer-Watson algorithm.
 function initialise_bowyer_watson!(tri::Triangulation, insertion_order, predicates::AbstractPredicateKernel = AdaptiveKernel())
     I = integer_type(tri)
     initial_triangle = get_initial_triangle(tri, insertion_order, predicates)
-    add_triangle!(tri, initial_triangle; update_ghost_edges = true)
+    u, v, w = triangle_vertices(initial_triangle)
+    g = I(𝒢)
+    add_triangle!(tri, u, v, w; protect_boundary = true, update_ghost_edges = false)
+    add_triangle!(tri, v, u, g; protect_boundary = true, update_ghost_edges = false)
+    add_triangle!(tri, w, v, g; protect_boundary = true, update_ghost_edges = false)
+    add_triangle!(tri, u, w, g; protect_boundary = true, update_ghost_edges = false)
     new_representative_point!(tri, I(1))
     for i in triangle_vertices(initial_triangle)
         p = get_point(tri, i)
@@ -106,9 +111,9 @@ For a given iteration of the Bowyer-Watson algorithm, finds the point to start t
 function get_initial_search_point(tri::Triangulation, num_points, new_point, insertion_order, num_sample_rule::F, rng, try_last_inserted_point) where {F}
     num_currently_inserted = num_points + 3 - 1     # + 3 for the points already inserted
     last_inserted_point_index = insertion_order[num_currently_inserted]
-    currently_inserted_points = @view insertion_order[begin:num_currently_inserted]
+    currently_inserted_points = each_solid_vertex(tri) # We can't just do something like insertion_order[1:num_currently_inserted] because, for weighted triangulations, not all previous points may still be in the triangulation if they are submerged
     m = num_sample_rule(num_currently_inserted)
-    try_points = try_last_inserted_point ? (last_inserted_point_index,) : (∅,)
+    try_points = try_last_inserted_point ? (last_inserted_point_index,) : (oftype(last_inserted_point_index, ∅),)
     initial_search_point = select_initial_point(tri, new_point; m, point_indices = currently_inserted_points, rng, try_points)
     return initial_search_point
 end
@@ -240,8 +245,8 @@ function add_point_bowyer_watson_dig_cavities!(tri::Triangulation, new_point::N,
             if !is_true(peek)
                 delete_triangle!(tri, v, u, new_point; protect_boundary = true, update_ghost_edges = false)
                 delete_triangle!(tri, u, v, g; protect_boundary = true, update_ghost_edges = false)
-                add_triangle!(tri, new_point, v, g; update_ghost_edges = false)
-                add_triangle!(tri, u, new_point, g; update_ghost_edges = false)
+                add_triangle!(tri, new_point, v, g; protect_boundary = true, update_ghost_edges = false)
+                add_triangle!(tri, u, new_point, g; protect_boundary = true, update_ghost_edges = false)
             end
             if is_true(store_event_history)
                 trit = triangle_type(tri)
@@ -276,6 +281,32 @@ function add_point_bowyer_watson_dig_cavities!(tri::Triangulation, new_point::N,
     I = integer_type(tri)
     update_representative_point && !is_true(peek) && update_centroid_after_addition!(tri, I(1), q) # How do we efficiently determine which curve to update for a given q when adding into an existing triangulation?
     return tri
+end
+
+"""
+    enter_cavity(tri::Triangulation, r, i, j, ℓ, predicates::AbstractPredicateKernel=AdaptiveKernel()) -> Bool
+
+Determines whether to enter the cavity in `tri` through the edge `(i, j)` when inserting `r` into the triangulation.
+
+# Arguments 
+- `tri`: The [`Triangulation`](@ref).
+- `r`: The new point being inserted.
+- `i`: The first vertex of the edge `(i, j)`.
+- `j`: The second vertex of the edge `(i, j)`.
+- `ℓ`: The vertex adjacent to `(j, i)`, so that the triangle being stepped into is `(j, i, ℓ)`.
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
+
+# Output
+- `true` if the cavity should be entered, and `false` otherwise. See also [`dig_cavity!`](@ref) and [`point_position_relative_to_circumcircle`](@ref).
+"""
+function enter_cavity(tri::Triangulation, r, i, j, ℓ, predicates::AbstractPredicateKernel = AdaptiveKernel())
+    contains_segment(tri, i, j)  && return false 
+    if is_ghost_vertex(ℓ)
+        cert = point_position_relative_to_circumcircle(tri, j, i, ℓ, r)
+    else 
+        cert = point_position_relative_to_circumcircle(tri, r, i, j, ℓ)
+    end
+    return is_inside(cert)
 end
 
 """
@@ -317,7 +348,7 @@ function dig_cavity!(tri::Triangulation, r, i, j, ℓ, flag, V, store_event_hist
         return tri
     end
     _r = is_true(peek) ? num_points(tri) + 1 : r # If we are peeking, then we need to use the number of points in the triangulation as the index for the new point since we don't actually insert the point
-    if !contains_segment(tri, i, j) && !is_ghost_vertex(ℓ) && is_inside(point_position_relative_to_circumcircle(predicates, tri, r, i, j, ℓ))
+    if enter_cavity(tri, r, i, j, ℓ, predicates)
         ℓ₁ = get_adjacent(tri, ℓ, i)
         ℓ₂ = get_adjacent(tri, j, ℓ)
         !is_true(peek) && delete_triangle!(tri, j, i, ℓ; protect_boundary = true, update_ghost_edges = false)
@@ -340,14 +371,14 @@ function dig_cavity!(tri::Triangulation, r, i, j, ℓ, flag, V, store_event_hist
             if u == i && v == j
                 return tri
             else
-                !is_true(peek) && add_triangle!(tri, r, i, j; update_ghost_edges = false)
+                !is_true(peek) && add_triangle!(tri, r, i, j; protect_boundary = true, update_ghost_edges = false)
                 if is_true(store_event_history)
                     trit = triangle_type(tri)
                     add_triangle!(event_history, construct_triangle(trit, _r, i, j))
                 end
             end
         else
-            !is_true(peek) && add_triangle!(tri, r, i, j; update_ghost_edges = false)
+            !is_true(peek) && add_triangle!(tri, r, i, j; protect_boundary = true, update_ghost_edges = false)
             if is_true(store_event_history)
                 trit = triangle_type(tri)
                 add_triangle!(event_history, construct_triangle(trit, _r, i, j))

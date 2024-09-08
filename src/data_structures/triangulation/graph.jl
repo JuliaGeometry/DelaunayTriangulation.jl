@@ -20,10 +20,10 @@ The map taking vertices `u` to the set of all `v` such that `(u, v)` is an edge 
 """
 struct Graph{I}
     vertices::Set{I}
-    edges::Set{NTuple{2, I}}
-    neighbours::Dict{I, Set{I}}
+    edges::Set{NTuple{2,I}}
+    neighbours::Dict{I,Set{I}}
 end
-Graph{I}() where {I} = Graph(Set{I}(), Set{NTuple{2, I}}(), Dict{I, Set{I}}())
+Graph{I}() where {I} = Graph(Set{I}(), Set{NTuple{2,I}}(), Dict{I,Set{I}}())
 function Base.show(io::IO, ::MIME"text/plain", graph::Graph)
     println(io, "Graph")
     println(io, "    Number of edges: ", num_edges(graph))
@@ -180,16 +180,30 @@ function add_neighbour!(G::Graph{I}, u, v...) where {I}
 end
 
 """
+    _delete!(G::Graph, u, v)
+
+Deletes the neighbour `v` from `u` in `G`. If the neighbours of `u` are empty once `v` is deleted, then `u` is also deleted from the vertex set.
+
+!!! warning "Undirected graph"
+
+    Even though the graph is undirected, this function only deletes `v` from the neighbours of `u`. If you want to delete `u` from the neighbours of `v`, you should call `delete_neighbour!(G, v, u)`.
+"""
+function _delete!(G::Graph{I}, u, v) where {I}
+    N = get_neighbours(G)
+    u_N = get!(Set{I}, N, u)
+    delete!(u_N, v)
+    iszero(num_neighbours(G, u)) && delete_vertex!(G, u) # We need to do this because, for weighted triangulations, this vertex might be forever missing (because it's  submerged) and cause issues with empty sets
+    return G
+end
+
+"""
     delete_neighbour!(G::Graph, u, v...)
 
 Deletes the neighbours `v...` from `u` in `G`.
 """
 function delete_neighbour!(G::Graph{I}, u, v) where {I}
-    N = get_neighbours(G)
-    u_N = get!(Set{I}, N, u)
-    v_N = get!(Set{I}, N, v)
-    delete!(u_N, v)
-    delete!(v_N, u) # undirected graph
+    _delete!(G, u, v)
+    _delete!(G, v, u)
     delete_edge!(G, u, v)
     return G
 end

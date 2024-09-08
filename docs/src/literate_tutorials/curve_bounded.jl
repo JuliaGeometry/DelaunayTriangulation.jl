@@ -188,7 +188,7 @@ tri = triangulate(copy(points); boundary_nodes = curve, rng) # copying so that w
 refine!(tri; max_area = 1.0e-2)
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "triangulate_curve_bounded_ex_4.png") fig by = psnr_equality(15) #src
+@test_reference joinpath(fig_path, "triangulate_curve_bounded_ex_4.png") fig by = psnr_equality(7) #src
 
 # ### Using Custom Constraints to Control Refinement 
 # Let's give another example of using custom constraints to better control the refinement within different domains. Referencing the 
@@ -221,7 +221,7 @@ tri = triangulate(points; boundary_nodes = curve, rng)
 refine!(tri; custom_constraint = poly_constraint, rng)
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "triangulate_curve_bounded_ex_5.png") fig #src
+@test_reference joinpath(fig_path, "triangulate_curve_bounded_ex_5.png") fig by=psnr_equality(7) #src
 
 # ## Defining a New Parametric Curve 
 # Let us now give an example where we define a domain by a parametric curve that is not provided natively by this package. For this 

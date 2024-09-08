@@ -73,7 +73,7 @@ function select_initial_point(
         current_dist, current_idx = compare_distance(current_dist, current_idx, tri, i, qx, qy)
     end
     for i in try_points
-        if i ≠ ∅
+        if has_vertex(tri, i)
             current_dist, current_idx = compare_distance(current_dist, current_idx, tri, i, qx, qy)
         end
     end

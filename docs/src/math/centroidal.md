@@ -32,7 +32,6 @@ has_ghost = DelaunayTriangulation.has_ghost_triangles(tri)
 !has_ghost && DelaunayTriangulation.add_ghost_triangles!(tri)
 has_bnds = DelaunayTriangulation.has_boundary_nodes(tri)
 !has_bnds && DelaunayTriangulation.lock_convex_hull!(tri)
-set_of_boundary_nodes = DelaunayTriangulation.get_all_boundary_nodes(tri)
 points = (deepcopy ∘ get_points)(tri)
 fig = Figure()
 ax = Axis(fig[1, 1], width = 300, height = 300)
@@ -42,7 +41,7 @@ scatter!(ax, point_obs, color = :black, markersize = 7)
 resize_to_layout!(fig)
 record(fig, "centroidal_voronoi.mp4", 1:200; framerate = 24) do _ # actual number of iterations needed is around 168
     global vorn, points
-    vorn, _max_dist = DelaunayTriangulation._centroidal_smooth_itr(vorn, set_of_boundary_nodes, points, rng)
+    vorn, _max_dist = DelaunayTriangulation._centroidal_smooth_itr(vorn, points, rng)
     vorn_obs[] = vorn 
     point_obs[] = points
 end
