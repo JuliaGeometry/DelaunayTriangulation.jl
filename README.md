@@ -51,7 +51,7 @@ vorn2 = voronoi(tri1)
 vorn3 = voronoi(tri1, clip=true, predicates = ExactKernel())
 
 # Smoothed Voronoi 
-vorn4 = centroidal_smooth(vorn3; rng, predicates = FastKernel()) # or do voronoi(tri1, clip = true, smooth = true)
+vorn4 = centroidal_smooth(vorn3; predicates = FastKernel()) # or do voronoi(tri1, clip = true, smooth = true)
 
 # Constrained example with refinement 
 boundary_points = [(0.0, 0.0), (1.0, 0.0), (1.0, 0.3), (0.5, 0.3),
@@ -91,21 +91,21 @@ tri8 = triangulate(points; boundary_nodes)
 refine!(tri8; max_area=1e-2get_area(tri8)) # could also use find_polygon to help define a custom refinement function for each shape
 
 # Weighted triangulation example
-points = tuple.(rand(rng, 20), rand(rng, 20))
-weights = 3randn(rng, 20)
-tri9 = triangulate(points; weights, rng)
+points = tuple.(rand(20), rand(20))
+weights = 3randn(20)
+tri9 = triangulate(points; weights)
 
 # Power diagram example 
-vorn10 = voronoi(tri9; rng) # can also use clip/smooth here 
+vorn10 = voronoi(tri9) # can also use clip/smooth here 
 
 # Clipped Voronoi example with a generic convex polygon
-points = 10randn(rng, 2, 100)
-weights = rand(rng, 100)
+points = 10randn(2, 100)
+weights = rand(100)
 circ = CircularArc((0.0, 2.0), (0.0, 2.0), (0.0, 0.0)) # clip to a circle 
 clip_points = [circ(t) for t in LinRange(0, 1, 100)]
 clip_vertices = [1:(length(clip_points)-1); 1]
-tri11 = triangulate(points; weights, rng)
-vorn11 = voronoi(tri11, clip=true, clip_polygon=(clip_points, clip_vertices), rng=rng)
+tri11 = triangulate(points; weights)
+vorn11 = voronoi(tri11, clip=true, clip_polygon=(clip_points, clip_vertices))
 
 # Plotting 
 fig = Figure(fontsize = 42, size = (2800, 2200))
