@@ -5,9 +5,9 @@
 # In the previous tutorial, we demonstrated how we can clip to
 # the convex hull of the point set. However, it is often useful to clip
 # to a rectangle, for example if you want to clip to a region of interest
-# in a simulation. We do not yet support this within [`voronoi`](@ref) itself, 
-# but we provide the function [`get_polygon_coordinates`](@ref) for this (this is what 
-# `voronoiplot` uses to plot inside a bounding box).
+# in a simulation. Here we obtain the coordinates just by looping over all 
+# the polygons, but you can also use this by providing a `clip_polygon` into 
+# `voronoi`, as described in [this tutorial](clipped_polygon.md).
 
 # Let us now demonstrate. First, we construct a tessellation of 
 # some example point set.

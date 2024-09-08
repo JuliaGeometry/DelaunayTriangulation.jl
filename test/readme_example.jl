@@ -12,7 +12,7 @@ vorn2 = voronoi(tri1; rng)
 vorn3 = voronoi(tri1, clip = true; rng, predicates = ExactKernel()) # you can change the predicate kernel
 
 # Smoothed Voronoi 
-vorn4 = centroidal_smooth(vorn3; rng, predicates = FastKernel())
+vorn4 = centroidal_smooth(vorn3; rng, predicates = FastKernel()) # or do voronoi(tri1, clip = true, smooth = true)
 
 # Constrained example with refinement 
 boundary_points = [
@@ -59,8 +59,28 @@ boundary_nodes = [[square], [[ellipse]], [[catmull_spl]], [[circle]], [[circle2]
 tri8 = triangulate(points; boundary_nodes, rng)
 refine!(tri8; max_area = 1.0e-2get_area(tri8), rng) # could also use find_polygon to help define a custom refinement function for each shape
 
+# Weighted triangulation example
+points = tuple.(rand(rng, 20), rand(rng, 20))
+weights = 3randn(rng, 20)
+tri9 = triangulate(points; weights, rng)
+
+# Power diagram example 
+points = tuple.(rand(rng, 100), rand(rng, 100))
+weights = rand(rng, 100)
+tri10 = triangulate(points; weights, rng)
+vorn10 = voronoi(tri10; rng) # can also use clip/smooth here 
+
+# Clipped Voronoi example with a generic convex polygon
+points = 10randn(rng, 2, 100)
+weights = rand(rng, 100)
+circ = CircularArc((0.0, 5.0), (0.0, 5.0), (0.0, 0.0)) # clip to a circle 
+clip_points = [circ(t) for t in LinRange(0, 1, 100)]
+clip_vertices = [1:(length(clip_points)-1); 1]
+tri11 = triangulate(points; weights, rng)
+vorn11 = voronoi(tri11, clip=true, clip_polygon=(clip_points, clip_vertices), rng=rng)
+
 # Plotting 
-fig = Figure(fontsize = 42, size = (2800, 1480))
+fig = Figure(fontsize = 42, size = (2800, 2200))
 ax = Axis(fig[1, 1], title = "Unconstrained", width = 600, height = 600);            triplot!(ax, tri1)
 ax = Axis(fig[1, 2], title = "Voronoi", width = 600, height = 600);                  voronoiplot!(ax, vorn2)
 ax = Axis(fig[1, 3], title = "Clipped Voronoi", width = 600, height = 600);          voronoiplot!(ax, vorn3)
@@ -69,6 +89,9 @@ ax = Axis(fig[2, 1], title = "Constrained", width = 600, height = 600);         
 ax = Axis(fig[2, 2], title = "Disjoint Constrained", width = 600, height = 600);     triplot!(ax, tri6)
 ax = Axis(fig[2, 3], title = "Curve-Bounded", width = 600, height = 600);            triplot!(ax, tri7)
 ax = Axis(fig[2, 4], title = "Disjoint Curve-Bounded", width = 600, height = 600);   triplot!(ax, tri8)
+ax = Axis(fig[3, 1], title = "Weighted", width = 600, height = 600);                 triplot!(ax, tri9)
+ax = Axis(fig[3, 2], title = "Power Diagram", width = 600, height = 600);            voronoiplot!(ax, vorn10)
+ax = Axis(fig[3, 3], title = "Generic Clipped Voronoi", width = 600, height = 600);  voronoiplot!(ax, vorn11)
 
 readme_img = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "readme.png")
 @test_reference readme_img fig by = psnr_equality(10)

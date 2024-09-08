@@ -64,7 +64,7 @@ function _centroidal_smooth_itr(vorn::VoronoiTessellation, points, rng, predicat
     point_set = Set(get_polygon_points(vorn))
     tri = get_triangulation(vorn)
     for i in each_polygon_index(vorn)
-        if !is_boundary_node(tri, i)[1] || !(get_generator(vorn, i) ∈ point_set)
+        if !is_boundary_node(tri, i)[1] || (!isnothing(clip_polygon) && !(get_generator(vorn, i) ∈ point_set))
             dist = move_generator_to_centroid!(points, vorn, i)
             max_dist = max(max_dist, dist)::F
         end

@@ -16,7 +16,7 @@ Many features are available, some of these being:
 
 - Unconstrained and constrained Delaunay triangulations, supporting many types of domains.
 - Weighted Delaunay triangulations.
-- Computation of Voronoi tessellations, clipped Voronoi tessellations where the Voronoi tiles get clipped to the convex hull, and centroidal Voronoi tessellations where each Voronoi tile's generator is the tile's centroid.
+- Computation of Voronoi tessellations, clipped Voronoi tessellations where the Voronoi tiles get clipped to a convex polygon, and centroidal Voronoi tessellations where each Voronoi tile's generator is the tile's centroid.
 - Power diagrams.
 - Mesh refinement, with support for custom angle and area constraints, as well as refinement of curve-bounded domains.
 - Dynamic point insertion, point deletion, and segment insertion, amongst many other operations.
@@ -51,7 +51,7 @@ vorn2 = voronoi(tri1)
 vorn3 = voronoi(tri1, clip=true, predicates = ExactKernel())
 
 # Smoothed Voronoi 
-vorn4 = centroidal_smooth(vorn3, predicates = FastKernel())
+vorn4 = centroidal_smooth(vorn3; rng, predicates = FastKernel()) # or do voronoi(tri1, clip = true, smooth = true)
 
 # Constrained example with refinement 
 boundary_points = [(0.0, 0.0), (1.0, 0.0), (1.0, 0.3), (0.5, 0.3),
@@ -90,16 +90,36 @@ boundary_nodes = [[square], [[ellipse]], [[catmull_spl]], [[circle]], [[circle2]
 tri8 = triangulate(points; boundary_nodes)
 refine!(tri8; max_area=1e-2get_area(tri8)) # could also use find_polygon to help define a custom refinement function for each shape
 
+# Weighted triangulation example
+points = tuple.(rand(rng, 20), rand(rng, 20))
+weights = 3randn(rng, 20)
+tri9 = triangulate(points; weights, rng)
+
+# Power diagram example 
+vorn10 = voronoi(tri9; rng) # can also use clip/smooth here 
+
+# Clipped Voronoi example with a generic convex polygon
+points = 10randn(rng, 2, 100)
+weights = rand(rng, 100)
+circ = CircularArc((0.0, 2.0), (0.0, 2.0), (0.0, 0.0)) # clip to a circle 
+clip_points = [circ(t) for t in LinRange(0, 1, 100)]
+clip_vertices = [1:(length(clip_points)-1); 1]
+tri11 = triangulate(points; weights, rng)
+vorn11 = voronoi(tri11, clip=true, clip_polygon=(clip_points, clip_vertices), rng=rng)
+
 # Plotting 
-fig = Figure(fontsize = 42, size = (2800, 1480))
-ax = Axis(fig[1, 1], title="Unconstrained", width=600,height=600);            triplot!(ax, tri1)
-ax = Axis(fig[1, 2], title="Voronoi", width=600,height=600);                  voronoiplot!(ax, vorn2)
-ax = Axis(fig[1, 3], title="Clipped Voronoi", width=600,height=600);          voronoiplot!(ax, vorn3)
-ax = Axis(fig[1, 4], title="Centroidal Voronoi", width=600,height=600);       voronoiplot!(ax, vorn4)
-ax = Axis(fig[2, 1], title="Constrained", width=600,height=600);              triplot!(ax, tri5)
-ax = Axis(fig[2, 2], title="Disjoint Constrained", width=600,height=600);     triplot!(ax, tri6)
-ax = Axis(fig[2, 3], title="Curve-Bounded", width=600,height=600);            triplot!(ax, tri7)
-ax = Axis(fig[2, 4], title="Disjoint Curve-Bounded", width=600,height=600);   triplot!(ax, tri8)
+fig = Figure(fontsize = 42, size = (2800, 2200))
+ax = Axis(fig[1, 1], title = "Unconstrained", width = 600, height = 600);            triplot!(ax, tri1)
+ax = Axis(fig[1, 2], title = "Voronoi", width = 600, height = 600);                  voronoiplot!(ax, vorn2)
+ax = Axis(fig[1, 3], title = "Clipped Voronoi", width = 600, height = 600);          voronoiplot!(ax, vorn3)
+ax = Axis(fig[1, 4], title = "Centroidal Voronoi", width = 600, height = 600);       voronoiplot!(ax, vorn4)
+ax = Axis(fig[2, 1], title = "Constrained", width = 600, height = 600);              triplot!(ax, tri5)
+ax = Axis(fig[2, 2], title = "Disjoint Constrained", width = 600, height = 600);     triplot!(ax, tri6)
+ax = Axis(fig[2, 3], title = "Curve-Bounded", width = 600, height = 600);            triplot!(ax, tri7)
+ax = Axis(fig[2, 4], title = "Disjoint Curve-Bounded", width = 600, height = 600);   triplot!(ax, tri8)
+ax = Axis(fig[3, 1], title = "Weighted", width = 600, height = 600);                 triplot!(ax, tri9)
+ax = Axis(fig[3, 2], title = "Power Diagram", width = 600, height = 600);            voronoiplot!(ax, vorn10)
+ax = Axis(fig[3, 3], title = "Clipped Voronoi", width = 600, height = 600);          voronoiplot!(ax, vorn11)
 ```
 
 ![](readme.png)

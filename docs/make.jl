@@ -131,8 +131,10 @@ const _PAGES = [
         "Clipped Voronoi Tessellations" => [
             "Clipping to the Convex Hull" => "tutorials/clipped.md",
             "Clipping to a Rectangle" => "tutorials/clipped_rectangle.md",
+            "Clipping to a Generic Convex Polygon" => "tutorials/clipped_polygon.md",
         ],
         "Centroidal Voronoi Tessellations" => "tutorials/centroidal.md",
+        "Power Diagrams" => "tutorials/power.md",
         "Point Location" => "tutorials/point_location.md",
         "Nearest Neighbour Queries" => "tutorials/nearest.md",
         "Convex Hulls" => "tutorials/convex_hull.md",
