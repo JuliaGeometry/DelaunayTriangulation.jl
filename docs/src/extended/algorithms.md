@@ -89,8 +89,6 @@ Pages = ["src/data_structures/triangulation/methods/segments.jl"]
 
 ## Weighted Triangulations
 
-While weighted triangulations are not yet completely implemented in the package, there are some functions related to them in preparation.
-
 ```@autodocs 
 Modules = [DelaunayTriangulation]
 Pages = ["src/data_structures/triangulation/methods/weights.jl"]

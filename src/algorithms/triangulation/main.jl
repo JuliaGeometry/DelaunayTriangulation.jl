@@ -114,13 +114,6 @@ Here are some warnings to consider for some of the arguments.
     For curve-bounded domains, note that the triangulation produced from this function is really just an initial coarse discretisation of the true curved boundaries. You will need to 
     refine further, via [`refine!`](@ref), to improve the discretisation, or increase `coarse_n` below. See also [`polygonise`](@ref) for a more direct approach to discretising a boundary (which 
     might not give as high-quality meshes as you can obtain from [`refine!`](@ref) though, note).
-
-- `weights`
-
-!!! danger "Weighted triangulations"
-
-    Weighted triangulations are not yet fully implemented due to certain bugs with the implementation.
-
 """
 function triangulate(
         points::P;

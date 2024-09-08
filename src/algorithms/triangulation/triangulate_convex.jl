@@ -14,11 +14,6 @@ Triangulates the convex polygon `S`.
 - `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 - `kwargs...`: Additional keyword arguments passed to `Triangulation`.
 
-!!! note "Weighted triangulations"
-
-    While weighted triangulations are not yet supported from `triangulate` directly, they are supported through this `triangulate_convex`. In particular,
-    you can use the `weights` keyword argument to pass the weights of the vertices in `points`.
-
 # Output 
 - `tri::Triangulation`: The triangulated polygon. 
 """
