@@ -39,7 +39,7 @@ fig
 # weight of $-10$.
 w = Observable(-10.0)
 weights = @lift (wts = zeros(length(points)); wts[10] = $w; wts)
-tri = @lift tri = triangulate(points; weights = $weights)
+tri = @lift triangulate(points; weights = $weights)
 weight_itr_base = LinRange(-10, 10, 30*5)
 weight_itr = vcat(weight_itr_base, reverse(weight_itr_base))
 title_obs = lift(w -> L"w_{10} = %$(round(w, sigdigits = 4))", w)

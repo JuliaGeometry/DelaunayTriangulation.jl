@@ -431,7 +431,7 @@ end
     circ = CircularArc((0.75, 0.5), (0.75, 0.5), (0.5, 0.5))
     t = LinRange(0, 1, 20)
     clip_points = circ.(t)[begin:end-1]
-    clip_vertices = [1:(length(clip_pts)); 1]
+    clip_vertices = [1:(length(clip_points)); 1]
     clip_polygon = (clip_points, clip_vertices)
     weights = [6.12365, -1.50081, 0.853172, 6.57105, 0.863264, 10.1487, -5.45746, 5.78284, 4.70237, 2.69588]
     tri = triangulate(pts; weights)

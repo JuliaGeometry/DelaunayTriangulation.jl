@@ -36,6 +36,7 @@ number_type
 number_type(x) = number_type(typeof(x))
 number_type(::Type{T}) where {T <: AbstractArray} = number_type(eltype(T))
 number_type(::Type{<:NTuple{N, T}}) where {N, T} = number_type(T)
+number_type(::Type{<:NTuple{0}}) = Any
 number_type(::Type{Tuple{}}) = Any
 number_type(::Type{T}) where {T} = T
 

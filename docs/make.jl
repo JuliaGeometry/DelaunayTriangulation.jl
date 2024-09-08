@@ -186,6 +186,7 @@ const _PAGES = [
         "Voronoi Tessellations" => "math/voronoi.md",
         "Clipped Voronoi Tessellations" => "math/clipped.md",
         "Centroidal Voronoi Tessellations" => "math/centroidal.md",
+        "Power Diagrams" => "math/power.md",
     ],
     "Example Applications" => [
         "Overview" => "applications/overview.md",
