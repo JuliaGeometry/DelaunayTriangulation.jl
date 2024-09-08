@@ -880,7 +880,7 @@ end
 
 
 ## TODO: Implement a brute-force DT.VoronoiTessellation that we can compare with
-function validate_tessellation(vorn::DT.VoronoiTessellation; check_convex = true, check_adjacent = true, predicates::DT.AbstractPredicateKernel = DT.AdaptiveKernel())
+function validate_tessellation(vorn::DT.VoronoiTessellation; check_convex = true, check_area = true, check_adjacent = true, predicates::DT.AbstractPredicateKernel = DT.AdaptiveKernel())
     tri = DT.get_triangulation(vorn)
     for (i, p) in DT.get_generators(vorn)
         flag = get_point(tri, i) == get_generator(vorn, i) == p
@@ -1003,7 +1003,7 @@ function validate_tessellation(vorn::DT.VoronoiTessellation; check_convex = true
             end
         end
     end
-    if isempty(DT.get_unbounded_polygons(vorn))
+    if isempty(DT.get_unbounded_polygons(vorn)) && check_area
         A = 0.0
         for i in each_polygon_index(vorn)
             A += get_area(vorn, i)

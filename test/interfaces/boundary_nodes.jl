@@ -26,6 +26,9 @@ global idx = DT.𝒢
     @test DT.has_multiple_sections(bn1)
     @test DT.has_multiple_sections(bn2)
     @test !DT.has_multiple_sections(bn3)
+
+    @test !DT.has_multiple_curves((1, 2, 3, 4, 1))
+    @test !DT.has_multiple_sections((1, 2, 3, 4, 1))
 end
 
 @testset "Getting number of sections/curves" begin
@@ -40,6 +43,8 @@ end
     @test DT.num_boundary_edges(bn1[1][1]) == 1
     @test DT.num_boundary_edges(bn2[2]) == 3
     @test DT.num_boundary_edges(Int[]) == 0
+    @test DT.num_boundary_edges((1, 2, 3, 4, 1)) == 4
+    @test DT.num_boundary_edges(()) == 0
 end
 
 @testset "Getting boundary nodes" begin

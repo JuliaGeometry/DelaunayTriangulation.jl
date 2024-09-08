@@ -1,14 +1,15 @@
 @doc """
-    get_nearest_neighbour(tri_or_vor, q; power = true, kwargs...)
+    get_nearest_neighbour(tri_or_vor, q; kwargs...)
 
 Get the index of the nearest neighbour of `q` in `tri_or_vor`. 
+
+For power diagrams, distance is measured using [`get_power_distance`](@ref) (with `q` being assigned zero weight).
 
 # Arguments 
 - `tri_or_vor`: A [`Triangulation`](@ref) or [`VoronoiTessellation`](@ref).
 - `q`: The point to be located.
 
 # Keyword Arguments
-- `power = true`: If `true`, the power distance is used. Otherwise, the Euclidean distance is used.
 - `kwargs...`: Keyword arguments passed to [`find_triangle`](@ref).
 
 # Output 
@@ -21,17 +22,17 @@ get_nearest_neighbour(tri::Triangulation, q; kwargs...) = jump_to_voronoi_polygo
 function find_triangle(vor::VoronoiTessellation, q; kwargs...)
     return jump_to_voronoi_polygon(get_triangulation(vor), q; kwargs...)
 end
-function jump_to_voronoi_polygon(tri::Triangulation, q; power=true, kwargs...)
+function jump_to_voronoi_polygon(tri::Triangulation, q; kwargs...)
     V = find_triangle(tri, q; kwargs...)
     qx, qy = getxy(q)
     V = sort_triangle(V)
     i, j, k = triangle_vertices(V)
     a, b = get_point(tri, i, j)
-    daq² = is_weighted(tri) && power ? get_power_distance(tri, i, q) : dist_sqr(a, q)
-    dbq² = is_weighted(tri) && power ? get_power_distance(tri, j, q) : dist_sqr(b, q)
+    daq² = is_weighted(tri) ? get_power_distance(tri, i, q) : dist_sqr(a, q)
+    dbq² = is_weighted(tri) ? get_power_distance(tri, j, q) : dist_sqr(b, q)
     if !is_ghost_vertex(k)
         c = get_point(tri, k)
-        dcq² = is_weighted(tri) && power ? get_power_distance(tri, k, q) : dist_sqr(c, q)
+        dcq² = is_weighted(tri) ? get_power_distance(tri, k, q) : dist_sqr(c, q)
     else
         dcq² = typemax(number_type(tri))
     end
@@ -49,7 +50,7 @@ function jump_to_voronoi_polygon(tri::Triangulation, q; power=true, kwargs...)
         # current_dist, current_idx = compare_distance(current_dist, current_idx, points, v, qx, qy)
         # Can't use compare_distance it only uses the Euclidean distance
         r = get_point(tri, v)
-        pv_dist = is_weighted(tri) && power ? get_power_distance(tri, v, q) : dist_sqr(r, q)
+        pv_dist = is_weighted(tri) ? get_power_distance(tri, v, q) : dist_sqr(r, q)
         if pv_dist < current_dist
             current_dist = pv_dist
             current_idx = v
@@ -66,7 +67,7 @@ function jump_to_voronoi_polygon(tri::Triangulation, q; power=true, kwargs...)
             # current_dist, current_idx = compare_distance(current_dist, current_idx, points, v, qx, qy)
             # Can't use compare_distance it only uses the Euclidean distance
             r = get_point(tri, v)
-            pv_dist = is_weighted(tri) && power ? get_power_distance(tri, v, q) : dist_sqr(r, q)
+            pv_dist = is_weighted(tri) ? get_power_distance(tri, v, q) : dist_sqr(r, q)
             if pv_dist < current_dist
                 current_dist = pv_dist
                 current_idx = v

@@ -189,6 +189,13 @@ with the first and last vertices equal. To obtain the coordinates, see [`get_pol
 get_polygon(vor::VoronoiTessellation, i) = get_polygons(vor)[i]
 
 """
+    has_polygon(vor::VoronoiTessellation, i) -> Bool
+
+Returns `true` if the Voronoi tessellation `vor` has a polygon with index `i`.
+"""
+has_polygon(vor::VoronoiTessellation, i) = haskey(get_polygons(vor), i)
+
+"""
     get_circumcenter_to_triangle(vor::VoronoiTessellation, i) -> Triangle
 
 Gets the triangle associated with the `i`th circumcenter. The triangle is sorted so that the minimum vertex is last.
