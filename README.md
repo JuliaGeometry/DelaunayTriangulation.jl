@@ -37,8 +37,8 @@ If you would like to make an issue or contribute, please see the [CONTRIBUTING.m
 Here is a quick example of some ways the package can be used. As mentioned, see the docs for many examples.
 
 ```julia
-# using Pkg; Pkg.add(["DelaunayTriangulation", "CairoMakie"])
-using DelaunayTriangulation, CairoMakie
+# using Pkg; Pkg.add(["DelaunayTriangulation", "CairoMakie", "StableRNGs"])
+using DelaunayTriangulation, CairoMakie, StableRNGs
 
 # Unconstrained 
 points = rand(2, 50)
@@ -91,7 +91,6 @@ tri8 = triangulate(points; boundary_nodes)
 refine!(tri8; max_area=1e-2get_area(tri8)) # could also use find_polygon to help define a custom refinement function for each shape
 
 # Weighted triangulation example
-using StableRNGs
 rng = StableRNG(1) # You can pass rngs for reproducibility. Alternatively, just use Random.seed!(n)
 points = tuple.(rand(rng, 20), rand(rng, 20))
 weights = 3randn(rng, 20)
