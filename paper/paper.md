@@ -15,15 +15,15 @@ authors:
 affiliations:
     - name: Department of Mathematics, Imperial College London, UK
       index: 1
-date: 28 July 2024
+date: 10 September 2024
 bibliography: paper.bib
 ---
 
 # Summary 
 
-Given a set of points $\mathcal P$, edges $\mathcal E$, and piecewise linear boundaries $\mathcal B$ together defining some domain $\Omega$, a _Delaunay triangulation_ is a subdivision of this domain into triangles. The vertices of the triangles come from $\mathcal P$, and each of the edges in $\mathcal E$ and $\mathcal B$ is present as an edge of some triangle [@cheng2013delaunay; @aurenhammer2013voronoi]. A related geometric structure is the _Voronoi tessellation_ that partitions the plane into convex polygons for each $p \in \mathcal P$ such that, for a given polygon, each point in that polygon is closer to the associated polygon's point than to any other $q \in \mathcal P$ [@cheng2013delaunay; @aurenhammer2013voronoi].
+DelaunayTriangulation.jl is a feature-rich Julia [@bezanson2017julia] package for computing Delaunay triangulations and Voronoi tessellations. The package, amongst many other features, supports unconstrained and constrained triangulations, mesh refinement, clipped and centroidal Voronoi tessellations, power diagrams, and dynamic updates. Thanks to the speed and genericity of Julia, the package is both performant and robust---making use of AdaptivePredicates.jl [@churavy2024adaptive; @shewchuk1997adaptive] and ExactPredicates.jl [@lairez2024exact] for computing predicates with robust arithmetic---while still allowing for generic representations of geometric primitives.
 
-DelaunayTriangulation.jl is a feature-rich Julia [@bezanson2017julia] package for computing Delaunay triangulations and Voronoi tessellations. The package, amongst many other features, supports constrained triangulations, mesh refinement, centroidal Voronoi tessellations, and dynamic updates. Thanks to the speed and genericity of Julia, the package is both performant and robust---making use of AdaptivePredicates.jl [@churavy2024adaptive; @shewchuk1997adaptive] and ExactPredicates.jl [@lairez2024exact] for computing predicates with robust arithmetic---while still allowing for generic representations of geometric primitives.
+Given a set of points $\mathcal P$, edges $\mathcal E$, and piecewise linear boundaries $\mathcal B$ together defining some domain $\Omega$, a _Delaunay triangulation_ is a subdivision of this domain into triangles. The vertices of the triangles come from $\mathcal P$, and each of the edges in $\mathcal E$ and $\mathcal B$ are present as an edge of some triangle [@cheng2013delaunay; @aurenhammer2013voronoi]. The boundaries $\mathcal B$ may also be given as parametric curves, in which case they are discretised until they accurately approximate the curved boundary [@gosselin2009delaunay]. A related geometric structure is the _Voronoi tessellation_ that partitions the plane into convex polygons for each $p \in \mathcal P$ such that, for a given polygon, each point in that polygon is closer to the associated polygon's point than to any other $q \in \mathcal P$ [@cheng2013delaunay; @aurenhammer2013voronoi]. Weighted triangulations and power diagrams are generalisations of these structures that allow for the inclusion of weights associated with the points [@cheng2013delaunay].
 
 # Statement of Need 
 
