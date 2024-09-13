@@ -33,7 +33,7 @@ end
     w3 = DT.ZeroWeight()
     @test DT.get_weight(w1, 1) == w1[1]
     @test DT.get_weight(w1, ()) == 0.0
-    @test DT.get_weight(w1, (1.0, 3.0, 4.0)) == 4.0 
+    @test DT.get_weight(w1, (1.0, 3.0, 4.0)) == 4.0
     @test DT.get_weight(w2, 1) == w2[1]
     @test DT.get_weight(w2, ()) === 0.0f0
     @test DT.get_weight(w2, (1.0, 3.0, 4.0)) == 4.0f0
@@ -54,11 +54,11 @@ end
 @testset "is_weighted" begin
     tri = Triangulation(rand(2, 10))
     @test !DT.is_weighted(tri)
-    tri = Triangulation(rand(2, 10); weights = rand(10))
+    tri = Triangulation(rand(2, 10); weights=rand(10))
     @test DT.is_weighted(tri)
-    tri = Triangulation(rand(2, 10); weights = DT.ZeroWeight())
+    tri = Triangulation(rand(2, 10); weights=DT.ZeroWeight())
     @test !DT.is_weighted(tri)
-    tri = Triangulation(rand(2, 10); weights = zeros(Float32, 10))
+    tri = Triangulation(rand(2, 10); weights=zeros(Float32, 10))
     @test DT.is_weighted(tri)
 end
 
@@ -135,15 +135,15 @@ end
     _weights[58] = weights[2]
     _weights[498] = weights[3]
     _weights[5] = weights[4]
-    tri = Triangulation(_points; weights = _weights)
+    tri = Triangulation(_points; weights=_weights)
     d = DT.get_distance_to_witness_plane(tri, 5, (137, 58, 498))
     @test d ≈ -2.129523129725314
     @test DT.get_distance_to_witness_plane(tri, 5, (137, 58, 498)) ≈
-        DT.get_distance_to_witness_plane(tri, 5, (58, 137, 498)) ≈
-        DT.get_distance_to_witness_plane(tri, 5, (498, 58, 137)) ≈
-        DT.get_distance_to_witness_plane(tri, 5, (137, 498, 58)) ≈
-        DT.get_distance_to_witness_plane(tri, 5, (58, 498, 137)) ≈
-        DT.get_distance_to_witness_plane(tri, 5, (498, 137, 58))
+          DT.get_distance_to_witness_plane(tri, 5, (58, 137, 498)) ≈
+          DT.get_distance_to_witness_plane(tri, 5, (498, 58, 137)) ≈
+          DT.get_distance_to_witness_plane(tri, 5, (137, 498, 58)) ≈
+          DT.get_distance_to_witness_plane(tri, 5, (58, 498, 137)) ≈
+          DT.get_distance_to_witness_plane(tri, 5, (498, 137, 58))
     _points[5] = (-3.9, 2.01)
     _weights[5] = -15.0
     d = DT.get_distance_to_witness_plane(tri, 5, (137, 58, 498))
@@ -228,8 +228,8 @@ end
         for i in 3:10
             for j in 3:10
                 tri = triangulate_rectangle(0, 10, 0, 10, i, j)
-                tri = triangulate(get_points(tri); weights = zeros(i * j))
-                @test validate_triangulation(tri) 
+                tri = triangulate(get_points(tri); weights=zeros(i * j))
+                @test validate_triangulation(tri)
                 validate_statistics(tri)
             end
         end
@@ -249,7 +249,7 @@ end
         for i in 3:10
             for j in 3:10
                 tri = triangulate_rectangle(0, 10, 0, 10, i, j)
-                tri = triangulate(get_points(tri); weights = 10randn() * ones(i * j))
+                tri = triangulate(get_points(tri); weights=10randn() * ones(i * j))
                 @test validate_triangulation(tri) # Why is this failing sometimes? Is validate not branching at weighted triangulations?
                 (i == j == 10) || validate_statistics(tri)
             end
@@ -278,15 +278,15 @@ end
 end
 
 @testset "Point location" begin
-    for fi in 1:NUM_CWEGT 
+    for fi in 1:NUM_CWEGT
         tri, submerged, nonsubmerged, weights, S = get_convex_polygon_weighted_example(fi)
-        for i in each_solid_vertex(tri) 
+        for i in each_solid_vertex(tri)
             V = find_triangle(tri, get_point(tri, i))
             cert = DT.point_position_relative_to_triangle(tri, V, i)
             @test DT.is_on(cert)
         end
         for V in each_solid_triangle(tri)
-            p, q, r  = get_point(tri, triangle_vertices(V)...)
+            p, q, r = get_point(tri, triangle_vertices(V)...)
             c = DT.triangle_centroid(p, q, r)
             T = find_triangle(tri, c)
             cert = DT.point_position_relative_to_triangle(tri, T, c)
@@ -301,7 +301,7 @@ end
             @test DT.is_on(cert)
         end
         for V in each_solid_triangle(tri)
-            p, q, r  = get_point(tri, triangle_vertices(V)...)
+            p, q, r = get_point(tri, triangle_vertices(V)...)
             c = DT.triangle_centroid(p, q, r)
             T = find_triangle(tri, c)
             cert = DT.point_position_relative_to_triangle(tri, T, c)
@@ -326,7 +326,7 @@ end
 end
 
 @testset "Random" begin
-    for fi in 1:NUM_WEGT 
+    for fi in 1:NUM_WEGT
         @info "Testing triangulation of a random weighted set: $fi"
         tri, submerged, nonsubmerged, weights = get_weighted_example(fi)
         rtri = triangulate(get_points(tri); weights)
@@ -352,7 +352,7 @@ end
         for j in 4:size(points, 2)
             add_point!(rtri, points[:, j]..., weights[j])
         end
-        convex_hull!(rtri) 
+        convex_hull!(rtri)
         DT.compute_representative_points!(rtri)
         DT.clear_empty_features!(rtri)
         DT.construct_polygon_hierarchy!(DT.get_polygon_hierarchy(rtri), get_points(rtri))
@@ -373,3 +373,60 @@ end
         @test DT.is_weighted(rtri)
     end
 end
+
+#=
+@testset "A case where all lifted points lie on a plane" begin
+    for _ in 1:10000
+        points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (1 / 2, 1 / 2)]
+        weights = [0.0, 0.0, 0.0, 0.0, -0.5]
+        tri = triangulate(points; weights)
+        @test DT.validate_triangulation(tri)
+    end
+end
+
+Random.seed!(1)
+points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (1 / 2, 1 / 2)]
+weights = [0.0, 0.0, 0.0, 0.0, -0.5]
+tri = triangulate(points; weights, insertion_order = [1, 2, 3, 4])
+
+new_point = 5 
+predicates = AdaptiveKernel()
+point_indices = each_solid_vertex(tri)
+m = default_num_samples(length(point_indices))
+try_points = ()
+rng = Random.default_rng()
+initial_search_point = integer_type(tri)(select_initial_point(tri, new_point; point_indices, m, try_points, rng))
+update_representative_point = false
+store_event_history = Val(false)
+event_history = nothing
+concavity_protection = false
+V = find_triangle(
+    tri,
+    get_point(tri, new_point);
+    m = nothing,
+    point_indices = nothing,
+    try_points = nothing,
+    k = initial_search_point,
+    concavity_protection,
+    predicates,
+    rng,
+)
+peek = Val(false)
+int_flag = new_point isa Integer
+q = get_point(tri, new_point)
+cert = point_position_relative_to_circumcircle(predicates, tri, V, new_point) # redirects to point_position_relative_to_witness_plane
+flag = point_position_relative_to_triangle(predicates, tri, V, q)
+I = integer_type(tri)
+_new_point = is_true(peek) ? new_point : I(new_point)
+_new_point = is_true(peek) ? num_points(tri) + 1 : new_point # If we are peeking, then we need to use the number of points in the triangulation as the index for the new point since we don't actually insert the point
+i, j, k = triangle_vertices(V)
+ℓ₁ = get_adjacent(tri, j, i)
+ℓ₂ = get_adjacent(tri, k, j)
+ℓ₃ = get_adjacent(tri, i, k)
+!is_true(peek) && delete_triangle!(tri, V; protect_boundary = true, update_ghost_edges = false)
+is_true(store_event_history) && delete_triangle!(event_history, V)
+
+
+add_point!(tri, 5)
+validate_triangulation(tri)
+=#
