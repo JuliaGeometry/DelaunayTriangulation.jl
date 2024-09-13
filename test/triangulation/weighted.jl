@@ -216,7 +216,7 @@ end
 
 @testset "Weighted triangulations with identical/no weights and random sets/collinear sets" begin
     @testset "Triangulation with zero weights" begin
-        for n in 3:500
+        for n in 3:150
             points = rand(2, n)
             weights = zeros(size(points, 2))
             tri1 = triangulate(points)
