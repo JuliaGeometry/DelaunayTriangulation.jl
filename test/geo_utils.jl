@@ -855,12 +855,12 @@ end
     @test DT.intersection_of_edge_and_bisector_ray(a, b, c)[2] == (-5.0, 5.0)
 
     a, b, c = (-7.0, 3.0), (-5.0, 7.0), (-4.0, 4.0)
-    cert, m = DT.intersection_of_edge_and_bisector_ray(a, b, c; project=true)
+    cert, m = DT.intersection_of_edge_and_bisector_ray(a, b, c; project = true)
     @test m == (-6.0, 5.0)
     c = (-3.0, 5.0)
-    cert, m = DT.intersection_of_edge_and_bisector_ray(a, b, c; project=true)
+    cert, m = DT.intersection_of_edge_and_bisector_ray(a, b, c; project = true)
     @test m == (-5.4, 6.2)
-    @test dot(b .- a, m .- c) ≈ 0.0 atol=1e-4
+    @test dot(b .- a, m .- c) ≈ 0.0 atol = 1.0e-4
 end
 
 @testset "classify_and_compute_segment_intersection" begin
@@ -1283,12 +1283,12 @@ end
     p, q = (-6.0, 4.0), (-3.0, 2.0)
     r = (-3.0, 4.0)
     c = DT.project_onto_line(p, q, r)
-    @test dot(p .- q, r .- c) ≈ 0.0 atol=1e-4
+    @test dot(p .- q, r .- c) ≈ 0.0 atol = 1.0e-4
     @test c ⪧ (-3.9230769230769234, 2.6153846153846154)
     cc = DT.project_onto_line(q, p, r)
     @test c ⪧ (-3.9230769230769234, 2.6153846153846154)
     cc = DT.project_onto_line(p, q, c)
-    @test c ⪧ cc 
+    @test c ⪧ cc
     cc = DT.project_onto_line(p, q, p)
     @test p ⪧ cc
     cc = DT.project_onto_line(p, q, q)
@@ -1296,7 +1296,7 @@ end
     p, q = (-6.0, 4.0), (-2.5, 4.0)
     r = (-3.0, 5.0)
     c = DT.project_onto_line(p, q, r)
-    @test dot(p .- q, r .- c) ≈ 0.0 atol=1e-4
+    @test dot(p .- q, r .- c) ≈ 0.0 atol = 1.0e-4
     @test c ⪧ (-3.0, 4.0)
 
     p, q, r = (-7.0, 7.0), (-8.0, 5.5), (-6.0, 5.0)

@@ -76,9 +76,9 @@ points = 10randn(rng, 2, 100)
 weights = rand(rng, 100)
 circ = CircularArc((0.0, 5.0), (0.0, 5.0), (0.0, 0.0)) # clip to a circle 
 clip_points = [circ(t) for t in LinRange(0, 1, 100)]
-clip_vertices = [1:(length(clip_points)-1); 1]
+clip_vertices = [1:(length(clip_points) - 1); 1]
 tri11 = triangulate(points; weights, rng)
-vorn11 = voronoi(tri11, clip=true, clip_polygon=(clip_points, clip_vertices), rng=rng)
+vorn11 = voronoi(tri11, clip = true, clip_polygon = (clip_points, clip_vertices), rng = rng)
 
 # Plotting 
 fig = Figure(fontsize = 42, size = (2800, 2200))

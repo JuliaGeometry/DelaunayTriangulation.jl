@@ -139,7 +139,7 @@ function Base.:(==)(tri1::Triangulation, tri2::Triangulation)
     for i in 1:length(rep1)
         p1 = get_representative_point_coordinates(tri1, i)
         p2 = get_representative_point_coordinates(tri2, i)
-        !isapprox([getx(p1), gety(p1)], [getx(p2), gety(p2)], atol=1e-10) && return false
+        !isapprox([getx(p1), gety(p1)], [getx(p2), gety(p2)], atol = 1.0e-10) && return false
     end
     get_polygon_hierarchy(tri1) ≠ get_polygon_hierarchy(tri2) && return false
     get_boundary_nodes(tri1) ≠ get_boundary_nodes(tri2) && return false

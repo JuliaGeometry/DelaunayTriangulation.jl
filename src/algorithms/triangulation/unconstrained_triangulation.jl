@@ -296,10 +296,10 @@ Determines whether to enter the cavity in `tri` through the edge `(i, j)` when i
 - `true` if the cavity should be entered, and `false` otherwise. See also [`dig_cavity!`](@ref) and [`point_position_relative_to_circumcircle`](@ref).
 """
 function enter_cavity(tri::Triangulation, r, i, j, ℓ, predicates::AbstractPredicateKernel = AdaptiveKernel())
-    contains_segment(tri, i, j)  && return false 
+    contains_segment(tri, i, j)  && return false
     if is_ghost_vertex(ℓ)
         cert = point_position_relative_to_circumcircle(tri, j, i, ℓ, r)
-    else 
+    else
         cert = point_position_relative_to_circumcircle(tri, r, i, j, ℓ)
     end
     return is_inside(cert)

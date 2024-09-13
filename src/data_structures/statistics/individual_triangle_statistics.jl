@@ -651,10 +651,10 @@ function triangle_orthocenter(p, q, r, a, b, c)
     px, py = getxy(p)
     qx, qy = getxy(q)
     rx, ry = getxy(r)
-    d11 = dist_sqr(p, r) + c - a 
-    d12 = py - ry 
-    d21 = dist_sqr(q, r) + c - b 
-    d22 = qy - ry 
+    d11 = dist_sqr(p, r) + c - a
+    d12 = py - ry
+    d21 = dist_sqr(q, r) + c - b
+    d22 = qy - ry
     ox = rx + (d11 * d22 - d12 * d21) / (4A)
     e11 = px - rx
     e12 = d11
@@ -691,5 +691,5 @@ function triangle_orthoradius_squared(p, q, r, a, b, c)
     e22 = d21
     t1 = d11 * d22 - d12 * d21
     t2 = e11 * e22 - e12 * e21
-    return (t1^2 + t2^2)/(16A^2) - c
+    return (t1^2 + t2^2) / (16A^2) - c
 end

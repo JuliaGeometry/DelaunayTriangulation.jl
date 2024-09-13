@@ -33,10 +33,10 @@ pvorn = voronoi(tri; rng)
 # Let's compare the power diagram to its unweighted counterpart.
 vorn = voronoi(triangulate(points; rng); rng)
 fig = Figure()
-ax1 = Axis(fig[1, 1], title="Unweighted", width=300, height=400)
-ax2 = Axis(fig[1, 2], title="Weighted", width=300, height=400)
-voronoiplot!(ax1, vorn, show_generators=true, colormap=:matter, strokewidth=4, clip=(-5, 5, -5, 10))
-voronoiplot!(ax2, pvorn, show_generators=true, colormap=:matter, strokewidth=4, clip=(-5, 5, -5, 10))
+ax1 = Axis(fig[1, 1], title = "Unweighted", width = 300, height = 400)
+ax2 = Axis(fig[1, 2], title = "Weighted", width = 300, height = 400)
+voronoiplot!(ax1, vorn, show_generators = true, colormap = :matter, strokewidth = 4, clip = (-5, 5, -5, 10))
+voronoiplot!(ax2, pvorn, show_generators = true, colormap = :matter, strokewidth = 4, clip = (-5, 5, -5, 10))
 resize_to_layout!(fig)
 fig
 @test_reference joinpath(fig_path, "power_diagram_ex_1.png") fig #src
@@ -48,27 +48,28 @@ fig
 
 # We can easily look at the affect of the weights on the power diagram.
 A, B, C, D, E, F, G, H,
-I, J, K, L, M, N = (-1.0, 3.0), (1.0, 3.0),
-(2.0, 2.0), (2.0, 0.0), (1.0, -1.0), (-1.0, -1.0),
-(-2.0, 0.0), (-2.0, 2.0), (-1.0, 2.0),
-(0.0, 1.5), (1.0, 2.5), (-1.0, 0.5),
-(1.0, 0.0), (1.5, 1.0)
+    I, J, K, L, M, N = (-1.0, 3.0), (1.0, 3.0),
+    (2.0, 2.0), (2.0, 0.0), (1.0, -1.0), (-1.0, -1.0),
+    (-2.0, 0.0), (-2.0, 2.0), (-1.0, 2.0),
+    (0.0, 1.5), (1.0, 2.5), (-1.0, 0.5),
+    (1.0, 0.0), (1.5, 1.0)
 points = [A, B, C, D, E, F, G, H, I, J, K, L, M, N]
 w = Observable(-10.0)
 weights = @lift (wts = zeros(length(points)); wts[10] = $w; wts)
-tri = @lift tri = triangulate(points; weights=$weights)
+tri = @lift tri = triangulate(points; weights = $weights)
 vorn = @lift voronoi($tri)
 weight_itr_base = LinRange(-10, 10, 30 * 5)
 weight_itr = vcat(weight_itr_base, reverse(weight_itr_base))
 title_obs = lift(w -> L"w_{10} = %$(round(w, sigdigits = 4))", w)
-fig, ax, sc = voronoiplot(vorn,
-    axis=(title=title_obs, titlealign=:left),
-    figure=(fontsize=24,),
+fig, ax, sc = voronoiplot(
+    vorn,
+    axis = (title = title_obs, titlealign = :left),
+    figure = (fontsize = 24,),
     clip = (-4, 4, -4, 4),
-    color = [:red, :blue, :green, :purple, :orange, :yellow, :cyan, :white, :black, :magenta, :gray, :brown, :pink, :lightblue]
+    color = [:red, :blue, :green, :purple, :orange, :yellow, :cyan, :white, :black, :magenta, :gray, :brown, :pink, :lightblue],
 )
-scatter!(ax, [J], color=:red, markersize=13)
-record(fig, "varying_weight_power.mp4", weight_itr; framerate=30) do _w
+scatter!(ax, [J], color = :red, markersize = 13)
+record(fig, "varying_weight_power.mp4", weight_itr; framerate = 30) do _w
     w[] = _w
 end;
 

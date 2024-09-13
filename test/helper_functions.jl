@@ -679,12 +679,12 @@ function validate_statistics(tri::DT.Triangulation, stats = statistics(tri))
     largest_area = maximum([areas[triangle_vertices(T)] for T in each_solid_triangle(tri)])
     smallest_radius_edge_ratio = minimum([radius_edge_ratio[triangle_vertices(T)] for T in each_solid_triangle(tri)])
     largest_radius_edge_ratio = maximum([radius_edge_ratio[triangle_vertices(T)] for T in each_solid_triangle(tri)])
-    @test DT.get_smallest_angle(stats) ≈ smallest_angle rtol = 1.0e-2 atol=1e-2
-    @test DT.get_largest_angle(stats) ≈ largest_angle rtol = 1.0e-2 atol=1e-2
-    @test DT.get_smallest_area(stats) ≈ smallest_area rtol = 1.0e-2 atol=1e-2
-    @test DT.get_largest_area(stats) ≈ largest_area rtol = 1.0e-2 atol=1e-2
-    @test DT.get_smallest_radius_edge_ratio(stats) ≈ smallest_radius_edge_ratio rtol = 1.0e-2 atol=1e-2
-    @test DT.get_largest_radius_edge_ratio(stats) ≈ largest_radius_edge_ratio rtol = 1.0e-2 atol=1e-2
+    @test DT.get_smallest_angle(stats) ≈ smallest_angle rtol = 1.0e-2 atol = 1.0e-2
+    @test DT.get_largest_angle(stats) ≈ largest_angle rtol = 1.0e-2 atol = 1.0e-2
+    @test DT.get_smallest_area(stats) ≈ smallest_area rtol = 1.0e-2 atol = 1.0e-2
+    @test DT.get_largest_area(stats) ≈ largest_area rtol = 1.0e-2 atol = 1.0e-2
+    @test DT.get_smallest_radius_edge_ratio(stats) ≈ smallest_radius_edge_ratio rtol = 1.0e-2 atol = 1.0e-2
+    @test DT.get_largest_radius_edge_ratio(stats) ≈ largest_radius_edge_ratio rtol = 1.0e-2 atol = 1.0e-2
     @test DT.get_smallest_radius_edge_ratio(stats) ≥ 1 / sqrt(3) - 0.1
     @test DT.get_smallest_angle(stats) ≤ deg2rad(60) + 0.01
 
@@ -705,13 +705,13 @@ function validate_statistics(tri::DT.Triangulation, stats = statistics(tri))
 
         r² = DT.triangle_orthoradius_squared(tri, T)
         if !DT.is_weighted(tri)
-            cr2 = DT.triangle_circumradius(get_point(tri,T...)...)^2 
+            cr2 = DT.triangle_circumradius(get_point(tri, T...)...)^2
             @test r² ≈ cr2 rtol = 1.0e-4 atol = 1.0e-2
         end
-        @test  r²  ≈ r1 
-        @test  r²  ≈ r2
-        @test  r²  ≈ r3
-        @test DT.dist_sqr(get_point(tri, i, o)...) - DT.get_weight(tri, i) - r² ≈ 0 atol=1e-2
+        @test  r² ≈ r1
+        @test  r² ≈ r2
+        @test  r² ≈ r3
+        @test DT.dist_sqr(get_point(tri, i, o)...) - DT.get_weight(tri, i) - r² ≈ 0 atol = 1.0e-2
     end
 end
 
@@ -2334,7 +2334,7 @@ function Random.rand(rng::Random.AbstractRNG, v::Random.SamplerTrivial{<:Triangl
     wy = u₁ * ay + u₂ * by
     return (px + wx, py + wy)
 end
-Random.eltype(::Type{T}) where {P, T<:Triangulation{P}} = NTuple{2, DT.number_type(P)}
+Random.eltype(::Type{T}) where {P, T <: Triangulation{P}} = NTuple{2, DT.number_type(P)}
 function Random.Sampler(::Type{<:Random.AbstractRNG}, tri::Triangulation, ::Random.Repetition)
     V = DT.triangle_type(tri)
     F = DT.number_type(tri)
@@ -2378,7 +2378,7 @@ function Random.rand!(rng::Random.AbstractRNG, a::AbstractVector, spl::Random.Sa
         p, q, r = get_point(tri, i, j, k)
         _spl = TriangleSampler(p, q, r)
         m = ntri[idx]
-        rand!(rng, view(a, (cur_idx+1):(cur_idx+m)), _spl)
+        rand!(rng, view(a, (cur_idx + 1):(cur_idx + m)), _spl)
         cur_idx += m
     end
     return a

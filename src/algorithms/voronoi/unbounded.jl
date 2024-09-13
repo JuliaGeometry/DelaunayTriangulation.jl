@@ -32,7 +32,7 @@ function initialise_voronoi_tessellation(tri::Tr) where {Tr <: Triangulation}
                 p, q, r = get_point(tri, u, v, w)
                 A = triangle_area(p, q, r)
                 cx, cy = triangle_circumcenter(p, q, r, A)
-            else 
+            else
                 cx, cy = triangle_orthocenter(tri, V)
             end
             if any(isinf, (cx, cy)) && INF_WARN[]

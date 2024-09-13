@@ -147,7 +147,7 @@ function _get_ray(vorn::VoronoiTessellation, i, ghost_vertex, predicates::Abstra
     end
     if is_weighted(vorn)
         m = project_onto_line(p, q, r)
-    else 
+    else
         m = midpoint(p, q)
     end
     mx, my = getxy(m)
@@ -310,7 +310,7 @@ Use the keyword arguments `predicates` to determine how predicates are computed.
 function get_bounded_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box; predicates::AbstractPredicateKernel = AdaptiveKernel())
     if isnothing(bounding_box)
         F = number_type(vorn)
-        !has_polygon(vorn, i) && return Vector{NTuple{2,F}}()
+        !has_polygon(vorn, i) && return Vector{NTuple{2, F}}()
         C = get_polygon(vorn, i)
         coords = Vector{NTuple{2, F}}(undef, length(C))
         for j in eachindex(C)

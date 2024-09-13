@@ -578,4 +578,3 @@ Returns `true` if all points in `points` are two-dimensional. The default defini
 `all(is_point2, each_point(points))`.
 """
 is_planar(points) = all(is_point2, each_point(points))
-

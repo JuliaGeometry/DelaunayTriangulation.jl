@@ -665,7 +665,7 @@ function dequeue_and_process!(
         return vorn
     end
     push!(processed_pairs, (e, incident_polygon))
-    foreach((intersected_edge_cache, left_edge_intersectors, right_edge_intersectors, current_edge_intersectors)) do cache 
+    foreach((intersected_edge_cache, left_edge_intersectors, right_edge_intersectors, current_edge_intersectors)) do cache
         empty!(cache)
     end
     left_edge, right_edge, e = process_polygon!(vorn, e, incident_polygon, boundary_sites, segment_intersections, intersected_edge_cache, exterior_circumcenters, equal_circumcenter_mapping, predicates)
@@ -846,10 +846,12 @@ Clip the Voronoi tessellation `vorn` to the convex hull of the generators in `vo
 # Outputs 
 There are no outputs, but the Voronoi tessellation is clipped in-place.
 """
-function clip_voronoi_tessellation!(vorn::VoronoiTessellation; 
+function clip_voronoi_tessellation!(
+        vorn::VoronoiTessellation;
         clip_polygon = nothing,
-        rng::Random.AbstractRNG = Random.default_rng(), 
-        predicates::AbstractPredicateKernel = AdaptiveKernel())
+        rng::Random.AbstractRNG = Random.default_rng(),
+        predicates::AbstractPredicateKernel = AdaptiveKernel(),
+    )
     # Power diagrams have so many edge cases that, even if we do want to clip to the 
     # convex hull, the algorithm we use for unweighted tessellations just doesn't work.
     # The main issue is the fact that two generators can be in the same tile in a power diagram.
@@ -858,7 +860,7 @@ function clip_voronoi_tessellation!(vorn::VoronoiTessellation;
     else
         if !isnothing(clip_polygon)
             _clip_voronoi_tessellation_convex_polygon!(vorn, clip_polygon[1], clip_polygon[2]; predicates)
-        else 
+        else
             tri = get_triangulation(vorn)
             _clip_voronoi_tessellation_convex_polygon!(vorn, get_points(tri), get_boundary_nodes(tri); predicates)
         end
@@ -866,13 +868,13 @@ function clip_voronoi_tessellation!(vorn::VoronoiTessellation;
     return vorn
 end
 
-function _clip_voronoi_tessellation_convex_hull!(vorn::VoronoiTessellation; rng::Random.AbstractRNG=Random.default_rng(), predicates::AbstractPredicateKernel=AdaptiveKernel())
+function _clip_voronoi_tessellation_convex_hull!(vorn::VoronoiTessellation; rng::Random.AbstractRNG = Random.default_rng(), predicates::AbstractPredicateKernel = AdaptiveKernel())
     if num_polygon_vertices(vorn) == 1
         single_triangle_clip!(vorn; predicates)
         return vorn
     else
         boundary_sites, segment_intersections, exterior_circumcenters, equal_circumcenter_mapping = find_all_intersections(vorn; rng, predicates)
-        if isempty(segment_intersections) 
+        if isempty(segment_intersections)
             fix_no_intersections!(vorn; predicates)
             return vorn
         end
@@ -890,7 +892,7 @@ end
 In the case that `vorn` is dual to a triangulation with only a single triangle, this function clips the tessellation more efficiently 
 than the general case with [`find_all_intersections`](@ref).
 """
-function single_triangle_clip!(vorn::VoronoiTessellation; predicates::AbstractPredicateKernel=AdaptiveKernel())
+function single_triangle_clip!(vorn::VoronoiTessellation; predicates::AbstractPredicateKernel = AdaptiveKernel())
     # Turn all the unbounded polygons into bounded polygons
     I = integer_type(vorn)
     tri = get_triangulation(vorn)
@@ -911,26 +913,26 @@ function single_triangle_clip!(vorn::VoronoiTessellation; predicates::AbstractPr
     clipper_vertices = (I(1), I(2), I(3), I(1))
     clipper_points = (p, q, r)
     if !isempty(Ci)
-        clip_vertices_Ci =  [1:(length(Ci)-1); 1]
-        clip_points_Ci = view(Ci, 1:(length(Ci)-1))
+        clip_vertices_Ci = [1:(length(Ci) - 1); 1]
+        clip_points_Ci = view(Ci, 1:(length(Ci) - 1))
         clipped_tile_Ci = clip_polygon(clip_vertices_Ci, clip_points_Ci, clipper_vertices, clipper_points; predicates)
-    else 
+    else
         clipped_tile_Ci = Ci
     end
     if !isempty(Cj)
-        clip_vertices_Cj =  [1:(length(Cj)-1); 1]
-        clip_points_Cj = view(Cj, 1:(length(Cj)-1))
+        clip_vertices_Cj = [1:(length(Cj) - 1); 1]
+        clip_points_Cj = view(Cj, 1:(length(Cj) - 1))
         clipped_tile_Cj = clip_polygon(clip_vertices_Cj, clip_points_Cj, clipper_vertices, clipper_points; predicates)
-    else 
+    else
         clipped_tile_Cj = Cj
     end
     if !isempty(Ck)
-        clip_vertices_Ck =  [1:(length(Ck)-1); 1]
-        clip_points_Ck = view(Ck, 1:(length(Ck)-1))
+        clip_vertices_Ck = [1:(length(Ck) - 1); 1]
+        clip_points_Ck = view(Ck, 1:(length(Ck) - 1))
         clipped_tile_Ck = clip_polygon(clip_vertices_Ck, clip_points_Ck, clipper_vertices, clipper_points; predicates)
-    else 
+    else
         clipped_tile_Ck = Ck
-    end 
+    end
 
     # Adjust all the fields as necesary 
     polygons = get_polygons(vorn)
@@ -940,17 +942,17 @@ function single_triangle_clip!(vorn::VoronoiTessellation; predicates::AbstractPr
     unbounded_polygons = get_unbounded_polygons(vorn)
     empty!(unbounded_polygons)
     polygon_points = get_polygon_points(vorn)
-    for (u, C) in ((i, clipped_tile_Ci), (j, clipped_tile_Cj), (k, clipped_tile_Ck)) 
-        isempty(C) && continue 
+    for (u, C) in ((i, clipped_tile_Ci), (j, clipped_tile_Cj), (k, clipped_tile_Ck))
+        isempty(C) && continue
         add_boundary_polygon!(vorn, u)
         Cv = Vector{I}(undef, length(C))
-        for (idx, p) in enumerate(C) 
+        for (idx, p) in enumerate(C)
             pidx = findfirst(==(p), polygon_points)
             if isnothing(pidx)
                 push_polygon_point!(vorn, p)
                 n = num_polygon_vertices(vorn)
-            else 
-                n = pidx 
+            else
+                n = pidx
             end
             Cv[idx] = n
         end
@@ -968,12 +970,12 @@ end
 In the case that the Voronoi tiles have no intersections at all with the convex hull, this function
 adds in the missing intersections. [`clip_polygon`](@ref) is used for this.
 """
-function fix_no_intersections!(vorn::VoronoiTessellation; predicates::AbstractPredicateKernel=AdaptiveKernel())
+function fix_no_intersections!(vorn::VoronoiTessellation; predicates::AbstractPredicateKernel = AdaptiveKernel())
     ## Find the interior generator
     I = integer_type(vorn)
     tri = get_triangulation(vorn)
     interior_generator = I(∅)
-    ninterior = 0 
+    ninterior = 0
     unbounded = get_unbounded_polygons(vorn)
     clip_vertices = get_polygon(vorn, first(each_generator(vorn)))
     clip_points = get_polygon_points(vorn)
@@ -991,16 +993,16 @@ function fix_no_intersections!(vorn::VoronoiTessellation; predicates::AbstractPr
             clip_vertices = _clip_vertices
         end
     end
-    if ninterior > 1 
+    if ninterior > 1
         throw("No intersections were found and there were multiple interior generators wrapping the convex hull. This should not occur. Please file an issue with a reproducible example.")
-    elseif ninterior == 0 
+    elseif ninterior == 0
         # Maybe one of the unbounded polygons wraps it?
         bbox = polygon_bounds(clipper_points, clipper_vertices)
         for v in each_unbounded_polygon(vorn)
             _clip_points = get_polygon_coordinates(vorn, v, bbox; predicates)
             isempty(_clip_points) && continue
             clip_points = _clip_points
-            clip_vertices = [1:(length(clip_points)-1); 1]
+            clip_vertices = [1:(length(clip_points) - 1); 1]
             δ = distance_to_polygon(c, clip_points, clip_vertices)
             if δ > 0
                 interior_generator = v
@@ -1014,12 +1016,12 @@ function fix_no_intersections!(vorn::VoronoiTessellation; predicates::AbstractPr
 
     ## Clip the interior generator
     clipped_tile = clip_polygon(clip_vertices, clip_points, clipper_vertices, clipper_points; predicates)
-    
+
     ## Adjust all the fields as necessary
     add_boundary_polygon!(vorn, interior_generator)
     polygons = get_polygons(vorn)
     empty!(polygons)
-    n = add_intersection_points!(vorn, view(clipped_tile, 1:(length(clipped_tile)-1)))
+    n = add_intersection_points!(vorn, view(clipped_tile, 1:(length(clipped_tile) - 1)))
     clipped_tile_vertices = [n + v for v in 1:(length(clipped_tile) - 1)]
     push!(clipped_tile_vertices, n + 1)
     add_polygon!(vorn, clipped_tile_vertices, interior_generator)
@@ -1087,9 +1089,9 @@ function find_all_intersecting_polygons(vorn::VoronoiTessellation, clip_points, 
         end
     end
     return interior_polygons, possibly_intersecting
-end 
+end
 
-function _clip_voronoi_tessellation_convex_polygon!(vorn::VoronoiTessellation, clip_points, clip_vertices; predicates::AbstractPredicateKernel=AdaptiveKernel())
+function _clip_voronoi_tessellation_convex_polygon!(vorn::VoronoiTessellation, clip_points, clip_vertices; predicates::AbstractPredicateKernel = AdaptiveKernel())
     exterior_circumcenters = find_all_exterior_circumcenters(vorn, clip_points, clip_vertices)
     interior_polygons, intersecting_polygons = find_all_intersecting_polygons(vorn, clip_points, clip_vertices, exterior_circumcenters)
     a, b, c, d = polygon_bounds(clip_points, clip_vertices, Val(true))
@@ -1105,15 +1107,15 @@ function _clip_voronoi_tessellation_convex_polygon!(vorn::VoronoiTessellation, c
         delete_polygon_adjacent!(vorn, v)
         delete!(polygons, v)
         if !isempty(poly_points)
-            poly_vertices = [1:(length(poly_points)-1); 1]
+            poly_vertices = [1:(length(poly_points) - 1); 1]
             clipped_tile = clip_polygon(poly_vertices, poly_points, clip_vertices, clip_points; predicates)
             if !isempty(clipped_tile)
                 add_boundary_polygon!(vorn, v)
-                clipped_tile_vertices  = Vector{I}(undef, length(clipped_tile))
+                clipped_tile_vertices = Vector{I}(undef, length(clipped_tile))
                 for (idx, p) in enumerate(clipped_tile)
                     n = num_polygon_vertices(vorn)
                     pidx = get(point_dict, p, I(n + 1))
-                    if pidx == n + 1 
+                    if pidx == n + 1
                         push_polygon_point!(vorn, p)
                         point_dict[p] = n + 1
                     end

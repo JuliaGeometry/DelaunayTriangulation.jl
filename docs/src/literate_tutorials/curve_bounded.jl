@@ -221,7 +221,7 @@ tri = triangulate(points; boundary_nodes = curve, rng)
 refine!(tri; custom_constraint = poly_constraint, rng)
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "triangulate_curve_bounded_ex_5.png") fig by=psnr_equality(7) #src
+@test_reference joinpath(fig_path, "triangulate_curve_bounded_ex_5.png") fig by = psnr_equality(7) #src
 
 # ## Defining a New Parametric Curve 
 # Let us now give an example where we define a domain by a parametric curve that is not provided natively by this package. For this 

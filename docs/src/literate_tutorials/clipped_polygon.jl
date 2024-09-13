@@ -24,7 +24,7 @@ vorn = voronoi(tri)
 
 # To define the polygon, we define the points and vertices just as we would, for example,
 # the boundary of a triangulation.
-xmin, xmax, ymin, ymax = -1/2, 1/2, -1.0, 1.0
+xmin, xmax, ymin, ymax = -1 / 2, 1 / 2, -1.0, 1.0
 clip_points = ((xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax))
 clip_vertices = (1, 2, 3, 4, 1)
 clip_polygon = (clip_points, clip_vertices)
@@ -52,10 +52,10 @@ rng = StableRNG(123333)
 points = randn(rng, 2, 50)
 tri = triangulate(points; rng)
 vorn = voronoi(tri)
-ellip = EllipticalArc((1/2, 0.0), (1/2, 0.0), (0.0, 0.0), 1/2, 1.0, 0.0)
+ellip = EllipticalArc((1 / 2, 0.0), (1 / 2, 0.0), (0.0, 0.0), 1 / 2, 1.0, 0.0)
 t = LinRange(0, 1, 50)
 clip_points = ellip.(t)
-clip_vertices = [1:(length(clip_points)-1); 1]
+clip_vertices = [1:(length(clip_points) - 1); 1]
 clip_polygon = (clip_points, clip_vertices)
 clipped_vorn = voronoi(tri, clip = true, clip_polygon = clip_polygon)
 fig = Figure()

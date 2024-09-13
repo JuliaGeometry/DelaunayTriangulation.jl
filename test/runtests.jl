@@ -14,7 +14,7 @@ include("helper_functions.jl")
 using .HelperFunctions
 
 ct() = Dates.format(now(), "HH:MM:SS")
-function safe_include(filename; name=filename, push=true, verbose=true) # Workaround for not being able to interpolate into SafeTestset test names
+function safe_include(filename; name = filename, push = true, verbose = true) # Workaround for not being able to interpolate into SafeTestset test names
     push && push!(ALL_TEST_SCRIPTS, normpath(filename))
     mod = @eval module $(gensym()) end
     @info "[$(ct())] Testing $name"
@@ -28,7 +28,7 @@ end
 
 @testset verbose = true "DelaunayTriangulation.jl" begin
     @testset verbose = true "Aqua" begin
-        Aqua.test_all(DelaunayTriangulation; ambiguities=false, project_extras=false, unbound_args=false) # don't care about julia < 1.2
+        Aqua.test_all(DelaunayTriangulation; ambiguities = false, project_extras = false, unbound_args = false) # don't care about julia < 1.2
         Aqua.test_ambiguities(DelaunayTriangulation) # don't pick up Base and Core...
     end
 
@@ -64,7 +64,7 @@ end
         safe_include("data_structures/curves.jl")
         safe_include("data_structures/rtree.jl")
         safe_include("data_structures/bst.jl")
-        safe_include("data_structures/polygon_hierarchy.jl", verbose=false)
+        safe_include("data_structures/polygon_hierarchy.jl", verbose = false)
     end
 
     @testset verbose = true "Predicates" begin
@@ -125,7 +125,7 @@ end
             app_dir = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "docs", "src", "literate_applications")
             app_files = readdir(app_dir)
             for file in app_files
-                safe_include(joinpath(app_dir, file); push=false)
+                safe_include(joinpath(app_dir, file); push = false)
             end
             mp4_path = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "cell_simulation.mp4")
             isfile(mp4_path) && rm(mp4_path)
@@ -135,7 +135,7 @@ end
             tut_dir = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "docs", "src", "literate_tutorials")
             tut_files = readdir(tut_dir)
             for file in tut_files
-                safe_include(joinpath(tut_dir, file); push=false)
+                safe_include(joinpath(tut_dir, file); push = false)
             end
         end
 

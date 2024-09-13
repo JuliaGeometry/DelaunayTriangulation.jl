@@ -75,7 +75,7 @@ See the documentation for more information about these choices.
 function intersection_of_edge_and_bisector_ray(kernel::AbstractPredicateKernel, a, b, c; project = false)
     cert = point_position_relative_to_line(kernel, a, b, c)
     if !is_left(cert)
-        if project 
+        if project
             m = project_onto_line(a, b, c)
         else
             m = midpoint(a, b)
