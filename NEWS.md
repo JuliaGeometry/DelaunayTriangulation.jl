@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.1
+
+- Fix an issue with a weighted triangulation where the lifted points' convex hull was entirely coplanar. See [#184](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/184)
+
 ## 1.3.0
 
 This release finally introduces weighted triangulations and power diagrams, and also allows for users to provide a generic convex polygon to for clipping a Voronoi tessellation instead of only the convex hull.

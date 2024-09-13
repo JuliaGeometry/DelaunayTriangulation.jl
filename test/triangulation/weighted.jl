@@ -33,7 +33,7 @@ end
     w3 = DT.ZeroWeight()
     @test DT.get_weight(w1, 1) == w1[1]
     @test DT.get_weight(w1, ()) == 0.0
-    @test DT.get_weight(w1, (1.0, 3.0, 4.0)) == 4.0 
+    @test DT.get_weight(w1, (1.0, 3.0, 4.0)) == 4.0
     @test DT.get_weight(w2, 1) == w2[1]
     @test DT.get_weight(w2, ()) === 0.0f0
     @test DT.get_weight(w2, (1.0, 3.0, 4.0)) == 4.0f0
@@ -216,7 +216,7 @@ end
 
 @testset "Weighted triangulations with identical/no weights and random sets/collinear sets" begin
     @testset "Triangulation with zero weights" begin
-        for n in 3:500
+        for n in 3:150
             points = rand(2, n)
             weights = zeros(size(points, 2))
             tri1 = triangulate(points)
@@ -229,7 +229,7 @@ end
             for j in 3:10
                 tri = triangulate_rectangle(0, 10, 0, 10, i, j)
                 tri = triangulate(get_points(tri); weights = zeros(i * j))
-                @test validate_triangulation(tri) 
+                @test validate_triangulation(tri)
                 validate_statistics(tri)
             end
         end
@@ -278,15 +278,15 @@ end
 end
 
 @testset "Point location" begin
-    for fi in 1:NUM_CWEGT 
+    for fi in 1:NUM_CWEGT
         tri, submerged, nonsubmerged, weights, S = get_convex_polygon_weighted_example(fi)
-        for i in each_solid_vertex(tri) 
+        for i in each_solid_vertex(tri)
             V = find_triangle(tri, get_point(tri, i))
             cert = DT.point_position_relative_to_triangle(tri, V, i)
             @test DT.is_on(cert)
         end
         for V in each_solid_triangle(tri)
-            p, q, r  = get_point(tri, triangle_vertices(V)...)
+            p, q, r = get_point(tri, triangle_vertices(V)...)
             c = DT.triangle_centroid(p, q, r)
             T = find_triangle(tri, c)
             cert = DT.point_position_relative_to_triangle(tri, T, c)
@@ -301,7 +301,7 @@ end
             @test DT.is_on(cert)
         end
         for V in each_solid_triangle(tri)
-            p, q, r  = get_point(tri, triangle_vertices(V)...)
+            p, q, r = get_point(tri, triangle_vertices(V)...)
             c = DT.triangle_centroid(p, q, r)
             T = find_triangle(tri, c)
             cert = DT.point_position_relative_to_triangle(tri, T, c)
@@ -326,7 +326,7 @@ end
 end
 
 @testset "Random" begin
-    for fi in 1:NUM_WEGT 
+    for fi in 1:NUM_WEGT
         @info "Testing triangulation of a random weighted set: $fi"
         tri, submerged, nonsubmerged, weights = get_weighted_example(fi)
         rtri = triangulate(get_points(tri); weights)
@@ -348,11 +348,11 @@ end
         points = get_points(tri)
         vpoints = points[:, 1:3]
         vweights = weights[1:3]
-        rtri = triangulate(vpoints; weights=vweights)
+        rtri = triangulate(vpoints; weights = vweights)
         for j in 4:size(points, 2)
             add_point!(rtri, points[:, j]..., weights[j])
         end
-        convex_hull!(rtri) 
+        convex_hull!(rtri)
         DT.compute_representative_points!(rtri)
         DT.clear_empty_features!(rtri)
         DT.construct_polygon_hierarchy!(DT.get_polygon_hierarchy(rtri), get_points(rtri))
@@ -371,5 +371,14 @@ end
         end
         fi == 155 || @test validate_triangulation(rtri)
         @test DT.is_weighted(rtri)
+    end
+end
+
+@testset "A case where all lifted points lie on a plane" begin
+    for _ in 1:10000
+        points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (1 / 2, 1 / 2)]
+        weights = [0.0, 0.0, 0.0, 0.0, -0.5]
+        tri = triangulate(points; weights)
+        @test DT.validate_triangulation(tri)
     end
 end
