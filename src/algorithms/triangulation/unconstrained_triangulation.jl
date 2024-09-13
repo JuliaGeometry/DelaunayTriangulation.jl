@@ -302,7 +302,7 @@ function enter_cavity(tri::Triangulation, r, i, j, ℓ, predicates::AbstractPred
     else
         cert = point_position_relative_to_circumcircle(tri, r, i, j, ℓ)
     end
-    return is_inside(cert)
+    return is_weighted(tri) ? !is_outside(cert) : is_inside(cert)
 end
 
 """

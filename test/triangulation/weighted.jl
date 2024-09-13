@@ -374,7 +374,6 @@ end
     end
 end
 
-#=
 @testset "A case where all lifted points lie on a plane" begin
     for _ in 1:10000
         points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (1 / 2, 1 / 2)]
@@ -383,50 +382,3 @@ end
         @test DT.validate_triangulation(tri)
     end
 end
-
-Random.seed!(1)
-points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (1 / 2, 1 / 2)]
-weights = [0.0, 0.0, 0.0, 0.0, -0.5]
-tri = triangulate(points; weights, insertion_order = [1, 2, 3, 4])
-
-new_point = 5 
-predicates = AdaptiveKernel()
-point_indices = each_solid_vertex(tri)
-m = default_num_samples(length(point_indices))
-try_points = ()
-rng = Random.default_rng()
-initial_search_point = integer_type(tri)(select_initial_point(tri, new_point; point_indices, m, try_points, rng))
-update_representative_point = false
-store_event_history = Val(false)
-event_history = nothing
-concavity_protection = false
-V = find_triangle(
-    tri,
-    get_point(tri, new_point);
-    m = nothing,
-    point_indices = nothing,
-    try_points = nothing,
-    k = initial_search_point,
-    concavity_protection,
-    predicates,
-    rng,
-)
-peek = Val(false)
-int_flag = new_point isa Integer
-q = get_point(tri, new_point)
-cert = point_position_relative_to_circumcircle(predicates, tri, V, new_point) # redirects to point_position_relative_to_witness_plane
-flag = point_position_relative_to_triangle(predicates, tri, V, q)
-I = integer_type(tri)
-_new_point = is_true(peek) ? new_point : I(new_point)
-_new_point = is_true(peek) ? num_points(tri) + 1 : new_point # If we are peeking, then we need to use the number of points in the triangulation as the index for the new point since we don't actually insert the point
-i, j, k = triangle_vertices(V)
-ℓ₁ = get_adjacent(tri, j, i)
-ℓ₂ = get_adjacent(tri, k, j)
-ℓ₃ = get_adjacent(tri, i, k)
-!is_true(peek) && delete_triangle!(tri, V; protect_boundary = true, update_ghost_edges = false)
-is_true(store_event_history) && delete_triangle!(event_history, V)
-
-
-add_point!(tri, 5)
-validate_triangulation(tri)
-=#
