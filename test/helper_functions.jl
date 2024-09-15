@@ -2299,6 +2299,22 @@ function plot_small_angle_complexes(enricher)
     return fig
 end
 
+function Base.:(==)(cache1::DT.TriangulationCache, cache2::DT.TriangulationCache)
+    DT.get_triangulation(cache1) ≠ DT.get_triangulation(cache2) && return false
+    DT.get_triangulation_2(cache1) ≠ DT.get_triangulation_2(cache2) && return false
+    DT.get_marked_vertices(cache1) ≠ DT.get_marked_vertices(cache2) && return false
+    DT.get_interior_segments_on_hull(cache1) ≠ DT.get_interior_segments_on_hull(cache2) && return false
+    DT.get_surrounding_polygon(cache1) ≠ DT.get_surrounding_polygon(cache2) && return false
+    DT.get_fan_triangles(cache1) ≠ DT.get_fan_triangles(cache2) && return false
+    length(DT.get_incircle_cache(cache1)) ≠ length(DT.get_incircle_cache(cache2)) && return false # no point comparing elements 
+    typeof(DT.get_incircle_cache(cache1)) ≠ typeof(DT.get_incircle_cache(cache2)) && return false
+    length(DT.get_orient3_cache(cache1)) ≠ length(DT.get_orient3_cache(cache2)) && return false # no point comparing elements
+    typeof(DT.get_orient3_cache(cache1)) ≠ typeof(DT.get_orient3_cache(cache2)) && return false
+    length(DT.get_insphere_cache(cache1)) ≠ length(DT.get_insphere_cache(cache2)) && return false # no point comparing elements
+    typeof(DT.get_insphere_cache(cache1)) ≠ typeof(DT.get_insphere_cache(cache2)) && return false
+    return true
+end
+
 using DelaunayTriangulation:
     test_adjacent2vertex_map_matches_adjacent_map,
     test_state,

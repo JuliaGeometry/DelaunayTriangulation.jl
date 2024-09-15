@@ -67,7 +67,7 @@ function add_point!(
     end
     q = get_point(tri, new_point)
     if is_weighted(tri)
-        cert = point_position_relative_to_circumcircle(predicates, tri, V, new_point) # redirects to point_position_relative_to_witness_plane
+        cert = point_position_relative_to_circumcircle(predicates, tri, V, new_point; cache = get_orient3_cache(tri)) # redirects to point_position_relative_to_witness_plane
         is_outside(cert) && return V # If the point is submerged, then we don't add it
     end
     flag = point_position_relative_to_triangle(predicates, tri, V, q)

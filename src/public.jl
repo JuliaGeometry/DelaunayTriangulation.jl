@@ -185,7 +185,9 @@
                 meet_predicate,
                 sort_triangle,
                 triangle_orthocenter,
-                triangle_orthoradius_squared
+                triangle_orthoradius_squared,
+                get_incircle_cache,
+                get_orient3_cache
     """,
         ),
     )

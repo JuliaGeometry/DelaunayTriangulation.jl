@@ -54,11 +54,11 @@ end
 @testset "is_weighted" begin
     tri = Triangulation(rand(2, 10))
     @test !DT.is_weighted(tri)
-    tri = Triangulation(rand(2, 10); weights = rand(10))
+    tri = Triangulation(rand(2, 10); weights=rand(10))
     @test DT.is_weighted(tri)
-    tri = Triangulation(rand(2, 10); weights = DT.ZeroWeight())
+    tri = Triangulation(rand(2, 10); weights=DT.ZeroWeight())
     @test !DT.is_weighted(tri)
-    tri = Triangulation(rand(2, 10); weights = zeros(Float32, 10))
+    tri = Triangulation(rand(2, 10); weights=zeros(Float32, 10))
     @test DT.is_weighted(tri)
 end
 
@@ -135,18 +135,24 @@ end
     _weights[58] = weights[2]
     _weights[498] = weights[3]
     _weights[5] = weights[4]
-    tri = Triangulation(_points; weights = _weights)
-    d = DT.get_distance_to_witness_plane(tri, 5, (137, 58, 498))
+    tri = Triangulation(_points; weights=_weights)
+    d = DT.get_distance_to_witness_plane(tri, 5, (137, 58, 498); cache=nothing)
     @test d ≈ -2.129523129725314
-    @test DT.get_distance_to_witness_plane(tri, 5, (137, 58, 498)) ≈
-        DT.get_distance_to_witness_plane(tri, 5, (58, 137, 498)) ≈
-        DT.get_distance_to_witness_plane(tri, 5, (498, 58, 137)) ≈
-        DT.get_distance_to_witness_plane(tri, 5, (137, 498, 58)) ≈
-        DT.get_distance_to_witness_plane(tri, 5, (58, 498, 137)) ≈
-        DT.get_distance_to_witness_plane(tri, 5, (498, 137, 58))
+    @test DT.get_distance_to_witness_plane(tri, 5, (137, 58, 498); cache=DT.get_incircle_cache(tri)) ≈
+          DT.get_distance_to_witness_plane(tri, 5, (58, 137, 498); cache=DT.get_incircle_cache(tri)) ≈
+          DT.get_distance_to_witness_plane(tri, 5, (498, 58, 137); cache=DT.get_incircle_cache(tri)) ≈
+          DT.get_distance_to_witness_plane(tri, 5, (137, 498, 58); cache=DT.get_incircle_cache(tri)) ≈
+          DT.get_distance_to_witness_plane(tri, 5, (58, 498, 137); cache=DT.get_incircle_cache(tri)) ≈
+          DT.get_distance_to_witness_plane(tri, 5, (498, 137, 58); cache=DT.get_incircle_cache(tri))
+    @test DT.get_distance_to_witness_plane(AdaptiveKernel(), tri, 5, (137, 58, 498), cache=DT.get_incircle_cache(tri)) ≈
+          DT.get_distance_to_witness_plane(FastKernel(), tri, 5, (58, 137, 498), cache=DT.get_orient3_cache(tri)) ≈
+          DT.get_distance_to_witness_plane(AdaptiveKernel(), tri, 5, (498, 58, 137), cache=DT.get_incircle_cache(tri)) ≈
+          DT.get_distance_to_witness_plane(AdaptiveKernel(), tri, 5, (137, 498, 58), cache=DT.get_incircle_cache(tri)) ≈
+          DT.get_distance_to_witness_plane(ExactKernel(), tri, 5, (58, 498, 137), cache=DT.get_incircle_cache(tri)) ≈
+          DT.get_distance_to_witness_plane(AdaptiveKernel(), tri, 5, (498, 137, 58), cache=DT.get_incircle_cache(tri))
     _points[5] = (-3.9, 2.01)
     _weights[5] = -15.0
-    d = DT.get_distance_to_witness_plane(tri, 5, (137, 58, 498))
+    d = DT.get_distance_to_witness_plane(tri, 5, (137, 58, 498); cache=DT.get_incircle_cache(tri))
     @test d ≈ 5.603226942686893
 
     # ghost triangles: exterior points
@@ -162,16 +168,16 @@ end
     points[2] = (6.0, 3.0)
     points[3] = (-7.0, 3.0)
     points[4] = (6.19, -1.52)
-    @test DT.get_distance_to_witness_plane(tri, 4, (2, 1, -1)) == -Inf
+    @test DT.get_distance_to_witness_plane(AdaptiveKernel(), tri, 4, (2, 1, -1)) == -Inf
     @test DT.get_distance_to_witness_plane(tri, 4, (1, 3, -1)) == Inf
     @test DT.get_distance_to_witness_plane(tri, 4, (3, 2, -1)) == Inf
     points[4] = (-6.0, 0.0)
     @test DT.get_distance_to_witness_plane(tri, 4, (2, 1, -1)) == Inf
-    @test DT.get_distance_to_witness_plane(tri, 4, (1, 3, -1)) == -Inf
+    @test DT.get_distance_to_witness_plane(tri, 4, (1, 3, -1); cache=DT.get_orient3_cache(tri)) == -Inf
     @test DT.get_distance_to_witness_plane(tri, 4, (3, 2, -1)) == Inf
     points[4] = (0.0, 6.0)
     @test DT.get_distance_to_witness_plane(tri, 4, (2, 1, -1)) == Inf
-    @test DT.get_distance_to_witness_plane(tri, 4, (1, 3, -1)) == Inf
+    @test DT.get_distance_to_witness_plane(ExactKernel(), tri, 4, (1, 3, -1), cache=nothing) == Inf
     @test DT.get_distance_to_witness_plane(tri, 4, (3, 2, -1)) == -Inf
 
     # ghost triangles: points on the solid unweighted edge
@@ -181,8 +187,8 @@ end
     points[2] = (2.0, 3.0)
     points[3] = (-5.0, 5.0)
     points[4] = (2.0, 0.0)
-    @test DT.get_distance_to_witness_plane(tri, 4, (2, 1, -1)) == DT.get_distance_to_witness_plane(tri, 4, (3, 1, 2))
-    @test DT.get_distance_to_witness_plane(tri, 4, (1, 3, -1)) == Inf
+    @test DT.get_distance_to_witness_plane(tri, 4, (2, 1, -1), cache=nothing) == DT.get_distance_to_witness_plane(tri, 4, (3, 1, 2))
+    @test DT.get_distance_to_witness_plane(tri, 4, (1, 3, -1), cache=nothing) == Inf
 
     # ghost triangles: points on the solid weighted edge
     points[3] = (-2.0, 0.0)
@@ -203,13 +209,13 @@ end
     for fi in 1:NUM_WEGT
         tri, submerged, nonsubmerged, weights = get_weighted_example(fi)
         for i in submerged
-            @test DT.is_submerged(tri, i)
+            @test DT.is_submerged(tri, i; cache=DT.get_incircle_cache(tri))
         end
         for i in nonsubmerged
             @test !DT.is_submerged(tri, i)
         end
         for i in 1:DT.num_points(tri)
-            @test (DT.is_submerged(tri, i, find_triangle(tri, get_point(tri, i)))) == (i ∈ submerged)
+            @test (DT.is_submerged(tri, i, find_triangle(tri, get_point(tri, i)); cache=DT.get_orient3_cache(tri))) == (i ∈ submerged)
         end
     end
 end
@@ -228,7 +234,7 @@ end
         for i in 3:10
             for j in 3:10
                 tri = triangulate_rectangle(0, 10, 0, 10, i, j)
-                tri = triangulate(get_points(tri); weights = zeros(i * j))
+                tri = triangulate(get_points(tri); weights=zeros(i * j))
                 @test validate_triangulation(tri)
                 validate_statistics(tri)
             end
@@ -249,7 +255,7 @@ end
         for i in 3:10
             for j in 3:10
                 tri = triangulate_rectangle(0, 10, 0, 10, i, j)
-                tri = triangulate(get_points(tri); weights = 10randn() * ones(i * j))
+                tri = triangulate(get_points(tri); weights=10randn() * ones(i * j))
                 @test validate_triangulation(tri) # Why is this failing sometimes? Is validate not branching at weighted triangulations?
                 (i == j == 10) || validate_statistics(tri)
             end
@@ -261,13 +267,13 @@ end
     tri = triangulate(rand(2, 50))
     for i in 1:50
         V = DT.brute_force_search_enclosing_circumcircle(tri, i)
-        @test !DT.is_outside(DT.point_position_relative_to_circumcircle(tri, V, i))
+        @test !DT.is_outside(DT.point_position_relative_to_circumcircle(tri, V, i; cache=rand() < 1 / 2 ? nothing : DT.get_incircle_cache(tri)))
     end
 
     for fi in 1:NUM_WEGT
         tri, submerged, nonsubmerged, weights = get_weighted_example(fi)
         for i in eachindex(weights)
-            V = DT.brute_force_search_enclosing_circumcircle(tri, i)
+            V = DT.brute_force_search_enclosing_circumcircle(tri, i; cache=DT.get_incircle_cache(tri))
             if i ∈ submerged
                 @test V == (0, 0, 0)
             else
@@ -348,7 +354,7 @@ end
         points = get_points(tri)
         vpoints = points[:, 1:3]
         vweights = weights[1:3]
-        rtri = triangulate(vpoints; weights = vweights)
+        rtri = triangulate(vpoints; weights=vweights)
         for j in 4:size(points, 2)
             add_point!(rtri, points[:, j]..., weights[j])
         end

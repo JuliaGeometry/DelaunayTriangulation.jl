@@ -33,4 +33,8 @@ DefaultAdjacentValue
 GhostVertex
 ε
 ∅
+fix_orient3_cache 
+fix_incircle_cache 
+validate_orient3_cache
+validate_incircle_cache
 ```

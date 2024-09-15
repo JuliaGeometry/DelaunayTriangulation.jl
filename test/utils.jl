@@ -1,6 +1,7 @@
 using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using LinearAlgebra
+using AdaptivePredicates
 using CairoMakie
 using BenchmarkTools
 using StableRNGs
@@ -1706,4 +1707,38 @@ end
 @testset "ε" begin
     @test DT.ε(Float64) == DT.ε(1.0) == sqrt(eps(Float64))
     @test DT.ε(Float32) == DT.ε(1.0f0) == sqrt(eps(Float32))
+end
+
+@testset "Fixing caches" begin
+    tri = triangulate(rand(2, 50))
+    orient3_cache = AdaptivePredicates.orient3adapt_cache(Float64)
+    incircle_cache = AdaptivePredicates.incircleadapt_cache(Float64)
+    @test DT.validate_incircle_cache(tri, incircle_cache)
+    @test DT.validate_incircle_cache(tri, nothing)
+    @test !DT.validate_incircle_cache(tri, orient3_cache)
+    @test DT.validate_orient3_cache(tri, orient3_cache)
+    @test DT.validate_orient3_cache(tri, nothing)
+    @test !DT.validate_orient3_cache(tri, incircle_cache)
+    tri32 = triangulate(rand(Float32, 2, 50))
+    orient3_cache32 = AdaptivePredicates.orient3adapt_cache(Float32)
+    incircle_cache32 = AdaptivePredicates.incircleadapt_cache(Float32)
+    @test DT.validate_incircle_cache(tri32, incircle_cache32)
+    @test DT.validate_incircle_cache(tri32, nothing)
+    @test !DT.validate_incircle_cache(tri32, orient3_cache32)
+    @test DT.validate_orient3_cache(tri32, orient3_cache32)
+    @test DT.validate_orient3_cache(tri32, nothing)
+    @test !DT.validate_orient3_cache(tri32, incircle_cache32)
+
+    @test DT.fix_incircle_cache(tri, incircle_cache) === incircle_cache
+    @test DT.fix_incircle_cache(tri, nothing) === nothing 
+    @test DT.fix_incircle_cache(tri, orient3_cache) === nothing 
+    @test DT.fix_orient3_cache(tri, orient3_cache) === orient3_cache
+    @test DT.fix_orient3_cache(tri, nothing) === nothing
+    @test DT.fix_orient3_cache(tri, incircle_cache) === nothing
+    @test DT.fix_incircle_cache(tri32, incircle_cache32) === incircle_cache32
+    @test DT.fix_incircle_cache(tri32, nothing) === nothing
+    @test DT.fix_incircle_cache(tri32, orient3_cache32) === nothing
+    @test DT.fix_orient3_cache(tri32, orient3_cache32) === orient3_cache32
+    @test DT.fix_orient3_cache(tri32, nothing) === nothing
+    @test DT.fix_orient3_cache(tri32, incircle_cache32) === nothing
 end

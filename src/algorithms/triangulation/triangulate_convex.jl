@@ -121,7 +121,7 @@ to make.
 """
 function add_point_convex_triangulation!(tri::Triangulation, u, v, w, S, predicates::AbstractPredicateKernel = AdaptiveKernel())
     x = get_adjacent(tri, w, v)
-    if edge_exists(x) && is_inside(point_position_relative_to_circumcircle(predicates, tri, u, v, w, x))
+    if edge_exists(x) && is_inside(point_position_relative_to_circumcircle(predicates, tri, u, v, w, x; cache = get_incircle_cache(tri)))
         # uvw and wvx are not Delaunay 
         delete_triangle!(tri, w, v, x; protect_boundary = true, update_ghost_edges = false)
         add_point_convex_triangulation!(tri, u, v, x, S, predicates)

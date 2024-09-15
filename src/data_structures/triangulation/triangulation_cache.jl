@@ -1,5 +1,5 @@
 """
-    TriangulationCache{T,M,I,S}
+    TriangulationCache{T,M,I,S,IC,OC,IS}
 
 A cache to be used as a field in [`Triangulation`](@ref).
 
@@ -14,6 +14,9 @@ A cache to be used as a field in [`Triangulation`](@ref).
    interior segments.
 - `surrounding_polygon::S`: The polygon surrounding the triangulation. This is needed for [`delete_point!`](@ref).
 - `fan_triangles::F`: Triangles in a fan. This is needed for sorting fans for constrained triangulations.
+- `incircle_cache::IC`: Cache for incircle tests.
+- `orient3_cache::OC`: Cache for orient3 tests.
+- `insphere_cache::IS`: Cache for insphere tests.
 
 !!! note "Caches of caches"
 
@@ -24,13 +27,16 @@ A cache to be used as a field in [`Triangulation`](@ref).
 
     The `points` of the cache's `triangulation` will be aliased to the `points` of the parent triangulation.
 """
-struct TriangulationCache{T, M, I, S, F}
+struct TriangulationCache{T, M, I, S, F, IC, OC, IS}
     triangulation::T
     triangulation_2::T
     marked_vertices::M
     interior_segments_on_hull::I
     surrounding_polygon::S
-    fan_triangles::F
+    fan_triangles::F 
+    incircle_cache::IC
+    orient3_cache::OC
+    insphere_cache::IS
 end
 function Base.show(io::IO, ::MIME"text/plain", cache::TriangulationCache)
     if isnothing(get_triangulation(cache)) # all fields are nothing, or none are 
@@ -38,6 +44,12 @@ function Base.show(io::IO, ::MIME"text/plain", cache::TriangulationCache)
     else
         return print(io, "TriangulationCache with storage.")
     end
+end
+
+const EmptyTriangulationCache = TriangulationCache{Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing}
+TriangulationCache{Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing}() = TriangulationCache()
+function TriangulationCache()
+    return TriangulationCache(nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing)
 end
 
 """
@@ -83,6 +95,27 @@ Returns the triangles in a fan stored in `cache`.
 get_fan_triangles(cache::TriangulationCache) = cache.fan_triangles
 
 """
+    get_incircle_cache(cache::TriangulationCache) -> Tuple
+
+Returns the incircle cache stored in `cache`.
+"""
+get_incircle_cache(cache::TriangulationCache) = cache.incircle_cache
+
+"""
+    get_orient3_cache(cache::TriangulationCache) -> Tuple
+
+Returns the orient3 cache stored in `cache`.
+"""
+get_orient3_cache(cache::TriangulationCache) = cache.orient3_cache
+
+"""
+    get_insphere_cache(cache::TriangulationCache) -> Tuple
+
+Returns the insphere cache stored in `cache`.
+"""
+get_insphere_cache(cache::TriangulationCache) = cache.insphere_cache
+
+"""
     empty!(cache::TriangulationCache) 
 
 Empties the cache by emptying the triangulation stored in it.
@@ -100,7 +133,18 @@ function Base.empty!(cache::TriangulationCache)
     empty!(surrounding_polygon)
     fan_triangles = get_fan_triangles(cache)
     empty!(fan_triangles)
-    return cache
+    #=
+    incircle_cache = get_incircle_cache(cache)
+    incircle_parent = parent(incircle_cache[1])
+    fill!(zero(eltype(incircle_parent)), incircle_parent)
+    orient3_cache = get_orient3_cache(cache)
+    orient3_parent = parent(orient3_cache[1])
+    fill!(zero(eltype(orient3_parent)), orient3_parent)
+    insphere_cache = get_insphere_cache(cache)
+    insphere_parent = parent(insphere_cache[1])
+    fill!(zero(eltype(insphere_parent)), insphere_parent)
+    =# # No point clearing these caches.
+    return cache 
 end
 
 """
