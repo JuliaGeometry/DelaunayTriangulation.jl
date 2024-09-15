@@ -27,7 +27,7 @@ There is no output, as `tri` is updated in-place.
     so that at a triangle that might have appeared in both will only appear in one.
 """
 function legalise_edge!(tri::Triangulation, i, j, r, store_event_history = Val(false), event_history = nothing; predicates::AbstractPredicateKernel = AdaptiveKernel())
-    cert = is_legal(predicates, tri, i, j)
+    cert = is_legal(predicates, tri, i, j; cache = get_incircle_cache(tri))
     if is_illegal(cert)
         e = get_adjacent(tri, j, i)
         flip_edge!(tri, i, j, e, r, store_event_history, event_history)

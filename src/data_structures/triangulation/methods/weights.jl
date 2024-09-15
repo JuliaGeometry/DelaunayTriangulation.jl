@@ -98,7 +98,7 @@ function get_power_distance(tri::Triangulation, i, j)
 end
 
 """"
-    get_distance_to_witness_plane(tri::Triangulation, i, V) -> Number
+    get_distance_to_witness_plane([kernel::AbstractPredicateKernel = AdaptiveKernel(), ] tri::Triangulation, i, V; cache = nothing) -> Number
 
 Computes the distance between the lifted companion of the vertex `i` and the witness plane to the triangle `V`. If `V` is a ghost triangle 
 and `i` is not on its solid edge, then the distance is `-Inf` if it is below the ghost triangle's witness plane and `Inf` if it is above. If `V` is a ghost triangle and `i` 
@@ -106,10 +106,16 @@ is on its solid edge, then the distance returned is the distance associated with
 
 In general, the distance is positive if the lifted vertex is above the witness plane, negative if it is below, 
 and zero if it is on the plane.
+    
+The `kernel` argument determines how this result is computed, and should be 
+one of [`ExactKernel`](@ref), [`FastKernel`](@ref), and [`AdaptiveKernel`](@ref) (the default).
+See the documentation for more information about these choices.
+
+The `cache` keyword argument is passed to [`point_position_relative_to_circumcircle`]. Please see the documentation for that function for more information.
 
 See also [`point_position_relative_to_witness_plane`](@ref) and [`get_distance_to_plane`](@ref).
 """
-function get_distance_to_witness_plane(tri::Triangulation, i, V)
+function get_distance_to_witness_plane(kernel::AbstractPredicateKernel, tri::Triangulation, i, V; cache::PredicateCacheType = nothing)
     if !is_ghost_triangle(V)
         u, v, w = triangle_vertices(V)
         p⁺ = get_lifted_point(tri, u)
@@ -118,17 +124,19 @@ function get_distance_to_witness_plane(tri::Triangulation, i, V)
         s⁺ = get_lifted_point(tri, i)
         return get_distance_to_plane(p⁺, q⁺, r⁺, s⁺)
     else
-        cert = point_position_relative_to_circumcircle(tri, V, i)
+        cert = point_position_relative_to_circumcircle(kernel, tri, V, i; cache)
         if is_inside(cert)
             return -Inf
         elseif is_outside(cert)
             return Inf
         else # is_on(cert) 
             V′ = replace_ghost_triangle_with_boundary_triangle(tri, V)
-            return get_distance_to_witness_plane(tri, i, V′)
+            return get_distance_to_witness_plane(kernel, tri, i, V′; cache)
         end
     end
 end
+get_distance_to_witness_plane(tri::Triangulation, i, V; cache::PredicateCacheType = nothing) = get_distance_to_witness_plane(AdaptiveKernel(), tri, i, V; cache)
+
 
 """
     get_weighted_nearest_neighbour(tri::Triangulation, i, j = rand(each_solid_vertex(tri))) -> Vertex 
@@ -164,24 +172,32 @@ function _get_weighted_nearest_neighbour(tri, i, j)
 end
 
 @doc """
-    is_submerged(tri::Triangulation, i) -> Bool 
-    is_submerged(tri::Triangulation, i, V) -> Bool
+    is_submerged([kernel::AbstractPredicateKernel = AdaptiveKernel(), ] tri::Triangulation, i; cache = nothing) -> Bool 
+    is_submerged([kernel::AbstractPredicateKernel = AdaptiveKernel(), ] tri::Triangulation, i, V; cache = nothing) -> Bool
 
 Returns `true` if the vertex `i` is submerged in `tri` and `false` otherwise. In the 
 second method, `V` is a triangle containing `tri`.
+
+The `kernel` argument determines how this result is computed, and should be
+one of [`ExactKernel`](@ref), [`FastKernel`](@ref), and [`AdaptiveKernel`](@ref) (the default).
+See the documentation for more information about these choices.
+
+The `cache` keyword argument is passed to [`point_position_relative_to_circumcircle`]. Please see the documentation for that function for more information.
 """
 is_submerged
-function is_submerged(tri::Triangulation, i)
+function is_submerged(kernel::AbstractPredicateKernel, tri::Triangulation, i; cache::PredicateCacheType = nothing)
     # A source that mentions that testing if `i` is submerged only needs to consider the triangle that contains it 
     # is given in https://otik.uk.zcu.cz/bitstream/11025/21574/1/Zemek.pdf on p.17. 
     # (If the link dies, it is the PhD thesis of Michal Zemek, "Regular Triangulation in 3D and Its Applications".)
     is_ghost_vertex(i) && return false
     q = get_point(tri, i)
     V = find_triangle(tri, q)
-    return is_submerged(tri, i, V)
+    return is_submerged(kernel, tri, i, V; cache)
 end
-function is_submerged(tri::Triangulation, i, V)
+function is_submerged(kernel::AbstractPredicateKernel, tri::Triangulation, i, V; cache::PredicateCacheType = nothing)
     is_ghost_vertex(i) && return false
-    cert = point_position_relative_to_circumcircle(tri, V, i)
+    cert = point_position_relative_to_circumcircle(kernel, tri, V, i; cache)
     return is_outside(cert)
 end
+is_submerged(tri::Triangulation, i; cache::PredicateCacheType = nothing) = is_submerged(AdaptiveKernel(), tri, i; cache)
+is_submerged(tri::Triangulation, i, V; cache::PredicateCacheType = nothing) = is_submerged(AdaptiveKernel(), tri, i, V; cache)

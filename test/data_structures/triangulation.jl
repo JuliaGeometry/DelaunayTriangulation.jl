@@ -6,80 +6,81 @@ using Setfield
 using Random
 using StatsBase
 using StableRNGs
+using AdaptivePredicates
 using ..DelaunayTriangulation: add_weight!, get_weight, get_weights
-
-@struct_equal DT.TriangulationCache
-
 
 using ..DelaunayTriangulation: Triangulation
 
 global pts = rand(2, 500)
-global tri = Triangulation(pts; IntegerType = Int32)
+global tri = Triangulation(pts; IntegerType=Int32)
 
 @testset "Initialising a triangulation" begin
     @test tri ⊢ Triangulation(
         pts, # points
-        Set{NTuple{3, Int32}}(), # triangles
+        Set{NTuple{3,Int32}}(), # triangles
         Int32[], # boundary_nodes
-        Set{NTuple{2, Int32}}(), # interior_segments
-        Set{NTuple{2, Int32}}(), # all_segments
+        Set{NTuple{2,Int32}}(), # interior_segments
+        Set{NTuple{2,Int32}}(), # all_segments
         DT.ZeroWeight(), # weights
-        DT.Adjacent{Int32, NTuple{2, Int32}}(), # adjacent
-        DT.Adjacent2Vertex{Int32, Set{NTuple{2, Int32}}}(), # adjacent2vertex
+        DT.Adjacent{Int32,NTuple{2,Int32}}(), # adjacent
+        DT.Adjacent2Vertex{Int32,Set{NTuple{2,Int32}}}(), # adjacent2vertex
         DT.Graph{Int32}(), # graph
         (), # boundary_curves
-        Dict{NTuple{2, Int32}, Tuple{Vector{Int32}, Int32}}(), # boundary_edge_map
-        Dict{Int32, Vector{Int32}}(DT.𝒢 => Int32[]), # ghost_vertex_map
-        Dict{Int32, UnitRange{Int32}}(-1 => -1:-1), # ghost_vertex_ranges
+        Dict{NTuple{2,Int32},Tuple{Vector{Int32},Int32}}(), # boundary_edge_map
+        Dict{Int32,Vector{Int32}}(DT.𝒢 => Int32[]), # ghost_vertex_map
+        Dict{Int32,UnitRange{Int32}}(-1 => -1:-1), # ghost_vertex_ranges
         DT.ConvexHull(pts, Int32[]), # convex_hull
-        Dict{Int32, DT.RepresentativeCoordinates{Int32, Float64}}(), # representative_point_coordinate
-        DT.construct_polygon_hierarchy(pts; IntegerType = Int32),
+        Dict{Int32,DT.RepresentativeCoordinates{Int32,Float64}}(), # representative_point_coordinate
+        DT.construct_polygon_hierarchy(pts; IntegerType=Int32),
         nothing,
         DT.TriangulationCache(
             DT.Triangulation(
                 pts,
-                Set{NTuple{3, Int32}}(), # triangles
+                Set{NTuple{3,Int32}}(), # triangles
                 Int32[], # boundary_nodes
-                Set{NTuple{2, Int32}}(), # interior_segments
-                Set{NTuple{2, Int32}}(), # all_segments
+                Set{NTuple{2,Int32}}(), # interior_segments
+                Set{NTuple{2,Int32}}(), # all_segments
                 DT.ZeroWeight(), # weights
-                DT.Adjacent{Int32, NTuple{2, Int32}}(), # adjacent
-                DT.Adjacent2Vertex{Int32, Set{NTuple{2, Int32}}}(), # adjacent2vertex
+                DT.Adjacent{Int32,NTuple{2,Int32}}(), # adjacent
+                DT.Adjacent2Vertex{Int32,Set{NTuple{2,Int32}}}(), # adjacent2vertex
                 DT.Graph{Int32}(), # graph
                 (), # boundary_curves
-                Dict{NTuple{2, Int32}, Tuple{Vector{Int32}, Int32}}(), # boundary_edge_map
-                Dict{Int32, Vector{Int32}}(DT.𝒢 => Int32[]), # ghost_vertex_map
-                Dict{Int32, UnitRange{Int32}}(-1 => -1:-1), # ghost_vertex_ranges
+                Dict{NTuple{2,Int32},Tuple{Vector{Int32},Int32}}(), # boundary_edge_map
+                Dict{Int32,Vector{Int32}}(DT.𝒢 => Int32[]), # ghost_vertex_map
+                Dict{Int32,UnitRange{Int32}}(-1 => -1:-1), # ghost_vertex_ranges
                 DT.ConvexHull(pts, Int32[]), # convex_hull
-                Dict{Int32, DT.RepresentativeCoordinates{Int32, Float64}}(), # representative_point_coordinate
-                DT.construct_polygon_hierarchy(pts; IntegerType = Int32),
+                Dict{Int32,DT.RepresentativeCoordinates{Int32,Float64}}(), # representative_point_coordinate
+                DT.construct_polygon_hierarchy(pts; IntegerType=Int32),
                 nothing, # boundary_enricher
-                DT.TriangulationCache(nothing, nothing, nothing, nothing, nothing, nothing),
+                DT.TriangulationCache(nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing),
             ),
             DT.Triangulation(
                 pts,
-                Set{NTuple{3, Int32}}(), # triangles
+                Set{NTuple{3,Int32}}(), # triangles
                 Int32[], # boundary_nodes
-                Set{NTuple{2, Int32}}(), # interior_segments
-                Set{NTuple{2, Int32}}(), # all_segments
+                Set{NTuple{2,Int32}}(), # interior_segments
+                Set{NTuple{2,Int32}}(), # all_segments
                 DT.ZeroWeight(), # weights
-                DT.Adjacent{Int32, NTuple{2, Int32}}(), # adjacent
-                DT.Adjacent2Vertex{Int32, Set{NTuple{2, Int32}}}(), # adjacent2vertex
+                DT.Adjacent{Int32,NTuple{2,Int32}}(), # adjacent
+                DT.Adjacent2Vertex{Int32,Set{NTuple{2,Int32}}}(), # adjacent2vertex
                 DT.Graph{Int32}(), # graph
                 (), # boundary_curves
-                Dict{NTuple{2, Int32}, Tuple{Vector{Int32}, Int32}}(), # boundary_edge_map
-                Dict{Int32, Vector{Int32}}(DT.𝒢 => Int32[]), # ghost_vertex_map
-                Dict{Int32, UnitRange{Int32}}(-1 => -1:-1), # ghost_vertex_ranges
+                Dict{NTuple{2,Int32},Tuple{Vector{Int32},Int32}}(), # boundary_edge_map
+                Dict{Int32,Vector{Int32}}(DT.𝒢 => Int32[]), # ghost_vertex_map
+                Dict{Int32,UnitRange{Int32}}(-1 => -1:-1), # ghost_vertex_ranges
                 DT.ConvexHull(pts, Int32[]), # convex_hull
-                Dict{Int32, DT.RepresentativeCoordinates{Int32, Float64}}(), # representative_point_coordinate
-                DT.construct_polygon_hierarchy(pts; IntegerType = Int32),
+                Dict{Int32,DT.RepresentativeCoordinates{Int32,Float64}}(), # representative_point_coordinate
+                DT.construct_polygon_hierarchy(pts; IntegerType=Int32),
                 nothing, # boundary_enricher
-                DT.TriangulationCache(nothing, nothing, nothing, nothing, nothing, nothing),
+                DT.TriangulationCache(nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing),
             ),
             Int32[],
-            Set{NTuple{2, Int32}}(),
+            Set{NTuple{2,Int32}}(),
             Vector{Int32}(),
-            Set{NTuple{3, Int32}}(),
+            Set{NTuple{3,Int32}}(),
+            AdaptivePredicates.incircleadapt_cache(Float64),
+            AdaptivePredicates.orient3adapt_cache(Float64),
+            AdaptivePredicates.insphereexact_cache(Float64),
         ),
     )
 end
@@ -88,21 +89,21 @@ _x, _y = complicated_geometry()
 global x = _x
 global y = _y
 boundary_nodes, points = convert_boundary_points_to_indices(x, y)
-global tri = triangulate(points; boundary_nodes, delete_ghosts = false)
+global tri = triangulate(points; boundary_nodes, delete_ghosts=false)
 A = get_area(tri)
-refine!(tri; max_area = 1.0e-1A, use_circumcenter = true, use_lens = false)
+refine!(tri; max_area=1.0e-1A, use_circumcenter=true, use_lens=false)
 boundary_nodes, points = convert_boundary_points_to_indices(x[1], y[1])
-global tri_2 = triangulate(points; boundary_nodes, delete_ghosts = false)
+global tri_2 = triangulate(points; boundary_nodes, delete_ghosts=false)
 A = get_area(tri_2)
-refine!(tri_2; max_area = 1.0e-1A, use_circumcenter = true, use_lens = false)
+refine!(tri_2; max_area=1.0e-1A, use_circumcenter=true, use_lens=false)
 boundary_nodes, points = convert_boundary_points_to_indices([0.0, 2.0, 2.0, 0.0, 0.0], [0.0, 0.0, 2.0, 2.0, 0.0])
-global tri_3 = triangulate(points; boundary_nodes, delete_ghosts = false)
+global tri_3 = triangulate(points; boundary_nodes, delete_ghosts=false)
 A = get_area(tri_3)
-refine!(tri_3; max_area = 1.0e-1A, use_circumcenter = true, use_lens = false)
+refine!(tri_3; max_area=1.0e-1A, use_circumcenter=true, use_lens=false)
 boundary_nodes, points = convert_boundary_points_to_indices(reverse(reverse.(x[2])), reverse(reverse.(y[2])))
-global tri_4 = triangulate(points; boundary_nodes, delete_ghosts = false)
+global tri_4 = triangulate(points; boundary_nodes, delete_ghosts=false)
 A = get_area(tri_4)
-refine!(tri_4; max_area = 1.0e-1A, use_circumcenter = true, use_lens = false)
+refine!(tri_4; max_area=1.0e-1A, use_circumcenter=true, use_lens=false)
 
 @testset "Triangulation getters" begin
     @test DT.get_points(tri) == tri.points
@@ -129,6 +130,9 @@ refine!(tri_4; max_area = 1.0e-1A, use_circumcenter = true, use_lens = false)
     @test DT.get_ghost_vertex_ranges(tri) == tri.ghost_vertex_ranges == DT.construct_ghost_vertex_ranges(get_boundary_nodes(tri))
     @test DT.get_boundary_edge_map(tri) == tri.boundary_edge_map == DT.construct_boundary_edge_map(get_boundary_nodes(tri))
     @test DT.get_cache(tri) == tri.cache
+    @test DT.get_incircle_cache(tri) == tri.cache.incircle_cache 
+    @test DT.get_orient3_cache(tri) == tri.cache.orient3_cache
+    @test DT.get_insphere_cache(tri) == tri.cache.insphere_cache
     @inferred DT.get_points(tri)
     @inferred DT.get_triangles(tri)
     @inferred DT.get_boundary_nodes(tri)
@@ -145,6 +149,12 @@ refine!(tri_4; max_area = 1.0e-1A, use_circumcenter = true, use_lens = false)
     @inferred DT.get_convex_hull(tri)
     @inferred DT.get_representative_point_list(tri)
     @inferred DT.get_exterior_curve_indices(tri)
+    @inferred DT.get_boundary_enricher(tri)
+    @inferred DT.get_polygon_hierarchy(tri)
+    @inferred DT.get_cache(tri)
+    @inferred DT.get_incircle_cache(tri)
+    @inferred DT.get_orient3_cache(tri)
+    @inferred DT.get_insphere_cache(tri)
 end
 
 @testset "Forwarded methods" begin
@@ -210,14 +220,14 @@ end
     @testset "ConvexHull" begin
         @test DT.get_convex_hull(tri) == tri.convex_hull
         @test DT.get_convex_hull_vertices(tri) == tri.convex_hull.vertices
-        _tri = triangulate_rectangle(0.0, 2.0, 5.0, 7.3, 5, 15; single_boundary = true)
+        _tri = triangulate_rectangle(0.0, 2.0, 5.0, 7.3, 5, 15; single_boundary=true)
         points = get_points(_tri)
         ch = convex_hull(points)
         @test ch.vertices == _tri.boundary_nodes
         _indices = deepcopy(ch.vertices)
         __indices = DT.get_convex_hull_vertices(_tri)
         empty!(__indices)
-        DT.convex_hull!(_tri; reconstruct = false)
+        DT.convex_hull!(_tri; reconstruct=false)
         @test length(__indices) == length(_indices)
         unique!(__indices)
         unique!(ch.vertices)
@@ -231,7 +241,7 @@ end
         ch.vertices .= circshift(ch.vertices, 1 - shift)
         @test __indices == ch.vertices
         delete_ghost_triangles!(_tri)
-        DT.convex_hull!(_tri; reconstruct = false)
+        DT.convex_hull!(_tri; reconstruct=false)
         @test length(__indices) == length(_indices)
         unique!(__indices)
         unique!(ch.vertices)
@@ -261,7 +271,7 @@ end
         c, d = 3.0, 7.0
         nx = 12
         ny = 15
-        @test DT.num_curves(triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 10, 10; delete_ghosts = false, single_boundary = false)) == 1
+        @test DT.num_curves(triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 10, 10; delete_ghosts=false, single_boundary=false)) == 1
         @test DT.num_sections(tri_2) == 4
         @inferred DT.num_sections(tri_2)
         @test DT.get_boundary_nodes(tri, 1) == tri.boundary_nodes[1]
@@ -284,10 +294,10 @@ end
     @testset "Triangles" begin
         rng = StableRNG(9882881)
         boundary_nodes, points = convert_boundary_points_to_indices(x, y)
-        tri = triangulate(points; rng, boundary_nodes, delete_ghosts = false)
+        tri = triangulate(points; rng, boundary_nodes, delete_ghosts=false)
         A = get_area(tri)
-        refine!(tri; max_area = 1.0e-1A, rng, use_circumcenter = true)
-        @test DT.triangle_type(tri) == NTuple{3, Int}
+        refine!(tri; max_area=1.0e-1A, rng, use_circumcenter=true)
+        @test DT.triangle_type(tri) == NTuple{3,Int}
         @inferred DT.triangle_type(tri)
         @test DT.num_triangles(tri) == length(tri.triangles)
         @test DT.each_triangle(tri) == tri.triangles
@@ -303,7 +313,7 @@ end
         @test DelaunayTriangulation.each_triangle(_solid_itr) == _solid_itr
         @test Base.IteratorSize(_solid_itr) == Base.HasLength()
         @test Base.IteratorEltype(_solid_itr) == Base.HasEltype()
-        @test Base.eltype(_solid_itr) == NTuple{3, Int}
+        @test Base.eltype(_solid_itr) == NTuple{3,Int}
         @test each_solid_triangle(tri) isa DT.EachSolidTriangle
         _solid_tri = collect(_solid_itr)
         @inferred collect(_solid_itr)
@@ -311,7 +321,7 @@ end
         _ghost_itr = each_ghost_triangle(tri)
         @test Base.IteratorSize(_ghost_itr) == Base.HasLength()
         @test Base.IteratorEltype(_ghost_itr) == Base.HasEltype()
-        @test Base.eltype(_ghost_itr) == NTuple{3, Int}
+        @test Base.eltype(_ghost_itr) == NTuple{3,Int}
         @test each_ghost_triangle(tri) isa DT.EachGhostTriangle
         _ghost_tri = collect(_ghost_itr)
         @inferred collect(_ghost_itr)
@@ -322,9 +332,9 @@ end
         @test length(_ghost_tri) == DT.num_ghost_triangles(tri) == length(_ghost_itr)
         boundary_nodes, points = convert_boundary_points_to_indices(x, y)
         rng = StableRNG(9882881)
-        ___tri = triangulate(points; boundary_nodes, delete_ghosts = false, rng)
+        ___tri = triangulate(points; boundary_nodes, delete_ghosts=false, rng)
         A = get_area(___tri)
-        refine!(___tri; max_area = 1.0e-1A, rng, use_circumcenter = true)
+        refine!(___tri; max_area=1.0e-1A, rng, use_circumcenter=true)
         DT.delete_ghost_triangles!(___tri)
         @test collect(each_triangle(___tri)) == collect(each_solid_triangle(___tri))
         @test length(collect(each_ghost_triangle(___tri))) == 0
@@ -337,10 +347,10 @@ end
     @testset "Edges" begin
         rng = StableRNG(998871)
         boundary_nodes, points = convert_boundary_points_to_indices(x, y)
-        tri = triangulate(points; rng, boundary_nodes, delete_ghosts = false)
+        tri = triangulate(points; rng, boundary_nodes, delete_ghosts=false)
         A = get_area(tri)
-        refine!(tri; max_area = 1.0e-1A, rng, use_circumcenter = true)
-        @test DT.edge_type(tri) == NTuple{2, Int}
+        refine!(tri; max_area=1.0e-1A, rng, use_circumcenter=true)
+        @test DT.edge_type(tri) == NTuple{2,Int}
         @inferred DT.edge_type(tri)
         @test DT.num_edges(tri) == length(tri.graph.edges)
         @inferred DT.num_edges(tri)
@@ -350,7 +360,7 @@ end
         @test DelaunayTriangulation.each_edge(_solid_itr) == _solid_itr
         @test Base.IteratorSize(_solid_itr) == Base.HasLength()
         @test Base.IteratorEltype(_solid_itr) == Base.HasEltype()
-        @test Base.eltype(_solid_itr) == NTuple{2, Int}
+        @test Base.eltype(_solid_itr) == NTuple{2,Int}
         @test each_solid_edge(tri) isa DT.EachSolidEdge
         _solid_tri = collect(_solid_itr)
         @inferred collect(_solid_itr)
@@ -358,7 +368,7 @@ end
         _ghost_itr = each_ghost_edge(tri)
         @test Base.IteratorSize(_ghost_itr) == Base.HasLength()
         @test Base.IteratorEltype(_ghost_itr) == Base.HasEltype()
-        @test Base.eltype(_ghost_itr) == NTuple{2, Int}
+        @test Base.eltype(_ghost_itr) == NTuple{2,Int}
         @test each_ghost_edge(tri) isa DT.EachGhostEdge
         _ghost_tri = collect(_ghost_itr)
         @inferred collect(_ghost_itr)
@@ -367,9 +377,9 @@ end
         @test length(_ghost_tri) + length(_solid_tri) == num_edges(tri)
         rng = StableRNG(998871)
         boundary_nodes, points = convert_boundary_points_to_indices(x, y)
-        ___tri = triangulate(points; rng, boundary_nodes, delete_ghosts = false)
+        ___tri = triangulate(points; rng, boundary_nodes, delete_ghosts=false)
         A = get_area(___tri)
-        refine!(___tri; max_area = 1.0e-1A, rng, use_circumcenter = true)
+        refine!(___tri; max_area=1.0e-1A, rng, use_circumcenter=true)
         DT.delete_ghost_triangles!(___tri)
         @test sort(collect(filter(!DT.is_ghost_edge, each_edge(___tri)))) == sort(collect(each_solid_edge(___tri)))
         @test sort(collect(filter(DT.is_ghost_edge, each_edge(___tri)))) == sort(collect(each_ghost_edge(___tri)))
@@ -391,7 +401,7 @@ end
         @test DT.num_points(tri) == length(tri.points)
         @inferred DT.num_points(tri)
         @test DT.get_point(tri, 2, 5, 6, 10) ==
-            ntuple(i -> Tuple(tri.points[(2, 5, 6, 10)[i]]), 4)
+              ntuple(i -> Tuple(tri.points[(2, 5, 6, 10)[i]]), 4)
         @inferred DT.get_point(tri, 2, 5, 6, 10)
         rep = DT.get_representative_point_list(tri)
         rep[1] = DT.RepresentativeCoordinates(0.5, 0.3, 2)
@@ -439,7 +449,7 @@ end
         boundary_nodes, points = convert_boundary_points_to_indices(x, y)
         _triq = triangulate(points; boundary_nodes, rng)
         A = get_area(_triq)
-        refine!(_triq; max_area = 1.0e-1A, rng, use_circumcenter = true, use_lens = false)
+        refine!(_triq; max_area=1.0e-1A, rng, use_circumcenter=true, use_lens=false)
         _solid_itr = each_solid_vertex(_triq)
         @test DelaunayTriangulation.each_vertex(_solid_itr) == _solid_itr
         @test Base.IteratorSize(_solid_itr) == Base.HasLength()
@@ -477,7 +487,7 @@ end
         rng = StableRNG(887271)
         ___tri = triangulate(points; boundary_nodes, rng)
         A = get_area(___tri)
-        refine!(___tri; max_area = 1.0e-1A, rng, use_circumcenter = true)
+        refine!(___tri; max_area=1.0e-1A, rng, use_circumcenter=true)
         DT.delete_ghost_triangles!(___tri)
         @test sort(collect(filter(!DT.is_ghost_vertex, each_vertex(___tri)))) == sort(collect(each_solid_vertex(___tri)))
         @test sort(collect(filter(DT.is_ghost_vertex, each_vertex(___tri)))) == sort(collect(each_ghost_vertex(___tri)))
@@ -505,10 +515,10 @@ end
     @testset "Miscellaneous" begin
         @test DT.integer_type(tri) == Int
         @test DT.number_type(tri) == Float64
-        @test DT.edge_type(tri) == NTuple{2, Int}
-        @test DT.edges_type(tri) == Set{NTuple{2, Int}}
-        @test DT.triangles_type(tri) == Set{NTuple{3, Int}}
-        @test DT.triangle_type(tri) == NTuple{3, Int}
+        @test DT.edge_type(tri) == NTuple{2,Int}
+        @test DT.edges_type(tri) == Set{NTuple{2,Int}}
+        @test DT.triangles_type(tri) == Set{NTuple{3,Int}}
+        @test DT.triangle_type(tri) == NTuple{3,Int}
         @inferred DT.integer_type(tri)
         @inferred DT.number_type(tri)
         DT.clear_empty_features!(tri)
@@ -535,7 +545,7 @@ end
         empty!(get_all_segments(_tri))
         @test !DT.is_constrained(_tri)
         @test reverse(sort(collect(DT.all_ghost_vertices(_tri)))) ==
-            [DT.𝒢, DT.𝒢 - 1, DT.𝒢 - 2, DT.𝒢 - 3]
+              [DT.𝒢, DT.𝒢 - 1, DT.𝒢 - 2, DT.𝒢 - 3]
     end
 end
 
@@ -558,18 +568,18 @@ end
     bn43 = bn4[3]
     bn44 = bn4[4]
     bn5 = all_bn[5][1]
-    e11 = Set(((bn11[i], bn11[i + 1]) for i in 1:(length(bn11) - 1)))
-    e12 = Set(((bn12[i], bn12[i + 1]) for i in 1:(length(bn12) - 1)))
-    e13 = Set(((bn13[i], bn13[i + 1]) for i in 1:(length(bn13) - 1)))
-    e14 = Set(((bn14[i], bn14[i + 1]) for i in 1:(length(bn14) - 1)))
-    e2 = Set(((bn2[i], bn2[i + 1]) for i in 1:(length(bn2) - 1)))
-    e3 = Set(((bn3[i], bn3[i + 1]) for i in 1:(length(bn3) - 1)))
-    e41 = Set(((bn41[i], bn41[i + 1]) for i in 1:(length(bn41) - 1)))
-    e42 = Set(((bn42[i], bn42[i + 1]) for i in 1:(length(bn42) - 1)))
-    e43 = Set(((bn43[i], bn43[i + 1]) for i in 1:(length(bn43) - 1)))
-    e44 = Set(((bn44[i], bn44[i + 1]) for i in 1:(length(bn44) - 1)))
-    e5 = Set(((bn5[i], bn5[i + 1]) for i in 1:(length(bn5) - 1)))
-    ace = Set{NTuple{2, Int}}()
+    e11 = Set(((bn11[i], bn11[i+1]) for i in 1:(length(bn11)-1)))
+    e12 = Set(((bn12[i], bn12[i+1]) for i in 1:(length(bn12)-1)))
+    e13 = Set(((bn13[i], bn13[i+1]) for i in 1:(length(bn13)-1)))
+    e14 = Set(((bn14[i], bn14[i+1]) for i in 1:(length(bn14)-1)))
+    e2 = Set(((bn2[i], bn2[i+1]) for i in 1:(length(bn2)-1)))
+    e3 = Set(((bn3[i], bn3[i+1]) for i in 1:(length(bn3)-1)))
+    e41 = Set(((bn41[i], bn41[i+1]) for i in 1:(length(bn41)-1)))
+    e42 = Set(((bn42[i], bn42[i+1]) for i in 1:(length(bn42)-1)))
+    e43 = Set(((bn43[i], bn43[i+1]) for i in 1:(length(bn43)-1)))
+    e44 = Set(((bn44[i], bn44[i+1]) for i in 1:(length(bn44)-1)))
+    e5 = Set(((bn5[i], bn5[i+1]) for i in 1:(length(bn5)-1)))
+    ace = Set{NTuple{2,Int}}()
     for es in (e11, e12, e13, e14, e2, e3, e41, e42, e43, e44, e5)
         for e in es
             push!(ace, e)
@@ -589,11 +599,11 @@ end
     bn2 = all_bn[2]
     bn3 = all_bn[3]
     bn4 = all_bn[4]
-    e1 = Set(((bn1[i], bn1[i + 1]) for i in 1:(length(bn1) - 1)))
-    e2 = Set(((bn2[i], bn2[i + 1]) for i in 1:(length(bn2) - 1)))
-    e3 = Set(((bn3[i], bn3[i + 1]) for i in 1:(length(bn3) - 1)))
-    e4 = Set(((bn4[i], bn4[i + 1]) for i in 1:(length(bn4) - 1)))
-    ace = Set{NTuple{2, Int}}()
+    e1 = Set(((bn1[i], bn1[i+1]) for i in 1:(length(bn1)-1)))
+    e2 = Set(((bn2[i], bn2[i+1]) for i in 1:(length(bn2)-1)))
+    e3 = Set(((bn3[i], bn3[i+1]) for i in 1:(length(bn3)-1)))
+    e4 = Set(((bn4[i], bn4[i+1]) for i in 1:(length(bn4)-1)))
+    ace = Set{NTuple{2,Int}}()
     for es in (e1, e2, e3, e4)
         for e in es
             push!(ace, e)
@@ -609,8 +619,8 @@ end
     j = rand(1:100000, 50)
     all_ce = Set(((i, j) for (i, j) in zip(i, j)))
     bn_map = get_ghost_vertex_map(tri_3)
-    e = Set(((all_bn[i], all_bn[i + 1]) for i in 1:(length(all_bn) - 1)))
-    ace = Set{NTuple{2, Int}}()
+    e = Set(((all_bn[i], all_bn[i+1]) for i in 1:(length(all_bn)-1)))
+    ace = Set{NTuple{2,Int}}()
     for e in e
         push!(ace, e)
     end
@@ -624,8 +634,8 @@ end
     j = rand(1:100000, 50)
     all_ce = Set(((i, j) for (i, j) in zip(i, j)))
     bn_map = get_ghost_vertex_map(tri_4)
-    e = Set(((all_bn[i], all_bn[i + 1]) for i in 1:(length(all_bn) - 1)))
-    ace = Set{NTuple{2, Int}}()
+    e = Set(((all_bn[i], all_bn[i+1]) for i in 1:(length(all_bn)-1)))
+    ace = Set{NTuple{2,Int}}()
     for e in e
         push!(ace, e)
     end
@@ -636,7 +646,7 @@ end
 end
 
 @testset "sort_edge_by_degree" begin
-    tri = triangulate(rand(2, 500); delete_ghosts = false)
+    tri = triangulate(rand(2, 500); delete_ghosts=false)
     for e in each_edge(tri)
         new_e = DT.sort_edge_by_degree(tri, e)
         d1 = DT.num_neighbours(tri, e[1])
@@ -653,17 +663,17 @@ end
     n = 20
     for _ in 1:10
         n += rand(1:5)
-        tri1 = triangulate(12randn(2, n), delete_ghosts = false)
-        tri2 = triangulate(12randn(2, n), delete_ghosts = true)
+        tri1 = triangulate(12randn(2, n), delete_ghosts=false)
+        tri2 = triangulate(12randn(2, n), delete_ghosts=true)
         for tri in (tri1, tri2)
             for qi in each_solid_vertex(tri)
                 for k in each_solid_vertex(tri)
                     q = get_point(tri, qi)
-                    history = DT.PointLocationHistory{NTuple{3, Int}, NTuple{2, Int}, Int}()
+                    history = DT.PointLocationHistory{NTuple{3,Int},NTuple{2,Int},Int}()
                     find_triangle(
                         tri, q;
                         k,
-                        store_history = true,
+                        store_history=true,
                         history,
                     )
                     visited_triangles = history.triangles
@@ -707,7 +717,7 @@ pts = [(rand(rng), rand(rng)) for _ in 1:50]
 bnd_pts = [(0.3cos(θ), 0.3sin(θ)) .+ 0.5 for θ in LinRange(0, 2π - 1 / 250, 25)]
 bnd_id = [(51:75)..., 51]
 append!(pts, bnd_pts)
-global tric = triangulate(pts; boundary_nodes = bnd_id, rng)
+global tric = triangulate(pts; boundary_nodes=bnd_id, rng)
 
 @testset "each_segment" begin
     @test each_segment(tric) == each_edge(get_all_segments(tric))
@@ -737,16 +747,16 @@ end
     boundary_nodes, points = convert_boundary_points_to_indices(x, y)
     tri = triangulate(points; rng, boundary_nodes)
     A = get_area(tri)
-    refine!(tri, rng = rng, max_area = 1.0e-1A, use_circumcenter = true, use_lens = false)
+    refine!(tri, rng=rng, max_area=1.0e-1A, use_circumcenter=true, use_lens=false)
     all_bn = DT.get_all_boundary_nodes(tri)
     @test all_bn == Set(reduce(vcat, reduce(vcat, get_boundary_nodes(tri))))
     tri2, label_map, index_map = simple_geometry()
     all_bn = DT.get_all_boundary_nodes(tri2)
     @test all_bn == Set(reduce(vcat, reduce(vcat, get_boundary_nodes(tri2))))
-    tri3 = triangulate_rectangle(0, 1, 0, 1, 50, 50; delete_ghosts = false, single_boundary = false)
+    tri3 = triangulate_rectangle(0, 1, 0, 1, 50, 50; delete_ghosts=false, single_boundary=false)
     all_bn = DT.get_all_boundary_nodes(tri3)
     @test all_bn == Set(reduce(vcat, reduce(vcat, get_boundary_nodes(tri3))))
-    tri4 = triangulate_rectangle(0, 1, 0, 1, 50, 50; delete_ghosts = false, single_boundary = true)
+    tri4 = triangulate_rectangle(0, 1, 0, 1, 50, 50; delete_ghosts=false, single_boundary=true)
     all_bn = DT.get_all_boundary_nodes(tri4)
     @test all_bn == Set(reduce(vcat, reduce(vcat, get_boundary_nodes(tri4))))
     tri = triangulate(rand(2, 50))
@@ -759,7 +769,7 @@ end
     boundary_nodes, points = convert_boundary_points_to_indices(x, y)
     tri = triangulate(points; rng, boundary_nodes)
     A = get_area(tri)
-    refine!(tri, rng = rng, max_area = 1.0e-2A, use_circumcenter = true)
+    refine!(tri, rng=rng, max_area=1.0e-2A, use_circumcenter=true)
     for (e, (s, i)) in tri.boundary_edge_map
         @test DT.get_boundary_edge_map(tri, e) == (s, i)
         @test DT.get_boundary_edge_map(tri, e...) == (s, i)
@@ -928,14 +938,14 @@ end
 end
 
 @testset "get_adjacent concurrency" begin # Shouldn't be an issue anymore since we removed DefaultDict, but let's keep this here anyway. The test here is simply that it doesn't error.
-    tri = triangulate(rand(2, 50), delete_ghosts = false)
+    tri = triangulate(rand(2, 50), delete_ghosts=false)
     Base.Threads.@threads for _ in 1:5000
         get_adjacent(tri, -5, rand(1:1000))
     end
 end
 
 @testset "has_vertex and has_ghost_vertices" begin
-    tri = triangulate(rand(2, 50), delete_ghosts = false)
+    tri = triangulate(rand(2, 50), delete_ghosts=false)
     @test DT.has_vertex(tri, 1)
     @test !DT.has_vertex(tri, 57)
     @test DT.has_ghost_vertices(tri)
@@ -978,8 +988,8 @@ end
         (-2.0, 12.0), (-4.0, 12.0), (-6.0, 11.0), (-7.0, 9.0),
         (-6.94, 7.13), (-6.0, 5.0), (-4.0, 3.0), (-2.0, 1.0), (0.0, 0.0),
     ]
-    boundary_nodes, pts = convert_boundary_points_to_indices(boundary_points; existing_points = pts)
-    tri = triangulate(pts; boundary_nodes, delete_ghosts = false)
+    boundary_nodes, pts = convert_boundary_points_to_indices(boundary_points; existing_points=pts)
+    tri = triangulate(pts; boundary_nodes, delete_ghosts=false)
     @test DT.is_positively_oriented(tri, 1)
 
     points = [
@@ -990,7 +1000,7 @@ end
     segment_2 = [(14.0, 0.0), (10.0, 4.0), (4.0, 6.0), (2.0, 12.0), (0.0, 14.0)]
     segment_3 = [(0.0, 14.0), (0.0, 0.0)]
     boundary_points = [segment_1, segment_2, segment_3]
-    boundary_nodes, points = convert_boundary_points_to_indices(boundary_points; existing_points = points)
+    boundary_nodes, points = convert_boundary_points_to_indices(boundary_points; existing_points=points)
     tri = triangulate(points; boundary_nodes)
     @test DT.is_positively_oriented(tri, 1)
 
@@ -1027,8 +1037,8 @@ end
         (5.6, 7.8), (5.6, 7.6), (5.6, 7.4), (6.2, 7.4), (6.0, 7.6),
         (7.0, 7.8), (7.0, 7.4),
     ]
-    boundary_nodes, points = convert_boundary_points_to_indices(curves; existing_points = points)
-    tri = triangulate(points; boundary_nodes = boundary_nodes)
+    boundary_nodes, points = convert_boundary_points_to_indices(curves; existing_points=points)
+    tri = triangulate(points; boundary_nodes=boundary_nodes)
     @test DT.is_positively_oriented(tri, 1)
     @test !DT.is_positively_oriented(tri, 2)
     @test !DT.is_positively_oriented(tri, 3)
@@ -1061,15 +1071,15 @@ end
         (13.0, 19.0), (13.0, 12.0), (16.0, 8.0), (9.8, 8.0), (7.5, 6.0),
         (12.0, 13.0), (19.0, 15.0),
     ]
-    boundary_nodes, points = convert_boundary_points_to_indices(curves; existing_points = points)
-    tri = triangulate(points; boundary_nodes = boundary_nodes)
+    boundary_nodes, points = convert_boundary_points_to_indices(curves; existing_points=points)
+    tri = triangulate(points; boundary_nodes=boundary_nodes)
     @test DT.is_positively_oriented(tri, 1)
     @test !DT.is_positively_oriented(tri, 2)
     @test DT.is_positively_oriented(tri, 3)
 
     θ = LinRange(0, 2π, 20) |> collect
     θ[end] = 0 # need to make sure that 2π gives the exact same coordinates as 0
-    xy = Vector{Vector{Vector{NTuple{2, Float64}}}}()
+    xy = Vector{Vector{Vector{NTuple{2,Float64}}}}()
     cx = 0.0
     for i in 1:2
         # Make the exterior circle
@@ -1079,7 +1089,7 @@ end
         cx += 3.0
     end
     boundary_nodes, points = convert_boundary_points_to_indices(xy)
-    tri = triangulate(points; boundary_nodes = boundary_nodes)
+    tri = triangulate(points; boundary_nodes=boundary_nodes)
     @test DT.is_positively_oriented(tri, 1)
     @test !DT.is_positively_oriented(tri, 2)
     @test DT.is_positively_oriented(tri, 3)
@@ -1243,7 +1253,7 @@ end
     dot_4 = [[K3, L3, M3, N3, O3, P3, Q3, R3, S3, T3, U3, V3, K3]]
     curves = [J_curve, U_curve, L_curve, I_curve, A_curve_outline, A_curve_hole, dot_1, dot_2, dot_3, dot_4]
     nodes, points = convert_boundary_points_to_indices(curves)
-    tri = triangulate(points; boundary_nodes = nodes)
+    tri = triangulate(points; boundary_nodes=nodes)
     @test DT.is_positively_oriented(tri, 1)
     @test DT.is_positively_oriented(tri, 2)
     @test DT.is_positively_oriented(tri, 3)
@@ -1272,21 +1282,21 @@ end
     @test tri1 == tri2
 
     # Custom types 
-    tri1 = triangulate(rand(2, 50); IntegerType = Int32)
-    tri2 = Triangulation(get_points(tri1), each_solid_triangle(tri1), get_convex_hull_vertices(tri1); IntegerType = Int32)
+    tri1 = triangulate(rand(2, 50); IntegerType=Int32)
+    tri2 = Triangulation(get_points(tri1), each_solid_triangle(tri1), get_convex_hull_vertices(tri1); IntegerType=Int32)
     unlock_convex_hull!(tri2)
     @test tri1 == tri2
     @test tri1 ⊢ tri2
 
     # Delete ghosts works properly 
-    tri1 = triangulate(rand(2, 50), delete_ghosts = true)
-    tri2 = Triangulation(get_points(tri1), each_solid_triangle(tri1), get_convex_hull_vertices(tri1), delete_ghosts = true)
+    tri1 = triangulate(rand(2, 50), delete_ghosts=true)
+    tri2 = Triangulation(get_points(tri1), each_solid_triangle(tri1), get_convex_hull_vertices(tri1), delete_ghosts=true)
     unlock_convex_hull!(tri2)
     @test tri1 == tri2
 
     # Weights work properly 
     weights = rand(50)
-    tri2 = Triangulation(get_points(tri1), each_solid_triangle(tri1), get_convex_hull_vertices(tri1), weights = weights)
+    tri2 = Triangulation(get_points(tri1), each_solid_triangle(tri1), get_convex_hull_vertices(tri1), weights=weights)
     @test DT.is_weighted(tri2) && get_weights(tri2) == weights
 end
 
@@ -1345,7 +1355,7 @@ end
     nodes, points = convert_boundary_points_to_indices(boundary_pts)
     push!(points, (20.0, 20.0))
     rng = StableRNG(19191919)
-    C = Set{NTuple{2, Int}}()
+    C = Set{NTuple{2,Int}}()
     for i in 1:50
         θ = 2π * rand(rng)
         r = 4sqrt(rand(rng))
@@ -1354,13 +1364,13 @@ end
         push!(points, (x, y))
         push!(C, (48, 48 + i))
     end
-    tri = triangulate(points; boundary_nodes = nodes, segments = C, rng)
+    tri = triangulate(points; boundary_nodes=nodes, segments=C, rng)
 
     # Vertices 
     ns = 5_000_000
     function test_vertex_sampler(tri, ns)
-        solid_vertices = DefaultDict{Int, Float64, Float64}(0.0)
-        ghost_vertices = DefaultDict{Int, Float64, Float64}(0.0)
+        solid_vertices = DefaultDict{Int,Float64,Float64}(0.0)
+        ghost_vertices = DefaultDict{Int,Float64,Float64}(0.0)
         for _ in 1:ns
             sv = rand(each_solid_vertex(tri))
             gv = rand(each_ghost_vertex(tri))
@@ -1378,8 +1388,8 @@ end
     gm = mean(values(ghost_vertices))
     @test sm ≈ 1 / DT.num_solid_vertices(tri)
     @test gm ≈ 1 / 2
-    @test all(y -> isapprox(y, sm, rtol = 1.0e-1), values(solid_vertices))
-    @test all(y -> isapprox(y, gm, rtol = 1.0e-1), values(ghost_vertices))
+    @test all(y -> isapprox(y, sm, rtol=1.0e-1), values(solid_vertices))
+    @test all(y -> isapprox(y, gm, rtol=1.0e-1), values(ghost_vertices))
     for i in 1:250
         for f in (each_vertex, each_solid_vertex, each_ghost_vertex)
             rng = StableRNG(i)
@@ -1396,8 +1406,8 @@ end
     # Triangles 
     ns = 5_000_000
     function test_triangle_sampler(tri, ns)
-        solid_triangles = DefaultDict{NTuple{3, Int}, Float64, Float64}(0.0)
-        ghost_triangles = DefaultDict{NTuple{3, Int}, Float64, Float64}(0.0)
+        solid_triangles = DefaultDict{NTuple{3,Int},Float64,Float64}(0.0)
+        ghost_triangles = DefaultDict{NTuple{3,Int},Float64,Float64}(0.0)
         for _ in 1:ns
             st = rand(each_solid_triangle(tri))
             gt = rand(each_ghost_triangle(tri))
@@ -1415,8 +1425,8 @@ end
     gm = mean(values(ghost_triangles))
     @test sm ≈ 1 / DT.num_solid_triangles(tri)
     @test gm ≈ 1 / DT.num_ghost_triangles(tri)
-    @test all(y -> isapprox(y, sm, rtol = 1.0e-1), values(solid_triangles))
-    @test all(y -> isapprox(y, gm, rtol = 1.0e-1), values(ghost_triangles))
+    @test all(y -> isapprox(y, sm, rtol=1.0e-1), values(solid_triangles))
+    @test all(y -> isapprox(y, gm, rtol=1.0e-1), values(ghost_triangles))
     for i in 1:250
         for f in (each_triangle, each_solid_triangle, each_ghost_triangle)
             rng = StableRNG(i)
@@ -1433,8 +1443,8 @@ end
     # Edges 
     ns = 5_000_000
     function test_edge_sampler(tri, ns)
-        solid_edges = DefaultDict{NTuple{2, Int}, Float64, Float64}(0.0)
-        ghost_edges = DefaultDict{NTuple{2, Int}, Float64, Float64}(0.0)
+        solid_edges = DefaultDict{NTuple{2,Int},Float64,Float64}(0.0)
+        ghost_edges = DefaultDict{NTuple{2,Int},Float64,Float64}(0.0)
         for _ in 1:ns
             se = rand(each_solid_edge(tri))
             ge = rand(each_ghost_edge(tri))
@@ -1452,8 +1462,8 @@ end
     gm = mean(values(ghost_edges))
     @test sm ≈ 1 / DT.num_solid_edges(tri)
     @test gm ≈ 1 / DT.num_ghost_edges(tri)
-    @test all(y -> isapprox(y, sm, rtol = 1.0e-1), values(solid_edges))
-    @test all(y -> isapprox(y, gm, rtol = 1.0e-1), values(ghost_edges))
+    @test all(y -> isapprox(y, sm, rtol=1.0e-1), values(solid_edges))
+    @test all(y -> isapprox(y, gm, rtol=1.0e-1), values(ghost_edges))
     for i in 1:250
         for f in (each_edge, each_solid_edge, each_ghost_edge)
             rng = StableRNG(i)

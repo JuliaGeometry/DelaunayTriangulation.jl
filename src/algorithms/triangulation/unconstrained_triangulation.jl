@@ -153,7 +153,7 @@ function add_point_bowyer_watson!(tri::Triangulation, new_point, initial_search_
     q = get_point(tri, _new_point)
     V = find_triangle(tri, q; predicates, m = nothing, point_indices = nothing, try_points = nothing, k = initial_search_point, rng)
     if is_weighted(tri)
-        cert = point_position_relative_to_circumcircle(predicates, tri, V, _new_point) # redirects to point_position_relative_to_witness_plane
+        cert = point_position_relative_to_circumcircle(predicates, tri, V, _new_point; cache = get_orient3_cache(tri)) # redirects to point_position_relative_to_witness_plane
         is_outside(cert) && return V # If the point is submerged, then we don't add it
     end
     flag = point_position_relative_to_triangle(predicates, tri, V, q)
@@ -298,9 +298,9 @@ Determines whether to enter the cavity in `tri` through the edge `(i, j)` when i
 function enter_cavity(tri::Triangulation, r, i, j, ℓ, predicates::AbstractPredicateKernel = AdaptiveKernel())
     contains_segment(tri, i, j)  && return false
     if is_ghost_vertex(ℓ)
-        cert = point_position_relative_to_circumcircle(tri, j, i, ℓ, r)
+        cert = point_position_relative_to_circumcircle(predicates, tri, j, i, ℓ, r; cache = get_incircle_cache(tri))
     else
-        cert = point_position_relative_to_circumcircle(tri, r, i, j, ℓ)
+        cert = point_position_relative_to_circumcircle(predicates, tri, r, i, j, ℓ; cache =  get_incircle_cache(tri))
     end
     return is_weighted(tri) ? !is_outside(cert) : is_inside(cert)
 end

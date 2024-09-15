@@ -652,7 +652,7 @@ function add_point_cavity_cdt!(tri::Triangulation, u, v, w, marked_vertices, pre
         insert_flag = true
     else
         p, q, r, s = get_point(tri, w, v, x, u) # Don't want to deal with boundary handling here 
-        incircle_test = point_position_relative_to_circle(predicates, p, q, r, s)
+        incircle_test = point_position_relative_to_circle(predicates, p, q, r, s; cache = get_incircle_cache(tri))
         orient_test = triangle_orientation(predicates, tri, u, v, w)
         insert_flag = !is_inside(incircle_test) && is_positively_oriented(orient_test)
     end

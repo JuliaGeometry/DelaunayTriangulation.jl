@@ -34,7 +34,7 @@ triangle_orientation(kernel::AbstractPredicateKernel, tri::Triangulation, T) = t
 triangle_orientation(tri::Triangulation, T) = triangle_orientation(AdaptiveKernel(), tri, T)
 
 """
-    point_position_relative_to_circle([kernel::AbstractPredicateKernel=AdaptiveKernel(),] a, b, c, p) -> Certificate
+    point_position_relative_to_circle([kernel::AbstractPredicateKernel=AdaptiveKernel(),] a, b, c, p; cache = nothing) -> Certificate
 
 Given a circle through the coordinates `(a, b, c)`, assumed to be positively oriented,
 computes the position of `p` relative to the circle. Returns a [`Certificate`](@ref), which is one of:
@@ -46,12 +46,17 @@ computes the position of `p` relative to the circle. Returns a [`Certificate`](@
 The `kernel` argument determines how this result is computed, and should be 
 one of [`ExactKernel`](@ref), [`FastKernel`](@ref), and [`AdaptiveKernel`](@ref) (the default).
 See the documentation for more information about these choices.
+
+The `cache` keyword argument is passed to [`incircle_predicate`] and should be one of 
+- `nothing`: No cache is used.
+- `AdaptivePredicates.incircleadapt_cache(T)`, where `T` is the number type used (`Float64` or `Float32`).
+The cache is only needed if an `AdaptiveKernel()` is used.
 """
-function point_position_relative_to_circle(kernel::AbstractPredicateKernel, a, b, c, p)
-    cert = incircle_predicate(kernel, a, b, c, p)
+function point_position_relative_to_circle(kernel::AbstractPredicateKernel, a, b, c, p; cache::PredicateCacheType = nothing)
+    cert = incircle_predicate(kernel, a, b, c, p; cache)
     return convert_certificate(cert, Cert.Outside, Cert.On, Cert.Inside)
 end
-point_position_relative_to_circle(a, b, c, p) = point_position_relative_to_circle(AdaptiveKernel(), a, b, c, p)
+point_position_relative_to_circle(a, b, c, p; cache::PredicateCacheType = nothing) = point_position_relative_to_circle(AdaptiveKernel(), a, b, c, p; cache)
 
 @doc """
     point_position_relative_to_line([kernel::AbstractPredicateKernel=AdaptiveKernel(),] a, b, p) -> Certificate
@@ -307,8 +312,8 @@ end
 point_position_relative_to_oriented_outer_halfplane(a, b, p) = point_position_relative_to_oriented_outer_halfplane(AdaptiveKernel(), a, b, p)
 
 @doc """
-    is_legal([kernel::AbstractPredicateKernel=AdaptiveKernel(),] tri::Triangulation, i, j) -> Certificate 
-    is_legal([kernel::AbstractPredicateKernel=AdaptiveKernel(),] p, q, r, s) -> Certificate
+    is_legal([kernel::AbstractPredicateKernel=AdaptiveKernel(),] tri::Triangulation, i, j; cache = nothing) -> Certificate 
+    is_legal([kernel::AbstractPredicateKernel=AdaptiveKernel(),] p, q, r, s[, cache = nothing]) -> Certificate
 
 Tests if the edge `(p, q)` (or the edge `(i, j)` of `tri`) is legal, where the edge `(p, q)`
 is incident to two triangles `(p, q, r)` and `(q, p, s)`. In partiuclar, tests that `s` is not inside 
@@ -322,19 +327,24 @@ If the edge `(i, j)` is a segment of `tri` or is a ghost edge, then the edge is 
 The `kernel` argument determines how this result is computed, and should be 
 one of [`ExactKernel`](@ref), [`FastKernel`](@ref), and [`AdaptiveKernel`](@ref) (the default).
 See the documentation for more information about these choices.
+
+The `cache` keyword argument is passed to [`point_position_relative_to_circumcircle`] and should be one of 
+- `nothing`: No cache is used.
+- `AdaptivePredicates.incircleadapt_cache(T)`, where `T` is the number type used (`Float64` or `Float32`).
+The cache is only needed if an `AdaptiveKernel()` is used.
 """
 is_legal
-function is_legal(kernel::AbstractPredicateKernel, p, q, r, s)
-    incirc = point_position_relative_to_circle(kernel, p, q, r, s)
+function is_legal(kernel::AbstractPredicateKernel, p, q, r, s; cache::PredicateCacheType = nothing)
+    incirc = point_position_relative_to_circle(kernel, p, q, r, s; cache)
     if is_inside(incirc)
         return Cert.Illegal
     else
         return Cert.Legal
     end
 end
-is_legal(p, q, r, s) = is_legal(AdaptiveKernel(), p, q, r, s)
+is_legal(p, q, r, s; cache::PredicateCacheType = nothing) = is_legal(AdaptiveKernel(), p, q, r, s; cache)
 
-function is_legal(kernel::AbstractPredicateKernel, tri::Triangulation, i, j)
+function is_legal(kernel::AbstractPredicateKernel, tri::Triangulation, i, j; cache::PredicateCacheType = nothing)
     if contains_segment(tri, i, j) ||
             is_boundary_edge(tri, j, i) || is_boundary_edge(tri, i, j) ||
             !edge_exists(tri, i, j) || !edge_exists(tri, j, i) ||
@@ -344,11 +354,11 @@ function is_legal(kernel::AbstractPredicateKernel, tri::Triangulation, i, j)
         k = get_adjacent(tri, i, j)
         ℓ = get_adjacent(tri, j, i)
         p, q, r, s = get_point(tri, i, j, k, ℓ)
-        cert = is_legal(kernel, p, q, r, s)
+        cert = is_legal(kernel, p, q, r, s; cache)
         return cert
     end
 end
-is_legal(tri::Triangulation, i, j) = is_legal(AdaptiveKernel(), tri, i, j)
+is_legal(tri::Triangulation, i, j; cache::PredicateCacheType = nothing) = is_legal(AdaptiveKernel(), tri, i, j; cache)
 
 @doc """
     triangle_line_segment_intersection([kernel::AbstractPredicateKernel=AdaptiveKernel(),] p, q, r, a, b) -> Certificate 
@@ -533,8 +543,8 @@ end
 find_edge(tri::Triangulation, T, ℓ) = find_edge(AdaptiveKernel(), tri, T, ℓ)
 
 @doc """
-    point_position_relative_to_circumcircle([kernel::AbstractPredicateKernel=AdaptiveKernel(),] tri::Triangulation, i, j, k, ℓ) -> Certificate
-    point_position_relative_to_circumcircle([kernel::AbstractPredicateKernel=AdaptiveKernel(),] tri::Triangulation, T, ℓ) -> Certificate
+    point_position_relative_to_circumcircle([kernel::AbstractPredicateKernel=AdaptiveKernel(),] tri::Triangulation, i, j, k, ℓ; cache = nothing) -> Certificate
+    point_position_relative_to_circumcircle([kernel::AbstractPredicateKernel=AdaptiveKernel(),] tri::Triangulation, T, ℓ; cache = nothing) -> Certificate
 
 Tests the position of the vertex `ℓ` of `tri` relative to the circumcircle of the triangle `T = (i, j, k)`. The returned value is a [`Certificate`](@ref), which is one of:
 
@@ -545,6 +555,12 @@ Tests the position of the vertex `ℓ` of `tri` relative to the circumcircle of 
 The `kernel` argument determines how this result is computed, and should be 
 one of [`ExactKernel`](@ref), [`FastKernel`](@ref), and [`AdaptiveKernel`](@ref) (the default).
 See the documentation for more information about these choices.
+
+The `cache` keyword argument is useful when an `AdaptiveKernel()` is used. Depending on whether the triangulation is weighted or not, the cache should be of the following:
+- `nothing`: No cache is used.
+- `AdaptivePredicates.incircleadapt_cache(T)`, where `T` is the number type used (`Float64` or `Float32`). This is used for unweighted triangulations.
+- `AdaptivePredicates.orient3adapt_cache(T)`, where `T` is the number type used (`Float64` or `Float32`). This is used for weighted triangulations.
+In case the wrong cache type is used, it is replaced with `nothing`.
 
 !!! note "Ghost triangles"
 
@@ -557,7 +573,7 @@ See the documentation for more information about these choices.
     in addition to checking [`point_position_relative_to_oriented_outer_halfplane`](@ref), we must check if the new vertex is not submerged by the adjoining solid triangle.
 """
 point_position_relative_to_circumcircle
-function point_position_relative_to_circumcircle(kernel::AbstractPredicateKernel, tri::Triangulation, i, j, k, ℓ)
+function point_position_relative_to_circumcircle(kernel::AbstractPredicateKernel, tri::Triangulation, i, j, k, ℓ; cache::PredicateCacheType = nothing)
     u, v, w = sort_triangle(i, j, k)
     a, b, c, p = get_point(tri, u, v, w, ℓ)
     if is_ghost_vertex(w)
@@ -565,27 +581,65 @@ function point_position_relative_to_circumcircle(kernel::AbstractPredicateKernel
         if is_on(cert) && is_weighted(tri)
             u′, v′, w′ = replace_ghost_triangle_with_boundary_triangle(tri, (u, v, w))
             !edge_exists(w′) && return Cert.Inside # needed for the case tri = triangulate(get_points(triangulate_rectangle(0, 10, 0, 10, 3, 3)), weights = zeros(9), insertion_order = [9, 7, 6, 8, 4, 5, 3, 1, 2]) 
-            sub_cert = point_position_relative_to_witness_plane(kernel, tri, u′, v′, w′, ℓ)
+            sub_cert = point_position_relative_to_witness_plane(kernel, tri, u′, v′, w′, ℓ; cache = fix_orient3_cache(tri, cache))
             is_above(sub_cert) && return Cert.Outside
             return cert
         else
             return cert
         end
     elseif !is_weighted(tri)
-        return point_position_relative_to_circle(kernel, a, b, c, p)
+        return point_position_relative_to_circle(kernel, a, b, c, p; cache = fix_incircle_cache(tri, cache))
     else
-        cert = point_position_relative_to_witness_plane(kernel, tri, i, j, k, ℓ)
+        cert = point_position_relative_to_witness_plane(kernel, tri, i, j, k, ℓ; cache =  fix_orient3_cache(tri, cache))
         return is_above(cert) ? Cert.Outside :
             is_below(cert) ? Cert.Inside :
             Cert.On
     end
 end
-point_position_relative_to_circumcircle(tri::Triangulation, i, j, k, ℓ) = point_position_relative_to_circumcircle(AdaptiveKernel(), tri, i, j, k, ℓ)
-point_position_relative_to_circumcircle(kernel::AbstractPredicateKernel, tri::Triangulation, T, ℓ) = point_position_relative_to_circumcircle(kernel, tri, geti(T), getj(T), getk(T), ℓ)
-point_position_relative_to_circumcircle(tri::Triangulation, T, ℓ) = point_position_relative_to_circumcircle(AdaptiveKernel(), tri, geti(T), getj(T), getk(T), ℓ)
+point_position_relative_to_circumcircle(tri::Triangulation, i, j, k, ℓ; cache::PredicateCacheType = nothing) = point_position_relative_to_circumcircle(AdaptiveKernel(), tri, i, j, k, ℓ; cache)
+point_position_relative_to_circumcircle(kernel::AbstractPredicateKernel, tri::Triangulation, T, ℓ; cache::PredicateCacheType = nothing) = point_position_relative_to_circumcircle(kernel, tri, geti(T), getj(T), getk(T), ℓ; cache)
+point_position_relative_to_circumcircle(tri::Triangulation, T, ℓ; cache::PredicateCacheType = nothing) = point_position_relative_to_circumcircle(AdaptiveKernel(), tri, geti(T), getj(T), getk(T), ℓ; cache)
 
 """
-    point_position_relative_to_witness_plane([kernel::AbstractPredicateKernel=AdaptiveKernel(),] tri::Triangulation, i, j, k, ℓ) -> Certificate
+    validate_incircle_cache(tri::Triangulation, cache) -> Bool
+
+Checks if the cache `cache` is of the correct type for computing incircle predicates for the triangulation `tri`. If `isnothing(cache)` or
+the cache is of the correct type, then `true` is returned. Otherwise, `false` is returned.
+"""
+@inline function validate_incircle_cache(tri::Triangulation, cache)
+    isnothing(cache) && return true 
+    incircle_cache = get_incircle_cache(tri)
+    return typeof(incircle_cache) === typeof(cache)  
+end
+
+"""
+    validate_orient3_cache(tri::Triangulation, cache) -> Bool
+
+Checks if the cache `cache` is of the correct type for cmoputing orient3 predicates for the triangulation `tri`. If `isnothing(cache)` or 
+the cache is of the correct type, then `true` is returned. Otherwise, `false` is returned.
+"""
+@inline function validate_orient3_cache(tri::Triangulation, cache)
+    isnothing(cache) && return true 
+    orient3_cache = get_orient3_cache(tri)
+    return typeof(orient3_cache) === typeof(cache)
+end
+
+"""
+    fix_incircle_cache(tri::Triangulation, cache) 
+
+Returns `cache` if `validate_incircle_cache(tri, cache)` is `true`, otherwise returns `nothing`.
+"""
+@inline fix_incircle_cache(tri::Triangulation, cache) = validate_incircle_cache(tri, cache) ? cache : nothing
+
+"""
+    fix_orient3_cache(tri::Triangulation, cache)
+
+Returns `cache` if `validate_orient3_cache(tri, cache)` is `true`, otherwise returns `nothing`.
+"""
+@inline fix_orient3_cache(tri::Triangulation, cache) = validate_orient3_cache(tri, cache) ? cache : nothing
+
+"""
+    point_position_relative_to_witness_plane([kernel::AbstractPredicateKernel=AdaptiveKernel(),] tri::Triangulation, i, j, k, ℓ; cache = nothing) -> Certificate
 
 Given a positively oriented triangle `T = (i, j, k)` of `tri` and a vertex `ℓ` of `tri`, returns the position of `ℓ` relative to the witness plane of `T`. The returned value is a [`Certificate`](@ref), which is one of:
 
@@ -597,19 +651,23 @@ The `kernel` argument determines how this result is computed, and should be
 one of [`ExactKernel`](@ref), [`FastKernel`](@ref), and [`AdaptiveKernel`](@ref) (the default).
 See the documentation for more information about these choices.
 
+The `cache` keyword argument is useful when an `AdaptiveKernel()` is used, and should be one of:
+- `nothing`: No cache is used.
+- `AdaptivePredicates.orient3adapt_cache(T)`, where `T` is the number type used (`Float64` or `Float32`).
+
 # Extended help 
 The witness plane of a triangle is defined as the plane through the triangle `(i⁺, j⁺, k⁺)` where, for example, `pᵢ⁺ = (x, y, x^2 + y^2 - wᵢ)` is the lifted companion of `i` 
 and `(x, y)` are the coordinates of the `i`th vertex. Moreover, by the orientation of `ℓ` relative to this witness plane we are referring to `ℓ⁺`'s position, not the plane point `ℓ`.
 """
-function point_position_relative_to_witness_plane(kernel::AbstractPredicateKernel, tri::Triangulation, i, j, k, ℓ)
+function point_position_relative_to_witness_plane(kernel::AbstractPredicateKernel, tri::Triangulation, i, j, k, ℓ; cache::PredicateCacheType = nothing)
     p⁺ = get_lifted_point(tri, i)
     q⁺ = get_lifted_point(tri, j)
     r⁺ = get_lifted_point(tri, k)
     a⁺ = get_lifted_point(tri, ℓ)
-    cert = orient_predicate(kernel, p⁺, q⁺, r⁺, a⁺)
+    cert = orient_predicate(kernel, p⁺, q⁺, r⁺, a⁺; cache)
     return convert_certificate(cert, Cert.Above, Cert.On, Cert.Below)
 end
-point_position_relative_to_witness_plane(tri::Triangulation, i, j, k, ℓ) = point_position_relative_to_witness_plane(AdaptiveKernel(), tri, i, j, k, ℓ)
+point_position_relative_to_witness_plane(tri::Triangulation, i, j, k, ℓ; cache::PredicateCacheType = nothing) = point_position_relative_to_witness_plane(AdaptiveKernel(), tri, i, j, k, ℓ; cache)
 
 """
     opposite_angle([kernel::AbstractPredicateKernel=AdaptiveKernel(),] p, q, r) -> Certificate

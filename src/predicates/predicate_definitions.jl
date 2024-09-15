@@ -96,7 +96,7 @@ end
 @inline orient(::AdaptiveKernel, p, q, r) = AP.orient2p(p, q, r)
 
 """
-    orient_predicate([kernel::AbstractPredicateKernel,] p, q, r) -> Integer
+    orient_predicate([kernel::AbstractPredicateKernel,] p, q, r; cache = nothing) -> Integer
 
 Returns 
 
@@ -126,18 +126,21 @@ Here, a positively oriented tetrahedron `(p, q, r, s)` takes the form
 The `kernel` argument determines how this result is computed, and should be 
 one of [`ExactKernel`](@ref), [`FastKernel`](@ref), and [`AdaptiveKernel`](@ref) (the default).
 See the documentation for more information about these choices.
+
+The optional `cache` keyword argument can be used for preallocating memory for intermediate results, passing the argument from `AdaptivePredicates.orient3adapt_cache(T)`,
+where `T` is the number type of the input points. If `nothing` is passed, no cache is used. This is only needed if an `AdaptiveKernel()` is used.
 """
-@inline function orient_predicate(kernel::AbstractPredicateKernel, p, q, r, s)
-    return orient(kernel, getxyz(p), getxyz(q), getxyz(r), getxyz(s))
+@inline function orient_predicate(kernel::AbstractPredicateKernel, p, q, r, s; cache::PredicateCacheType = nothing)
+    return orient(kernel, getxyz(p), getxyz(q), getxyz(r), getxyz(s), cache)
 end
-@inline orient_predicate(p, q, r, s) = orient_predicate(AdaptiveKernel(), p, q, r, s)
+@inline orient_predicate(p, q, r, s; cache::PredicateCacheType = nothing) = orient_predicate(AdaptiveKernel(), p, q, r, s; cache)
 
-@inline orient(::FastKernel, p, q, r, s) = sgn(AP.orient3fast(p, q, r, s))
-@inline orient(::ExactKernel, p, q, r, s) = EP.orient(_getxyz(p), _getxyz(q), _getxyz(r), _getxyz(s))
-@inline orient(::AdaptiveKernel, p, q, r, s) = AP.orient3p(p, q, r, s)
+@inline orient(::FastKernel, p, q, r, s, _::PredicateCacheType = nothing) = sgn(AP.orient3fast(p, q, r, s))
+@inline orient(::ExactKernel, p, q, r, s, _::PredicateCacheType = nothing) = EP.orient(_getxyz(p), _getxyz(q), _getxyz(r), _getxyz(s))
+@inline orient(::AdaptiveKernel, p, q, r, s, cache::PredicateCacheType = nothing) = AP.orient3p(p, q, r, s, cache)
 
 """
-    incircle_predicate([kernel::AbstractPredicateKernel,] a, b, c, p) -> Integer
+    incircle_predicate([kernel::AbstractPredicateKernel,] a, b, c, p; cache = nothing) -> Integer
 
 Assuming that `(a, b, c)` is a positively oriented triangle, returns
 
@@ -148,15 +151,18 @@ Assuming that `(a, b, c)` is a positively oriented triangle, returns
 The `kernel` argument determines how this result is computed, and should be 
 one of [`ExactKernel`](@ref), [`FastKernel`](@ref), and [`AdaptiveKernel`](@ref) (the default).
 See the documentation for more information about these choices.
-"""
-@inline function incircle_predicate(kernel::AbstractPredicateKernel, a, b, c, p)
-    return incircle(kernel, getxy(a), getxy(b), getxy(c), getxy(p))
-end
-@inline incircle_predicate(a, b, c, p) = incircle_predicate(AdaptiveKernel(), a, b, c, p)
 
-@inline incircle(::FastKernel, a, b, c, p) = sgn(AP.incirclefast(a, b, c, p))
-@inline incircle(::ExactKernel, a, b, c, p) = EP.incircle(_getxy(a), _getxy(b), _getxy(c), _getxy(p))
-@inline incircle(::AdaptiveKernel, a, b, c, p) = AP.incirclep(a, b, c, p)
+The optional `cache` keyword argument can be used for preallocating memory for intermediate results, passing the argument from `AdaptivePredicates.incircleadapt_cache(T)`,
+where `T` is the number type of the input points. If `nothing` is passed, no cache is used. This is only needed if an `AdaptiveKernel()` is used.
+"""
+@inline function incircle_predicate(kernel::AbstractPredicateKernel, a, b, c, p; cache::PredicateCacheType = nothing)
+    return incircle(kernel, getxy(a), getxy(b), getxy(c), getxy(p), cache)
+end
+@inline incircle_predicate(a, b, c, p; cache::PredicateCacheType = nothing) = incircle_predicate(AdaptiveKernel(), a, b, c, p; cache)
+
+@inline incircle(::FastKernel, a, b, c, p, _::PredicateCacheType = nothing) = sgn(AP.incirclefast(a, b, c, p))
+@inline incircle(::ExactKernel, a, b, c, p, _::PredicateCacheType = nothing) = EP.incircle(_getxy(a), _getxy(b), _getxy(c), _getxy(p))
+@inline incircle(::AdaptiveKernel, a, b, c, p, cache::PredicateCacheType = nothing) = AP.incirclep(a, b, c, p, cache)
 
 """
     parallelorder_predicate([kernel::AbstractPredicateKernel,] a, b, p, q) -> Integer

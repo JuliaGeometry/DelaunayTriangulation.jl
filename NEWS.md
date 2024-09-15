@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.0
+
+- Updated to AdaptivePredicates.jl v1.2, now allowing caches to be passed to the predicates involving `incircle` and `orient3`. These are only useful when using the `AdaptiveKernel()` kernel. Outside of triangulating, these caches are not passed by default, but can be provided. The functions `get_incircle_cache` and `get_orient3_cache` can be used for this purpose on a triangulation (without a triangulation, refer to AdaptivePredicate.jl's `incircleadapt_cache` and `orient3adapt_cache`).
+
 ## 1.3.1
 
 - Fix an issue with a weighted triangulation where the lifted points' convex hull was entirely coplanar. See [#184](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/184)
