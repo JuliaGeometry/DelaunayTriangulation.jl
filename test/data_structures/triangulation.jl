@@ -130,9 +130,9 @@ refine!(tri_4; max_area=1.0e-1A, use_circumcenter=true, use_lens=false)
     @test DT.get_ghost_vertex_ranges(tri) == tri.ghost_vertex_ranges == DT.construct_ghost_vertex_ranges(get_boundary_nodes(tri))
     @test DT.get_boundary_edge_map(tri) == tri.boundary_edge_map == DT.construct_boundary_edge_map(get_boundary_nodes(tri))
     @test DT.get_cache(tri) == tri.cache
-    @test DT.get_incircle_cache(tri) == tri.cache.incircle_cache 
-    @test DT.get_orient3_cache(tri) == tri.cache.orient3_cache
-    @test DT.get_insphere_cache(tri) == tri.cache.insphere_cache
+    @test DT.get_incircle_cache(tri) === tri.cache.incircle_cache 
+    @test DT.get_orient3_cache(tri) === tri.cache.orient3_cache
+    @test DT.get_insphere_cache(tri) === tri.cache.insphere_cache
     @inferred DT.get_points(tri)
     @inferred DT.get_triangles(tri)
     @inferred DT.get_boundary_nodes(tri)
