@@ -1,7 +1,7 @@
 using DelaunayTriangulation
 using DelaunayTriangulation.SphericalDelaunay
 using Test
-using Makie, CairoMakie, GLMakie
+using Makie, CairoMakie#, GLMakie
 CairoMakie.activate!()
 using Random
 using LinearAlgebra
@@ -37,7 +37,7 @@ function Makie.convert_arguments(p::Type{<:Poly}, tri::SphericalTriangulation)
     return Makie.convert_arguments(p, res...)
 end
 
-function uniform_rand_sphere(N)
+function uniform_sphere(N)
     # http://web.archive.org/web/20120421191837/http://www.cgafaq.info/wiki/Evenly_distributed_points_on_sphere
     coords = Vector{SphericalPoint{NTuple{3,Float64}}}(undef, N)
     s = 3.6 / sqrt(N)
@@ -198,5 +198,13 @@ end
     end
 end
 
-points = uniform_rand_sphere(35)
-tri = spherical_triangulate(points)
+#=
+tri1 = spherical_triangulate(uniform_sphere(50))
+tri2 = spherical_triangulate(uniform_sphere(50))
+refine!(tri2; max_area = 0.004pi)
+tri3 = spherical_triangulate(uniform_sphere(100))
+vorn3 = spherical_voronoi(tri3)
+display(GLMakie.Screen(), lines(tri1))
+display(GLMakie.Screen(), lines(tri2))
+display(GLMakie.Screen(), lines(vorn3))
+=#
