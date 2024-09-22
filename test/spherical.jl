@@ -198,10 +198,5 @@ end
     end
 end
 
-points = uniform_rand_sphere(15)
+points = uniform_rand_sphere(35)
 tri = spherical_triangulate(points)
-refine!(tri, max_area = 1e-1)
-
-points = uniform_rand_sphere(15)
-tri = spherical_triangulate(points)
-vorn = spherical_voronoi(tri)

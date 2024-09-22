@@ -77,7 +77,7 @@ function enqueue_triangle!(tri::SphericalTriangulation, queue::RefinementQueue, 
     return setindex!(queue, A, T)
 end
 
-function finalise!(tri::Triangulation, args::RefinementArguments)
+function finalise!(tri::SphericalTriangulation, args::RefinementArguments)
     #unlock_convex_hull!(tri; reconstruct = true)
     #lock_convex_hull!(tri; rng = args.rng, predicates = args.predicates)
     convex_hull!(tri; reconstruct = false, predicates = args.predicates)
