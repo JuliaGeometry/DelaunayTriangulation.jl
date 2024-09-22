@@ -25,6 +25,7 @@ import EnumX
 import Random
 
 abstract type AbstractPredicateKernel end # needs to be defined early for use in data_structures.jl
+const PredicateCacheType = Union{Nothing, <:Tuple}
 
 include("data_structures.jl")
 include("predicates.jl")

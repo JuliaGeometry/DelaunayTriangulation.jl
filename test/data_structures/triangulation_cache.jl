@@ -3,11 +3,24 @@ const DT = DelaunayTriangulation
 using DataStructures
 using StructEquality
 using Setfield
+using AdaptivePredicates
 using ..DelaunayTriangulation: add_weight!, get_weight, get_weights
 
 @struct_equal DT.TriangulationCache
 
-tri = triangulate(rand(2, 50); weights = DT.ZeroWeight())
+cache = DT.TriangulationCache()
+@test isnothing(DT.get_triangulation(cache))
+@test isnothing(DT.get_triangulation_2(cache))
+@test isnothing(DT.get_marked_vertices(cache))
+@test isnothing(DT.get_interior_segments_on_hull(cache))
+@test isnothing(DT.get_fan_triangles(cache))
+@test isnothing(DT.get_incircle_cache(cache))
+@test isnothing(DT.get_orient3_cache(cache))
+@test isnothing(DT.get_insphere_cache(cache))
+@test isnothing(DT.get_surrounding_polygon(cache))
+@test typeof(cache) == DT.EmptyTriangulationCache
+
+tri = triangulate(rand(2, 50); weights = rand(50))
 cache = DT.get_cache(tri)
 @test get_weights(DT.get_triangulation(DT.get_cache(tri))) === get_weights(tri)
 DT.unconstrained_triangulation!(DT.get_triangulation(cache))
@@ -73,3 +86,6 @@ push!(surrounding_polygon, 5)
 @test !isempty(surrounding_polygon)
 empty!(cache)
 @test isempty(surrounding_polygon)
+@test length.(DT.get_incircle_cache(cache)) == length.(AdaptivePredicates.incircleadapt_cache(Float64))
+@test length.(DT.get_orient3_cache(cache)) == length.(AdaptivePredicates.orient3adapt_cache(Float64))
+@test length.(DT.get_insphere_cache(cache)) == length.(AdaptivePredicates.insphereexact_cache(Float64))

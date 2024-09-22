@@ -38,16 +38,22 @@ function brute_force_search(tri::Triangulation, q; itr = each_triangle(tri), pre
 end
 
 """
-    brute_force_search_enclosing_circumcircle(tri::Triangulation, i, predicates::AbstractPredicateKernel=AdaptiveKernel()) -> Triangle 
+    brute_force_search_enclosing_circumcircle(tri::Triangulation, i, predicates::AbstractPredicateKernel=AdaptiveKernel(); cache = nothing) -> Triangle 
 
 Searches for a triangle in `tri` containing the vertex `i` in its circumcircle using brute force. If 
 `tri` is a weighted Delaunay triangulation, the triangle returned instead has the lifted vertex `i` 
 below its witness plane. If no such triangle exists, `($∅, $∅, $∅)` is returned. You can control 
 the method used for computing predicates via the `predicates` argument.
+
+The `cache` argument is passed to [`point_position_relative_to_circumcircle`] and should be one of 
+- `nothing`: No cache is used.
+- `get_incircle_cache(tri)`: The cache stored inside `tri`.
+- `AdaptivePredicates.incircleadapt_cache(number_type(tri))`: Compute a new cache.
+The cache is only needed if an `AdaptiveKernel()` is used.
 """
-function brute_force_search_enclosing_circumcircle(tri::Triangulation, i, predicates::AbstractPredicateKernel = AdaptiveKernel())
+function brute_force_search_enclosing_circumcircle(tri::Triangulation, i, predicates::AbstractPredicateKernel = AdaptiveKernel(); cache::PredicateCacheType = nothing)
     for V in each_triangle(tri)
-        cert = point_position_relative_to_circumcircle(predicates, tri, V, i)
+        cert = point_position_relative_to_circumcircle(predicates, tri, V, i; cache)
         !is_outside(cert) && return V
     end
     tri_type = triangle_type(tri)
