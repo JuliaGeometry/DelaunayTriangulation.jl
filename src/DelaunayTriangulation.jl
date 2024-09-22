@@ -35,4 +35,6 @@ include("validation.jl")
 include("exports.jl")
 include("public.jl")
 
+include("spherical/SphericalDelaunay.jl")
+
 end

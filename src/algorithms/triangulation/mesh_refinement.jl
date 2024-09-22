@@ -77,10 +77,10 @@ The triangulation is refined in-place.
 function refine_itr!(tri::Triangulation, args::RefinementArguments)
     T, ρ = popfirst_triangle!(args.queue)
     u, v, w = triangle_vertices(T)
-    if !is_ghost_triangle(T) && get_adjacent(tri, u, v) == w # Need the last part in case T was already split and thus no longer exists 
+    if get_adjacent(tri, u, v) == w # Need the last part in case T was already split and thus no longer exists 
         success = split_triangle!(tri, args, T)
         if is_encroachment_failure(success)
-            !haskey(args.queue, T) && (args.queue[T] = ρ)
+            !haskey(args.queue, T) && enqueue_triangle!(tri, args.queue, ρ, T)
             split_all_encroached_segments!(tri, args)
         elseif is_successful_insertion(success)
             assess_added_triangles!(args, tri)
@@ -104,15 +104,19 @@ function enqueue_all_encroached_segments!(args::RefinementArguments, tri::Triang
     return args
 end
 
+function _each_solid_triangle(tri::Triangulation)
+    return each_solid_triangle(tri)
+end # This method exists so that we can overload it for SphericalTriangulations
+
 """
     enqueue_all_bad_triangles!(args::RefinementArguments, tri::Triangulation)
 
 Enqueues all bad triangles in the triangulation into `args.queue`.
 """
 function enqueue_all_bad_triangles!(args::RefinementArguments, tri::Triangulation)
-    for T in each_solid_triangle(tri)
+    for T in _each_solid_triangle(tri)
         ρ, flag = assess_triangle_quality(tri, args, T)
-        flag && (args.queue[T] = ρ)
+        flag && enqueue_triangle!(tri, args.queue, ρ, T)
     end
     return args
 end
@@ -183,9 +187,9 @@ Computes the Steiner point for a triangle `T` of `tri` to improve its quality in
 function get_steiner_point(tri::Triangulation, args::RefinementArguments, T)
     i, j, k = triangle_vertices(T)
     p, q, r = get_point(tri, i, j, k)
-    A = triangle_area(p, q, r)
+    A = triangle_area(tri, T)
     check_precision(A) && return Cert.PrecisionFailure, q # the point q is just for type stability with the return 
-    c = triangle_circumcenter(p, q, r, A)
+    c = triangle_circumcenter(tri, T, A)
     if !args.use_circumcenter
         # TODO: Implement generalised Steiner points so that c above is translated appropriately.
     end
@@ -193,13 +197,17 @@ function get_steiner_point(tri::Triangulation, args::RefinementArguments, T)
     return Cert.None, c # nothing went wrong yet
 end
 
+function _is_ghost_triangle(_::Triangulation, T)
+    return is_ghost_triangle(T)
+end # This method exists so that we can overload it for SphericalTriangulations
+
 """
     check_steiner_point_precision(tri::Triangulation, T, c) -> Bool
 
 Checks if the Steiner point `c` of a triangle `T` of `tri` can be computed without precision issues, returning `true` if there are precision issues and `false` otherwise.
 """
 function check_steiner_point_precision(tri::Triangulation, T, c)
-    is_ghost_triangle(T) && return true # we aren't supposed to get ghost triangles, unless we are _just_ off the boundary due to precision errors
+    _is_ghost_triangle(tri, T) && return true # we aren't supposed to get ghost triangles, unless we are _just_ off the boundary due to precision errors
     i, j, k = triangle_vertices(T)
     (px, py), (qx, qy), (rx, ry) = get_point(tri, i, j, k)
     cx, cy = getxy(c)
@@ -254,7 +262,7 @@ function locate_steiner_point(tri::Triangulation, args::RefinementArguments, T, 
     init = get_init_for_steiner_point(tri, T)
     V, _ = find_triangle(tri, c; predicates = args.predicates, m = nothing, point_indices = nothing, try_points = nothing, k = init, args.rng, args.concavity_protection, use_barriers = Val(true))
     flag = point_position_relative_to_triangle(args.predicates, tri, V, c)
-    if is_ghost_triangle(V) && is_on(flag)
+    if _is_ghost_triangle(tri, V) && is_on(flag)
         V = replace_ghost_triangle_with_boundary_triangle(tri, V)
     end
     return V, flag
@@ -282,10 +290,8 @@ Determines if the Steiner point `c`'s insertion will not affect the quality of `
 - `V′`: The triangle that the Steiner point is in, which is `T` if `c` is not suitable.
 """
 function check_for_invisible_steiner_point(tri::Triangulation, V, T, flag, c)
-    !is_outside(flag) && !is_ghost_triangle(V) && return c, V # don't need to check if the point is on the solid edge of a ghost triangle, since we already do that check previously via is_on(flag) in locate_steiner_point
-    i, j, k = triangle_vertices(T)
-    p, q, r = get_point(tri, i, j, k)
-    c′ = triangle_centroid(p, q, r)
+    !is_outside(flag) && !_is_ghost_triangle(tri, V) && return c, V # don't need to check if the point is on the solid edge of a ghost triangle, since we already do that check previously via is_on(flag) in locate_steiner_point
+    c′ = triangle_centroid(tri, T)
     return c′, T
 end
 
@@ -833,6 +839,16 @@ function is_triangle_nestled(tri::Triangulation, T, idx) # nestled: a triangle i
     return e_ki_seg && e_kj_seg
 end
 
+function _quality_statistics(tri::Triangulation, args::RefinementArguments, T)
+    u, v, w = triangle_vertices(T)
+    p, q, r = get_point(tri, u, v, w)
+    ℓmin², ℓmax², ℓmid², idx = squared_triangle_lengths_and_smallest_index(p, q, r)
+    A = triangle_area(tri, T)
+    cr = triangle_circumradius(tri, T, A) # this recomputes squared_triangle_lengths_and_smallest_index but it's fine
+    ρ = triangle_radius_edge_ratio(cr, sqrt(ℓmin²))
+    return ρ, A, idx
+end
+
 """
     assess_triangle_quality(tri::Triangulation, args::RefinementArguments, T) -> Float64, Bool
 
@@ -851,16 +867,12 @@ A triangle is bad quality if it does not meet the area constraints, violates the
 """
 function assess_triangle_quality(tri::Triangulation, args::RefinementArguments, T)
     haskey(args.queue, T) && return args.queue[T], true
-    if is_ghost_triangle(T)
+    if _is_ghost_triangle(tri, T)
         T = replace_ghost_triangle_with_boundary_triangle(tri, T)
     end
-    # First, get the radius-edge ratio.
+    # First, get some statistics 
     u, v, w = triangle_vertices(T)
-    p, q, r = get_point(tri, u, v, w)
-    ℓmin², ℓmed², ℓmax², idx = squared_triangle_lengths_and_smallest_index(p, q, r)
-    A = triangle_area(p, q, r)
-    cr = triangle_circumradius(A, ℓmin², ℓmed², ℓmax²)
-    ρ = triangle_radius_edge_ratio(cr, sqrt(ℓmin²))
+    ρ, A, idx = _quality_statistics(tri, args, T)
     # Next, check the area constraints.
     A < args.constraints.min_area && return ρ, false
     A > args.constraints.max_area && return ρ, true
@@ -883,11 +895,11 @@ Assesses the quality of all triangles in `args.events.added_triangles` according
 function assess_added_triangles!(args::RefinementArguments, tri::Triangulation)
     E = edge_type(tri)
     for T in each_added_triangle(args.events)
-        if !is_ghost_triangle(T)
+        if !_is_ghost_triangle(tri, T)
             u, v, w = triangle_vertices(T)
             if get_adjacent(tri, u, v) == w # It's not guaranteed that each triangle in events.added_triangles _actually_ still exists, edge flipping could have deleted it
                 ρ, flag = assess_triangle_quality(tri, args, T)
-                flag && !haskey(args.queue, T) && (args.queue[T] = ρ)
+                flag && !haskey(args.queue, T) && enqueue_triangle!(tri, args.queue, ρ, T)
                 for e in triangle_edges(T)
                     ee = construct_edge(E, initial(e), terminal(e)) # Need to convert e to the correct edge type since triangle_edges returns Tuples
                     if contains_segment(tri, ee) && !haskey(args.queue, ee) && is_encroached(tri, args, ee)

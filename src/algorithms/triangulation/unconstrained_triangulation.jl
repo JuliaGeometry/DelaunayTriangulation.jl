@@ -47,9 +47,8 @@ function get_initial_triangle(tri::Triangulation, insertion_order, predicates::A
     i, j, k = @view insertion_order[1:3] # insertion_order got converted into a Vector, so indexing is safe 
     initial_triangle = construct_positively_oriented_triangle(tri, i, j, k, predicates)
     i, j, k = triangle_vertices(initial_triangle)
-    p, q, r = get_point(tri, i, j, k)
-    degenerate_cert = triangle_orientation(predicates, p, q, r)
-    if length(insertion_order) > 3 && (is_degenerate(degenerate_cert) || check_precision(triangle_area(p, q, r))) && itr ≤ length(insertion_order) # Do not get stuck in an infinite loop if there are just three points, the three of them being collinear. The itr ≤ length(insertion_order) is needed because, if all the points are collinear, the loop could go on forever 
+    degenerate_cert = triangle_orientation(predicates, tri, i, j, k)
+    if length(insertion_order) > 3 && (is_degenerate(degenerate_cert) || check_precision(triangle_area(tri, (i, j, k)))) && itr ≤ length(insertion_order) # Do not get stuck in an infinite loop if there are just three points, the three of them being collinear. The itr ≤ length(insertion_order) is needed because, if all the points are collinear, the loop could go on forever 
         @static if VERSION ≥ v"1.8.1"
             circshift!(insertion_order, -1)
         else

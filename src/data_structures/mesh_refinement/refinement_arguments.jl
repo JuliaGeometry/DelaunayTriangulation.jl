@@ -92,23 +92,7 @@ function RefinementArguments(
         seditious_angle,
         custom_constraint,
     )
-    queue = RefinementQueue(tri)
-    events = InsertionEventHistory(tri)
-    E = edge_type(tri)
-    I = integer_type(tri)
-    segment_list = Set{E}()
-    segment_vertices = Set{I}()
-    sizehint!(segment_list, num_edges(get_all_segments(tri)))
-    sizehint!(segment_vertices, num_edges(get_all_segments(tri)) ÷ 2)
-    for e in each_segment(tri)
-        push!(segment_list, e)
-        push!(segment_vertices, initial(e), terminal(e))
-    end
-    midpoint_split_list = Set{I}()
-    offcenter_split_list = Set{I}()
-    sizehint!(midpoint_split_list, num_edges(get_all_segments(tri)))
-    sizehint!(offcenter_split_list, 2num_edges(get_all_segments(tri)))
-    min_steiner_vertex = I(num_points(tri) + 1)
+    queue, events, segment_list, segment_vertices, midpoint_split_list, offcenter_split_list, min_steiner_vertex = _build_queues(tri)
     return RefinementArguments(
         queue,
         constraints,
@@ -127,6 +111,27 @@ function RefinementArguments(
         concavity_protection,
         predicates,
     )
+end
+
+function _build_queues(tri::Triangulation)
+    queue = RefinementQueue(tri)
+    events = InsertionEventHistory(tri)
+    E = edge_type(tri)
+    I = integer_type(tri)
+    segment_list = Set{E}()
+    segment_vertices = Set{I}()
+    sizehint!(segment_list, num_edges(get_all_segments(tri)))
+    sizehint!(segment_vertices, num_edges(get_all_segments(tri)) ÷ 2)
+    for e in each_segment(tri)
+        push!(segment_list, e)
+        push!(segment_vertices, initial(e), terminal(e))
+    end
+    midpoint_split_list = Set{I}()
+    offcenter_split_list = Set{I}()
+    sizehint!(midpoint_split_list, num_edges(get_all_segments(tri)))
+    sizehint!(offcenter_split_list, 2num_edges(get_all_segments(tri)))
+    min_steiner_vertex = I(num_points(tri) + 1)
+    return queue, events, segment_list, segment_vertices, midpoint_split_list, offcenter_split_list, min_steiner_vertex
 end
 
 """
