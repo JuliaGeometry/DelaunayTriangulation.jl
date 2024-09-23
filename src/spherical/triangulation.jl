@@ -6,11 +6,14 @@ A type alias for a triangulation of points on the surface of a [`UnitSphere`](@r
 For this triangulation, note that while ghost triangles are present, they should be interpreted as solid triangles - 
 they are the triangles that help patch up the north pole. 
 
-The ghost vertex of the triangulation maps to `(NaN, NaN)`, which is the north pole (after `invproject`).
+Note that the ghost vertex does not map to the north pole due to technical reasons. Use `north_pole` to obtain 
+the north pole.
 
 If you want to replace all these triangles with solid triangles, use [`solidify!`](@ref).
 """
 const SphericalTriangulation = Triangulation{<:SphericalPoints}
+
+north_pole(tri::SphericalTriangulation) = north_pole(number_type(tri))
 
 function triangle_circumcenter(tri::SphericalTriangulation, T, _=nothing) # the unused argument is the triangle area
     points = get_points(tri)
@@ -79,10 +82,12 @@ function spherical_triangulate(points::AbstractVector{<:SphericalPoint}; rng::Ab
     tri = triangulate(wpoints; skip_points, kwargs..., delete_ghosts=false, recompute_representative_points=false, rng, predicates)
     # lock_convex_hull!(tri; rng, predicates)
 
+    #=
     empty_representative_points!(tri)
     I = integer_type(tri)
     rep = new_representative_point!(tri, one(I))
     rep[1] = RepresentativeCoordinates(T(NaN), T(NaN), zero(I))
+    =# # This causes issues with point location :-(
     return tri::SphericalTriangulation
 end
 
@@ -97,8 +102,7 @@ other triangles.
 It is recommended that you just handle the ghost triangles directly instead of using this function.
 """
 function solidify!(tri::SphericalTriangulation)
-    T = number_type(tri)
-    np = north_pole(T)
+    np = north_pole(tri)
     idx = findfirst(==(np), each_point(tri))
     if isnothing(idx)
         push_point!(tri, np)

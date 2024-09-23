@@ -198,6 +198,37 @@ end
     end
 end
 
+function slow_find_triangle(tri, p)
+    points = get_points(tri)
+    for T in each_triangle(tri)
+        A = DT.triangle_area(tri, T)
+        u, v, w = triangle_vertices(T)
+        a, b, c = SD._getindex(points, u), SD._getindex(points, v), SD._getindex(points, w)
+        A1 = SD.spherical_triangle_area(a, b, p)
+        A2 = SD.spherical_triangle_area(b, c, p)
+        A3 = SD.spherical_triangle_area(c, a, p)
+        if A ≈ A1 + A2 + A3
+            return T
+        end
+    end
+    throw(ErrorException("Triangle not found"))
+end
+
+points = uniform_sphere(50)
+tri = spherical_triangulate(points)
+p = SphericalPoint(0.3908413014578491, 0.28203954256710945, 0.8761830707696139)
+Random.seed!(0)
+find_triangle(tri, p)
+slow_find_triangle(tri, p)
+
+
+p = rand(UnitSphere(), 25000)
+for p in p
+    @show p
+    T = slow_find_triangle(tri, p)
+    @test DT.sort_triangle(T) == DT.sort_triangle(find_triangle(tri, p))
+end
+
 #=
 tri1 = spherical_triangulate(uniform_sphere(50))
 tri2 = spherical_triangulate(uniform_sphere(50))
