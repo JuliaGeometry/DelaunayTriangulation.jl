@@ -131,15 +131,15 @@ function point_position_relative_to_spherical_triangle(tri::SphericalTriangulati
 end
 
 """
-    find_triangle(tri::SphericalTriangulation, q; check_sphere=true, kwargs...) 
+    find_triangle(tri::SphericalTriangulation, q::SphericalPoint; check_sphere=true, kwargs...) 
 
 Finds the spherical triangle in `tri` that contains the point `q`. The keyword arguments are the same as those for 
 the usual [`find_triangle`], except that `check_sphere` can be used to check if the found triangle actually contains `q` 
 (since the check is done in the stereographic projection). If it's not, it will be found by searching the triangles near the found 
 triangle or using an exhaustive search.
 """
-function find_triangle(tri::SphericalTriangulation, s; check_sphere = true, kwargs...)
-    V = @invoke find_triangle(tri::Triangulation, s; kwargs..., check_sphere = false, use_barriers = Val(false))
+function find_triangle(tri::SphericalTriangulation, s::SphericalPoint; check_sphere = true, kwargs...)
+    V = Base.invoke(find_triangle, Tuple{Triangulation, Any}, tri, s; kwargs..., check_sphere = false, use_barriers = Val(false))
     check_sphere || return V
     cert = point_position_relative_to_spherical_triangle(tri, V, s)
     if !is_outside(cert)
