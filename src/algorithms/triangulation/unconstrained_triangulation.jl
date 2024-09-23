@@ -150,7 +150,7 @@ The function [`add_point_bowyer_watson_dig_cavities!`](@ref) is the main workhor
 function add_point_bowyer_watson!(tri::Triangulation, new_point, initial_search_point::I, rng::Random.AbstractRNG = Random.default_rng(), predicates::AbstractPredicateKernel = AdaptiveKernel(), update_representative_point = true, store_event_history = Val(false), event_history = nothing, peek::P = Val(false)) where {I, P}
     _new_point = is_true(peek) ? new_point : I(new_point)
     q = get_point(tri, _new_point)
-    V = find_triangle(tri, q; predicates, m = nothing, point_indices = nothing, try_points = nothing, k = initial_search_point, rng)
+    V = find_triangle(tri, q; predicates, m = nothing, point_indices = nothing, try_points = nothing, k = initial_search_point, rng, check_sphere = false)
     if is_weighted(tri)
         cert = point_position_relative_to_circumcircle(predicates, tri, V, _new_point; cache = get_orient3_cache(tri)) # redirects to point_position_relative_to_witness_plane
         is_outside(cert) && return V # If the point is submerged, then we don't add it

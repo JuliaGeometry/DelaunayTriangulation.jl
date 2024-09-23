@@ -57,6 +57,7 @@ function add_point!(
             concavity_protection,
             predicates,
             rng,
+            check_sphere = false
         ),
         peek::P = Val(false),
     ) where {P}
@@ -97,6 +98,7 @@ function add_point!(
             concavity_protection,
             predicates,
             rng,
+            check_sphere = false
         ),
         peek::P = Val(false),
     ) where {P}

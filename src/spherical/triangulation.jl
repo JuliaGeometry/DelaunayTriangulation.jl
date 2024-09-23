@@ -9,7 +9,10 @@ they are the triangles that help patch up the north pole.
 Note that the ghost vertex does not map to the north pole due to technical reasons. Use `north_pole` to obtain 
 the north pole.
 
-If you want to replace all these triangles with solid triangles, use [`solidify!`](@ref).
+If you want to replace all these triangles with solid triangles, use [`solidify!`](@ref). This is not recommended.
+
+Note also that the triangulations, and e.g. point location, are not as robust as the planar case. You may 
+experience numerical issues near the north pole for example.
 """
 const SphericalTriangulation = Triangulation{<:SphericalPoints}
 
@@ -118,4 +121,60 @@ function solidify!(tri::SphericalTriangulation)
     delete_ghost_triangles!(tri)
     delete_ghost_vertices_from_graph!(tri)
     return tri
+end
+
+function point_position_relative_to_spherical_triangle(tri::SphericalTriangulation, V, s)
+    u, v, w = triangle_vertices(V)
+    points = get_points(tri)
+    p, q, r = _getindex(points, u), _getindex(points, v), _getindex(points, w)
+    return point_position_relative_to_spherical_triangle(p, q, r, s)
+end
+
+"""
+    find_triangle(tri::SphericalTriangulation, q; check_sphere=true, kwargs...) 
+
+Finds the spherical triangle in `tri` that contains the point `q`. The keyword arguments are the same as those for 
+the usual [`find_triangle`], except that `check_sphere` can be used to check if the found triangle actually contains `q` 
+(since the check is done in the stereographic projection). If it's not, it will be found by searching the triangles near the found 
+triangle or using an exhaustive search.
+"""
+function find_triangle(tri::SphericalTriangulation, s; check_sphere = true, kwargs...)
+    V = @invoke find_triangle(tri::Triangulation, s; kwargs..., check_sphere = false, use_barriers = Val(false))
+    check_sphere || return V
+    cert = point_position_relative_to_spherical_triangle(tri, V, s)
+    if !is_outside(cert)
+        return V 
+    else 
+        T = triangle_type(tri)
+        u, v, w = triangle_vertices(V)
+        ℓuv = get_adjacent(tri, v, u)
+        ℓvw = get_adjacent(tri, w, v)
+        ℓwu = get_adjacent(tri, u, w)
+        V1 = construct_triangle(T, v, u, ℓuv)
+        V2 = construct_triangle(T, w, v, ℓvw)
+        V3 = construct_triangle(T, u, w, ℓwu)
+        for _V in (V1, V2, V3)
+            cert = point_position_relative_to_spherical_triangle(tri, _V, s)
+            !is_outside(cert) && return _V
+        end
+        # Still not found. Find the nearest vertex and then look at its neighbours
+        points = get_points(tri)
+        p, q, r = _getindex(points, u), _getindex(points, v), _getindex(points, w)
+        d1 = spherical_distance(p, s)
+        d2 = spherical_distance(q, s)
+        d3 = spherical_distance(r, s)
+        d = min(d1, d2, d3)
+        minidx = d == d1 ? u : d == d2 ? v : w
+        for (i, j) in each_edge(get_adjacent2vertex(tri, minidx))
+            _V = construct_triangle(T, i, j, minidx)
+            cert = point_position_relative_to_spherical_triangle(tri, _V, s)
+            !is_outside(cert) && return _V
+        end
+        # Still not found. Do an exhaustive search 
+        for _V in each_triangle(tri)
+            cert = point_position_relative_to_spherical_triangle(tri, _V, s)
+            !is_outside(cert) && return _V
+        end
+        throw(PointNotFoundError(tri, s))
+    end
 end

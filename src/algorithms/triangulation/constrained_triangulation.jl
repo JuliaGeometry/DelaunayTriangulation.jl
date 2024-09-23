@@ -711,7 +711,7 @@ function locate_intersecting_triangles(tri::Triangulation, e, rotate = Val(true)
     add_right_vertex!(history, initial(e))
     find_triangle(
         tri, get_point(tri, terminal(e)); predicates,
-        m = nothing, k = initial(e), store_history = Val(true), history, rng,
+        m = nothing, k = initial(e), store_history = Val(true), history, rng, check_sphere = false
     )
     add_left_vertex!(history, terminal(e))
     add_right_vertex!(history, terminal(e))

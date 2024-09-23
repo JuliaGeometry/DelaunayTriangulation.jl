@@ -45,7 +45,7 @@ end
 
 Computes the spherical distance between the points `p` and `q`.
 """
-function spherical_distance(p, q)
+function spherical_distance(p::SphericalPoint, q::SphericalPoint)
     # https://brsr.github.io/2021/05/01/vector-spherical-geometry.html
     _px, _py, _pz = __getxyz(p)
     _qx, _qy, _qz = __getxyz(q)
@@ -103,9 +103,37 @@ function spherical_triangle_centroid(p, q, r)
     sa = _hypot(cross(q, r)...)
     sb = _hypot(cross(r, p)...)
     sc = _hypot(cross(p, q)...)
-    Px = _px * sa * x + _qx * sb * y + _rx * sc * z 
+    Px = _px * sa * x + _qx * sb * y + _rx * sc * z
     Py = _py * sa * x + _qy * sb * y + _ry * sc * z
     Pz = _pz * sa * x + _qz * sb * y + _rz * sc * z
     scale = _hypot(Px, Py, Pz)
     return SphericalPoint(Px / scale, Py / scale, Pz / scale)
+end
+
+"""
+    point_position_relative_to_spherical_triangle(p::SphericalPoint, q::SphericalPoint, r::SphericalPoint, s::SphericalPoint) -> Certificate 
+
+Tests if `s` is in the spherical triangle defined by the points `p`, `q`, and `r`. Returns a `Certificate` object, which is
+
+- `Certificate.Inside`: if `s` is in the triangle,
+- `Certificate.On`: if `s` is on the edge of the triangle, or
+- `Certificate.Outside`: if `s` is outside the triangle.
+"""
+function point_position_relative_to_spherical_triangle(p::SphericalPoint, q::SphericalPoint, r::SphericalPoint, s::SphericalPoint)
+    x1, y1, z1 = __getxyz(p)
+    x2, y2, z2 = __getxyz(q)
+    x3, y3, z3 = __getxyz(r)
+    x, y, z = __getxyz(s)
+    D = x * y1 * z2 - x * y2 * z1 - x1 * y * z2 + x1 * y2 * z + x2 * y * z1 - x2 * y1 * z - x * y1 * z3 + x * y3 * z1 + x1 * y * z3 - x1 * y3 * z - x3 * y * z1 + x3 * y1 * z + x * y2 * z3 - x * y3 * z2 - x2 * y * z3 + x2 * y3 * z + x3 * y * z2 - x3 * y2 * z
+    a = (x * y2 * z3 - x * y3 * z2 - x2 * y * z3 + x2 * y3 * z + x3 * y * z2 - x3 * y2 * z) / D
+    b = -(x * y1 * z3 - x * y3 * z1 - x1 * y * z3 + x1 * y3 * z + x3 * y * z1 - x3 * y1 * z) / D
+    c = (D + x * y1 * z3 - x * y3 * z1 - x1 * y * z3 + x1 * y3 * z + x3 * y * z1 - x3 * y1 * z - x * y2 * z3 + x * y3 * z2 + x2 * y * z3 - x2 * y3 * z - x3 * y * z2 + x3 * y2 * z) / D
+    lambda = (x1 * y2 * z3 - x1 * y3 * z2 - x2 * y1 * z3 + x2 * y3 * z1 + x3 * y1 * z2 - x3 * y2 * z1) / D
+    if a > 0 && b > 0 && c > 0 && lambda > 0
+        return Certificate.Inside
+    elseif a == 0 || b == 0 || c == 0
+        return Certificate.On
+    else
+        return Certificate.Outside
+    end
 end

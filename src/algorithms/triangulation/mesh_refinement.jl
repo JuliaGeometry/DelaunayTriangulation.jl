@@ -260,7 +260,7 @@ function locate_steiner_point(tri::Triangulation, args::RefinementArguments, T, 
     flag = point_position_relative_to_triangle(args.predicates, tri, T, c)
     !is_outside(flag) && return T, flag # T is never a ghost triangle, so don't worry about checking is_on(flag) here
     init = get_init_for_steiner_point(tri, T)
-    V, _ = find_triangle(tri, c; predicates = args.predicates, m = nothing, point_indices = nothing, try_points = nothing, k = init, args.rng, args.concavity_protection, use_barriers = Val(true))
+    V, _ = find_triangle(tri, c; predicates = args.predicates, m = nothing, point_indices = nothing, try_points = nothing, k = init, args.rng, args.concavity_protection, use_barriers = Val(true), check_sphere = false)
     flag = point_position_relative_to_triangle(args.predicates, tri, V, c)
     if _is_ghost_triangle(tri, V) && is_on(flag)
         V = replace_ghost_triangle_with_boundary_triangle(tri, V)

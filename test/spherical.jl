@@ -76,6 +76,11 @@ end
     @test collect(SD.invproject((X, Y)).p) ≈ collect(p.p)
     @test DT.number_type(p) == Float64
     @test DT.number_type(rand(UnitSphere{Float32}())) == Float32
+    for _ in 1:100000
+        p = rand(UnitSphere())
+        X, Y = SD.project(p)
+        @test collect(SD.invproject((X, Y)).p) ≈ collect(p.p)
+    end
 end
 
 @testset "SphericalPoints" begin
@@ -198,44 +203,45 @@ end
     end
 end
 
-function slow_find_triangle(tri, p)
-    points = get_points(tri)
-    for T in each_triangle(tri)
-        A = DT.triangle_area(tri, T)
-        u, v, w = triangle_vertices(T)
-        a, b, c = SD._getindex(points, u), SD._getindex(points, v), SD._getindex(points, w)
-        A1 = SD.spherical_triangle_area(a, b, p)
-        A2 = SD.spherical_triangle_area(b, c, p)
-        A3 = SD.spherical_triangle_area(c, a, p)
-        if A ≈ A1 + A2 + A3
-            return T
+@testset "Point location" begin
+    function slow_find_triangle(tri, p)
+        points = get_points(tri)
+        for T in each_triangle(tri)
+            A = DT.triangle_area(tri, T)
+            u, v, w = triangle_vertices(T)
+            a, b, c = SD._getindex(points, u), SD._getindex(points, v), SD._getindex(points, w)
+            A1 = SD.spherical_triangle_area(a, b, p)
+            A2 = SD.spherical_triangle_area(b, c, p)
+            A3 = SD.spherical_triangle_area(c, a, p)
+            if A ≈ A1 + A2 + A3
+                return T
+            end
         end
+        throw(ErrorException("Point not found"))
     end
-    throw(ErrorException("Triangle not found"))
+    points = uniform_sphere(50)
+    tri = spherical_triangulate(points)
+    for s in rand(UnitSphere(), 25000)
+        yield()
+        # point_position_relative_to_spherical_triangle
+        T = slow_find_triangle(tri, s)
+        T = DT.sort_triangle(T)
+        for V in each_triangle(tri)
+            V = DT.sort_triangle(V)
+            p, q, r = SD._getindex.((get_points(tri),), triangle_vertices(V))
+            cert1 = SD.point_position_relative_to_spherical_triangle(p, q, r, s)
+            @inferred SD.point_position_relative_to_spherical_triangle(p, q, r, s)
+            cert2 = SD.point_position_relative_to_spherical_triangle(tri, V, s)
+            if T == V
+                @test DT.is_inside(cert1) && DT.is_inside(cert2)
+            else
+                @test DT.is_outside(cert1) && DT.is_outside(cert2)
+            end
+        end
+
+        # find_triangle
+        V = DT.sort_triangle(find_triangle(tri, s))
+        @inferred DT.sort_triangle(find_triangle(tri, s))
+        @test T == V
+    end
 end
-
-points = uniform_sphere(50)
-tri = spherical_triangulate(points)
-p = SphericalPoint(0.3908413014578491, 0.28203954256710945, 0.8761830707696139)
-Random.seed!(0)
-find_triangle(tri, p)
-slow_find_triangle(tri, p)
-
-
-p = rand(UnitSphere(), 25000)
-for p in p
-    @show p
-    T = slow_find_triangle(tri, p)
-    @test DT.sort_triangle(T) == DT.sort_triangle(find_triangle(tri, p))
-end
-
-#=
-tri1 = spherical_triangulate(uniform_sphere(50))
-tri2 = spherical_triangulate(uniform_sphere(50))
-refine!(tri2; max_area = 0.004pi)
-tri3 = spherical_triangulate(uniform_sphere(100))
-vorn3 = spherical_voronoi(tri3)
-display(GLMakie.Screen(), lines(tri1))
-display(GLMakie.Screen(), lines(tri2))
-display(GLMakie.Screen(), lines(vorn3))
-=#
