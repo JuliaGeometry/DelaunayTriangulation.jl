@@ -1,0 +1,59 @@
+---
+title: "DelaunayTriangulation.jl"
+subtitle: "Two-dimensional Delaunay Triangulations and Voronoi Tessellations in Julia"
+author:
+  - name: "Daniel VandenHeuvel"
+    email: "d.vandenheuvel24@imperial.ac.uk"
+    affiliation:
+      - name: "Department of Mathematics, Imperial College London"
+      - city: "London"
+      - country: "UK"
+      - department: "Department of Mathematics"
+      - url: "https://www.imperial.ac.uk/mathematics"
+date: "2024-10-09" 
+engine: "julia"
+execute:
+    daemon: true
+format: revealjs
+include-in-header:
+  - text: |
+      <style>
+      #title-slide .title {
+        font-size: 2.4em;
+      }
+      </style>
+css: "style.css"
+---
+
+<!--
+The title image was generated using 
+
+using DelaunayTriangulation, CairoMakie
+outer = CircularArc((1.5, 0.0), (1.5, 0.0), (0.0, 0.0), positive=false)
+inner = CircularArc((0.8, 0.0), (0.8, 0.0), (0.0, 0.0), positive=true)
+square = [(-2.0, -2.0), (2.0, -2.0), (2.0, 2.0), (-2.0, 2.0)]
+boundary = [[[outer]], [[inner]], [[1, 2, 3, 4, 1]]]
+tri = triangulate(square; boundary_nodes=boundary)
+refine!(tri; max_area = 1e-2)
+fig, ax, sc = triplot(tri, figure = (; size = (1600, 800)), axis = (; width = 800, height = 800))
+xlims!(ax, -2, 2.5)
+ylims!(ax, -2, 2)
+hidedecorations!(ax)
+hidespines!(ax)
+
+points = randn(2, 200)
+circ = CircularArc((2.0, 0.0), (2.0, 0.0), (0.0, 0.0))
+clip_points = [circ(t) for t in LinRange(0, 1, 100)]
+clip_vertices = [1:(length(clip_points)-1); 1]
+tri = triangulate(points)
+vorn = voronoi(tri, clip=true, clip_polygon=(clip_points, clip_vertices))
+ax = Axis(fig[1, 2], width = 800, height = 800)
+voronoiplot!(ax, vorn, show_generators = false)
+xlims!(ax, -2.5, 2)
+ylims!(ax, -2, 2)
+hidedecorations!(ax)
+hidespines!(ax)
+resize_to_layout!(fig)
+save("panel.png", fig)
+-->
+ 

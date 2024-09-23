@@ -1,0 +1,16 @@
+.subtitle {
+    position: relative;
+    padding-bottom: 20px; /* Adjust for spacing */
+    text-align: center; /* Center-align the subtitle and the image */
+}
+
+.subtitle::after {
+    content: '';
+    display: block; /* Keep it as a block to move to a new line */
+    width: 600px; /* Adjust width as needed */
+    height: 300px; /* Adjust height as needed */
+    background-image: url('panel.png'); /* Replace with your image path */
+    background-size: contain; /* Adjust as needed */
+    background-repeat: no-repeat;
+    margin: 10px auto -70px; /* Center the image and apply negative margin */
+}
