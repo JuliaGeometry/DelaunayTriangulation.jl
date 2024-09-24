@@ -17,6 +17,7 @@ execute:
 format: 
   revealjs:
       slide-number: true
+      self-contained: true
 include-in-header:
   - text: |
       <style>
