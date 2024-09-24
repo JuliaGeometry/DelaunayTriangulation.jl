@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en"><head>
-<script src="presentation_files/libs/clipboard/clipboard.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="presentation_files/libs/clipboard/clipboard.min.js"></script>
 <script src="presentation_files/libs/quarto-html/tabby.min.js"></script>
 <script src="presentation_files/libs/quarto-html/popper.min.js"></script>
 <script src="presentation_files/libs/quarto-html/tippy.umd.min.js"></script>
@@ -30,6 +30,71 @@
       margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
       vertical-align: middle;
     }
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      { color: #003b4f; background-color: #f1f3f5; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #003b4f; } /* Normal */
+    code span.al { color: #ad0000; } /* Alert */
+    code span.an { color: #5e5e5e; } /* Annotation */
+    code span.at { color: #657422; } /* Attribute */
+    code span.bn { color: #ad0000; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #003b4f; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #20794d; } /* Char */
+    code span.cn { color: #8f5902; } /* Constant */
+    code span.co { color: #5e5e5e; } /* Comment */
+    code span.cv { color: #5e5e5e; font-style: italic; } /* CommentVar */
+    code span.do { color: #5e5e5e; font-style: italic; } /* Documentation */
+    code span.dt { color: #ad0000; } /* DataType */
+    code span.dv { color: #ad0000; } /* DecVal */
+    code span.er { color: #ad0000; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #ad0000; } /* Float */
+    code span.fu { color: #4758ab; } /* Function */
+    code span.im { color: #00769e; } /* Import */
+    code span.in { color: #5e5e5e; } /* Information */
+    code span.kw { color: #003b4f; font-weight: bold; } /* Keyword */
+    code span.op { color: #5e5e5e; } /* Operator */
+    code span.ot { color: #003b4f; } /* Other */
+    code span.pp { color: #ad0000; } /* Preprocessor */
+    code span.sc { color: #5e5e5e; } /* SpecialChar */
+    code span.ss { color: #20794d; } /* SpecialString */
+    code span.st { color: #20794d; } /* String */
+    code span.va { color: #111111; } /* Variable */
+    code span.vs { color: #20794d; } /* VerbatimString */
+    code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   </style>
   <link rel="stylesheet" href="presentation_files/libs/revealjs/dist/theme/quarto.css">
   <link rel="stylesheet" href="style.css">
@@ -322,6 +387,9 @@
       margin-right: 0; 
     }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+  
+  <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
   <style>
   #title-slide .title {
     font-size: 2.4em;
@@ -366,39 +434,725 @@ Daniel VandenHeuvel
 
   <p class="date">2024-10-09</p>
 </section>
-<section class="slide level2">
+<section id="overview" class="slide level2">
+<h2>Overview</h2>
+<ul>
+<li>Delaunay triangulations</li>
+<li>Constrained Delaunay triangulations</li>
+<li>Mesh refinement</li>
+<li>Voronoi tessellations</li>
+<li>Interpolation and solving PDEs</li>
+</ul>
+</section>
+<section id="delaunay-triangulations" class="slide level2">
+<h2>Delaunay Triangulations</h2>
+<ul>
+<li>A triangulation of a set of points <span class="math inline">\(\mathcal P\)</span> in the plane such that no triangle’s circumcircle contains any other point in the set.</li>
+</ul>
 
-<!--
-The title image was generated using 
+<img data-src="delaunay.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="delaunay-triangulations-1" class="slide level2" data-visibility="uncounted">
+<h2>Delaunay Triangulations</h2>
+<ul>
+<li>A triangulation of a set of points <span class="math inline">\(\mathcal P\)</span> in the plane such that no triangle’s circumcircle contains any other point in the set.</li>
+<li>Maximizes the minimum angle over all other triangulations of <span class="math inline">\(\mathcal P\)</span>.</li>
+</ul>
+</section>
+<section id="delaunay-triangulations-2" class="slide level2" data-visibility="uncounted">
+<h2>Delaunay Triangulations</h2>
+<ul>
+<li>A triangulation of a set of points <span class="math inline">\(\mathcal P\)</span> in the plane such that no triangle’s circumcircle contains any other point in the set.</li>
+<li>Maximizes the minimum angle over all other triangulations of <span class="math inline">\(\mathcal P\)</span>.</li>
+<li>Minimises the worst-case pointwise piecewise linear interpolation error for curvature-bounded functions.</li>
+</ul>
+</section>
+<section id="bowyer-watson-algorithm" class="slide level2">
+<h2>Bowyer-Watson Algorithm</h2>
+<ul>
+<li>Triangulations are computed incrementally.</li>
+</ul>
 
-using DelaunayTriangulation, CairoMakie
-outer = CircularArc((1.5, 0.0), (1.5, 0.0), (0.0, 0.0), positive=false)
-inner = CircularArc((0.8, 0.0), (0.8, 0.0), (0.0, 0.0), positive=true)
-square = [(-2.0, -2.0), (2.0, -2.0), (2.0, 2.0), (-2.0, 2.0)]
-boundary = [[[outer]], [[inner]], [[1, 2, 3, 4, 1]]]
-tri = triangulate(square; boundary_nodes=boundary)
-refine!(tri; max_area = 1e-2)
-fig, ax, sc = triplot(tri, figure = (; size = (1600, 800)), axis = (; width = 800, height = 800))
-xlims!(ax, -2, 2.5)
-ylims!(ax, -2, 2)
-hidedecorations!(ax)
-hidespines!(ax)
+<img data-src="bowyer-watson-1.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="bowyer-watson-algorithm-1" class="slide level2" data-visibility="uncounted">
+<h2>Bowyer-Watson Algorithm</h2>
+<ul>
+<li>Triangulations are computed incrementally.</li>
+</ul>
 
-points = randn(2, 200)
-circ = CircularArc((2.0, 0.0), (2.0, 0.0), (0.0, 0.0))
-clip_points = [circ(t) for t in LinRange(0, 1, 100)]
-clip_vertices = [1:(length(clip_points)-1); 1]
-tri = triangulate(points)
-vorn = voronoi(tri, clip=true, clip_polygon=(clip_points, clip_vertices))
-ax = Axis(fig[1, 2], width = 800, height = 800)
-voronoiplot!(ax, vorn, show_generators = false)
-xlims!(ax, -2.5, 2)
-ylims!(ax, -2, 2)
-hidedecorations!(ax)
-hidespines!(ax)
-resize_to_layout!(fig)
-save("panel.png", fig)
--->
+<img data-src="bowyer-watson-2.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="bowyer-watson-algorithm-2" class="slide level2" data-visibility="uncounted">
+<h2>Bowyer-Watson Algorithm</h2>
+<ul>
+<li>Triangulations are computed incrementally.</li>
+</ul>
+
+<img data-src="bowyer-watson-3.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="bowyer-watson-algorithm-3" class="slide level2" data-visibility="uncounted">
+<h2>Bowyer-Watson Algorithm</h2>
+<ul>
+<li>Triangulations are computed incrementally.</li>
+</ul>
+
+<img data-src="bowyer-watson-4.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="ghost-vertices" class="slide level2">
+<h2>Ghost Vertices</h2>
+<ul>
+<li>How to handle points outside of the triangulation?</li>
+<li>Ghost vertices.</li>
+</ul>
+
+<img data-src="ghost-vertices-1.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="ghost-vertices-1" class="slide level2" data-visibility="uncounted">
+<h2>Ghost Vertices</h2>
+<ul>
+<li>How to handle points outside of the triangulation?</li>
+<li>Ghost vertices.</li>
+</ul>
+
+<img data-src="ghost-vertices-2.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="ghost-vertices-2" class="slide level2" data-visibility="uncounted">
+<h2>Ghost Vertices</h2>
+<ul>
+<li>How to handle points outside of the triangulation?</li>
+<li>Ghost vertices.</li>
+</ul>
+
+<img data-src="ghost-vertices-3.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="ghost-vertices-3" class="slide level2" data-visibility="uncounted">
+<h2>Ghost Vertices</h2>
+<ul>
+<li>How to handle points outside of the triangulation?</li>
+<li>Ghost vertices.</li>
+</ul>
+
+<img data-src="ghost-vertices-4.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="using-delaunaytriangulation.jl" class="slide level2" data-auto-animate="true">
+<h2 data-id="quarto-animate-title">Using DelaunayTriangulation.jl</h2>
+<div id="24" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource julia number-lines code-with-copy" data-id="quarto-animate-code"><code class="sourceCode julia hljs"><span id="cb1-1" class="hljs-ln-code"><a href=""></a><span class="im">using</span> <span class="bu">DelaunayTriangulation</span></span>
+<span id="cb1-2" class="hljs-ln-code"><a href=""></a>points <span class="op">=</span> [<span class="fu">randn</span>(<span class="fl">2</span>) for _ <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">20</span>]</span>
+<span id="cb1-3" class="hljs-ln-code"><a href=""></a>tri <span class="op">=</span> <span class="fu">triangulate</span>(points)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="using-delaunaytriangulation.jl-1" class="slide level2" data-auto-animate="true" data-visibility="uncounted">
+<h2 data-id="quarto-animate-title">Using DelaunayTriangulation.jl</h2>
+<div id="28" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource julia number-lines code-with-copy" data-id="quarto-animate-code"><code class="sourceCode julia hljs"><span id="cb2-1" class="hljs-ln-code"><a href=""></a><span class="im">using</span> <span class="bu">DelaunayTriangulation</span></span>
+<span id="cb2-2" class="hljs-ln-code"><a href=""></a>points <span class="op">=</span> [<span class="fu">randn</span>(<span class="fl">2</span>) for _ <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">20</span>]</span>
+<span id="cb2-3" class="hljs-ln-code"><a href=""></a>tri <span class="op">=</span> <span class="fu">triangulate</span>(points)</span>
+<span id="cb2-4" class="hljs-ln-code"><a href=""></a><span class="fu">add_point!</span>(tri, <span class="fl">0.3</span>, <span class="fl">0.5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="using-delaunaytriangulation.jl-2" class="slide level2" data-auto-animate="true" data-visibility="uncounted">
+<h2 data-id="quarto-animate-title">Using DelaunayTriangulation.jl</h2>
+<div id="32" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource julia number-lines code-with-copy" data-id="quarto-animate-code"><code class="sourceCode julia hljs"><span id="cb3-1" class="hljs-ln-code"><a href=""></a><span class="im">using</span> <span class="bu">DelaunayTriangulation</span></span>
+<span id="cb3-2" class="hljs-ln-code"><a href=""></a>points <span class="op">=</span> [<span class="fu">randn</span>(<span class="fl">2</span>) for _ <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">20</span>]</span>
+<span id="cb3-3" class="hljs-ln-code"><a href=""></a>tri <span class="op">=</span> <span class="fu">triangulate</span>(points)</span>
+<span id="cb3-4" class="hljs-ln-code"><a href=""></a><span class="fu">add_point!</span>(tri, <span class="fl">0.3</span>, <span class="fl">0.5</span>)</span>
+<span id="cb3-5" class="hljs-ln-code"><a href=""></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
+<span id="cb3-6" class="hljs-ln-code"><a href=""></a><span class="fu">triplot</span>(tri)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+<img data-src="using-delaunay-triangulation.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="point-location" class="slide level2">
+<h2>Point Location</h2>
+<ul>
+<li>At each stage, we need to find the triangle <span class="math inline">\(T\)</span> containing the inserted point <span class="math inline">\(q\)</span>.</li>
+<li>Jump and march. Accelerate by sampling <span class="math inline">\(\mathcal O(n^{1/3})\)</span> vertices to start from.</li>
+</ul>
+
+<img data-src="point-location.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="using-delaunaytriangulation.jl-3" class="slide level2" data-auto-animate="true">
+<h2 data-id="quarto-animate-title">Using DelaunayTriangulation.jl</h2>
+<div id="38" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource julia number-lines code-with-copy" data-id="quarto-animate-code"><code class="sourceCode julia hljs"><span id="cb4-1" class="hljs-ln-code"><a href=""></a><span class="im">using</span> <span class="bu">DelaunayTriangulation</span></span>
+<span id="cb4-2" class="hljs-ln-code"><a href=""></a>points <span class="op">=</span> <span class="fu">rand</span>(<span class="fl">2</span>, <span class="fl">500</span>)</span>
+<span id="cb4-3" class="hljs-ln-code"><a href=""></a>tri <span class="op">=</span> <span class="fu">triangulate</span>(points)</span>
+<span id="cb4-4" class="hljs-ln-code"><a href=""></a><span class="fu">find_triangle</span>(tri, (<span class="fl">0.2</span>, <span class="fl">0.3</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>(383, 394, 405)</code></pre>
+</div>
+</div>
+</section>
+<section id="using-delaunaytriangulation.jl-4" class="slide level2" data-auto-animate="true" data-visibility="uncounted">
+<h2 data-id="quarto-animate-title">Using DelaunayTriangulation.jl</h2>
+<div id="40" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource julia number-lines code-with-copy" data-id="quarto-animate-code"><code class="sourceCode julia hljs"><span id="cb6-1" class="hljs-ln-code"><a href=""></a><span class="im">using</span> <span class="bu">DelaunayTriangulation</span></span>
+<span id="cb6-2" class="hljs-ln-code"><a href=""></a>points <span class="op">=</span> <span class="fu">rand</span>(<span class="fl">2</span>, <span class="fl">500</span>)</span>
+<span id="cb6-3" class="hljs-ln-code"><a href=""></a>tri <span class="op">=</span> <span class="fu">triangulate</span>(points)</span>
+<span id="cb6-4" class="hljs-ln-code"><a href=""></a><span class="fu">find_triangle</span>(tri, (<span class="fl">0.2</span>, <span class="fl">0.3</span>))</span>
+<span id="cb6-5" class="hljs-ln-code"><a href=""></a><span class="fu">find_triangle</span>(tri, (<span class="fl">1.2</span>, <span class="fl">1.5</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>(461, 339, -1)</code></pre>
+</div>
+</div>
+</section>
+<section id="using-delaunaytriangulation.jl-5" class="slide level2" data-auto-animate="true" data-visibility="uncounted">
+<h2 data-id="quarto-animate-title">Using DelaunayTriangulation.jl</h2>
+<div id="42" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource julia number-lines code-with-copy" data-id="quarto-animate-code"><code class="sourceCode julia hljs"><span id="cb8-1" class="hljs-ln-code"><a href=""></a><span class="im">using</span> <span class="bu">DelaunayTriangulation</span></span>
+<span id="cb8-2" class="hljs-ln-code"><a href=""></a>points <span class="op">=</span> <span class="fu">rand</span>(<span class="fl">2</span>, <span class="fl">500</span>)</span>
+<span id="cb8-3" class="hljs-ln-code"><a href=""></a>tri <span class="op">=</span> <span class="fu">triangulate</span>(points)</span>
+<span id="cb8-4" class="hljs-ln-code"><a href=""></a><span class="fu">find_triangle</span>(tri, (<span class="fl">0.2</span>, <span class="fl">0.3</span>))</span>
+<span id="cb8-5" class="hljs-ln-code"><a href=""></a><span class="fu">find_triangle</span>(tri, (<span class="fl">1.2</span>, <span class="fl">1.5</span>))</span>
+<span id="cb8-6" class="hljs-ln-code"><a href=""></a><span class="fu">find_triangle</span>(tri, (<span class="fl">0.5</span>, <span class="fl">0.5</span>); k<span class="op">=</span><span class="fl">7</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>(304, 442, 409)</code></pre>
+</div>
+</div>
+</section>
+<section id="constrained-triangulations" class="slide level2">
+<h2>Constrained Triangulations</h2>
+<ul>
+<li>Triangulation of points, segments, and boundaries.</li>
+<li>Useful for enforcing constraints and setting up domains for PDEs.</li>
+</ul>
+
+<img data-src="constrained-triangulation.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="constrained-delaunay-property" class="slide level2">
+<h2>Constrained Delaunay Property</h2>
+<ul>
+<li>A triangle is <em>constrained Delaunay</em> if its circumcircle contains no points in its interior <em>visible</em> from the triangle.</li>
+<li>The edge <span class="math inline">\(e\)</span> and triangle <span class="math inline">\(T\)</span> are both constrained Delaunay.</li>
+</ul>
+
+<img data-src="constrained-delaunay.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="inserting-segments" class="slide level2">
+<h2>Inserting Segments</h2>
+<ul>
+<li>Insert segments one at a time.</li>
+<li>Observation: Segments split the triangulation into two localised parts on either side.</li>
+</ul>
+
+<img data-src="inserting-segments-1.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="inserting-segments-1" class="slide level2" data-visibility="uncounted">
+<h2>Inserting Segments</h2>
+<ul>
+<li>Insert segments one at a time.</li>
+<li>Observation: Segments split the triangulation into two localised parts on either side.</li>
+</ul>
+
+<img data-src="inserting-segments-2.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="inserting-segments-2" class="slide level2" data-visibility="uncounted">
+<h2>Inserting Segments</h2>
+<ul>
+<li>Insert segments one at a time.</li>
+<li>Observation: Segments split the triangulation into two localised parts on either side.</li>
+</ul>
+
+<img data-src="inserting-segments-3.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="inserting-segments-3" class="slide level2" data-visibility="uncounted">
+<h2>Inserting Segments</h2>
+<ul>
+<li>Insert segments one at a time.</li>
+<li>Observation: Segments split the triangulation into two localised parts on either side.</li>
+</ul>
+
+<img data-src="inserting-segments-4.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="inserting-segments-4" class="slide level2" data-visibility="uncounted">
+<h2>Inserting Segments</h2>
+<ul>
+<li>Insert segments one at a time.</li>
+<li>Observation: Segments split the triangulation into two localised parts on either side.</li>
+</ul>
+
+<img data-src="inserting-segments-5.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="inserting-segments-5" class="slide level2" data-visibility="uncounted">
+<h2>Inserting Segments</h2>
+<ul>
+<li>Insert segments one at a time.</li>
+<li>Observation: Segments split the triangulation into two localised parts on either side.</li>
+</ul>
+
+<img data-src="inserting-segments-6.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="using-delaunaytriangulation.jl-6" class="slide level2">
+<h2>Using DelaunayTriangulation.jl</h2>
+<div id="60" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource julia number-lines code-with-copy"><code class="sourceCode julia"><span id="cb10-1"><a href=""></a><span class="im">using</span> <span class="bu">DelaunayTriangulation</span>, <span class="bu">CairoMakie</span></span>
+<span id="cb10-2"><a href=""></a>points <span class="op">=</span> [(<span class="fl">0.0</span>, <span class="fl">0.0</span>), (<span class="fl">0.0</span>, <span class="fl">1.0</span>), (<span class="fl">0.0</span>, <span class="fl">2.5</span>), (<span class="fl">2.0</span>, <span class="fl">0.0</span>),</span>
+<span id="cb10-3"><a href=""></a>    (<span class="fl">6.0</span>, <span class="fl">0.0</span>), (<span class="fl">8.0</span>, <span class="fl">0.0</span>), (<span class="fl">8.0</span>, <span class="fl">0.5</span>), (<span class="fl">7.5</span>, <span class="fl">1.0</span>),</span>
+<span id="cb10-4"><a href=""></a>    (<span class="fl">4.0</span>, <span class="fl">1.0</span>), (<span class="fl">4.0</span>, <span class="fl">2.5</span>), (<span class="fl">8.0</span>, <span class="fl">2.5</span>)]</span>
+<span id="cb10-5"><a href=""></a>tri <span class="op">=</span> <span class="fu">triangulate</span>(points; segments<span class="op">=</span><span class="fu">Set</span>([(<span class="fl">2</span>, <span class="fl">7</span>)]))</span>
+<span id="cb10-6"><a href=""></a></span>
+<span id="cb10-7"><a href=""></a><span class="fu">triplot</span>(tri)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+<img data-src="using-delaunay-triangulation-1.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="using-delaunaytriangulation.jl-7" class="slide level2" data-visibility="uncounted">
+<h2>Using DelaunayTriangulation.jl</h2>
+<div id="64" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource julia number-lines code-with-copy"><code class="sourceCode julia"><span id="cb11-1"><a href=""></a><span class="im">using</span> <span class="bu">DelaunayTriangulation</span>, <span class="bu">CairoMakie</span></span>
+<span id="cb11-2"><a href=""></a>points <span class="op">=</span> [(<span class="fl">0.0</span>, <span class="fl">0.0</span>), (<span class="fl">0.0</span>, <span class="fl">1.0</span>), (<span class="fl">0.0</span>, <span class="fl">2.5</span>), (<span class="fl">2.0</span>, <span class="fl">0.0</span>),</span>
+<span id="cb11-3"><a href=""></a>    (<span class="fl">6.0</span>, <span class="fl">0.0</span>), (<span class="fl">8.0</span>, <span class="fl">0.0</span>), (<span class="fl">8.0</span>, <span class="fl">0.5</span>), (<span class="fl">7.5</span>, <span class="fl">1.0</span>),</span>
+<span id="cb11-4"><a href=""></a>    (<span class="fl">4.0</span>, <span class="fl">1.0</span>), (<span class="fl">4.0</span>, <span class="fl">2.5</span>), (<span class="fl">8.0</span>, <span class="fl">2.5</span>)]</span>
+<span id="cb11-5"><a href=""></a>tri <span class="op">=</span> <span class="fu">triangulate</span>(points; segments<span class="op">=</span><span class="fu">Set</span>([(<span class="fl">2</span>, <span class="fl">7</span>)]))</span>
+<span id="cb11-6"><a href=""></a><span class="fu">add_segment!</span>(tri, <span class="fl">2</span>, <span class="fl">11</span>)</span>
+<span id="cb11-7"><a href=""></a><span class="fu">triplot</span>(tri)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+<img data-src="using-delaunay-triangulation-2.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="boundaries" class="slide level2">
+<h2>Boundaries</h2>
+<ul>
+<li>Boundaries are just sequences of segments.</li>
+<li>Exterior vertices are deleted, identified recursively.</li>
+</ul>
+
+<img data-src="boundaries-1.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="boundaries-1" class="slide level2" data-visibility="uncounted">
+<h2>Boundaries</h2>
+<ul>
+<li>Boundaries are just sequences of segments.</li>
+<li>Exterior vertices are deleted, identified recursively.</li>
+</ul>
+
+<img data-src="boundaries-2.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="boundaries-2" class="slide level2" data-visibility="uncounted">
+<h2>Boundaries</h2>
+<ul>
+<li>Boundaries are just sequences of segments.</li>
+<li>Exterior vertices are deleted, identified recursively.</li>
+</ul>
+
+<img data-src="boundaries-3.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="boundaries-3" class="slide level2" data-visibility="uncounted">
+<h2>Boundaries</h2>
+<ul>
+<li>Boundaries are just sequences of segments.</li>
+<li>Exterior vertices are deleted, identified recursively.</li>
+</ul>
+
+<img data-src="boundaries-4.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="using-delaunaytriangulation.jl-8" class="slide level2">
+<h2>Using DelaunayTriangulation.jl</h2>
+<div id="78" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource julia number-lines code-with-copy"><code class="sourceCode julia"><span id="cb12-1"><a href=""></a><span class="im">using</span> <span class="bu">DelaunayTriangulation</span>, <span class="bu">CairoMakie</span></span>
+<span id="cb12-2"><a href=""></a>boundary <span class="op">=</span> [(<span class="fl">0.0</span>, <span class="fl">0.0</span>), (<span class="fl">0.1</span>, <span class="op">-</span><span class="fl">0.1</span>), (<span class="fl">0.2</span>, <span class="op">-</span><span class="fl">0.2</span>), (<span class="fl">0.2</span>, <span class="fl">0.0</span>),</span>
+<span id="cb12-3"><a href=""></a>    (<span class="fl">0.8</span>, <span class="fl">0.0</span>), (<span class="fl">0.8</span>, <span class="op">-</span><span class="fl">0.2</span>), (<span class="fl">0.9</span>, <span class="op">-</span><span class="fl">0.1</span>), (<span class="fl">1.0</span>, <span class="fl">0.0</span>),</span>
+<span id="cb12-4"><a href=""></a>    (<span class="fl">0.9</span>, <span class="fl">0.2</span>), (<span class="fl">0.7</span>, <span class="fl">0.3</span>), (<span class="fl">0.6</span>, <span class="fl">0.2</span>), (<span class="fl">0.5</span>, <span class="fl">0.1</span>),</span>
+<span id="cb12-5"><a href=""></a>    (<span class="fl">0.4</span>, <span class="fl">0.2</span>), (<span class="fl">0.3</span>, <span class="fl">0.3</span>), (<span class="fl">0.1</span>, <span class="fl">0.2</span>), (<span class="fl">0.0</span>, <span class="fl">0.0</span>)]</span>
+<span id="cb12-6"><a href=""></a>points <span class="op">=</span> [(<span class="fu">rand</span>(), <span class="fl">0.5</span><span class="fu">rand</span>() <span class="op">-</span> <span class="fl">0.2</span>) for _ <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">1000</span>]</span>
+<span id="cb12-7"><a href=""></a>boundary_nodes, points <span class="op">=</span> <span class="fu">convert_boundary_points_to_indices</span>(</span>
+<span id="cb12-8"><a href=""></a>    boundary; existing_points<span class="op">=</span>points)</span>
+<span id="cb12-9"><a href=""></a>tri <span class="op">=</span> <span class="fu">triangulate</span>(points; boundary_nodes)</span>
+<span id="cb12-10"><a href=""></a><span class="fu">triplot</span>(tri)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+<img data-src="using-delaunay-triangulation-boundaries.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="identifying-boundaries" class="slide level2">
+<h2>Identifying Boundaries</h2>
+<ul>
+<li>To support boundary conditions, we need a way to assign IDs to boundaries.</li>
+<li>Define boundaries as sequences of individual sections, with each section having its own ghost vertex.</li>
+<li>Leveraged by FiniteVolumeMethod.jl.</li>
+</ul>
+
+<img data-src="identifying-boundaries.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="using-delaunaytriangulation.jl-9" class="slide level2">
+<h2>Using DelaunayTriangulation.jl</h2>
+<div id="86" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource julia number-lines code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href=""></a><span class="im">using</span> <span class="bu">DelaunayTriangulation</span>, <span class="bu">CairoMakie</span></span>
+<span id="cb13-2"><a href=""></a>section_1 <span class="op">=</span> [(<span class="fl">0.0</span>, <span class="fl">0.0</span>), (<span class="fl">0.1</span>, <span class="op">-</span><span class="fl">0.1</span>)]</span>
+<span id="cb13-3"><a href=""></a>section_2 <span class="op">=</span> [(<span class="fl">0.1</span>, <span class="op">-</span><span class="fl">0.1</span>), (<span class="fl">0.2</span>, <span class="op">-</span><span class="fl">0.2</span>), (<span class="fl">0.2</span>, <span class="fl">0.0</span>),</span>
+<span id="cb13-4"><a href=""></a>    (<span class="fl">0.8</span>, <span class="fl">0.0</span>), (<span class="fl">0.8</span>, <span class="op">-</span><span class="fl">0.2</span>)]</span>
+<span id="cb13-5"><a href=""></a>section_3 <span class="op">=</span> [(<span class="fl">0.8</span>, <span class="op">-</span><span class="fl">0.2</span>), (<span class="fl">0.9</span>, <span class="op">-</span><span class="fl">0.1</span>), (<span class="fl">1.0</span>, <span class="fl">0.0</span>)]</span>
+<span id="cb13-6"><a href=""></a>section_4 <span class="op">=</span> [(<span class="fl">1.0</span>, <span class="fl">0.0</span>), (<span class="fl">0.9</span>, <span class="fl">0.2</span>), (<span class="fl">0.7</span>, <span class="fl">0.3</span>), (<span class="fl">0.6</span>, <span class="fl">0.2</span>), (<span class="fl">0.5</span>, <span class="fl">0.1</span>),</span>
+<span id="cb13-7"><a href=""></a>    (<span class="fl">0.4</span>, <span class="fl">0.2</span>), (<span class="fl">0.3</span>, <span class="fl">0.3</span>), (<span class="fl">0.1</span>, <span class="fl">0.2</span>), (<span class="fl">0.0</span>, <span class="fl">0.0</span>)]</span>
+<span id="cb13-8"><a href=""></a>boundary <span class="op">=</span> [section_1, section_2, section_3, section_4]</span>
+<span id="cb13-9"><a href=""></a>points <span class="op">=</span> [(<span class="fu">rand</span>(), <span class="fl">0.5</span><span class="fu">rand</span>() <span class="op">-</span> <span class="fl">0.2</span>) for _ <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">1000</span>]</span>
+<span id="cb13-10"><a href=""></a>boundary_nodes, points <span class="op">=</span> <span class="fu">convert_boundary_points_to_indices</span>(</span>
+<span id="cb13-11"><a href=""></a>    boundary; existing_points<span class="op">=</span>points)</span>
+<span id="cb13-12"><a href=""></a>tri <span class="op">=</span> <span class="fu">triangulate</span>(points; boundary_nodes)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="using-delaunaytriangulation.jl-10" class="slide level2" data-auto-animate="true">
+<h2 data-id="quarto-animate-title">Using DelaunayTriangulation.jl</h2>
+<ul>
+<li>You can access features of the boundary easily.</li>
+</ul>
+<div id="88" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource julia number-lines code-with-copy" data-id="quarto-animate-code"><code class="sourceCode julia hljs"><span id="cb14-1" class="hljs-ln-code"><a href=""></a><span class="fu">get_boundary_nodes</span>(tri)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>4-element Vector{Vector{Int64}}:
+ [1001, 1002]
+ [1002, 1003, 1004, 1005, 1006]
+ [1006, 1007, 1008]
+ [1008, 1009, 1010, 1011, 1012, 1013, 1014, 1015, 1001]</code></pre>
+</div>
+</div>
+</section>
+<section id="using-delaunaytriangulation.jl-11" class="slide level2" data-auto-animate="true" data-visibility="uncounted">
+<h2 data-id="quarto-animate-title">Using DelaunayTriangulation.jl</h2>
+<ul>
+<li>You can access features of the boundary easily.</li>
+</ul>
+<div id="90" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource julia number-lines code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href=""></a><span class="fu">get_boundary_nodes</span>(tri)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>4-element Vector{Vector{Int64}}:
+ [1001, 1002]
+ [1002, 1003, 1004, 1005, 1006]
+ [1006, 1007, 1008]
+ [1008, 1009, 1010, 1011, 1012, 1013, 1014, 1015, 1001]</code></pre>
+</div>
+</div>
+<div id="92" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource julia number-lines code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href=""></a><span class="fu">get_adjacent2vertex</span>(tri, <span class="op">-</span><span class="fl">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>Set{Tuple{Int64, Int64}} with 4 elements:
+  (1004, 1003)
+  (1006, 1005)
+  (1003, 1002)
+  (1005, 1004)</code></pre>
+</div>
+</div>
+</section>
+<section id="using-delaunaytriangulation.jl-12" class="slide level2" data-auto-animate="true" data-visibility="uncounted">
+<h2 data-id="quarto-animate-title">Using DelaunayTriangulation.jl</h2>
+<ul>
+<li>You can access features of the boundary easily.</li>
+</ul>
+<div id="94" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource julia number-lines code-with-copy"><code class="sourceCode julia"><span id="cb20-1"><a href=""></a><span class="fu">get_boundary_nodes</span>(tri)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>4-element Vector{Vector{Int64}}:
+ [1001, 1002]
+ [1002, 1003, 1004, 1005, 1006]
+ [1006, 1007, 1008]
+ [1008, 1009, 1010, 1011, 1012, 1013, 1014, 1015, 1001]</code></pre>
+</div>
+</div>
+<div id="96" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource julia number-lines code-with-copy"><code class="sourceCode julia"><span id="cb22-1"><a href=""></a><span class="fu">get_adjacent2vertex</span>(tri, <span class="op">-</span><span class="fl">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>Set{Tuple{Int64, Int64}} with 4 elements:
+  (1004, 1003)
+  (1006, 1005)
+  (1003, 1002)
+  (1005, 1004)</code></pre>
+</div>
+</div>
+<div id="98" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource julia number-lines code-with-copy"><code class="sourceCode julia"><span id="cb24-1"><a href=""></a><span class="fu">get_neighbours</span>(tri, <span class="op">-</span><span class="fl">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<pre><code>Set{Int64} with 5 elements:
+  1005
+  1002
+  1006
+  1003
+  1004</code></pre>
+</div>
+</div>
+</section>
+<section id="using-delaunaytriangulation.jl-13" class="slide level2">
+<h2>Using DelaunayTriangulation.jl</h2>
+<ul>
+<li>Disjoint domains and holes follow the same representation.</li>
+</ul>
+<div class="columns">
+<div class="column" style="width:55%;">
+<div id="102" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource julia number-lines code-with-copy"><code class="sourceCode julia"><span id="cb26-1"><a href=""></a><span class="im">using</span> <span class="bu">DelaunayTriangulation</span></span>
+<span id="cb26-2"><a href=""></a><span class="im">using</span> <span class="bu">CairoMakie</span></span>
+<span id="cb26-3"><a href=""></a>θ <span class="op">=</span> <span class="fu">LinRange</span>(<span class="fl">0</span>, <span class="fl">2</span>pi, <span class="fl">100</span>);</span>
+<span id="cb26-4"><a href=""></a>θ <span class="op">=</span> [θ[<span class="fl">1</span><span class="op">:</span><span class="fl">99</span>]; θ[<span class="fl">1</span>]];</span>
+<span id="cb26-5"><a href=""></a>θr <span class="op">=</span> <span class="fu">reverse</span>(θ)</span>
+<span id="cb26-6"><a href=""></a>otrx, otry <span class="op">=</span> <span class="fl">10</span><span class="fu">cos</span>.(θ), <span class="fl">10</span><span class="fu">sin</span>.(θ)</span>
+<span id="cb26-7"><a href=""></a>innx, inny <span class="op">=</span> <span class="fl">5</span><span class="fu">cos</span>.(θr), <span class="fl">5</span><span class="fu">sin</span>.(θr)</span>
+<span id="cb26-8"><a href=""></a>inn2x, inn2y <span class="op">=</span> <span class="fl">2.5</span><span class="fu">cos</span>.(θ), <span class="fl">2.5</span><span class="fu">sin</span>.(θ)</span>
+<span id="cb26-9"><a href=""></a>x <span class="op">=</span> [[otrx], [innx], [inn2x]]</span>
+<span id="cb26-10"><a href=""></a>y <span class="op">=</span> [[otry], [inny], [inn2y]]</span>
+<span id="cb26-11"><a href=""></a>points <span class="op">=</span> [(<span class="fl">20</span><span class="fu">rand</span>() <span class="op">-</span> <span class="fl">10</span>, <span class="fl">20</span><span class="fu">rand</span>() <span class="op">-</span> <span class="fl">10</span>)</span>
+<span id="cb26-12"><a href=""></a>          for _ <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">1000</span>]</span>
+<span id="cb26-13"><a href=""></a>boundary_nodes, points <span class="op">=</span></span>
+<span id="cb26-14"><a href=""></a>    <span class="fu">convert_boundary_points_to_indices</span>(</span>
+<span id="cb26-15"><a href=""></a>        x, y; existing_points<span class="op">=</span>points)</span>
+<span id="cb26-16"><a href=""></a>tri <span class="op">=</span> <span class="fu">triangulate</span>(points;</span>
+<span id="cb26-17"><a href=""></a>    boundary_nodes)</span>
+<span id="cb26-18"><a href=""></a><span class="fu">triplot</span>(tri)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div><div class="column" style="width:45%;">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="disjoint-domains.png"></p>
+<figcaption>&nbsp;</figcaption>
+</figure>
+</div>
+</div></div>
+</section>
+<section id="mesh-refinement" class="slide level2">
+<h2>Mesh Refinement</h2>
+<ul>
+<li>Solutions using meshes are highly dependent on the quality of the triangles.</li>
+<li>Poor quality triangles can cause interpolation errors, gradient errors, and ill-conditioning.</li>
+</ul>
+
+<img data-src="needle-cap.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="assessing-element-quality" class="slide level2">
+<h2>Assessing Element Quality</h2>
+<ul>
+<li><p>Assess triangles using the <em>radius-edge ratio</em> <span class="math inline">\(\rho = R/\ell_{\min}\)</span>.</p></li>
+<li><p><span class="math inline">\(1/\sqrt 3 \leq \rho &lt;\infty\)</span>, with <span class="math inline">\(1/\sqrt 3\)</span> attained for equilateral triangles.</p></li>
+<li><p>Related to the smallest angle by</p></li>
+</ul>
+<p><span class="math display">\[
+\rho = \frac{1}{2\sin \theta_{\min}}.
+\]</span></p>
+<p>Thus, controlling <span class="math inline">\(\rho\)</span> controls the smallest angle.</p>
+</section>
+<section id="mesh-encroachment" class="slide level2">
+<h2>Mesh Encroachment</h2>
+<ul>
+<li>Mesh refinement inserts points into the triangulation.</li>
+<li>One issue with insertion is <em>encroachment</em>.</li>
+</ul>
+
+<img data-src="diametral-circle-lens.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="rupperts-algorithm" class="slide level2">
+<h2>Ruppert’s Algorithm</h2>
+<div id="110" class="cell" data-execution_count="0">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource julia number-lines code-with-copy"><code class="sourceCode julia"><span id="cb27-1"><a href=""></a><span class="kw">function</span> <span class="fu">refine</span>(tri)</span>
+<span id="cb27-2"><a href=""></a>    <span class="fu">split_all_encroached_segments!</span>(tri)</span>
+<span id="cb27-3"><a href=""></a>    <span class="cf">while</span> <span class="fu">has_bad_triangles</span>(tri)</span>
+<span id="cb27-4"><a href=""></a>        T <span class="op">=</span> <span class="fu">get_bad_triangle</span>(tri)</span>
+<span id="cb27-5"><a href=""></a>        <span class="fu">insert_circumcenter!</span>(tri, T)</span>
+<span id="cb27-6"><a href=""></a>        <span class="cf">if</span> <span class="fu">circumcenter_encroaches</span>(tri)</span>
+<span id="cb27-7"><a href=""></a>            <span class="fu">undo_insertion!</span>(tri, T)</span>
+<span id="cb27-8"><a href=""></a>            <span class="fu">split_all_encroached_segments!</span>(tri)</span>
+<span id="cb27-9"><a href=""></a>        <span class="cf">else</span></span>
+<span id="cb27-10"><a href=""></a>            <span class="cf">for</span> V <span class="kw">in</span> <span class="fu">new_triangles</span>(tri)</span>
+<span id="cb27-11"><a href=""></a>                ρ, A <span class="op">=</span> <span class="fu">radius_edge_ratio</span>(V), <span class="fu">area</span>(V)</span>
+<span id="cb27-12"><a href=""></a>                (ρ <span class="op">&gt;</span> ρₘₐₓ <span class="op">||</span> A <span class="op">&gt;</span> Aₘₐₓ) <span class="op">&amp;&amp;</span> <span class="fu">mark_bad!</span>(tri, V)</span>
+<span id="cb27-13"><a href=""></a>            <span class="cf">end</span></span>
+<span id="cb27-14"><a href=""></a>        <span class="cf">end</span></span>
+<span id="cb27-15"><a href=""></a>    <span class="cf">end</span></span>
+<span id="cb27-16"><a href=""></a><span class="kw">end</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ul>
+<li>Typically converges for <span class="math inline">\(\theta_{\min} &lt; 33.9^\circ\)</span>.</li>
+<li>Extra care needed for small angles.</li>
+</ul>
+</section>
+<section id="rupperts-algorithm-1" class="slide level2">
+<h2>Ruppert’s Algorithm</h2>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><video data-src="rupperts-algorithm.mp4" controls=""><a href="rupperts-algorithm.mp4">Video</a></video></p>
+<figcaption>&nbsp;</figcaption>
+</figure>
+</div>
+</section>
+<section id="using-delaunaytriangulation.jl-14" class="slide level2">
+<h2>Using DelaunayTriangulation.jl</h2>
+<div id="114" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource julia number-lines code-with-copy"><code class="sourceCode julia"><span id="cb28-1"><a href=""></a><span class="im">using</span> <span class="bu">DelaunayTriangulation</span>, <span class="bu">CairoMakie</span></span>
+<span id="cb28-2"><a href=""></a>outer <span class="op">=</span> [(<span class="fl">0.0</span>, <span class="fl">0.0</span>), (<span class="fl">1.0</span>, <span class="fl">0.0</span>), (<span class="fl">1.0</span>, <span class="fl">1.0</span>), (<span class="fl">0.0</span>, <span class="fl">1.0</span>), (<span class="fl">0.0</span>, <span class="fl">0.0</span>)]</span>
+<span id="cb28-3"><a href=""></a>inner <span class="op">=</span> [(<span class="fl">0.25</span>, <span class="fl">0.25</span>), (<span class="fl">0.25</span>, <span class="fl">0.75</span>), (<span class="fl">0.75</span>, <span class="fl">0.75</span>), (<span class="fl">0.75</span>, <span class="fl">0.25</span>), (<span class="fl">0.25</span>, <span class="fl">0.25</span>)]</span>
+<span id="cb28-4"><a href=""></a>boundary <span class="op">=</span> [[outer], [inner]]</span>
+<span id="cb28-5"><a href=""></a>boundary_nodes, points <span class="op">=</span> <span class="fu">convert_boundary_points_to_indices</span>(boundary)</span>
+<span id="cb28-6"><a href=""></a>segments <span class="op">=</span> <span class="fu">Set</span>([(<span class="fl">1</span>, <span class="fl">5</span>), (<span class="fl">7</span>, <span class="fl">3</span>)])</span>
+<span id="cb28-7"><a href=""></a>tri <span class="op">=</span> <span class="fu">triangulate</span>(points; boundary_nodes, segments)</span>
+<span id="cb28-8"><a href=""></a><span class="fu">refine!</span>(tri; max_area<span class="op">=</span><span class="fl">0.01</span>)</span>
+<span id="cb28-9"><a href=""></a><span class="fu">triplot</span>(tri)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+<img data-src="rupperts-algorithm.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="curve-bounded-domains" class="slide level2">
+<h2>Curve-Bounded Domains</h2>
+<ul>
+<li>Generalise triangulations to allow for <em>parametric curves</em>.</li>
+<li>Six types of parametric curves are supported, but the interface can be extended easily to new curves.</li>
+</ul>
+
+<img data-src="parametric_curves.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="boundary-enrichment" class="slide level2">
+<h2>Boundary Enrichment</h2>
+<ul>
+<li>Equally spaced discretisations can lead to excess triangles. Use curvature.</li>
+<li>Discretise until all edges are <em>constrained Delaunay</em> and the <em>total variation</em> <span class="math inline">\(\int_C |\kappa(s)|\,\mathrm ds &lt; \pi/2\)</span> over each subcurve.</li>
+</ul>
+
+<img data-src="boundary-enrichment-1.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="boundary-enrichment-1" class="slide level2" data-visibility="uncounted">
+<h2>Boundary Enrichment</h2>
+<ul>
+<li>Equally spaced discretisations can lead to excess triangles. Use curvature.</li>
+<li>Discretise until all edges are <em>constrained Delaunay</em> and the <em>total variation</em> <span class="math inline">\(\int_C |\kappa(s)|\,\mathrm ds &lt; \pi/2\)</span> over each subcurve.</li>
+</ul>
+
+<img data-src="boundary-enrichment-2.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="boundary-enrichment-2" class="slide level2" data-visibility="uncounted">
+<h2>Boundary Enrichment</h2>
+<ul>
+<li>Equally spaced discretisations can lead to excess triangles. Use curvature.</li>
+<li>Discretise until all edges are <em>constrained Delaunay</em> and the <em>total variation</em> <span class="math inline">\(\int_C |\kappa(s)|\,\mathrm ds &lt; \pi/2\)</span> over each subcurve.</li>
+</ul>
+
+<img data-src="boundary-enrichment-3.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="curve-bounded-refinement" class="slide level2">
+<h2>Curve-Bounded Refinement</h2>
+<ul>
+<li>Works just as in the standard case, except encroached edges are split at the <em>equivariation point</em> instead of their midpoint.</li>
+</ul>
+
+<img data-src="curve-bounded-split.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="comparison-with-discretisation" class="slide level2">
+<h2>Comparison with Discretisation</h2>
+
+<img data-src="manual-vs-circular.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="using-delaunaytriangulation.jl-15" class="slide level2">
+<h2>Using DelaunayTriangulation.jl</h2>
+<div id="130" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode numberSource julia number-lines code-with-copy"><code class="sourceCode julia"><span id="cb29-1"><a href=""></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">123</span>)</span>
+<span id="cb29-2"><a href=""></a><span class="im">using</span> <span class="bu">DelaunayTriangulation</span>, <span class="bu">CairoMakie</span></span>
+<span id="cb29-3"><a href=""></a>r₁, r₂, r₃ <span class="op">=</span> <span class="fl">10.0</span>, <span class="fl">5.0</span>, <span class="fl">2.5</span></span>
+<span id="cb29-4"><a href=""></a>c₁ <span class="op">=</span> <span class="fu">CircularArc</span>((r₁, <span class="fl">0.0</span>), (r₁, <span class="fl">0.0</span>), (<span class="fl">0.0</span>, <span class="fl">0.0</span>))</span>
+<span id="cb29-5"><a href=""></a>c₂ <span class="op">=</span> <span class="fu">CircularArc</span>((r₂, <span class="fl">0.0</span>), (r₂, <span class="fl">0.0</span>), (<span class="fl">0.0</span>, <span class="fl">0.0</span>), positive<span class="op">=</span><span class="cn">false</span>)</span>
+<span id="cb29-6"><a href=""></a>c₃ <span class="op">=</span> <span class="fu">CircularArc</span>((r₃, <span class="fl">0.0</span>), (r₃, <span class="fl">0.0</span>), (<span class="fl">0.0</span>, <span class="fl">0.0</span>))</span>
+<span id="cb29-7"><a href=""></a>tri <span class="op">=</span> <span class="fu">triangulate</span>(<span class="dt">NTuple</span>{<span class="fl">2</span>,<span class="dt">Float64</span>}[]; boundary_nodes<span class="op">=</span>[[[c₁]], [[c₂]], [[c₃]]])</span>
+<span id="cb29-8"><a href=""></a><span class="fu">refine!</span>(tri; max_area<span class="op">=</span><span class="fl">0.001</span><span class="fu">get_area</span>(tri))</span>
+<span id="cb29-9"><a href=""></a><span class="fu">triplot</span>(tri)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+<img data-src="curve-refinement-annulus.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="heterogenous-constraints" class="slide level2">
+<h2>Heterogenous Constraints</h2>
+<ul>
+<li>Use <code>custom_constraint</code> to apply different constraints in each region.</li>
+</ul>
+<div id="134" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource julia number-lines code-with-copy"><code class="sourceCode julia"><span id="cb30-1"><a href=""></a><span class="bu">Random</span>.<span class="fu">seed!</span>(<span class="fl">123</span>)</span>
+<span id="cb30-2"><a href=""></a>outer_area <span class="op">=</span> <span class="cn">π</span> <span class="op">*</span> (r₁<span class="op">^</span><span class="fl">2</span> <span class="op">-</span> r₂<span class="op">^</span><span class="fl">2</span>)</span>
+<span id="cb30-3"><a href=""></a>inner_area <span class="op">=</span> <span class="cn">π</span> <span class="op">*</span> r₃<span class="op">^</span><span class="fl">2</span></span>
+<span id="cb30-4"><a href=""></a><span class="kw">function</span> <span class="fu">area_constraint</span>(tri, T)</span>
+<span id="cb30-5"><a href=""></a>    u, v, w <span class="op">=</span> <span class="fu">triangle_vertices</span>(T)</span>
+<span id="cb30-6"><a href=""></a>    p, q, r <span class="op">=</span> <span class="fu">get_point</span>(tri, u, v, w)</span>
+<span id="cb30-7"><a href=""></a>    A <span class="op">=</span> DelaunayTriangulation.<span class="fu">triangle_area</span>(p, q, r)</span>
+<span id="cb30-8"><a href=""></a>    c <span class="op">=</span> (p <span class="op">.+</span> q <span class="op">.+</span> r) <span class="op">./</span> <span class="fl">3</span></span>
+<span id="cb30-9"><a href=""></a>    poly <span class="op">=</span> <span class="fu">find_polygon</span>(tri, c) <span class="co"># 1: outer-most; 3: inner-most; 2: in-between</span></span>
+<span id="cb30-10"><a href=""></a>    <span class="cf">return</span> poly <span class="op">==</span> <span class="fl">1</span> ? (A <span class="op">≥</span> <span class="fl">0.005</span>inner_area) <span class="op">:</span> (A <span class="op">≥</span> <span class="fl">0.001</span>outer_area) <span class="co"># 2 is impossible</span></span>
+<span id="cb30-11"><a href=""></a><span class="kw">end</span></span>
+<span id="cb30-12"><a href=""></a>tri <span class="op">=</span> <span class="fu">triangulate</span>(<span class="dt">NTuple</span>{<span class="fl">2</span>,<span class="dt">Float64</span>}[]; boundary_nodes<span class="op">=</span>[[[c₁]], [[c₂]], [[c₃]]])</span>
+<span id="cb30-13"><a href=""></a><span class="fu">refine!</span>(tri; custom_constraint<span class="op">=</span>area_constraint)</span>
+<span id="cb30-14"><a href=""></a><span class="fu">triplot</span>(tri)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="heterogenous-constraints-1" class="slide level2" data-visibility="uncounted">
+<h2>Heterogenous Constraints</h2>
+
+<img data-src="heterogenous-constraints.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="voronoi-tessellations" class="slide level2">
+<h2>Voronoi Tessellations</h2>
+<ul>
+<li>Dual graph to the Delaunay triangulation.</li>
+<li>Each point in a Voronoi cell is closer to its associated <em>generator</em> than to any other generator.</li>
+</ul>
+
+<img data-src="voronoi-tessellations.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="using-delaunaytriangulation.jl-16" class="slide level2">
+<h2>Using DelaunayTriangulation.jl</h2>
+<div id="140" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource julia number-lines code-with-copy"><code class="sourceCode julia"><span id="cb31-1"><a href=""></a><span class="im">using</span> <span class="bu">DelaunayTriangulation</span>, <span class="bu">CairoMakie</span></span>
+<span id="cb31-2"><a href=""></a>points <span class="op">=</span> <span class="fu">randn</span>(<span class="fl">2</span>, <span class="fl">25</span>)</span>
+<span id="cb31-3"><a href=""></a>tri <span class="op">=</span> <span class="fu">triangulate</span>(points)</span>
+<span id="cb31-4"><a href=""></a>vorn <span class="op">=</span> <span class="fu">voronoi</span>(tri)</span>
+<span id="cb31-5"><a href=""></a><span class="fu">voronoiplot</span>(vorn)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+<img data-src="voronoi-tessellations-2.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="clipped-voronoi-tessellations" class="slide level2">
+<h2>Clipped Voronoi Tessellations</h2>
+<ul>
+<li>Support for clipping to convex polygons.</li>
+</ul>
+<div id="144" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource julia number-lines code-with-copy"><code class="sourceCode julia"><span id="cb32-1"><a href=""></a>vorn <span class="op">=</span> <span class="fu">voronoi</span>(tri; clip<span class="op">=</span><span class="cn">true</span>) <span class="co"># clips to the convex hull</span></span>
+<span id="cb32-2"><a href=""></a><span class="fu">voronoiplot</span>(vorn)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+<img data-src="clipped-voronoi-tessellations-1.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="clipped-voronoi-tessellations-1" class="slide level2" data-visibility="uncounted">
+<h2>Clipped Voronoi Tessellations</h2>
+<ul>
+<li>Support for clipping to convex polygons.</li>
+</ul>
+<div id="148" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource julia number-lines code-with-copy"><code class="sourceCode julia"><span id="cb33-1"><a href=""></a>clip_points <span class="op">=</span> [(<span class="op">-</span><span class="fl">2.0</span>, <span class="op">-</span><span class="fl">1.0</span>), (<span class="fl">2.0</span>, <span class="op">-</span><span class="fl">1.0</span>), (<span class="fl">2.0</span>, <span class="fl">1.0</span>), (<span class="op">-</span><span class="fl">2.0</span>, <span class="fl">1.0</span>)]</span>
+<span id="cb33-2"><a href=""></a>clip_vertices <span class="op">=</span> [<span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span>, <span class="fl">4</span>, <span class="fl">1</span>]</span>
+<span id="cb33-3"><a href=""></a>vorn <span class="op">=</span> <span class="fu">voronoi</span>(tri; clip<span class="op">=</span><span class="cn">true</span>,</span>
+<span id="cb33-4"><a href=""></a>    clip_polygon<span class="op">=</span>(clip_points, clip_vertices)) <span class="co"># clips to the square</span></span>
+<span id="cb33-5"><a href=""></a><span class="fu">voronoiplot</span>(vorn)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+<img data-src="clipped-voronoi-tessellations-2.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="clipped-voronoi-tessellations-2" class="slide level2" data-visibility="uncounted">
+<h2>Clipped Voronoi Tessellations</h2>
+<ul>
+<li>Support for clipping to convex polygons.</li>
+</ul>
+<div id="152" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode numberSource julia number-lines code-with-copy"><code class="sourceCode julia"><span id="cb34-1"><a href=""></a>ellip <span class="op">=</span> <span class="fu">EllipticalArc</span>((<span class="fl">2.0</span>, <span class="fl">0.0</span>), (<span class="fl">2.0</span>, <span class="fl">0.0</span>), (<span class="fl">0.0</span>, <span class="fl">0.0</span>), <span class="fl">2.0</span>, <span class="fl">0.8</span>, <span class="fl">0.0</span>)</span>
+<span id="cb34-2"><a href=""></a>t <span class="op">=</span> <span class="fu">LinRange</span>(<span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">100</span>)</span>
+<span id="cb34-3"><a href=""></a>clip_points <span class="op">=</span> <span class="fu">ellip</span>.(t)[<span class="fl">1</span><span class="op">:</span><span class="kw">end</span><span class="op">-</span><span class="fl">1</span>]</span>
+<span id="cb34-4"><a href=""></a>clip_vertices <span class="op">=</span> [<span class="fl">1</span><span class="op">:</span><span class="fu">length</span>(clip_points); <span class="fl">1</span>]</span>
+<span id="cb34-5"><a href=""></a>vorn <span class="op">=</span> <span class="fu">voronoi</span>(tri; clip<span class="op">=</span><span class="cn">true</span>,</span>
+<span id="cb34-6"><a href=""></a>    clip_polygon<span class="op">=</span>(clip_points, clip_vertices)) <span class="co"># clips to the ellipse</span></span>
+<span id="cb34-7"><a href=""></a><span class="fu">voronoiplot</span>(vorn)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+<img data-src="clipped-voronoi-tessellations-3.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="centroidal-voronoi-tessellations" class="slide level2">
+<h2>Centroidal Voronoi Tessellations</h2>
+<ul>
+<li>Support for centroidal Voronoi tessellations.</li>
+</ul>
+<div id="156" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource julia number-lines code-with-copy"><code class="sourceCode julia"><span id="cb35-1"><a href=""></a>points <span class="op">=</span> <span class="fu">rand</span>(<span class="fl">2</span>, <span class="fl">500</span>)</span>
+<span id="cb35-2"><a href=""></a>vorn <span class="op">=</span> <span class="fu">voronoi</span>(<span class="fu">triangulate</span>(points); clip<span class="op">=</span><span class="cn">true</span>, smooth<span class="op">=</span><span class="cn">true</span>)</span>
+<span id="cb35-3"><a href=""></a><span class="fu">voronoiplot</span>(vorn)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+<img data-src="centroidal-voronoi-tessellations.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="finitevolumemethod.jl" class="slide level2">
+<h2>FiniteVolumeMethod.jl</h2>
+<ul>
+<li>FiniteVolumeMethod.jl leverages DelaunayTriangulation.jl for meshing, solving PDEs of the form <span class="math display">\[
+\frac{\partial u(\boldsymbol x, t)}{\partial t} + \boldsymbol \nabla \cdot \boldsymbol q(\boldsymbol x, t, u) = S(\boldsymbol x, t, u)
+\]</span></li>
+<li>Hooks into the SciML interface to support a wide range of solvers.</li>
+</ul>
+</section>
+<section id="finitevolumemethod.jl-1" class="slide level2" data-visibility="uncounted">
+<h2>FiniteVolumeMethod.jl</h2>
+
+<img data-src="mean-exit-time.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="naturalneighbours.jl" class="slide level2">
+<h2>NaturalNeighbours.jl</h2>
+<ul>
+<li>NaturalNeighbours.jl uses DelaunayTriangulation.jl for performing <em>natural neighbour interpolation</em>.</li>
+</ul>
+<video muted="" loop="">
+<source src="natural-neighbours.mp4" type="video/mp4">
+<p>Your browser does not support the video tag. </p>
+</video></section>
+<section id="natural-neighbours" class="slide level2">
+<h2>Natural Neighbours</h2>
+<ul>
+<li>Use interpolants of the form <span class="math inline">\(f(\boldsymbol x_0) = \sum_{i \in N_0} \lambda_i f(\boldsymbol x_i)\)</span>.</li>
+<li>Sibson coordinates: <span class="math inline">\(\lambda_i = A(\boldsymbol x_i)/A(\boldsymbol x)\)</span>.</li>
+</ul>
+
+<img data-src="new_tile.png" class="r-stretch quarto-figure-center"><p class="caption">&nbsp;</p></section>
+<section id="conclusion" class="slide level2">
+<h2>Conclusion</h2>
+<ul>
+<li>Delaunay triangulations are a powerful tool for meshing and interpolation, among other applications.</li>
+<li>DelaunayTriangulation.jl is a feature-rich package for working with Delaunay triangulations and Voronoi tessellations.</li>
+<li>Documentation contains many other examples, details, and applications such as cell biology.</li>
+<li>Experimental support for spherical Delaunay triangulations and Voronoi tessellations.</li>
+<li>Also supports weighted triangulations and power diagrams.</li>
+</ul>
 <div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 
@@ -456,7 +1210,7 @@ save("panel.png", fig)
         progress: true,
 
         // Display the page number of the current slide
-        slideNumber: false,
+        slideNumber: 'c/t',
 
         // 'all', 'print', or 'speaker'
         showSlideNumber: 'all',

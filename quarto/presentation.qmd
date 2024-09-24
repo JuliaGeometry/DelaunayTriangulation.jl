@@ -13,8 +13,10 @@ author:
 date: "2024-10-09" 
 engine: "julia"
 execute:
-    daemon: true
-format: revealjs
+    daemon: 600
+format: 
+  revealjs:
+      slide-number: true
 include-in-header:
   - text: |
       <style>
@@ -24,36 +26,2047 @@ include-in-header:
       </style>
 css: "style.css"
 ---
+ 
+## Overview
 
-<!--
-The title image was generated using 
+- Delaunay triangulations
+- Constrained Delaunay triangulations
+- Mesh refinement
+- Voronoi tessellations
+- Interpolation and solving PDEs
 
-using DelaunayTriangulation, CairoMakie
-outer = CircularArc((1.5, 0.0), (1.5, 0.0), (0.0, 0.0), positive=false)
-inner = CircularArc((0.8, 0.0), (0.8, 0.0), (0.0, 0.0), positive=true)
-square = [(-2.0, -2.0), (2.0, -2.0), (2.0, 2.0), (-2.0, 2.0)]
-boundary = [[[outer]], [[inner]], [[1, 2, 3, 4, 1]]]
-tri = triangulate(square; boundary_nodes=boundary)
-refine!(tri; max_area = 1e-2)
-fig, ax, sc = triplot(tri, figure = (; size = (1600, 800)), axis = (; width = 800, height = 800))
-xlims!(ax, -2, 2.5)
-ylims!(ax, -2, 2)
+## Delaunay Triangulations 
+
+```{julia}
+#| echo: false
+#| output: false
+using DelaunayTriangulation
+EllipticalArc((0.0, 0.0), (1.0, 0.0), (0.0, 0.0), 0.5, 0.5, 0.0)
+```
+
+- A triangulation of a set of points $\mathcal P$ in the plane such that no triangle's circumcircle contains any other point in the set. 
+```{julia}
+#| echo: false
+#| output: false
+using DelaunayTriangulation, CairoMakie, StableRNGs
+rng = StableRNG(123)
+points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0),
+    (0.25, 0.25), (0.5, 0.7), (0.2, 0.5), (0.7, 0.7),
+    (0.5, 0.9), (0.1, 0.1), (0.8, 0.2)]
+tri = triangulate(points; rng)
+T = (6, 5, 11)
+u, v, w = triangle_vertices(T)
+p, q, r = get_point(tri, u, v, w)
+cent = DelaunayTriangulation.triangle_circumcenter(p, q, r)
+rad = DelaunayTriangulation.triangle_circumradius(p, q, r)
+circles = [Circle(Point2(cent), rad)]
+
+fig, ax, sc = triplot(tri, figure=(; size=(400, 400)))
+translate!(sc, 0, 0, 1)
+poly!(ax, [p, q, r], color=(:blue, 0.3))
+poly!(ax, circles, strokecolor=:red, strokewidth=2.5, color=(:white, 0.0), linestyle=:dashdot)
+xlims!(ax, -0.01, 1.01)
+ylims!(ax, -0.01, 1.01)
+hidedecorations!(ax)
+hidespines!(ax)
+save("delaunay.png", fig)
+```
+
+![&nbsp;](delaunay.png)
+
+## Delaunay Triangulations {visibility="uncounted"}
+
+- A triangulation of a set of points $\mathcal P$ in the plane such that no triangle's circumcircle contains any other point in the set. 
+- Maximizes the minimum angle over all other triangulations of $\mathcal P$.
+
+## Delaunay Triangulations {visibility="uncounted"}
+
+- A triangulation of a set of points $\mathcal P$ in the plane such that no triangle's circumcircle contains any other point in the set. 
+- Maximizes the minimum angle over all other triangulations of $\mathcal P$.
+- Minimises the worst-case pointwise piecewise linear interpolation error for curvature-bounded functions. 
+
+## Bowyer-Watson Algorithm
+
+- Triangulations are computed incrementally.
+
+```{julia}
+#| echo: false
+#| output: false
+using DelaunayTriangulation, CairoMakie, StableRNGs
+a = (0.0, 0.0)
+b = (10.0, 0.0)
+c = (20.0, 0.0)
+d = (20.0, 10.0)
+e = (20.0, 20.0)
+f = (10.0, 20.0)
+g = (0.0, 20.0)
+h = (0.0, 10.0)
+i = (4.0, 16.0)
+j = (4.0, 6.0)
+k = (8.0, 6.0)
+ℓ = (8.0, 16.0)
+m = (14.0, 10.0)
+n = (14.0, 6.0)
+o = (12.0, 4.0)
+p = (14.0, 2.0)
+q = (18.0, 6.0)
+r = (18.0, 12.0)
+s = (4.0, 2.0)
+t = (10.0, 2.0)
+u = (10.0, 4.0)
+v = (14.0, 18.0)
+w = (12.0, 14.0)
+z = (18.0, 16.0)
+a1 = (4.0, 18.0)
+b1 = (2.0, 12.0)
+points = [a, b, c, d, e, f, g, h, i, j, k, ℓ,
+    m, n, o, p, q, r, s, t, u, v, w, z, a1, b1]
+rng = StableRNG(177255878673)
+tri = DelaunayTriangulation.triangulate(points; rng)
+p = (10.0, 12.0)
+fig, ax, sc = triplot(tri; axis=(; width=400, height=400))
+scatter!(ax, [p], markersize=14, color=:red)
+hidedecorations!(ax)
+hidespines!(ax)
+save("bowyer-watson-1.png", fig)
+```
+
+![&nbsp;](bowyer-watson-1.png)
+
+## Bowyer-Watson Algorithm {visibility="uncounted"}
+
+- Triangulations are computed incrementally.
+
+```{julia}
+#| echo: false 
+#| output: false
+DelaunayTriangulation.push_point!(tri, p)
+r = DelaunayTriangulation.num_points(tri)
+fig, ax, sc = triplot(tri; axis=(; width=400, height=400))
+triangles_to_delete = NTuple{3,Int}[]
+for T in each_solid_triangle(tri)
+    flag = DelaunayTriangulation.point_position_relative_to_circumcircle(tri, T, r)
+    if DelaunayTriangulation.is_inside(flag)
+        push!(triangles_to_delete, T)
+        i, j, k = triangle_vertices(T)
+        pp, qq, rr = get_point(tri, i, j, k)
+        poly!(ax, [pp, qq, rr], color=(:blue, 0.3))
+        cc = DelaunayTriangulation.triangle_circumcenter(pp, qq, rr)
+        cr = DelaunayTriangulation.triangle_circumradius(pp, qq, rr)
+        circs = Circle(Point2(cc), cr)
+        poly!(ax, circs, color=(:white, 0.0), strokewidth=2, strokecolor=(:magenta, 0.6))
+    end
+end
+scatter!(ax, [p], markersize=14, color=:red)
+hidedecorations!(ax)
+hidespines!(ax)
+save("bowyer-watson-2.png", fig)
+```
+
+![&nbsp;](bowyer-watson-2.png)
+
+## Bowyer-Watson Algorithm {visibility="uncounted"}
+
+- Triangulations are computed incrementally.
+
+```{julia}
+#| echo: false
+#| output: false
+for T in triangles_to_delete
+    delete_triangle!(tri, T)
+end
+fig, ax, sc = triplot(tri; axis=(; width=400, height=400))
+scatter!(ax, [p], markersize=14, color=:red)
+hidedecorations!(ax)
+hidespines!(ax)
+save("bowyer-watson-3.png", fig)
+```
+
+![&nbsp;](bowyer-watson-3.png)
+
+## Bowyer-Watson Algorithm {visibility="uncounted"}
+
+- Triangulations are computed incrementally.
+
+```{julia}
+#| echo: false
+#| output: false
+fig, ax, sc = triplot(tri; axis=(; width=400, height=400))
+for e in each_solid_edge(tri)
+    u, v = edge_vertices(e)
+    if !DelaunayTriangulation.edge_exists(tri, v, u)
+        add_triangle!(tri, v, u, r)
+        lines!(ax, [get_point(tri, v, r)...], linewidth=5, color=:black)
+        lines!(ax, [get_point(tri, u, r)...], linewidth=5, color=:black)
+    end
+end
+scatter!(ax, [p], markersize=14, color=:red)
+hidedecorations!(ax)
+hidespines!(ax)
+save("bowyer-watson-4.png", fig)
+```
+
+![&nbsp;](bowyer-watson-4.png)
+
+## Ghost Vertices 
+
+- How to handle points outside of the triangulation?
+- Ghost vertices.
+
+```{julia}
+#| echo: false
+#| output: false
+using DelaunayTriangulation, CairoMakie, StableRNGs
+rng = StableRNG(100)
+points = tuple.(rand(rng, 10), rand(rng, 10))
+p = (0.8, 0.75)
+tri = triangulate(points; rng)
+
+fig, ax, sc = triplot(tri; axis=(; width=600, height=600))
+scatter!(ax, [p], markersize=14, color=:red)
+xlims!(ax, -0.1, 1)
+ylims!(ax, -0.1, 1)
+hidedecorations!(ax)
+hidespines!(ax)
+save("ghost-vertices-1.png", fig)
+```
+
+![&nbsp;](ghost-vertices-1.png)
+
+## Ghost Vertices {visibility="uncounted"}
+
+- How to handle points outside of the triangulation?
+- Ghost vertices.
+
+```{julia}
+#| echo: false
+#| output: false
+fig, ax, sc = triplot(tri; axis=(; width=600, height=600), show_ghost_edges=true)
+scatter!(ax, [p], markersize=14, color=:red)
+xlims!(ax, -0.1, 1)
+ylims!(ax, -0.1, 1)
+hidedecorations!(ax)
+hidespines!(ax)
+save("ghost-vertices-2.png", fig)
+```
+
+![&nbsp;](ghost-vertices-2.png)
+
+## Ghost Vertices {visibility="uncounted"}
+
+- How to handle points outside of the triangulation?
+- Ghost vertices.
+
+```{julia}
+#| echo: false
+#| output: false
+fig, ax, sc = triplot(tri; axis=(; width=600, height=600))
+scatter!(ax, [p], markersize=14, color=:red)
+for e in each_edge(get_adjacent2vertex(tri, -1))
+    u, v = edge_vertices(e)
+    q, r = get_point(tri, u, v)
+    qx, qy = getxy(q)
+    rx, ry = getxy(r)
+    slope = (ry - qy) / (rx - qx)
+    intercept = qy - slope * qx
+    ablines!(ax, intercept, slope, color=:green, linestyle=:dashdot)
+end
+xlims!(ax, -0.1, 1)
+ylims!(ax, -0.1, 1)
+hidedecorations!(ax)
+hidespines!(ax)
+save("ghost-vertices-3.png", fig)
+```
+
+![&nbsp;](ghost-vertices-3.png)
+
+## Ghost Vertices {visibility="uncounted"}
+
+- How to handle points outside of the triangulation?
+- Ghost vertices.
+
+```{julia}
+#| echo: false
+#| output: false
+add_point!(tri, p)
+fig, ax, sc = triplot(tri; axis=(; width=600, height=600))
+scatter!(ax, [p], markersize=14, color=:red)
+xlims!(ax, -0.1, 1)
+ylims!(ax, -0.1, 1)
+hidedecorations!(ax)
+hidespines!(ax)
+save("ghost-vertices-4.png", fig)
+```
+
+![&nbsp;](ghost-vertices-4.png)
+
+## Using DelaunayTriangulation.jl {auto-animate="true"}
+
+```{julia}
+#| echo: false 
+#| output: false 
+s = 5
+using Random
+Random.seed!(s)
+```
+
+```{julia}
+#| echo: true
+#| output: false
+using DelaunayTriangulation
+points = [randn(2) for _ in 1:20]
+tri = triangulate(points)
+```
+
+## Using DelaunayTriangulation.jl {auto-animate="true" visibility="uncounted"}
+
+```{julia}
+#| echo: false 
+#| output: false 
+Random.seed!(s)
+```
+
+```{julia}
+#| echo: true
+#| output: false
+using DelaunayTriangulation
+points = [randn(2) for _ in 1:20]
+tri = triangulate(points)
+add_point!(tri, 0.3, 0.5)
+```
+
+## Using DelaunayTriangulation.jl {auto-animate="true" visibility="uncounted"}
+
+```{julia}
+#| echo: false 
+#| output: false 
+Random.seed!(s)
+```
+
+```{julia}
+#| echo: true
+#| output: false
+using DelaunayTriangulation
+points = [randn(2) for _ in 1:20]
+tri = triangulate(points)
+add_point!(tri, 0.3, 0.5)
+using CairoMakie
+triplot(tri)
+```
+
+
+```{julia}
+#| echo: false 
+#| output: false
+fig, ax, sc = triplot(tri)
+save("using-delaunay-triangulation.png", fig)
+```
+
+![&nbsp;](using-delaunay-triangulation.png)
+
+## Point Location 
+
+- At each stage, we need to find the triangle $T$ containing the inserted point $q$.
+- Jump and march. Accelerate by sampling $\mathcal O(n^{1/3})$ vertices to start from.
+
+```{julia}
+#| echo: false 
+#| output: false
+rng = StableRNG(123)
+points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
+tri = triangulate(points; rng)
+refine!(tri; max_area=0.003, rng)
+
+q = (0.18457144136226902, 0.7789395439761025)
+T = find_triangle(tri, q)
+k = findmin(DelaunayTriangulation.norm_sqr.([p .- (0.9, 0.15) for p in get_points(tri)]))[2]
+r = get_point(tri, k)
+V, E, I = DelaunayTriangulation.triangle_type(tri), DelaunayTriangulation.edge_type(tri), DelaunayTriangulation.integer_type(tri)
+history = DelaunayTriangulation.PointLocationHistory{V,E,I}()
+find_triangle(tri, q; k, store_history=Val(true), history)
+
+fig, ax, sc = triplot(tri)
+lines!(ax, [q, r], linestyle=:dashdot, linewidth=2, color=:black)
+scatter!(ax, [q], markersize=16, color=:red)
+scatter!(ax, [r], markersize=16, color=:blue)
+for T in each_triangle(history.triangles)
+    u, v, w = triangle_vertices(T)
+    pp, qq, rr = get_point(tri, u, v, w)
+    poly!(ax, [pp, qq, rr], color=(:blue, 0.3))
+end
+xlims!(ax, -0.01, 1.01)
+ylims!(ax, -0.01, 1.01)
+hidedecorations!(ax)
+hidespines!(ax)
+save("point-location.png", fig)
+```
+
+![&nbsp;](point-location.png)
+
+## Using DelaunayTriangulation.jl {auto-animate="true"}
+
+```{julia}
+#| echo: true
+using DelaunayTriangulation
+points = rand(2, 500)
+tri = triangulate(points)
+find_triangle(tri, (0.2, 0.3))
+```
+
+## Using DelaunayTriangulation.jl {auto-animate="true" visibility="uncounted"}
+
+```{julia}
+#| echo: true
+using DelaunayTriangulation
+points = rand(2, 500)
+tri = triangulate(points)
+find_triangle(tri, (0.2, 0.3))
+find_triangle(tri, (1.2, 1.5))
+```
+
+## Using DelaunayTriangulation.jl {auto-animate="true" visibility="uncounted"}
+
+```{julia}
+#| echo: true
+using DelaunayTriangulation
+points = rand(2, 500)
+tri = triangulate(points)
+find_triangle(tri, (0.2, 0.3))
+find_triangle(tri, (1.2, 1.5))
+find_triangle(tri, (0.5, 0.5); k=7)
+```
+
+## Constrained Triangulations 
+
+- Triangulation of points, segments, and boundaries.
+- Useful for enforcing constraints and setting up domains for PDEs.
+
+```{julia}
+#| echo: false 
+#| output: false 
+using Colors, GeometryBasics
+C = (15.7109521325776, 33.244486807457)
+D = (14.2705719699703, 32.8530791545746)
+E = (14.3, 27.2)
+F = (14.1, 27.0)
+G = (13.7, 27.2)
+H = (13.4, 27.5)
+I = (13.1, 27.6)
+J = (12.7, 27.4)
+K = (12.5, 27.1)
+L = (12.7, 26.7)
+M = (13.1, 26.5)
+N = (13.6, 26.4)
+O = (14.0, 26.4)
+P = (14.6, 26.5)
+Q = (15.1983491346581, 26.8128534095401)
+R = (15.6, 27.6)
+S = (15.6952958264624, 28.2344688505621)
+T = (17.8088971520274, 33.1192363585346)
+U = (16.3058917649589, 33.0722674401887)
+V = (16.3215480710742, 29.7374742376305)
+W = (16.3841732955354, 29.393035503094)
+Z = (16.6190178872649, 28.9233463196351)
+A1 = (17.0417381523779, 28.5319386667527)
+B1 = (17.5114273358368, 28.3753756055997)
+C1 = (18.1376795804487, 28.3597192994844)
+D1 = (18.7169629067146, 28.5632512789833)
+E1 = (19.2805899268653, 28.8920337074045)
+F1 = (19.26493362075, 28.4536571361762)
+G1 = (20.6426885588962, 28.4223445239456)
+H1 = (20.689657477242, 33.1035800524193)
+I1 = (19.2805899268653, 33.0722674401887)
+J1 = (19.2962462329806, 29.7531305437458)
+K1 = (19.0614016412512, 29.393035503094)
+L1 = (18.7482755189452, 29.236472441941)
+M1 = (18.4508057027546, 29.1425346052493)
+N1 = (18.1689921926793, 29.3147539725175)
+O1 = (17.7932408459121, 29.6278800948235)
+P1 = (22.6466957416542, 35.4207133574833)
+Q1 = (21.2219718851621, 34.9979930923702)
+R1 = (21.2376281912774, 28.4693134422915)
+S1 = (22.6780083538847, 28.4380008300609)
+T1 = (24.5724213938357, 33.1975178891111)
+U1 = (23.3512295168425, 32.8530791545746)
+V1 = (23.3199169046119, 28.4380008300609)
+W1 = (24.6663592305274, 28.3753756055997)
+Z1 = (15.1942940307729, 35.4363696635986)
+A2 = (14.7246048473139, 35.3737444391374)
+B2 = (14.3645098066621, 35.1858687657538)
+C2 = (14.1766341332786, 34.8570863373326)
+D2 = (14.1140089088174, 34.3247719294125)
+E2 = (14.2705719699703, 33.8394264398383)
+F2 = (14.7246048473139, 33.6202381542241)
+G2 = (15.4604512347329, 33.6045818481088)
+H2 = (16.0, 34.0)
+I2 = (15.9771093365377, 34.6848669700643)
+J2 = (15.6170142958859, 35.2328376840997)
+K2 = (24.1653574348379, 35.4520259697138)
+L2 = (23.7739497819555, 35.4363696635986)
+M2 = (23.4608236596496, 35.2641502963303)
+N2 = (23.272947986266, 34.9040552556785)
+O2 = (23.1320412312284, 34.5909291333725)
+P2 = (23.1163849251131, 34.2151777866054)
+Q2 = (23.2886042923813, 33.8081138276077)
+R2 = (23.8209187003014, 33.6045818481088)
+S2 = (24.3062641898756, 33.5576129297629)
+T2 = (24.7602970672192, 33.8550827459536)
+U2 = (25.010797965064, 34.4656786844502)
+V2 = (24.8385785977957, 34.9666804801397)
+W2 = (24.5254524754898, 35.2641502963303)
+Z2 = (25.3708930057158, 37.4716894585871)
+A3 = (24.7916096794498, 37.3464390096648)
+B3 = (24.4471709449133, 36.9550313567823)
+C3 = (24.3062641898756, 36.5636237038999)
+D3 = (24.4941398632592, 35.9999966837492)
+E3 = (25.0264542711793, 35.5929327247515)
+F3 = (25.5587686790994, 35.5929327247515)
+F3 = (25.5587686790994, 35.5929327247515)
+G3 = (26.0, 36.0)
+H3 = (26.1380520053653, 36.5792800100152)
+I3 = (26.0, 37.0)
+J3 = (25.7466443524829, 37.2838137852036)
+K3 = (26.3885529032101, 35.4676822758291)
+L3 = (25.9814889442124, 35.3580881330221)
+M3 = (25.6840191280217, 35.1858687657538)
+N3 = (25.5274560668688, 34.9040552556785)
+O3 = (25.4961434546382, 34.5596165211419)
+P3 = (25.5274560668688, 34.246490398836)
+Q3 = (25.6683628219064, 33.8394264398383)
+R3 = (26.0284578625583, 33.6358944603394)
+S3 = (26.5451159643631, 33.6202381542241)
+T3 = (27.0, 34.0)
+U3 = (27.280962351782, 34.5596165211419)
+V3 = (27.0304614539373, 35.2171813779844)
+W3 = (26.1693646175959, 33.087923746304)
+Z3 = (26.0, 33.0)
+A4 = (25.5274560668688, 32.7278287056522)
+B4 = (25.2612988629087, 32.4147025833463)
+C4 = (25.1830173323322, 32.0702638488098)
+D4 = (25.2299862506781, 31.7727940326191)
+E4 = (25.6527065157911, 31.5222931347744)
+F4 = (26.2946150665183, 31.7258251142732)
+G4 = (26.5607722704784, 32.5086404200381)
+H4 = (27.1557119028596, 32.7434850117675)
+I4 = (27.6097447802033, 32.4929841139228)
+J4 = (27.6410573924338, 32.1015764610403)
+K4 = (27.7193389230103, 31.6005746653509)
+L4 = (27.437525412935, 31.4283552980826)
+M4 = (26.9834925355914, 31.2561359308143)
+N4 = (26.5764285765937, 31.0995728696614)
+O4 = (26.0441141686736, 30.7864467473554)
+P4 = (25.6527065157911, 30.5672584617413)
+Q4 = (25.3239240873699, 30.1915071149741)
+R4 = (25.1673610262169, 29.8783809926682)
+S4 = (25.1047358017558, 29.6122237887082)
+T4 = (25.0890794956405, 29.1895035235952)
+U4 = (25.2926114751393, 28.8294084829433)
+V4 = (25.6840191280217, 28.5632512789833)
+W4 = (26.1537083114806, 28.3753756055997)
+Z4 = (26.8269294744384, 28.391031911715)
+A5 = (27.4844943312809, 28.6102201973292)
+B5 = (27.7342002330051, 28.7239579596219)
+C5 = (27.7264126450755, 28.4202565942047)
+D5 = (29.1825559185446, 28.3922538389457)
+E5 = (29.1545531632856, 32.2146299318021)
+F5 = (29.000538009361, 32.5786657501693)
+G5 = (28.6785063238822, 32.9006974356481)
+H5 = (28.3144705055149, 33.0827153448317)
+I5 = (27.9084305542591, 33.2367304987563)
+J5 = (27.3343740714492, 33.3207387645334)
+K5 = (26.8303244767868, 33.2367304987563)
+L5 = (27.6564057569279, 30.786489413592)
+M5 = (27.6984098898165, 30.3944508399657)
+N5 = (27.6984098898165, 29.7363860913787)
+O5 = (27.5863988687804, 29.4143544059)
+P5 = (27.2643671833016, 29.2043337414573)
+Q5 = (26.9843396307114, 29.1763309861983)
+R5 = (26.6903107004917, 29.3163447624934)
+S5 = (26.5782996794556, 29.7503874690082)
+T5 = (26.7603175886393, 30.3384453294476)
+U5 = (27.3203726938197, 30.7024811478149)
+J_curve = [[C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, C]]
+U_curve = [[T, U, V, W, Z, A1, B1, C1, D1, E1, F1, G1, H1, I1, J1, K1, L1, M1, N1, O1, T]]
+L_curve = [[P1, Q1, R1, S1, P1]]
+I_curve = [[T1, U1, V1, W1, T1]]
+A_curve_outline = [
+    [
+        K5, W3, Z3, A4, B4, C4, D4, E4, F4, G4, H4, I4, J4, K4, L4, M4, N4,
+        O4, P4, Q4, R4, S4, T4, U4, V4, W4, Z4, A5, B5, C5, D5, E5, F5, G5,
+        H5, I5, J5, K5,
+    ],
+]
+A_curve_hole = [[L5, M5, N5, O5, P5, Q5, R5, S5, T5, U5, L5]]
+dot_1 = [[Z1, A2, B2, C2, D2, E2, F2, G2, H2, I2, J2, Z1]] # these could also be circular arcs
+dot_2 = [[Z2, A3, B3, C3, D3, E3, F3, G3, H3, I3, J3, Z2]]
+dot_3 = [[K2, L2, M2, N2, O2, P2, Q2, R2, S2, T2, U2, V2, W2, K2]]
+dot_4 = [[K3, L3, M3, N3, O3, P3, Q3, R3, S3, T3, U3, V3, K3]]
+curves = [J_curve, U_curve, L_curve, I_curve, A_curve_outline, A_curve_hole, dot_1, dot_2, dot_3, dot_4]
+nodes, points = convert_boundary_points_to_indices(curves)
+tri = triangulate(points; boundary_nodes=nodes)
+refine!(tri; max_area=1e-1)
+
+## Get a color for each face to prettify 
+faces = TriangleFace.(each_solid_triangle(tri))
+julia_colors = Colors.JULIA_LOGO_COLORS
+colors = merge(julia_colors, (white=RGB(1.0, 1.0, 1.0),))
+face_colors = Vector{eltype(colors)}(undef, size(faces, 1))
+color_mapping = Dict(
+    1 => colors.white,
+    2 => colors.white,
+    3 => colors.white,
+    4 => colors.white,
+    5 => colors.white,
+    6 => colors.white,
+    7 => colors.blue,
+    8 => colors.green,
+    9 => colors.red,
+    10 => colors.purple
+)
+for (idx, T) in enumerate(faces)
+    i, j, k = triangle_vertices(T)
+    p, q, r = get_point(tri, i, j, k)
+    c = DelaunayTriangulation.triangle_centroid(p, q, r)
+    poly = find_polygon(tri, c)
+    face_colors[idx] = color_mapping[poly]
+end
+
+## Next, to do per-face coloring, we use the code from https://github.com/MakieOrg/Makie.jl/issues/742#issuecomment-1415809653 since Makie does not directly support per-face coloring.
+msh = GeometryBasics.Mesh(Point2d.(get_points(tri)), faces)
+dupfaces = Vector{TriangleFace{Int}}()
+duppos = Vector{Point2d}()
+dupcols = Vector{eltype(colors)}()
+pos_ind = 1
+for (idx, T) in enumerate(GeometryBasics.faces(msh))
+    global pos_ind
+    i, j, k = triangle_vertices(T)
+    p, q, r = get_point(msh.position, i, j, k)
+    push!(duppos, p, q, r)
+    push!(dupcols, face_colors[idx], face_colors[idx], face_colors[idx])
+    push!(dupfaces, TriangleFace((pos_ind, pos_ind + 1, pos_ind + 2)))
+    pos_ind += 3
+end
+dupmsh = GeometryBasics.Mesh(duppos, dupfaces)
+
+## Finally, plot
+fig, ax, sc = CairoMakie.mesh(dupmsh, color=dupcols, shading=NoShading)
+triplot!(ax, tri, triangle_color=(:white, 0.0), strokecolor=:black)
+hidedecorations!(ax)
+hidespines!(ax)
+save("constrained-triangulation.png", fig)
+```
+
+![&nbsp;](constrained-triangulation.png)
+
+## Constrained Delaunay Property
+
+- A triangle is _constrained Delaunay_ if its circumcircle contains no points in its interior _visible_ from the triangle.
+- The edge $e$ and triangle $T$ are both constrained Delaunay.
+
+```{julia}
+#| echo: false
+#| output: false
+a, b, c, d, e, f, g, h = (0.0, 0.0), (1.5770997082159, -1.1507664953748),
+(1.8, -1.0), (1.6, -0.2), (1.2013398785742, 0.5705889047104),
+(0.2, 0.6), (-0.4, 0.0), (0.2, -1.0)
+points = [a, b, c, d, e, f, g, h]
+segments = Set([(2, 7), (3, 5)])
+tri = triangulate(points; segments)
+fig, ax, sc = triplot(tri; show_constrained_edges=true, axis=(; width=500, height=500), strokewidth=4, constrained_edge_color=:magenta, constrained_edge_linewidth=6)
+poly!(ax, Circle(Point2((a .+ b) ./ 2), DelaunayTriangulation.dist(a, b) / 2), color=(:white, 0.0), strokewidth=6, strokecolor=:red, linestyle=:dashdot)
+text!(ax, (a .+ b) ./ 2, text=L"e", color=:black, fontsize=64)
+scatter!(ax, [d, h], color=:blue, markersize=23)
 hidedecorations!(ax)
 hidespines!(ax)
 
-points = randn(2, 200)
-circ = CircularArc((2.0, 0.0), (2.0, 0.0), (0.0, 0.0))
-clip_points = [circ(t) for t in LinRange(0, 1, 100)]
-clip_vertices = [1:(length(clip_points)-1); 1]
-tri = triangulate(points)
-vorn = voronoi(tri, clip=true, clip_polygon=(clip_points, clip_vertices))
-ax = Axis(fig[1, 2], width = 800, height = 800)
-voronoiplot!(ax, vorn, show_generators = false)
-xlims!(ax, -2.5, 2)
-ylims!(ax, -2, 2)
+a, b, c, d, e, f, g, h = (0.0, 0.0), (1.2, 0.2), (0.6, 0.2), (0.0312625701618, -0.4057556787232),
+(1.4, -0.2), (0.4, -1.0), (0.8977129431933, -1.1687492907957), (1.4, -1.0)
+points = [a, b, c, d, e, f, g, h]
+segments = Set([(1, 2), (4, 7)])
+tri = triangulate(points; segments)
+ax = Axis(fig[1, 2], width=500, height=500)
+triplot!(ax, tri; show_constrained_edges=true, strokewidth=4, constrained_edge_color=:magenta, constrained_edge_linewidth=6)
+T = (4, 7, 5)
+p, q, r = get_point(tri, triangle_vertices(T)...)
+cc = DelaunayTriangulation.triangle_circumcenter(p, q, r)
+cr = DelaunayTriangulation.triangle_circumradius(p, q, r)
+circs = Circle(Point2(cc), cr)
+poly!(ax, circs, color=(:white, 0.0), strokewidth=6, strokecolor=:red, linestyle=:dashdot)
+text!(ax, (p .+ q .+ r) ./ 3, text=L"T", color=:black, fontsize=64)
+scatter!(ax, [f, c], color=:blue, markersize=23)
 hidedecorations!(ax)
 hidespines!(ax)
 resize_to_layout!(fig)
-save("panel.png", fig)
--->
- 
+save("constrained-delaunay.png", fig)
+```
+
+![&nbsp;](constrained-delaunay.png)
+
+## Inserting Segments 
+
+- Insert segments one at a time.
+- Observation: Segments split the triangulation into two localised parts on either side.
+
+```{julia}
+#| echo: false
+#| output: false
+a = (0.0, 0.0)
+b = (0.0, 1.0)
+c = (0.0, 2.5)
+d = (2.0, 0.0)
+e = (6.0, 0.0)
+f = (8.0, 0.0)
+g = (8.0, 0.5)
+h = (7.5, 1.0)
+i = (4.0, 1.0)
+j = (4.0, 2.5)
+k = (8.0, 2.5)
+pts = [a, b, c, d, e, f, g, h, i, j, k]
+rng = StableRNG(213)
+tri = triangulate(pts; rng, segments=Set(NTuple{2,Int}[]))
+e = (2, 7)
+fig, ax, sc = triplot(tri; axis=(; width=1200, height=500), strokewidth=3)
+lines!(ax, [get_point(tri, e...)...], color=:magenta, linewidth=6)
+hidedecorations!(ax)
+hidespines!(ax)
+resize_to_layout!(fig)
+save("inserting-segments-1.png", fig)
+```
+
+![&nbsp;](inserting-segments-1.png)
+
+## Inserting Segments {visibility="uncounted"}
+
+- Insert segments one at a time.
+- Observation: Segments split the triangulation into two localised parts on either side.
+
+```{julia}
+#| echo: false
+#| output: false
+segment = e
+e = DelaunayTriangulation.optimise_edge_order(tri, segment)
+DelaunayTriangulation.fix_edge_order_after_rotation!(tri, segment, e)
+DelaunayTriangulation.add_segment_to_list!(tri, e)
+intersecting_triangles, collinear_segments, left_cavity, right_cavity = DelaunayTriangulation.locate_intersecting_triangles(tri, e, !DelaunayTriangulation.contains_boundary_edge(tri, segment))
+triangles = map(intersecting_triangles) do T
+    u, v, w = triangle_vertices(T)
+    pp, qq, rr = get_point(tri, u, v, w)
+    [pp, qq, rr]
+end
+poly!(ax, triangles, color=(:blue, 0.3))
+save("inserting-segments-2.png", fig)
+```
+
+![&nbsp;](inserting-segments-2.png)
+
+## Inserting Segments {visibility="uncounted"}
+
+- Insert segments one at a time.
+- Observation: Segments split the triangulation into two localised parts on either side.
+
+```{julia}
+#| echo: false
+#| output: false
+lines!(ax, [get_point(tri, left_cavity...)...], color=:blue, linewidth=6)
+lines!(ax, [get_point(tri, right_cavity...)...], color=:orange, linewidth=6)
+save("inserting-segments-3.png", fig)
+```
+
+![&nbsp;](inserting-segments-3.png)
+
+## Inserting Segments {visibility="uncounted"}
+
+- Insert segments one at a time.
+- Observation: Segments split the triangulation into two localised parts on either side.
+
+```{julia}
+#| echo: false
+#| output: false
+DelaunayTriangulation.delete_intersected_triangles!(tri, intersecting_triangles)
+fig, ax, sc = triplot(tri; axis=(; width=1200, height=500), strokewidth=3)
+lines!(ax, [get_point(tri, e...)...], color=:magenta, linewidth=6)
+LC = lines!(ax, [get_point(tri, left_cavity...)...], color=:blue, linewidth=6)
+RC = lines!(ax, [get_point(tri, right_cavity...)...], color=:orange, linewidth=6)
+hidedecorations!(ax)
+hidespines!(ax)
+resize_to_layout!(fig)
+save("inserting-segments-4.png", fig)
+```
+
+![&nbsp;](inserting-segments-4.png)
+
+## Inserting Segments {visibility="uncounted"}
+
+- Insert segments one at a time.
+- Observation: Segments split the triangulation into two localised parts on either side.
+
+```{julia}
+#| echo: false
+#| output: false
+cache = DelaunayTriangulation.get_cache(tri)
+cavity = left_cavity
+empty!(cache)
+tri_cavity = DelaunayTriangulation.get_triangulation(cache)
+tri_fan = DelaunayTriangulation.get_triangulation_2(cache)
+marked_vertices = DelaunayTriangulation.get_marked_vertices(cache)
+fan_triangles = DelaunayTriangulation.get_fan_triangles(cache)
+DelaunayTriangulation.triangulate_cavity_cdt!(tri_cavity, cavity, tri_fan, marked_vertices, fan_triangles)
+tr = triplot!(ax, tri_cavity; strokewidth=3)
+translate!(tr, 0.0, 0.0, -1.0)
+delete!(ax, LC)
+save("inserting-segments-5.png", fig)
+```
+
+![&nbsp;](inserting-segments-5.png)
+
+## Inserting Segments {visibility="uncounted"}
+
+- Insert segments one at a time.
+- Observation: Segments split the triangulation into two localised parts on either side.
+
+```{julia}
+#| echo: false
+#| output: false
+cavity = right_cavity
+empty!(cache)
+tri_cavity = DelaunayTriangulation.get_triangulation(cache)
+tri_fan = DelaunayTriangulation.get_triangulation_2(cache)
+marked_vertices = DelaunayTriangulation.get_marked_vertices(cache)
+fan_triangles = DelaunayTriangulation.get_fan_triangles(cache)
+DelaunayTriangulation.triangulate_cavity_cdt!(tri_cavity, cavity, tri_fan, marked_vertices, fan_triangles)
+tr = triplot!(ax, tri_cavity; strokewidth=3)
+translate!(tr, 0.0, 0.0, -1.0)
+delete!(ax, RC)
+save("inserting-segments-6.png", fig)
+```
+
+![&nbsp;](inserting-segments-6.png)
+
+## Using DelaunayTriangulation.jl
+
+```{julia}
+#| echo: true
+#| output: false
+using DelaunayTriangulation, CairoMakie
+points = [(0.0, 0.0), (0.0, 1.0), (0.0, 2.5), (2.0, 0.0),
+    (6.0, 0.0), (8.0, 0.0), (8.0, 0.5), (7.5, 1.0),
+    (4.0, 1.0), (4.0, 2.5), (8.0, 2.5)]
+tri = triangulate(points; segments=Set([(2, 7)]))
+
+triplot(tri)
+```
+
+```{julia}
+#| echo: false 
+#| output: false
+fig, ax, sc = triplot(tri; axis=(; width=1200, height=500), strokewidth=3)
+lines!(ax, [get_point(tri, 2, 7)...], color=:magenta, linewidth=6)
+hidedecorations!(ax)
+hidespines!(ax)
+resize_to_layout!(fig)
+save("using-delaunay-triangulation-1.png", fig)
+```
+
+![&nbsp;](using-delaunay-triangulation-1.png)
+
+## Using DelaunayTriangulation.jl {visibility="uncounted"}
+
+```{julia}
+#| echo: true
+#| output: false
+using DelaunayTriangulation, CairoMakie
+points = [(0.0, 0.0), (0.0, 1.0), (0.0, 2.5), (2.0, 0.0),
+    (6.0, 0.0), (8.0, 0.0), (8.0, 0.5), (7.5, 1.0),
+    (4.0, 1.0), (4.0, 2.5), (8.0, 2.5)]
+tri = triangulate(points; segments=Set([(2, 7)]))
+add_segment!(tri, 2, 11)
+triplot(tri)
+```
+
+```{julia}
+#| echo: false 
+#| output: false
+fig, ax, sc = triplot(tri; axis=(; width=1200, height=500), strokewidth=3)
+lines!(ax, [get_point(tri, 2, 7)...], color=:magenta, linewidth=6)
+lines!(ax, [get_point(tri, 2, 11)...], color=:magenta, linewidth=6)
+hidedecorations!(ax)
+hidespines!(ax)
+resize_to_layout!(fig)
+save("using-delaunay-triangulation-2.png", fig)
+```
+
+![&nbsp;](using-delaunay-triangulation-2.png)
+
+## Boundaries 
+
+- Boundaries are just sequences of segments.
+- Exterior vertices are deleted, identified recursively.
+
+```{julia}
+#| echo: false
+#| output: false
+a = (-3.0, 4.0)
+b = (3.0, 4.0)
+c = (2.0, 2.0)
+d = (3.0, 0.0)
+e = (0.0, 1.0)
+f = (2.0, -2.0)
+g = (0.0, -1.0)
+h = (-1.84, -2.04)
+i = (-3.0, 0.0)
+j = (-2.0, 3.0)
+k = (-2.0, 0.0)
+l = (1.0, 3.0)
+m = (-1.0, 2.0)
+n = (-5.0, 4.0)
+o = (-3.0, 6.0)
+p = (5.0, 6.0)
+q = (7.0, 3.0)
+r = (-4.82, 1.0)
+points = [o, p, n, q, m, r]
+boundary_nodes = [[[h, g, f, e, d, c, b, a, i, h]], [[j, l, k, j]]]
+boundary_nodes, points = convert_boundary_points_to_indices(boundary_nodes; existing_points=points)
+tri = triangulate(points; boundary_nodes, delete_holes=false)
+fig, ax, sc = triplot(tri; axis=(; width=700, height=700), strokewidth=3, markersize=26)
+lines!(ax, [h, g, f, e, d, c, b, a, i, h, (NaN, NaN), j, l, k, j], color=:red, linewidth=4)
+scatter!(ax, get_points(tri), color=:black, markersize=26)
+hidedecorations!(ax)
+hidespines!(ax)
+resize_to_layout!(fig)
+save("boundaries-1.png", fig)
+```
+
+![&nbsp;](boundaries-1.png)
+
+## Boundaries {visibility="uncounted"}
+
+- Boundaries are just sequences of segments.
+- Exterior vertices are deleted, identified recursively.
+
+```{julia}
+#| echo: false
+#| output: false
+points_to_process = DelaunayTriangulation.find_all_points_to_delete(tri)
+scatter!(ax, [get_point(tri, filter(!DelaunayTriangulation.is_ghost_vertex, points_to_process)...)...], color=:blue, markersize=48)
+save("boundaries-2.png", fig)
+```
+
+![&nbsp;](boundaries-2.png)
+
+## Boundaries {visibility="uncounted"}
+
+- Boundaries are just sequences of segments.
+- Exterior vertices are deleted, identified recursively.
+
+```{julia}
+#| echo: false
+#| output: false
+triangles_to_delete = DelaunayTriangulation.find_all_triangles_to_delete(tri, points_to_process)
+for T in each_triangle(triangles_to_delete)
+    DelaunayTriangulation.is_ghost_triangle(T) && continue
+    u, v, w = triangle_vertices(T)
+    pp, qq, rr = get_point(tri, u, v, w)
+    poly!(ax, [pp, qq, rr], color=(:magenta, 0.3))
+end
+save("boundaries-3.png", fig)
+```
+
+![&nbsp;](boundaries-3.png)
+
+## Boundaries {visibility="uncounted"}
+
+- Boundaries are just sequences of segments.
+- Exterior vertices are deleted, identified recursively.
+
+```{julia}
+#| echo: false
+#| output: false
+DelaunayTriangulation.delete_all_exterior_triangles!(tri, triangles_to_delete)
+fig, ax, sc = triplot(tri; axis=(; width=700, height=700), strokewidth=3, markersize=26)
+lines!(ax, [h, g, f, e, d, c, b, a, i, h, (NaN, NaN), j, l, k, j], color=:red, linewidth=4)
+hidedecorations!(ax)
+hidespines!(ax)
+resize_to_layout!(fig)
+save("boundaries-4.png", fig)
+```
+
+![&nbsp;](boundaries-4.png)
+
+## Using DelaunayTriangulation.jl
+
+```{julia}
+#| echo: false 
+#| output: false
+using Random
+Random.seed!(123)
+```
+
+```{julia}
+#| echo: true
+#| output: false
+using DelaunayTriangulation, CairoMakie
+boundary = [(0.0, 0.0), (0.1, -0.1), (0.2, -0.2), (0.2, 0.0),
+    (0.8, 0.0), (0.8, -0.2), (0.9, -0.1), (1.0, 0.0),
+    (0.9, 0.2), (0.7, 0.3), (0.6, 0.2), (0.5, 0.1),
+    (0.4, 0.2), (0.3, 0.3), (0.1, 0.2), (0.0, 0.0)]
+points = [(rand(), 0.5rand() - 0.2) for _ in 1:1000]
+boundary_nodes, points = convert_boundary_points_to_indices(
+    boundary; existing_points=points)
+tri = triangulate(points; boundary_nodes)
+triplot(tri)
+```
+
+```{julia}
+#| echo: false
+#| output: false
+fig, ax, sc = triplot(tri; axis=(; width=1200, height=500), strokewidth=3)
+hidedecorations!(ax)
+hidespines!(ax)
+resize_to_layout!(fig)
+save("using-delaunay-triangulation-boundaries.png", fig)
+```
+
+![&nbsp;](using-delaunay-triangulation-boundaries.png)
+
+## Identifying Boundaries 
+
+- To support boundary conditions, we need a way to assign IDs to boundaries.
+- Define boundaries as sequences of individual sections, with each section having its own ghost vertex.
+- Leveraged by FiniteVolumeMethod.jl.
+
+```{julia}
+#| echo: false
+#| output: false
+tri = triangulate_rectangle(0, 3, 0, 1, 15, 15, single_boundary=false)
+fig, ax, sc = triplot(tri; axis=(; width=1200, height=500), strokewidth=3)
+lines!(ax, [get_point(tri, get_boundary_nodes(tri, 1)...)...], color=:magenta, linewidth=8)
+lines!(ax, [get_point(tri, get_boundary_nodes(tri, 2)...)...], color=:blue, linewidth=8)
+lines!(ax, [get_point(tri, get_boundary_nodes(tri, 3)...)...], color=:green, linewidth=8)
+lines!(ax, [get_point(tri, get_boundary_nodes(tri, 4)...)...], color=:red, linewidth=8)
+text!(ax, [(1.5, -0.2), (3.02, 0.5), (1.5, 1.002), (-0.25, 0.5)], text=[L"-1", L"-2", L"-3", L"-4"], fontsize=50)
+xlims!(ax, -0.3, 3.3)
+ylims!(ax, -0.3, 1.2)
+hidedecorations!(ax)
+hidespines!(ax)
+resize_to_layout!(fig)
+save("identifying-boundaries.png", fig)
+```
+
+![&nbsp;](identifying-boundaries.png)
+
+## Using DelaunayTriangulation.jl
+
+```{julia}
+#| echo: false 
+#| output: false
+using Random
+Random.seed!(123)
+```
+
+```{julia}
+#| echo: true
+#| output: false
+using DelaunayTriangulation, CairoMakie
+section_1 = [(0.0, 0.0), (0.1, -0.1)]
+section_2 = [(0.1, -0.1), (0.2, -0.2), (0.2, 0.0),
+    (0.8, 0.0), (0.8, -0.2)]
+section_3 = [(0.8, -0.2), (0.9, -0.1), (1.0, 0.0)]
+section_4 = [(1.0, 0.0), (0.9, 0.2), (0.7, 0.3), (0.6, 0.2), (0.5, 0.1),
+    (0.4, 0.2), (0.3, 0.3), (0.1, 0.2), (0.0, 0.0)]
+boundary = [section_1, section_2, section_3, section_4]
+points = [(rand(), 0.5rand() - 0.2) for _ in 1:1000]
+boundary_nodes, points = convert_boundary_points_to_indices(
+    boundary; existing_points=points)
+tri = triangulate(points; boundary_nodes)
+```
+
+## Using DelaunayTriangulation.jl {auto-animate="true"}
+
+- You can access features of the boundary easily.
+
+```{julia}
+#| echo: true 
+#| output: true
+get_boundary_nodes(tri)
+```
+
+## Using DelaunayTriangulation.jl {auto-animate="true" visibility="uncounted"}
+
+- You can access features of the boundary easily.
+
+```{julia}
+#| echo: true 
+#| output: true
+get_boundary_nodes(tri)
+```
+
+```{julia}
+#| echo: true 
+#| output: true
+get_adjacent2vertex(tri, -2)
+```
+
+
+## Using DelaunayTriangulation.jl {auto-animate="true" visibility="uncounted"}
+
+- You can access features of the boundary easily.
+
+```{julia}
+#| echo: true 
+#| output: true
+get_boundary_nodes(tri)
+```
+
+```{julia}
+#| echo: true 
+#| output: true
+get_adjacent2vertex(tri, -2)
+```
+
+```{julia}
+#| echo: true 
+#| output: true
+get_neighbours(tri, -2)
+```
+
+## Using DelaunayTriangulation.jl
+
+- Disjoint domains and holes follow the same representation.
+
+```{julia}
+#| echo: false
+#| output: false
+Random.seed!(123)
+```
+
+::: {.columns}
+::: {.column width="55%"}
+
+```{julia}
+#| echo: true
+#| output: false
+using DelaunayTriangulation
+using CairoMakie
+θ = LinRange(0, 2pi, 100);
+θ = [θ[1:99]; θ[1]];
+θr = reverse(θ)
+otrx, otry = 10cos.(θ), 10sin.(θ)
+innx, inny = 5cos.(θr), 5sin.(θr)
+inn2x, inn2y = 2.5cos.(θ), 2.5sin.(θ)
+x = [[otrx], [innx], [inn2x]]
+y = [[otry], [inny], [inn2y]]
+points = [(20rand() - 10, 20rand() - 10)
+          for _ in 1:1000]
+boundary_nodes, points =
+    convert_boundary_points_to_indices(
+        x, y; existing_points=points)
+tri = triangulate(points;
+    boundary_nodes)
+triplot(tri)
+```
+
+:::
+
+::: {.column width="45%"}
+```{julia}
+#| echo: false
+#| output: false
+fig, ax, sc = triplot(tri; axis=(; width=500, height=500))
+hidedecorations!(ax)
+hidespines!(ax)
+resize_to_layout!(fig)
+save("disjoint-domains.png", fig)
+```
+
+![&nbsp;](disjoint-domains.png)
+
+:::
+
+:::
+
+## Mesh Refinement 
+
+- Solutions using meshes are highly dependent on the quality of the triangles.
+- Poor quality triangles can cause interpolation errors, gradient errors, and ill-conditioning.
+
+```{julia}
+#| echo: false
+#| output: false
+a, b, c = (0.0, 0.0), (-5.0, 0.25), (-5.0, -0.25)
+fig, ax, sc = lines([a, b, c, a], color=:black, linewidth=3, axis=(; width=900, height=900, title="Needle"), figure=(; fontsize=48))
+cc = DelaunayTriangulation.triangle_circumcenter(a, b, c)
+cr = DelaunayTriangulation.triangle_circumradius(a, b, c)
+poly!(ax, Circle(Point2(cc), cr), color=(:white, 0.0), strokecolor=:red, strokewidth=2)
+scatter!(ax, [a, b, c], color=:blue, markersize=40)
+xlims!(ax, -5.5, 0.1)
+ylims!(ax, -3, 3)
+hidedecorations!(ax)
+hidespines!(ax)
+
+a, b, c = (-2.5116571933078, 2.44167760522), (-3.4008262107331, 2.2833367532921), (-1.6629269171889, 2.2912068742991)
+ax = Axis(fig[1, 2], width=900, height=900, title="Cap")
+lines!(ax, [a, b, c, a], color=:black, linewidth=3)
+cc = DelaunayTriangulation.triangle_circumcenter(a, b, c)
+cr = DelaunayTriangulation.triangle_circumradius(a, b, c)
+poly!(ax, Circle(Point2(cc), cr), color=(:white, 0.0), strokecolor=:red, strokewidth=2)
+scatter!(ax, [a, b, c], color=:blue, markersize=40)
+xlims!(ax, -5.5, 0.1)
+ylims!(ax, -3, 3)
+hidedecorations!(ax)
+hidespines!(ax)
+resize_to_layout!(fig)
+save("needle-cap.png", fig)
+```
+
+![&nbsp;](needle-cap.png)
+
+## Assessing Element Quality
+
+- Assess triangles using the _radius-edge ratio_ $\rho = R/\ell_{\min}$. 
+- $1/\sqrt 3 \leq \rho <\infty$, with $1/\sqrt 3$ attained for equilateral triangles.
+
+- Related to the smallest angle by 
+
+$$
+\rho = \frac{1}{2\sin \theta_{\min}}.
+$$
+
+Thus, controlling $\rho$ controls the smallest angle.
+
+## Mesh Encroachment
+
+- Mesh refinement inserts points into the triangulation.
+- One issue with insertion is _encroachment_.
+
+```{julia}
+#| echo: false
+#| output: false
+using LinearAlgebra
+function reflect_point_across_line(p, q, u)
+    orig_p = p
+    q = collect(q .- p)
+    u = collect(u .- p)
+    p = zeros(2)
+    pq_θ = -atan(q[2], q[1])
+    cwrot_θ = [cos(pq_θ) -sin(pq_θ); sin(pq_θ) cos(pq_θ)]
+    rotu = cwrot_θ * u
+    # pq is now a horizontal line on the x-axis. So, to reflect rotu about this line, just do 
+    rotu = [rotu[1], -rotu[2]]
+    # Now, rotate back
+    rotu = cwrot_θ' * rotu
+    u = rotu .+ orig_p
+    return Tuple(u)
+end
+function compute_diametral_circle(p, q)
+    m = (p .+ q) ./ 2
+    θ = LinRange(0, 2π, 250)
+    rad = norm(p .- q) ./ 2
+    circle = tuple.(m[1] .+ rad * cos.(θ), m[2] .+ rad * sin.(θ))
+    lower_circle = circle[1:125, :] |> vec
+    upper_circle = circle[126:end, :] |> vec
+    unique!(circle)
+    push!(circle, circle[begin])
+    return upper_circle, lower_circle, circle
+end
+function compute_diametral_lens(p, q, lens_angle)
+    orig_p = p
+    orig_q = q
+    q = collect(q .- p)
+    p = zeros(2)
+    pq_θ = -atan(q[2], q[1])
+    cwrot_θ = [cos(pq_θ) -sin(pq_θ); sin(pq_θ) cos(pq_θ)]
+    p = cwrot_θ * p
+    q = cwrot_θ * q
+    m = (p .+ q) ./ 2
+    pq_normal = (q[2] - p[2], q[1] - p[1])
+    pq_normal = pq_normal ./ norm(pq_normal)
+    a = norm(p .- q) / 2
+    c = a / cosd(lens_angle)
+    b = c * sind(lens_angle)
+    u = m .+ b .* pq_normal
+    circumcenter = DelaunayTriangulation.triangle_circumcenter(p, q, u)
+    circumradius = DelaunayTriangulation.triangle_circumradius(p, q, u)
+    p_angle = atan(p[2] - circumcenter[2], p[1] - circumcenter[1])
+    q_angle = atan(q[2] - circumcenter[2], q[1] - circumcenter[1])
+    θ = LinRange(p_angle, q_angle, 250)
+    lens = hcat(circumcenter[1] .+ circumradius * cos.(θ), circumcenter[2] .+ circumradius * sin.(θ))
+    reflected_lens = reflect_point_across_line.(Ref(p), Ref(q), eachrow(lens))
+    reflected_lens = hcat(first.(reflected_lens), last.(reflected_lens))
+    combined_lens = vcat(lens, reverse(reflected_lens))
+    rerotated_and_shifted_lens = (cwrot_θ' * lens')'
+    rerotated_and_shifted_reflected_lens = (cwrot_θ' * reflected_lens')'
+    rerotated_and_shifted_combined_lens = (cwrot_θ' * combined_lens')'
+    rerotated_and_shifted_lens = tuple.(rerotated_and_shifted_lens[:, 1] .+ orig_p[1], rerotated_and_shifted_lens[:, 2] .+ orig_p[2])
+    rerotated_and_shifted_reflected_lens = tuple.(rerotated_and_shifted_reflected_lens[:, 1] .+ orig_p[1], rerotated_and_shifted_reflected_lens[:, 2] .+ orig_p[2])
+    rerotated_and_shifted_combined_lens = vcat(rerotated_and_shifted_lens, reverse(rerotated_and_shifted_reflected_lens))
+    unique!(rerotated_and_shifted_combined_lens)
+    push!(rerotated_and_shifted_combined_lens, rerotated_and_shifted_combined_lens[begin])
+    return rerotated_and_shifted_lens, rerotated_and_shifted_reflected_lens, rerotated_and_shifted_combined_lens
+end
+function circ(p, q, r)
+    x1, y1 = getxy(p)
+    x2, y2 = getxy(q)
+    x3, y3 = getxy(r)
+    x12, x13, x31, x21 = x1 - x2, x1 - x3, x3 - x1, x2 - x1
+    y12, y13, y31, y21 = y1 - y2, y1 - y3, y3 - y1, y2 - y1
+    sx13 = x1^2 - x3^2
+    sy13 = y1^2 - y3^2
+    sx21 = x2^2 - x1^2
+    sy21 = y2^2 - y1^2
+    f = (sx13 * x12 + sy13 * x12 + sx21 * x13 + sy21 * x13) / (2 * (y31 * x12 - y21 * x13))
+    g = (sx13 * y12 + sy13 * y12 + sx21 * y13 + sy21 * y13) / (2 * (x31 * y12 - x21 * y13))
+    c = -x1^2 - y1^2 - 2g * x1 - 2f * y1
+    h = -g
+    k = -f
+    r = sqrt(h^2 + k^2 - c)
+    return (h, k, r)
+end
+
+p, q = (0.0, 0.0), (2.0, 0.0)
+_, _, circle = compute_diametral_circle(p, q)
+t = 30.0
+_, _, lens = compute_diametral_lens(p, q, t)
+
+fig = Figure(fontsize=60)
+
+ax = Axis(fig[1, 1], width=1200, height=1200, title="Diametral Circle")
+lines!(ax, [p, q], color=:black, linewidth=5)
+lines!(ax, circle, color=:blue, linewidth=5)
+scatter!(ax, [p, q], color=:black, markersize=36)
+xlims!(ax, -0.3, 2.3)
+ylims!(ax, -1.3, 1.3)
+hidedecorations!(ax)
+hidespines!(ax)
+
+ax = Axis(fig[1, 2], width=1200, height=1200, title="Diametral Lens")
+lines!(ax, [p, q], color=:black, linewidth=5)
+xlims!(ax, -0.3, 2.3)
+ylims!(ax, -1.3, 1.3)
+m = (p .+ q) ./ 2
+lines!(ax, circle, color=:blue, linewidth=5)
+vlines!(ax, [m[1]], color=(:grey, 0.4), linestyle=:dash, linewidth=3)
+du = norm(p .- q) * tand(t) / 2
+u = (1.0, du)
+scatter!(ax, [u, (1.0, -du)], color=:red, markersize=36)
+lines!(ax, [p, u], color=:red, linestyle=:dash, linewidth=5)
+lines!(ax, [p, (1.0, -du)], color=:red, linestyle=:dash, linewidth=5)
+text!(ax, [(0.5, 0.02), (0.5, -0.2)], text=[L"\theta_\ell", L"\theta_\ell"], fontsize=80)
+H, K, R = circ(p, q, u)
+arc!(ax, (H, K), R, 0.0, 2pi, color=(:magenta, 0.7), linewidth=5)
+H, K, R = circ(p, q, (1.0, -du))
+arc!(ax, (H, K), R, 0.0, 2pi, color=(:magenta, 0.7), linewidth=5)
+lines!(ax, lens, color=:red)
+text!(ax, [p .- (0.3, 0.05), q .- (-0.1, 0.1)], text=[L"p_u", L"p_v"], fontsize=80)
+text!(ax, [u .+ (0.05, 0.05)], text=[L"p"], fontsize=80)
+text!(ax, [(1.0, -du) .+ (0.05, 0.05)], text=[L"q"], fontsize=80)
+scatter!(ax, [p, q], color=:black, markersize=36)
+hidedecorations!(ax)
+hidespines!(ax)
+
+resize_to_layout!(fig)
+save("diametral-circle-lens.png", fig)
+```
+
+![&nbsp;](diametral-circle-lens.png)
+
+## Ruppert's Algorithm
+
+```{julia}
+#| echo: true
+#| output: false
+#| eval: false
+function refine(tri)
+    split_all_encroached_segments!(tri)
+    while has_bad_triangles(tri)
+        T = get_bad_triangle(tri)
+        insert_circumcenter!(tri, T)
+        if circumcenter_encroaches(tri)
+            undo_insertion!(tri, T)
+            split_all_encroached_segments!(tri)
+        else
+            for V in new_triangles(tri)
+                ρ, A = radius_edge_ratio(V), area(V)
+                (ρ > ρₘₐₓ || A > Aₘₐₓ) && mark_bad!(tri, V)
+            end
+        end
+    end
+end
+```
+
+- Typically converges for $\theta_{\min} < 33.9^\circ$.
+- Extra care needed for small angles.
+
+## Ruppert's Algorithm
+
+```{julia}
+#| echo: false 
+#| output: false
+Random.seed!(0)
+outer = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.0, 0.0)]
+inner = [(0.25, 0.25), (0.25, 0.75), (0.75, 0.75), (0.75, 0.25), (0.25, 0.25)]
+boundary = [[outer], [inner]]
+boundary_nodes, points = convert_boundary_points_to_indices(boundary)
+append!(points, [(0.2, 0.1), (0.2, 0.7), (0.5, 0.8), (0.9, 0.45)])
+segments = Set([(1, 5), (7, 3)])
+tri = triangulate(points; boundary_nodes, segments)
+args = DelaunayTriangulation.RefinementArguments(tri; max_area=0.01)
+
+triobs = Observable(tri)
+encroached_segments = lift(triobs) do tri
+    segments = NTuple{2,Float64}[]
+    for e in each_segment(tri)
+        if DelaunayTriangulation.is_encroached(tri, args, e)
+            u, v = edge_vertices(e)
+            p, q = get_point(tri, u, v)
+            push!(segments, p, q, (NaN, NaN))
+        end
+    end
+    return segments
+end
+bad_triangles = lift(triobs) do tri
+    triangles = typeof(Polygon([Point2f(0.0, 0.0), Point2f(0.0, 0.0), Point2f(0.0, 0.0)]))[]
+    for T in each_solid_triangle(tri)
+        _, flag = DelaunayTriangulation.assess_triangle_quality(tri, args, T)
+        if flag
+            u, v, w = triangle_vertices(T)
+            p, q, r = get_point(tri, u, v, w)
+            push!(triangles, Polygon([Point2f(p), Point2f(q), Point2f(r)]))
+        end
+    end
+    return triangles
+end
+
+fig, ax, sc = triplot(triobs; axis=(; width=600, height=600), strokewidth=3)
+poly!(ax, bad_triangles, color=(:blue, 0.3))
+linesegments!(ax, encroached_segments, color=:magenta, linewidth=6)
+hidedecorations!(ax)
+hidespines!(ax)
+resize_to_layout!(fig)
+record(fig, "rupperts-algorithm.mp4"; framerate=10) do io
+    [recordframe!(io) for _ in 1:(5*4)]
+    DelaunayTriangulation.enqueue_all_encroached_segments!(args, tri)
+    while DelaunayTriangulation.keep_splitting(tri, args)
+        e, _ = DelaunayTriangulation.popfirst_segment!(args.queue)
+        !DelaunayTriangulation.unoriented_edge_exists(tri, e) && continue
+        DelaunayTriangulation.split_subsegment!(tri, args, e)
+        notify(triobs)
+        recordframe!(io)
+    end
+    DelaunayTriangulation.enqueue_all_bad_triangles!(args, tri)
+    while DelaunayTriangulation.keep_iterating(tri, args)
+        T, ρ = DelaunayTriangulation.popfirst_triangle!(args.queue)
+        u, v, w = triangle_vertices(T)
+        if !DelaunayTriangulation.is_ghost_triangle(T) && get_adjacent(tri, u, v) == w
+            success = DelaunayTriangulation.split_triangle!(tri, args, T)
+            if DelaunayTriangulation.is_encroachment_failure(success)
+                !haskey(args.queue, T) && (args.queue[T] = ρ)
+                while DelaunayTriangulation.keep_splitting(tri, args)
+                    e, _ = DelaunayTriangulation.popfirst_segment!(args.queue)
+                    !DelaunayTriangulation.unoriented_edge_exists(tri, e) && continue
+                    DelaunayTriangulation.split_subsegment!(tri, args, e)
+                    notify(triobs)
+                    recordframe!(io)
+                end
+            elseif DelaunayTriangulation.is_successful_insertion(success)
+                DelaunayTriangulation.assess_added_triangles!(args, tri)
+            end
+        end
+        notify(triobs)
+        recordframe!(io)
+    end
+end
+```
+
+![&nbsp;](rupperts-algorithm.mp4)
+
+## Using DelaunayTriangulation.jl
+
+```{julia}
+#| echo: true
+#| output: false
+using DelaunayTriangulation, CairoMakie
+outer = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.0, 0.0)]
+inner = [(0.25, 0.25), (0.25, 0.75), (0.75, 0.75), (0.75, 0.25), (0.25, 0.25)]
+boundary = [[outer], [inner]]
+boundary_nodes, points = convert_boundary_points_to_indices(boundary)
+segments = Set([(1, 5), (7, 3)])
+tri = triangulate(points; boundary_nodes, segments)
+refine!(tri; max_area=0.01)
+triplot(tri)
+```
+
+```{julia}
+#| echo: false
+#| output: false
+fig, ax, sc = triplot(tri; axis=(; width=700, height=700), strokewidth=3)
+hidedecorations!(ax)
+hidespines!(ax)
+resize_to_layout!(fig)
+save("rupperts-algorithm.png", fig)
+```
+
+![&nbsp;](rupperts-algorithm.png)
+
+## Curve-Bounded Domains
+
+- Generalise triangulations to allow for _parametric curves_.
+- Six types of parametric curves are supported, but the interface can be extended easily to new curves.
+
+```{julia}
+#| echo: false
+#| output: false
+a, b, c, d, e, f, g = (0.0, -3.0), (3.0, -1.0), (5.0, 1.0),
+(2.0, 3.0), (-2.0, 3.0), (-4.0, 1.0), (-1.0, 0.0)
+xl, xu = -5.5, 5.5
+yl, yu = -5.5, 5.5
+t = LinRange(0, 1, 2500)
+_LineSegment = LineSegment(g, b)
+_CircularArc = CircularArc((3.0, 0.0), (-1.0040570116834, 2.8269894795152), (0.0, 0.0))
+_EllipticalArc = DelaunayTriangulation.EllipticalArc(b, (-1.0, 1.0), (1.0, 0.0), 3.2566165379827, 1.267103498323, 0.0)
+_BSpline = BSpline([a, b, c, d, e, f, g], degree=3)
+_BezierCurve = BezierCurve([a, b, c, d, e, f, g])
+_CatmullRomSpline = CatmullRomSpline([a, b, c, d, e, f, g])
+
+fig = Figure(fontsize=40)
+ax = Axis(fig[1, 1], width=400, height=400, title="LineSegment")
+xlims!(ax, xl, xu)
+ylims!(ax, yl, yu)
+hidedecorations!(ax)
+lines!(ax, _LineSegment.(t), color=:black, linewidth=6)
+scatter!(ax, [g, b], color=:red, markersize=20)
+
+ax = Axis(fig[1, 2], width=400, height=400, title="CircularArc")
+xlims!(ax, xl, xu)
+ylims!(ax, yl, yu)
+hidedecorations!(ax)
+lines!(ax, _CircularArc.(t), color=:black, linewidth=6)
+scatter!(ax, [(3.0, 0.0), (-1.0040570116834, 2.8269894795152), (0.0, 0.0)], color=:red, markersize=20)
+
+ax = Axis(fig[1, 3], width=400, height=400, title="EllipticalArc")
+xlims!(ax, xl, xu)
+ylims!(ax, yl, yu)
+hidedecorations!(ax)
+lines!(ax, _EllipticalArc.(t), color=:black, linewidth=6)
+scatter!(ax, [b, (-1.0, 1.0), (1.0, 0.0)], color=:red, markersize=20)
+
+ax = Axis(fig[2, 1], width=400, height=400, title="BSpline (degree 3)")
+xlims!(ax, xl, xu)
+ylims!(ax, yl, yu)
+hidedecorations!(ax)
+lines!(ax, _BSpline.(t), color=:black, linewidth=6)
+scatter!(ax, [a, b, c, d, e, f, g], color=:red, markersize=20)
+
+ax = Axis(fig[2, 2], width=400, height=400, title="BezierCurve")
+xlims!(ax, xl, xu)
+ylims!(ax, yl, yu)
+hidedecorations!(ax)
+lines!(ax, _BezierCurve.(t), color=:black, linewidth=6)
+scatter!(ax, [a, b, c, d, e, f, g], color=:red, markersize=20)
+
+ax = Axis(fig[2, 3], width=400, height=400, title="CatmullRomSpline")
+xlims!(ax, xl, xu)
+ylims!(ax, yl, yu)
+hidedecorations!(ax)
+lines!(ax, _CatmullRomSpline.(t), color=:black, linewidth=6)
+scatter!(ax, [a, b, c, d, e, f, g], color=:red, markersize=20)
+
+resize_to_layout!(fig)
+save("parametric_curves.png", fig)
+```
+
+![&nbsp;](parametric_curves.png)
+
+## Boundary Enrichment
+
+- Equally spaced discretisations can lead to excess triangles. Use curvature.
+- Discretise until all edges are _constrained Delaunay_ and the _total variation_ $\int_C |\kappa(s)|\,\mathrm ds < \pi/2$ over each subcurve.
+
+```{julia}
+#| echo: false
+#| output: false
+a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p = (0.0, -1.0),
+(2.0, -2.0), (4.0, -3.0), (6.0, -2.0), (8.0, 0.0), (6.0, 2.0), (4.0, 3.0),
+(2.0, 2.0), (0.0, 1.0), (-2.0, 2.0), (-4.0, 3.0), (-6.0, 2.0), (-8.0, 0.0),
+(-6.0, -2.0), (-4.0, -3.0), (-2.0, -2.0)
+q, r, s, t, u, v = (1.2, 1.8), (1.2, 1.2), (0.6, 1.6),
+(-0.6, 1.6), (-1.2, 1.2), (-1.2, 1.8)
+points = [a, b, c, d, e, f, g, h, q, r, s, i, t, u, v, j, k, l, m, n, o, p, a]
+spl = CatmullRomSpline(points)
+t = LinRange(0, 1, 2500)
+fig, ax, sc = lines(spl.(t), color=:black, linewidth=6, axis=(; width=1200, height=600))
+xlims!(ax, -10, 10)
+ylims!(ax, -5.0, 5.0)
+hidedecorations!(ax)
+hidespines!(ax)
+resize_to_layout!(fig)
+save("boundary-enrichment-1.png", fig)
+```
+
+![&nbsp;](boundary-enrichment-1.png)
+
+## Boundary Enrichment {visibility="uncounted"}
+
+- Equally spaced discretisations can lead to excess triangles. Use curvature.
+- Discretise until all edges are _constrained Delaunay_ and the _total variation_ $\int_C |\kappa(s)|\,\mathrm ds < \pi/2$ over each subcurve.
+
+```{julia}
+#| echo: false
+#| output: false
+tri = triangulate(NTuple{2,Float64}[]; boundary_nodes=[spl])
+t = LinRange(0, 1, 2500)
+fig, ax, sc = lines(spl.(t), color=(:black, 0.05), linewidth=6, axis=(; width=1200, height=600))
+for e in each_segment(tri)
+    u, v = edge_vertices(e)
+    _p, _q = get_point(tri, u, v)
+    poly!(ax, Circle(Point2((_p .+ _q) ./ 2), norm(_p .- _q) ./ 2), color=(:blue, 0.3), strokecolor=:blue, strokewidth=2)
+end
+ts = sort(DelaunayTriangulation.get_inverse.((spl,), get_points(tri)))
+push!(ts, 1.0)
+lines!(ax, spl.(t), color=(:black, 0.05), linewidth=6)
+lines!(ax, spl.(ts), color=:red, linewidth=6)
+xlims!(ax, -10, 10)
+ylims!(ax, -5.0, 5.0)
+hidedecorations!(ax)
+hidespines!(ax)
+resize_to_layout!(fig)
+save("boundary-enrichment-2.png", fig)
+```
+
+![&nbsp;](boundary-enrichment-2.png)
+
+## Boundary Enrichment {visibility="uncounted"}
+
+- Equally spaced discretisations can lead to excess triangles. Use curvature.
+- Discretise until all edges are _constrained Delaunay_ and the _total variation_ $\int_C |\kappa(s)|\,\mathrm ds < \pi/2$ over each subcurve.
+
+```{julia}
+#| echo: false
+#| output: false
+t = LinRange(0, 1, 2500)
+fig, ax, sc = lines(spl.(t), color=(:black, 0.05), linewidth=6, axis=(; width=1200, height=600))
+triplot!(ax, tri; strokewidth=3)
+lines!(ax, spl.(t), color=(:black, 0.2), linewidth=6)
+xlims!(ax, -10, 10)
+ylims!(ax, -5.0, 5.0)
+hidedecorations!(ax)
+hidespines!(ax)
+resize_to_layout!(fig)
+save("boundary-enrichment-3.png", fig)
+```
+
+![&nbsp;](boundary-enrichment-3.png)
+
+## Curve-Bounded Refinement
+
+- Works just as in the standard case, except encroached edges are split at the _equivariation point_ instead of their midpoint.
+
+```{julia}
+#| echo: false
+#| output: false
+w, z, a1, b1, c1, d1 = (8.0, -12.0), (10.0, -10.0), (12.0, -14.0), (14.0, -12.0), (16.0, -10.0), (18.0, -14.0)
+points = [w, z, a1, b1, c1, d1]
+spl = CatmullRomSpline(points)
+t = LinRange(0, 1, 2500)
+fig, ax, sc = lines(spl.(t), color=(:black, 0.3), linewidth=6, axis=(; width=1200, height=600))
+lines!(ax, [w, d1], color=:red, linewidth=6)
+scatter!(ax, [(w .+ d1) ./ 2], color=:magenta, markersize=20)
+scatter!(ax, [spl(DelaunayTriangulation.get_equivariation_split(spl, 0.0, 1.0)[1])], color=:blue, markersize=20)
+hidedecorations!(ax)
+hidespines!(ax)
+resize_to_layout!(fig)
+save("curve-bounded-split.png", fig)
+```
+
+![&nbsp;](curve-bounded-split.png)
+
+## Comparison with Discretisation
+
+```{julia}
+#| echo: false
+#| output: false
+# Manual discretisation
+n = 100
+θ = LinRange(0, 2π, n + 1)
+θ = [θ[1:n]; θ[1]]
+cir = tuple.(cos.(θ), sin.(θ))
+boundary_nodes, points = convert_boundary_points_to_indices(cir)
+tri = triangulate(points; boundary_nodes)
+refine!(tri; max_area=0.03)
+fig, ax, sc = triplot(tri; axis=(; width=800, height=800, title="Manual"), strokewidth=3, figure=(; fontsize=48))
+hidedecorations!(ax)
+hidespines!(ax)
+
+cir = CircularArc((1.0, 0.0), (1.0, 0.0), (0.0, 0.0))
+tri = triangulate(NTuple{2,Float64}[]; boundary_nodes=[cir])
+refine!(tri; max_area=0.03)
+ax = Axis(fig[1, 2], width=800, height=800, title="CircularArc")
+triplot!(ax, tri; strokewidth=3)
+hidedecorations!(ax)
+hidespines!(ax)
+
+resize_to_layout!(fig)
+save("manual-vs-circular.png", fig)
+```
+
+![&nbsp;](manual-vs-circular.png)
+
+## Using DelaunayTriangulation.jl
+
+```{julia}
+#| echo: true
+#| output: false
+Random.seed!(123)
+using DelaunayTriangulation, CairoMakie
+r₁, r₂, r₃ = 10.0, 5.0, 2.5
+c₁ = CircularArc((r₁, 0.0), (r₁, 0.0), (0.0, 0.0))
+c₂ = CircularArc((r₂, 0.0), (r₂, 0.0), (0.0, 0.0), positive=false)
+c₃ = CircularArc((r₃, 0.0), (r₃, 0.0), (0.0, 0.0))
+tri = triangulate(NTuple{2,Float64}[]; boundary_nodes=[[[c₁]], [[c₂]], [[c₃]]])
+refine!(tri; max_area=0.001get_area(tri))
+triplot(tri)
+```
+
+```{julia}
+#| echo: false
+#| output: false
+fig, ax, sc = triplot(tri; axis=(; width=800, height=800), strokewidth=3)
+hidedecorations!(ax)
+hidespines!(ax)
+resize_to_layout!(fig)
+save("curve-refinement-annulus.png", fig)
+```
+
+![&nbsp;](curve-refinement-annulus.png)
+
+## Heterogenous Constraints
+
+- Use `custom_constraint` to apply different constraints in each region.
+
+```{julia}
+#| echo: true 
+#| output: false
+Random.seed!(123)
+outer_area = π * (r₁^2 - r₂^2)
+inner_area = π * r₃^2
+function area_constraint(tri, T)
+    u, v, w = triangle_vertices(T)
+    p, q, r = get_point(tri, u, v, w)
+    A = DelaunayTriangulation.triangle_area(p, q, r)
+    c = (p .+ q .+ r) ./ 3
+    poly = find_polygon(tri, c) # 1: outer-most; 3: inner-most; 2: in-between
+    return poly == 1 ? (A ≥ 0.005inner_area) : (A ≥ 0.001outer_area) # 2 is impossible
+end
+tri = triangulate(NTuple{2,Float64}[]; boundary_nodes=[[[c₁]], [[c₂]], [[c₃]]])
+refine!(tri; custom_constraint=area_constraint)
+triplot(tri)
+```
+
+## Heterogenous Constraints {visibility="uncounted"}
+
+```{julia}
+#| echo: false
+#| output: false
+fig, ax, sc = triplot(tri; axis=(; width=1400, height=1400), strokewidth=3)
+hidedecorations!(ax)
+hidespines!(ax)
+resize_to_layout!(fig)
+save("heterogenous-constraints.png", fig)
+```
+
+![&nbsp;](heterogenous-constraints.png)
+
+## Voronoi Tessellations
+
+- Dual graph to the Delaunay triangulation.
+- Each point in a Voronoi cell is closer to its associated _generator_ than to any other generator.
+
+```{julia}
+#| echo: false 
+#| output: false 
+rng = StableRNG(123)
+points = randn(rng, 2, 10)
+tri = triangulate(points)
+vorn = voronoi(tri)
+fig, ax, sc = voronoiplot(vorn, show_generators=false, axis=(; width=800, height=800))
+triplot!(ax, tri; strokewidth=3, strokecolor=:white)
+hidedecorations!(ax)
+hidespines!(ax)
+resize_to_layout!(fig)
+save("voronoi-tessellations.png", fig)
+```
+
+![&nbsp;](voronoi-tessellations.png)
+
+## Using DelaunayTriangulation.jl
+
+```{julia}
+#| echo: true
+#| output: false
+using DelaunayTriangulation, CairoMakie
+points = randn(2, 25)
+tri = triangulate(points)
+vorn = voronoi(tri)
+voronoiplot(vorn)
+```
+
+```{julia}
+#| echo: false
+#| output: false
+fig, ax, sc = voronoiplot(vorn, show_generators=false, axis=(; width=1000, height=1000))
+hidedecorations!(ax)
+hidespines!(ax)
+resize_to_layout!(fig)
+save("voronoi-tessellations-2.png", fig)
+```
+
+![&nbsp;](voronoi-tessellations-2.png)
+
+## Clipped Voronoi Tessellations
+
+- Support for clipping to convex polygons.
+
+```{julia}
+#| echo: true 
+#| output: false
+vorn = voronoi(tri; clip=true) # clips to the convex hull
+voronoiplot(vorn)
+```
+
+```{julia}
+#| echo: false
+#| output: false
+fig, ax, sc = voronoiplot(voronoi(tri), show_generators=false, axis=(; width=800, height=800), color=(:white, 0.0), strokecolor=:black, clip=(-3.5, 3.5, -3.5, 3.5))
+voronoiplot!(vorn, show_generators=false)
+hidedecorations!(ax)
+hidespines!(ax)
+resize_to_layout!(fig)
+save("clipped-voronoi-tessellations-1.png", fig)
+```
+
+![&nbsp;](clipped-voronoi-tessellations-1.png)
+
+## Clipped Voronoi Tessellations {visibility="uncounted"}
+
+- Support for clipping to convex polygons.
+
+```{julia}
+#| echo: true 
+#| output: false
+clip_points = [(-2.0, -1.0), (2.0, -1.0), (2.0, 1.0), (-2.0, 1.0)]
+clip_vertices = [1, 2, 3, 4, 1]
+vorn = voronoi(tri; clip=true,
+    clip_polygon=(clip_points, clip_vertices)) # clips to the square
+voronoiplot(vorn)
+```
+
+```{julia}
+#| echo: false
+#| output: false
+fig, ax, sc = voronoiplot(voronoi(tri), show_generators=false, axis=(; width=800, height=800), color=(:white, 0.0), strokecolor=:black, clip=(-3.5, 3.5, -3.5, 3.5))
+voronoiplot!(vorn, show_generators=false)
+hidedecorations!(ax)
+hidespines!(ax)
+resize_to_layout!(fig)
+save("clipped-voronoi-tessellations-2.png", fig)
+```
+
+![&nbsp;](clipped-voronoi-tessellations-2.png)
+
+## Clipped Voronoi Tessellations {visibility="uncounted"}
+
+- Support for clipping to convex polygons.
+
+```{julia}
+#| echo: true 
+#| output: false
+ellip = EllipticalArc((2.0, 0.0), (2.0, 0.0), (0.0, 0.0), 2.0, 0.8, 0.0)
+t = LinRange(0, 1, 100)
+clip_points = ellip.(t)[1:end-1]
+clip_vertices = [1:length(clip_points); 1]
+vorn = voronoi(tri; clip=true,
+    clip_polygon=(clip_points, clip_vertices)) # clips to the ellipse
+voronoiplot(vorn)
+```
+
+```{julia}
+#| echo: false
+#| output: false
+fig, ax, sc = voronoiplot(voronoi(tri), show_generators=false, axis=(; width=800, height=800), color=(:white, 0.0), strokecolor=:black, clip=(-3.5, 3.5, -3.5, 3.5))
+voronoiplot!(vorn, show_generators=false)
+hidedecorations!(ax)
+hidespines!(ax)
+resize_to_layout!(fig)
+save("clipped-voronoi-tessellations-3.png", fig)
+```
+
+![&nbsp;](clipped-voronoi-tessellations-3.png)
+
+## Centroidal Voronoi Tessellations 
+
+- Support for centroidal Voronoi tessellations.
+
+```{julia}
+#| echo: true
+#| output: false
+points = rand(2, 500)
+vorn = voronoi(triangulate(points); clip=true, smooth=true)
+voronoiplot(vorn)
+```
+
+
+```{julia}
+#| echo: false
+#| output: false
+fig, ax, sc = voronoiplot(vorn, show_generators=false, axis=(; width=500, height=500), strokecolor=:black)
+hidedecorations!(ax)
+hidespines!(ax)
+resize_to_layout!(fig)
+save("centroidal-voronoi-tessellations.png", fig)
+```
+
+![&nbsp;](centroidal-voronoi-tessellations.png)
+
+
+
+## FiniteVolumeMethod.jl
+
+- FiniteVolumeMethod.jl leverages DelaunayTriangulation.jl for meshing, solving PDEs of the form
+$$
+\frac{\partial u(\boldsymbol x, t)}{\partial t} + \boldsymbol \nabla \cdot \boldsymbol q(\boldsymbol x, t, u) = S(\boldsymbol x, t, u)
+$$ 
+- Hooks into the SciML interface to support a wide range of solvers.
+
+## FiniteVolumeMethod.jl {visibility="uncounted"}
+
+```{julia}
+#| echo: false
+#| output: false
+using DelaunayTriangulation, CairoMakie
+
+## Example 1: Mean exit time
+# The outer circle
+θ = 5π / 64
+cs = θ -> (cos(θ), sin(θ))
+p₁, q₁ = cs(-π / 2 - θ), cs(θ) # Absorbing 
+p₂, q₂ = q₁, cs(π / 2 - θ)     # Reflecting 
+p₃, q₃ = q₂, cs(π + θ)         # Absorbing 
+p₄, q₄ = q₃, p₁                # Reflecting
+c₀ = (0.0, 0.0)
+𝒞₀₁ = CircularArc(p₁, q₁, c₀) # first, last, center
+𝒞₀₂ = CircularArc(p₂, q₂, c₀)
+𝒞₀₃ = CircularArc(p₃, q₃, c₀)
+𝒞₀₄ = CircularArc(p₄, q₄, c₀)
+𝒞₀ = [[𝒞₀₁], [𝒞₀₂], [𝒞₀₃], [𝒞₀₄]]
+# Inner circles
+c₁, p₅ = (-0.4, -0.4), (-0.65, -0.65)
+c₂, p₆ = (0.4, 0.4), (0.65, 0.65)
+𝒞₁ = CircularArc(p₅, p₅, c₁, positive=false) # Reflecting
+𝒞₂ = CircularArc(p₆, p₆, c₂, positive=false) # Reflecting
+# Triangulate and refine
+sink = (0.0, 0.0)
+tri = triangulate([sink], boundary_nodes=[𝒞₀, [[𝒞₁]], [[𝒞₂]]])
+refine!(tri; max_area=1e-3get_area(tri))
+# Plot
+fig, ax, sc = triplot(tri,
+    axis=(width=500, height=500, title="Triangulation"),
+    figure=(fontsize=30,))
+colors = [:red, :blue, :red, :blue, :blue, :blue]
+section = (tri, i) -> [get_point(tri, i) for i in get_neighbours(tri, i)]
+for i in each_ghost_vertex(tri)
+    scatter!(ax, section(tri, i), color=colors[-i], markersize=15) # ghost vertices are negative
+end
+fig
+
+# Solve
+using FiniteVolumeMethod, OrdinaryDiffEq, SteadyStateDiffEq
+D, zerof = 6.25e-4, Returns(0.0)
+geo = FVMGeometry(tri)
+zero_bc = ntuple(i -> zerof, Val(num_ghost_vertices(tri))) # all the boundary conditions are homogeneous
+bc_types = (Dirichlet, Neumann, Dirichlet, Neumann, Neumann, Neumann)
+BCs = BoundaryConditions(geo, zero_bc, bc_types)
+ICs = InternalConditions(zerof, dirichlet_nodes=Dict(1 => findfirst(==(sink), get_points(tri))))
+initial_guess = map(DelaunayTriangulation.each_point(tri)) do p
+    p == sink && return 0.0
+    inside = DelaunayTriangulation.dist(tri, p) > 0.0
+    return !inside ? 0.0 : (1 - sqrt(getx(p)^2 + gety(p)^2)) / (4D) # (R^2 - r^2)/(4D) is solution in a disk of radius R
+end
+prob = FVMProblem(geo, BCs, ICs;
+    diffusion_function=Returns(D), source_function=Returns(1.0),
+    initial_condition=initial_guess, final_time=Inf)
+met_prob = SteadyFVMProblem(prob)
+sol = solve(met_prob, DynamicSS(Rosenbrock23()))
+ax = Axis(fig[1, 2], width=500, height=500, title="Mean exit time")
+hm = tricontourf!(ax, tri, sol.u, levels=0:10:250, extendhigh=:auto)
+poly!(ax, 𝒞₁.(LinRange(0, 1, 2500)), color=:white)
+poly!(ax, 𝒞₂.(LinRange(0, 1, 2500)), color=:white)
+ax.yticklabelsvisible = false
+Colorbar(fig[1, 3], hm, label=L"T(x, y)")
+resize_to_layout!(fig)
+save("mean-exit-time.png", fig)
+```
+
+![&nbsp;](mean-exit-time.png)
+
+## NaturalNeighbours.jl 
+
+- NaturalNeighbours.jl uses DelaunayTriangulation.jl for performing _natural neighbour interpolation_.
+
+```{julia}
+#| echo: false
+#| output: false
+using DelaunayTriangulation, CairoMakie, StableRNGs
+CairoMakie.activate!()
+rng = StableRNG(1231412)
+point = Observable((0.25, 0.25))
+points = Observable(vcat([(0.0,0.0),(1.0,0.0),(1.0,1.0),(0.0,1.0)], tuple.(rand(rng, 10), rand(rng, 10)), point[]))
+on(point) do p 
+    points[][end] = p
+    notify(points)
+end
+fig = Figure()
+ax = Axis(fig[1, 1], width = 600, height = 600)
+triplot!(ax, points, strokewidth = 3)
+sc = scatter!(ax, point, color = :red, markersize = 24)
+translate!(sc, 0, 0, 1)
+xlims!(ax, -0.1, 1.1)
+ylims!(ax, -0.1, 1.1)
+
+ax2 = Axis(fig[1, 2], width = 600, height = 600)
+voronoiplot!(ax2, points, show_generators=false, strokewidth = 3)
+sc2 = scatter!(ax2, point, color = :red, markersize = 24)
+translate!(sc2, 0, 0, 1)
+xlims!(ax, -0.1, 1.1)
+ylims!(ax, -0.1, 1.1)
+
+track = CircularArc((0.25, 0.25), (0.25, 0.25), (0.5, 0.5))
+framerate = 30
+nframes = 4framerate
+t = LinRange(0, 1, nframes)
+resize_to_layout!(fig) 
+hidedecorations!(ax) 
+hidedecorations!(ax2) 
+record(fig, "natural-neighbours.mp4", t; framerate=framerate) do _t 
+    q = track(_t)
+    point[] = q
+end 
+```
+
+<video muted loop>
+  <source src="natural-neighbours.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
+## Natural Neighbours 
+
+- Use interpolants of the form $f(\boldsymbol x_0) = \sum_{i \in N_0} \lambda_i f(\boldsymbol x_i)$.
+- Sibson coordinates: $\lambda_i = A(\boldsymbol x_i)/A(\boldsymbol x)$.
+
+![&nbsp;](new_tile.png)
+
+## Conclusion 
+
+- Delaunay triangulations are a powerful tool for meshing and interpolation, among other applications.
+- DelaunayTriangulation.jl is a feature-rich package for working with Delaunay triangulations and Voronoi tessellations.
+- Documentation contains many other examples, details, and applications such as cell biology.
+- Experimental support for spherical Delaunay triangulations and Voronoi tessellations.
+- Also supports weighted triangulations and power diagrams.
