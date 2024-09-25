@@ -18,7 +18,7 @@ format:
   revealjs:
       slide-number: true
       self-contained: true
-include-in-header:
+include-in-header:  
   - text: |
       <style>
       #title-slide .title {
