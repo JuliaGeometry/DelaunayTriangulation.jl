@@ -162,578 +162,568 @@ In addition to these Julia packages, software packages in other programming lang
 
 Compared to all these other libraries, and only in the context of planar triangulations, DelaunayTriangulation.jl is one of the most developed in terms of the features provided, except possibly with the exception of CGAL and Gmsh who provide many features although neither are in the public domain (CGAL being GPL v3+ and Gmsh being GPL v2+), unlike DelaunayTriangulation.jl which is MIT licensed. A tabular comparison of all these packages is given below (focusing only on two dimensional meshing). If there are any errors in this comparison, please let me know. Also please note that the features listed are not intended to be exhaustive, but rather to give a general idea of the capabilities of each package, and certainly not all software packages are listed here.
 
-<style type="text/css">
-.tg  {border-collapse:collapse;border-spacing:0;}
-.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
-  overflow:hidden;padding:10px 5px;word-break:normal;}
-.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
-  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
-.tg .tg-c3ow{border-color:inherit;text-align:center;vertical-align:top}
-.tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
-.tg .tg-0lax{text-align:left;vertical-align:top}
-</style>
-<table class="tg"><thead>
+<table><thead>
   <tr>
-    <th class="tg-0pky"></th>
-    <th class="tg-0pky"></th>
-    <th class="tg-0pky"></th>
-    <th class="tg-c3ow" colspan="10">Delaunay Triangulations</th>
-    <th class="tg-c3ow" colspan="5">Voronoi</th>
-    <th class="tg-0pky"></th>
-    <th class="tg-0pky"></th>
-    <th class="tg-0pky"></th>
+    <th></th>
+    <th></th>
+    <th></th>
+    <th colspan="10">Delaunay Triangulations</th>
+    <th colspan="5">Voronoi</th>
+    <th></th>
+    <th></th>
+    <th></th>
   </tr></thead>
 <tbody>
   <tr>
-    <td class="tg-0pky">Package</td>
-    <td class="tg-0pky">Language</td>
-    <td class="tg-0pky">Open Source License</td>
-    <td class="tg-0pky">Unconstrained</td>
-    <td class="tg-0pky">Constrained</td>
-    <td class="tg-0pky">Weighted</td>
-    <td class="tg-0pky">Refinement<br></td>
-    <td class="tg-0pky">Curve-Bounded</td>
-    <td class="tg-0pky">Dynamic Updates</td>
-    <td class="tg-0pky">Convex Polygons</td>
-    <td class="tg-0pky">Periodic</td>
-    <td class="tg-0pky">Spherical</td>
-    <td class="tg-0pky">Furthest-site</td>
-    <td class="tg-0pky">Standard</td>
-    <td class="tg-0pky">Clipped (Rect. or Hull)</td>
-    <td class="tg-0pky">Generic Clipped</td>
-    <td class="tg-0pky">Centroidal</td>
-    <td class="tg-0pky">Power</td>
-    <td class="tg-0pky">Point Location</td>
-    <td class="tg-0pky">Robust Predicates</td>
-    <td class="tg-0pky">Customisable Interface</td>
+    <td>Package</td>
+    <td>Language</td>
+    <td>Open Source License</td>
+    <td>Unconstrained</td>
+    <td>Constrained</td>
+    <td>Weighted</td>
+    <td>Refinement<br></td>
+    <td>Curve-Bounded</td>
+    <td>Dynamic Updates</td>
+    <td>Convex Polygons</td>
+    <td>Periodic</td>
+    <td>Spherical</td>
+    <td>Furthest-site</td>
+    <td>Standard</td>
+    <td>Clipped (Rect. or Hull)</td>
+    <td>Generic Clipped</td>
+    <td>Centroidal</td>
+    <td>Power</td>
+    <td>Point Location</td>
+    <td>Robust Predicates</td>
+    <td>Customisable Interface</td>
   </tr>
   <tr>
-    <td class="tg-0pky">DelaunayTriangulation.jl</td>
-    <td class="tg-0pky">Julia</td>
-    <td class="tg-0pky">✅ (MIT)</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0lax">✅</td>
+    <td>DelaunayTriangulation.jl</td>
+    <td>Julia</td>
+    <td>✅ (MIT)</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>✅</td>
   </tr>
   <tr>
-    <td class="tg-0pky">VoronoiDelaunay.jl</td>
-    <td class="tg-0pky">Julia</td>
-    <td class="tg-0pky">✅ (MIT)</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
+    <td>VoronoiDelaunay.jl</td>
+    <td>Julia</td>
+    <td>✅ (MIT)</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>❌</td>
   </tr>
   <tr>
-    <td class="tg-0pky">VoronoiCells.jl</td>
-    <td class="tg-0pky">Julia</td>
-    <td class="tg-0pky">✅ (MIT)</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
+    <td>VoronoiCells.jl</td>
+    <td>Julia</td>
+    <td>✅ (MIT)</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
   </tr>
   <tr>
-    <td class="tg-0pky">Delaunay.jl</td>
-    <td class="tg-0pky">Julia</td>
-    <td class="tg-0pky">✅ (MIT)</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
+    <td>Delaunay.jl</td>
+    <td>Julia</td>
+    <td>✅ (MIT)</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
   </tr>
   <tr>
-    <td class="tg-0pky">MiniQhull.jl</td>
-    <td class="tg-0pky">Julia</td>
-    <td class="tg-0pky">✅ (MIT)</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
+    <td>MiniQhull.jl</td>
+    <td>Julia</td>
+    <td>✅ (MIT)</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
   </tr>
   <tr>
-    <td class="tg-0pky">DirectQhull.jl</td>
-    <td class="tg-0pky">Julia</td>
-    <td class="tg-0pky">✅ (MIT)</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
+    <td>DirectQhull.jl</td>
+    <td>Julia</td>
+    <td>✅ (MIT)</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
   </tr>
   <tr>
-    <td class="tg-0pky">Delaunator.jl</td>
-    <td class="tg-0pky">Julia</td>
-    <td class="tg-0pky">✅ (MIT)</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
+    <td>Delaunator.jl</td>
+    <td>Julia</td>
+    <td>✅ (MIT)</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
   </tr>
   <tr>
-    <td class="tg-0pky">TriangleMesh.jl</td>
-    <td class="tg-0pky">Julia</td>
-    <td class="tg-0pky">✅ (MIT)</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
+    <td>TriangleMesh.jl</td>
+    <td>Julia</td>
+    <td>✅ (MIT)</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
   </tr>
   <tr>
-    <td class="tg-0pky">Triangulate.jl</td>
-    <td class="tg-0pky">Julia</td>
-    <td class="tg-0pky">✅ (MIT)</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
+    <td>Triangulate.jl</td>
+    <td>Julia</td>
+    <td>✅ (MIT)</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
   </tr>
   <tr>
-    <td class="tg-0pky">Triangle.jl</td>
-    <td class="tg-0pky">Julia</td>
-    <td class="tg-0pky">✅ (MIT)</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
+    <td>Triangle.jl</td>
+    <td>Julia</td>
+    <td>✅ (MIT)</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
   </tr>
   <tr>
-    <td class="tg-0pky">GMT.jl</td>
-    <td class="tg-0pky">Julia</td>
-    <td class="tg-0pky">✅ (MIT)</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
+    <td>GMT.jl</td>
+    <td>Julia</td>
+    <td>✅ (MIT)</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
   </tr>
   <tr>
-    <td class="tg-0pky">Quickhull.jl</td>
-    <td class="tg-0pky">Julia</td>
-    <td class="tg-0pky">✅ (MIT)</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
+    <td>Quickhull.jl</td>
+    <td>Julia</td>
+    <td>✅ (MIT)</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
   </tr>
   <tr>
-    <td class="tg-0pky">Triangle</td>
-    <td class="tg-0pky">C</td>
-    <td class="tg-0pky">❌ (Non-standard)</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
+    <td>Triangle</td>
+    <td>C</td>
+    <td>❌ (Non-standard)</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>❌</td>
   </tr>
   <tr>
-    <td class="tg-0pky">CGAL</td>
-    <td class="tg-0pky">C++</td>
-    <td class="tg-0pky">❌ (GPL v3+)</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
+    <td>CGAL</td>
+    <td>C++</td>
+    <td>❌ (GPL v3+)</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>❌</td>
   </tr>
   <tr>
-    <td class="tg-0pky">Gmsh</td>
-    <td class="tg-0pky">Own/C++</td>
-    <td class="tg-0pky">❌ (GPL v2+)</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
+    <td>Gmsh</td>
+    <td>Own/C++</td>
+    <td>❌ (GPL v2+)</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
   </tr>
   <tr>
-    <td class="tg-0pky">SciPy</td>
-    <td class="tg-0pky">Python</td>
-    <td class="tg-0pky">✅ (BSD 3-Clause)</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
+    <td>SciPy</td>
+    <td>Python</td>
+    <td>✅ (BSD 3-Clause)</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
   </tr>
   <tr>
-    <td class="tg-0pky">MATLAB</td>
-    <td class="tg-0pky">MATLAB</td>
-    <td class="tg-0pky">❌ (Commercial)</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
+    <td>MATLAB</td>
+    <td>MATLAB</td>
+    <td>❌ (Commercial)</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>❌</td>
   </tr>
   <tr>
-    <td class="tg-0pky">Qhull</td>
-    <td class="tg-0pky">C</td>
-    <td class="tg-0pky">✅ (Permissive)</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
+    <td>Qhull</td>
+    <td>C</td>
+    <td>✅ (Permissive)</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
   </tr>
   <tr>
-    <td class="tg-0pky">Delaunator</td>
-    <td class="tg-0pky">JavaScript</td>
-    <td class="tg-0pky">✅ (ISC)</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
+    <td>Delaunator</td>
+    <td>JavaScript</td>
+    <td>✅ (ISC)</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
   </tr>
   <tr>
-    <td class="tg-0pky">Spade</td>
-    <td class="tg-0pky">Rust</td>
-    <td class="tg-0pky">✅ (MIT/Apache 2.0)</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0lax">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
+    <td>Spade</td>
+    <td>Rust</td>
+    <td>✅ (MIT/Apache 2.0)</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
   </tr>
   <tr>
-    <td class="tg-0pky">Acute</td>
-    <td class="tg-0pky">C</td>
-    <td class="tg-0pky">❌ (Non-standard)</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
+    <td>Acute</td>
+    <td>C</td>
+    <td>❌ (Non-standard)</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>❌</td>
   </tr>
   <tr>
-    <td class="tg-0pky">Tinfour</td>
-    <td class="tg-0pky">Java</td>
-    <td class="tg-0pky">✅ (Apache 2.0)</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
+    <td>Tinfour</td>
+    <td>Java</td>
+    <td>✅ (Apache 2.0)</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>❌</td>
   </tr>
   <tr>
-    <td class="tg-0pky">JTS</td>
-    <td class="tg-0pky">Java</td>
-    <td class="tg-0pky">✅ (EPL 2.0/EDL 1.0)</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">❌</td>
-    <td class="tg-0pky">✅</td>
-    <td class="tg-0pky">❌</td>
+    <td>JTS</td>
+    <td>Java</td>
+    <td>✅ (EPL 2.0/EDL 1.0)</td>
+    <td>✅</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>❌</td>
+    <td>✅</td>
+    <td>❌</td>
   </tr>
 </tbody></table>
