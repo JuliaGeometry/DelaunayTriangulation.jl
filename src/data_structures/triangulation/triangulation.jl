@@ -488,7 +488,7 @@ Returns the `Triangulation` corresponding to the triangulation of `points` with 
 
 # Arguments 
 - `points`: The points that the triangulation is of. 
-- `triangles`: The triangles of the triangulation. These should be given in counter-clockwise order, with vertices corresponding to `points`. These should not include any ghost triangles.
+- `triangles`: The triangles of the triangulation. These should be given in counter-clockwise order, with vertices corresponding to `points`. Ghost triangles should not be included (and are ignored if they are).
 - `boundary_nodes`: The boundary nodes of the triangulation. These should match the specification given in the documentation or in [`check_args`](@ref).
 
 # Keyword Arguments 
@@ -524,11 +524,17 @@ end
     Triangulation(points, triangles; kwargs...) -> Triangulation
 
 Returns the unconstrained `Triangulation` corresponding to the triangulation of `points` with `triangles`.
-WARNING: Since it uses 'convex_hull' on the points to find the boundary it may not work if there are some points in points that are not vertices in triangles.
+
+!!! note "Valid boundary"
+
+    This constructor uses the [`convex_hull`](@ref) of `points` to determine the triangulation's boundary.
+    If the set of triangles does not form a valid unconstrained triangulation, then this constructor may not
+    return a valid triangulation. Similarly, if there is a point in `points` that is not a vertex of some 
+    triangle, but is a vertex of the convex hull, the triangulation will not be valid.
 
 # Arguments 
-- `points`: The points that the triangulation is of, there should not be any points not referenced in `triangles`.
-- `triangles`: The triangles of the triangulation. These should be given in counter-clockwise order, with vertices corresponding to `points`. These should not include any ghost triangles.
+- `points`: The points that the triangulation is of. There should not be any points not referenced in `triangles`.
+- `triangles`: The triangles of the triangulation. These should be given in counter-clockwise order, with vertices corresponding to `points`. Ghost triangles should not be included (and are ignored if they are).
 
 # Keyword Arguments 
 - `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
@@ -554,8 +560,10 @@ WARNING: Since it uses 'convex_hull' on the points to find the boundary it may n
     delete_ghosts=false,
     predicates::AbstractPredicateKernel=AdaptiveKernel(),
 ) where {P,T,I,E,V,Es,Ts}
-    _bn = get_vertices(convex_hull(points; predicates, IntegerType))
-    return Triangulation(points, triangles, _bn; IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType, weights, delete_ghosts, predicates)
+    bn = get_vertices(convex_hull(points; predicates, IntegerType))
+    tri = Triangulation(points, triangles, bn; IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType, weights, delete_ghosts, predicates)
+    unlock_convex_hull!(tri)
+    return tri
 end
 
 """
@@ -578,6 +586,7 @@ See the documentation for more information about these choices.
     graph = get_graph(tri)
     tris = get_triangles(tri)
     for τ in each_triangle(triangles)
+        is_ghost_triangle(τ) && continue
         add_triangle!(adj, τ)
         add_triangle!(adj2v, τ)
         add_triangle!(graph, τ)

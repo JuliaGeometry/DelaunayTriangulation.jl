@@ -2,7 +2,7 @@
 
 ## 1.5.0
 
-- Added the ability to generate unconstrained triangulations with the constructor Triangulation(points, triangles). See [#192](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/192)
+- Introduced the ability to reconstruct unconstrained triangulations from an existing set of points and triangles using `Triangulation(points, triangles)`. See [#192](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/192)
 
 ## 1.4.0
 
