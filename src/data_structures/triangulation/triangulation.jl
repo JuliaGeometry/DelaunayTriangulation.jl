@@ -521,6 +521,42 @@ Returns the `Triangulation` corresponding to the triangulation of `points` with 
 end
 
 """
+    Triangulation(points, triangles; kwargs...) -> Triangulation
+
+Returns the `Triangulation` corresponding to the triangulation of `points` with `triangles`.
+
+# Arguments 
+- `points`: The points that the triangulation is of. 
+- `triangles`: The triangles of the triangulation. These should be given in counter-clockwise order, with vertices corresponding to `points`. These should not include any ghost triangles.
+
+# Keyword Arguments 
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
+- `IntegerType=Int`: The integer type to use for the triangulation. This is used for representing vertices.
+- `EdgeType=isnothing(segments) ? NTuple{2,IntegerType} : (edge_type ∘ typeof)(segments)`: The edge type to use for the triangulation. 
+- `TriangleType=NTuple{3,IntegerType}`: The triangle type to use for the triangulation.
+- `EdgesType=isnothing(segments) ? Set{EdgeType} : typeof(segments)`: The type to use for storing the edges of the triangulation.
+- `TrianglesType=Set{TriangleType}`: The type to use for storing the triangles of the triangulation.
+- `weights=ZeroWeight()`: The weights associated with the triangulation. 
+- `delete_ghosts=false`: Whether to delete the ghost triangles after the triangulation is computed. This is done using [`delete_ghost_triangles!`](@ref).
+
+# Output 
+- `tri`: The [`Triangulation`](@ref).
+"""
+@inline function Triangulation(
+    points::P, triangles::T;
+    IntegerType::Type{I}=Int,
+    EdgeType::Type{E}=NTuple{2,IntegerType},
+    TriangleType::Type{V}=NTuple{3,IntegerType},
+    EdgesType::Type{Es}=Set{EdgeType},
+    TrianglesType::Type{Ts}=Set{TriangleType},
+    weights=ZeroWeight(),
+    delete_ghosts=false,
+    predicates::AbstractPredicateKernel=AdaptiveKernel(),
+) where {P,T,I,E,V,Es,Ts}
+    tri = Triangulation(points; boundary_nodes=[nothing], weights, IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType)
+    return build_triangulation_from_data!(tri, triangles, _bn, delete_ghosts, predicates)
+
+"""
     build_triangulation_from_data!(tri::Triangulation, triangles, boundary_nodes, delete_ghosts, predicates::AbstractPredicateKernel=AdaptiveKernel())
 
 Given an empty `triangulation`, `tri`, adds all the `triangles` and `boundary_nodes` into it. Use 
