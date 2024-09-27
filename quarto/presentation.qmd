@@ -18,6 +18,7 @@ format:
   revealjs:
       slide-number: true
       self-contained: true
+      background-color: "white"
 include-in-header:  
   - text: |
       <style>
@@ -1397,114 +1398,45 @@ end
 - Typically converges for $\theta_{\min} < 33.9^\circ$.
 - Extra care needed for small angles.
 
-## Ruppert's Algorithm
-
-```{julia}
-#| echo: false 
-#| output: false
-Random.seed!(0)
-outer = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.0, 0.0)]
-inner = [(0.25, 0.25), (0.25, 0.75), (0.75, 0.75), (0.75, 0.25), (0.25, 0.25)]
-boundary = [[outer], [inner]]
-boundary_nodes, points = convert_boundary_points_to_indices(boundary)
-append!(points, [(0.2, 0.1), (0.2, 0.7), (0.5, 0.8), (0.9, 0.45)])
-segments = Set([(1, 5), (7, 3)])
-tri = triangulate(points; boundary_nodes, segments)
-args = DelaunayTriangulation.RefinementArguments(tri; max_area=0.01)
-
-triobs = Observable(tri)
-encroached_segments = lift(triobs) do tri
-    segments = NTuple{2,Float64}[]
-    for e in each_segment(tri)
-        if DelaunayTriangulation.is_encroached(tri, args, e)
-            u, v = edge_vertices(e)
-            p, q = get_point(tri, u, v)
-            push!(segments, p, q, (NaN, NaN))
-        end
-    end
-    return segments
-end
-bad_triangles = lift(triobs) do tri
-    triangles = typeof(Polygon([Point2f(0.0, 0.0), Point2f(0.0, 0.0), Point2f(0.0, 0.0)]))[]
-    for T in each_solid_triangle(tri)
-        _, flag = DelaunayTriangulation.assess_triangle_quality(tri, args, T)
-        if flag
-            u, v, w = triangle_vertices(T)
-            p, q, r = get_point(tri, u, v, w)
-            push!(triangles, Polygon([Point2f(p), Point2f(q), Point2f(r)]))
-        end
-    end
-    return triangles
-end
-
-fig, ax, sc = triplot(triobs; axis=(; width=600, height=600), strokewidth=3)
-poly!(ax, bad_triangles, color=(:blue, 0.3))
-linesegments!(ax, encroached_segments, color=:magenta, linewidth=6)
-hidedecorations!(ax)
-hidespines!(ax)
-resize_to_layout!(fig)
-record(fig, "rupperts-algorithm.mp4"; framerate=10) do io
-    [recordframe!(io) for _ in 1:(5*4)]
-    DelaunayTriangulation.enqueue_all_encroached_segments!(args, tri)
-    while DelaunayTriangulation.keep_splitting(tri, args)
-        e, _ = DelaunayTriangulation.popfirst_segment!(args.queue)
-        !DelaunayTriangulation.unoriented_edge_exists(tri, e) && continue
-        DelaunayTriangulation.split_subsegment!(tri, args, e)
-        notify(triobs)
-        recordframe!(io)
-    end
-    DelaunayTriangulation.enqueue_all_bad_triangles!(args, tri)
-    while DelaunayTriangulation.keep_iterating(tri, args)
-        T, ρ = DelaunayTriangulation.popfirst_triangle!(args.queue)
-        u, v, w = triangle_vertices(T)
-        if !DelaunayTriangulation.is_ghost_triangle(T) && get_adjacent(tri, u, v) == w
-            success = DelaunayTriangulation.split_triangle!(tri, args, T)
-            if DelaunayTriangulation.is_encroachment_failure(success)
-                !haskey(args.queue, T) && (args.queue[T] = ρ)
-                while DelaunayTriangulation.keep_splitting(tri, args)
-                    e, _ = DelaunayTriangulation.popfirst_segment!(args.queue)
-                    !DelaunayTriangulation.unoriented_edge_exists(tri, e) && continue
-                    DelaunayTriangulation.split_subsegment!(tri, args, e)
-                    notify(triobs)
-                    recordframe!(io)
-                end
-            elseif DelaunayTriangulation.is_successful_insertion(success)
-                DelaunayTriangulation.assess_added_triangles!(args, tri)
-            end
-        end
-        notify(triobs)
-        recordframe!(io)
-    end
-end
-```
-
-![&nbsp;](rupperts-algorithm.mp4)
-
 ## Using DelaunayTriangulation.jl
 
 ```{julia}
 #| echo: true
 #| output: false
 using DelaunayTriangulation, CairoMakie
-outer = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.0, 0.0)]
+outer = [(0.0, 0.0), (0.5, 0.2499), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.0, 0.0)]
 inner = [(0.25, 0.25), (0.25, 0.75), (0.75, 0.75), (0.75, 0.25), (0.25, 0.25)]
 boundary = [[outer], [inner]]
 boundary_nodes, points = convert_boundary_points_to_indices(boundary)
-segments = Set([(1, 5), (7, 3)])
+segments = Set([(1, 5), (8, 3)])
 tri = triangulate(points; boundary_nodes, segments)
-refine!(tri; max_area=0.01)
+refine!(tri; max_area=0.001)
 triplot(tri)
 ```
 
 ```{julia}
 #| echo: false
 #| output: false
-fig, ax, sc = triplot(tri; axis=(; width=700, height=700), strokewidth=3)
-hidedecorations!(ax)
-hidespines!(ax)
+outer = [(0.0, 0.0), (0.5, 0.2499), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.0, 0.0)]
+inner = [(0.25, 0.25), (0.25, 0.75), (0.75, 0.75), (0.75, 0.25), (0.25, 0.25)]
+boundary = [[outer], [inner]]
+boundary_nodes, points = convert_boundary_points_to_indices(boundary)
+segments = Set([(1, 6), (8, 3)])
+tri = triangulate(points; boundary_nodes, segments)
+fig, ax, sc = triplot(tri; axis=(; width=600, height=600, title="Pre-refinement"), strokewidth=1, show_constrained_edges=true)
+refine!(tri; max_area=0.001)
+ax = Axis(fig[1, 2], width=600, height=600, title="Post-refinement")
+triplot!(ax, tri; strokewidth=1, show_constrained_edges=true)
+stats = statistics(tri)
+angles = first.(get_all_stat(stats, :angles)) # the first is the smallest
+ax = Axis(fig[2, 1:2], xlabel="θₘᵢₙ", ylabel="Count", title="Angle histogram", width=1200, height=400)
+hist!(ax, rad2deg.(angles), bins=20:2:60)
+vlines!(ax, [30.0], color=:red)
 resize_to_layout!(fig)
 save("rupperts-algorithm.png", fig)
 ```
+
+## Using DelaunayTriangulation.jl {visibility="uncounted"}
 
 ![&nbsp;](rupperts-algorithm.png)
 
@@ -1741,24 +1673,83 @@ save("curve-refinement-annulus.png", fig)
 
 ## Heterogenous Constraints
 
-- Use `custom_constraint` to apply different constraints in each region.
+- May want to apply different refinement criteria to different regions.
+
+```{julia}
+#| echo: false
+#| output: false
+A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, Z =
+    (0.0, 0.0), (100.0, 0.0), (100.0, 30.0), (0.0, 30.0),
+    (6.424534494031, 8.15827723642343),
+    (12.7466820515884, 12.8120803324773),
+    (24.6007088056857, 16.7634225838431),
+    (35.0, 15.0),
+    (45.0598809072019, 11.8461966710323),
+    (59.5481358288765, 13.2511183604068),
+    (70.5240865271148, 18.16834427321676),
+    (78.5145786354323, 22.9977625804424),
+    (90.105182572772, 27.3003352541518),
+    (10.0246462784253, 2.8898209012699),
+    (20.2103285263904, 6.489932730292),
+    (30.2203955631837, 6.7533555470497),
+    (39.0011561217744, 5.3484338576752),
+    (47.781916680365, 3.7678969571289),
+    (59.1969054065329, 6.3143175191202),
+    (68.0654735707094, 10.4412749816578),
+    (80.0, 15.0),
+    (88.0856076442961, 17.2024606117726),
+    (95.5492541190982, 21.1538028631384),
+    (100.0, 25.0)
+
+domain = [A, B, C, D, A]
+river = [A, N, O, P, Q, R, S, T, U, V, W, Z, C, M, L, K, J, I, H, G, F, E, A]
+A1, B1 = (50.0, 20.0), (50.0, 25.0)
+cir = CircularArc(B1, B1, A1, positive=false)
+river_spl = CatmullRomSpline(river)
+clamp_xy = xy -> (clamp(xy[1], 0.0, 100.0), clamp(xy[2], 0.0, 30.0))
+
+t = LinRange(0, 1, 2500)
+fig, ax, sc = lines(domain, color=:black, linewidth=6, axis=(; width=1200, height=600))
+lines!(ax, clamp_xy.(river_spl.(t)), color=:black, linewidth=6)
+lines!(ax, cir.(t), color=:black, linewidth=6)
+hidedecorations!(ax)
+hidespines!(ax)
+resize_to_layout!(fig)
+save("heterogenous-constraints-1.png", fig)
+```
+
+![&nbsp;](heterogenous-constraints-1.png)
+
+## Heterogenous Constraints
+
+- Use `custom_constraint`.
+
+```{julia}
+#| echo: false 
+#| output: false
+using DelaunayTriangulation: triangle_area, point_position_relative_to_curve, is_left, dist
+```
 
 ```{julia}
 #| echo: true 
 #| output: false
-Random.seed!(123)
-outer_area = π * (r₁^2 - r₂^2)
-inner_area = π * r₃^2
-function area_constraint(tri, T)
-    u, v, w = triangle_vertices(T)
-    p, q, r = get_point(tri, u, v, w)
-    A = DelaunayTriangulation.triangle_area(p, q, r)
+domain = [A, B, C, D, A]
+river = [A, N, O, P, Q, R, S, T, U, V, W, Z, C, M, L, K, J, I, H, G, F, E, A]
+A1, B1 = (50.0, 20.0), (50.0, 25.0)
+cir = CircularArc(B1, B1, A1, positive=false)
+boundary_nodes, points = convert_boundary_points_to_indices(domain)
+river_spl = CatmullRomSpline(river)
+tri = triangulate(points; boundary_nodes=[[[cir]], [boundary_nodes]])
+Ar = 100 * 30
+custom_constraint = (tri, T) -> begin
+    p, q, r = get_point(tri, triangle_vertices(T)...)
     c = (p .+ q .+ r) ./ 3
-    poly = find_polygon(tri, c) # 1: outer-most; 3: inner-most; 2: in-between
-    return poly == 1 ? (A ≥ 0.005inner_area) : (A ≥ 0.001outer_area) # 2 is impossible
+    TA = triangle_area(p, q, r)
+    is_left(point_position_relative_to_curve(river_spl, c)) && return TA > 1e-4Ar
+    abs(dist(c, A1) - dist(A1, B1)) / dist(A1, B1) < 1e-1 && return TA > 1e-4Ar
+    return false
 end
-tri = triangulate(NTuple{2,Float64}[]; boundary_nodes=[[[c₁]], [[c₂]], [[c₃]]])
-refine!(tri; custom_constraint=area_constraint)
+refine!(tri; custom_constraint=custom_constraint, max_area=1e-1Ar)
 triplot(tri)
 ```
 
@@ -1767,14 +1758,17 @@ triplot(tri)
 ```{julia}
 #| echo: false
 #| output: false
-fig, ax, sc = triplot(tri; axis=(; width=1400, height=1400), strokewidth=3)
+fig, ax, sc = triplot(tri; axis=(; width=1200, height=600), strokewidth=3)
+t = LinRange(0, 1, 2500)
+lines!(ax, clamp_xy.(river_spl.(t)), color=:magenta, linewidth=6)
+lines!(ax, cir.(t), color=:magenta, linewidth=6)
 hidedecorations!(ax)
 hidespines!(ax)
 resize_to_layout!(fig)
-save("heterogenous-constraints.png", fig)
+save("heterogenous-constraints-2.png", fig)
 ```
 
-![&nbsp;](heterogenous-constraints.png)
+![&nbsp;](heterogenous-constraints-2.png)
 
 ## Voronoi Tessellations
 
@@ -1927,8 +1921,6 @@ save("centroidal-voronoi-tessellations.png", fig)
 
 ![&nbsp;](centroidal-voronoi-tessellations.png)
 
-
-
 ## FiniteVolumeMethod.jl
 
 - FiniteVolumeMethod.jl leverages DelaunayTriangulation.jl for meshing, solving PDEs of the form
@@ -2008,56 +2000,7 @@ save("mean-exit-time.png", fig)
 
 ![&nbsp;](mean-exit-time.png)
 
-## NaturalNeighbours.jl 
-
-- NaturalNeighbours.jl uses DelaunayTriangulation.jl for performing _natural neighbour interpolation_.
-
-```{julia}
-#| echo: false
-#| output: false
-using DelaunayTriangulation, CairoMakie, StableRNGs
-CairoMakie.activate!()
-rng = StableRNG(1231412)
-point = Observable((0.25, 0.25))
-points = Observable(vcat([(0.0,0.0),(1.0,0.0),(1.0,1.0),(0.0,1.0)], tuple.(rand(rng, 10), rand(rng, 10)), point[]))
-on(point) do p 
-    points[][end] = p
-    notify(points)
-end
-fig = Figure()
-ax = Axis(fig[1, 1], width = 600, height = 600)
-triplot!(ax, points, strokewidth = 3)
-sc = scatter!(ax, point, color = :red, markersize = 24)
-translate!(sc, 0, 0, 1)
-xlims!(ax, -0.1, 1.1)
-ylims!(ax, -0.1, 1.1)
-
-ax2 = Axis(fig[1, 2], width = 600, height = 600)
-voronoiplot!(ax2, points, show_generators=false, strokewidth = 3)
-sc2 = scatter!(ax2, point, color = :red, markersize = 24)
-translate!(sc2, 0, 0, 1)
-xlims!(ax, -0.1, 1.1)
-ylims!(ax, -0.1, 1.1)
-
-track = CircularArc((0.25, 0.25), (0.25, 0.25), (0.5, 0.5))
-framerate = 30
-nframes = 4framerate
-t = LinRange(0, 1, nframes)
-resize_to_layout!(fig) 
-hidedecorations!(ax) 
-hidedecorations!(ax2) 
-record(fig, "natural-neighbours.mp4", t; framerate=framerate) do _t 
-    q = track(_t)
-    point[] = q
-end 
-```
-
-<video muted loop>
-  <source src="natural-neighbours.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
-
-## Natural Neighbours 
+## NaturalNeighbours.jl
 
 - Use interpolants of the form $f(\boldsymbol x_0) = \sum_{i \in N_0} \lambda_i f(\boldsymbol x_i)$.
 - Sibson coordinates: $\lambda_i = A(\boldsymbol x_i)/A(\boldsymbol x)$.
