@@ -555,7 +555,7 @@ WARNING: Since it uses 'convex_hull' on the points to find the boundary it may n
     predicates::AbstractPredicateKernel=AdaptiveKernel(),
 ) where {P,T,I,E,V,Es,Ts}
     _bn = get_vertices(convex_hull(points; predicates, IntegerType))
-    return Triangulation(points, triangles, boundary_nodes=_bn; IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType, weights, delete_ghosts, predicates)
+    return Triangulation(points, triangles, _bn; IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType, weights, delete_ghosts, predicates)
 end
 
 """
