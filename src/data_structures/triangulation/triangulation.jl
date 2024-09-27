@@ -553,7 +553,8 @@ Returns the `Triangulation` corresponding to the triangulation of `points` with 
     delete_ghosts=false,
     predicates::AbstractPredicateKernel=AdaptiveKernel(),
 ) where {P,T,I,E,V,Es,Ts}
-    tri = Triangulation(points; boundary_nodes=[nothing], weights, IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType)
+    _bn = [nothing]
+    tri = Triangulation(points; boundary_nodes=_bn, weights, IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType)
     return build_triangulation_from_data!(tri, triangles, _bn, delete_ghosts, predicates)
 end
 
