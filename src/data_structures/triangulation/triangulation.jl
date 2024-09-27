@@ -488,7 +488,7 @@ Returns the `Triangulation` corresponding to the triangulation of `points` with 
 
 # Arguments 
 - `points`: The points that the triangulation is of. 
-- `triangles`: The triangles of the triangulation. These should be given in counter-clockwise order, with vertices corresponding to `points`. These should not include any ghost triangles.
+- `triangles`: The triangles of the triangulation. These should be given in counter-clockwise order, with vertices corresponding to `points`. Ghost triangles should not be included (and are ignored if they are).
 - `boundary_nodes`: The boundary nodes of the triangulation. These should match the specification given in the documentation or in [`check_args`](@ref).
 
 # Keyword Arguments 
@@ -521,6 +521,52 @@ Returns the `Triangulation` corresponding to the triangulation of `points` with 
 end
 
 """
+    Triangulation(points, triangles; kwargs...) -> Triangulation
+
+Returns the unconstrained `Triangulation` corresponding to the triangulation of `points` with `triangles`.
+
+!!! note "Valid boundary"
+
+    This constructor uses the [`convex_hull`](@ref) of `points` to determine the triangulation's boundary.
+    If the set of triangles does not form a valid unconstrained triangulation, then this constructor may not
+    return a valid triangulation. Similarly, if there is a point in `points` that is not a vertex of some 
+    triangle, but is a vertex of the convex hull, the triangulation will not be valid.
+
+# Arguments 
+- `points`: The points that the triangulation is of. There should not be any points not referenced in `triangles`.
+- `triangles`: The triangles of the triangulation. These should be given in counter-clockwise order, with vertices corresponding to `points`. Ghost triangles should not be included (and are ignored if they are).
+
+# Keyword Arguments 
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
+- `IntegerType=Int`: The integer type to use for the triangulation. This is used for representing vertices.
+- `EdgeType=isnothing(segments) ? NTuple{2,IntegerType} : (edge_type ∘ typeof)(segments)`: The edge type to use for the triangulation. 
+- `TriangleType=NTuple{3,IntegerType}`: The triangle type to use for the triangulation.
+- `EdgesType=isnothing(segments) ? Set{EdgeType} : typeof(segments)`: The type to use for storing the edges of the triangulation.
+- `TrianglesType=Set{TriangleType}`: The type to use for storing the triangles of the triangulation.
+- `weights=ZeroWeight()`: The weights associated with the triangulation. 
+- `delete_ghosts=false`: Whether to delete the ghost triangles after the triangulation is computed. This is done using [`delete_ghost_triangles!`](@ref).
+
+# Output 
+- `tri`: The [`Triangulation`](@ref).
+"""
+@inline function Triangulation(
+    points::P, triangles::T;
+    IntegerType::Type{I}=Int,
+    EdgeType::Type{E}=NTuple{2,IntegerType},
+    TriangleType::Type{V}=NTuple{3,IntegerType},
+    EdgesType::Type{Es}=Set{EdgeType},
+    TrianglesType::Type{Ts}=Set{TriangleType},
+    weights=ZeroWeight(),
+    delete_ghosts=false,
+    predicates::AbstractPredicateKernel=AdaptiveKernel(),
+) where {P,T,I,E,V,Es,Ts}
+    bn = get_vertices(convex_hull(points; predicates, IntegerType))
+    tri = Triangulation(points, triangles, bn; IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType, weights, delete_ghosts, predicates)
+    unlock_convex_hull!(tri)
+    return tri
+end
+
+"""
     build_triangulation_from_data!(tri::Triangulation, triangles, boundary_nodes, delete_ghosts, predicates::AbstractPredicateKernel=AdaptiveKernel())
 
 Given an empty `triangulation`, `tri`, adds all the `triangles` and `boundary_nodes` into it. Use 
@@ -540,6 +586,7 @@ See the documentation for more information about these choices.
     graph = get_graph(tri)
     tris = get_triangles(tri)
     for τ in each_triangle(triangles)
+        is_ghost_triangle(τ) && continue
         add_triangle!(adj, τ)
         add_triangle!(adj2v, τ)
         add_triangle!(graph, τ)
