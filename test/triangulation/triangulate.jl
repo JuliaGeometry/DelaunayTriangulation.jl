@@ -37,3 +37,12 @@ end
         end
     end
 end
+
+@testset "Constructor with only points and triangles" begin
+    points = [(0.0, 0.0), (0.87, 0.0), (1.0006, 0.7766), (0.0, 1.0), (0.5, 0.5)]
+    tri1 = triangulate(points)
+    triangles = tri.triangles
+    tri2 = DT.Triangulation(points, triangles)
+    @test validate_triangulation(tri2)
+    @test tri1 == tri2
+end

@@ -523,10 +523,11 @@ end
 """
     Triangulation(points, triangles; kwargs...) -> Triangulation
 
-Returns the `Triangulation` corresponding to the triangulation of `points` with `triangles`.
+Returns the unconstrained `Triangulation` corresponding to the triangulation of `points` with `triangles`.
+WARNING: Since it uses 'convex_hull' on the points to find the boundary it may not work if there are some points in points that are not vertices in triangles.
 
 # Arguments 
-- `points`: The points that the triangulation is of. 
+- `points`: The points that the triangulation is of, there should not be any points not referenced in `triangles`.
 - `triangles`: The triangles of the triangulation. These should be given in counter-clockwise order, with vertices corresponding to `points`. These should not include any ghost triangles.
 
 # Keyword Arguments 
@@ -553,7 +554,8 @@ Returns the `Triangulation` corresponding to the triangulation of `points` with 
     delete_ghosts=false,
     predicates::AbstractPredicateKernel=AdaptiveKernel(),
 ) where {P,T,I,E,V,Es,Ts}
-    return Triangulation(points, triangles, [nothing]; IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType, weights, delete_ghosts, predicates)
+    _bn = get_vertices(convex_hull(points; predicates, IntegerType))
+    return Triangulation(points, triangles, boundary_nodes=_bn; IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType, weights, delete_ghosts, predicates)
 end
 
 """
