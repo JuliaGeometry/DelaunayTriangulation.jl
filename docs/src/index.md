@@ -50,6 +50,13 @@ import Pkg
 Pkg.add("DelaunayTriangulation")
 ```
 
+Alternatively, the Pkg REPL can be used (accessed by typing `]` at the `julia>` prompt):
+
+```julia
+pkg> add DelaunayTriangulation
+```
+
+
 # Citing DelaunayTriangulation.jl
 
 If you use DelaunayTriangulation.jl, please cite it. There is a JOSS paper published at https://doi.org/10.21105/joss.0717. The BibTeX entry for this paper is:
@@ -67,12 +74,6 @@ If you use DelaunayTriangulation.jl, please cite it. There is a JOSS paper publi
     volume = {9},
     year = {2024}
 }
-```
-
-Alternatively, the Pkg REPL can be used (accessed by typing `]` at the `julia>` prompt):
-
-```julia
-pkg> add DelaunayTriangulation
 ```
 
 # License 
