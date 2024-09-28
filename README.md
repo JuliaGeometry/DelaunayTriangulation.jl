@@ -134,7 +134,7 @@ ax = Axis(fig[3, 3]; title = "Generic Clipped Voronoi", wh...);  voronoiplot!(ax
 If you use DelaunayTriangulation.jl, please cite it. There is a JOSS paper published at [https://doi.org/10.21105/joss.07174](https://doi.org/10.21105/joss.07174). The BibTeX entry for this paper is:
 
 ```bibtex
-@article{VandenHeuvel_DelaunayTriangulation_jl_A_Julia_2024,
+@article{VandenHeuvel2024DelaunayTriangulation,
     author = {VandenHeuvel, Daniel J.},
     doi = {10.21105/joss.07174},
     journal = {Journal of Open Source Software},
