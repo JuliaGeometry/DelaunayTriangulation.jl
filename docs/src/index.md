@@ -23,6 +23,8 @@ This is a package for computing Delaunay triangulations and Voronoi tessellation
 To ensure that the algorithms are robust, by default we make use of [AdaptivePredicates.jl](https://github.com/JuliaGeometry/AdaptivePredicates.jl) to use 
 adaptive arithmetic for all geometric predicates in this package. This choice can be configured, allowing for the additional choices of [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl) or no adaptive or exact arithmetic at all; see [here](manual/predicate_kernels.md). Much of the work in this package is derived from the book [*Delaunay Mesh Generation* by Cheng, Dey, and Shewchuk (2013)](https://people.eecs.berkeley.edu/~jrs/meshbook.html).
 
+If you would like to make an issue or contribute, please see the CONTRIBUTION.md file in the repository. For feature requests, please see the discussions tab.
+
 # Documentation Structure 
 
 The documentation for this package is broken into several sections.
@@ -35,11 +37,9 @@ The documentation for this package is broken into several sections.
 - **Example Applications**: In case you want to use this package for some of your applications, it might be useful to see how it has been applied in certain situations. Only a few applications are considered here, but more could be added in the future.
 - **Terminology**: This section provides a short description of some of the terminology used throughout the package.
 
+If you would also like to see how DelaunayTriangulation.jl is used in other packages, see [FiniteVolumeMethod.jl](https://github.com/SciML/FiniteVolumeMethod.jl) (solving 2D PDEs) and [NaturalNeighbours.jl](https://github.com/DanielVandH/NaturalNeighbours.jl) (scattered data interpolation).
+
 If you see anything missing in any of these sections, or anything you think could be improved, feel free to file an issue.
-
-# Citing DelaunayTriangulation.jl
-
-If you use DelaunayTriangulation.jl, please cite it. For now, we have a Zenodo record available at [10.5281/zenodo.7456989](https://doi.org/10.5281/zenodo.7456989).
 
 # Installation
 
@@ -48,6 +48,25 @@ You can install DelaunayTriangulation.jl using the package manager:
 ```julia
 import Pkg 
 Pkg.add("DelaunayTriangulation")
+```
+
+# Citing DelaunayTriangulation.jl
+
+If you use DelaunayTriangulation.jl, please cite it. There is a JOSS paper published at https://doi.org/10.21105/joss.0717. The BibTeX entry for this paper is:
+
+```bibtex
+@article{VandenHeuvel2024DelaunayTriangulation,
+    author = {VandenHeuvel, Daniel J.},
+    doi = {10.21105/joss.07174},
+    journal = {Journal of Open Source Software},
+    month = sep,
+    number = {101},
+    pages = {7174},
+    title = {{DelaunayTriangulation.jl: A Julia package for Delaunay triangulations and Voronoi tessellations in the plane}},
+    url = {https://joss.theoj.org/papers/10.21105/joss.07174},
+    volume = {9},
+    year = {2024}
+}
 ```
 
 Alternatively, the Pkg REPL can be used (accessed by typing `]` at the `julia>` prompt):

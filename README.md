@@ -129,6 +129,29 @@ ax = Axis(fig[3, 3]; title = "Generic Clipped Voronoi", wh...);  voronoiplot!(ax
 
 ![](readme.png)
 
+## Citing DelaunayTriangulation.jl
+
+If you use DelaunayTriangulation.jl, please cite it. There is a JOSS paper published at [https://doi.org/10.21105/joss.07174](https://doi.org/10.21105/joss.07174). The BibTeX entry for this paper is:
+
+```bibtex
+@article{VandenHeuvel_DelaunayTriangulation_jl_A_Julia_2024,
+    author = {VandenHeuvel, Daniel J.},
+    doi = {10.21105/joss.07174},
+    journal = {Journal of Open Source Software},
+    month = sep,
+    number = {101},
+    pages = {7174},
+    title = {{DelaunayTriangulation.jl: A Julia package for Delaunay triangulations and Voronoi tessellations in the plane}},
+    url = {https://joss.theoj.org/papers/10.21105/joss.07174},
+    volume = {9},
+    year = {2024}
+}
+```
+
+## License 
+
+DelaunayTriangulation.jl is provided under a [MIT license](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/main/LICENSE).
+
 ## Similar Packages
 
 This is not the only Delaunay triangulation package available. Some others are:
