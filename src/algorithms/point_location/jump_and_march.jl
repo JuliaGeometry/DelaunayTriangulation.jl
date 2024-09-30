@@ -108,6 +108,9 @@ Selects a random edge from the set of edges `edges`.
 """
 function select_random_edge(tri::Triangulation, edges, rng::Random.AbstractRNG = Random.default_rng())
     edge = random_edge(rng, edges)
+    while is_ghost_edge(edge) # Issue #188
+        edge = random_edge(rng, edges)
+    end
     i, j = edge_vertices(edge)
     pᵢ, pⱼ = get_point(tri, i, j)
     return i, j, pᵢ, pⱼ
