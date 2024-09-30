@@ -136,8 +136,8 @@ Selects a random edge from the set of edges `edges` and computes the certificate
 """
 function prepare_initial_edge(tri::Triangulation, edges, p, q, rng::Random.AbstractRNG = Random.default_rng(), predicates::AbstractPredicateKernel = AdaptiveKernel())
     i, j, pᵢ, pⱼ = select_random_edge(tri, edges, rng)
-    line_cert_i = point_position_relative_to_line(predicates, tri, p, q, i)
-    line_cert_j = point_position_relative_to_line(predicates, tri, p, q, j)
+    line_cert_i = point_position_relative_to_line(predicates, p, q, pᵢ)
+    line_cert_j = point_position_relative_to_line(predicates, p, q, pⱼ)
     return i, j, pᵢ, pⱼ, line_cert_i, line_cert_j
 end
 
