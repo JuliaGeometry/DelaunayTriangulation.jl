@@ -1571,6 +1571,26 @@ end
             @test DT.eval_fnc_at_het_tuple_element(f, tup, i) == basic_def(f, tup, i)
             @inferred DT.eval_fnc_at_het_tuple_element(f, tup, i)
         end
+
+        ## large tuples
+        tup = ntuple(_ -> rand((1, 2.0, "string", [1 2 3], [5, 7, 9], 0x00, 'A')), 32)
+        @test DT.eval_fnc_at_het_tuple_element(f, tup, 14) == basic_def(f, tup, 14)
+        b = @allocated DT.eval_fnc_at_het_tuple_element(f, tup, 14)
+        b = @allocated DT.eval_fnc_at_het_tuple_element(f, tup, 14)
+        b2 = @allocated basic_def(f, tup, 14)
+        b2 = @allocated basic_def(f, tup, 14)
+        @inferred DT.eval_fnc_at_het_tuple_element(f, tup, 14)
+        @test iszero(b) || iszero(b .- 16) 
+        @test b < b2 
+        @test !(tup isa DT.ANY32)
+
+        tup = ntuple(_ -> rand((1, 2.0, "string", [1 2 3], [5, 7, 9], 0x00, 'A')), 33)
+        @test DT.eval_fnc_at_het_tuple_element(f, tup, 33) == basic_def(f, tup, 33)
+        b = @allocated DT.eval_fnc_at_het_tuple_element(f, tup, 33)
+        b = @allocated DT.eval_fnc_at_het_tuple_element(f, tup, 33)
+        b2 = @allocated basic_def(f, tup, 33)
+        b2 = @allocated basic_def(f, tup, 33)
+        @test b == b2
     end
 
     @testset "eval_fnc_in_het_tuple" begin
@@ -1612,6 +1632,24 @@ end
             @test DT.eval_fnc_in_het_tuple(tup, arg, i) == basic_def2(tup, arg, i)
             @inferred DT.eval_fnc_in_het_tuple(tup, arg, i)
         end
+
+        ## large tuples 
+        tup = ntuple(_ -> rand((gg1, gg2, gg3, gg4, gg5, gg6, gg7)), 32)
+        @test DT.eval_fnc_in_het_tuple(tup, arg, 14) == basic_def2(tup, arg, 14)
+        b = @allocated DT.eval_fnc_in_het_tuple(tup, arg, 14)
+        b = @allocated DT.eval_fnc_in_het_tuple(tup, arg, 14)
+        b2 = @allocated basic_def2(tup, arg, 14)
+        b2 = @allocated basic_def2(tup, arg, 14)
+        @inferred DT.eval_fnc_in_het_tuple(tup, arg, 14)
+        @test iszero(b) || iszero(b .- 16)
+
+        tup = ntuple(_ -> rand((gg1, gg2, gg3, gg4, gg5, gg6, gg7)), 33)
+        @test DT.eval_fnc_in_het_tuple(tup, arg, 33) == basic_def2(tup, arg, 33)
+        b = @allocated DT.eval_fnc_in_het_tuple(tup, arg, 33)
+        b = @allocated DT.eval_fnc_in_het_tuple(tup, arg, 33)
+        b2 = @allocated basic_def2(tup, arg, 33)
+        b2 = @allocated basic_def2(tup, arg, 33)
+        @test b == b2
     end
 
     @testset "eval_fnc_at_het_tuple_two_elements" begin
@@ -1639,6 +1677,24 @@ end
             end
         end
         @test all(iszero, a .- 16) || all(iszero, a)
+
+        ## large tuples
+        tup = ntuple(_ -> rand((1, 2.0, "string", [1 2 3], [5, 7, 9], 0x00, 'A')), 32)
+        @test DT.eval_fnc_at_het_tuple_two_elements(fft, tup, 14, 15) == basic_defft(fft, tup, 14, 15)
+        b = @allocated DT.eval_fnc_at_het_tuple_two_elements(fft, tup, 14, 15)
+        b = @allocated DT.eval_fnc_at_het_tuple_two_elements(fft, tup, 14, 15)
+        b2 = @allocated basic_defft(fft, tup, 14, 15)
+        b2 = @allocated basic_defft(fft, tup, 14, 15)
+        @inferred DT.eval_fnc_at_het_tuple_two_elements(fft, tup, 14, 15)
+        @test iszero(b) || iszero(b .- 16)
+
+        tup = ntuple(_ -> rand((1, 2.0, "string", [1 2 3], [5, 7, 9], 0x00, 'A')), 33)
+        @test DT.eval_fnc_at_het_tuple_two_elements(fft, tup, 33, 32) == basic_defft(fft, tup, 33, 32)
+        b = @allocated DT.eval_fnc_at_het_tuple_two_elements(fft, tup, 33, 32)
+        b = @allocated DT.eval_fnc_at_het_tuple_two_elements(fft, tup, 33, 32)
+        b2 = @allocated basic_defft(fft, tup, 33, 32)
+        b2 = @allocated basic_defft(fft, tup, 33, 32)
+        @test b == b2
     end
 
     @testset "eval_fnc_at_het_tuple_element_with_arg" begin
@@ -1667,6 +1723,20 @@ end
             @inferred DT.eval_fnc_at_het_tuple_element_with_arg(fft, tup, arg, i)
         end
         @test all(iszero, a .- 16) || all(iszero, a)
+
+        ## large tuples
+        tup = ntuple(_ -> rand((1, 2.0, "string", [1 2 3], [5, 7, 9], 0x00, 'A')), 32)
+        @test DT.eval_fnc_at_het_tuple_element_with_arg(fft, tup, ((2.0, 3.0), -1.0, "5"), 14) == basic_defft(fft, tup, ((2.0, 3.0), -1.0, "5"), 14)
+        arg = ((2.0, 3.0), -1.0, "5")
+        b = @allocated DT.eval_fnc_at_het_tuple_element_with_arg(fft, tup, arg, 14)
+        b = @allocated DT.eval_fnc_at_het_tuple_element_with_arg(fft, tup, arg, 14)
+        b2 = @allocated basic_defft(fft, tup, ((2.0, 3.0), -1.0, "5"), 14)
+        b2 = @allocated basic_defft(fft, tup, ((2.0, 3.0), -1.0, "5"), 14)
+        @inferred DT.eval_fnc_at_het_tuple_element_with_arg(fft, tup, ((2.0, 3.0), -1.0, "5"), 14)
+        @test iszero(b) || iszero(b .- 16)
+
+        tup = ntuple(_ -> rand((1, 2.0, "string", [1 2 3], [5, 7, 9], 0x00, 'A')), 33)
+        @test DT.eval_fnc_at_het_tuple_element_with_arg(fft, tup, ((2.0, 3.0), -1.0, "5"), 33) == basic_defft(fft, tup, ((2.0, 3.0), -1.0, "5"), 33)
     end
 
     @testset "eval_fnc_at_het_tuple_element_with_arg_and_prearg" begin
@@ -1696,6 +1766,20 @@ end
             @inferred DT.eval_fnc_at_het_tuple_element_with_arg_and_prearg(fft, tup, prearg, arg, i)
         end
         @test all(iszero, a .- 16) || all(iszero, a)
+
+        ## large tuples
+        tup = ntuple(_ -> rand((1, 2.0, "string", [1 2 3], [5, 7, 9], 0x00, 'A')), 32)
+        @test DT.eval_fnc_at_het_tuple_element_with_arg_and_prearg(fft, tup, -3.0, ((2.0, 3.0), "5"), 14) == basic_defft(fft, tup, -3.0, ((2.0, 3.0), "5"), 14)
+        arg = ((2.0, 3.0), "5")
+        b = @allocated DT.eval_fnc_at_het_tuple_element_with_arg_and_prearg(fft, tup, -3.0, arg, 14)
+        b = @allocated DT.eval_fnc_at_het_tuple_element_with_arg_and_prearg(fft, tup, -3.0, arg, 14)
+        b2 = @allocated basic_defft(fft, tup, -3.0, ((2.0, 3.0), "5"), 14)
+        b2 = @allocated basic_defft(fft, tup, -3.0, ((2.0, 3.0), "5"), 14)
+        @inferred DT.eval_fnc_at_het_tuple_element_with_arg_and_prearg(fft, tup, -3.0, ((2.0, 3.0), "5"), 14)
+        @test iszero(b) || iszero(b .- 16)
+
+        tup = ntuple(_ -> rand((1, 2.0, "string", [1 2 3], [5, 7, 9], 0x00, 'A')), 33)
+        @test DT.eval_fnc_at_het_tuple_element_with_arg_and_prearg(fft, tup, -3.0, ((2.0, 3.0), "5"), 33) == basic_defft(fft, tup, -3.0, ((2.0, 3.0), "5"), 33)
     end
 end
 

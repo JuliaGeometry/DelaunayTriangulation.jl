@@ -21,6 +21,7 @@ using ReferenceTests
     @test L.first == p
     @test L.last == q
     @test L.length ≈ sqrt(sum((p .- q) .^ 2))
+    @test DT.is_linear(L)
 
     # Evaluation 
     @test collect(L(0.0)) ≈ collect(p)
@@ -120,7 +121,7 @@ using ReferenceTests
     t′, q′ = DT.get_circle_intersection(L, 1.0, 0.0, r)
     @test t′ ≈ 0.6464466094067263 && q′ ⪧ (0.6464466094067263, 0.6464466094067263)
 
-    # == 
+    ## == 
     p = rand(2) |> Tuple
     q = rand(2) |> Tuple
     L1 = LineSegment(p, q)
@@ -132,6 +133,23 @@ using ReferenceTests
     @test L1 ≠ L2
     L2 = LineSegment(q, q)
     @test L1 ≠ L2
+
+    ## Evaluating at the endpoints
+    (p, q) = ((-0.21174248248640498, -0.3224838363216223), (0.02115793761243195, 1.0376631964860346))
+    L = LineSegment(p, q)
+    @test L(0.0) == p
+    @test L(1.0) == q
+
+    ## Reverse
+    for _ in 1:100
+        p, q = rand(2) |> Tuple, rand(2) |> Tuple
+        L = LineSegment(p, q)
+        LR = reverse(L)
+        @test LR.first == q && LR.last == p
+        for t in LinRange(0, 1, 100)
+            @test L(t) ⪧ LR(1 - t)
+        end
+    end
 end
 
 @testset "PiecewiseLinear" begin
@@ -186,13 +204,13 @@ end
     @test !DT.is_piecewise_linear(arc)
     @test !DT.is_interpolating(arc)
     @inferred CircularArc(p1, q1, center1)
-    negarc = CircularArc(p1, q1, center1, positive = false)
+    negarc = CircularArc(p1, q1, center1, positive=false)
     revarc = CircularArc(q1, p1, center1)
-    revnegarc = CircularArc(q1, p1, center1, positive = false)
+    revnegarc = CircularArc(q1, p1, center1, positive=false)
     center2 = (3.0, -5.0)
     p2 = (6.0, 5.0)
     circ = CircularArc(p2, p2, center2)
-    revcirc = CircularArc(p2, p2, center2, positive = false)
+    revcirc = CircularArc(p2, p2, center2, positive=false)
     @test arc.center == negarc.center == revarc.center == revnegarc.center == center1
     @test circ.center == revcirc.center == center2
     @test arc.radius == negarc.radius == revarc.radius == revnegarc.radius ≈ sqrt(41)
@@ -400,6 +418,21 @@ end
     @test arc ≠ revnegarc
     @test circ ≠ revcirc
     @test circ ≠ arc
+
+    ## reverse 
+    p, q, ct = (5.0, 5.0), (-4.0, -4.0), (1.0, 0.0)
+    c = CircularArc(p, q, ct)
+    cr = CircularArc(q, p, ct, positive=false)
+    c1 = CircularArc(p, q, ct, positive=false)
+    c1r = CircularArc(q, p, ct)
+    _cr = reverse(c)
+    _c1r = reverse(c1)
+    for t in LinRange(0, 1, 100)
+        @test c(t) ⪧ _cr(1 - t)
+        @test cr(t) ⪧ _cr(t)
+        @test c1(t) ⪧ _c1r(1 - t)
+        @test c1r(t) ⪧ _c1r(t)
+    end
 end
 
 @testset "EllipticalArc" begin
@@ -409,11 +442,12 @@ end
     arc = EllipticalArc(A, B, (Cx, Cy), Rx, Ry, s)
     @test DT.is_curve_bounded(arc)
     @test !DT.is_piecewise_linear(arc)
+    @test !DT.is_linear(arc)
     @test !DT.is_interpolating(arc)
     @inferred EllipticalArc(A, B, (Cx, Cy), Rx, Ry, s)
-    negarc = EllipticalArc(A, B, (Cx, Cy), Rx, Ry, s, positive = false)
+    negarc = EllipticalArc(A, B, (Cx, Cy), Rx, Ry, s, positive=false)
     revarc = EllipticalArc(B, A, (Cx, Cy), Rx, Ry, s)
-    revnegarc = EllipticalArc(B, A, (Cx, Cy), Rx, Ry, s, positive = false)
+    revnegarc = EllipticalArc(B, A, (Cx, Cy), Rx, Ry, s, positive=false)
     @test arc.center == negarc.center == revarc.center == revnegarc.center == (Cx, Cy)
     @test arc.first == negarc.first == revarc.last == revnegarc.last == A
     @test arc.last == negarc.last == revarc.first == revnegarc.first == B
@@ -429,7 +463,7 @@ end
     @test revarc.sector_angle > 0
     @test revnegarc.sector_angle < 0
     closed_arc = EllipticalArc(A, A, (Cx, Cy), Rx, Ry, s)
-    revclosed_arc = EllipticalArc(A, A, (Cx, Cy), Rx, Ry, s, positive = false)
+    revclosed_arc = EllipticalArc(A, A, (Cx, Cy), Rx, Ry, s, positive=false)
     @test closed_arc.sector_angle ≈ 2π
     @test revclosed_arc.sector_angle ≈ -2π
     @test closed_arc.center == revclosed_arc.center == (Cx, Cy)
@@ -668,6 +702,22 @@ end
     @test arc ≠ revnegarc
     @test closed_arc ≠ revclosed_arc
     @test closed_arc ≠ arc
+
+    ## reverse
+    Rx, Ry, Cx, Cy, s = 2.2, 2.75, 0.6, 0.65, 60.0
+    A, B = (-1.9827767129992, 1.4963893939715), (2.5063071261053, -1.2608915244961)
+    arc = EllipticalArc(A, B, (Cx, Cy), Rx, Ry, s)
+    revarc = EllipticalArc(B, A, (Cx, Cy), Rx, Ry, s, positive=false)
+    arc2 = EllipticalArc(A, B, (Cx, Cy), Rx, Ry, s, positive=false)
+    revarc2 = EllipticalArc(B, A, (Cx, Cy), Rx, Ry, s)
+    _revarc = reverse(arc)
+    _revarc2 = reverse(arc2)
+    for t in LinRange(0, 1, 100)
+        @test arc(t) ⪧ _revarc(1 - t)
+        @test revarc(t) ⪧ _revarc(t)
+        @test arc2(t) ⪧ _revarc2(1 - t)
+        @test revarc2(t) ⪧ _revarc2(t)
+    end
 end
 
 @testset "BezierCurve" begin
@@ -676,9 +726,10 @@ end
     bezier = BezierCurve(control_points)
     @test DT.is_curve_bounded(bezier)
     @test !DT.is_piecewise_linear(bezier)
+    @test !DT.is_linear(bezier)
     @test !DT.is_interpolating(bezier)
     @test bezier.control_points == control_points
-    @test typeof(bezier.cache) == Vector{NTuple{2, Float64}} && length(bezier.cache) == 5
+    @test typeof(bezier.cache) == Vector{NTuple{2,Float64}} && length(bezier.cache) == 5
     @test length(bezier.lookup_table) == 5000
     for i in 1:5000
         t = (i - 1) / 4999
@@ -708,8 +759,8 @@ end
     ## Closest point 
     invert(points) =
         let y = maximum(last.(points))
-        return [(x, y - y′) for (x, y′) in points]
-    end # just to match my reference figure
+            return [(x, y - y′) for (x, y′) in points]
+        end # just to match my reference figure
     control_points = invert([(207.0, 65.0), (84.0, 97.0), (58.0, 196.0), (261.0, 130.0), (216.0, 217.0), (54.0, 122.0), (52.0, 276.0), (85.0, 330.0), (258.0, 334.0), (209.0, 286.0)])
     for lookup_steps in (100, 500, 1000)
         if lookup_steps ≠ 500
@@ -1079,6 +1130,28 @@ end
     ctrl2 = control_points
     @test BezierCurve(ctrl1) == BezierCurve(ctrl1)
     @test BezierCurve(ctrl1) ≠ BezierCurve(ctrl2)
+
+    ## Reverse 
+    control_points = [
+        (-12.0, 5.0), (-9.77, 6.29),
+        (-8.11, 4.55), (-7.47, 1.49),
+        (-7.61, -1.29), (-9.63, -3.69),
+        (-13.65, -4.37), (-15.65, -1.25),
+        (-15.39, 0.93), (-14.17, 1.63),
+        (-12.37, -0.93), (-13.51, -1.17),
+        (-12.59, -2.39), (-10.6, -2.47),
+        (-9.19, 0.11), (-9.95, 2.79),
+    ]
+    spl = BezierCurve(control_points)
+    revspl = BezierCurve(reverse(control_points))
+    _revspl = reverse(spl)
+    @test revspl.control_points == _revspl.control_points
+    for t in LinRange(0, 1, 1000)
+        @test spl(t) ⪧ _revspl(1 - t)
+        @test revspl(t) ⪧ _revspl(t) 
+    end
+    @test revspl.lookup_table ⪧ _revspl.lookup_table
+    @test revspl.orientation_markers ≈ _revspl.orientation_markers
 end
 
 @testset "BSpline" begin
@@ -1087,9 +1160,10 @@ end
     spline = BSpline(control_points)
     @test DT.is_curve_bounded(spline)
     @test !DT.is_piecewise_linear(spline)
+    @test !DT.is_linear(spline)
     @test !DT.is_interpolating(spline)
     @test spline.control_points ⪧ control_points
-    @test typeof(spline.cache) == Vector{NTuple{2, Float64}} && length(spline.cache) == 4
+    @test typeof(spline.cache) == Vector{NTuple{2,Float64}} && length(spline.cache) == 4
     @test spline.knots == [0, 0, 0, 0, 1, 1, 1, 1]
     @test length(spline.lookup_table) == 5000
     for i in 1:5000
@@ -1099,7 +1173,7 @@ end
     periodic_control_points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (1 / 2, 1 / 2), (0.0, 0.0)]
     periodic_spline = BSpline(periodic_control_points)
     @test periodic_spline.control_points ⪧ [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (1 / 2, 1 / 2), (0.0, 0.0)]
-    @test typeof(periodic_spline.cache) == Vector{NTuple{2, Float64}} && length(periodic_spline.cache) == 6
+    @test typeof(periodic_spline.cache) == Vector{NTuple{2,Float64}} && length(periodic_spline.cache) == 6
     @test periodic_spline.knots == [0, 0, 0, 0, 1, 2, 3, 3, 3, 3]
     @test length(periodic_spline.lookup_table) == 5000
     for i in 1:5000
@@ -1107,9 +1181,9 @@ end
     end
 
     longer_control_points = [(0.3, 0.3), (0.5, -1.0), (2.0, 0.0), (2.5, 3.2), (-10.0, 10.0)]
-    longer_spline = BSpline(longer_control_points; lookup_steps = 2500)
+    longer_spline = BSpline(longer_control_points; lookup_steps=2500)
     @test longer_spline.control_points ⪧ longer_control_points
-    @test typeof(longer_spline.cache) == Vector{NTuple{2, Float64}} && length(longer_spline.cache) == 5
+    @test typeof(longer_spline.cache) == Vector{NTuple{2,Float64}} && length(longer_spline.cache) == 5
     @test longer_spline.knots == [0, 0, 0, 0, 1, 2, 2, 2, 2]
     @test length(longer_spline.lookup_table) == 2500
     for i in 1:2500
@@ -1117,9 +1191,9 @@ end
     end
 
     quadratic_control_points = [(0.1, 0.1), (0.2, 0.2), (0.5, 0.8), (1.0, 2.0), (0.0, 15.0), (-5.0, 10.0), (-10.0, 0.0)]
-    quadratic_spline = BSpline(quadratic_control_points; degree = 2)
+    quadratic_spline = BSpline(quadratic_control_points; degree=2)
     @test quadratic_spline.control_points ⪧ quadratic_control_points
-    @test typeof(quadratic_spline.cache) == Vector{NTuple{2, Float64}} && length(quadratic_spline.cache) == 7
+    @test typeof(quadratic_spline.cache) == Vector{NTuple{2,Float64}} && length(quadratic_spline.cache) == 7
     @test quadratic_spline.knots == [0, 0, 0, 1, 2, 3, 4, 5, 5, 5]
     @test length(quadratic_spline.lookup_table) == 5000
     for i in 1:5000
@@ -1127,9 +1201,9 @@ end
     end
 
     sextic_control_points = [(cos(t), sin(t)) for t in LinRange(0, π - π / 3, 10)]
-    sextic_spline = BSpline(sextic_control_points; degree = 6)
+    sextic_spline = BSpline(sextic_control_points; degree=6)
     @test sextic_spline.control_points ⪧ sextic_control_points
-    @test typeof(sextic_spline.cache) == Vector{NTuple{2, Float64}} && length(sextic_spline.cache) == 10
+    @test typeof(sextic_spline.cache) == Vector{NTuple{2,Float64}} && length(sextic_spline.cache) == 10
     @test sextic_spline.knots == [0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 4, 4, 4, 4, 4, 4]
     @test length(sextic_spline.lookup_table) == 5000
     for i in 1:5000
@@ -1138,9 +1212,9 @@ end
 
     quadratic_periodic_control_points = [(cos(t), sin(t)) for t in LinRange(0, 2π, 5)]
     quadratic_periodic_control_points[end] = quadratic_periodic_control_points[1]
-    quadratic_periodic_spline = BSpline(quadratic_periodic_control_points; degree = 2)
+    quadratic_periodic_spline = BSpline(quadratic_periodic_control_points; degree=2)
     @test quadratic_periodic_spline.control_points ⪧ quadratic_periodic_control_points
-    @test typeof(quadratic_periodic_spline.cache) == Vector{NTuple{2, Float64}} && length(quadratic_periodic_spline.cache) == 5
+    @test typeof(quadratic_periodic_spline.cache) == Vector{NTuple{2,Float64}} && length(quadratic_periodic_spline.cache) == 5
     @test quadratic_periodic_spline.knots == [0, 0, 0, 1, 2, 3, 3, 3]
     @test length(quadratic_periodic_spline.lookup_table) == 5000
     for i in 1:5000
@@ -1276,10 +1350,10 @@ end
     t = LinRange(0, 1, 25000)
     f = tuple.(sin.(π .* t), cos.(π .* t))
     spl = BSpline(f)
-    for t in t[3:(end - 2)]
+    for t in t[3:(end-2)]
         @test spl(t) ⪧ (sin(π * t), cos(π * t)) rtol = 1.0e-2
         der = DT.differentiate(spl, t)
-        @test ⪧(der, (π * cos(π * t), -π * sin(π * t)); atol = 1.0e-2)
+        @test ⪧(der, (π * cos(π * t), -π * sin(π * t)); atol=1.0e-2)
     end
 
     t = LinRange(0, 1, 25000)
@@ -1287,10 +1361,10 @@ end
     f[end] = f[begin]
     spl = BSpline(f)
     ctr = 0
-    for t in t[3:(end - 2)]
+    for t in t[3:(end-2)]
         @test spl(t) ⪧ (sin(2π * t), cos(2π * t)) rtol = 1.0e-2
         der = DT.differentiate(spl, t)
-        @test ⪧(der, (2π * cos(2π * t), -2π * sin(2π * t)); atol = 1.0e-2)
+        @test ⪧(der, (2π * cos(2π * t), -2π * sin(2π * t)); atol=1.0e-2)
     end
 
     t = LinRange(0, 1, 1500)
@@ -1307,8 +1381,8 @@ end
             else
                 der3 = (spl(t) .- spl(t - h)) ./ h
             end
-            flag1 = ⪧(der1, der2, rtol = 1.0e-6, atol = 1.0e-6)
-            flag2 = ⪧(der2, der3, rtol = 1.0e-3, atol = 1.0e-6)
+            flag1 = ⪧(der1, der2, rtol=1.0e-6, atol=1.0e-6)
+            flag2 = ⪧(der2, der3, rtol=1.0e-3, atol=1.0e-6)
             @test flag1 || flag2
         end
     end
@@ -1335,9 +1409,9 @@ end
     t = LinRange(0, 1, 25000)
     f = tuple.(sin.(π .* t), cos.(π .* t))
     spl = BSpline(f)
-    for t in t[4:(end - 4)]
+    for t in t[4:(end-4)]
         der = DT.twice_differentiate(spl, t)
-        @test ⪧(der, (-π^2 * sin(π * t), -π^2 * cos(π * t)); atol = 1.0e-2)
+        @test ⪧(der, (-π^2 * sin(π * t), -π^2 * cos(π * t)); atol=1.0e-2)
     end
 
     ## Thrice differentiate 
@@ -1356,8 +1430,8 @@ end
             else
                 der3 = (DT.twice_differentiate(spl, t) .- DT.twice_differentiate(spl, t - h)) ./ h
             end
-            flag1 = ⪧(der1, der2, rtol = 1.0e-6, atol = 1.0e-6)
-            flag2 = ⪧(der2, der3, rtol = 1.0e-3, atol = 1.0e-6)
+            flag1 = ⪧(der1, der2, rtol=1.0e-6, atol=1.0e-6)
+            flag2 = ⪧(der2, der3, rtol=1.0e-3, atol=1.0e-6)
             @test flag1 || flag2
         end
     end
@@ -1365,9 +1439,9 @@ end
     t = LinRange(0, 1, 2500)
     f = tuple.(sin.(π .* t), cos.(π .* t))
     spl = BSpline(f)
-    for t in t[4:(end - 4)]
+    for t in t[4:(end-4)]
         der = DT.thrice_differentiate(spl, t)
-        @test ⪧(der, (-π^3 * cos(π * t), π^3 * sin(π * t)); atol = 1.0e-2, rtol = 1.0e-2)
+        @test ⪧(der, (-π^3 * cos(π * t), π^3 * sin(π * t)); atol=1.0e-2, rtol=1.0e-2)
     end
 
     ## Closest point 
@@ -1665,8 +1739,29 @@ end
     ctrl1 = [(0.0, 1.3), (17.3, 5.0), (-1.0, 2.0), (50.0, 23.0), (17.3, -2.0), (27.3, 50.1)]
     ctrl2 = [(5.3, 1.3), (17.5, 23.0), (17.3, 200.0), (173.0, 1.3), (0.0, 0.0)]
     @test BSpline(ctrl1) == BSpline(ctrl1)
-    @test BSpline(ctrl1) ≠ BSpline(ctrl1, degree = 2)
+    @test BSpline(ctrl1) ≠ BSpline(ctrl1, degree=2)
     @test BSpline(ctrl1) ≠ BSpline(ctrl2)
+
+    ## reverse 
+    for c in (spline, periodic_spline, longer_spline, quadratic_spline, sextic_spline, quadratic_periodic_spline)
+        rev = reverse(c)
+        for t in LinRange(0, 1, 1500)
+            @test c(t) ⪧ rev(1 - t)
+        end
+    end
+    control_points = [(cos(t), sin(t)) for t in LinRange(0, π - π / 3, 10)]
+    spl = BSpline(control_points)
+    revspl = BSpline(reverse(control_points))
+    _revspl = reverse(spl)
+    for t in LinRange(0, 1, 1500)
+        @test spl(t) ⪧ _revspl(1 - t)
+        @test revspl(t) ⪧ _revspl(t)
+    end 
+    @test _revspl.control_points == revspl.control_points
+    @test _revspl.knots == revspl.knots
+    @test _revspl.cache == revspl.cache
+    @test _revspl.lookup_table ⪧ revspl.lookup_table
+    @test _revspl.orientation_markers ≈ revspl.orientation_markers
 end
 
 @testset "CatmullRomSpline" begin
@@ -1683,6 +1778,7 @@ end
             @test DT.is_curve_bounded(_spl)
             @test !DT.is_interpolating(_spl)
             @test !DT.is_piecewise_linear(_spl)
+            @test !DT.is_linear(_spl)
             @test _spl(0.0) == p₁
             @test _spl(1.0) == p₂
             @inferred _spl(rand())
@@ -1692,12 +1788,12 @@ end
             end
         end
         t = LinRange(0, 1, 1500)
-        fig = Figure(fontsize = 44)
+        fig = Figure(fontsize=44)
         for i in 1:3
             for j in 1:3
-                ax = Axis(fig[i, j], xlabel = L"x", ylabel = L"y", title = L"α = %$(α[i]), τ = %$(τ[j])", titlealign = :left, width = 400, height = 400)
-                lines!(ax, spl[i, j].(t), color = :blue, linewidth = 6)
-                scatter!(ax, [p₀, p₁, p₂, p₃], color = [:blue, :black, :red, :green], markersize = 16)
+                ax = Axis(fig[i, j], xlabel=L"x", ylabel=L"y", title=L"α = %$(α[i]), τ = %$(τ[j])", titlealign=:left, width=400, height=400)
+                lines!(ax, spl[i, j].(t), color=:blue, linewidth=6)
+                scatter!(ax, [p₀, p₁, p₂, p₃], color=[:blue, :black, :red, :green], markersize=16)
             end
         end
         resize_to_layout!(fig)
@@ -1716,67 +1812,83 @@ end
                 @inferred DT.thrice_differentiate(_spl, t)
             end
         end
+
+        ## reverse 
+        p₀ = (0.0, 0.0)
+        p₁ = (1.0, 1.0)
+        p₂ = (2.0, -1.0)
+        p₃ = (3.0, 0.0)
+        spl = DT.catmull_rom_spline_segment(p₀, p₁, p₂, p₃, 0.0, 1.0)
+        revspl = DT.catmull_rom_spline_segment(p₃, p₂, p₁, p₀, 0.0, 1.0)
+        _revspl = reverse(spl)
+        for t in LinRange(0, 1, 1500)
+            @test spl(t) ⪧ _revspl(1 - t)
+            @test revspl(t) ⪧ _revspl(t)
+            @test DT.differentiate(spl, t) ⪧ .-DT.differentiate(revspl, 1 - t)
+            @test DT.twice_differentiate(spl, t) ⪧ DT.twice_differentiate(revspl, 1 - t)
+            @test DT.thrice_differentiate(spl, t) ⪧ .-DT.thrice_differentiate(revspl, 1 - t)
+        end
     end
 
     ## Extrapolations 
     p₁, p₂, p₃, p₄, x = (2.571, 4.812), (2.05, 17.81), (17.3, -25.3), (0.5, 0.3), 10.0
     perms_1234 =
         [
-        4 3 2 1
-        4 3 1 2
-        4 2 3 1
-        4 2 1 3
-        4 1 3 2
-        4 1 2 3
-        3 4 2 1
-        3 4 1 2
-        3 2 4 1
-        3 2 1 4
-        3 1 4 2
-        3 1 2 4
-        2 4 3 1
-        2 4 1 3
-        2 3 4 1
-        2 3 1 4
-        2 1 4 3
-        2 1 3 4
-        1 4 3 2
-        1 4 2 3
-        1 3 4 2
-        1 3 2 4
-        1 2 4 3
-        1 2 3 4
-    ]
+            4 3 2 1
+            4 3 1 2
+            4 2 3 1
+            4 2 1 3
+            4 1 3 2
+            4 1 2 3
+            3 4 2 1
+            3 4 1 2
+            3 2 4 1
+            3 2 1 4
+            3 1 4 2
+            3 1 2 4
+            2 4 3 1
+            2 4 1 3
+            2 3 4 1
+            2 3 1 4
+            2 1 4 3
+            2 1 3 4
+            1 4 3 2
+            1 4 2 3
+            1 3 4 2
+            1 3 2 4
+            1 2 4 3
+            1 2 3 4
+        ]
     th4 = [DT.thiele4((p₁, p₂, p₃, p₄)[[i, j, k, ℓ]]..., x)[1] for (i, j, k, ℓ) in eachrow(perms_1234)]
     th3 = [DT.thiele3((p₁, p₂, p₃, p₄)[[i, j, k]]..., x)[1] for (i, j, k, ℓ) in eachrow(perms_1234)]
     quad = [DT.quadratic_interp((p₁, p₂, p₃, p₄)[[i, j, k]]..., x)[1] for (i, j, k, ℓ) in eachrow(perms_1234)]
     th4th3quad =
         [
-        -12.5908 -31.3945 44.1259
-        -12.5908 -91.4788 3.2565
-        -12.5908 -31.3945 44.1259
-        -12.5908 1.95457 -1214.16
-        -12.5908 -91.4788 3.2565
-        -12.5908 1.95457 -1214.16
-        -12.5908 -31.3945 44.1259
-        -12.5908 -91.4788 3.2565
-        -12.5908 -31.3945 44.1259
-        -12.5908 -22.2832 -91.8257
-        -12.5908 -91.4788 3.2565
-        -12.5908 -22.2832 -91.8257
-        -12.5908 -31.3945 44.1259
-        -12.5908 1.95457 -1214.16
-        -12.5908 -31.3945 44.1259
-        -12.5908 -22.2832 -91.8257
-        -12.5908 1.95457 -1214.16
-        -12.5908 -22.2832 -91.8257
-        -12.5908 -91.4788 3.2565
-        -12.5908 1.95457 -1214.16
-        -12.5908 -91.4788 3.2565
-        -12.5908 -22.2832 -91.8257
-        -12.5908 1.95457 -1214.16
-        -12.5908 -22.2832 -91.8257
-    ]
+            -12.5908 -31.3945 44.1259
+            -12.5908 -91.4788 3.2565
+            -12.5908 -31.3945 44.1259
+            -12.5908 1.95457 -1214.16
+            -12.5908 -91.4788 3.2565
+            -12.5908 1.95457 -1214.16
+            -12.5908 -31.3945 44.1259
+            -12.5908 -91.4788 3.2565
+            -12.5908 -31.3945 44.1259
+            -12.5908 -22.2832 -91.8257
+            -12.5908 -91.4788 3.2565
+            -12.5908 -22.2832 -91.8257
+            -12.5908 -31.3945 44.1259
+            -12.5908 1.95457 -1214.16
+            -12.5908 -31.3945 44.1259
+            -12.5908 -22.2832 -91.8257
+            -12.5908 1.95457 -1214.16
+            -12.5908 -22.2832 -91.8257
+            -12.5908 -91.4788 3.2565
+            -12.5908 1.95457 -1214.16
+            -12.5908 -91.4788 3.2565
+            -12.5908 -22.2832 -91.8257
+            -12.5908 1.95457 -1214.16
+            -12.5908 -22.2832 -91.8257
+        ]
     @test [th4 th3 quad] ≈ th4th3quad rtol = 1.0e-5
 
     control_points = [(-9.0, 5.0), (-7.0, 6.0), (-6.0, 4.0), (-3.0, 5.0)]
@@ -1784,6 +1896,7 @@ end
     spl = CatmullRomSpline(control_points)
     pspl = CatmullRomSpline(periodic_control_points)
     @test !DT.is_piecewise_linear(spl)
+    @test !DT.is_linear(spl)
     @test DT.is_interpolating(spl)
     @test spl.left ⪧ (-11.0, 4.7894736842105265)
     @test spl.right ⪧ (0.0, 5.243243243243242)
@@ -1816,16 +1929,16 @@ end
                     alpha = 1 / 2
                     tension = 0.0
                 else
-                    spl = CatmullRomSpline(control_points; lookup_steps, _alpha = alpha, _tension = tension)
-                    pspl = CatmullRomSpline(periodic_control_points; lookup_steps, _alpha = alpha, _tension = tension)
+                    spl = CatmullRomSpline(control_points; lookup_steps, _alpha=alpha, _tension=tension)
+                    pspl = CatmullRomSpline(periodic_control_points; lookup_steps, _alpha=alpha, _tension=tension)
                 end
                 knots = zeros(4)
                 pknots = zeros(6)
                 for i in 2:4
-                    knots[i] = knots[i - 1] + norm(control_points[i] .- control_points[i - 1])^alpha
+                    knots[i] = knots[i-1] + norm(control_points[i] .- control_points[i-1])^alpha
                 end
                 for i in 2:6
-                    pknots[i] = pknots[i - 1] + norm(periodic_control_points[i] .- periodic_control_points[i - 1])^alpha
+                    pknots[i] = pknots[i-1] + norm(periodic_control_points[i] .- periodic_control_points[i-1])^alpha
                 end
                 left = DT.extend_left_control_point(control_points)
                 right = DT.extend_right_control_point(control_points)
@@ -1833,8 +1946,8 @@ end
                 pright = DT.extend_right_control_point(periodic_control_points)
                 knots ./= knots[end]
                 pknots ./= pknots[end]
-                lookup_table = Vector{NTuple{2, Float64}}(undef, lookup_steps)
-                plookup_table = Vector{NTuple{2, Float64}}(undef, lookup_steps)
+                lookup_table = Vector{NTuple{2,Float64}}(undef, lookup_steps)
+                plookup_table = Vector{NTuple{2,Float64}}(undef, lookup_steps)
                 for i in 1:lookup_steps
                     t = (i - 1) / (lookup_steps - 1)
                     lookup_table[i] = spl(t)
@@ -1995,7 +2108,7 @@ end
             _t, _q = closest_point_on_curve(spl, p)
             if !(spl == pspl)
                 @test _t ≈ t′ rtol = 1.0e-1 atol = 1.0e-1
-            elseif !isapprox(_t, 0, atol = 1.0e-3) && !isapprox(_t, 1, atol = 1.0e-3) && !isapprox(t′, 0, atol = 1.0e-3) && !isapprox(t′, 1, atol = 1.0e-3)
+            elseif !isapprox(_t, 0, atol=1.0e-3) && !isapprox(_t, 1, atol=1.0e-3) && !isapprox(t′, 0, atol=1.0e-3) && !isapprox(t′, 1, atol=1.0e-3)
                 @test _t ≈ t′ rtol = 1.0e-1 atol = 1.0e-1
             end
             @test q ⪧ _q rtol = 1.0e-1 atol = 1.0e-1
@@ -2007,7 +2120,7 @@ end
             @test q ⪧ spl(t′)
             if !(spl == pspl)
                 @test t ≈ t′ rtol = 1.0e-1 atol = 1.0e-1
-            elseif !isapprox(t, 0, atol = 1.0e-3) && !isapprox(t, 1, atol = 1.0e-3)
+            elseif !isapprox(t, 0, atol=1.0e-3) && !isapprox(t, 1, atol=1.0e-3)
                 @test t ≈ t′ rtol = 1.0e-1 atol = 1.0e-1
             end
             @test p ⪧ q rtol = 1.0e-1 atol = 1.0e-1
@@ -2213,8 +2326,30 @@ end
     @test CatmullRomSpline(ctrl1) == CatmullRomSpline(ctrl1)
     @test CatmullRomSpline(ctrl1) ≠ CatmullRomSpline(ctrl2)
     @test CatmullRomSpline(ctrl2) == CatmullRomSpline(ctrl2)
-    @test CatmullRomSpline(ctrl1, _alpha = 0.3) ≠ CatmullRomSpline(ctrl1)
-    @test CatmullRomSpline(ctrl1, _tension = 0.2) ≠ CatmullRomSpline(ctrl1)
+    @test CatmullRomSpline(ctrl1, _alpha=0.3) ≠ CatmullRomSpline(ctrl1)
+    @test CatmullRomSpline(ctrl1, _tension=0.2) ≠ CatmullRomSpline(ctrl1)
+
+    ## reverse 
+     control_points = [(-9.0, 5.0), (-7.0, 6.0), (-6.0, 4.0), (-3.0, 5.0), (0.0, 0.0), (2.0, -5.0), (2.0, 10.0), (5.0, 12.0), (-9.0, 10.0)]
+    spl = CatmullRomSpline(control_points)
+    revspl = CatmullRomSpline(reverse(control_points))
+    _revspl = reverse(spl)
+    @test revspl.control_points == _revspl.control_points
+    @test revspl.knots ≈ _revspl.knots
+    @test revspl.lookup_table ⪧ _revspl.lookup_table
+    @test revspl.alpha == _revspl.alpha
+    @test revspl.tension == _revspl.tension
+    @test revspl.left == _revspl.left
+    @test revspl.right == _revspl.right
+    @test revspl.lengths ≈ _revspl.lengths
+    @test revspl.orientation_markers ≈ _revspl.orientation_markers
+    for t in LinRange(0, 1, 15000)
+        @test revspl(t) ⪧ _revspl(t)
+        @test _revspl(t) ⪧ spl(1 - t)
+        @test DT.differentiate(revspl, t) ⪧ DT.differentiate(_revspl, t)
+        @test DT.twice_differentiate(revspl, t) ⪧ DT.twice_differentiate(_revspl, t)
+        @test DT.thrice_differentiate(revspl, t) ⪧ DT.thrice_differentiate(_revspl, t)
+    end 
 end
 
 @testset "angle_between" begin
@@ -2292,10 +2427,10 @@ end
     @inferred DT.angle_between(L5, L1)
 
     A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V = (14.0, -2.0), (12.0, 2.0),
-        (0.0, 6.0), (12.0, -2.0), (0.0, -2.0), (2.0, -6.0), (0.0, -8.0),
-        (4.0, -8.0), (2.0, -4.0), (6.0, -4.0), (6.0, -14.0), (14.0, -14.0),
-        (8.0, -12.0), (14.0, -12.0), (8.0, -8.0), (16.0, -8.0), (8.0, -4.0),
-        (16.0, -4.0), (16.0, 6.0), (2.0, 6.0), (8.0, 4.0), (14.0, 4.0)
+    (0.0, 6.0), (12.0, -2.0), (0.0, -2.0), (2.0, -6.0), (0.0, -8.0),
+    (4.0, -8.0), (2.0, -4.0), (6.0, -4.0), (6.0, -14.0), (14.0, -14.0),
+    (8.0, -12.0), (14.0, -12.0), (8.0, -8.0), (16.0, -8.0), (8.0, -4.0),
+    (16.0, -4.0), (16.0, 6.0), (2.0, 6.0), (8.0, 4.0), (14.0, 4.0)
     LAB = LineSegment(A, B)
     LBC = LineSegment(B, C)
     LCD = LineSegment(C, D)
@@ -2409,7 +2544,7 @@ end
     c₃ = CatmullRomSpline([(12.0, -3.0), (12.0, -4.0), (5.0, -10.0), (0.0, -10.0)])
     c₄ = DT.PiecewiseLinear([(0.0, -10.0), (-10.0, -3.0), (-7.0, -3.0), (-5.0, -4.0), (-5.0, 2.0)], [1, 2, 3, 4, 5])
     c₅ = BSpline([(-5.0, 2.0), (0.0, 8.0), (0.0, 10.0), (5.0, 1.0), (10.0, 0.0)])
-    c₆ = CircularArc((10.0, 0.0), (0.0, 0.0), (5.0, 0.0), positive = false)
+    c₆ = CircularArc((10.0, 0.0), (0.0, 0.0), (5.0, 0.0), positive=false)
     θ12 = DT.angle_between(c₁, c₂) |> rad2deg
     θ23 = DT.angle_between(c₂, c₃) |> rad2deg
     θ34 = DT.angle_between(c₃, c₄) |> rad2deg
