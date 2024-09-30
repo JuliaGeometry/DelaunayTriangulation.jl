@@ -283,6 +283,17 @@ Returns the indices of the exterior curves of `hierarchy`.
 get_exterior_curve_indices(hierarchy::PolygonHierarchy) = keys(get_trees(hierarchy))
 
 """
+    get_positive_curve_indices(hierarchy::PolygonHierarchy) -> Generator 
+
+Returns the indices of the positively oriented curves of `hierarchy` as a generator, i.e. 
+as a lazy result.
+"""
+function get_positive_curve_indices(hierarchy::PolygonHierarchy) 
+    orientations = get_polygon_orientations(hierarchy)
+    return (index for (index, orientation) in enumerate(orientations) if orientation)
+end
+
+"""
     get_trees(hierarchy::PolygonHierarchy) -> Dict{I,PolygonTree{I}}
 
 Returns the trees of `hierarchy`, mapping the index of an exterior polygon to its [`PolygonTree`](@ref).

@@ -748,6 +748,7 @@ end
     end
 end
 
+
 @testset "Issue #188" begin
     r₁, r₂, r₃ = 10.0, 5.0, 2.5
     c₁ = CircularArc((r₁, 0.0), (r₁, 0.0), (0.0, 0.0))
@@ -755,6 +756,7 @@ end
     c₃ = CircularArc((r₃, 0.0), (r₃, 0.0), (0.0, 0.0))
     rng = StableRNG(1234)
     tri = triangulate(NTuple{2,Float64}[]; boundary_nodes=[[[c₁]], [[c₂]], [[c₃]]], rng)
+    @test collect(DT.get_positive_curve_indices(tri)) == [1, 3]
     for _ in 1:1000
         V, flag = jump_and_march(tri, (1e-16, 0.0); k=3, use_barriers=Val(true))
         @test !flag
