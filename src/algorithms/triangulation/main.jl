@@ -48,7 +48,7 @@ For the keyword arguments below, you may like to review the extended help as som
 - `recompute_representative_points=true`: Whether to recompute the representative points after the triangulation is computed. This is done using [`compute_representative_points!`](@ref). 
 - `delete_holes=true`: Whether to delete holes after the triangulation is computed. This is done using [`delete_holes!`](@ref).
 - `check_arguments=true`: Whether to check the arguments `points` and `boundary_nodes` are valid. This is done using [`check_args`](@ref).
-- `polygonise_n=4096`: Number of points to use for polygonising the boundary when considering the poylgon hierarchy for a curve-bounded domain using [`polygonise`](@ref). See [`triangulate_curve_bounded`](@ref).
+- `polygonise_n=4096`: Number of points to use for polygonising the boundary when considering the polygon hierarchy for a curve-bounded domain using [`polygonise`](@ref). See [`triangulate_curve_bounded`](@ref).
 - `coarse_n=0`: Number of points to use for initialising a curve-bounded domain. See [`triangulate_curve_bounded`](@ref). (A value of `0` means the number of points is chosen automatically until the diametral circles of all edges are empty.)
 
 # Outputs

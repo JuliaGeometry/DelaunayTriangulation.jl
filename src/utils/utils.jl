@@ -520,10 +520,17 @@ function uniquetol(A::Vector{Float64}; tol = 1.0e-12)
     return Auniq
 end
 
+const ANY32{N} = Tuple{Any,Any,Any,Any,Any,Any,Any,Any,
+                       Any,Any,Any,Any,Any,Any,Any,Any,
+                       Any,Any,Any,Any,Any,Any,Any,Any,
+                       Any,Any,Any,Any,Any,Any,Any,Any,
+                       Any, Vararg{Any,N}}
+
 """
     eval_fnc_at_het_tuple_element(f, tup, idx) 
 
 Evaluates `f(tup[idx])` in a type-stable way. If `idx > length(tup)`, then `f` is evaluated on the last element of `tup`.
+If `length(tup) > 32`, then the function is not type-stable; note that, in this case, `idx > length(tup)` leads to a `BoundsError`.
 """
 @inline function eval_fnc_at_het_tuple_element(f::F, tup::T, idx) where {F, T}
     return _eval_fnc_at_het_tuple_element(f, idx, tup...)
@@ -536,10 +543,14 @@ end
     return f(el)
 end
 
+function eval_fnc_at_het_tuple_element(f::F, tup::ANY32{N}, idx) where {F, N}
+    return f(tup[idx])
+end
+
 """
     eval_fnc_at_het_tuple_two_elements(f, tup, idx1, idx2)
 
-Evaluates `f(tup[idx1], tup[idx2])` in a type-stable way. 
+Evaluates `f(tup[idx1], tup[idx2])` in a type-stable way. If `length(tup) > 32`, then the function is not type-stable.
 """
 @inline function eval_fnc_at_het_tuple_two_elements(f::F, tup::T, idx1, idx2) where {F, T <: Tuple}
     return _eval_fnc_at_het_tuple_two_elements(f, idx2, tup, idx1, tup...)
@@ -559,10 +570,15 @@ end
     return f(el, el2)
 end
 
+function eval_fnc_at_het_tuple_two_elements(f::F, tup::ANY32{N}, idx1, idx2) where {F, N}
+    return f(tup[idx1], tup[idx2])
+end
+
 """
     eval_fnc_at_het_tuple_element_with_arg(f, tup, arg, idx)
 
 Evaluates `f(tup[idx], arg...)` in a type-stable way. If `idx > length(tup)`, then `f` is evaluated on the last element of `tup`.
+If `length(tup) > 32`, then the function is not type-stable; note that, in this case, `idx > length(tup)` leads to a `BoundsError`.
 """
 @inline function eval_fnc_at_het_tuple_element_with_arg(f::F, tup::T, arg, idx) where {F, T}
     return _eval_fnc_at_het_tuple_element_with_arg(f, idx, arg, tup...)
@@ -575,10 +591,15 @@ end
     return f(el, arg...)
 end
 
+function eval_fnc_at_het_tuple_element_with_arg(f::F, tup::ANY32{N}, arg, idx) where {F, N}
+    return f(tup[idx], arg...)
+end
+
 """
     eval_fnc_at_het_tuple_element_with_arg_and_prearg(f, tup, prearg, arg, idx)
 
 Evaluates `f(prearg, tup[idx], arg...)` in a type-stable way. If `idx > length(tup)`, then `f` is evaluated on the last element of `tup`.
+If `length(tup) > 32`, then the function is not type-stable; note that, in this case, `idx > length(tup)` leads to a `BoundsError`.
 """
 @inline function eval_fnc_at_het_tuple_element_with_arg_and_prearg(f::F, tup::T, prearg, arg, idx) where {F, T}
     return _eval_fnc_at_het_tuple_element_with_arg_and_prearg(f, idx, prearg, arg, tup...)
@@ -589,6 +610,10 @@ end
 end
 @inline function _eval_fnc_at_het_tuple_element_with_arg_and_prearg(f::F, idx, prearg, arg, el::E) where {F, E}
     return f(prearg, el, arg...)
+end
+
+function eval_fnc_at_het_tuple_element_with_arg_and_prearg(f::F, tup::ANY32{N}, prearg, arg, idx) where {F, N}
+    return f(prearg, tup[idx], arg...)
 end
 
 """

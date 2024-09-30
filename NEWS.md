@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.6.0
+- Feature: Define `reverse` for `AbstractParametricCurve`s, making it easier to reverse the orientation of a curve. See 
+- Bugfix: Fixed an issue with `LineSegment` not returning the exact endpoints at `t=1`, which can be problematic when joining boundary nodes. This has been fixed. See 
+- Bugfix: Introduced `is_linear` to fix issues with boundary enrichment of domains with `LineSegment`s. In particular, `LineSegment`s are no longer enriched. See
+- Bugfix: `orientation_markers` now uses `uniquetol` instead of `unique` for the final set of markers (it already did it for the intermediate markers). 
+- Bugfix: For large `Tuple`s, functions like `eval_fnc_at_het_tuple_two_elements` are problematic and allocate more than their non-type-stable counterparts. To get around this, for `Tuple`s of length `N > 32`, the non-type-stable version is used. See 
+
 ## 1.5.0
 
 - Introduced the ability to reconstruct unconstrained triangulations from an existing set of points and triangles using `Triangulation(points, triangles)`. See [#192](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/192)

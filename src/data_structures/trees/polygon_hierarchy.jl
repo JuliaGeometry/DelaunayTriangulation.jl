@@ -162,7 +162,7 @@ Struct used to define a polygon hierarchy. The hierarchy is represented as a for
 
 !!! note "One-based indexing"
 
-    Note that the vector definitions for `poylgon_orientations` and `bounding_boxes` are treating the curves with the assumption that they are 
+    Note that the vector definitions for `polygon_orientations` and `bounding_boxes` are treating the curves with the assumption that they are 
     enumerated in the order 1, 2, 3, ....
 
 # Constructor
