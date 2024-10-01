@@ -124,6 +124,7 @@ for _ in 1:20 # Run many times to make sure the segfault is gone
         @test DT.get_bounding_boxes(hierarchy) ⊢ [DT.bounding_box(points)]
         @test DT.get_bounding_box(hierarchy, 1) ⊢ DT.bounding_box(points)
         @test DT.get_exterior_curve_indices(hierarchy) == Set(1)
+        @test collect(DT.get_positive_curve_indices(hierarchy)) == findall(DT.get_polygon_orientations(hierarchy))
         @test DT.get_trees(hierarchy) === hierarchy.trees
         @test DT.get_tree(hierarchy, 1) === hierarchy.trees[1]
         tree = DT.get_tree(hierarchy, 1)
@@ -144,6 +145,7 @@ for _ in 1:20 # Run many times to make sure the segfault is gone
         @test DT.get_bounding_boxes(hierarchy) ⊢ [DT.BoundingBox(DT.polygon_bounds(points, boundary_nodes)...)]
         @test DT.get_bounding_box(hierarchy, 1) ⊢ DT.BoundingBox(DT.polygon_bounds(points, boundary_nodes)...)
         @test DT.get_exterior_curve_indices(hierarchy) == Set(1)
+        @test collect(DT.get_positive_curve_indices(hierarchy)) == findall(DT.get_polygon_orientations(hierarchy))
         @test DT.get_trees(hierarchy) === hierarchy.trees
         @test DT.get_tree(hierarchy, 1) === hierarchy.trees[1]
         tree = DT.get_tree(hierarchy, 1)
@@ -161,6 +163,7 @@ for _ in 1:20 # Run many times to make sure the segfault is gone
         @test DT.get_bounding_boxes(hierarchy) ⊢ [DT.BoundingBox(DT.polygon_bounds(points, boundary_nodes)...)]
         @test DT.get_bounding_box(hierarchy, 1) ⊢ DT.BoundingBox(DT.polygon_bounds(points, boundary_nodes)...)
         @test DT.get_exterior_curve_indices(hierarchy) == Set(1)
+        @test collect(DT.get_positive_curve_indices(hierarchy)) == findall(DT.get_polygon_orientations(hierarchy))
         @test DT.get_trees(hierarchy) === hierarchy.trees
         @test DT.get_tree(hierarchy, 1) === hierarchy.trees[1]
         tree = DT.get_tree(hierarchy, 1)
@@ -179,6 +182,7 @@ for _ in 1:20 # Run many times to make sure the segfault is gone
         @test DT.get_bounding_box(hierarchy, 1) ⊢ DT.BoundingBox(DT.polygon_bounds(points, get_boundary_nodes(boundary_nodes, 1))...)
         @test DT.get_bounding_box(hierarchy, 2) ⊢ DT.BoundingBox(DT.polygon_bounds(points, get_boundary_nodes(boundary_nodes, 2))...)
         @test DT.get_exterior_curve_indices(hierarchy) == Set(1)
+        @test collect(DT.get_positive_curve_indices(hierarchy)) == findall(DT.get_polygon_orientations(hierarchy))
         @test DT.get_trees(hierarchy) === hierarchy.trees
         @test DT.get_tree(hierarchy, 1) === hierarchy.trees[1]
         tree = DT.get_tree(hierarchy, 1)
@@ -228,6 +232,7 @@ for _ in 1:20 # Run many times to make sure the segfault is gone
         boundary_nodes, points = convert_boundary_points_to_indices([_Q1, _Q2, _Q3, _Q4, _Q5, _Q6, _Q7, _Q8, _Q9, _Q10, _Q11, _Q12, _Q13, _Q14, _Q15])
         hierarchy = DT.construct_polygon_hierarchy(points, boundary_nodes)
         @test DT.get_exterior_curve_indices(hierarchy) == Set([6, 5, 7, 15])
+        @test collect(DT.get_positive_curve_indices(hierarchy)) == findall(DT.get_polygon_orientations(hierarchy))
         @test DT.get_bounding_boxes(hierarchy) ⊢ [
             DT.BoundingBox(-9.0, -2.0, -1.0, 7.0),
             DT.BoundingBox(0.0, 10.0, -5.0, 6.0),

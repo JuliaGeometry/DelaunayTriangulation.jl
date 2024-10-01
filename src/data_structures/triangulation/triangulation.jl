@@ -307,6 +307,14 @@ Returns the set of all curve indices that correspond to exterior curves of `tri`
 get_exterior_curve_indices(tri::Triangulation) = get_exterior_curve_indices(get_polygon_hierarchy(tri))
 
 """
+    get_positive_curve_indices(tri::Triangulation) -> Generator 
+
+Returns the indices of the positively oriented curves of `hierarchy` as a generator, i.e. 
+as a lazy result.
+"""
+get_positive_curve_indices(tri::Triangulation) = get_positive_curve_indices(get_polygon_hierarchy(tri))
+
+"""
     get_boundary_enricher(tri::Triangulation) -> BoundaryEnricher
 
 Returns the [`BoundaryEnricher`](@ref) of `tri`. If the domain is not curve-bounded, this is `nothing`.
