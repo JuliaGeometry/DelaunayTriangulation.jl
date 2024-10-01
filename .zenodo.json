@@ -16,7 +16,7 @@
 		"computational-geometry"
 	],
 	"license": "MIT",
-	"title": "DelaunayTriangulation.jl",
+	"title": "DelaunayTriangulation.jl: A Julia package for Delaunay triangulations and Voronoi tessellations in the plane",
 	"upload_type": "software",
 	"language": "eng"
 }

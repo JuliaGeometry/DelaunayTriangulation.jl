@@ -155,7 +155,7 @@ function _coarse_discretisation_multiple_sections!(points, boundary_nodes, bound
     return nothing
 end
 function _coarse_discretisation_contiguous!(points, boundary_nodes, boundary_curves, curve_index, m)
-    is_piecewise_linear(boundary_curves, curve_index) && return nothing
+    (is_piecewise_linear(boundary_curves, curve_index) || is_linear(boundary_curves, curve_index)) && return nothing
     is_while = m == M_INF
     for _ in 1:m
         nn = num_boundary_edges(boundary_nodes)

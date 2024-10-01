@@ -54,7 +54,7 @@ k_list = unique(boundary_nodes[1][1])
         @test DT.is_ghost_vertex(get_adjacent(adj, i, j))
         @test i == index_map["c"] && j == index_map["b"]
     end
-    q = [25.0, 0.0]
+    q = [25.0, 0.0]      
     for k in k_list
         i, j = DT.exterior_find_triangle(tri, k, q)
         @test DT.is_ghost_vertex(get_adjacent(adj, i, j))
@@ -121,7 +121,7 @@ end
         if DT.is_exterior_boundary_node(tri, k)
             i, j = DT.exterior_find_triangle(tri, k, get_point(tri, k))
             @test k ∈ (i, j) &&
-                DT.is_exterior_ghost_triangle(tri, i, j, get_adjacent(tri, i, j))
+                  DT.is_exterior_ghost_triangle(tri, i, j, get_adjacent(tri, i, j))
             @test DT.is_on(DT.point_position_relative_to_triangle(tri, i, j, k, k))
         end
     end

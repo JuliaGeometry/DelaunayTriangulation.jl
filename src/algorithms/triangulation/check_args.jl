@@ -96,9 +96,10 @@ function Base.showerror(io::IO, err::InconsistentOrientationError)
         # Only show this longer message if this part of the boundary could be defined by an AbstractParametricCurve. 
         # It's hard to detect if the curve is indeed defined by an AbstractParametricCurve since the curve could be defined 
         # by a combination of multiple AbstractParametricCurves and possibly a PiecewiseLinear part. Thus, the above advice
-        # might nto be wrong.
+        # might not be wrong.
         str2 = "\nIf this curve is defined by an AbstractParametricCurve, you may instead need to reverse the order of the control points defining" *
-            " the sections of the curve; the `positive` keyword may also be of interest for CircularArcs and EllipticalArcs."
+            " the sections of the curve; the `positive` keyword may also be of interest for CircularArcs and EllipticalArcs. Alternatively, for individual" *
+            " AbstractParametricCurves, note that `reverse` can be used to reverse the orientation of the curve directly instead of the control points."
         str *= str2
     end
     sign = err.should_be_positive ? "positive" : "negative"

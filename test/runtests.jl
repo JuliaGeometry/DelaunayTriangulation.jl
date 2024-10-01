@@ -89,7 +89,7 @@ end
         safe_include("point_location/jump_and_march.jl")
         safe_include("point_location/find_polygon.jl")
     end
-
+     
     @testset verbose = true "Operations" begin
         safe_include("operations/add_triangle.jl")
         safe_include("operations/delete_triangle.jl")
@@ -122,6 +122,10 @@ end
 
     @testset verbose = true "Spherical" begin
         safe_include("spherical.jl")
+    end
+
+    @testset verbose = true "Makie" begin
+        safe_include("makie/makie.jl")
     end
 
     @testset verbose = true "Run the documentation examples" begin

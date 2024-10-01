@@ -731,6 +731,20 @@ end
 end
 
 """
+    is_linear(enricher::BoundaryEnricher, curve_index) -> Bool
+
+Returns `true` if the `curve_index`th curve in `enricher` is a [`LineSegment`](@ref), and `false` otherwise.
+"""
+@inline function is_linear(enricher::BoundaryEnricher, curve_index)
+    boundary_curves = get_boundary_curves(enricher)
+    return is_linear(boundary_curves, curve_index)
+end
+@inline function is_linear(boundary_curves::C, curve_index) where {C <: Tuple}
+    isempty(boundary_curves) && return true
+    return eval_fnc_at_het_tuple_element(is_linear, boundary_curves, curve_index)
+end
+
+"""
     get_inverse(enricher::BoundaryEnricher, curve_index, q) -> Float64
 
 Returns the inverse of the `curve_index`th curve at `q`.

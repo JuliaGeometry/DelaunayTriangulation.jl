@@ -130,8 +130,44 @@ CatmullRomSpline
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/mesh_refinement/curves.jl"]
+Pages = ["data_structures/mesh_refinement/curves/abstract.jl"]
 ```
+
+```@autodocs
+Modules = [DelaunayTriangulation]
+Pages = ["data_structures/mesh_refinement/curves/beziercurve.jl"]
+```
+
+```@autodocs
+Modules = [DelaunayTriangulation]
+Pages = ["data_structures/mesh_refinement/curves/bspline.jl"]
+```
+
+```@autodocs
+Modules = [DelaunayTriangulation]
+Pages = ["data_structures/mesh_refinement/curves/catmullromspline.jl"]
+```
+
+```@autodocs
+Modules = [DelaunayTriangulation]
+Pages = ["data_structures/mesh_refinement/curves/circulararc.jl"]
+```
+
+```@autodocs
+Modules = [DelaunayTriangulation]
+Pages = ["data_structures/mesh_refinement/curves/ellipticalarc.jl"]
+```
+
+```@autodocs
+Modules = [DelaunayTriangulation]
+Pages = ["data_structures/mesh_refinement/curves/linesegment.jl"]
+```
+
+```@autodocs
+Modules = [DelaunayTriangulation]
+Pages = ["data_structures/mesh_refinement/curves/piecewiselinear.jl"]
+```
+
 
 ## RepresentativeCoordinates
 

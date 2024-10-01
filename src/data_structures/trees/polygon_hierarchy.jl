@@ -16,19 +16,19 @@ A tree structure used to define a polygon hierarchy.
 Constructs a [`PolygonTree`](@ref) with `parent`, `index`, and `height`, and no children.
 """
 mutable struct PolygonTree{I}
-    parent::Union{Nothing, PolygonTree{I}}
+    parent::Union{Nothing,PolygonTree{I}}
     @const children::Set{PolygonTree{I}}
     @const index::I
     height::Int
 end
-PolygonTree{I}(parent::Union{Nothing, PolygonTree{I}}, index, height) where {I} = PolygonTree{I}(parent, Set{PolygonTree{I}}(), index, height)
+PolygonTree{I}(parent::Union{Nothing,PolygonTree{I}}, index, height) where {I} = PolygonTree{I}(parent, Set{PolygonTree{I}}(), index, height)
 function hash_tree(tree::PolygonTree)
     height = get_height(tree)
     index = get_index(tree)
     parent_index = has_parent(tree) ? get_index(get_parent(tree)) : 0
     h = hash((parent_index, index, height))
     children = collect(get_children(tree))
-    sort!(children, by = get_index)
+    sort!(children, by=get_index)
     for child in children
         h = hash((h, hash_tree(child)))
     end
@@ -46,22 +46,23 @@ function Base.:(==)(tree1::PolygonTree, tree2::PolygonTree)
     height1 ≠ height2 && return false
     return hash_tree(tree1) == hash_tree(tree2)
 end
-@static if VERSION ≥ v"1.10"
-    function Base.deepcopy(tree::PolygonTree) # without this definition, deepcopy would occassionally segfault 
-        @warn "Deepcopy on PolygonTrees is not currently supported. Returning the tree without copying." maxlog = 1 # https://github.com/JuliaGeometry/DelaunayTriangulation.jl/issues/129
-        return tree
-        #=
-        parent = get_parent(tree)
-        children = get_children(tree)
-        index = get_index(tree)
-        height = get_height(tree)
-        new_parent = isnothing(parent) ? nothing : deepcopy(parent)
-        new_children = deepcopy(children)
-        new_index = deepcopy(index)
-        return PolygonTree(new_parent, new_children, new_index, height)
-        =# # Why does the above still segfault sometimes?
-        # TODO: Fix
+function Base.deepcopy_internal(tree::PolygonTree{I}, dict::IdDict) where {I}
+    haskey(dict, tree) && return dict[tree]
+    copy_tree = PolygonTree{I}(nothing, get_index(tree), get_height(tree))
+    dict[tree] = copy_tree
+    new_parent = Base.deepcopy_internal(get_parent(tree), dict)
+    if !isnothing(new_parent)
+        set_parent!(copy_tree, new_parent)
     end
+    for child in get_children(tree)
+        add_child!(copy_tree, Base.deepcopy_internal(child, dict))
+    end
+    return copy_tree
+end
+function Base.copy(tree::PolygonTree{I}) where {I}
+    parent = get_parent(tree)
+    new_parent = isnothing(parent) ? nothing : copy(parent)
+    return PolygonTree{I}(new_parent, copy(get_children(tree)), copy(get_index(tree)), copy(get_height(tree)))
 end
 function Base.show(io::IO, ::MIME"text/plain", tree::PolygonTree)
     print(io, "PolygonTree at height $(get_height(tree)) with index $(get_index(tree)) and $(length(get_children(tree))) children")
@@ -158,11 +159,11 @@ Struct used to define a polygon hierarchy. The hierarchy is represented as a for
 - `polygon_orientations::BitVector`: A `BitVector` of length `n` where `n` is the number of polygons in the hierarchy. The `i`th entry is `true` if the `i`th polygon is positively oriented, and `false` otherwise.
 - `bounding_boxes::Vector{BoundingBox}`: A `Vector` of [`BoundingBox`](@ref)s of length `n` where `n` is the number of polygons in the hierarchy. The `i`th entry is the [`BoundingBox`](@ref) of the `i`th polygon.
 - `trees::Dict{I,PolygonTree{I}}`: A `Dict` mapping the index of a polygon to its [`PolygonTree`](@ref). The keys of `trees` are the roots of each individual tree, i.e. the outer-most polygons.
-- `reorder_cache::Vector{PolygonTree{I}}`: A `Vector used for caching trees to be deleted in [`reorder_subtree!`](@ref).
+- `reorder_cache::Vector{PolygonTree{I}}`: A `Vector` used for caching trees to be deleted in [`reorder_subtree!`](@ref).
 
 !!! note "One-based indexing"
 
-    Note that the vector definitions for `poylgon_orientations` and `bounding_boxes` are treating the curves with the assumption that they are 
+    Note that the vector definitions for `polygon_orientations` and `bounding_boxes` are treating the curves with the assumption that they are 
     enumerated in the order 1, 2, 3, ....
 
 # Constructor
@@ -174,29 +175,40 @@ Constructs a [`PolygonHierarchy`](@ref) with no polygons.
 struct PolygonHierarchy{I}
     polygon_orientations::BitVector
     bounding_boxes::Vector{BoundingBox}
-    trees::Dict{I, PolygonTree{I}}
+    trees::Dict{I,PolygonTree{I}}
     reorder_cache::Vector{PolygonTree{I}}
 end
-PolygonHierarchy{I}() where {I} = PolygonHierarchy{I}(BitVector(), BoundingBox[], Dict{I, PolygonTree{I}}(), PolygonTree{I}[])
-@static if VERSION ≥ v"1.10"
-    function Base.deepcopy(hierarchy::PolygonHierarchy{I}) where {I} # without this definition, deepcopy would occassionally segfault 
-        polygon_orientations = get_polygon_orientations(hierarchy)
-        bounding_boxes = get_bounding_boxes(hierarchy)
-        trees = get_trees(hierarchy)
-        reorder_cache = get_reorder_cache(hierarchy)
-        new_polygon_orientations = copy(polygon_orientations)
-        new_bounding_boxes = copy(bounding_boxes)
-        new_trees = Dict{I, PolygonTree{I}}()
-        for (index, tree) in trees
-            new_trees[index] = deepcopy(tree)
-        end
-        new_reorder_cache = similar(reorder_cache)
-        for (index, tree) in enumerate(reorder_cache)
-            new_reorder_cache[index] = deepcopy(tree)
-        end
-        return PolygonHierarchy{I}(new_polygon_orientations, new_bounding_boxes, new_trees, new_reorder_cache)
+PolygonHierarchy{I}() where {I} = PolygonHierarchy{I}(BitVector(), BoundingBox[], Dict{I,PolygonTree{I}}(), PolygonTree{I}[])
+function Base.deepcopy_internal(hierarchy::PolygonHierarchy{I}, dict::IdDict) where {I}
+    haskey(dict, hierarchy) && return dict[hierarchy]
+    copy_polygon_orientations = Base.deepcopy_internal(get_polygon_orientations(hierarchy), dict)
+    copy_bounding_boxes = Base.deepcopy_internal(get_bounding_boxes(hierarchy), dict)
+    copy_trees = Dict{I, PolygonTree{I}}()
+    for (key, tree) in get_trees(hierarchy)
+        copy_trees[key] = Base.deepcopy_internal(tree, dict)
     end
+    copy_reorder_cache = Vector{PolygonTree{I}}()
+    for tree in get_reorder_cache(hierarchy)
+        push!(copy_reorder_cache, Base.deepcopy_internal(tree, dict))
+    end
+    copy_hierarchy = PolygonHierarchy(
+        copy_polygon_orientations,
+        copy_bounding_boxes,
+        copy_trees,
+        copy_reorder_cache
+    )
+    dict[hierarchy] = copy_hierarchy
+    return copy_hierarchy
 end
+function Base.copy(hierarchy::PolygonHierarchy{I}) where {I}
+    return PolygonHierarchy(
+        copy(get_polygon_orientations(hierarchy)),
+        copy(get_bounding_boxes(hierarchy)),
+        copy(get_trees(hierarchy)),
+        copy(get_reorder_cache(hierarchy))
+    )
+end
+
 function Base.empty!(hierarchy::PolygonHierarchy)
     polygon_orientations = get_polygon_orientations(hierarchy)
     bounding_boxes = get_bounding_boxes(hierarchy)
@@ -283,6 +295,17 @@ Returns the indices of the exterior curves of `hierarchy`.
 get_exterior_curve_indices(hierarchy::PolygonHierarchy) = keys(get_trees(hierarchy))
 
 """
+    get_positive_curve_indices(hierarchy::PolygonHierarchy) -> Generator 
+
+Returns the indices of the positively oriented curves of `hierarchy` as a generator, i.e. 
+as a lazy result.
+"""
+function get_positive_curve_indices(hierarchy::PolygonHierarchy)
+    orientations = get_polygon_orientations(hierarchy)
+    return (index for (index, orientation) in enumerate(orientations) if orientation)
+end
+
+"""
     get_trees(hierarchy::PolygonHierarchy) -> Dict{I,PolygonTree{I}}
 
 Returns the trees of `hierarchy`, mapping the index of an exterior polygon to its [`PolygonTree`](@ref).
@@ -354,7 +377,7 @@ end
 
 Returns a [`PolygonHierarchy`](@ref) defining the polygon hierarchy for a given set of `points`. This defines a hierarchy with a single polygon.
 """
-function construct_polygon_hierarchy(points; IntegerType = Int)
+function construct_polygon_hierarchy(points; IntegerType=Int)
     hierarchy = PolygonHierarchy{IntegerType}()
     return construct_polygon_hierarchy!(hierarchy, points)
 end
@@ -374,11 +397,11 @@ end
 Returns a [`PolygonHierarchy`](@ref) defining the polygon hierarchy for a given set of `boundary_nodes` that define a set of piecewise 
 linear curves. 
 """
-function construct_polygon_hierarchy(points, boundary_nodes; IntegerType = Int)
+function construct_polygon_hierarchy(points, boundary_nodes; IntegerType=Int)
     hierarchy = PolygonHierarchy{IntegerType}()
     return construct_polygon_hierarchy!(hierarchy, points, boundary_nodes)
 end
-construct_polygon_hierarchy(points, ::Nothing; IntegerType = Int) = construct_polygon_hierarchy(points; IntegerType)
+construct_polygon_hierarchy(points, ::Nothing; IntegerType=Int) = construct_polygon_hierarchy(points; IntegerType)
 function construct_polygon_hierarchy!(hierarchy::PolygonHierarchy{I}, points, boundary_nodes) where {I}
     if !has_boundary_nodes(boundary_nodes)
         return construct_polygon_hierarchy!(hierarchy, points)
@@ -600,7 +623,7 @@ end
 
 Expands the bounding boxes of `hierarchy` by a factor of `perc` in each direction.
 """
-function expand_bounds!(hierarchy::PolygonHierarchy, perc = 0.1)
+function expand_bounds!(hierarchy::PolygonHierarchy, perc=0.1)
     bboxes = get_bounding_boxes(hierarchy)
     for (i, bbox) in enumerate(bboxes)
         bboxes[i] = expand(bbox, perc)
@@ -623,9 +646,9 @@ from the curves in `boundary_curves`. Uses [`polygonise`](@ref) to fill in the b
 - `IntegerType=Int`: The integer type to use for indexing the polygons.
 - `n=4096`: The number of points to use for filling in the boundary curves in [`polygonise`](@ref).
 """
-function construct_polygon_hierarchy(points, boundary_nodes, boundary_curves; IntegerType = Int, n = 4096)
+function construct_polygon_hierarchy(points, boundary_nodes, boundary_curves; IntegerType=Int, n=4096)
     new_points, new_boundary_nodes = polygonise(points, boundary_nodes, boundary_curves; n)
     hierarchy = PolygonHierarchy{IntegerType}()
     return construct_polygon_hierarchy!(hierarchy, new_points, new_boundary_nodes)
 end
-construct_polygon_hierarchy(points, boundary_nodes, ::Tuple{}; IntegerType = Int, n = 4096) = construct_polygon_hierarchy(points, boundary_nodes; IntegerType)
+construct_polygon_hierarchy(points, boundary_nodes, ::Tuple{}; IntegerType=Int, n=4096) = construct_polygon_hierarchy(points, boundary_nodes; IntegerType)

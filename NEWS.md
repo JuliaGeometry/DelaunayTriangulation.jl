@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.6.0
+- Define `reverse` for `AbstractParametricCurve`s, making it easier to reverse the orientation of a curve. See [#195](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/195).
+- Fixed an issue with `LineSegment` not returning the exact endpoints at `t=1`, which can be problematic when joining boundary nodes. This has been fixed. See [#195](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/195).
+- Introduced `is_linear` to fix issues with boundary enrichment of domains with `LineSegment`s. In particular, `LineSegment`s are no longer enriched. See [#195](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/195).
+- `orientation_markers` now uses `uniquetol` instead of `unique` for the final set of markers (it already did it for the intermediate markers). See [#195](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/195).
+- For large `Tuple`s, functions like `eval_fnc_at_het_tuple_two_elements` are problematic and allocate more than their non-type-stable counterparts. To get around this, for `Tuple`s of length `N > 32`, the non-type-stable version is used. See [#195](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/195).
+- Fixed issue with `use_barriers` when a ghost edge is selected at random during point location. See [#196](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/196).
+- Introduced the (currently internal) function `get_positive_curve_indices` for finding curves with positive orientation in a `Triangulation`. [#196](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/196).
+- `is_exterior_curve`, `is_interior_curve`, `num_exterior_curves`, and `is_disjoint` are now defined based on `get_positive_curve_indices` rather than `get_exterior_curve_indices`. See [#196](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/196).
+- `copy` and `deepcopy` are now correctly implemented for `PolygonTree`s and `PolygonHierarchy`s. See [#199](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/199)
+
+## 1.5.0
+
+- Introduced the ability to reconstruct unconstrained triangulations from an existing set of points and triangles using `Triangulation(points, triangles)`. See [#192](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/192)
+
 ## 1.4.0
 
 - Updated to AdaptivePredicates.jl v1.2, now allowing caches to be passed to the predicates involving `incircle` and `orient3`. These are only useful when using the `AdaptiveKernel()` kernel. Outside of triangulating, these caches are not passed by default, but can be provided. The functions `get_incircle_cache` and `get_orient3_cache` can be used for this purpose on a triangulation (without a triangulation, refer to AdaptivePredicate.jl's `incircleadapt_cache` and `orient3adapt_cache`). See [#185](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/185).

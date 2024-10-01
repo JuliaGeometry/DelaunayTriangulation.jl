@@ -3,7 +3,7 @@
 
 Returns `true` if the `curve_index`th curve in `tri` is an exterior curve, and `false` otherwise.
 """
-is_exterior_curve(tri::Triangulation, curve_index) = curve_index ∈ get_exterior_curve_indices(tri)
+is_exterior_curve(tri::Triangulation, curve_index) = curve_index ∈ get_positive_curve_indices(tri)
 
 """
     is_interior_curve(tri::Triangulation, curve_index) -> Bool
@@ -17,7 +17,7 @@ is_interior_curve(tri::Triangulation, curve_index) = !is_exterior_curve(tri, cur
 
 Returns the number of exterior curves in `tri`.
 """
-num_exterior_curves(tri::Triangulation) = (length ∘ get_exterior_curve_indices)(tri)
+num_exterior_curves(tri::Triangulation) = count(get_polygon_orientations(get_polygon_hierarchy(tri)))
 
 """
     is_disjoint(tri::Triangulation) -> Bool

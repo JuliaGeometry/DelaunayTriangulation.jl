@@ -122,6 +122,7 @@ refine!(tri_4; max_area=1.0e-1A, use_circumcenter=true, use_lens=false)
     @test DT.get_convex_hull(tri) == tri.convex_hull
     @test DT.get_representative_point_list(tri) == tri.representative_point_list
     @test DT.get_exterior_curve_indices(tri) == keys(tri.polygon_hierarchy.trees)
+    @test collect(DT.get_positive_curve_indices(tri)) == findall(tri.polygon_hierarchy.polygon_orientations)
     @test DT.get_boundary_enricher(tri) === tri.boundary_enricher
     @test compare_trees(DT.get_polygon_hierarchy(tri), DT.construct_polygon_hierarchy(tri.points, tri.boundary_nodes))
     @test compare_edge_vectors(collect(DT.get_all_segments(tri)), collect(tri.all_segments))
@@ -149,6 +150,7 @@ refine!(tri_4; max_area=1.0e-1A, use_circumcenter=true, use_lens=false)
     @inferred DT.get_convex_hull(tri)
     @inferred DT.get_representative_point_list(tri)
     @inferred DT.get_exterior_curve_indices(tri)
+    @inferred DT.get_positive_curve_indices(tri)
     @inferred DT.get_boundary_enricher(tri)
     @inferred DT.get_polygon_hierarchy(tri)
     @inferred DT.get_cache(tri)
@@ -1474,4 +1476,14 @@ end
             @test rand(rng, f(tri)) == V2
         end
     end
+end
+
+@testset "Constructor with only points and triangles" begin
+    points = [(0.0, 0.0), (0.87, 0.0), (1.0006, 0.7766), (0.0, 1.0), (0.5, 0.5)]
+    tri1 = triangulate(points)
+    triangles = tri1.triangles
+    tri2 = DT.Triangulation(points, triangles)
+    @test validate_triangulation(tri2)
+    @test tri1 == tri2
+    @test !DT.has_boundary_nodes(tri2)
 end
