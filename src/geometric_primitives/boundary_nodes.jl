@@ -390,6 +390,9 @@ Dict{Tuple{Int64, Int64}, Tuple{Tuple{Int64, Int64}, Int64}} with 12 entries:
 end
 function _construct_boundary_edge_map_multiple_curves(boundary_nodes, IntegerType::Type{I}, EdgeType::Type{E}) where {I, E}
     dict = Dict{E, Tuple{NTuple{2, I}, I}}()
+    return _construct_boundary_edge_map!(dict, boundary_nodes)
+end
+function _construct_boundary_edge_map!(dict::Dict{E, Tuple{NTuple{2, I}, I}}, boundary_nodes) where {E, I}
     nc = num_curves(boundary_nodes)
     for m in 1:nc
         bn_m = get_boundary_nodes(boundary_nodes, m)
@@ -409,6 +412,9 @@ function _construct_boundary_edge_map_multiple_curves(boundary_nodes, IntegerTyp
 end
 function _construct_boundary_edge_map_multiple_sections(boundary_nodes, IntegerType::Type{I}, EdgeType::Type{E}) where {I, E}
     dict = Dict{E, NTuple{2, I}}()
+    return _construct_boundary_edge_map!(dict, boundary_nodes)
+end
+function _construct_boundary_edge_map!(dict::Dict{E, NTuple{2, I}}, boundary_nodes) where {E, I} 
     ns = num_sections(boundary_nodes)
     for n in 1:ns
         bn_n = get_boundary_nodes(boundary_nodes, n)
@@ -424,6 +430,9 @@ function _construct_boundary_edge_map_multiple_sections(boundary_nodes, IntegerT
 end
 function _construct_boundary_edge_map_contiguous(boundary_nodes::A, IntegerType::Type{I}, EdgeType::Type{E}) where {A, I, E}
     dict = Dict{E, Tuple{A, I}}()
+    return _construct_boundary_edge_map!(dict, boundary_nodes)
+end
+function _construct_boundary_edge_map!(dict::Dict{E, Tuple{A, I}}, boundary_nodes) where {A, I, E}
     ne = num_boundary_edges(boundary_nodes)
     for ℓ in 1:ne
         u = get_boundary_nodes(boundary_nodes, ℓ)
@@ -433,6 +442,16 @@ function _construct_boundary_edge_map_contiguous(boundary_nodes::A, IntegerType:
     end
     return dict
 end
+
+function _bemcopy(dict::Dict{E, Tuple{A, I}}; boundary_nodes) where {A, I, E} # so that boundary_nodes remains aliased with this dict when copying in Triangulation
+    new_dict = Dict{E, Tuple{A, I}}()
+    for (e, (pos, ℓ)) in dict
+        new_dict[e] = (boundary_nodes, ℓ)
+    end
+    return new_dict
+end
+_bemcopy(dict::Dict{E, NTuple{2, I}}; boundary_nodes) where {I, E} = copy(dict)
+_bemcopy(dict::Dict{E, Tuple{NTuple{2, I}, I}}; boundary_nodes) where {E, I} = copy(dict)
 
 """
     insert_boundary_node!(boundary_nodes, pos, node)

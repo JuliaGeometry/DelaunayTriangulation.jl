@@ -155,6 +155,13 @@ end
         @test get_boundary_nodes(S, k) == ij[1]
         @test get_boundary_nodes(S, k + 1) == ij[2]
     end
+    cbn = copy(bn)
+    _bn_map = DT._bemcopy(bn_map; boundary_nodes=cbn)
+    @test bn_map == _bn_map 
+    _bn = first.(values(_bn_map))
+    @test all(x -> x === cbn, _bn)
+    @test all(x -> !(x === bn), _bn)
+    @test all(==(bn), _bn)
     bn = [[1, 2, 3, 4], [4, 5, 6, 7, 8], [8, 9, 10, 1]]
     bn_map = DT.construct_boundary_edge_map(bn)
     for (ij, (index, k)) in bn_map
@@ -162,6 +169,8 @@ end
         @test get_boundary_nodes(S, k) == ij[1]
         @test get_boundary_nodes(S, k + 1) == ij[2]
     end
+    _bn_map = DT._bemcopy(bn_map; boundary_nodes=bn)
+    @test _bn_map == bn_map && !(bn_map === _bn_map)
     bn = [
         [[1, 2, 3, 4, 5], [5, 6, 7], [7, 8], [8, 9, 10, 1]],
         [[13, 14, 15, 16, 17], [17, 18, 19, 20], [20, 13]],
@@ -172,6 +181,8 @@ end
         @test get_boundary_nodes(S, k) == ij[1]
         @test get_boundary_nodes(S, k + 1) == ij[2]
     end
+    _bn_map = DT._bemcopy(bn_map; boundary_nodes=bn)
+    @test _bn_map == bn_map && !(bn_map === _bn_map)
     bn = Int[]
     bn_map = DT.construct_boundary_edge_map(bn)
     @test bn_map == Dict{Tuple{Int32, Int32}, Tuple{Vector{Int}, Int}}()

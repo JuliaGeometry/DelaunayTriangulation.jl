@@ -52,6 +52,21 @@ function TriangulationCache()
     return TriangulationCache(nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing)
 end
 
+Base.copy(cache::EmptyTriangulationCache) = cache
+Base.copy(cache::TriangulationCache) = _copy_cache(cache)
+function _copy_cache(cache::TriangulationCache; weights = copy(get_weights(get_triangulation(cache))))
+    # Doesn't actually copy the values in the cache. Just generates a new cache.
+    tri = get_triangulation(cache)
+    points = copy(get_points(tri))
+    I = integer_type(tri)
+    E = edge_type(tri)
+    V = triangle_type(tri)
+    Es = edges_type(tri)
+    T = triangles_type(tri)
+    new_cache = _build_cache(points, I, E, V, Es, T, weights, Val(true))
+    return new_cache
+end
+
 """
     get_triangulation(cache::TriangulationCache) -> Triangulation
 

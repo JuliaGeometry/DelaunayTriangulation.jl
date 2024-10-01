@@ -45,6 +45,15 @@ function Base.:(==)(b₁::BezierCurve, b₂::BezierCurve)
     return true
 end
 
+function Base.copy(b::BezierCurve)
+    return BezierCurve(
+        copy(b.control_points),
+        copy(b.cache),
+        copy(b.lookup_table),
+        copy(b.orientation_markers)
+    )
+end
+
 function BezierCurve(control_points::Vector{NTuple{2,Float64}}; lookup_steps=5000, kwargs...)
     cache = similar(control_points) # will be copyto! later
     lookup_table = similar(control_points, lookup_steps)

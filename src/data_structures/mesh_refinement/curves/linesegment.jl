@@ -21,6 +21,8 @@ struct LineSegment <: AbstractParametricCurve # line segment
 end
 Base.:(==)(L₁::LineSegment, L₂::LineSegment) = L₁.first == L₂.first && L₁.last == L₂.last
 
+Base.copy(L::LineSegment) = L
+
 function LineSegment(p₀, p₁)
     return LineSegment(p₀, p₁, dist(p₀, p₁))
 end

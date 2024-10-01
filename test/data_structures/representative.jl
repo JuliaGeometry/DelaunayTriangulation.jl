@@ -2,9 +2,8 @@ using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using StatsBase
 
-
 @testset "Initialise" begin
-    c = DT.RepresentativeCoordinates{Int, Float64}()
+    c = DT.RepresentativeCoordinates{Int,Float64}()
     @test c == DT.RepresentativeCoordinates(0.0, 0.0, 0)
 end
 
@@ -17,7 +16,7 @@ end
 
 @testset "Conversion" begin
     c = DT.RepresentativeCoordinates(0.39182, 0.5919198, 5)
-    newc = convert(DT.RepresentativeCoordinates{Int32, Float32}, c)
+    newc = convert(DT.RepresentativeCoordinates{Int32,Float32}, c)
     @test newc.x isa Float32
     @test newc.y isa Float32
     @test newc.n isa Int32
@@ -33,7 +32,7 @@ end
 end
 
 @testset "Adding and deleting points to representative coordinates" begin
-    c = DT.RepresentativeCoordinates{Int, Float64}()
+    c = DT.RepresentativeCoordinates{Int,Float64}()
     pts = [15randn(2) for _ in 1:200]
     foreach(p -> DT.add_point!(c, p), pts)
     mx, my = mean(pts)
@@ -79,7 +78,7 @@ end
 @testset "Polylabel, representative points, and distance" begin
     x, y, x1, x2, x3, x4, x5, y1, y2, y3, y4, y5 = complicated_geometry()
     boundary_nodes, points = convert_boundary_points_to_indices(x, y)
-    tri = triangulate(points; boundary_nodes, delete_ghosts = false)
+    tri = triangulate(points; boundary_nodes, delete_ghosts=false)
     for i in (1, 2, 3)
         local x1, y1, x2, y2, x3, y3, x4, y4, x5, y5
         if i == 3
@@ -125,4 +124,12 @@ end
         @test collect(get_point(tri, -10)) ≈ [x4, y4]
         @test collect(get_point(tri, -11)) ≈ [x5, y5]
     end
+end
+
+@testset "copy/deepcopy" begin
+    c = DT.RepresentativeCoordinates(0.39182, 0.5919198, 5)
+    c2 = copy(c)
+    @test c == c2 && !(c === c2)
+    c2 = deepcopy(c)
+    @test c == c2 && !(c === c2)
 end

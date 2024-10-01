@@ -14,6 +14,8 @@ end
 Queue{T}() where {T} = Queue{T}(T[])
 Base.:(==)(q1::Queue, q2::Queue) = q1.data == q2.data
 
+Base.copy(queue::Queue) = Queue(copy(queue.data))
+
 """
     isempty(queue::Queue) -> Bool 
 

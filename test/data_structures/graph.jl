@@ -2,7 +2,6 @@ using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using DataStructures
 
-
 @testset "Constructing empty graphs" begin
     g1 = DT.Graph{Int64}()
     g2 = DT.Graph{Int32}()
@@ -164,4 +163,19 @@ end
     @test isempty(get_neighbours(graph))
     @test isempty(DT.get_edges(graph))
     @test isempty(DT.get_vertices(graph))
+end
+
+@testset "copy/deepcopy" begin
+    tri = triangulate(rand(2, 50))
+    graph = get_graph(tri)
+    graph2 = copy(graph)
+    @test graph == graph2 && !(graph === graph2)
+    S = get_neighbours(tri, 1)
+    S2 = get_neighbours(graph2, 1)
+    @test S === S2
+    graph2 = deepcopy(graph)
+    @test graph == graph2 
+    S = get_neighbours(tri, 1)
+    S2 = get_neighbours(graph2, 1)
+    @test S == S2 && !(S === S2)
 end

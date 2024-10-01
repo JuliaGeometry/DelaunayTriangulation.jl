@@ -32,6 +32,10 @@ function Base.convert(::Type{RepresentativeCoordinates{I, T}}, c::Representative
     return c
 end
 
+function Base.copy(c::RepresentativeCoordinates)
+    return RepresentativeCoordinates(getx(c), gety(c), getn(c))
+end
+
 """
     getx(c::RepresentativeCoordinates) -> Number
 

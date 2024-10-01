@@ -32,3 +32,11 @@ push!(q1, 1)
 @test q1 ≠ q2
 push!(q2, 1)
 @test q1 == q2
+
+@testset "copy/deepcopy" begin
+    queue = DT.Queue{Int}([1, 2, 3, 4])
+    queue2 = copy(queue)
+    @test queue == queue2 && !(queue === queue2)
+    queue2 = deepcopy(queue)
+    @test queue == queue2 && !(queue === queue2)
+end

@@ -12,6 +12,7 @@ using ..DelaunayTriangulation: add_weight!, get_weight, get_weights
     zw = DT.ZeroWeight{Float32}()
     @inferred DT.ZeroWeight{Float32}()
     @test get_weight(zw, 1) ⊢ 0.0f0
+    @test copy(zw) === zw
 end
 
 @testset "get_weight" begin

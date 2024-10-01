@@ -77,3 +77,11 @@ end
     points = rand(2, 50)
     @test convex_hull(points).vertices == convex_hull(vcat(points, points)).vertices
 end
+
+@testset "copy/deepcopy" begin
+    ch = convex_hull(rand(2, 50))
+    ch2 = copy(ch)
+    @test ch == ch2 && !(ch === ch2)
+    ch2 = deepcopy(ch)
+    @test ch == ch2 && !(ch === ch2)
+end

@@ -42,6 +42,8 @@ function Base.:(==)(e₁::EllipticalArc, e₂::EllipticalArc)
     return true
 end
 
+Base.copy(e::EllipticalArc) = e
+
 function EllipticalArc(p, q, c, α, β, θ°; positive=true)
     px, py = getxy(p)
     qx, qy = getxy(q)

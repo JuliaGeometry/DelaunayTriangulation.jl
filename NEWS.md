@@ -14,6 +14,9 @@
 - `PointLocationHistory` was not marked as public. This has been fixed. See [#198](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/198).
 - Fixed an issue with missing docstrings and duplicate docstrings in the documentation. See [#198](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/198).
 - `copy` and `deepcopy` are now correctly implemented for `PolygonTree`s and `PolygonHierarchy`s. See [#199](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/199)
+- Implemented `copy` and `deepcopy` for `Triangulation` and `VoronoiTessellation`. See 
+- Fixed a bug with `Triangulation`s `polygon_hierarchy` not being correctly aliased with the `polygon_hierarchy` from the `BoundaryEnricher`, and similarly for the `boundary_edge_map`. See
+- Implemented `==` for `VoronoiTessellation`.
 
 ## 1.5.0
 
