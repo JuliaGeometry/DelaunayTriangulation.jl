@@ -1,13 +1,13 @@
 # Changelog
 
 ## 1.6.0
-- Feature: Define `reverse` for `AbstractParametricCurve`s, making it easier to reverse the orientation of a curve. See [#195](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/195).
-- Bugfix: Fixed an issue with `LineSegment` not returning the exact endpoints at `t=1`, which can be problematic when joining boundary nodes. This has been fixed. See [#195](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/195).
-- Bugfix: Introduced `is_linear` to fix issues with boundary enrichment of domains with `LineSegment`s. In particular, `LineSegment`s are no longer enriched. See [#195](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/195).
-- Bugfix: `orientation_markers` now uses `uniquetol` instead of `unique` for the final set of markers (it already did it for the intermediate markers). See [#195](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/195).
-- Bugfix: For large `Tuple`s, functions like `eval_fnc_at_het_tuple_two_elements` are problematic and allocate more than their non-type-stable counterparts. To get around this, for `Tuple`s of length `N > 32`, the non-type-stable version is used. See [#195](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/195).
-- Bigfix: Fixed issue with `use_barriers` when a ghost edge is selected at random during point location. See [#196](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/196).
-- Feature: Introduced the (currently internal) function `get_positive_curve_indices` for finding curves with positive orientation in a `Triangulation`. See [#196](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/196).
+- Define `reverse` for `AbstractParametricCurve`s, making it easier to reverse the orientation of a curve. See [#195](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/195).
+- Fixed an issue with `LineSegment` not returning the exact endpoints at `t=1`, which can be problematic when joining boundary nodes. This has been fixed. See [#195](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/195).
+- Introduced `is_linear` to fix issues with boundary enrichment of domains with `LineSegment`s. In particular, `LineSegment`s are no longer enriched. See [#195](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/195).
+- `orientation_markers` now uses `uniquetol` instead of `unique` for the final set of markers (it already did it for the intermediate markers). See [#195](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/195).
+- For large `Tuple`s, functions like `eval_fnc_at_het_tuple_two_elements` are problematic and allocate more than their non-type-stable counterparts. To get around this, for `Tuple`s of length `N > 32`, the non-type-stable version is used. See [#195](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/195).
+- Fixed issue with `use_barriers` when a ghost edge is selected at random during point location. See [#196](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/196).
+- Introduced the (currently internal) function `get_positive_curve_indices` for finding curves with positive orientation in a `Triangulation`. See [#196](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/196).
 - `is_exterior_curve`, `is_interior_curve`, `num_exterior_curves`, and `is_disjoint` are now defined based on `get_positive_curve_indices` rather than `get_exterior_curve_indices`. See [#196](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/196).
 - PrecompileTools.jl is now used. See [#200](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/200).
 
