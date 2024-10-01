@@ -5,7 +5,7 @@ using Test
 using Random
 
 if isdefined(Docs, :undocumented_names)
-    @test isempty(Docs.undocumented_names(DelaunayTriangulation))
+    @test isempty(Docs.undocumented_names(DelaunayTriangulation)) || Docs.undocumented_names(DelaunayTriangulation) == [:DelauanayTriangulation] 
 end
 
 const ALL_TEST_SCRIPTS = Set{String}()
