@@ -9,7 +9,8 @@
 - Bigfix: Fixed issue with `use_barriers` when a ghost edge is selected at random during point location. See [#196](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/196).
 - Feature: Introduced the (currently internal) function `get_positive_curve_indices` for finding curves with positive orientation in a `Triangulation`. [#196](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/196).
 - `is_exterior_curve`, `is_interior_curve`, `num_exterior_curves`, and `is_disjoint` are now defined based on `get_positive_curve_indices` rather than `get_exterior_curve_indices`. See [#196](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/196).
-- Bugfix: `PointLocationHistory` was not marked as public. This has been fixed. 
+- Bugfix: `PointLocationHistory` was not marked as public. This has been fixed. See [#198](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/198).
+- Bugfix: Fixed an issue with missing docstrings and duplicate docstrings in the documentation. See [#198](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/198).
 
 ## 1.5.0
 
