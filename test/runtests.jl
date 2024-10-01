@@ -120,6 +120,10 @@ end
         safe_include("voronoi/power.jl")
     end
 
+    @testset verbose = true "Makie" begin
+        safe_include("makie/makie.jl")
+    end
+
     @testset verbose = true "Run the documentation examples" begin
         @testset verbose = true "Check that the applications in the docs run" begin
             app_dir = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "docs", "src", "literate_applications")
