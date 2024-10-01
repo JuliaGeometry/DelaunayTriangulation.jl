@@ -113,7 +113,7 @@ end
     @test isempty(get_adjacent(adj))
 end
 
-@testse "copy/deepcopy" begin
+@testset "copy/deepcopy" begin
     tri = triangulate(rand(2, 50))
     adj = get_adjacent(tri)
     adj2 = copy(adj)

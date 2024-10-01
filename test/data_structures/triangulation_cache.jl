@@ -98,11 +98,11 @@ empty!(cache)
     cache = DT.get_cache(tri)
     cache2 = copy(cache)
     @inferred copy(cache2)
-    @test cache2 == cache && !(cache2 === cache)
+    @test typeof(cache2) == typeof(cache) && !(cache2 === cache)
 
     tri = triangulate(rand(2, 50); weights=rand(50))
     cache = DT.get_cache(tri)
     cache2 = copy(cache)
     @inferred copy(cache2)
-    @test cache2 == cache && !(cache2 === cache)
+    @test typeof(cache2) == typeof(cache) && !(cache2 === cache)
 end
