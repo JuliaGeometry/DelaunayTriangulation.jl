@@ -6,9 +6,14 @@ CurrentModule = DelaunayTriangulation
 
 This section lists some of the internal utility functions, or other miscellaneous functions, used in this package.
 
+```@docs; canonical=false
+number_type
+```
+
 ```@autodocs 
 Modules = [DelaunayTriangulation]
 Pages = ["src/utils/utils.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.number_type,))
 ```
 
 ```@autodocs 

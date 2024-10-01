@@ -50,6 +50,7 @@ Pages = ["src/algorithms/triangulation/basic_operations/add_segment.jl"]
 ```@autodocs
 Modules = [DelaunayTriangulation] 
 Pages = ["src/algorithms/triangulation/constrained_triangulation.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.convert_boundary_points_to_indices,))
 ```
 
 ```@autodocs
@@ -92,6 +93,7 @@ Pages = ["src/data_structures/triangulation/methods/segments.jl"]
 ```@autodocs 
 Modules = [DelaunayTriangulation]
 Pages = ["src/data_structures/triangulation/methods/weights.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.ZeroWeight,))
 ```
 
 ## Mesh Refinement 
@@ -170,6 +172,7 @@ Pages = ["src/data_structures/triangulation/methods/adjacent2vertex.jl"]
 ```@autodocs 
 Modules = [DelaunayTriangulation]
 Pages = ["src/data_structures/triangulation/methods/graph.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.get_vertices, DelaunayTriangulation.get_edges))
 ```
 
 ```@autodocs 

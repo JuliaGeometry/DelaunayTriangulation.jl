@@ -17,6 +17,7 @@ MaxPriorityQueue
 ```@autodocs 
 Modules = [DelaunayTriangulation]
 Pages = ["data_structures/queue/max_priority_queue.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.MaxPriorityQueue,))
 ```
 
 ## Queue 
@@ -30,6 +31,7 @@ Queue
 ```@autodocs
 Modules = [DelaunayTriangulation]
 Pages = ["data_structures/queue/queue.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.Queue,)) 
 ```
 
 ## BalancedBST
@@ -43,6 +45,7 @@ BalancedBST
 ```@autodocs
 Modules = [DelaunayTriangulation]
 Pages = ["data_structures/trees/bst.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.BalancedBST,))
 ```
 
 ## RTree
@@ -56,6 +59,7 @@ RTree
 ```@autodocs
 Modules = [DelaunayTriangulation]
 Pages = ["data_structures/trees/rtree.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.RTree,)) 
 ```
 
 ```@docs 
@@ -73,6 +77,7 @@ PolygonHierarchy
 ```@autodocs 
 Modules = [DelaunayTriangulation]
 Pages = ["data_structures/trees/polygon_hierarchy.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.PolygonHierarchy,))
 ```
 
 ## Adjacent 
@@ -86,6 +91,7 @@ Adjacent
 ```@autodocs 
 Modules = [DelaunayTriangulation]
 Pages = ["data_structures/triangulation/adjacent.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.Adjacent,))
 ```
 
 ## Adjacent2Vertex
@@ -99,6 +105,7 @@ Adjacent2Vertex
 ```@autodocs
 Modules = [DelaunayTriangulation]
 Pages = ["data_structures/triangulation/adjacent2vertex.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.Adjacent2Vertex,))
 ```
 
 ## Graph 
@@ -112,13 +119,14 @@ Graph
 ```@autodocs
 Modules = [DelaunayTriangulation]
 Pages = ["data_structures/triangulation/graph.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.Graph,))
 ```
 
 ## Curves 
 
 There are many data structures used to define the curves we provide in this package, all subtyping the `AbstractParametricCurve` type. This type, and its subtypes, are all in the public API with the exception of `PiecewiseLinear`.
 
-```@docs; canonical=false 
+```@docs; canonical=false
 AbstractParametricCurve
 LineSegment
 CircularArc
@@ -128,39 +136,55 @@ BSpline
 CatmullRomSpline
 ```
 
+```@docs; canonical=false
+twice_differentiate
+total_variation
+thrice_differentiate
+differentiate
+arc_length
+```
+
 ```@autodocs
 Modules = [DelaunayTriangulation]
 Pages = ["data_structures/mesh_refinement/curves/abstract.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.AbstractParametricCurve, DelaunayTriangulation.twice_differentiate, DelaunayTriangulation.total_variation, DelaunayTriangulation.thrice_differentiate, DelaunayTriangulation.differentiate, DelaunayTriangulation.arc_length))
 ```
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
 Pages = ["data_structures/mesh_refinement/curves/beziercurve.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.BezierCurve,))
+
 ```
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
 Pages = ["data_structures/mesh_refinement/curves/bspline.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.BSpline,))
 ```
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
 Pages = ["data_structures/mesh_refinement/curves/catmullromspline.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.CatmullRomSpline,))
 ```
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
 Pages = ["data_structures/mesh_refinement/curves/circulararc.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.CircularArc,))
 ```
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
 Pages = ["data_structures/mesh_refinement/curves/ellipticalarc.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.EllipticalArc,))
 ```
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
 Pages = ["data_structures/mesh_refinement/curves/linesegment.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.LineSegment,))
 ```
 
 ```@autodocs
@@ -211,6 +235,7 @@ ConvexHull
 ```@autodocs
 Modules = [DelaunayTriangulation]
 Pages = ["data_structures/convex_hull.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.ConvexHull,))
 ```
 
 ## Triangulation
@@ -224,6 +249,7 @@ Triangulation
 ```@autodocs    
 Modules = [DelaunayTriangulation]
 Pages = ["data_structures/triangulation/triangulation.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.Triangulation,))
 ```
 
 ## TriangulationCache 
@@ -246,6 +272,7 @@ BoundaryEnricher
 ```@autodocs 
 Modules = [DelaunayTriangulation]
 Pages = ["data_structures/mesh_refinement/boundary_enricher.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.BoundaryEnricher,))
 ```
 
 ## AbstractEach(Vertex/Edge/Triangle) Iterators 
@@ -261,22 +288,28 @@ Pages = ["data_structures/triangulation/methods/iterators.jl"]
 
 We provide a means for storing the history of triangles encountered during point location, using a `PointLocationHistory` struct. The main motivation for this struct is for constrained triangulations.
 
+```@docs; canonical=false
+PointLocationHistory
+```
+
 ```@autodocs 
 Modules = [DelaunayTriangulation]
 Pages = ["data_structures/point_location_history.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.PointLocationHistory,))
 ```
 
 ## IndividualTriangleStatistics 
 
 We provide an `IndividualTriangleStatistics` struct for storing statistics about individual triangles in a triangulation. This struct is in the public API, as listed in the [API](../api/overview.md).
 
-```@docs; canonical=false 
+```@docs; canonical=false
 IndividualTriangleStatistics 
 ```
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
 Pages = ["data_structures/statistics/individual_triangle_statistics.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.IndividualTriangleStatistics,))
 ```
 
 ## TriangulationStatistics 
@@ -290,15 +323,21 @@ TriangulationStatistics
 ```@autodocs
 Modules = [DelaunayTriangulation]
 Pages = ["data_structures/statistics/triangulation_statistics.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.TriangulationStatistics,))
 ```
 
 ## InsertionEventHistory 
 
 For mesh refinement we need a way to identify what happens to a triangulation after a point is added, in case we need to reverse the insertion. For this, we use `InsertionEventHistory` internally.
 
+```@docs; canonical=false
+InsertionEventHistory
+```
+
 ```@autodocs
 Modules = [DelaunayTriangulation]
 Pages = ["data_structures/mesh_refinement/insertion_event_history.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.InsertionEventHistory,))
 ```
 
 ## RefinementConstraints
@@ -339,6 +378,7 @@ VoronoiTessellation
 ```@autodocs
 Modules = [DelaunayTriangulation]
 Pages = ["data_structures/voronoi.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.VoronoiTessellation,))
 ```
 
 ## Polygon
@@ -363,34 +403,74 @@ Pages = ["data_structures/shuffled_polygon_linked_list.jl"]
 
 Here are functions that are used for defining and working with points in the package.
 
+```@docs; canonical=false
+set_point!
+push_point!
+pop_point!
+num_points
+getpoint
+get_point
+each_point_index
+each_point
+```
+
 ```@autodocs 
 Modules = [DelaunayTriangulation]
 Pages = ["src/geometric_primitives/points.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.set_point!, DelaunayTriangulation.push_point!, DelaunayTriangulation.pop_point!, DelaunayTriangulation.num_points, DelaunayTriangulation.getpoint, DelaunayTriangulation.get_point, DelaunayTriangulation.each_point_index, DelaunayTriangulation.each_point))
 ```
 
 ## Edges (Primitive Interface)
 
 Here are functions that are used for defining and working with edges in the package.
 
+```@docs; canonical=false
+random_edge
+each_edge
+contains_edge
+construct_edge
+```
+
 ```@autodocs
 Modules = [DelaunayTriangulation]
 Pages = ["src/geometric_primitives/edges.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.random_edge, DelaunayTriangulation.each_edge, DelaunayTriangulation.contains_edge, DelaunayTriangulation.construct_edge))
 ```
 
 ## Triangles (Primitive Interface)
 
 Here are functions that are used for defining and working with triangles in the package.
 
+```@docs; canonical=false
+triangle_edges
+sort_triangle
+each_triangle
+delete_triangle!
+contains_triangle
+construct_triangle
+add_triangle!
+```
+
 ```@autodocs
 Modules = [DelaunayTriangulation]
 Pages = ["src/geometric_primitives/triangles.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.triangle_edges, DelaunayTriangulation.sort_triangle, DelaunayTriangulation.each_triangle, DelaunayTriangulation.delete_triangle!, DelaunayTriangulation.contains_triangle, DelaunayTriangulation.construct_triangle, DelaunayTriangulation.add_triangle!))
 ```
 
 ## Boundary Nodes (Primitive Interface)
 
 Here are functions that are used for defining and working with boundary nodes in the package.
 
+```@docs; canonical=false
+has_multiple_sections
+has_multiple_curves
+get_section_index
+get_curve_index
+get_boundary_nodes
+```
+
 ```@autodocs
 Modules = [DelaunayTriangulation]
 Pages = ["src/geometric_primitives/boundary_nodes.jl"]
+Filter = t -> !(t in (DelaunayTriangulation.has_multiple_sections, DelaunayTriangulation.has_multiple_curves, DelaunayTriangulation.get_section_index, DelaunayTriangulation.get_curve_index, DelaunayTriangulation.get_boundary_nodes))
 ```

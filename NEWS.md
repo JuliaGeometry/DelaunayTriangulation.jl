@@ -11,6 +11,8 @@
 - `is_exterior_curve`, `is_interior_curve`, `num_exterior_curves`, and `is_disjoint` are now defined based on `get_positive_curve_indices` rather than `get_exterior_curve_indices`. See [#196](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/196).
 - PrecompileTools.jl is now used. See [#200](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/200).
 - Introduced the (currently internal) function `get_positive_curve_indices` for finding curves with positive orientation in a `Triangulation`. [#196](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/196).
+- `PointLocationHistory` was not marked as public. This has been fixed. See [#198](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/198).
+- Fixed an issue with missing docstrings and duplicate docstrings in the documentation. See [#198](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/198).
 - `copy` and `deepcopy` are now correctly implemented for `PolygonTree`s and `PolygonHierarchy`s. See [#199](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/199)
 
 ## 1.5.0
