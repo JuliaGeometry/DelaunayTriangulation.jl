@@ -9,7 +9,7 @@ DocMeta.setdocmeta!(
     recursive = true,
 )
 
-const IS_LIVESERVER = false && get(ENV, "LIVESERVER_ACTIVE", "false") == "true"
+const IS_LIVESERVER = get(ENV, "LIVESERVER_ACTIVE", "false") == "true"
 if IS_LIVESERVER
     using Revise
     Revise.revise()

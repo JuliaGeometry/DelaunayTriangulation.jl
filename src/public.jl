@@ -6,6 +6,7 @@
                 Adjacent2Vertex,
                 Graph,
                 InsertionEventHistory,
+                PointLocationHistory,
                 ZeroWeight,
                 all_ghost_vertices,
                 check_args,

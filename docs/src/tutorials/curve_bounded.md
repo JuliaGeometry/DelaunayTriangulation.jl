@@ -277,7 +277,7 @@ with this package we need:
 
 - To represent the curve as a callable struct that subtypes `AbstractParametricCurve` that maps `Float64 -> NTuple{2,Float64}`.
 - To define [`DelaunayTriangulation.differentiate`](@ref), [`DelaunayTriangulation.twice_differentiate`](@ref), and [`DelaunayTriangulation.thrice_differentiate`](@ref).
-- Have a `lookup_table` field that maps `lookup_table[i]` to `(i - 1) / (length(lookup_table) - 1)`, where `lookup_table` is a `Dict`.
+- Have a `lookup_table` field that maps `lookup_table[i]` to the position of the curve at `t = (i - 1) / (length(lookup_table) - 1)`, where `lookup_table` is a `Vector`.
 - Have defined the parametric curve according to $0 ≤ t ≤ 1$ (already done).
 
 Let's now meet these requirements.

@@ -10,7 +10,11 @@ points in the plane closest to the associated generator. This implies that
 finding a nearest neighbour is the same as a point location problem, meaning
 given a point `p` find the Voronoi tile `P` containing it. Here we give an example
 of how we can use triangulations or tessellations to find the nearest neighbour
-in the point set to a given point. First, we load in the packages we need.
+in the point set to a given point. We note that these same ideas
+could be applied for power diagrams, except that the metric used for defining distances
+is based on the power distance instead of the Euclidean distance (see the [power diagram tutorial](power.md)
+for more details); this is not demonstrated
+in this tutorial. First, we load in the packages we need.
 
 ````@example nearest
 using DelaunayTriangulation
