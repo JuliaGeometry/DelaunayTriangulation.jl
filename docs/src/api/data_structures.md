@@ -12,4 +12,5 @@ Triangulation
 VoronoiTessellation
 ConvexHull
 InsertionEventHistory
+PointLocationHistory
 ```

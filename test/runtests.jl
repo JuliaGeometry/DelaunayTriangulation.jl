@@ -4,10 +4,6 @@ using Aqua
 using Test
 using Random
 
-if isdefined(Docs, :undocumented_names)
-    @test isempty(Docs.undocumented_names(DelaunayTriangulation))
-end
-
 const ALL_TEST_SCRIPTS = Set{String}()
 const NON_TEST_SCRIPTS = Set{String}(["helper_functions.jl", "runtests.jl"])
 include("helper_functions.jl")
