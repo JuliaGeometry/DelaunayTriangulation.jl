@@ -42,7 +42,7 @@ for _ in 1:20 # Run many times to make sure the segfault is gone
     ]
 
     curve_IV = [CircularArc((1.0, 0.0), (1.0, 0.0), (0.0, 0.0))]
-    points_IV = NTuple{2, Float64}[]
+    points_IV = NTuple{2,Float64}[]
 
     curve_V = [BezierCurve([(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.0, 0.0)])]
     points_V = [(0.0, 0.0), (0.2, 0.25)]
@@ -73,13 +73,13 @@ for _ in 1:20 # Run many times to make sure the segfault is gone
 
     curve_IX =
         [
-        [
-            [1, 2, 3, 4, 5, 6, 7, 1],
-        ],
-        [
-            [CircularArc((0.6, 0.5), (0.6, 0.5), (0.5, 0.5), positive = false)],
-        ],
-    ]
+            [
+                [1, 2, 3, 4, 5, 6, 7, 1],
+            ],
+            [
+                [CircularArc((0.6, 0.5), (0.6, 0.5), (0.5, 0.5), positive=false)],
+            ],
+        ]
     points_IX = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.5, 1.5), (0.0, 1.0), (0.0, 0.5), (0.0, 0.2)]
 
     curve_X = [
@@ -111,7 +111,7 @@ for _ in 1:20 # Run many times to make sure the segfault is gone
             [12, 11, 10, 12],
         ],
         [
-            [CircularArc((1.1, -3.0), (1.1, -3.0), (0.0, -3.0), positive = false)],
+            [CircularArc((1.1, -3.0), (1.1, -3.0), (0.0, -3.0), positive=false)],
         ],
     ]
     points_XI = [(-2.0, 0.0), (0.0, 0.0), (2.0, 0.0), (-2.0, -5.0), (2.0, -5.0), (2.0, -1 / 10), (-2.0, -1 / 10), (-1.0, -3.0), (0.0, -4.0), (0.0, -2.3), (-0.5, -3.5), (0.9, -3.0)]
@@ -335,11 +335,16 @@ for _ in 1:20 # Run many times to make sure the segfault is gone
         @test traverse_tree(hierarchy.trees[7]) ≠ traverse_tree(hierarchy.trees[15])
         @test compare_trees(hierarchy, hierarchy)
         @test compare_trees(deepcopy(hierarchy), deepcopy(hierarchy))
+        @test compare_trees(hierarchy, deepcopy(hierarchy))
+        @test compare_trees(hierarchy, copy(hierarchy))
+        @test compare_trees(copy(hierarchy), copy(hierarchy))
+        @test !(hierarchy === deepcopy(hierarchy))
         @test !compare_trees(hierarchy, hierarchy2)
         @test hierarchy.trees[7] ≠ hierarchy.trees[15]
         @test hierarchy == hierarchy
         @test deepcopy(hierarchy) == hierarchy
         @test deepcopy(hierarchy) == deepcopy(hierarchy)
+        @test !(hierarchy === deepcopy(hierarchy))
         @test hierarchy ≠ hierarchy2
         @test deepcopy(hierarchy) ≠ hierarchy2
     end
@@ -357,7 +362,7 @@ for _ in 1:20 # Run many times to make sure the segfault is gone
         hierarchy = DT.construct_polygon_hierarchy(points, nnew_boundary_nodes, boundary_curves)
         DT.expand_bounds!(hierarchy, DT.ε(Float64))
         @test DT.get_bounding_boxes(hierarchy) ⊢ [DT.BoundingBox(-1 - 2DT.ε(Float64), 1 + 2DT.ε(Float64), -1 - 2DT.ε(Float64), 1 + 2DT.ε(Float64))] &&
-            DT.get_polygon_orientations(hierarchy) ⊢ BitVector([1])
+              DT.get_polygon_orientations(hierarchy) ⊢ BitVector([1])
         trees = DT.get_trees(hierarchy)
         @test length(trees) == 1
         tree = trees[1]
