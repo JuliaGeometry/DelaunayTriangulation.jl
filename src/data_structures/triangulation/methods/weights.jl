@@ -27,6 +27,8 @@ ZeroWeight() = ZeroWeight{Float64}()
 get_weight(weights::ZeroWeight{T}, i) where {T} = is_point3(i) ? i[3] : zero(T)
 get_weight(weights::ZeroWeight{T}, i::Integer) where {T} = zero(T)
 
+Base.copy(w::ZeroWeight) = w
+
 """
     add_weight!(tri::Triangulation, w)
 

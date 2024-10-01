@@ -1714,3 +1714,63 @@ end
         @test c ⪧ get_generator(vorn, index) rtol=1e-2 atol=1e-4
     end
 end
+
+@testset "==" begin
+    tri = triangulate(rand(2, 100))
+    vorn = voronoi(tri, clip=true)
+    vorn2 = voronoi(tri, clip=true)
+    @test vorn == vorn
+    @test vorn == vorn2
+    g1 = vorn.generators[1]
+    vorn.generators[1] = vorn.generators[2] 
+    @test vorn != vorn2
+    vorn.generators[1] = g1
+    @test vorn == vorn2
+    p1 = vorn.polygon_points[1]
+    vorn.polygon_points[1] = vorn.polygon_points[2]
+    @test vorn != vorn2
+    vorn.polygon_points[1] = p1
+    @test vorn == vorn2
+    poly1 = vorn.polygons[1]
+    vorn.polygons[1] = vorn.polygons[2]
+    @test vorn != vorn2
+    vorn.polygons[1] = poly1
+    @test vorn == vorn2
+    T1 = vorn.circumcenter_to_triangle[1]
+    vorn.circumcenter_to_triangle[1] = vorn.circumcenter_to_triangle[2]
+    @test vorn != vorn2
+    vorn.circumcenter_to_triangle[1] = T1
+    @test vorn == vorn2
+    T2 = vorn.circumcenter_to_triangle[2]
+    p1 = vorn.triangle_to_circumcenter[T1]
+    vorn.triangle_to_circumcenter[T1] = vorn.triangle_to_circumcenter[T2]
+    @test vorn != vorn2
+    vorn.triangle_to_circumcenter[T1] = p1
+    @test vorn == vorn2
+    push!(vorn.unbounded_polygons, 5)
+    @test vorn != vorn2
+    delete!(vorn.unbounded_polygons, 5)
+    (u, v), w = first(vorn.adjacent.adjacent)
+    vorn.adjacent.adjacent[(u, v)] = w + 1
+    @test vorn != vorn2
+    vorn.adjacent.adjacent[(u, v)] = w
+    @test vorn == vorn2
+    push!(vorn.boundary_polygons, 5000)
+    @test vorn != vorn2
+    delete!(vorn.boundary_polygons, 5000)
+    @test vorn == vorn2
+end
+
+@testset "copy/deepcopy" begin 
+    vorn = voronoi(triangulate(rand(2, 100)), clip = true, smooth = true)
+    vorn1 = deepcopy(vorn)
+    vorn2 = copy(vorn)
+    @test typeof(vorn1) == typeof(vorn) == typeof(vorn2)
+    for _vorn in (vorn1, vorn2)
+        @test vorn == _vorn && !(vorn === _vorn)
+        for f in fieldnames(typeof(vorn))
+            @test getfield(vorn, f) == getfield(_vorn, f)
+            @test !(getfield(vorn, f) === getfield(_vorn, f))
+        end
+    end
+end

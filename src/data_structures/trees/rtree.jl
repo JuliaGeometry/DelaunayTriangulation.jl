@@ -45,6 +45,8 @@ struct BoundingInterval <: AbstractBoundingShape
 end
 Base.show(io::IO, I::BoundingInterval) = print(io, "[$(I.a) .. $(I.b)]")
 
+Base.copy(I::BoundingInterval) = I
+
 """
     InvalidBoundingInterval
 
@@ -137,6 +139,8 @@ struct BoundingBox <: AbstractBoundingShape
     y::BoundingInterval
 end
 Base.show(io::IO, r::BoundingBox) = print(io, "[$(r.x.a), $(r.x.b)] × [$(r.y.a), $(r.y.b)]")
+
+Base.copy(r::BoundingBox) = r
 
 """
     InvalidBoundingBox
@@ -279,7 +283,7 @@ function bounding_box(points)
     ymin = Inf
     ymax = -Inf
     for p in each_point(points)
-        px, py = getxy(p)
+        px, py = _getxy(p)
         xmin = min(xmin, px)
         xmax = max(xmax, px)
         ymin = min(ymin, py)
@@ -330,6 +334,8 @@ struct DiametralBoundingBox
     bounding_box::BoundingBox
     edge::NTuple{2, Int}
 end
+
+Base.copy(bbox::DiametralBoundingBox) = bbox
 
 """
     bounding_box(points, i, j) -> DiametralBoundingBox
@@ -508,6 +514,24 @@ function Base.:(==)(leaf1::Leaf, leaf2::Leaf)
     return true
 end
 
+function Base.deepcopy_internal(leaf::Leaf{Branch}, dict::IdDict) where {Branch}
+    haskey(dict, leaf) && return dict[leaf]
+    new_parent = has_parent(leaf) ? Base.deepcopy_internal(get_parent(leaf), dict) : nothing
+    bbox = get_bounding_box(leaf)
+    cchildren = copy(get_children(leaf))
+    new_leaf = Leaf{Branch}(new_parent, bbox, cchildren)
+    dict[leaf] = new_leaf
+    return new_leaf
+end
+
+function Base.copy(leaf::Leaf{B}) where {B}
+    parent = get_parent(leaf)
+    cparent = isnothing(parent) ? nothing : copy(parent)
+    bbox = get_bounding_box(leaf)
+    cchildren = copy(get_children(leaf))
+    return Leaf{B}(cparent, bbox, cchildren)
+end
+
 """
     mutable struct Branch <: AbstractNode
 
@@ -538,6 +562,24 @@ function Base.:(==)(branch1::Branch, branch2::Branch)
     get_children(branch1) ≠ get_children(branch2) && return false
     get_level(branch1) ≠ get_level(branch2) && return false
     return true
+end
+
+function Base.deepcopy_internal(branch::Branch, dict::IdDict)
+    haskey(dict, branch) && return dict[branch]
+    new_parent = has_parent(branch) ? Base.deepcopy_internal(get_parent(branch), dict) : nothing
+    bbox = get_bounding_box(branch)
+    cchildren = copy(get_children(branch))
+    new_branch = Branch(new_parent, bbox, cchildren, get_level(branch))
+    dict[branch] = new_branch
+    return new_branch
+end
+
+function Base.copy(branch::Branch)
+    parent = get_parent(branch)
+    cparent = isnothing(parent) ? nothing : copy(parent)
+    bbox = get_bounding_box(branch)
+    cchildren = copy(get_children(branch))
+    return Branch(cparent, bbox, cchildren, get_level(branch))
 end
 
 function Base.show(io::IO, ::MIME"text/plain", leaf::Leaf)
@@ -613,6 +655,13 @@ struct NodeCache{Node, Child} # similar to why we use TriangulationCache. Think 
         sizehint!(cache, size_limit)
         return new{Node, Child}(cache, size_limit)
     end
+end
+
+Base.:(==)(cache1::NodeCache, cache2::NodeCache) = get_size_limit(cache1) == get_size_limit(cache2) && cache1.cache == cache2.cache
+
+function Base.copy(cache::NodeCache{Node, Child}) where {Node, Child}
+    # Just generates a new cache
+    return NodeCache{Node, Child}(get_size_limit(cache))
 end
 
 """
@@ -713,6 +762,10 @@ end
 RTreeIntersectionCache() = RTreeIntersectionCache(Vector{Int}(), BitVector())
 Base.sizehint!(cache::RTreeIntersectionCache, n) = (sizehint!(get_node_indices(cache), n); sizehint!(get_need_tests(cache), n))
 
+Base.:(==)(cache1::RTreeIntersectionCache, cache2::RTreeIntersectionCache) = get_node_indices(cache1) == get_node_indices(cache2) && get_need_tests(cache1) == get_need_tests(cache2)
+
+Base.copy(cache::RTreeIntersectionCache) = RTreeIntersectionCache() # Just generates a new cache
+
 """
     get_node_indices(cache::RTreeIntersectionCache) -> Vector{Int}
 
@@ -761,32 +814,45 @@ mutable struct RTree # linear
     @const free_cache::BitVector
     @const detached_cache::Vector{Union{Branch, Leaf{Branch}}}
     @const intersection_cache::NTuple{2, RTreeIntersectionCache}
-    function RTree(; size_limit = 100, fill_factor = 0.7) # https://en.wikipedia.org/wiki/R-tree: "however best performance has been experienced with a minimum fill of 30%–40%)
-        branch_cache = BranchCache(size_limit)
-        twig_cache = TwigCache(size_limit)
-        leaf_cache = LeafCache(size_limit)
-        root = spawn_node!(leaf_cache)
-        num_elements = 0
-        free_cache = BitVector()
-        sizehint!(free_cache, size_limit)
-        detached_cache = Vector{Union{Branch, Leaf{Branch}}}()
-        sizehint!(detached_cache, size_limit)
-        cache1, cache2 = RTreeIntersectionCache(), RTreeIntersectionCache()
-        sizehint!(cache1, ceil(Int, log2(size_limit)))
-        sizehint!(cache2, ceil(Int, log2(size_limit)))
-        return new(
-            root,
-            num_elements,
-            branch_cache,
-            twig_cache,
-            leaf_cache,
-            fill_factor,
-            free_cache,
-            detached_cache,
-            (cache1, cache2),
-        )
-    end
 end
+function RTree(; size_limit = 100, fill_factor = 0.7) # https://en.wikipedia.org/wiki/R-tree: "however best performance has been experienced with a minimum fill of 30%–40%)
+    branch_cache = BranchCache(size_limit)
+    twig_cache = TwigCache(size_limit)
+    leaf_cache = LeafCache(size_limit)
+    root = spawn_node!(leaf_cache)
+    num_elements = 0
+    free_cache = BitVector()
+    sizehint!(free_cache, size_limit)
+    detached_cache = Vector{Union{Branch, Leaf{Branch}}}()
+    sizehint!(detached_cache, size_limit)
+    cache1, cache2 = RTreeIntersectionCache(), RTreeIntersectionCache()
+    sizehint!(cache1, ceil(Int, log2(size_limit)))
+    sizehint!(cache2, ceil(Int, log2(size_limit)))
+    return RTree(
+        root,
+        num_elements,
+        branch_cache,
+        twig_cache,
+        leaf_cache,
+        fill_factor,
+        free_cache,
+        detached_cache,
+        (cache1, cache2),
+    )
+end
+
+function Base.copy(tree::RTree)
+    root = copy(get_root(tree))
+    branch_cache = copy(get_branch_cache(tree))
+    twig_cache = copy(get_twig_cache(tree))
+    leaf_cache = copy(get_leaf_cache(tree))
+    fill_factor = get_fill_factor(tree)
+    free_cache = copy(get_free_cache(tree))
+    detached_cache = copy(get_detached_cache(tree))
+    intersection_cache = copy.(get_intersection_cache(tree))
+    return RTree(root, num_elements(tree), branch_cache, twig_cache, leaf_cache, fill_factor, free_cache, detached_cache, intersection_cache)
+end
+
 function Base.:(==)(tree1::RTree, tree2::RTree)
     num_elements(tree1) ≠ num_elements(tree2) && return false
     get_root(tree1) ≠ get_root(tree2) && return false
@@ -1070,6 +1136,12 @@ struct BoundaryRTree{P}
     points::P
 end
 BoundaryRTree(points) = BoundaryRTree(RTree(), points)
+
+function Base.copy(tree::BoundaryRTree)
+    ctree = copy(tree.tree)
+    cpoints = copy(tree.points)
+    return BoundaryRTree(ctree, cpoints)
+end
 
 function Base.:(==)(tree1::BoundaryRTree, tree2::BoundaryRTree)
     tree1.points ≠ tree2.points && return false

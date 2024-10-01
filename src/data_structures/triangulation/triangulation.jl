@@ -108,6 +108,36 @@ struct Triangulation{P,T,BN,W,I,E,Es,BC,BEM,GVM,GVR,BPL,C,BE}
     boundary_enricher::BE
     cache::C
 end
+
+function Base.copy(tri::Triangulation)
+    points = copy(get_points(tri))
+    triangles = copy(get_triangles(tri))
+    boundary_nodes = copy(get_boundary_nodes(tri))
+    interior_segments = copy(get_interior_segments(tri))
+    all_segments = copy(get_all_segments(tri))
+    weights = copy(get_weights(tri))
+    adjacent = copy(get_adjacent(tri))
+    adjacent2vertex = copy(get_adjacent2vertex(tri))
+    graph = copy(get_graph(tri))
+    boundary_curves = _plcopy.(get_boundary_curves(tri); points)
+    boundary_edge_map = _bemcopy(get_boundary_edge_map(tri); boundary_nodes)
+    ghost_vertex_map = copy(get_ghost_vertex_map(tri))
+    ghost_vertex_ranges = copy(get_ghost_vertex_ranges(tri))
+    convex_hull = copy(get_convex_hull(tri))
+    representative_point_list = copy(get_representative_point_list(tri))
+    polygon_hierarchy = copy(get_polygon_hierarchy(tri))
+    boundary_enricher = enrcopy(get_boundary_enricher(tri); points, 
+        boundary_nodes, segments=interior_segments,boundary_curves,
+        polygon_hierarchy,boundary_edge_map) 
+    cache = _copy_cache(get_cache(tri); weights) 
+    return Triangulation(
+        points, triangles, boundary_nodes, interior_segments, all_segments, weights,
+        adjacent, adjacent2vertex, graph, boundary_curves, boundary_edge_map,
+        ghost_vertex_map, ghost_vertex_ranges, convex_hull, representative_point_list,
+        polygon_hierarchy, boundary_enricher, cache
+    )
+end
+
 function Base.show(io::IO, ::MIME"text/plain", tri::Triangulation)
     println(io, "Delaunay Triangulation.")
     println(io, "   Number of vertices: ", num_solid_vertices(tri))

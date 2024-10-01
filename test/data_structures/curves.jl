@@ -1148,7 +1148,7 @@ end
     @test revspl.control_points == _revspl.control_points
     for t in LinRange(0, 1, 1000)
         @test spl(t) ⪧ _revspl(1 - t)
-        @test revspl(t) ⪧ _revspl(t) 
+        @test revspl(t) ⪧ _revspl(t)
     end
     @test revspl.lookup_table ⪧ _revspl.lookup_table
     @test revspl.orientation_markers ≈ _revspl.orientation_markers
@@ -1756,7 +1756,7 @@ end
     for t in LinRange(0, 1, 1500)
         @test spl(t) ⪧ _revspl(1 - t)
         @test revspl(t) ⪧ _revspl(t)
-    end 
+    end
     @test _revspl.control_points == revspl.control_points
     @test _revspl.knots == revspl.knots
     @test _revspl.cache == revspl.cache
@@ -2330,7 +2330,7 @@ end
     @test CatmullRomSpline(ctrl1, _tension=0.2) ≠ CatmullRomSpline(ctrl1)
 
     ## reverse 
-     control_points = [(-9.0, 5.0), (-7.0, 6.0), (-6.0, 4.0), (-3.0, 5.0), (0.0, 0.0), (2.0, -5.0), (2.0, 10.0), (5.0, 12.0), (-9.0, 10.0)]
+    control_points = [(-9.0, 5.0), (-7.0, 6.0), (-6.0, 4.0), (-3.0, 5.0), (0.0, 0.0), (2.0, -5.0), (2.0, 10.0), (5.0, 12.0), (-9.0, 10.0)]
     spl = CatmullRomSpline(control_points)
     revspl = CatmullRomSpline(reverse(control_points))
     _revspl = reverse(spl)
@@ -2349,7 +2349,7 @@ end
         @test DT.differentiate(revspl, t) ⪧ DT.differentiate(_revspl, t)
         @test DT.twice_differentiate(revspl, t) ⪧ DT.twice_differentiate(_revspl, t)
         @test DT.thrice_differentiate(revspl, t) ⪧ DT.thrice_differentiate(_revspl, t)
-    end 
+    end
 end
 
 @testset "angle_between" begin
@@ -2557,4 +2557,98 @@ end
     @test θ45 ≈ 360 - 140.19442890773482
     @test θ56 ≈ 360 - 101.3099324740202
     @test θ61 ≈ 360 - 348.6900675259798
+end
+
+@testset "copy/deepcopy" begin
+    @testset "LineSegment" begin
+        L = LineSegment((0.0, 0.0), (1.0, 1.0))
+        L2 = copy(L)
+        @test L === L
+        L2 = deepcopy(L)
+        @test L === L2
+    end
+
+    @testset "PiecewiseLinear" begin
+        points = [(0.0, 0.0), (10.0, 0.0), (10.0, 10.0)]
+        boundary = [[1, 2, 3]]
+        PL = DT.PiecewiseLinear(points, boundary)
+        PL2 = copy(PL)
+        @test PL == PL2 && !(PL === PL2)
+        @test get_boundary_nodes(PL)[1] === get_boundary_nodes(PL2)[1]
+        PL2 = deepcopy(PL)
+        @test PL == PL2 && !(PL === PL2)
+        @test !(get_boundary_nodes(PL)[1] === get_boundary_nodes(PL2)[1])
+    end
+
+    @testset "BezierCurve" begin
+        control_points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
+        spl = BezierCurve(control_points)
+        spl2 = copy(spl)
+        @test spl == spl2 && !(spl === spl2)
+        @test spl.cache == spl2.cache && !(spl.cache === spl2.cache)
+        @test spl.lookup_table == spl2.lookup_table && !(spl.lookup_table === spl2.lookup_table)
+        @test spl.orientation_markers == spl2.orientation_markers && !(spl.orientation_markers === spl2.orientation_markers)
+        spl2 = deepcopy(spl)
+        @test spl == spl2 && !(spl === spl2)
+    end
+
+    @testset "CircularArc" begin
+        p, q, c = (0.0, 0.0), (1.0, 0.0), (0.5, 0.5)
+        cir = CircularArc(p, q, c)
+        cir2 = copy(cir)
+        @test cir === cir2
+        cir2 = deepcopy(cir)
+        @test cir === cir2
+    end
+
+    @testset "EllipticalArc" begin
+        p, q, c, A, B, rot = (0.0, 0.0), (1.0, 0.0), (0.5, 0.5), 1.0, 1.0, 0.0
+        ell = DT.EllipticalArc(p, q, c, A, B, rot)
+        ell2 = copy(ell)
+        @test ell === ell2
+        ell2 = deepcopy(ell)
+        @test ell === ell2
+    end
+
+    @testset "CatmullRomSplineSegment" begin
+        p0, p1, p2, p3, a, t = (0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), 0.5, 0.5
+        spl = DT.catmull_rom_spline_segment(p0, p1, p2, p3, a, t)
+        spl2 = copy(spl)
+        @test spl === spl2
+        spl2 = deepcopy(spl)
+        @test spl === spl2
+    end
+
+    @testset "CatmullRomSpline" begin
+        control_points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
+        spl = CatmullRomSpline(control_points)
+        spl2 = copy(spl)
+        @test spl == spl2 && !(spl === spl2)
+        @test spl.control_points == spl2.control_points && !(spl.control_points === spl2.control_points)
+        @test spl.knots == spl2.knots && !(spl.knots === spl2.knots)
+        @test spl.lookup_table == spl2.lookup_table && !(spl.lookup_table === spl2.lookup_table)
+        @test spl.alpha === spl2.alpha
+        @test spl.tension === spl2.tension
+        @test spl.left === spl2.left
+        @test spl.right === spl2.right
+        @test spl.lengths == spl2.lengths && !(spl.lengths === spl2.lengths)
+        @test spl.segments == spl2.segments && !(spl.segments === spl2.segments)
+        @test spl.orientation_markers == spl2.orientation_markers && !(spl.orientation_markers === spl2.orientation_markers)
+        spl2 = deepcopy(spl)
+        @test spl == spl2 && !(spl === spl2)
+    end
+
+    @testset "BSpline" begin
+        control_points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
+        spl = BSpline(control_points)
+        spl2 = copy(spl)
+        @test spl == spl2 && !(spl === spl2)
+        @test spl.control_points == spl2.control_points && !(spl.control_points === spl2.control_points)
+        @test spl.knots == spl2.knots && !(spl.knots === spl2.knots)
+        @test spl.lookup_table == spl2.lookup_table && !(spl.lookup_table === spl2.lookup_table)
+        @test spl.orientation_markers == spl2.orientation_markers && !(spl.orientation_markers === spl2.orientation_markers)
+        @test spl.cache == spl2.cache && !(spl.cache === spl2.cache)
+        spl2 = deepcopy(spl)
+        @test spl == spl2 && !(spl === spl2)
+    end
 end

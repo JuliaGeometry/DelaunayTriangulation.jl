@@ -49,6 +49,35 @@ struct VoronoiTessellation{Tr <: Triangulation, P, I, T, S, E}
     boundary_polygons::Set{I}
 end
 
+function Base.copy(vorn::VoronoiTessellation)
+    return VoronoiTessellation(
+        copy(get_triangulation(vorn)),
+        copy(get_generators(vorn)),
+        copy(get_polygon_points(vorn)),
+        copy(get_polygons(vorn)),
+        copy(get_circumcenter_to_triangle(vorn)),
+        copy(get_triangle_to_circumcenter(vorn)),
+        copy(get_unbounded_polygons(vorn)),
+        copy(get_cocircular_circumcenters(vorn)),
+        copy(get_adjacent(vorn)),
+        copy(get_boundary_polygons(vorn))
+    )
+end
+
+function Base.:(==)(vorn1::VoronoiTessellation, vorn2::VoronoiTessellation)
+    get_triangulation(vorn1) ≠ get_triangulation(vorn2) && return false 
+    get_generators(vorn1) ≠ get_generators(vorn2) && return false
+    get_polygon_points(vorn1) ≠ get_polygon_points(vorn2) && return false
+    get_polygons(vorn1) ≠ get_polygons(vorn2) && return false
+    get_circumcenter_to_triangle(vorn1) ≠ get_circumcenter_to_triangle(vorn2) && return false
+    get_triangle_to_circumcenter(vorn1) ≠ get_triangle_to_circumcenter(vorn2) && return false
+    get_unbounded_polygons(vorn1) ≠ get_unbounded_polygons(vorn2) && return false
+    get_cocircular_circumcenters(vorn1) ≠ get_cocircular_circumcenters(vorn2) && return false
+    get_adjacent(vorn1) ≠ get_adjacent(vorn2) && return false
+    get_boundary_polygons(vorn1) ≠ get_boundary_polygons(vorn2) && return false
+    return true
+end
+
 """
     get_triangulation(vorn::VoronoiTessellation) -> Triangulation 
 

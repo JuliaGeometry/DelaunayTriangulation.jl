@@ -24,6 +24,8 @@ function Base.show(io::IO, m::MIME"text/plain", adj2v::Adjacent2Vertex{I, Es}) w
 end
 Base.sizehint!(adj2v::Adjacent2Vertex, n) = Base.sizehint!(get_adjacent2vertex(adj2v), n)
 
+Base.copy(adj2v::Adjacent2Vertex) = Adjacent2Vertex(copy(get_adjacent2vertex(adj2v)))
+
 """
     get_adjacent2vertex(adj2v::Adjacent2Vertex) -> Dict
 

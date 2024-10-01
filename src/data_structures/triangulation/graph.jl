@@ -54,6 +54,13 @@ function Base.sizehint!(graph::Graph, n1, n2, n3)
     return graph
 end
 
+function Base.copy(graph::Graph)
+    V = get_vertices(graph)
+    E = get_edges(graph)
+    N = get_neighbours(graph)
+    return Graph(copy(V), copy(E), copy(N))
+end
+
 """
     get_vertices(graph::Graph) -> Set{Vertex}
 

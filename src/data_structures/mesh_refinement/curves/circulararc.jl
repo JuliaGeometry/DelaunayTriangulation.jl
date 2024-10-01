@@ -44,6 +44,8 @@ function Base.:(==)(c₁::CircularArc, c₂::CircularArc)
     return true
 end
 
+Base.copy(c::CircularArc) = c
+
 function CircularArc(p, q, c; positive=true)
     px, py = getxy(p)
     qx, qy = getxy(q)

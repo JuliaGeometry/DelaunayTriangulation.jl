@@ -45,6 +45,16 @@ function Base.:(==)(b₁::BSpline, b₂::BSpline)
     return true
 end
 
+function Base.copy(b::BSpline)
+    return BSpline(
+        copy(b.control_points),
+        copy(b.knots),
+        copy(b.cache),
+        copy(b.lookup_table),
+        copy(b.orientation_markers)
+    )
+end
+
 function BSpline(control_points::Vector{NTuple{2,Float64}}; degree=3, lookup_steps=5000, kwargs...)
     nc = length(control_points)
     @assert degree ≥ 1 "Degree must be at least 1, got $degree."

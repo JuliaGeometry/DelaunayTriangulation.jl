@@ -316,7 +316,13 @@ function remake_triangulation_with_constraints(tri::Triangulation, segments, bou
     boundary_curves = get_boundary_curves(tri)
     I = integer_type(tri)
     E = edge_type(tri)
-    boundary_edge_map = construct_boundary_edge_map(boundary_nodes, I, E)
+    if is_curve_bounded(tri)
+        boundary_edge_map = get_boundary_edge_map(get_boundary_enricher(tri))
+        empty!(boundary_edge_map)
+        _construct_boundary_edge_map!(boundary_edge_map, boundary_nodes)
+    else
+        boundary_edge_map = construct_boundary_edge_map(boundary_nodes, I, E)
+    end
     ghost_vertex_map = get_ghost_vertex_map(tri)
     new_ghost_vertex_map = construct_ghost_vertex_map(boundary_nodes, I) # Delay putting these in until we are done with the triangulation
     ghost_vertex_ranges = get_ghost_vertex_ranges(tri)
@@ -349,7 +355,7 @@ function remake_triangulation_with_constraints(tri::Triangulation, segments, bou
 end
 
 """
-    replace_ghost_vertex_information(tri::Triangulation, ghost_vertex_map, ghost_vertex_ranges) -> Triangulation
+    replace_ghost_vertex_information(tri::Triangulation, ghost_vertex_map, ghost_vertex_ranges, polygon_hierarchy) -> Triangulation
 
 Replaces the ghost vertex information in `tri` with `ghost_vertex_map` and `ghost_vertex_ranges`, using the results from 
 [`remake_triangulation_with_constraints`](@ref).
@@ -358,11 +364,12 @@ Replaces the ghost vertex information in `tri` with `ghost_vertex_map` and `ghos
 - `tri::Triangulation`: The triangulation to remake.
 - `ghost_vertex_map`: The ghost vertex map to add to the triangulation.
 - `ghost_vertex_ranges`: The ghost vertex ranges to add to the triangulation.
+- `polygon_hierarchy`: The polygon hierarchy to add to the triangulation.
 
 # Outputs
 - `new_tri::Triangulation`: The new triangulation, now containing `ghost_vertex_map` in the `ghost_vertex_map` field and `ghost_vertex_ranges` in the `ghost_vertex_ranges` field.
 """
-function replace_ghost_vertex_information(tri::Triangulation, ghost_vertex_map, ghost_vertex_ranges)
+function replace_ghost_vertex_information(tri::Triangulation, ghost_vertex_map, ghost_vertex_ranges, polygon_hierarchy = get_polygon_hierarchy(tri))
     points = get_points(tri)
     triangles = get_triangles(tri)
     boundary_nodes = get_boundary_nodes(tri)
@@ -376,7 +383,6 @@ function replace_ghost_vertex_information(tri::Triangulation, ghost_vertex_map, 
     boundary_edge_map = get_boundary_edge_map(tri)
     ch = get_convex_hull(tri)
     representative_point_list = get_representative_point_list(tri)
-    polygon_hierarchy = get_polygon_hierarchy(tri)
     boundary_enricher = get_boundary_enricher(tri)
     cache = get_cache(tri)
     return Triangulation(
@@ -828,13 +834,11 @@ function constrained_triangulation!(tri::Triangulation, segments, boundary_nodes
     for e in each_edge(all_segments)
         add_segment!(new_tri, e; predicates, rng)
     end
-    new_tri_2 = replace_ghost_vertex_information(new_tri, ghost_vertex_map, ghost_vertex_ranges)
+    new_tri_2 = replace_ghost_vertex_information(new_tri, ghost_vertex_map, ghost_vertex_ranges, full_polygon_hierarchy)
     if !(isnothing(boundary_nodes) || !has_boundary_nodes(boundary_nodes)) && delete_holes
         delete_holes!(new_tri_2)
         add_boundary_information!(new_tri_2)
         add_ghost_triangles!(new_tri_2) # fix the ghost triangles 
-        polygon_hierarchy = get_polygon_hierarchy(new_tri_2)
-        copyto!(polygon_hierarchy, full_polygon_hierarchy)
     end
     return new_tri_2
 end
