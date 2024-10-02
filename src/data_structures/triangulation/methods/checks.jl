@@ -1,6 +1,6 @@
 """
-    edge_exists(tri::Triangulation, ij) -> Bool 
-    edge_exists(tri::Triangulation, i, j) -> Bool
+    edge_exists(tri::Union{Triangulation, Adjacent}, ij) -> Bool 
+    edge_exists(tri::Union{Triangulation, Adjacent}, i, j) -> Bool
 
 Tests if the edge `(i, j)` is in `tri`, returning `true` if so and `false` otherwise. 
 

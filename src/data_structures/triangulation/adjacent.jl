@@ -55,7 +55,6 @@ true
 """
 get_adjacent(adj::Adjacent) = adj.adjacent
 
-
 """
     get_adjacent(adj::Adjacent{I, E}, uv::E) -> Vertex
     get_adjacent(adj::Adjacent{I, E}, u, v) -> Vertex
@@ -278,3 +277,6 @@ function Base.empty!(adj::Adjacent)
     empty!(dict)
     return adj
 end
+
+edge_exists(adj::Adjacent, uv) = edge_exists(get_adjacent(adj, uv))
+edge_exists(adj::Adjacent, u, v) = edge_exists(get_adjacent(adj, u, v))
