@@ -20,7 +20,7 @@ cache = DT.TriangulationCache()
 @test isnothing(DT.get_surrounding_polygon(cache))
 @test typeof(cache) == DT.EmptyTriangulationCache
 
-tri = triangulate(rand(2, 50); weights = rand(50))
+tri = triangulate(rand(2, 50); weights=rand(50))
 cache = DT.get_cache(tri)
 @test get_weights(DT.get_triangulation(DT.get_cache(tri))) === get_weights(tri)
 DT.unconstrained_triangulation!(DT.get_triangulation(cache))
@@ -89,3 +89,20 @@ empty!(cache)
 @test length.(DT.get_incircle_cache(cache)) == length.(AdaptivePredicates.incircleadapt_cache(Float64))
 @test length.(DT.get_orient3_cache(cache)) == length.(AdaptivePredicates.orient3adapt_cache(Float64))
 @test length.(DT.get_insphere_cache(cache)) == length.(AdaptivePredicates.insphereexact_cache(Float64))
+
+@testset "copy/deepcopy" begin
+    cache = DT.TriangulationCache()
+    @test copy(cache) === cache
+
+    tri = triangulate(rand(2, 50))
+    cache = DT.get_cache(tri)
+    cache2 = copy(cache)
+    @inferred copy(cache2)
+    @test typeof(cache2) == typeof(cache) && !(cache2 === cache)
+
+    tri = triangulate(rand(2, 50); weights=rand(50))
+    cache = DT.get_cache(tri)
+    cache2 = copy(cache)
+    @inferred copy(cache2)
+    @test typeof(cache2) == typeof(cache) && !(cache2 === cache)
+end

@@ -23,6 +23,8 @@ function Base.show(io::IO, m::MIME"text/plain", adj::Adjacent{I, E}) where {I, E
 end
 Base.sizehint!(adj::Adjacent, n) = sizehint!(get_adjacent(adj), n)
 
+Base.copy(adj::Adjacent) = Adjacent(copy(get_adjacent(adj)))
+
 """
     get_adjacent(adj::Adjacent) -> Dict 
 

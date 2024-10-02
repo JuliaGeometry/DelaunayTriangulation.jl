@@ -131,7 +131,7 @@ refine!(tri_4; max_area=1.0e-1A, use_circumcenter=true, use_lens=false)
     @test DT.get_ghost_vertex_ranges(tri) == tri.ghost_vertex_ranges == DT.construct_ghost_vertex_ranges(get_boundary_nodes(tri))
     @test DT.get_boundary_edge_map(tri) == tri.boundary_edge_map == DT.construct_boundary_edge_map(get_boundary_nodes(tri))
     @test DT.get_cache(tri) == tri.cache
-    @test DT.get_incircle_cache(tri) === tri.cache.incircle_cache 
+    @test DT.get_incircle_cache(tri) === tri.cache.incircle_cache
     @test DT.get_orient3_cache(tri) === tri.cache.orient3_cache
     @test DT.get_insphere_cache(tri) === tri.cache.insphere_cache
     @inferred DT.get_points(tri)
@@ -1486,4 +1486,121 @@ end
     @test validate_triangulation(tri2)
     @test tri1 == tri2
     @test !DT.has_boundary_nodes(tri2)
+end
+
+@testset "copy/deepcopy" begin 
+    tri = triangulate(rand(2, 50))
+    _tri1 = copy(tri)
+    _tri2 = deepcopy(tri)
+    @test typeof(tri) == typeof(_tri1) == typeof(_tri2)
+    for tri2 in (_tri1, _tri2)
+        @test tri == tri2 && !(tri === tri2)
+        for f in fieldnames(typeof(tri))
+            f in (:weights, :boundary_enricher) && continue
+            @test getfield(tri, f) == getfield(tri2, f)
+            f == :boundary_curves && continue
+            @test !(getfield(tri, f) === getfield(tri2, f))
+        end
+    end
+
+    a, b, c, d = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
+    points = [a, b, c, d]
+    append!(points, tuple.(rand(100), rand(100)))
+    tri = triangulate(points; boundary_nodes=[1, 2, 3, 4, 1], segments=Set([(1, 3)]))
+    _tri1 = copy(tri)
+    _tri2 = deepcopy(tri)
+    @test typeof(tri) == typeof(_tri1) == typeof(_tri2)
+    for tri2 in (_tri1, _tri2)
+        @test tri == tri2 && !(tri === tri2)
+        for f in fieldnames(typeof(tri))
+            f in (:weights, :boundary_enricher, :cache) && continue
+            @test getfield(tri, f) == getfield(tri2, f)
+            f == :boundary_curves && continue
+            @test !(getfield(tri, f) === getfield(tri2, f))
+        end
+        bem = DT.get_boundary_edge_map(tri)
+        _bem = DT.get_boundary_edge_map(tri2)
+        @test bem == _bem && !(bem === _bem)
+        bn = DT.get_boundary_nodes(tri)
+        _bn = DT.get_boundary_nodes(tri2)
+        cbn = first.(values(bem))
+        _cbn = first.(values(_bem))
+        @test all(x -> x === bn, cbn)
+        @test all(x -> x === _bn, _cbn)
+        @test all(x -> !(x === _bn), cbn)
+    end
+
+    curve_XI = [
+        [
+            [1, 2, 3], [DT.EllipticalArc((2.0, 0.0), (-2.0, 0.0), (0.0, 0.0), 2, 1 / 2, 0.0)],
+        ],
+        [
+            [BSpline([(0.0, 0.4), (1.0, 0.2), (0.0, 0.1), (-1.0, 0.2), (0.0, 0.4)])],
+        ],
+        [
+            [4, 5, 6, 7, 4],
+        ],
+        [
+            [BezierCurve(reverse([(-1.0, -3.0), (-1.0, -2.5), (0.0, -2.5), (0.0, -2.0)]))], [CatmullRomSpline(reverse([(0.0, -2.0), (1.0, -3.0), (0.0, -4.0), (-1.0, -3.0)]))],
+        ],
+        [
+            [12, 11, 10, 12],
+        ],
+        [
+            [CircularArc((1.1, -3.0), (1.1, -3.0), (0.0, -3.0), positive=false)],
+        ],
+    ]
+    points_XI = [(-2.0, 0.0), (0.0, 0.0), (2.0, 0.0), (-2.0, -5.0), (2.0, -5.0), (2.0, -1 / 10), (-2.0, -1 / 10), (-1.0, -3.0), (0.0, -4.0), (0.0, -2.3), (-0.5, -3.5), (0.9, -3.0)]
+    fpoints_XI = flatten_boundary_nodes(points_XI, curve_XI)
+    points_XI_extra = copy(points_XI)
+    push!(points_XI_extra, (-1.0, -4.0), (-1.0, -2.0), (0.0, -4.1), (1.0, -4.0), (1.0, -2.0), (1.0, 0.4), (0.0, 0.49), (1.99, -2.0), (-1.99, -2.0), (-1.99, -3.71))
+    tri = triangulate(points_XI_extra; boundary_nodes=curve_XI)
+    _tri1 = copy(tri)
+    _tri2 = deepcopy(tri)
+    @test typeof(tri) == typeof(_tri1) == typeof(_tri2)
+    for tri2 in (_tri1, _tri2)
+        @test tri == tri2 && !(tri === tri2)
+        for f in fieldnames(typeof(tri))
+            f in (:weights, :cache) && continue
+            @test getfield(tri, f) == getfield(tri2, f)
+            @test !(getfield(tri, f) === getfield(tri2, f))
+        end
+        enricher = DT.get_boundary_enricher(tri)
+        _enricher = DT.get_boundary_enricher(tri2)
+        tree = DT.get_spatial_tree(enricher)
+        _tree = DT.get_spatial_tree(_enricher)
+        @test tree == _tree && !(tree === _tree)
+        @test enricher == _enricher && !(enricher === _enricher)
+        @test DT.get_points(enricher) === DT.get_points(tri)
+        @test DT.get_boundary_nodes(enricher) === DT.get_boundary_nodes(tri)
+        @test DT.get_boundary_curves(enricher) === DT.get_boundary_curves(tri)
+        @test DT.get_segments(enricher) === DT.get_interior_segments(tri)
+        @test DT.get_polygon_hierarchy(enricher) === DT.get_polygon_hierarchy(tri)
+        @test DT.get_boundary_edge_map(enricher) === DT.get_boundary_edge_map(tri)
+        @test DT.get_points(_enricher) === DT.get_points(tri2)
+        @test DT.get_boundary_nodes(_enricher) === DT.get_boundary_nodes(tri2)
+        @test DT.get_boundary_curves(_enricher) === DT.get_boundary_curves(tri2)
+        @test DT.get_segments(_enricher) === DT.get_interior_segments(tri2)
+        @test DT.get_polygon_hierarchy(_enricher) === DT.get_polygon_hierarchy(tri2)
+        @test DT.get_boundary_edge_map(_enricher) === DT.get_boundary_edge_map(tri2)
+    end
+
+    tri = triangulate(rand(2, 50); weights = rand(50))
+    _tri1 = copy(tri)
+    _tri2 = deepcopy(tri)
+    @test typeof(tri) == typeof(_tri1) == typeof(_tri2)
+    for tri2 in (_tri1, _tri2)
+        @test tri == tri2 && !(tri === tri2)
+        for f in fieldnames(typeof(tri))
+            f in (:boundary_enricher, :cache) && continue
+            @test getfield(tri, f) == getfield(tri2, f)
+            f in (:boundary_curves,) && continue
+            @test !(getfield(tri, f) === getfield(tri2, f))
+        end
+        @test get_weights(tri) == get_weights(tri2) && !(get_weights(tri) === get_weights(tri2))
+        cache = DT.get_cache(tri)
+        _cache = DT.get_cache(tri2)
+        @test DT.get_weights(DT.get_triangulation(cache)) === DT.get_weights(DT.get_triangulation_2(cache)) === DT.get_weights(tri)
+        @test DT.get_weights(DT.get_triangulation(_cache)) === DT.get_weights(DT.get_triangulation_2(_cache)) === DT.get_weights(tri2)
+    end
 end

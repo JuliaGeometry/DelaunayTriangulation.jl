@@ -496,6 +496,25 @@ end
     @test DT.reorient_edge(enricher, 23, 14) == (14, 23)
 end
 
+@testset "copy/deepcopy" begin 
+    ppoints_XI = deepcopy(points_XI)
+    ccurve_XI = deepcopy(curve_XI)
+    tri = triangulate(ppoints_XI; boundary_nodes = ccurve_XI)
+    enricher = DT.get_boundary_enricher(tri)
+    enricher2 = copy(enricher)
+    @test enricher == enricher2 && !(enricher === enricher2)
+    @test get_points(enricher) === get_points(get_boundary_curves(enricher)[1])
+    @test get_points(enricher) === get_points(get_boundary_curves(enricher)[4])
+    @test get_points(enricher) === get_points(get_boundary_curves(enricher)[7])
+    @test get_points(enricher) === DT.get_spatial_tree(enricher).points
+    enricher2 = deepcopy(enricher)
+    @test enricher == enricher2 && !(enricher === enricher2)
+    @test get_points(enricher) === get_points(get_boundary_curves(enricher)[1])
+    @test get_points(enricher) === get_points(get_boundary_curves(enricher)[4])
+    @test get_points(enricher) === get_points(get_boundary_curves(enricher)[7])
+    @test get_points(enricher) === DT.get_spatial_tree(enricher).points
+end
+
 @testset "coarse_discretisation" begin
     # I 
     points = deepcopy(points_I)
@@ -1018,6 +1037,9 @@ end
     member = SACM(1, 7)
     nmember = DT.replace_next_edge(member, 12)
     @test DT.get_parent_curve(nmember) == 1 && DT.get_next_edge(nmember) == 12
+    membercopy = copy(member)
+    @test member === membercopy
+    @test member === deepcopy(member)
 
     points, boundary_nodes = deepcopy(points_I), deepcopy(curve_I)
     enricher = DT.BoundaryEnricher(points, boundary_nodes)
@@ -1058,6 +1080,11 @@ end
         1 => [SAC(1, [SACM(3, 11), SACM(1, 2)])],
     )
     @test DT.get_small_angle_complexes(enricher) == _complexes
+    cp1 = DT.get_small_angle_complexes(enricher)
+    cp2 = copy(cp1)
+    @test cp1 == cp2 && !(cp1 === cp2)
+    cp2 = deepcopy(cp1)
+    @test cp1 == cp2 && !(cp1 === cp2)
 
     A, B, C, D, E, F, G, H, I, J, K = (0.0, 0.0), (0.2, 1.4), (0.6, 1.2),
     (1.2, 0.2), (1.2, -0.2), (-1.4, -0.2),

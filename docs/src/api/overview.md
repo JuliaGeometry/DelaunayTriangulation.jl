@@ -23,5 +23,5 @@ associated accessor functions are intended to be used, e.g. prefer `get_X(tri)` 
 Each section will first start with the list of all functions to be listed, and then the docstrings of those functions will be given. There will be some docstrings that fit into multiple categories, in which case one is chosen. Here is an index of all the functions listed in the above pages.
 
 ```@index 
-Pages = ["data_structures.md", "triangulation.md", "operations.md", "voronoi.md", "convex_hull.md", "curves.md", "iterators.md", "point_location.md", "predicates.md", "statistics.md", "primitive_interfaces.md", "other.md"]
+Pages = ["convex_hull.md", "curves.md", "data_structures.md", "iterators.md", "operations.md", "other.md", "point_location.md", "predicates.md", "primitives.md", "statistics.md", "triangulation.md", "voronoi.md"]
 ```

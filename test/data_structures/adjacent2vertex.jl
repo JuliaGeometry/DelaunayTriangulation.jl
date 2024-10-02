@@ -3,12 +3,12 @@ const DT = DelaunayTriangulation
 using DataStructures
 using StaticArrays
 
-global dict_1 = Dict{Int, Set{NTuple{2, Int}}}()
-global dict_2 = Dict{Int, Vector{NTuple{2, Int}}}()
-global dict_3 = Dict{Int32, Set{SVector{2, Int32}}}()
-global adj2v_1 = DT.Adjacent2Vertex{Int, Set{NTuple{2, Int}}}()
-global adj2v_2 = DT.Adjacent2Vertex{Int, Vector{NTuple{2, Int}}}()
-global adj2v_3 = DT.Adjacent2Vertex{Int32, Set{SVector{2, Int32}}}()
+global dict_1 = Dict{Int,Set{NTuple{2,Int}}}()
+global dict_2 = Dict{Int,Vector{NTuple{2,Int}}}()
+global dict_3 = Dict{Int32,Set{SVector{2,Int32}}}()
+global adj2v_1 = DT.Adjacent2Vertex{Int,Set{NTuple{2,Int}}}()
+global adj2v_2 = DT.Adjacent2Vertex{Int,Vector{NTuple{2,Int}}}()
+global adj2v_3 = DT.Adjacent2Vertex{Int32,Set{SVector{2,Int32}}}()
 
 @testset "Constructors and getters" begin
     @test adj2v_1.adjacent2vertex == dict_1
@@ -32,28 +32,28 @@ global dict_2 = Dict(
     2 => [(5, 7), (10, 14), (2, 3), (5, 9)],
     3 => [(10, 25), (23, 29)],
 )
-global dict_3 = Dict{Int32, Set{SVector{2, Int32}}}(
-    1 => Set{SVector{2, Int32}}(
+global dict_3 = Dict{Int32,Set{SVector{2,Int32}}}(
+    1 => Set{SVector{2,Int32}}(
         (
-            @SVector[1, 2],
-            @SVector[3, 4],
-            @SVector[10, 15],
-            @SVector[2, 5],
-        ),
+        @SVector[1, 2],
+        @SVector[3, 4],
+        @SVector[10, 15],
+        @SVector[2, 5],
     ),
-    2 => Set{SVector{2, Int32}}(
-        (
-            @SVector[5, 7],
-            @SVector[10, 14],
-            @SVector[2, 3],
-            @SVector[5, 9],
-        ),
     ),
-    3 => Set{SVector{2, Int32}}(
+    2 => Set{SVector{2,Int32}}(
         (
-            @SVector[10, 25],
-            @SVector[23, 29],
-        ),
+        @SVector[5, 7],
+        @SVector[10, 14],
+        @SVector[2, 3],
+        @SVector[5, 9],
+    ),
+    ),
+    3 => Set{SVector{2,Int32}}(
+        (
+        @SVector[10, 25],
+        @SVector[23, 29],
+    ),
     ),
 )
 global adj2v_1 = DT.Adjacent2Vertex(dict_1)
@@ -75,20 +75,20 @@ global adj2v_3 = DT.Adjacent2Vertex(dict_3)
             @test w3 == [(10, 25), (23, 29)]
         elseif adj2v === adj2v_3
             @test w1 ==
-                Set{SVector{2, Int32}}(
+                  Set{SVector{2,Int32}}(
                 (
-                    @SVector[1, 2], @SVector[3, 4], @SVector[10, 15],
-                    @SVector[2, 5],
-                ),
+                @SVector[1, 2], @SVector[3, 4], @SVector[10, 15],
+                @SVector[2, 5],
+            ),
             )
             @test w2 ==
-                Set{SVector{2, Int32}}(
+                  Set{SVector{2,Int32}}(
                 (
-                    @SVector[5, 7], @SVector[10, 14], @SVector[2, 3],
-                    @SVector[5, 9],
-                ),
+                @SVector[5, 7], @SVector[10, 14], @SVector[2, 3],
+                @SVector[5, 9],
+            ),
             )
-            @test w3 == Set{SVector{2, Int32}}((@SVector[10, 25], @SVector[23, 29]))
+            @test w3 == Set{SVector{2,Int32}}((@SVector[10, 25], @SVector[23, 29]))
         end
 
         DT.add_adjacent2vertex!(adj2v, 1, 23, 50)
@@ -103,24 +103,24 @@ global adj2v_3 = DT.Adjacent2Vertex(dict_3)
             @test w3 == [(10, 25), (23, 29), (38, 173)]
         elseif adj2v === adj2v_3
             @test w1 ==
-                Set{SVector{2, Int32}}(
+                  Set{SVector{2,Int32}}(
                 (
-                    @SVector[1, 2], @SVector[3, 4], @SVector[10, 15],
-                    @SVector[2, 5], @SVector[23, 50],
-                ),
+                @SVector[1, 2], @SVector[3, 4], @SVector[10, 15],
+                @SVector[2, 5], @SVector[23, 50],
+            ),
             )
             @test w2 ==
-                Set{SVector{2, Int32}}(
+                  Set{SVector{2,Int32}}(
                 (
-                    @SVector[5, 7], @SVector[10, 14], @SVector[2, 3],
-                    @SVector[5, 9],
-                ),
+                @SVector[5, 7], @SVector[10, 14], @SVector[2, 3],
+                @SVector[5, 9],
+            ),
             )
-            @test w3 == Set{SVector{2, Int32}}(
+            @test w3 == Set{SVector{2,Int32}}(
                 (
-                    @SVector[10, 25], @SVector[23, 29],
-                    @SVector[38, 173],
-                ),
+                @SVector[10, 25], @SVector[23, 29],
+                @SVector[38, 173],
+            ),
             )
         end
 
@@ -137,19 +137,19 @@ global adj2v_3 = DT.Adjacent2Vertex(dict_3)
                 @test w3 == [(10, 25), (23, 29), (38, 173)]
             elseif adj2v === adj2v_3
                 @test w1 ==
-                    Set{SVector{2, Int32}}(
+                      Set{SVector{2,Int32}}(
                     (
-                        @SVector[1, 2], @SVector[10, 15], @SVector[2, 5],
-                        @SVector[23, 50],
-                    ),
+                    @SVector[1, 2], @SVector[10, 15], @SVector[2, 5],
+                    @SVector[23, 50],
+                ),
                 )
                 @test w2 ==
-                    Set{SVector{2, Int32}}((@SVector[5, 7], @SVector[10, 14], @SVector[2, 3]))
-                @test w3 == Set{SVector{2, Int32}}(
+                      Set{SVector{2,Int32}}((@SVector[5, 7], @SVector[10, 14], @SVector[2, 3]))
+                @test w3 == Set{SVector{2,Int32}}(
                     (
-                        @SVector[10, 25], @SVector[23, 29],
-                        @SVector[38, 173],
-                    ),
+                    @SVector[10, 25], @SVector[23, 29],
+                    @SVector[38, 173],
+                ),
                 )
             end
         end
@@ -164,14 +164,14 @@ global adj2v_3 = DT.Adjacent2Vertex(dict_3)
             @test w2 == [(5, 7), (10, 14), (2, 3), (5, 9)]
         elseif adj2v === adj2v_3
             @test w1 ==
-                Set{SVector{2, Int32}}(
+                  Set{SVector{2,Int32}}(
                 (
-                    @SVector[1, 2], @SVector[10, 15], @SVector[2, 5],
-                    @SVector[23, 50],
-                ),
+                @SVector[1, 2], @SVector[10, 15], @SVector[2, 5],
+                @SVector[23, 50],
+            ),
             )
             @test w2 ==
-                Set{SVector{2, Int32}}((@SVector[5, 7], @SVector[10, 14], @SVector[2, 3]))
+                  Set{SVector{2,Int32}}((@SVector[5, 7], @SVector[10, 14], @SVector[2, 3]))
         end
 
         DT.add_triangle!(adj2v, 51, 52, 53)
@@ -218,7 +218,7 @@ global adj2v_3 = DT.Adjacent2Vertex(dict_3)
 end
 
 @testset "Seeing if Adjacent2Vertex is empty and clearing empty sets" begin
-    adj2v = DT.Adjacent2Vertex{Int, Set{NTuple{2, Int}}}()
+    adj2v = DT.Adjacent2Vertex{Int,Set{NTuple{2,Int}}}()
     DT.add_adjacent2vertex!(adj2v, 2, 5, 7)
     DT.add_adjacent2vertex!(adj2v, 2, 7, 13)
     DT.add_adjacent2vertex!(adj2v, 13, 5, 23)
@@ -238,4 +238,19 @@ end
     @test !isempty(get_adjacent2vertex(adj2v))
     empty!(adj2v)
     @test isempty(get_adjacent2vertex(adj2v))
+end
+
+@testset "copy/deepcopy" begin
+    tri = triangulate(rand(2, 50))
+    adj2v = get_adjacent2vertex(tri)
+    adj2v2 = copy(adj2v)
+    @test adj2v == adj2v2 && !(adj2v === adj2v2)
+    S = get_adjacent2vertex(adj2v, 1)
+    S2 = get_adjacent2vertex(adj2v2, 1)
+    @test S === S2 # shallow
+    adj2v3 = deepcopy(adj2v)
+    @test adj2v == adj2v3 && !(adj2v === adj2v3)
+    S = get_adjacent2vertex(adj2v, 1)
+    S2 = get_adjacent2vertex(adj2v3, 1)
+    @test !(S === S2) # deep
 end

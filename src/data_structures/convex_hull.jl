@@ -9,7 +9,7 @@ Struct for representing a convex hull. See also [`convex_hull`](@ref).
 
 # Constructors 
     ConvexHull(points, vertices)
-    convex_hull(points; IntegerType=Int)
+    convex_hull(points; predicates=AdaptiveKernel(), IntegerType=Int)
 """
 struct ConvexHull{P, I}
     points::P
@@ -31,6 +31,12 @@ function Base.show(io::IO, m::MIME"text/plain", ch::ConvexHull)
     show(io, m, v)
 end
 Base.sizehint!(ch::ConvexHull, n) = Base.sizehint!(get_vertices(ch), n)
+
+function Base.copy(ch::ConvexHull)
+    p = get_points(ch)
+    v = get_vertices(ch)
+    return ConvexHull(copy(p), copy(v))
+end
 
 @doc """
     get_points(convex_hull::ConvexHull) -> Points

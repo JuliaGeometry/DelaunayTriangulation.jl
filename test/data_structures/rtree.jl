@@ -6,12 +6,21 @@ using Random
 const DT = DelaunayTriangulation
 const SI = SpatialIndexing
 
+@testset "copy for BoundingInterval" begin
+    I = DT.BoundingInterval(1.0, 2.0)
+    @test I === copy(I)
+end
 
 @testset "Expanding a BoundingBox" begin
     bbox = DT.BoundingBox(2, 5, 13, 20)
     tol = 0.1
     bbox2 = DT.expand(bbox, tol)
     @test bbox2 == DT.BoundingBox(2 - 0.3, 5 + 0.3, 13 - 0.7, 20 + 0.7)
+end
+
+@testset "copy for BoundingBox" begin
+    bbox = DT.BoundingBox(2, 5, 13, 20)
+    @test copy(bbox) === bbox
 end
 
 @testset "BoundingBox for a set of points" begin
@@ -54,6 +63,7 @@ end
         for i in axes(points, 2)
             for j in axes(points, 2)
                 bbox = DT.bounding_box(points, i, j)
+                @test copy(bbox) === bbox
                 _bbox = DT.get_bounding_box(bbox)
                 _edge = DT.get_edge(bbox)
                 @test _edge == (i, j)
@@ -78,6 +88,11 @@ end
     leaf1 = DT.Leaf{DT.Branch}(parent, bbox, [dbx1, dbx2])
     leaf2 = DT.Leaf{DT.Branch}(parent, bbox, [dbx1, dbx2])
     @test leaf1 == leaf2
+    @test leaf1 == leaf2
+    @test leaf1 == copy(leaf1) && !(leaf1 === copy(leaf1))
+    @test typeof(copy(leaf1)) === typeof(leaf1)
+    @test leaf1 == deepcopy(leaf1) && !(leaf1 === deepcopy(leaf1))
+    @test typeof(deepcopy(leaf1)) === typeof(leaf1)
     leaf2 = DT.Leaf{DT.Branch}(parent, bbox1, [dbx1, dbx2])
     @test leaf1 ≠ leaf2
     leaf2 = DT.Leaf{DT.Branch}(parent, bbox, [dbx1])
@@ -85,12 +100,21 @@ end
     leaf1 = DT.Leaf{DT.Branch}(DT.Branch(), bbox, [dbx1, dbx2])
     leaf2 = DT.Leaf{DT.Branch}(DT.Branch(), bbox, [dbx1, dbx2])
     @test leaf1 == leaf2
+    @test leaf1 == copy(leaf1) && !(leaf1 === copy(leaf1))
+    @test typeof(copy(leaf1)) === typeof(leaf1)
+    @test leaf1 == deepcopy(leaf1) && !(leaf1 === deepcopy(leaf1))
+    @test typeof(deepcopy(leaf1)) === typeof(leaf1)
 
     leaf1 = DT.Leaf{DT.Branch}(parent, bbox, [dbx1, dbx2])
     leaf2 = DT.Leaf{DT.Branch}(DT.Branch(), bbox, [dbx1, dbx2])
     branch1 = DT.Branch(parent, bbox, [leaf1, leaf2], 1)
     branch2 = DT.Branch(parent, bbox, [leaf1, leaf2], 1)
     @test branch1 == branch2
+    @test leaf1 == leaf2
+    @test branch1 == copy(branch1) && !(branch1 === copy(branch1))
+    @test typeof(copy(branch1)) === typeof(branch1)
+    @test branch1 == deepcopy(branch1) && !(branch1 === deepcopy(branch1))
+    @test typeof(deepcopy(branch1)) === typeof(branch1)
     branch2 = DT.Branch(parent, bbox, [leaf1, leaf2], 2)
     @test branch1 ≠ branch2
     branch2 = DT.Branch(parent, bbox1, [leaf1, leaf2], 1)
@@ -99,6 +123,11 @@ end
     @test branch1 ≠ branch2
     branch1 = DT.Branch(DT.Branch(), bbox, [leaf1, leaf2], 1)
     branch2 = DT.Branch(DT.Branch(), bbox, [leaf1, leaf2], 1)
+    @test leaf1 == leaf2
+    @test branch1 == copy(branch1) && !(branch1 === copy(branch1))
+    @test typeof(copy(branch1)) === typeof(branch1)
+    @test branch1 == deepcopy(branch1) && !(branch1 === deepcopy(branch1))
+    @test typeof(deepcopy(branch1)) === typeof(branch1)
     @test branch1 == branch2
 end
 
@@ -277,4 +306,56 @@ end
     @test tree1 ≠ tree2
     insert!(tree2, 1, 2)
     @test tree1 == tree2
+end
+
+@testset "RTree copy/deepcopy" begin
+    for f in (copy, deepcopy)
+        tree1 = DT.RTree()
+        tree2 = f(tree1)
+        @test tree1 == tree2 && !(tree1 === tree2)
+        @test typeof(tree1) === typeof(tree2)
+        @test DT.get_branch_cache(tree1) == DT.get_branch_cache(tree2) && !(DT.get_branch_cache(tree1) === DT.get_branch_cache(tree2))
+        @test DT.get_twig_cache(tree1) == DT.get_twig_cache(tree2) && !(DT.get_twig_cache(tree1) === DT.get_twig_cache(tree2))
+        @test DT.get_leaf_cache(tree1) == DT.get_leaf_cache(tree2) && !(DT.get_leaf_cache(tree1) === DT.get_leaf_cache(tree2))
+        @test DT.get_fill_factor(tree1) == DT.get_fill_factor(tree2) 
+        @test DT.get_free_cache(tree1) == DT.get_free_cache(tree2) && !(DT.get_free_cache(tree1) === DT.get_free_cache(tree2))
+        @test DT.get_detached_cache(tree1) == DT.get_detached_cache(tree2) && !(DT.get_detached_cache(tree1) === DT.get_detached_cache(tree2))
+        @test DT.get_intersection_cache(tree1) == DT.get_intersection_cache(tree2) && !(DT.get_intersection_cache(tree1) === DT.get_intersection_cache(tree2))
+
+        insert!(tree1, DT.DiametralBoundingBox(DT.BoundingBox((0.0, 0.0)), (1, 2)))
+        insert!(tree1, DT.DiametralBoundingBox(DT.BoundingBox((0.3, 0.0)), (1, 3)))
+        @test tree1 ≠ tree2
+        tree2 = f(tree1)
+        @test tree1 == tree2 && !(tree1 === tree2)
+        @test typeof(tree1) === typeof(tree2)
+        @test DT.get_branch_cache(tree1) == DT.get_branch_cache(tree2) && !(DT.get_branch_cache(tree1) === DT.get_branch_cache(tree2))
+        @test DT.get_twig_cache(tree1) == DT.get_twig_cache(tree2) && !(DT.get_twig_cache(tree1) === DT.get_twig_cache(tree2))
+        @test DT.get_leaf_cache(tree1) == DT.get_leaf_cache(tree2) && !(DT.get_leaf_cache(tree1) === DT.get_leaf_cache(tree2))
+        @test DT.get_fill_factor(tree1) == DT.get_fill_factor(tree2)
+        @test DT.get_free_cache(tree1) == DT.get_free_cache(tree2) && !(DT.get_free_cache(tree1) === DT.get_free_cache(tree2))
+        @test DT.get_detached_cache(tree1) == DT.get_detached_cache(tree2) && !(DT.get_detached_cache(tree1) === DT.get_detached_cache(tree2))
+        @test DT.get_intersection_cache(tree1) == DT.get_intersection_cache(tree2) && !(DT.get_intersection_cache(tree1) === DT.get_intersection_cache(tree2))
+    end
+end
+
+@testset "BoundaryRTree copy/deepcopy" begin
+    for f in (copy, deepcopy)
+        n = 25
+        points = 5 .* randn(2, n)
+        tree1 = DT.BoundaryRTree(points)
+        tree2 = f(tree1)
+        @test tree1 == tree2 && !(tree1 === tree2)
+        @test typeof(tree1) === typeof(tree2)
+        @test tree1.points == tree2.points && !(tree1.points === tree2.points)
+        @test tree1.tree == tree2.tree && !(tree1.tree === tree2.tree)
+
+        insert!(tree1, 1, 2)
+        insert!(tree1, 1, 3)
+        @test tree1 ≠ tree2
+        tree2 = f(tree1)
+        @test tree1 == tree2 && !(tree1 === tree2)
+        @test typeof(tree1) === typeof(tree2)
+        @test tree1.points == tree2.points && !(tree1.points === tree2.points)
+        @test tree1.tree == tree2.tree && !(tree1.tree === tree2.tree)
+    end
 end

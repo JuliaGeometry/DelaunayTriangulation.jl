@@ -46,6 +46,8 @@ struct CatmullRomSplineSegment <: AbstractParametricCurve
     p₂::NTuple{2,Float64}
 end
 
+Base.copy(c::CatmullRomSplineSegment) = c
+
 function (c::CatmullRomSplineSegment)(t)
     if iszero(t)
         return c.p₁
@@ -201,6 +203,21 @@ struct CatmullRomSpline <: AbstractParametricCurve
     lengths::Vector{Float64}
     segments::Vector{CatmullRomSplineSegment}
     orientation_markers::Vector{Float64}
+end
+
+function Base.copy(c::CatmullRomSpline)
+    return CatmullRomSpline(
+        copy(c.control_points),
+        copy(c.knots),
+        copy(c.lookup_table),
+        c.alpha,
+        c.tension,
+        c.left,
+        c.right,
+        copy(c.lengths),
+        copy(c.segments),
+        copy(c.orientation_markers)
+    )
 end
 
 function _reverse(c::CatmullRomSpline)
