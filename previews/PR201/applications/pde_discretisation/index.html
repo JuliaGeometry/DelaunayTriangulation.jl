@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Solving PDEs · DelaunayTriangulation.jl</title><meta name="title" content="Solving PDEs · DelaunayTriangulation.jl"/><meta property="og:title" content="Solving PDEs · DelaunayTriangulation.jl"/><meta property="twitter:title" content="Solving PDEs · DelaunayTriangulation.jl"/><meta name="description" content="Documentation for DelaunayTriangulation.jl."/><meta property="og:description" content="Documentation for DelaunayTriangulation.jl."/><meta property="twitter:description" content="Documentation for DelaunayTriangulation.jl."/><meta property="og:url" content="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/applications/pde_discretisation/"/><meta property="twitter:url" content="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/applications/pde_discretisation/"/><link rel="canonical" href="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/applications/pde_discretisation/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">DelaunayTriangulation.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><input class="collapse-toggle" id="menuitem-2" type="checkbox"/><label class="tocitem" for="menuitem-2"><span class="docs-label">Tutorials</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../tutorials/overview/">Overview</a></li><li><a class="tocitem" href="../../tutorials/unconstrained/">Unconstrained Triangulations</a></li><li><input class="collapse-toggle" id="menuitem-2-3" type="checkbox"/><label class="tocitem" for="menuitem-2-3"><span class="docs-label">Constrained Triangulations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../tutorials/constrained_edges/">Constrained Edges</a></li><li><a class="tocitem" href="../../tutorials/constrained_outer_boundary/">Outer Boundary</a></li><li><a class="tocitem" href="../../tutorials/constrained_outer_boundary_segmented/">Segmented Outer Boundary</a></li><li><a class="tocitem" href="../../tutorials/constrained_multiply_connected/">Domain with Interior Holes</a></li><li><a class="tocitem" href="../../tutorials/constrained_interior_within_interiors/">Domain with Interior Holes inside Interior Holes</a></li><li><a class="tocitem" href="../../tutorials/constrained_multipolygon/">Disjoint Domains</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-2-4" type="checkbox"/><label class="tocitem" for="menuitem-2-4"><span class="docs-label">Triangulation Operations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../tutorials/operations_vertex_insertion_deletion/">Vertex Insertion and Deletion</a></li><li><a class="tocitem" href="../../tutorials/operations_segment_insertion/">Edge Insertion</a></li><li><a class="tocitem" href="../../tutorials/operations_ghost_triangles/">Adding or Clearing Ghost Triangles</a></li><li><a class="tocitem" href="../../tutorials/operations_flip_edge/">Edge Flipping</a></li><li><a class="tocitem" href="../../tutorials/operations_legalise_edge/">Legalising an Edge</a></li><li><a class="tocitem" href="../../tutorials/operations_split_edge/">Edge Splitting</a></li><li><a class="tocitem" href="../../tutorials/operations_split_triangle/">Triangle Splitting</a></li><li><a class="tocitem" href="../../tutorials/operations_convex_hull_locking/">Locking and Unlocking the Convex Hull</a></li></ul></li><li><a class="tocitem" href="../../tutorials/refinement/">Mesh Refinement</a></li><li><a class="tocitem" href="../../tutorials/lattice/">Triangulating Rectangular Regions</a></li><li><a class="tocitem" href="../../tutorials/convex/">Triangulating Convex Polygons</a></li><li><a class="tocitem" href="../../tutorials/curve_bounded/">Triangulating Curve-Bounded Domains</a></li><li><a class="tocitem" href="../../tutorials/weighted/">Weighted Triangulations</a></li><li><a class="tocitem" href="../../tutorials/voronoi/">Voronoi Tessellations</a></li><li><input class="collapse-toggle" id="menuitem-2-11" type="checkbox"/><label class="tocitem" for="menuitem-2-11"><span class="docs-label">Clipped Voronoi Tessellations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../tutorials/clipped/">Clipping to the Convex Hull</a></li><li><a class="tocitem" href="../../tutorials/clipped_rectangle/">Clipping to a Rectangle</a></li><li><a class="tocitem" href="../../tutorials/clipped_polygon/">Clipping to a Generic Convex Polygon</a></li></ul></li><li><a class="tocitem" href="../../tutorials/centroidal/">Centroidal Voronoi Tessellations</a></li><li><a class="tocitem" href="../../tutorials/power/">Power Diagrams</a></li><li><a class="tocitem" href="../../tutorials/point_location/">Point Location</a></li><li><a class="tocitem" href="../../tutorials/nearest/">Nearest Neighbour Queries</a></li><li><a class="tocitem" href="../../tutorials/convex_hull/">Convex Hulls</a></li><li><a class="tocitem" href="../../tutorials/pole_of_inaccessibility/">Pole of Inaccessibility</a></li><li><a class="tocitem" href="../../tutorials/point_in_polygon/">Point-in-Polygon Testing</a></li><li><a class="tocitem" href="../../tutorials/custom_primitive/">Using Custom Structs for Primitives and Boundaries</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3" type="checkbox"/><label class="tocitem" for="menuitem-3"><span class="docs-label">Manual</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/overview/">Overview</a></li><li><a class="tocitem" href="../../manual/primitives/">Representing Primitives</a></li><li><a class="tocitem" href="../../manual/boundaries/">Representing Boundaries</a></li><li><a class="tocitem" href="../../manual/ghost_triangles/">Ghost (Negative) Vertices</a></li><li><a class="tocitem" href="../../manual/curve_bounded/">Defining Curve-Bounded Domains</a></li><li><a class="tocitem" href="../../manual/predicates/">Geometrical Predicates</a></li><li><a class="tocitem" href="../../manual/triangulation_output/">Triangulation Output</a></li><li><a class="tocitem" href="../../manual/voronoi_output/">Voronoi Tessellation Output</a></li><li><a class="tocitem" href="../../manual/predicate_kernels/">Predicate Kernels</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">API Reference</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../api/overview/">Section Overview</a></li><li><a class="tocitem" href="../../api/data_structures/">Data Structures</a></li><li><a class="tocitem" href="../../api/triangulation/">Triangulations</a></li><li><a class="tocitem" href="../../api/operations/">Triangulation Operations</a></li><li><a class="tocitem" href="../../api/voronoi/">Voronoi Tessellations</a></li><li><a class="tocitem" href="../../api/convex_hull/">Convex Hull</a></li><li><a class="tocitem" href="../../api/curves/">Curves</a></li><li><a class="tocitem" href="../../api/iterators/">Iterators</a></li><li><a class="tocitem" href="../../api/point_location/">Point Location</a></li><li><a class="tocitem" href="../../api/predicates/">Predicates</a></li><li><a class="tocitem" href="../../api/statistics/">Triangulation Statistics</a></li><li><a class="tocitem" href="../../api/primitives/">Primitive Interfaces</a></li><li><a class="tocitem" href="../../api/other/">Other</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">Extended Reference</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../extended/overview/">Overview</a></li><li><a class="tocitem" href="../../extended/data_structures/">Data Structures</a></li><li><a class="tocitem" href="../../extended/algorithms/">Algorithm Internals</a></li><li><a class="tocitem" href="../../extended/utils/">Utility Functions</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">Mathematical Details</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../math/overview/">Overview</a></li><li><a class="tocitem" href="../../math/delaunay/">Delaunay Triangulations</a></li><li><a class="tocitem" href="../../math/constrained/">Constrained Delaunay Triangulations</a></li><li><a class="tocitem" href="../../math/convex/">Triangulating Convex Polygons</a></li><li><a class="tocitem" href="../../math/refinement/">Mesh Refinement</a></li><li><a class="tocitem" href="../../math/curves/">Curves</a></li><li><a class="tocitem" href="../../math/curve_bounded/">Triangulating Curve-Bounded Domains</a></li><li><a class="tocitem" href="../../math/weighted/">Weighted Delaunay Triangulations</a></li><li><a class="tocitem" href="../../math/voronoi/">Voronoi Tessellations</a></li><li><a class="tocitem" href="../../math/clipped/">Clipped Voronoi Tessellations</a></li><li><a class="tocitem" href="../../math/centroidal/">Centroidal Voronoi Tessellations</a></li><li><a class="tocitem" href="../../math/power/">Power Diagrams</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox" checked/><label class="tocitem" for="menuitem-7"><span class="docs-label">Example Applications</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../overview/">Overview</a></li><li><a class="tocitem" href="../interpolation/">Interpolation</a></li><li><a class="tocitem" href="../cell_simulations/">Cellular Biology</a></li><li class="is-active"><a class="tocitem" href>Solving PDEs</a><ul class="internal"><li><a class="tocitem" href="#Problem-Statement"><span>Problem Statement</span></a></li><li><a class="tocitem" href="#Discretisation-of-the-Domain"><span>Discretisation of the Domain</span></a></li><li><a class="tocitem" href="#Discretisation-of-the-PDE"><span>Discretisation of the PDE</span></a></li><li><a class="tocitem" href="#Building-a-Matrix-System"><span>Building a Matrix System</span></a></li><li><a class="tocitem" href="#Implementation"><span>Implementation</span></a></li><li><a class="tocitem" href="#Solving-the-System"><span>Solving the System</span></a></li><li><a class="tocitem" href="#Just-the-code"><span>Just the code</span></a></li></ul></li></ul></li><li><a class="tocitem" href="../../terminology/">Terminology</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Example Applications</a></li><li class="is-active"><a href>Solving PDEs</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Solving PDEs</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_applications/pde_discretisation.jl" title="View source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Solving-PDEs"><a class="docs-heading-anchor" href="#Solving-PDEs">Solving PDEs</a><a id="Solving-PDEs-1"></a><a class="docs-heading-anchor-permalink" href="#Solving-PDEs" title="Permalink"></a></h1><p>For our next application, we consider solving PDEs. In particular, we focus on the discretisation of a domain on which a PDE can be solved. The method we discuss here is the basis of the package <a href="https://github.com/SciML/FiniteVolumeMethod.jl">FiniteVolumeMethod.jl</a>.</p><h2 id="Problem-Statement"><a class="docs-heading-anchor" href="#Problem-Statement">Problem Statement</a><a id="Problem-Statement-1"></a><a class="docs-heading-anchor-permalink" href="#Problem-Statement" title="Permalink"></a></h2><p>For this discussion, we will focus solely on solving a mean exit time problem of the form</p><p class="math-container">\[\begin{aligned}
+D\grad^2 T(\vb x) &amp;= -1, \quad \vb x \in \Omega, \\
+T(\vb x) &amp;= 0, \quad \vb x \in \partial \Omega,
+\end{aligned}\]</p><p>where <span>$T$</span> is the <em>mean exit time</em>, meaning the average amount of time it takes a particle to leave <span>$\Omega$</span> through <span>$\partial\Omega$</span> starting at <span>$\vb x$</span>; <span>$D$</span> is the diffusivity; and <span>$\Omega$</span> is the domain of interest.<sup class="footnote-reference"><a id="citeref-1" href="#footnote-1">[1]</a></sup> For this discussion, we will let <span>$\Omega$</span> be an annulus so that <span>$\Omega = \{(r, \theta) : 1 &lt; r &lt; 2,\, 0 &lt; \theta &lt; 2\pi\}$</span>. We will exploit the linearity in this problem to express its solution as being approximated by some linear system of the form <span>$\vb A\vb T = \vb b$</span>, but we note that for most PDEs nonlinear solvers are required.</p><h2 id="Discretisation-of-the-Domain"><a class="docs-heading-anchor" href="#Discretisation-of-the-Domain">Discretisation of the Domain</a><a id="Discretisation-of-the-Domain-1"></a><a class="docs-heading-anchor-permalink" href="#Discretisation-of-the-Domain" title="Permalink"></a></h2><p>Now let&#39;s discuss the discretisation of <span>$\Omega$</span>. The aim is to decompose <span>$\Omega$</span> into a collection of triangles <span>$\mathcal T_i$</span> such that <span>$\Omega = \cup_i\mathcal T_i$</span>. We will then approximate the solution <span>$T$</span> on each triangle <span>$\mathcal T_i$</span> by a piecewise linear function. For this decomposition, we simply use <span>$\mathcal D\mathcal T(\Omega)$</span>, where <span>$\mathcal D\mathcal T(\Omega)$</span> is some Delaunay triangulation of points in <span>$\Omega$</span> with <span>$\partial\mathcal D\mathcal T(\Omega) = \partial\Omega$</span>. Here is our discretisation of our annulus.</p><pre><code class="language-julia hljs">using DelaunayTriangulation
+using CairoMakie
+using StableRNGs
+rng = StableRNG(123)
+R₁ = 1.0
+R₂ = 2.0
+outer_circle = CircularArc((R₂, 0.0), (R₂, 0.0), (0.0, 0.0))
+inner_circle = CircularArc((R₁, 0.0), (R₁, 0.0), (0.0, 0.0), positive = false)
+points = NTuple{2, Float64}[]
+tri = triangulate(points; rng, boundary_nodes = [[[outer_circle]], [[inner_circle]]])
+A = 2π * (R₂^2 - R₁^2)
+refine!(tri; max_area = 2.0e-3A, min_angle = 33.0, rng)
+fig, ax, sc = triplot(tri)
+fig</code></pre><img src="98f1fdae.png" alt="Example block output"/><h2 id="Discretisation-of-the-PDE"><a class="docs-heading-anchor" href="#Discretisation-of-the-PDE">Discretisation of the PDE</a><a id="Discretisation-of-the-PDE-1"></a><a class="docs-heading-anchor-permalink" href="#Discretisation-of-the-PDE" title="Permalink"></a></h2><p>Now let&#39;s determine how we can use the discretisation above to solve the PDE. Central to this approach is the idea of a <em>control volume</em> around each point. In particular, connect the centroids of each triangle to the midpoints of the edges of the triangle. This defines a collection of polygons <span>$\Omega_i$</span> around each point <span>$\vb x_i$</span>, as shown below in blue.</p><img src="857a0d22.png" alt="Example block output"/><p>Consider a particular control volume <span>$\Omega_i$</span>. We integrate our PDE over this domain, writing <span>$\grad^2 = \grad \vdot \grad$</span> and use the divergence theorem:</p><p class="math-container">\[\begin{aligned}
+D\iint_{\Omega_i} \grad^2 T(\vb x)\, \dd A &amp;= -\iint_{\Omega_i}\, \dd A \\
+D\oint_{\partial\Omega_i} \grad T(\vb x) \vdot \vu{n}\, \dd s &amp;= -A_i,
+\end{aligned}\]</p><p>where <span>$\vu{n}$</span> is the outward normal to <span>$\Omega_i$</span> and <span>$A_i$</span> is the area of <span>$\Omega_i$</span>. Now, let <span>$\mathcal E_i$</span> be the set of edges defining <span>$\partial\Omega_i$</span> so that <span>$\partial\Omega_i = \cup_{\sigma\in\mathcal E_i} \sigma$</span>. Thus,</p><p class="math-container">\[D\sum_{\sigma\in\mathcal E_i}\int_\sigma \grad T(\vb x) \vdot \vu{n}\, \dd s = -A_i.\]</p><p>Now we want to approximate each <span>$\int_\sigma \grad T(\vb x) \vdot \vu{n} \, \dd s$</span>. First, we use a midpoint approximation to give</p><p class="math-container">\[\int_{\sigma} \grad T(\vb x) \vdot \vu{n}\, \dd s \approx \left[\grad T(\vb x_\sigma) \vdot \vu{n}_\sigma\right] L_\sigma,\]</p><p>where <span>$\vb x_\sigma$</span> is the midpoint of <span>$\sigma$</span>, and <span>$\vu{n}_\sigma$</span> is the normal to <span>$\sigma$</span>. Now, to approximate <span>$\grad T(\vb x_\sigma)$</span>, we use a piecewise linear approximation to <span>$T$</span> on each triangle. In particular, suppose <span>$\vb x_\sigma$</span> is inside some triangle <span>$\mathcal T_k$</span>. We use a linear shape function inside <span>$\mathcal T_k$</span> for approximating <span>$T$</span>, writing</p><p class="math-container">\[T(\vb x) = \alpha_k x + \beta_k y + \gamma_k, \quad \vb x \in \mathcal T_k.\]</p><p>Using Cramer&#39;s rule, we can determine <span>$\alpha_k$</span>, <span>$\beta_k$</span>, and <span>$\gamma_k$</span> in terms of the values of <span>$T$</span> at the vertices of <span>$\mathcal T_k$</span>. In particular,</p><p class="math-container">\[\begin{aligned}
+\alpha_k &amp;= s_{k, 11} T_{k1} + s_{k, 12} T_{k2} + s_{k, 13} T_{k3}, \\
+\beta_k &amp;= s_{k, 21} T_{k1} + s_{k, 22} T_{k2} + s_{k, 23} T_{k3}, \\
+\gamma_k &amp;= s_{k, 31} T_{k1} + s_{k, 32} T_{k2} + s_{k, 33} T_{k3},
+\end{aligned}\]</p><p>where</p><p class="math-container">\[\begin{aligned}
+\vb S_k &amp;= \frac{1}{\Delta_k} \begin{bmatrix} y_{k2} - y_{k3} &amp; y_{k3} - y_{k1} &amp; y_{k1} - y_{k2} \\ x_{k3} - x_{k2} &amp; x_{k1} - x_{k3} &amp; x_{k2} - x_{k1} \\ x_{k2}y_{k3} - x_{k3}y_{k2} &amp; x_{k3}y_{k1} - x_{k1}y_{k3} &amp; x_{k1}y_{k2} - x_{k2}y_{k1} \end{bmatrix}, \\
+\Delta_k &amp;= x_{k1}y_{k2}-x_{k2}y_{k1}-x_{k1}y_{k3}+x_{k3}y_{k1}+x_{k2}y_{k3}-x_{k3}y_{k2}.
+\end{aligned}\]</p><p>With this approximation, <span>$\grad T(\vb x_\sigma) \approx (\alpha_k, \beta_k)^{\mathsf T\mkern-1.5mu}$</span>. Thus, have</p><p class="math-container">\[\frac{D}{A_i}\sum_{\sigma \in \mathcal E_i} \left[\left(s_{k, 11}n_\sigma^x + s_{k, 21}n_\sigma^y\right)T_{k1} + \left(s_{k, 12}n_\sigma^x + s_{k, 22}n_\sigma^y\right)T_{k2} + \left(s_{k, 13}n_\sigma^x + s_{k,23}n_\sigma^y\right)T_{k3}\right]L_\sigma = -1.\]</p><h2 id="Building-a-Matrix-System"><a class="docs-heading-anchor" href="#Building-a-Matrix-System">Building a Matrix System</a><a id="Building-a-Matrix-System-1"></a><a class="docs-heading-anchor-permalink" href="#Building-a-Matrix-System" title="Permalink"></a></h2><p>Notice that the equation above is linear in the unknowns <span>$T_{ki}$</span>. Thus, we can write this as a matrix system <span>$\vb A\vb T = \vb b$</span>. Consider the <span>$i$</span>th row of <span>$\vb A$</span>. This row corresponds to the control volume <span>$\Omega_i$</span> and is given by <span>$\vb a_i^{\mathsf T\mkern-1.5mu}$</span>, where the non-zero terms of <span>$\vb a_i$</span> correspond to the vertices of the triangles that make up <span>$\Omega_i$</span>. The corresponding value of <span>$b_i$</span> in <span>$\vb b$</span> is simply <span>$-1$</span>. For handling the boundaries, we will instead let <span>$\vb a_i = \vb e_i$</span> for any nodes <span>$\vb x_i$</span> on the boundary, where <span>$\vb e_i = (0, \ldots, 1, \ldots, 0)$</span> is the <span>$i$</span>th standard basis vector, and <span>$b_i = 0$</span>. The solution to this system will give us the mean exit time <span>$T$</span>.</p><h2 id="Implementation"><a class="docs-heading-anchor" href="#Implementation">Implementation</a><a id="Implementation-1"></a><a class="docs-heading-anchor-permalink" href="#Implementation" title="Permalink"></a></h2><p>Let&#39;s now implement these ideas. Some details of this implementation, like how we efficient loop over the mesh for building the system by using edges rather than vertices, have been skipped and are described in more detail <a href="https://sciml.github.io/FiniteVolumeMethod.jl/dev/math/">here</a>.</p><pre><code class="language-julia hljs">using LinearAlgebra
+using SparseArrays
+function solve_met_problem(tri::Triangulation, D)
+    # To start, we need to build a map that takes the vertices from tri
+    # into a range of consecutive integers, since not all vertices are used.
+    vertex_map = Dict{Int, Int}()
+    inverse_vertex_map = Dict{Int, Int}()
+    cur_idx = 1
+    for i in DelaunayTriangulation.each_point_index(tri)
+        if DelaunayTriangulation.has_vertex(tri, i)
+            vertex_map[i] = cur_idx
+            inverse_vertex_map[cur_idx] = i
+            cur_idx += 1
+        end
+    end
+    # Next, we need to build up what we need from the geometry.
+    nv = num_solid_vertices(tri)
+    nt = num_solid_triangles(tri)
+    cv_volumes = zeros(nv)
+    Ttype = DelaunayTriangulation.triangle_type(tri)
+    shape_function_coefficients = Dict{Ttype, NTuple{9, Float64}}()
+    cv_edge_midpoints = Dict{Ttype, NTuple{3, NTuple{2, Float64}}}()
+    cv_edge_normals = Dict{Ttype, NTuple{3, NTuple{2, Float64}}}()
+    cv_edge_lengths = Dict{Ttype, NTuple{3, Float64}}()
+    sizehint!.((cv_volumes, shape_function_coefficients, cv_edge_midpoints, cv_edge_normals, cv_edge_lengths), nt)
+    for T in each_solid_triangle(tri)
+        u, v, w = triangle_vertices(T)
+        p, q, r = get_point(tri, u, v, w)
+        px, py = getxy(p)
+        qx, qy = getxy(q)
+        rx, ry = getxy(r)
+        cx, cy = (px + qx + rx) / 3, (py + qy + ry) / 3
+        m₁x, m₁y = (px + qx) / 2, (py + qy) / 2
+        m₂x, m₂y = (qx + rx) / 2, (qy + ry) / 2
+        m₃x, m₃y = (rx + px) / 2, (ry + py) / 2
+        # Connect the centroid to each vertex, and all the midpoints to each other
+        pcx, pcy = cx - px, cy - py
+        qcx, qcy = cx - qx, cy - qy
+        rcx, rcy = cx - rx, cy - ry
+        m₁₃x, m₁₃y = m₁x - m₃x, m₁y - m₃y
+        m₂₁x, m₂₁y = m₂x - m₁x, m₂y - m₁y
+        m₃₂x, m₃₂y = m₃x - m₂x, m₃y - m₂y
+        # Get the sub-control volume areas
+        S₁ = 1 / 2 * abs(pcx * m₁₃y - pcy * m₁₃x)
+        S₂ = 1 / 2 * abs(qcx * m₂₁y - qcy * m₂₁x)
+        S₃ = 1 / 2 * abs(rcx * m₃₂y - rcy * m₃₂x)
+        cv_volumes[vertex_map[u]] += S₁
+        cv_volumes[vertex_map[v]] += S₂
+        cv_volumes[vertex_map[w]] += S₃
+        # Now get the shape function coefficients
+        Δ = qx * ry - qy * rx - px * ry + rx * py + px * qy - qx * py
+        s₁ = (qy - ry) / Δ
+        s₂ = (ry - py) / Δ
+        s₃ = (py - qy) / Δ
+        s₄ = (rx - qx) / Δ
+        s₅ = (px - rx) / Δ
+        s₆ = (qx - px) / Δ
+        s₇ = (qx * ry - rx * qy) / Δ
+        s₈ = (rx * py - px * ry) / Δ
+        s₉ = (px * qy - qx * py) / Δ
+        shape_function_coefficients[T] = (s₁, s₂, s₃, s₄, s₅, s₆, s₇, s₈, s₉)
+        # Get the midpoints
+        m₁c = (m₁x + cx) / 2, (m₁y + cy) / 2
+        m₂c = (m₂x + cx) / 2, (m₂y + cy) / 2
+        m₃c = (m₃x + cx) / 2, (m₃y + cy) / 2
+        cv_edge_midpoints[T] = (m₁c, m₂c, m₃c)
+        # Now get the normal vectors on the control volume edges
+        e₁x, e₁y = cx - m₁x, cy - m₁y
+        e₂x, e₂y = cx - m₂x, cy - m₂y
+        e₃x, e₃y = cx - m₃x, cy - m₃y
+        ℓ₁ = norm((e₁x, e₁y))
+        ℓ₂ = norm((e₂x, e₂y))
+        ℓ₃ = norm((e₃x, e₃y))
+        cv_edge_lengths[T] = (ℓ₁, ℓ₂, ℓ₃)
+        n₁ = e₁y / ℓ₁, -e₁x / ℓ₁
+        n₂ = e₂y / ℓ₂, -e₂x / ℓ₂
+        n₃ = e₃y / ℓ₃, -e₃x / ℓ₃
+        cv_edge_normals[T] = (n₁, n₂, n₃)
+    end
+    # Now we can build A
+    A = zeros(nv, nv)
+    for T in each_solid_triangle(tri)
+        u, v, w = triangle_vertices(T)
+        p, q, r = get_point(tri, u, v, w)
+        s₁₁, s₁₂, s₁₃, s₂₁, s₂₂, s₂₃, s₃₁, s₃₂, s₃₃ = shape_function_coefficients[T]
+        for (edge_index, e₁₂) in enumerate(DelaunayTriangulation.triangle_edges(T))
+            e₁, e₂ = edge_vertices(e₁₂)
+            x, y = cv_edge_midpoints[T][edge_index]
+            nx, ny = cv_edge_normals[T][edge_index]
+            ℓ = cv_edge_lengths[T][edge_index]
+            Dℓ = D * ℓ
+            a123 = (
+                Dℓ * (s₁₁ * nx + s₂₁ * ny),
+                Dℓ * (s₁₂ * nx + s₂₂ * ny),
+                Dℓ * (s₁₃ * nx + s₂₃ * ny),
+            )
+            e1_is_bnd = DelaunayTriangulation.is_boundary_node(tri, e₁)[1]
+            e2_is_bnd = DelaunayTriangulation.is_boundary_node(tri, e₂)[1]
+            for vert in 1:3
+                e1_is_bnd || (A[vertex_map[e₁], vertex_map[(u, v, w)[vert]]] += a123[vert] / cv_volumes[vertex_map[e₁]])
+                e2_is_bnd || (A[vertex_map[e₂], vertex_map[(u, v, w)[vert]]] -= a123[vert] / cv_volumes[vertex_map[e₂]])
+            end
+        end
+    end
+    Asp = sparse(A)
+    # Now we can build b
+    b = zeros(nv)
+    for i in each_solid_vertex(tri)
+        if !DelaunayTriangulation.is_boundary_node(tri, i)[1]
+            b[vertex_map[i]] = -1.0
+        else
+            A[vertex_map[i], vertex_map[i]] = 1.0 # b[i] is already 0
+        end
+    end
+    # Now solve and return the solution
+    T = A \ b
+    filled_out_T = zeros(DelaunayTriangulation.num_points(tri)) # make sure that T[i] actually refers to the vertex i
+    for i in 1:nv
+        filled_out_T[inverse_vertex_map[i]] = T[i]
+    end
+    return filled_out_T
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">solve_met_problem (generic function with 1 method)</code></pre><h2 id="Solving-the-System"><a class="docs-heading-anchor" href="#Solving-the-System">Solving the System</a><a id="Solving-the-System-1"></a><a class="docs-heading-anchor-permalink" href="#Solving-the-System" title="Permalink"></a></h2><p>Let&#39;s now solve this problem, taking <span>$D = 6.25 \times 10^{-4}$</span>.</p><pre><code class="language-julia hljs">D = 6.25e-4
+T = solve_met_problem(tri, D)
+fig, ax, sc = tricontourf(tri, T, levels = 0:5:200, extendhigh = :auto)
+fig</code></pre><img src="87dd8a48.png" alt="Example block output"/><h2 id="Just-the-code"><a class="docs-heading-anchor" href="#Just-the-code">Just the code</a><a id="Just-the-code-1"></a><a class="docs-heading-anchor-permalink" href="#Just-the-code" title="Permalink"></a></h2><p>An uncommented version of this example is given below. You can view the source code for this file <a href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_applications/pde_discretisation.jl">here</a>.</p><pre><code class="language-julia hljs">using DelaunayTriangulation
+using CairoMakie
+using StableRNGs
+rng = StableRNG(123)
+R₁ = 1.0
+R₂ = 2.0
+outer_circle = CircularArc((R₂, 0.0), (R₂, 0.0), (0.0, 0.0))
+inner_circle = CircularArc((R₁, 0.0), (R₁, 0.0), (0.0, 0.0), positive = false)
+points = NTuple{2, Float64}[]
+tri = triangulate(points; rng, boundary_nodes = [[[outer_circle]], [[inner_circle]]])
+A = 2π * (R₂^2 - R₁^2)
+refine!(tri; max_area = 2.0e-3A, min_angle = 33.0, rng)
+fig, ax, sc = triplot(tri)
+fig
+
+
+using LinearAlgebra
+using SparseArrays
+function solve_met_problem(tri::Triangulation, D)
+    # To start, we need to build a map that takes the vertices from tri
+    # into a range of consecutive integers, since not all vertices are used.
+    vertex_map = Dict{Int, Int}()
+    inverse_vertex_map = Dict{Int, Int}()
+    cur_idx = 1
+    for i in DelaunayTriangulation.each_point_index(tri)
+        if DelaunayTriangulation.has_vertex(tri, i)
+            vertex_map[i] = cur_idx
+            inverse_vertex_map[cur_idx] = i
+            cur_idx += 1
+        end
+    end
+    # Next, we need to build up what we need from the geometry.
+    nv = num_solid_vertices(tri)
+    nt = num_solid_triangles(tri)
+    cv_volumes = zeros(nv)
+    Ttype = DelaunayTriangulation.triangle_type(tri)
+    shape_function_coefficients = Dict{Ttype, NTuple{9, Float64}}()
+    cv_edge_midpoints = Dict{Ttype, NTuple{3, NTuple{2, Float64}}}()
+    cv_edge_normals = Dict{Ttype, NTuple{3, NTuple{2, Float64}}}()
+    cv_edge_lengths = Dict{Ttype, NTuple{3, Float64}}()
+    sizehint!.((cv_volumes, shape_function_coefficients, cv_edge_midpoints, cv_edge_normals, cv_edge_lengths), nt)
+    for T in each_solid_triangle(tri)
+        u, v, w = triangle_vertices(T)
+        p, q, r = get_point(tri, u, v, w)
+        px, py = getxy(p)
+        qx, qy = getxy(q)
+        rx, ry = getxy(r)
+        cx, cy = (px + qx + rx) / 3, (py + qy + ry) / 3
+        m₁x, m₁y = (px + qx) / 2, (py + qy) / 2
+        m₂x, m₂y = (qx + rx) / 2, (qy + ry) / 2
+        m₃x, m₃y = (rx + px) / 2, (ry + py) / 2
+        # Connect the centroid to each vertex, and all the midpoints to each other
+        pcx, pcy = cx - px, cy - py
+        qcx, qcy = cx - qx, cy - qy
+        rcx, rcy = cx - rx, cy - ry
+        m₁₃x, m₁₃y = m₁x - m₃x, m₁y - m₃y
+        m₂₁x, m₂₁y = m₂x - m₁x, m₂y - m₁y
+        m₃₂x, m₃₂y = m₃x - m₂x, m₃y - m₂y
+        # Get the sub-control volume areas
+        S₁ = 1 / 2 * abs(pcx * m₁₃y - pcy * m₁₃x)
+        S₂ = 1 / 2 * abs(qcx * m₂₁y - qcy * m₂₁x)
+        S₃ = 1 / 2 * abs(rcx * m₃₂y - rcy * m₃₂x)
+        cv_volumes[vertex_map[u]] += S₁
+        cv_volumes[vertex_map[v]] += S₂
+        cv_volumes[vertex_map[w]] += S₃
+        # Now get the shape function coefficients
+        Δ = qx * ry - qy * rx - px * ry + rx * py + px * qy - qx * py
+        s₁ = (qy - ry) / Δ
+        s₂ = (ry - py) / Δ
+        s₃ = (py - qy) / Δ
+        s₄ = (rx - qx) / Δ
+        s₅ = (px - rx) / Δ
+        s₆ = (qx - px) / Δ
+        s₇ = (qx * ry - rx * qy) / Δ
+        s₈ = (rx * py - px * ry) / Δ
+        s₉ = (px * qy - qx * py) / Δ
+        shape_function_coefficients[T] = (s₁, s₂, s₃, s₄, s₅, s₆, s₇, s₈, s₉)
+        # Get the midpoints
+        m₁c = (m₁x + cx) / 2, (m₁y + cy) / 2
+        m₂c = (m₂x + cx) / 2, (m₂y + cy) / 2
+        m₃c = (m₃x + cx) / 2, (m₃y + cy) / 2
+        cv_edge_midpoints[T] = (m₁c, m₂c, m₃c)
+        # Now get the normal vectors on the control volume edges
+        e₁x, e₁y = cx - m₁x, cy - m₁y
+        e₂x, e₂y = cx - m₂x, cy - m₂y
+        e₃x, e₃y = cx - m₃x, cy - m₃y
+        ℓ₁ = norm((e₁x, e₁y))
+        ℓ₂ = norm((e₂x, e₂y))
+        ℓ₃ = norm((e₃x, e₃y))
+        cv_edge_lengths[T] = (ℓ₁, ℓ₂, ℓ₃)
+        n₁ = e₁y / ℓ₁, -e₁x / ℓ₁
+        n₂ = e₂y / ℓ₂, -e₂x / ℓ₂
+        n₃ = e₃y / ℓ₃, -e₃x / ℓ₃
+        cv_edge_normals[T] = (n₁, n₂, n₃)
+    end
+    # Now we can build A
+    A = zeros(nv, nv)
+    for T in each_solid_triangle(tri)
+        u, v, w = triangle_vertices(T)
+        p, q, r = get_point(tri, u, v, w)
+        s₁₁, s₁₂, s₁₃, s₂₁, s₂₂, s₂₃, s₃₁, s₃₂, s₃₃ = shape_function_coefficients[T]
+        for (edge_index, e₁₂) in enumerate(DelaunayTriangulation.triangle_edges(T))
+            e₁, e₂ = edge_vertices(e₁₂)
+            x, y = cv_edge_midpoints[T][edge_index]
+            nx, ny = cv_edge_normals[T][edge_index]
+            ℓ = cv_edge_lengths[T][edge_index]
+            Dℓ = D * ℓ
+            a123 = (
+                Dℓ * (s₁₁ * nx + s₂₁ * ny),
+                Dℓ * (s₁₂ * nx + s₂₂ * ny),
+                Dℓ * (s₁₃ * nx + s₂₃ * ny),
+            )
+            e1_is_bnd = DelaunayTriangulation.is_boundary_node(tri, e₁)[1]
+            e2_is_bnd = DelaunayTriangulation.is_boundary_node(tri, e₂)[1]
+            for vert in 1:3
+                e1_is_bnd || (A[vertex_map[e₁], vertex_map[(u, v, w)[vert]]] += a123[vert] / cv_volumes[vertex_map[e₁]])
+                e2_is_bnd || (A[vertex_map[e₂], vertex_map[(u, v, w)[vert]]] -= a123[vert] / cv_volumes[vertex_map[e₂]])
+            end
+        end
+    end
+    Asp = sparse(A)
+    # Now we can build b
+    b = zeros(nv)
+    for i in each_solid_vertex(tri)
+        if !DelaunayTriangulation.is_boundary_node(tri, i)[1]
+            b[vertex_map[i]] = -1.0
+        else
+            A[vertex_map[i], vertex_map[i]] = 1.0 # b[i] is already 0
+        end
+    end
+    # Now solve and return the solution
+    T = A \ b
+    filled_out_T = zeros(DelaunayTriangulation.num_points(tri)) # make sure that T[i] actually refers to the vertex i
+    for i in 1:nv
+        filled_out_T[inverse_vertex_map[i]] = T[i]
+    end
+    return filled_out_T
+end
+
+D = 6.25e-4
+T = solve_met_problem(tri, D)
+fig, ax, sc = tricontourf(tri, T, levels = 0:5:200, extendhigh = :auto)
+fig</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a>See <a href="https://sciml.github.io/FiniteVolumeMethod.jl/stable/tutorials/mean_exit_time/">this example</a> for more detail.</li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../cell_simulations/">« Cellular Biology</a><a class="docs-footer-nextpage" href="../../terminology/">Terminology »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Tuesday 1 October 2024 20:26">Tuesday 1 October 2024</span>. Using Julia version 1.10.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

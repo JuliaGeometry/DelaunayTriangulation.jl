@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Cellular Biology · DelaunayTriangulation.jl</title><meta name="title" content="Cellular Biology · DelaunayTriangulation.jl"/><meta property="og:title" content="Cellular Biology · DelaunayTriangulation.jl"/><meta property="twitter:title" content="Cellular Biology · DelaunayTriangulation.jl"/><meta name="description" content="Documentation for DelaunayTriangulation.jl."/><meta property="og:description" content="Documentation for DelaunayTriangulation.jl."/><meta property="twitter:description" content="Documentation for DelaunayTriangulation.jl."/><meta property="og:url" content="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/applications/cell_simulations/"/><meta property="twitter:url" content="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/applications/cell_simulations/"/><link rel="canonical" href="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/applications/cell_simulations/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">DelaunayTriangulation.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><input class="collapse-toggle" id="menuitem-2" type="checkbox"/><label class="tocitem" for="menuitem-2"><span class="docs-label">Tutorials</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../tutorials/overview/">Overview</a></li><li><a class="tocitem" href="../../tutorials/unconstrained/">Unconstrained Triangulations</a></li><li><input class="collapse-toggle" id="menuitem-2-3" type="checkbox"/><label class="tocitem" for="menuitem-2-3"><span class="docs-label">Constrained Triangulations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../tutorials/constrained_edges/">Constrained Edges</a></li><li><a class="tocitem" href="../../tutorials/constrained_outer_boundary/">Outer Boundary</a></li><li><a class="tocitem" href="../../tutorials/constrained_outer_boundary_segmented/">Segmented Outer Boundary</a></li><li><a class="tocitem" href="../../tutorials/constrained_multiply_connected/">Domain with Interior Holes</a></li><li><a class="tocitem" href="../../tutorials/constrained_interior_within_interiors/">Domain with Interior Holes inside Interior Holes</a></li><li><a class="tocitem" href="../../tutorials/constrained_multipolygon/">Disjoint Domains</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-2-4" type="checkbox"/><label class="tocitem" for="menuitem-2-4"><span class="docs-label">Triangulation Operations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../tutorials/operations_vertex_insertion_deletion/">Vertex Insertion and Deletion</a></li><li><a class="tocitem" href="../../tutorials/operations_segment_insertion/">Edge Insertion</a></li><li><a class="tocitem" href="../../tutorials/operations_ghost_triangles/">Adding or Clearing Ghost Triangles</a></li><li><a class="tocitem" href="../../tutorials/operations_flip_edge/">Edge Flipping</a></li><li><a class="tocitem" href="../../tutorials/operations_legalise_edge/">Legalising an Edge</a></li><li><a class="tocitem" href="../../tutorials/operations_split_edge/">Edge Splitting</a></li><li><a class="tocitem" href="../../tutorials/operations_split_triangle/">Triangle Splitting</a></li><li><a class="tocitem" href="../../tutorials/operations_convex_hull_locking/">Locking and Unlocking the Convex Hull</a></li></ul></li><li><a class="tocitem" href="../../tutorials/refinement/">Mesh Refinement</a></li><li><a class="tocitem" href="../../tutorials/lattice/">Triangulating Rectangular Regions</a></li><li><a class="tocitem" href="../../tutorials/convex/">Triangulating Convex Polygons</a></li><li><a class="tocitem" href="../../tutorials/curve_bounded/">Triangulating Curve-Bounded Domains</a></li><li><a class="tocitem" href="../../tutorials/weighted/">Weighted Triangulations</a></li><li><a class="tocitem" href="../../tutorials/voronoi/">Voronoi Tessellations</a></li><li><input class="collapse-toggle" id="menuitem-2-11" type="checkbox"/><label class="tocitem" for="menuitem-2-11"><span class="docs-label">Clipped Voronoi Tessellations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../tutorials/clipped/">Clipping to the Convex Hull</a></li><li><a class="tocitem" href="../../tutorials/clipped_rectangle/">Clipping to a Rectangle</a></li><li><a class="tocitem" href="../../tutorials/clipped_polygon/">Clipping to a Generic Convex Polygon</a></li></ul></li><li><a class="tocitem" href="../../tutorials/centroidal/">Centroidal Voronoi Tessellations</a></li><li><a class="tocitem" href="../../tutorials/power/">Power Diagrams</a></li><li><a class="tocitem" href="../../tutorials/point_location/">Point Location</a></li><li><a class="tocitem" href="../../tutorials/nearest/">Nearest Neighbour Queries</a></li><li><a class="tocitem" href="../../tutorials/convex_hull/">Convex Hulls</a></li><li><a class="tocitem" href="../../tutorials/pole_of_inaccessibility/">Pole of Inaccessibility</a></li><li><a class="tocitem" href="../../tutorials/point_in_polygon/">Point-in-Polygon Testing</a></li><li><a class="tocitem" href="../../tutorials/custom_primitive/">Using Custom Structs for Primitives and Boundaries</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3" type="checkbox"/><label class="tocitem" for="menuitem-3"><span class="docs-label">Manual</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/overview/">Overview</a></li><li><a class="tocitem" href="../../manual/primitives/">Representing Primitives</a></li><li><a class="tocitem" href="../../manual/boundaries/">Representing Boundaries</a></li><li><a class="tocitem" href="../../manual/ghost_triangles/">Ghost (Negative) Vertices</a></li><li><a class="tocitem" href="../../manual/curve_bounded/">Defining Curve-Bounded Domains</a></li><li><a class="tocitem" href="../../manual/predicates/">Geometrical Predicates</a></li><li><a class="tocitem" href="../../manual/triangulation_output/">Triangulation Output</a></li><li><a class="tocitem" href="../../manual/voronoi_output/">Voronoi Tessellation Output</a></li><li><a class="tocitem" href="../../manual/predicate_kernels/">Predicate Kernels</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">API Reference</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../api/overview/">Section Overview</a></li><li><a class="tocitem" href="../../api/data_structures/">Data Structures</a></li><li><a class="tocitem" href="../../api/triangulation/">Triangulations</a></li><li><a class="tocitem" href="../../api/operations/">Triangulation Operations</a></li><li><a class="tocitem" href="../../api/voronoi/">Voronoi Tessellations</a></li><li><a class="tocitem" href="../../api/convex_hull/">Convex Hull</a></li><li><a class="tocitem" href="../../api/curves/">Curves</a></li><li><a class="tocitem" href="../../api/iterators/">Iterators</a></li><li><a class="tocitem" href="../../api/point_location/">Point Location</a></li><li><a class="tocitem" href="../../api/predicates/">Predicates</a></li><li><a class="tocitem" href="../../api/statistics/">Triangulation Statistics</a></li><li><a class="tocitem" href="../../api/primitives/">Primitive Interfaces</a></li><li><a class="tocitem" href="../../api/other/">Other</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">Extended Reference</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../extended/overview/">Overview</a></li><li><a class="tocitem" href="../../extended/data_structures/">Data Structures</a></li><li><a class="tocitem" href="../../extended/algorithms/">Algorithm Internals</a></li><li><a class="tocitem" href="../../extended/utils/">Utility Functions</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">Mathematical Details</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../math/overview/">Overview</a></li><li><a class="tocitem" href="../../math/delaunay/">Delaunay Triangulations</a></li><li><a class="tocitem" href="../../math/constrained/">Constrained Delaunay Triangulations</a></li><li><a class="tocitem" href="../../math/convex/">Triangulating Convex Polygons</a></li><li><a class="tocitem" href="../../math/refinement/">Mesh Refinement</a></li><li><a class="tocitem" href="../../math/curves/">Curves</a></li><li><a class="tocitem" href="../../math/curve_bounded/">Triangulating Curve-Bounded Domains</a></li><li><a class="tocitem" href="../../math/weighted/">Weighted Delaunay Triangulations</a></li><li><a class="tocitem" href="../../math/voronoi/">Voronoi Tessellations</a></li><li><a class="tocitem" href="../../math/clipped/">Clipped Voronoi Tessellations</a></li><li><a class="tocitem" href="../../math/centroidal/">Centroidal Voronoi Tessellations</a></li><li><a class="tocitem" href="../../math/power/">Power Diagrams</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox" checked/><label class="tocitem" for="menuitem-7"><span class="docs-label">Example Applications</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../overview/">Overview</a></li><li><a class="tocitem" href="../interpolation/">Interpolation</a></li><li class="is-active"><a class="tocitem" href>Cellular Biology</a><ul class="internal"><li><a class="tocitem" href="#Cell-model"><span>Cell model</span></a></li><li><a class="tocitem" href="#Implementation"><span>Implementation</span></a></li><li><a class="tocitem" href="#Example"><span>Example</span></a></li><li><a class="tocitem" href="#Just-the-code"><span>Just the code</span></a></li></ul></li><li><a class="tocitem" href="../pde_discretisation/">Solving PDEs</a></li></ul></li><li><a class="tocitem" href="../../terminology/">Terminology</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Example Applications</a></li><li class="is-active"><a href>Cellular Biology</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Cellular Biology</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_applications/cell_simulations.jl" title="View source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Cellular-Biology"><a class="docs-heading-anchor" href="#Cellular-Biology">Cellular Biology</a><a id="Cellular-Biology-1"></a><a class="docs-heading-anchor-permalink" href="#Cellular-Biology" title="Permalink"></a></h1><p>Our next application concerns the simulation of cell dynamics in two dimensions.<sup class="footnote-reference"><a id="citeref-1" href="#footnote-1">[1]</a></sup> We only consider a very basic model here, allowing only diffusion and proliferation. The point here is to just demonstrate how we can make use of the neighbourhood graph in a <code>Triangulation</code> to perform this type of simulation. A good paper discussing these types of simulations is the paper <a href="https://doi.org/10.1371/journal.pcbi.1005387"><em>Comparing individual-based approaches to modelling the self-organization of multicellular tissues</em></a> by Osborne et al. (2017).</p><h2 id="Cell-model"><a class="docs-heading-anchor" href="#Cell-model">Cell model</a><a id="Cell-model-1"></a><a class="docs-heading-anchor-permalink" href="#Cell-model" title="Permalink"></a></h2><p>Let us consider a domain <span>$\Omega$</span>, and suppose we have an initial set of points <span>$\mathcal P = \{\vb r_1, \ldots, \vb r_N\}$</span> in the plane. We use a spring based model based on Hooke&#39;s law and Newton&#39;s laws, writing</p><p class="math-container">\[\dv{\vb r_i}{t} = \alpha \sum_{j \in \mathcal N_i} \left(\|\vb r_{ji}\| - s\right)\hat{\vb r}_{ji}, \quad i=1,2,\ldots,N,\]</p><p>where <span>$\mathcal N_i$</span> is the set of points neighbouring <span>$\vb r_i$</span> in the triangulation <span>$\mathcal D\mathcal T(\mathcal P)$</span>, <span>$\vb r_{ji} = \vb r_j - \vb r_i$</span>, <span>$\hat{\vb r}_{ji} = \vb r_{ji} / \|\vb r_{ji}\|$</span>, <span>$s$</span> is the resting spring length, and <span>$\alpha$</span> is the ratio of the spring constant <span>$k$</span> to the damping constant <span>$\eta$</span>. We will allow the boundary nodes to move freely rather than consider some types of boundary conditions.</p><p>Now consider proliferation. We interpret the cells as being the Voronoi polygons associated with each <span>$\vb r_i$</span>, i.e. the cell associated with <span>$\vb r_i$</span> is <span>$\mathcal V_i$</span>. We allow only one cell to proliferate over a time interval <span>$[t, t + \Delta t)$</span> and, given that a cell does proliferate, the probability that <span>$\mathcal V_i$</span> proliferates is <span>$G_i\Delta t$</span> with <span>$G_i = \max\{0, \beta(1 - 1/(KA_i))\}$</span>, where <span>$\beta$</span> is the intrinsic proliferation rate, <span>$K$</span> is the cell carrying capacity density, and <span>$A_i$</span> is the area of <span>$\mathcal V_i$</span>. For cells on the boundary, <span>$G_i = 0$</span> so that they do not proliferate; this is done to avoid issues with unbounded cells. The probability any proliferation event occurs is given by <span>$\sum_i G_i\Delta t$</span>. When a cell <span>$\mathcal V_i$</span> is selected to proliferate, we select a random angle <span>$\theta \in [0, 2\pi)$</span> and place a new point <span>$\vb r_i&#39;$</span> at <span>$\vb r_i&#39; = \vb r_i + \delta \epsilon \vb d$</span>, where <span>$\vb d = (\cos\theta,\sin\theta)$</span>, <span>$\delta = \operatorname{dist}(\vb r_i, \mathcal V_i)$</span>, and <span>$\epsilon$</span> is a small separation constant in <span>$[0, 1)$</span>.</p><p>For our simulation, we will first determine if any proliferation event occurs and, if so, update the triangulation with the new <span>$\vb r_i&#39;$</span>. To then integrate forward in time, we use Euler&#39;s method, writing</p><p class="math-container">\[\vb r_i(t + \Delta t) = \vb r_i(t) + \alpha \Delta t \sum_{j \in \mathcal N_i} \left(\|\vb r_{ji}\| - s\right)\hat{\vb r}_{ji}, \quad i=1,2,\ldots,N.\]</p><p>We update the triangulation after each step.<sup class="footnote-reference"><a id="citeref-2" href="#footnote-2">[2]</a></sup></p><h2 id="Implementation"><a class="docs-heading-anchor" href="#Implementation">Implementation</a><a id="Implementation-1"></a><a class="docs-heading-anchor-permalink" href="#Implementation" title="Permalink"></a></h2><p>Let us now implement this model. First, we define a struct for storing the parameters of our model.</p><pre><code class="language-julia hljs">using DelaunayTriangulation
+using StableRNGs
+using LinearAlgebra
+using StatsBase
+using CairoMakie
+Base.@kwdef mutable struct CellModel{P}
+    tri::Triangulation{P}
+    new_r_cache::Vector{NTuple{2, Float64}} # for r(t + Δt)
+    α::Float64
+    s::Float64
+    Δt::Float64
+    rng::StableRNGs.LehmerRNG
+    final_time::Float64
+    β::Float64
+    K::Float64
+    ϵ::Float64
+end</code></pre><p>Let&#39;s now write functions for performing the migration step.</p><pre><code class="language-julia hljs">function migrate_cells!(cells::CellModel) # a more efficient way would be to loop over edges rather than vertices
+    tri = cells.tri
+    for i in each_solid_vertex(tri)
+        rᵢ = get_point(tri, i)
+        F = 0.0
+        for j in get_neighbours(tri, i)
+            DelaunayTriangulation.is_ghost_vertex(j) &amp;&amp; continue
+            rⱼ = get_point(tri, j)
+            rᵢⱼ = rⱼ .- rᵢ
+            F = F .+ cells.α * (norm(rᵢⱼ) - cells.s) .* rᵢⱼ ./ norm(rᵢⱼ)
+        end
+        cells.new_r_cache[i] = rᵢ .+ cells.Δt .* F
+    end
+    for i in each_solid_vertex(tri)
+        DelaunayTriangulation.set_point!(tri, i, cells.new_r_cache[i])
+    end
+    cells.tri = retriangulate(tri; cells.rng)
+    return nothing
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">migrate_cells! (generic function with 1 method)</code></pre><p>Now we can write the proliferation functions. First, let us write a function that computes the Voronoi areas. If we had the <code>VoronoiTessellation</code> computed, we would just use <code>get_area</code>, but we are aiming to avoid having to compute <span>$\mathcal V\mathcal T(\mathcal P)$</span> directly.</p><pre><code class="language-julia hljs">function polygon_area(points) # this is the same function from the Interpolation section
+    n = DelaunayTriangulation.num_points(points)
+    p, q, r, s = get_point(points, 1, 2, n, n - 1)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
+    rx, ry = getxy(r)
+    sx, sy = getxy(s)
+    area = px * (qy - ry) + rx * (py - sy)
+    for i in 2:(n - 1)
+        p, q, r = get_point(points, i, i + 1, i - 1)
+        px, py = getxy(p)
+        qx, qy = getxy(q)
+        rx, ry = getxy(r)
+        area += px * (qy - ry)
+    end
+    return area / 2
+end
+function get_voronoi_area(tri::Triangulation, i)
+    points = NTuple{2, Float64}[]
+    !DelaunayTriangulation.has_vertex(tri, i) &amp;&amp; return (0.0, points) # might not be included anymore due to retriangulation
+    DelaunayTriangulation.is_boundary_node(tri, i)[1] &amp;&amp; return (0.0, points) # to prevent boundary cells from proliferating
+    N = get_neighbours(tri, i)
+    N₁ = first(N)
+    j = N₁
+    k = get_adjacent(tri, i, j)
+    Ttype = DelaunayTriangulation.triangle_type(tri)
+    for _ in 1:num_neighbours(tri, i)
+        T = DelaunayTriangulation.construct_triangle(Ttype, i, j, k)
+        c = DelaunayTriangulation.triangle_circumcenter(tri, T)
+        push!(points, c)
+        j = k
+        k = get_adjacent(tri, i, j)
+    end
+    push!(points, points[begin])
+    return polygon_area(points), points
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">get_voronoi_area (generic function with 1 method)</code></pre><p>The function <code>get_voronoi_area</code> above returns <code>0</code> if the cell is on the boundary. Finally, our function for performing the proliferation step is below.</p><pre><code class="language-julia hljs">function proliferate_cells!(cells::CellModel)
+    E = 0.0
+    Δt = cells.Δt
+    tri = cells.tri
+    areas = [get_voronoi_area(tri, i)[1] for i in DelaunayTriangulation.each_point_index(tri)] # don&#39;t use each_solid_vertex since each_solid_vertex is not ordered
+    for i in DelaunayTriangulation.each_point_index(tri)
+        Gᵢ = iszero(areas[i]) ? 0.0 : max(0.0, cells.β * (1 - 1 / (cells.K * areas[i])))
+        E += Gᵢ * Δt
+    end
+    u = rand(cells.rng)
+    if u &lt; E
+        areas ./= sum(areas)
+        weights = Weights(areas)
+        i = sample(cells.rng, weights) # select cell to proliferate randomly based on area
+        θ = 2π * rand(cells.rng)
+        p = get_point(tri, i)
+        poly = get_voronoi_area(tri, i)[2]
+        δ = DelaunayTriangulation.distance_to_polygon(p, get_points(tri), poly)
+        s, c = sincos(θ)
+        q = p .+ (δ * cells.ϵ) .* (c, s)
+        add_point!(tri, q; rng = cells.rng)
+        push!(cells.new_r_cache, q)
+    end
+    return nothing
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">proliferate_cells! (generic function with 1 method)</code></pre><p>Finally, our simulation function is below.</p><pre><code class="language-julia hljs">function perform_step!(cells::CellModel)
+    proliferate_cells!(cells)
+    migrate_cells!(cells)
+    return nothing
+end
+function simulate_cells(cells::CellModel)
+    t = 0.0
+    all_points = Vector{Vector{NTuple{2, Float64}}}()
+    push!(all_points, deepcopy(get_points(cells.tri)))
+    while t &lt; cells.final_time
+        perform_step!(cells)
+        t += cells.Δt
+        push!(all_points, deepcopy(get_points(cells.tri)))
+    end
+    return all_points
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">simulate_cells (generic function with 1 method)</code></pre><h2 id="Example"><a class="docs-heading-anchor" href="#Example">Example</a><a id="Example-1"></a><a class="docs-heading-anchor-permalink" href="#Example" title="Permalink"></a></h2><p>Let us now give an example. Our initial set of points will be randomly chosen inside the rectangle <span>$[-2, 2] \times [-5, 5]$</span>. We use <span>$\alpha = 5$</span>, <span>$s = 2$</span>, <span>$\Delta t = 10^{-3}$</span>, <span>$\beta = 0.25$</span>, <span>$K = 100^2$</span>, and <span>$\epsilon = 0.5$</span>.</p><pre><code class="language-julia hljs">rng = StableRNG(123444)
+a, b, c, d = -2.0, 2.0, -5.0, 5.0
+points = [(a + (b - a) * rand(rng), c + (d - c) * rand(rng)) for _ in 1:10]
+tri = triangulate(points; rng = rng)
+cells = CellModel(;
+    tri = tri, new_r_cache = similar(points), α = 5.0, s = 2.0, Δt = 1.0e-3,
+    β = 0.25, K = 100.0^2, rng, final_time = 25.0, ϵ = 0.5,
+)
+results = simulate_cells(cells);
+
+fig = Figure(fontsize = 26)
+title_obs = Observable(L&quot;t = %$(0.0)&quot;)
+ax1 = Axis(fig[1, 1], width = 1200, height = 400, title = title_obs, titlealign = :left)
+Δt = cells.Δt
+i = Observable(1)
+voronoiplot!(
+    ax1, @lift(voronoi(triangulate(results[$i]; rng), clip = true, rng = rng)),
+    color = :darkgreen, strokecolor = :black, strokewidth = 2, show_generators = false,
+)
+xlims!(ax1, -12, 12)
+ylims!(ax1, -12, 12)
+resize_to_layout!(fig)
+t = 0:Δt:cells.final_time
+record(fig, &quot;cell_simulation.mp4&quot;, 1:10:length(t); framerate = 60) do ii
+    i[] = ii
+    title_obs[] = L&quot;t = %$(((ii-1) * Δt))&quot;
+end;</code></pre><p><video src="../cell_simulation.mp4" controls="true" title><a href="../cell_simulation.mp4"></a></video></p><h2 id="Just-the-code"><a class="docs-heading-anchor" href="#Just-the-code">Just the code</a><a id="Just-the-code-1"></a><a class="docs-heading-anchor-permalink" href="#Just-the-code" title="Permalink"></a></h2><p>An uncommented version of this example is given below. You can view the source code for this file <a href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_applications/cell_simulations.jl">here</a>.</p><pre><code class="language-julia hljs">using DelaunayTriangulation
+using StableRNGs
+using LinearAlgebra
+using StatsBase
+using CairoMakie
+Base.@kwdef mutable struct CellModel{P}
+    tri::Triangulation{P}
+    new_r_cache::Vector{NTuple{2, Float64}} # for r(t + Δt)
+    α::Float64
+    s::Float64
+    Δt::Float64
+    rng::StableRNGs.LehmerRNG
+    final_time::Float64
+    β::Float64
+    K::Float64
+    ϵ::Float64
+end
+
+function migrate_cells!(cells::CellModel) # a more efficient way would be to loop over edges rather than vertices
+    tri = cells.tri
+    for i in each_solid_vertex(tri)
+        rᵢ = get_point(tri, i)
+        F = 0.0
+        for j in get_neighbours(tri, i)
+            DelaunayTriangulation.is_ghost_vertex(j) &amp;&amp; continue
+            rⱼ = get_point(tri, j)
+            rᵢⱼ = rⱼ .- rᵢ
+            F = F .+ cells.α * (norm(rᵢⱼ) - cells.s) .* rᵢⱼ ./ norm(rᵢⱼ)
+        end
+        cells.new_r_cache[i] = rᵢ .+ cells.Δt .* F
+    end
+    for i in each_solid_vertex(tri)
+        DelaunayTriangulation.set_point!(tri, i, cells.new_r_cache[i])
+    end
+    cells.tri = retriangulate(tri; cells.rng)
+    return nothing
+end
+
+function polygon_area(points) # this is the same function from the Interpolation section
+    n = DelaunayTriangulation.num_points(points)
+    p, q, r, s = get_point(points, 1, 2, n, n - 1)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
+    rx, ry = getxy(r)
+    sx, sy = getxy(s)
+    area = px * (qy - ry) + rx * (py - sy)
+    for i in 2:(n - 1)
+        p, q, r = get_point(points, i, i + 1, i - 1)
+        px, py = getxy(p)
+        qx, qy = getxy(q)
+        rx, ry = getxy(r)
+        area += px * (qy - ry)
+    end
+    return area / 2
+end
+function get_voronoi_area(tri::Triangulation, i)
+    points = NTuple{2, Float64}[]
+    !DelaunayTriangulation.has_vertex(tri, i) &amp;&amp; return (0.0, points) # might not be included anymore due to retriangulation
+    DelaunayTriangulation.is_boundary_node(tri, i)[1] &amp;&amp; return (0.0, points) # to prevent boundary cells from proliferating
+    N = get_neighbours(tri, i)
+    N₁ = first(N)
+    j = N₁
+    k = get_adjacent(tri, i, j)
+    Ttype = DelaunayTriangulation.triangle_type(tri)
+    for _ in 1:num_neighbours(tri, i)
+        T = DelaunayTriangulation.construct_triangle(Ttype, i, j, k)
+        c = DelaunayTriangulation.triangle_circumcenter(tri, T)
+        push!(points, c)
+        j = k
+        k = get_adjacent(tri, i, j)
+    end
+    push!(points, points[begin])
+    return polygon_area(points), points
+end
+
+function proliferate_cells!(cells::CellModel)
+    E = 0.0
+    Δt = cells.Δt
+    tri = cells.tri
+    areas = [get_voronoi_area(tri, i)[1] for i in DelaunayTriangulation.each_point_index(tri)] # don&#39;t use each_solid_vertex since each_solid_vertex is not ordered
+    for i in DelaunayTriangulation.each_point_index(tri)
+        Gᵢ = iszero(areas[i]) ? 0.0 : max(0.0, cells.β * (1 - 1 / (cells.K * areas[i])))
+        E += Gᵢ * Δt
+    end
+    u = rand(cells.rng)
+    if u &lt; E
+        areas ./= sum(areas)
+        weights = Weights(areas)
+        i = sample(cells.rng, weights) # select cell to proliferate randomly based on area
+        θ = 2π * rand(cells.rng)
+        p = get_point(tri, i)
+        poly = get_voronoi_area(tri, i)[2]
+        δ = DelaunayTriangulation.distance_to_polygon(p, get_points(tri), poly)
+        s, c = sincos(θ)
+        q = p .+ (δ * cells.ϵ) .* (c, s)
+        add_point!(tri, q; rng = cells.rng)
+        push!(cells.new_r_cache, q)
+    end
+    return nothing
+end
+
+function perform_step!(cells::CellModel)
+    proliferate_cells!(cells)
+    migrate_cells!(cells)
+    return nothing
+end
+function simulate_cells(cells::CellModel)
+    t = 0.0
+    all_points = Vector{Vector{NTuple{2, Float64}}}()
+    push!(all_points, deepcopy(get_points(cells.tri)))
+    while t &lt; cells.final_time
+        perform_step!(cells)
+        t += cells.Δt
+        push!(all_points, deepcopy(get_points(cells.tri)))
+    end
+    return all_points
+end
+
+rng = StableRNG(123444)
+a, b, c, d = -2.0, 2.0, -5.0, 5.0
+points = [(a + (b - a) * rand(rng), c + (d - c) * rand(rng)) for _ in 1:10]
+tri = triangulate(points; rng = rng)
+cells = CellModel(;
+    tri = tri, new_r_cache = similar(points), α = 5.0, s = 2.0, Δt = 1.0e-3,
+    β = 0.25, K = 100.0^2, rng, final_time = 25.0, ϵ = 0.5,
+)
+results = simulate_cells(cells);
+
+fig = Figure(fontsize = 26)
+title_obs = Observable(L&quot;t = %$(0.0)&quot;)
+ax1 = Axis(fig[1, 1], width = 1200, height = 400, title = title_obs, titlealign = :left)
+Δt = cells.Δt
+i = Observable(1)
+voronoiplot!(
+    ax1, @lift(voronoi(triangulate(results[$i]; rng), clip = true, rng = rng)),
+    color = :darkgreen, strokecolor = :black, strokewidth = 2, show_generators = false,
+)
+xlims!(ax1, -12, 12)
+ylims!(ax1, -12, 12)
+resize_to_layout!(fig)
+t = 0:Δt:cells.final_time
+record(fig, &quot;cell_simulation.mp4&quot;, 1:10:length(t); framerate = 60) do ii
+    i[] = ii
+    title_obs[] = L&quot;t = %$(((ii-1) * Δt))&quot;
+end;</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a>If you are interested in how these ideas are applied in one dimension, see also <a href="https://github.com/DanielVandH/EpithelialDynamics1D.jl">EpithelialDynamics1D.jl</a>.</li><li class="footnote" id="footnote-2"><a class="tag is-link" href="#citeref-2">2</a>There are efficient methods for updating the triangulation after small perturbations, e.g. the paper <a href="https://doi.org/10.1145/1064092.1064129"><em>Star splaying: an algorithm for repairing Delaunay triangulations and convex hulls</em></a> by Shewchuk (2005). For this implementation, we do not concern ourselves with being overly efficient, and simply retriangulate.</li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../interpolation/">« Interpolation</a><a class="docs-footer-nextpage" href="../pde_discretisation/">Solving PDEs »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Saturday 28 September 2024 08:07">Saturday 28 September 2024</span>. Using Julia version 1.10.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
