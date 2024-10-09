@@ -1235,6 +1235,46 @@ $$
 
 Thus, controlling $\rho$ controls the smallest angle.
 
+## Triangle and Segment Splitting 
+
+```{julia}
+#| echo: false
+#| output: false
+points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (1/2, 1/2), (1/4, 0.9), (1/2, 1/3)]
+tri = triangulate(points; boundary_nodes = [1, 2, 3, 4, 1], segments = Set([(1, 3)]))
+
+fig = Figure()
+ax11 = Axis(fig[1, 1], title = "Pre-insertion", width = 300, height = 300)
+triplot!(ax11, tri, show_constrained_edges = true)
+T = (2, 5, 7)
+poly!(ax11, [get_point(tri, triangle_vertices(T)...)...], color = (:blue, 0.3))
+c = DelaunayTriangulation.triangle_circumcenter(tri, T)
+scatter!(ax11, [c], color = :red, markersize = 10)
+
+ax12 = Axis(fig[1, 2], title = "Post-insertion", width = 300, height = 300)
+add_point!(tri, c)
+triplot!(ax12, tri, show_constrained_edges = true)
+
+ax21 = Axis(fig[2, 1], title = "Pre-split", width = 300, height = 300)
+e = (2, 3)
+triplot!(ax21, tri, show_constrained_edges = true)
+lines!(ax21, [get_point(tri, e...)...], color = :red, linewidth = 6)
+T = (8, 2, 3)
+poly!(ax21, [get_point(tri, triangle_vertices(T)...)...], color = (:blue, 0.3))
+c = DelaunayTriangulation.triangle_circumcenter(tri, T)
+scatter!(ax21, [c], color = :red, markersize = 10)
+
+ax22 = Axis(fig[2, 2], title = "Post-split", width = 300, height = 300)
+m = (1.0, 1/2)
+DelaunayTriangulation.push_point!(tri, m)
+DelaunayTriangulation.complete_split_edge_and_legalise!(tri, 2, 3, 9)
+triplot!(ax22, tri, show_constrained_edges = true)
+resize_to_layout!(fig)
+save("triangle-segment-splitting.png", fig)
+```
+
+![&nbsp;](triangle-segment-splitting.png)
+
 ## Mesh Encroachment
 
 - Mesh refinement inserts points into the triangulation.
