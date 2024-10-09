@@ -8,7 +8,7 @@ In this section, we will describe how ghost triangles and ghost vertices are use
 
 Ghost vertices are negative vertices that are associated with a part of a boundary. Mathematically speaking, they are typically treated as points out at infinity, and each edge on the boundary adjoins a ghost vertex. This way, all edges have two adjoining vertices and we can associate any point in space, including points outside of the triangulation, with a triangle. As an example, if `tri` is a triangulation and `get_adjacent(tri, u, v) == -1`, then this means that `(u, v)` is an edge on the boundary of the triangulation. This number `-1` is defined as `DelaunayTriangulation.𝒢` internally.
 
-In the case of a single contiguosu boundary, the only possible ghost vertex is `-1`. When it comes to considering a boundary with mutliple sections or multiple boundaries, then we need to have multiple ghost vertices to refer to eachs ection separately. We accomplish this by simply subtracting 1 from the current ghost vertex for each new section. For example, if the boundary node vector is 
+In the case of a single contiguous boundary, the only possible ghost vertex is `-1`. When it comes to considering a boundary with mutliple sections or multiple boundaries, then we need to have multiple ghost vertices to refer to eachs ection separately. We accomplish this by simply subtracting 1 from the current ghost vertex for each new section. For example, if the boundary node vector is 
 
 ```julia 
 boundary_nodes = [
