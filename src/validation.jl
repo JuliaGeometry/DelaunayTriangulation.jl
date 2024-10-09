@@ -81,9 +81,8 @@ function test_delaunay_criterion(tri; predicates::AbstractPredicateKernel = Exac
         failures = Tuple{triangle_type(tri), integer_type(tri)}[]
         for T in each_solid_triangle(tri)
             i, j, k = triangle_vertices(T)
-            p, q, r = get_point(tri, i, j, k)
-            c = triangle_circumcenter(p, q, r)
-            cr = triangle_circumradius(p, q, r)
+            c = triangle_circumcenter(tri, T)
+            cr = triangle_circumradius(tri, T)
             xmin, xmax = getx(c) - cr, getx(c) + cr
             ymin, ymax = gety(c) - cr, gety(c) + cr
             any(!isfinite, (xmin, xmax, ymin, ymax)) && continue
@@ -113,8 +112,8 @@ function test_delaunay_criterion(tri; predicates::AbstractPredicateKernel = Exac
                 any(==(r), (i, j, k)) && continue
                 T = construct_triangle(triangle_type(tri), i, j, k)
                 cert = point_position_relative_to_circumcircle(predicates, tri, T, r)
-                c = triangle_centroid(get_point(tri, i, j, k)...)
-                A = triangle_area(get_point(tri, i, j, k)...)
+                c = triangle_centroid(tri, T)
+                A = triangle_area(tri, T)
                 check_precision(A) && continue # the centroids in this case sometimes appear outside of the triangle
                 if is_inside(cert)
                     is_boundary_edge(tri, i, j) && is_right(point_position_relative_to_line(predicates, tri, i, j, r)) && continue # if it's outside of the domain relative to this edge, just continue

@@ -293,9 +293,7 @@ function get_area(tri::Triangulation)
     F = number_type(tri)
     A = zero(F)
     for T in each_solid_triangle(tri)
-        u, v, w = triangle_vertices(T)
-        p, q, r = get_point(tri, u, v, w)
-        A += triangle_area(p, q, r)
+        A += triangle_area(tri, T)
     end
     return A
 end

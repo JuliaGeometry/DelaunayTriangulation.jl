@@ -70,7 +70,6 @@ function Base.getindex(queue::RefinementQueue{T, E, F}, triangle::T) where {T, E
     end
 end
 
-
 """
     setindex!(queue::RefinementQueue{T,E,F}, ℓ²::F, segment::E) where {T,E,F}
     queue[segment] = ℓ²
@@ -105,6 +104,15 @@ function Base.setindex!(queue::RefinementQueue{T, E, F}, ρ, triangle::T) where 
         triangles[triangle] = ρ
     end
     return triangles
+end
+
+"""
+    enqueue_triangle!(tri::Triangulation, queue::RefinementQueue, ρ, triangle)
+
+Add `triangle` to `queue` with a priority of `ρ`. 
+""" # This method just exists so that we can overload it for SphericalTriangulations
+function enqueue_triangle!(_::Triangulation, queue::RefinementQueue, ρ, T)
+    return setindex!(queue, ρ, T)
 end
 
 """

@@ -763,6 +763,7 @@ function find_triangle(
         maxiters = 2 + num_exterior_curves(tri) - num_solid_vertices(tri) + num_solid_edges(tri),
         concavity_protection = false,
         use_barriers::Val{U} = Val(false),
+        check_sphere = false # this gets ignored. It's just here for spherical triangulations...
     ) where {F, U}
     I = integer_type(tri)
     maxiters = Int(maxiters)
