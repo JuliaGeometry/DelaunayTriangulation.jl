@@ -563,7 +563,7 @@ There is no output, but `tri` is updated in-place.
 """
 function triangulate_cavity_cdt!(tri::Triangulation, V, tri_fan::Triangulation, marked_vertices, fan_triangles; rng::Random.AbstractRNG = Random.default_rng(), predicates::AbstractPredicateKernel = AdaptiveKernel())
     list = setup_cavity_cdt(tri, V; rng, predicates)
-    add_triangle!(tri, V[begin], V[list.shuffled_indices[2]], V[end]; protect_boundary = true, update_ghost_edges = false)
+    add_triangle!(tri, V[begin], V[list.shuffled_indices[2]], V[end])
     for i in 3:(list.k - 1)
         a, b, c = get_triplet(list, i)
         add_point_cavity_cdt!(tri, a, b, c, marked_vertices, predicates)
@@ -592,12 +592,12 @@ The `predicates` argument defines the method for computing predicates. Can be on
 function retriangulate_fan!(tri::Triangulation, tri_fan::Triangulation, fan, fan_triangles; predicates::AbstractPredicateKernel = AdaptiveKernel(), rng::Random.AbstractRNG = Random.default_rng())
     for T in each_triangle(fan_triangles)
         u, v, w = triangle_vertices(T)
-        delete_triangle!(tri, u, v, w; protect_boundary = true, update_ghost_edges = false)
+        delete_triangle!(tri, u, v, w)
     end
     triangulate_convex!(tri_fan, fan; predicates, rng)
     for T in each_solid_triangle(tri_fan)
         u, v, w = triangle_vertices(T)
-        add_triangle!(tri, u, v, w; protect_boundary = true, update_ghost_edges = false)
+        add_triangle!(tri, u, v, w)
     end
     return tri
 end
@@ -663,9 +663,9 @@ function add_point_cavity_cdt!(tri::Triangulation, u, v, w, marked_vertices, pre
         insert_flag = !is_inside(incircle_test) && is_positively_oriented(orient_test)
     end
     if insert_flag
-        add_triangle!(tri, u, v, w; protect_boundary = true, update_ghost_edges = false)
+        add_triangle!(tri, u, v, w)
     else
-        delete_triangle!(tri, w, v, x; protect_boundary = true, update_ghost_edges = false)
+        delete_triangle!(tri, w, v, x)
         add_point_cavity_cdt!(tri, u, v, x, marked_vertices, predicates)
         add_point_cavity_cdt!(tri, u, x, w, marked_vertices, predicates)
         if !is_inside(incircle_test)
@@ -682,7 +682,7 @@ Adds the triangles from `tris` to `tri_original`.
 """
 function add_new_triangles!(tri_original::Triangulation, tris)
     for tri in each_triangle(tris)
-        add_triangle!(tri_original, tri; protect_boundary = true, update_ghost_edges = false)
+        add_triangle!(tri_original, tri)
     end
     return tri_original
 end
@@ -739,7 +739,7 @@ Deletes the triangles in `triangles` from `tri`.
 """
 function delete_intersected_triangles!(tri, triangles) # don't really _need_ this method, but maybe it makes the code a bit clearer?
     for τ in each_triangle(triangles)
-        delete_triangle!(tri, τ; protect_boundary = true, update_ghost_edges = false)
+        delete_triangle!(tri, τ)
     end
     return tri
 end

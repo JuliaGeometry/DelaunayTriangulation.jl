@@ -79,10 +79,10 @@ function initialise_bowyer_watson!(tri::Triangulation, insertion_order, predicat
     initial_triangle = get_initial_triangle(tri, insertion_order, predicates)
     u, v, w = triangle_vertices(initial_triangle)
     g = I(𝒢)
-    add_triangle!(tri, u, v, w; protect_boundary = true, update_ghost_edges = false)
-    add_triangle!(tri, v, u, g; protect_boundary = true, update_ghost_edges = false)
-    add_triangle!(tri, w, v, g; protect_boundary = true, update_ghost_edges = false)
-    add_triangle!(tri, u, w, g; protect_boundary = true, update_ghost_edges = false)
+    add_triangle!(tri, u, v, w)
+    add_triangle!(tri, v, u, g)
+    add_triangle!(tri, w, v, g)
+    add_triangle!(tri, u, w, g)
     new_representative_point!(tri, I(1))
     for i in triangle_vertices(initial_triangle)
         p = get_point(tri, i)
@@ -221,7 +221,7 @@ function add_point_bowyer_watson_dig_cavities!(tri::Triangulation, new_point::N,
     ℓ₁ = get_adjacent(tri, j, i)
     ℓ₂ = get_adjacent(tri, k, j)
     ℓ₃ = get_adjacent(tri, i, k)
-    !is_true(peek) && delete_triangle!(tri, V; protect_boundary = true, update_ghost_edges = false)
+    !is_true(peek) && delete_triangle!(tri, V)
     is_true(store_event_history) && delete_triangle!(event_history, V)
     dig_cavity!(tri, new_point, i, j, ℓ₁, flag, V, store_event_history, event_history, peek, predicates)
     dig_cavity!(tri, new_point, j, k, ℓ₂, flag, V, store_event_history, event_history, peek, predicates)
@@ -239,10 +239,10 @@ function add_point_bowyer_watson_dig_cavities!(tri::Triangulation, new_point::N,
             end
             g = get_adjacent(tri, u, v)
             if !is_true(peek)
-                delete_triangle!(tri, v, u, new_point; protect_boundary = true, update_ghost_edges = false)
-                delete_triangle!(tri, u, v, g; protect_boundary = true, update_ghost_edges = false)
-                add_triangle!(tri, new_point, v, g; protect_boundary = true, update_ghost_edges = false)
-                add_triangle!(tri, u, new_point, g; protect_boundary = true, update_ghost_edges = false)
+                delete_triangle!(tri, v, u, new_point)
+                delete_triangle!(tri, u, v, g)
+                add_triangle!(tri, new_point, v, g)
+                add_triangle!(tri, u, new_point, g)
             end
             if is_true(store_event_history)
                 delete_triangle!(event_history, (u, v, g))
@@ -346,7 +346,7 @@ function dig_cavity!(tri::Triangulation, r, i, j, ℓ, flag, V, store_event_hist
     if enter_cavity(tri, r, i, j, ℓ, predicates)
         ℓ₁ = get_adjacent(tri, ℓ, i)
         ℓ₂ = get_adjacent(tri, j, ℓ)
-        !is_true(peek) && delete_triangle!(tri, j, i, ℓ; protect_boundary = true, update_ghost_edges = false)
+        !is_true(peek) && delete_triangle!(tri, j, i, ℓ)
         dig_cavity!(tri, r, i, ℓ, ℓ₁, flag, V, store_event_history, event_history, peek, predicates)
         dig_cavity!(tri, r, ℓ, j, ℓ₂, flag, V, store_event_history, event_history, peek, predicates)
         if is_true(store_event_history)
@@ -365,13 +365,13 @@ function dig_cavity!(tri::Triangulation, r, i, j, ℓ, flag, V, store_event_hist
             if u == i && v == j
                 return tri
             else
-                !is_true(peek) && add_triangle!(tri, r, i, j; protect_boundary = true, update_ghost_edges = false)
+                !is_true(peek) && add_triangle!(tri, r, i, j)
                 if is_true(store_event_history)
                     add_triangle!(event_history, (_r, i, j))
                 end
             end
         else
-            !is_true(peek) && add_triangle!(tri, r, i, j; protect_boundary = true, update_ghost_edges = false)
+            !is_true(peek) && add_triangle!(tri, r, i, j)
             if is_true(store_event_history)
                 add_triangle!(event_history, (_r, i, j))
             end

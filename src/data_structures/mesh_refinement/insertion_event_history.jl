@@ -167,10 +167,10 @@ If you do not want to delete the latest vertex from the triangulation, set `pop`
 function undo_insertion!(tri::Triangulation, events::InsertionEventHistory, pop = Val(true))
     vertex = num_points(tri)
     for T in events.added_triangles
-        delete_triangle!(tri, T; protect_boundary = true, update_ghost_edges = false)
+        delete_triangle!(tri, T)
     end
     for T in events.deleted_triangles
-        add_triangle!(tri, T; protect_boundary = true, update_ghost_edges = false)
+        add_triangle!(tri, T)
     end
     undo_segment_changes!(tri, events)
     undo_boundary_segment_changes!(tri, events)

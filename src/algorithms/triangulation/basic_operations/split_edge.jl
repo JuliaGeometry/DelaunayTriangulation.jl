@@ -79,9 +79,9 @@ function split_edge!(tri::Triangulation, i, j, r, store_event_history = Val(fals
         end
     end
     k = get_adjacent(tri, i, j)
-    delete_triangle!(tri, i, j, k; protect_boundary = true, update_ghost_edges = false)
-    add_triangle!(tri, i, r, k; protect_boundary = true, update_ghost_edges = false)
-    add_triangle!(tri, r, j, k; protect_boundary = true, update_ghost_edges = false)
+    delete_triangle!(tri, i, j, k)
+    add_triangle!(tri, i, r, k)
+    add_triangle!(tri, r, j, k)
     if is_true(store_event_history)
         Tᵢⱼₖ = (i, j, k)
         Tᵢᵣₖ = (i, r, k)

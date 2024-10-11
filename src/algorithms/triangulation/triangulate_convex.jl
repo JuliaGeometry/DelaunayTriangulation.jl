@@ -52,7 +52,7 @@ function triangulate_convex!(tri::Triangulation, S; rng::Random.AbstractRNG = Ra
     list = ShuffledPolygonLinkedList(S; rng)
     delete_vertices_in_random_order!(list, tri, rng, predicates)
     u, v, w = get_triplet(list, 1)
-    add_triangle!(tri, u, v, w; protect_boundary = true, update_ghost_edges = false)
+    add_triangle!(tri, u, v, w)
     for i in 4:list.k
         u, v, w = get_triplet(list, i)
         add_point_convex_triangulation!(tri, u, v, w, S, predicates)
@@ -123,12 +123,12 @@ function add_point_convex_triangulation!(tri::Triangulation, u, v, w, S, predica
     x = get_adjacent(tri, w, v)
     if edge_exists(x) && is_inside(point_position_relative_to_circumcircle(predicates, tri, u, v, w, x; cache = get_incircle_cache(tri)))
         # uvw and wvx are not Delaunay 
-        delete_triangle!(tri, w, v, x; protect_boundary = true, update_ghost_edges = false)
+        delete_triangle!(tri, w, v, x)
         add_point_convex_triangulation!(tri, u, v, x, S, predicates)
         add_point_convex_triangulation!(tri, u, x, w, S, predicates)
     else
         # vw is a Delaunay edge 
-        add_triangle!(tri, u, v, w; protect_boundary = true, update_ghost_edges = false)
+        add_triangle!(tri, u, v, w)
     end
     return tri
 end
@@ -163,7 +163,7 @@ function postprocess_triangulate_convex!(tri::Triangulation, S; delete_ghosts, d
         u = S[i]
         v = S[i + 1]
         if !delete_ghosts
-            add_triangle!(tri, v, u, I(𝒢); protect_boundary = true, update_ghost_edges = false)
+            add_triangle!(tri, v, u, I(𝒢))
         else
             # Still want the ghost vertex in the graph, adjacent2vertex map, and the adjacent map.
             add_neighbour!(tri, I(𝒢), u)
@@ -174,7 +174,7 @@ function postprocess_triangulate_convex!(tri::Triangulation, S; delete_ghosts, d
     u = S[end]
     v = S[begin]
     if !delete_ghosts
-        add_triangle!(tri, v, u, I(𝒢); protect_boundary = true, update_ghost_edges = false)
+        add_triangle!(tri, v, u, I(𝒢))
     else
         add_neighbour!(tri, I(𝒢), u)
         add_adjacent2vertex!(tri, I(𝒢), v, u)

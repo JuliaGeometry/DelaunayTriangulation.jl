@@ -27,10 +27,10 @@ function flip_edge!(tri::Triangulation, i::I, j::I, store_event_history::Val{B} 
     return tri
 end
 function flip_edge!(tri::Triangulation, i::I, j::I, k::I, ℓ::I, store_event_history::Val{B} = Val(false), event_history = nothing) where {I <: Integer, B}
-    delete_triangle!(tri, i, k, j; protect_boundary = true, update_ghost_edges = false)
-    delete_triangle!(tri, i, j, ℓ; protect_boundary = true, update_ghost_edges = false)
-    add_triangle!(tri, ℓ, k, j; protect_boundary = true, update_ghost_edges = false)
-    add_triangle!(tri, ℓ, i, k; protect_boundary = true, update_ghost_edges = false)
+    delete_triangle!(tri, i, k, j)
+    delete_triangle!(tri, i, j, ℓ)
+    add_triangle!(tri, ℓ, k, j)
+    add_triangle!(tri, ℓ, i, k)
     is_true(store_event_history) && store_flip_edge_history!(event_history, i, j, k, ℓ)
     return tri
 end

@@ -16,10 +16,10 @@ See also [`legalise_split_triangle!`](@ref) and [`complete_split_triangle_and_le
 There is no output, but `tri` will be updated so that it now contains the triangles `(i, j, r)`, `(j, k, r)`, and `(k, i, r)`.
 """
 function split_triangle!(tri::Triangulation, i, j, k, r)
-    delete_triangle!(tri, i, j, k; protect_boundary = true, update_ghost_edges = false)
-    add_triangle!(tri, i, j, r; protect_boundary = true, update_ghost_edges = false)
-    add_triangle!(tri, j, k, r; protect_boundary = true, update_ghost_edges = false)
-    add_triangle!(tri, k, i, r; protect_boundary = true, update_ghost_edges = false)
+    delete_triangle!(tri, i, j, k)
+    add_triangle!(tri, i, j, r)
+    add_triangle!(tri, j, k, r)
+    add_triangle!(tri, k, i, r)
     return tri
 end
 

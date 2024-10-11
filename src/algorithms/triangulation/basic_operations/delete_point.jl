@@ -148,13 +148,13 @@ function delete_point!(
     neighbouring_edges = get_adjacent2vertex(tri, vertex)
     for uv in each_edge(neighbouring_edges) # note that we are mutating this iterator during iteration
         u, v = edge_vertices(uv)
-        delete_triangle!(tri, vertex, u, v; protect_boundary = true, update_ghost_edges = false)
+        delete_triangle!(tri, vertex, u, v)
         is_true(store_event_history) && delete_triangle!(event_history, (vertex, u, v))
     end
     triangulate_convex!(convex_tri, S; predicates, rng) # fill in the cavity
     for T in each_solid_triangle(convex_tri)
         u, v, w = triangle_vertices(T)
-        add_triangle!(tri, u, v, w; protect_boundary = true, update_ghost_edges = false)
+        add_triangle!(tri, u, v, w)
         is_true(store_event_history) && add_triangle!(event_history, T)
     end
     delete_adjacent2vertex!(tri, vertex)
