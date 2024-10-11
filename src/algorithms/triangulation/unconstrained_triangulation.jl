@@ -245,10 +245,9 @@ function add_point_bowyer_watson_dig_cavities!(tri::Triangulation, new_point::N,
                 add_triangle!(tri, u, new_point, g; protect_boundary = true, update_ghost_edges = false)
             end
             if is_true(store_event_history)
-                trit = triangle_type(tri)
-                delete_triangle!(event_history, construct_triangle(trit, u, v, g))
-                add_triangle!(event_history, construct_triangle(trit, _new_point, v, g))
-                add_triangle!(event_history, construct_triangle(trit, u, _new_point, g))
+                delete_triangle!(event_history, (u, v, g))
+                add_triangle!(event_history, (_new_point, v, g))
+                add_triangle!(event_history, (u, _new_point, g))
             end
             if is_constrained(tri) && is_bnd # If we don't do this here now, then when we try and do it later we will get a KeyError since we've already modified the boundary edge but we wouldn't have updated the segment fields
                 # We also only do this if contains_boundary_edge since we want to assume that (u, v) does not appear in interior_segments
@@ -351,8 +350,7 @@ function dig_cavity!(tri::Triangulation, r, i, j, ℓ, flag, V, store_event_hist
         dig_cavity!(tri, r, i, ℓ, ℓ₁, flag, V, store_event_history, event_history, peek, predicates)
         dig_cavity!(tri, r, ℓ, j, ℓ₂, flag, V, store_event_history, event_history, peek, predicates)
         if is_true(store_event_history)
-            trit = triangle_type(tri)
-            delete_triangle!(event_history, construct_triangle(trit, j, i, ℓ))
+            delete_triangle!(event_history, (j, i, ℓ))
         end
     else
         # If we are here, then this means that we are on an edge of the polygonal cavity. 
@@ -369,15 +367,13 @@ function dig_cavity!(tri::Triangulation, r, i, j, ℓ, flag, V, store_event_hist
             else
                 !is_true(peek) && add_triangle!(tri, r, i, j; protect_boundary = true, update_ghost_edges = false)
                 if is_true(store_event_history)
-                    trit = triangle_type(tri)
-                    add_triangle!(event_history, construct_triangle(trit, _r, i, j))
+                    add_triangle!(event_history, (_r, i, j))
                 end
             end
         else
             !is_true(peek) && add_triangle!(tri, r, i, j; protect_boundary = true, update_ghost_edges = false)
             if is_true(store_event_history)
-                trit = triangle_type(tri)
-                add_triangle!(event_history, construct_triangle(trit, _r, i, j))
+                add_triangle!(event_history, (_r, i, j))
             end
         end
     end
@@ -395,8 +391,7 @@ function add_point_bowyer_watson_onto_segment!(tri::Triangulation, new_point, V,
             is_bnd = (contains_boundary_edge(tri, u, v) || contains_boundary_edge(tri, v, u))
             # First, let us search on the other side of the segment, provided we are not on a boundary edge. 
             w = get_adjacent(tri, v, u)
-            T = triangle_type(tri)
-            V = construct_triangle(T, v, u, w)
+            V = (v, u, w)
             add_point_bowyer_watson_dig_cavities!(tri, new_point, V, q, flag, update_representative_point, store_event_history, event_history, peek, predicates)
             # Now, we need to replace the segment by this new segment.
             E = edge_type(tri)

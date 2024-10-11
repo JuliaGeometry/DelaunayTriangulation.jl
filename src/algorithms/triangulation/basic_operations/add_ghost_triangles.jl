@@ -12,7 +12,7 @@ function add_ghost_triangles!(tri::Triangulation)
             add_adjacent!(tri, g, u, v)
             add_adjacent2vertex!(tri, u, v, g)
             add_adjacent2vertex!(tri, v, g, u)
-            add_triangle!(T, u, v, g)
+            # add_triangle!(T, u, v, g)
         end
     end
     return tri

@@ -9,3 +9,4 @@ docs/Manifest.toml
 /.vscode
 LocalPreferences.toml
 docs/src/applications/cell_simulation.mp4
+TODO.md

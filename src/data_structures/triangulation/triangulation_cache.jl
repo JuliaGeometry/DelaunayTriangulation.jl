@@ -60,10 +60,8 @@ function _copy_cache(cache::TriangulationCache; weights = copy(get_weights(get_t
     points = copy(get_points(tri))
     I = integer_type(tri)
     E = edge_type(tri)
-    V = triangle_type(tri)
     Es = edges_type(tri)
-    T = triangles_type(tri)
-    new_cache = _build_cache(points, I, E, V, Es, T, weights, Val(true))
+    new_cache = _build_cache(points, I, E, Es, weights, Val(true))
     return new_cache
 end
 

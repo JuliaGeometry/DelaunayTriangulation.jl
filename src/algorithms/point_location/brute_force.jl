@@ -56,7 +56,7 @@ function brute_force_search_enclosing_circumcircle(tri::Triangulation, i, predic
         cert = point_position_relative_to_circumcircle(predicates, tri, V, i; cache)
         !is_outside(cert) && return V
     end
-    tri_type = triangle_type(tri)
-    V = construct_triangle(tri_type, ∅, ∅, ∅)
+    I = integer_type(tri)
+    V = (I(∅), I(∅), I(∅))
     return V
 end

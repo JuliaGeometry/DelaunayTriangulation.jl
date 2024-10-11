@@ -83,7 +83,6 @@ Returns a [`TriangulationStatistics`](@ref) object containing statistics about t
 """
 function statistics(tri::Triangulation)
     F = number_type(tri)
-    V = triangle_type(tri)
     I = integer_type(tri)
     nverts = num_vertices(tri)
     nsolid_verts = num_solid_vertices(tri)
@@ -102,7 +101,7 @@ function statistics(tri::Triangulation)
     nsegments = num_edges(segments)
     convex_hull_vertices = get_convex_hull_vertices(tri)
     nconvex_hull_vertices = max(0, length(convex_hull_vertices) - 1) # -1 because the last index is the same as the first 
-    individual_statistics = Dict{V, IndividualTriangleStatistics{F}}()
+    individual_statistics = Dict{NTuple{3,I}, IndividualTriangleStatistics{F}}()
     sizehint!(individual_statistics, nsolid_tris)
     smallest_angle = typemax(F)
     largest_angle = typemin(F)

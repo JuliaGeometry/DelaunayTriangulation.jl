@@ -1,11 +1,11 @@
 """
-    InsertionEventHistory{T,E}
+    InsertionEventHistory{I,E}
 
 A data structure for storing the changes to the triangulation during the insertion of a point.
 
 # Fields
-- `added_triangles::Set{T}`: The triangles that were added.
-- `deleted_triangles::Set{T}`: The triangles that were deleted.
+- `added_triangles::Set{NTuple{3,I}}`: The triangles that were added.
+- `deleted_triangles::Set{NTuple{3,I}}`: The triangles that were deleted.
 - `added_segments::Set{E}`: The interior segments that were added.
 - `deleted_segments::Set{E}`: The interior segments that were deleted.
 - `added_boundary_segments::Set{E}`: The boundary segments that were added.
@@ -18,9 +18,9 @@ The default constructor is available, but we also provide
 
 which will initialise this struct with empty, appropriately `sizehint!`ed, sets.
 """
-struct InsertionEventHistory{T, E}
-    added_triangles::Set{T}
-    deleted_triangles::Set{T}
+struct InsertionEventHistory{I, E}
+    added_triangles::Set{NTuple{3,I}}
+    deleted_triangles::Set{NTuple{3,I}}
     added_segments::Set{E}
     deleted_segments::Set{E}
     added_boundary_segments::Set{E}
@@ -42,10 +42,10 @@ end
 Initialises an `InsertionEventHistory` for the triangulation `tri`.
 """
 function InsertionEventHistory(tri::Triangulation)
-    T = triangle_type(tri)
+    I = integer_type(tri)
     E = edge_type(tri)
-    add_set = Set{T}()
-    delete_set = Set{T}()
+    add_set = Set{NTuple{3,I}}()
+    delete_set = Set{NTuple{3,I}}()
     add_edge_set = Set{E}()
     delete_edge_set = Set{E}()
     add_bnd_set = Set{E}()
@@ -56,7 +56,7 @@ function InsertionEventHistory(tri::Triangulation)
     sizehint!(delete_edge_set, 8)
     sizehint!(add_bnd_set, 8)
     sizehint!(delete_bnd_set, 8)
-    return InsertionEventHistory{T, E}(add_set, delete_set, add_edge_set, delete_edge_set, add_bnd_set, delete_bnd_set)
+    return InsertionEventHistory{I, E}(add_set, delete_set, add_edge_set, delete_edge_set, add_bnd_set, delete_bnd_set)
 end
 
 """
@@ -135,11 +135,11 @@ Returns an iterator over the boundary segments that were added to the triangulat
 each_added_boundary_segment(events::InsertionEventHistory) = each_edge(events.added_boundary_segments)
 
 """
-    triangle_type(::InsertionEventHistory{T}) where {T} = T
+    integer_type(events::InsertionEventHistory) -> I
 
-Returns the type of the triangles in `events`, `T`.
+Returns the integer type of the triangles in `events`.
 """
-triangle_type(::InsertionEventHistory{T}) where {T} = T
+integer_type(events::InsertionEventHistory{I}) where {I} = I
 
 """
     empty!(events::InsertionEventHistory)

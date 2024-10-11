@@ -1,3 +1,5 @@
+abstract type AbstractGraph end
+
 """
     Graph{IntegerType}
 
@@ -18,7 +20,7 @@ The map taking vertices `u` to the set of all `v` such that `(u, v)` is an edge 
     Graph{IntegerType}()
     Graph(vertices::Set{IntegerType}, edges::Set{NTuple{2, IntegerType}}, neighbours::Dict{IntegerType, Set{IntegerType}})
 """
-struct Graph{I}
+struct Graph{I} <: AbstractGraph
     vertices::Set{I}
     edges::Set{NTuple{2,I}}
     neighbours::Dict{I,Set{I}}

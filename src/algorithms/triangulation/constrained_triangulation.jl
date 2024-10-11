@@ -708,11 +708,8 @@ See also [`find_triangle`](@ref).
 - `right_vertices`: The vertices of the intersected triangles that are right of `e`.
 """
 function locate_intersecting_triangles(tri::Triangulation, e, rotate = Val(true), rng::Random.AbstractRNG = Random.default_rng(), predicates::AbstractPredicateKernel = AdaptiveKernel())
-    V = triangle_type(tri)
-    E = edge_type(tri)
-    I = integer_type(tri)
     e = is_true(rotate) ? sort_edge_by_degree(tri, e) : e # faster to start at the minimum degree vertex of the edge
-    history = PointLocationHistory{V, E, I}()
+    history = PointLocationHistory{}(tri)
     add_left_vertex!(history, initial(e))
     add_right_vertex!(history, initial(e))
     find_triangle(

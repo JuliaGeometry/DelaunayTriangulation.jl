@@ -28,7 +28,7 @@ function compare_triangles(T, V)
         (i, j, k) == (w, u, v)
 end
 
-function construct_positively_oriented_triangle(::Type{V}, i, j, k, points, predicates::AbstractPredicateKernel = AdaptiveKernel()) where {V}
+function construct_positively_oriented_triangle(i, j, k, points, predicates::AbstractPredicateKernel = AdaptiveKernel())
     p, q, r = get_point(points, i, j, k)
     orientation = triangle_orientation(predicates, p, q, r)
     if is_negatively_oriented(orientation)
@@ -38,7 +38,7 @@ function construct_positively_oriented_triangle(::Type{V}, i, j, k, points, pred
     end
 end
 
-function rotate_triangle(T, ::Val{N})
+function rotate_triangle(T, ::Val{N}) where {N}
     i, j, k = triangle_vertices(T)
     N < 0 && throw(ArgumentError(lazy"Cannot rotate triangle $T by a negative amount."))
     return N == 0 ? T : N == 1 ? (j, k, i) : N == 2 ? (k, i, j) : rotate_triangle(T, Val(N % 3))
@@ -52,7 +52,7 @@ Triangles{I,E}() where {I,E} = Triangle{I,E}(Adjacent{I,E}())
 get_adjacent(triangles::Triangles) = triangles.adjacent
 get_dict(triangles::Triangles) = get_adjacent(get_adjacent(triangles))
 num_triangles(triangles) = length(triangles)
-contains_triangle(T, triangles::Triangles) = in(sort_triangle(T), triangles)
+contains_triangle(T, triangles) = in(sort_triangle(T), triangles) # not doing ::Triangles because of an ambiguity
 add_triangle!(triangles::Triangles, T...) = add_triangle!(get_adjacent(triangles), T...)
 delete_triangle!(triangles::Triangles, T) = delete_triangle!(get_adjacent(triangles), T)
 each_triangle(triangles) = triangles 
@@ -63,19 +63,25 @@ function compare_triangle_collections(T::Triangles, V::Triangles)
     end
     return true
 end
+integer_type(::Triangles{I}) where {I} = I
+edge_type(::Triangles{I,E}) where {I,E} = E
 
 # AbstractSet
-Base.length(triangles::Triangles) = length(get_dict(triangles))
+Base.length(triangles::Triangles) = length(get_dict(triangles)) ÷ 3
 function Base.iterate(triangles::Triangles, state...)
-    (e, w), _state = Base.iterate(get_dict(triangles), state...)
+    ew_state = Base.iterate(get_dict(triangles), state...)
+    ew_state === nothing && return nothing
+    (e, w), state = ew_state
     u, v = edge_vertices(e)
     T = (u, v, w)
     while T != sort_triangle(T) # unique representation
-        (e, w), _state = Base.iterate(get_dict(triangles), _state...)
+        ew_state = Base.iterate(get_dict(triangles), state...)
+        ew_state === nothing && return nothing
+        (e, w), state = ew_state
         u, v = edge_vertices(e)
         T = (u, v, w)
     end
-    return T, _state
+    return T, state
 end
 Base.empty(triangles::Triangles{I,E}) where {I, E} = Triangles{I,E}()
 Base.isempty(triangles::Triangles{I,E}) where {I, E} = isempty(get_dict(triangles))
@@ -86,3 +92,5 @@ function Base.in(T, triangles::Triangles)
 end
 Base.copy(triangles::Triangles) = Triangles(copy(get_adjacent(triangles)))
 Base.empty!(triangles::Triangles) = empty!(get_adjacent(triangles))
+
+concretize(triangles::Triangles) = Set(triangles)

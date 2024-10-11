@@ -17,13 +17,13 @@ Deletes all the ghost triangles from `tri`.
 function delete_ghost_triangles!(tri::Triangulation)
     T = get_triangles(tri)
     for g in each_ghost_vertex(tri)
-        for uv in (each_edge ∘ get_adjacent2vertex)(tri, g)
+        for uv in each_edge(get_adjacent2vertex(tri, g))
             u, v = edge_vertices(uv)
             delete_adjacent!(tri, v, g)
             delete_adjacent!(tri, g, u)
             delete_adjacent2vertex!(tri, u, v, g)
             delete_adjacent2vertex!(tri, v, g, u)
-            delete_triangle!(T, u, v, g)
+            # delete_triangle!(T, u, v, g)
         end
     end
     return tri

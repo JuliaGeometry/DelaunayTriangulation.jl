@@ -17,9 +17,7 @@ Triangulates the rectangle `[a, b] × [c, d]`.
 - `delete_ghosts=false`: If `true`, then the ghost triangles are deleted. Otherwise, they are kept.
 - `IntegerType::Type{I}=Int`: The type of the vertices. 
 - `EdgeType::Type{E}=NTuple{2,IntegerType}`: The type of the edges.
-- `TriangleType::Type{V}=NTuple{3,IntegerType}`: The type of the triangles.
 - `EdgesType::Type{Es}=Set{EdgeType}`: The type of the edges container.
-- `TrianglesType::Type{Ts}=Set{TriangleType}`: The type of the triangles container.
 - `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
 # Outputs 
@@ -31,28 +29,26 @@ Triangulates the rectangle `[a, b] × [c, d]`.
         delete_ghosts = false,
         IntegerType::Type{I} = Int,
         EdgeType::Type{E} = NTuple{2, IntegerType},
-        TriangleType::Type{V} = NTuple{3, IntegerType},
         EdgesType::Type{Es} = Set{EdgeType},
-        TrianglesType::Type{Ts} = Set{TriangleType},
         predicates::AbstractPredicateKernel = AdaptiveKernel(),
-    ) where {I, E, V, Es, Ts}
-    return _triangulate_rectangle(a, b, c, d, nx, ny, I, E, V, Es, Ts, single_boundary, delete_ghosts, predicates)
+    ) where {I, E, Es}
+    return _triangulate_rectangle(a, b, c, d, nx, ny, I, E, Es, single_boundary, delete_ghosts, predicates)
 end
 @inline function _triangulate_rectangle(
         a, b, c, d, nx, ny,
-        ::Type{I}, ::Type{E}, ::Type{V}, ::Type{Es}, ::Type{Ts},
+        ::Type{I}, ::Type{E}, ::Type{Es},
         single_boundary, delete_ghosts, predicates::AbstractPredicateKernel = AdaptiveKernel(),
-    ) where {I, E, V, Es, Ts}
-    T, sub2ind = get_lattice_triangles(nx, ny, Ts, V)
+    ) where {I, E, Es}
+    T, sub2ind = get_lattice_triangles(nx, ny, I)
     points = get_lattice_points(a, b, c, d, nx, ny, sub2ind)
     boundary_nodes = get_lattice_boundary(nx, ny, sub2ind, Val(single_boundary), I)
-    tri = Triangulation(points, T, boundary_nodes; predicates, IntegerType = I, EdgeType = E, TriangleType = V, EdgesType = Es, TrianglesType = Ts, delete_ghosts)
+    tri = Triangulation(points, T, boundary_nodes; predicates, IntegerType = I, EdgeType = E, EdgesType = Es, delete_ghosts)
     compute_representative_points!(tri)
     return tri
 end
 
 """
-    get_lattice_triangles(nx, ny, Ts, V) 
+    get_lattice_triangles(nx, ny, I)
 
 Computes the triangles defining a lattice with `nx` and `ny` points in the `x`- and `y`-directions,
 respectively.
@@ -62,28 +58,28 @@ See [`triangulate_rectangle`](@ref).
 # Arguments 
 - `nx`: The number of `x` points in the lattice.
 - `ny`: The number of `y` points in the lattice.
-- `Ts`: The type to use for representing a collection of triangles.
-- `V`: The type to use for representing an individual triangle.
+- `I`: The type used for representing vertices.
 
 # Outputs 
 - `T`: The collection of triangles.
 - `sub2ind`: A map that takes cartesian indices `(i, j)` into the associated linear index along the lattice. See `LinearIndices`.
 """
-@inline function get_lattice_triangles(nx, ny, ::Type{Ts}, ::Type{V}) where {Ts, V}
-    T = Ts()
+@inline function get_lattice_triangles(nx, ny, ::Type{I}) where {I}
+    T = Set{NTuple{3, I}}()
+    sizehint!(T, 2(nx-1)*(ny-1))
     sub2ind = LinearIndices((1:nx, 1:ny))
     for j in 1:(ny - 1)
         for i in 1:(nx - 1)
             u = sub2ind[CartesianIndex(i, j)]
             v = sub2ind[CartesianIndex(i + 1, j)]
             w = sub2ind[CartesianIndex(i, j + 1)]
-            τ = construct_triangle(V, u, v, w)
-            add_triangle!(T, τ)
+            τ = (u, v, w)
+            push!(T, τ)
             u = sub2ind[CartesianIndex(i, j + 1)]
             v = sub2ind[CartesianIndex(i + 1, j)]
             w = sub2ind[CartesianIndex(i + 1, j + 1)]
-            τ = construct_triangle(V, u, v, w)
-            add_triangle!(T, τ)
+            τ = (u, v, w)
+            push!(T, τ)
         end
     end
     return T, sub2ind

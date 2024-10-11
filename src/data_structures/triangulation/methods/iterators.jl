@@ -175,10 +175,9 @@ struct EachGhostTriangle{V, T} <: AbstractEachTriangle{V}
     triangles::V
     tri::T
 end
-triangle_type(itr::AbstractEachTriangle) = triangle_type(itr.tri)
 Base.IteratorSize(::Type{<:AbstractEachTriangle}) = Base.HasLength()
 Base.IteratorEltype(::Type{<:AbstractEachTriangle{T}}) where {T} = Base.IteratorEltype(T)
-Base.eltype(::Type{<:AbstractEachTriangle{T}}) where {T} = triangle_type(T)
+Base.eltype(::Type{<:AbstractEachTriangle{T}}) where {T} = eltype(T)
 each_triangle(itr::AbstractEachTriangle) = itr
 Base.length(itr::EachSolidTriangle) = num_solid_triangles(itr.tri)
 Base.length(itr::EachGhostTriangle) = num_ghost_triangles(itr.tri)

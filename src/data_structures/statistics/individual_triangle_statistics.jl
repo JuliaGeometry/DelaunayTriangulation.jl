@@ -596,7 +596,7 @@ Sinks were introduced in [this paper](https://doi.org/10.1145/378583.378644). Fo
 In cases where the triangulation has holes, this definition can lead to loops. In such a case, we just pick one of the triangles 
 in the loop as the sink triangle.
 """
-function triangle_sink(tri::Triangulation, T, prev_T = construct_triangle(triangle_type(tri), integer_type(tri)(∅), integer_type(tri)(∅), integer_type(tri)(∅)); predicates::AbstractPredicateKernel = AdaptiveKernel())
+function triangle_sink(tri::Triangulation, T, prev_T = (integer_type(tri)(∅), integer_type(tri)(∅), integer_type(tri)(∅)); predicates::AbstractPredicateKernel = AdaptiveKernel())
     # TODO: This function would be faster if we just always search away from the largest angle.
     T = sort_triangle(T)
     c = triangle_circumcenter(tri, T)
@@ -624,11 +624,11 @@ function triangle_sink(tri::Triangulation, T, prev_T = construct_triangle(triang
     θ₃ ≤ π / 2 + ε(θ₃) && return c
     m = triangle_centroid(p, q, r)
     if !is_none(line_segment_intersection_type(predicates, p, q, m, c)) && !is_left(point_position_relative_to_line(predicates, p, q, c))
-        next_T = construct_triangle(triangle_type(tri), j, i, get_adjacent(tri, j, i))
+        next_T = (j, i, get_adjacent(tri, j, i))
     elseif !is_none(line_segment_intersection_type(predicates, q, r, m, c)) && !is_left(point_position_relative_to_line(predicates, q, r, c))
-        next_T = construct_triangle(triangle_type(tri), k, j, get_adjacent(tri, k, j))
+        next_T = (k, j, get_adjacent(tri, k, j))
     else # Must intersect the edge ki instead then 
-        next_T = construct_triangle(triangle_type(tri), i, k, get_adjacent(tri, i, k))
+        next_T = (i, k, get_adjacent(tri, i, k))
     end
     sort_triangle(next_T) == prev_T && return c
     return triangle_sink(tri, next_T, T; predicates)

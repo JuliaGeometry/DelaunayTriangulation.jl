@@ -225,10 +225,9 @@ of ghost triangle.
 """
 function replace_boundary_triangle_with_ghost_triangle(tri::Triangulation, V)
     u, v, w = triangle_vertices(V)
-    T = triangle_type(tri)
-    is_boundary_edge(tri, u, v) && return construct_triangle(T, v, u, get_adjacent(tri, v, u))
-    is_boundary_edge(tri, v, w) && return construct_triangle(T, w, v, get_adjacent(tri, w, v))
-    return construct_triangle(T, u, w, get_adjacent(tri, u, w))
+    is_boundary_edge(tri, u, v) && return (v, u, get_adjacent(tri, v, u))
+    is_boundary_edge(tri, v, w) && return (w, v, get_adjacent(tri, w, v))
+    return (u, w, get_adjacent(tri, u, w))
 end
 
 """
@@ -239,7 +238,7 @@ Given a ghost triangle `V` of `tri`, returns the adjacent boundary triangle.
 function replace_ghost_triangle_with_boundary_triangle(tri::Triangulation, V)
     T = sort_triangle(V)
     u, v, w = triangle_vertices(T) # w is the ghost triangle 
-    return construct_triangle(triangle_type(tri), v, u, get_adjacent(tri, v, u))
+    return (v, u, get_adjacent(tri, v, u))
 end
 
 @doc raw"""

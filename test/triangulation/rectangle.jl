@@ -2,8 +2,7 @@ using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using CairoMakie
 using Test
-
-#
+using .HelperFunctions
 
 @testset "Multiple boundaries" begin
     a, b, c, d = 2.0, 10.0, -5.0, 7.5

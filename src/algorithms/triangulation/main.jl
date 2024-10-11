@@ -33,9 +33,7 @@ For the keyword arguments below, you may like to review the extended help as som
 - `weights=ZeroWeight{number_type(points)}()`: The weights to use for the triangulation. By default, the triangulation is unweighted. The weights can also be provided as a vector, with the `i`th weight referring to the `i`th vertex, or more generally any object that defines [`get_weight`](@ref). 
 - `IntegerType=Int`: The integer type to use for the triangulation. This is used for representing vertices.
 - `EdgeType=isnothing(segments) ? NTuple{2,IntegerType} : (edge_type ∘ typeof)(segments)`: The edge type to use for the triangulation. 
-- `TriangleType=NTuple{3,IntegerType}`: The triangle type to use for the triangulation.
 - `EdgesType=isnothing(segments) ? Set{EdgeType} : typeof(segments)`: The type to use for storing the edges of the triangulation.
-- `TrianglesType=Set{TriangleType}`: The type to use for storing the triangles of the triangulation.
 - `randomise=true`: Whether to randomise the order in which the points are inserted into the triangulation. This is done using [`get_insertion_order`](@ref).
 - `delete_ghosts=false`: Whether to delete the ghost triangles after the triangulation is computed. This is done using [`delete_ghost_triangles!`](@ref).
 - `delete_empty_features=true`: Whether to delete empty features after the triangulation is computed. This is done using [`clear_empty_features!`](@ref).
@@ -123,9 +121,7 @@ function triangulate(
         weights = ZeroWeight{number_type(P)}(),
         IntegerType::Type{I} = Int,
         EdgeType::Type{E} = isnothing(segments) ? NTuple{2, IntegerType} : edge_type(typeof(segments)),
-        TriangleType::Type{V} = NTuple{3, IntegerType},
         EdgesType::Type{Es} = isnothing(segments) ? Set{EdgeType} : typeof(segments),
-        TrianglesType::Type{Ts} = Set{TriangleType},
         randomise = true,
         delete_ghosts = false,
         delete_empty_features = true,
@@ -143,16 +139,16 @@ function triangulate(
         polygonise_n = 4096,
         coarse_n = 0,
         enrich = false,
-    ) where {P, I, E, V, Es, Ts, M, H}
+    ) where {P, I, E, Es, M, H}
     check_config(points, weights, segments, boundary_nodes, predicates)
     if enrich || (isempty(boundary_curves) && is_curve_bounded(boundary_nodes)) # If boundary_curves is not empty, then we are coming from triangulate_curve_bounded
-        return triangulate_curve_bounded(points; segments, boundary_nodes, predicates, weights, IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType, randomise, delete_ghosts, delete_empty_features, try_last_inserted_point, skip_points, num_sample_rule, rng, insertion_order, recompute_representative_points, delete_holes, check_arguments, polygonise_n, coarse_n)
+        return triangulate_curve_bounded(points; segments, boundary_nodes, predicates, weights, IntegerType, EdgeType, EdgesType, randomise, delete_ghosts, delete_empty_features, try_last_inserted_point, skip_points, num_sample_rule, rng, insertion_order, recompute_representative_points, delete_holes, check_arguments, polygonise_n, coarse_n)
     end
     if isnothing(full_polygon_hierarchy)
         full_polygon_hierarchy = construct_polygon_hierarchy(points, boundary_nodes; IntegerType)
     end
     check_arguments && check_args(points, boundary_nodes, full_polygon_hierarchy, boundary_curves)
-    tri = Triangulation(points; IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType, weights, boundary_curves, boundary_enricher, build_cache = Val(true))
+    tri = Triangulation(points; IntegerType, EdgeType, EdgesType, weights, boundary_curves, boundary_enricher, build_cache = Val(true))
     return _triangulate!(
         tri, segments, boundary_nodes, predicates, randomise, try_last_inserted_point, skip_points, num_sample_rule, rng, insertion_order,
         recompute_representative_points, delete_holes, full_polygon_hierarchy, delete_ghosts, delete_empty_features,
@@ -209,9 +205,7 @@ function retriangulate(
         weights = get_weights(tri),
         IntegerType = integer_type(tri),
         EdgeType = edge_type(tri),
-        TriangleType = triangle_type(tri),
         EdgesType = edges_type(tri),
-        TrianglesType = triangles_type(tri),
         check_arguments = false,
         skip_points,
         kwargs...,

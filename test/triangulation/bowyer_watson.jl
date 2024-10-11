@@ -45,6 +45,7 @@ end
     u, v, w = first(S)
     BI = DT.𝒢
     @test get_triangles(_tri) == Set(((u, v, w), (w, v, BI), (v, u, BI), (u, w, BI)))
+    @test get_triangles(_tri) != Set(((1,2,3),(3,2,1),(4,5,6),(10,11,12)))
     @test get_adjacent(get_adjacent(_tri)) == Dict(
         (u, v) => w,
         (v, w) => u,

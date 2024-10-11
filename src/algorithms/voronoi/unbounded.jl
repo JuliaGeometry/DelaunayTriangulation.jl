@@ -11,12 +11,11 @@ Initialise a `VoronoiTessellation` from the triangulation `tri`.
 """
 function initialise_voronoi_tessellation(tri::Tr) where {Tr <: Triangulation}
     I = integer_type(tri)
-    T = triangle_type(tri)
     F = number_type(tri)
     P = NTuple{2, F}
     polygon_points = Vector{P}()
-    circumcenter_to_triangle = Dict{I, T}()
-    triangle_to_circumcenter = Dict{T, I}()
+    circumcenter_to_triangle = Dict{I, NTuple{3, I}}()
+    triangle_to_circumcenter = Dict{NTuple{3, I}, I}()
     sizehint!(polygon_points, num_triangles(tri))
     sizehint!(circumcenter_to_triangle, num_triangles(tri))
     sizehint!(triangle_to_circumcenter, num_triangles(tri))
@@ -112,10 +111,9 @@ Get the next triangle for the Voronoi polygon for the point `i` in the `VoronoiT
 - `k`: The next vertex in `S` after the input `k`.
 """
 function get_next_triangle_for_voronoi_polygon(vorn::VoronoiTessellation, i, k, S, m)
-    T = triangle_type(vorn)
     j = k
     k = S[m]
-    V = sort_triangle(construct_triangle(T, i, j, k))
+    V = sort_triangle(i, j, k)
     ci = get_triangle_to_circumcenter(vorn, V)
     return ci, k
 end

@@ -27,7 +27,7 @@ function delete_triangle!(
     delete_triangle!(adj, u, v, w)
     delete_triangle!(adj2v, u, v, w)
     # delete_triangle!(graph, u, v, w)
-    delete_triangle!(triangles, u, v, w)
+    # delete_triangle!(triangles, u, v, w)
     vu_bnd = is_boundary_edge(tri, u, v)
     uw_bnd = is_boundary_edge(tri, w, u)
     wv_bnd = is_boundary_edge(tri, v, w)
@@ -80,9 +80,9 @@ function delete_boundary_edges_single!(u, v, w, vu_bnd, uw_bnd, wv_bnd, triangle
         add_adjacent2vertex!(adj2v, w, u, g)
         add_adjacent2vertex!(adj2v, u, g, w)
         # Ghost triangles
-        add_triangle!(triangles, v, w, g)
-        add_triangle!(triangles, w, u, g)
-        delete_triangle!(triangles, v, u, g)
+        # add_triangle!(triangles, v, w, g)
+        # add_triangle!(triangles, w, u, g)
+        # delete_triangle!(triangles, v, u, g)
     end
     return nothing
 end
@@ -111,9 +111,9 @@ function delete_boundary_edges_double!(u, v, w, vu_bnd, uw_bnd, wv_bnd, triangle
         add_adjacent2vertex!(adj2v, u, v, g)
         add_adjacent2vertex!(adj2v, v, g, u)
         # Ghost triangles
-        add_triangle!(triangles, u, v, g)
-        delete_triangle!(triangles, u, w, g)
-        delete_triangle!(triangles, w, v, g)
+        # add_triangle!(triangles, u, v, g)
+        # delete_triangle!(triangles, u, w, g)
+        # delete_triangle!(triangles, w, v, g)
     end
     return nothing
 end
@@ -143,9 +143,9 @@ function delete_boundary_edges_triple!(u, v, w, triangles, adj::Adjacent{I, E}, 
         delete_adjacent2vertex!(adj2v, u, w, g)
         delete_adjacent2vertex!(adj2v, w, g, u)
         # Ghost triangles 
-        delete_triangle!(triangles, v, u, g)
-        delete_triangle!(triangles, w, v, g)
-        delete_triangle!(triangles, u, w, g)
+        # delete_triangle!(triangles, v, u, g)
+        # delete_triangle!(triangles, w, v, g)
+        # delete_triangle!(triangles, u, w, g)
     end
     return nothing
 end

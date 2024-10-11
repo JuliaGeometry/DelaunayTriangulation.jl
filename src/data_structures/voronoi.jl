@@ -186,13 +186,6 @@ Type used for representing indices in the Voronoi tessellation.
 integer_type(::VoronoiTessellation{Tr, P, I}) where {Tr, P, I} = I
 
 """
-    triangle_type(vorn::VoronoiTessellation) -> DataType
-
-Type used for representing individual triangles in the Voronoi tessellation.
-"""
-triangle_type(::VoronoiTessellation{Tr, P, I, T}) where {Tr, P, I, T} = T
-
-"""
     get_generator(vor::VoronoiTessellation, i) -> NTuple{2, Number}
     get_generator(vor::VoronoiTessellation, i...) -> NTuple{length(i), NTuple{2, Number}}
 
@@ -243,10 +236,9 @@ function get_triangle_to_circumcenter(vor::VoronoiTessellation, T)
         tri = get_triangulation(vor)
         u, v, w = triangle_vertices(T)
         range = get_ghost_vertex_range(tri, w) # w = ghost vertex
-        V = triangle_type(tri)
         dict = get_triangle_to_circumcenter(vor)
         for j in range
-            T = construct_triangle(V, u, v, j)
+            T = (u, v, j)
             haskey(dict, T) && return dict[T]
         end
         throw(KeyError(T))

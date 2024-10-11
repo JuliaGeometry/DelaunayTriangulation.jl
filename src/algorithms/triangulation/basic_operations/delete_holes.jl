@@ -153,13 +153,13 @@ This function works in two stages.
 """
 function find_all_triangles_to_delete(tri::Triangulation, points_to_process)
     ## Process the non-boundary nodes for deletion
-    T = triangle_type(tri)
-    triangles_to_delete = Set{T}()
+    I = integer_type(tri)
+    triangles_to_delete = Set{NTuple{3,I}}()
     for point in points_to_process
         S = get_adjacent2vertex(tri, point)
         for e in each_edge(S)
             u, v = edge_vertices(e)
-            V = construct_triangle(T, u, v, point)
+            V = (u, v, point)
             !contains_triangle(V, triangles_to_delete)[2] && add_triangle!(triangles_to_delete, V)
         end
     end
@@ -169,7 +169,7 @@ function find_all_triangles_to_delete(tri::Triangulation, points_to_process)
         S = get_adjacent2vertex(tri, node)
         for e in each_edge(S)
             u, v = edge_vertices(e)
-            V = construct_triangle(T, u, v, node)
+            V = (u, v, node)
             if !contains_triangle(V, triangles_to_delete)[2]
                 p, q, r = get_point(tri, u, v, node)
                 c = triangle_centroid(p, q, r)

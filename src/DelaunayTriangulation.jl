@@ -20,6 +20,6 @@ include("validation.jl")
 include("exports.jl")
 include("public.jl")
 
-include("precompile.jl")
+# include("precompile.jl")
 
 end

@@ -1,3 +1,5 @@
+abstract type AbstractAdjacent2Vertex end 
+
 """
     Adjacent2Vertex{IntegerType, EdgesType}
 
@@ -12,7 +14,7 @@ The map taking `w` to the set of all `(u, v)` such that `(u, v, w)` is a positiv
     Adjacent2Vertex{IntegerType, EdgesType}()
     Adjacent2Vertex(adj2v::Dict{IntegerType, EdgesType})
 """
-struct Adjacent2Vertex{I, Es}
+struct Adjacent2Vertex{I, Es} <: AbstractAdjacent2Vertex
     adjacent2vertex::Dict{I, Es}
     Adjacent2Vertex(adj2v::Dict{I, Es}) where {I, Es} = new{I, Es}(adj2v)
 end

@@ -34,7 +34,7 @@ function add_triangle!(
     add_triangle!(adj, u, v, w)
     add_triangle!(adj2v, u, v, w)
     add_triangle!(graph, u, v, w)
-    add_triangle!(triangles, u, v, w)
+    # add_triangle!(triangles, u, v, w)
     ## Now consider the boundary 
     num_bnd_edges = protect_boundary ? 0 : count((uv_bnd, vw_bnd, wu_bnd))
     if num_bnd_edges == 1
@@ -75,9 +75,9 @@ function add_boundary_edges_single!(u, v, w, uv_bnd, vw_bnd, wu_bnd, triangles, 
         add_adjacent2vertex!(adj2v, v, g, w)
         delete_adjacent2vertex!(adj2v, u, v, g)
         delete_adjacent2vertex!(adj2v, v, g, u)
-        add_triangle!(triangles, u, w, g)
-        add_triangle!(triangles, w, v, g)
-        delete_triangle!(triangles, u, v, g)
+        # add_triangle!(triangles, u, w, g)
+        # add_triangle!(triangles, w, v, g)
+        # delete_triangle!(triangles, u, v, g)
     end
     return nothing
 end
@@ -105,9 +105,9 @@ function add_boundary_edges_double!(u, v, w, uv_bnd, vw_bnd, wu_bnd, triangles, 
         delete_adjacent2vertex!(adj2v, u, g, w)
         delete_adjacent2vertex!(adj2v, v, w, g)
         delete_adjacent2vertex!(adj2v, w, g, v)
-        add_triangle!(triangles, v, u, g)
-        delete_triangle!(triangles, v, w, g)
-        delete_triangle!(triangles, w, u, g)
+        #  add_triangle!(triangles, v, u, g)
+        #  delete_triangle!(triangles, v, w, g)
+        #  delete_triangle!(triangles, w, u, g)
     end
     return nothing
 end
@@ -136,9 +136,9 @@ function add_boundary_edges_triple!(u, v, w, triangles, adj::Adjacent{I, E}, adj
         add_adjacent2vertex!(adj2v, v, g, w)
         add_adjacent2vertex!(adj2v, u, w, g)
         add_adjacent2vertex!(adj2v, w, g, u)
-        add_triangle!(triangles, v, u, g)
-        add_triangle!(triangles, u, w, g)
-        add_triangle!(triangles, w, v, g)
+        # add_triangle!(triangles, v, u, g)
+        # add_triangle!(triangles, u, w, g)
+        # add_triangle!(triangles, w, v, g)
     end
     return nothing
 end

@@ -36,11 +36,10 @@ function flip_edge!(tri::Triangulation, i::I, j::I, k::I, ℓ::I, store_event_hi
 end
 
 function store_flip_edge_history!(event_history, i, j, k, ℓ)
-    trit = triangle_type(event_history)
-    Tikj = construct_triangle(trit, i, k, j)
-    Tijℓ = construct_triangle(trit, i, j, ℓ)
-    Tℓkj = construct_triangle(trit, ℓ, k, j)
-    Tℓik = construct_triangle(trit, ℓ, i, k)
+    Tikj = (i, k, j)
+    Tijℓ = (i, j, ℓ)
+    Tℓkj = (ℓ, k, j)
+    Tℓik = (ℓ, i, k)
     delete_triangle!(event_history, Tikj)
     delete_triangle!(event_history, Tijℓ)
     add_triangle!(event_history, Tℓkj)
