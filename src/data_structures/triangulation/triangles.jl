@@ -93,4 +93,4 @@ end
 Base.copy(triangles::Triangles) = Triangles(copy(get_adjacent(triangles)))
 Base.empty!(triangles::Triangles) = empty!(get_adjacent(triangles))
 
-concretize(triangles::Triangles) = Set(triangles)
+concretize_triangles(triangles) = Set(each_triangle(triangles))

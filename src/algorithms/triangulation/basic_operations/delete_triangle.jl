@@ -12,7 +12,7 @@ so that its non-existence in the triangulation is known.
 # Outputs 
 There are no outputs as `tri` is updated in-place.
 """
-function delete_triangle!(tri::Ts, u::Integer, v::Integer, w::Integer) 
+function delete_triangle!(tri::Ts, u::Integer, v::Integer, w::Integer) where {Ts}
     adj = get_adjacent(tri)
     delete_triangle!(adj, u, v, w)
     return tri

@@ -12,18 +12,25 @@ The map taking edges `(u, v)` to `w` such that `(u, v, w)` is a positively orien
     Adjacent{IntegerType, EdgeType}()
     Adjacent(adjacent::Dict{EdgeType, IntegerType})
 """
-struct Adjacent{I, E}
-    adjacent::Dict{E, I}
+struct Adjacent{I,E} <: AbstractDict{E,I}
+    adjacent::Dict{E,I}
 end
-Adjacent{I, E}() where {I, E} = Adjacent{I, E}(Dict{E, I}())
-Base.:(==)(adj::Adjacent, adj2::Adjacent) = get_adjacent(adj) == get_adjacent(adj2)
-function Base.show(io::IO, m::MIME"text/plain", adj::Adjacent{I, E}) where {I, E}
-    println(io, "Adjacent{$I, $E}, with map:")
-    show(io, m, get_adjacent(adj))
-end
+Adjacent{I,E}() where {I,E} = Adjacent{I,E}(Dict{E,I}())
+# Base.:(==)(adj::Adjacent, adj2::Adjacent) = get_adjacent(adj) == get_adjacent(adj2)
+# function Base.show(io::IO, m::MIME"text/plain", adj::Adjacent{I, E}) where {I, E}
+#     println(io, "Adjacent{$I, $E}, with map:")
+#     show(io, m, get_adjacent(adj))
+# end
 Base.sizehint!(adj::Adjacent, n) = sizehint!(get_adjacent(adj), n)
 
-Base.copy(adj::Adjacent) = Adjacent(copy(get_adjacent(adj)))
+Base.iterate(adj::Adjacent, state...) = iterate(get_adjacent(adj), state...)
+
+Base.length(adj::Adjacent) = length(get_adjacent(adj))
+
+edge_type(adj::Adjacent{I,E}) where {I,E} = E
+integer_type(adj::Adjacent{I,E}) where {I,E} = I
+
+# Base.copy(adj::Adjacent) = Adjacent(copy(get_adjacent(adj)))
 
 """
     get_adjacent(adj::Adjacent) -> Dict 
@@ -90,15 +97,14 @@ julia> get_adjacent(adj, (1, 6))
 0
 ```
 """
-function get_adjacent(adj::Adjacent{I, E}, uv::E) where {I, E}
+function get_adjacent(adj::Adjacent{I,E}, uv::E) where {I,E}
     dict = get_adjacent(adj)
     return get(dict, uv, I(∅))
 end
-function get_adjacent(adj::Adjacent{I, E}, u, v) where {I, E}
+function get_adjacent(adj::Adjacent{I,E}, u, v) where {I,E}
     e = construct_edge(E, u, v)
     return get_adjacent(adj, e)
 end
-
 
 """
     add_adjacent!(adj::Adjacent, uv, w)
@@ -136,7 +142,7 @@ function add_adjacent!(adj::Adjacent, uv, w)
     dict[uv] = w
     return adj
 end
-function add_adjacent!(adj::Adjacent{I, E}, u, v, w) where {I, E}
+function add_adjacent!(adj::Adjacent{I,E}, u, v, w) where {I,E}
     e = construct_edge(E, u, v)
     return add_adjacent!(adj, e, w)
 end
@@ -183,7 +189,7 @@ function delete_adjacent!(adj::Adjacent, uv)
     delete!(dict, uv)
     return adj
 end
-function delete_adjacent!(adj::Adjacent{I, E}, u, v) where {I, E}
+function delete_adjacent!(adj::Adjacent{I,E}, u, v) where {I,E}
     e = construct_edge(E, u, v)
     return delete_adjacent!(adj, e)
 end
@@ -280,3 +286,25 @@ end
 
 edge_exists(adj::Adjacent, uv) = edge_exists(get_adjacent(adj, uv))
 edge_exists(adj::Adjacent, u, v) = edge_exists(get_adjacent(adj, u, v))
+
+# iterates over unordered edges
+# TODO: Define show
+struct EdgeIterator{I,E}
+    adj::Adjacent{I,E}
+end
+Base.length(ei::EdgeIterator) = length(get_adjacent(ei.adj)) ÷ 2
+Base.eltype(ei::EdgeIterator) = edge_type(ei.adj)
+function Base.iterate(itr::EdgeIterator, state...)
+    e_state = iterate(get_adjacent(itr.adj), state...)
+    e_state === nothing && return nothing
+    (e, w), state = e_state
+    u, v = edge_vertices(e)
+    while min(u, v) == v
+        e_state = iterate(get_adjacent(itr.adj), state...)
+        e_state === nothing && return nothing
+        (e, w), state = e_state
+        u, v = edge_vertices(e)
+    end
+    e = construct_edge(edge_type(itr.adj), u, v)
+    return e, state
+end

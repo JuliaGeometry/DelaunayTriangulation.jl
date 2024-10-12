@@ -94,8 +94,8 @@ struct Triangulation{P,BN,W,I,E,Es,BC,BEM,GVM,GVR,BPL,C,BE}
     weights::W
     # Topology
     adjacent::Adjacent{I,E}
-    adjacent2vertex::Adjacent2Vertex{I,Es}
-    graph::Graph{I}
+    adjacent2vertex::Adjacent2Vertex{I,E}
+    graph::Graph{I,E}
     # Boundary handling
     boundary_curves::BC
     boundary_edge_map::BEM
@@ -118,7 +118,7 @@ function Base.copy(tri::Triangulation)
     adjacent = copy(get_adjacent(tri))
     triangles = Triangles(adjacent)
     adjacent2vertex = _adj2vcopy(get_adjacent2vertex(tri); adjacent)
-    graph = copy(get_graph(tri))
+    graph = Graph(adjacent2vertex)
     boundary_curves = _plcopy.(get_boundary_curves(tri); points)
     boundary_edge_map = _bemcopy(get_boundary_edge_map(tri); boundary_nodes)
     ghost_vertex_map = copy(get_ghost_vertex_map(tri))
@@ -413,8 +413,8 @@ edge_type(::Triangulation{P,BN,W,I,E}) where {P,BN,W,I,E} = E
 ) where {P,I,E,Es}
     adj = Adjacent{IntegerType,EdgeType}()
     T = Triangles(adj)
-    adj2v = Adjacent2Vertex{IntegerType,EdgesType}()
-    graph = Graph{IntegerType}()
+    adj2v = Adjacent2Vertex(adj)
+    graph = Graph(adj2v)
     all_segments = EdgesType()
     boundary_edge_map = construct_boundary_edge_map(boundary_nodes, IntegerType, EdgeType)
     ghost_vertex_map = construct_ghost_vertex_map(boundary_nodes, IntegerType)
@@ -423,7 +423,6 @@ edge_type(::Triangulation{P,BN,W,I,E}) where {P,BN,W,I,E} = E
     n = num_points(points)
     sizehint!(adj, 3n - 6) # maximum number of edges 
     sizehint!(adj2v, n)
-    sizehint!(graph, 3n - 6, n, n)
     sizehint!(ch, n)
     polygon_hierarchy = construct_polygon_hierarchy(points; IntegerType)
     return T, adj, adj2v, graph, all_segments, boundary_edge_map, ghost_vertex_map, ghost_vertex_ranges, ch, polygon_hierarchy
