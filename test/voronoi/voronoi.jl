@@ -1384,7 +1384,7 @@ end
     @test validate_tessellation(vorn, check_convex=false)
 end
 
-@testset "Clipping to a generic convex polygon" begin 
+@testset "Clipping to a generic convex polygon" begin
     a, b, c, d, e, f, g, h, i = (-5.0, 7.0),
     (-8.0, 6.0), (-7.0, 4.0), (-4.0, 3.0), (-6.0, 6.0),
     (-1.0, 6.0), (-4.0, 6.0), (-3.0, 5.0), (-2.0, 8.0)
@@ -1482,11 +1482,11 @@ end
     @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[7]...), pt7, ⪧)
     @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[8]...), pt8, ⪧)
     @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[9]...), pt9, ⪧)
-    @test validate_tessellation(vorn; check_area = false)
+    @test validate_tessellation(vorn; check_area=false)
     @test isempty(vorn.unbounded_polygons)
     @test vorn.boundary_polygons == Set((4, 6, 2, 9, 3, 1))
 
-    vorn = voronoi(tri, clip=true, clip_polygon=clip_polygon, rng=rng, smooth = true)
+    vorn = voronoi(tri, clip=true, clip_polygon=clip_polygon, rng=rng, smooth=true)
     pt1 = [
         (-5.1590315116169645, 8.028359015649276)
         (-2.0329830757675342, 9.155154224395774)
@@ -1551,7 +1551,7 @@ end
         (-0.15539885081025462, 7.000135534420414)
         (2.0, 7.000229455337406)
     ]
-    @test validate_tessellation(vorn; check_area = false)
+    @test validate_tessellation(vorn; check_area=false)
     @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[1]...), pt1, ⪧)
     @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[2]...), pt2, ⪧)
     @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[3]...), pt3, ⪧)
@@ -1562,7 +1562,7 @@ end
     @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[9]...), pt9, ⪧)
     for index in each_polygon_index(vorn)
         c = DT.get_centroid(vorn, index)
-        @test c ⪧ get_generator(vorn, index) rtol=1e-2 atol=1e-4
+        @test c ⪧ get_generator(vorn, index) rtol = 1e-2 atol = 1e-4
     end
 
     J, K, L, M = (-2.0, 12.0), (-8.0, 4.0), (-4.0, 2.0), (-2.0, 10.0)
@@ -1711,7 +1711,7 @@ end
     @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[9]...), pt9, ⪧)
     for index in each_polygon_index(vorn)
         c = DT.get_centroid(vorn, index)
-        @test c ⪧ get_generator(vorn, index) rtol=1e-2 atol=1e-4
+        @test c ⪧ get_generator(vorn, index) rtol = 1e-2 atol = 1e-4
     end
 end
 
@@ -1722,7 +1722,7 @@ end
     @test vorn == vorn
     @test vorn == vorn2
     g1 = vorn.generators[1]
-    vorn.generators[1] = vorn.generators[2] 
+    vorn.generators[1] = vorn.generators[2]
     @test vorn != vorn2
     vorn.generators[1] = g1
     @test vorn == vorn2
@@ -1761,8 +1761,8 @@ end
     @test vorn == vorn2
 end
 
-@testset "copy/deepcopy" begin 
-    vorn = voronoi(triangulate(rand(2, 100)), clip = true, smooth = true)
+@testset "copy/deepcopy" begin
+    vorn = voronoi(triangulate(rand(2, 100)), clip=true, smooth=true)
     vorn1 = deepcopy(vorn)
     vorn2 = copy(vorn)
     @test typeof(vorn1) == typeof(vorn) == typeof(vorn2)
@@ -1773,4 +1773,19 @@ end
             @test !(getfield(vorn, f) === getfield(_vorn, f))
         end
     end
+end
+
+@testset "Issue #206" begin
+    Random.seed!(123)
+    pts = [(0.1, 0.2), (1.1, 0.2), (0.1, 1.7)]
+    tri = triangulate(pts)
+    vorn = voronoi(tri, clip=true, clip_polygon=(
+        [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], [1, 2, 3, 4, 1]
+    ))
+    @test validate_tessellation(vorn; check_area=false)
+    A = 0.0
+    for i in each_polygon_index(vorn)
+        A += get_area(vorn, i)
+    end
+    @test A ≈ 1.0
 end
