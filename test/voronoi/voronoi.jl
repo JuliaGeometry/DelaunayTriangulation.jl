@@ -1788,4 +1788,7 @@ end
         A += get_area(vorn, i)
     end
     @test A ≈ 1.0
+    vorn = voronoi(tri)
+    poly = get_polygon_coordinates(vorn, 3, (0.0, 1.0, 0.0, 1.0))
+    @test poly ⪧ [(0.675, 1.0), (0.0, 1.0), (0.0, 0.95), (0.6, 0.95), (0.675, 1.0)]
 end
