@@ -1,7 +1,7 @@
 # Changelog
 
 ## 1.6.1
-- Fix issue with clipping Voronoi tessellation dual to a single right-angled triangle.
+- Fix issue with clipping Voronoi tessellation dual to a single right-angled triangle. See [#207](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/207)
 
 ## 1.6.0
 - Define `reverse` for `AbstractParametricCurve`s, making it easier to reverse the orientation of a curve. See [#195](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/195).
