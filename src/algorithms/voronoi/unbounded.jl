@@ -1,4 +1,19 @@
 """
+    get_voronoi_vertex(tri::Triangulation, T) -> NTuple{2, Number}
+
+Returns the vertex of the Voronoi diagram associated with the triangle `T` in the triangulation `tri`. 
+If the triangulation is weighted, this returns the orthocenter of the triangle `T`, otherwise it returns the circumcenter.
+"""
+function get_voronoi_vertex(tri::Triangulation, T)
+    if !is_weighted(tri)
+        cx, cy = triangle_circumcenter(tri, T)
+    else
+        cx, cy = triangle_orthocenter(tri, T)
+    end
+    return cx, cy
+end
+
+"""
     initialise_voronoi_tessellation(tri::Triangulation) -> VoronoiTessellation
 
 Initialise a `VoronoiTessellation` from the triangulation `tri`.
@@ -28,13 +43,7 @@ function initialise_voronoi_tessellation(tri::Tr) where {Tr <: Triangulation}
         V = sort_triangle(V)
         if !is_ghost_triangle(V)
             u, v, w = triangle_vertices(V)
-            if !is_weighted(tri)
-                p, q, r = get_point(tri, u, v, w)
-                A = triangle_area(p, q, r)
-                cx, cy = triangle_circumcenter(p, q, r, A)
-            else 
-                cx, cy = triangle_orthocenter(tri, V)
-            end
+            cx, cy = get_voronoi_vertex(tri, V)
             if any(isinf, (cx, cy)) && INF_WARN[]
                 @warn "The triangle $((u, v, w)) has a degenerate circumcenter, $((cx, cy)). You may encounter issues with this tessellation. You can disable this warning using toggle_inf_warn!()."
             end

@@ -116,6 +116,10 @@ end
         safe_include("voronoi/power.jl")
     end
 
+    @testset verbose = true "Spherical" begin
+        safe_include("spherical.jl")
+    end
+
     @testset verbose = true "Makie" begin
         safe_include("makie/makie.jl")
     end

@@ -123,6 +123,17 @@ function triangle_area(ℓ₁²::Number, ℓ₂²::Number, ℓ₃²::Number)
     return sqrt(A²)
 end
 
+"""
+    triangle_area(tri::Triangulation, T) -> Number
+
+Computes the area of the triangle `T` in the triangulation `tri`.
+"""
+function triangle_area(tri::Triangulation, T)
+    i, j, k = triangle_vertices(T)
+    p, q, r = get_point(tri, i, j, k)
+    return triangle_area(p, q, r)
+end
+
 @doc raw"""
     triangle_circumradius(A, ℓmin², ℓmed², ℓmax²) -> Number
 
@@ -132,7 +143,7 @@ Computes the circumradius of a triangle with area `A` and squared edge lengths `
 r = \dfrac{\ell_{\min}\ell_{\text{med}}\ell_{\max}}{4A}.
 ```
 """
-triangle_circumradius(A, ℓmin², ℓmed², ℓmax²) = sqrt(ℓmin² * ℓmed² * ℓmax²) / (4A)
+triangle_circumradius(A::Number, ℓmin²::Number, ℓmed²::Number, ℓmax²::Number) = sqrt(ℓmin² * ℓmed² * ℓmax²) / (4A)
 
 @doc raw"""
     triangle_perimeter(ℓmin::Number, ℓmed::Number, ℓmax::Number) -> Number 
@@ -199,22 +210,17 @@ function triangle_centroid(p, q, r)
     cx′, cy′ = 2midpoint(qx′, rx′) / 3, 2midpoint(qy′, ry′) / 3
     cx, cy = cx′ + px, cy′ + py
     return cx, cy
-    #=
-    A = triangle_area(PP, QQ, RR) 
-    isixA = inv(6A)
-    px′, py′ = zero(px), zero(py)
-    qx′, qy′ = qx - px, qy - py 
-    rx′, ry′ = rx - px, ry - py
-    cx1 = (px′ + qx′) * ((px′ * qy′) - (qx′ * py′))
-    cx2 = (qx′ + rx′) * ((qx′ * ry′) - (rx′ * qy′))
-    cx3 = (rx′ + px′) * ((rx′ * py′) - (px′ * ry′))
-    cx = px + (cx1 + cx2 + cx3) * isixA 
-    cy1 = (py′ + qy′) * ((px′ * qy′) - (qx′ * py′))
-    cy2 = (qy′ + ry′) * ((qx′ * ry′) - (rx′ * qy′))
-    cy3 = (ry′ + py′) * ((rx′ * py′) - (px′ * ry′))
-    cy = py + (cy1 + cy2 + cy3) * isixA
-    return cx, cy
-    =#
+end
+
+"""
+    triangle_centroid(tri::Triangulation, T) -> (Number, Number)
+
+Computes the centroid of the triangle `T` in the triangulation `tri`.
+"""
+function triangle_centroid(tri::Triangulation, T)
+    i, j, k = triangle_vertices(T)
+    p, q, r = get_point(tri, i, j, k)
+    return triangle_centroid(p, q, r)
 end
 
 @doc raw"""
@@ -337,25 +343,38 @@ function triangle_circumcenter(p, q, r, A = triangle_area(p, q, r))
 end
 
 """
-    triangle_circumcenter(tri::Triangulation, T) -> (Number, Number)
+    triangle_circumcenter(tri::Triangulation, T[, A = triangle_area(tri, T)]) -> (Number, Number)
 
-Computes the circumcenter of the triangle `T` in the triangulation `tri`.
+Computes the circumcenter of the triangle `T` in the triangulation `tri`. You 
+can optionally provide the area `A` of the triangle.
 """
-function triangle_circumcenter(tri::Triangulation, T)
+function triangle_circumcenter(tri::Triangulation, T, A = triangle_area(tri, T))
     i, j, k = triangle_vertices(T)
     p, q, r = get_point(tri, i, j, k)
-    return triangle_circumcenter(p, q, r)
+    return triangle_circumcenter(p, q, r, A)
 end
 
 """
-    triangle_circumradius(p, q, r) -> Number
+    triangle_circumradius(p, q, r[, A=triangle_area(p, q, r)]) -> Number
 
 Computes the circumradius of the triangle with coordinates `(p, q, r)`. 
+You can optionally provide the area `A` of the triangle.
 """
-function triangle_circumradius(p, q, r)
+function triangle_circumradius(p, q, r, A = triangle_area(p, q, r))
     ℓ₁², ℓ₂², ℓ₃² = squared_triangle_lengths(p, q, r)
-    A = triangle_area(p, q, r)
     return triangle_circumradius(A, ℓ₁², ℓ₂², ℓ₃²)
+end
+
+"""
+    triangle_circumradius(tri::Triangulation, T, A = triangle_area(tri, T)) -> Number
+
+Computes the circumradius of the triangle `T` in the triangulation `tri`. You
+can optionally provide the area `A` of the triangle.
+"""
+function triangle_circumradius(tri::Triangulation, T, A = triangle_area(tri, T))
+    i, j, k = triangle_vertices(T)
+    p, q, r = get_point(tri, i, j, k)
+    return triangle_circumradius(p, q, r, A)
 end
 
 """
@@ -622,7 +641,7 @@ function triangle_sink(tri::Triangulation, T, prev_T = construct_triangle(triang
     =#
     _, _, θ₃ = triangle_angles(p, q, r)
     θ₃ ≤ π / 2 + ε(θ₃) && return c
-    m = triangle_centroid(p, q, r)
+    m = triangle_centroid(tri, T)
     if !is_none(line_segment_intersection_type(predicates, p, q, m, c)) && !is_left(point_position_relative_to_line(predicates, p, q, c))
         next_T = construct_triangle(triangle_type(tri), j, i, get_adjacent(tri, j, i))
     elseif !is_none(line_segment_intersection_type(predicates, q, r, m, c)) && !is_left(point_position_relative_to_line(predicates, q, r, c))
