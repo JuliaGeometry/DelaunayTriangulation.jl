@@ -347,3 +347,22 @@ end
     _spoints = [points[:, r] for r in rounds]
     @test spoints == _spoints
 end
+
+@testset "BRIO" begin
+    points = rand(2, 2500)
+    cpoints = copy(points)
+    order = DT.get_brio(points; rng=Xoshiro(1))
+    rounds = DT.hilbert_sort_rounds(points; rng=Xoshiro(1))
+    order2 = reduce(vcat, rounds)
+    @test order == order2
+    order = DT.get_brio(points; rng=Xoshiro(1), skip_points=(1, 2, 19, 281, 501))
+    rounds = DT.hilbert_sort_rounds(points; rng=Xoshiro(1))
+    order2 = reduce(vcat, rounds)
+    setdiff!(order2, (1, 2, 19, 281, 501))
+    @test order == order2
+    @test points == cpoints
+    order = DT.get_brio(points; rng=Xoshiro(1), skip_points=(1, 2, 19, 281, 501), IntegerType = Int32)
+    @test eltype(order) == Int32
+    order2 = DT.get_brio(points; skip_points=(1, 2, 19, 281, 501), IntegerType = Int32)
+    @test order != order2
+end

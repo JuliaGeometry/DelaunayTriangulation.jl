@@ -47,6 +47,7 @@ Some new exports:
 Some new public functions:
 
 - `DelaunayTriangulation.Middle()` and `DelaunayTriangulation.Median()`: Defines the splitting policies to use for `hilbert_sort`. (`Median` splitting is not yet implemented, but it should be eventually.)
+- `DelaunayTriangulation_get_brio`: This function defines the insertion order for `triangulate`, using a biased randomised insertion order based on a Hilbert curve.
 
 ## 1.6.0
 - Define `reverse` for `AbstractParametricCurve`s, making it easier to reverse the orientation of a curve. See [#195](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/195).
