@@ -11,6 +11,11 @@ const SI = SpatialIndexing
     @test I === copy(I)
 end
 
+@testset "bounds for BoundingInterval" begin
+    I = DT.BoundingInterval(1.0, 2.0)
+    @test DT.bounds(I) == (1.0, 2.0)
+end
+
 @testset "Expanding a BoundingBox" begin
     bbox = DT.BoundingBox(2, 5, 13, 20)
     tol = 0.1
@@ -21,6 +26,11 @@ end
 @testset "copy for BoundingBox" begin
     bbox = DT.BoundingBox(2, 5, 13, 20)
     @test copy(bbox) === bbox
+end
+
+@testset "bounds for BoundingBox" begin
+    bbox = DT.BoundingBox(2, 5, 13, 20)
+    @test DT.bounds(bbox) == (2, 5, 13, 20)
 end
 
 @testset "BoundingBox for a set of points" begin

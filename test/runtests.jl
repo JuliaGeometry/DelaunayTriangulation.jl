@@ -13,7 +13,7 @@ ct() = Dates.format(now(), "HH:MM:SS")
 function safe_include(filename; name=filename, push=true, verbose=true) # Workaround for not being able to interpolate into SafeTestset test names
     push && push!(ALL_TEST_SCRIPTS, normpath(filename))
     mod = @eval module $(gensym()) end
-    @info "[$(ct())] Testing $name"
+    @info "[$(ct())] Testing $name" 
     @testset verbose = verbose "$(basename(name))" begin
         Random.seed!(0)
         @eval mod using ..HelperFunctions
@@ -36,6 +36,7 @@ end
         safe_include("triangulation/constrained.jl")
         safe_include("triangulation/check_args.jl")
         safe_include("triangulation/weighted.jl")
+        safe_include("triangulation/spatial.jl")
     end
 
     @testset verbose = true "Interfaces" begin

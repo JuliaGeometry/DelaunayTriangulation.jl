@@ -188,7 +188,9 @@
                 triangle_orthocenter,
                 triangle_orthoradius_squared,
                 get_incircle_cache,
-                get_orient3_cache
+                get_orient3_cache,
+                Middle,
+                Median
     """,
         ),
     )

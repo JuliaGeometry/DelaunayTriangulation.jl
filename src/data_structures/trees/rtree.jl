@@ -48,6 +48,13 @@ Base.show(io::IO, I::BoundingInterval) = print(io, "[$(I.a) .. $(I.b)]")
 Base.copy(I::BoundingInterval) = I
 
 """
+    bounds(I::BoundingInterval) -> Tuple{Float64, Float64}
+
+Returns the bounds of `I`.
+"""
+bounds(I::BoundingInterval) = (I.a, I.b)
+
+"""
     InvalidBoundingInterval
 
 A constant for representing an invalid interva[`BoundingInterval`](@ref), i.e. an interval with `NaN` endpoints.
@@ -141,6 +148,13 @@ end
 Base.show(io::IO, r::BoundingBox) = print(io, "[$(r.x.a), $(r.x.b)] × [$(r.y.a), $(r.y.b)]")
 
 Base.copy(r::BoundingBox) = r
+
+"""
+    bounds(r::BoundingBox) -> Tuple{Float64, Float64, Float64, Float64}
+
+Returns the bounds of `r`, given as a `Tuple` of the form `(xmin, xmax, ymin, ymax)`.
+"""
+bounds(r::BoundingBox) = (bounds(r.x)..., bounds(r.y)...)
 
 """
     InvalidBoundingBox

@@ -302,3 +302,35 @@ end
     @test !DT.is_planar(rand(3, 50))
     @test !DT.is_planar([SVector{3,Float64}((1.0, 2.0, 3.0)), SVector{3,Float64}((2.0, 3.0, 4.0)), SVector{3,Float64}((3.0, 4.0, 5.0))])
 end
+
+@testset "swap_points!" begin
+    points = rand(2, 50)
+    i, j = 13, 23
+    p, q = points[:, i], points[:, j]
+    DT.swap_points!(points, i, j)
+    @test points[:, i] == q
+    @test points[:, j] == p
+    DT.swap_points!(points, i, j)
+    @test points[:, i] == p
+    @test points[:, j] == q
+end
+
+@testset "PointsWrapper" begin
+    p = rand(2, 500)
+    pw = DT.PointsWrapper(p)
+    @test pw[3] == tuple(p[:, 3]...)
+    @test pw[[2, 17, 3, 295]] == Tuple.(eachcol(p[:, [2, 17, 3, 295]]))
+    @test DT.num_points(pw) == 500
+    @test get_point(pw, 17, 37, 291) == get_point(p, 17, 37, 291)
+    @test get_point(pw, 8) == get_point(p, 8)
+    @test DT.each_point_index(pw) == 1:500
+    @test size(pw) == (500,)
+    @test pw == Tuple.(collect(eachcol(p)))
+    @test length(pw) == 500
+    @test pw isa AbstractVector
+    DT.set_point!(pw, 17, (30.0, 40.0))
+    @test pw[17] == (30.0, 40.0) && p[:, 17] == [30.0, 40.0]
+    @test DT.unwrap(pw) === p
+    @test DT.unwrap(DT.PointsWrapper(pw)) === pw
+    @test DT.unwrap(p) === p
+end

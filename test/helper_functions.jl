@@ -7,8 +7,10 @@ using Random
 using DataStructures
 using DelimitedFiles
 using OrderedCollections
+using StatsBase
 using Distributions
 using InteractiveUtils
+using CairoMakie
 using Test
 using DelaunayTriangulation
 import SpatialIndexing as SI
@@ -44,21 +46,21 @@ function complicated_geometry()
     x4 = reverse(
         reverse.(
             [
-                collect(LinRange(1, 1.5, 4)),
-                collect(LinRange(1.5, 1.5, 4)),
-                collect(LinRange(1.5, 1, 4)),
-                collect(LinRange(1, 1, 4)),
-            ],
+            collect(LinRange(1, 1.5, 4)),
+            collect(LinRange(1.5, 1.5, 4)),
+            collect(LinRange(1.5, 1, 4)),
+            collect(LinRange(1, 1, 4)),
+        ],
         ),
     )
     y4 = reverse(
         reverse.(
             [
-                collect(LinRange(2, 2, 4)),
-                collect(LinRange(2, 5, 4)),
-                collect(LinRange(5, 5, 4)),
-                collect(LinRange(5, 2, 4)),
-            ],
+            collect(LinRange(2, 2, 4)),
+            collect(LinRange(2, 5, 4)),
+            collect(LinRange(5, 5, 4)),
+            collect(LinRange(5, 2, 4)),
+        ],
         ),
     )
     x5 = [reverse([0.2, 0.5, 0.75, 0.75, 0.2, 0.2])]
@@ -138,7 +140,7 @@ function simple_geometry()
         r q d
     ]
     T = indexin(T, pts)
-    T = Set{NTuple{3, Int}}((Tuple(T) for T in eachrow(T)))
+    T = Set{NTuple{3,Int}}((Tuple(T) for T in eachrow(T)))
     outer = [[indexin([a, b, c, d, e, f, g, h, a], pts)...]]
     inner1 = [[indexin([ℓ, k, j, i, ℓ], pts)...]]
     inner2 = [[indexin([r, q, p], pts)...], [indexin([p, o, n, m, r], pts)...]]
@@ -157,7 +159,7 @@ function simple_geometry()
             "b1",
         ] .=> DT.each_point_index(pts),
     )
-    return DT.Triangulation(pts, T, boundary_nodes, delete_ghosts = true, predicates = DT.ExactKernel()), label_map, index_map
+    return DT.Triangulation(pts, T, boundary_nodes, delete_ghosts=true, predicates=DT.ExactKernel()), label_map, index_map
 end
 
 macro _adj(i, j, k)
@@ -175,14 +177,14 @@ function example_triangulation()
     p7 = @SVector[2.0, 1.0]
     p8 = @SVector[5.0, 1.0]
     pts = [p1, p2, p3, p4, p5, p6, p7, p8]
-    T = Set{NTuple{3, Int}}(
+    T = Set{NTuple{3,Int}}(
         [
-            (6, 3, 1),
-            (3, 2, 5),
-            (4, 1, 5),
-            (4, 6, 1),
-            (5, 1, 3),
-        ],
+        (6, 3, 1),
+        (3, 2, 5),
+        (4, 1, 5),
+        (4, 6, 1),
+        (5, 1, 3),
+    ],
     )
     A = [
         0 0 1 1 1 1 1
@@ -209,23 +211,23 @@ function example_triangulation()
     )
     adj2v = DT.Adjacent2Vertex(
         Dict(
-            DT.𝒢 => Set{NTuple{2, Int}}([(4, 5), (5, 2), (2, 3), (3, 6), (6, 4)]),
-            1 => Set{NTuple{2, Int}}([(5, 4), (3, 5), (6, 3), (4, 6)]),
-            2 => Set{NTuple{2, Int}}([(5, 3)]),
-            3 => Set{NTuple{2, Int}}([(1, 6), (5, 1), (2, 5)]),
-            4 => Set{NTuple{2, Int}}([(1, 5), (6, 1)]),
-            5 => Set{NTuple{2, Int}}([(4, 1), (1, 3), (3, 2)]),
-            6 => Set{NTuple{2, Int}}([(1, 4), (3, 1)]),
+            DT.𝒢 => Set{NTuple{2,Int}}([(4, 5), (5, 2), (2, 3), (3, 6), (6, 4)]),
+            1 => Set{NTuple{2,Int}}([(5, 4), (3, 5), (6, 3), (4, 6)]),
+            2 => Set{NTuple{2,Int}}([(5, 3)]),
+            3 => Set{NTuple{2,Int}}([(1, 6), (5, 1), (2, 5)]),
+            4 => Set{NTuple{2,Int}}([(1, 5), (6, 1)]),
+            5 => Set{NTuple{2,Int}}([(4, 1), (1, 3), (3, 2)]),
+            6 => Set{NTuple{2,Int}}([(1, 4), (3, 1)]),
         ),
     )
-    rep = Dict{Int, DT.RepresentativeCoordinates{Int, Float64}}()
+    rep = Dict{Int,DT.RepresentativeCoordinates{Int,Float64}}()
     tri = DT.Triangulation(
-        pts, T, Int[], Set{NTuple{2, Int}}(), Set{NTuple{2, Int}}(),
+        pts, T, Int[], Set{NTuple{2,Int}}(), Set{NTuple{2,Int}}(),
         DT.ZeroWeight(), adj, adj2v, DG, (), DT.construct_boundary_edge_map(Int[]),
-        Dict{Int, Vector{Int}}(), Dict{Int, UnitRange{Int}}(), DT.ConvexHull(pts, [2, 6, 4, 5, 2]), rep, DT.construct_polygon_hierarchy(pts), nothing,
+        Dict{Int,Vector{Int}}(), Dict{Int,UnitRange{Int}}(), DT.ConvexHull(pts, [2, 6, 4, 5, 2]), rep, DT.construct_polygon_hierarchy(pts), nothing,
         DT._build_cache(
-            pts, Int, NTuple{2, Int}, NTuple{3, Int},
-            Set{NTuple{2, Int}}, Set{NTuple{3, Int}}, DT.ZeroWeight(), Val(true),
+            pts, Int, NTuple{2,Int}, NTuple{3,Int},
+            Set{NTuple{2,Int}}, Set{NTuple{3,Int}}, DT.ZeroWeight(), Val(true),
         ),
     )
     DT.compute_representative_points!(tri)
@@ -237,20 +239,20 @@ function example_empty_triangulation()
     p2 = @SVector[3.0, -1.0]
     p3 = @SVector[2.0, 0.0]
     pts = [p1, p2, p3]
-    T = Set{NTuple{3, Int}}()
+    T = Set{NTuple{3,Int}}()
     A = zeros(Int, 0, 0)
     DG = SimpleGraphs.relabel(SimpleGraphs.UndirectedGraph(A), Dict(1:7 .=> [-1, (1:6)...]))
     DG = DT.Graph(DG.V, DG.E, DG.N)
-    adj = DT.Adjacent(Dict{NTuple{2, Int}, Int}())
-    adj2v = DT.Adjacent2Vertex(Dict(DT.𝒢 => Set{NTuple{2, Int}}()))
-    rep = Dict{Int, DT.RepresentativeCoordinates{Int, Float64}}()
+    adj = DT.Adjacent(Dict{NTuple{2,Int},Int}())
+    adj2v = DT.Adjacent2Vertex(Dict(DT.𝒢 => Set{NTuple{2,Int}}()))
+    rep = Dict{Int,DT.RepresentativeCoordinates{Int,Float64}}()
     tri = DT.Triangulation(
-        pts, T, Int[], Set{NTuple{2, Int}}(), Set{NTuple{2, Int}}(),
+        pts, T, Int[], Set{NTuple{2,Int}}(), Set{NTuple{2,Int}}(),
         DT.ZeroWeight(), adj, adj2v, DG, (), DT.construct_boundary_edge_map(Int[]),
-        Dict{Int, Vector{Int}}(), Dict{Int, UnitRange{Int}}(), DT.ConvexHull(pts, [1, 2, 3, 1]), rep, DT.construct_polygon_hierarchy(pts), nothing,
+        Dict{Int,Vector{Int}}(), Dict{Int,UnitRange{Int}}(), DT.ConvexHull(pts, [1, 2, 3, 1]), rep, DT.construct_polygon_hierarchy(pts), nothing,
         DT._build_cache(
-            pts, Int, NTuple{2, Int}, NTuple{3, Int},
-            Set{NTuple{2, Int}}, Set{NTuple{3, Int}}, DT.ZeroWeight(), Val(true),
+            pts, Int, NTuple{2,Int}, NTuple{3,Int},
+            Set{NTuple{2,Int}}, Set{NTuple{3,Int}}, DT.ZeroWeight(), Val(true),
         ),
     )
     DT.compute_representative_points!(tri)
@@ -278,7 +280,7 @@ function example_with_special_corners()
     r = [3.0, 8.0]
     pts = [a, b, c, d, e, f, g, h, i, j, k, ℓ, m, n, o, p, q, r]
     rng = StableRNG(29292929292)
-    tri = triangulate(pts; rng, delete_ghosts = false, randomise = false, predicates = DT.ExactKernel())
+    tri = triangulate(pts; rng, delete_ghosts=false, randomise=false, predicates=DT.ExactKernel())
     return tri
 end
 
@@ -296,7 +298,7 @@ function shewchuk_example_constrained()
     k = [8.0, 4.0]
     pts = [a, b, c, d, e, f, g, h, i, j, k]
     rng = StableRNG(213)
-    tri = triangulate(pts; rng, delete_ghosts = false, randomise = false)
+    tri = triangulate(pts; rng, delete_ghosts=false, randomise=false)
     return tri
 end
 
@@ -314,7 +316,7 @@ function fixed_shewchuk_example_constrained()
     k = [8.0, 2.5]
     pts = [a, b, c, d, e, f, g, h, i, j, k]
     rng = StableRNG(213)
-    tri = triangulate(pts; rng, delete_ghosts = false, randomise = false, predicates = DT.ExactKernel())
+    tri = triangulate(pts; rng, delete_ghosts=false, randomise=false, predicates=DT.ExactKernel())
     return tri
 end
 
@@ -383,12 +385,12 @@ function test_segment_triangle_intersections(tri, edge, true_triangles, true_col
     !isnothing(current_constrained_edges) && @test compare_edge_vectors(constrained_edges, current_constrained_edges)
 end
 
-function get_random_vertices_and_constrained_edges(nverts1, nverts2, nedges, rng = Random.default_rng())
+function get_random_vertices_and_constrained_edges(nverts1, nverts2, nedges, rng=Random.default_rng())
     ## To generate a random set of constrained edges, we get a random small triangulation, 
     ## and we just take the edges from that triangulation.
     points = [Tuple(rand(rng, 2)) for _ in 1:nverts1]
-    tri = triangulate(points; predicates = DT.FastKernel(), rng)
-    edges = Set{NTuple{2, Int}}()
+    tri = triangulate(points; predicates=DT.FastKernel(), rng)
+    edges = Set{NTuple{2,Int}}()
     all_edges = collect(each_solid_edge(tri))
     iter = 0
     while length(edges) < nedges && iter < 10000
@@ -397,7 +399,7 @@ function get_random_vertices_and_constrained_edges(nverts1, nverts2, nedges, rng
         iter += 1
     end
     ## Now get the rest of the points 
-    append!(points, [Tuple(rand(rng, 2)) for _ in 1:(nverts2 - nverts1)])
+    append!(points, [Tuple(rand(rng, 2)) for _ in 1:(nverts2-nverts1)])
     return points, edges, vec(hcat(getindex.(edges, 1), getindex.(edges, 2))')
 end
 
@@ -475,11 +477,11 @@ function example_for_testing_add_point_on_constrained_triangulation()
     return P, Set([(1, 2)])
 end
 
-function validate_statistics(tri::DT.Triangulation, stats = statistics(tri))
+function validate_statistics(tri::DT.Triangulation, stats=statistics(tri))
     ## Build up the array (see also test_iterators)
     I = DT.integer_type(tri)
-    T = NTuple{3, I}
-    E = NTuple{2, I}
+    T = NTuple{3,I}
+    E = NTuple{2,I}
     solid_triangles = T[]
     ghost_triangles = T[]
     all_triangles = T[]
@@ -544,19 +546,19 @@ function validate_statistics(tri::DT.Triangulation, stats = statistics(tri))
     sort!(ghost_vertices)
     NT = DT.number_type(tri)
     ## Build up the individual statistics 
-    areas = Dict{T, NT}()
-    lengths = Dict{T, NTuple{3, NT}}()
-    circumcenters = Dict{T, NTuple{2, NT}}()
-    circumradii = Dict{T, NT}()
-    angles = Dict{T, NTuple{3, NT}}()
-    radius_edge_ratio = Dict{T, NT}()
-    edge_midpoints = Dict{T, NTuple{3, NTuple{2, NT}}}()
-    aspect_ratio = Dict{T, NT}()
-    inradius = Dict{T, NT}()
-    perimeter = Dict{T, NT}()
-    centroid = Dict{T, NTuple{2, NT}}()
-    offcenters = Dict{T, NTuple{2, NT}}()
-    sinks = Dict{T, NTuple{2, NT}}()
+    areas = Dict{T,NT}()
+    lengths = Dict{T,NTuple{3,NT}}()
+    circumcenters = Dict{T,NTuple{2,NT}}()
+    circumradii = Dict{T,NT}()
+    angles = Dict{T,NTuple{3,NT}}()
+    radius_edge_ratio = Dict{T,NT}()
+    edge_midpoints = Dict{T,NTuple{3,NTuple{2,NT}}}()
+    aspect_ratio = Dict{T,NT}()
+    inradius = Dict{T,NT}()
+    perimeter = Dict{T,NT}()
+    centroid = Dict{T,NTuple{2,NT}}()
+    offcenters = Dict{T,NTuple{2,NT}}()
+    sinks = Dict{T,NTuple{2,NT}}()
     total_A = zero(NT)
     for T in each_solid_triangle(tri)
         u, v, w = DT.triangle_vertices(T)
@@ -581,8 +583,8 @@ function validate_statistics(tri::DT.Triangulation, stats = statistics(tri))
         circumcenters[triangle_vertices(T)] = (ox, oy)
         circumradii[triangle_vertices(T)] = norm(r - collect(circumcenters[triangle_vertices(T)]))
         all_angles = [(norm(p - r)^2 + norm(q - r)^2 - norm(p - q)^2) / (2norm(p - r) * norm(q - r)) for (p, q, r) in ((p, q, r), (q, r, p), (r, p, q))]
-        all_angles[all_angles .< -1.0] .= -1.0
-        all_angles[all_angles .> 1.0] .= 1.0
+        all_angles[all_angles.<-1.0] .= -1.0
+        all_angles[all_angles.>1.0] .= 1.0
         all_angles = acos.(all_angles)
         sort!(all_angles)
         radius_edge_ratio[triangle_vertices(T)] = circumradii[triangle_vertices(T)] / ℓ1
@@ -679,12 +681,12 @@ function validate_statistics(tri::DT.Triangulation, stats = statistics(tri))
     largest_area = maximum([areas[triangle_vertices(T)] for T in each_solid_triangle(tri)])
     smallest_radius_edge_ratio = minimum([radius_edge_ratio[triangle_vertices(T)] for T in each_solid_triangle(tri)])
     largest_radius_edge_ratio = maximum([radius_edge_ratio[triangle_vertices(T)] for T in each_solid_triangle(tri)])
-    @test DT.get_smallest_angle(stats) ≈ smallest_angle rtol = 1.0e-2 atol=1e-2
-    @test DT.get_largest_angle(stats) ≈ largest_angle rtol = 1.0e-2 atol=1e-2
-    @test DT.get_smallest_area(stats) ≈ smallest_area rtol = 1.0e-2 atol=1e-2
-    @test DT.get_largest_area(stats) ≈ largest_area rtol = 1.0e-2 atol=1e-2
-    @test DT.get_smallest_radius_edge_ratio(stats) ≈ smallest_radius_edge_ratio rtol = 1.0e-2 atol=1e-2
-    @test DT.get_largest_radius_edge_ratio(stats) ≈ largest_radius_edge_ratio rtol = 1.0e-2 atol=1e-2
+    @test DT.get_smallest_angle(stats) ≈ smallest_angle rtol = 1.0e-2 atol = 1e-2
+    @test DT.get_largest_angle(stats) ≈ largest_angle rtol = 1.0e-2 atol = 1e-2
+    @test DT.get_smallest_area(stats) ≈ smallest_area rtol = 1.0e-2 atol = 1e-2
+    @test DT.get_largest_area(stats) ≈ largest_area rtol = 1.0e-2 atol = 1e-2
+    @test DT.get_smallest_radius_edge_ratio(stats) ≈ smallest_radius_edge_ratio rtol = 1.0e-2 atol = 1e-2
+    @test DT.get_largest_radius_edge_ratio(stats) ≈ largest_radius_edge_ratio rtol = 1.0e-2 atol = 1e-2
     @test DT.get_smallest_radius_edge_ratio(stats) ≥ 1 / sqrt(3) - 0.1
     @test DT.get_smallest_angle(stats) ≤ deg2rad(60) + 0.01
 
@@ -705,20 +707,20 @@ function validate_statistics(tri::DT.Triangulation, stats = statistics(tri))
 
         r² = DT.triangle_orthoradius_squared(tri, T)
         if !DT.is_weighted(tri)
-            cr2 = DT.triangle_circumradius(get_point(tri,T...)...)^2 
+            cr2 = DT.triangle_circumradius(get_point(tri, T...)...)^2
             @test r² ≈ cr2 rtol = 1.0e-4 atol = 1.0e-2
         end
-        @test  r²  ≈ r1 
-        @test  r²  ≈ r2
-        @test  r²  ≈ r3
-        @test DT.dist_sqr(get_point(tri, i, o)...) - DT.get_weight(tri, i) - r² ≈ 0 atol=1e-2
+        @test r² ≈ r1
+        @test r² ≈ r2
+        @test r² ≈ r3
+        @test DT.dist_sqr(get_point(tri, i, o)...) - DT.get_weight(tri, i) - r² ≈ 0 atol = 1e-2
     end
 end
 
 function slow_encroachment_test(tri::DT.Triangulation)
     E = DT.edge_type(tri)
     I = DT.integer_type(tri)
-    ch = Channel{Pair{E, Tuple{Bool, I}}}(Inf) # https://discourse.julialang.org/t/can-dicts-be-threadsafe/27172/17
+    ch = Channel{Pair{E,Tuple{Bool,I}}}(Inf) # https://discourse.julialang.org/t/can-dicts-be-threadsafe/27172/17
     @sync for i in collect(each_solid_vertex(tri))
         Base.Threads.@spawn begin
             for j in each_solid_vertex(tri)
@@ -745,8 +747,8 @@ function slow_encroachment_test(tri::DT.Triangulation)
             end
         end
     end
-    not_in_dt_encroached_edges = Dict{E, Tuple{Bool, I}}()
-    in_dt_encroached_edges = Dict{E, Tuple{Bool, I}}()
+    not_in_dt_encroached_edges = Dict{E,Tuple{Bool,I}}()
+    in_dt_encroached_edges = Dict{E,Tuple{Bool,I}}()
     while !isempty(ch)
         e, (b, k) = take!(ch)
         if DT.edge_exists(tri, e) || DT.edge_exists(tri, DT.reverse_edge(e))
@@ -761,7 +763,7 @@ end
 function slow_encroachment_test_diametral_lens(tri::DT.Triangulation, lens_angle)
     E = DT.edge_type(tri)
     I = DT.integer_type(tri)
-    ch = Channel{Pair{E, Tuple{Bool, I}}}(Inf) # https://discourse.julialang.org/t/can-dicts-be-threadsafe/27172/17
+    ch = Channel{Pair{E,Tuple{Bool,I}}}(Inf) # https://discourse.julialang.org/t/can-dicts-be-threadsafe/27172/17
     @sync for i in collect(each_solid_vertex(tri))
         Base.Threads.@spawn begin
             for j in each_solid_vertex(tri)
@@ -793,8 +795,8 @@ function slow_encroachment_test_diametral_lens(tri::DT.Triangulation, lens_angle
             end
         end
     end
-    not_in_dt_encroached_edges = Dict{E, Tuple{Bool, I}}()
-    in_dt_encroached_edges = Dict{E, Tuple{Bool, I}}()
+    not_in_dt_encroached_edges = Dict{E,Tuple{Bool,I}}()
+    in_dt_encroached_edges = Dict{E,Tuple{Bool,I}}()
     while !isempty(ch)
         e, (b, k) = take!(ch)
         if DT.edge_exists(tri, e) || DT.edge_exists(tri, DT.reverse_edge(e))
@@ -880,7 +882,7 @@ end
 
 
 ## TODO: Implement a brute-force DT.VoronoiTessellation that we can compare with
-function validate_tessellation(vorn::DT.VoronoiTessellation; check_convex = true, check_area = true, check_adjacent = true, predicates::DT.AbstractPredicateKernel = DT.AdaptiveKernel())
+function validate_tessellation(vorn::DT.VoronoiTessellation; check_convex=true, check_area=true, check_adjacent=true, predicates::DT.AbstractPredicateKernel=DT.AdaptiveKernel())
     tri = DT.get_triangulation(vorn)
     for (i, p) in DT.get_generators(vorn)
         flag = get_point(tri, i) == get_generator(vorn, i) == p
@@ -986,7 +988,7 @@ function validate_tessellation(vorn::DT.VoronoiTessellation; check_convex = true
         if i ∉ DT.get_unbounded_polygons(vorn)
             verts = get_polygon(vorn, i)
             poly_points = get_polygon_point.(Ref(vorn), verts)
-            flag = @views allunique(poly_points[begin:(end - 1)])
+            flag = @views allunique(poly_points[begin:(end-1)])
             if !flag
                 println("Polygon $i has repeated vertices.")
                 return false
@@ -1008,12 +1010,12 @@ function validate_tessellation(vorn::DT.VoronoiTessellation; check_convex = true
         for i in each_polygon_index(vorn)
             A += get_area(vorn, i)
         end
-        @test isapprox(A, get_area(vorn.triangulation), rtol = 1.0e-4)
+        @test isapprox(A, get_area(vorn.triangulation), rtol=1.0e-4)
     end
     return true
 end
 
-function _make_graph_from_adjacency(A, labels = Dict(axes(A, 1) .=> axes(A, 1)))
+function _make_graph_from_adjacency(A, labels=Dict(axes(A, 1) .=> axes(A, 1)))
     g = DT.Graph{Int}()
     foreach(axes(A, 1)) do i
         push!(g.vertices, labels[i])
@@ -1151,7 +1153,7 @@ function compute_diametral_lens(p, q, lens_angle)
 end
 function get_points_in_diametral_circle(p, q)
     tri = triangulate(rand(2, 50))
-    args = DT.RefinementArguments(tri; use_lens = false)
+    args = DT.RefinementArguments(tri; use_lens=false)
     θ = LinRange(0, 2π, 250)
     r = LinRange(0, norm(p .- q) / 2, 250)
     m = (p .+ q) ./ 2
@@ -1161,7 +1163,7 @@ function get_points_in_diametral_circle(p, q)
 end
 function get_points_in_diametral_lens(p, q, lens_angle)
     tri = triangulate(rand(2, 50))
-    args = DT.RefinementArguments(tri; use_lens = true, min_angle = lens_angle)
+    args = DT.RefinementArguments(tri; use_lens=true, min_angle=lens_angle)
     θ = LinRange(0, 2π, 250)
     r = LinRange(0, norm(p .- q) / 2, 250)
     m = (p .+ q) ./ 2
@@ -1171,7 +1173,7 @@ function get_points_in_diametral_lens(p, q, lens_angle)
 end
 
 function get_random_convex_polygon(points)
-    tri = triangulate(points; predicates = DT.ExactKernel())
+    tri = triangulate(points; predicates=DT.ExactKernel())
     S = get_convex_hull_vertices(tri)
     pop!(S) # Want S[begin] ≠ S[end]
     return S
@@ -1187,7 +1189,7 @@ function _lexicographically_sort_pair_vector(pairs)
             return key_x < key_y
         end
     end
-    return sort(pairs, lt = lt)
+    return sort(pairs, lt=lt)
 end
 function _compare_pairs(pairs, dt_pairs)
     @test length(pairs) == length(dt_pairs)
@@ -1263,7 +1265,7 @@ function validate_insertion_event_history(tri::Triangulation, orig_tri::Triangul
     @test DT.compare_unoriented_edge_collections(manual_history.added_boundary_segments, history.added_boundary_segments)
 end
 
-_approx_ispow2(x) = ispow2(x) || isapprox(log2(x), round(log2(x)), atol = 1.0e-9, rtol = 1.0e-9)
+_approx_ispow2(x) = ispow2(x) || isapprox(log2(x), round(log2(x)), atol=1.0e-9, rtol=1.0e-9)
 
 function compare_encroach_queues(args::DT.RefinementArguments, manual_enqueue)
     _manual_enqueue_pairs = collect(manual_enqueue)
@@ -1291,7 +1293,7 @@ function compare_triangle_queues(args::DT.RefinementArguments, manual_enqueue)
     _compare_pairs(_manual_enqueue_pairs, _args_queue_triangle_pairs)
 end
 
-function is_conformal(tri::Triangulation; predicates::DT.AbstractPredicateKernel = DT.AdaptiveKernel())
+function is_conformal(tri::Triangulation; predicates::DT.AbstractPredicateKernel=DT.AdaptiveKernel())
     points = get_points(tri)
     segment_tree = DT.BoundaryRTree(points)
     for e in each_segment(tri)
@@ -1299,7 +1301,7 @@ function is_conformal(tri::Triangulation; predicates::DT.AbstractPredicateKernel
         insert!(segment_tree, i, j)
     end
     for r in each_solid_vertex(tri)
-        intersects = DT.get_intersections(segment_tree, r, cache_id = 1) # can't use multithreading here
+        intersects = DT.get_intersections(segment_tree, r, cache_id=1) # can't use multithreading here
         c = get_point(tri, r)
         for box in intersects
             i, j = DT.get_edge(box)
@@ -1321,8 +1323,8 @@ function is_conformal(tri::Triangulation; predicates::DT.AbstractPredicateKernel
 end
 
 function slow_triangle_assess(tri, args)
-    good_T = NTuple{3, Int}[]
-    bad_T = NTuple{3, Int}[]
+    good_T = NTuple{3,Int}[]
+    bad_T = NTuple{3,Int}[]
     for T in each_solid_triangle(tri)
         u, v, w = T
         p, q, r = get_point(tri, u, v, w)
@@ -1348,7 +1350,7 @@ end
 
 function slow_triangle_assess_queue(tri, args)
     good_T, bad_T = slow_triangle_assess(tri, args)
-    queue = PriorityQueue{NTuple{3, Int}, Float64}(Base.Order.Reverse)
+    queue = PriorityQueue{NTuple{3,Int},Float64}(Base.Order.Reverse)
     for T in bad_T
         queue[T] = DT.triangle_radius_edge_ratio(get_point(tri, T...)...)
     end
@@ -1404,7 +1406,7 @@ function compute_φmin(tri)
     return φmin
 end
 
-function validate_refinement(tri, args; check_conformal = true, warn = true)
+function validate_refinement(tri, args; check_conformal=true, warn=true)
     ## Things to check:
     ##   1. All angle constraints are met, except for seditious and nestled triangles.
     ##   2. If !use_lens, the triangulation is conformal. 
@@ -1439,7 +1441,7 @@ function validate_refinement(tri, args; check_conformal = true, warn = true)
             minθ = min(minθ, t1, t2, t3)
             maxθ = max(maxθ, t1, t2, t3)
         end
-        V = find_triangle(tri, steiner_point; predicates = DT.ExactKernel())
+        V = find_triangle(tri, steiner_point; predicates=DT.ExactKernel())
         flag = DT.point_position_relative_to_triangle(DT.ExactKernel(), tri, V, steiner_point)
         if DT.is_on(flag) && DT.is_ghost_triangle(V)
             V = DT.replace_ghost_triangle_with_boundary_triangle(tri, V)
@@ -1495,7 +1497,7 @@ function validate_refinement(tri, args; check_conformal = true, warn = true)
         end
     end
     if !args.use_lens && check_conformal
-        flag = is_conformal(tri; predicates = DT.ExactKernel())
+        flag = is_conformal(tri; predicates=DT.ExactKernel())
         if !flag
             println("The triangulation is not conformal.")
             return false
@@ -1529,7 +1531,7 @@ function validate_refinement(tri, args; check_conformal = true, warn = true)
     end
     return true
 end
-validate_refinement(tri; check_conformal = true, warn = true, predicates = DT.ExactKernel(), kwargs...) = validate_refinement(tri, DT.RefinementArguments(tri; predicates, kwargs...); warn, check_conformal)
+validate_refinement(tri; check_conformal=true, warn=true, predicates=DT.ExactKernel(), kwargs...) = validate_refinement(tri, DT.RefinementArguments(tri; predicates, kwargs...); warn, check_conformal)
 
 function why_not_equal(tri1, tri2)
     !DT.has_ghost_triangles(tri1) && DT.has_ghost_triangles(tri2) && println("!has_ghost_triangles(tri1) && has_ghost_triangles(tri2)")
@@ -1681,7 +1683,7 @@ function get_weighted_example(i)
     num_pts = Int(mat[1, 1])
     points = mat[2:num_pts, 1:2]
     weights = mat[2:num_pts, 3]
-    triangles = Int.(mat[(num_pts + 1):end, :])
+    triangles = Int.(mat[(num_pts+1):end, :])
     triangles = Set([Tuple(tri) for tri in eachrow(triangles)])
     _triangles = empty(triangles)
     for T in triangles
@@ -1700,7 +1702,7 @@ function get_weighted_example(i)
     # since some of the vertices might be submerged, we can't just get the 
     # convex hull of points to find the boundary (in cases of collinear points). instead, let's find 
     # all the edges which have only one adjoining triangle, and then sort them.
-    d = Dict{NTuple{2, Int}, Int}()
+    d = Dict{NTuple{2,Int},Int}()
     for T in triangles
         i, j, k = T
         d[(i, j)] = k
@@ -1732,7 +1734,7 @@ function get_weighted_example(i)
     # return 
     tri = Triangulation(points, triangles, boundary_nodes; weights)
     unlock_convex_hull!(tri)
-    return (tri = tri, submerged_vertices = submerged_vertices, nonsubmerged_vertices = nonsubmerged_vertices, weights = weights)
+    return (tri=tri, submerged_vertices=submerged_vertices, nonsubmerged_vertices=nonsubmerged_vertices, weights=weights)
 end
 get_unstructured_weighted_example(i) = get_weighted_example(i)
 function get_convex_polygon_weighted_example(i)
@@ -1741,11 +1743,11 @@ function get_convex_polygon_weighted_example(i)
     representative_point_list = DT.get_representative_point_list(tri)
     cx, cy = DT.mean_points(get_points(tri), S)
     representative_point_list[1] = DT.RepresentativeCoordinates(cx, cy, length(S))
-    return (tri = tri, submerged_vertices = submerged_vertices, nonsubmerged_vertices = nonsubmerged_vertices, weights = weights, S = S)
+    return (tri=tri, submerged_vertices=submerged_vertices, nonsubmerged_vertices=nonsubmerged_vertices, weights=weights, S=S)
 end
 
 function get_all_distances_to_witness_planes(tri, i)
-    distances = Dict{NTuple{3, Int}, Float64}()
+    distances = Dict{NTuple{3,Int},Float64}()
     for T in each_solid_triangle(tri)
         T = DT.sort_triangle(T)
         δ = DT.get_distance_to_witness_plane(tri, i, T)
@@ -1755,7 +1757,7 @@ function get_all_distances_to_witness_planes(tri, i)
 end
 
 function get_nearest_power_point(tri, i)
-    all_dists = Dict{Int, Float64}()
+    all_dists = Dict{Int,Float64}()
     for j in each_solid_vertex(tri)
         p = DT.get_point(tri, i)
         q = DT.get_point(tri, j)
@@ -1765,7 +1767,7 @@ function get_nearest_power_point(tri, i)
 end
 
 ⪧(a::Vector{Tuple}, b::Vector{Tuple}; kwargs...) = ⪧(collect.(a), collect.(b); kwargs...)
-⪧(a::Vector{<:Union{Vector, Number}}, b::Vector; kwargs...) = isapprox(a, b; kwargs...)
+⪧(a::Vector{<:Union{Vector,Number}}, b::Vector; kwargs...) = isapprox(a, b; kwargs...)
 ⪧(a, b; kwargs...) = isapprox(collect(collect.(a)), collect(collect.(b)); kwargs...)
 
 function closest_point_on_curve(c, p)
@@ -1780,8 +1782,8 @@ end
 function slow_arc_length(c, t₁, t₂)
     t = LinRange(t₁, t₂, 15000)
     s = 0.0
-    for i in 1:(length(t) - 1)
-        s += norm(c(t[i + 1]) .- c(t[i]))
+    for i in 1:(length(t)-1)
+        s += norm(c(t[i+1]) .- c(t[i]))
     end
     return s
 end
@@ -1789,9 +1791,9 @@ end
 function slow_total_absolute_curvature(c, t₁, t₂)
     t = LinRange(t₁, t₂, 1500)
     s = 0.0
-    for i in 1:(length(t) - 1)
+    for i in 1:(length(t)-1)
         T₁ = DT.differentiate(c, t[i])
-        T₂ = DT.differentiate(c, t[i + 1])
+        T₂ = DT.differentiate(c, t[i+1])
         _rat = dot(T₁, T₂) / (norm(T₁) * norm(T₂))
         _dot = _rat > 1 ? 1 : _rat < -1 ? -1 : _rat
         θ = acos(_dot)
@@ -1803,32 +1805,32 @@ end
 function slow_get_segment(control_points, knots, alpha, tension, t)
     L = 0.0
     for i in 2:lastindex(control_points)
-        L += norm(control_points[i] .- control_points[i - 1])^alpha
+        L += norm(control_points[i] .- control_points[i-1])^alpha
     end
     is_closed = control_points[begin] == control_points[end]
     s = 0
     for outer s in eachindex(knots)
-        knots[s] ≤ t ≤ knots[s + 1] && break
+        knots[s] ≤ t ≤ knots[s+1] && break
     end
-    points = NTuple{2, Float64}[]
+    points = NTuple{2,Float64}[]
     if s == 1
         if is_closed
-            push!(points, control_points[end - 1])
+            push!(points, control_points[end-1])
         else
             push!(points, DT.extend_left_control_point(control_points))
         end
     else
-        push!(points, control_points[s - 1])
+        push!(points, control_points[s-1])
     end
-    push!(points, control_points[s], control_points[s + 1])
+    push!(points, control_points[s], control_points[s+1])
     if s == length(knots) - 1
         if is_closed
-            push!(points, control_points[begin + 1])
+            push!(points, control_points[begin+1])
         else
             push!(points, DT.extend_right_control_point(control_points))
         end
     else
-        push!(points, control_points[s + 2])
+        push!(points, control_points[s+2])
     end
     return DT.catmull_rom_spline_segment(points..., alpha, tension), s
 end
@@ -1841,7 +1843,7 @@ function slow_eval_bspline(control_points, knots, t)
     end
     val = Real[0, 0]
     order = length(knots) - length(control_points)
-    a, b = knots[order], knots[length(control_points) + 1]
+    a, b = knots[order], knots[length(control_points)+1]
     t = a + (b - a) * t
     for i in eachindex(control_points)
         val = val .+ control_points[i] .* slow_eval_bspline_basis(knots, i, order, t)
@@ -1850,10 +1852,10 @@ function slow_eval_bspline(control_points, knots, t)
 end
 function slow_eval_bspline_basis(knots, i, order, t)
     if order == 1
-        return (knots[i] ≤ t < knots[i + 1]) ? 1.0 : 0.0
+        return (knots[i] ≤ t < knots[i+1]) ? 1.0 : 0.0
     else
-        coeff1 = (t - knots[i]) / (knots[i + order - 1] - knots[i])
-        coeff2 = (knots[i + order] - t) / (knots[i + order] - knots[i + 1])
+        coeff1 = (t - knots[i]) / (knots[i+order-1] - knots[i])
+        coeff2 = (knots[i+order] - t) / (knots[i+order] - knots[i+1])
         coeff1 = isfinite(coeff1) ? coeff1 : 0.0
         coeff2 = isfinite(coeff2) ? coeff2 : 0.0
         return coeff1 * slow_eval_bspline_basis(knots, i, order - 1, t) + coeff2 * slow_eval_bspline_basis(knots, i + 1, order - 1, t)
@@ -1863,11 +1865,11 @@ end
 function slow_bezier_eval(points, t)
     points = collect.(points)
     n = length(points) - 1
-    return collect(sum([binomial(n, i) .* (1 - t)^(n - i) .* t^i .* points[i + 1] for i in 0:n]))
+    return collect(sum([binomial(n, i) .* (1 - t)^(n - i) .* t^i .* points[i+1] for i in 0:n]))
 end
 
-function flatten_boundary_nodes(points, boundary_nodes, segments = nothing)
-    _points = NTuple{2, Float64}[]
+function flatten_boundary_nodes(points, boundary_nodes, segments=nothing)
+    _points = NTuple{2,Float64}[]
     if DT.has_multiple_curves(boundary_nodes)
         nc = DT.num_curves(boundary_nodes)
         for i in 1:nc
@@ -1877,7 +1879,7 @@ function flatten_boundary_nodes(points, boundary_nodes, segments = nothing)
                 __boundary_nodes = get_boundary_nodes(_boundary_nodes, j)
                 if !(get_boundary_nodes(__boundary_nodes, 1) isa DT.AbstractParametricCurve)
                     n = DT.num_boundary_edges(__boundary_nodes)
-                    for k in 1:(n + 1)
+                    for k in 1:(n+1)
                         push!(_points, get_point(points, get_boundary_nodes(__boundary_nodes, k)))
                     end
                 else
@@ -2000,11 +2002,12 @@ function get_dt_rectangles!(rects, els, node::DT.Leaf)
     return identity.(rects), identity.(els)
 end
 
+to_lines(xmin, xmax, ymin, ymax) = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax), (xmin, ymin)]
 to_lines(rect::DT.BoundingBox) = [(rect.x.a, rect.y.a), (rect.x.b, rect.y.a), (rect.x.b, rect.y.b), (rect.x.a, rect.y.b), (rect.x.a, rect.y.a)]
 to_lines(rect::SI.Rect) =
     let a = rect.low[1], c = rect.low[2], b = rect.high[1], d = rect.high[2]
-    [(a, c), (b, c), (b, d), (a, d), (a, c)]
-end
+        [(a, c), (b, c), (b, d), (a, d), (a, c)]
+    end
 to_lines(rect::DT.DiametralBoundingBox) = to_lines(DT.get_bounding_box(rect))
 to_lines(rect::SI.SpatialElem) = to_lines(rect.mbr)
 to_edge(rect::DT.DiametralBoundingBox) = DT.get_edge(rect)
@@ -2015,9 +2018,9 @@ function get_plot_data(tree, points)
     else
         bounding_rectangles, id_rectangles = get_si_rectangles(tree)
     end
-    _lines = NTuple{2, Float64}[]
-    id_rectangle_lines = NTuple{2, Float64}[]
-    bounding_rectangle_lines = NTuple{2, Float64}[]
+    _lines = NTuple{2,Float64}[]
+    id_rectangle_lines = NTuple{2,Float64}[]
+    bounding_rectangle_lines = NTuple{2,Float64}[]
     for rect in id_rectangles
         i, j = to_edge(rect)
         p, q = get_point(points, i, j)
@@ -2033,9 +2036,9 @@ function get_plot_data(tree, points)
 end
 function plot_tree(tree, points)
     _lines, _id_rectangle_lines, _bounding_rectangle_lines = get_plot_data(tree, points)
-    fig, ax, sc = lines(_id_rectangle_lines, color = :blue)
-    linesegments!(ax, _lines, color = :black)
-    lines!(ax, _bounding_rectangle_lines, color = :red)
+    fig, ax, sc = lines(_id_rectangle_lines, color=:blue)
+    linesegments!(ax, _lines, color=:black)
+    lines!(ax, _bounding_rectangle_lines, color=:red)
     display(fig)
     return fig, ax, sc
 end
@@ -2074,7 +2077,7 @@ function traverse_tree(tree::DT.PolygonTree)
     parent_index = DT.has_parent(tree) ? DT.get_index(DT.get_parent(tree)) : 0
     tup = (height, index, parent_index)
     children = DT.get_children(tree)
-    schildren = sort(OrderedSet(children), by = x -> DT.get_index(x))
+    schildren = sort(OrderedSet(children), by=x -> DT.get_index(x))
     for child in schildren
         tup = (tup..., traverse_tree(child))
     end
@@ -2083,7 +2086,7 @@ end
 function traverse_tree(hierarchy::DT.PolygonHierarchy)
     dict = Dict()
     trees = DT.get_trees(hierarchy)
-    strees = sort(OrderedDict(trees), by = x -> x[1])
+    strees = sort(OrderedDict(trees), by=x -> x[1])
     for (index, tree) in strees
         dict[index] = traverse_tree(tree)
     end
@@ -2098,7 +2101,7 @@ function compare_trees(hierarchy1::DT.PolygonHierarchy, hierarchy2::DT.PolygonHi
     return true
 end
 
-function plot_boundary_and_diametral_circles(points, boundary_nodes, segments = nothing)
+function plot_boundary_and_diametral_circles(points, boundary_nodes, segments=nothing)
     fpoints = flatten_boundary_nodes(points, boundary_nodes, segments)
     fig, ax, sc = lines(fpoints)
     scatter!(ax, points)
@@ -2111,7 +2114,7 @@ function plot_boundary_and_diametral_circles(points, boundary_nodes, segments = 
                     u, v = get_boundary_nodes(section_nodes, k), get_boundary_nodes(section_nodes, k + 1)
                     p, q = get_point(points, u, v)
                     c, r = DT.diametral_circle(p, q)
-                    arc!(ax, c, r, 0, 2π, color = :red, linestyle = :dash)
+                    arc!(ax, c, r, 0, 2π, color=:red, linestyle=:dash)
                 end
             end
         end
@@ -2122,7 +2125,7 @@ function plot_boundary_and_diametral_circles(points, boundary_nodes, segments = 
                 u, v = get_boundary_nodes(section_nodes, j), get_boundary_nodes(section_nodes, j + 1)
                 p, q = get_point(points, u, v)
                 c, r = DT.diametral_circle(p, q)
-                arc!(ax, c, r, 0, 2π, color = :red, linestyle = :dash)
+                arc!(ax, c, r, 0, 2π, color=:red, linestyle=:dash)
             end
         end
     else
@@ -2130,7 +2133,7 @@ function plot_boundary_and_diametral_circles(points, boundary_nodes, segments = 
             u, v = get_boundary_nodes(boundary_nodes, i), get_boundary_nodes(boundary_nodes, i + 1)
             p, q = get_point(points, u, v)
             c, r = DT.diametral_circle(p, q)
-            arc!(ax, c, r, 0, 2π, color = :red, linestyle = :dash)
+            arc!(ax, c, r, 0, 2π, color=:red, linestyle=:dash)
         end
     end
     if !isnothing(segments)
@@ -2138,7 +2141,7 @@ function plot_boundary_and_diametral_circles(points, boundary_nodes, segments = 
             i, j = DT.edge_vertices(e)
             p, q = get_point(points, i, j)
             c, r = DT.diametral_circle(p, q)
-            arc!(ax, c, r, 0, 2π, color = :red, linestyle = :dash)
+            arc!(ax, c, r, 0, 2π, color=:red, linestyle=:dash)
         end
     end
     display(fig)
@@ -2269,7 +2272,7 @@ end
 function plot_small_angle_complexes(enricher)
     points, boundary_nodes, boundary_curves = get_points(enricher), get_boundary_nodes(enricher), DT.get_boundary_curves(enricher)
     complexes = DT.get_small_angle_complexes(points, boundary_nodes, boundary_curves)
-    _points, _boundary_nodes = DT.polygonise(points, boundary_nodes, boundary_curves; n = 2^10)
+    _points, _boundary_nodes = DT.polygonise(points, boundary_nodes, boundary_curves; n=2^10)
     fpoints = flatten_boundary_nodes(_points, _boundary_nodes)
     fig, ax, sc = lines(fpoints)
     colors = [:red, :green, :blue, :orange, :purple, :cyan, :magenta, :yellow]
@@ -2282,18 +2285,18 @@ function plot_small_angle_complexes(enricher)
                 curve = boundary_curves[parent_curve]
                 p, q = get_point(points, apex, next_edge)
                 if DT.is_piecewise_linear(curve)
-                    lines!(ax, [p, q], linewidth = 4, color = colors[color_ctr])
+                    lines!(ax, [p, q], linewidth=4, color=colors[color_ctr])
                 else
                     t₁ = DT.get_inverse(curve, p)
                     t₂ = DT.get_inverse(curve, q)
                     t = LinRange(t₁, t₂, 1000)
-                    lines!(ax, curve.(t), linewidth = 4, color = colors[color_ctr])
+                    lines!(ax, curve.(t), linewidth=4, color=colors[color_ctr])
                 end
             end
             color_ctr = mod1(color_ctr + 1, length(colors))
         end
         p = get_point(points, apex)
-        scatter!(ax, [p], color = colors[1], markersize = 17)
+        scatter!(ax, [p], color=colors[1], markersize=17)
     end
     display(fig)
     return fig
@@ -2326,11 +2329,11 @@ using DelaunayTriangulation:
 rt() = rand((DT.FastKernel(), DT.ExactKernel(), DT.AdaptiveKernel()))
 
 struct TriangleSampler{T}
-    p::NTuple{2, T}
-    q::NTuple{2, T}
-    r::NTuple{2, T}
+    p::NTuple{2,T}
+    q::NTuple{2,T}
+    r::NTuple{2,T}
 end
-Random.eltype(::Type{TriangleSampler{T}}) where {T} = NTuple{2, T}
+Random.eltype(::Type{TriangleSampler{T}}) where {T} = NTuple{2,T}
 function Random.rand(rng::Random.AbstractRNG, v::Random.SamplerTrivial{<:TriangleSampler{T}}) where {T}
     # https://blogs.sas.com/content/iml/2020/10/19/random-points-in-triangle.html
     itr = v[]
@@ -2350,7 +2353,7 @@ function Random.rand(rng::Random.AbstractRNG, v::Random.SamplerTrivial{<:Triangl
     wy = u₁ * ay + u₂ * by
     return (px + wx, py + wy)
 end
-Random.eltype(::Type{T}) where {P, T<:Triangulation{P}} = NTuple{2, DT.number_type(P)}
+Random.eltype(::Type{T}) where {P,T<:Triangulation{P}} = NTuple{2,DT.number_type(P)}
 function Random.Sampler(::Type{<:Random.AbstractRNG}, tri::Triangulation, ::Random.Repetition)
     V = DT.triangle_type(tri)
     F = DT.number_type(tri)
@@ -2386,7 +2389,7 @@ function Random.rand!(rng::Random.AbstractRNG, a::AbstractVector, spl::Random.Sa
     areas = spl.data.areas
     multi = Multinomial(1, areas)
     samples = rand(rng, multi, n)
-    ntri = sum(samples; dims = 2)
+    ntri = sum(samples; dims=2)
     cur_idx = 0
     for (idx, T) in enumerate(triangles)
         ntri[idx] == 0 && continue
@@ -2400,6 +2403,239 @@ function Random.rand!(rng::Random.AbstractRNG, a::AbstractVector, spl::Random.Sa
     return a
 end
 
+function apply_transform(p, transform)
+    # A transform is specified as a 6-tuple (a, b, c, d, e, f), representing the transformation
+    # p -> Mp + t, where M = [a b; c d] and t = [e f].
+    a, b, c, d, e, f = transform
+    x, y = getxy(p)
+    x′ = x * a + y * b + e
+    y′ = x * c + y * d + f
+    return (x′, y′)
+end
+function apply_transform!(points, transform)
+    for i in DelaunayTriangulation.each_point_index(points)
+        p = get_point(points, i)
+        DelaunayTriangulation.set_point!(points, i, apply_transform(p, transform))
+    end
+    return points
+end
+const SW_TRANSFORM = (0 // 1, 1 // 2, 1 // 2, 0 // 1, -1 // 4, -1 // 4) # Scale -> Translate -> Rotate -> Mirror
+const SE_TRANSFORM = (0 // 1, -1 // 2, -1 // 2, 0 // 1, 1 // 4, -1 // 4) # Scale -> Translate -> Rotate -> Mirror
+const NW_TRANSFORM = (1 // 2, 0 // 1, 0 // 1, 1 // 2, -1 // 4, 1 // 4) # Scale -> Translate
+const NE_TRANSFORM = (1 // 2, 0 // 1, 0 // 1, 1 // 2, 1 // 4, 1 // 4) # Scale -> Translate
+function hilbert_step(points)
+    sw, se, nw, ne = copy(points), copy(points), copy(points), copy(points)
+    apply_transform!(sw, SW_TRANSFORM)
+    apply_transform!(se, SE_TRANSFORM)
+    apply_transform!(nw, NW_TRANSFORM)
+    apply_transform!(ne, NE_TRANSFORM)
+    append!(sw, nw, ne, se)
+    return sw
+end
+function hilbert(order; points=[(0.0, 0.0)]) # use points kwarg if you want to look at the transformed points
+    # This function assumes that the Hilbert curve lives in [-1/2, 1/2]².
+    # Since we centre at (0.0, 0.0), we don't have to keep track of the width,
+    # allowing the transforms above to be constant.
+    for _ in 1:order
+        yield()
+        points = hilbert_step(points)
+    end
+    return points
+end
+function hilbert(order, lo, hi; points=[(0.0, 0.0)]) # kwarg is in [-1/2, 1/2]² space
+    points = hilbert(order; points=points)
+    width = hi - lo
+    for i in DelaunayTriangulation.each_point_index(points)
+        p = get_point(points, i)
+        x, y = getxy(p)
+        x′ = lo + width * (x + 1 / 2)
+        y′ = lo + width * (y + 1 / 2)
+        DelaunayTriangulation.set_point!(points, i, (x′, y′))
+    end
+    return points
+end
+function hilbert_id(hilbert, p, h)
+    px, py = getxy(p)
+    for i in DT.each_point_index(hilbert)
+        q = get_point(hilbert, i)
+        qx, qy = getxy(q)
+        box = (qx - h / 2, qx + h / 2, qy - h / 2, qy + h / 2)
+        xmin, xmax, ymin, ymax = box
+        if xmin ≤ px ≤ xmax && ymin ≤ py ≤ ymax
+            return i
+        end
+    end
+    throw(ArgumentError("Point $p is not in the Hilbert curve"))
+end
+function hilbert_ids(points, order) # this function isn't perfect for the case where a point lies on a boundary of a square
+    if DT.num_points(points) == 1
+        @test order == 0
+        return 1
+    end
+    # Scale points to [-1/2, 1/2]
+    bbox = DT.bounds(DT.bounding_box(points))
+    xmin, xmax, ymin, ymax = bbox
+    for i in DT.each_point_index(points)
+        p = get_point(points, i)
+        x, y = getxy(p)
+        x′ = (x - xmin) / (xmax - xmin) - 1 / 2
+        y′ = (y - ymin) / (ymax - ymin) - 1 / 2
+        DT.set_point!(points, i, (x′, y′))
+    end
+    hb = hilbert(order)
+    h = step(LinRange(-1 / 2, 1 / 2, 2^order + 1))
+    ids = Vector{Int}(undef, DT.num_points(points))
+    Base.Threads.@threads for i in DT.each_point_index(points)
+        ids[i] = hilbert_id(hb, get_point(points, i), h)
+    end
+    return ids
+end
+function philbert(p::Int)
+    # This curve will span [0, 2^p]².
+    hilb = hilbert(p, -1 // 2, -1 // 2 + (1 << p); points=[(0 // 1, 0 // 1)])
+    return convert(Vector{NTuple{2,Int}}, hilb)
+end
+function plot_hilbert(order, lo=-1 / 2, hi=1 / 2)
+    points = hilbert(order, lo, hi)
+    steps = LinRange(lo, hi, 2^order + 1)
+    fig, ax, sc = scatterlines(points, color=:blue, linewidth=2)
+    vlines!(ax, steps, color=:black, linewidth=1)
+    hlines!(ax, steps, color=:black, linewidth=1)
+    xlims!(ax, lo, hi)
+    ylims!(ax, lo, hi)
+    display(fig)
+    return fig, ax, sc
+end
+function plot_philbert(p)
+    hilb = philbert(p)
+    fig, ax, sc = lines(hilb, color=:blue, linewidth=2)
+    xlims!(ax, -1e-2, (1 << p) + 1e-2)
+    ylims!(ax, -1e-2, (1 << p) + 1e-2)
+    display(fig)
+    return fig, ax, sc
+end
+
+function _get_hilbert_order(bboxes, initbbox)
+    # Gets the order by counting the maximum number of times a bbox's area decreases 
+    b = initbbox
+    A = abs(b[2] - b[1]) * abs(b[4] - b[3])
+    order = 1
+    for b in bboxes
+        a = abs(b[2] - b[1]) * abs(b[4] - b[3])
+        r = a / A
+        order = max(order, abs(log(4, r)))
+    end
+    return round(Int, order)
+end
+function _point_map(points, bboxes)
+    I = Int
+    to_square = Vector{I}(undef, DT.num_points(points))
+    to_point = Dict{I,Set{I}}()
+    for (j, b) in enumerate(bboxes)
+        xmin, xmax, ymin, ymax = b
+        xmin, xmax = minmax(xmin, xmax)
+        ymin, ymax = minmax(ymin, ymax)
+        for i in DT.each_point_index(points)
+            p = get_point(points, i)
+            x, y = getxy(p)
+            if xmin ≤ x ≤ xmax && ymin ≤ y ≤ ymax
+                to_square[i] = j
+                if haskey(to_point, j)
+                    push!(to_point[j], i)
+                else
+                    to_point[j] = Set([i])
+                end
+            end
+        end
+    end
+    return to_square, to_point
+end
+function _hilbert_sort(points; capacity=8, splitter=DT.Middle(), rng=Random.default_rng()) # This version is for collecting the bboxes
+    if splitter === DT.Median()
+        throw(ArgumentError("Median splitting is not yet implemented."))
+    end
+    sorter = DT.HilbertSorter(points; capacity, splitter, rng)
+    bboxes = [sorter.bbox]
+    initbbox = sorter.bbox
+    _hilbert_sort!(sorter, bboxes)
+    pts = NTuple{2,Float64}[]
+    splits = NTuple{2,Float64}[]
+    for bbox in bboxes
+        pt = to_lines(bbox...)
+        push!(pts, pt..., (NaN, NaN))
+        xmin, xmax, ymin, ymax = bbox
+        midpt = ((xmin + xmax) / 2, (ymin + ymax) / 2)
+        push!(splits, midpt)
+    end
+    fig, ax, sc = lines(pts, color=:black)
+    lines!(ax, splits, color=:red, linewidth=1 / 2)
+    scatter!(ax, points, color=:blue, markersize=4)
+    # display(fig)
+    return bboxes, pts, splits, (fig, ax, sc), _get_hilbert_order(bboxes, initbbox), _point_map(points, bboxes)
+end
+function _hilbert_sort!(sorter::DT.HilbertSorter, bboxes)
+    DT.stop_sorter(sorter) && return
+    xsplit, ysplit = DT.get_split(sorter)
+    i₁, i₂, i₃, i₄, i₅ = DT.quadrant_sort!(sorter, xsplit, ysplit)
+    sorter1 = DT.to_quadrant1(sorter, xsplit, ysplit, i₁, i₂, i₃, i₄, i₅)
+    sorter2 = DT.to_quadrant2(sorter, xsplit, ysplit, i₁, i₂, i₃, i₄, i₅)
+    sorter3 = DT.to_quadrant3(sorter, xsplit, ysplit, i₁, i₂, i₃, i₄, i₅)
+    sorter4 = DT.to_quadrant4(sorter, xsplit, ysplit, i₁, i₂, i₃, i₄, i₅)
+    deleteat!(bboxes, findfirst(x -> sort(collect(x)) == sort(collect(sorter.bbox)), bboxes))
+    xmin, xmax, ymin, ymax = sorter.bbox
+    b1 = (xmin, xsplit, ymin, ysplit)
+    b2 = (xmin, xsplit, ysplit, ymax)
+    b3 = (xsplit, xmax, ysplit, ymax)
+    b4 = (xsplit, xmax, ymin, ysplit)
+    if sorter.directions.coord == DT.Y()
+        b1 = reverse(b1)
+        b2 = reverse(b2)
+        b3 = reverse(b3)
+        b4 = reverse(b4)
+    end
+    push!(bboxes, b1)
+    _hilbert_sort!(sorter1, bboxes)
+    push!(bboxes, b2)
+    _hilbert_sort!(sorter2, bboxes)
+    push!(bboxes, b3)
+    _hilbert_sort!(sorter3, bboxes)
+    push!(bboxes, b4)
+    _hilbert_sort!(sorter4, bboxes)
+    return
+end
+
+function get_round_map(n, rounds)
+    map = Vector{Int}(undef, n)
+    for (i, round) in enumerate(rounds) 
+        for j in round 
+            map[j] = i
+        end
+    end
+    return map
+end
+function check_distr(indices)
+    n = length(indices)
+    distr = zeros(ceil(Int, log2(n)) + 1)
+    for _ in 1:10000
+        rounds = DT.assign_rounds(indices)
+        _map = get_round_map(n, rounds)
+        _cmap = countmap(_map)
+        for (r, m) in _cmap 
+            distr[r] += m / n
+        end
+    end
+    distr = distr ./ 10000
+    return distr
+end
+
+export check_distr
+export get_round_map
+export _hilbert_sort
+export plot_hilbert
+export plot_philbert
+export hilbert_ids
+export hilbert_id
+export hilbert
 export validate_triangulation
 export @_adj
 export _make_graph_from_adjacency

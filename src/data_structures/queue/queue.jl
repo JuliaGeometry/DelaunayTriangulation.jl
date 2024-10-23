@@ -35,7 +35,7 @@ Base.length(queue::Queue) = length(queue.data)
 
 Returns the type of elements stored in `q`.
 """
-Base.eltype(queue::Type{Queue{T}}) where {T} = T
+Base.eltype(::Type{Queue{T}}) where {T} = T
 
 """
     push!(queue::Queue, item) 

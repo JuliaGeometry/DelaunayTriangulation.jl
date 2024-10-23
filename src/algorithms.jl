@@ -1,5 +1,6 @@
 include("algorithms/intersections/rtree.jl")
 include("algorithms/convex_hull.jl")
+include("algorithms/spatial_sorting.jl")
 include("algorithms/point_location/brute_force.jl")
 include("algorithms/point_location/jump_and_march.jl")
 include("algorithms/point_location/nearest_neighbour.jl")

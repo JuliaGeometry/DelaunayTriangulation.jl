@@ -4,6 +4,8 @@
 
 This new release restructures the `Triangulation` struct a bit, completely redesigning the `triangles`, `graph`, and `adjacent2vertex` fields. The reason for this is that they represent information that can be obtained entirely from the `adjacent` field, and so having to update them and store them separately leads to performance and memory issues. Before getting to the list of changes, I also want to emphasise that, as with almost all other structs in this package, the API is *not* to work with the fields directly, e.g. `tri.adjacent`, but to work with the associated accessor functions like `get_adjacent`. 
 
+In addition to these changes, spatial sorting has now been implemented and is used, by default, to define the insertion order into the triangulation. See the documentation for the `insertion_order` argument in `triangulate` for more information.
+
 Now onto the changes. To get around the performance and memory issues mentioned above:
 
 - `triangles`: **While this field still exists, it is now implemented as a `Triangles` type that basically just wraps an `Adjacent` map**. There should be no differences in the public API for working with `triangles`, but the internal implementation is now much more efficient. Also note that, obviously, modifying the `triangles` field directly will also modify the `adjacent` field. With this change, it is no longer possible to provide custom types for triangle(s), and so **the `TriangleType` and `TrianglesType` keyword arguments are no longer allowed in `triangulate` and related functions. All triangles are now assumed to be of type `NTuple{3, I}`, and collections of triangles are now assumed to be of type `Triangles`**. In addition, **the `Triangles` type is a subtype of `AbstractSet`.** Finally, **all triangles returned from this iterator are in canonical form, i.e. their smallest vertex is last**. If you do want to get the set of triangles as a `Set` instead of a `Triangles` type, use `concretize_triangles`.
@@ -37,6 +39,14 @@ Some other fixes:
 
 - The docstring of `construct_positively_oriented_triangle` was fixed; it previously had the wrong name in the signature (`construct_triangle`).
 
+Some new exports:
+
+- `hilbert_sort`: This is a new function for performing a Hilbert sort. It is used internally for spatial sorting, but is also exported for users to use if they want to sort points in a Hilbert curve order.
+- `hilbert_sort_rounds`: Similar to `hilbert_sort`, except points are sorted within-rounds defined by `assign_rounds`, for the purpose of defining a biased randomised insertion order for a triangulation. 
+
+Some new public functions:
+
+- `DelaunayTriangulation.Middle()` and `DelaunayTriangulation.Median()`: Defines the splitting policies to use for `hilbert_sort`. (`Median` splitting is not yet implemented, but it should be eventually.)
 
 ## 1.6.0
 - Define `reverse` for `AbstractParametricCurve`s, making it easier to reverse the orientation of a curve. See [#195](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/195).

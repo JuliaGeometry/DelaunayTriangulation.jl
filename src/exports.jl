@@ -103,4 +103,6 @@ export
     num_neighbours,
     FastKernel,
     AdaptiveKernel,
-    ExactKernel
+    ExactKernel,
+    hilbert_sort,
+    hilbert_sort_rounds

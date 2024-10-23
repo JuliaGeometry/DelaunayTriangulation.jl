@@ -579,3 +579,41 @@ Returns `true` if all points in `points` are two-dimensional. The default defini
 """
 is_planar(points) = all(is_point2, each_point(points))
 
+"""
+    swap_points!(points, i, j) 
+
+Swaps the points at indices `i` and `j` in `points`.
+"""
+function swap_points!(points, i, j)
+    p, q = get_point(points, i, j)
+    set_point!(points, i, q)
+    set_point!(points, j, p)
+    return points
+end
+
+"""
+    PointsWrapper(points) -> PointsWrapper{P, T}
+
+Wraps `points` in a `PointsWrapper` struct, acting as a vector of points.
+"""
+struct PointsWrapper{P,T} <: AbstractVector{NTuple{2,T}}
+    points::P
+    PointsWrapper(points::P) where {P} = new{P,number_type(P)}(points)
+end
+@inline num_points(pw::PointsWrapper) = num_points(unwrap(pw))
+@inline get_point(pw::PointsWrapper, i) = get_point(unwrap(pw), i)
+@inline set_point!(pw::PointsWrapper, i, p) = set_point!(unwrap(pw), i, p)
+@inline each_point_index(pw::PointsWrapper) = each_point_index(unwrap(pw))
+@inline Base.size(pw::PointsWrapper) = (num_points(pw),)
+@inline Base.getindex(pw::PointsWrapper, i::Int) = getxy(get_point(pw, i))
+@inline Base.IndexStyle(::Type{<:PointsWrapper}) = Base.IndexLinear()
+@inline Base.setindex!(pw::PointsWrapper, p, i::Int) = set_point!(pw, i, p)
+@inline Base.axes(pw::PointsWrapper) = (each_point_index(pw),)
+
+"""
+    unwrap(pw)
+
+If `pw` is a `PointsWrapper`, returns the points it wraps. Otherwise, returns `pw`.
+"""
+unwrap(pw::PointsWrapper) = pw.points
+unwrap(pw) = pw
