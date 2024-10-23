@@ -42,7 +42,7 @@ For the keyword arguments below, you may like to review the extended help as som
    Note that, for curve-bounded domains, `skip_points` is ignored when using [`enrich_boundary!`](@ref).
 - `num_sample_rule=default_num_samples`: A function mapping a number of points `n` to a number of samples `m` to use for sampling the initial points during the point location step of the algorithm within [`find_triangle`](@ref).
 - `rng::Random.AbstractRNG=Random.default_rng()`: The random number generator.
-- `insertion_order::Vector=get_insertion_order(points, randomise, skip_points, IntegerType, rng)`: The insertion order to use for inserting points into the triangulation. This is ignored if you are defining a curve-bounded domain.
+- `insertion_order::Vector=get_insertion_order(points, randomise, skip_points, IntegerType, rng)`: The insertion order to use for inserting points into the triangulation. The default implementation uses a biased randomised insertion order; see [`get_insertion_order`](@ref) and [`get_brio`](@ref). This is ignored if you are defining a curve-bounded domain.
 - `recompute_representative_points=true`: Whether to recompute the representative points after the triangulation is computed. This is done using [`compute_representative_points!`](@ref). 
 - `delete_holes=true`: Whether to delete holes after the triangulation is computed. This is done using [`delete_holes!`](@ref).
 - `check_arguments=true`: Whether to check the arguments `points` and `boundary_nodes` are valid. This is done using [`check_args`](@ref).
