@@ -2,7 +2,7 @@
 This implementation is basically a refined version from the implementation
 in https://github.com/JuliaGeometry/DistMesh.jl/blob/master/src/hilbertsort.jl,
 taken with permission from @sjkelly. Some changes have been made to make the algorithm
-easier to understand from the code itself, and median splitting has been implemented. The license for
+easier to understand from the code itself. The license for
 the original code from DistMesh.jl is reprinted below (note that DistMesh.jl's repository has a different license
 than the one for this code itself at https://github.com/JuliaGeometry/DistMesh.jl/blob/4f0a64a44bd807e2aef7bdfdadcf3a33386619ee/src/hilbertsort.jl#L2).
 
