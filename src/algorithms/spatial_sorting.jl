@@ -181,7 +181,6 @@ is not nothing, then `carry` is permuted as `v` is.
 """
 function quickselect!(v, p::F, k; rng=Random.default_rng(), carry=nothing) where {F}
     length(v) == 1 && return only(v) # assumes k == 1 
-    @show v, k
     pivot = rand(rng, v)
     i, j = triseparate!(v, QuickSelectPredicate(p, pivot); carry)
     lows = view(v, firstindex(v):i-1)
