@@ -9,13 +9,13 @@ DocMeta.setdocmeta!(
     recursive = true,
 )
 
-const IS_LIVESERVER = get(ENV, "LIVESERVER_ACTIVE", "false") == "true"
+const IS_LIVESERVER = Base.get(ENV, "LIVESERVER_ACTIVE", "false") == "true"
 if IS_LIVESERVER
     using Revise
     Revise.revise()
 end
-const IS_GITHUB_ACTIONS = get(ENV, "GITHUB_ACTIONS", "false") == "true"
-const IS_CI = get(ENV, "CI", "false") == "true"
+const IS_GITHUB_ACTIONS = Base.get(ENV, "GITHUB_ACTIONS", "false") == "true"
+const IS_CI = Base.get(ENV, "CI", "false") == "true"
 function safe_include(filename)
     mod = @eval module $(gensym()) end
     return Base.include(mod, filename)

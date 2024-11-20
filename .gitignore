@@ -10,3 +10,4 @@ docs/Manifest.toml
 LocalPreferences.toml
 docs/src/applications/cell_simulation.mp4
 TODO.md
+src2/*
