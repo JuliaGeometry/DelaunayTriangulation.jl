@@ -151,7 +151,7 @@ function _get_ray(vorn::VoronoiTessellation, i, ghost_vertex, predicates::Abstra
         m = midpoint(p, q)
     end
     mx, my = getxy(m)
-    if r == m # It's possible for the circumcenter to lie on the edge and exactly at the midpoint (e.g. [(0.0,1.0),(-1.0,2.0),(-2.0,-1.0)]). In this case, just rotate 
+    if check_precision(dist(r, m)) # It's possible for the circumcenter to lie on the edge and exactly at the midpoint (e.g. [(0.0,1.0),(-1.0,2.0),(-2.0,-1.0)]). In this case, just rotate 
         dx, dy = qx - mx, qy - my
         if is_right(point_position_relative_to_line(predicates, p, q, r))
             rotated_dx, rotated_dy = dy, -dx
