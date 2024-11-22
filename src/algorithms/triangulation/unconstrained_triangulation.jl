@@ -47,9 +47,8 @@ function get_initial_triangle(tri::Triangulation, insertion_order, predicates::A
     i, j, k = @view insertion_order[1:3] # insertion_order got converted into a Vector, so indexing is safe 
     initial_triangle = construct_positively_oriented_triangle(tri, i, j, k, predicates)
     i, j, k = triangle_vertices(initial_triangle)
-    p, q, r = get_point(tri, i, j, k)
-    degenerate_cert = triangle_orientation(predicates, p, q, r)
-    if length(insertion_order) > 3 && (is_degenerate(degenerate_cert) || check_precision(triangle_area(p, q, r))) && itr ≤ length(insertion_order) # Do not get stuck in an infinite loop if there are just three points, the three of them being collinear. The itr ≤ length(insertion_order) is needed because, if all the points are collinear, the loop could go on forever 
+    degenerate_cert = triangle_orientation(predicates, tri, i, j, k)
+    if length(insertion_order) > 3 && (is_degenerate(degenerate_cert) || check_precision(triangle_area(tri, (i, j, k)))) && itr ≤ length(insertion_order) # Do not get stuck in an infinite loop if there are just three points, the three of them being collinear. The itr ≤ length(insertion_order) is needed because, if all the points are collinear, the loop could go on forever 
         @static if VERSION ≥ v"1.8.1"
             circshift!(insertion_order, -1)
         else
@@ -151,7 +150,7 @@ The function [`add_point_bowyer_watson_dig_cavities!`](@ref) is the main workhor
 function add_point_bowyer_watson!(tri::Triangulation, new_point, initial_search_point::I, rng::Random.AbstractRNG = Random.default_rng(), predicates::AbstractPredicateKernel = AdaptiveKernel(), update_representative_point = true, store_event_history = Val(false), event_history = nothing, peek::P = Val(false)) where {I, P}
     _new_point = is_true(peek) ? new_point : I(new_point)
     q = get_point(tri, _new_point)
-    V = find_triangle(tri, q; predicates, m = nothing, point_indices = nothing, try_points = nothing, k = initial_search_point, rng)
+    V = find_triangle(tri, q; predicates, m = nothing, point_indices = nothing, try_points = nothing, k = initial_search_point, rng, check_sphere = false)
     if is_weighted(tri)
         cert = point_position_relative_to_circumcircle(predicates, tri, V, _new_point; cache = get_orient3_cache(tri)) # redirects to point_position_relative_to_witness_plane
         is_outside(cert) && return V # If the point is submerged, then we don't add it
