@@ -6,7 +6,6 @@ import ExactPredicates as EP
 import AdaptivePredicates as AP
 import EnumX
 import Random
-import PrecompileTools
 
 abstract type AbstractPredicateKernel end # needs to be defined early for use in data_structures.jl
 const PredicateCacheType = Union{Nothing, <:Tuple}
@@ -19,7 +18,5 @@ include("algorithms.jl")
 include("validation.jl")
 include("exports.jl")
 include("public.jl")
-
-include("precompile.jl")
 
 end
