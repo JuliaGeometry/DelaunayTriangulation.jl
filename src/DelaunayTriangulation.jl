@@ -60,7 +60,6 @@ end
 import ExactPredicates
 import AdaptivePredicates
 import Random
-import PrecompileTools
 
 abstract type AbstractPredicateKernel end
 const PredicateCache = Union{Nothing,<:Tuple}
