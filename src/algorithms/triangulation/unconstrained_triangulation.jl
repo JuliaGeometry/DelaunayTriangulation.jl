@@ -457,8 +457,8 @@ function unconstrained_triangulation!(
     ) where {M}
     initialise_bowyer_watson!(tri, insertion_order, predicates)
     remaining_points = @view insertion_order[(begin + 3):end]
-    for (num_points, new_point) in enumerate(remaining_points)
-        initial_search_point = get_initial_search_point(tri, num_points, new_point, insertion_order, num_sample_rule, rng, try_last_inserted_point)
+    for (npts, new_point) in enumerate(remaining_points)
+        initial_search_point = get_initial_search_point(tri, npts, new_point, insertion_order, num_sample_rule, rng, try_last_inserted_point)
         add_point_bowyer_watson!(tri, new_point, initial_search_point, rng, predicates)
     end
     convex_hull!(tri; predicates, reconstruct = false)
