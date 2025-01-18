@@ -1,12 +1,14 @@
 """
-    check_args(points, boundary_nodes, hierarchy::PolygonHierarchy, boundary_curves = ()) -> Bool 
+    check_args(points, boundary_nodes, hierarchy::PolygonHierarchy, boundary_curves = (); skip_points = Set{Int}()) -> Bool 
 
 Check that the arguments `points` and `boundary_nodes` to [`triangulate`](@ref), and a constructed 
 [`PolygonHierarchy`](@ref) given by `hierarchy`, are valid. In particular, the function checks:
 
 - The dimension of the points. If the points are not 2D, a warning is thrown.
-- The points are all unique. If they are not, a `DuplicatePointsError` is thrown.
+- The points are all unique. If they are not, a warning is thrown and the indices of the duplicates are merged into `skip_points`.
 - There are at least three points. If there are not, an `InsufficientPointsError` is thrown.
+
+If any duplicate points are found, the indices of the duplicates are merged into `skip_points` in-place.
 
 If `boundary_nodes` are provided, meaning [`has_boundary_nodes`](@ref), then the function also checks:
 
@@ -21,9 +23,9 @@ If `boundary_nodes` are provided, meaning [`has_boundary_nodes`](@ref), then the
     Another requirement for [`triangulate`](@ref) is that none of the boundaries intersect in their interior, which also prohibits 
     interior self-intersections. This is NOT checked. Similarly, segments should not intersect in their interior, which is not checked.
 """
-function check_args(points, boundary_nodes, hierarchy, boundary_curves = ())
+function check_args(points, boundary_nodes, hierarchy, boundary_curves = (); skip_points = Set{Int}())
     check_dimension(points)
-    has_unique_points(points)
+    has_unique_points!(skip_points, points)
     has_enough_points(points)
     has_bnd = has_boundary_nodes(boundary_nodes)
     if has_bnd
@@ -33,9 +35,6 @@ function check_args(points, boundary_nodes, hierarchy, boundary_curves = ())
     return true
 end
 
-struct DuplicatePointsError{P} <: Exception
-    points::P
-end
 struct InsufficientPointsError{P} <: Exception
     points::P
 end
@@ -51,22 +50,6 @@ struct InconsistentOrientationError{I} <: Exception
     should_be_positive::Bool
     is_sectioned::Bool
     is_curve_bounded::Bool
-end
-function Base.showerror(io::IO, err::DuplicatePointsError)
-    points = err.points
-    dup_seen = find_duplicate_points(points)
-    println(io, "DuplicatePointsError: There were duplicate points. The following points are duplicated:")
-    n = length(dup_seen)
-    ctr = 1
-    for (p, ivec) in dup_seen
-        if ctr < n
-            println(io, "    ", p, " at indices ", ivec)
-        else
-            print(io, "    ", p, " at indices ", ivec, ".")
-        end
-        ctr += 1
-    end
-    return io
 end
 function Base.showerror(io::IO, err::InsufficientPointsError)
     points = err.points
@@ -116,9 +99,29 @@ function check_dimension(points)
     return valid
 end
 
-function has_unique_points(points)
+function has_unique_points!(skip_points, points)
     all_unique = points_are_unique(points)
-    !all_unique && throw(DuplicatePointsError(points))
+    if !all_unique 
+        dup_seen = find_duplicate_points(points)
+        if WARN_ON_DUPES[]
+            io = IOBuffer()
+            println(io, "There were duplicate points. Only one of each duplicate will be used, and all other duplicates will be skipped. The indices of the duplicates are:")
+        end
+        for (p, ivec) in dup_seen 
+            for j in 2:lastindex(ivec)
+                push!(skip_points, ivec[j])
+            end
+            if WARN_ON_DUPES[]
+                println(io, "  ", p, " at indices ", ivec)
+            end
+        end
+        if WARN_ON_DUPES[]
+            println(io, "To suppress this warning, call `DelaunayTriangulation.toggle_warn_on_dupes!()`.")
+        end
+        if WARN_ON_DUPES[]
+            @warn String(take!(io))
+        end
+    end
     return true
 end
 

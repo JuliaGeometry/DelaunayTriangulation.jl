@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.4 
+
+- An error is no longer thrown for inputs with duplicate points. Instead, a warning is thrown and any duplicates are merged into the `skip_points` keyword argument. With this, `DuplicatePointsError` has been removed. To silence the new warning, use `DelaunayTriangulation.toggle_warn_on_dupes!()`.
+
 ## 1.6.1
 - Fix issue with clipping Voronoi tessellation dual to a single right-angled triangle. See [#207](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/207)
 
