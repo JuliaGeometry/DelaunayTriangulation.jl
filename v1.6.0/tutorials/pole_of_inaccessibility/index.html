@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Pole of Inaccessibility · DelaunayTriangulation.jl</title><meta name="title" content="Pole of Inaccessibility · DelaunayTriangulation.jl"/><meta property="og:title" content="Pole of Inaccessibility · DelaunayTriangulation.jl"/><meta property="twitter:title" content="Pole of Inaccessibility · DelaunayTriangulation.jl"/><meta name="description" content="Documentation for DelaunayTriangulation.jl."/><meta property="og:description" content="Documentation for DelaunayTriangulation.jl."/><meta property="twitter:description" content="Documentation for DelaunayTriangulation.jl."/><meta property="og:url" content="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/tutorials/pole_of_inaccessibility/"/><meta property="twitter:url" content="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/tutorials/pole_of_inaccessibility/"/><link rel="canonical" href="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/tutorials/pole_of_inaccessibility/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">DelaunayTriangulation.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><input class="collapse-toggle" id="menuitem-2" type="checkbox" checked/><label class="tocitem" for="menuitem-2"><span class="docs-label">Tutorials</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../overview/">Overview</a></li><li><a class="tocitem" href="../unconstrained/">Unconstrained Triangulations</a></li><li><input class="collapse-toggle" id="menuitem-2-3" type="checkbox"/><label class="tocitem" for="menuitem-2-3"><span class="docs-label">Constrained Triangulations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../constrained_edges/">Constrained Edges</a></li><li><a class="tocitem" href="../constrained_outer_boundary/">Outer Boundary</a></li><li><a class="tocitem" href="../constrained_outer_boundary_segmented/">Segmented Outer Boundary</a></li><li><a class="tocitem" href="../constrained_multiply_connected/">Domain with Interior Holes</a></li><li><a class="tocitem" href="../constrained_interior_within_interiors/">Domain with Interior Holes inside Interior Holes</a></li><li><a class="tocitem" href="../constrained_multipolygon/">Disjoint Domains</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-2-4" type="checkbox"/><label class="tocitem" for="menuitem-2-4"><span class="docs-label">Triangulation Operations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../operations_vertex_insertion_deletion/">Vertex Insertion and Deletion</a></li><li><a class="tocitem" href="../operations_segment_insertion/">Edge Insertion</a></li><li><a class="tocitem" href="../operations_ghost_triangles/">Adding or Clearing Ghost Triangles</a></li><li><a class="tocitem" href="../operations_flip_edge/">Edge Flipping</a></li><li><a class="tocitem" href="../operations_legalise_edge/">Legalising an Edge</a></li><li><a class="tocitem" href="../operations_split_edge/">Edge Splitting</a></li><li><a class="tocitem" href="../operations_split_triangle/">Triangle Splitting</a></li><li><a class="tocitem" href="../operations_convex_hull_locking/">Locking and Unlocking the Convex Hull</a></li></ul></li><li><a class="tocitem" href="../refinement/">Mesh Refinement</a></li><li><a class="tocitem" href="../lattice/">Triangulating Rectangular Regions</a></li><li><a class="tocitem" href="../convex/">Triangulating Convex Polygons</a></li><li><a class="tocitem" href="../curve_bounded/">Triangulating Curve-Bounded Domains</a></li><li><a class="tocitem" href="../weighted/">Weighted Triangulations</a></li><li><a class="tocitem" href="../voronoi/">Voronoi Tessellations</a></li><li><input class="collapse-toggle" id="menuitem-2-11" type="checkbox"/><label class="tocitem" for="menuitem-2-11"><span class="docs-label">Clipped Voronoi Tessellations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../clipped/">Clipping to the Convex Hull</a></li><li><a class="tocitem" href="../clipped_rectangle/">Clipping to a Rectangle</a></li><li><a class="tocitem" href="../clipped_polygon/">Clipping to a Generic Convex Polygon</a></li></ul></li><li><a class="tocitem" href="../centroidal/">Centroidal Voronoi Tessellations</a></li><li><a class="tocitem" href="../power/">Power Diagrams</a></li><li><a class="tocitem" href="../point_location/">Point Location</a></li><li><a class="tocitem" href="../nearest/">Nearest Neighbour Queries</a></li><li><a class="tocitem" href="../convex_hull/">Convex Hulls</a></li><li class="is-active"><a class="tocitem" href>Pole of Inaccessibility</a><ul class="internal"><li><a class="tocitem" href="#Just-the-code"><span>Just the code</span></a></li></ul></li><li><a class="tocitem" href="../point_in_polygon/">Point-in-Polygon Testing</a></li><li><a class="tocitem" href="../custom_primitive/">Using Custom Structs for Primitives and Boundaries</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3" type="checkbox"/><label class="tocitem" for="menuitem-3"><span class="docs-label">Manual</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/overview/">Overview</a></li><li><a class="tocitem" href="../../manual/primitives/">Representing Primitives</a></li><li><a class="tocitem" href="../../manual/boundaries/">Representing Boundaries</a></li><li><a class="tocitem" href="../../manual/ghost_triangles/">Ghost (Negative) Vertices</a></li><li><a class="tocitem" href="../../manual/curve_bounded/">Defining Curve-Bounded Domains</a></li><li><a class="tocitem" href="../../manual/predicates/">Geometrical Predicates</a></li><li><a class="tocitem" href="../../manual/triangulation_output/">Triangulation Output</a></li><li><a class="tocitem" href="../../manual/voronoi_output/">Voronoi Tessellation Output</a></li><li><a class="tocitem" href="../../manual/predicate_kernels/">Predicate Kernels</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">API Reference</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../api/overview/">Section Overview</a></li><li><a class="tocitem" href="../../api/data_structures/">Data Structures</a></li><li><a class="tocitem" href="../../api/triangulation/">Triangulations</a></li><li><a class="tocitem" href="../../api/operations/">Triangulation Operations</a></li><li><a class="tocitem" href="../../api/voronoi/">Voronoi Tessellations</a></li><li><a class="tocitem" href="../../api/convex_hull/">Convex Hull</a></li><li><a class="tocitem" href="../../api/curves/">Curves</a></li><li><a class="tocitem" href="../../api/iterators/">Iterators</a></li><li><a class="tocitem" href="../../api/point_location/">Point Location</a></li><li><a class="tocitem" href="../../api/predicates/">Predicates</a></li><li><a class="tocitem" href="../../api/statistics/">Triangulation Statistics</a></li><li><a class="tocitem" href="../../api/primitives/">Primitive Interfaces</a></li><li><a class="tocitem" href="../../api/other/">Other</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">Extended Reference</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../extended/overview/">Overview</a></li><li><a class="tocitem" href="../../extended/data_structures/">Data Structures</a></li><li><a class="tocitem" href="../../extended/algorithms/">Algorithm Internals</a></li><li><a class="tocitem" href="../../extended/utils/">Utility Functions</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">Mathematical Details</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../math/overview/">Overview</a></li><li><a class="tocitem" href="../../math/delaunay/">Delaunay Triangulations</a></li><li><a class="tocitem" href="../../math/constrained/">Constrained Delaunay Triangulations</a></li><li><a class="tocitem" href="../../math/convex/">Triangulating Convex Polygons</a></li><li><a class="tocitem" href="../../math/refinement/">Mesh Refinement</a></li><li><a class="tocitem" href="../../math/curves/">Curves</a></li><li><a class="tocitem" href="../../math/curve_bounded/">Triangulating Curve-Bounded Domains</a></li><li><a class="tocitem" href="../../math/weighted/">Weighted Delaunay Triangulations</a></li><li><a class="tocitem" href="../../math/voronoi/">Voronoi Tessellations</a></li><li><a class="tocitem" href="../../math/clipped/">Clipped Voronoi Tessellations</a></li><li><a class="tocitem" href="../../math/centroidal/">Centroidal Voronoi Tessellations</a></li><li><a class="tocitem" href="../../math/power/">Power Diagrams</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox"/><label class="tocitem" for="menuitem-7"><span class="docs-label">Example Applications</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../applications/overview/">Overview</a></li><li><a class="tocitem" href="../../applications/interpolation/">Interpolation</a></li><li><a class="tocitem" href="../../applications/cell_simulations/">Cellular Biology</a></li><li><a class="tocitem" href="../../applications/pde_discretisation/">Solving PDEs</a></li></ul></li><li><a class="tocitem" href="../../terminology/">Terminology</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>Pole of Inaccessibility</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Pole of Inaccessibility</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/pole_of_inaccessibility.jl" title="View source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Pole-of-Inaccessibility"><a class="docs-heading-anchor" href="#Pole-of-Inaccessibility">Pole of Inaccessibility</a><a id="Pole-of-Inaccessibility-1"></a><a class="docs-heading-anchor-permalink" href="#Pole-of-Inaccessibility" title="Permalink"></a></h1><p>In this tutorial, we demonstrate how we can compute the pole of inaccessibility of a given polygon, namely the point inside the polygon that is furthest from the boundary, using the algorithm described in <a href="https://blog.mapbox.com/a-new-algorithm-for-finding-a-visual-center-of-a-polygon-7c77e6492fbc">this blogpost</a> based on recursively subdividing the polygon using quadtree partitioning. The polygons should be defined the same way the boundary of a triangulation is defined; see the constrained triangulation tutorials. In particular, the algorithm we use works for polygons that may possibly have interior holes, or even nested holes, as well as for multipolygons. We give a simple example. First, let us define our polygon.</p><pre><code class="language-julia hljs">using DelaunayTriangulation
+using CairoMakie
+
+points = [
+    0.0 8.0
+    2.0 5.0
+    3.0 7.0
+    1.81907 8.13422
+    3.22963 8.865
+    4.24931 7.74335
+    4.50423 5.87393
+    3.67149 4.3784
+    2.73678 2.62795
+    5.50691 1.38734
+    8.43 2.74691
+    9.7046 5.53404
+    8.56595 7.79433
+    6.71353 9.03494
+    4.13034 9.66375
+    2.75378 10.3775
+    1.0883 10.4965
+    -1.138 9.83369
+    -2.25965 8.45712
+    -2.78649 5.94191
+    -1.39292 3.64763
+    0.323538 4.97322
+    -0.900078 6.6217
+    0.98633 9.68074
+    0.153591 9.54478
+    0.272554 8.66106
+    2.90673 8.18521
+    2.12497 9.42582
+    7.27436 2.7979
+    3.0 4.0
+    5.33697 1.88019
+]&#39;
+outer_boundary = [
+    # split into segments for demonstration purposes
+    [1, 4, 3, 2],
+    [2, 9, 10, 11, 8, 7, 12],
+    [12, 6, 13, 5, 14, 15, 16, 17, 16],
+    [16, 17, 18, 19, 20, 21, 22, 23, 1],
+]
+inner_1 = [
+    [26, 25, 24], [24, 28, 27, 26],
+]
+inner_2 = [
+    [29, 30, 31, 29],
+]
+boundary_nodes = [outer_boundary, inner_1, inner_2]
+fig = Figure()
+ax = Axis(fig[1, 1])
+for i in eachindex(boundary_nodes)
+    lines!(ax, points[:, reduce(vcat, boundary_nodes[i])], color = :red)
+end
+fig</code></pre><img src="fd727423.png" alt="Example block output"/><p>To now find the pole of inaccessibility, use <a href="../../api/other/#DelaunayTriangulation.pole_of_inaccessibility"><code>DelaunayTriangulation.pole_of_inaccessibility</code></a>:</p><pre><code class="language-julia hljs">pole = DelaunayTriangulation.pole_of_inaccessibility(points, boundary_nodes)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(-1.0785225000000003, 5.3725974999999995)</code></pre><pre><code class="language-julia hljs">scatter!(ax, pole, color = :blue, markersize = 16)
+fig</code></pre><img src="e21a0ff4.png" alt="Example block output"/><p>This shows that the point inside the red region that is furthest from the boundary is the blue point shown.</p><p>We note that triangulations also store the poles of inaccessibility for each boundary, as these are used to define the orientation of a ghost edge. Here is an example. First, we get the triangulation.</p><pre><code class="language-julia hljs">θ = LinRange(0, 2π, 20) |&gt; collect
+θ[end] = 0 # need to make sure that 2π gives the exact same coordinates as 0
+xy = Vector{Vector{Vector{NTuple{2, Float64}}}}()
+cx = 0.0
+for i in 1:2
+    global cx
+    # Make the exterior circle
+    push!(xy, [[(cx + cos(θ), sin(θ)) for θ in θ]])
+    # Now the interior circle - clockwise
+    push!(xy, [[(cx + 0.5cos(θ), 0.5sin(θ)) for θ in reverse(θ)]])
+    cx += 3.0
+end
+boundary_nodes, points = convert_boundary_points_to_indices(xy)
+tri = triangulate(points; boundary_nodes = boundary_nodes)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Delaunay Triangulation.
+   Number of vertices: 76
+   Number of triangles: 76
+   Number of edges: 152
+   Has boundary nodes: true
+   Has ghost triangles: true
+   Curve-bounded: false
+   Weighted: false
+   Constrained: true</code></pre><p>To see the poles, called representative points, we use</p><pre><code class="language-julia hljs">DelaunayTriangulation.get_representative_point_list(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{Int64, DelaunayTriangulation.RepresentativeCoordinates{Int64, Float64}} with 4 entries:
+  4 =&gt; RepresentativeCoordinates{Int64, Float64}(3.0, -4.79892e-17, 0)
+  2 =&gt; RepresentativeCoordinates{Int64, Float64}(-1.7996e-17, -2.02455e-17, 0)
+  3 =&gt; RepresentativeCoordinates{Int64, Float64}(3.0, -4.49899e-17, 0)
+  1 =&gt; RepresentativeCoordinates{Int64, Float64}(0.50341, -0.499994, 0)</code></pre><p>The keys of the <code>Dict</code> refer to the curve index, and the values contain the coordinates.</p><pre><code class="language-julia hljs">fig, ax, sc = triplot(tri, show_ghost_edges = true)
+colors = (:red, :blue, :darkgreen, :purple)
+for i in eachindex(boundary_nodes)
+    lines!(ax, points[reduce(vcat, boundary_nodes[i])], color = colors[i], linewidth = 6)
+    coords = DelaunayTriangulation.get_representative_point_coordinates(tri, i)
+    scatter!(ax, coords, color = colors[i], markersize = 16)
+end
+fig</code></pre><img src="956f91a6.png" alt="Example block output"/><p>Note that the green and purple boundaries have the same pole of inaccessibility. The first curve, the red curve, is the only one that has the pole of inaccessibility computed with respect to all other boundaries. You can also see that indeed the ghost edges are all oriented relative to the representative points.</p><h2 id="Just-the-code"><a class="docs-heading-anchor" href="#Just-the-code">Just the code</a><a id="Just-the-code-1"></a><a class="docs-heading-anchor-permalink" href="#Just-the-code" title="Permalink"></a></h2><p>An uncommented version of this example is given below. You can view the source code for this file <a href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/pole_of_inaccessibility.jl">here</a>.</p><pre><code class="language-julia hljs">using DelaunayTriangulation
+using CairoMakie
+
+points = [
+    0.0 8.0
+    2.0 5.0
+    3.0 7.0
+    1.81907 8.13422
+    3.22963 8.865
+    4.24931 7.74335
+    4.50423 5.87393
+    3.67149 4.3784
+    2.73678 2.62795
+    5.50691 1.38734
+    8.43 2.74691
+    9.7046 5.53404
+    8.56595 7.79433
+    6.71353 9.03494
+    4.13034 9.66375
+    2.75378 10.3775
+    1.0883 10.4965
+    -1.138 9.83369
+    -2.25965 8.45712
+    -2.78649 5.94191
+    -1.39292 3.64763
+    0.323538 4.97322
+    -0.900078 6.6217
+    0.98633 9.68074
+    0.153591 9.54478
+    0.272554 8.66106
+    2.90673 8.18521
+    2.12497 9.42582
+    7.27436 2.7979
+    3.0 4.0
+    5.33697 1.88019
+]&#39;
+outer_boundary = [
+    # split into segments for demonstration purposes
+    [1, 4, 3, 2],
+    [2, 9, 10, 11, 8, 7, 12],
+    [12, 6, 13, 5, 14, 15, 16, 17, 16],
+    [16, 17, 18, 19, 20, 21, 22, 23, 1],
+]
+inner_1 = [
+    [26, 25, 24], [24, 28, 27, 26],
+]
+inner_2 = [
+    [29, 30, 31, 29],
+]
+boundary_nodes = [outer_boundary, inner_1, inner_2]
+fig = Figure()
+ax = Axis(fig[1, 1])
+for i in eachindex(boundary_nodes)
+    lines!(ax, points[:, reduce(vcat, boundary_nodes[i])], color = :red)
+end
+fig
+
+pole = DelaunayTriangulation.pole_of_inaccessibility(points, boundary_nodes)
+
+scatter!(ax, pole, color = :blue, markersize = 16)
+fig
+
+θ = LinRange(0, 2π, 20) |&gt; collect
+θ[end] = 0 # need to make sure that 2π gives the exact same coordinates as 0
+xy = Vector{Vector{Vector{NTuple{2, Float64}}}}()
+cx = 0.0
+for i in 1:2
+    global cx
+    # Make the exterior circle
+    push!(xy, [[(cx + cos(θ), sin(θ)) for θ in θ]])
+    # Now the interior circle - clockwise
+    push!(xy, [[(cx + 0.5cos(θ), 0.5sin(θ)) for θ in reverse(θ)]])
+    cx += 3.0
+end
+boundary_nodes, points = convert_boundary_points_to_indices(xy)
+tri = triangulate(points; boundary_nodes = boundary_nodes)
+
+DelaunayTriangulation.get_representative_point_list(tri)
+
+fig, ax, sc = triplot(tri, show_ghost_edges = true)
+colors = (:red, :blue, :darkgreen, :purple)
+for i in eachindex(boundary_nodes)
+    lines!(ax, points[reduce(vcat, boundary_nodes[i])], color = colors[i], linewidth = 6)
+    coords = DelaunayTriangulation.get_representative_point_coordinates(tri, i)
+    scatter!(ax, coords, color = colors[i], markersize = 16)
+end
+fig</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../convex_hull/">« Convex Hulls</a><a class="docs-footer-nextpage" href="../point_in_polygon/">Point-in-Polygon Testing »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Wednesday 2 October 2024 04:41">Wednesday 2 October 2024</span>. Using Julia version 1.10.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
