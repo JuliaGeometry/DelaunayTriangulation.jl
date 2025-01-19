@@ -302,7 +302,6 @@ end
         f
     end
 
-
     @test_reference "Voronoiplot with some custom bounding boxes may not contain all data sites.png" begin
         reseed!()
         points = [(-3.0, 7.0), (1.0, 6.0), (-1.0, 3.0), (-2.0, 4.0), (3.0, -2.0), (5.0, 5.0), (-4.0, -3.0), (3.0, 8.0)]

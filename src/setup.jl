@@ -48,6 +48,15 @@ By default, this warning is enabled.
 """
 toggle_inf_warn!() = (INF_WARN[] = !INF_WARN[])
 
+const WARN_ON_DUPES = Ref(true)
+"""
+    toggle_warn_on_dupes!()
+
+Toggle the warning for duplicate points in the input data.
+By default, this warning is enabled.
+"""
+toggle_warn_on_dupes!() = (WARN_ON_DUPES[] = !WARN_ON_DUPES[])
+
 @eval macro $(Symbol("const"))(field)
     if VERSION >= v"1.8.0-DEV.1148"
         return Expr(:const, esc(field))

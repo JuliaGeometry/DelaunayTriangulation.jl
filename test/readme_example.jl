@@ -93,7 +93,7 @@ ax = Axis(fig[2, 3]; title = "Curve-Bounded", wh...);            triplot!(ax, tr
 ax = Axis(fig[2, 4]; title = "Disjoint Curve-Bounded", wh...);   triplot!(ax, tri8)
 ax = Axis(fig[3, 1]; title = "Weighted", wh...);                 triplot!(ax, tri9)
 ax = Axis(fig[3, 2]; title = "Power Diagram", wh...);            voronoiplot!(ax, vorn10)
-ax = Axis(fig[3, 3]; title = "Clipped Voronoi", wh...);          voronoiplot!(ax, vorn11)
+ax = Axis(fig[3, 3]; title = "Clipped Voronoi", wh...);          voronoiplot!(ax, vorn11, color=:white, strokewidth = 4)
 
 readme_img = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "readme.png")
 @test_reference readme_img fig by = psnr_equality(10)
