@@ -14,8 +14,6 @@ jobs:
   test:
     name: Julia ${{ matrix.version }} - ${{ matrix.arch }} - ${{ github.event_name }} - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    env:
-      JULIA_NUM_THREADS: ${{ matrix.julia-threads }}
     strategy:
       fail-fast: false
       matrix:
