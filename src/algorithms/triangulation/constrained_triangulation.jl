@@ -752,7 +752,7 @@ end
 
 Given segments in `collinear_segments` that are collinear with an edge `e`, updates `tri` so that this edge `e` is instead 
 split so that it is instead represented by `collinear_segments`. These new segments will be placed into the triangulation using 
-[`add_segment!`](@ref).
+[`add_segment!`](@ref). Returns !isempty(collinear_segments).
 
 The `predicates::AbstractPredicateKernel` argument defines the method for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
