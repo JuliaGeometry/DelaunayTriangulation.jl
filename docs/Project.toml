@@ -34,3 +34,6 @@ SimpleGraphs = "0.8"
 StableRNGs = "1.0"
 StatsBase = "0.34"
 Test = "1.11"
+
+[sources]
+DelaunayTriangulation = { path = ".." }

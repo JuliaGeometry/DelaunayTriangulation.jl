@@ -759,3 +759,25 @@ end
 @inline function _get_skeleton_contiguous(boundary_nodes, ::Type{I}) where {I}
     return I[]
 end
+
+"""
+    set_boundary_node!(boundary_nodes, pos, node)
+
+Given a set of `boundary_nodes`, sets the boundary node at position `pos` to `node`.
+Here, `pos[1]` is such that `get_boundary_nodes(boundary_nodes, pos[1])`
+is the section that the node will be set onto, and `pos[2]` gives the position
+of the array to set `node` into. In particular, 
+
+    set_boundary_node!(boundary_nodes, pos, node)
+
+is the same as
+
+    get_boundary_nodes(boundary_nodes, pos[1])[pos[2]] = node
+
+assuming `setindex!` is defined for the type of `boundary_nodes`.
+"""
+function set_boundary_node!(boundary_nodes, pos, node)
+    nodes = get_boundary_nodes(boundary_nodes, pos[1])
+    nodes[pos[2]] = node
+    return boundary_nodes
+end

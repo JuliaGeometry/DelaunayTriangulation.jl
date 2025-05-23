@@ -1,5 +1,5 @@
 """
-    check_args(points, boundary_nodes, hierarchy::PolygonHierarchy, boundary_curves = (); skip_points = Set{Int}()) -> Bool 
+    check_args(points, boundary_nodes, segments, hierarchy::PolygonHierarchy, boundary_curves = (); skip_points = Set{Int}()) -> Bool 
 
 Check that the arguments `points` and `boundary_nodes` to [`triangulate`](@ref), and a constructed 
 [`PolygonHierarchy`](@ref) given by `hierarchy`, are valid. In particular, the function checks:
@@ -18,17 +18,24 @@ If `boundary_nodes` are provided, meaning [`has_boundary_nodes`](@ref), then the
    so that e.g. the exterior boundary curves are all counter-clockwise (relative to just themselves), the next exterior-most curves inside those 
    exteriors are all clockwise (again, relative to just themselves), and so on.
 
+The arguments `boundary_nodes` and `segments` are also used when checking for duplicate points. Any duplicate points that are also referenced in `boundary_nodes`
+and `segments` are updated so the vertex refers to the first instance of the duplicate point. This is done in-place, so that the original `boundary_nodes` and `segments` are modified.
+
+!!! danger "Mutation"
+
+    If indeed duplicate points are found, the function modifies the `boundary_nodes` and `segments` in-place. This means that the original
+    `boundary_nodes` and `segments` are modified, and the original points are not modified. The indices of the duplicates are merged into `skip_points` in-place.
+
 !!! danger "Intersecting boundaries"
 
     Another requirement for [`triangulate`](@ref) is that none of the boundaries intersect in their interior, which also prohibits 
     interior self-intersections. This is NOT checked. Similarly, segments should not intersect in their interior, which is not checked.
 """
-function check_args(points, boundary_nodes, hierarchy, boundary_curves = (); skip_points = Set{Int}())
+function check_args(points, boundary_nodes, segments, hierarchy, boundary_curves=(); skip_points=Set{Int}())
     check_dimension(points)
-    has_unique_points!(skip_points, points)
+    has_unique_points!(skip_points, points, boundary_nodes, segments)
     has_enough_points(points)
-    has_bnd = has_boundary_nodes(boundary_nodes)
-    if has_bnd
+    if has_boundary_nodes(boundary_nodes)
         has_consistent_connections(boundary_nodes)
         has_consistent_orientations(hierarchy, boundary_nodes, is_curve_bounded(boundary_curves))
     end
@@ -38,7 +45,7 @@ end
 struct InsufficientPointsError{P} <: Exception
     points::P
 end
-struct InconsistentConnectionError{I, J} <: Exception
+struct InconsistentConnectionError{I,J} <: Exception
     curve_index::I
     segment_index₁::I
     segment_index₂::I
@@ -81,8 +88,8 @@ function Base.showerror(io::IO, err::InconsistentOrientationError)
         # by a combination of multiple AbstractParametricCurves and possibly a PiecewiseLinear part. Thus, the above advice
         # might not be wrong.
         str2 = "\nIf this curve is defined by an AbstractParametricCurve, you may instead need to reverse the order of the control points defining" *
-            " the sections of the curve; the `positive` keyword may also be of interest for CircularArcs and EllipticalArcs. Alternatively, for individual" *
-            " AbstractParametricCurves, note that `reverse` can be used to reverse the orientation of the curve directly instead of the control points."
+               " the sections of the curve; the `positive` keyword may also be of interest for CircularArcs and EllipticalArcs. Alternatively, for individual" *
+               " AbstractParametricCurves, note that `reverse` can be used to reverse the orientation of the curve directly instead of the control points."
         str *= str2
     end
     sign = err.should_be_positive ? "positive" : "negative"
@@ -92,27 +99,81 @@ function Base.showerror(io::IO, err::InconsistentOrientationError)
 end
 
 function check_dimension(points)
-    valid = is_planar(points) 
-    if !valid 
-        @warn "The provided points are not in the plane. All but the first two coordinates of each point will be ignored." maxlog=1
+    valid = is_planar(points)
+    if !valid
+        @warn "The provided points are not in the plane. All but the first two coordinates of each point will be ignored." maxlog = 1
     end
     return valid
 end
 
-function has_unique_points!(skip_points, points)
+function has_unique_points!(skip_points, points, boundary_nodes, segments)
     all_unique = points_are_unique(points)
-    if !all_unique 
+    if !all_unique
         dup_seen = find_duplicate_points(points)
         if WARN_ON_DUPES[]
             io = IOBuffer()
-            println(io, "There were duplicate points. Only one of each duplicate will be used, and all other duplicates will be skipped. The indices of the duplicates are:")
+            println(io, "There were duplicate points. Only one of each duplicate will be used (the first vertex encountered in the order that follows), and all other duplicates will be skipped. The indices of the duplicates are:")
         end
-        for (p, ivec) in dup_seen 
-            for j in 2:lastindex(ivec)
+        for (p, ivec) in dup_seen
+            # Skip all but the first duplicate point for each point.
+            for j in (firstindex(ivec)+1):lastindex(ivec)
                 push!(skip_points, ivec[j])
             end
             if WARN_ON_DUPES[]
                 println(io, "  ", p, " at indices ", ivec)
+            end
+            # We need to be careful about the duplicate points in the boundary nodes and segments. 
+            # https://github.com/JuliaGeometry/DelaunayTriangulation.jl/issues/220
+            ref = first(ivec)
+            if !(isnothing(segments) || num_edges(segments) == 0)
+                # We can't delete the segments while iterating, so we need to build a list 
+                E = edge_type(segments)
+                segment_map = Dict{E,E}()
+                for e in each_edge(segments)
+                    u, v = edge_vertices(e)
+                    if u ∈ ivec
+                        segment_map[e] = construct_edge(E, ref, v)
+                    elseif v ∈ ivec
+                        segment_map[e] = construct_edge(E, u, ref)
+                    end
+                end
+                for (e, new_e) in segment_map
+                    delete_edge!(segments, e)
+                    add_edge!(segments, new_e)
+                end
+            end 
+            if has_boundary_nodes(boundary_nodes)
+                if has_multiple_curves(boundary_nodes)
+                    for k in 1:num_curves(boundary_nodes)
+                        curve = get_boundary_nodes(boundary_nodes, k)
+                        for j in 1:num_sections(curve)
+                            segment = get_boundary_nodes(curve, j)
+                            for i in 1:(num_boundary_edges(segment)+1)
+                                v = get_boundary_nodes(segment, i)
+                                if v ∈ ivec
+                                    set_boundary_node!(boundary_nodes, ((k, j), i), ref)
+                                end
+                            end
+                        end
+                    end
+                elseif has_multiple_sections(boundary_nodes)
+                    for j in 1:num_sections(boundary_nodes)
+                        segment = get_boundary_nodes(boundary_nodes, j)
+                        for i in 1:(num_boundary_edges(segment)+1)
+                            v = get_boundary_nodes(segment, i)
+                            if v ∈ ivec
+                                set_boundary_node!(boundary_nodes, (j, i), ref)
+                            end
+                        end
+                    end
+                else
+                    for i in 1:(num_boundary_edges(boundary_nodes)+1)
+                        v = get_boundary_nodes(boundary_nodes, i)
+                        if v ∈ ivec
+                            set_boundary_node!(boundary_nodes, (boundary_nodes, i), ref)
+                        end
+                    end
+                end
             end
         end
         if WARN_ON_DUPES[]
@@ -125,7 +186,7 @@ function has_unique_points!(skip_points, points)
     return true
 end
 
-function has_enough_points(points)
+function has_enough_points(points) 
     has_enough = num_points(points) ≥ 3
     !has_enough && throw(InsufficientPointsError(points))
     return true
@@ -171,7 +232,7 @@ function has_consistent_connections_multiple_curves(boundary_nodes)
     end
     return true
 end
-function has_consistent_connections_multiple_sections(boundary_nodes, curve_index = 0)
+function has_consistent_connections_multiple_sections(boundary_nodes, curve_index=0)
     ns = num_sections(boundary_nodes)
     segmentⱼ₋₁ = get_boundary_nodes(boundary_nodes, 1)
     nn = num_boundary_edges(segmentⱼ₋₁) + 1

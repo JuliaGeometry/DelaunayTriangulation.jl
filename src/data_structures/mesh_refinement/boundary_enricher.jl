@@ -388,13 +388,13 @@ end
 Base.copy(enricher::BoundaryEnricher) = enrcopy(enricher)
 enrcopy(::Nothing; kwargs...) = nothing
 
-function enrcopy(enricher::BoundaryEnricher; 
-        points = copy(get_points(enricher)), 
-        boundary_nodes  = copy(get_boundary_nodes(enricher)),
-        segments = copy(get_segments(enricher)),
-        boundary_curves = _plcopy.(get_boundary_curves(enricher); points),
-        polygon_hierarchy = copy(get_polygon_hierarchy(enricher)),
-        boundary_edge_map = copy(get_boundary_edge_map(enricher))) 
+function enrcopy(enricher::BoundaryEnricher;
+    points=copy(get_points(enricher)),
+    boundary_nodes=copy(get_boundary_nodes(enricher)),
+    segments=copy(get_segments(enricher)),
+    boundary_curves=_plcopy.(get_boundary_curves(enricher); points),
+    polygon_hierarchy=copy(get_polygon_hierarchy(enricher)),
+    boundary_edge_map=copy(get_boundary_edge_map(enricher)))
     parent_map = copy(get_parent_map(enricher))
     curve_index_map = copy(get_curve_index_map(enricher))
     spatial_tree = copy(get_spatial_tree(enricher))
@@ -454,7 +454,8 @@ function check_args(enricher::BoundaryEnricher)
     boundary_nodes = get_boundary_nodes(enricher)
     hierarchy = get_polygon_hierarchy(enricher)
     boundary_curves = get_boundary_curves(enricher)
-    return check_args(points, boundary_nodes, hierarchy, boundary_curves)
+    segments = get_segments(enricher)
+    return check_args(points, boundary_nodes, segments, hierarchy, boundary_curves)
 end
 
 """
