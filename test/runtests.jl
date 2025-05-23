@@ -5,8 +5,9 @@ using Test
 using Random
 
 const ALL_TEST_SCRIPTS = Set{String}()
-const NON_TEST_SCRIPTS = Set{String}(["runtests.jl"])
-using HelperFunctions
+const NON_TEST_SCRIPTS = Set{String}(["helper_functions.jl", "runtests.jl"])
+include("helper_functions.jl")
+using .HelperFunctions
 
 ct() = Dates.format(now(), "HH:MM:SS")
 function safe_include(filename; name=filename, push=true, verbose=true) # Workaround for not being able to interpolate into SafeTestset test names

@@ -10,6 +10,7 @@ using OrderedCollections
 using Distributions
 using InteractiveUtils
 using Test
+
 using DelaunayTriangulation
 import SpatialIndexing as SI
 getxy((0.0, 0.0)) # avoid shadow
