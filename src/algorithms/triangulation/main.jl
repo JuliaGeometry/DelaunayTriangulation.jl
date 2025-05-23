@@ -86,9 +86,10 @@ Here are some warnings to consider for some of the arguments.
 
 !!! warning "Mutation"
 
-    The `segments` may get mutated in two ways: (1) Segments may get rotated so that `(i, j)` becomes `(j, i)`. (2) If there are
+    The `segments` may get mutated in three ways: (1) Segments may get rotated so that `(i, j)` becomes `(j, i)`. (2) If there are
     segments that are collinear with other segments, then they may get split into chain of non-overlapping connecting segments (also see below). For 
-    curve-bounded domains, segments are also split so that no subsegment's diametral circle contains any other point.
+    curve-bounded domains, segments are also split so that no subsegment's diametral circle contains any other point. (3) If there are 
+    duplicate points in `points` that are also referenced in `segments`, then the duplicated vertex will be changed to the first occurrence of the vertex in `points`.
 
 !!! warning "Intersecting segments"
 
@@ -98,6 +99,10 @@ Here are some warnings to consider for some of the arguments.
     from [`enrich_boundary!`](@ref).
 
 - `boundary_nodes`
+
+!!! warning "Mutation"
+
+    If duplicate points are found, and they are also referenced in `boundary_nodes`, then the duplicated vertex will be changed to the first occurrence of the vertex in `points`.
 
 !!! warning "Points outside of boundary curves"
 
@@ -151,9 +156,9 @@ function triangulate(
     if isnothing(full_polygon_hierarchy)
         full_polygon_hierarchy = construct_polygon_hierarchy(points, boundary_nodes; IntegerType)
     end
-    skip_points_set = Set{IntegerType}(skip_points)
+    skip_points_set = Set{IntegerType}(skip_points) 
     n = length(skip_points_set)
-    check_arguments && check_args(points, boundary_nodes, full_polygon_hierarchy, boundary_curves; skip_points = skip_points_set)
+    check_arguments && check_args(points, boundary_nodes, segments, full_polygon_hierarchy, boundary_curves; skip_points = skip_points_set)
     if length(skip_points_set) > n 
         setdiff!(insertion_order, skip_points_set) 
     end

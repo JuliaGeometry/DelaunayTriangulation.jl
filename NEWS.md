@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.6.5
+- (Internal) A function `set_boundary_node!` has been added for setting a specific boundary node to another inside the provided `boundary_nodes`.
+- (Internal) The `HelperFunctions` module in the tests has been reworked into its own package inside `test/HelperFunctions`.
+- (Fix) Currently when checking for duplicate points, any extra points get skipped. However we did not correctly make sure those point's vertices inside `segments` or `boundary_nodes` were replaced with the first instance of the duplicate. This has been fixed. 
+
 ## 1.6.4 
 
 - An error is no longer thrown for inputs with duplicate points. Instead, a warning is thrown and any duplicates are merged into the `skip_points` keyword argument. With this, `DuplicatePointsError` has been removed. To silence the new warning, use `DelaunayTriangulation.toggle_warn_on_dupes!()`.

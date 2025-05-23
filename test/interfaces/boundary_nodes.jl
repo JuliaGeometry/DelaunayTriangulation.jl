@@ -66,7 +66,7 @@ end
     map3 = DT.construct_ghost_vertex_map(bn3)
     idx = DT.𝒢
     @test map1 ==
-        Dict(
+          Dict(
         idx => (1, 1), idx - 1 => (1, 2), idx - 2 => (1, 3), idx - 3 => (1, 4),
         idx - 4 => (2, 1), idx - 5 => (2, 2),
         idx - 6 => (3, 1), idx - 7 => (3, 2),
@@ -157,7 +157,7 @@ end
     end
     cbn = copy(bn)
     _bn_map = DT._bemcopy(bn_map; boundary_nodes=cbn)
-    @test bn_map == _bn_map 
+    @test bn_map == _bn_map
     _bn = first.(values(_bn_map))
     @test all(x -> x === cbn, _bn)
     @test all(x -> !(x === bn), _bn)
@@ -185,7 +185,7 @@ end
     @test _bn_map == bn_map && !(bn_map === _bn_map)
     bn = Int[]
     bn_map = DT.construct_boundary_edge_map(bn)
-    @test bn_map == Dict{Tuple{Int32, Int32}, Tuple{Vector{Int}, Int}}()
+    @test bn_map == Dict{Tuple{Int32,Int32},Tuple{Vector{Int},Int}}()
 end
 
 @testset "insert_boundary_node!" begin
@@ -242,4 +242,47 @@ end
         [[2, 3, 4, 5], [5, 6], [7], [8, 9, 1]],
         [[13, 14, 16, 17], [17, 18, 20], [20]],
     ]
+end
+
+@testset "set_boundary_node!" begin
+    # Single curve
+    bn = [1, 2, 3, 4, 5, 6, 7, 1]
+    DT.set_boundary_node!(bn, (bn, 5), 17)
+    DT.set_boundary_node!(bn, (bn, 1), 13)
+    @test bn == [13, 2, 3, 4, 17, 6, 7, 1]
+
+    # Multiple sections
+    bn = [[1, 2, 3, 4], [4, 5, 6, 7, 8], [8, 9, 10, 1]]
+    DT.set_boundary_node!(bn, (1, 2), 22)
+    DT.set_boundary_node!(bn, (1, 4), 33)
+    DT.set_boundary_node!(bn, (2, 4), 44)
+    DT.set_boundary_node!(bn, (3, 1), 55)
+    @test bn == [[1, 22, 3, 33], [4, 5, 6, 44, 8], [55, 9, 10, 1]]
+
+    # Multiple curves
+    bn = [
+        [[1, 2, 3, 4, 5], [5, 6, 7], [7, 8], [8, 9, 10, 1]],
+        [[13, 14, 15, 16, 17], [17, 18, 19, 20], [20, 13]],
+    ]
+    DT.set_boundary_node!(bn, ((1, 1), 1), 99)
+    DT.set_boundary_node!(bn, ((1, 2), 3), 88)
+    DT.set_boundary_node!(bn, ((1, 3), 2), 77)
+    DT.set_boundary_node!(bn, ((1, 4), 3), 66)
+    DT.set_boundary_node!(bn, ((2, 1), 3), 55)
+    DT.set_boundary_node!(bn, ((2, 2), 3), 44)
+    DT.set_boundary_node!(bn, ((2, 3), 2), 33)
+    @test bn == [
+        [[99, 2, 3, 4, 5], [5, 6, 88], [7, 77], [8, 9, 66, 1]],
+        [[13, 14, 55, 16, 17], [17, 18, 44, 20], [20, 33]],
+    ]
+
+    # Invalid index should throw
+    @test_throws MethodError DT.set_boundary_node!([1, 2, 3], (1, 10), 99)
+    @test_throws BoundsError DT.set_boundary_node!([1, 2, 3], ([1, 2, 3], 4), 99)
+
+    # Aliasing check
+    bn = [[10, 20], [30, 40]]
+    s = get_boundary_nodes(bn, 1)
+    DT.set_boundary_node!(bn, (1, 2), 999)
+    @test s[2] == 999  # test that the reference s is updated too
 end
