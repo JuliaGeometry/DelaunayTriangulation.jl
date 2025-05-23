@@ -1,9 +1,9 @@
 # Changelog
 
 ## 1.6.5
-- (Internal) A function `set_boundary_node!` has been added for setting a specific boundary node to another inside the provided `boundary_nodes`.
-- (Internal) The `HelperFunctions` module in the tests has been reworked into its own package inside `test/HelperFunctions`.
-- (Fix) Currently when checking for duplicate points, any extra points get skipped. However we did not correctly make sure those point's vertices inside `segments` or `boundary_nodes` were replaced with the first instance of the duplicate. This has been fixed. 
+- (Internal) A function `set_boundary_node!` has been added for setting a specific boundary node to another inside the provided `boundary_nodes`. See [#224](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/224).
+- (Internal) The `HelperFunctions` module in the tests has been reworked into its own package inside `test/HelperFunctions`. See [#224](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/224).
+- (Fix) Currently when checking for duplicate points, any extra points get skipped. However we did not correctly make sure those point's vertices inside `segments` or `boundary_nodes` were replaced with the first instance of the duplicate. This has been fixed. See [#224](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/224).
 
 ## 1.6.4 
 
