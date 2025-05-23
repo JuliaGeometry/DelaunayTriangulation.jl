@@ -52,6 +52,7 @@
                 num_generators,
                 polygon_features,
                 toggle_inf_warn!,
+                toggle_warn_on_dupes!,
                 AbstractParametricCurve,
                 angle_between,
                 arc_length,

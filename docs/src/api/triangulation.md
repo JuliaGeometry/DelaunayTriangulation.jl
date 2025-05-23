@@ -12,6 +12,7 @@ refine!
 retriangulate 
 convert_boundary_points_to_indices
 check_args
+toggle_warn_on_dupes!
 get_points
 get_triangles
 get_boundary_nodes
