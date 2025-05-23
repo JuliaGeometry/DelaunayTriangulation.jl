@@ -5,9 +5,8 @@ using Test
 using Random
 
 const ALL_TEST_SCRIPTS = Set{String}()
-const NON_TEST_SCRIPTS = Set{String}(["helper_functions.jl", "runtests.jl"])
-include("helper_functions.jl")
-using .HelperFunctions
+const NON_TEST_SCRIPTS = Set{String}(["runtests.jl"])
+using HelperFunctions
 
 ct() = Dates.format(now(), "HH:MM:SS")
 function safe_include(filename; name=filename, push=true, verbose=true) # Workaround for not being able to interpolate into SafeTestset test names
@@ -22,13 +21,13 @@ function safe_include(filename; name=filename, push=true, verbose=true) # Workar
     end
 end
 
-@testset verbose = true "DelaunayTriangulation.jl" begin
-    @testset verbose = true "Aqua" begin
+@testset verbose = false "DelaunayTriangulation.jl" begin
+    @testset verbose = false "Aqua" begin
         Aqua.test_all(DelaunayTriangulation; ambiguities=false, project_extras=false, unbound_args=false) # don't care about julia < 1.2
         Aqua.test_ambiguities(DelaunayTriangulation) # don't pick up Base and Core...
     end
 
-    @testset verbose = true "Triangulation" begin
+    @testset verbose = false "Triangulation" begin
         safe_include("triangulation/rectangle.jl")
         safe_include("triangulation/bowyer_watson.jl")
         safe_include("triangulation/triangulate.jl")
@@ -38,14 +37,14 @@ end
         safe_include("triangulation/weighted.jl")
     end
 
-    @testset verbose = true "Interfaces" begin
+    @testset verbose = false "Interfaces" begin
         safe_include("interfaces/triangles.jl")
         safe_include("interfaces/edges.jl")
         safe_include("interfaces/points.jl")
         safe_include("interfaces/boundary_nodes.jl")
     end
 
-    @testset verbose = true "Data Structures" begin
+    @testset verbose = false "Data Structures" begin
         safe_include("data_structures/adjacent.jl")
         safe_include("data_structures/adjacent2vertex.jl")
         safe_include("data_structures/graph.jl")
@@ -63,20 +62,20 @@ end
         safe_include("data_structures/polygon_hierarchy.jl", verbose=false)
     end
 
-    @testset verbose = true "Predicates" begin
+    @testset verbose = false "Predicates" begin
         safe_include("predicates/certificate.jl")
         safe_include("predicates/boundaries_and_ghosts.jl")
         safe_include("predicates/general.jl")
         safe_include("predicates/index_and_ghost_handling.jl")
     end
 
-    @testset verbose = true "Utilities" begin
+    @testset verbose = false "Utilities" begin
         safe_include("utils.jl")
         safe_include("geo_utils.jl")
         safe_include("helper_function_tests.jl")
     end
 
-    @testset verbose = true "Point Location" begin
+    @testset verbose = false "Point Location" begin
         safe_include("point_location/brute_force.jl")
         safe_include("point_location/select_initial_point.jl")
         safe_include("point_location/select_initial_triangle_interior_node.jl")
@@ -86,7 +85,7 @@ end
         safe_include("point_location/find_polygon.jl")
     end
      
-    @testset verbose = true "Operations" begin
+    @testset verbose = false "Operations" begin
         safe_include("operations/add_triangle.jl")
         safe_include("operations/delete_triangle.jl")
         safe_include("operations/add_ghost_triangles.jl")
@@ -101,27 +100,27 @@ end
         safe_include("operations/delete_holes.jl")
     end
 
-    @testset verbose = true "Constrained Triangulation" begin
+    @testset verbose = false "Constrained Triangulation" begin
         safe_include("constrained_triangulation/segment_location.jl")
         safe_include("constrained_triangulation/segment_insertion.jl")
     end
 
-    @testset verbose = true "Refinement" begin
+    @testset verbose = false "Refinement" begin
         safe_include("refinement/refine.jl")
         safe_include("refinement/curve_bounded.jl")
     end
 
-    @testset verbose = true "Voronoi" begin
+    @testset verbose = false "Voronoi" begin
         safe_include("voronoi/voronoi.jl")
         safe_include("voronoi/power.jl")
     end
 
-    @testset verbose = true "Makie" begin
+    @testset verbose = false "Makie" begin
         safe_include("makie/makie.jl")
     end
 
-    @testset verbose = true "Run the documentation examples" begin
-        @testset verbose = true "Check that the applications in the docs run" begin
+    @testset verbose = false "Run the documentation examples" begin
+        @testset verbose = false "Check that the applications in the docs run" begin
             app_dir = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "docs", "src", "literate_applications")
             app_files = readdir(app_dir)
             for file in app_files
@@ -131,7 +130,7 @@ end
             isfile(mp4_path) && rm(mp4_path)
         end
 
-        @testset verbose = true "Test the tutorials" begin
+        @testset verbose = false "Test the tutorials" begin
             tut_dir = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "docs", "src", "literate_tutorials")
             tut_files = readdir(tut_dir)
             for file in tut_files
@@ -139,7 +138,7 @@ end
             end
         end
 
-        @testset verbose = true "Test the readme example" begin
+        @testset verbose = false "Test the readme example" begin
             safe_include("readme_example.jl")
         end
     end

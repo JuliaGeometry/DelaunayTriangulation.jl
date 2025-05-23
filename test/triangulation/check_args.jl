@@ -605,3 +605,9 @@ end
     DT.toggle_warn_on_dupes!()
     @test DT.WARN_ON_DUPES[]
 end
+
+# Issue #220: `Duplicate points not correctly handled when present in boundary_nodes`
+p1 = [(118.57716599999999, 28.538463999999994), (118.814236, 27.962729999999993), (119.435126, 27.759529999999994), (120.044726, 27.962729999999993), (120.30437599999999, 28.538463999999994), (120.044726, 29.114197999999995), (119.435126, 29.317397999999994), (118.814236, 29.114197999999995), (118.57716599999999, 28.538463999999994), (118.57716599999999, 28.538463999999994)]
+boundary_points = [[p1]]
+boundary_nodes, points = convert_boundary_points_to_indices(boundary_points)
+tri6 = triangulate(points; boundary_nodes)
