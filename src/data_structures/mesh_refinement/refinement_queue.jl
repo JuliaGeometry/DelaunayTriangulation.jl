@@ -88,7 +88,7 @@ function Base.setindex!(queue::RefinementQueue{T, E, F}, ℓ²::F, segment::E) w
 end
 
 """
-    Bassetindex!(queue::RefinementQueue{T,E,F}, ρ::F, triangle::T) where {T,E,F}
+    setindex!(queue::RefinementQueue{T,E,F}, ρ::F, triangle::T) where {T,E,F}
     queue[triangle] = ρ
 
 Add a `triangle` to `queue` whose radius-edge ratio is `ρ`. If the `triangle` is already in the `queue`, its priority is updated to `ρ`.
