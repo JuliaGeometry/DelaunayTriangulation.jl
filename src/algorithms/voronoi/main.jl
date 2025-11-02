@@ -8,7 +8,7 @@ Computes the Voronoi tessellation dual to a triangulation. If the triangulation 
 
 # Keyword Arguments
 - `clip=false`: If `true`, then the Voronoi tessellation is clipped to the convex hull of the triangulation. Otherwise, the Voronoi tessellation is unbounded.
-- `clip_polygon=nothing`: If `clip=true`, then this is the polygon to clip the Voronoi tessellation to. If `nothing`, the convex hull of the triangulation is used. The polygon should be defined as a `Tuple` of the form `(points, boundary_nodes)` where the `boundary_nodes` are vertices mapping to coordinates in `points`, adhering to the usual conventions for defining boundaries. 
+- `clip_polygon=nothing`: If `clip=true`, then this is the polygon to clip the Voronoi tessellation to. If `nothing`, the convex hull of the triangulation is used. The polygon should be defined as a `Tuple` of the form `(points, boundary_nodes)` where the `boundary_nodes` are vertices mapping to coordinates in `points`, adhering to the usual conventions for defining boundaries (in particular, must be counter-clockwise - see https://juliageometry.github.io/DelaunayTriangulation.jl/stable/manual/boundaries/). 
 
 !!! warning "Convex"
 
