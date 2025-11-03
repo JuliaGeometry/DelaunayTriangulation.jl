@@ -319,38 +319,38 @@ end
 
 @testset "Convex polygons" begin
     for fi in 1:NUM_CWEGT
-        @info "Testing triangulation of a weighted convex polygon: $fi"
+        msg = "Testing triangulation of a weighted convex polygon: $fi"
         tri, submerged, nonsubmerged, weights, S = get_convex_polygon_weighted_example(fi)
         ctri = triangulate_convex(get_points(tri), S; weights)
-        @test tri == ctri
+        @test_with_log msg tri == ctri
         for v in submerged
-            @test !DT.has_vertex(tri, v)
+            @test_with_log msg !DT.has_vertex(tri, v)
         end
-        fi == 77 || @test validate_triangulation(ctri) # takes ways too long for fi == 77
-        @test DT.is_weighted(ctri)
+        fi == 77 || @test_with_log msg validate_triangulation(ctri) # takes ways too long for fi == 77
+        @test_with_log msg DT.is_weighted(ctri)
         fi == 77 || validate_statistics(ctri)
     end
 end
 
 @testset "Random" begin
     for fi in 1:NUM_WEGT
-        @info "Testing triangulation of a random weighted set: $fi"
+        msg = "Testing triangulation of a random weighted set: $fi"
         tri, submerged, nonsubmerged, weights = get_weighted_example(fi)
         rtri = triangulate(get_points(tri); weights)
-        @test tri == rtri
+        @test_with_log msg tri == rtri
         for v in submerged
-            @test !DT.has_vertex(tri, v)
+            @test_with_log msg !DT.has_vertex(tri, v)
         end
-        fi == 155 || @test validate_triangulation(rtri)
-        @test DT.is_weighted(rtri)
-        @test DT.is_weighted(DT.get_triangulation(DT.get_cache(rtri)))
+        fi == 155 || @test_with_log msg validate_triangulation(rtri)
+        @test_with_log msg DT.is_weighted(rtri)
+        @test_with_log msg DT.is_weighted(DT.get_triangulation(DT.get_cache(rtri)))
         fi == 155 || validate_statistics(rtri)
     end
 end
 
 @testset "add_point!" begin
     for fi in 1:NUM_WEGT
-        @info "Testing adding points to a weighted triangulation: $fi"
+        msg = "Testing adding points to a weighted triangulation: $fi"
         tri, submerged, nonsubmerged, weights = get_weighted_example(fi)
         points = get_points(tri)
         vpoints = points[:, 1:3]
@@ -363,21 +363,21 @@ end
         DT.compute_representative_points!(rtri)
         DT.clear_empty_features!(rtri)
         DT.construct_polygon_hierarchy!(DT.get_polygon_hierarchy(rtri), get_points(rtri))
-        @test tri == rtri
+        @test_with_log msg tri == rtri
     end
 end
 
 @testset "retriangulate" begin
     for fi in 1:NUM_WEGT
-        @info "Testing retriangulation of a weighted triangulation: $fi"
+        msg = "Testing retriangulation of a weighted triangulation: $fi"
         tri, submerged, nonsubmerged, weights = get_weighted_example(fi)
         rtri = retriangulate(tri)
-        @test tri == rtri
+        @test_with_log msg tri == rtri
         for v in submerged
-            @test !DT.has_vertex(tri, v)
+            @test_with_log msg !DT.has_vertex(tri, v)
         end
-        fi == 155 || @test validate_triangulation(rtri)
-        @test DT.is_weighted(rtri)
+        fi == 155 || @test_with_log msg validate_triangulation(rtri)
+        @test_with_log msg DT.is_weighted(rtri)
     end
 end
 

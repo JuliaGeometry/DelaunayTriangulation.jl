@@ -7,7 +7,7 @@ using StableRNGs
 @testset "Random constrained Delaunay triangulations" begin
     for PT in subtypes(DT.AbstractPredicateKernel)
         for i in 1:8
-            @info "Testing random constrained Delaunay triangulations. Run: $i; Block: 1; Predicates: $PT"
+            msg = "Testing random constrained Delaunay triangulations. Run: $i; Block: 1; Predicates: $PT"
             rng = StableRNG(i)
             points, edges, mat_edges = get_random_vertices_and_constrained_edges(40, 100, 20, rng)
             # Need to deepcopy edges below, else it gets changed and updated on the first call to tri, which changes the insertion order of the segments and thus comparing tri to _tri might not work
@@ -15,20 +15,20 @@ using StableRNGs
             if i % 5 == 0
                 _tri = retriangulate(tri; segments = deepcopy(edges), rng = StableRNG(i), predicates = PT())
                 @inferred retriangulate(tri; segments = deepcopy(edges), rng = StableRNG(i), predicates = PT())
-                @test tri == _tri
+                @test_with_log msg tri == _tri
             end
-            @test validate_triangulation(tri; predicates = PT())
+            @test_with_log msg validate_triangulation(tri; predicates = PT())
             empty!(get_all_segments(tri))
-            @test !validate_triangulation(tri; predicates = PT(), print_result = false)
+            @test_with_log msg !validate_triangulation(tri; predicates = PT(), print_result = false)
         end
         for i in 1:4
-            @info "Testing random constrained Delaunay triangulations. Run: $i; Block: 2; Predicates: $PT"
+            msg = "Testing random constrained Delaunay triangulations. Run: $i; Block: 2; Predicates: $PT"
             rng = StableRNG(i^5)
             points, edges, mat_edges = get_random_vertices_and_constrained_edges(200, 500, 100, rng)
             tri = triangulate(points; segments = edges, rng, predicates = PT())
-            @test validate_triangulation(tri; predicates = PT())
+            @test_with_log msg validate_triangulation(tri; predicates = PT())
             empty!(get_all_segments(tri))
-            @test !validate_triangulation(tri; predicates = PT(), print_result = false)
+            @test_with_log msg !validate_triangulation(tri; predicates = PT(), print_result = false)
         end
     end
 end
@@ -47,7 +47,7 @@ end
 @testset "Random parabolas" begin
     for PT in (DT.ExactKernel, DT.AdaptiveKernel)
         for i in 1:5
-            @info "Testing random parabolas. Run: $i. Predicates: $PT"
+            msg = "Testing random parabolas. Run: $i. Predicates: $PT"
             rng = StableRNG(i)
             np, nx = 100, 26
             pts = [(2rand(rng) - 1, rand(rng)) for _ in 1:100]
@@ -60,7 +60,7 @@ end
                 push!(C, [(j, j + 1) for j in (np + nx * (i - 1) + 1):(np + nx * (i - 1) + (nx - 1))]...)
             end
             tri = triangulate(pts; segments = C, rng, predicates = PT())
-            @test validate_triangulation(tri; predicates = PT())
+            @test_with_log msg validate_triangulation(tri; predicates = PT())
         end
     end
 end
@@ -68,7 +68,7 @@ end
 @testset "Random collection of straight lines" begin
     for PT in subtypes(DT.AbstractPredicateKernel)
         for i in 1:4
-            @info "Testing random collection of straight lines. Run: $i. Predicates: $PT"
+            msg = "Testing random collection of straight lines. Run: $i. Predicates: $PT"
             rng = StableRNG(i)
             pts = NTuple{2, Float64}[]
             C = Set{NTuple{2, Int}}()
@@ -93,7 +93,7 @@ end
             push!(C, [(j, j + 1) for j in 41:49]...)
             push!(C, [(j, j + 1) for j in 51:59]...)
             tri = triangulate(pts; segments = C, rng, predicates = PT())
-            @test validate_triangulation(tri; predicates = PT())
+            @test_with_log msg validate_triangulation(tri; predicates = PT())
         end
     end
 end
@@ -101,7 +101,7 @@ end
 @testset "Lattice" begin
     for PT in (DT.ExactKernel, DT.AdaptiveKernel)
         for m in 1:2
-            @info "Testing dense lattice. Run: $m. Predicates: $PT"
+            msg = "Testing dense lattice. Run: $m. Predicates: $PT"
             rng = StableRNG(m)
             a = 0.0
             b = 5.0
@@ -118,7 +118,7 @@ end
             for e in [(99, 113), (113, 101), (101, 115)]
                 add_segment!(tri, e; rng, predicates = PT())
             end
-            @test validate_triangulation(tri; predicates = PT())
+            @test_with_log msg validate_triangulation(tri; predicates = PT())
 
             a = -0.1
             b = 0.1
@@ -131,7 +131,7 @@ end
             for i in 2:24
                 add_segment!(tri, i, 600 + i; rng, predicates = PT())
             end
-            @test validate_triangulation(tri; predicates = PT())
+            @test_with_log msg validate_triangulation(tri; predicates = PT())
             tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts = false, single_boundary = true, predicates = PT())
             tri = triangulate(get_points(tri); rng, predicates = PT())
             for e in [(1, 28), (28, 103), (103, 180), (180, 625), (625, 523)]
@@ -140,11 +140,11 @@ end
             for e in [(437, 614), (527, 602), (528, 603), (555, 605)]
                 add_segment!(tri, e; rng, predicates = PT())
             end
-            @test validate_triangulation(tri; predicates = PT())
+            @test_with_log msg validate_triangulation(tri; predicates = PT())
         end
         for m in 1:10
             rng = StableRNG(m)
-            @info "Testing coarse lattice. Run: $m. Predicates: $PT"
+            msg = "Testing coarse lattice. Run: $m. Predicates: $PT"
             a = 0.0
             b = 1.0
             c = 0.0
@@ -153,7 +153,7 @@ end
             ny = 2
             tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts = false, single_boundary = true, predicates = PT())
             add_segment!(tri, 1, 4; rng, predicates = PT())
-            @test validate_triangulation(tri; predicates = PT())
+            @test_with_log msg validate_triangulation(tri; predicates = PT())
 
             a = 0
             b = 1
@@ -173,7 +173,7 @@ end
                 v = 26
                 add_segment!(tri, u, v; rng, predicates = PT())
             end
-            @test validate_triangulation(tri; predicates = PT())
+            @test_with_log msg validate_triangulation(tri; predicates = PT())
         end
     end
 end
@@ -181,17 +181,17 @@ end
 @testset "Triangulating with a deleted exterior" begin
     for PT in subtypes(DT.AbstractPredicateKernel)
         for i in 1:20
-            @info "Testing triangulation of a domain with a hole: Run $i. Predicates: $PT"
+            msg = "Testing triangulation of a domain with a hole: Run $i. Predicates: $PT"
             rng = StableRNG(i)
             pts = [(rand(rng), rand(rng)) for _ in 1:50]
             bnd_pts = [(0.3cos(θ), 0.3sin(θ)) .+ 0.5 for θ in LinRange(0, 2π - 1 / 250, 25)]
             bnd_id = [(51:75)..., 51]
             append!(pts, bnd_pts)
             tri = triangulate(pts; boundary_nodes = bnd_id, rng, predicates = PT())
-            @test validate_triangulation(tri; predicates = PT())
+            @test_with_log msg validate_triangulation(tri; predicates = PT())
             _tri = retriangulate(tri; predicates = PT())
             @inferred retriangulate(tri; predicates = PT())
-            @test tri == _tri
+            @test_with_log msg tri == _tri
         end
     end
 end
@@ -199,7 +199,7 @@ end
 @testset "Triangulation with two curves" begin
     for PT in (DT.ExactKernel, DT.AdaptiveKernel)
         for i in 1:5
-            @info "Testing triangulation of a domain with two curves: Run $i. Predicates: $PT"
+            msg = "Testing triangulation of a domain with two curves: Run $i. Predicates: $PT"
             rng = StableRNG(i)
             pts = [(rand(rng), rand(rng)) for _ in 1:50]
             x1 = LinRange(0, 1, 100)
@@ -224,7 +224,7 @@ end
             y = [outer_square_y, inner_circle_y]
             nodes, pts = convert_boundary_points_to_indices(x, y; existing_points = pts)
             tri = triangulate(pts; boundary_nodes = nodes, rng, predicates = PT())
-            @test validate_triangulation(tri; predicates = PT())
+            @test_with_log msg validate_triangulation(tri; predicates = PT())
         end
     end
 end
@@ -232,7 +232,7 @@ end
 @testset "Adding points into a constrained triangulation; no collinearities" begin
     for PT in subtypes(DT.AbstractPredicateKernel)
         for L in 1:4
-            @info "Testing the addition of points into a constrained triangulation. Run: $L. Predicates: $PT"
+            msg = "Testing the addition of points into a constrained triangulation. Run: $L. Predicates: $PT"
             pts, C = example_for_testing_add_point_on_constrained_triangulation()
             tri = triangulate(pts; segments = C, delete_ghosts = false, predicates = PT())
             @test validate_triangulation(tri; predicates = PT())
@@ -272,8 +272,8 @@ end
                 (7, 6, DT.𝒢)
                 (6, 4, DT.𝒢)
             ]
-            @test DT.compare_triangle_collections(get_triangles(tri), T)
-            @test validate_triangulation(tri; predicates = PT())
+            @test_with_log msg DT.compare_triangle_collections(get_triangles(tri), T)
+            @test_with_log msg validate_triangulation(tri; predicates = PT())
             (x, y) = (2.3258217552204066, 1.4540267924574883) # a while loop was used to find this point that broke the triangulation (fixed now, obviously)
             DT.push_point!(tri, x, y)
             add_point!(tri, DT.num_points(tri); predicates = PT())
@@ -311,15 +311,15 @@ end
                 (7, 6, DT.𝒢)
                 (6, 4, DT.𝒢)
             ]
-            @test DT.compare_triangle_collections(get_triangles(tri), T)
-            @test validate_triangulation(tri; predicates = PT())
+            @test_with_log msg DT.compare_triangle_collections(get_triangles(tri), T)
+            @test_with_log msg validate_triangulation(tri; predicates = PT())
             for i in 1:25
                 x = 4rand()
                 y = 5rand()
                 DT.push_point!(tri, x, y)
                 add_point!(tri, DT.num_points(tri); predicates = PT())
-                @test validate_triangulation(tri; predicates = PT())
-                @test DT.edge_exists(tri, 1, 2) && DT.edge_exists(tri, 2, 1)
+                @test_with_log msg validate_triangulation(tri; predicates = PT())
+                @test_with_log msg DT.edge_exists(tri, 1, 2) && DT.edge_exists(tri, 2, 1)
             end
         end
     end
@@ -328,7 +328,7 @@ end
 @testset "Adding points into a constrained triangulation; interior segment collinearities" begin
     for PT in subtypes(DT.AbstractPredicateKernel)
         for m in 1:3
-            @info "Testing the addition of points into a constrained triangulation with interior segment collinearities. Run: $m. Predicates: $PT"
+            msg = "Testing the addition of points into a constrained triangulation with interior segment collinearities. Run: $m. Predicates: $PT"
             pts, C = example_for_testing_add_point_on_constrained_triangulation()
             push!(C, (1, 12))
             tri = triangulate(pts; segments = C, delete_ghosts = false, predicates = PT())
@@ -341,7 +341,7 @@ end
 
             DT.push_point!(tri, new_points[1])
             add_point!(tri, DT.num_points(tri), predicates = PT())
-            @test sort_edge_vector(collect(get_interior_segments(tri))) ==
+            @test_with_log msg sort_edge_vector(collect(get_interior_segments(tri))) ==
                 sort_edge_vector(collect(Set([(1, 2), (1, 15), (15, 12)]))) ==
                 sort_edge_vector(collect(get_interior_segments(tri)))
             T = [
@@ -374,12 +374,12 @@ end
                 (7, 6, DT.𝒢)
                 (6, 4, DT.𝒢)
             ]
-            @test DT.compare_triangle_collections(get_triangles(tri), T)
-            @test validate_triangulation(tri, predicates = PT())
+            @test_with_log msg DT.compare_triangle_collections(get_triangles(tri), T)
+            @test_with_log msg validate_triangulation(tri, predicates = PT())
 
             DT.push_point!(tri, new_points[2])
             add_point!(tri, DT.num_points(tri), predicates = PT())
-            @test sort_edge_vector(collect(get_interior_segments(tri))) ==
+            @test_with_log msg sort_edge_vector(collect(get_interior_segments(tri))) ==
                 sort_edge_vector(collect(Set([(1, 2), (1, 15), (15, 16), (16, 12)]))) ==
                 sort_edge_vector(collect(get_interior_segments(tri)))
             T = [
@@ -414,12 +414,12 @@ end
                 (7, 6, DT.𝒢)
                 (6, 4, DT.𝒢)
             ]
-            @test DT.compare_triangle_collections(get_triangles(tri), T)
-            @test validate_triangulation(tri, predicates = PT())
+            @test_with_log msg DT.compare_triangle_collections(get_triangles(tri), T)
+            @test_with_log msg validate_triangulation(tri, predicates = PT())
 
             DT.push_point!(tri, new_points[3])
             add_point!(tri, DT.num_points(tri), predicates = PT())
-            @test sort_edge_vector(collect(get_interior_segments(tri))) ==
+            @test_with_log msg sort_edge_vector(collect(get_interior_segments(tri))) ==
                 sort_edge_vector(collect(Set([(1, 2), (1, 15), (15, 16), (16, 17), (17, 12)]))) ==
                 sort_edge_vector(collect(get_interior_segments(tri)))
             T = [
@@ -456,12 +456,12 @@ end
                 (7, 6, DT.𝒢)
                 (6, 4, DT.𝒢)
             ]
-            @test DT.compare_triangle_collections(get_triangles(tri), T)
-            @test validate_triangulation(tri, predicates = PT())
+            @test_with_log msg DT.compare_triangle_collections(get_triangles(tri), T)
+            @test_with_log msg validate_triangulation(tri, predicates = PT())
 
             DT.push_point!(tri, new_points[4])
             add_point!(tri, DT.num_points(tri), predicates = PT())
-            @test sort_edge_vector(collect(get_interior_segments(tri))) ==
+            @test_with_log msg sort_edge_vector(collect(get_interior_segments(tri))) ==
                 sort_edge_vector(collect(Set([(1, 2), (1, 15), (15, 16), (16, 17), (17, 18), (18, 12)]))) ==
                 sort_edge_vector(collect(get_interior_segments(tri)))
             T = [
@@ -500,21 +500,21 @@ end
                 (7, 6, DT.𝒢)
                 (6, 4, DT.𝒢)
             ]
-            @test DT.compare_triangle_collections(get_triangles(tri), T)
-            @test validate_triangulation(tri, predicates = PT())
+            @test_with_log msg DT.compare_triangle_collections(get_triangles(tri), T)
+            @test_with_log msg validate_triangulation(tri, predicates = PT())
 
             add_segment!(tri, 6, 10, predicates = PT())
-            @test validate_triangulation(tri, predicates = PT())
+            @test_with_log msg  validate_triangulation(tri, predicates = PT())
             new_points = LinRange(-1.8, 2.8, 25)
             new_points = collect(new_points)
             shuffle!(new_points)
             foreach(new_points) do p
                 DT.push_point!(tri, -3.0, p)
                 add_point!(tri, DT.num_points(tri), predicates = PT())
-                @test validate_triangulation(tri, predicates = PT())
+                @test_with_log msg validate_triangulation(tri, predicates = PT())
             end
-            @test length(get_interior_segments(tri)) == 32
-            @test length(get_all_segments(tri)) == 32
+            @test_with_log msg length(get_interior_segments(tri)) == 32
+            @test_with_log msg length(get_all_segments(tri)) == 32
 
             new_points = LinRange(0.357, 4.8912, 10)
             new_points = collect(new_points)
@@ -522,7 +522,7 @@ end
             foreach(new_points) do p
                 DT.push_point!(tri, p, 3.0)
                 add_point!(tri, DT.num_points(tri), predicates = PT())
-                @test validate_triangulation(tri, predicates = PT())
+                @test_with_log msg validate_triangulation(tri, predicates = PT())
             end
         end
     end

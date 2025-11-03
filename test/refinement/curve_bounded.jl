@@ -1578,7 +1578,7 @@ end
                             for (idx3, min_area) in enumerate((1.0e-12,))
                                 for (idx4, max_area) in enumerate(max_area_opts[curve_idx])
                                     for (idx5, seditious_angle) in enumerate((10.0, 20.0))
-                                        @info "Testing curve-bounded refinement with circumcenters. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle; curve: $curve_idx; point set: $point_idx"
+                                        msg = "Testing curve-bounded refinement with circumcenters. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle; curve: $curve_idx; point set: $point_idx"
                                         rng = StableRNG(abs(_rng_num(idx1, idx2, idx3, idx4, idx5, curve_idx, point_idx)))
                                         points, curve = deepcopy(point_sets[point_idx][curve_idx]), deepcopy(curve_sets[curve_idx])
                                         if point_idx ≤ 2
@@ -1596,7 +1596,7 @@ end
                                         end
                                         refine!(tri; min_angle, min_area, max_area, custom_constraint, seditious_angle, use_circumcenter=true, use_lens, rng, predicates=PT())
                                         args = DT.RefinementArguments(tri; min_angle, min_area, max_area, seditious_angle, custom_constraint, use_circumcenter=true, use_lens, predicates=PT())
-                                        @test validate_refinement(tri, args, warn=false)
+                                        @test_with_log msg validate_refinement(tri, args, warn=false)
                                         if _rng_num(idx1, idx2, idx3, idx4, idx5, curve_idx, point_idx) == _rng_num(1, 3, 1, 2, 2, curve_idx, point_idx)
                                             fig, ax, sc = triplot(tri)
                                             @test_reference "rcb_example_$(curve_idx)_$(names[curve_idx])_$(point_names[point_idx])_$(abs(_rng_num(1, 3, 1, 2, 2, curve_idx, point_idx))).png" fig by = psnr_equality(7)
@@ -1604,7 +1604,7 @@ end
                                             fig, ax, sc = triplot(tri)
                                             @test_reference "rcb_example_$(curve_idx)_$(names[curve_idx])_$(point_names[point_idx])_$(abs(_rng_num(2, 3, 1, 2, 2, curve_idx, point_idx))).png" fig by = psnr_equality(7)
                                         end
-                                        @test tri.boundary_enricher.boundary_edge_map == tri.boundary_edge_map
+                                        @test_with_log msg tri.boundary_enricher.boundary_edge_map == tri.boundary_edge_map
                                     end
                                 end
                             end
