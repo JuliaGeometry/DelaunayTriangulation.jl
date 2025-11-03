@@ -234,13 +234,13 @@ end
         for i in 1:length(true_triangle_queue)
             T, ρ = DT.popfirst_triangle!(queue)
             push!(triangle_res, DT.sort_triangle(T) => ρ)
-            T, ρ = dequeue_pair!(true_triangle_queue)
+            T, ρ = popfirst!(true_triangle_queue)
             push!(true_triangle_res, T => ρ)
         end
         for i in 1:length(true_segment_queue)
             e, ℓ = DT.popfirst_segment!(queue)
             push!(segment_res, (e[1] < e[2] ? e : DT.reverse_edge(e)) => ℓ)
-            e, ℓ = dequeue_pair!(true_segment_queue)
+            e, ℓ = popfirst!(true_segment_queue)
             push!(true_segment_res, e => ℓ)
         end
         @test length(true_triangle_queue) == length(queue.triangles) == 0
