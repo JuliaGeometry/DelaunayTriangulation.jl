@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.5
+
+- Clarified the counter-clockwise requirement for the `clip_polygon` argument in `voronoi`. See [#230](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/230).
+
 ## 1.6.4 
 
 - An error is no longer thrown for inputs with duplicate points. Instead, a warning is thrown and any duplicates are merged into the `skip_points` keyword argument. With this, `DuplicatePointsError` has been removed. To silence the new warning, use `DelaunayTriangulation.toggle_warn_on_dupes!()`.

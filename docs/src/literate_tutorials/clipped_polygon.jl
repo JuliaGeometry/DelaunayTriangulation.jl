@@ -4,7 +4,8 @@
 
 # In this tutorial we show how to clip a Voronoi tessellation to 
 # more generic convex polygons (non-convex polygons are not currently supported) than just a convex hull or a rectangle. This is
-# done by using the `clip_polygon` keyword argument in `voronoi`.
+# done by using the `clip_polygon` keyword argument in `voronoi`. The provided polygons must adhere to the usual
+# conventions for defining boundaries, i.e. they must be defined counter-clockwise.
 
 # We start by clipping the tessellation to a rectangle, showing an alternative
 # to the [previous tutorial](clipped_rectangle.md). To start, we load in the packages 
