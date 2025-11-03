@@ -130,11 +130,11 @@ Returns the insphere cache stored in `cache`.
 """
 get_insphere_cache(cache::TriangulationCache) = cache.insphere_cache
 
-"""
+#=
     empty!(cache::TriangulationCache) 
 
 Empties the cache by emptying the triangulation stored in it.
-"""
+=#
 function Base.empty!(cache::TriangulationCache)
     tri = get_triangulation(cache)
     tri_2 = get_triangulation_2(cache)

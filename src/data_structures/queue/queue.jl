@@ -16,39 +16,39 @@ Base.:(==)(q1::Queue, q2::Queue) = q1.data == q2.data
 
 Base.copy(queue::Queue) = Queue(copy(queue.data))
 
-"""
+#=
     isempty(queue::Queue) -> Bool 
 
 Returns `true` if the `queue` is empty, `false` otherwise.
-"""
+=#
 Base.isempty(queue::Queue) = isempty(queue.data)
 
-"""
+#=
     length(queue::Queue) -> Int
 
 Returns the number of elements in the `queue`.
-"""
+=#
 Base.length(queue::Queue) = length(queue.data)
 
-"""
+#=
     eltype(queue::Queue{T}) -> Type{T}
 
 Returns the type of elements stored in `q`.
-"""
+=#
 Base.eltype(queue::Type{Queue{T}}) where {T} = T
 
-"""
+#=
     push!(queue::Queue, item) 
 
 Adds `item` to the end of the `queue`.
-"""
+=#
 Base.push!(queue::Queue, item) = (push!(queue.data, item); return queue)
 
-"""
+#=
     popfirst!(queue::Queue) 
 
 Removes the element from the front of the `queue` and returns it.
-"""
+=#
 Base.popfirst!(queue::Queue) = popfirst!(queue.data)
 
 """

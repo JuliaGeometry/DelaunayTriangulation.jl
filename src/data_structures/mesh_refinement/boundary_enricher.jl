@@ -62,18 +62,18 @@ function replace_next_edge!(complex::SmallAngleComplex, member_id, next_edge)
     return nothing
 end
 
-"""
+#=
     push!(complex::SmallAngleComplex, member::SmallAngleComplexMember) 
 
 Pushes `member` onto the members of `complex`.
-"""
+=#
 Base.push!(complex::SmallAngleComplex, member::SmallAngleComplexMember) = push!(get_members(complex), member)
 
-"""
+#=
     append!(complex::SmallAngleComplex, new_complex::SmallAngleComplex)
 
 Appends the members of `new_complex` onto the members of `complex`.
-"""
+=#
 Base.append!(complex::SmallAngleComplex, new_complex::SmallAngleComplex) = append!(get_members(complex), get_members(new_complex))
 
 """
