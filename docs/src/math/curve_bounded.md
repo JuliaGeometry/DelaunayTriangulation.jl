@@ -65,7 +65,7 @@ resize_to_layout!(fig)
 ```
 
 ```@example curvbonddom1
-fig # hide
+fig #hide
 ```
 
 In the figure above, we show an example of a set of subcurves $\{s_1, s_2, s_3, s_4, s_5, s_6\}$ together with a common apex vertex. We see that the curve $s_1$ forms no small angle with any other curve, and so it is not a part of any small angle complex. The curves $\{s_2, s_3, s_4\}$ together form a small angle complex since they form a contiguous set of small angles. The curve $s_5$ is not included in this complex since the angle between $s_4$ and $s_5$ is not small. Lastly, the curves $\{s_5, s_6\}$ define a small angle complex. See that it is possible for a single apex vertex to define several separate small angle complexes.
@@ -130,7 +130,7 @@ resize_to_layout!(fig)
 ```
 
 ```@example curvbonddom1
-fig # hide
+fig #hide
 ```
 
 In the above figure, the subcurves of interest are the subcures defined by the curves from $a$ to each of the first blue points on each curve. These blue points and lines shows the piecewise linear approximation to each subcurve. The shortest edge length is then used to compute $r_{\max}$, giving the circle shown in red. The shell with radius $2^{\lfloor \log_2 r_{\max}}\rfloor$ is shown in green. We then split each of the subcurves at their intersection with this green curve, giving the points shown in green and the updated piecewise linear approximation in the second figure. All subsequent splits of these subcurves (those between $a$ and the new split points) will be at the next smaller power of two shell, i.e. $2^{\lfloor \log_2 r_{\max} \rfloor - 1}$.

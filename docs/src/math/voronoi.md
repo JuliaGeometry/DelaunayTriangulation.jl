@@ -37,7 +37,7 @@ resize_to_layout!(fig)
 ```
 
 ```@example voronoi123 
-fig # hide
+fig #hide
 ```
 
 ## Computation 

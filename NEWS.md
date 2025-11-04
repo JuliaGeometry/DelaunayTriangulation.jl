@@ -3,7 +3,7 @@
 ## 1.6.5
 
 - Clarified the counter-clockwise requirement for the `clip_polygon` argument in `voronoi`. See [#230](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/230).
-- Reduced spam during tests. `@info` statements are now only shown on a failed test, and are now shown in the `Context` output of the failed test. See [#231](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/231).
+- Reduced spam during package tests. `@info` statements are now only shown on a failed test, and are now shown in the `Context` output of the failed test. See [#231](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/231).
 - Removed docstrings on some methods that extended `Base` functions for internal use only. You can still find documentation on them by going to the method location and viewing the commented-out docstring. See [#231](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/231). 
 
 ## 1.6.4 

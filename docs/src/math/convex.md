@@ -41,7 +41,7 @@ resize_to_layout!(fig)
 ```
 
 ```@example convpoly
-fig # hide
+fig #hide
 ```
 
 See that at each stage the vertex $v_u$ to be added, shown in red, it lies outside of the triangulation, and only a single edge $e_{vw}$ separates $v_u$ from the triangulation. Thus, we can identify that the point location step amounts to finding this edge $e_{vw}$ so that we inserting $v_u$ into the triangulation can be done by retriangulating the cavity formed by the union of the triangles $T_{uvw}$ and the triangles containing $u$ in their circumcircles.
