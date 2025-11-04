@@ -23,11 +23,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 =#
 
-"""
+#=
     insert!(tree::RTree, bounding_box[, level = 1]) -> Bool 
 
 Inserts `bounding_box` into `tree`. Returns `true` if the `tree`'s bounding boxes had to be adjusted and `false` otherwise.
-"""
+=#
 function Base.insert!(tree::RTree, bounding_box) # See e.g. https://rutgers-db.github.io/cs541-fall19/slides/notes4.pdf for discussions about overflow
     increment_num_elements!(tree)
     return insert!(tree::RTree, bounding_box, 1)
@@ -37,11 +37,11 @@ function Base.insert!(tree::RTree, bounding_box, level)
     return insert!(subtree, bounding_box, tree)
 end
 
-"""
+#=
     insert!(node::AbstractNode, child, tree::RTree) -> Bool
 
 Inserts `child` into `node` in `tree`. Returns `true` if the `tree`'s bounding boxes had to be adjusted and `false` otherwise.
-"""
+=#
 function Base.insert!(node::AbstractNode, child, tree::RTree)
     if !is_full(node, tree)
         original_bounding_box = get_bounding_box(node)
@@ -58,11 +58,11 @@ function Base.insert!(node::AbstractNode, child, tree::RTree)
     end
 end
 
-"""
+#=
     append!(node::AbstractNode, child)
 
 Appends `child` to `node`'s children. Also updates `node`'s bounding box.
-"""
+=#
 function Base.append!(node::AbstractNode, child::C) where {C}
     original_bounding_box = get_bounding_box(node)
     flag = has_children(node)
@@ -74,11 +74,11 @@ function Base.append!(node::AbstractNode, child::C) where {C}
     return node
 end
 
-"""
+#=
     find_subtree(tree, bounding_box, level) -> Union{Branch,Leaf{Branch}}
 
 Returns the subtree of `tree` at `level` that `bounding_box` should be inserted into.
-"""
+=#
 function find_subtree(tree, bounding_box, level)
     node = get_root(tree)::Union{Branch, Leaf{Branch}}
     while get_level(node) > level
@@ -329,11 +329,11 @@ function replace!(node, left, right, original_bounding_box, tree)
     return flag || rect_is_old
 end
 
-"""
+#=
     delete!(tree::RTree, id_bounding_box::DiametralBoundingBox) 
 
 Deletes `id_bounding_box` from `tree`.
-"""
+=#
 function Base.delete!(tree::RTree, id_bounding_box::DiametralBoundingBox)
     decrement_num_elements!(tree)
     leaf, idx = find_bounding_box(tree, id_bounding_box)
@@ -482,11 +482,11 @@ function get_intersections(tree::RTree, point::NTuple{2, <:Number}; cache_id = 1
     return RTreeIntersectionIterator(tree, BoundingBox(point), cache_id)
 end
 
-"""
+#=
     iterate(itr::RTreeIntersectionIterator, state...)
 
 Iterate over the next state of `itr` to find more intersections with the bounding box in `RTreeIntersectionIterator`.
-"""
+=#
 function Base.iterate(itr::RTreeIntersectionIterator)
     tree = itr.tree
     root = get_root(tree)

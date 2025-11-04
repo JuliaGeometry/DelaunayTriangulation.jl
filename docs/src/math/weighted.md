@@ -28,7 +28,7 @@ resize_to_layout!(fig)
 ```
     
 ```@example weighted_ex1
-fig # hide
+fig #hide
 ```
 
 Let $\mathcal P^+$ denote the set of lifted points. It can be shown that the projection of the underside of the convex hull of $\mathcal P^+$, meaning the projection of all faces of the convex hull with a downward-facing normal (where the positive $z$-axis points upward), is equal to $\mathcal D\mathcal T(\mathcal P)$; see Proposition 2.2 in the reference above. This is the basis for the definition of a weighted Delaunay triangulation.

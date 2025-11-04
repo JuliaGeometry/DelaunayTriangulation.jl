@@ -54,18 +54,18 @@ A constant for representing an invalid interva[`BoundingInterval`](@ref), i.e. a
 """
 const InvalidBoundingInterval = BoundingInterval(NaN, NaN)
 
-"""
+#=
     length(I::BoundingInterval) -> Float64 
 
 Returns the length of the interval `I`.
-"""
+=#
 Base.length(I::BoundingInterval) = I.b - I.a
 
-"""
+#=
     isempty(I::BoundingInterval) -> Bool
 
 Returns `true` if `I` is empty, i.e. if `I.a` or `I.b` is `NaN` or if `length(I) < 0`.
-"""
+=#
 Base.isempty(I::BoundingInterval) = isnan(I.a) || isnan(I.b) || length(I) < 0
 
 """
@@ -75,12 +75,12 @@ Returns the midpoint of `I`.
 """
 midpoint(I::BoundingInterval) = midpoint(I.a, I.b)
 
-"""
+#=
     intersect(I::BoundingInterval, J::BoundingInterval) -> BoundingInterval
     I::BoundingInterval ∩ J::BoundingInterval -> BoundingInterval
 
 Returns the intersection of `I` and `J`. If the intersection is empty, returns [`InvalidBoundingInterval`](@ref).
-"""
+=#
 function Base.:(∩)(I::BoundingInterval, J::BoundingInterval)
     a′ = max(I.a, J.a)
     b′ = min(I.b, J.b)
@@ -91,32 +91,32 @@ function Base.:(∩)(I::BoundingInterval, J::BoundingInterval)
     end
 end
 
-"""
+#=
     union(I::BoundingInterval, J::BoundingInterval) -> BoundingInterval
     I::BoundingInterval ∪ J::BoundingInterval -> BoundingInterval
 
 Returns the union of `I` and `J`, combining their bounds; i.e. the smallest interval that contains both `I` and `J`.
-"""
+=#
 function Base.:(∪)(I::BoundingInterval, J::BoundingInterval)
     a′ = min(I.a, J.a)
     b′ = max(I.b, J.b)
     return BoundingInterval(a′, b′)
 end
 
-"""
+#=
     in(a::Float64, I::BoundingInterval) -> Bool
     a::Float64 ∈ I::BoundingInterval -> Bool
 
 Tests whether `a` is in `I`.
-"""
+=#
 Base.in(a::Float64, I::BoundingInterval) = I.a ≤ a ≤ I.b
 
-"""
+#=
     in(I::BoundingInterval, J::BoundingInterval) -> Bool
     I::BoundingInterval ∈ J::BoundingInterval -> Bool
 
 Tests whether the interval `I` is in the interval `J`.
-"""
+=#
 Base.in(I::BoundingInterval, J::BoundingInterval) = I.a ∈ J && I.b ∈ J
 
 """
@@ -172,11 +172,11 @@ Returns the area of `r`, i.e. `hspan(r) * vspan(r)`.
 """
 get_area(r::BoundingBox) = hspan(r) * vspan(r)
 
-"""
+#=
     isempty(r::BoundingBox) -> Bool
 
 Returns `true` if `r` is empty, i.e. if `r.x` or `r.y` is empty.
-"""
+=#
 Base.isempty(r::BoundingBox) = isempty(r.x) || isempty(r.y)
 
 """
@@ -186,12 +186,12 @@ Returns the center of `r`.
 """
 midpoint(r::BoundingBox) = (midpoint(r.x), midpoint(r.y))
 
-"""
+#=
     intersect(r1::BoundingBox, r2::BoundingBox) -> BoundingBox
     r1::BoundingBox ∩ r2::BoundingBox -> BoundingBox
 
 Returns the intersection of `r1` and `r2`. If the intersection is empty, returns [`InvalidBoundingBox`](@ref).
-"""
+=#
 function Base.:(∩)(r1::BoundingBox, r2::BoundingBox)
     I = r1.x ∩ r2.x
     J = r1.y ∩ r2.y
@@ -202,32 +202,32 @@ function Base.:(∩)(r1::BoundingBox, r2::BoundingBox)
     end
 end
 
-"""
+#=
     union(r1::BoundingBox, r2::BoundingBox) -> BoundingBox
     r1::BoundingBox ∪ r2::BoundingBox -> BoundingBox
 
 Returns the union of `r1` and `r2`, i.e. the smallest bounding box that contains both `r1` and `r2`.
-"""
+=#
 function Base.:(∪)(r1::BoundingBox, r2::BoundingBox)
     I = r1.x ∪ r2.x
     J = r1.y ∪ r2.y
     return BoundingBox(I, J)
 end
 
-"""
+#=
     in(r1::BoundingBox, r2::BoundingBox) -> Bool
     r1::BoundingBox ∈ r2::BoundingBox -> Bool
 
 Tests whether `r1` is in `r2`.
-"""
+=#
 Base.in(r1::BoundingBox, r2::BoundingBox) = (r1.x ∈ r2.x) && (r1.y ∈ r2.y)
 
-"""
+#=
     in(p::NTuple{2,<:Number}, r::BoundingBox) -> Bool
     p::NTuple{2,<:Number} ∈ r::BoundingBox -> Bool
 
 Tests whether `p` is in `r`.
-"""
+=#
 Base.in(p::NTuple{2, <:Number}, r::BoundingBox) = BoundingBox(p) ∈ r
 
 """
@@ -622,12 +622,12 @@ Sets the level of `branch` to be `level`.
 """
 set_level!(branch::Branch, level::Integer) = branch.level = level
 
-"""
+#=
     setindex!(branch::Branch, child, i::Integer)
     branch[i] = child
 
 Sets the `i`th child of `branch` to be `child`, also updating the parent of `child` to be `branch`.
-"""
+=#
 function Base.setindex!(branch::Branch, child, i::Integer)
     set_child!(branch, child, i)
     set_parent!(child, branch)
@@ -685,30 +685,32 @@ Type for representing a cache of leaf nodes.
 """
 const LeafCache = NodeCache{Leaf{Branch}, DiametralBoundingBox}
 
-"""
+#=
     length(cache::NodeCache) -> Int
 
 Returns the number of nodes in `cache`.
-"""
+=#
 Base.length(cache::NodeCache) = length(cache.cache)
 
-"""
+#=
     isempty(cache::NodeCache) -> Bool
 
 Returns `true` if `cache` is empty.
-"""
+=#
 Base.isempty(cache::NodeCache) = isempty(cache.cache)
 
-"""
+#=
     pop!(cache::NodeCache) -> Node
 
 Removes and returns the last node in `cache`.
-"""
+=#
 Base.pop!(cache::NodeCache) = pop!(cache.cache)
 
-"""
+#=
     push!(cache::NodeCache, node)
-"""
+
+Adds `node` to `cache`.
+=#
 Base.push!(cache::NodeCache, node) = push!(cache.cache, node)
 
 """
@@ -1160,21 +1162,21 @@ function bounding_box(tree::BoundaryRTree, i, j)
     return bounding_box(points, i′, j′)
 end
 
-"""
+#=
     insert!(tree::BoundaryRTree, i, j) -> Bool
 
 Inserts the diametral circle of the edge between `i` and `j` into `tree`. Returns `true` if the `tree`'s bounding boxes had to be adjusted and `false` otherwise.
-"""
+=#
 function Base.insert!(tree::BoundaryRTree, i, j)
     bbox = bounding_box(tree, i, j)
     return insert!(tree.tree, bbox)
 end
 
-"""
+#=
     delete!(tree::BoundaryRTree, i, j)
 
 Deletes the bounding box of the diametral circle of the edge between `i` and `j` in `tree`.
-"""
+=#
 function Base.delete!(tree::BoundaryRTree, i, j)
     bbox = bounding_box(tree, i, j)
     return delete!(tree.tree, bbox)

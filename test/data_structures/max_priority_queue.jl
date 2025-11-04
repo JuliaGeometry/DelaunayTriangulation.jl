@@ -53,7 +53,7 @@ for n in [1:10; (11:50:10000)]
     dt_pairs = Pair{Int, Int}[]
     while !isempty(queue)
         pair = popfirst!(queue)
-        dt_pair = dequeue_pair!(dt_queue)
+        dt_pair = popfirst!(dt_queue)
         push!(pairs, pair)
         push!(dt_pairs, dt_pair)
     end

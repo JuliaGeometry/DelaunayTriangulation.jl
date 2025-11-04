@@ -51,7 +51,7 @@ end
 ```
 
 ```@example segins1 
-fig # hide
+fig #hide
 ```
 
 To develop an algorithm, we need to notice one important thing from this figure: Since the blue segment will occlude visibility between any points on either side of the segment, the blue segment effectively divides, locally, the triangulation into two parts that no longer interact with each other. In the figure above, this means that any changes to the triangles bounded between the red curve and the blue segment will not interact those in the region bounded between the green curve and the bkue segment. This is a key observation that will allow us to develop an algorithm for inserting segments: we can handle the two sides separately.
@@ -151,7 +151,7 @@ resize_to_layout!(fig)
 ```
 
 ```@example segins1
-fig # hide
+fig #hide
 ```
 
 ## Adding Points into a Constrained Delaunay Triangulation

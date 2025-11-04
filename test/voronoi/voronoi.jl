@@ -970,7 +970,7 @@ end
         flag = 0
         tot = 0
         for i in 1:25
-            @info "Testing centroidal tessellation: Run: $i"
+            msg = "Testing centroidal tessellation: Run: $i"
             p1 = randn(2, 50)
             p2 = rand(SVector{2,Float64}, 30)
             p3 = rand(Point2f, 250)
@@ -984,9 +984,9 @@ end
                 points = _pts[jj]
                 tri = triangulate(points, predicates=PT())
                 vorn = voronoi(tri, clip=true, predicates=PT())
-                @test validate_tessellation(vorn, check_convex=!(jj ∈ (3, 4, 7, 8)), predicates=PT())
+                @test_with_log msg validate_tessellation(vorn, check_convex=!(jj ∈ (3, 4, 7, 8)), predicates=PT())
                 for smooth_vorn in (centroidal_smooth(vorn, maxiters=5000, predicates=PT()), voronoi(tri, clip=true, smooth=true, maxiters=5000, predicates=PT()))
-                    @test validate_tessellation(smooth_vorn, check_convex=!(jj ∈ (3, 4, 7, 8)), predicates=PT())
+                    @test_with_log msg validate_tessellation(smooth_vorn, check_convex=!(jj ∈ (3, 4, 7, 8)), predicates=PT())
                     for i in each_polygon_index(smooth_vorn)
                         p = get_generator(smooth_vorn, i)
                         c = DT.get_centroid(smooth_vorn, i)
