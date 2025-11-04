@@ -60,11 +60,11 @@ Returns `true` if the element at index `k` is the root of a heap.
 """
 is_root(k) = isone(k)
 
-"""
-    Base.length(queue::MaxPriorityQueue) -> Int
+#=
+    length(queue::MaxPriorityQueue) -> Int
 
 Returns the number of elements in `queue`.
-"""
+=#
 Base.length(queue::MaxPriorityQueue) = length(queue.data)
 
 """
@@ -74,25 +74,25 @@ Returns `true` if the element at index `k` has children in the `queue`.
 """
 has_children(queue::MaxPriorityQueue, k) = hleft(k) ≤ length(queue)
 
-"""
+#=
     isempty(queue::MaxPriorityQueue) -> Bool
 
 Returns `true` if the `queue` is empty.
-"""
+=#
 Base.isempty(queue::MaxPriorityQueue) = isempty(queue.data)
 
-"""
+#=
     haskey(queue::MaxPriorityQueue, key) -> Bool
 
 Returns `true` if the `queue` has an element with key `key`.
-"""
+=#
 Base.haskey(queue::MaxPriorityQueue, key) = haskey(queue.map, key)
 
-"""
+#=
     first(queue::MaxPriorityQueue) -> Pair{K, V}
 
 Returns the element with the highest priority in a `queue`, without removing it from `queue`.
-"""
+=#
 Base.first(queue::MaxPriorityQueue) = first(queue.data)
 
 """
@@ -157,12 +157,12 @@ function fix_down!(queue::MaxPriorityQueue, k::Int)
     return queue
 end
 
-"""
+#=
     setindex!(queue::MaxPriorityQueue, priority, key)
     queue[key] = priority
 
 Sets the priority of the element with key `key` in a `queue` to `priority`, or adds the element to the `queue` if it is not already present.
-"""
+=#
 function Base.setindex!(queue::MaxPriorityQueue{K, V}, priority, key) where {K, V}
     new_pair = Pair{K, V}(key, priority)
     if haskey(queue, key)
@@ -180,11 +180,11 @@ function Base.setindex!(queue::MaxPriorityQueue{K, V}, priority, key) where {K, 
     return priority
 end
 
-"""
+#=
     push!(queue::MaxPriorityQueue, pair)
 
 Adds the key-value pair `pair` to the `queue`.
-"""
+=#
 function Base.push!(queue::MaxPriorityQueue, pair::Pair)
     key = pair.first
     if haskey(queue, key)
@@ -196,11 +196,11 @@ function Base.push!(queue::MaxPriorityQueue, pair::Pair)
     return queue
 end
 
-"""
+#=
     popfirst!(queue::MaxPriorityQueue{K, V}) where {K, V} -> Pair{K, V}
 
 Removes and returns the element with the highest priority from the `queue`.
-"""
+=#
 function Base.popfirst!(queue::MaxPriorityQueue)
     root = queue.data[begin]
     last = pop!(queue.data)
@@ -213,12 +213,12 @@ function Base.popfirst!(queue::MaxPriorityQueue)
     return root
 end
 
-"""
+#=
     getindex(queue::MaxPriorityQueue, key) 
     queue[key]
 
 Returns the priority of the element with key `key` in a `queue`.
-"""
+=#
 function Base.getindex(queue::MaxPriorityQueue, key)
     return queue.data[queue.map[key]].second
 end

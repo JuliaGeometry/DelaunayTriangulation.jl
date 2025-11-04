@@ -234,13 +234,13 @@ end
         for i in 1:length(true_triangle_queue)
             T, ρ = DT.popfirst_triangle!(queue)
             push!(triangle_res, DT.sort_triangle(T) => ρ)
-            T, ρ = dequeue_pair!(true_triangle_queue)
+            T, ρ = popfirst!(true_triangle_queue)
             push!(true_triangle_res, T => ρ)
         end
         for i in 1:length(true_segment_queue)
             e, ℓ = DT.popfirst_segment!(queue)
             push!(segment_res, (e[1] < e[2] ? e : DT.reverse_edge(e)) => ℓ)
-            e, ℓ = dequeue_pair!(true_segment_queue)
+            e, ℓ = popfirst!(true_segment_queue)
             push!(true_segment_res, e => ℓ)
         end
         @test length(true_triangle_queue) == length(queue.triangles) == 0
@@ -1196,7 +1196,7 @@ end
             @inferred triangulate(rand(2, 250))
         end
         for (iii, tri) in enumerate((tri_1, tri_2, tri_3, tri_4, tri_5, tri_6))
-            @info "Testing if encroached edges are detected. Run: $iii."
+            msg = "Testing if encroached edges are detected. Run: $iii."
             args = DT.RefinementArguments(tri; use_lens = false)
             in_dt_encroached_edges, not_in_dt_encroached_edges = slow_encroachment_test(tri)
             all_bn = DT.get_all_boundary_nodes(tri)
@@ -1204,7 +1204,7 @@ end
                 if DT.initial(e) ∈ all_bn && DT.terminal(e) ∈ all_bn && !DT.contains_segment(tri, e) # e.g. if an edge crosses an interior
                     continue
                 end
-                @test DT.is_encroached(tri, args, e) == b
+                @test_with_log msg DT.is_encroached(tri, args, e) == b
             end
             for (e, (b, k)) in in_dt_encroached_edges
                 if DT.initial(e) ∈ all_bn && DT.terminal(e) ∈ all_bn && !DT.contains_segment(tri, e)
@@ -1213,7 +1213,7 @@ end
                 if tri === tri_1 && e == (11, 12) && k == 112 # k is right on e in this case, so we could adjust the code to check e.g. slightly obtuse, but let's just go past it for now 
                     continue
                 end
-                @test DT.is_encroached(tri, args, e) == b
+                @test_with_log msg DT.is_encroached(tri, args, e) == b
             end
 
             in_dt_encroached_edges_lens_45, not_in_dt_encroached_edges_lens_45 = slow_encroachment_test_diametral_lens(tri, 45.0)
@@ -1221,16 +1221,16 @@ end
             in_dt_encroached_edges_lens_20, not_in_dt_encroached_edges_lens_20 = slow_encroachment_test_diametral_lens(tri, 20.0)
             all_bn = DT.get_all_boundary_nodes(tri)
             for (lens_angle, not_in_dt_encroached_edges) in zip((45.0, 30.0, 20.0), (not_in_dt_encroached_edges_lens_45, not_in_dt_encroached_edges_lens_30, not_in_dt_encroached_edges_lens_20))
-                @info "Testing encroached edge detection. lens angle: $lens_angle"
+                msg = "Testing encroached edge detection. lens angle: $lens_angle"
                 args = DT.RefinementArguments(tri; use_lens = true, min_angle = lens_angle)
                 for (e, (b, k)) in not_in_dt_encroached_edges
                     if DT.initial(e) ∈ all_bn && DT.terminal(e) ∈ all_bn && !DT.contains_segment(tri, e) # e.g. if an edge crosses an interior
                         continue
                     end
                     if !b && !DT.unoriented_edge_exists(tri, e) # edge doesn't exist, for collinearities with tri_4 this causes annoying issues since the triangulation isn't unique in that case but the computation of the diametral lens isn't robust enough to distinguish if a point is on the edge or otherwise
-                        @test DT.is_encroached(tri, args, e)
+                        @test_with_log msg DT.is_encroached(tri, args, e)
                     else
-                        @test DT.is_encroached(tri, args, e) == b
+                        @test_with_log msg DT.is_encroached(tri, args, e) == b
                     end
                 end
             end
@@ -1718,7 +1718,7 @@ end
         for iii in 1:5
             for use_lens in (false, true)
                 for pass in 1:2
-                    @info "Testing enqueuing and splitting all encroached segments. Predicates: $PT; Run: $iii; lens: $use_lens; Block: $pass"
+                    msg = "Testing enqueuing and splitting all encroached segments. Predicates: $PT; Run: $iii; lens: $use_lens; Block: $pass"
                     if pass == 1
                         p1 = (0.0, 0.0)
                         p2 = (1.0, 0.0)
@@ -1751,18 +1751,18 @@ end
                         compare_encroach_queues(args, manual_enqueue)
                         empty!(args.events)
                         DT.split_all_encroached_segments!(tri, args)
-                        @test isempty(args.queue.segments)
-                        @test !isempty(args.events.added_triangles)
+                        @test_with_log msg isempty(args.queue.segments)
+                        @test_with_log msg !isempty(args.events.added_triangles)
                         DT.enqueue_all_encroached_segments!(args, tri)
-                        @test isempty(args.queue.segments)
+                        @test_with_log msg isempty(args.queue.segments)
                         if use_lens
                             for e in each_segment(tri)
-                                @test !DT.is_encroached(tri, args, e)
+                                @test_with_log msg !DT.is_encroached(tri, args, e)
                             end
                         else
-                            @test is_conformal(tri)
+                            @test_with_log msg is_conformal(tri)
                         end
-                        @test validate_triangulation(tri)
+                        @test_with_log msg validate_triangulation(tri)
                     else
                         points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
                         for r in LinRange(0.1, 0.9, 15)
@@ -1789,18 +1789,18 @@ end
                         compare_encroach_queues(args, manual_enqueue)
                         empty!(args.events)
                         DT.split_all_encroached_segments!(tri, args)
-                        @test isempty(args.queue.segments)
-                        @test !isempty(args.events.added_triangles)
+                        @test_with_log msg isempty(args.queue.segments)
+                        @test_with_log msg !isempty(args.events.added_triangles)
                         DT.enqueue_all_encroached_segments!(args, tri)
-                        @test isempty(args.queue.segments)
+                        @test_with_log msg isempty(args.queue.segments)
                         if use_lens
                             for e in each_segment(tri)
-                                @test !DT.is_encroached(tri, args, e)
+                                @test_with_log msg !DT.is_encroached(tri, args, e)
                             end
                         else
-                            @test is_conformal(tri)
+                            @test_with_log msg is_conformal(tri)
                         end
-                        @test validate_triangulation(tri)
+                        @test_with_log msg validate_triangulation(tri)
                     end
                 end
             end
@@ -2269,7 +2269,7 @@ end
                 for (idx3, min_area) in enumerate((1.0e-12,))
                     for (idx4, max_area) in enumerate((1.0e-1, 1.0e-2))
                         for (idx5, seditious_angle) in enumerate((10.0, 20.0))
-                            @info "Testing refinement of a simple convex example. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle."
+                            msg = "Testing refinement of a simple convex example. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle."
                             rng = StableRNG(_rng_num(idx1, idx2, idx3, idx4, idx5))
                             points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
                             tri = triangulate(points; boundary_nodes = [1, 2, 3, 4, 1], rng)
@@ -2282,7 +2282,7 @@ end
                             end
                             refine!(tri; min_angle, min_area, max_area, custom_constraint, seditious_angle, use_circumcenter = true, use_lens, rng)
                             args = DT.RefinementArguments(tri; min_angle, min_area, max_area, seditious_angle, custom_constraint, use_circumcenter = true, use_lens)
-                            @test validate_refinement(tri, args)
+                            @test_with_log msg validate_refinement(tri, args)
                             if _rng_num(idx1, idx2, idx3, idx4, idx5) == _rng_num(1, 3, 1, 2, 2)
                                 fig, ax, sc = triplot(tri)
                                 @test_reference "a_simple_convex_example_circle.png" fig by = psnr_equality(15)
@@ -2303,7 +2303,7 @@ end
                 for (idx3, min_area) in enumerate((1.0e-12,))
                     for (idx4, max_area) in enumerate((1.0e-2, 1.0e-3, 1.0e-4))
                         for (idx5, seditious_angle) in enumerate((20.0, 40.0))
-                            @info "Testing refinement of a triangulation with a hole. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle."
+                            msg = "Testing refinement of a triangulation with a hole. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle."
                             rng = StableRNG(_rng_num(idx1, idx2, idx3, idx4, idx5))
                             points = [
                                 (0.0, 0.0), (0.5, 0.1), (1.0, 0.0), (0.9, 0.5), (1.0, 1.0), (0.5, 0.9), (0.0, 1.0),
@@ -2312,7 +2312,7 @@ end
                             boundary_nodes = [[[1, 2, 3, 4, 5, 6, 7, 1]], [[11, 10, 9, 8, 11]]]
                             tri = triangulate(points; boundary_nodes, rng)
                             refine!(tri; min_angle, min_area, max_area, use_circumcenter = true, use_lens, rng, seditious_angle)
-                            @test validate_refinement(tri, DT.RefinementArguments(tri; min_angle, min_area, seditious_angle, max_area, use_circumcenter = true, use_lens))
+                            @test_with_log msg validate_refinement(tri, DT.RefinementArguments(tri; min_angle, min_area, seditious_angle, max_area, use_circumcenter = true, use_lens))
                             if _rng_num(idx1, idx2, idx3, idx4, idx5) == _rng_num(1, 3, 1, 3, 1)
                                 fig, ax, sc = triplot(tri)
                                 @test_reference "triangulation_with_a_hole_circle.png" fig by = psnr_equality(15)
@@ -2333,7 +2333,7 @@ end
                 for (idx3, min_area) in enumerate((1.0e-12,))
                     for (idx4, max_area) in enumerate((1.0e-1, 1.0e-3, 1.0e-4))
                         for (idx5, seditious_angle) in enumerate((10.0, 20.0, 60.0))
-                            @info "Testing refinement of a very non-convex example. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle."
+                            msg = "Testing refinement of a very non-convex example. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle."
                             rng = StableRNG(_rng_num(idx1, idx2, idx3, idx4, idx5))
                             points = [
                                 (0.0, 0.0), (0.0, 1.0), (0.1, 1.0),
@@ -2349,7 +2349,7 @@ end
                             boundary_nodes, points = convert_boundary_points_to_indices(points)
                             tri = triangulate(points; boundary_nodes, rng)
                             refine!(tri; min_angle, min_area, max_area, use_circumcenter = true, use_lens, seditious_angle, rng)
-                            @test validate_refinement(tri; min_angle, min_area, max_area, seditious_angle, use_circumcenter = true, use_lens, check_conformal = false)
+                            @test_with_log msg validate_refinement(tri; min_angle, min_area, max_area, seditious_angle, use_circumcenter = true, use_lens, check_conformal = false)
                             if _rng_num(idx1, idx2, idx3, idx4, idx5) == _rng_num(1, 3, 1, 3, 2)
                                 fig, ax, sc = triplot(tri)
                                 @test_reference "a_very_non_convex_example_circle.png" fig
@@ -2370,7 +2370,7 @@ end
                 for (idx3, min_area) in enumerate((1.0e-12,))
                     for (idx4, max_area) in enumerate((1.0e-2, 1.0e-3, 1.0e-4))
                         for (idx5, seditious_angle) in enumerate((20.0, 40.0))
-                            @info "Testing refinement of a triangulation with multiple holes. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle."
+                            msg = "Testing refinement of a triangulation with multiple holes. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle."
                             rng = StableRNG(_rng_num(idx1, idx2, idx3, idx4, idx5))
                             curve_1 = [
                                 [
@@ -2409,7 +2409,7 @@ end
                             tri = triangulate(points; boundary_nodes, rng)
                             _max_area = max_area * get_area(tri)
                             refine!(tri; min_angle, min_area, max_area = _max_area, use_circumcenter = true, seditious_angle, use_lens, rng)
-                            @test validate_refinement(tri; min_angle, min_area, max_area = _max_area, use_circumcenter = true, seditious_angle, use_lens, check_conformal = false)
+                            @test_with_log msg validate_refinement(tri; min_angle, min_area, max_area = _max_area, use_circumcenter = true, seditious_angle, use_lens, check_conformal = false)
                             if _rng_num(idx1, idx2, idx3, idx4, idx5) == _rng_num(1, 3, 1, 3, 1)
                                 fig, ax, sc = triplot(tri)
                                 @test_reference "a_constrained_triangulation_with_multiple_holes_circle.png" fig by = psnr_equality(15)
@@ -2430,7 +2430,7 @@ end
                 for (idx3, min_area) in enumerate((1.0e-12,))
                     for (idx4, max_area) in enumerate((1.0e-1, 1.0e-2, 1.0e-4))
                         for (idx5, seditious_angle) in enumerate((10.0, 20.0))
-                            @info "Testing refinement of a square. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle."
+                            msg = "Testing refinement of a square. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle."
                             rng = StableRNG(_rng_num(idx1, idx2, idx3, idx4, idx5))
                             p1 = (0.0, 0.0)
                             p2 = (1.0, 0.0)
@@ -2440,14 +2440,14 @@ end
                             tri = triangulate(pts; rng)
                             refine!(tri; min_angle, min_area, max_area, use_circumcenter = true, seditious_angle, use_lens, rng)
                             stats = statistics(tri)
-                            @test DT.get_smallest_angle(stats) ≥ deg2rad(min_angle)
-                            @test DT.get_largest_area(stats) ≤ max_area
-                            @test DT.get_smallest_area(stats) ≥ min_area
-                            @test !DT.is_constrained(tri)
-                            @test DT.convex_hull(tri).vertices == DT.convex_hull(tri.points).vertices
-                            @test validate_triangulation(tri)
-                            validate_statistics(tri)
-                            @test validate_refinement(tri; min_angle, min_area, max_area, seditious_angle, use_circumcenter = true, use_lens)
+                            @test_with_log msg DT.get_smallest_angle(stats) ≥ deg2rad(min_angle)
+                            @test_with_log msg DT.get_largest_area(stats) ≤ max_area
+                            @test_with_log msg DT.get_smallest_area(stats) ≥ min_area
+                            @test_with_log msg !DT.is_constrained(tri)
+                            @test_with_log msg DT.convex_hull(tri).vertices == DT.convex_hull(tri.points).vertices
+                            @test_with_log msg validate_triangulation(tri)
+                            validate_statistics(tri; msg)
+                            @test_with_log msg validate_refinement(tri; min_angle, min_area, max_area, seditious_angle, use_circumcenter = true, use_lens)
                             if _rng_num(idx1, idx2, idx3, idx4, idx5) == _rng_num(1, 4, 1, 3, 2)
                                 fig, ax, sc = triplot(tri)
                                 @test_reference "another_square_example_circle.png" fig by = psnr_equality(15)
@@ -2483,7 +2483,7 @@ end
                 for (idx3, min_area) in enumerate((1.0e-12,))
                     for (idx4, max_area) in enumerate((1.0e-1, 1.0e-2))
                         for (idx5, seditious_angle) in enumerate((10.0, 20.0))
-                            @info "Testing that infinite bouncing is avoided during refinement. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle."
+                            msg = "Testing that infinite bouncing is avoided during refinement. use_lens: $use_lens; min_angle: $min_angle; min_area: $min_area; max_area: $max_area; seditious_angle: $seditious_angle."
                             p1 = (0.0, 0.0)
                             p2 = (1.0, 0.0)
                             p3 = (0.0, 0.7)
@@ -2493,8 +2493,8 @@ end
                             tri = triangulate(pts; rng)
                             add_segment!(tri, 1, 4; rng)
                             refine!(tri; min_angle, min_area, max_area, seditious_angle, use_circumcenter = true, use_lens, rng)
-                            @test validate_refinement(tri; min_angle, min_area, max_area, seditious_angle, use_circumcenter = true, use_lens)
-                            validate_statistics(tri)
+                            @test_with_log msg validate_refinement(tri; min_angle, min_area, max_area, seditious_angle, use_circumcenter = true, use_lens)
+                            validate_statistics(tri; msg)
                             if _rng_num(idx1, idx2, idx3, idx4, idx5) == _rng_num(1, 3, 1, 2, 2)
                                 fig, ax, sc = triplot(tri)
                                 @test_reference "avoid_bouncing_concentric_circular_shells_circle.png" fig by = psnr_equality(15)
@@ -2511,33 +2511,33 @@ end
 
     @testset "some seditious edge testing and default calls" begin
         for i in 1:10
-            @info "Testing seditious edges. Run: $i"
+            msg = "Testing seditious edges. Run: $i"
             points = [(0.0, 0.0), (1.0, 0.0), (0.8, 0.2)]
             tri = triangulate(points)
             refine!(tri, use_circumcenter = true)
             @test_reference "seditious_edge_testing_1.png" triplot(tri) by = psnr_equality(15)
-            @test validate_refinement(tri, use_circumcenter = true)
-            validate_statistics(tri)
+            @test_with_log msg validate_refinement(tri, use_circumcenter = true)
+            validate_statistics(tri; msg)
 
             points = [(0.0, 0.0), (1.0, 0.0), (0.8, 0.2)]
             tri = triangulate(points)
             refine!(tri, use_circumcenter = true, use_lens = false)
             @test_reference "seditious_edge_testing_2.png" triplot(tri) by = psnr_equality(15)
-            @test validate_refinement(tri, use_circumcenter = true, use_lens = false)
-            validate_statistics(tri)
+            @test_with_log msg validate_refinement(tri, use_circumcenter = true, use_lens = false)
+            validate_statistics(tri; msg)
 
             points = [(0.0, 0.0), (1.0, 0.0), (0.8, 0.2)]
             tri = triangulate(points)
             args = DT.RefinementArguments(tri, use_circumcenter = true, use_lens = false, max_area = 1.0e-3get_area(tri))
             refine!(tri, args)
-            @test validate_refinement(tri, args)
+            @test_with_log msg validate_refinement(tri, args)
             @test_reference "seditious_edge_testing_3.png" triplot(tri) by = psnr_equality(15)
-            validate_statistics(tri)
+            validate_statistics(tri; msg)
         end
     end
 
     @testset "Triangulating with an interior hole" begin
-        @info "Testing triangulation of an interior hole"
+        msg = "Testing triangulation of an interior hole"
         p1 = (0.0, 0.0)
         p2 = (1.0, 0.0)
         p3 = (1.0, 1.0)
@@ -2560,19 +2560,19 @@ end
         add_segment!(tri, 10, 11; rng)
         refine!(tri; max_area = 0.001, max_points = 5000, use_circumcenter = true, use_lens = true, rng)
         stats = statistics(tri)
-        @test DT.get_smallest_angle(stats) ≥ deg2rad(30)
-        @test DT.get_largest_area(stats) ≤ 0.001
-        @test DT.is_constrained(tri)
-        @test DT.convex_hull(tri).vertices == DT.convex_hull(tri.points).vertices
-        validate_statistics(tri, stats)
-        @test validate_triangulation(tri)
-        @test validate_refinement(tri; max_area = 0.001, max_points = 5000, use_circumcenter = true, use_lens = true)
+        @test_with_log msg DT.get_smallest_angle(stats) ≥ deg2rad(30)
+        @test_with_log msg DT.get_largest_area(stats) ≤ 0.001
+        @test_with_log msg DT.is_constrained(tri)
+        @test_with_log msg DT.convex_hull(tri).vertices == DT.convex_hull(tri.points).vertices
+        validate_statistics(tri, stats; msg)
+        @test_with_log msg validate_triangulation(tri)
+        @test_with_log msg validate_refinement(tri; max_area = 0.001, max_points = 5000, use_circumcenter = true, use_lens = true)
         fig, ax, sc = triplot(tri)
         @test_reference "triangulating_with_an_interior_hole.png" fig by = psnr_equality(15)
     end
 
     @testset "Refining disjoint sets" begin
-        @info "Testing the refinement of disjoint sets"
+        msg = "Testing the refinement of disjoint sets"
         θ = LinRange(0, 2π, 30) |> collect
         θ[end] = 0
         xy = Vector{Vector{Vector{NTuple{2, Float64}}}}()
@@ -2590,8 +2590,8 @@ end
         min_area = 1.0e-9A
         refine!(tri; min_area, rng, max_area, use_circumcenter = true)
         stats = statistics(tri)
-        validate_statistics(tri)
-        @test validate_refinement(tri; min_area, max_area, use_circumcenter = true)
+        validate_statistics(tri; msg)
+        @test_with_log msg validate_refinement(tri; min_area, max_area, use_circumcenter = true)
         fig, ax, sc = triplot(tri)
         @test_reference "refining_disjoint_sets.png" fig by = psnr_equality(15)
     end
@@ -2601,7 +2601,7 @@ end
             ps = 0
             fig = Figure(fontsize = 52)
             for i in 1:12
-                @info "Testing refinement with small angles. Run: $i; Predicates: $PT"
+                msg = "Testing refinement with small angles. Run: $i; Predicates: $PT"
                 if i > 6
                     use_lens = true
                     i -= 6
@@ -2632,8 +2632,8 @@ end
                 refine!(tri; min_angle = 27.3, min_area = 0.0, use_circumcenter = true, rng, use_lens, predicates = PT())
                 stats = statistics(tri)
                 ps += DT.get_largest_angle(stats) ≤ max(π - 2 * deg2rad(17.0), 2asin((sqrt(3) - 1) / 2)) # Corollary 8 of "When and Why Ruppert's Algorithm Works. In Twelfth International Meshing Roundtable, pp. 91–102, Santa Fe, NM, Sept 2003."
-                validate_statistics(tri)
-                @test validate_refinement(tri; min_angle = 27.3, min_area = 0.0, use_circumcenter = true, warn = false, use_lens, rng)
+                validate_statistics(tri; msg)
+                @test_with_log msg validate_refinement(tri; min_angle = 27.3, min_area = 0.0, use_circumcenter = true, warn = false, use_lens, rng)
                 triplot!(ax, tri)
             end
             resize_to_layout!(fig)
@@ -2643,7 +2643,7 @@ end
     end
 
     @testset "Another disjoint domain" begin
-        @info "Testing refinement of another disjoint domain"
+        msg = "Testing refinement of another disjoint domain"
         rng = StableRNG(123)
         t = (collect ∘ LinRange)(0, 2π, 50)
         t[end] = 0
@@ -2669,18 +2669,18 @@ end
             c ∉ keys(bem) && c′ ∉ keys(bem) && push!(C′, c)
         end
         tri = triangulate(points; boundary_nodes, rng, segments = C′)
-        @test DT.is_disjoint(tri)
-        @test validate_triangulation(tri)
+        @test_with_log msg DT.is_disjoint(tri)
+        @test_with_log msg validate_triangulation(tri)
         A = DT.get_area(tri)
         refine!(tri, max_area = 1.0e-3A, min_area = 1.0e-12A, rng = rng, use_circumcenter = true, use_lens = true)
-        validate_statistics(tri)
-        @test validate_refinement(tri, max_area = 1.0e-3A, min_area = 0.0, use_circumcenter = true, use_lens = true, warn = false)
+        validate_statistics(tri; msg)
+        @test_with_log msg validate_refinement(tri, max_area = 1.0e-3A, min_area = 0.0, use_circumcenter = true, use_lens = true, warn = false)
         fig, ax, sc = triplot(tri)
         @test_reference "refining_disjoint_sets_2.png" fig by = psnr_equality(15)
     end
 
     @testset "Tight example with a single triangle boundary interior" begin
-        @info "Testing refinement with a single triangle boundary interior"
+        msg = "Testing refinement with a single triangle boundary interior"
         A = (0.0, 0.0)
         B = (0.0, 25.0)
         C = (5.0, 25.0)
@@ -2723,17 +2723,17 @@ end
         nodes, points = convert_boundary_points_to_indices(boundary_pts)
         rng = StableRNG(123)
         tri = triangulate(points; boundary_nodes = nodes, rng)
-        @test validate_triangulation(tri)
+        @test_with_log msg validate_triangulation(tri)
         A = get_area(tri)
         refine!(tri; max_area = 1.0e-3A, use_circumcenter = true, rng)
-        validate_statistics(tri)
-        @test validate_refinement(tri; max_area = 1.0e-3A, rng, use_circumcenter = true, warn = true)
+        validate_statistics(tri; msg)
+        @test_with_log msg validate_refinement(tri; max_area = 1.0e-3A, rng, use_circumcenter = true, warn = true)
         fig, ax, sc = triplot(tri)
         @test_reference "tight_example_with_a_single_triangle_boundary_interior.png" fig by = psnr_equality(15)
     end
 
     @testset "A complicated example with tight walls and small angles" begin
-        @info "Testing refinement of a complicated example with tight walls and small angles"
+        msg = "Testing refinement of a complicated example with tight walls and small angles"
         rng = StableRNG(123456)
         A = (0.0, 0.0)
         B = (0.0, 25.0)
@@ -2797,10 +2797,10 @@ end
             push!(C, (48, 48 + i))
         end
         tri = triangulate(points; boundary_nodes = nodes, segments = C, rng)
-        @test validate_triangulation(tri)
+        @test_with_log msg validate_triangulation(tri)
         A = get_area(tri)
         refine!(tri; max_area = 1.0, rng, use_circumcenter = true)
-        validate_statistics(tri)
+        validate_statistics(tri; msg)
         fig, ax, sc = triplot(tri)
         @test_reference "complicated_example_with_tight_walls_and_small_angles.png" fig by = psnr_equality(15)
     end
@@ -2809,7 +2809,7 @@ end
     if !(get(ENV, "CI", "false") == "true")
         @testset "Tasmania" begin
             for PT in (DT.ExactKernel, DT.AdaptiveKernel)
-                @info "Testing refinement of Tasmnia. Predicates: $PT"
+                msg = "Testing refinement of Tasmnia. Predicates: $PT"
                 rng = StableRNG(123)
                 tassy_path = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "test", "tassy.txt")
                 tassy = readdlm(tassy_path)
@@ -2822,8 +2822,8 @@ end
                 tri = triangulate(points; rng, boundary_nodes=boundary_nodes, predicates=PT())
                 A = get_area(tri)
                 refine!(tri; max_area=1e-2A, use_circumcenter=true, rng, predicates=PT())
-                validate_statistics(tri)
-                @test validate_refinement(tri; max_area=1e-2A, rng, use_circumcenter=true, warn=false)
+                validate_statistics(tri; msg)
+                @test_with_log msg validate_refinement(tri; max_area=1e-2A, rng, use_circumcenter=true, warn=false)
                 fig, ax, sc = triplot(tri)
                 @test_reference "tasmania.png" fig by = psnr_equality(15)
             end
@@ -2885,7 +2885,7 @@ end
     end
 
     @testset "Custom refinement example" begin
-        @info "Testing refinement with custom constraints"
+        msg = "Testing refinement with custom constraints"
         rng = StableRNG(123)
         points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
         tri = triangulate(points; rng)
@@ -2926,13 +2926,13 @@ end
         for T in each_triangle(tri)
             push!(stat, custom_refine_ex(tri, T))
         end
-        @test !any(stat)
-        @test validate_refinement(tri; custom_constraint = custom_refine_ex, use_circumcenter = true)
-        validate_statistics(tri)
+        @test_with_log msg !any(stat)
+        @test_with_log msg validate_refinement(tri; custom_constraint = custom_refine_ex, use_circumcenter = true)
+        validate_statistics(tri; msg)
     end
 
     @testset "Julia logo" begin
-        @info "Testing refinement of the Julia logo"
+        msg = "Testing refinement of the Julia logo"
         rng = StableRNG(123)
         C = (15.7109521325776, 33.244486807457)
         D = (14.2705719699703, 32.8530791545746)
@@ -3095,8 +3095,8 @@ end
         tri = triangulate(points; boundary_nodes = nodes, rng)
         A = get_area(tri)
         refine!(tri; min_angle = 26.45, max_area = 0.005A / 9, rng, use_circumcenter = true)
-        validate_statistics(tri)
-        @test validate_refinement(tri; min_angle = 26.45, max_area = 0.005A / 9, rng, use_circumcenter = true)
+        validate_statistics(tri; msg)
+        @test_with_log msg validate_refinement(tri; min_angle = 26.45, max_area = 0.005A / 9, rng, use_circumcenter = true)
         fig, ax, sc = triplot(tri)
         @test_reference "julia_logo.png" fig by = psnr_equality(15)
     end

@@ -157,7 +157,7 @@ resize_to_layout!(fig)
 ```
 
 ```@example refex
-fig # hide
+fig #hide
 ```
 
 In this figure, the blue circle shows the diametral circle, and the red shape shows the diametral lens, the grey line is the perpendicular bisector of $e_{uv}$, and the magenta circles show the two circles whose intersection defines the diametral lens. Checking if a point $p$ is inside the diametral lens can be done using an extended version of Thales' theorem (see, for example, Theorem 9 in [Lisboa's thesis](https://repositorio.ufmg.br/bitstream/1843/RHCT-7GMJR6/1/adriano_chaves_lisboa.pdf)). We define the quantity 
@@ -248,7 +248,7 @@ resize_to_layout!(fig)
 ```
 
 ```@example refex
-fig # hide
+fig #hide
 ```
 
 In the first figure, the bottom segment $e_1$ encroaches upon the vertex of the other adjoining segment $e_2$, so we split $e_1$ at its midpoint. Once we insert this new midpoint, the segment $e_2$ is encroached upon, and so we need to split $e_2$. The third figure then shows how the new segment of $e_1$ is encroached upon by the vertex adding onto $e_2$, and so yet again we must split this subsegment. We can continue this process again to obtain the fourth figure. This will repeat indefinitely, leading to many points added as shown in the last figure. This is the ping-pong encroachment problem.
@@ -319,7 +319,7 @@ resize_to_layout!(fig)
 ```
 
 ```@example refex
-fig # hide
+fig #hide
 ```
 
 In the second and third figures we have two midpoint splits since the segments are the input segments. For the subsegment in the fourth figure, we see that the new point is being put onto the concentric circles surrounding the input vertex, and similarly for the last figure. In the last figure, we finally see that the newly inserted vertx is no longer encroaching upon the other subsegment, and so the ping-pong encroachment stops.

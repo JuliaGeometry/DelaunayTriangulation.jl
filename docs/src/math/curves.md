@@ -100,7 +100,7 @@ resize_to_layout!(fig)
 ```
 
 ```@example curvexs1 
-fig # hide
+fig #hide
 ```
 
 There are many orientation markers on this curve. Only two of these come from $\kappa(t) = 0$, with all the others coming from $x', y', x''$, and $y''$, as we can see from the graphs shown.
@@ -140,7 +140,7 @@ resize_to_layout!(fig)
 ```
 
 ```@example curvexs1
-fig # hide
+fig #hide
 ```
 
 ### Position of a point relative to a curve 
@@ -173,7 +173,7 @@ resize_to_layout!(fig)
 ```
 
 ```@example curvexs1
-fig # hide
+fig #hide
 ```
 
 ### Computing equidistant splits
@@ -217,7 +217,7 @@ resize_to_layout!(fig)
 ```
 
 ```@example curvexs1
-fig # hide
+fig #hide
 ```
 
 ## LineSegment

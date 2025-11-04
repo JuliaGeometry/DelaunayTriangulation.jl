@@ -38,9 +38,9 @@ Returns the next cell in the queue.
 """
 get_next_cell!(queue::CellQueue) = popfirst!(queue.queue).first
 
-"""
+#=
     isempty(queue::CellQueue) -> Bool 
 
 Returns `true` if the `queue` is empty, and `false` otherwise.
-"""
+=#
 Base.isempty(queue::CellQueue) = Base.isempty(queue.queue)

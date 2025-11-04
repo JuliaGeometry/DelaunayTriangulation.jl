@@ -20,7 +20,7 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
 BenchmarkTools = "1.5"
-CairoMakie = "0.12"
+CairoMakie = "0.15"
 Dates = "1.11"
 Documenter = "1.5.0"
 DocumenterTools = "0.1"
@@ -34,3 +34,6 @@ SimpleGraphs = "0.8"
 StableRNGs = "1.0"
 StatsBase = "0.34"
 Test = "1.11"
+
+[sources]
+DelaunayTriangulation = { path = ".." }

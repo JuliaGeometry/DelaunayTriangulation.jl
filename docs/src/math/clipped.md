@@ -25,7 +25,7 @@ resize_to_layout!(fig)
 ```
 
 ```@example vornclip11
-fig # hide
+fig #hide
 ```
 
 At the end of this section, we also discuss the intersection of $\mathcal V(\mathcal P)$ with a rectangle, and then discuss clipping $\mathcal V(\mathcal P)$ more generically to a given convex polygon.
@@ -100,7 +100,7 @@ resize_to_layout!(fig)
 ```
 
 ```@example vornclip11
-fig # hide
+fig #hide
 ```
 
 In the first figure above, we are considering the processing of an edge $e$. The Voronoi polygon $\mathcal V$ we consider incident to $e$ is shown, obtained by finding that the midpoint of $e$ is contained in $\mathcal V$. By just processing the intersections of $\mathcal V$, we find the intersections with $\mathcal C\mathcal H(\mathcal P)$ (shown in magenta) shown in orange. This alone is not enough, though, as we can see that we don't identify that the black dot between $e_\ell$ and $e$ should be included in this intersection. This dot is an example of a corner point we were discussing previously, showing the need for this extra processing step. Note also from the above figure that  unbounded polygons $\mathcal V$ alone are not sufficient for checking all intersections, as we can see that some of the bounded polygons also intersect with the convex hull. Eventually, after processing all edges in this way, we obtain the set of orange points shown in the second figure.
@@ -157,7 +157,7 @@ resize_to_layout!(fig)
 ```
 
 ```@example suthodg
-fig # hide
+fig #hide
 ```
 
 In the figure above, the black polygon shows the subject polygon and the red polygon is the clip polygon. Our aim is to clip the subject polygon to the clip polygon to obtain the blue polygon shown. Letting $\mathcal P_S = \{p_1, \ldots, p_n\}$ and $\mathcal P_C = \{q_1, \ldots, q_m\}$ be the subject and clip polygons listed in counter-clockwise order with $p_1 \neq p_n$ and $q_1 \neq q_m$, respectively, the procedure for this clipping as follows:
@@ -208,7 +208,7 @@ resize_to_layout!(fig)
 ```
 
 ```@example suthodg
-fig # hide
+fig #hide
 ```
 
 In the figure above, we show the individual steps of this algorithm. In the second panel, the blue line shows the extended edge of the clip polygon that we use to slice the subject polygon, clipping it onto the edge. For the next four panels, the blue line never touches the subject polygon, and so nothing happens. The last two panels show the last two clips needed to obtain the final polygon.
@@ -270,7 +270,7 @@ resize_to_layout!(fig)
 ```
 
 ```@example suthodg
-fig # hide
+fig #hide
 ```
 
 In the figure above, the polygon we are interested is the one corresponding to the black dot, and we want to clip this polygon to the red rectangle. The following figures show how we grow the polygon's unbounded edges to begin.
@@ -324,7 +324,7 @@ resize_to_layout!(fig)
 ```
 
 ```@example suthodg
-fig # hide
+fig #hide
 ```
 
 In these figures, the blue polygon shows the Voronoi polygon, and the green edges show the approximations to the unbounded rays; the top-most ray starts away from the polygon since the midpoint is further behind the associated circumcenter in this case. The magenta line shows the line segment joining the two approximations - the aim is to grow the green edges long enough such that the magenta line is completely outside of the red rectangle. Let's analyse each figure.
@@ -350,7 +350,7 @@ resize_to_layout!(fig)
 ```
 
 ```@example suthodg
-fig # hide
+fig #hide
 ```
 
 ## Computing the intersection of the Voronoi tessellation with a convex polygon

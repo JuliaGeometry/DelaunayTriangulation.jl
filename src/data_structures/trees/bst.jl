@@ -239,11 +239,11 @@ Returns `true` if `tree` has a root, `false` otherwise.
 """
 has_root(tree::BalancedBST) = !isnothing(get_root(tree))
 
-"""
+#=
     push!(tree::BalancedBST{K}, key::K)
 
 Inserts `key` into `tree` if it is not already present.
-"""
+=#
 function Base.push!(tree::BalancedBST, key)
     haskey(tree, key) && return tree
     root = get_root(tree)
@@ -381,11 +381,11 @@ function rotate_right!(parent::BalancedBSTNode)
     return left_child
 end
 
-"""
+#=
     findfirst(tree::BalancedBST{K}, key::K) -> Union{Nothing,BalancedBSTNode{K}}
 
 Returns the node in `tree` with key `key`. If no such node exists, returns `nothing`.
-"""
+=#
 function Base.findfirst(tree::BalancedBST, key)
     prev = nothing
     node = get_root(tree)
@@ -404,22 +404,22 @@ function Base.findfirst(tree::BalancedBST, key)
     end
 end
 
-"""
+#=
     haskey(tree::BalancedBST{K}, key::K) -> Bool
 
 Returns `true` if `tree` has a node with key `key`, `false` otherwise.
-"""
+=#
 function Base.haskey(tree::BalancedBST, key)
     !has_root(tree) && return false
     node = findfirst(tree, key)
     return get_key(node) == key
 end
 
-"""
+#=
     delete!(tree::BalancedBST{K}, key::K) -> BalancedBST{K}
 
 Deletes the node in `tree` with key `key` if it exists. Returns `tree`.
-"""
+=#
 function Base.delete!(tree::BalancedBST, key)
     !haskey(tree, key) && return tree
     root = get_root(tree)

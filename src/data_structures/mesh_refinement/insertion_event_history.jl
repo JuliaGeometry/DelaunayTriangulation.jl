@@ -141,11 +141,11 @@ Returns the type of the triangles in `events`, `T`.
 """
 triangle_type(::InsertionEventHistory{T}) where {T} = T
 
-"""
+#=
     empty!(events::InsertionEventHistory)
 
 Empties `events` by emptying all of its fields.
-"""
+=#
 function Base.empty!(events::InsertionEventHistory)
     empty!(events.added_triangles)
     empty!(events.deleted_triangles)

@@ -58,7 +58,7 @@ triplot!(ax, tri, strokewidth = 3, show_points = true)
 ```
 
 ```@example delaunay_ex1
-fig # hide
+fig #hide
 ```
 
 We can see that the circumcircles of the triangles contain no points in their interior. This is a Delaunay triangulation.
@@ -148,7 +148,7 @@ resize_to_layout!(fig)
 ```
 
 ```@example delaunay_ex1
-fig # hide
+fig #hide
 ```
 
 In the above figure, we are considering insertion the red point into the triangulation. We then then all triangles whose circumcircles contain this red point, shown in blue. Deleting these triangles leaves behind a cavity shown in the third figure. Finally, connecting the vertices of the cavity to the red point gives the final triangulation.
@@ -186,7 +186,7 @@ scatter!(ax, [p, q], color = :red, markersize = 17, strokecolor = :black, stroke
 ```
 
 ```@example delaunay_ex1 
-fig # hide
+fig #hide
 ```
 
 The algorithm draws a line connecting some initial point $q$ and the search point $p$, as shown in red, and then marches along triangles until $p$ is found, traversing the blue triangles shown above. 
@@ -254,7 +254,7 @@ resize_to_layout!(fig)
 ```
 
 ```@example delaunay_ex1
-fig # hide
+fig #hide
 ```
 
 In this example, we are interested in the ghost triangle associated with the blue edge. The oriented outer halfplane for this edge can be defined simply as $H = \{(x, y) ∈ \mathbb R^2 : y > 1\} ∪ \{(x, y) ∈ \mathbb R^2 : 0 < x < 1, y = 1\}$. Using this definition, we see that the red point is not in $H$, the magenta point is in $H$ (in fact, it is exactly on $\partial H$, where $\partial H$ denotes the boundary of $H$), the black point is in $H$, and the green point is not in $H$.
@@ -301,7 +301,7 @@ resize_to_layout!(fig)
 ```
 
 ```@example delaunay_ex1
-fig # hide
+fig #hide
 ```
 
 The ghost edges are the blue lines, and the central point is the red dot. With this definition, we therefore see that we can uniquely each region in space with a triangle - be it a ghost triangle or a real (solid) triangle.
