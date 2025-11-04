@@ -9,9 +9,9 @@ I, J, K, L, M, N = (-1.0, 3.0), (1.0, 3.0),
 points = [A, B, C, D, E, F, G, H, I, J, K, L, M, N]
 weights = randn(length(points))
 tri = triangulate(points; weights)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Delaunay Triangulation.
-   Number of vertices: 14
-   Number of triangles: 18
-   Number of edges: 31
+   Number of vertices: 13
+   Number of triangles: 16
+   Number of edges: 28
    Has boundary nodes: false
    Has ghost triangles: true
    Curve-bounded: false
@@ -30,7 +30,7 @@ triplot!(ax, tri_unweighted, strokecolor = :black)
 ax2 = Axis(fig[1, 2], width = 400, height = 400, title = &quot;Weighted&quot;, titlealign = :left)
 triplot!(ax2, tri, strokecolor = :red)
 resize_to_layout!(fig)
-fig</code></pre><img src="cf430ed6.png" alt="Example block output"/><p>The triangles are of course not the same. Also, note that not all vertices appear in the weighted triangulation. To see the effect of the weights, let&#39;s reset all the weights to zero and see how the triangulation changes as we vary the weight of the point at <span>$(x, y) = (0, 1.5)$</span>, starting with a weight of <span>$-10$</span>.</p><pre><code class="language-julia hljs">w = Observable(-10.0)
+fig</code></pre><img src="f40bd113.png" alt="Example block output"/><p>The triangles are of course not the same. Also, note that not all vertices appear in the weighted triangulation. To see the effect of the weights, let&#39;s reset all the weights to zero and see how the triangulation changes as we vary the weight of the point at <span>$(x, y) = (0, 1.5)$</span>, starting with a weight of <span>$-10$</span>.</p><pre><code class="language-julia hljs">w = Observable(-10.0)
 weights = @lift (wts = zeros(length(points)); wts[10] = $w; wts)
 tri = @lift triangulate(points; weights = $weights)
 weight_itr_base = LinRange(-10, 10, 30*5)
@@ -75,4 +75,4 @@ figure = (fontsize = 24,))
 scatter!(ax, [J], color = :red, markersize = 13)
 record(fig, &quot;varying_weight.mp4&quot;, weight_itr; framerate = 30) do _w
     w[] = _w
-end;</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../curve_bounded/">« Triangulating Curve-Bounded Domains</a><a class="docs-footer-nextpage" href="../voronoi/">Voronoi Tessellations »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.15.0 on <span class="colophon-date" title="Tuesday 4 November 2025 10:01">Tuesday 4 November 2025</span>. Using Julia version 1.12.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end;</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../curve_bounded/">« Triangulating Curve-Bounded Domains</a><a class="docs-footer-nextpage" href="../voronoi/">Voronoi Tessellations »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.15.0 on <span class="colophon-date" title="Tuesday 4 November 2025 13:28">Tuesday 4 November 2025</span>. Using Julia version 1.12.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

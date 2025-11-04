@@ -5,18 +5,19 @@ using CairoMakie
 points = rand(2, 50)
 tri = triangulate(points)
 get_boundary_nodes(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Int64[]</code></pre><p>As you can see, the boundary nodes field is empty. We can lock the convex hull using <a href="../../api/operations/#DelaunayTriangulation.lock_convex_hull!"><code>lock_convex_hull!</code></a>:</p><pre><code class="language-julia hljs">lock_convex_hull!(tri)
-get_boundary_nodes(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">11-element Vector{Int64}:
- 12
+get_boundary_nodes(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">12-element Vector{Int64}:
+ 45
+ 49
+ 42
+ 14
+  8
+ 20
  32
-  1
-  4
+ 24
+ 26
  33
  39
- 34
- 43
- 21
- 13
- 12</code></pre><p>Now the boundary nodes field is not empty. Note that if you try and lock the convex hull again, you will get an error because <code>DelaunayTriangulation.has_boundary_nodes(tri)</code> is now true. To now unlock the convex hull, we use <a href="../../api/operations/#DelaunayTriangulation.unlock_convex_hull!"><code>unlock_convex_hull!</code></a>:</p><pre><code class="language-julia hljs">unlock_convex_hull!(tri)
+ 45</code></pre><p>Now the boundary nodes field is not empty. Note that if you try and lock the convex hull again, you will get an error because <code>DelaunayTriangulation.has_boundary_nodes(tri)</code> is now true. To now unlock the convex hull, we use <a href="../../api/operations/#DelaunayTriangulation.unlock_convex_hull!"><code>unlock_convex_hull!</code></a>:</p><pre><code class="language-julia hljs">unlock_convex_hull!(tri)
 get_boundary_nodes(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Int64[]</code></pre><p>This function will error if it detects that the existing boundary isn&#39;t actually equal to the convex hull.</p><p>Note that this locking/unlocking doesn&#39;t actually change anything about the triangulation, it just adds information into <code>tri</code> to treat it as if you had provided the convex hull as a constrained boundary to start with.</p><h2 id="Just-the-code"><a class="docs-heading-anchor" href="#Just-the-code">Just the code</a><a id="Just-the-code-1"></a><a class="docs-heading-anchor-permalink" href="#Just-the-code" title="Permalink"></a></h2><p>An uncommented version of this example is given below. You can view the source code for this file <a href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/operations_convex_hull_locking.jl">here</a>.</p><pre><code class="language-julia hljs">using DelaunayTriangulation
 using CairoMakie
 
@@ -28,4 +29,4 @@ lock_convex_hull!(tri)
 get_boundary_nodes(tri)
 
 unlock_convex_hull!(tri)
-get_boundary_nodes(tri)</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../operations_split_triangle/">« Triangle Splitting</a><a class="docs-footer-nextpage" href="../refinement/">Mesh Refinement »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.15.0 on <span class="colophon-date" title="Tuesday 4 November 2025 10:01">Tuesday 4 November 2025</span>. Using Julia version 1.12.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+get_boundary_nodes(tri)</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../operations_split_triangle/">« Triangle Splitting</a><a class="docs-footer-nextpage" href="../refinement/">Mesh Refinement »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.15.0 on <span class="colophon-date" title="Tuesday 4 November 2025 13:28">Tuesday 4 November 2025</span>. Using Julia version 1.12.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
