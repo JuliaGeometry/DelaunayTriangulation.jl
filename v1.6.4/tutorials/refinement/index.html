@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Mesh Refinement · DelaunayTriangulation.jl</title><meta name="title" content="Mesh Refinement · DelaunayTriangulation.jl"/><meta property="og:title" content="Mesh Refinement · DelaunayTriangulation.jl"/><meta property="twitter:title" content="Mesh Refinement · DelaunayTriangulation.jl"/><meta name="description" content="Documentation for DelaunayTriangulation.jl."/><meta property="og:description" content="Documentation for DelaunayTriangulation.jl."/><meta property="twitter:description" content="Documentation for DelaunayTriangulation.jl."/><meta property="og:url" content="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/tutorials/refinement/"/><meta property="twitter:url" content="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/tutorials/refinement/"/><link rel="canonical" href="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/tutorials/refinement/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">DelaunayTriangulation.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><input class="collapse-toggle" id="menuitem-2" type="checkbox" checked/><label class="tocitem" for="menuitem-2"><span class="docs-label">Tutorials</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../overview/">Overview</a></li><li><a class="tocitem" href="../unconstrained/">Unconstrained Triangulations</a></li><li><input class="collapse-toggle" id="menuitem-2-3" type="checkbox"/><label class="tocitem" for="menuitem-2-3"><span class="docs-label">Constrained Triangulations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../constrained_edges/">Constrained Edges</a></li><li><a class="tocitem" href="../constrained_outer_boundary/">Outer Boundary</a></li><li><a class="tocitem" href="../constrained_outer_boundary_segmented/">Segmented Outer Boundary</a></li><li><a class="tocitem" href="../constrained_multiply_connected/">Domain with Interior Holes</a></li><li><a class="tocitem" href="../constrained_interior_within_interiors/">Domain with Interior Holes inside Interior Holes</a></li><li><a class="tocitem" href="../constrained_multipolygon/">Disjoint Domains</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-2-4" type="checkbox"/><label class="tocitem" for="menuitem-2-4"><span class="docs-label">Triangulation Operations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../operations_vertex_insertion_deletion/">Vertex Insertion and Deletion</a></li><li><a class="tocitem" href="../operations_segment_insertion/">Edge Insertion</a></li><li><a class="tocitem" href="../operations_ghost_triangles/">Adding or Clearing Ghost Triangles</a></li><li><a class="tocitem" href="../operations_flip_edge/">Edge Flipping</a></li><li><a class="tocitem" href="../operations_legalise_edge/">Legalising an Edge</a></li><li><a class="tocitem" href="../operations_split_edge/">Edge Splitting</a></li><li><a class="tocitem" href="../operations_split_triangle/">Triangle Splitting</a></li><li><a class="tocitem" href="../operations_convex_hull_locking/">Locking and Unlocking the Convex Hull</a></li></ul></li><li class="is-active"><a class="tocitem" href>Mesh Refinement</a><ul class="internal"><li><a class="tocitem" href="#Unconstrained-triangulation"><span>Unconstrained triangulation</span></a></li><li><a class="tocitem" href="#Constrained-triangulation-and-custom-constraints"><span>Constrained triangulation and custom constraints</span></a></li><li><a class="tocitem" href="#Domains-with-small-angles"><span>Domains with small angles</span></a></li><li><a class="tocitem" href="#Just-the-code"><span>Just the code</span></a></li></ul></li><li><a class="tocitem" href="../lattice/">Triangulating Rectangular Regions</a></li><li><a class="tocitem" href="../convex/">Triangulating Convex Polygons</a></li><li><a class="tocitem" href="../curve_bounded/">Triangulating Curve-Bounded Domains</a></li><li><a class="tocitem" href="../weighted/">Weighted Triangulations</a></li><li><a class="tocitem" href="../voronoi/">Voronoi Tessellations</a></li><li><input class="collapse-toggle" id="menuitem-2-11" type="checkbox"/><label class="tocitem" for="menuitem-2-11"><span class="docs-label">Clipped Voronoi Tessellations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../clipped/">Clipping to the Convex Hull</a></li><li><a class="tocitem" href="../clipped_rectangle/">Clipping to a Rectangle</a></li><li><a class="tocitem" href="../clipped_polygon/">Clipping to a Generic Convex Polygon</a></li></ul></li><li><a class="tocitem" href="../centroidal/">Centroidal Voronoi Tessellations</a></li><li><a class="tocitem" href="../power/">Power Diagrams</a></li><li><a class="tocitem" href="../point_location/">Point Location</a></li><li><a class="tocitem" href="../nearest/">Nearest Neighbour Queries</a></li><li><a class="tocitem" href="../convex_hull/">Convex Hulls</a></li><li><a class="tocitem" href="../pole_of_inaccessibility/">Pole of Inaccessibility</a></li><li><a class="tocitem" href="../point_in_polygon/">Point-in-Polygon Testing</a></li><li><a class="tocitem" href="../custom_primitive/">Using Custom Structs for Primitives and Boundaries</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3" type="checkbox"/><label class="tocitem" for="menuitem-3"><span class="docs-label">Manual</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/overview/">Overview</a></li><li><a class="tocitem" href="../../manual/primitives/">Representing Primitives</a></li><li><a class="tocitem" href="../../manual/boundaries/">Representing Boundaries</a></li><li><a class="tocitem" href="../../manual/ghost_triangles/">Ghost (Negative) Vertices</a></li><li><a class="tocitem" href="../../manual/curve_bounded/">Defining Curve-Bounded Domains</a></li><li><a class="tocitem" href="../../manual/predicates/">Geometrical Predicates</a></li><li><a class="tocitem" href="../../manual/triangulation_output/">Triangulation Output</a></li><li><a class="tocitem" href="../../manual/voronoi_output/">Voronoi Tessellation Output</a></li><li><a class="tocitem" href="../../manual/predicate_kernels/">Predicate Kernels</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">API Reference</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../api/overview/">Section Overview</a></li><li><a class="tocitem" href="../../api/data_structures/">Data Structures</a></li><li><a class="tocitem" href="../../api/triangulation/">Triangulations</a></li><li><a class="tocitem" href="../../api/operations/">Triangulation Operations</a></li><li><a class="tocitem" href="../../api/voronoi/">Voronoi Tessellations</a></li><li><a class="tocitem" href="../../api/convex_hull/">Convex Hull</a></li><li><a class="tocitem" href="../../api/curves/">Curves</a></li><li><a class="tocitem" href="../../api/iterators/">Iterators</a></li><li><a class="tocitem" href="../../api/point_location/">Point Location</a></li><li><a class="tocitem" href="../../api/predicates/">Predicates</a></li><li><a class="tocitem" href="../../api/statistics/">Triangulation Statistics</a></li><li><a class="tocitem" href="../../api/primitives/">Primitive Interfaces</a></li><li><a class="tocitem" href="../../api/other/">Other</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">Extended Reference</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../extended/overview/">Overview</a></li><li><a class="tocitem" href="../../extended/data_structures/">Data Structures</a></li><li><a class="tocitem" href="../../extended/algorithms/">Algorithm Internals</a></li><li><a class="tocitem" href="../../extended/utils/">Utility Functions</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">Mathematical Details</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../math/overview/">Overview</a></li><li><a class="tocitem" href="../../math/delaunay/">Delaunay Triangulations</a></li><li><a class="tocitem" href="../../math/constrained/">Constrained Delaunay Triangulations</a></li><li><a class="tocitem" href="../../math/convex/">Triangulating Convex Polygons</a></li><li><a class="tocitem" href="../../math/refinement/">Mesh Refinement</a></li><li><a class="tocitem" href="../../math/curves/">Curves</a></li><li><a class="tocitem" href="../../math/curve_bounded/">Triangulating Curve-Bounded Domains</a></li><li><a class="tocitem" href="../../math/weighted/">Weighted Delaunay Triangulations</a></li><li><a class="tocitem" href="../../math/voronoi/">Voronoi Tessellations</a></li><li><a class="tocitem" href="../../math/clipped/">Clipped Voronoi Tessellations</a></li><li><a class="tocitem" href="../../math/centroidal/">Centroidal Voronoi Tessellations</a></li><li><a class="tocitem" href="../../math/power/">Power Diagrams</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox"/><label class="tocitem" for="menuitem-7"><span class="docs-label">Example Applications</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../applications/overview/">Overview</a></li><li><a class="tocitem" href="../../applications/interpolation/">Interpolation</a></li><li><a class="tocitem" href="../../applications/cell_simulations/">Cellular Biology</a></li><li><a class="tocitem" href="../../applications/pde_discretisation/">Solving PDEs</a></li></ul></li><li><a class="tocitem" href="../../terminology/">Terminology</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>Mesh Refinement</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Mesh Refinement</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/refinement.jl" title="View source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Mesh-Refinement"><a class="docs-heading-anchor" href="#Mesh-Refinement">Mesh Refinement</a><a id="Mesh-Refinement-1"></a><a class="docs-heading-anchor-permalink" href="#Mesh-Refinement" title="Permalink"></a></h1><p>In this tutorial, we show how we can use mesh refinement to improve the quality of a mesh by inserting more points. In this package, we allow for constant area and angle constraints, and also for custom constraints based on a user-provided function. You can also limit the maximum number of points. Moreover, any type of triangulation can be provided, regardless of whether the triangulation is unconstrained or triangulations, and regardless of the number of holes and domains. Curve-bounded domains, not included in this tutorial, can also be refined as discussed in <a href="../curve_bounded/">this tutorial</a>.</p><p>Let us start by loading in the packages we will need.</p><pre><code class="language-julia hljs">using DelaunayTriangulation
+using CairoMakie
+using StableRNGs</code></pre><h2 id="Unconstrained-triangulation"><a class="docs-heading-anchor" href="#Unconstrained-triangulation">Unconstrained triangulation</a><a id="Unconstrained-triangulation-1"></a><a class="docs-heading-anchor-permalink" href="#Unconstrained-triangulation" title="Permalink"></a></h2><p>Let us start with a simple example, refining an unconstrained triangulation. We will constrain the triangulation such that the minimum angle is 30 degrees, and the maximum area of a triangulation is 1% of the triangulation&#39;s total area. Note that below we need to make sure <code>points</code> is mutable, else it is not possible to push points into the triangulation. Here we use a vector, but you could also use e.g. an <code>ElasticMatrix</code> from <a href="https://github.com/JuliaArrays/ElasticArrays.jl">ElasticArrays.jl</a>.</p><pre><code class="language-julia hljs">rng = StableRNG(123)
+x = rand(rng, 50)
+y = rand(rng, 50)
+points = tuple.(x, y)
+tri = triangulate(points; rng)
+orig_tri = deepcopy(tri)
+A = get_area(tri)
+refine!(tri; min_angle = 30.0, max_area = 0.01A, rng)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Delaunay Triangulation.
+   Number of vertices: 293
+   Number of triangles: 522
+   Number of edges: 814
+   Has boundary nodes: false
+   Has ghost triangles: true
+   Curve-bounded: false
+   Weighted: false
+   Constrained: false</code></pre><p>The <a href="../../api/triangulation/#DelaunayTriangulation.refine!"><code>refine!</code></a> function operates on <code>tri</code> in-place. If we wanted to review the statistics of the refined mesh, we can use <a href="../../api/statistics/#DelaunayTriangulation.statistics"><code>statistics</code></a>:</p><pre><code class="language-julia hljs">statistics(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Delaunay Triangulation Statistics.
+   Triangulation area: 0.6676219360027273
+   Number of vertices: 294
+   Number of solid vertices: 293
+   Number of ghost vertices: 1
+   Number of edges: 876
+   Number of solid edges: 814
+   Number of ghost edges: 62
+   Number of triangles: 584
+   Number of solid triangles: 522
+   Number of ghost triangles: 62
+   Number of boundary segments: 0
+   Number of interior segments: 0
+   Number of segments: 0
+   Number of convex hull vertices: 62
+   Smallest angle: 30.093123918976033°
+   Largest angle: 115.16815010364209°
+   Smallest area: 2.1013155442142383e-5
+   Largest area: 0.006504759798840958
+   Smallest radius-edge ratio: 0.5783859342412219
+   Largest radius-edge ratio: 0.9971940823138769</code></pre><p>As we can see, the maximum area of a triangle is about 0.0064, which is indeed less than 1% of the triangulation&#39;s area, which is about 0.0067. Moreover, the smallest angle is indeed greater than 30.</p><p>Let us compare the triangulation pre- and post-refinement.</p><pre><code class="language-julia hljs">fig, ax, sc = triplot(orig_tri, axis = (title = &quot;Pre-refinement&quot;,))
+ax = Axis(fig[1, 2], title = &quot;Post-refinement&quot;)
+triplot!(ax, tri)
+fig</code></pre><img src="ebe6f417.png" alt="Example block output"/><p>The triangulation is now much finer. There are still some parts with many more triangles than other regions, but these are mostly near a boundary or where was a cluster of random points. If we wanted, we could refine again to try and improve this.</p><pre><code class="language-julia hljs">refine!(tri; min_angle = 30.0, max_area = 0.001A, rng) # 0.1% instead of 1%
+fig, ax, sc = triplot(tri)
+fig</code></pre><img src="419f3652.png" alt="Example block output"/><p>The quality has now been improved. We could also try improving the minimum angle further, but even 30 is a bit closer to the limit of convergence (which is about 33.9 degrees). For example, if we try a minimum angle of 35 degrees, the algorithm just doesn&#39;t even converge, instead it reaches the maximum number of points.</p><pre><code class="language-julia hljs">test_tri = deepcopy(tri)
+refine!(test_tri; min_angle = 35.0, max_area = 0.001A, max_points = 5_000, rng) # 20_000 so that it doesn&#39;t just keep going
+statistics(test_tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Delaunay Triangulation Statistics.
+   Triangulation area: 0.6676219360027267
+   Number of vertices: 5001
+   Number of solid vertices: 5000
+   Number of ghost vertices: 1
+   Number of edges: 14997
+   Number of solid edges: 14829
+   Number of ghost edges: 168
+   Number of triangles: 9998
+   Number of solid triangles: 9830
+   Number of ghost triangles: 168
+   Number of boundary segments: 0
+   Number of interior segments: 0
+   Number of segments: 0
+   Number of convex hull vertices: 168
+   Smallest angle: 32.569525342355476°
+   Largest angle: 113.43199723096218°
+   Smallest area: 6.547564216329479e-6
+   Largest area: 0.0006565996109229845
+   Smallest radius-edge ratio: 0.5773550586596291
+   Largest radius-edge ratio: 0.9288110493512934</code></pre><p>As we can see, the smallest angle is about 29 degrees instead of 35 degrees, and there are now 5000 points in the triangulation. The resulting triangulation is given below:</p><pre><code class="language-julia hljs">fig, ax, sc = triplot(test_tri)
+fig</code></pre><img src="b8218008.png" alt="Example block output"/><p>This is certainly not a suitable triangulation.</p><p>One useful figure to look at for these plots are histograms that look at the areas and angles. Looking to <code>tri</code>, we can plot these as follows:</p><pre><code class="language-julia hljs">stats = statistics(tri)
+fig = Figure(fontsize = 33)
+areas = get_all_stat(stats, :area) ./ A
+angles = first.(get_all_stat(stats, :angles)) # the first is the smallest
+ax = Axis(fig[1, 1], xlabel = &quot;A/A(Ω)&quot;, ylabel = &quot;Count&quot;, title = &quot;Area histogram&quot;, width = 400, height = 400, titlealign = :left)
+hist!(ax, areas, bins = 0:0.0001:0.0005)
+ax = Axis(fig[1, 2], xlabel = &quot;θₘᵢₙ&quot;, ylabel = &quot;Count&quot;, title = &quot;Angle histogram&quot;, width = 400, height = 400, titlealign = :left)
+hist!(ax, rad2deg.(angles), bins = 20:2:60)
+vlines!(ax, [30.0], color = :red)
+resize_to_layout!(fig)
+fig</code></pre><img src="64367c4d.png" alt="Example block output"/><p>We see that indeed many of the triangle areas are very small, and the angles are all greater than 30 degrees.</p><h2 id="Constrained-triangulation-and-custom-constraints"><a class="docs-heading-anchor" href="#Constrained-triangulation-and-custom-constraints">Constrained triangulation and custom constraints</a><a id="Constrained-triangulation-and-custom-constraints-1"></a><a class="docs-heading-anchor-permalink" href="#Constrained-triangulation-and-custom-constraints" title="Permalink"></a></h2><p>We now give an example of a constrained triangulation being refined. This is the most common case where the mesh refinement is needed. For this example, we consider an example with holes, but note that any triangulation can be refined, regardless of the type. Here is the triangulation we consider.</p><pre><code class="language-julia hljs">n = 100
+θ = LinRange(0, 2π, n + 1)
+θ = [θ[1:n]; 0]
+rev_θ = reverse(θ) # to go from ccw to cw
+r₁ = 10.0
+r₂ = 5.0
+r₃ = 2.5
+outer_x, outer_y = r₁ * cos.(θ), r₁ * sin.(θ)
+inner_x, inner_y = r₂ * cos.(rev_θ), r₂ * sin.(rev_θ)
+innermost_x, innermost_y = r₃ * cos.(θ), r₃ * sin.(θ)
+x = [[outer_x], [inner_x], [innermost_x]]
+y = [[outer_y], [inner_y], [innermost_y]]
+boundary_nodes, points = convert_boundary_points_to_indices(x, y)
+rng = StableRNG(456)
+tri = triangulate(points; boundary_nodes, rng)
+fig, ax, sc = triplot(tri)
+fig</code></pre><img src="aef0ff1b.png" alt="Example block output"/><p>Let us now refine this triangulation.</p><pre><code class="language-julia hljs">A = get_area(tri)
+refine!(tri; min_angle = 27.3, max_area = 0.01A, rng)
+fig, ax, sc = triplot(tri)
+fig</code></pre><img src="eb3566f8.png" alt="Example block output"/><p>We inspect the plot, and we might think that it&#39;s perhaps not fine enough. Let&#39;s use finer constraints and see what happens. Since <code>refine!</code> operates on <code>tri</code> in-place, refining it again with the constraints below is going to take roughly the same amount of time as if we had refined it with these constraints in the first place.</p><pre><code class="language-julia hljs">refine!(tri; min_angle = 33.9, max_area = 0.001A, rng)
+fig, ax, sc = triplot(tri)
+fig</code></pre><img src="24ea646a.png" alt="Example block output"/><p>This is indeed much better, but notice that the inner hole is much more fine than the outer. This is because we are applying the same area constraint inside and outside, when really we should try and take note of the total contribution to the area that each part of the domain gives. To refine with this in mind, we need to use custom constraints. The function that we use for constraining the area takes the form <code>f(tri, T)</code>, where <code>T</code> is the triangle&#39;s vertices and <code>tri</code> is the triangulation. It should return <code>true</code> if the triangle should be refined, and <code>false</code> otherwise. Let us define a function such that, instead of applying constraints so that the triangles are limited to 1% of the total triangulation area, we do 0.5% or 0.1% of the area of the inner or outer domain, respectively.</p><pre><code class="language-julia hljs">outer_area = π * (r₁^2 - r₂^2)
+inner_area = π * r₃^2
+function in_inner(p, q, r)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
+    rx, ry = getxy(r)
+    cx, cy = (px + qx + rx) / 3, (py + qy + ry) / 3
+    rad2 = cx^2 + cy^2
+    return rad2 ≤ r₃^2
+end
+function area_constraint(_tri, T)
+    i, j, k = triangle_vertices(T)
+    p, q, r = get_point(_tri, i, j, k)
+    A = DelaunayTriangulation.triangle_area(p, q, r)
+    return in_inner(p, q, r) ? (A ≥ 0.005inner_area) : (A ≥ 0.001outer_area)
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">area_constraint (generic function with 1 method)</code></pre><p>Let&#39;s now refine. We recompute the triangulation so that we can see the new results.</p><pre><code class="language-julia hljs">boundary_nodes, points = convert_boundary_points_to_indices(x, y)
+rng = StableRNG(456)
+tri = triangulate(points; boundary_nodes, rng)
+refine!(tri; min_angle = 30.0, custom_constraint = area_constraint, rng)
+fig, ax, sc = triplot(tri)
+fig</code></pre><img src="ef566922.png" alt="Example block output"/><p>This is now much better, and the two parts of the domain are appropriately refined. Let us extend our custom constraint function to also require that any triangle has minimum angle less than 33 degrees inside the innermost domain, and less than 20 degrees outside the innermost domain.</p><pre><code class="language-julia hljs">function angle_constraint(_tri, T)
+    i, j, k = triangle_vertices(T)
+    p, q, r = get_point(_tri, i, j, k)
+    θ = rad2deg(minimum(DelaunayTriangulation.triangle_angles(p, q, r)))
+    return in_inner(p, q, r) ? (θ ≤ 33.9) : (θ ≤ 20.0)
+end
+function custom_constraint(_tri, T)
+    return area_constraint(_tri, T) || angle_constraint(_tri, T)
+end
+boundary_nodes, points = convert_boundary_points_to_indices(x, y)
+rng = StableRNG(456)
+tri = triangulate(points; boundary_nodes, rng)
+refine!(tri; custom_constraint, rng)
+fig, ax, sc = triplot(tri)
+fig</code></pre><img src="bd045345.png" alt="Example block output"/><p>Indeed, the inner domain is much finer. These examples could be extended to more complicated cases, for example using adaptive mesh refinement for a numerical PDE solution so that triangles are refined based on some <em>a posteriori</em> error estimate, implemented using a custom area constraint like above, or even some refinement based on the triangle&#39;s location in space in case of some geospatial application.</p><h2 id="Domains-with-small-angles"><a class="docs-heading-anchor" href="#Domains-with-small-angles">Domains with small angles</a><a id="Domains-with-small-angles-1"></a><a class="docs-heading-anchor-permalink" href="#Domains-with-small-angles" title="Permalink"></a></h2><p>In the examples considered, none of the boundaries had small angles. When domains have small angles, it is not always possible to satisfy the minimum angle constraints, but the algorithm will still try its best to refine in these locations. Let&#39;s consider a complicated example with many small angles. We consider the boundary of Switzerland, as obtained in this <a href="https://danielvandh.github.io/NaturalNeighbours.jl/stable/swiss/">NaturalNeighbours.jl example</a>.</p><pre><code class="language-julia hljs">using Downloads
+using DelimitedFiles
+boundary_url = &quot;https://gist.githubusercontent.com/DanielVandH/13687b0918e45a416a5c93cd52c91449/raw/a8da6cdc94859fd66bcff85a2307f0f9cd57a18c/boundary.txt&quot;
+boundary_dir = Downloads.download(boundary_url)
+boundary = readdlm(boundary_dir, skipstart = 6)
+boundary_points = [(boundary[i, 1], boundary[i, 2]) for i in axes(boundary, 1)]
+reverse!(boundary_points)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">5126-element Vector{Tuple{Float64, Float64}}:
+ (7.133862520764, 45.871870678164)
+ (7.138563027059, 45.871870678164)
+ (7.138563027059, 45.876571184459)
+ (7.143263533355, 45.876571184459)
+ (7.14796403965, 45.876571184459)
+ (7.152664545945, 45.876571184459)
+ (7.15736505224, 45.876571184459)
+ (7.162065558535, 45.876571184459)
+ (7.162065558535, 45.871870678164)
+ (7.166766064831, 45.871870678164)
+ ⋮
+ (7.110359989288, 45.857769159278)
+ (7.115060495583, 45.857769159278)
+ (7.119761001878, 45.857769159278)
+ (7.119761001878, 45.862469665573)
+ (7.124461508174, 45.862469665573)
+ (7.129162014469, 45.862469665573)
+ (7.129162014469, 45.867170171868)
+ (7.133862520764, 45.867170171868)
+ (7.133862520764, 45.871870678164)</code></pre><p>Here is the boundary.</p><pre><code class="language-julia hljs">boundary_nodes, points = convert_boundary_points_to_indices(boundary_points)
+rng = StableRNG(789)
+tri = triangulate(points; boundary_nodes, rng)
+fig, ax, sc = triplot(tri)
+fig</code></pre><img src="ca9ff354.png" alt="Example block output"/><p>Now let&#39;s refine.</p><pre><code class="language-julia hljs">A = get_area(tri)
+refine!(tri; min_angle = 30.0, max_area = 0.001A, rng)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Delaunay Triangulation.
+   Number of vertices: 14165
+   Number of triangles: 23178
+   Number of edges: 37342
+   Has boundary nodes: true
+   Has ghost triangles: true
+   Curve-bounded: false
+   Weighted: false
+   Constrained: true</code></pre><pre><code class="language-julia hljs">fig, ax, sc = triplot(tri)
+fig</code></pre><img src="548a1777.png" alt="Example block output"/><p>We see that the triangulation is now adequately refined. There are still triangles near the boundaries whose minimum angle is less than 30 degrees, though, because of the angles that boundary edges meet at in some places. Most of the triangles will satisfy the constraint, though, as we show below.</p><pre><code class="language-julia hljs">stats = statistics(tri)
+angles = first.(get_all_stat(stats, :angles)) # the first is the smallest
+fig, ax, sc = scatter(rad2deg.(angles))
+hlines!(ax, [30.0], color = :red, linewidth = 4)
+fig</code></pre><img src="88fbccd1.png" alt="Example block output"/><p>As we can see, the vast majority of the triangles satisfy the constraint, but there are still some that do not. Here is another set of results with a lower minimum angle constraint.</p><pre><code class="language-julia hljs">boundary_nodes, points = convert_boundary_points_to_indices(boundary_points)
+rng = StableRNG(789)
+tri = triangulate(points; boundary_nodes, rng)
+refine!(tri; min_angle = 18.73, max_area = 0.001A, rng)
+fig = Figure(fontsize = 43)
+ax = Axis(fig[1, 1], width = 600, height = 400)
+triplot!(tri)
+ax = Axis(fig[1, 2], width = 600, height = 400)
+stats = statistics(tri)
+angles = first.(get_all_stat(stats, :angles)) # the first is the smallest
+scatter!(ax, rad2deg.(angles))
+hlines!(ax, [18.73], color = :red, linewidth = 4)
+resize_to_layout!(fig)
+fig</code></pre><img src="dc639453.png" alt="Example block output"/><p>In this case, all the triangles satisfy the constraint, of course at the expense of some other triangles having lesser quality.</p><h2 id="Just-the-code"><a class="docs-heading-anchor" href="#Just-the-code">Just the code</a><a id="Just-the-code-1"></a><a class="docs-heading-anchor-permalink" href="#Just-the-code" title="Permalink"></a></h2><p>An uncommented version of this example is given below. You can view the source code for this file <a href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/refinement.jl">here</a>.</p><pre><code class="language-julia hljs">using DelaunayTriangulation
+using CairoMakie
+using StableRNGs
+
+rng = StableRNG(123)
+x = rand(rng, 50)
+y = rand(rng, 50)
+points = tuple.(x, y)
+tri = triangulate(points; rng)
+orig_tri = deepcopy(tri)
+A = get_area(tri)
+refine!(tri; min_angle = 30.0, max_area = 0.01A, rng)
+
+statistics(tri)
+
+fig, ax, sc = triplot(orig_tri, axis = (title = &quot;Pre-refinement&quot;,))
+ax = Axis(fig[1, 2], title = &quot;Post-refinement&quot;)
+triplot!(ax, tri)
+fig
+
+refine!(tri; min_angle = 30.0, max_area = 0.001A, rng) # 0.1% instead of 1%
+fig, ax, sc = triplot(tri)
+fig
+
+test_tri = deepcopy(tri)
+refine!(test_tri; min_angle = 35.0, max_area = 0.001A, max_points = 5_000, rng) # 20_000 so that it doesn&#39;t just keep going
+statistics(test_tri)
+
+fig, ax, sc = triplot(test_tri)
+fig
+
+stats = statistics(tri)
+fig = Figure(fontsize = 33)
+areas = get_all_stat(stats, :area) ./ A
+angles = first.(get_all_stat(stats, :angles)) # the first is the smallest
+ax = Axis(fig[1, 1], xlabel = &quot;A/A(Ω)&quot;, ylabel = &quot;Count&quot;, title = &quot;Area histogram&quot;, width = 400, height = 400, titlealign = :left)
+hist!(ax, areas, bins = 0:0.0001:0.0005)
+ax = Axis(fig[1, 2], xlabel = &quot;θₘᵢₙ&quot;, ylabel = &quot;Count&quot;, title = &quot;Angle histogram&quot;, width = 400, height = 400, titlealign = :left)
+hist!(ax, rad2deg.(angles), bins = 20:2:60)
+vlines!(ax, [30.0], color = :red)
+resize_to_layout!(fig)
+fig
+
+n = 100
+θ = LinRange(0, 2π, n + 1)
+θ = [θ[1:n]; 0]
+rev_θ = reverse(θ) # to go from ccw to cw
+r₁ = 10.0
+r₂ = 5.0
+r₃ = 2.5
+outer_x, outer_y = r₁ * cos.(θ), r₁ * sin.(θ)
+inner_x, inner_y = r₂ * cos.(rev_θ), r₂ * sin.(rev_θ)
+innermost_x, innermost_y = r₃ * cos.(θ), r₃ * sin.(θ)
+x = [[outer_x], [inner_x], [innermost_x]]
+y = [[outer_y], [inner_y], [innermost_y]]
+boundary_nodes, points = convert_boundary_points_to_indices(x, y)
+rng = StableRNG(456)
+tri = triangulate(points; boundary_nodes, rng)
+fig, ax, sc = triplot(tri)
+fig
+
+A = get_area(tri)
+refine!(tri; min_angle = 27.3, max_area = 0.01A, rng)
+fig, ax, sc = triplot(tri)
+fig
+
+refine!(tri; min_angle = 33.9, max_area = 0.001A, rng)
+fig, ax, sc = triplot(tri)
+fig
+
+outer_area = π * (r₁^2 - r₂^2)
+inner_area = π * r₃^2
+function in_inner(p, q, r)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
+    rx, ry = getxy(r)
+    cx, cy = (px + qx + rx) / 3, (py + qy + ry) / 3
+    rad2 = cx^2 + cy^2
+    return rad2 ≤ r₃^2
+end
+function area_constraint(_tri, T)
+    i, j, k = triangle_vertices(T)
+    p, q, r = get_point(_tri, i, j, k)
+    A = DelaunayTriangulation.triangle_area(p, q, r)
+    return in_inner(p, q, r) ? (A ≥ 0.005inner_area) : (A ≥ 0.001outer_area)
+end
+
+boundary_nodes, points = convert_boundary_points_to_indices(x, y)
+rng = StableRNG(456)
+tri = triangulate(points; boundary_nodes, rng)
+refine!(tri; min_angle = 30.0, custom_constraint = area_constraint, rng)
+fig, ax, sc = triplot(tri)
+fig
+
+function angle_constraint(_tri, T)
+    i, j, k = triangle_vertices(T)
+    p, q, r = get_point(_tri, i, j, k)
+    θ = rad2deg(minimum(DelaunayTriangulation.triangle_angles(p, q, r)))
+    return in_inner(p, q, r) ? (θ ≤ 33.9) : (θ ≤ 20.0)
+end
+function custom_constraint(_tri, T)
+    return area_constraint(_tri, T) || angle_constraint(_tri, T)
+end
+boundary_nodes, points = convert_boundary_points_to_indices(x, y)
+rng = StableRNG(456)
+tri = triangulate(points; boundary_nodes, rng)
+refine!(tri; custom_constraint, rng)
+fig, ax, sc = triplot(tri)
+fig
+
+using Downloads
+using DelimitedFiles
+boundary_url = &quot;https://gist.githubusercontent.com/DanielVandH/13687b0918e45a416a5c93cd52c91449/raw/a8da6cdc94859fd66bcff85a2307f0f9cd57a18c/boundary.txt&quot;
+boundary_dir = Downloads.download(boundary_url)
+boundary = readdlm(boundary_dir, skipstart = 6)
+boundary_points = [(boundary[i, 1], boundary[i, 2]) for i in axes(boundary, 1)]
+reverse!(boundary_points)
+
+boundary_nodes, points = convert_boundary_points_to_indices(boundary_points)
+rng = StableRNG(789)
+tri = triangulate(points; boundary_nodes, rng)
+fig, ax, sc = triplot(tri)
+fig
+
+A = get_area(tri)
+refine!(tri; min_angle = 30.0, max_area = 0.001A, rng)
+
+fig, ax, sc = triplot(tri)
+fig
+
+stats = statistics(tri)
+angles = first.(get_all_stat(stats, :angles)) # the first is the smallest
+fig, ax, sc = scatter(rad2deg.(angles))
+hlines!(ax, [30.0], color = :red, linewidth = 4)
+fig
+
+boundary_nodes, points = convert_boundary_points_to_indices(boundary_points)
+rng = StableRNG(789)
+tri = triangulate(points; boundary_nodes, rng)
+refine!(tri; min_angle = 18.73, max_area = 0.001A, rng)
+fig = Figure(fontsize = 43)
+ax = Axis(fig[1, 1], width = 600, height = 400)
+triplot!(tri)
+ax = Axis(fig[1, 2], width = 600, height = 400)
+stats = statistics(tri)
+angles = first.(get_all_stat(stats, :angles)) # the first is the smallest
+scatter!(ax, rad2deg.(angles))
+hlines!(ax, [18.73], color = :red, linewidth = 4)
+resize_to_layout!(fig)
+fig</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../operations_convex_hull_locking/">« Locking and Unlocking the Convex Hull</a><a class="docs-footer-nextpage" href="../lattice/">Triangulating Rectangular Regions »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.0 on <span class="colophon-date" title="Sunday 19 January 2025 12:58">Sunday 19 January 2025</span>. Using Julia version 1.11.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Interpolation · DelaunayTriangulation.jl</title><meta name="title" content="Interpolation · DelaunayTriangulation.jl"/><meta property="og:title" content="Interpolation · DelaunayTriangulation.jl"/><meta property="twitter:title" content="Interpolation · DelaunayTriangulation.jl"/><meta name="description" content="Documentation for DelaunayTriangulation.jl."/><meta property="og:description" content="Documentation for DelaunayTriangulation.jl."/><meta property="twitter:description" content="Documentation for DelaunayTriangulation.jl."/><meta property="og:url" content="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/applications/interpolation/"/><meta property="twitter:url" content="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/applications/interpolation/"/><link rel="canonical" href="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/applications/interpolation/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">DelaunayTriangulation.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><input class="collapse-toggle" id="menuitem-2" type="checkbox"/><label class="tocitem" for="menuitem-2"><span class="docs-label">Tutorials</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../tutorials/overview/">Overview</a></li><li><a class="tocitem" href="../../tutorials/unconstrained/">Unconstrained Triangulations</a></li><li><input class="collapse-toggle" id="menuitem-2-3" type="checkbox"/><label class="tocitem" for="menuitem-2-3"><span class="docs-label">Constrained Triangulations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../tutorials/constrained_edges/">Constrained Edges</a></li><li><a class="tocitem" href="../../tutorials/constrained_outer_boundary/">Outer Boundary</a></li><li><a class="tocitem" href="../../tutorials/constrained_outer_boundary_segmented/">Segmented Outer Boundary</a></li><li><a class="tocitem" href="../../tutorials/constrained_multiply_connected/">Domain with Interior Holes</a></li><li><a class="tocitem" href="../../tutorials/constrained_interior_within_interiors/">Domain with Interior Holes inside Interior Holes</a></li><li><a class="tocitem" href="../../tutorials/constrained_multipolygon/">Disjoint Domains</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-2-4" type="checkbox"/><label class="tocitem" for="menuitem-2-4"><span class="docs-label">Triangulation Operations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../tutorials/operations_vertex_insertion_deletion/">Vertex Insertion and Deletion</a></li><li><a class="tocitem" href="../../tutorials/operations_segment_insertion/">Edge Insertion</a></li><li><a class="tocitem" href="../../tutorials/operations_ghost_triangles/">Adding or Clearing Ghost Triangles</a></li><li><a class="tocitem" href="../../tutorials/operations_flip_edge/">Edge Flipping</a></li><li><a class="tocitem" href="../../tutorials/operations_legalise_edge/">Legalising an Edge</a></li><li><a class="tocitem" href="../../tutorials/operations_split_edge/">Edge Splitting</a></li><li><a class="tocitem" href="../../tutorials/operations_split_triangle/">Triangle Splitting</a></li><li><a class="tocitem" href="../../tutorials/operations_convex_hull_locking/">Locking and Unlocking the Convex Hull</a></li></ul></li><li><a class="tocitem" href="../../tutorials/refinement/">Mesh Refinement</a></li><li><a class="tocitem" href="../../tutorials/lattice/">Triangulating Rectangular Regions</a></li><li><a class="tocitem" href="../../tutorials/convex/">Triangulating Convex Polygons</a></li><li><a class="tocitem" href="../../tutorials/curve_bounded/">Triangulating Curve-Bounded Domains</a></li><li><a class="tocitem" href="../../tutorials/voronoi/">Voronoi Tessellations</a></li><li><input class="collapse-toggle" id="menuitem-2-10" type="checkbox"/><label class="tocitem" for="menuitem-2-10"><span class="docs-label">Clipped Voronoi Tessellations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../tutorials/clipped/">Clipping to the Convex Hull</a></li><li><a class="tocitem" href="../../tutorials/clipped_rectangle/">Clipping to a Rectangle</a></li></ul></li><li><a class="tocitem" href="../../tutorials/centroidal/">Centroidal Voronoi Tessellations</a></li><li><a class="tocitem" href="../../tutorials/point_location/">Point Location</a></li><li><a class="tocitem" href="../../tutorials/nearest/">Nearest Neighbour Queries</a></li><li><a class="tocitem" href="../../tutorials/convex_hull/">Convex Hulls</a></li><li><a class="tocitem" href="../../tutorials/pole_of_inaccessibility/">Pole of Inaccessibility</a></li><li><a class="tocitem" href="../../tutorials/point_in_polygon/">Point-in-Polygon Testing</a></li><li><a class="tocitem" href="../../tutorials/custom_primitive/">Using Custom Structs for Primitives and Boundaries</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3" type="checkbox"/><label class="tocitem" for="menuitem-3"><span class="docs-label">Manual</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/overview/">Overview</a></li><li><a class="tocitem" href="../../manual/primitives/">Representing Primitives</a></li><li><a class="tocitem" href="../../manual/boundaries/">Representing Boundaries</a></li><li><a class="tocitem" href="../../manual/ghost_triangles/">Ghost (Negative) Vertices</a></li><li><a class="tocitem" href="../../manual/curve_bounded/">Defining Curve-Bounded Domains</a></li><li><a class="tocitem" href="../../manual/predicates/">Geometrical Predicates</a></li><li><a class="tocitem" href="../../manual/triangulation_output/">Triangulation Output</a></li><li><a class="tocitem" href="../../manual/voronoi_output/">Voronoi Tessellation Output</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">API Reference</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../api/overview/">Section Overview</a></li><li><a class="tocitem" href="../../api/data_structures/">Data Structures</a></li><li><a class="tocitem" href="../../api/triangulation/">Triangulations</a></li><li><a class="tocitem" href="../../api/operations/">Triangulation Operations</a></li><li><a class="tocitem" href="../../api/voronoi/">Voronoi Tessellations</a></li><li><a class="tocitem" href="../../api/convex_hull/">Convex Hull</a></li><li><a class="tocitem" href="../../api/curves/">Curves</a></li><li><a class="tocitem" href="../../api/iterators/">Iterators</a></li><li><a class="tocitem" href="../../api/point_location/">Point Location</a></li><li><a class="tocitem" href="../../api/predicates/">Predicates</a></li><li><a class="tocitem" href="../../api/statistics/">Triangulation Statistics</a></li><li><a class="tocitem" href="../../api/primitives/">Primitive Interfaces</a></li><li><a class="tocitem" href="../../api/other/">Other</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">Extended Reference</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../extended/overview/">Overview</a></li><li><a class="tocitem" href="../../extended/data_structures/">Data Structures</a></li><li><a class="tocitem" href="../../extended/algorithms/">Algorithm Internals</a></li><li><a class="tocitem" href="../../extended/utils/">Utility Functions</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">Mathematical Details</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../math/overview/">Overview</a></li><li><a class="tocitem" href="../../math/delaunay/">Delaunay Triangulations</a></li><li><a class="tocitem" href="../../math/constrained/">Constrained Delaunay Triangulations</a></li><li><a class="tocitem" href="../../math/convex/">Triangulating Convex Polygons</a></li><li><a class="tocitem" href="../../math/refinement/">Mesh Refinement</a></li><li><a class="tocitem" href="../../math/curves/">Curves</a></li><li><a class="tocitem" href="../../math/curve_bounded/">Triangulating Curve-Bounded Domains</a></li><li><a class="tocitem" href="../../math/voronoi/">Voronoi Tessellations</a></li><li><a class="tocitem" href="../../math/clipped/">Clipped Voronoi Tessellations</a></li><li><a class="tocitem" href="../../math/centroidal/">Centroidal Voronoi Tessellations</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox" checked/><label class="tocitem" for="menuitem-7"><span class="docs-label">Example Applications</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../overview/">Overview</a></li><li class="is-active"><a class="tocitem" href>Interpolation</a><ul class="internal"><li><a class="tocitem" href="#Natural-Neighbours"><span>Natural Neighbours</span></a></li><li><a class="tocitem" href="#Sibsonian-Interpolation"><span>Sibsonian Interpolation</span></a></li><li><a class="tocitem" href="#Implementation"><span>Implementation</span></a></li><li><a class="tocitem" href="#Evaluating-the-Sibsonian-interpolant"><span>Evaluating the Sibsonian interpolant</span></a></li><li><a class="tocitem" href="#Just-the-code"><span>Just the code</span></a></li></ul></li><li><a class="tocitem" href="../cell_simulations/">Cellular Biology</a></li><li><a class="tocitem" href="../pde_discretisation/">Solving PDEs</a></li></ul></li><li><a class="tocitem" href="../../terminology/">Terminology</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Example Applications</a></li><li class="is-active"><a href>Interpolation</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Interpolation</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_applications/interpolation.jl" title="View source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Interpolation"><a class="docs-heading-anchor" href="#Interpolation">Interpolation</a><a id="Interpolation-1"></a><a class="docs-heading-anchor-permalink" href="#Interpolation" title="Permalink"></a></h1><p>For our first application, we consider applying Voronoi tessellations to interpolation. The discussion here is based on the implementation of what is known as <em>natural neighbour interpolation</em> in <a href="https://github.com/DanielVandH/NaturalNeighbours.jl">NaturalNeighbours.jl</a>. NaturalNeighbours.jl considers a diverse set of interpolants for this purpose, but here we will focus only on a single interpolant (called the <code>Sibson()</code> interpolant in NaturalNeighbours.jl).</p><p>The problem we are considering is as follows: Given some data <span>$\mathcal D = \{(\vb x_i, z_i)\}_{i=1}^m \subseteq \mathbb R^2 \times \mathbb R$</span>, we want to construct a smooth interpolant <span>$f \colon \mathcal C\mathcal H(X) \to \mathbb R$</span> of the data, where <span>$X = \{\vb x_1, \ldots, \vb x_m\}$</span>, such that <span>$f(\vb x_i) = z_i$</span> for all <span>$i = 1, \ldots, m$</span>.</p><p>One idea to interpolate this data would be to use a <em>piecewise linear interpolant</em>, obtained by defining, inside each triangle <span>$T \in \mathcal D\mathcal T(X)$</span>, a piecewise linear interpolant using the data points at each of the three vertices. One problem with this is that <span>$\mathcal D\mathcal T(X)$</span> does not depend continuously on <span>$X$</span>, meaning that small perturbations of a data point can lead to topological changes in the triangulation. One way around this is to instead use the Voronoi tessellation to guide the tessellation, since <span>$\mathcal V(X)$</span> <em>does</em> depend continuously on <span>$X$</span>. We give an example of this below, where we show how <span>$\mathcal D\mathcal T(X)$</span> may change significant after a small perturbation while <span>$\mathcal V(X)$</span> does not at the same time.</p><img src="8d6b8091.png" alt="Example block output"/><p>This observation motivates the use of the Voronoi tessellation to guide the interpolation.</p><h2 id="Natural-Neighbours"><a class="docs-heading-anchor" href="#Natural-Neighbours">Natural Neighbours</a><a id="Natural-Neighbours-1"></a><a class="docs-heading-anchor-permalink" href="#Natural-Neighbours" title="Permalink"></a></h2><p>Let us start by defining <em>natural neighbours</em>. Consider two Voronoi polygons <span>$\mathcal V_i$</span> and <span>$\mathcal V_j$</span>, and let <span>$\mathcal F_{ij} = \mathcal V_i \cap \mathcal V_j$</span>. If <span>$\mathcal F_{ij} \neq \emptyset$</span>, we say that <span>$\vb x_i$</span> and <span>$\vb x_j$</span> are natural neighbours in <span>$X$</span>. For a point <span>$\vb  \in X$</span>, we denote its set of natural neighbours by <span>$N(\vb x) \subseteq X$</span>, and the corresponding indices by <span>$N_i = \{j : \vb x_j \in N(\vb x_i)\}$</span>.</p><p>We use natural neighbours to guide our representation of points. In particular, we use <em>natural neighbour coordinates</em>, which are defined as follows: For a point <span>$\vb x \in X$</span>, a vector <span>$\boldsymbol\lambda$</span> are called a set of <em>natural neighbour coordinates</em> if <span>$\lambda_{i} \geq 0$</span> for each <span>$i$</span>, <span>$\boldsymbol\lambda$</span> is continuous with respect to <span>$\vb x$</span>, and <span>$\lambda_i &gt; 0 \iff \vb x_i \in N(\vb x)$</span>.</p><h2 id="Sibsonian-Interpolation"><a class="docs-heading-anchor" href="#Sibsonian-Interpolation">Sibsonian Interpolation</a><a id="Sibsonian-Interpolation-1"></a><a class="docs-heading-anchor-permalink" href="#Sibsonian-Interpolation" title="Permalink"></a></h2><p>Here, for <span>$\boldsymbol\lambda$</span> we will discuss <em>Sibsonian coordinates</em>. To define these coordinates, take <span>$\mathcal V(X)$</span> and consider what happens when a new point <span>$\vb x_0$</span> is added into it. This new point creates a new tessellation <span>$\mathcal V(X \cup \{\vb x_0\})$</span>, where all the tiles that change in the new tessellation compared to <span>$\mathcal V(\vb X)$</span> are those in <span>$N(\vb x_0)$</span>. We let <span>$A(\vb x_0)$</span> be the area of the new tile created by <span>$\vb x_0$</span>, and let <span>$A(\vb x_i)$</span> be the area of the intersection between the original tile for <span>$\vb x_i$</span> and the new tile from <span>$\vb x_0$</span>. The Sibson coordinates are then</p><p class="math-container">\[\lambda_i(\vb x_0) = \frac{A(\vb x_i)}{A(\vb x_0)}.\]</p><p>Using this definition of Sibsonian coordinates, the Sibson interpolant is defined by</p><p class="math-container">\[f(\vb x_0) = \sum_{i \in N_0} \lambda_i(\vb x_0)z_i.\]</p><p>This interpolant is <span>$C^1$</span> continuous in <span>$\mathcal C\mathcal H(X) \setminus X$</span>, with derivative discontinuities at the data sites.</p><h2 id="Implementation"><a class="docs-heading-anchor" href="#Implementation">Implementation</a><a id="Implementation-1"></a><a class="docs-heading-anchor-permalink" href="#Implementation" title="Permalink"></a></h2><p>Let us now implement the Sibson interpolant. We note that, in this implementation, we ignore some edge cases; these are handled properly in the implementation in NaturalNeighbours.jl. Moreover, our implementation will not be the most efficient, but will be enough for the purposes of this demonstration. We assume that all points are contained in the interior of <span>$\mathcal C\mathcal H(X)$</span>.</p><h3 id="Bowyer-Watson-envelope"><a class="docs-heading-anchor" href="#Bowyer-Watson-envelope">Bowyer-Watson envelope</a><a id="Bowyer-Watson-envelope-1"></a><a class="docs-heading-anchor-permalink" href="#Bowyer-Watson-envelope" title="Permalink"></a></h3><p>The first issue to deal with in our implementation is the computation of the <em>Bowyer-Watson envelope</em>. For a point <span>$\vb x$</span>, its Bowyer-Watson envelope is the boundary of the set of all triangles in <span>$\mathcal D\mathcal T(X)$</span> whose circumcircles contain <span>$\vb x$</span>. This envelope tells us the region in which any changes to the triangulation and to the tessellation can occur. A reasonably straight forward way to implement this is to simply add <span>$\vb x$</span> into <span>$\mathcal D\mathcal T(X)$</span> and take all the triangles containing <span>$\vb x$</span> as a vertex in <span>$\mathcal D\mathcal T(X \cup \{\vb x\})$</span>. We then remove <span>$\vb x$</span> from <span>$\mathcal D\mathcal T(X \cup \{\vb x\})$</span>. We implement this below.<sup class="footnote-reference"><a id="citeref-1" href="#footnote-1">[1]</a></sup></p><pre><code class="language-julia hljs">using DelaunayTriangulation
+function compute_envelope(tri::Triangulation, point)
+    r = DelaunayTriangulation.num_points(tri)
+    x, y = getxy(point)
+    add_point!(tri, x, y)
+    envelope_vertices = DelaunayTriangulation.get_surrounding_polygon(tri, r + 1)
+    push!(envelope_vertices, envelope_vertices[begin])
+    envelope_points = [get_point(tri, i) for i in envelope_vertices]
+    delete_point!(tri, r + 1)
+    DelaunayTriangulation.pop_point!(tri)
+    return envelope_vertices, envelope_points
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">compute_envelope (generic function with 1 method)</code></pre><p>Let&#39;s now check that this function works.</p><pre><code class="language-julia hljs">using CairoMakie
+using StableRNGs
+using ElasticArrays
+rng = StableRNG(999)
+points = ElasticMatrix(randn(rng, 2, 50)) # so that the points are mutable
+tri = triangulate(points; rng)
+envelope_vertices, envelope_points = compute_envelope(tri, (0.5, 0.5))
+
+fig = Figure(fontsize=24)
+ax = Axis(fig[1, 1], width=400, height=400)
+triplot!(ax, tri, show_points=true)
+ax2 = Axis(fig[1, 2], width=400, height=400)
+add_point!(tri, 0.5, 0.5)
+triplot!(ax2, tri, show_points=true)
+poly!(ax2, envelope_points, color=(:red, 0.2))
+resize_to_layout!(fig)
+fig</code></pre><img src="093ac84b.png" alt="Example block output"/><p>As we can see, the red region we have computed from our envelope is indeed the envelope we need.</p><h3 id="Computing-the-Sibsonian-coordinates"><a class="docs-heading-anchor" href="#Computing-the-Sibsonian-coordinates">Computing the Sibsonian coordinates</a><a id="Computing-the-Sibsonian-coordinates-1"></a><a class="docs-heading-anchor-permalink" href="#Computing-the-Sibsonian-coordinates" title="Permalink"></a></h3><p>When we are interpolating at a point <span>$\vb x$</span>, remember that we need to know the area of the Voronoi polygon that would be produced when <span>$\vb x$</span> is inserted into <span>$\mathcal V(X)$</span>. To compute this area, we need to know how we can compute it using the Bowyer-Watson envelope. Remember that the Voronoi polygons are obtained by drawing lines between the circumcenters of neighbouring triangles. This can be done using the Bowyer-Watson envelope: The edges of the envelope, together with the new point, define the triangles that would be produced if it were to be added into the triangulation, and so we can join the circumcenters of these triangles to compute the new Voronoi polygon. We can then use this polygon, together with the original tessellation, to compute the Sibsonian coordinates.</p><p>Let us first discuss the area of the Voronoi polygons in <span>$N(\vb x)$</span> (<span>$\vb x$</span>&#39;s natural neighbours, i.e. the vertices of the envelope) before <span>$\vb x$</span> is inserted. We only need to compute the part of the area that is contained within the envelope, since everything outside of that envelope is unchanged. If we included the entire area, then the area that we subtract off for the intersection we compute later would just cancel it out anyway. Let&#39;s zoom in on the envelope and consider a specific example of how we can do this computation.</p><pre><code class="language-julia hljs">fig = Figure(fontsize=24)
+ax = Axis(fig[1, 1], width=400, height=400)
+triplot!(ax, tri, show_points=true)
+lines!(ax, envelope_points, color=:red)
+j = 7 # example vertex
+v = envelope_vertices[j]
+scatter!(ax, [get_point(tri, v)], color=:blue)
+first_neighbour = envelope_vertices[j-1]
+next_triangle = get_adjacent(tri, first_neighbour, v)
+next_triangle_2 = get_adjacent(tri, v, envelope_vertices[j+1])
+last_neighbour = envelope_vertices[j+1]
+polygon_points = [
+    get_point(tri, v),
+    (get_point(tri, v) .+ get_point(tri, last_neighbour)) ./ 2,
+    DelaunayTriangulation.triangle_circumcenter(tri, (v, envelope_vertices[j+1], next_triangle_2)),
+    DelaunayTriangulation.triangle_circumcenter(tri, (first_neighbour, v, next_triangle)),
+    (get_point(tri, v) .+ get_point(tri, first_neighbour)) ./ 2
+]
+poly!(ax, polygon_points, color=(:blue, 0.5), strokecolor=:blue, strokewidth=2)
+xlims!(ax, -0.5, 1.4)
+ylims!(ax, -0.15, 1.4)
+resize_to_layout!(fig)
+fig</code></pre><img src="354b8205.png" alt="Example block output"/><p>The relevant polygon is shown above in blue, associated with the generator shown by the blue point. We need to compute the area of this polygon. This is simple using the <a href="https://en.wikipedia.org/wiki/Shoelace_formula">shoelace formula</a>. Our implementation of this is given below.</p><pre><code class="language-julia hljs">function polygon_area(points) # this is the first formula in the &quot;Other formulae&quot; section of the above Wikipedia article
+    n = DelaunayTriangulation.num_points(points)
+    p, q, r, s = get_point(points, 1, 2, n, n - 1)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
+    rx, ry = getxy(r)
+    sx, sy = getxy(s)
+    area = px * (qy - ry) + rx * (py - sy)
+    for i in 2:(n-1)
+        p, q, r = get_point(points, i, i + 1, i - 1)
+        px, py = getxy(p)
+        qx, qy = getxy(q)
+        rx, ry = getxy(r)
+        area += px * (qy - ry)
+    end
+    return area / 2
+end
+function pre_insertion_area(tri::Triangulation, i, envelope_vertices) # area from the envelope[i]th generator
+    poly_points = NTuple{2,Float64}[]
+    u = envelope_vertices[i]
+    prev_index = i == 1 ? length(envelope_vertices) - 1 : i - 1
+    next_index = i == length(envelope_vertices) ? 1 : i + 1
+    first_neighbour = envelope_vertices[prev_index]
+    last_neighbour = envelope_vertices[next_index]
+    v = last_neighbour
+    (ux, uy), (vx, vy) = get_point(tri, u, v)
+    mx1, my1 = (ux + vx) / 2, (uy + vy) / 2
+    push!(poly_points, (mx1, my1))
+    while v ≠ first_neighbour
+        w = get_adjacent(tri, u, v)
+        cx, cy = DelaunayTriangulation.triangle_circumcenter(tri, (u, v, w))
+        push!(poly_points, (cx, cy))
+        v = w
+    end
+    vx, vy = get_point(tri, v)
+    mx, my = (ux + vx) / 2, (uy + vy) / 2
+    push!(poly_points, (mx, my), (mx1, my1))
+    return polygon_area(poly_points)
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">pre_insertion_area (generic function with 1 method)</code></pre><p>The details for the post-insertion area are similar, but now the triangles that we take the circumcenters of are those where the edges instead join with the inserted vertex. The function we use is below.</p><pre><code class="language-julia hljs">function post_insertion_area(tri::Triangulation, i, envelope_vertices, point)
+    u = envelope_vertices[i]
+    prev_index = i == 1 ? length(envelope_vertices) - 1 : i - 1
+    next_index = i == length(envelope_vertices) ? 1 : i + 1
+    first_neighbour = envelope_vertices[prev_index]
+    last_neighbour = envelope_vertices[next_index]
+    p, q, r = get_point(tri, u, first_neighbour, last_neighbour)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
+    rx, ry = getxy(r)
+    mpq = (px + qx) / 2, (py + qy) / 2
+    mpr = (px + rx) / 2, (py + ry) / 2
+    g1 = DelaunayTriangulation.triangle_circumcenter(p, r, point)
+    !all(isfinite, g1) &amp;&amp; return NaN # point is one of p and r, i.e. we are interpolating at a data site
+    g2 = DelaunayTriangulation.triangle_circumcenter(q, p, point)
+    !all(isfinite, g2) &amp;&amp; return NaN
+    points = (mpq, mpr, g1, g2, mpq)
+    return polygon_area(points)
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">post_insertion_area (generic function with 1 method)</code></pre><p>Now that we can compute the pre- and post-insertion areas, we can start computing the Sibsonian coordinates.</p><pre><code class="language-julia hljs">function compute_sibson_coordinates(tri::Triangulation, envelope_vertices, point)
+    coordinates = zeros(length(envelope_vertices) - 1)
+    w = 0.0
+    for i in firstindex(envelope_vertices):(lastindex(envelope_vertices)-1)
+        pre = max(0.0, pre_insertion_area(tri, i, envelope_vertices))
+        post = max(0.0, post_insertion_area(tri, i, envelope_vertices, point))
+        if isnan(post) # need to return the the vector λ = [1] since we are exactly at a data site
+            return [1.0]
+        end
+        coordinates[i] = max(pre - post, 0.0) # take care of any precision issues
+        w += coordinates[i]
+    end
+    coordinates ./= w
+    return coordinates
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">compute_sibson_coordinates (generic function with 1 method)</code></pre><p>This function gives our <span>$\boldsymbol\lambda$</span> vector. Notice that, in the computation of these coordinates, we need needed to have <span>$\mathcal V(X)$</span> directly or make use of the data <span>$z_i$</span>.</p><h2 id="Evaluating-the-Sibsonian-interpolant"><a class="docs-heading-anchor" href="#Evaluating-the-Sibsonian-interpolant">Evaluating the Sibsonian interpolant</a><a id="Evaluating-the-Sibsonian-interpolant-1"></a><a class="docs-heading-anchor-permalink" href="#Evaluating-the-Sibsonian-interpolant" title="Permalink"></a></h2><p>Now we can evaluate our Sibson interpolant. The following function does this for us.</p><pre><code class="language-julia hljs">function evaluate_sibson_interpolant(tri::Triangulation, z, point)
+    envelope_vertices, _ = compute_envelope(tri, point)
+    λ = compute_sibson_coordinates(tri, envelope_vertices, point)
+    if length(λ) == 1
+        for i in each_solid_vertex(tri)
+            get_point(tri, i) == point &amp;&amp; return z[i]
+        end
+    else
+        itp = 0.0
+        for (λ, k) in zip(λ, envelope_vertices)
+            itp += λ * z[k]
+        end
+        return itp
+    end
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">evaluate_sibson_interpolant (generic function with 1 method)</code></pre><p>Let&#39;s now use this function to interpolate some data.</p><pre><code class="language-julia hljs">f = (x, y) -&gt; sin(x * y) - cos(x - y) * exp(-(x - y)^2)
+trit = triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 30, 30)
+zz = [f(x, y) for (x, y) in DelaunayTriangulation.each_point(trit)]
+xx = LinRange(0.001, 0.999, 20) # handling points on the boundary requires more care than we have discussed here
+yy = LinRange(0.001, 0.999, 20)
+fig = Figure(fontsize = 24)
+ax = Axis(fig[1, 1], xlabel=L&quot;x&quot;, ylabel=L&quot;y&quot;, title=&quot;True function&quot;, titlealign=:left, width=400, height=400)
+contourf!(ax, xx, yy, f.(xx, yy&#39;))
+ax2 = Axis(fig[1, 2], xlabel=L&quot;x&quot;, ylabel=L&quot;y&quot;, title=&quot;Interpolant&quot;, titlealign=:left, width=400, height=400)
+zi = [evaluate_sibson_interpolant(trit, zz, (xᵢ, yᵢ)) for xᵢ in xx, yᵢ in yy]
+contourf!(ax2, xx, yy, zi)
+resize_to_layout!(fig)
+fig</code></pre><img src="86a9a530.png" alt="Example block output"/><p>Works perfectly!</p><h2 id="Just-the-code"><a class="docs-heading-anchor" href="#Just-the-code">Just the code</a><a id="Just-the-code-1"></a><a class="docs-heading-anchor-permalink" href="#Just-the-code" title="Permalink"></a></h2><p>An uncommented version of this example is given below. You can view the source code for this file <a href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_applications/interpolation.jl">here</a>.</p><pre><code class="language-julia hljs">using DelaunayTriangulation
+function compute_envelope(tri::Triangulation, point)
+    r = DelaunayTriangulation.num_points(tri)
+    x, y = getxy(point)
+    add_point!(tri, x, y)
+    envelope_vertices = DelaunayTriangulation.get_surrounding_polygon(tri, r + 1)
+    push!(envelope_vertices, envelope_vertices[begin])
+    envelope_points = [get_point(tri, i) for i in envelope_vertices]
+    delete_point!(tri, r + 1)
+    DelaunayTriangulation.pop_point!(tri)
+    return envelope_vertices, envelope_points
+end
+
+using CairoMakie
+using StableRNGs
+using ElasticArrays
+rng = StableRNG(999)
+points = ElasticMatrix(randn(rng, 2, 50)) # so that the points are mutable
+tri = triangulate(points; rng)
+envelope_vertices, envelope_points = compute_envelope(tri, (0.5, 0.5))
+
+fig = Figure(fontsize=24)
+ax = Axis(fig[1, 1], width=400, height=400)
+triplot!(ax, tri, show_points=true)
+ax2 = Axis(fig[1, 2], width=400, height=400)
+add_point!(tri, 0.5, 0.5)
+triplot!(ax2, tri, show_points=true)
+poly!(ax2, envelope_points, color=(:red, 0.2))
+resize_to_layout!(fig)
+fig
+
+fig = Figure(fontsize=24)
+ax = Axis(fig[1, 1], width=400, height=400)
+triplot!(ax, tri, show_points=true)
+lines!(ax, envelope_points, color=:red)
+j = 7 # example vertex
+v = envelope_vertices[j]
+scatter!(ax, [get_point(tri, v)], color=:blue)
+first_neighbour = envelope_vertices[j-1]
+next_triangle = get_adjacent(tri, first_neighbour, v)
+next_triangle_2 = get_adjacent(tri, v, envelope_vertices[j+1])
+last_neighbour = envelope_vertices[j+1]
+polygon_points = [
+    get_point(tri, v),
+    (get_point(tri, v) .+ get_point(tri, last_neighbour)) ./ 2,
+    DelaunayTriangulation.triangle_circumcenter(tri, (v, envelope_vertices[j+1], next_triangle_2)),
+    DelaunayTriangulation.triangle_circumcenter(tri, (first_neighbour, v, next_triangle)),
+    (get_point(tri, v) .+ get_point(tri, first_neighbour)) ./ 2
+]
+poly!(ax, polygon_points, color=(:blue, 0.5), strokecolor=:blue, strokewidth=2)
+xlims!(ax, -0.5, 1.4)
+ylims!(ax, -0.15, 1.4)
+resize_to_layout!(fig)
+fig
+
+function polygon_area(points) # this is the first formula in the &quot;Other formulae&quot; section of the above Wikipedia article
+    n = DelaunayTriangulation.num_points(points)
+    p, q, r, s = get_point(points, 1, 2, n, n - 1)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
+    rx, ry = getxy(r)
+    sx, sy = getxy(s)
+    area = px * (qy - ry) + rx * (py - sy)
+    for i in 2:(n-1)
+        p, q, r = get_point(points, i, i + 1, i - 1)
+        px, py = getxy(p)
+        qx, qy = getxy(q)
+        rx, ry = getxy(r)
+        area += px * (qy - ry)
+    end
+    return area / 2
+end
+function pre_insertion_area(tri::Triangulation, i, envelope_vertices) # area from the envelope[i]th generator
+    poly_points = NTuple{2,Float64}[]
+    u = envelope_vertices[i]
+    prev_index = i == 1 ? length(envelope_vertices) - 1 : i - 1
+    next_index = i == length(envelope_vertices) ? 1 : i + 1
+    first_neighbour = envelope_vertices[prev_index]
+    last_neighbour = envelope_vertices[next_index]
+    v = last_neighbour
+    (ux, uy), (vx, vy) = get_point(tri, u, v)
+    mx1, my1 = (ux + vx) / 2, (uy + vy) / 2
+    push!(poly_points, (mx1, my1))
+    while v ≠ first_neighbour
+        w = get_adjacent(tri, u, v)
+        cx, cy = DelaunayTriangulation.triangle_circumcenter(tri, (u, v, w))
+        push!(poly_points, (cx, cy))
+        v = w
+    end
+    vx, vy = get_point(tri, v)
+    mx, my = (ux + vx) / 2, (uy + vy) / 2
+    push!(poly_points, (mx, my), (mx1, my1))
+    return polygon_area(poly_points)
+end
+
+function post_insertion_area(tri::Triangulation, i, envelope_vertices, point)
+    u = envelope_vertices[i]
+    prev_index = i == 1 ? length(envelope_vertices) - 1 : i - 1
+    next_index = i == length(envelope_vertices) ? 1 : i + 1
+    first_neighbour = envelope_vertices[prev_index]
+    last_neighbour = envelope_vertices[next_index]
+    p, q, r = get_point(tri, u, first_neighbour, last_neighbour)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
+    rx, ry = getxy(r)
+    mpq = (px + qx) / 2, (py + qy) / 2
+    mpr = (px + rx) / 2, (py + ry) / 2
+    g1 = DelaunayTriangulation.triangle_circumcenter(p, r, point)
+    !all(isfinite, g1) &amp;&amp; return NaN # point is one of p and r, i.e. we are interpolating at a data site
+    g2 = DelaunayTriangulation.triangle_circumcenter(q, p, point)
+    !all(isfinite, g2) &amp;&amp; return NaN
+    points = (mpq, mpr, g1, g2, mpq)
+    return polygon_area(points)
+end
+
+function compute_sibson_coordinates(tri::Triangulation, envelope_vertices, point)
+    coordinates = zeros(length(envelope_vertices) - 1)
+    w = 0.0
+    for i in firstindex(envelope_vertices):(lastindex(envelope_vertices)-1)
+        pre = max(0.0, pre_insertion_area(tri, i, envelope_vertices))
+        post = max(0.0, post_insertion_area(tri, i, envelope_vertices, point))
+        if isnan(post) # need to return the the vector λ = [1] since we are exactly at a data site
+            return [1.0]
+        end
+        coordinates[i] = max(pre - post, 0.0) # take care of any precision issues
+        w += coordinates[i]
+    end
+    coordinates ./= w
+    return coordinates
+end
+
+function evaluate_sibson_interpolant(tri::Triangulation, z, point)
+    envelope_vertices, _ = compute_envelope(tri, point)
+    λ = compute_sibson_coordinates(tri, envelope_vertices, point)
+    if length(λ) == 1
+        for i in each_solid_vertex(tri)
+            get_point(tri, i) == point &amp;&amp; return z[i]
+        end
+    else
+        itp = 0.0
+        for (λ, k) in zip(λ, envelope_vertices)
+            itp += λ * z[k]
+        end
+        return itp
+    end
+end
+
+f = (x, y) -&gt; sin(x * y) - cos(x - y) * exp(-(x - y)^2)
+trit = triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 30, 30)
+zz = [f(x, y) for (x, y) in DelaunayTriangulation.each_point(trit)]
+xx = LinRange(0.001, 0.999, 20) # handling points on the boundary requires more care than we have discussed here
+yy = LinRange(0.001, 0.999, 20)
+fig = Figure(fontsize = 24)
+ax = Axis(fig[1, 1], xlabel=L&quot;x&quot;, ylabel=L&quot;y&quot;, title=&quot;True function&quot;, titlealign=:left, width=400, height=400)
+contourf!(ax, xx, yy, f.(xx, yy&#39;))
+ax2 = Axis(fig[1, 2], xlabel=L&quot;x&quot;, ylabel=L&quot;y&quot;, title=&quot;Interpolant&quot;, titlealign=:left, width=400, height=400)
+zi = [evaluate_sibson_interpolant(trit, zz, (xᵢ, yᵢ)) for xᵢ in xx, yᵢ in yy]
+contourf!(ax2, xx, yy, zi)
+resize_to_layout!(fig)
+fig</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a>This is more expensive than we need. In NaturalNeighbours.jl, we use the <code>peek</code> keyword in <code>triangulate</code> to avoid making any changes to the triangulation itself, and use the <code>InsertionEventHistory</code> to track all changes made.</li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../overview/">« Overview</a><a class="docs-footer-nextpage" href="../cell_simulations/">Cellular Biology »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Wednesday 8 May 2024 20:10">Wednesday 8 May 2024</span>. Using Julia version 1.10.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

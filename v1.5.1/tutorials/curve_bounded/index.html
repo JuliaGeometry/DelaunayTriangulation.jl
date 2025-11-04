@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Triangulating Curve-Bounded Domains · DelaunayTriangulation.jl</title><meta name="title" content="Triangulating Curve-Bounded Domains · DelaunayTriangulation.jl"/><meta property="og:title" content="Triangulating Curve-Bounded Domains · DelaunayTriangulation.jl"/><meta property="twitter:title" content="Triangulating Curve-Bounded Domains · DelaunayTriangulation.jl"/><meta name="description" content="Documentation for DelaunayTriangulation.jl."/><meta property="og:description" content="Documentation for DelaunayTriangulation.jl."/><meta property="twitter:description" content="Documentation for DelaunayTriangulation.jl."/><meta property="og:url" content="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/tutorials/curve_bounded/"/><meta property="twitter:url" content="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/tutorials/curve_bounded/"/><link rel="canonical" href="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/tutorials/curve_bounded/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">DelaunayTriangulation.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><input class="collapse-toggle" id="menuitem-2" type="checkbox" checked/><label class="tocitem" for="menuitem-2"><span class="docs-label">Tutorials</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../overview/">Overview</a></li><li><a class="tocitem" href="../unconstrained/">Unconstrained Triangulations</a></li><li><input class="collapse-toggle" id="menuitem-2-3" type="checkbox"/><label class="tocitem" for="menuitem-2-3"><span class="docs-label">Constrained Triangulations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../constrained_edges/">Constrained Edges</a></li><li><a class="tocitem" href="../constrained_outer_boundary/">Outer Boundary</a></li><li><a class="tocitem" href="../constrained_outer_boundary_segmented/">Segmented Outer Boundary</a></li><li><a class="tocitem" href="../constrained_multiply_connected/">Domain with Interior Holes</a></li><li><a class="tocitem" href="../constrained_interior_within_interiors/">Domain with Interior Holes inside Interior Holes</a></li><li><a class="tocitem" href="../constrained_multipolygon/">Disjoint Domains</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-2-4" type="checkbox"/><label class="tocitem" for="menuitem-2-4"><span class="docs-label">Triangulation Operations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../operations_vertex_insertion_deletion/">Vertex Insertion and Deletion</a></li><li><a class="tocitem" href="../operations_segment_insertion/">Edge Insertion</a></li><li><a class="tocitem" href="../operations_ghost_triangles/">Adding or Clearing Ghost Triangles</a></li><li><a class="tocitem" href="../operations_flip_edge/">Edge Flipping</a></li><li><a class="tocitem" href="../operations_legalise_edge/">Legalising an Edge</a></li><li><a class="tocitem" href="../operations_split_edge/">Edge Splitting</a></li><li><a class="tocitem" href="../operations_split_triangle/">Triangle Splitting</a></li><li><a class="tocitem" href="../operations_convex_hull_locking/">Locking and Unlocking the Convex Hull</a></li></ul></li><li><a class="tocitem" href="../refinement/">Mesh Refinement</a></li><li><a class="tocitem" href="../lattice/">Triangulating Rectangular Regions</a></li><li><a class="tocitem" href="../convex/">Triangulating Convex Polygons</a></li><li class="is-active"><a class="tocitem" href>Triangulating Curve-Bounded Domains</a><ul class="internal"><li><a class="tocitem" href="#Curves"><span>Curves</span></a></li><li><a class="tocitem" href="#A-Circular-Domain"><span>A Circular Domain</span></a></li><li><a class="tocitem" href="#A-Boundary-Defined-by-Multiple-Parametric-Curves"><span>A Boundary Defined by Multiple Parametric Curves</span></a></li><li><a class="tocitem" href="#A-Complicated-Multiply-Connected-Disjoint-Domain"><span>A Complicated Multiply-Connected Disjoint Domain</span></a></li><li><a class="tocitem" href="#Defining-a-New-Parametric-Curve"><span>Defining a New Parametric Curve</span></a></li><li><a class="tocitem" href="#Just-the-code"><span>Just the code</span></a></li></ul></li><li><a class="tocitem" href="../weighted/">Weighted Triangulations</a></li><li><a class="tocitem" href="../voronoi/">Voronoi Tessellations</a></li><li><input class="collapse-toggle" id="menuitem-2-11" type="checkbox"/><label class="tocitem" for="menuitem-2-11"><span class="docs-label">Clipped Voronoi Tessellations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../clipped/">Clipping to the Convex Hull</a></li><li><a class="tocitem" href="../clipped_rectangle/">Clipping to a Rectangle</a></li><li><a class="tocitem" href="../clipped_polygon/">Clipping to a Generic Convex Polygon</a></li></ul></li><li><a class="tocitem" href="../centroidal/">Centroidal Voronoi Tessellations</a></li><li><a class="tocitem" href="../power/">Power Diagrams</a></li><li><a class="tocitem" href="../point_location/">Point Location</a></li><li><a class="tocitem" href="../nearest/">Nearest Neighbour Queries</a></li><li><a class="tocitem" href="../convex_hull/">Convex Hulls</a></li><li><a class="tocitem" href="../pole_of_inaccessibility/">Pole of Inaccessibility</a></li><li><a class="tocitem" href="../point_in_polygon/">Point-in-Polygon Testing</a></li><li><a class="tocitem" href="../custom_primitive/">Using Custom Structs for Primitives and Boundaries</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3" type="checkbox"/><label class="tocitem" for="menuitem-3"><span class="docs-label">Manual</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/overview/">Overview</a></li><li><a class="tocitem" href="../../manual/primitives/">Representing Primitives</a></li><li><a class="tocitem" href="../../manual/boundaries/">Representing Boundaries</a></li><li><a class="tocitem" href="../../manual/ghost_triangles/">Ghost (Negative) Vertices</a></li><li><a class="tocitem" href="../../manual/curve_bounded/">Defining Curve-Bounded Domains</a></li><li><a class="tocitem" href="../../manual/predicates/">Geometrical Predicates</a></li><li><a class="tocitem" href="../../manual/triangulation_output/">Triangulation Output</a></li><li><a class="tocitem" href="../../manual/voronoi_output/">Voronoi Tessellation Output</a></li><li><a class="tocitem" href="../../manual/predicate_kernels/">Predicate Kernels</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">API Reference</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../api/overview/">Section Overview</a></li><li><a class="tocitem" href="../../api/data_structures/">Data Structures</a></li><li><a class="tocitem" href="../../api/triangulation/">Triangulations</a></li><li><a class="tocitem" href="../../api/operations/">Triangulation Operations</a></li><li><a class="tocitem" href="../../api/voronoi/">Voronoi Tessellations</a></li><li><a class="tocitem" href="../../api/convex_hull/">Convex Hull</a></li><li><a class="tocitem" href="../../api/curves/">Curves</a></li><li><a class="tocitem" href="../../api/iterators/">Iterators</a></li><li><a class="tocitem" href="../../api/point_location/">Point Location</a></li><li><a class="tocitem" href="../../api/predicates/">Predicates</a></li><li><a class="tocitem" href="../../api/statistics/">Triangulation Statistics</a></li><li><a class="tocitem" href="../../api/primitives/">Primitive Interfaces</a></li><li><a class="tocitem" href="../../api/other/">Other</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">Extended Reference</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../extended/overview/">Overview</a></li><li><a class="tocitem" href="../../extended/data_structures/">Data Structures</a></li><li><a class="tocitem" href="../../extended/algorithms/">Algorithm Internals</a></li><li><a class="tocitem" href="../../extended/utils/">Utility Functions</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">Mathematical Details</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../math/overview/">Overview</a></li><li><a class="tocitem" href="../../math/delaunay/">Delaunay Triangulations</a></li><li><a class="tocitem" href="../../math/constrained/">Constrained Delaunay Triangulations</a></li><li><a class="tocitem" href="../../math/convex/">Triangulating Convex Polygons</a></li><li><a class="tocitem" href="../../math/refinement/">Mesh Refinement</a></li><li><a class="tocitem" href="../../math/curves/">Curves</a></li><li><a class="tocitem" href="../../math/curve_bounded/">Triangulating Curve-Bounded Domains</a></li><li><a class="tocitem" href="../../math/weighted/">Weighted Delaunay Triangulations</a></li><li><a class="tocitem" href="../../math/voronoi/">Voronoi Tessellations</a></li><li><a class="tocitem" href="../../math/clipped/">Clipped Voronoi Tessellations</a></li><li><a class="tocitem" href="../../math/centroidal/">Centroidal Voronoi Tessellations</a></li><li><a class="tocitem" href="../../math/power/">Power Diagrams</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox"/><label class="tocitem" for="menuitem-7"><span class="docs-label">Example Applications</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../applications/overview/">Overview</a></li><li><a class="tocitem" href="../../applications/interpolation/">Interpolation</a></li><li><a class="tocitem" href="../../applications/cell_simulations/">Cellular Biology</a></li><li><a class="tocitem" href="../../applications/pde_discretisation/">Solving PDEs</a></li></ul></li><li><a class="tocitem" href="../../terminology/">Terminology</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>Triangulating Curve-Bounded Domains</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Triangulating Curve-Bounded Domains</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/curve_bounded.jl" title="View source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Triangulating-Curve-Bounded-Domains"><a class="docs-heading-anchor" href="#Triangulating-Curve-Bounded-Domains">Triangulating Curve-Bounded Domains</a><a id="Triangulating-Curve-Bounded-Domains-1"></a><a class="docs-heading-anchor-permalink" href="#Triangulating-Curve-Bounded-Domains" title="Permalink"></a></h1><p>In this tutorial, we show how we can triangulate a domain that is defined by curves rather than by straight lines. This tutorial makes use of functions introduced in the <a href="../refinement/">refinement tutorial</a>.</p><p>Let us start by loading in the packages we will need.</p><pre><code class="language-julia hljs">using DelaunayTriangulation
+using DelaunayTriangulation: EllipticalArc # CairoMakie also exports this
+using CairoMakie
+using StableRNGs
+using LinearAlgebra</code></pre><h2 id="Curves"><a class="docs-heading-anchor" href="#Curves">Curves</a><a id="Curves-1"></a><a class="docs-heading-anchor-permalink" href="#Curves" title="Permalink"></a></h2><p>In this package, only a small subset of curves are provided (although arbitrary curves could be provided by the user, as discussed in <a href="../../api/curves/">here</a>. The curves, defined as parametric curves over a parameter <span>$t ∈ [0, 1]$</span>, are:</p><ul><li><a href="../../math/curves/#LineSegment"><code>LineSegment</code></a>: Just a simple line segment between two points.</li><li><a href="../../math/curves/#CircularArc"><code>CircularArc</code></a>: A circular arc defined between two points and a center.</li><li><a href="../../math/curves/#EllipticalArc"><code>EllipticalArc</code></a>: An elliptical arc defined by two points, a center, a major radius, a minor radius, and an angle of rotation.</li><li><a href="../../math/curves/#BezierCurve"><code>BezierCurve</code></a>: A Bézier curve defined by a set of control points.</li><li><a href="../../math/curves/#BSpline"><code>BSpline</code></a>: A B-spline curve defined by a set of control points. Defaults to a cubic B-spline.</li><li><a href="../../math/curves/#CatmullRomSpline"><code>CatmullRomSpline</code></a>: A Catmull-Rom spline defined by a set of control points.</li></ul><p>This set of curves is sufficient to represent a large number of curves.</p><h2 id="A-Circular-Domain"><a class="docs-heading-anchor" href="#A-Circular-Domain">A Circular Domain</a><a id="A-Circular-Domain-1"></a><a class="docs-heading-anchor-permalink" href="#A-Circular-Domain" title="Permalink"></a></h2><p>We start with a simple domain: a circle. In particular, we consider a circle of radius <span>$r = 2$</span> centered at <span>$(x, y) = (1/2, 2)$</span>. In past tutorials, we would have defined a domain like this by a set of points around a boundary, e.g.:</p><pre><code class="language-julia hljs">n = 50
+r = 2.0
+xc, yc = 1 / 2, 2.0
+θ = range(0, 2π, length = n + 1) |&gt; collect;
+θ[end] = θ[begin];
+x = xc .+ r * cos.(θ)
+y = yc .+ r * sin.(θ);</code></pre><p>One problem with this approach is that we had to decide what value of <span>$n$</span> to use for discretising this boundary. Instead, we can use <code>CircularArc</code>. For this, we use:</p><pre><code class="language-julia hljs">p = (xc + r, yc)
+c = (xc, yc)
+arc = CircularArc(p, p, c)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(::CircularArc) (generic function with 1 method)</code></pre><p>Here, the syntax is <code>CircularArc(first_point, last_point, centre)</code>. Since the circle is closed, we use <code>p</code> for both <code>first_point</code> and <code>last_point</code>. Notice that the <code>arc</code> is a function. In particular,</p><pre><code class="language-julia hljs">typeof(arc) |&gt; supertype |&gt; supertype</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Function</code></pre><p>If we wanted to look at this circle, we would need to evaluate it at a set of <span>$t \in [0, 1]$</span>.</p><pre><code class="language-julia hljs">t = LinRange(0, 1, 2500)
+points = arc.(t)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2500-element Vector{Tuple{Float64, Float64}}:
+ (2.5, 2.0)
+ (2.4999936784002426, 2.00502855437152)
+ (2.499974713640933, 2.0100570769545323)
+ (2.4999431058419583, 2.015085535960729)
+ (2.4998988552031305, 2.0201138996022054)
+ (2.499841962004185, 2.0251421360916586)
+ (2.4997724266047774, 2.0301702136425908)
+ (2.499690249444483, 2.0351981004695077)
+ (2.4995954310427924, 2.0402257647881212)
+ (2.49948797199911, 2.0452531748155494)
+ ⋮
+ (2.4995954310427924, 1.9597742352118779)
+ (2.499690249444483, 1.9648018995304912)
+ (2.4997724266047774, 1.969829786357408)
+ (2.499841962004185, 1.9748578639083398)
+ (2.4998988552031305, 1.9798861003977948)
+ (2.4999431058419583, 1.984914464039271)
+ (2.499974713640933, 1.9899429230454677)
+ (2.4999936784002426, 1.9949714456284795)
+ (2.5, 2.0)</code></pre><pre><code class="language-julia hljs">fig, ax, sc = lines(points)</code></pre><img src="cef5cf13.png" alt="Example block output"/><p>Let&#39;s now triangulate this domain. We need to put the arc into its own vector, and we still need to pass a set of points into <code>triangulate</code>:</p><pre><code class="language-julia hljs">points = NTuple{2, Float64}[]
+rng = StableRNG(123)
+tri = triangulate(points; boundary_nodes = [arc], rng)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Delaunay Triangulation.
+   Number of vertices: 8
+   Number of triangles: 6
+   Number of edges: 13
+   Has boundary nodes: true
+   Has ghost triangles: true
+   Curve-bounded: true
+   Weighted: false
+   Constrained: true</code></pre><pre><code class="language-julia hljs">fig, ax, sc = triplot(tri)
+fig</code></pre><img src="f0140187.png" alt="Example block output"/><p>Notice that the domain doesn&#39;t look like a circle yet. This is because using <code>triangulate</code> on the curve just by itself isn&#39;t enough. In fact, the triangulation returned in this case is simply one where:</p><ul><li>No point is contained in the interior of any boundary edge&#39;s diametral circle.</li><li>The total variation between any two neighbouring points is less than <span>$\pi/2$</span>, meaning that the absolute change in the angle along the parametric curve between these points is less than <span>$\pi/2$</span>.</li></ul><p>This is probably not what we actually want, though. Instead, we need to refine the domain using mesh refinement. The syntax for this is the same as in the <a href="../refinement/">refinement tutorial</a>:</p><pre><code class="language-julia hljs">refine!(tri; max_area = 1.0e-1, rng)
+fig, ax, sc = triplot(tri)
+fig</code></pre><img src="87bd2cfe.png" alt="Example block output"/><p>Much better! We have now triangulated our first curve-bounded domain.</p><h2 id="A-Boundary-Defined-by-Multiple-Parametric-Curves"><a class="docs-heading-anchor" href="#A-Boundary-Defined-by-Multiple-Parametric-Curves">A Boundary Defined by Multiple Parametric Curves</a><a id="A-Boundary-Defined-by-Multiple-Parametric-Curves-1"></a><a class="docs-heading-anchor-permalink" href="#A-Boundary-Defined-by-Multiple-Parametric-Curves" title="Permalink"></a></h2><p>We now take a domain which is defined by three separate curves: a circular arc, a B-spline, and a piecewise linear curve. For piecewise linear curves, we use the same method as we would in previous tutorials, where instead of using coordinates to define the boundary we use numbers that refer to points in the point set. To start, the point set we will be using is</p><pre><code class="language-julia hljs">points = [(0.1, 0.1), (0.15, 0.15), (0.23, 0.23), (0.009, 0.11), (0.0, -2.0), (0.2, -1.7), (0.000591, 0.00019), (0.111, -0.005), (-0.0001, -0.00991), (1.0, 0.0)]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">10-element Vector{Tuple{Float64, Float64}}:
+ (0.1, 0.1)
+ (0.15, 0.15)
+ (0.23, 0.23)
+ (0.009, 0.11)
+ (0.0, -2.0)
+ (0.2, -1.7)
+ (0.000591, 0.00019)
+ (0.111, -0.005)
+ (-0.0001, -0.00991)
+ (1.0, 0.0)</code></pre><p>Now, for the boundary, we will take:</p><ul><li>A circular arc defined between <span>$(1, 0)$</span> and <span>$(0, 1)$</span> centred at <span>$(0, 0)$</span>.</li><li>A B-spline with control points <span>$(0,1)$</span>, <span>$(-1, 2)$</span>, <span>$(-2,0)$</span>, <span>$(-2,-1)$</span>, and <span>$(0,-2)$</span>.</li><li>A piecewise linear curve defined between the fixth, sixth, and tenth points in <code>points</code>.</li></ul><p>We can define these curves as follows:</p><pre><code class="language-julia hljs">arc = CircularArc((1.0, 0.0), (0.0, 1.0), (0.0, 0.0))
+bspl = BSpline([(0.0, 1.0), (-1.0, 2.0), (-2.0, 0.0), (-2.0, -1.0), (0.0, -2.0)])
+pce = [5, 6, 10]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3-element Vector{Int64}:
+  5
+  6
+ 10</code></pre><p>Notice that we still must make sure that the curves connect, and that together the curves define a positively-oriented boundary. The domain we get from this looks like:</p><pre><code class="language-julia hljs">t = LinRange(0, 1, 1000)
+pts = vcat(arc.(t), bspl.(t), points[pce])
+fig, ax, sc = lines(pts)
+fig</code></pre><img src="d01f672c.png" alt="Example block output"/><p>Let&#39;s now get a triangulation of this domain. We will use a custom constraint to force triangles closer to the origin to be smaller than those outside of it.</p><pre><code class="language-julia hljs">curve = [[arc], [bspl], pce]
+rng = StableRNG(123)
+tri = triangulate(points; boundary_nodes = curve, rng)
+refine!(
+    tri; max_area = 1.0e-2, rng, custom_constraint = (_tri, T) -&gt; begin
+        i, j, k = triangle_vertices(T)
+        p, q, r = get_point(_tri, i, j, k)
+        c = (p .+ q .+ r) ./ 3
+        return norm(c) &lt; 1 / 2 &amp;&amp; DelaunayTriangulation.triangle_area(p, q, r) &gt; 1.0e-3
+    end,
+)
+fig, ax, sc = triplot(tri)
+fig</code></pre><img src="f4d97bc3.png" alt="Example block output"/><h2 id="A-Complicated-Multiply-Connected-Disjoint-Domain"><a class="docs-heading-anchor" href="#A-Complicated-Multiply-Connected-Disjoint-Domain">A Complicated Multiply-Connected Disjoint Domain</a><a id="A-Complicated-Multiply-Connected-Disjoint-Domain-1"></a><a class="docs-heading-anchor-permalink" href="#A-Complicated-Multiply-Connected-Disjoint-Domain" title="Permalink"></a></h2><p>For our last example, we take a complicated case with a domain that is disjoint, and where the individual domains are multiply-connected. Let us give the domain followed by an explanation of how it is defined:</p><pre><code class="language-julia hljs">curve = [
+    [
+        [1, 2, 3], [EllipticalArc((2.0, 0.0), (-2.0, 0.0), (0.0, 0.0), 2, 1 / 2, 0.0)],
+    ],
+    [
+        [BSpline([(0.0, 0.4), (1.0, 0.2), (0.0, 0.1), (-1.0, 0.2), (0.0, 0.4)])],
+    ],
+    [
+        [4, 5, 6, 7, 4],
+    ],
+    [
+        [BezierCurve([(0.0, -2.0), (0.0, -2.5), (-1.0, -2.5), (-1.0, -3.0)])], [CatmullRomSpline([(-1.0, -3.0), (0.0, -4.0), (1.0, -3.0), (0.0, -2.0)])],
+    ],
+    [
+        [12, 11, 10, 12],
+    ],
+    [
+        [CircularArc((1.1, -3.0), (1.1, -3.0), (0.0, -3.0), positive = false)],
+    ],
+]
+points = [(-2.0, 0.0), (0.0, 0.0), (2.0, 0.0), (-2.0, -5.0), (2.0, -5.0), (2.0, -1 / 10), (-2.0, -1 / 10), (-1.0, -3.0), (0.0, -4.0), (0.0, -2.3), (-0.5, -3.5), (0.9, -3.0)]
+t = LinRange(0, 1, 1000)
+fig
+fig = Figure()
+ax = Axis(fig[1, 1])
+lines!(ax, [get_point(points, curve[1][1]...)...], color = :red, label = &quot;(1, 2, 3)&quot;)
+lines!(ax, curve[1][2][1].(t), color = :red, linestyle = :dashdot, label = &quot;EllipticalArc&quot;)
+lines!(ax, curve[2][1][1].(t), color = :green, label = &quot;BSpline&quot;)
+lines!(ax, [get_point(points, curve[3][1]...)...], color = :blue, label = &quot;(4, 5, 6, 7, 4)&quot;)
+lines!(ax, curve[4][1][1].(t), color = :purple, label = &quot;BezierCurve&quot;)
+lines!(ax, curve[4][2][1].(t), color = :purple, linestyle = :dashdot, label = &quot;CatmullRomSpline&quot;)
+lines!(ax, [get_point(points, curve[5][1]...)...], color = :orange, label = &quot;(12, 11, 10, 12)&quot;)
+lines!(ax, curve[6][1][1].(t), color = :black, label = &quot;CircularArc&quot;)
+fig[1, 2] = Legend(fig, ax, &quot;Curve&quot;)
+fig</code></pre><img src="886e5f7c.png" alt="Example block output"/><p>Let&#39;s walk through the definition of <code>curve</code>.</p><ul><li>The first domain that is defined is the red curve in the above figure, defined in terms of a piecewise linear portion and an elliptical arc. The elliptical arc is defined by the points <span>$(2, 0)$</span>, <span>$(-2, 0)$</span>, and <span>$(0, 0)$</span>, with a major radius of <span>$2$</span>, a minor radius of <span>$1/2$</span>, and an angle of rotation of <span>$0$</span>.</li><li>The second domain that is defined is the green curve, defined as a cubic B-spline with control points <span>$(0, 0.4)$</span>, <span>$(1, 0.2)$</span>, <span>$(0, 0.1)$</span>, <span>$(-1, 0.2)$</span>, <span>$(0, 0.4)$</span>.</li><li>The third domain that we define is the square blue curve.</li><li>The fourth domain that we define is the purple curve, defined by a Bézier curve and a Catmull-Rom spline. The Bézier curve is defined by the control points <span>$(-1, -3)$</span>, <span>$(-1, -2.5)$</span>, <span>$(0, -2.5)$</span>, and <span>$(0, -2)$</span>. The Catmull-Rom spline is defined by the control points <span>$(0, -2)$</span>, <span>$(1, -3)$</span>, <span>$(0, -4)$</span>, and <span>$(-1, -3)$</span>.</li><li>The fifth domain that we define is the orange curve, defined as a piecewise linear curve to represent a triangle.</li><li>The last domain that we define is a circular arc. To get the orientation correct, i.e. to make sure the circle is defined clockwise so that the domain remains positively oriented, we must use <code>positive=false</code>.</li></ul><p>In addition to ensuring that the curves are all oriented correctly, care has also been taken in the definition of these curves to make sure that the curves connect at the correct points.</p><p>Let&#39;s now triangulate.</p><pre><code class="language-julia hljs">rng = StableRNG(123)
+tri = triangulate(copy(points); boundary_nodes = curve, rng) # copying so that we don&#39;t mutate for the next section
+refine!(tri; max_area = 1.0e-2)
+fig, ax, sc = triplot(tri)
+fig</code></pre><img src="02872dc1.png" alt="Example block output"/><h3 id="Using-Custom-Constraints-to-Control-Refinement"><a class="docs-heading-anchor" href="#Using-Custom-Constraints-to-Control-Refinement">Using Custom Constraints to Control Refinement</a><a id="Using-Custom-Constraints-to-Control-Refinement-1"></a><a class="docs-heading-anchor-permalink" href="#Using-Custom-Constraints-to-Control-Refinement" title="Permalink"></a></h3><p>Let&#39;s give another example of using custom constraints to better control the refinement within different domains. Referencing the previous figure where we showed each domain by colour, let us try and use a coarse mesh in the region bounded between the red and green curves, a slightly denser mesh bounded between the blue and black curves, and finally a dense mesh in the region bounded between the purple and orange curves. To do this, we must have a method for deciding which region a given point resides in. This is what <code>find_polygon</code> for is, as we also use in the <a href="../point_in_polygon/">point-in-polygon tutorial</a>. To write this function, we note that the indices of these polygons are 1, 3, and 4 for the red, blue, and purple regions, respectively.</p><pre><code class="language-julia hljs">poly_constraint = (_tri, T) -&gt; begin
+    i, j, k = triangle_vertices(T)
+    p, q, r = get_point(_tri, i, j, k)
+    c = (p .+ q .+ r) ./ 3
+    idx = find_polygon(_tri, c)
+    if idx ∉ (1, 3, 4)
+        return true
+    end
+    max_area = if idx == 1 # coarse
+        1.0e-1
+    elseif idx == 3 # medium
+        1.0e-2
+    else # dense
+        1.0e-3
+    end
+    area = DelaunayTriangulation.triangle_area(p, q, r)
+    return area &gt; max_area
+end
+rng = StableRNG(123)
+tri = triangulate(points; boundary_nodes = curve, rng)
+refine!(tri; custom_constraint = poly_constraint, rng)
+fig, ax, sc = triplot(tri)
+fig</code></pre><img src="bb21c552.png" alt="Example block output"/><h2 id="Defining-a-New-Parametric-Curve"><a class="docs-heading-anchor" href="#Defining-a-New-Parametric-Curve">Defining a New Parametric Curve</a><a id="Defining-a-New-Parametric-Curve-1"></a><a class="docs-heading-anchor-permalink" href="#Defining-a-New-Parametric-Curve" title="Permalink"></a></h2><p>Let us now give an example where we define a domain by a parametric curve that is not provided natively by this package. For this example, we consider the astroid, where</p><p class="math-container">\[\begin{aligned}
+x(t) = \cos^3(2\pi t), \\
+y(t) = \sin^3(2\pi t).
+\end{aligned}\]</p><p>Following the docstring of <a href="../../api/curves/#DelaunayTriangulation.AbstractParametricCurve"><code>DelaunayTriangulation.AbstractParametricCurve</code></a>, we know that to define this curve to be compatible with this package we need:</p><ul><li>To represent the curve as a callable struct that subtypes <code>AbstractParametricCurve</code> that maps <code>Float64 -&gt; NTuple{2,Float64}</code>.</li><li>To define <a href="../../api/curves/#DelaunayTriangulation.differentiate"><code>DelaunayTriangulation.differentiate</code></a>, <a href="../../api/curves/#DelaunayTriangulation.twice_differentiate"><code>DelaunayTriangulation.twice_differentiate</code></a>, and <a href="../../api/curves/#DelaunayTriangulation.thrice_differentiate"><code>DelaunayTriangulation.thrice_differentiate</code></a>.</li><li>Have a <code>lookup_table</code> field that maps <code>lookup_table[i]</code> to the position of the curve at <code>t = (i - 1) / (length(lookup_table) - 1)</code>, where <code>lookup_table</code> is a <code>Vector</code>.</li><li>Have defined the parametric curve according to <span>$0 ≤ t ≤ 1$</span> (already done).</li></ul><p>Let&#39;s now meet these requirements.</p><pre><code class="language-julia hljs">struct Astroid &lt;: DelaunayTriangulation.AbstractParametricCurve
+    lookup_table::Vector{NTuple{2, Float64}}
+end
+function (c::Astroid)(t)
+    if t == 0.0 || t == 1.0
+        return (1.0, 0.0)
+    end
+    x = cos(2π * t)^3
+    y = sin(2π * t)^3
+    return (x, y)
+end
+function DelaunayTriangulation.differentiate(c::Astroid, t)
+    x = -6π * sin(2π * t) * cos(2π * t)^2
+    y = 6π * sin(2π * t)^2 * cos(2π * t)
+    return (x, y)
+end
+function DelaunayTriangulation.twice_differentiate(c::Astroid, t)
+    x = -12π^2 * cos(2π * t) * (cos(2π * t)^2 - 2sin(2π * t)^2)
+    y = -12π^2 * sin(2π * t) * (sin(2π * t)^2 - 2cos(2π * t)^2)
+    return (x, y)
+end
+function DelaunayTriangulation.thrice_differentiate(c::Astroid, t)
+    x = 24π^3 * sin(2π * t) * (7cos(2π * t)^2 - 2sin(2π * t)^2)
+    y = 24π^3 * cos(2π * t) * (2cos(2π * t)^2 - 7sin(2π * t)^2)
+    return (x, y)
+end</code></pre><p>Let&#39;s now define an astroid curve and triangulate it.</p><pre><code class="language-julia hljs">function Astroid(n::Int)
+    lookup_table = Vector{NTuple{2, Float64}}(undef, n)
+    c = Astroid(lookup_table)
+    for i in 1:n
+        lookup_table[i] = c((i - 1) / (n - 1))
+    end
+    return Astroid(lookup_table)
+end
+rng = StableRNG(123)
+curve = Astroid(1000)
+tri = triangulate(NTuple{2, Float64}[]; boundary_nodes = [curve], rng)
+refine!(tri; max_area = 1.0e-2)
+fig, ax, sc = triplot(tri)
+fig</code></pre><img src="8d362b11.png" alt="Example block output"/><h2 id="Just-the-code"><a class="docs-heading-anchor" href="#Just-the-code">Just the code</a><a id="Just-the-code-1"></a><a class="docs-heading-anchor-permalink" href="#Just-the-code" title="Permalink"></a></h2><p>An uncommented version of this example is given below. You can view the source code for this file <a href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/curve_bounded.jl">here</a>.</p><pre><code class="language-julia hljs">using DelaunayTriangulation
+using DelaunayTriangulation: EllipticalArc # CairoMakie also exports this
+using CairoMakie
+using StableRNGs
+using LinearAlgebra
+
+n = 50
+r = 2.0
+xc, yc = 1 / 2, 2.0
+θ = range(0, 2π, length = n + 1) |&gt; collect;
+θ[end] = θ[begin];
+x = xc .+ r * cos.(θ)
+y = yc .+ r * sin.(θ);
+
+p = (xc + r, yc)
+c = (xc, yc)
+arc = CircularArc(p, p, c)
+
+typeof(arc) |&gt; supertype |&gt; supertype
+
+t = LinRange(0, 1, 2500)
+points = arc.(t)
+
+fig, ax, sc = lines(points)
+
+points = NTuple{2, Float64}[]
+rng = StableRNG(123)
+tri = triangulate(points; boundary_nodes = [arc], rng)
+
+fig, ax, sc = triplot(tri)
+fig
+
+refine!(tri; max_area = 1.0e-1, rng)
+fig, ax, sc = triplot(tri)
+fig
+
+points = [(0.1, 0.1), (0.15, 0.15), (0.23, 0.23), (0.009, 0.11), (0.0, -2.0), (0.2, -1.7), (0.000591, 0.00019), (0.111, -0.005), (-0.0001, -0.00991), (1.0, 0.0)]
+
+arc = CircularArc((1.0, 0.0), (0.0, 1.0), (0.0, 0.0))
+bspl = BSpline([(0.0, 1.0), (-1.0, 2.0), (-2.0, 0.0), (-2.0, -1.0), (0.0, -2.0)])
+pce = [5, 6, 10]
+
+t = LinRange(0, 1, 1000)
+pts = vcat(arc.(t), bspl.(t), points[pce])
+fig, ax, sc = lines(pts)
+fig
+
+curve = [[arc], [bspl], pce]
+rng = StableRNG(123)
+tri = triangulate(points; boundary_nodes = curve, rng)
+refine!(
+    tri; max_area = 1.0e-2, rng, custom_constraint = (_tri, T) -&gt; begin
+        i, j, k = triangle_vertices(T)
+        p, q, r = get_point(_tri, i, j, k)
+        c = (p .+ q .+ r) ./ 3
+        return norm(c) &lt; 1 / 2 &amp;&amp; DelaunayTriangulation.triangle_area(p, q, r) &gt; 1.0e-3
+    end,
+)
+fig, ax, sc = triplot(tri)
+fig
+
+curve = [
+    [
+        [1, 2, 3], [EllipticalArc((2.0, 0.0), (-2.0, 0.0), (0.0, 0.0), 2, 1 / 2, 0.0)],
+    ],
+    [
+        [BSpline([(0.0, 0.4), (1.0, 0.2), (0.0, 0.1), (-1.0, 0.2), (0.0, 0.4)])],
+    ],
+    [
+        [4, 5, 6, 7, 4],
+    ],
+    [
+        [BezierCurve([(0.0, -2.0), (0.0, -2.5), (-1.0, -2.5), (-1.0, -3.0)])], [CatmullRomSpline([(-1.0, -3.0), (0.0, -4.0), (1.0, -3.0), (0.0, -2.0)])],
+    ],
+    [
+        [12, 11, 10, 12],
+    ],
+    [
+        [CircularArc((1.1, -3.0), (1.1, -3.0), (0.0, -3.0), positive = false)],
+    ],
+]
+points = [(-2.0, 0.0), (0.0, 0.0), (2.0, 0.0), (-2.0, -5.0), (2.0, -5.0), (2.0, -1 / 10), (-2.0, -1 / 10), (-1.0, -3.0), (0.0, -4.0), (0.0, -2.3), (-0.5, -3.5), (0.9, -3.0)]
+t = LinRange(0, 1, 1000)
+fig
+fig = Figure()
+ax = Axis(fig[1, 1])
+lines!(ax, [get_point(points, curve[1][1]...)...], color = :red, label = &quot;(1, 2, 3)&quot;)
+lines!(ax, curve[1][2][1].(t), color = :red, linestyle = :dashdot, label = &quot;EllipticalArc&quot;)
+lines!(ax, curve[2][1][1].(t), color = :green, label = &quot;BSpline&quot;)
+lines!(ax, [get_point(points, curve[3][1]...)...], color = :blue, label = &quot;(4, 5, 6, 7, 4)&quot;)
+lines!(ax, curve[4][1][1].(t), color = :purple, label = &quot;BezierCurve&quot;)
+lines!(ax, curve[4][2][1].(t), color = :purple, linestyle = :dashdot, label = &quot;CatmullRomSpline&quot;)
+lines!(ax, [get_point(points, curve[5][1]...)...], color = :orange, label = &quot;(12, 11, 10, 12)&quot;)
+lines!(ax, curve[6][1][1].(t), color = :black, label = &quot;CircularArc&quot;)
+fig[1, 2] = Legend(fig, ax, &quot;Curve&quot;)
+fig
+
+rng = StableRNG(123)
+tri = triangulate(copy(points); boundary_nodes = curve, rng) # copying so that we don&#39;t mutate for the next section
+refine!(tri; max_area = 1.0e-2)
+fig, ax, sc = triplot(tri)
+fig
+
+poly_constraint = (_tri, T) -&gt; begin
+    i, j, k = triangle_vertices(T)
+    p, q, r = get_point(_tri, i, j, k)
+    c = (p .+ q .+ r) ./ 3
+    idx = find_polygon(_tri, c)
+    if idx ∉ (1, 3, 4)
+        return true
+    end
+    max_area = if idx == 1 # coarse
+        1.0e-1
+    elseif idx == 3 # medium
+        1.0e-2
+    else # dense
+        1.0e-3
+    end
+    area = DelaunayTriangulation.triangle_area(p, q, r)
+    return area &gt; max_area
+end
+rng = StableRNG(123)
+tri = triangulate(points; boundary_nodes = curve, rng)
+refine!(tri; custom_constraint = poly_constraint, rng)
+fig, ax, sc = triplot(tri)
+fig
+
+struct Astroid &lt;: DelaunayTriangulation.AbstractParametricCurve
+    lookup_table::Vector{NTuple{2, Float64}}
+end
+function (c::Astroid)(t)
+    if t == 0.0 || t == 1.0
+        return (1.0, 0.0)
+    end
+    x = cos(2π * t)^3
+    y = sin(2π * t)^3
+    return (x, y)
+end
+function DelaunayTriangulation.differentiate(c::Astroid, t)
+    x = -6π * sin(2π * t) * cos(2π * t)^2
+    y = 6π * sin(2π * t)^2 * cos(2π * t)
+    return (x, y)
+end
+function DelaunayTriangulation.twice_differentiate(c::Astroid, t)
+    x = -12π^2 * cos(2π * t) * (cos(2π * t)^2 - 2sin(2π * t)^2)
+    y = -12π^2 * sin(2π * t) * (sin(2π * t)^2 - 2cos(2π * t)^2)
+    return (x, y)
+end
+function DelaunayTriangulation.thrice_differentiate(c::Astroid, t)
+    x = 24π^3 * sin(2π * t) * (7cos(2π * t)^2 - 2sin(2π * t)^2)
+    y = 24π^3 * cos(2π * t) * (2cos(2π * t)^2 - 7sin(2π * t)^2)
+    return (x, y)
+end
+
+function Astroid(n::Int)
+    lookup_table = Vector{NTuple{2, Float64}}(undef, n)
+    c = Astroid(lookup_table)
+    for i in 1:n
+        lookup_table[i] = c((i - 1) / (n - 1))
+    end
+    return Astroid(lookup_table)
+end
+rng = StableRNG(123)
+curve = Astroid(1000)
+tri = triangulate(NTuple{2, Float64}[]; boundary_nodes = [curve], rng)
+refine!(tri; max_area = 1.0e-2)
+fig, ax, sc = triplot(tri)
+fig</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../convex/">« Triangulating Convex Polygons</a><a class="docs-footer-nextpage" href="../weighted/">Weighted Triangulations »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Saturday 28 September 2024 08:07">Saturday 28 September 2024</span>. Using Julia version 1.10.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
