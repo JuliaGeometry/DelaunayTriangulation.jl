@@ -1812,9 +1812,54 @@ end
         return sum(e1 .* (point .- origin)), sum(e2 .* (point .- origin))
     end
 
-    for n in 2:10
-        points = generatePoints(n)
+    # n = 3
+    for PT in subtypes(DT.AbstractPredicateKernel)
+        points = generatePoints(3)
         points2d = [projection(p) for p in points]
-        @test voronoiplot([p[1] for p in points2d], [p[2] for p in points2d], ones(size(points2d))) |> _ -> true
+        tri = triangulate(points2d)
+        vorn = voronoi(tri)
+        @test DT.circular_equality(
+            collect.(
+                DT.get_polygon_coordinates(
+                    vorn, 6, DT.polygon_bounds(vorn, 0.0), predicates=PT()
+                )
+            ),
+            collect.(
+                [
+                    (-0.5, -0.408248290463863)
+                    (-0.3535533905932738, -0.2041241452319315)
+                    (-4.503599627370496e15, 2.600154457184655e15)
+                    (-4.503599627370496e15, 2.600154457184655e15)
+                    (-4.503599627370496e15, -0.408248290463863)
+                    (-0.5, -0.408248290463863)
+                ]
+            )
+        )
+    end
+
+    # n = 4
+    for PT in subtypes(DT.AbstractPredicateKernel)
+        points = generatePoints(4)
+        points2d = [projection(p) for p in points]
+        tri = triangulate(points2d)
+        vorn = voronoi(tri)
+        @test DT.circular_equality(
+            collect.(
+                DT.get_polygon_coordinates(
+                    vorn, 10, DT.polygon_bounds(vorn, 0.0), predicates=PT()
+                )
+            ),
+            collect.(
+                [
+                    (-4.0031996687737745e15, 2.3112484063863605e15)
+                    (-4.0031996687737745e15, 2.3112484063863605e15)
+                    (-4.0031996687737745e15, -0.408248290463863)
+                    (-0.5, -0.408248290463863)
+                    (-0.4714045207910318, -0.2721655269759087)
+                    (-1.9459543375848782e15, 1.1234972606353498e15)
+                    (-4.0031996687737745e15, 2.3112484063863605e15)
+                ]
+            )
+        )
     end
 end
