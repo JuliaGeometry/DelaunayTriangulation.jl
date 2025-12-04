@@ -1792,3 +1792,29 @@ end
     poly = get_polygon_coordinates(vorn, 3, (0.0, 1.0, 0.0, 1.0))
     @test poly ⪧ [(0.675, 1.0), (0.0, 1.0), (0.0, 0.95), (0.6, 0.95), (0.675, 1.0)]
 end
+
+@testset "Issue #234" begin
+    function generatePoints(n)
+        points = Vector{NTuple{3,Float64}}(undef, n * (n + 1) ÷ 2)
+        m = 1
+        for (k, i) in enumerate(range(0, 1, n))
+            for j in range(i, 1, n - k + 1)
+                px = i
+                py = j - i
+                pz = 1 - j
+                points[m] = (px, py, pz)
+                m += 1
+            end
+        end
+        return points
+    end
+    function projection(point; origin=[1 / 3, 1 / 3, 1 / 3], e1=normalize(cross(normalize([0.0, 0.0, 1.0] .- [1 / 3, 1 / 3, 1 / 3]), normalize([1 / 3, 1 / 3, 1 / 3]))), e2=normalize([0.0, 0.0, 1.0] .- [1 / 3, 1 / 3, 1 / 3]))
+        return sum(e1 .* (point .- origin)), sum(e2 .* (point .- origin))
+    end
+
+    for n in 2:10
+        points = generatePoints(n)
+        points2d = [projection(p) for p in points]
+        @test voronoiplot([p[1] for p in points2d], [p[2] for p in points2d], ones(size(points2d))) |> _ -> true
+    end
+end
