@@ -221,12 +221,12 @@ Truncates the unbounded edges of the `i`th polygon of `vorn` so that the line co
 - `new_points`: The new points of the polygon. This is not a circular vector.
 """
 function grow_polygon_outside_of_box(vorn::VoronoiTessellation, i, bounding_box, predicates::AbstractPredicateKernel=AdaptiveKernel())
-    # try default Float64 first
+    # try provided number type first
     new_vertices, new_points =
-        _grow_polygon_outside_of_box(Float64, vorn, i, bounding_box, predicates)
+        _grow_polygon_outside_of_box(number_type(vorn), vorn, i, bounding_box, predicates)
 
     # if the default produced Inf values, rerun with BigFloat
-    has_inf = any(p -> any(isinf, p), new_points)
+    has_inf = !allfinite(new_points)
 
     if has_inf
         return _grow_polygon_outside_of_box(BigFloat, vorn, i, bounding_box, predicates)

@@ -579,3 +579,14 @@ Returns `true` if all points in `points` are two-dimensional. The default defini
 """
 is_planar(points) = all(is_point2, each_point(points))
 
+
+"""
+    allfinite(points) -> Bool
+Returns `true` if all coordinates of all points in `points` are finite.
+"""
+function allfinite(points)  
+    for p in each_point(points)  
+        all(isfinite, getxy(p)) || return false  
+    end  
+    return true  
+end 
