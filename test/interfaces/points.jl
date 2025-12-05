@@ -305,37 +305,37 @@ end
 
 @testset "allfinite" begin
     # All finite points
-    @test allfinite([[2.0, 3.5], [1.7, 23.3], [-1.0, 0.0]])
-    @test allfinite([(2.0, 3.5), (1.7, 23.3), (-1.0, 0.0)])
-    @test allfinite([2.0 1.7 -1.0; 3.5 23.3 0.0])
-    @test allfinite(((2.0, 3.5), (1.7, 23.3), (-1.0, 0.0)))
+    @test DT.allfinite([[2.0, 3.5], [1.7, 23.3], [-1.0, 0.0]])
+    @test DT.allfinite([(2.0, 3.5), (1.7, 23.3), (-1.0, 0.0)])
+    @test DT.allfinite([2.0 1.7 -1.0; 3.5 23.3 0.0])
+    @test DT.allfinite(((2.0, 3.5), (1.7, 23.3), (-1.0, 0.0)))
     
     # With Inf
-    @test !allfinite([[2.0, 3.5], [Inf, 23.3], [-1.0, 0.0]])
-    @test !allfinite([(2.0, 3.5), (Inf, 23.3), (-1.0, 0.0)])
-    @test !allfinite([2.0 Inf -1.0; 3.5 23.3 0.0])
-    @test !allfinite(((2.0, 3.5), (Inf, 23.3), (-1.0, 0.0)))
+    @test !DT.allfinite([[2.0, 3.5], [Inf, 23.3], [-1.0, 0.0]])
+    @test !DT.allfinite([(2.0, 3.5), (Inf, 23.3), (-1.0, 0.0)])
+    @test !DT.allfinite([2.0 Inf -1.0; 3.5 23.3 0.0])
+    @test !DT.allfinite(((2.0, 3.5), (Inf, 23.3), (-1.0, 0.0)))
     
     # With NaN
-    @test !allfinite([[2.0, 3.5], [1.7, NaN], [-1.0, 0.0]])
-    @test !allfinite([(2.0, 3.5), (1.7, NaN), (-1.0, 0.0)])
-    @test !allfinite([2.0 1.7 NaN; 3.5 23.3 0.0])
-    @test !allfinite(((2.0, 3.5), (1.7, NaN), (-1.0, 0.0)))
+    @test !DT.allfinite([[2.0, 3.5], [1.7, NaN], [-1.0, 0.0]])
+    @test !DT.allfinite([(2.0, 3.5), (1.7, NaN), (-1.0, 0.0)])
+    @test !DT.allfinite([2.0 1.7 NaN; 3.5 23.3 0.0])
+    @test !DT.allfinite(((2.0, 3.5), (1.7, NaN), (-1.0, 0.0)))
     
     # With both Inf and NaN
-    @test !allfinite([[2.0, 3.5], [Inf, 23.3], [NaN, 0.0]])
+    @test !DT.allfinite([[2.0, 3.5], [Inf, 23.3], [NaN, 0.0]])
     
     # Edge cases
-    @test allfinite(Vector{Vector{Float64}}())  # vacuous truth
-    @test allfinite(Matrix{Float64}(undef, 2, 0))  # vacuous truth
-    @test allfinite([[1.0, 2.0]])
-    @test !allfinite([[Inf, 2.0]])
+    @test DT.allfinite(Vector{Vector{Float64}}())  # vacuous truth
+    @test DT.allfinite(Matrix{Float64}(undef, 2, 0))  # vacuous truth
+    @test DT.allfinite([[1.0, 2.0]])
+    @test !DT.allfinite([[Inf, 2.0]])
     
     # First point non-finite
-    @test !allfinite([[Inf, 1.0], [2.0, 3.0]])
-    @test !allfinite([[NaN, 1.0], [2.0, 3.0]])
+    @test !DT.allfinite([[Inf, 1.0], [2.0, 3.0]])
+    @test !DT.allfinite([[NaN, 1.0], [2.0, 3.0]])
     
     # Last point non-finite
-    @test !allfinite([[1.0, 2.0], [3.0, 4.0], [5.0, Inf]])
-    @test !allfinite([[1.0, 2.0], [3.0, 4.0], [NaN, 6.0]])
+    @test !DT.allfinite([[1.0, 2.0], [3.0, 4.0], [5.0, Inf]])
+    @test !DT.allfinite([[1.0, 2.0], [3.0, 4.0], [NaN, 6.0]])
 end
