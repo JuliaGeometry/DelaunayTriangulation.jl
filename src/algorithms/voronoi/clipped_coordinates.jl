@@ -220,32 +220,78 @@ Truncates the unbounded edges of the `i`th polygon of `vorn` so that the line co
 - `new_vertices`: The new vertices of the polygon. This is not a circular vector.
 - `new_points`: The new points of the polygon. This is not a circular vector.
 """
-function grow_polygon_outside_of_box(vorn::VoronoiTessellation, i, bounding_box, predicates::AbstractPredicateKernel = AdaptiveKernel())
+function grow_polygon_outside_of_box(vorn::VoronoiTessellation, i, bounding_box, predicates::AbstractPredicateKernel=AdaptiveKernel())
+    # try provided number type first
+    new_vertices, new_points =
+        _grow_polygon_outside_of_box(number_type(vorn), vorn, i, bounding_box, predicates)
+
+    # if the default produced Inf values, rerun with BigFloat
+    has_inf = !allfinite(new_points)
+
+    if has_inf
+        return _grow_polygon_outside_of_box(BigFloat, vorn, i, bounding_box, predicates)
+    else
+        return new_vertices, new_points
+    end
+end
+
+"""
+    _grow_polygon_outside_of_box(::Type{T}, vorn::VoronoiTessellation, i, bounding_box, predicates::AbstractPredicateKernel=AdaptiveKernel()) -> (Vector{Int}, Vector{NTuple{2,Number}})
+
+Internal method that is called by [`grow_polygon_outside_of_box`](@ref). Can be used to specify the number type `T` to allow for higher precision computations.
+
+# Arguments
+- `T`: The number type to use for computations.
+- `vorn`: The [`VoronoiTessellation`](@ref).
+- `i`: The index of the polygon. The polygon must be unbounded.
+- `bounding_box`: The bounding box to clip the polygon to. See also [`polygon_bounds`](@ref).
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
+
+# Outputs 
+- `new_vertices`: The new vertices of the polygon. This is not a circular vector.
+- `new_points`: The new points of the polygon. This is not a circular vector.
+"""
+function _grow_polygon_outside_of_box(
+    ::Type{T},
+    vorn::VoronoiTessellation,
+    i,
+    bounding_box,
+    predicates::AbstractPredicateKernel=AdaptiveKernel(),
+) where {T<:AbstractFloat}
     a, b, c, d = bounding_box
+
     vertices = get_polygon(vorn, i)
     new_vertices, new_points, ghost_vertices = get_new_polygon_indices(vorn, vertices)
     inside = true
-    t = 1.0 # don't do 0.5 so we get t = 1 later, else we get duplicated vertices for polygons completely outside of the box
+    t = one(T) # don't do 0.5 so we get t = 1 later, else we get duplicated vertices for polygons completely outside of the box
+
     u, v = ghost_vertices
     u_m, u_r = _get_ray(vorn, i, u, predicates)
     v_m, v_r = _get_ray(vorn, i, v, predicates)
+
     u_mx, u_my = getxy(u_m)
     u_rx, u_ry = getxy(u_r)
     v_mx, v_my = getxy(v_m)
     v_rx, v_ry = getxy(v_r)
-    p = (0.0, 0.0)
-    q = (0.0, 0.0)
+
+    p = (zero(T), zero(T))
+    q = (zero(T), zero(T))
+
     dist_to_box = maximum_distance_to_box(a, b, c, d, u_m) # this is a squared distance
     dist_to_box = max(dist_to_box, maximum_distance_to_box(a, b, c, d, v_m))
+
     while inside
         t *= 2.0
         p = (u_mx + t * (u_rx - u_mx), u_my + t * (u_ry - u_my))
         q = (v_mx + t * (v_rx - v_mx), v_my + t * (v_ry - v_my))
+
+        (isinf(p[1]) || isinf(p[2]) || isinf(q[1]) || isinf(q[2])) && break
+
         int1, int2 = liang_barsky(a, b, c, d, p, q)
         outside = all(isnan, int1) && all(isnan, int2)
-        # We need to be careful of the case where the generator is outside of the bounding box. In this case, 
-        # the unbounded edge might start initially outside of the box but then find it's way inside. 
-        # So, to avoid this, we also apply a conservative check that the length of each ray is greater than 
+        # We need to be careful of the case where the generator is outside of the bounding box. In this case,
+        # the unbounded edge might start initially outside of the box but then find it's way inside.
+        # So, to avoid this, we also apply a conservative check that the length of each ray is greater than
         # the maximum distance from the generators to the bounding box.
         # See the example with [(-3,7),(1,6),(-1,3),(-2,4),(3,-2),(5,5),(-4,-3),(3,8)] and bb = (0,5,-15,15) with the 7th polygon.
         p_length = dist_sqr(p, (u_mx, u_my))

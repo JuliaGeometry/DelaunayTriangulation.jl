@@ -10,6 +10,7 @@ using StaticArrays
 using LinearAlgebra
 using StructEquality
 using GeometryBasics
+using ReferenceTests
 @struct_equal DT.Queue
 
 @testset "Unconstrained test" begin
@@ -1791,4 +1792,38 @@ end
     vorn = voronoi(tri)
     poly = get_polygon_coordinates(vorn, 3, (0.0, 1.0, 0.0, 1.0))
     @test poly ⪧ [(0.675, 1.0), (0.0, 1.0), (0.0, 0.95), (0.6, 0.95), (0.675, 1.0)]
+end
+
+@testset "Issue #234" begin
+    function generatePoints(n)
+        points = Vector{NTuple{3,Float64}}(undef, n * (n + 1) ÷ 2)
+        m = 1
+        for (k, i) in enumerate(range(0, 1, n))
+            for j in range(i, 1, n - k + 1)
+                px = i
+                py = j - i
+                pz = 1 - j
+                points[m] = (px, py, pz)
+                m += 1
+            end
+        end
+        return points
+    end
+    function projection(point; origin=[1 / 3, 1 / 3, 1 / 3], e1=normalize(cross(normalize([0.0, 0.0, 1.0] .- [1 / 3, 1 / 3, 1 / 3]), normalize([1 / 3, 1 / 3, 1 / 3]))), e2=normalize([0.0, 0.0, 1.0] .- [1 / 3, 1 / 3, 1 / 3]))
+        return sum(e1 .* (point .- origin)), sum(e2 .* (point .- origin))
+    end
+
+    @test_reference "voronoi_issue_234_reference_n3.png" begin
+        points = [projection(p) for p in generatePoints(3)]
+        values = [0, 1, 2, 2, 0, 1]
+        fig, ax, _ = voronoiplot([p[1] for p in points], [p[2] for p in points], values)
+        fig
+    end
+
+    @test_reference "voronoi_issue_234_reference_n4.png" begin
+        points = [projection(p) for p in generatePoints(4)]
+        values = [0, 1, 2, 0, 2, 0, 1, 1, 2, 0]
+        fig, ax, _ = voronoiplot([p[1] for p in points], [p[2] for p in points], values)
+        fig
+    end
 end
