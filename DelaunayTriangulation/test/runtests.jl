@@ -107,8 +107,8 @@ end
     end
 
     @testset verbose = true "Refinement" begin
-        safe_include("refinement/refine.jl")
-        safe_include("refinement/curve_bounded.jl")
+        safe_include("refine.jl")
+        safe_include("curve_bounded.jl")
     end
 
     @testset verbose = true "Voronoi" begin

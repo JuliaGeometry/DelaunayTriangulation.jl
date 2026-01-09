@@ -2,12 +2,10 @@ sw
 *.jl.*.cov
 *.jl.cov
 *.jl.mem
-/Manifest.toml
-test/Manifest.toml
-docs/Manifest.toml 
-/docs/build/
+**/Manifest.toml
+**/docs/build/
+**docs/src/applications/cell_simulation.mp4
 /.vscode
 LocalPreferences.toml
-docs/src/applications/cell_simulation.mp4
 varying_weight_power.mp4
 varying_weight.mp4
