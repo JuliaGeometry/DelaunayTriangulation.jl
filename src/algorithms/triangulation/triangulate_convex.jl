@@ -159,27 +159,32 @@ function postprocess_triangulate_convex!(tri::Triangulation, S; delete_ghosts, d
     append!(hull, S)
     push!(hull, S[begin])
     I = integer_type(tri)
+    ghost_vertex = I(𝒢)
     for i in firstindex(S):(lastindex(S) - 1)
         u = S[i]
         v = S[i + 1]
         if !delete_ghosts
-            add_triangle!(tri, v, u, I(𝒢); protect_boundary = true, update_ghost_edges = false)
+            add_triangle!(tri, v, u, ghost_vertex; protect_boundary = true, update_ghost_edges = false)
         else
             # Still want the ghost vertex in the graph, adjacent2vertex map, and the adjacent map.
-            add_neighbour!(tri, I(𝒢), u)
-            add_adjacent2vertex!(tri, I(𝒢), v, u)
-            add_adjacent!(tri, v, u, I(𝒢))
+            add_neighbour!(tri, ghost_vertex, u)
+            add_adjacent2vertex!(tri, ghost_vertex, v, u)
+            add_adjacent!(tri, v, u, ghost_vertex)
         end
+        # Add boundary vertex to ghost mapping
+        add_boundary_vertex_to_ghost!(tri, u, ghost_vertex)
     end
     u = S[end]
     v = S[begin]
     if !delete_ghosts
-        add_triangle!(tri, v, u, I(𝒢); protect_boundary = true, update_ghost_edges = false)
+        add_triangle!(tri, v, u, ghost_vertex; protect_boundary = true, update_ghost_edges = false)
     else
-        add_neighbour!(tri, I(𝒢), u)
-        add_adjacent2vertex!(tri, I(𝒢), v, u)
-        add_adjacent!(tri, v, u, I(𝒢))
+        add_neighbour!(tri, ghost_vertex, u)
+        add_adjacent2vertex!(tri, ghost_vertex, v, u)
+        add_adjacent!(tri, v, u, ghost_vertex)
     end
+    # Add the last boundary vertex to ghost mapping
+    add_boundary_vertex_to_ghost!(tri, u, ghost_vertex)
     delete_empty_features && clear_empty_features!(tri)
     empty_representative_points!(tri)
     cx, cy = mean_points(get_points(tri), S)

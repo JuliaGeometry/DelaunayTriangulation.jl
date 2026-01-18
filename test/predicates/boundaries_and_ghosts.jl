@@ -188,10 +188,16 @@ end
 
 @testset "has_ghost_triangles" begin
     @test DT.has_ghost_triangles(tri)
+    @test DT.has_ghosts(tri)
     DT.delete_ghost_triangles!(tri)
     @test !DT.has_ghost_triangles(tri)
+    @test !DT.has_ghosts(tri)
     DT.add_ghost_triangles!(tri)
     @test DT.has_ghost_triangles(tri)
+    @test DT.has_ghosts(tri)
+
+    # Test that has_ghost_triangles is an alias for has_ghosts
+    @test DT.has_ghost_triangles(tri) == DT.has_ghosts(tri)
 end
 
 @testset "has_boundary_nodes and is_constrained" begin
@@ -270,4 +276,106 @@ end
             @test !flag2 && res2 == DT.∅
         end
     end
+
+    # Test that boundary_vertex_to_ghost map is correctly maintained
+    @testset "boundary_vertex_to_ghost consistency" begin
+        # Test with complicated geometry (multiple curves and sections)
+        for (ghost_vertex, segment_index) in get_ghost_vertex_map(tri)
+            nodes = get_boundary_nodes(tri, segment_index)
+            for node in nodes
+                bv_map = DT.get_boundary_vertex_to_ghost(tri)
+                @test haskey(bv_map, node)
+                @test bv_map[node] == ghost_vertex
+            end
+        end
+
+        # Test with simple geometry
+        for (ghost_vertex, segment_index) in get_ghost_vertex_map(tri2)
+            nodes = get_boundary_nodes(tri2, segment_index)
+            for node in nodes
+                bv_map = DT.get_boundary_vertex_to_ghost(tri2)
+                @test haskey(bv_map, node)
+                @test bv_map[node] == ghost_vertex
+            end
+        end
+
+        # Test that non-boundary nodes are not in the map
+        bv_map = DT.get_boundary_vertex_to_ghost(tri)
+        for node in each_vertex(tri)
+            if node ∉ reduced_bn
+                @test !haskey(bv_map, node)
+            end
+        end
+    end
+end
+
+@testset "boundary_vertex_to_ghost getter and setters" begin
+    tri, label_map, index_map = simple_geometry()
+
+    # Test initial state - empty map for unconstrained tri before boundary info added
+    bv_map = DT.get_boundary_vertex_to_ghost(tri)
+    @test bv_map isa Dict
+    @test isempty(bv_map)
+
+    # Manually add some mappings for testing
+    I = DT.integer_type(tri)
+    test_vertex = I(5)
+    test_ghost = I(-2)
+
+    DT.add_boundary_vertex_to_ghost!(tri, test_vertex, test_ghost)
+    @test haskey(DT.get_boundary_vertex_to_ghost(tri), test_vertex)
+    @test DT.get_boundary_vertex_to_ghost(tri)[test_vertex] == test_ghost
+
+    # Test deletion
+    DT.delete_boundary_vertex_from_ghost_map!(tri, test_vertex)
+    @test !haskey(DT.get_boundary_vertex_to_ghost(tri), test_vertex)
+
+    # Test with actual triangulation with boundaries
+    x, y = complicated_geometry()
+    rng = StableRNG(99988)
+    boundary_nodes, points = convert_boundary_points_to_indices(x, y)
+    tri_with_boundary = triangulate(points; rng, boundary_nodes, delete_ghosts = false)
+
+    # Verify map is populated
+    bv_map = DT.get_boundary_vertex_to_ghost(tri_with_boundary)
+    @test !isempty(bv_map)
+
+    # Verify all boundary nodes are in the map
+    all_boundary_nodes = reduce(vcat, reduce(vcat, get_boundary_nodes(tri_with_boundary)))
+    for bn in all_boundary_nodes
+        @test haskey(bv_map, bn)
+    end
+
+    # Verify non-boundary nodes are not in the map
+    for v in each_vertex(tri_with_boundary)
+        if v ∉ all_boundary_nodes
+            @test !haskey(bv_map, v)
+        end
+    end
+end
+
+@testset "boundary_vertex_to_ghost with Base.copy and ==" begin
+    x, y = complicated_geometry()
+    rng = StableRNG(99988)
+    boundary_nodes, points = convert_boundary_points_to_indices(x, y)
+    tri = triangulate(points; rng, boundary_nodes, delete_ghosts = false)
+
+    # Test Base.copy preserves the map
+    tri_copy = copy(tri)
+    @test DT.get_boundary_vertex_to_ghost(tri) == DT.get_boundary_vertex_to_ghost(tri_copy)
+    @test DT.get_boundary_vertex_to_ghost(tri) !== DT.get_boundary_vertex_to_ghost(tri_copy)  # Different objects
+
+    # Test Base.== compares the map
+    @test tri == tri_copy
+
+    # Modify the copy's map and verify inequality
+    I = DT.integer_type(tri_copy)
+    fake_vertex = I(999999)
+    fake_ghost = I(-999)
+    DT.add_boundary_vertex_to_ghost!(tri_copy, fake_vertex, fake_ghost)
+    @test tri != tri_copy
+
+    # Remove it and verify equality again
+    DT.delete_boundary_vertex_from_ghost_map!(tri_copy, fake_vertex)
+    @test tri == tri_copy
 end

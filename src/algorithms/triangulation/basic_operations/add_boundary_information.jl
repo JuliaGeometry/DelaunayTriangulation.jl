@@ -24,8 +24,11 @@ function add_boundary_node_information!(tri::Triangulation, bn, ghost_vertex)
         add_adjacent!(tri, u, v, ghost_vertex)
         add_adjacent2vertex!(tri, ghost_vertex, u, v)
         add_neighbour!(tri, ghost_vertex, u, v)
+        add_boundary_vertex_to_ghost!(tri, u, ghost_vertex)
         u = v
     end
+    # Add the last vertex
+    add_boundary_vertex_to_ghost!(tri, u, ghost_vertex)
     return ghost_vertex
 end
 function add_boundary_segment_information!(tri::Triangulation, bn, ghost_vertex)

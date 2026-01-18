@@ -13,7 +13,11 @@ function add_ghost_triangles!(tri::Triangulation)
             add_adjacent2vertex!(tri, u, v, g)
             add_adjacent2vertex!(tri, v, g, u)
             add_triangle!(T, u, v, g)
+            # Add boundary vertices to the boundary_vertex_to_ghost map
+            add_boundary_vertex_to_ghost!(tri, u, g)
+            add_boundary_vertex_to_ghost!(tri, v, g)
         end
     end
+    set_has_ghosts!(tri, true)
     return tri
 end
