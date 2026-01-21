@@ -160,6 +160,10 @@ function postprocess_triangulate_convex!(tri::Triangulation, S; delete_ghosts, d
     push!(hull, S[begin])
     I = integer_type(tri)
     ghost_vertex = I(𝒢)
+    # Only populate boundary_vertex_to_ghost map for triangulations with actual constrained boundary nodes.
+    # Convex hull vertices (from unconstrained triangulations) should not be in this map.
+    # This matches the behavior of add_ghost_triangles!
+    populate_map = has_boundary_nodes(tri) && !delete_ghosts
     for i in firstindex(S):(lastindex(S) - 1)
         u = S[i]
         v = S[i + 1]
@@ -171,8 +175,8 @@ function postprocess_triangulate_convex!(tri::Triangulation, S; delete_ghosts, d
             add_adjacent2vertex!(tri, ghost_vertex, v, u)
             add_adjacent!(tri, v, u, ghost_vertex)
         end
-        # Add boundary vertex to ghost mapping
-        add_boundary_vertex_to_ghost!(tri, u, ghost_vertex)
+        # Add boundary vertex to ghost mapping only for constrained boundaries
+        populate_map && add_boundary_vertex_to_ghost!(tri, u, ghost_vertex)
     end
     u = S[end]
     v = S[begin]
@@ -183,8 +187,10 @@ function postprocess_triangulate_convex!(tri::Triangulation, S; delete_ghosts, d
         add_adjacent2vertex!(tri, ghost_vertex, v, u)
         add_adjacent!(tri, v, u, ghost_vertex)
     end
-    # Add the last boundary vertex to ghost mapping
-    add_boundary_vertex_to_ghost!(tri, u, ghost_vertex)
+    # Add the last boundary vertex to ghost mapping only for constrained boundaries
+    populate_map && add_boundary_vertex_to_ghost!(tri, u, ghost_vertex)
+    # Set has_ghosts flag based on whether we added ghost triangles
+    set_has_ghosts!(tri, !delete_ghosts)
     delete_empty_features && clear_empty_features!(tri)
     empty_representative_points!(tri)
     cx, cy = mean_points(get_points(tri), S)

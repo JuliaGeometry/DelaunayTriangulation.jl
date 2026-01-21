@@ -53,6 +53,8 @@ global tri = Triangulation(pts; IntegerType=Int32)
                 DT.construct_polygon_hierarchy(pts; IntegerType=Int32),
                 nothing, # boundary_enricher
                 DT.TriangulationCache(nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing),
+                false, # has_ghosts
+                Dict{Int32,Int32}(), # boundary_vertex_to_ghost
             ),
             DT.Triangulation(
                 pts,
@@ -73,6 +75,8 @@ global tri = Triangulation(pts; IntegerType=Int32)
                 DT.construct_polygon_hierarchy(pts; IntegerType=Int32),
                 nothing, # boundary_enricher
                 DT.TriangulationCache(nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing),
+                false, # has_ghosts
+                Dict{Int32,Int32}(), # boundary_vertex_to_ghost
             ),
             Int32[],
             Set{NTuple{2,Int32}}(),
@@ -82,6 +86,8 @@ global tri = Triangulation(pts; IntegerType=Int32)
             AdaptivePredicates.orient3adapt_cache(Float64),
             AdaptivePredicates.insphereexact_cache(Float64),
         ),
+        false, # has_ghosts
+        Dict{Int32,Int32}(), # boundary_vertex_to_ghost
     )
 end
 
@@ -1498,7 +1504,7 @@ end
         for f in fieldnames(typeof(tri))
             f in (:weights, :boundary_enricher) && continue
             @test getfield(tri, f) == getfield(tri2, f)
-            f == :boundary_curves && continue
+            f in (:boundary_curves, :has_ghosts) && continue
             @test !(getfield(tri, f) === getfield(tri2, f))
         end
     end
@@ -1515,7 +1521,7 @@ end
         for f in fieldnames(typeof(tri))
             f in (:weights, :boundary_enricher, :cache) && continue
             @test getfield(tri, f) == getfield(tri2, f)
-            f == :boundary_curves && continue
+            f in (:boundary_curves, :has_ghosts) && continue
             @test !(getfield(tri, f) === getfield(tri2, f))
         end
         bem = DT.get_boundary_edge_map(tri)
@@ -1563,6 +1569,7 @@ end
         for f in fieldnames(typeof(tri))
             f in (:weights, :cache) && continue
             @test getfield(tri, f) == getfield(tri2, f)
+            f in (:has_ghosts,) && continue
             @test !(getfield(tri, f) === getfield(tri2, f))
         end
         enricher = DT.get_boundary_enricher(tri)
@@ -1594,7 +1601,7 @@ end
         for f in fieldnames(typeof(tri))
             f in (:boundary_enricher, :cache) && continue
             @test getfield(tri, f) == getfield(tri2, f)
-            f in (:boundary_curves,) && continue
+            f in (:boundary_curves, :has_ghosts) && continue
             @test !(getfield(tri, f) === getfield(tri2, f))
         end
         @test get_weights(tri) == get_weights(tri2) && !(get_weights(tri) === get_weights(tri2))

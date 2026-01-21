@@ -385,7 +385,10 @@ has_ghosts(tri::Triangulation) = tri.has_ghosts
 
 Sets the `has_ghosts` flag of the triangulation to `flag`.
 """
-set_has_ghosts!(tri::Triangulation, flag::Bool) = tri.has_ghosts = flag
+function set_has_ghosts!(tri::Triangulation, flag::Bool)
+    tri.has_ghosts = flag
+    return tri
+end
 
 """
     get_boundary_vertex_to_ghost(tri::Triangulation) -> Dict{I, I}

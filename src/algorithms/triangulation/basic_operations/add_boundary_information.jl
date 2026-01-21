@@ -7,6 +7,8 @@ function add_boundary_information!(tri::Triangulation)
     I = integer_type(tri)
     ghost_vertex = I(𝒢)
     bn = get_boundary_nodes(tri)
+    # Clear any existing boundary_vertex_to_ghost entries before repopulating
+    empty!(get_boundary_vertex_to_ghost(tri))
     if has_multiple_curves(tri)
         add_boundary_curve_information!(tri, bn, ghost_vertex)
     elseif has_multiple_sections(tri)
@@ -18,6 +20,7 @@ function add_boundary_information!(tri::Triangulation)
 end
 function add_boundary_node_information!(tri::Triangulation, bn, ghost_vertex)
     n_edge = num_boundary_edges(bn)
+    n_edge == 0 && return ghost_vertex
     u = get_boundary_nodes(bn, n_edge + 1)
     for j in n_edge:-1:1
         v = get_boundary_nodes(bn, j)

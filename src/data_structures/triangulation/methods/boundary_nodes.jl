@@ -126,10 +126,17 @@ function split_boundary_edge!(tri::Triangulation, i, j, node)
     delete_unoriented_edge!(segments, construct_edge(E, i, j))
     !contains_edge(construct_edge(E, node, i), segments) && add_edge!(segments, construct_edge(E, i, node))
     !contains_edge(construct_edge(E, j, node), segments) && add_edge!(segments, construct_edge(E, node, j))
-    # Sometimes, the user might accidentally also put an interior segment in that forms part of the boundary. Let's remove it. 
+    # Sometimes, the user might accidentally also put an interior segment in that forms part of the boundary. Let's remove it.
     interior_segments = get_interior_segments(tri)
     if contains_unoriented_edge(construct_edge(E, i, j), interior_segments)
         delete_unoriented_edge!(interior_segments, construct_edge(E, i, j))
+    end
+    # Update boundary_vertex_to_ghost map for the new boundary node
+    # The new node should map to the same ghost vertex as i and j
+    bv_map = get_boundary_vertex_to_ghost(tri)
+    if !isempty(bv_map) && haskey(bv_map, i)
+        ghost_vertex = bv_map[i]
+        add_boundary_vertex_to_ghost!(tri, node, ghost_vertex)
     end
     return tri
 end
