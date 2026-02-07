@@ -45,7 +45,7 @@ function lock_convex_hull!(tri::Triangulation; rng::Random.AbstractRNG = Random.
             add_edge!(interior_segments_on_hull, e)
         end
     end
-    # Also add the last vertex (which equals the first in a closed boundary)
+    # Add the last vertex (closed boundary)
     u = get_boundary_nodes(bn, ne + 1)
     add_boundary_vertex_to_ghost!(tri, u, ghost_vertex)
     for e in keys(bnn_map)

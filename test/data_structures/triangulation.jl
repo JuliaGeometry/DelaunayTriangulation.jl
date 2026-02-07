@@ -1669,51 +1669,32 @@ end
     @test DT.has_ghosts(tri)
 end
 
-@testset "Triangulation fields are const (except has_ghosts)" begin
+@testset "Mutating has_ghosts" begin
     points = [(0.0, 0.0), (1.0, 0.0), (0.5, 0.5)]
     tri = DT.Triangulation(points)
-
-    # Test that has_ghosts can be modified (is not const)
     @test !DT.has_ghosts(tri)
     DT.set_has_ghosts!(tri, true)
     @test DT.has_ghosts(tri)
-
-    # Test that trying to reassign const fields should error
-    # Note: We can't easily test this at runtime since const fields are checked at compile time
-    # But we can verify that the struct is mutable
     @test ismutable(tri)
-
-    # Verify the field can be directly accessed (for the getter implementation)
     @test tri.has_ghosts == DT.has_ghosts(tri)
-
-    # Verify we can modify has_ghosts but the struct itself is the same object
-    old_tri = tri
-    DT.set_has_ghosts!(tri, false)
-    @test old_tri === tri # Same object
-    @test !DT.has_ghosts(tri)
 end
 
-@testset "has_ghosts with Base.copy" begin
+@testset "has_ghosts with copy" begin
     points = [(0.0, 0.0), (1.0, 0.0), (0.5, 0.5)]
     tri = DT.Triangulation(points)
 
-    # Set has_ghosts to true
     DT.set_has_ghosts!(tri, true)
     @test DT.has_ghosts(tri)
 
-    # Copy the triangulation
     tri_copy = Base.copy(tri)
 
-    # Verify the copy has the same has_ghosts value
     @test DT.has_ghosts(tri_copy) == DT.has_ghosts(tri)
     @test DT.has_ghosts(tri_copy) == true
 
-    # Modify the original
     DT.set_has_ghosts!(tri, false)
     @test !DT.has_ghosts(tri)
-    @test DT.has_ghosts(tri_copy) # Copy should still be true
+    @test DT.has_ghosts(tri_copy)
 
-    # Test with has_ghosts = false
     tri2 = DT.Triangulation(points)
     @test !DT.has_ghosts(tri2)
     tri2_copy = Base.copy(tri2)
@@ -1725,24 +1706,20 @@ end
     tri1 = DT.Triangulation(points)
     tri2 = DT.Triangulation(points)
 
-    # Both have has_ghosts = false initially
     @test !DT.has_ghosts(tri1)
     @test !DT.has_ghosts(tri2)
     @test tri1 == tri2
 
-    # Set one to true
     DT.set_has_ghosts!(tri1, true)
     @test DT.has_ghosts(tri1)
     @test !DT.has_ghosts(tri2)
-    @test tri1 != tri2 # Should not be equal
+    @test tri1 != tri2 
 
-    # Set both to true
     DT.set_has_ghosts!(tri2, true)
     @test DT.has_ghosts(tri1)
     @test DT.has_ghosts(tri2)
-    @test tri1 == tri2 # Should be equal again
+    @test tri1 == tri2
 
-    # Set both to false
     DT.set_has_ghosts!(tri1, false)
     DT.set_has_ghosts!(tri2, false)
     @test !DT.has_ghosts(tri1)

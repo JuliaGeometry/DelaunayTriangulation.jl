@@ -187,9 +187,7 @@ function postprocess_triangulate_convex!(tri::Triangulation, S; delete_ghosts, d
         add_adjacent2vertex!(tri, ghost_vertex, v, u)
         add_adjacent!(tri, v, u, ghost_vertex)
     end
-    # Add the last boundary vertex to ghost mapping only for constrained boundaries
     populate_map && add_boundary_vertex_to_ghost!(tri, u, ghost_vertex)
-    # Set has_ghosts flag based on whether we added ghost triangles
     set_has_ghosts!(tri, !delete_ghosts)
     delete_empty_features && clear_empty_features!(tri)
     empty_representative_points!(tri)

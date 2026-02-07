@@ -26,7 +26,6 @@ function delete_ghost_triangles!(tri::Triangulation)
             delete_triangle!(T, u, v, g)
         end
     end
-    # Clear the boundary_vertex_to_ghost map since ghost triangles are deleted
     empty!(get_boundary_vertex_to_ghost(tri))
     set_has_ghosts!(tri, false)
     return tri

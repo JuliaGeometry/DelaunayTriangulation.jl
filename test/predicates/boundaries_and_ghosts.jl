@@ -15,9 +15,6 @@ A = get_area(tri)
 refine!(tri; max_area = 1.0e-2A, rng, use_circumcenter = true)
 
 tri2, label_map, index_map = simple_geometry()
-# Manually repopulate boundary_vertex_to_ghost after simple_geometry() which uses delete_ghosts=true
-# This is needed because add_boundary_information! clears the map but the package code changes
-# may not be loaded in the current session
 let bn = get_boundary_nodes(tri2)
     bv_map = DT.get_boundary_vertex_to_ghost(tri2)
     ghost = DT.𝒢
@@ -309,12 +306,11 @@ end
         end
     end
 
-    # Test that boundary_vertex_to_ghost map is correctly maintained
     @testset "boundary_vertex_to_ghost consistency" begin
         # Test with complicated geometry (multiple curves and sections)
-        # Note: For junction nodes (nodes shared between sections), the map will only
-        # contain ONE ghost vertex, whichever was set last during processing.
-        # So we check that each boundary node IS in the map and maps to a VALID
+        # Note: For junction nodes, the map will only
+        # contain one ghost vertex, whichever was set last during processing.
+        # So we check that each boundary node is in the map and maps to a valid
         # ghost vertex (one that is in the ghost vertex range for that curve).
         bv_map = DT.get_boundary_vertex_to_ghost(tri)
         for (ghost_vertex, segment_index) in get_ghost_vertex_map(tri)
@@ -350,12 +346,10 @@ end
 @testset "boundary_vertex_to_ghost getter and setters" begin
     tri, label_map, index_map = simple_geometry()
 
-    # Test initial state - empty map for unconstrained tri before boundary info added
     bv_map = DT.get_boundary_vertex_to_ghost(tri)
     @test bv_map isa Dict
     @test isempty(bv_map)
 
-    # Manually add some mappings for testing
     I = DT.integer_type(tri)
     test_vertex = I(5)
     test_ghost = I(-2)
@@ -364,27 +358,22 @@ end
     @test haskey(DT.get_boundary_vertex_to_ghost(tri), test_vertex)
     @test DT.get_boundary_vertex_to_ghost(tri)[test_vertex] == test_ghost
 
-    # Test deletion
     DT.delete_boundary_vertex_from_ghost_map!(tri, test_vertex)
     @test !haskey(DT.get_boundary_vertex_to_ghost(tri), test_vertex)
 
-    # Test with actual triangulation with boundaries
     x, y = complicated_geometry()
     rng = StableRNG(99988)
     boundary_nodes, points = convert_boundary_points_to_indices(x, y)
     tri_with_boundary = triangulate(points; rng, boundary_nodes, delete_ghosts = false)
 
-    # Verify map is populated
     bv_map = DT.get_boundary_vertex_to_ghost(tri_with_boundary)
     @test !isempty(bv_map)
 
-    # Verify all boundary nodes are in the map
     all_boundary_nodes = reduce(vcat, reduce(vcat, get_boundary_nodes(tri_with_boundary)))
     for bn in all_boundary_nodes
         @test haskey(bv_map, bn)
     end
 
-    # Verify non-boundary nodes are not in the map
     for v in each_vertex(tri_with_boundary)
         if v ∉ all_boundary_nodes
             @test !haskey(bv_map, v)
@@ -392,28 +381,24 @@ end
     end
 end
 
-@testset "boundary_vertex_to_ghost with Base.copy and ==" begin
+@testset "boundary_vertex_to_ghost with copy and ==" begin
     x, y = complicated_geometry()
     rng = StableRNG(99988)
     boundary_nodes, points = convert_boundary_points_to_indices(x, y)
     tri = triangulate(points; rng, boundary_nodes, delete_ghosts = false)
 
-    # Test Base.copy preserves the map
     tri_copy = copy(tri)
     @test DT.get_boundary_vertex_to_ghost(tri) == DT.get_boundary_vertex_to_ghost(tri_copy)
     @test DT.get_boundary_vertex_to_ghost(tri) !== DT.get_boundary_vertex_to_ghost(tri_copy)  # Different objects
 
-    # Test Base.== compares the map
     @test tri == tri_copy
 
-    # Modify the copy's map and verify inequality
     I = DT.integer_type(tri_copy)
     fake_vertex = I(999999)
     fake_ghost = I(-999)
     DT.add_boundary_vertex_to_ghost!(tri_copy, fake_vertex, fake_ghost)
     @test tri != tri_copy
 
-    # Remove it and verify equality again
     DT.delete_boundary_vertex_from_ghost_map!(tri_copy, fake_vertex)
     @test tri == tri_copy
 end

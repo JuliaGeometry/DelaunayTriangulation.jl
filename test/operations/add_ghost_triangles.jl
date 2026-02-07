@@ -6,13 +6,11 @@ using StaticArrays
 @testset "Adding ghost triangles" begin
     tri, label_map, index_map = simple_geometry()
 
-    # Test that has_ghosts is initially false
     @test !DT.has_ghosts(tri)
     @test !DT.has_ghost_triangles(tri)
 
     DT.add_ghost_triangles!(tri)
 
-    # Test that has_ghosts is now true after adding ghost triangles
     @test DT.has_ghosts(tri)
     @test DT.has_ghost_triangles(tri)
     outer_edges = [

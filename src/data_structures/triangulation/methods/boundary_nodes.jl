@@ -160,7 +160,6 @@ function merge_boundary_edge!(tri::Triangulation, i, j, node)
     node_pos = (pos[1], pos[2] + 1)
     bnn = get_boundary_edge_map(tri)
     delete_boundary_node!(tri, node_pos)
-    # Remove the merged node from boundary_vertex_to_ghost map
     delete_boundary_vertex_from_ghost_map!(tri, node)
     E = edge_type(tri)
     delete!(bnn, construct_edge(E, i, node))
