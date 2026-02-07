@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.6
+
+- The `Triangulation` struct now stores a `has_ghosts::Bool` field and a `boundary_vertex_to_ghost` map for efficient lookup. See [#240](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/240).
+
 ## 1.6.5
 
 - Clarified the counter-clockwise requirement for the `clip_polygon` argument in `voronoi`. See [#230](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/230).
