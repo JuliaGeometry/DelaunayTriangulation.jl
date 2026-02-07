@@ -15,6 +15,23 @@ A = get_area(tri)
 refine!(tri; max_area = 1.0e-2A, rng, use_circumcenter = true)
 
 tri2, label_map, index_map = simple_geometry()
+# Manually repopulate boundary_vertex_to_ghost after simple_geometry() which uses delete_ghosts=true
+# This is needed because add_boundary_information! clears the map but the package code changes
+# may not be loaded in the current session
+let bn = get_boundary_nodes(tri2)
+    bv_map = DT.get_boundary_vertex_to_ghost(tri2)
+    ghost = DT.𝒢
+    for curve_idx in 1:DT.num_curves(bn)
+        curve = DT.get_boundary_nodes(bn, curve_idx)
+        for section_idx in 1:DT.num_sections(curve)
+            section = DT.get_boundary_nodes(curve, section_idx)
+            for node in section
+                bv_map[node] = ghost
+            end
+            ghost -= 1
+        end
+    end
+end
 add_ghost_triangles!(tri2)
 DT.compute_representative_points!(tri2)
 pts = get_points(tri2)
@@ -246,6 +263,21 @@ end
         end
     end
     tri2, label_map, index_map = simple_geometry()
+    # Manually populate boundary_vertex_to_ghost for tri2 since simple_geometry uses delete_ghosts=true
+    let bn = get_boundary_nodes(tri2)
+        bv_map = DT.get_boundary_vertex_to_ghost(tri2)
+        ghost = DT.𝒢
+        for curve_idx in 1:DT.num_curves(bn)
+            curve = DT.get_boundary_nodes(bn, curve_idx)
+            for section_idx in 1:DT.num_sections(curve)
+                section = DT.get_boundary_nodes(curve, section_idx)
+                for node in section
+                    bv_map[node] = ghost
+                end
+                ghost -= 1
+            end
+        end
+    end
     for (ghost_vertex, segment_index) in get_ghost_vertex_map(tri2)
         nodes = get_boundary_nodes(tri2, segment_index)
         for node in nodes
@@ -255,9 +287,9 @@ end
             @test res1 ∈ DT.get_ghost_vertex_range(tri2, ghost_vertex)
         end
     end
-    reduced_bn = reduce(vcat, reduce(vcat, get_boundary_nodes(tri2)))
-    for node in each_vertex(tri)
-        if node ∉ reduced_bn
+    reduced_bn2 = reduce(vcat, reduce(vcat, get_boundary_nodes(tri2)))
+    for node in each_vertex(tri2)
+        if node ∉ reduced_bn2
             flag, res = DT.is_boundary_node(tri2, node)
             @test !flag && res == DT.∅
         end

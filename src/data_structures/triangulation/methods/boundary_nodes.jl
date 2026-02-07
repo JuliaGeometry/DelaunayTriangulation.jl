@@ -132,11 +132,15 @@ function split_boundary_edge!(tri::Triangulation, i, j, node)
         delete_unoriented_edge!(interior_segments, construct_edge(E, i, j))
     end
     # Update boundary_vertex_to_ghost map for the new boundary node
-    # The new node should map to the same ghost vertex as i and j
-    bv_map = get_boundary_vertex_to_ghost(tri)
-    if !isempty(bv_map) && haskey(bv_map, i)
-        ghost_vertex = bv_map[i]
-        add_boundary_vertex_to_ghost!(tri, node, ghost_vertex)
+    # We need to find the ghost vertex for the section being split, not just use
+    # vertex i's ghost (which may be from a different section in multiply-connected domains)
+    section_path = pos[1]
+    ghost_vertex_map = get_ghost_vertex_map(tri)
+    for (g, path) in ghost_vertex_map
+        if path == section_path
+            add_boundary_vertex_to_ghost!(tri, node, g)
+            break
+        end
     end
     return tri
 end
@@ -156,6 +160,8 @@ function merge_boundary_edge!(tri::Triangulation, i, j, node)
     node_pos = (pos[1], pos[2] + 1)
     bnn = get_boundary_edge_map(tri)
     delete_boundary_node!(tri, node_pos)
+    # Remove the merged node from boundary_vertex_to_ghost map
+    delete_boundary_vertex_from_ghost_map!(tri, node)
     E = edge_type(tri)
     delete!(bnn, construct_edge(E, i, node))
     delete!(bnn, construct_edge(E, node, j))
