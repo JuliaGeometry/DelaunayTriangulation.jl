@@ -38,7 +38,7 @@ jobs:
       - run: julia -e 'using InteractiveUtils; versioninfo(verbose=true)'
 
       - name: Cache artifacts, etc.
-        uses: julia-actions/cache@v2
+        uses: julia-actions/cache@v3
 
       - name: Build the package
         uses: julia-actions/julia-buildpkg@v1
