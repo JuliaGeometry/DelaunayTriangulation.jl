@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Unconstrained Triangulations · DelaunayTriangulation.jl</title><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://DanielVandH.github.io/DelaunayTriangulation.jl/triangulations/unconstrained/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">DelaunayTriangulation.jl</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Triangulations</span><ul><li class="is-active"><a class="tocitem" href>Unconstrained Triangulations</a></li><li><a class="tocitem" href="../constrained/">Constrained Triangulations</a></li><li><a class="tocitem" href="../refinement/">Mesh Refinement</a></li><li><a class="tocitem" href="../lattice/">Lattice</a></li><li><a class="tocitem" href="../gmsh/">Gmsh</a></li><li><a class="tocitem" href="../plotting/">Plotting</a></li><li><a class="tocitem" href="../convex/">Convex Polygons</a></li></ul></li><li><span class="tocitem">Voronoi Tessellations</span><ul><li><a class="tocitem" href="../../tessellations/voronoi/">Voronoi Tessellations</a></li><li><a class="tocitem" href="../../tessellations/clipped/">Clipped Voronoi Tessellations</a></li><li><a class="tocitem" href="../../tessellations/lloyd/">Centroidal Voronoi Tessellation</a></li><li><a class="tocitem" href="../../tessellations/plotting/">Plotting</a></li></ul></li><li><a class="tocitem" href="../../boundary_handling/">Boundary Handling</a></li><li><span class="tocitem">Data Structures</span><ul><li><a class="tocitem" href="../../data_structures/adjacent/">Adjacent</a></li><li><a class="tocitem" href="../../data_structures/adjacent2vertex/">Adjacent2Vertex</a></li><li><a class="tocitem" href="../../data_structures/graph/">Graph</a></li><li><a class="tocitem" href="../../data_structures/convex_hull/">Convex Hull</a></li><li><a class="tocitem" href="../../data_structures/triangulation/">Triangulation</a></li><li><a class="tocitem" href="../../data_structures/statistics/">Statistics</a></li><li><a class="tocitem" href="../../data_structures/voronoi/">Voronoi Tessellation</a></li></ul></li><li><a class="tocitem" href="../../operations/">Operations</a></li><li><span class="tocitem">Other Features</span><ul><li><a class="tocitem" href="../../other_features/point_location/">Point Location</a></li><li><a class="tocitem" href="../../other_features/pole_of_inaccessibility/">Pole of Inaccessibility and Polygons</a></li><li><a class="tocitem" href="../../other_features/convex_hull/">Convex Hull</a></li></ul></li><li><span class="tocitem">Primitive Interfaces</span><ul><li><a class="tocitem" href="../../interface/interface/">General and Defaults</a></li><li><a class="tocitem" href="../../interface/triangles/">Triangles</a></li><li><a class="tocitem" href="../../interface/edges/">Edges</a></li><li><a class="tocitem" href="../../interface/points/">Points</a></li><li><a class="tocitem" href="../../interface/boundary_nodes/">Boundary Nodes</a></li><li><a class="tocitem" href="../../interface/example/">Example</a></li></ul></li><li><a class="tocitem" href="../../predicates/">Predicates</a></li><li><a class="tocitem" href="../../utils/">Other Utilities</a></li><li><span class="tocitem">Triangulation Algorithms</span><ul><li><a class="tocitem" href="../../tri_algs/bowyer/">Bowyer-Watson Algorithm</a></li><li><a class="tocitem" href="../../tri_algs/convex/">Chew&#39;s Algorithm for Triangulating Convex Polygons</a></li><li><a class="tocitem" href="../../tri_algs/constrained/">Constrained Triangulations</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Triangulations</a></li><li class="is-active"><a href>Unconstrained Triangulations</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Unconstrained Triangulations</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/DanielVandH/DelaunayTriangulation.jl/blob/main/docs/src/triangulations/unconstrained.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Unconstrained-Triangulations"><a class="docs-heading-anchor" href="#Unconstrained-Triangulations">Unconstrained Triangulations</a><a id="Unconstrained-Triangulations-1"></a><a class="docs-heading-anchor-permalink" href="#Unconstrained-Triangulations" title="Permalink"></a></h1><p>It is simple to construct unconstrained triangulations. The method for this is through the <code>triangulate</code> function, shown below.</p><article class="docstring"><header><a class="docstring-binding" id="DelaunayTriangulation.triangulate" href="#DelaunayTriangulation.triangulate"><code>DelaunayTriangulation.triangulate</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia hljs">triangulate(points::P; edges=nothing, boundary_nodes=nothing,
+    IntegerType::Type{I}=Int64,
+    EdgeType::Type{E}=NTuple{2,IntegerType},
+    TriangleType::Type{V}=NTuple{3,IntegerType},
+    EdgesType::Type{Es}=Set{EdgeType},
+    TrianglesType::Type{Ts}=Set{TriangleType},
+    randomise=true,
+    delete_ghosts=true,
+    delete_empty_features=true,
+    try_last_inserted_point=true,
+    skip_points=Set{IntegerType}(),
+    num_sample_rule::M=default_num_samples,
+    rng::AbstractRNG=Random.default_rng(),
+    point_order=get_point_order(points, randomise, skip_points, IntegerType, rng),
+    recompute_representative_point=true,
+    delete_holes=true,
+    check_arguments=true
+) where {P,I,E,V,Es,Ts,M}</code></pre><p>Computes the unconstrained Delaunay triangulation of a set of <code>points</code>. If <code>edges</code> is provided,  they will be inserted. If <code>boundary_nodes</code> is provided, a boundary will also be made from these  nodes, with all triangles inside the boundaries deleted.</p><p><strong>Arguments</strong></p><ul><li><code>points::P</code>: The set of points to compute the triangulation of. </li></ul><p><strong>Keyword Arguments</strong></p><ul><li><code>edges=nothing</code>: Any constrained edges to insert. If <code>nothing</code>, an unconstrained triangulation is built. The constrained edges should not intersect each other, and they should not cross over boundary edges.</li><li><code>boundary_nodes=nothing</code>: Any boundaries to define. The specification of these boundary nodes is outlined in the boundary handling section of the documentation. All triangles away from a defined boundary are deleted if <code>delete_holes</code>.</li><li><code>IntegerType::Type{I}=Int64</code>: The integer type to use for indexing. </li><li><code>EdgeType::Type{E}=NTuple{2,IntegerType}</code>: The type to use for representing edges. </li><li><code>TriangleType::Type{V}=NTuple{3,IntegerType}</code>: The type to use for representing triangles. </li><li><code>EdgesType::Type{Es}=Set{EdgeType}</code>: The type to use for representing collections of edges. </li><li><code>TrianglesType::Type{Ts}=Set{TriangleType}</code>: The type to use for representing collections of triangles. </li><li><code>randomise=true</code>: Whether to randomise the insertion order. </li><li><code>delete_ghosts=true</code>: Whether to remove the ghost triangles at the end of the triangulation. </li><li><code>delete_empty_features=true</code>: Whether to delete any empty neighbourhoods and adjacencies at the end of the triangulation. </li><li><code>try_last_inserted_point=true</code>: When finding the next point, this decides if the previously inserted point should also be attempted. </li><li><code>skip_points=Set{IntegerType}()</code>: Points to skip over when triangulationg, i.e. points to not include in the triangulation. </li><li><code>num_sample_rule::M=default_num_samples</code>: A function of the form <code>n -&gt; Number</code>, with <code>n</code> the number of points currently in the triangulation, that returns the number of points to sample during the point location steps. </li><li><code>rng::AbstractRNG=Random.default_rng()</code>: The RNG to use.</li><li><code>point_order=get_point_order(points, randomise, skip_points, IntegerType, rng)</code>: The insertion order. </li><li><code>recompute_representative_point=true</code>: At the end of the triangulation, will recompute the <code>RepresentativePointList</code> if <code>true</code>.</li><li><code>delete_holes=true</code>: Whether to delete the exterior faces of all boundaries. There may be issues if you have boundary nodes but have this set to <code>false</code> - this kwarg is mostly for debugging.</li><li><code>check_arguments=true</code>: Whether to check the arguments for validity.</li></ul><p><strong>Outputs</strong></p><p>Returns a <a href="../../data_structures/triangulation/#DelaunayTriangulation.Triangulation"><code>Triangulation</code></a>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/DanielVandH/DelaunayTriangulation.jl/blob/cd30ed4fa1326e00ba5c41a0019f1d0a83019674/src/triangulation/triangulate.jl#L1-L50">source</a></section></article><p>In the code below, we give an example, and show how we can plot the result.</p><pre><code class="language-julia hljs">using DelaunayTriangulation, CairoMakie 
+a = [1.5, 4.0]
+b = [0.0, 3.5]
+c = [2.0, 1.5]
+d = [3.0, 2.5]
+e = [2.5, 3.5]
+f = [0.5, 3.0]
+g = [2.5, -2.0]
+h = [0.5, 1.5]
+i = [0.0, 0.5]
+j = [1.5, 3.0]
+pts = [a, b, c, d, e, f, g, h, i, j]
+tri = triangulate(pts)
+fig, ax, sc = triplot(tri)</code></pre><figure>
+    <img src='../figs/small_example.png', alt='Triangulation'><br>
+</figure><p>This object <code>tri</code> is a <code>Triangulation</code>.</p><pre><code class="language-julia-repl hljs">julia&gt; tri
+Delaunay Triangulation.
+    Constrained: false
+    Has ghost triangles: false
+    Number of points: 10
+    Number of triangles: 12
+    Number of edges: 27</code></pre><p>As we describe in more detail in the data structures section in the sidebar, <code>tri</code> has several fields:</p><pre><code class="language-julia-repl hljs">julia&gt; propertynames(tri)
+(:points, :triangles, :adjacent, :adjacent2vertex, :graph, :boundary_nodes, :boundary_edge_map, :boundary_map, :boundary_index_ranges, :constrained_edges, :all_constrained_edges, :convex_hull, :representative_point_list)</code></pre><p>We explain each field below.</p><ul><li><p><code>tri.points</code>: This stores <code>pts</code>.</p></li><li><p><code>tri.triangles</code>: This stores all the triangles. In this case,</p></li></ul><pre><code class="language-julia-repl hljs">julia&gt; get_triangles(tri)
+Set{Tuple{Int64, Int64, Int64}} with 12 elements:
+  (10, 5, 1)
+  (9, 7, 3)
+  (2, 6, 1)
+  (3, 10, 8)
+  (10, 4, 5)
+  (9, 3, 8)
+  (3, 4, 10)
+  (8, 6, 2)
+  (9, 8, 2)
+  (10, 1, 6)
+  (8, 10, 6)
+  (3, 7, 4)</code></pre><p>More generally, you can iterate over these triangles via <code>each_triangle(tri)</code>. For example, the area of the triangulation could be computed as follows:</p><pre><code class="language-julia hljs">triangle_area(p, q, r) = 0.5 * (p[1] * q[2] + q[1] * r[2] + r[1] * p[2] - p[1] * r[2] - r[1] * q[2] - q[1] * p[2])
+A = 0.0
+for T in each_triangle(tri)
+    i, j, k = indices(T)
+    p, q, r = get_point(tri, i, j, k)
+    A += triangle_area(p, q, r)
+end </code></pre><ul><li><code>tri.adjacent</code>: This stores the adjacency relationships of the triangulation, mapping edges <code>(u, v)</code> to a vertex <code>w</code> so that <code>(u, v, w)</code> is a positively oriented triangle in <code>tri</code>. In this case, we have </li></ul><pre><code class="language-julia-repl hljs">julia&gt; get_adjacent(tri)
+Adjacent{Int64, Tuple{Int64, Int64}}, with map:
+DataStructures.DefaultDict{Tuple{Int64, Int64}, Int64, Int64} with 43 entries:
+  (9, 3)  =&gt; 8
+  (8, 9)  =&gt; 3
+  (4, 7)  =&gt; -1
+  (2, 1)  =&gt; -1
+  (10, 1) =&gt; 6
+  (2, 8)  =&gt; 6
+  (10, 8) =&gt; 3
+  (3, 9)  =&gt; 7
+  (4, 5)  =&gt; 10
+  (8, 3)  =&gt; 10
+  (9, 8)  =&gt; 2
+  ⋮       =&gt; ⋮</code></pre><p>This object is iterable, allowing for you to do e.g.</p><pre><code class="language-julia hljs">for (uv, w) in get_adjacent(tri)
+    u = initial(uv)
+    v = terminal(uv)
+    ...
+end</code></pre><ul><li><code>tri.adjacent2vertex</code>: This is a map that returns, given an index <code>i</code>, all other edges <code>(j, k)</code> such that <code>(i, j, k)</code> is a positively oriented triangle in the triangulation. In this case, we have </li></ul><pre><code class="language-julia-repl hljs">julia&gt; get_adjacent2vertex(tri)
+Adjacent{Int64, Set{Tuple{Int64, Int64}}, Tuple{Int64, Int64}}, with map:
+Dict{Int64, Set{Tuple{Int64, Int64}}} with 11 entries:
+  5  =&gt; Set([(10, 4), (1, 10)])
+  8  =&gt; Set([(9, 3), (2, 9), (6, 2), (3, 10), (10, 6)])
+  1  =&gt; Set([(6, 10), (10, 5), (2, 6)])
+  6  =&gt; Set([(1, 2), (2, 8), (10, 1), (8, 10)])
+  -1 =&gt; Set([(7, 9), (4, 7), (2, 1), (9, 2), (5, 4), (1, 5)])
+  9  =&gt; Set([(7, 3), (3, 8), (8, 2)])
+  3  =&gt; Set([(7, 4), (4, 10), (10, 8), (8, 9), (9, 7)])
+  7  =&gt; Set([(3, 9), (4, 3)])
+  4  =&gt; Set([(5, 10), (3, 7), (10, 3)])
+  2  =&gt; Set([(8, 6), (9, 8), (6, 1)])
+  10 =&gt; Set([(4, 5), (6, 8), (8, 3), (5, 1), (1, 6), (3, 4)])</code></pre><p>This object is iterable, allowing for you to do e.g. </p><pre><code class="language-julia hljs">for (w, S) in get_adjacent2vertex(w)
+    for (u, v) in S 
+        ...
+    end
+end </code></pre><ul><li><code>tri.graph</code>: This is a graph that returns, given an index <code>i</code>, all other indices <code>j</code> such that <code>(i, j)</code> is an edge in the triangulation. In this case, we have </li></ul><pre><code class="language-julia-repl hljs">julia&gt; get_graph(tri)
+Graph
+    Number of edges: 27
+    Number of vertices: 11
+
+julia&gt; get_edges(tri)
+Set{Tuple{Int64, Int64}} with 27 elements:
+  (2, 9)
+  (4, 5)
+  (1, 2)
+  (6, 8)
+  (6, 10)
+  (3, 7)
+  (-1, 2)
+  (4, 7)
+  (3, 4)
+  (1, 5)
+  (-1, 9)
+  (4, 10)
+  (2, 8)
+  (-1, 5)
+  (1, 6)
+  (3, 9)
+  (7, 9)
+  ⋮
+
+julia&gt; get_neighbours(tri)
+Dict{Int64, Set{Int64}} with 11 entries:
+  5  =&gt; Set([4, -1, 10, 1])
+  8  =&gt; Set([6, 2, 10, 9, 3])
+  1  =&gt; Set([5, 6, 2, 10, -1])
+  6  =&gt; Set([2, 10, 8, 1])
+  -1 =&gt; Set([5, 4, 7, 2, 9, 1])
+  9  =&gt; Set([7, 2, -1, 8, 3])
+  3  =&gt; Set([4, 7, 10, 9, 8])
+  7  =&gt; Set([4, -1, 9, 3])
+  4  =&gt; Set([5, 7, -1, 10, 3])
+  2  =&gt; Set([6, -1, 9, 8, 1])
+  10 =&gt; Set([5, 4, 6, 8, 3, 1])</code></pre><ul><li><p><code>tri.boundary_nodes</code>: This is a list of all fixed boundary nodes in the triangulation. In our case, we have none. See the Gmsh section for an example. The actual nodes on the boundary in this case can be obtained via <code>tri.convex_hull</code>.</p></li><li><p><code>tri.boundary_edge_map</code>: This is a <code>Dict</code> that maps all boundary edges to their position in <code>tri.boundary_nodes</code>. See the Gmsh section for an example.</p></li><li><p><code>tri.boundary_map</code>: This would be a list mapping boundary indices to all the fixed boundary nodes in <code>tri.boundary_nodes</code> corresponding to that index. This map is empty in this case as we have no fixed boundary nodes,, but see the Gmsh section for an example.</p></li><li><p><code>tri.boundary_index_ranges</code>: This is be a list mapping indices of boundary curves to all boundary indices belonging to that curve. In this case, we have </p></li></ul><pre><code class="language-julia-repl hljs">julia&gt; get_boundary_index_ranges(tri)
+OrderedCollections.OrderedDict{Int64, UnitRange{Int64}} with 1 entry:
+  -1 =&gt; -1:-1</code></pre><p>This tells us that whenever we see a <code>-1</code> as a vertex, we have a ghost vertex corresponding to the outer curve, so e.g. if <code>get_adjacent(tri, u, v) == -1</code>, then <code>(u, v)</code> is an edge on the boundary. A better example is in the Gmsh section.</p><ul><li><p><code>tri.constrained_edges</code>: This would be the collection of constrained edges if we had any. See the constrained trangulation section.</p></li><li><p><code>tri.all_constrained_edges</code>: This is a collection of all constrained edges currently in the triangulation, including the boundary edges. We have none here, but see the constrained triangulation section.</p></li><li><p><code>tri.convex_hull</code>: This is the <code>ConvexHull</code> of <code>tri.points</code>. In this case, we have</p></li></ul><pre><code class="language-julia-repl hljs">julia&gt; get_convex_hull(tri)
+Convex hull.
+    Indices:
+7-element Vector{Int64}:
+ 7
+ 4
+ 5
+ 1
+ 2
+ 9
+ 7</code></pre><ul><li><code>tri.representative_point_list</code>: This is the <code>Dict</code> that maps curve indices to the coordinate used for representing corresponding boundary indices. Typically, these points are near the centroid of the curve; see the <code>pole_of_inaccessibility</code> function. In our case,</li></ul><pre><code class="language-julia-repl hljs">julia&gt; tri.representative_point_list
+Dict{Int64, DelaunayTriangulation.RepresentativeCoordinates{Int64, Float64}} with 1 entry:
+  1 =&gt; RepresentativeCoordinates{Int64, Float64}(1.51155, 1.43234, 0)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../">« Home</a><a class="docs-footer-nextpage" href="../constrained/">Constrained Triangulations »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Wednesday 26 April 2023 12:26">Wednesday 26 April 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
