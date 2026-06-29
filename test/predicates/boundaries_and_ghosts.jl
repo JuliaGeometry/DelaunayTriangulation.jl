@@ -15,6 +15,20 @@ A = get_area(tri)
 refine!(tri; max_area = 1.0e-2A, rng, use_circumcenter = true)
 
 tri2, label_map, index_map = simple_geometry()
+let bn = get_boundary_nodes(tri2)
+    bv_map = DT.get_boundary_vertex_to_ghost(tri2)
+    ghost = DT.𝒢
+    for curve_idx in 1:DT.num_curves(bn)
+        curve = DT.get_boundary_nodes(bn, curve_idx)
+        for section_idx in 1:DT.num_sections(curve)
+            section = DT.get_boundary_nodes(curve, section_idx)
+            for node in section
+                bv_map[node] = ghost
+            end
+            ghost -= 1
+        end
+    end
+end
 add_ghost_triangles!(tri2)
 DT.compute_representative_points!(tri2)
 pts = get_points(tri2)
@@ -188,10 +202,16 @@ end
 
 @testset "has_ghost_triangles" begin
     @test DT.has_ghost_triangles(tri)
+    @test DT.has_ghosts(tri)
     DT.delete_ghost_triangles!(tri)
     @test !DT.has_ghost_triangles(tri)
+    @test !DT.has_ghosts(tri)
     DT.add_ghost_triangles!(tri)
     @test DT.has_ghost_triangles(tri)
+    @test DT.has_ghosts(tri)
+
+    # Test that has_ghost_triangles is an alias for has_ghosts
+    @test DT.has_ghost_triangles(tri) == DT.has_ghosts(tri)
 end
 
 @testset "has_boundary_nodes and is_constrained" begin
@@ -240,6 +260,21 @@ end
         end
     end
     tri2, label_map, index_map = simple_geometry()
+    # Manually populate boundary_vertex_to_ghost for tri2 since simple_geometry uses delete_ghosts=true
+    let bn = get_boundary_nodes(tri2)
+        bv_map = DT.get_boundary_vertex_to_ghost(tri2)
+        ghost = DT.𝒢
+        for curve_idx in 1:DT.num_curves(bn)
+            curve = DT.get_boundary_nodes(bn, curve_idx)
+            for section_idx in 1:DT.num_sections(curve)
+                section = DT.get_boundary_nodes(curve, section_idx)
+                for node in section
+                    bv_map[node] = ghost
+                end
+                ghost -= 1
+            end
+        end
+    end
     for (ghost_vertex, segment_index) in get_ghost_vertex_map(tri2)
         nodes = get_boundary_nodes(tri2, segment_index)
         for node in nodes
@@ -249,9 +284,9 @@ end
             @test res1 ∈ DT.get_ghost_vertex_range(tri2, ghost_vertex)
         end
     end
-    reduced_bn = reduce(vcat, reduce(vcat, get_boundary_nodes(tri2)))
-    for node in each_vertex(tri)
-        if node ∉ reduced_bn
+    reduced_bn2 = reduce(vcat, reduce(vcat, get_boundary_nodes(tri2)))
+    for node in each_vertex(tri2)
+        if node ∉ reduced_bn2
             flag, res = DT.is_boundary_node(tri2, node)
             @test !flag && res == DT.∅
         end
@@ -270,4 +305,100 @@ end
             @test !flag2 && res2 == DT.∅
         end
     end
+
+    @testset "boundary_vertex_to_ghost consistency" begin
+        # Test with complicated geometry (multiple curves and sections)
+        # Note: For junction nodes, the map will only
+        # contain one ghost vertex, whichever was set last during processing.
+        # So we check that each boundary node is in the map and maps to a valid
+        # ghost vertex (one that is in the ghost vertex range for that curve).
+        bv_map = DT.get_boundary_vertex_to_ghost(tri)
+        for (ghost_vertex, segment_index) in get_ghost_vertex_map(tri)
+            nodes = get_boundary_nodes(tri, segment_index)
+            for node in nodes
+                @test haskey(bv_map, node)
+                # The mapped ghost vertex should be in the valid range for this curve
+                mapped_ghost = bv_map[node]
+                @test mapped_ghost ∈ DT.get_ghost_vertex_range(tri, ghost_vertex)
+            end
+        end
+
+        # Test with simple geometry
+        bv_map2 = DT.get_boundary_vertex_to_ghost(tri2)
+        for (ghost_vertex, segment_index) in get_ghost_vertex_map(tri2)
+            nodes = get_boundary_nodes(tri2, segment_index)
+            for node in nodes
+                @test haskey(bv_map2, node)
+                mapped_ghost = bv_map2[node]
+                @test mapped_ghost ∈ DT.get_ghost_vertex_range(tri2, ghost_vertex)
+            end
+        end
+
+        # Test that non-boundary nodes are not in the map
+        for node in each_vertex(tri)
+            if node ∉ reduced_bn
+                @test !haskey(bv_map, node)
+            end
+        end
+    end
+end
+
+@testset "boundary_vertex_to_ghost getter and setters" begin
+    tri, label_map, index_map = simple_geometry()
+
+    bv_map = DT.get_boundary_vertex_to_ghost(tri)
+    @test bv_map isa Dict
+    @test isempty(bv_map)
+
+    I = DT.integer_type(tri)
+    test_vertex = I(5)
+    test_ghost = I(-2)
+
+    DT.add_boundary_vertex_to_ghost!(tri, test_vertex, test_ghost)
+    @test haskey(DT.get_boundary_vertex_to_ghost(tri), test_vertex)
+    @test DT.get_boundary_vertex_to_ghost(tri)[test_vertex] == test_ghost
+
+    DT.delete_boundary_vertex_from_ghost_map!(tri, test_vertex)
+    @test !haskey(DT.get_boundary_vertex_to_ghost(tri), test_vertex)
+
+    x, y = complicated_geometry()
+    rng = StableRNG(99988)
+    boundary_nodes, points = convert_boundary_points_to_indices(x, y)
+    tri_with_boundary = triangulate(points; rng, boundary_nodes, delete_ghosts = false)
+
+    bv_map = DT.get_boundary_vertex_to_ghost(tri_with_boundary)
+    @test !isempty(bv_map)
+
+    all_boundary_nodes = reduce(vcat, reduce(vcat, get_boundary_nodes(tri_with_boundary)))
+    for bn in all_boundary_nodes
+        @test haskey(bv_map, bn)
+    end
+
+    for v in each_vertex(tri_with_boundary)
+        if v ∉ all_boundary_nodes
+            @test !haskey(bv_map, v)
+        end
+    end
+end
+
+@testset "boundary_vertex_to_ghost with copy and ==" begin
+    x, y = complicated_geometry()
+    rng = StableRNG(99988)
+    boundary_nodes, points = convert_boundary_points_to_indices(x, y)
+    tri = triangulate(points; rng, boundary_nodes, delete_ghosts = false)
+
+    tri_copy = copy(tri)
+    @test DT.get_boundary_vertex_to_ghost(tri) == DT.get_boundary_vertex_to_ghost(tri_copy)
+    @test DT.get_boundary_vertex_to_ghost(tri) !== DT.get_boundary_vertex_to_ghost(tri_copy)  # Different objects
+
+    @test tri == tri_copy
+
+    I = DT.integer_type(tri_copy)
+    fake_vertex = I(999999)
+    fake_ghost = I(-999)
+    DT.add_boundary_vertex_to_ghost!(tri_copy, fake_vertex, fake_ghost)
+    @test tri != tri_copy
+
+    DT.delete_boundary_vertex_from_ghost_map!(tri_copy, fake_vertex)
+    @test tri == tri_copy
 end

@@ -83,30 +83,40 @@ The [`BoundaryEnricher`](@ref) used for triangulating a curve-bounded domain. If
 
 A [`TriangulationCache`](@ref) used as a cache for [`add_segment!`](@ref) which requires a separate `Triangulation` structure for use.
 This will not contain any segments or boundary nodes. Also stores segments useful for [`lock_convex_hull!`](@ref) and [`unlock_convex_hull!`](@ref).
+- `has_ghosts::Bool`
+
+A flag indicating whether the triangulation currently has ghost triangles. This is toggled by [`add_ghost_triangles!`](@ref) and [`delete_ghost_triangles!`](@ref).
+- `boundary_vertex_to_ghost::Dict{I, I}`
+
+A `Dict` that maps each boundary vertex to its corresponding ghost vertex. This provides O(1) lookup for [`is_boundary_node`](@ref)
+instead of iterating through all ghost vertices. This map is maintained automatically when boundary nodes are added or removed from the triangulation.
+For unconstrained triangulations with no boundary nodes, this will be an empty `Dict`.
 """
-struct Triangulation{P,T,BN,W,I,E,Es,BC,BEM,GVM,GVR,BPL,C,BE}
+mutable struct Triangulation{P,T,BN,W,I,E,Es,BC,BEM,GVM,GVR,BPL,C,BE}
     # Geometry
-    points::P
-    triangles::T
-    boundary_nodes::BN
-    interior_segments::Es
-    all_segments::Es
-    weights::W
+    const points::P
+    const triangles::T
+    const boundary_nodes::BN
+    const interior_segments::Es
+    const all_segments::Es
+    const weights::W
     # Topology
-    adjacent::Adjacent{I,E}
-    adjacent2vertex::Adjacent2Vertex{I,Es}
-    graph::Graph{I}
+    const adjacent::Adjacent{I,E}
+    const adjacent2vertex::Adjacent2Vertex{I,Es}
+    const graph::Graph{I}
     # Boundary handling
-    boundary_curves::BC
-    boundary_edge_map::BEM
-    ghost_vertex_map::GVM
-    ghost_vertex_ranges::GVR
-    # Other 
-    convex_hull::ConvexHull{P,I}
-    representative_point_list::BPL
-    polygon_hierarchy::PolygonHierarchy{I}
-    boundary_enricher::BE
-    cache::C
+    const boundary_curves::BC
+    const boundary_edge_map::BEM
+    const ghost_vertex_map::GVM
+    const ghost_vertex_ranges::GVR
+    # Other
+    const convex_hull::ConvexHull{P,I}
+    const representative_point_list::BPL
+    const polygon_hierarchy::PolygonHierarchy{I}
+    const boundary_enricher::BE
+    const cache::C
+    has_ghosts::Bool
+    const boundary_vertex_to_ghost::Dict{I,I}
 end
 
 function Base.copy(tri::Triangulation)
@@ -126,15 +136,17 @@ function Base.copy(tri::Triangulation)
     convex_hull = copy(get_convex_hull(tri))
     representative_point_list = copy(get_representative_point_list(tri))
     polygon_hierarchy = copy(get_polygon_hierarchy(tri))
-    boundary_enricher = enrcopy(get_boundary_enricher(tri); points, 
+    boundary_enricher = enrcopy(get_boundary_enricher(tri); points,
         boundary_nodes, segments=interior_segments,boundary_curves,
-        polygon_hierarchy,boundary_edge_map) 
-    cache = _copy_cache(get_cache(tri); weights) 
+        polygon_hierarchy,boundary_edge_map)
+    cache = _copy_cache(get_cache(tri); weights)
+    has_ghosts_flag = has_ghosts(tri)
+    boundary_vertex_to_ghost_map = copy(get_boundary_vertex_to_ghost(tri))
     return Triangulation(
         points, triangles, boundary_nodes, interior_segments, all_segments, weights,
         adjacent, adjacent2vertex, graph, boundary_curves, boundary_edge_map,
         ghost_vertex_map, ghost_vertex_ranges, convex_hull, representative_point_list,
-        polygon_hierarchy, boundary_enricher, cache
+        polygon_hierarchy, boundary_enricher, cache, has_ghosts_flag, boundary_vertex_to_ghost_map
     )
 end
 
@@ -151,6 +163,8 @@ function Base.show(io::IO, ::MIME"text/plain", tri::Triangulation)
 end
 
 function Base.:(==)(tri1::Triangulation, tri2::Triangulation)
+    has_ghosts(tri1) ≠ has_ghosts(tri2) && return false
+    get_boundary_vertex_to_ghost(tri1) ≠ get_boundary_vertex_to_ghost(tri2) && return false
     !has_ghost_triangles(tri1) && has_ghost_triangles(tri2) && return false
     !has_ghost_triangles(tri2) && has_ghost_triangles(tri1) && return false
     get_points(tri1) ≠ get_points(tri2) && return false
@@ -359,6 +373,53 @@ Returns the cache of `tri`. This is a [`TriangulationCache`](@ref) used as a cac
 get_cache(tri::Triangulation) = tri.cache
 
 """
+    has_ghosts(tri::Triangulation) -> Bool
+
+Returns `true` if the triangulation currently has ghost triangles, and `false` otherwise.
+This flag is toggled by [`add_ghost_triangles!`](@ref) and [`delete_ghost_triangles!`](@ref).
+"""
+has_ghosts(tri::Triangulation) = tri.has_ghosts
+
+"""
+    set_has_ghosts!(tri::Triangulation, flag::Bool)
+
+Sets the `has_ghosts` flag of the triangulation to `flag`.
+"""
+function set_has_ghosts!(tri::Triangulation, flag::Bool)
+    tri.has_ghosts = flag
+    return tri
+end
+
+"""
+    get_boundary_vertex_to_ghost(tri::Triangulation) -> Dict{I, I}
+
+Returns the `Dict` that maps each boundary vertex to its corresponding ghost vertex.
+This provides O(1) lookup for [`is_boundary_node`](@ref) instead of iterating through
+all ghost vertices.
+"""
+get_boundary_vertex_to_ghost(tri::Triangulation) = tri.boundary_vertex_to_ghost
+
+"""
+    add_boundary_vertex_to_ghost!(tri::Triangulation, vertex, ghost_vertex)
+
+Adds a mapping from `vertex` to `ghost_vertex` in the `boundary_vertex_to_ghost` map.
+"""
+function add_boundary_vertex_to_ghost!(tri::Triangulation, vertex, ghost_vertex)
+    get_boundary_vertex_to_ghost(tri)[vertex] = ghost_vertex
+    return tri
+end
+
+"""
+    delete_boundary_vertex_from_ghost_map!(tri::Triangulation, vertex)
+
+Deletes the mapping for `vertex` from the `boundary_vertex_to_ghost` map.
+"""
+function delete_boundary_vertex_from_ghost_map!(tri::Triangulation, vertex)
+    delete!(get_boundary_vertex_to_ghost(tri), vertex)
+    return tri
+end
+
+"""
     get_incircle_cache(tri::Triangulation) -> Tuple 
 
 Returns the incircle cache stored in `tri`.
@@ -511,10 +572,13 @@ end
 ) where {I,E,V,Es,Ts,B}
     T, adj, adj2v, graph, all_segments, boundary_edge_map, ghost_vertex_map, ghost_vertex_ranges, ch, polygon_hierarchy = __Triangulation(points, boundary_nodes, I, E, V, Es, Ts)
     cache = _build_cache(points, I, E, V, Es, Ts, weights, build_cache)
+    has_ghosts_flag = false
+    boundary_vertex_to_ghost_map = Dict{I,I}()
     tri = Triangulation(
         points, T, boundary_nodes, segments, all_segments, weights,
         adj, adj2v, graph, boundary_curves, boundary_edge_map,
         ghost_vertex_map, ghost_vertex_ranges, ch, representative_point_list, polygon_hierarchy, boundary_enricher, cache,
+        has_ghosts_flag, boundary_vertex_to_ghost_map,
     )
     return tri
 end

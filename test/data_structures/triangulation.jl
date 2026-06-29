@@ -53,6 +53,8 @@ global tri = Triangulation(pts; IntegerType=Int32)
                 DT.construct_polygon_hierarchy(pts; IntegerType=Int32),
                 nothing, # boundary_enricher
                 DT.TriangulationCache(nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing),
+                false, # has_ghosts
+                Dict{Int32,Int32}(), # boundary_vertex_to_ghost
             ),
             DT.Triangulation(
                 pts,
@@ -73,6 +75,8 @@ global tri = Triangulation(pts; IntegerType=Int32)
                 DT.construct_polygon_hierarchy(pts; IntegerType=Int32),
                 nothing, # boundary_enricher
                 DT.TriangulationCache(nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing),
+                false, # has_ghosts
+                Dict{Int32,Int32}(), # boundary_vertex_to_ghost
             ),
             Int32[],
             Set{NTuple{2,Int32}}(),
@@ -82,6 +86,8 @@ global tri = Triangulation(pts; IntegerType=Int32)
             AdaptivePredicates.orient3adapt_cache(Float64),
             AdaptivePredicates.insphereexact_cache(Float64),
         ),
+        false, # has_ghosts
+        Dict{Int32,Int32}(), # boundary_vertex_to_ghost
     )
 end
 
@@ -1498,7 +1504,7 @@ end
         for f in fieldnames(typeof(tri))
             f in (:weights, :boundary_enricher) && continue
             @test getfield(tri, f) == getfield(tri2, f)
-            f == :boundary_curves && continue
+            f in (:boundary_curves, :has_ghosts) && continue
             @test !(getfield(tri, f) === getfield(tri2, f))
         end
     end
@@ -1515,7 +1521,7 @@ end
         for f in fieldnames(typeof(tri))
             f in (:weights, :boundary_enricher, :cache) && continue
             @test getfield(tri, f) == getfield(tri2, f)
-            f == :boundary_curves && continue
+            f in (:boundary_curves, :has_ghosts) && continue
             @test !(getfield(tri, f) === getfield(tri2, f))
         end
         bem = DT.get_boundary_edge_map(tri)
@@ -1563,6 +1569,7 @@ end
         for f in fieldnames(typeof(tri))
             f in (:weights, :cache) && continue
             @test getfield(tri, f) == getfield(tri2, f)
+            f in (:has_ghosts,) && continue
             @test !(getfield(tri, f) === getfield(tri2, f))
         end
         enricher = DT.get_boundary_enricher(tri)
@@ -1594,7 +1601,7 @@ end
         for f in fieldnames(typeof(tri))
             f in (:boundary_enricher, :cache) && continue
             @test getfield(tri, f) == getfield(tri2, f)
-            f in (:boundary_curves,) && continue
+            f in (:boundary_curves, :has_ghosts) && continue
             @test !(getfield(tri, f) === getfield(tri2, f))
         end
         @test get_weights(tri) == get_weights(tri2) && !(get_weights(tri) === get_weights(tri2))
@@ -1603,4 +1610,119 @@ end
         @test DT.get_weights(DT.get_triangulation(cache)) === DT.get_weights(DT.get_triangulation_2(cache)) === DT.get_weights(tri)
         @test DT.get_weights(DT.get_triangulation(_cache)) === DT.get_weights(DT.get_triangulation_2(_cache)) === DT.get_weights(tri2)
     end
+end
+
+@testset "has_ghosts getter and setter" begin
+    # Test basic getter functionality
+    points = [(0.0, 0.0), (1.0, 0.0), (0.5, 0.5)]
+    tri = DT.Triangulation(points)
+
+    # Initial state should be false
+    @test !DT.has_ghosts(tri)
+    @test DT.has_ghosts(tri) == false
+
+    # Test setter
+    DT.set_has_ghosts!(tri, true)
+    @test DT.has_ghosts(tri)
+    @test DT.has_ghosts(tri) == true
+
+    DT.set_has_ghosts!(tri, false)
+    @test !DT.has_ghosts(tri)
+    @test DT.has_ghosts(tri) == false
+
+    # Test that setter returns the triangulation (for chaining)
+    result = DT.set_has_ghosts!(tri, true)
+    @test result === tri
+    @test DT.has_ghosts(tri)
+
+    # Test has_ghost_triangles is an alias for has_ghosts
+    @test DT.has_ghost_triangles(tri) == DT.has_ghosts(tri)
+    DT.set_has_ghosts!(tri, false)
+    @test DT.has_ghost_triangles(tri) == DT.has_ghosts(tri)
+    DT.set_has_ghosts!(tri, true)
+    @test DT.has_ghost_triangles(tri) == DT.has_ghosts(tri)
+end
+
+@testset "has_ghosts integration with add/delete ghost triangles" begin
+    points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
+    tri = DT.Triangulation(points)
+
+    # Initial state
+    @test !DT.has_ghosts(tri)
+
+    # Add boundary information first
+    DT.add_boundary_information!(tri)
+    @test !DT.has_ghosts(tri) # Still false before adding ghost triangles
+
+    # Add ghost triangles
+    DT.add_ghost_triangles!(tri)
+    @test DT.has_ghosts(tri)
+    @test DT.has_ghost_triangles(tri)
+
+    # Delete ghost triangles
+    DT.delete_ghost_triangles!(tri)
+    @test !DT.has_ghosts(tri)
+    @test !DT.has_ghost_triangles(tri)
+
+    # Add them again to test toggle
+    DT.add_ghost_triangles!(tri)
+    @test DT.has_ghosts(tri)
+end
+
+@testset "Mutating has_ghosts" begin
+    points = [(0.0, 0.0), (1.0, 0.0), (0.5, 0.5)]
+    tri = DT.Triangulation(points)
+    @test !DT.has_ghosts(tri)
+    DT.set_has_ghosts!(tri, true)
+    @test DT.has_ghosts(tri)
+    @test ismutable(tri)
+    @test tri.has_ghosts == DT.has_ghosts(tri)
+end
+
+@testset "has_ghosts with copy" begin
+    points = [(0.0, 0.0), (1.0, 0.0), (0.5, 0.5)]
+    tri = DT.Triangulation(points)
+
+    DT.set_has_ghosts!(tri, true)
+    @test DT.has_ghosts(tri)
+
+    tri_copy = Base.copy(tri)
+
+    @test DT.has_ghosts(tri_copy) == DT.has_ghosts(tri)
+    @test DT.has_ghosts(tri_copy) == true
+
+    DT.set_has_ghosts!(tri, false)
+    @test !DT.has_ghosts(tri)
+    @test DT.has_ghosts(tri_copy)
+
+    tri2 = DT.Triangulation(points)
+    @test !DT.has_ghosts(tri2)
+    tri2_copy = Base.copy(tri2)
+    @test !DT.has_ghosts(tri2_copy)
+end
+
+@testset "has_ghosts with Base.==" begin
+    points = [(0.0, 0.0), (1.0, 0.0), (0.5, 0.5)]
+    tri1 = DT.Triangulation(points)
+    tri2 = DT.Triangulation(points)
+
+    @test !DT.has_ghosts(tri1)
+    @test !DT.has_ghosts(tri2)
+    @test tri1 == tri2
+
+    DT.set_has_ghosts!(tri1, true)
+    @test DT.has_ghosts(tri1)
+    @test !DT.has_ghosts(tri2)
+    @test tri1 != tri2 
+
+    DT.set_has_ghosts!(tri2, true)
+    @test DT.has_ghosts(tri1)
+    @test DT.has_ghosts(tri2)
+    @test tri1 == tri2
+
+    DT.set_has_ghosts!(tri1, false)
+    DT.set_has_ghosts!(tri2, false)
+    @test !DT.has_ghosts(tri1)
+    @test !DT.has_ghosts(tri2)
+    @test tri1 == tri2
 end

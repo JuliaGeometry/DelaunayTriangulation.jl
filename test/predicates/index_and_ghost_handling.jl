@@ -19,6 +19,7 @@ for PT in subtypes(DT.AbstractPredicateKernel)
         _tri.all_segments, _tri.weights, _tri.adjacent, _tri.adjacent2vertex, _tri.graph, _tri.boundary_curves,
         _tri.boundary_edge_map, _tri.ghost_vertex_map, _tri.ghost_vertex_ranges, DT.ConvexHull(_pts, _tri.convex_hull.vertices), _tri.representative_point_list,
         _tri.polygon_hierarchy, _tri.boundary_enricher, _tri.cache,
+        _tri.has_ghosts, copy(_tri.boundary_vertex_to_ghost),
     )
     DT.compute_representative_points!(tri)
     global rep = DT.get_representative_point_list(tri)

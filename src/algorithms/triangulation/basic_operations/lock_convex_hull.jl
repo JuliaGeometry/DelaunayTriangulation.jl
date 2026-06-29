@@ -30,16 +30,24 @@ function lock_convex_hull!(tri::Triangulation; rng::Random.AbstractRNG = Random.
     interior_segments = get_interior_segments(tri)
     interior_segments_on_hull = get_interior_segments_on_hull(get_cache(tri))
     empty!(interior_segments_on_hull)
+    ghost_vertex = I(𝒢)
     for i in 1:ne
         u = get_boundary_nodes(bn, i)
         v = get_boundary_nodes(bn, i + 1)
         e = construct_edge(E, u, v)
         bnn_map[e] = (bn, i)
+        # Populate the boundary_vertex_to_ghost map to maintain consistency
+        # with the boundary_nodes. This prevents add_ghost_triangles! from
+        # needing to repopulate it later.
+        add_boundary_vertex_to_ghost!(tri, u, ghost_vertex)
         if contains_unoriented_edge(e, interior_segments)
             delete_unoriented_edge!(interior_segments, e)
             add_edge!(interior_segments_on_hull, e)
         end
     end
+    # Add the last vertex (closed boundary)
+    u = get_boundary_nodes(bn, ne + 1)
+    add_boundary_vertex_to_ghost!(tri, u, ghost_vertex)
     for e in keys(bnn_map)
         add_segment!(tri, e; rng, predicates)
     end

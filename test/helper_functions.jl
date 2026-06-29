@@ -239,6 +239,8 @@ function example_triangulation()
             pts, Int, NTuple{2,Int}, NTuple{3,Int},
             Set{NTuple{2,Int}}, Set{NTuple{3,Int}}, DT.ZeroWeight(), Val(true),
         ),
+        false,  # has_ghosts
+        Dict{Int,Int}(),  # boundary_vertex_to_ghost
     )
     DT.compute_representative_points!(tri)
     return tri
@@ -264,6 +266,8 @@ function example_empty_triangulation()
             pts, Int, NTuple{2,Int}, NTuple{3,Int},
             Set{NTuple{2,Int}}, Set{NTuple{3,Int}}, DT.ZeroWeight(), Val(true),
         ),
+        false,  # has_ghosts
+        Dict{Int,Int}(),  # boundary_vertex_to_ghost
     )
     DT.compute_representative_points!(tri)
     return tri
@@ -1568,6 +1572,8 @@ function why_not_equal(tri1, tri2)
     DT.get_polygon_hierarchy(tri1) ≠ DT.get_polygon_hierarchy(tri2) && println("get_polygon_hierarchy(tri1) ≠ get_polygon_hierarchy(tri2)")
     DT.get_boundary_nodes(tri1) ≠ DT.get_boundary_nodes(tri2) && println("get_boundary_nodes(tri1) ≠ get_boundary_nodes(tri2)")
     DT.get_weights(tri1) ≠ DT.get_weights(tri2) && println("get_weights(tri1) ≠ get_weights(tri2)")
+    DT.has_ghosts(tri1) ≠ DT.has_ghosts(tri2) && println("has_ghosts(tri1) ≠ has_ghosts(tri2)")
+    DT.get_boundary_vertex_to_ghost(tri1) ≠ DT.get_boundary_vertex_to_ghost(tri2) && println("get_boundary_vertex_to_ghost(tri1) ≠ get_boundary_vertex_to_ghost(tri2)")
 end
 
 #=

@@ -8,8 +8,19 @@ using StaticArrays
 @testset "Deleting ghost triangles" begin
     tri, label_map, index_map = simple_geometry()
     _tri = deepcopy(tri)
+
+    @test !DT.has_ghosts(tri)
+    @test !DT.has_ghost_triangles(tri)
+
     DT.add_ghost_triangles!(tri)
+
+    @test DT.has_ghosts(tri)
+    @test DT.has_ghost_triangles(tri)
+
     DT.delete_ghost_triangles!(tri)
+
+    @test !DT.has_ghosts(tri)
+    @test !DT.has_ghost_triangles(tri)
 
     @test tri == _tri
 end
