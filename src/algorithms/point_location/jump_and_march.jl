@@ -419,7 +419,7 @@ function search_right_down_adjacent_boundary_edges(tri::Triangulation, q, q_pos,
         k = get_adjacent(tri, i, j)
         return (true, Cert.On, i, j, k) # true is the return_flag
     end
-    return (false, Cert.Outside, i, j, k)
+    return (false, Cert.Outside, i, j, get_adjacent(tri, i, j))
 end
 function search_left_down_adjacent_boundary_edges(tri::Triangulation, q, q_pos, predicates::AbstractPredicateKernel, store_history::F, history, ghost_vertex, i, j, pⱼ) where {F}
     if is_true(store_history) # in case we don't enter the loop
@@ -445,7 +445,7 @@ function search_left_down_adjacent_boundary_edges(tri::Triangulation, q, q_pos, 
         k = get_adjacent(tri, j, i)
         return (true, Cert.On, j, i, k)
     end
-    return (false, Cert.Outside, i, j, k)
+    return (false, Cert.Outside, i, j, get_adjacent(tri, i, j))
 end
 
 """
