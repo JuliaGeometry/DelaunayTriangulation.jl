@@ -957,10 +957,28 @@ end
     @test DT.has_vertex(tri, 1)
     @test !DT.has_vertex(tri, 57)
     @test DT.has_ghost_vertices(tri)
+    @test DT.has_ghost_vertices(tri) == DT.has_ghost_vertices(DT.get_graph(tri)) # agrees with the graph-level scan
     @test DT.has_vertex(tri, -1)
     DT.delete_ghost_vertices_from_graph!(tri)
     @test !DT.has_vertex(tri, -1)
     @test !DT.has_ghost_vertices(tri)
+    @test DT.has_ghost_vertices(tri) == DT.has_ghost_vertices(DT.get_graph(tri)) # agrees with the graph-level scan
+
+    # multiple ghost vertices (constrained triangulation with an interior hole)
+    curve_1 = [[1, 2, 3, 4, 5, 6, 7, 1]]
+    points_1 = [
+        (0.0, 0.0), (4.0, 0.0), (8.0, 0.0), (8.0, 4.0),
+        (8.0, 8.0), (4.0, 8.0), (0.0, 8.0),
+    ]
+    curve_2 = [[8, 9, 10, 11, 8]]
+    points_2 = [(6.0, 2.0), (6.0, 3.0), (7.0, 3.0), (7.0, 2.0)]
+    points = [points_1..., points_2...]
+    tri2 = triangulate(points; boundary_nodes = [curve_1, curve_2], delete_ghosts = false)
+    @test DT.has_ghost_vertices(tri2)
+    @test DT.has_ghost_vertices(tri2) == DT.has_ghost_vertices(DT.get_graph(tri2))
+    DT.delete_ghost_vertices_from_graph!(tri2)
+    @test !DT.has_ghost_vertices(tri2)
+    @test DT.has_ghost_vertices(tri2) == DT.has_ghost_vertices(DT.get_graph(tri2))
 end
 
 @testset "Issue #70" begin

@@ -100,7 +100,13 @@ num_vertices(tri::Triangulation) = num_vertices(get_graph(tri))
 
 Returns `true` if `tri` has ghost vertices, and `false` otherwise.
 """
-has_ghost_vertices(tri::Triangulation) = has_ghost_vertices(get_graph(tri))
+function has_ghost_vertices(tri::Triangulation)
+    # Check the registered ghost vertices with O(1) graph-membership lookups instead of
+    # scanning every vertex of the graph. The scan makes each query O(n), and since point
+    # location queries this (via is_boundary_node and each_ghost_vertex) on every insertion,
+    # it makes triangulate quadratic in the number of points. See #236.
+    return any(g -> has_vertex(tri, g), all_ghost_vertices(tri))
+end
 
 """
     num_ghost_vertices(tri::Triangulation) -> Integer
