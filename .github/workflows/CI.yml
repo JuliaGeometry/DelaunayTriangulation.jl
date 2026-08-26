@@ -28,7 +28,7 @@ jobs:
           - x64
     steps:
       - name: Checkout repository for access
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Julia
         uses: julia-actions/setup-julia@v2
@@ -38,7 +38,7 @@ jobs:
       - run: julia -e 'using InteractiveUtils; versioninfo(verbose=true)'
 
       - name: Cache artifacts, etc.
-        uses: julia-actions/cache@v2
+        uses: julia-actions/cache@v3
 
       - name: Build the package
         uses: julia-actions/julia-buildpkg@v1
@@ -52,7 +52,7 @@ jobs:
 
       - name: Upload the results
         if: always()
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
             token: ${{ secrets.CODECOV_TOKEN }}
             file: lcov.info
@@ -64,7 +64,7 @@ jobs:
       contents: write
       statuses: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: julia-actions/setup-julia@v2
         with:
           version: '1'
