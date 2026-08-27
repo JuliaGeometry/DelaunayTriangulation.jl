@@ -25,6 +25,9 @@ function unlock_convex_hull!(tri::Triangulation; reconstruct = false)
     bnn_map = get_boundary_edge_map(tri)
     empty!(bn)
     bn_map[I(𝒢)] = bn
+    # Clear the boundary_vertex_to_ghost map since we're unlocking the convex hull
+    # and these are no longer constrained boundary nodes
+    empty!(get_boundary_vertex_to_ghost(tri))
     segments = get_interior_segments(tri)
     all_segments = get_all_segments(tri)
     for e in keys(bnn_map)

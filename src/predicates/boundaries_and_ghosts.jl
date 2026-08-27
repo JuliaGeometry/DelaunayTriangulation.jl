@@ -107,18 +107,35 @@ end
 
 Tests if the vertex `i` is a boundary node of `tri`.
 
-# Arguments 
-- `tri::Triangulation`: The [`Triangulation`](@ref).
-- `i`: The vertex to test. 
+This function uses an O(1) lookup into the `boundary_vertex_to_ghost` map when available,
+providing significant performance improvement for triangulations with many boundary sections.
+If the map is not yet populated (e.g., during triangulation), it falls back to O(k) iteration
+over ghost vertices.
 
-# Outputs 
+# Arguments
+- `tri::Triangulation`: The [`Triangulation`](@ref).
+- `i`: The vertex to test.
+
+# Outputs
 - `flag`: `true` if `i` is a boundary node, and `false` otherwise.
 - `g`: Either the ghost vertex corresponding with the section that `i` lives on if `flag` is true, or $∅ otherwise.
 """
 function is_boundary_node(tri::Triangulation, i)
-    for g in each_ghost_vertex(tri)
-        i ∈ get_neighbours(tri, g) && return (true, g)
+    bv_map = get_boundary_vertex_to_ghost(tri)
+    # Use the map if it's populated, otherwise fall back to iteration
+    if !isempty(bv_map)
+        if haskey(bv_map, i)
+            return (true, bv_map[i])
+        else
+            I = integer_type(tri)
+            return (false, I(∅))
+        end
+    else
+        # Fallback to O(k) iteration when map is not populated
+        for g in each_ghost_vertex(tri)
+            i ∈ get_neighbours(tri, g) && return (true, g)
+        end
+        I = integer_type(tri)
+        return (false, I(∅))
     end
-    I = integer_type(tri)
-    return (false, I(∅))
 end

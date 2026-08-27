@@ -23,15 +23,10 @@ unoriented_edge_exists(tri::Triangulation, i, j) = unoriented_edge_exists(tri, c
     has_ghost_triangles(tri::Triangulation) -> Bool
 
 Returns `true` if `tri` has ghost triangles, and `false` otherwise.
+
+This is an alias for [`has_ghosts`](@ref).
 """
-function has_ghost_triangles(tri::Triangulation)
-    num_ghost_vertices(tri) == 0 && return false
-    I = integer_type(tri)
-    some_outer_boundary_edges = get_adjacent2vertex(tri, I(𝒢))
-    isempty(some_outer_boundary_edges) && return false
-    e = (first ∘ each_edge)(some_outer_boundary_edges)
-    return edge_exists(tri, terminal(e), I(𝒢))
-end
+has_ghost_triangles(tri::Triangulation) = has_ghosts(tri)
 
 """
     is_constrained(tri::Triangulation) -> Bool

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.6.6
+
+- The `Triangulation` struct now stores a `has_ghosts::Bool` field and a `boundary_vertex_to_ghost` map for efficient lookup. See [#240](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/240).
+- `has_ghost_vertices(tri)` no longer scans every vertex of the graph. The scan made each query O(n), and point location hit it on every insertion, so unconstrained `triangulate` was quadratic in the number of points (591 s for 250,000 points, now 14 s). See [#236](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/issues/236) and [#247](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/247).
+
 ## 1.6.5
 
 - Clarified the counter-clockwise requirement for the `clip_polygon` argument in `voronoi`. See [#230](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/230).

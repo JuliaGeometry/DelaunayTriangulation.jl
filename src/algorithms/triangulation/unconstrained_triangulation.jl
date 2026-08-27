@@ -83,6 +83,7 @@ function initialise_bowyer_watson!(tri::Triangulation, insertion_order, predicat
     add_triangle!(tri, v, u, g; protect_boundary = true, update_ghost_edges = false)
     add_triangle!(tri, w, v, g; protect_boundary = true, update_ghost_edges = false)
     add_triangle!(tri, u, w, g; protect_boundary = true, update_ghost_edges = false)
+    set_has_ghosts!(tri, true)
     new_representative_point!(tri, I(1))
     for i in triangle_vertices(initial_triangle)
         p = get_point(tri, i)

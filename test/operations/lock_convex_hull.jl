@@ -67,6 +67,9 @@ end
     @test tri.ghost_vertex_map == tri2.ghost_vertex_map
     @test tri.boundary_edge_map == tri2.boundary_edge_map
     @test tri.convex_hull == tri2.convex_hull
+    # Test that unlock_convex_hull! clears the boundary_vertex_to_ghost map
+    @test isempty(DT.get_boundary_vertex_to_ghost(tri))
+    @test isempty(DT.get_boundary_vertex_to_ghost(tri2))
     @test_throws ArgumentError("Cannot unlock the convex hull of a triangulation without boundary nodes.") unlock_convex_hull!(tri2)
     lock_convex_hull!(tri)
     push!(tri.convex_hull.vertices, 17)

@@ -6,7 +6,13 @@ using StaticArrays
 @testset "Adding ghost triangles" begin
     tri, label_map, index_map = simple_geometry()
 
+    @test !DT.has_ghosts(tri)
+    @test !DT.has_ghost_triangles(tri)
+
     DT.add_ghost_triangles!(tri)
+
+    @test DT.has_ghosts(tri)
+    @test DT.has_ghost_triangles(tri)
     outer_edges = [
         ("a", "b") => DT.𝒢,
         ("b", "c") => DT.𝒢,

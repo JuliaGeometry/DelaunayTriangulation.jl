@@ -332,6 +332,8 @@ function remake_triangulation_with_constraints(tri::Triangulation, segments, bou
     polygon_hierarchy = get_polygon_hierarchy(tri)
     boundary_enricher = get_boundary_enricher(tri)
     cache = get_cache(tri)
+    has_ghosts_flag = has_ghosts(tri)
+    boundary_vertex_to_ghost_map = get_boundary_vertex_to_ghost(tri)
     return new_ghost_vertex_map, new_ghost_vertex_ranges, Triangulation(
             points,
             triangles,
@@ -351,6 +353,8 @@ function remake_triangulation_with_constraints(tri::Triangulation, segments, bou
             polygon_hierarchy,
             boundary_enricher,
             cache,
+            has_ghosts_flag,
+            boundary_vertex_to_ghost_map,
         )
 end
 
@@ -385,6 +389,8 @@ function replace_ghost_vertex_information(tri::Triangulation, ghost_vertex_map, 
     representative_point_list = get_representative_point_list(tri)
     boundary_enricher = get_boundary_enricher(tri)
     cache = get_cache(tri)
+    has_ghosts_flag = has_ghosts(tri)
+    boundary_vertex_to_ghost_map = get_boundary_vertex_to_ghost(tri)
     return Triangulation(
         points,
         triangles,
@@ -404,6 +410,8 @@ function replace_ghost_vertex_information(tri::Triangulation, ghost_vertex_map, 
         polygon_hierarchy,
         boundary_enricher,
         cache,
+        has_ghosts_flag,
+        boundary_vertex_to_ghost_map,
     )
 end
 
