@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Gmsh · DelaunayTriangulation.jl</title><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://DanielVandH.github.io/DelaunayTriangulation.jl/triangulations/gmsh/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">DelaunayTriangulation.jl</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Triangulations</span><ul><li><a class="tocitem" href="../unconstrained/">Unconstrained Triangulations</a></li><li><a class="tocitem" href="../constrained/">Constrained Triangulations</a></li><li><a class="tocitem" href="../refinement/">Mesh Refinement</a></li><li><a class="tocitem" href="../lattice/">Lattice</a></li><li class="is-active"><a class="tocitem" href>Gmsh</a><ul class="internal"><li><a class="tocitem" href="#Example-I:-Contiguous-boundary"><span>Example I: Contiguous boundary</span></a></li><li><a class="tocitem" href="#Example-II:-Single-boundary-curve-with-multiple-segments"><span>Example II: Single boundary curve with multiple segments</span></a></li><li><a class="tocitem" href="#Example-III:-Multiple-boundaries"><span>Example III: Multiple boundaries</span></a></li></ul></li><li><a class="tocitem" href="../convex/">Convex Polygons</a></li></ul></li><li><span class="tocitem">Voronoi Tessellations</span><ul><li><a class="tocitem" href="../../tessellations/voronoi/">Voronoi Tessellations</a></li><li><a class="tocitem" href="../../tessellations/clipped/">Clipped Voronoi Tessellations</a></li><li><a class="tocitem" href="../../tessellations/lloyd/">Centroidal Voronoi Tessellation</a></li></ul></li><li><a class="tocitem" href="../../boundary_handling/">Boundary Handling</a></li><li><span class="tocitem">Data Structures</span><ul><li><a class="tocitem" href="../../data_structures/adjacent/">Adjacent</a></li><li><a class="tocitem" href="../../data_structures/adjacent2vertex/">Adjacent2Vertex</a></li><li><a class="tocitem" href="../../data_structures/graph/">Graph</a></li><li><a class="tocitem" href="../../data_structures/convex_hull/">Convex Hull</a></li><li><a class="tocitem" href="../../data_structures/triangulation/">Triangulation</a></li><li><a class="tocitem" href="../../data_structures/statistics/">Statistics</a></li><li><a class="tocitem" href="../../data_structures/voronoi/">Voronoi Tessellation</a></li></ul></li><li><a class="tocitem" href="../../operations/">Operations</a></li><li><span class="tocitem">Other Features</span><ul><li><a class="tocitem" href="../../other_features/point_location/">Point Location</a></li><li><a class="tocitem" href="../../other_features/pole_of_inaccessibility/">Pole of Inaccessibility and Polygons</a></li><li><a class="tocitem" href="../../other_features/convex_hull/">Convex Hull</a></li></ul></li><li><span class="tocitem">Primitive Interfaces</span><ul><li><a class="tocitem" href="../../interface/interface/">General and Defaults</a></li><li><a class="tocitem" href="../../interface/triangles/">Triangles</a></li><li><a class="tocitem" href="../../interface/edges/">Edges</a></li><li><a class="tocitem" href="../../interface/points/">Points</a></li><li><a class="tocitem" href="../../interface/boundary_nodes/">Boundary Nodes</a></li><li><a class="tocitem" href="../../interface/example/">Example</a></li><li><a class="tocitem" href="../../interface/counting/">Application: Counting Function Calls</a></li></ul></li><li><a class="tocitem" href="../../predicates/">Predicates</a></li><li><a class="tocitem" href="../../utils/">Other Utilities</a></li><li><span class="tocitem">Triangulation Algorithms</span><ul><li><a class="tocitem" href="../../tri_algs/bowyer/">Bowyer-Watson Algorithm</a></li><li><a class="tocitem" href="../../tri_algs/convex/">Chew&#39;s Algorithm for Triangulating Convex Polygons</a></li><li><a class="tocitem" href="../../tri_algs/constrained/">Constrained Triangulations</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Triangulations</a></li><li class="is-active"><a href>Gmsh</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Gmsh</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/DanielVandH/DelaunayTriangulation.jl/blob/main/docs/src/triangulations/gmsh.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Gmsh"><a class="docs-heading-anchor" href="#Gmsh">Gmsh</a><a id="Gmsh-1"></a><a class="docs-heading-anchor-permalink" href="#Gmsh" title="Permalink"></a></h1><p>We provide Gmsh support, making it possible to represent more complicated meshes. (This is less relevant now that we have constrained triangulations and mesh refinement without needing Gmsh.) The discussion that follows assume you have installed Gmsh, and defined a corresponding <code>GMSH_PATH</code>. I have used the default,</p><pre><code class="language-julia-repl hljs">julia&gt; GMSH_PATH = &quot;./gmsh-4.11.1-Windows64/gmsh.exe&quot;</code></pre><p>The methods for generating meshes with Gmsh are shown below.</p><article class="docstring"><header><a class="docstring-binding" id="DelaunayTriangulation.generate_mesh" href="#DelaunayTriangulation.generate_mesh"><code>DelaunayTriangulation.generate_mesh</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia hljs">generate_mesh(x, y, ref;
+    mesh_algorithm = 6, 
+    gmsh_path = &quot;./gmsh-4.11.1-Windows64/gmsh.exe&quot;,
+    verbosity = 0, 
+    convert_result = true, 
+    add_ghost_triangles = false, 
+    check_args = true)</code></pre><p>Using Gmsh, generates a mesh of the domain defined by <code>(x, y)</code>.</p><p><strong>Arguments</strong></p><ul><li><p><code>x, y</code>: These are the coordinates defining the curves that define the boundaries of the domain. All curves are to be positively oriented, meaning the outermost boundary should be counter-clockwise while the interior boundaries should be clockwise. The accepted forms of <code>x, y</code> are outlined in in the boundary handling section of the docs.</p></li><li><p><code>ref</code>: The refinement parameter – smaller <code>ref</code> means more elements. </p></li></ul><p><strong>Keyword Arguments</strong></p><ul><li><code>mesh_algorithm = 6</code>: The meshing algorithm to use. See the Gmsh documentation for more information. The default <code>6</code> means Frontal-Delaunay. </li><li><code>gmsh_path = &quot;./gmsh-4.11.1-Windows64/gmsh.exe&quot;</code>: The path to the Gmsh executable.</li><li><code>verbosity = 0</code>: The verbosity of the Gmsh output.</li><li><code>convert_result = true</code>: Whether to convert the Gmsh output to a <a href="../../data_structures/triangulation/#DelaunayTriangulation.Triangulation"><code>Triangulation</code></a>.</li><li><code>add_ghost_triangles = false</code>: Whether to add ghost triangles to the triangulation.</li><li><code>check_args = true</code>: Whether to check the validity of the arguments.</li></ul><p><strong>Outputs</strong></p><p>If <code>convert_result</code>, then the final result is a <a href="../../data_structures/triangulation/#DelaunayTriangulation.Triangulation"><code>Triangulation</code></a> type for the mesh. Otherwise,  the following values are returned: </p><ul><li><code>elements</code>: The triangular elements of the mesh. </li><li><code>nodes</code>: The nodes in the mesh. </li><li><code>boundary_nodes</code>: The bonudary nodes in the mesh.  All boundaries are positively oriented relative to the interior, meaning the outermost boundary is counter-clockwise while the interior boundaries are clockwise, and match the form of <code>(x, y)</code>. </li></ul><p><strong>Extended help</strong></p><p>The function proceeds in four steps:</p><ol><li>Mesh generation</li></ol><p>Here, we write a file &quot;meshgeometry.geo&quot; in the working directory. This file takes the form</p><pre><code class="nohighlight hljs">r = ref;
+Mesh.Algorithm = mesh_algorithm; 
+Mesh.Format = 1;
+General.Verbosity = 0;
+Point(&lt;point index&gt;) = {&lt;x&gt;, &lt;y&gt;, 0, r}; # For each point
+Line(&lt;line index&gt;) = {&lt;initial point&gt;, &lt;final point&gt;}; # For each line 
+Curve Loop(&lt;boundary index&gt;) = {&lt;line 1&gt;, &lt;line 2&gt;, ...}; # For each boundary 
+Plane Surface(1) = {&lt;curve 1&gt;, &lt;curve 2&gt;, ...}; # &lt;curve 1&gt; = 1 and is the outermost boundary, while &lt;curve i&gt; = i, i &gt; 1, are boundaries of interior holes 
+Physical Curve(&lt;last line index + i&gt;) = {&lt;line 1&gt;, &lt;line 2&gt;, ...}; # For i ranging over the number of segments, and the lines represent that segment 
+Physical Surface(1) = {1};</code></pre><p>Most importantly, every edge input into the function <code>generate_mesh</code> will be included in the mesh. An  older version of this function previously used cubic splines for defining boundary curves, but this  has the consequence that (1) not every edge put into the function is included, and (2) the boundary  is not exactly represented. </p><p>The function that handles this generation is <code>write_gmsh</code>.</p><ol><li>Mesh writing </li></ol><p>The &quot;meshgeometry.geo&quot; file is then used to mesh the domain, running the terminal command </p><pre><code class="nohighlight hljs">gmsh_path &quot;meshgeometry.geo&quot; -2 -format msh2</code></pre><p>This creates a file &quot;meshgeometry.msh&quot; in the same working directory. </p><p>The function that handles this writing is <code>run_gmsh</code>.</p><ol><li>Mesh reading </li></ol><p>Once &quot;meshgeometry.msh&quot; is created, we need to read it. The format used (MeshFormat) is  2.2, but note that as of writing (13/01/2013), the most modern format is 4.1.</p><p>The &quot;meshgeometry.msh&quot; file is split into groups:</p><p>3a. MeshFormat </p><p>This just reads off the format of the file used. This part of the file  is read using <code>read_mesh_format!</code>.</p><p>3b. Nodes </p><p>This lists the node indices and all the coordinates of the nodes, with the  first line giving the number of nodes. A single line in this section,  after the first, takes the form </p><pre><code class="nohighlight hljs">&lt;node index&gt; &lt;x&gt; &lt;y&gt; 0</code></pre><p>and we read this using <code>read_node_line</code>. This entire part of the file  is read using <code>read_nodes!</code>.</p><p>3c. Elements </p><p>The first line in this part of the file is the number of elements, though  here elements refer to both the lines and the triangles. The lines (edges)  are listed first, with each line taking the form </p><pre><code class="nohighlight hljs">&lt;line index&gt; 1 2 &lt;boundary index&gt; &lt;&gt; &lt;left node&gt; &lt;right node&gt;</code></pre><p>and will be in counter-clockwise order. After the lines are listed, all the triangles follow, with each line in this part taking the form</p><pre><code class="nohighlight hljs">&lt;triangle index&gt; 2 2 1 1 &lt;node 1&gt; &lt;node 2&gt; &lt;node 3&gt;</code></pre><p>with each triangle positively oriented. These lines are read using  <code>read_element_line</code>. The entire part of the file is read using  <code>read_elements!</code>.</p><ol><li>Conversion to <a href="../../data_structures/triangulation/#DelaunayTriangulation.Triangulation"><code>Triangulation</code></a></li></ol><p>Once the file &quot;meshgeometry.geo&quot; has been read, we have a list of  triangular elements, nodes, and boundary nodes. These need to all be  converted into a <a href="../../data_structures/triangulation/#DelaunayTriangulation.Triangulation"><code>Triangulation</code></a> type, and a constructor of  <a href="../../data_structures/triangulation/#DelaunayTriangulation.Triangulation"><code>Triangulation</code></a> is used to accomplish this.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/DanielVandH/DelaunayTriangulation.jl/blob/32e1597ddd029da688883b139e22134d4d4fbde8/src/triangulation/gmsh.jl#L1-L115">source</a></section><section><div><pre><code class="nohighlight hljs">generate_mesh(a, b, c, d, ref; 
+    mesh_algorithm=6,
+    gmsh_path=&quot;./gmsh-4.11.1-Windows64/gmsh.exe&quot;,
+    verbosity=0,
+    single_boundary=true,
+    convert_result=true,
+    add_ghost_triangles=false)</code></pre><p>Generates a mesh of a rectangle <code>[a, b] × [c, d]</code>. Use <code>single_boundary=true</code> if  each side of the rectangle should be treated the same, and <code>single_boundary=false</code> if  you want the boundary nodes to be segmented each side of the rectangle.</p><p>See the main function <a href="#DelaunayTriangulation.generate_mesh"><code>generate_mesh</code></a> for a description of the other  arguments.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/DanielVandH/DelaunayTriangulation.jl/blob/32e1597ddd029da688883b139e22134d4d4fbde8/src/triangulation/gmsh.jl#L172-L187">source</a></section></article><p>Let&#39;s give some examples. </p><h2 id="Example-I:-Contiguous-boundary"><a class="docs-heading-anchor" href="#Example-I:-Contiguous-boundary">Example I: Contiguous boundary</a><a id="Example-I:-Contiguous-boundary-1"></a><a class="docs-heading-anchor-permalink" href="#Example-I:-Contiguous-boundary" title="Permalink"></a></h2><p>Let us mesh a domain with a single non-segmented boundary curve. </p><pre><code class="language-julia hljs">using DelaunayTriangulation, CairoMakie
+a = 4 / 5
+t = LinRange(0, 2π, 100)
+x = @. a * (2cos(t) + cos(2t))
+y = @. a * (2sin(t) - sin(2t))
+tri = generate_mesh(x, y, 0.1)
+tri2 = generate_mesh(x, y, 1.0)
+fig = Figure()
+ax = Axis(fig[1, 1], xlabel=L&quot;x&quot;, ylabel=L&quot;y&quot;, width=300, height=300,
+    title=L&quot;(a):$ $ Dense mesh&quot;, titlealign=:left)
+triplot!(ax, tri, show_convex_hull=true, show_constrained_edges=true)
+ax = Axis(fig[1, 2], xlabel=L&quot;x&quot;, ylabel=L&quot;y&quot;, width=300, height=300,
+    title=L&quot;(b):$ $  Coarse mesh&quot;, titlealign=:left)
+triplot!(ax, tri2, show_convex_hull=true, show_constrained_edges=true)
+resize_to_layout!(fig)</code></pre><figure>
+    <img src='../figs/gmsh_example_1.png', alt='Triangulation'><br>
+</figure><p>In the figure, the red curve shows the convex hull. We note that we now have information in <code>tri.boundary_nodes</code>:</p><pre><code class="language-julia-repl hljs">julia&gt; get_boundary_nodes(tri)
+178-element Vector{Int}:
+  1
+  2
+  3
+  4
+  ⋮
+ 97
+ 98
+ 99
+  1</code></pre><p>Similarly, <code>tri.boundary_map</code> is now populated:</p><pre><code class="language-julia-repl hljs">julia&gt; get_boundary_map(tri)
+OrderedDict{Int, Vector{Int}} with 1 entry:
+  -1 =&gt; [1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1]</code></pre><p>We now also have <code>tri.boundary_edge_map</code>:</p><pre><code class="language-julia-repl hljs">julia&gt; tri.boundary_edge_map
+Dict{Tuple{Int, Int}, Tuple{Vector{Int}, Int}} with 177 entries:
+  (116, 20)  =&gt; ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 36)
+  (78, 158)  =&gt; ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 136)
+  (11, 105)  =&gt; ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 16)
+  (106, 13)  =&gt; ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 19)
+  (103, 10)  =&gt; ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 13)
+  (145, 56)  =&gt; ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 101)
+  (169, 87)  =&gt; ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 156)
+  (110, 111) =&gt; ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 27)
+  (128, 42)  =&gt; ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 70)
+  (43, 130)  =&gt; ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 73)
+  (30, 31)   =&gt; ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 56)
+  (156, 77)  =&gt; ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 133)
+  (3, 4)     =&gt; ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 3)
+  (112, 113) =&gt; ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 30)
+  (41, 128)  =&gt; ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 69)
+  (153, 74)  =&gt; ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 127)
+  (133, 47)  =&gt; ([1, 2, 3, 4, 5, 6, 100, 7, 101, 8  …  93, 176, 94, 177, 95, 96, 97, 98, 99, 1], 80)
+  ⋮          =&gt; ⋮</code></pre><p>In this case, each output of <code>(i, j)</code> is the <code>Tuple</code> <code>(get_boundary_nodes(tri), k)</code>. For example,</p><pre><code class="language-julia-repl hljs">julia&gt; u, v = 133, 47;
+
+julia&gt; pos = get_boundary_edge_map(tri, u, v);
+
+julia&gt; segment_nodes = get_boundary_nodes(tri, pos[1]);
+
+julia&gt; get_boundary_nodes(segment_nodes, pos[2]) == u # edges start at the left
+true
+
+julia&gt; get_boundary_nodes(segment_nodes, pos[2]+1) == v
+true</code></pre><h2 id="Example-II:-Single-boundary-curve-with-multiple-segments"><a class="docs-heading-anchor" href="#Example-II:-Single-boundary-curve-with-multiple-segments">Example II: Single boundary curve with multiple segments</a><a id="Example-II:-Single-boundary-curve-with-multiple-segments-1"></a><a class="docs-heading-anchor-permalink" href="#Example-II:-Single-boundary-curve-with-multiple-segments" title="Permalink"></a></h2><p>Let us now give an example where we still have just a single boundary curve, but we split it into multiple segments. Importantly, each segment must be counter-clockwise and join with the previous segment.</p><pre><code class="language-julia hljs">using DelaunayTriangulation, CairoMakie
+# The first segment 
+t = LinRange(0, 1 / 4, 25)
+x1 = cos.(2π * t)
+y1 = sin.(2π * t)
+# The second segment 
+t = LinRange(0, -3, 25)
+x2 = collect(t)
+y2 = repeat([1.0], length(t))
+# The third segment 
+t = LinRange(1, 0, 25)
+x3 = -3.0 .+ (1 .- t) .* sin.(t)
+y3 = collect(t)
+# The fourth segment 
+t = LinRange(0, 1, 25)
+x4 = collect(-3.0(1 .- t))
+y4 = collect(0.98t)
+# The fifth segment 
+x5 = [0.073914, 0.0797, 0.1522, 0.1522, 0.2, 0.28128, 0.3659, 0.4127, 0.3922, 0.4068, 0.497, 0.631, 0.728, 0.804, 0.888, 1.0]
+y5 = [0.8815, 0.8056, 0.80268, 0.73258, 0.6, 0.598, 0.5777, 0.525, 0.4346, 0.3645, 0.3032, 0.2886, 0.2623, 0.1367, 0.08127, 0.0]
+# Now combine the vectors 
+x = [x1, x2, x3, x4, x5]
+y = [y1, y2, y3, y4, y5]
+# Mesh 
+tri = generate_mesh(x, y, 0.05)
+fig = Figure()
+ax = Axis(fig[1, 1], xlabel=L&quot;x&quot;, ylabel=L&quot;y&quot;, width=600, height=300)
+triplot!(ax, tri, show_convex_hull=true)
+colors = [:red, :blue, :orange, :purple, :darkgreen]
+bn_map = get_boundary_map(tri)
+for (i, segment_index) in enumerate(values(bn_map))
+    bn_nodes = get_boundary_nodes(tri, segment_index)
+    lines!(ax, get_points(tri)[:, bn_nodes], color=colors[i], linewidth=4)
+end
+resize_to_layout!(fig)</code></pre><figure>
+    <img src='../figs/gmsh_example_2.png', alt='Triangulation'><br>
+</figure><p>An important feature to note for this case is that the index now used to refer to boundaries is no longer constant. In particular, the <code>n</code>th segment will map to <code>-n</code>, as we can verify using:</p><pre><code class="language-julia-repl hljs">julia&gt; get_boundary_map(tri)
+OrderedDict{Int, Int} with 5 entries:
+  -1 =&gt; 1
+  -2 =&gt; 2
+  -3 =&gt; 3
+  -4 =&gt; 4
+  -5 =&gt; 5</code></pre><p>This map makes it simple to iterate over all parts of a boundary, as we show in the above code when plotting. The <code>tri.boundary_edge_map</code> in this case is:</p><pre><code class="language-julia-repl hljs">julia&gt; get_boundary_edge_map(tri)
+Dict{Tuple{Int, Int}, Tuple{Int, Int}} with 262 entries:
+  (118, 8)   =&gt; (1, 14)
+  (55, 56)   =&gt; (3, 10)
+  (34, 154)  =&gt; (2, 28)
+  (213, 214) =&gt; (4, 35)
+  (223, 224) =&gt; (4, 50)
+  (143, 29)  =&gt; (2, 12)
+  (24, 135)  =&gt; (1, 47)
+  (178, 179) =&gt; (2, 65)
+  (132, 22)  =&gt; (1, 42)
+  (46, 178)  =&gt; (2, 64)
+  (169, 42)  =&gt; (2, 51)
+  (154, 155) =&gt; (2, 29)
+  (115, 5)   =&gt; (1, 8)
+  (43, 172)  =&gt; (2, 55)
+  (261, 262) =&gt; (5, 38)
+  (146, 147) =&gt; (2, 17)
+  (49, 184)  =&gt; (3, 1)
+  ⋮          =&gt; ⋮</code></pre><p>For example, </p><pre><code class="language-julia-repl hljs">julia&gt; let pos = get_boundary_edge_map(tri, 115, 5)
+       segment_nodes = get_boundary_nodes(tri, pos[1])
+       u′ = get_boundary_nodes(segment_nodes, pos[2])
+       v′ = get_boundary_nodes(segment_nodes, pos[2]+1)
+       u′ == 115 &amp;&amp; v′ == 5
+       end
+true</code></pre><h2 id="Example-III:-Multiple-boundaries"><a class="docs-heading-anchor" href="#Example-III:-Multiple-boundaries">Example III: Multiple boundaries</a><a id="Example-III:-Multiple-boundaries-1"></a><a class="docs-heading-anchor-permalink" href="#Example-III:-Multiple-boundaries" title="Permalink"></a></h2><p>Now let us give a more complicated example, meshing a multiply-connected domain. In this case, we provide the outer-most boundary in a counter-clockwise order, while all the inner boundaries are in a clockwise order.</p><pre><code class="language-julia hljs">using DelaunayTriangulation, CairoMakie
+x1 = [collect(LinRange(0, 2, 4)),
+    collect(LinRange(2, 2, 4)),
+    collect(LinRange(2, 0, 4)),
+    collect(LinRange(0, 0, 4))]
+y1 = [collect(LinRange(0, 0, 4)),
+    collect(LinRange(0, 6, 4)),
+    collect(LinRange(6, 6, 4)),
+    collect(LinRange(6, 0, 4))]
+r = 0.5
+h = k = 0.6
+θ = LinRange(2π, 0, 50)
+x2 = [h .+ r .* cos.(θ)]
+y2 = [k .+ r .* sin.(θ)]
+r = 0.2
+h = 1.5
+k = 0.5
+x3 = [h .+ r .* cos.(θ)]
+y3 = [k .+ r .* sin.(θ)]
+x4 = reverse(reverse.([collect(LinRange(1, 1.5, 4)),
+    collect(LinRange(1.5, 1.5, 4)),
+    collect(LinRange(1.5, 1, 4)),
+    collect(LinRange(1, 1, 4))]))
+y4 = reverse(reverse.([collect(LinRange(2, 2, 4)),
+    collect(LinRange(2, 5, 4)),
+    collect(LinRange(5, 5, 4)),
+    collect(LinRange(5, 2, 4))]))
+x5 = [reverse([0.2, 0.5, 0.75, 0.75, 0.2, 0.2])]
+y5 = [reverse([2.0, 2.0, 3.0, 4.0, 5.0, 2.0])]
+x = [x1, x2, x3, x4, x5]
+y = [y1, y2, y3, y4, y5]
+tri = generate_mesh(x, y, 0.2)
+fig, ax, sc = triplot(tri; show_convex_hull=true, show_ghost_edges=true, show_constrained_edges=true, convex_hull_linestyle=:solid, convex_hull_linewidth=4)</code></pre><figure>
+    <img src='../figs/gmsh_example_3.png', alt='Triangulation'><br>
+</figure><p>The blue edges show the interpretation of the ghost edges (you can delete via <code>delete_ghost_triangles!</code> if you want). For the outer boundary, these edges are pointing away from the interior, collinear with a point in the center, as we can obtain via:</p><pre><code class="language-julia-repl hljs">julia&gt; DelaunayTriangulation.get_representative_point_coordinates(tri, 1)</code></pre><p>or, alternatively,</p><pre><code class="language-julia-repl hljs">julia&gt; DelaunayTriangulation.get_representative_point_list(tri)
+Dict{Int, DelaunayTriangulation.RepresentativeCoordinates{Int, Float64}} with 5 entries:
+  5 =&gt; RepresentativeCoordinates{Int, Float64}(0.475, 3.5, 0)
+  4 =&gt; RepresentativeCoordinates{Int, Float64}(1.25, 3.5, 0)
+  2 =&gt; RepresentativeCoordinates{Int, Float64}(0.6, 0.6, 0)
+  3 =&gt; RepresentativeCoordinates{Int, Float64}(1.5, 0.5, 0)
+  1 =&gt; RepresentativeCoordinates{Int, Float64}(1.5, 1.5, 0)</code></pre><p>The keys are the indices for the boundary curve. These coordinates are visual centers, obtained via the pole of inaccessibility function; see the sidebar. For the inner boundaries, the ghost edges are no longer infinite and so they connect directly with these representative coordinates.</p><p>To access more of the boundary information, we could first consider <code>boundary_nodes</code>:</p><pre><code class="language-julia-repl hljs">julia&gt; get_boundary_nodes(tri)
+5-element Vector{Vector{Vector{Int}}}:
+ [[1, 128, 129, 130, 2, 131, 132, 133, 3, 134, 135, 136, 4], [4, 137, 138, 139, 140, 141, 142, 143, 144, 145  …  155, 156, 157, 158, 159, 160, 161, 162, 163, 7], [7, 164, 165, 166, 8, 167, 168, 169, 9, 170, 171, 172, 10], [10, 173, 174, 175, 176, 177, 178, 179, 180, 181  …  191, 192, 193, 194, 195, 196, 197, 198, 199, 1]]
+ [[13, 14, 15, 16, 17, 18, 19, 20, 21, 22  …  53, 54, 55, 56, 57, 58, 59, 60, 61, 13]]
+ [[62, 63, 64, 65, 66, 67, 68, 69, 70, 71  …  102, 103, 104, 105, 106, 107, 108, 109, 110, 62]]
+ [[111, 200, 201, 202, 203, 112, 204, 205, 206, 207, 113, 208, 209, 210, 211, 114], [114, 115, 116, 117], [117, 212, 213, 214, 215, 118, 216, 217, 218, 219, 119, 220, 221, 222, 223, 120], [120, 121, 122, 111]]  
+ [[123, 224, 225, 226, 227, 228, 229, 230, 231, 232  …  246, 126, 247, 248, 249, 250, 251, 127, 252, 123]]</code></pre><p>This is simply a vector of curves, with each curve storing its segments. This vector itself does not tell us what boundary index corresponds to what segment of what curve, and this could be obtained from the boundary map:</p><pre><code class="language-julia-repl hljs">julia&gt; get_boundary_map(tri)
+OrderedDict{Int, Tuple{Int, Int}} with 11 entries:
+  -1  =&gt; (1, 1)
+  -2  =&gt; (1, 2)
+  -3  =&gt; (1, 3)
+  -4  =&gt; (1, 4)
+  -5  =&gt; (2, 1)
+  -6  =&gt; (3, 1)
+  -7  =&gt; (4, 1)
+  -8  =&gt; (4, 2)
+  -9  =&gt; (4, 3)
+  -10 =&gt; (4, 4)
+  -11 =&gt; (5, 1)</code></pre><p>So, for example, the boundary index <code>-8</code> comes from the second segment of the fourth curve. As before, this boundary map makes it simple to iterate over each segment as follows:</p><pre><code class="language-julia hljs">bn_map = get_boundary_map(tri)
+for segment_index in values(bn_map)
+    bn_nodes = get_boundary_nodes(tri, segment_index)
+    nedges = num_boundary_edges(bn_nodes) # Note that nedges = length(bn_nodes) - 1
+    for edge_idx in 1:nedges 
+        node = get_boundary_node(bn_nodes, edge_idx)
+        ...
+    end
+end</code></pre><p>The form above is generic, and ignores the last part of each segment (since it is duplicated for the next segment). Of course, a version like</p><pre><code class="language-julia hljs">bn_map = get_boundary_map(tri)
+for segment_index in values(bn_map)
+    bn_nodes = get_boundary_nodes(tri, segment_index)
+    for i in bn_nodes
+        node = get_boundary_node(bn_nodes, i)
+        ...
+    end
+end</code></pre><p>(which includes the last part of each segment) could be used. It is up to you based on your interface how you prefer to write this. Notice also that in the previous example we used a similar style, using <code>get_boundary_nodes(tri, segment_index)</code> also. The function <code>get_boundary_nodes</code> can be used with either single integers or <code>Tuple</code>s, making it simple to iterate with this exact pattern whether we have a contiguous boundary curve, a segmented boundary curve, or multiple boundaries. </p><p>Another feature to note is <code>tri.boundary_index_ranges</code>, which will tell us what other boundary indices belong to a curve given a known boundary index for that curve. This can be useful if we want to rotate around a boundary curve based on a given boundary index (see e.g. how it is used in the <code>get_left_boundary_node</code> and <code>get_right_boundary_node</code> functions). This field is a major part of making point location work in these inner boundaries, making <code>get_adjacent</code> work properly in this case (see e.g. the code in <code>_safe_get_adjacent</code>).</p><pre><code class="language-julia-repl hljs">julia&gt; get_boundary_index_ranges(tri)
+OrderedDict{Int, UnitRange{Int}} with 11 entries:
+  -1  =&gt; -4:-1
+  -2  =&gt; -4:-1
+  -3  =&gt; -4:-1
+  -4  =&gt; -4:-1
+  -5  =&gt; -5:-5
+  -6  =&gt; -6:-6
+  -7  =&gt; -10:-7
+  -8  =&gt; -10:-7
+  -9  =&gt; -10:-7
+  -10 =&gt; -10:-7
+  -11 =&gt; -11:-11</code></pre><p>So, for example, we see tha the boundary index <code>-3</code> belongs to a curve that also has boundary indices <code>-1</code>, <code>-2</code>, and <code>-4</code>. If we wanted to go from a boundary index to the index for the curve, this is what the boundary map is also for:</p><pre><code class="language-julia-repl hljs">julia&gt; DelaunayTriangulation.get_curve_index(tri, -3)
+1</code></pre><p>The last feature to show is the new <code>tri.boundary_edge_map</code> for this case, given by</p><pre><code class="language-julia-repl hljs">julia&gt; get_boundary_edge_map(tri)
+Dict{Tuple{Int, Int}, Tuple{Tuple{Int, Int}, Int}} with 252 entries:
+  (55, 56)   =&gt; ((2, 1), 43)
+  (130, 2)   =&gt; ((1, 1), 4)
+  (92, 93)   =&gt; ((3, 1), 31)
+  (213, 214) =&gt; ((4, 3), 3)
+  (14, 15)   =&gt; ((2, 1), 2)
+  (172, 10)  =&gt; ((1, 3), 12)
+  (203, 112) =&gt; ((4, 1), 5)
+  (178, 179) =&gt; ((1, 4), 7)
+  (121, 122) =&gt; ((4, 4), 2)
+  (151, 152) =&gt; ((1, 2), 17)
+  (26, 27)   =&gt; ((2, 1), 14)
+  (171, 172) =&gt; ((1, 3), 11)
+  (88, 89)   =&gt; ((3, 1), 27)
+  (132, 133) =&gt; ((1, 1), 7)
+  (133, 3)   =&gt; ((1, 1), 8)
+  (146, 147) =&gt; ((1, 2), 12)
+  (46, 47)   =&gt; ((2, 1), 34)
+  ⋮          =&gt; ⋮</code></pre><p>As before, <code>(u, v) = (get_boundary_nodes(segment_nodes, pos[2]), get_boundary_nodes(segment_nodes, pos[2]+1)</code>, where <code>segment_nodes = get_boundary_nodes(tri, pos[1])</code> and <code>pos = get_boundary_edge_map(tri, u, v)</code>. This pattern is true for any form of boundary nodes, in fact.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lattice/">« Lattice</a><a class="docs-footer-nextpage" href="../convex/">Convex Polygons »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Thursday 7 September 2023 12:58">Thursday 7 September 2023</span>. Using Julia version 1.9.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

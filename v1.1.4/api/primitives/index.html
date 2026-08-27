@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Primitive Interfaces · DelaunayTriangulation.jl</title><meta name="title" content="Primitive Interfaces · DelaunayTriangulation.jl"/><meta property="og:title" content="Primitive Interfaces · DelaunayTriangulation.jl"/><meta property="twitter:title" content="Primitive Interfaces · DelaunayTriangulation.jl"/><meta name="description" content="Documentation for DelaunayTriangulation.jl."/><meta property="og:description" content="Documentation for DelaunayTriangulation.jl."/><meta property="twitter:description" content="Documentation for DelaunayTriangulation.jl."/><meta property="og:url" content="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/api/primitives/"/><meta property="twitter:url" content="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/api/primitives/"/><link rel="canonical" href="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/api/primitives/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">DelaunayTriangulation.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><input class="collapse-toggle" id="menuitem-2" type="checkbox"/><label class="tocitem" for="menuitem-2"><span class="docs-label">Tutorials</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../tutorials/overview/">Overview</a></li><li><a class="tocitem" href="../../tutorials/unconstrained/">Unconstrained Triangulations</a></li><li><input class="collapse-toggle" id="menuitem-2-3" type="checkbox"/><label class="tocitem" for="menuitem-2-3"><span class="docs-label">Constrained Triangulations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../tutorials/constrained_edges/">Constrained Edges</a></li><li><a class="tocitem" href="../../tutorials/constrained_outer_boundary/">Outer Boundary</a></li><li><a class="tocitem" href="../../tutorials/constrained_outer_boundary_segmented/">Segmented Outer Boundary</a></li><li><a class="tocitem" href="../../tutorials/constrained_multiply_connected/">Domain with Interior Holes</a></li><li><a class="tocitem" href="../../tutorials/constrained_interior_within_interiors/">Domain with Interior Holes inside Interior Holes</a></li><li><a class="tocitem" href="../../tutorials/constrained_multipolygon/">Disjoint Domains</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-2-4" type="checkbox"/><label class="tocitem" for="menuitem-2-4"><span class="docs-label">Triangulation Operations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../tutorials/operations_vertex_insertion_deletion/">Vertex Insertion and Deletion</a></li><li><a class="tocitem" href="../../tutorials/operations_segment_insertion/">Edge Insertion</a></li><li><a class="tocitem" href="../../tutorials/operations_ghost_triangles/">Adding or Clearing Ghost Triangles</a></li><li><a class="tocitem" href="../../tutorials/operations_flip_edge/">Edge Flipping</a></li><li><a class="tocitem" href="../../tutorials/operations_legalise_edge/">Legalising an Edge</a></li><li><a class="tocitem" href="../../tutorials/operations_split_edge/">Edge Splitting</a></li><li><a class="tocitem" href="../../tutorials/operations_split_triangle/">Triangle Splitting</a></li><li><a class="tocitem" href="../../tutorials/operations_convex_hull_locking/">Locking and Unlocking the Convex Hull</a></li></ul></li><li><a class="tocitem" href="../../tutorials/refinement/">Mesh Refinement</a></li><li><a class="tocitem" href="../../tutorials/lattice/">Triangulating Rectangular Regions</a></li><li><a class="tocitem" href="../../tutorials/convex/">Triangulating Convex Polygons</a></li><li><a class="tocitem" href="../../tutorials/curve_bounded/">Triangulating Curve-Bounded Domains</a></li><li><a class="tocitem" href="../../tutorials/voronoi/">Voronoi Tessellations</a></li><li><input class="collapse-toggle" id="menuitem-2-10" type="checkbox"/><label class="tocitem" for="menuitem-2-10"><span class="docs-label">Clipped Voronoi Tessellations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../tutorials/clipped/">Clipping to the Convex Hull</a></li><li><a class="tocitem" href="../../tutorials/clipped_rectangle/">Clipping to a Rectangle</a></li></ul></li><li><a class="tocitem" href="../../tutorials/centroidal/">Centroidal Voronoi Tessellations</a></li><li><a class="tocitem" href="../../tutorials/point_location/">Point Location</a></li><li><a class="tocitem" href="../../tutorials/nearest/">Nearest Neighbour Queries</a></li><li><a class="tocitem" href="../../tutorials/convex_hull/">Convex Hulls</a></li><li><a class="tocitem" href="../../tutorials/pole_of_inaccessibility/">Pole of Inaccessibility</a></li><li><a class="tocitem" href="../../tutorials/point_in_polygon/">Point-in-Polygon Testing</a></li><li><a class="tocitem" href="../../tutorials/custom_primitive/">Using Custom Structs for Primitives and Boundaries</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3" type="checkbox"/><label class="tocitem" for="menuitem-3"><span class="docs-label">Manual</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/overview/">Overview</a></li><li><a class="tocitem" href="../../manual/primitives/">Representing Primitives</a></li><li><a class="tocitem" href="../../manual/boundaries/">Representing Boundaries</a></li><li><a class="tocitem" href="../../manual/ghost_triangles/">Ghost (Negative) Vertices</a></li><li><a class="tocitem" href="../../manual/curve_bounded/">Defining Curve-Bounded Domains</a></li><li><a class="tocitem" href="../../manual/predicates/">Geometrical Predicates</a></li><li><a class="tocitem" href="../../manual/triangulation_output/">Triangulation Output</a></li><li><a class="tocitem" href="../../manual/voronoi_output/">Voronoi Tessellation Output</a></li><li><a class="tocitem" href="../../manual/predicate_kernels/">Predicate Kernels</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox" checked/><label class="tocitem" for="menuitem-4"><span class="docs-label">API Reference</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../overview/">Section Overview</a></li><li><a class="tocitem" href="../data_structures/">Data Structures</a></li><li><a class="tocitem" href="../triangulation/">Triangulations</a></li><li><a class="tocitem" href="../operations/">Triangulation Operations</a></li><li><a class="tocitem" href="../voronoi/">Voronoi Tessellations</a></li><li><a class="tocitem" href="../convex_hull/">Convex Hull</a></li><li><a class="tocitem" href="../curves/">Curves</a></li><li><a class="tocitem" href="../iterators/">Iterators</a></li><li><a class="tocitem" href="../point_location/">Point Location</a></li><li><a class="tocitem" href="../predicates/">Predicates</a></li><li><a class="tocitem" href="../statistics/">Triangulation Statistics</a></li><li class="is-active"><a class="tocitem" href>Primitive Interfaces</a><ul class="internal"><li><a class="tocitem" href="#Points"><span>Points</span></a></li><li><a class="tocitem" href="#Edges"><span>Edges</span></a></li><li><a class="tocitem" href="#Triangles"><span>Triangles</span></a></li><li><a class="tocitem" href="#Boundary-Nodes"><span>Boundary Nodes</span></a></li></ul></li><li><a class="tocitem" href="../other/">Other</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">Extended Reference</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../extended/overview/">Overview</a></li><li><a class="tocitem" href="../../extended/data_structures/">Data Structures</a></li><li><a class="tocitem" href="../../extended/algorithms/">Algorithm Internals</a></li><li><a class="tocitem" href="../../extended/utils/">Utility Functions</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">Mathematical Details</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../math/overview/">Overview</a></li><li><a class="tocitem" href="../../math/delaunay/">Delaunay Triangulations</a></li><li><a class="tocitem" href="../../math/constrained/">Constrained Delaunay Triangulations</a></li><li><a class="tocitem" href="../../math/convex/">Triangulating Convex Polygons</a></li><li><a class="tocitem" href="../../math/refinement/">Mesh Refinement</a></li><li><a class="tocitem" href="../../math/curves/">Curves</a></li><li><a class="tocitem" href="../../math/curve_bounded/">Triangulating Curve-Bounded Domains</a></li><li><a class="tocitem" href="../../math/voronoi/">Voronoi Tessellations</a></li><li><a class="tocitem" href="../../math/clipped/">Clipped Voronoi Tessellations</a></li><li><a class="tocitem" href="../../math/centroidal/">Centroidal Voronoi Tessellations</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox"/><label class="tocitem" for="menuitem-7"><span class="docs-label">Example Applications</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../applications/overview/">Overview</a></li><li><a class="tocitem" href="../../applications/interpolation/">Interpolation</a></li><li><a class="tocitem" href="../../applications/cell_simulations/">Cellular Biology</a></li><li><a class="tocitem" href="../../applications/pde_discretisation/">Solving PDEs</a></li></ul></li><li><a class="tocitem" href="../../terminology/">Terminology</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">API Reference</a></li><li class="is-active"><a href>Primitive Interfaces</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Primitive Interfaces</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/main/docs/src/api/primitives.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Primitive-Interfaces"><a class="docs-heading-anchor" href="#Primitive-Interfaces">Primitive Interfaces</a><a id="Primitive-Interfaces-1"></a><a class="docs-heading-anchor-permalink" href="#Primitive-Interfaces" title="Permalink"></a></h1><h2 id="Points"><a class="docs-heading-anchor" href="#Points">Points</a><a id="Points-1"></a><a class="docs-heading-anchor-permalink" href="#Points" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.getx" href="#DelaunayTriangulation.getx"><code>DelaunayTriangulation.getx</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">getx(c::RepresentativeCoordinates) -&gt; Number</code></pre><p>Returns the x-coordinate of <code>c</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/data_structures/representative_coordinates/representative_coordinates.jl#L35-L39">source</a></section><section><div><pre><code class="language-julia hljs">getx(c::Cell) -&gt; Number</code></pre><p>Returns the x-coordinate of <code>c</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/data_structures/representative_coordinates/cell.jl#L49-L53">source</a></section><section><div><pre><code class="language-julia hljs">getx(p) -&gt; Number</code></pre><p>Get the x-coordinate of <code>p</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; p = (0.3, 0.7);
+
+julia&gt; getx(p)
+0.3</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/points.jl#L1-L15">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.gety" href="#DelaunayTriangulation.gety"><code>DelaunayTriangulation.gety</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">gety(c::RepresentativeCoordinates) -&gt; Number</code></pre><p>Returns the y-coordinate of <code>c</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/data_structures/representative_coordinates/representative_coordinates.jl#L42-L46">source</a></section><section><div><pre><code class="language-julia hljs">gety(c::Cell) -&gt; Number</code></pre><p>Returns the y-coordinate of <code>c</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/data_structures/representative_coordinates/cell.jl#L56-L60">source</a></section><section><div><pre><code class="language-julia hljs">gety(p) -&gt; Number</code></pre><p>Get the y-coordinate of <code>p</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; p = (0.9, 1.3);
+
+julia&gt; gety(p)
+1.3</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/points.jl#L18-L32">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.getxy" href="#DelaunayTriangulation.getxy"><code>DelaunayTriangulation.getxy</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">getxy(p) -&gt; NTuple{2, Number}</code></pre><p>Get the coordinates of <code>p</code> as a <code>Tuple</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; p = [0.9, 23.8];
+
+julia&gt; getxy(p)
+(0.9, 23.8)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/points.jl#L42-L56">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.is_point2" href="#DelaunayTriangulation.is_point2"><code>DelaunayTriangulation.is_point2</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">is_point2(p) -&gt; Bool</code></pre><p>Tests if <code>p</code> represents a point in the plane. By default, this returns the result of </p><pre><code class="nohighlight hljs">eltype(p) &lt;: Number &amp;&amp; length(p) == 2</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/points.jl#L146-L152">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.getpoint" href="#DelaunayTriangulation.getpoint"><code>DelaunayTriangulation.getpoint</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">getpoint(points, vertex) -&gt; NTuple{2, Number}</code></pre><p>Get the point associated with <code>vertex</code> in <code>points</code>, returned as a <code>Tuple</code> of the coordinates.  If <code>vertex</code> is not an integer, then <code>vertex</code> is returned so that points and vertices can be easily mixed.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; points = [(0.3, 0.7), (1.3, 5.0), (5.0, 17.0)];
+
+julia&gt; DelaunayTriangulation.getpoint(points, 2)
+(1.3, 5.0)
+
+julia&gt; points = [0.3 1.3 5.0; 0.7 5.0 17.0];
+
+julia&gt; DelaunayTriangulation.getpoint(points, 2)
+(1.3, 5.0)
+
+julia&gt; DelaunayTriangulation.getpoint(points, (17.3, 33.0))
+(17.3, 33.0)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/points.jl#L164-L187">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.get_point" href="#DelaunayTriangulation.get_point"><code>DelaunayTriangulation.get_point</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">get_point(points, vertices...) -&gt; NTuple{length(vertices), NTuple{2, Number}}</code></pre><p>Get the points associated with <code>vertices</code> in <code>points</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; points = [(1.0, 2.0), (3.0, 5.5), (1.7, 10.3), (-5.0, 0.0)];
+
+julia&gt; get_point(points, 1)
+(1.0, 2.0)
+
+julia&gt; get_point(points, 1, 2, 3, 4)
+((1.0, 2.0), (3.0, 5.5), (1.7, 10.3), (-5.0, 0.0))
+
+julia&gt; points = [1.0 3.0 1.7 -5.0; 2.0 5.5 10.3 0.0];
+
+julia&gt; get_point(points, 1)
+(1.0, 2.0)
+
+julia&gt; get_point(points, 1, 2, 3, 4)
+((1.0, 2.0), (3.0, 5.5), (1.7, 10.3), (-5.0, 0.0))
+
+julia&gt; typeof(ans)
+NTuple{4, Tuple{Float64, Float64}}</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/points.jl#L193-L221">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.push_point!" href="#DelaunayTriangulation.push_point!"><code>DelaunayTriangulation.push_point!</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">push_point!(points, x, y)
+push_point!(points, p) = push_point!(points, getx(p), gety(p))</code></pre><p>Pushes the point <code>p = (x, y)</code> into <code>points</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; points = [(1.0, 3.0), (5.0, 1.0)]
+2-element Vector{Tuple{Float64, Float64}}:
+ (1.0, 3.0)
+ (5.0, 1.0)
+
+julia&gt; DelaunayTriangulation.push_point!(points, 2.3, 5.3)
+3-element Vector{Tuple{Float64, Float64}}:
+ (1.0, 3.0)
+ (5.0, 1.0)
+ (2.3, 5.3)
+
+julia&gt; DelaunayTriangulation.push_point!(points, (17.3, 5.0))
+4-element Vector{Tuple{Float64, Float64}}:
+ (1.0, 3.0)
+ (5.0, 1.0)
+ (2.3, 5.3)
+ (17.3, 5.0)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/points.jl#L379-L407">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.pop_point!" href="#DelaunayTriangulation.pop_point!"><code>DelaunayTriangulation.pop_point!</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">pop_point!(points)</code></pre><p>Pops the last point from <code>points</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; points = [(1.0, 2.0), (1.3, 5.3)]
+2-element Vector{Tuple{Float64, Float64}}:
+ (1.0, 2.0)
+ (1.3, 5.3)
+
+julia&gt; DelaunayTriangulation.pop_point!(points) # returns the popped vector
+(1.3, 5.3)
+
+julia&gt; points
+1-element Vector{Tuple{Float64, Float64}}:
+ (1.0, 2.0)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/points.jl#L414-L435">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.set_point!" href="#DelaunayTriangulation.set_point!"><code>DelaunayTriangulation.set_point!</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">set_point!(points, i, x, y)
+set_point!(points, i, p) = set_point!(points, i, getx(p), gety(p))</code></pre><p>Sets the point at index <code>i</code> in <code>points</code> to <code>(x, y)</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; points = [(1.0, 3.0), (5.0, 17.0)]
+2-element Vector{Tuple{Float64, Float64}}:
+ (1.0, 3.0)
+ (5.0, 17.0)
+
+julia&gt; DelaunayTriangulation.set_point!(points, 1, 0.0, 0.0)
+(0.0, 0.0)
+
+julia&gt; points
+2-element Vector{Tuple{Float64, Float64}}:
+ (0.0, 0.0)
+ (5.0, 17.0)
+
+julia&gt; points = [1.0 2.0 3.0; 4.0 5.0 6.0]
+2×3 Matrix{Float64}:
+ 1.0  2.0  3.0
+ 4.0  5.0  6.0
+
+julia&gt; DelaunayTriangulation.set_point!(points, 2, (17.3, 0.0))
+2-element view(::Matrix{Float64}, :, 2) with eltype Float64:
+ 17.3
+  0.0
+
+julia&gt; points
+2×3 Matrix{Float64}:
+ 1.0  17.3  3.0
+ 4.0   0.0  6.0</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/points.jl#L492-L530">source</a></section></article><h2 id="Edges"><a class="docs-heading-anchor" href="#Edges">Edges</a><a id="Edges-1"></a><a class="docs-heading-anchor-permalink" href="#Edges" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.construct_edge" href="#DelaunayTriangulation.construct_edge"><code>DelaunayTriangulation.construct_edge</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">construct_edge(::Type{E}, i, j) where {E} -&gt; E</code></pre><p>Construct an edge of type <code>E</code> from vertices <code>i</code> and <code>j</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; DelaunayTriangulation.construct_edge(NTuple{2,Int}, 2, 5)
+(2, 5)
+
+julia&gt; DelaunayTriangulation.construct_edge(Vector{Int32}, 5, 15)
+2-element Vector{Int32}:
+  5
+ 15</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/edges.jl#L1-L18">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.initial" href="#DelaunayTriangulation.initial"><code>DelaunayTriangulation.initial</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">initial(e) -&gt; Vertex</code></pre><p>Get the initial vertex of <code>e</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; e = (1, 3);
+
+julia&gt; DelaunayTriangulation.initial(e)
+1
+
+julia&gt; e = [2, 5];
+
+julia&gt; DelaunayTriangulation.initial(e)
+2</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/edges.jl#L24-L43">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.terminal" href="#DelaunayTriangulation.terminal"><code>DelaunayTriangulation.terminal</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">terminal(e) -&gt; Vertex</code></pre><p>Get the terminal vertex of <code>e</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; e = (1, 7);
+
+julia&gt; DelaunayTriangulation.terminal(e)
+7
+
+julia&gt; e = [2, 13];
+
+julia&gt; DelaunayTriangulation.terminal(e)
+13</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/edges.jl#L46-L65">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.edge_vertices" href="#DelaunayTriangulation.edge_vertices"><code>DelaunayTriangulation.edge_vertices</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">edge_vertices(e) -&gt; NTuple{2, Vertex}</code></pre><p>Get the vertices of <code>e</code></p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; e = (1, 5);
+
+julia&gt; edge_vertices(e)
+(1, 5)
+
+julia&gt; e = [23, 50];
+
+julia&gt; edge_vertices(e)
+(23, 50)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/edges.jl#L68-L87">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.reverse_edge" href="#DelaunayTriangulation.reverse_edge"><code>DelaunayTriangulation.reverse_edge</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">reverse_edge(e) -&gt; Edge</code></pre><p>Get the edge with the vertices of <code>e</code> in reverse order.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; e = (17, 3);
+
+julia&gt; DelaunayTriangulation.reverse_edge(e)
+(3, 17)
+
+julia&gt; e = [1, 2];
+
+julia&gt; DelaunayTriangulation.reverse_edge(e)
+2-element Vector{Int64}:
+ 2
+ 1</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/edges.jl#L90-L111">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.compare_unoriented_edges" href="#DelaunayTriangulation.compare_unoriented_edges"><code>DelaunayTriangulation.compare_unoriented_edges</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">compare_unoriented_edges(u, v) -&gt; Bool</code></pre><p>Compare the unoriented edges <code>u</code> and <code>v</code>, i.e. compare the vertices of <code>u</code> and <code>v</code> in any order.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; u = (1, 3);
+
+julia&gt; v = (5, 3);
+
+julia&gt; DelaunayTriangulation.compare_unoriented_edges(u, v)
+false
+
+julia&gt; v = (1, 3);
+
+julia&gt; DelaunayTriangulation.compare_unoriented_edges(u, v)
+true
+
+julia&gt; v = (3, 1);
+
+julia&gt; DelaunayTriangulation.compare_unoriented_edges(u, v)
+true</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/edges.jl#L114-L141">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.edge_type" href="#DelaunayTriangulation.edge_type"><code>DelaunayTriangulation.edge_type</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">edge_type(tri::Triangulation) -&gt; DataType</code></pre><p>Returns the type used for representing individual edges in <code>tri</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/data_structures/triangulation/triangulation.jl#L345-L349">source</a></section><section><div><pre><code class="language-julia hljs">edge_type(vorn::VoronoiTessellation) -&gt; DataType</code></pre><p>Type used for representing individual edges in the Voronoi tessellation.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/data_structures/voronoi.jl#L132-L136">source</a></section><section><div><pre><code class="language-julia hljs">edge_type(E) -&gt; DataType</code></pre><p>Get the type of edges in <code>E</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; e = Set(((1,2),(2,3),(17,5)))
+Set{Tuple{Int64, Int64}} with 3 elements:
+  (1, 2)
+  (17, 5)
+  (2, 3)
+
+julia&gt; DelaunayTriangulation.edge_type(e)
+Tuple{Int64, Int64}
+
+julia&gt; e = [[1,2],[3,4],[17,3]]
+3-element Vector{Vector{Int64}}:
+ [1, 2]
+ [3, 4]
+ [17, 3]
+
+julia&gt; DelaunayTriangulation.edge_type(e)
+Vector{Int64} (alias for Array{Int64, 1})</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/edges.jl#L165-L192">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.contains_edge" href="#DelaunayTriangulation.contains_edge"><code>DelaunayTriangulation.contains_edge</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">contains_edge(i, j, E) -&gt; Bool
+contains_edge(e, E) -&gt; Bool</code></pre><p>Check if <code>E</code> contains the edge <code>e = (i, j)</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; E = Set(((1,3),(17,3),(1,-1)))
+Set{Tuple{Int64, Int64}} with 3 elements:
+  (1, -1)
+  (17, 3)
+  (1, 3)
+
+julia&gt; DelaunayTriangulation.contains_edge((1, 2), E)
+false
+
+julia&gt; DelaunayTriangulation.contains_edge((17, 3), E)
+true
+
+julia&gt; DelaunayTriangulation.contains_edge(3, 17, E) # order
+false
+
+julia&gt; E = [[1,2],[5,13],[-1,1]]
+3-element Vector{Vector{Int64}}:
+ [1, 2]
+ [5, 13]
+ [-1, 1]
+
+julia&gt; DelaunayTriangulation.contains_edge(1, 2, E)
+true</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/edges.jl#L195-L229">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.contains_unoriented_edge" href="#DelaunayTriangulation.contains_unoriented_edge"><code>DelaunayTriangulation.contains_unoriented_edge</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">contains_unoriented_edge(e, E) -&gt; Bool</code></pre><p>Check if <code>E</code> contains the unoriented edge <code>e</code>, i.e. check if <code>E</code> contains the edge <code>e</code> or <code>reverse_edge(e)</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/edges.jl#L234-L238">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.add_to_edges!" href="#DelaunayTriangulation.add_to_edges!"><code>DelaunayTriangulation.add_to_edges!</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">add_to_edges!(E, e)</code></pre><p>Add the edge <code>e</code> to <code>E</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; E = Set(((1, 2),(3,5)))
+Set{Tuple{Int64, Int64}} with 2 elements:
+  (1, 2)
+  (3, 5)
+
+julia&gt; DelaunayTriangulation.add_to_edges!(E, (1, 5))
+Set{Tuple{Int64, Int64}} with 3 elements:
+  (1, 2)
+  (3, 5)
+  (1, 5)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/edges.jl#L241-L261">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.delete_from_edges!" href="#DelaunayTriangulation.delete_from_edges!"><code>DelaunayTriangulation.delete_from_edges!</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">delete_from_edges!(E, e)</code></pre><p>Delete the edge <code>e</code> from <code>E</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; E = Set(([1,2],[5,15],[17,10],[5,-1]))
+Set{Vector{Int64}} with 4 elements:
+  [17, 10]
+  [5, 15]
+  [5, -1]
+  [1, 2]
+
+julia&gt; DelaunayTriangulation.delete_from_edges!(E, [5, 15])
+Set{Vector{Int64}} with 3 elements:
+  [17, 10]
+  [5, -1]
+  [1, 2]</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/edges.jl#L307-L329">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.delete_unoriented_edge!" href="#DelaunayTriangulation.delete_unoriented_edge!"><code>DelaunayTriangulation.delete_unoriented_edge!</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">delete_unoriented_edge!(E, e)</code></pre><p>Delete the unoriented edge <code>e</code> from <code>E</code>, i.e. delete both the edge <code>e</code> and <code>reverse_edge(e)</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/edges.jl#L372-L376">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.random_edge" href="#DelaunayTriangulation.random_edge"><code>DelaunayTriangulation.random_edge</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">random_edge([rng], E) -&gt; E</code></pre><p>Get a random edge from <code>E</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation, StableRNGs
+
+julia&gt; E = Set(((1,2),(10,15),(23,20)))
+Set{Tuple{Int64, Int64}} with 3 elements:
+  (1, 2)
+  (23, 20)
+  (10, 15)
+
+julia&gt; rng = StableRNG(123);
+
+julia&gt; DelaunayTriangulation.random_edge(rng, E)
+(10, 15)
+
+julia&gt; DelaunayTriangulation.random_edge(rng, E)
+(10, 15)
+
+julia&gt; DelaunayTriangulation.random_edge(rng, E)
+(23, 20)</code></pre><pre><code class="language-julia-repl hljs">julia&gt; DelaunayTriangulation.random_edge(E)
+(1, 2)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/edges.jl#L405-L435">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.edges_are_disjoint" href="#DelaunayTriangulation.edges_are_disjoint"><code>DelaunayTriangulation.edges_are_disjoint</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">edges_are_disjoint(e, e′) -&gt; Bool</code></pre><p>Returns <code>true</code> if <code>e</code> and <code>e′</code> have any shared vertex, and <code>false</code> otherwise.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/edges.jl#L453-L457">source</a></section></article><h2 id="Triangles"><a class="docs-heading-anchor" href="#Triangles">Triangles</a><a id="Triangles-1"></a><a class="docs-heading-anchor-permalink" href="#Triangles" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.construct_triangle" href="#DelaunayTriangulation.construct_triangle"><code>DelaunayTriangulation.construct_triangle</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">construct_triangle(::Type{T}, i, j, k) where {T} -&gt; Triangle</code></pre><p>Construct a triangle of type <code>T</code> from vertices <code>i</code>, <code>j</code>, and <code>k</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; DelaunayTriangulation.construct_triangle(NTuple{3,Int}, 1, 2, 3)
+(1, 2, 3)
+
+julia&gt; DelaunayTriangulation.construct_triangle(Vector{Int32}, 1, 2, 3)
+3-element Vector{Int32}:
+ 1
+ 2
+ 3</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/triangles.jl#L1-L19">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.geti" href="#DelaunayTriangulation.geti"><code>DelaunayTriangulation.geti</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">geti(T) -&gt; Vertex</code></pre><p>Get the first vertex of <code>T</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; DelaunayTriangulation.geti((1, 2, 3))
+1
+
+julia&gt; DelaunayTriangulation.geti([2, 5, 1])
+2</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/triangles.jl#L25-L40">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.getj" href="#DelaunayTriangulation.getj"><code>DelaunayTriangulation.getj</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">getj(T) -&gt; Vertex</code></pre><p>Get the second vertex of <code>T</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; DelaunayTriangulation.getj((5, 6, 13))
+6
+
+julia&gt; DelaunayTriangulation.getj([10, 19, 21])
+19</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/triangles.jl#L43-L58">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.getk" href="#DelaunayTriangulation.getk"><code>DelaunayTriangulation.getk</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">getk(T) -&gt; Vertex</code></pre><p>Get the third vertex of <code>T</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; DelaunayTriangulation.getk((1,2,3))
+3
+
+julia&gt; DelaunayTriangulation.getk([1,2,3])
+3</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/triangles.jl#L61-L76">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.triangle_vertices" href="#DelaunayTriangulation.triangle_vertices"><code>DelaunayTriangulation.triangle_vertices</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">triangle_vertices(T) -&gt; NTuple{3, Vertex}</code></pre><p>Returns the vertices of <code>T</code> as a <code>Tuple</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; triangle_vertices((1, 5, 17))
+(1, 5, 17)
+
+julia&gt; triangle_vertices([5, 18, 23]) # -&gt; tuple
+(5, 18, 23)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/triangles.jl#L79-L94">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.triangle_type" href="#DelaunayTriangulation.triangle_type"><code>DelaunayTriangulation.triangle_type</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">triangle_type(tri::Triangulation) -&gt; DataType</code></pre><p>Returns the type used for representing individual triangles in <code>tri</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/data_structures/triangulation/triangulation.jl#L359-L363">source</a></section><section><div><pre><code class="language-julia hljs">triangle_type(::InsertionEventHistory{T}) where {T} = T</code></pre><p>Returns the type of the triangles in <code>events</code>, <code>T</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/data_structures/mesh_refinement/insertion_event_history.jl#L137-L141">source</a></section><section><div><pre><code class="language-julia hljs">triangle_type(vorn::VoronoiTessellation) -&gt; DataType</code></pre><p>Type used for representing individual triangles in the Voronoi tessellation.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/data_structures/voronoi.jl#L153-L157">source</a></section><section><div><pre><code class="language-julia hljs">triangle_type(::Type{T}) -&gt; DataType</code></pre><p>Get the triangle type of <code>T</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; DelaunayTriangulation.triangle_type(Set{NTuple{3,Int64}})
+Tuple{Int64, Int64, Int64}
+
+julia&gt; DelaunayTriangulation.triangle_type(Vector{NTuple{3,Int32}})
+Tuple{Int32, Int32, Int32}
+
+julia&gt; DelaunayTriangulation.triangle_type(Vector{Vector{Int64}})
+Vector{Int64} (alias for Array{Int64, 1})</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/triangles.jl#L97-L115">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.triangle_edges" href="#DelaunayTriangulation.triangle_edges"><code>DelaunayTriangulation.triangle_edges</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">triangle_edges(T) -&gt; NTuple{3, Edge}
+triangle_edges(i, j, k) -&gt; NTuple{3, Edge}</code></pre><p>Get the edges of <code>T = (i, j, k)</code> as a <code>Tuple</code>, in particular </p><pre><code class="nohighlight hljs">((i, j), (j, k), (k, i)).</code></pre><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; T = (1, 2, 3);
+
+julia&gt; DelaunayTriangulation.triangle_edges(T)
+((1, 2), (2, 3), (3, 1))
+
+julia&gt; DelaunayTriangulation.triangle_edges(1, 2, 3)
+((1, 2), (2, 3), (3, 1))</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/triangles.jl#L137-L157">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.sort_triangle" href="#DelaunayTriangulation.sort_triangle"><code>DelaunayTriangulation.sort_triangle</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">sort_triangle(T) -&gt; Triangle
+sort_triangle(i, j, k) -&gt; Triangle</code></pre><p>Sort the triangle <code>T = (i, j, k)</code> so that its last vertex is the smallest,  respecting the orientation of <code>T</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; DelaunayTriangulation.sort_triangle((1, 5, 3))
+(5, 3, 1)
+
+julia&gt; DelaunayTriangulation.sort_triangle((1, -1, 2))
+(2, 1, -1)
+
+julia&gt; DelaunayTriangulation.sort_triangle((3, 2, 1))
+(3, 2, 1)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/triangles.jl#L366-L386">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.compare_triangles" href="#DelaunayTriangulation.compare_triangles"><code>DelaunayTriangulation.compare_triangles</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">compare_triangles(T, V) -&gt; Bool</code></pre><p>Compare the triangles <code>T</code> and <code>V</code> by comparing their vertices up to rotation.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; T1 = (1, 5, 10);
+
+julia&gt; T2 = (17, 23, 20);
+
+julia&gt; DelaunayTriangulation.compare_triangles(T1, T2)
+false
+
+julia&gt; T2 = (5, 10, 1);
+
+julia&gt; DelaunayTriangulation.compare_triangles(T1, T2)
+true
+
+julia&gt; T2 = (10, 1, 5);
+
+julia&gt; DelaunayTriangulation.compare_triangles(T1, T2)
+true
+
+julia&gt; T2 = (10, 5, 1);
+
+julia&gt; DelaunayTriangulation.compare_triangles(T1, T2)
+false</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/triangles.jl#L269-L300">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.add_to_triangles!" href="#DelaunayTriangulation.add_to_triangles!"><code>DelaunayTriangulation.add_to_triangles!</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">add_to_triangles!(T, V)</code></pre><p>Add the triangle <code>V</code> to the collection of triangles <code>T</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; T = Set(((1, 2, 3), (17, 8, 9)));
+
+julia&gt; DelaunayTriangulation.add_to_triangles!(T, (1, 5, 12))
+Set{Tuple{Int64, Int64, Int64}} with 3 elements:
+  (1, 5, 12)
+  (1, 2, 3)
+  (17, 8, 9)
+
+julia&gt; DelaunayTriangulation.add_to_triangles!(T, (-1, 3, 6))
+Set{Tuple{Int64, Int64, Int64}} with 4 elements:
+  (1, 5, 12)
+  (1, 2, 3)
+  (17, 8, 9)
+  (-1, 3, 6)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/triangles.jl#L411-L435">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.delete_from_triangles!" href="#DelaunayTriangulation.delete_from_triangles!"><code>DelaunayTriangulation.delete_from_triangles!</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">delete_from_triangles!(T, V)</code></pre><p>Delete the triangle <code>V</code> from the collection of triangles <code>T</code>. Only deletes <code>V</code> if <code>V</code> is in <code>T</code> up to rotation.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; V = Set(((1, 2, 3), (4, 5, 6), (7, 8, 9)))
+Set{Tuple{Int64, Int64, Int64}} with 3 elements:
+  (7, 8, 9)
+  (4, 5, 6)
+  (1, 2, 3)
+
+julia&gt; DelaunayTriangulation.delete_from_triangles!(V, (4, 5, 6))
+Set{Tuple{Int64, Int64, Int64}} with 2 elements:
+  (7, 8, 9)
+  (1, 2, 3)
+
+julia&gt; DelaunayTriangulation.delete_from_triangles!(V, (9, 7, 8))
+Set{Tuple{Int64, Int64, Int64}} with 1 element:
+  (1, 2, 3)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/triangles.jl#L491-L516">source</a></section></article><h2 id="Boundary-Nodes"><a class="docs-heading-anchor" href="#Boundary-Nodes">Boundary Nodes</a><a id="Boundary-Nodes-1"></a><a class="docs-heading-anchor-permalink" href="#Boundary-Nodes" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.num_boundary_edges" href="#DelaunayTriangulation.num_boundary_edges"><code>DelaunayTriangulation.num_boundary_edges</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">num_boundary_edges(boundary_nodes) -&gt; Integer</code></pre><p>Get the number of boundary edges in <code>boundary_nodes</code>, assuming that <code>boundary_nodes</code> defines a  boundary with only one curve and a single section.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/boundary_nodes.jl#L136-L141">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="DelaunayTriangulation.each_boundary_node" href="#DelaunayTriangulation.each_boundary_node"><code>DelaunayTriangulation.each_boundary_node</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">each_boundary_node(boundary_nodes) -&gt; Iterator</code></pre><p>Returns an iterator that goves over each node in <code>boundary_nodes</code>. It is assumed that <code>boundary_nodes</code> represents a single section or a single contiguous boundary; if you do want to loop over every boundary nodes for a boundary  with multiple sections, you should to see the result from <a href="../../extended/data_structures/#DelaunayTriangulation.construct_ghost_vertex_map-Union{Tuple{Any}, Tuple{I}, Tuple{Any, Type{I}}} where I"><code>construct_ghost_vertex_map</code></a>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using DelaunayTriangulation
+
+julia&gt; DelaunayTriangulation.each_boundary_node([7, 8, 19, 2, 17])
+5-element Vector{Int64}:
+  7
+  8
+ 19
+  2
+ 17
+
+julia&gt; DelaunayTriangulation.each_boundary_node([7, 8, 19, 2, 17, 7])
+6-element Vector{Int64}:
+  7
+  8
+ 19
+  2
+ 17
+  7</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/24041c3a11eaf88fdc1c1d1b638330fef5670f10/src/geometric_primitives/boundary_nodes.jl#L201-L230">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../statistics/">« Triangulation Statistics</a><a class="docs-footer-nextpage" href="../other/">Other »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.6.0 on <span class="colophon-date" title="Sunday 1 September 2024 18:03">Sunday 1 September 2024</span>. Using Julia version 1.10.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

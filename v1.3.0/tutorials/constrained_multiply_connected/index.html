@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Domain with Interior Holes · DelaunayTriangulation.jl</title><meta name="title" content="Domain with Interior Holes · DelaunayTriangulation.jl"/><meta property="og:title" content="Domain with Interior Holes · DelaunayTriangulation.jl"/><meta property="twitter:title" content="Domain with Interior Holes · DelaunayTriangulation.jl"/><meta name="description" content="Documentation for DelaunayTriangulation.jl."/><meta property="og:description" content="Documentation for DelaunayTriangulation.jl."/><meta property="twitter:description" content="Documentation for DelaunayTriangulation.jl."/><meta property="og:url" content="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/tutorials/constrained_multiply_connected/"/><meta property="twitter:url" content="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/tutorials/constrained_multiply_connected/"/><link rel="canonical" href="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/tutorials/constrained_multiply_connected/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">DelaunayTriangulation.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><input class="collapse-toggle" id="menuitem-2" type="checkbox" checked/><label class="tocitem" for="menuitem-2"><span class="docs-label">Tutorials</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../overview/">Overview</a></li><li><a class="tocitem" href="../unconstrained/">Unconstrained Triangulations</a></li><li><input class="collapse-toggle" id="menuitem-2-3" type="checkbox" checked/><label class="tocitem" for="menuitem-2-3"><span class="docs-label">Constrained Triangulations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../constrained_edges/">Constrained Edges</a></li><li><a class="tocitem" href="../constrained_outer_boundary/">Outer Boundary</a></li><li><a class="tocitem" href="../constrained_outer_boundary_segmented/">Segmented Outer Boundary</a></li><li class="is-active"><a class="tocitem" href>Domain with Interior Holes</a><ul class="internal"><li><a class="tocitem" href="#Domain-with-Interior-Holes"><span>Domain with Interior Holes</span></a></li><li><a class="tocitem" href="#Just-the-code"><span>Just the code</span></a></li></ul></li><li><a class="tocitem" href="../constrained_interior_within_interiors/">Domain with Interior Holes inside Interior Holes</a></li><li><a class="tocitem" href="../constrained_multipolygon/">Disjoint Domains</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-2-4" type="checkbox"/><label class="tocitem" for="menuitem-2-4"><span class="docs-label">Triangulation Operations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../operations_vertex_insertion_deletion/">Vertex Insertion and Deletion</a></li><li><a class="tocitem" href="../operations_segment_insertion/">Edge Insertion</a></li><li><a class="tocitem" href="../operations_ghost_triangles/">Adding or Clearing Ghost Triangles</a></li><li><a class="tocitem" href="../operations_flip_edge/">Edge Flipping</a></li><li><a class="tocitem" href="../operations_legalise_edge/">Legalising an Edge</a></li><li><a class="tocitem" href="../operations_split_edge/">Edge Splitting</a></li><li><a class="tocitem" href="../operations_split_triangle/">Triangle Splitting</a></li><li><a class="tocitem" href="../operations_convex_hull_locking/">Locking and Unlocking the Convex Hull</a></li></ul></li><li><a class="tocitem" href="../refinement/">Mesh Refinement</a></li><li><a class="tocitem" href="../lattice/">Triangulating Rectangular Regions</a></li><li><a class="tocitem" href="../convex/">Triangulating Convex Polygons</a></li><li><a class="tocitem" href="../curve_bounded/">Triangulating Curve-Bounded Domains</a></li><li><a class="tocitem" href="../weighted/">Weighted Triangulations</a></li><li><a class="tocitem" href="../voronoi/">Voronoi Tessellations</a></li><li><input class="collapse-toggle" id="menuitem-2-11" type="checkbox"/><label class="tocitem" for="menuitem-2-11"><span class="docs-label">Clipped Voronoi Tessellations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../clipped/">Clipping to the Convex Hull</a></li><li><a class="tocitem" href="../clipped_rectangle/">Clipping to a Rectangle</a></li><li><a class="tocitem" href="../clipped_polygon/">Clipping to a Generic Convex Polygon</a></li></ul></li><li><a class="tocitem" href="../centroidal/">Centroidal Voronoi Tessellations</a></li><li><a class="tocitem" href="../power/">Power Diagrams</a></li><li><a class="tocitem" href="../point_location/">Point Location</a></li><li><a class="tocitem" href="../nearest/">Nearest Neighbour Queries</a></li><li><a class="tocitem" href="../convex_hull/">Convex Hulls</a></li><li><a class="tocitem" href="../pole_of_inaccessibility/">Pole of Inaccessibility</a></li><li><a class="tocitem" href="../point_in_polygon/">Point-in-Polygon Testing</a></li><li><a class="tocitem" href="../custom_primitive/">Using Custom Structs for Primitives and Boundaries</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3" type="checkbox"/><label class="tocitem" for="menuitem-3"><span class="docs-label">Manual</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/overview/">Overview</a></li><li><a class="tocitem" href="../../manual/primitives/">Representing Primitives</a></li><li><a class="tocitem" href="../../manual/boundaries/">Representing Boundaries</a></li><li><a class="tocitem" href="../../manual/ghost_triangles/">Ghost (Negative) Vertices</a></li><li><a class="tocitem" href="../../manual/curve_bounded/">Defining Curve-Bounded Domains</a></li><li><a class="tocitem" href="../../manual/predicates/">Geometrical Predicates</a></li><li><a class="tocitem" href="../../manual/triangulation_output/">Triangulation Output</a></li><li><a class="tocitem" href="../../manual/voronoi_output/">Voronoi Tessellation Output</a></li><li><a class="tocitem" href="../../manual/predicate_kernels/">Predicate Kernels</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">API Reference</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../api/overview/">Section Overview</a></li><li><a class="tocitem" href="../../api/data_structures/">Data Structures</a></li><li><a class="tocitem" href="../../api/triangulation/">Triangulations</a></li><li><a class="tocitem" href="../../api/operations/">Triangulation Operations</a></li><li><a class="tocitem" href="../../api/voronoi/">Voronoi Tessellations</a></li><li><a class="tocitem" href="../../api/convex_hull/">Convex Hull</a></li><li><a class="tocitem" href="../../api/curves/">Curves</a></li><li><a class="tocitem" href="../../api/iterators/">Iterators</a></li><li><a class="tocitem" href="../../api/point_location/">Point Location</a></li><li><a class="tocitem" href="../../api/predicates/">Predicates</a></li><li><a class="tocitem" href="../../api/statistics/">Triangulation Statistics</a></li><li><a class="tocitem" href="../../api/primitives/">Primitive Interfaces</a></li><li><a class="tocitem" href="../../api/other/">Other</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">Extended Reference</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../extended/overview/">Overview</a></li><li><a class="tocitem" href="../../extended/data_structures/">Data Structures</a></li><li><a class="tocitem" href="../../extended/algorithms/">Algorithm Internals</a></li><li><a class="tocitem" href="../../extended/utils/">Utility Functions</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">Mathematical Details</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../math/overview/">Overview</a></li><li><a class="tocitem" href="../../math/delaunay/">Delaunay Triangulations</a></li><li><a class="tocitem" href="../../math/constrained/">Constrained Delaunay Triangulations</a></li><li><a class="tocitem" href="../../math/convex/">Triangulating Convex Polygons</a></li><li><a class="tocitem" href="../../math/refinement/">Mesh Refinement</a></li><li><a class="tocitem" href="../../math/curves/">Curves</a></li><li><a class="tocitem" href="../../math/curve_bounded/">Triangulating Curve-Bounded Domains</a></li><li><a class="tocitem" href="../../math/weighted/">Weighted Delaunay Triangulations</a></li><li><a class="tocitem" href="../../math/voronoi/">Voronoi Tessellations</a></li><li><a class="tocitem" href="../../math/clipped/">Clipped Voronoi Tessellations</a></li><li><a class="tocitem" href="../../math/centroidal/">Centroidal Voronoi Tessellations</a></li><li><a class="tocitem" href="../../math/power/">Power Diagrams</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox"/><label class="tocitem" for="menuitem-7"><span class="docs-label">Example Applications</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../applications/overview/">Overview</a></li><li><a class="tocitem" href="../../applications/interpolation/">Interpolation</a></li><li><a class="tocitem" href="../../applications/cell_simulations/">Cellular Biology</a></li><li><a class="tocitem" href="../../applications/pde_discretisation/">Solving PDEs</a></li></ul></li><li><a class="tocitem" href="../../terminology/">Terminology</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li><a class="is-disabled">Constrained Triangulations</a></li><li class="is-active"><a href>Domain with Interior Holes</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Domain with Interior Holes</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/constrained_multiply_connected.jl" title="View source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Constrained-Triangulations"><a class="docs-heading-anchor" href="#Constrained-Triangulations">Constrained Triangulations</a><a id="Constrained-Triangulations-1"></a><a class="docs-heading-anchor-permalink" href="#Constrained-Triangulations" title="Permalink"></a></h1><h2 id="Domain-with-Interior-Holes"><a class="docs-heading-anchor" href="#Domain-with-Interior-Holes">Domain with Interior Holes</a><a id="Domain-with-Interior-Holes-1"></a><a class="docs-heading-anchor-permalink" href="#Domain-with-Interior-Holes" title="Permalink"></a></h2><p>We now consider triangulating a domain which has not only a boundary, but also an interior boundary. To start, let us load the packages.</p><pre><code class="language-julia hljs">using DelaunayTriangulation
+using CairoMakie
+using StableRNGs</code></pre><p>Let us now define what we will be triangulating. The boundary will be made up of a boundary and three interior holes. To represent the boundaries for this case, we use a vector of vector of vectors. The triple-nested vector structure is necessary to allow for individual boundaries to be segmented (as in the previous tutorial). Moreover, while the outer boundary must be counter-clockwise, the interior boundaries must be clockwise so that the orientations of the interiors relative to the boundaries are consistent. Note again that neighbouring segments must connect.</p><pre><code class="language-julia hljs">curve_1 = [
+    # first segment
+    [
+        (0.0, 0.0), (4.0, 0.0), (8.0, 0.0), (12.0, 0.0), (12.0, 4.0),
+        (12.0, 8.0), (14.0, 10.0), (16.0, 12.0), (16.0, 16.0),
+        (14.0, 18.0), (12.0, 20.0), (12.0, 24.0), (12.0, 28.0),
+    ],
+    # second segment
+    [
+        (12.0, 28.0), (8.0, 28.0), (4.0, 28.0), (0.0, 28.0), (-2.0, 26.0), (0.0, 22.0),
+        (0.0, 18.0), (0.0, 10.0), (0.0, 8.0), (0.0, 4.0), (-4.0, 4.0),
+        (-4.0, 0.0), (0.0, 0.0),
+    ],
+] # outer: counter-clockwise
+curve_2 = [
+    # first segment
+    [
+        (4.0, 26.0), (8.0, 26.0), (10.0, 26.0), (10.0, 24.0),
+        (10.0, 22.0), (10.0, 20.0),
+    ],
+    # second segment
+    [
+        (10.0, 20.0), (8.0, 20.0), (6.0, 20.0),
+        (4.0, 20.0), (4.0, 22.0), (4.0, 24.0), (4.0, 26.0),
+    ],
+] # inner: clockwise
+curve_3 = [[(4.0, 16.0), (12.0, 16.0), (12.0, 14.0), (4.0, 14.0), (4.0, 16.0)]] # inner: clockwise
+curve_4 = [[(4.0, 8.0), (10.0, 8.0), (8.0, 6.0), (6.0, 6.0), (4.0, 8.0)]] # inner: clockwise
+curves = [curve_1, curve_2, curve_3, curve_4]
+points = [
+    (2.0, 26.0), (2.0, 24.0), (6.0, 24.0), (6.0, 22.0), (8.0, 24.0), (8.0, 22.0),
+    (2.0, 22.0), (0.0, 26.0), (10.0, 18.0), (8.0, 18.0), (4.0, 18.0), (2.0, 16.0),
+    (2.0, 12.0), (6.0, 12.0), (2.0, 8.0), (2.0, 4.0), (4.0, 2.0),
+    (-2.0, 2.0), (4.0, 6.0), (10.0, 2.0), (10.0, 6.0), (8.0, 10.0), (4.0, 10.0),
+    (10.0, 12.0), (12.0, 12.0), (14.0, 26.0), (16.0, 24.0), (18.0, 28.0),
+    (16.0, 20.0), (18.0, 12.0), (16.0, 8.0), (14.0, 4.0), (14.0, -2.0),
+    (6.0, -2.0), (2.0, -4.0), (-4.0, -2.0), (-2.0, 8.0), (-2.0, 16.0),
+    (-4.0, 22.0), (-4.0, 26.0), (-2.0, 28.0), (6.0, 15.0), (7.0, 15.0),
+    (8.0, 15.0), (9.0, 15.0), (10.0, 15.0), (6.2, 7.8),
+    (5.6, 7.8), (5.6, 7.6), (5.6, 7.4), (6.2, 7.4), (6.0, 7.6),
+    (7.0, 7.8), (7.0, 7.4),
+]
+boundary_nodes, points = convert_boundary_points_to_indices(curves; existing_points = points);</code></pre><p>Notice that <code>curve_1</code> and <code>curve_2</code> are split up into multiple segments. For <code>curve_3</code> and <code>curve_4</code>, note that we have to wrap the entire vector in a vector, essentially treating them as a single segment.</p><p>Now let us triangulate.</p><pre><code class="language-julia hljs">rng = StableRNG(123) # the triangulation is not unique due to cocircular points
+tri = triangulate(points; boundary_nodes, rng)
+fig, ax, sc = triplot(tri, show_constrained_edges = true, show_convex_hull = true)
+fig</code></pre><img src="d4bcac52.png" alt="Example block output"/><p>Like before, we examine individual segments by referring to them by their ghost vertices, which are still in the order <code>-1</code>, <code>-2</code>, and so on in the order of the segments provided in <code>boundary_nodes</code>. This is a lot more cumbersome to keep track of than the previous tutorials since there are many more ghost vertices. This is where the boundary fields become much more useful. For instance, the <code>boundary_edge_map</code> in this case is given by:</p><pre><code class="language-julia hljs">get_boundary_edge_map(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{Tuple{Int64, Int64}, Tuple{Tuple{Int64, Int64}, Int64}} with 43 entries:
+  (61, 62) =&gt; ((1, 1), 7)
+  (58, 59) =&gt; ((1, 1), 4)
+  (93, 90) =&gt; ((3, 1), 4)
+  (56, 57) =&gt; ((1, 1), 2)
+  (55, 56) =&gt; ((1, 1), 1)
+  (96, 97) =&gt; ((4, 1), 3)
+  (92, 93) =&gt; ((3, 1), 3)
+  (75, 76) =&gt; ((1, 2), 9)
+  (97, 94) =&gt; ((4, 1), 4)
+  (71, 72) =&gt; ((1, 2), 5)
+  (67, 68) =&gt; ((1, 2), 1)
+  (77, 78) =&gt; ((1, 2), 11)
+  (60, 61) =&gt; ((1, 1), 6)
+  (88, 89) =&gt; ((2, 2), 5)
+  (66, 67) =&gt; ((1, 1), 12)
+  (69, 70) =&gt; ((1, 2), 3)
+  (76, 77) =&gt; ((1, 2), 10)
+  (73, 74) =&gt; ((1, 2), 7)
+  (91, 92) =&gt; ((3, 1), 2)
+  ⋮        =&gt; ⋮</code></pre><p>The <code>Tuples</code> in the <code>values</code> are now of the form <code>((I, J), K)</code>, with <code>I</code> the curve index (with <code>1</code> being the outer boundary), <code>J</code> the segment index, and <code>K</code> the position of the edge within the segment. To look at the ghost vertices directly, another useful field is <code>ghost_vertex_ranges</code>:</p><pre><code class="language-julia hljs">get_ghost_vertex_ranges(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{Int64, UnitRange{Int64}} with 6 entries:
+  -5 =&gt; -5:-5
+  -1 =&gt; -2:-1
+  -3 =&gt; -4:-3
+  -2 =&gt; -2:-1
+  -4 =&gt; -4:-3
+  -6 =&gt; -6:-6</code></pre><p>This field maps a ghost vertex to the complete set of ghost vertices that might be found on the curve corresponding to that ghost vertex. For example, <code>-3 =&gt; -4:-3</code> means that the ghost vertex <code>-3</code> is part of a curve that, in addition to itself, contains the ghost vertex <code>-4</code>. If you want all the ghost vertex, you can use</p><pre><code class="language-julia hljs">DelaunayTriangulation.all_ghost_vertices(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">KeySet for a Dict{Int64, UnitRange{Int64}} with 6 entries. Keys:
+  -5
+  -1
+  -3
+  -2
+  -4
+  -6</code></pre><p>which is just <code>keys(get_ghost_vertex_ranges(tri))</code>. If you just want to find what curve and what segment a ghost vertex belongs to, you can look at the <code>ghost_vertex_map</code>:</p><pre><code class="language-julia hljs">get_ghost_vertex_map(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{Int64, Tuple{Int64, Int64}} with 6 entries:
+  -5 =&gt; (3, 1)
+  -1 =&gt; (1, 1)
+  -3 =&gt; (2, 1)
+  -2 =&gt; (1, 2)
+  -4 =&gt; (2, 2)
+  -6 =&gt; (4, 1)</code></pre><p>So that, for example, <code>-3 =&gt; (2, 1)</code> means that the ghost vertex <code>-3</code> corresponds to the first part (from the second <code>Tuple</code> element) of the second curve (from the first <code>Tuple</code> element).</p><p>To get all the boundary nodes, you can use</p><pre><code class="language-julia hljs">DelaunayTriangulation.get_all_boundary_nodes(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Set{Int64} with 43 elements:
+  56
+  55
+  60
+  67
+  73
+  64
+  90
+  63
+  86
+  91
+  62
+  58
+  75
+  92
+  69
+  68
+  82
+  85
+  84
+  ⋮ </code></pre><p>To give an example of how we can work with this boundary, let us compute the area of the triangulation (a more efficient approach is with <a href="../../api/triangulation/#DelaunayTriangulation.get_area"><code>get_area(tri)</code></a>, but this is just for demonstration). For this, the order of the boundary edges is appropriate, so we must iterate in a way that respects the ordering.</p><pre><code class="language-julia hljs">function get_triangulation_area(tri)
+    A = 0.0
+    nc = DelaunayTriangulation.num_curves(tri)
+    for curve_index in 1:nc
+        bn = get_boundary_nodes(tri, curve_index)
+        ns = DelaunayTriangulation.num_sections(bn)
+        for segment_index in 1:ns
+            bnn = get_boundary_nodes(bn, segment_index)
+            ne = num_boundary_edges(bnn)
+            for i in 1:ne
+                vᵢ = get_boundary_nodes(bnn, i)
+                vᵢ₊₁ = get_boundary_nodes(bnn, i + 1)
+                pᵢ, pᵢ₊₁ = get_point(tri, vᵢ, vᵢ₊₁)
+                xᵢ, yᵢ = getxy(pᵢ)
+                xᵢ₊₁, yᵢ₊₁ = getxy(pᵢ₊₁)
+                A += (yᵢ + yᵢ₊₁) * (xᵢ - xᵢ₊₁)
+            end
+        end
+    end
+    return A / 2
+end
+A = get_triangulation_area(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">330.0</code></pre><p>This is of course quite a complicated example since we need to take care of the order. If we don&#39;t care about order, then the complexity of the code for iterating over a boundary is much simpler. For example, here we compute the perimeter of the boundary, and we also consider the length of each curve and of each segment.</p><pre><code class="language-julia hljs">function get_perimeters(tri)
+    total_perimeter = 0.0
+    nc = DelaunayTriangulation.num_curves(tri)
+    curve_perimeters = zeros(nc) # curve_index =&gt; perimeter
+    segment_perimeters = Dict{NTuple{2, Int}, Float64}() # (curve_index, segment_index) =&gt; perimeter
+    for (e, ((curve_index, section_index), node_index)) in get_boundary_edge_map(tri)
+        u, v = edge_vertices(e)
+        p, q = get_point(tri, u, v)
+        ℓ = sqrt((getx(p) - getx(q))^2 + (gety(p) - gety(q))^2)
+        total_perimeter += ℓ
+        curve_perimeters[curve_index] += ℓ
+        if haskey(segment_perimeters, (curve_index, section_index))
+            segment_perimeters[(curve_index, section_index)] += ℓ
+        else
+            segment_perimeters[(curve_index, section_index)] = ℓ
+        end
+    end
+    return total_perimeter, curve_perimeters, segment_perimeters
+end
+ℓ, cℓ, sℓ = get_perimeters(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(150.2711258282229, [92.61427157873052, 24.0, 20.0, 13.65685424949238], Dict((1, 2) =&gt; 49.30056307974577, (3, 1) =&gt; 20.0, (1, 1) =&gt; 43.31370849898476, (4, 1) =&gt; 13.65685424949238, (2, 2) =&gt; 12.0, (2, 1) =&gt; 12.0))</code></pre><h2 id="Just-the-code"><a class="docs-heading-anchor" href="#Just-the-code">Just the code</a><a id="Just-the-code-1"></a><a class="docs-heading-anchor-permalink" href="#Just-the-code" title="Permalink"></a></h2><p>An uncommented version of this example is given below. You can view the source code for this file <a href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/constrained_multiply_connected.jl">here</a>.</p><pre><code class="language-julia hljs">using DelaunayTriangulation
+using CairoMakie
+using StableRNGs
+
+curve_1 = [
+    # first segment
+    [
+        (0.0, 0.0), (4.0, 0.0), (8.0, 0.0), (12.0, 0.0), (12.0, 4.0),
+        (12.0, 8.0), (14.0, 10.0), (16.0, 12.0), (16.0, 16.0),
+        (14.0, 18.0), (12.0, 20.0), (12.0, 24.0), (12.0, 28.0),
+    ],
+    # second segment
+    [
+        (12.0, 28.0), (8.0, 28.0), (4.0, 28.0), (0.0, 28.0), (-2.0, 26.0), (0.0, 22.0),
+        (0.0, 18.0), (0.0, 10.0), (0.0, 8.0), (0.0, 4.0), (-4.0, 4.0),
+        (-4.0, 0.0), (0.0, 0.0),
+    ],
+] # outer: counter-clockwise
+curve_2 = [
+    # first segment
+    [
+        (4.0, 26.0), (8.0, 26.0), (10.0, 26.0), (10.0, 24.0),
+        (10.0, 22.0), (10.0, 20.0),
+    ],
+    # second segment
+    [
+        (10.0, 20.0), (8.0, 20.0), (6.0, 20.0),
+        (4.0, 20.0), (4.0, 22.0), (4.0, 24.0), (4.0, 26.0),
+    ],
+] # inner: clockwise
+curve_3 = [[(4.0, 16.0), (12.0, 16.0), (12.0, 14.0), (4.0, 14.0), (4.0, 16.0)]] # inner: clockwise
+curve_4 = [[(4.0, 8.0), (10.0, 8.0), (8.0, 6.0), (6.0, 6.0), (4.0, 8.0)]] # inner: clockwise
+curves = [curve_1, curve_2, curve_3, curve_4]
+points = [
+    (2.0, 26.0), (2.0, 24.0), (6.0, 24.0), (6.0, 22.0), (8.0, 24.0), (8.0, 22.0),
+    (2.0, 22.0), (0.0, 26.0), (10.0, 18.0), (8.0, 18.0), (4.0, 18.0), (2.0, 16.0),
+    (2.0, 12.0), (6.0, 12.0), (2.0, 8.0), (2.0, 4.0), (4.0, 2.0),
+    (-2.0, 2.0), (4.0, 6.0), (10.0, 2.0), (10.0, 6.0), (8.0, 10.0), (4.0, 10.0),
+    (10.0, 12.0), (12.0, 12.0), (14.0, 26.0), (16.0, 24.0), (18.0, 28.0),
+    (16.0, 20.0), (18.0, 12.0), (16.0, 8.0), (14.0, 4.0), (14.0, -2.0),
+    (6.0, -2.0), (2.0, -4.0), (-4.0, -2.0), (-2.0, 8.0), (-2.0, 16.0),
+    (-4.0, 22.0), (-4.0, 26.0), (-2.0, 28.0), (6.0, 15.0), (7.0, 15.0),
+    (8.0, 15.0), (9.0, 15.0), (10.0, 15.0), (6.2, 7.8),
+    (5.6, 7.8), (5.6, 7.6), (5.6, 7.4), (6.2, 7.4), (6.0, 7.6),
+    (7.0, 7.8), (7.0, 7.4),
+]
+boundary_nodes, points = convert_boundary_points_to_indices(curves; existing_points = points);
+
+rng = StableRNG(123) # the triangulation is not unique due to cocircular points
+tri = triangulate(points; boundary_nodes, rng)
+fig, ax, sc = triplot(tri, show_constrained_edges = true, show_convex_hull = true)
+fig
+
+get_boundary_edge_map(tri)
+
+get_ghost_vertex_ranges(tri)
+
+DelaunayTriangulation.all_ghost_vertices(tri)
+
+get_ghost_vertex_map(tri)
+
+DelaunayTriangulation.get_all_boundary_nodes(tri)
+
+function get_triangulation_area(tri)
+    A = 0.0
+    nc = DelaunayTriangulation.num_curves(tri)
+    for curve_index in 1:nc
+        bn = get_boundary_nodes(tri, curve_index)
+        ns = DelaunayTriangulation.num_sections(bn)
+        for segment_index in 1:ns
+            bnn = get_boundary_nodes(bn, segment_index)
+            ne = num_boundary_edges(bnn)
+            for i in 1:ne
+                vᵢ = get_boundary_nodes(bnn, i)
+                vᵢ₊₁ = get_boundary_nodes(bnn, i + 1)
+                pᵢ, pᵢ₊₁ = get_point(tri, vᵢ, vᵢ₊₁)
+                xᵢ, yᵢ = getxy(pᵢ)
+                xᵢ₊₁, yᵢ₊₁ = getxy(pᵢ₊₁)
+                A += (yᵢ + yᵢ₊₁) * (xᵢ - xᵢ₊₁)
+            end
+        end
+    end
+    return A / 2
+end
+A = get_triangulation_area(tri)
+
+function get_perimeters(tri)
+    total_perimeter = 0.0
+    nc = DelaunayTriangulation.num_curves(tri)
+    curve_perimeters = zeros(nc) # curve_index =&gt; perimeter
+    segment_perimeters = Dict{NTuple{2, Int}, Float64}() # (curve_index, segment_index) =&gt; perimeter
+    for (e, ((curve_index, section_index), node_index)) in get_boundary_edge_map(tri)
+        u, v = edge_vertices(e)
+        p, q = get_point(tri, u, v)
+        ℓ = sqrt((getx(p) - getx(q))^2 + (gety(p) - gety(q))^2)
+        total_perimeter += ℓ
+        curve_perimeters[curve_index] += ℓ
+        if haskey(segment_perimeters, (curve_index, section_index))
+            segment_perimeters[(curve_index, section_index)] += ℓ
+        else
+            segment_perimeters[(curve_index, section_index)] = ℓ
+        end
+    end
+    return total_perimeter, curve_perimeters, segment_perimeters
+end
+ℓ, cℓ, sℓ = get_perimeters(tri)</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../constrained_outer_boundary_segmented/">« Segmented Outer Boundary</a><a class="docs-footer-nextpage" href="../constrained_interior_within_interiors/">Domain with Interior Holes inside Interior Holes »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Sunday 8 September 2024 20:48">Sunday 8 September 2024</span>. Using Julia version 1.10.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Pole of Inaccessibility and Polygons · DelaunayTriangulation.jl</title><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://DanielVandH.github.io/DelaunayTriangulation.jl/other_features/pole_of_inaccessibility/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">DelaunayTriangulation.jl</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Triangulations</span><ul><li><a class="tocitem" href="../../triangulations/unconstrained/">Unconstrained Triangulations</a></li><li><a class="tocitem" href="../../triangulations/constrained/">Constrained Triangulations</a></li><li><a class="tocitem" href="../../triangulations/refinement/">Mesh Refinement</a></li><li><a class="tocitem" href="../../triangulations/lattice/">Lattice</a></li><li><a class="tocitem" href="../../triangulations/gmsh/">Gmsh</a></li><li><a class="tocitem" href="../../triangulations/convex/">Convex Polygons</a></li></ul></li><li><span class="tocitem">Voronoi Tessellations</span><ul><li><a class="tocitem" href="../../tessellations/voronoi/">Voronoi Tessellations</a></li><li><a class="tocitem" href="../../tessellations/clipped/">Clipped Voronoi Tessellations</a></li><li><a class="tocitem" href="../../tessellations/lloyd/">Centroidal Voronoi Tessellation</a></li></ul></li><li><a class="tocitem" href="../../boundary_handling/">Boundary Handling</a></li><li><span class="tocitem">Data Structures</span><ul><li><a class="tocitem" href="../../data_structures/adjacent/">Adjacent</a></li><li><a class="tocitem" href="../../data_structures/adjacent2vertex/">Adjacent2Vertex</a></li><li><a class="tocitem" href="../../data_structures/graph/">Graph</a></li><li><a class="tocitem" href="../../data_structures/convex_hull/">Convex Hull</a></li><li><a class="tocitem" href="../../data_structures/triangulation/">Triangulation</a></li><li><a class="tocitem" href="../../data_structures/statistics/">Statistics</a></li><li><a class="tocitem" href="../../data_structures/voronoi/">Voronoi Tessellation</a></li></ul></li><li><a class="tocitem" href="../../operations/">Operations</a></li><li><span class="tocitem">Other Features</span><ul><li><a class="tocitem" href="../point_location/">Point Location</a></li><li class="is-active"><a class="tocitem" href>Pole of Inaccessibility and Polygons</a><ul class="internal"><li><a class="tocitem" href="#Example:-Pole-of-inaccessibility"><span>Example: Pole of inaccessibility</span></a></li><li><a class="tocitem" href="#Example:-Querying-if-points-are-in-a-polygon"><span>Example: Querying if points are in a polygon</span></a></li></ul></li><li><a class="tocitem" href="../convex_hull/">Convex Hull</a></li></ul></li><li><span class="tocitem">Primitive Interfaces</span><ul><li><a class="tocitem" href="../../interface/interface/">General and Defaults</a></li><li><a class="tocitem" href="../../interface/triangles/">Triangles</a></li><li><a class="tocitem" href="../../interface/edges/">Edges</a></li><li><a class="tocitem" href="../../interface/points/">Points</a></li><li><a class="tocitem" href="../../interface/boundary_nodes/">Boundary Nodes</a></li><li><a class="tocitem" href="../../interface/example/">Example</a></li><li><a class="tocitem" href="../../interface/counting/">Application: Counting Function Calls</a></li></ul></li><li><a class="tocitem" href="../../predicates/">Predicates</a></li><li><a class="tocitem" href="../../utils/">Other Utilities</a></li><li><span class="tocitem">Triangulation Algorithms</span><ul><li><a class="tocitem" href="../../tri_algs/bowyer/">Bowyer-Watson Algorithm</a></li><li><a class="tocitem" href="../../tri_algs/convex/">Chew&#39;s Algorithm for Triangulating Convex Polygons</a></li><li><a class="tocitem" href="../../tri_algs/constrained/">Constrained Triangulations</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Other Features</a></li><li class="is-active"><a href>Pole of Inaccessibility and Polygons</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Pole of Inaccessibility and Polygons</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/DanielVandH/DelaunayTriangulation.jl/blob/main/docs/src/other_features/pole_of_inaccessibility.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Pole-of-Inaccessibility-and-Polygons"><a class="docs-heading-anchor" href="#Pole-of-Inaccessibility-and-Polygons">Pole of Inaccessibility and Polygons</a><a id="Pole-of-Inaccessibility-and-Polygons-1"></a><a class="docs-heading-anchor-permalink" href="#Pole-of-Inaccessibility-and-Polygons" title="Permalink"></a></h1><p>We provide a function for computing the pole of inaccessibility of a given polygon, namely the point inside the polygon that is furthest from the boundary. Our method is primarily based on <a href="https://blog.mapbox.com/a-new-algorithm-for-finding-a-visual-center-of-a-polygon-7c77e6492fbc">this blogpost</a>, recursively subdividing the polygon using quadtree partitioning. The function for this is <code>pole_of_inaccessibility</code>:</p><article class="docstring"><header><a class="docstring-binding" id="DelaunayTriangulation.pole_of_inaccessibility" href="#DelaunayTriangulation.pole_of_inaccessibility"><code>DelaunayTriangulation.pole_of_inaccessibility</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia hljs">pole_of_inaccessibility(pts, boundary_nodes; precision = one(number_type(pts)))</code></pre><p>Given a collection of points <code>pts</code> and a set of <code>boundary_nodes</code> defining the polygon connections, finds the pole of inaccessibility. This works for multiply-connected polygons,  provided <code>boundary_nodes</code> matches the specification given in the documentation. You can  control the tolerance of the returned pole using <code>precision</code>.</p><p>This function is also commonly called <code>polylabel</code>.</p><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>The pole of inaccessibility is a point within a polygon that is furthest from an  edge. It is useful for our purposes since it is a representative point that is  guaranteed to be inside the polygon, in contrast to for example a centroid which  is not always inside the polygon.</p><p>For more information about this, see e.g. <a href="https://blog.mapbox.com/a-new-algorithm-for-finding-a-visual-center-of-a-polygon-7c77e6492fbc">this blog post</a> or <a href="https://github.com/mapbox/polylabel">the original repo</a>. This implementation was partially based  on <a href="https://github.com/Twista/python-polylabel">the python implementation</a> and <a href="https://github.com/asinghvi17/Polylabel.jl">this other Julia implementation</a>.</p></div></div></div><a class="docs-sourcelink" target="_blank" href="https://github.com/DanielVandH/DelaunayTriangulation.jl/blob/1d087ecdce69a2b08ea437af99c9f631ad335d2e/src/geometry_utils/polylabel.jl#L1-L21">source</a></section></article><p>We needed this method since the point we need to associate ghost vertices with must be inside the domain, and so other representative points like centroids or arithmetic averages would not be sufficient if the domain is non-convex.</p><p>Below we also list some other relevant docstrings.</p><article class="docstring"><header><a class="docstring-binding" id="DelaunayTriangulation.Cell" href="#DelaunayTriangulation.Cell"><code>DelaunayTriangulation.Cell</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia hljs">Cell{T}</code></pre><p>A cell in a grid. The cell is a square with side length <code>2half_width</code>. The cell is centered at <code>(x, y)</code>. The cell is  assumed to live in a polygon.</p><p><strong>Fields</strong></p><ul><li><code>x::T</code></li></ul><p>The x-coordinate of the center of the cell.</p><ul><li><code>y::T</code></li></ul><p>The y-coordinate of the center of the cell.</p><ul><li><code>half_width::T</code></li></ul><p>The half-width of the cell.</p><ul><li><code>dist::T</code></li></ul><p>The distance from the center of the cell to the polygon.</p><ul><li><code>max_dist::T</code></li></ul><p>The maximum distance from the center of the cell to the polygon. This is <code>dist + half_width * sqrt(2)</code>.</p><p><strong>Constructors</strong></p><pre><code class="nohighlight hljs">`Cell(x::T, y::T, half_width::T, pts, boundary_nodes)`</code></pre><p>Constructs a cell with center <code>(x, y)</code> and half-width <code>half_width</code>. The cell is assumed to live in the polygon defined by <code>pts</code> and <code>boundary_nodes</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/DanielVandH/DelaunayTriangulation.jl/blob/1d087ecdce69a2b08ea437af99c9f631ad335d2e/src/data_structures/polylabel/cell.jl#L1-L28">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="DelaunayTriangulation.CellQueue" href="#DelaunayTriangulation.CellQueue"><code>DelaunayTriangulation.CellQueue</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia hljs">CellQueue{T}</code></pre><p>A struct representing the priority queue of <a href="#DelaunayTriangulation.Cell"><code>Cell</code></a>s, used for sorting the cells in a grid according to their maximum distance.</p><p><strong>Fields</strong></p><ul><li><code>queue::PriorityQueue{Cell{T},T,typeof(Base.Order.Reverse)}</code></li></ul><p>The priority queue of cells.</p><p><strong>Constructors</strong></p><pre><code class="nohighlight hljs">CellQueue{T}()</code></pre><p>Constructs a new <code>CellQueue</code> with elements of type <code>Cell{T}</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/DanielVandH/DelaunayTriangulation.jl/blob/1d087ecdce69a2b08ea437af99c9f631ad335d2e/src/data_structures/polylabel/cell_queue.jl#L1-L16">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="DelaunayTriangulation.polygon_features-Tuple{Any, Any}" href="#DelaunayTriangulation.polygon_features-Tuple{Any, Any}"><code>DelaunayTriangulation.polygon_features</code></a> — <span class="docstring-category">Method</span></header><section><div><pre><code class="language-julia hljs">polygon_features(pts, boundary_nodes)</code></pre><p>Returns features of the polygon represented by the points <code>pts</code> with <code>boundary_nodes</code> defining the polygon  connections. The features returned are <code>(a, c)</code>, where <code>a</code> is the area of the polygon and  <code>c = (cx, cy)</code> is the centroid. </p><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><ul><li>The polygon is assumed to be simple, i.e. no self-intersections.</li><li>The function works with holes, provided <code>boundary_nodes</code> represents these as described in the documentation.</li><li>The polygon is assumed to have a consistent orientation for each boundary. If the orientation is positive, <code>a &gt; 0</code>, and <code>a &lt; 0</code> otherwise.</li></ul></div></div></div><a class="docs-sourcelink" target="_blank" href="https://github.com/DanielVandH/DelaunayTriangulation.jl/blob/1d087ecdce69a2b08ea437af99c9f631ad335d2e/src/geometry_utils/polygons.jl#L1-L13">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="DelaunayTriangulation.squared_distance_to_segment" href="#DelaunayTriangulation.squared_distance_to_segment"><code>DelaunayTriangulation.squared_distance_to_segment</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia hljs">squared_distance_to_segment(x₁, y₁, x₂, y₂, x, y)</code></pre><p>Given a line segment <code>(x₁, y₁) → (x₂, y₂)</code> and a query point <code>(x, y)</code>, returns the  squared distance from <code>(x, y)</code> to the line segment.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/DanielVandH/DelaunayTriangulation.jl/blob/1d087ecdce69a2b08ea437af99c9f631ad335d2e/src/geometry_utils/polygons.jl#L80-L85">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="DelaunayTriangulation.distance_to_polygon" href="#DelaunayTriangulation.distance_to_polygon"><code>DelaunayTriangulation.distance_to_polygon</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia hljs">distance_to_polygon(q, pts, boundary_nodes)</code></pre><p>Given a polygon represented by the points <code>pts</code> with <code>boundary_nodes</code> defining the polygon  connections, and a query point <code>q</code>, returns the signed distance from <code>q</code> to the polygon. If  <code>q</code> is outside of the polygon, then the returned distance is negative, and if it is inside  then the distance is positive. Works with holes, provided <code>boundary_nodes</code> matches the  specification of a boundary given in the documentation.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/DanielVandH/DelaunayTriangulation.jl/blob/1d087ecdce69a2b08ea437af99c9f631ad335d2e/src/geometry_utils/polygons.jl#L100-L108">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="DelaunayTriangulation.polygon_bounds-Tuple{Any, Any}" href="#DelaunayTriangulation.polygon_bounds-Tuple{Any, Any}"><code>DelaunayTriangulation.polygon_bounds</code></a> — <span class="docstring-category">Method</span></header><section><div><pre><code class="language-julia hljs">polygon_bounds(pts, boundary_nodes, check_all_curves = Val(false))</code></pre><p>Given a polygon represented by the points <code>pts</code> with <code>boundary_nodes</code> defining the polygon  connections, returns a bounding box of the polygon. The bounding box is returned  in the order <code>(xmin, xmax, ymin, ymax)</code>. If your polygon is not a multiple polygon,  <code>check_all_curves = Val(false)</code> is sufficient, otherwise you might want to use <code>Val(true)</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/DanielVandH/DelaunayTriangulation.jl/blob/1d087ecdce69a2b08ea437af99c9f631ad335d2e/src/geometry_utils/polygons.jl#L173-L180">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="DelaunayTriangulation.sort_convex_polygon!" href="#DelaunayTriangulation.sort_convex_polygon!"><code>DelaunayTriangulation.sort_convex_polygon!</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia hljs">sort_convex_polygon!(vertices, points)</code></pre><p>Sorts the vertices of a convex polygon in counter-clockwise order. The polygon is defined by the points <code>points</code> and the vertices <code>vertices</code>. The vertices are sorted in place. It is  assumed that the vertices are not circular, i.e. <code>vertices[begin] ≠ vertices[end]</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/DanielVandH/DelaunayTriangulation.jl/blob/1d087ecdce69a2b08ea437af99c9f631ad335d2e/src/geometry_utils/polygons.jl#L235-L241">source</a></section></article><p><code>distance_to_polygon</code> is also useful for point location, as shown in the examples below.</p><p>If you need to compute this for multiple boundaries, meaning multiple poles, use <code>compute_representative_points!</code>.</p><article class="docstring"><header><a class="docstring-binding" id="DelaunayTriangulation.compute_representative_points!" href="#DelaunayTriangulation.compute_representative_points!"><code>DelaunayTriangulation.compute_representative_points!</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia hljs">compute_representative_points!(tri::Triangulation; use_convex_hull=!has_multiple_segments(tri) &amp;&amp; num_boundary_edges(get_boundary_nodes(tri)) == 0)</code></pre><p>Updates <code>get_representative_point_list(tri)</code> to match the current position of the boundaries. If there are no boundary nodes, <code>use_convex_hull</code> instead represents them using the indices of the convex hull.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/DanielVandH/DelaunayTriangulation.jl/blob/1d087ecdce69a2b08ea437af99c9f631ad335d2e/src/data_structures/triangulation/representative_points.jl#L1-L6">source</a></section></article><h2 id="Example:-Pole-of-inaccessibility"><a class="docs-heading-anchor" href="#Example:-Pole-of-inaccessibility">Example: Pole of inaccessibility</a><a id="Example:-Pole-of-inaccessibility-1"></a><a class="docs-heading-anchor-permalink" href="#Example:-Pole-of-inaccessibility" title="Permalink"></a></h2><p>Below is a simple example of computing this pole of inaccessibility.</p><pre><code class="language-julia hljs">pts = [0.0 8.0
+      2.0 5.0
+      3.0 7.0
+      1.81907 8.13422
+      3.22963 8.865
+      4.24931 7.74335
+      4.50423 5.87393
+      3.67149 4.3784
+      2.73678 2.62795
+      5.50691 1.38734
+      8.43 2.74691
+      9.7046 5.53404
+      8.56595 7.79433
+      6.71353 9.03494
+      4.13034 9.66375
+      2.75378 10.3775
+      1.0883 10.4965
+      -1.138 9.83369
+      -2.25965 8.45712
+      -2.78649 5.94191
+      -1.39292 3.64763
+      0.323538 4.97322
+      -0.900078 6.6217
+      0.98633 9.68074
+      0.153591 9.54478
+      0.272554 8.66106
+      2.90673 8.18521
+      2.12497 9.42582
+      7.27436 2.7979
+      3.0 4.0
+      5.33697 1.88019]&#39;
+boundary_nodes = [
+      [[1, 4, 3, 2], [2, 9, 10, 11, 8, 7, 12], [12, 6, 13, 5, 14, 15, 16, 17, 16], [16, 17, 18, 19, 20, 21, 22, 23, 1]],
+      [[26, 25, 24], [24, 28, 27, 26]],
+      [[29, 30, 31, 29]]
+]
+x, y = DT.pole_of_inaccessibility(pts, boundary_nodes)
+
+fig = Figure()
+ax = Axis(fig[1, 1], xlabel=L&quot;x&quot;, ylabel=L&quot;y&quot;)
+bn1 = pts[:, unique(reduce(vcat, boundary_nodes[1]))] |&gt; x -&gt; hcat(x, x[:, begin])
+bn2 = pts[:, unique(reduce(vcat, boundary_nodes[2]))] |&gt; x -&gt; hcat(x, x[:, begin])
+bn3 = pts[:, unique(reduce(vcat, boundary_nodes[3]))] |&gt; x -&gt; hcat(x, x[:, begin])
+lines!(ax, bn1, color=:red, linewidth=4)
+lines!(ax, bn2, color=:red, linewidth=4)
+lines!(ax, bn3, color=:red, linewidth=4)
+scatter!(ax, [x], [y], color=:blue, markersize=23)</code></pre><figure>
+    <img src='../figs/pole_of_inaccessibility.png', alt='Pole of inaccessibility'><br>
+</figure><h2 id="Example:-Querying-if-points-are-in-a-polygon"><a class="docs-heading-anchor" href="#Example:-Querying-if-points-are-in-a-polygon">Example: Querying if points are in a polygon</a><a id="Example:-Querying-if-points-are-in-a-polygon-1"></a><a class="docs-heading-anchor-permalink" href="#Example:-Querying-if-points-are-in-a-polygon" title="Permalink"></a></h2><p>If we need to, <code>distance_to_polygon</code> is a nice way for querying whether a point is inside or outside of a given polygon. Let&#39;s use the Julia example. Let us start by defining the polygon (this is a multiple polygon, it works for even simpler polygons obviously) and placing random points inside its bounding box:</p><pre><code class="language-juliaC hljs">D = (14.2705719699703, 32.8530791545746)
+E = (14.3, 27.2)
+F = (14.1, 27.0)
+G = (13.7, 27.2)
+H = (13.4, 27.5)
+I = (13.1, 27.6)
+J = (12.7, 27.4)
+K = (12.5, 27.1)
+L = (12.7, 26.7)
+M = (13.1, 26.5)
+N = (13.6, 26.4)
+O = (14.0, 26.4)
+P = (14.6, 26.5)
+Q = (15.1983491346581, 26.8128534095401)
+R = (15.6, 27.6)
+S = (15.6952958264624, 28.2344688505621)
+T = (17.8088971520274, 33.1192363585346)
+U = (16.3058917649589, 33.0722674401887)
+V = (16.3215480710742, 29.7374742376305)
+W = (16.3841732955354, 29.393035503094)
+Z = (16.6190178872649, 28.9233463196351)
+A1 = (17.0417381523779, 28.5319386667527)
+B1 = (17.5114273358368, 28.3753756055997)
+C1 = (18.1376795804487, 28.3597192994844)
+D1 = (18.7169629067146, 28.5632512789833)
+E1 = (19.2805899268653, 28.8920337074045)
+F1 = (19.26493362075, 28.4536571361762)
+G1 = (20.6426885588962, 28.4223445239456)
+H1 = (20.689657477242, 33.1035800524193)
+I1 = (19.2805899268653, 33.0722674401887)
+J1 = (19.2962462329806, 29.7531305437458)
+K1 = (19.0614016412512, 29.393035503094)
+L1 = (18.7482755189452, 29.236472441941)
+M1 = (18.4508057027546, 29.1425346052493)
+N1 = (18.1689921926793, 29.3147539725175)
+O1 = (17.7932408459121, 29.6278800948235)
+P1 = (22.6466957416542, 35.4207133574833)
+Q1 = (21.2219718851621, 34.9979930923702)
+R1 = (21.2376281912774, 28.4693134422915)
+S1 = (22.6780083538847, 28.4380008300609)
+T1 = (24.5724213938357, 33.1975178891111)
+U1 = (23.3512295168425, 32.8530791545746)
+V1 = (23.3199169046119, 28.4380008300609)
+W1 = (24.6663592305274, 28.3753756055997)
+Z1 = (15.1942940307729, 35.4363696635986)
+A2 = (14.7246048473139, 35.3737444391374)
+B2 = (14.3645098066621, 35.1858687657538)
+C2 = (14.1766341332786, 34.8570863373326)
+D2 = (14.1140089088174, 34.3247719294125)
+E2 = (14.2705719699703, 33.8394264398383)
+F2 = (14.7246048473139, 33.6202381542241)
+G2 = (15.4604512347329, 33.6045818481088)
+H2 = (16.0, 34.0)
+I2 = (15.9771093365377, 34.6848669700643)
+J2 = (15.6170142958859, 35.2328376840997)
+K2 = (24.1653574348379, 35.4520259697138)
+L2 = (23.7739497819555, 35.4363696635986)
+M2 = (23.4608236596496, 35.2641502963303)
+N2 = (23.272947986266, 34.9040552556785)
+O2 = (23.1320412312284, 34.5909291333725)
+P2 = (23.1163849251131, 34.2151777866054)
+Q2 = (23.2886042923813, 33.8081138276077)
+R2 = (23.8209187003014, 33.6045818481088)
+S2 = (24.3062641898756, 33.5576129297629)
+T2 = (24.7602970672192, 33.8550827459536)
+U2 = (25.010797965064, 34.4656786844502)
+V2 = (24.8385785977957, 34.9666804801397)
+W2 = (24.5254524754898, 35.2641502963303)
+Z2 = (25.3708930057158, 37.4716894585871)
+A3 = (24.7916096794498, 37.3464390096648)
+B3 = (24.4471709449133, 36.9550313567823)
+C3 = (24.3062641898756, 36.5636237038999)
+D3 = (24.4941398632592, 35.9999966837492)
+E3 = (25.0264542711793, 35.5929327247515)
+F3 = (25.5587686790994, 35.5929327247515)
+F3 = (25.5587686790994, 35.5929327247515)
+G3 = (26.0, 36.0)
+H3 = (26.1380520053653, 36.5792800100152)
+I3 = (26.0, 37.0)
+J3 = (25.7466443524829, 37.2838137852036)
+K3 = (26.3885529032101, 35.4676822758291)
+L3 = (25.9814889442124, 35.3580881330221)
+M3 = (25.6840191280217, 35.1858687657538)
+N3 = (25.5274560668688, 34.9040552556785)
+O3 = (25.4961434546382, 34.5596165211419)
+P3 = (25.5274560668688, 34.246490398836)
+Q3 = (25.6683628219064, 33.8394264398383)
+R3 = (26.0284578625583, 33.6358944603394)
+S3 = (26.5451159643631, 33.6202381542241)
+T3 = (27.0, 34.0)
+U3 = (27.280962351782, 34.5596165211419)
+V3 = (27.0304614539373, 35.2171813779844)
+W3 = (26.1693646175959, 33.087923746304)
+Z3 = (26.0, 33.0)
+A4 = (25.5274560668688, 32.7278287056522)
+B4 = (25.2612988629087, 32.4147025833463)
+C4 = (25.1830173323322, 32.0702638488098)
+D4 = (25.2299862506781, 31.7727940326191)
+E4 = (25.6527065157911, 31.5222931347744)
+F4 = (26.2946150665183, 31.7258251142732)
+G4 = (26.5607722704784, 32.5086404200381)
+H4 = (27.1557119028596, 32.7434850117675)
+I4 = (27.6097447802033, 32.4929841139228)
+J4 = (27.6410573924338, 32.1015764610403)
+K4 = (27.7193389230103, 31.6005746653509)
+L4 = (27.437525412935, 31.4283552980826)
+M4 = (26.9834925355914, 31.2561359308143)
+N4 = (26.5764285765937, 31.0995728696614)
+O4 = (26.0441141686736, 30.7864467473554)
+P4 = (25.6527065157911, 30.5672584617413)
+Q4 = (25.3239240873699, 30.1915071149741)
+R4 = (25.1673610262169, 29.8783809926682)
+S4 = (25.1047358017558, 29.6122237887082)
+T4 = (25.0890794956405, 29.1895035235952)
+U4 = (25.2926114751393, 28.8294084829433)
+V4 = (25.6840191280217, 28.5632512789833)
+W4 = (26.1537083114806, 28.3753756055997)
+Z4 = (26.8269294744384, 28.391031911715)
+A5 = (27.4844943312809, 28.6102201973292)
+B5 = (27.7342002330051, 28.7239579596219)
+C5 = (27.7264126450755, 28.4202565942047)
+D5 = (29.1825559185446, 28.3922538389457)
+E5 = (29.1545531632856, 32.2146299318021)
+F5 = (29.000538009361, 32.5786657501693)
+G5 = (28.6785063238822, 32.9006974356481)
+H5 = (28.3144705055149, 33.0827153448317)
+I5 = (27.9084305542591, 33.2367304987563)
+J5 = (27.3343740714492, 33.3207387645334)
+K5 = (26.8303244767868, 33.2367304987563)
+L5 = (27.6564057569279, 30.786489413592)
+M5 = (27.6984098898165, 30.3944508399657)
+N5 = (27.6984098898165, 29.7363860913787)
+O5 = (27.5863988687804, 29.4143544059)
+P5 = (27.2643671833016, 29.2043337414573)
+Q5 = (26.9843396307114, 29.1763309861983)
+R5 = (26.6903107004917, 29.3163447624934)
+S5 = (26.5782996794556, 29.7503874690082)
+T5 = (26.7603175886393, 30.3384453294476)
+U5 = (27.3203726938197, 30.7024811478149)
+J_curve = [[C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, C]]
+U_curve = [[T, U, V, W, Z, A1, B1, C1, D1, E1, F1, G1, H1, I1, J1, K1, L1, M1, N1, O1, T]]
+L_curve = [[P1, Q1, R1, S1, P1]]
+I_curve = [[T1, U1, V1, W1, T1]]
+A_curve_outline = [[
+    K5, W3, Z3, A4, B4, C4, D4, E4, F4, G4, H4, I4, J4, K4, L4, M4, N4,
+    O4, P4, Q4, R4, S4, T4, U4, V4, W4, Z4, A5, B5, C5, D5, E5, F5, G5,
+    H5, I5, J5, K5]]
+A_curve_hole = [[L5, M5, N5, O5, P5, Q5, R5, S5, T5, U5, L5]]
+dot_1 = [[Z1, A2, B2, C2, D2, E2, F2, G2, H2, I2, J2, Z1]]
+dot_2 = [[Z2, A3, B3, C3, D3, E3, F3, G3, H3, I3, J3, Z2]]
+dot_3 = [[K2, L2, M2, N2, O2, P2, Q2, R2, S2, T2, U2, V2, W2, K2]]
+dot_4 = [[K3, L3, M3, N3, O3, P3, Q3, R3, S3, T3, U3, V3, K3]]
+curves = [J_curve, U_curve, L_curve, I_curve, A_curve_outline, A_curve_hole, dot_1, dot_2, dot_3, dot_4]
+nodes, points = convert_boundary_points_to_indices(curves)
+xmin, xmax, ymin, ymax = DelaunayTriangulation.polygon_bounds(points, nodes, Val(true)) # Val(true) =&gt; check all parts of the polygon
+query_points = [((xmax - xmin) * rand() + xmin, (ymax - ymin) * rand() + ymin) for _ in 1:1000]
+
+fig = Figure()
+ax = Axis(fig[1, 1])
+scatter!(ax, query_points)
+for nodes in nodes
+    lines!(ax, points[reduce(vcat, nodes)], color=:magenta, linewidth=3)
+end</code></pre><figure>
+    <img src='../figs/scattered_julia.png', alt='Scattered Julia'><br>
+</figure><p>Now let&#39;s use <code>distance_to_polygon</code> to test if points are inside or outside of the logo. We colour points inside in blue, and points outside in red.</p><pre><code class="language-julia hljs">is_inside = [DelaunayTriangulation.distance_to_polygon(q, points, nodes) &gt; 0 for q in query_points]
+scatter!(ax, query_points[is_inside], color=:blue)
+scatter!(ax, query_points[.!is_inside], color=:red)</code></pre><figure>
+    <img src='../figs/point_in_polygon.png', alt='Point-in-polygon'><br>
+</figure><p>Works perfectly! </p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../point_location/">« Point Location</a><a class="docs-footer-nextpage" href="../convex_hull/">Convex Hull »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Wednesday 1 November 2023 00:00">Wednesday 1 November 2023</span>. Using Julia version 1.9.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
