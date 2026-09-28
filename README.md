@@ -127,7 +127,7 @@ ax = Axis(fig[3, 2]; title = "Power Diagram", wh...);            voronoiplot!(ax
 ax = Axis(fig[3, 3]; title = "Clipped Voronoi", wh...);          voronoiplot!(ax, vorn11, color=:white, strokewidth = 4)
 ```
 
-![](readme.png)
+![](assets/readme.png)
 
 ## Citing DelaunayTriangulation.jl
 
@@ -197,4 +197,4 @@ Compared to all these other libraries, and only in the context of planar triangu
 </div>
 -->
 
-![Comparison](softwarecomparison.png)
+![Comparison](assets/softwarecomparison.png)

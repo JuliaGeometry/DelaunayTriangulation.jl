@@ -1,5 +1,5 @@
 ```@meta
-EditURL = "https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/operations_ghost_triangles.jl"
+EditURL = "https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/DelaunayTriangulation/docs/src/literate_tutorials/operations_ghost_triangles.jl"
 ```
 
 # Triangulation Operations
@@ -120,7 +120,7 @@ collect(each_solid_vertex(tri)) == collect(each_vertex(tri))
 
 ## Just the code
 An uncommented version of this example is given below.
-You can view the source code for this file [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/operations_ghost_triangles.jl).
+You can view the source code for this file [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/DelaunayTriangulation/docs/src/literate_tutorials/operations_ghost_triangles.jl).
 
 ```julia
 using DelaunayTriangulation

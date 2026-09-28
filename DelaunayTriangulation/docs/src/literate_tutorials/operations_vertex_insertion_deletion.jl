@@ -9,7 +9,7 @@ using CairoMakie
 using StableRNGs
 using ReferenceTests #src
 using Test #src
-fig_path = joinpath(@__DIR__, "../figures") #src
+fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures") #src
 
 # Let us now define our initial triangulation.
 points = [(0.0, 0.0), (2.0, 0.0), (1.0, 2.0)]

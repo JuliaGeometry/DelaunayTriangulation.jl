@@ -11,6 +11,7 @@ using LinearAlgebra
 using StructEquality
 using GeometryBasics
 using ReferenceTests
+const ASSETS = joinpath(@__DIR__, "..", "..", "..", "assets", "test", "voronoi")
 @struct_equal DT.Queue
 
 @testset "Unconstrained test" begin
@@ -1813,14 +1814,14 @@ end
         return sum(e1 .* (point .- origin)), sum(e2 .* (point .- origin))
     end
 
-    @test_reference "voronoi_issue_234_reference_n3.png" begin
+    @test_reference joinpath(ASSETS, "voronoi_issue_234_reference_n3.png") begin
         points = [projection(p) for p in generatePoints(3)]
         values = [0, 1, 2, 2, 0, 1]
         fig, ax, _ = voronoiplot([p[1] for p in points], [p[2] for p in points], values)
         fig
     end
 
-    @test_reference "voronoi_issue_234_reference_n4.png" begin
+    @test_reference joinpath(ASSETS, "voronoi_issue_234_reference_n4.png") begin
         points = [projection(p) for p in generatePoints(4)]
         values = [0, 1, 2, 0, 2, 0, 1, 1, 2, 0]
         fig, ax, _ = voronoiplot([p[1] for p in points], [p[2] for p in points], values)

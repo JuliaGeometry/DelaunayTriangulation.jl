@@ -1,5 +1,5 @@
 ```@meta
-EditURL = "https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/refinement.jl"
+EditURL = "https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/DelaunayTriangulation/docs/src/literate_tutorials/refinement.jl"
 ```
 
 # Mesh Refinement
@@ -315,7 +315,7 @@ at the expense of some other triangles having lesser quality.
 
 ## Just the code
 An uncommented version of this example is given below.
-You can view the source code for this file [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/refinement.jl).
+You can view the source code for this file [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/DelaunayTriangulation/docs/src/literate_tutorials/refinement.jl).
 
 ```julia
 using DelaunayTriangulation

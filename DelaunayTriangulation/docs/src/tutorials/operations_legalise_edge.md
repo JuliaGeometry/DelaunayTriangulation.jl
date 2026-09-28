@@ -1,5 +1,5 @@
 ```@meta
-EditURL = "https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/operations_legalise_edge.jl"
+EditURL = "https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/DelaunayTriangulation/docs/src/literate_tutorials/operations_legalise_edge.jl"
 ```
 
 # Triangulation Operations
@@ -95,7 +95,7 @@ The triangulation is now Delaunay, and there are no more illegal edges.
 
 ## Just the code
 An uncommented version of this example is given below.
-You can view the source code for this file [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/operations_legalise_edge.jl).
+You can view the source code for this file [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/DelaunayTriangulation/docs/src/literate_tutorials/operations_legalise_edge.jl).
 
 ```julia
 using DelaunayTriangulation

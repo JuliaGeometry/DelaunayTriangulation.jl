@@ -27,6 +27,8 @@ jobs:
           version: ${{ matrix.julia-version }}
           arch: x64
       - uses: julia-actions/julia-buildpkg@latest
+        with:
+          project: DelaunayTriangulation
       - name: Clone Downstream
         uses: actions/checkout@v7
         with:
@@ -38,7 +40,7 @@ jobs:
           using Pkg
           try
             # force it to use this PR's version of the package
-            Pkg.develop(PackageSpec(path="."))  # resolver may fail with main deps
+            Pkg.develop(PackageSpec(path="DelaunayTriangulation"))  # resolver may fail with main deps
             Pkg.update()
             Pkg.test(coverage=true)  # resolver may fail with test time deps
           catch err
@@ -50,6 +52,8 @@ jobs:
             exit(0)  # Exit immediately, as a success
           end
       - uses: julia-actions/julia-processcoverage@v1
+        with:
+          directories: DelaunayTriangulation/src
       - uses: codecov/codecov-action@v7
         with:
           file: lcov.info

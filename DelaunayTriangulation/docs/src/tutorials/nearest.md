@@ -1,5 +1,5 @@
 ```@meta
-EditURL = "https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/nearest.jl"
+EditURL = "https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/DelaunayTriangulation/docs/src/literate_tutorials/nearest.jl"
 ```
 
 # Nearest Neighbour Queries
@@ -64,7 +64,7 @@ Both methods lead to the same results because they use the same algorithm.
 
 ## Just the code
 An uncommented version of this example is given below.
-You can view the source code for this file [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/nearest.jl).
+You can view the source code for this file [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/DelaunayTriangulation/docs/src/literate_tutorials/nearest.jl).
 
 ```julia
 using DelaunayTriangulation

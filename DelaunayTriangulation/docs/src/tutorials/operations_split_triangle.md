@@ -1,5 +1,5 @@
 ```@meta
-EditURL = "https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/operations_split_triangle.jl"
+EditURL = "https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/DelaunayTriangulation/docs/src/literate_tutorials/operations_split_triangle.jl"
 ```
 
 # Triangulation Operations
@@ -45,7 +45,7 @@ about restoring the Delaunay property of the triangulation after using
 
 ## Just the code
 An uncommented version of this example is given below.
-You can view the source code for this file [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/operations_split_triangle.jl).
+You can view the source code for this file [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/DelaunayTriangulation/docs/src/literate_tutorials/operations_split_triangle.jl).
 
 ```julia
 using DelaunayTriangulation

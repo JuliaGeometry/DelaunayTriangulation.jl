@@ -9,7 +9,7 @@ using CairoMakie
 using StableRNGs
 using ReferenceTests #src
 using Test #src
-fig_path = joinpath(@__DIR__, "../figures") #src
+fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures") #src
 
 # Let us now define what we will be triangulating. The 
 # boundary will be made up of a boundary and three interior 

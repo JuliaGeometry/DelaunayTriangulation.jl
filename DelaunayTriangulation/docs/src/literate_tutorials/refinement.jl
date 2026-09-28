@@ -18,7 +18,7 @@ using StableRNGs
 using StatsBase #src
 using ReferenceTests #src
 using Test #src
-fig_path = joinpath(@__DIR__, "../figures") #src
+fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures") #src
 
 # ## Unconstrained triangulation 
 # Let us start with a simple example, refining an unconstrained triangulation.

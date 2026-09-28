@@ -1,5 +1,6 @@
 using DelaunayTriangulation
 using ReferenceTests
+const ASSETS = joinpath(@__DIR__, "..", "..", "..", "assets", "test", "makie")
 using CairoMakie
 using Test
 using StableRNGs
@@ -13,7 +14,7 @@ _rand(args...) = rand(STABLE_RNG, args...)
 const RNG = (; reseed!, randn=_randn, rand=_rand, STABLE_RNG)
 
 @testset "tricontour" begin
-    @test_reference "tricontourf.png" begin
+    @test_reference joinpath(ASSETS, "tricontourf.png") begin
         reseed!()
         x = RNG.randn(50)
         y = RNG.randn(50)
@@ -25,7 +26,7 @@ const RNG = (; reseed!, randn=_randn, rand=_rand, STABLE_RNG)
         f
     end
 
-    @test_reference "tricontourf extendhigh extendlow.png" begin
+    @test_reference joinpath(ASSETS, "tricontourf extendhigh extendlow.png") begin
         reseed!()
         x = RNG.randn(50)
         y = RNG.randn(50)
@@ -37,7 +38,7 @@ const RNG = (; reseed!, randn=_randn, rand=_rand, STABLE_RNG)
         f
     end
 
-    @test_reference "tricontourf relative mode.png" begin
+    @test_reference joinpath(ASSETS, "tricontourf relative mode.png") begin
         reseed!()
         x = RNG.randn(50)
         y = RNG.randn(50)
@@ -49,7 +50,7 @@ const RNG = (; reseed!, randn=_randn, rand=_rand, STABLE_RNG)
         f
     end
 
-    @test_reference "tricontourf manual vs delaunay.png" begin
+    @test_reference joinpath(ASSETS, "tricontourf manual vs delaunay.png") begin
         reseed!()
         n = 20
         angles = range(0, 2pi, length=n + 1)[1:end-1]
@@ -72,7 +73,7 @@ const RNG = (; reseed!, randn=_randn, rand=_rand, STABLE_RNG)
         f
     end
 
-    @test_reference "tricontourf with boundary nodes.png" begin
+    @test_reference joinpath(ASSETS, "tricontourf with boundary nodes.png") begin
         reseed!()
         n = 20
         angles = range(0, 2pi, length=n + 1)[1:end-1]
@@ -89,7 +90,7 @@ const RNG = (; reseed!, randn=_randn, rand=_rand, STABLE_RNG)
         f
     end
 
-    @test_reference "tricontourf with boundary nodes and edges.png" begin
+    @test_reference joinpath(ASSETS, "tricontourf with boundary nodes and edges.png") begin
         reseed!()
         curve_1 = [
             [(0.0, 0.0), (5.0, 0.0), (10.0, 0.0), (15.0, 0.0), (20.0, 0.0), (25.0, 0.0)],
@@ -125,7 +126,7 @@ const RNG = (; reseed!, randn=_randn, rand=_rand, STABLE_RNG)
         f
     end
 
-    @test_reference "tricontourf with provided triangulation.png" begin
+    @test_reference joinpath(ASSETS, "tricontourf with provided triangulation.png") begin
         reseed!()
         θ = [LinRange(0, 2π * (1 - 1 / 19), 20); 0]
         xy = Vector{Vector{Vector{NTuple{2,Float64}}}}()
@@ -144,7 +145,7 @@ const RNG = (; reseed!, randn=_randn, rand=_rand, STABLE_RNG)
 end
 
 @testset "triplot" begin
-    @test_reference "Triplot with points, ghost edges, and convex hull.png" begin
+    @test_reference joinpath(ASSETS, "Triplot with points, ghost edges, and convex hull.png") begin
         reseed!()
         pts = RNG.rand(2, 50)
         tri = triangulate(pts; rng=RNG.STABLE_RNG)
@@ -156,7 +157,7 @@ end
         fig
     end
 
-    @test_reference "Triplot of a constrained triangulation with holes and a custom bounding box.png" begin
+    @test_reference joinpath(ASSETS, "Triplot of a constrained triangulation with holes and a custom bounding box.png") begin
         reseed!()
         curve_1 = [[
             (0.0, 0.0), (4.0, 0.0), (8.0, 0.0), (12.0, 0.0), (12.0, 4.0),
@@ -201,7 +202,7 @@ end
         fig
     end
 
-    @test_reference "Triplot with nonlinear transformation.png" begin
+    @test_reference joinpath(ASSETS, "Triplot with nonlinear transformation.png") begin
         reseed!()
         f = Figure()
         ax = PolarAxis(f[1, 1])
@@ -213,7 +214,7 @@ end
         f
     end
 
-    @test_reference "Triplot after adding points and make sure the representative_point_list is correctly updated.png" begin
+    @test_reference joinpath(ASSETS, "Triplot after adding points and make sure the representative_point_list is correctly updated.png") begin
         reseed!()
         points = [(0.0, 0.0), (0.95, 0.0), (1.0, 1.4), (0.0, 1.0)] # not 1 so that we have a unique triangulation
         tri = Observable(triangulate(points; delete_ghosts=false))
@@ -228,7 +229,7 @@ end
         fig
     end
 
-    @test_reference "Triplot Showing ghost edges for a triangulation with disjoint boundaries.png" begin
+    @test_reference joinpath(ASSETS, "Triplot Showing ghost edges for a triangulation with disjoint boundaries.png") begin
         reseed!()
         θ = LinRange(0, 2π, 20) |> collect
         θ[end] = 0 # need to make sure that 2π gives the exact same coordinates as 0
@@ -249,7 +250,7 @@ end
 end
 
 @testset "voronoiplot" begin
-    @test_reference "Voronoiplot for a tessellation with a custom bounding box.png" begin
+    @test_reference joinpath(ASSETS, "Voronoiplot for a tessellation with a custom bounding box.png") begin
         reseed!()
         pts = 25RNG.randn(2, 50)
         tri = triangulate(pts; rng=RNG.STABLE_RNG)
@@ -268,7 +269,7 @@ end
         fig
     end
 
-    @test_reference "Voronoiplots with clipped tessellation and unbounded polygons.png" begin
+    @test_reference joinpath(ASSETS, "Voronoiplots with clipped tessellation and unbounded polygons.png") begin
         reseed!()
         pts = 25RNG.randn(2, 10)
         tri = triangulate(pts; rng=RNG.STABLE_RNG)
@@ -285,7 +286,7 @@ end
         fig
     end
 
-    @test_reference "Voronoiplot with a nonlinear transform.png" begin
+    @test_reference joinpath(ASSETS, "Voronoiplot with a nonlinear transform.png") begin
         reseed!()
         f = Figure()
         ax = PolarAxis(f[1, 1], theta_as_x=false)
@@ -302,7 +303,7 @@ end
         f
     end
 
-    @test_reference "Voronoiplot with some custom bounding boxes may not contain all data sites.png" begin
+    @test_reference joinpath(ASSETS, "Voronoiplot with some custom bounding boxes may not contain all data sites.png") begin
         reseed!()
         points = [(-3.0, 7.0), (1.0, 6.0), (-1.0, 3.0), (-2.0, 4.0), (3.0, -2.0), (5.0, 5.0), (-4.0, -3.0), (3.0, 8.0)]
         tri = triangulate(points)
@@ -324,7 +325,7 @@ end
         fig
     end
 
-    @test_reference "Voronoiplot after adding points.png" begin
+    @test_reference joinpath(ASSETS, "Voronoiplot after adding points.png") begin
         reseed!()
         points = Observable([(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)])
         fig, ax, sc = voronoiplot(points, show_generators=true, markersize=36) # make sure any regressions with missing generators are identified, so use 36

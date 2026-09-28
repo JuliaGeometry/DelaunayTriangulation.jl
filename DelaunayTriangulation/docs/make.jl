@@ -32,9 +32,9 @@ const session_tmp = mktempdir()
 #   EditURL = "../../../../../../../AppData/Local/Temp/jl_8nsMGu/cs1_just_the_code.jl"
 #   ```
 function update_edit_url(content, file, folder)
-    content = replace(content, "<unknown>" => "https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main")
+    content = replace(content, "<unknown>" => "https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/DelaunayTriangulation")
     content = replace(content, "temp/" => "") # as of Literate 2.14.1
-    content = replace(content, r"EditURL\s*=\s*\"[^\"]*\"" => "EditURL = \"https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_$(folder)/$file\"")
+    content = replace(content, r"EditURL\s*=\s*\"[^\"]*\"" => "EditURL = \"https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/DelaunayTriangulation/docs/src/literate_$(folder)/$file\"")
     return content
 end
 

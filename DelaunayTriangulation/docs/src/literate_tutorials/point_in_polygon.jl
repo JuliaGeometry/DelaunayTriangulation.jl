@@ -8,7 +8,7 @@ using CairoMakie
 using StableRNGs
 using ReferenceTests #src
 using StatsBase #src
-fig_path = joinpath(@__DIR__, "../figures") #src
+fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures") #src
 
 C = (15.7109521325776, 33.244486807457)
 D = (14.2705719699703, 32.8530791545746)

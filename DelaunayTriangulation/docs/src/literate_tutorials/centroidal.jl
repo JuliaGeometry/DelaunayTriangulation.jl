@@ -12,7 +12,7 @@ using CairoMakie
 using StableRNGs
 using ReferenceTests #src
 using Test #src
-fig_path = joinpath(@__DIR__, "../figures") #src
+fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures") #src
 rng = StableRNG(123)
 points = 25randn(rng, 2, 500)
 tri = triangulate(points; rng)

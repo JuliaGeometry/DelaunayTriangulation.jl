@@ -1,5 +1,5 @@
 ```@meta
-EditURL = "https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/constrained_outer_boundary_segmented.jl"
+EditURL = "https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/DelaunayTriangulation/docs/src/literate_tutorials/constrained_outer_boundary_segmented.jl"
 ```
 
 # Constrained Triangulations
@@ -188,7 +188,7 @@ to deal with the case of multiple boundaries so that we know where a ghost verte
 
 ## Just the code
 An uncommented version of this example is given below.
-You can view the source code for this file [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/constrained_outer_boundary_segmented.jl).
+You can view the source code for this file [here](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/DelaunayTriangulation/docs/src/literate_tutorials/constrained_outer_boundary_segmented.jl).
 
 ```julia
 using DelaunayTriangulation

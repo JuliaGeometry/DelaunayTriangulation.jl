@@ -20,7 +20,7 @@ using CairoMakie
 using StableRNGs
 using Test #src
 using ReferenceTests #src
-fig_path = joinpath(@__DIR__, "../figures") #src
+fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures") #src
 
 points = [
     (-3.0, 6.0), (5.0, 1.0), (-5.0, 3.0), (2.0, -3.0),

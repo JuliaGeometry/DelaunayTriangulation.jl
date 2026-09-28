@@ -9,7 +9,7 @@ using DelaunayTriangulation
 using CairoMakie
 using ReferenceTests #src
 using Test #src
-fig_path = joinpath(@__DIR__, "../figures") #src
+fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures") #src
 
 # We consider triangulating the following set of points:
 a = (0.0, 0.0)

@@ -9,6 +9,7 @@ using StableRNGs
 using StructEquality
 using ForwardDiff
 using ReferenceTests
+const ASSETS = joinpath(@__DIR__, "..", "..", "..", "assets", "test", "data_structures")
 
 @testset "LineSegment" begin
     # Construction 
@@ -1798,7 +1799,7 @@ end
         end
         resize_to_layout!(fig)
         fig
-        @test_reference "catmull_rom_segments.png" fig
+        @test_reference joinpath(ASSETS, "catmull_rom_segments.png") fig
 
         ## Differentiate 
         for _spl in spl

@@ -9,7 +9,7 @@ using CairoMakie
 using StableRNGs
 using ReferenceTests #src
 using Test #src
-fig_path = joinpath(@__DIR__, "../figures") #src
+fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures") #src
 
 # To represent curves inside of curves, note that we have 
 # already had to do this for the outer boundary, where 

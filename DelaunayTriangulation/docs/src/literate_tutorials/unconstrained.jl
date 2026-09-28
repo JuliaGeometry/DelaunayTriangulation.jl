@@ -11,7 +11,7 @@ using LinearAlgebra # used for computing norms later
 using StatsBase #src
 using ReferenceTests #src
 using Test #src
-fig_path = joinpath(@__DIR__, "../figures") #src
+fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures") #src
 
 # We consider just triangulating a random set of points. First, generating
 # the points:

@@ -2,6 +2,7 @@ using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using CairoMakie
 using ReferenceTests
+const ASSETS = joinpath(@__DIR__, "..", "..", "..", "assets", "test", "data_structures")
 
 
 @testset "Computing statistics" begin
@@ -192,7 +193,7 @@ end
     scatter!(ax, interior_sinks, color = :red)
     triplot!(ax, tri)
     fig
-    @test_reference "sink_figures.png" fig
+    @test_reference joinpath(ASSETS, "sink_figures.png") fig
 end
 
 @testset "triangle_offcenter" begin

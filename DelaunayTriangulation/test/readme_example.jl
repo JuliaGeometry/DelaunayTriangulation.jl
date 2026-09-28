@@ -95,5 +95,5 @@ ax = Axis(fig[3, 1]; title = "Weighted", wh...);                 triplot!(ax, tr
 ax = Axis(fig[3, 2]; title = "Power Diagram", wh...);            voronoiplot!(ax, vorn10)
 ax = Axis(fig[3, 3]; title = "Clipped Voronoi", wh...);          voronoiplot!(ax, vorn11, color=:white, strokewidth = 4)
 
-readme_img = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "readme.png")
+readme_img = joinpath(dirname(dirname(dirname(pathof(DelaunayTriangulation)))), "assets", "readme.png")
 @test_reference readme_img fig by = psnr_equality(10)

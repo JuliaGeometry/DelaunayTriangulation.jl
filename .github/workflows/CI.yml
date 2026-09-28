@@ -42,13 +42,19 @@ jobs:
 
       - name: Build the package
         uses: julia-actions/julia-buildpkg@v1
+        with:
+          project: DelaunayTriangulation
 
       - name: Run the tests
         uses: julia-actions/julia-runtest@v1
+        with:
+          project: DelaunayTriangulation
 
       - name: Process the coverage
         if: always()
         uses: julia-actions/julia-processcoverage@v1
+        with:
+          directories: DelaunayTriangulation/src
 
       - name: Upload the results
         if: always()
@@ -69,13 +75,17 @@ jobs:
         with:
           version: '1'
       - uses: julia-actions/julia-buildpkg@v1
+        with:
+          project: DelaunayTriangulation
       - uses: julia-actions/julia-docdeploy@v1
+        with:
+          project: DelaunayTriangulation
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: |
-          julia --project=docs -e '
+          julia --project=DelaunayTriangulation/docs -e '
             using Pkg
-            Pkg.develop(PackageSpec(path=pwd()))
+            Pkg.develop(PackageSpec(path="DelaunayTriangulation"))
             Pkg.instantiate()
             using Documenter: DocMeta, doctest
             using DelaunayTriangulation

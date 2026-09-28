@@ -11,7 +11,6 @@ withenv("LIVESERVER_ACTIVE" => "true") do
         skip_dirs = [
             joinpath(repo_root, "docs/src/tutorials"),
             joinpath(repo_root, "docs/src/applications"),
-            joinpath(repo_root, "docs/src/figures"),
         ],
     )
 end

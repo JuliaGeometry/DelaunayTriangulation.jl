@@ -15,7 +15,7 @@ using DelaunayTriangulation
 using CairoMakie
 using ReferenceTests #src
 using Test #src
-fig_path = joinpath(@__DIR__, "../figures") #src
+fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures") #src
 A = (-3.0, 7.0)
 B = (1.0, 6.0)
 C = (-1.0, 3.0)

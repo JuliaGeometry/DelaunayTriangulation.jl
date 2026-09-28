@@ -9,7 +9,7 @@
 using DelaunayTriangulation
 using CairoMakie
 using ReferenceTests #src
-fig_path = joinpath(@__DIR__, "../figures") #src
+fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures") #src
 
 θ = LinRange(0, 2π, 20) |> collect
 θ[end] = 0 # need to make sure that 2π gives the exact same coordinates as 0

@@ -26,7 +26,7 @@ using DelaunayTriangulation
 using CairoMakie
 using ReferenceTests #src
 using Test #src
-fig_path = joinpath(@__DIR__, "../figures") #src
+fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures") #src
 
 points = [
     (-1.0, 2.0), (4.0, 6.0), (4.0, 3.0), (-3.0, 7.0),

@@ -11,7 +11,7 @@ using StableRNGs
 using StatsBase #src
 using ReferenceTests #src
 using Test #src
-fig_path = joinpath(@__DIR__, "../figures") #src
+fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures") #src
 
 # We build the tessellation by constructing the triangulation, 
 # and then passing that triangulation into `voronoi`.

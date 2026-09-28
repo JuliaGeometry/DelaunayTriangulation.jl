@@ -13,7 +13,7 @@ using StableRNGs
 using LinearAlgebra
 using ReferenceTests #src
 using Test #src
-fig_path = joinpath(@__DIR__, "../figures") #src
+fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures") #src
 
 # ## Curves 
 # In this package, only a small subset of curves are provided (although 

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.8
+
+- Restructured the repository to reduce package size. The package now lives in the `DelaunayTriangulation/` subdirectory and all reference images live in the top-level `assets/` directory, which is not shipped with the package. See [#237](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/issues/237).
+
 ## 1.6.7
 
 - The `Triangulation` struct now stores a `has_ghosts::Bool` field and a `boundary_vertex_to_ghost` map for efficient lookup. See [#240](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/240).

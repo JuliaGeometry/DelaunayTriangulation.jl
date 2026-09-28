@@ -16,7 +16,7 @@ using StableRNGs
 using StatsBase #src
 using ReferenceTests #src
 using Test #src
-fig_path = joinpath(@__DIR__, "../figures") #src
+fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures") #src
 
 # To build a power diagram, you need to start from a weighted 
 # Delaunay triangulation as described in [this tutorial](weighted.md).

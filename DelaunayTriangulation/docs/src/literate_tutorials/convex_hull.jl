@@ -14,7 +14,7 @@ using CairoMakie
 using StableRNGs
 using Test #src
 using ReferenceTests #src
-fig_path = joinpath(@__DIR__, "../figures") #src
+fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures") #src
 
 # We construct a triangulation of a point set.
 rng = StableRNG(123)
