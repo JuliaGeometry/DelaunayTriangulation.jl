@@ -81,12 +81,3 @@ jobs:
       - run: julia --project=DelaunayTriangulation/docs --color=yes DelaunayTriangulation/docs/make.jl
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: |
-          julia --project=DelaunayTriangulation/docs -e '
-            using Pkg
-            Pkg.develop(PackageSpec(path="DelaunayTriangulation"))
-            Pkg.instantiate()
-            using Documenter: DocMeta, doctest
-            using DelaunayTriangulation
-            DocMeta.setdocmeta!(DelaunayTriangulation, :DocTestSetup, :(using DelaunayTriangulation); recursive=true)
-            doctest(DelaunayTriangulation)'

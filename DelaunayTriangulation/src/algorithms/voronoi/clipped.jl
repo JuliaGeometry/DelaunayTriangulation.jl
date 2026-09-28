@@ -51,7 +51,7 @@ Returns the vertex shared by the edges `e` and `f`, or `∅` if they do not shar
 - `u`: The shared vertex.
 
 # Example
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> DelaunayTriangulation.get_shared_vertex((1, 3), (5, 7))

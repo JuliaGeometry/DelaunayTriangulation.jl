@@ -4,7 +4,7 @@
 Construct a triangle of type `T` from vertices `i`, `j`, and `k`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> DelaunayTriangulation.construct_triangle(NTuple{3,Int}, 1, 2, 3)
@@ -28,7 +28,7 @@ construct_triangle(::Type{A}, i, j, k) where {I, A <: AbstractVector{I}} = A(I[i
 Get the first vertex of `T`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> DelaunayTriangulation.geti((1, 2, 3))
@@ -46,7 +46,7 @@ geti(T) = T[1]
 Get the second vertex of `T`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> DelaunayTriangulation.getj((5, 6, 13))
@@ -64,7 +64,7 @@ getj(T) = T[2]
 Get the third vertex of `T`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> DelaunayTriangulation.getk((1,2,3))
@@ -82,7 +82,7 @@ getk(T) = T[3]
 Returns the vertices of `T` as a `Tuple`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> triangle_vertices((1, 5, 17))
@@ -100,7 +100,7 @@ triangle_vertices(T) = (geti(T), getj(T), getk(T))
 Get the triangle type of `T`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> DelaunayTriangulation.triangle_type(Set{NTuple{3,Int64}})
@@ -121,7 +121,7 @@ triangle_type(::Type{T}) where {T} = eltype(T)
 Get the number of triangles in `T`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> T1, T2, T3 = (1, 5, 10), (17, 23, 10), (-1, 10, 5);
@@ -143,7 +143,7 @@ Get the edges of `T = (i, j, k)` as a `Tuple`, in particular
     ((i, j), (j, k), (k, i)).
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> T = (1, 2, 3);
@@ -171,7 +171,7 @@ Rotate the vertices of `T` by `rotation`. In particular, if
 - Otherwise, return `rotate_triangle(T, rotation % 3)`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> T = (1, 2, 3)
@@ -212,7 +212,7 @@ Construct a triangle of type `V` from vertices `i`, `j`, and `k` such that the
 triangle is positively oriented, using `points` for the coordinates.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> points = [(0.0, 0.0), (0.0, 1.0), (1.0, 0.0)];
@@ -272,7 +272,7 @@ end
 Compare the triangles `T` and `V` by comparing their vertices up to rotation.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> T1 = (1, 5, 10);
@@ -315,7 +315,7 @@ or `T` if no such triangle exists. The `Bool` is `true` if `V` contains `T`,
 and `false` otherwise.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> V = Set(((1, 2, 3), (4, 5, 6), (7, 8, 9)))
@@ -371,7 +371,7 @@ Sort the triangle `T = (i, j, k)` so that its last vertex is the smallest,
 respecting the orientation of `T`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> DelaunayTriangulation.sort_triangle((1, 5, 3))
@@ -414,7 +414,7 @@ end
 Add the triangle `V` to the collection of triangles `T`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> T = Set(((1, 2, 3), (17, 8, 9)));
@@ -450,7 +450,7 @@ end
 Add the triangles `V...` or `V = (i, j, k)` to the collection of triangles `T`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> T = Set(((1, 2, 3), (4, 5, 6)))
@@ -495,7 +495,7 @@ Delete the triangle `V` from the collection of triangles `T`.
 Only deletes `V` if `V` is in `T` up to rotation.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> V = Set(((1, 2, 3), (4, 5, 6), (7, 8, 9)))
@@ -527,7 +527,7 @@ end
 Delete the triangles `T...` from the collection of triangles `V`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> V = Set(((1, 2, 3), (4, 5, 6), (7, 8, 9), (10, 11, 12), (13, 14, 15)))
@@ -575,7 +575,7 @@ end
 Return an iterator over the triangles in `T`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> T = Set(((1, 2, 3), (-1, 5, 10), (17, 13, 18)));
@@ -606,7 +606,7 @@ Compare the collections of triangles `T` and `V` by comparing their triangles
 according to [`compare_triangles`](@ref).
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> T = Set(((1, 2, 3), (4, 5, 6), (7, 8, 9)));
@@ -643,7 +643,7 @@ Sort the triangles in `T` so that the first vertex of each triangle is the large
 respecting the orientation of the triangles. See [`sort_triangle`](@ref).
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> T = Set(((1, 3, 2), (5, 2, 3), (10, 1, 13), (-1, 10, 12), (10, 1, 17), (5, 8, 2)))

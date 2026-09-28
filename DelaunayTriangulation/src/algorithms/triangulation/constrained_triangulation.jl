@@ -11,7 +11,7 @@ Fixes the overlapping segments in `segments`, referred to via `bad_indices`, by 
 There are no outputs as `segments` is updated in-place.
 
 # Example 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> segments = [(2, 15), (2, 28), (2, 41)]; # the edges all start with 2, so they are not actual segments in the triangulation, and so must be fixed
@@ -66,7 +66,7 @@ end
 Connects the ordered vector of `segments` so that the endpoints all connect, preserving order.
 
 # Example 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> segments = [(7, 12), (12, 17), (17, 22), (32, 37), (37, 42), (42, 47)];
@@ -115,7 +115,7 @@ and `segment` is `(i₀, iₙ₊₁)`. Then the extended sequence becomes
         ---(i₀, i₁)---(i₁, i₂)---(i₂, i₃)---(⋯, ⋯)---(iₙ₋₁, iₙ)---(iₙ, iₙ₊₁)---
 
 # Example 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> segments = [(2, 7), (7, 12), (12, 49)];
@@ -160,7 +160,7 @@ Splits `segment` at the segments in `collinear_segments`, which are assumed to b
 There is no output, as `segments` is updated in-place.
 
 # Example
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> segments = Set(((2, 3), (3, 5), (10, 12)))

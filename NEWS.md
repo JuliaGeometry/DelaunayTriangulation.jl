@@ -3,6 +3,7 @@
 ## 1.6.8
 
 - Restructured the repository to reduce package size. The package now lives in the `DelaunayTriangulation/` subdirectory and all reference images live in the top-level `assets/` directory, which is not shipped with the package. See [#237](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/issues/237).
+- Docstring examples are no longer run as doctests, since many of their outputs depended on `Dict` and `Set` iteration order, which changes between Julia versions. The examples are instead tested in `test/docstring_examples.jl`. See [#248](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/pull/248).
 
 ## 1.6.7
 

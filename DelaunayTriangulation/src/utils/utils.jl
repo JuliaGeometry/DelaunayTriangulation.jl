@@ -4,7 +4,7 @@
 Given a container `x`, returns the number type used for storing coordinates.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> DelaunayTriangulation.number_type([1, 2, 3])
@@ -48,7 +48,7 @@ Given three vertices `i`, `j`, and `k`, returns the ghost vertex among them. If 
 The two-argument version is equivalent to `get_ghost_vertex(i, j, j)`.
 
 # Examples 
-```jldoctest 
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> DelaunayTriangulation.get_ghost_vertex(1, 7, -2)
@@ -84,7 +84,7 @@ end
 Returns `b` represents a `true` value, and `false` otherwise.
 
 # Examples
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> DelaunayTriangulation.is_true(true)
@@ -157,7 +157,7 @@ end
 Returns the ordinal suffix for the integer `i`. 
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> DelaunayTriangulation.get_ordinal_suffix(1)

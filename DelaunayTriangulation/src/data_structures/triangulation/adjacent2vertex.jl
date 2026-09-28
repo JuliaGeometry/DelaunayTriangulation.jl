@@ -32,7 +32,7 @@ Base.copy(adj2v::Adjacent2Vertex) = Adjacent2Vertex(copy(get_adjacent2vertex(adj
 Returns the `adjacent2vertex` map of `adj2v`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> e1 = Set(((1, 2), (5, 3), (7, 8)));
@@ -65,7 +65,7 @@ Returns the set of edges `E` such that `(u, v, w)` is a positively oriented tria
 underlying triangulation for each `(u, v) ∈ E`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> adj2v = DelaunayTriangulation.Adjacent2Vertex(Dict(1 => Set(((2, 3), (5, 7), (8, 9))), 5 => Set(((1, 2), (7, 9), (8, 3)))))
@@ -100,7 +100,7 @@ Adds the edge `uv` to the set of edges `E` such that `(u, v, w)` is a positively
 underlying triangulation for each `(u, v) ∈ E`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> adj2v = DelaunayTriangulation.Adjacent2Vertex{Int64, Set{NTuple{2, Int64}}}()
@@ -144,7 +144,7 @@ Deletes the edge `uv` from the set of edges `E` such that `(u, v, w)` is a posit
 underlying triangulation for each `(u, v) ∈ E`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> adj2v = DelaunayTriangulation.Adjacent2Vertex(Dict(1 => Set(((2, 3), (5, 7), (8, 9))), 5 => Set(((1, 2), (7, 9), (8, 3)))))
@@ -183,7 +183,7 @@ end
 Deletes the vertex `w` from `adj2v`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> adj2v = DelaunayTriangulation.Adjacent2Vertex(Dict(1 => Set(((2, 3), (5, 7))), 5 => Set(((-1, 2), (2, 3)))))
@@ -215,7 +215,7 @@ end
 Adds the relationships defined by the triangle `T = (u, v, w)` into `adj2v`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> adj2v = DelaunayTriangulation.Adjacent2Vertex{Int32, Set{NTuple{2, Int32}}}()
@@ -254,7 +254,7 @@ add_triangle!(adj2v::Adjacent2Vertex, T) = add_triangle!(adj2v, geti(T), getj(T)
 Deletes the relationships defined by the triangle `T =(u, v, w)` from `adj2v`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> adj2v = DelaunayTriangulation.Adjacent2Vertex{Int32, Set{NTuple{2, Int32}}}()
@@ -310,7 +310,7 @@ delete_triangle!(adj2v::Adjacent2Vertex, T) = delete_triangle!(adj2v, geti(T), g
 Deletes all vertices `w` from `adj2v` such that `get_adjacent2vertex(adj2v, w)` is empty.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> adj2v = DelaunayTriangulation.Adjacent2Vertex{Int64, Set{NTuple{2, Int64}}}()

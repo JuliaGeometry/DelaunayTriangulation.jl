@@ -31,7 +31,7 @@ Base.copy(adj::Adjacent) = Adjacent(copy(get_adjacent(adj)))
 Returns the `adjacent` map of `adj`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> d = Dict((1, 2) => 3, (2, 3) => 1, (3, 1) => 2);
@@ -64,7 +64,7 @@ Returns the vertex `w` such that `(u, v, w)` is a positively oriented triangle i
 underlying triangulation, or `∅` if no such triangle exists.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> adj = DelaunayTriangulation.Adjacent(Dict((1, 2) => 3, (2, 3) => 1, (3, 1) => 2, (4, 5) => -1))
@@ -108,7 +108,7 @@ end
 Adds the adjacency relationship `(u, v, w)` to `adj`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> adj = DelaunayTriangulation.Adjacent{Int64, NTuple{2, Int64}}();
@@ -149,7 +149,7 @@ end
 Deletes the edge `uv` from `adj`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> adj = DelaunayTriangulation.Adjacent(Dict((2, 7) => 6, (7, 6) => 2, (6, 2) => 2, (17, 3) => -1, (-1, 5) => 17, (5, 17) => -1));
@@ -196,7 +196,7 @@ end
 Adds the adjacency relationships defined from the triangle `T = (u, v, w)` to `adj`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> adj = DelaunayTriangulation.Adjacent{Int32, NTuple{2, Int32}}();
@@ -234,7 +234,7 @@ add_triangle!(adj::Adjacent, T) = add_triangle!(adj, geti(T), getj(T), getk(T))
 Deletes the adjacency relationships defined from the triangle `T = (u, v, w)` from `adj`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> adj = DelaunayTriangulation.Adjacent{Int32, NTuple{2, Int32}}();

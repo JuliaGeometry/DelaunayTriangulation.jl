@@ -4,7 +4,7 @@
 Get the x-coordinate of `p`.
 
 # Examples
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> p = (0.3, 0.7);
@@ -21,7 +21,7 @@ getx(p) = p[1]
 Get the y-coordinate of `p`.
 
 # Examples
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> p = (0.9, 1.3);
@@ -45,7 +45,7 @@ getz(p) = p[3]
 Get the coordinates of `p` as a `Tuple`.
 
 # Examples
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> p = [0.9, 23.8];
@@ -69,7 +69,7 @@ getxyz(p) = (getx(p), gety(p), getz(p))
 Get the x-coordinate of `p` as a `Float64`.
 
 # Examples
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> p = (0.37, 0.7);
@@ -91,7 +91,7 @@ _getx(p) = Float64(getx(p))
 Get the y-coordinate of `p` as a `Float64`.
 
 # Examples
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> p = (0.5, 0.5);
@@ -120,7 +120,7 @@ _getz(p) = Float64(getz(p))
 Get the coordinates of `p` as a `Tuple` of `Float64`s.
 
 # Examples
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> p = [0.3, 0.5];
@@ -168,7 +168,7 @@ Get the point associated with `vertex` in `points`, returned as a `Tuple` of the
 If `vertex` is not an integer, then `vertex` is returned so that points and vertices can be easily mixed.
 
 # Examples
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> points = [(0.3, 0.7), (1.3, 5.0), (5.0, 17.0)];
@@ -196,7 +196,7 @@ getpoint(points, p) = p # so that we can mix points and vertices
 Get the points associated with `vertices` in `points`.
 
 # Examples
-```jldoctest 
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> points = [(1.0, 2.0), (3.0, 5.5), (1.7, 10.3), (-5.0, 0.0)];
@@ -229,7 +229,7 @@ get_point(points, i::Vararg{Any, N}) where {N} = ntuple(j -> get_point(points, i
 Returns an iterator over each point index in `points`.
 
 # Examples
-```jldoctest 
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> points = [(1.0, 2.0), (-5.0, 2.0), (2.3, 2.3)];
@@ -253,7 +253,7 @@ each_point_index(points::AbstractMatrix) = axes(points, 2)
 Returns an iterator over each point in `points`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> points = [(1.0, 2.0), (5.0, 13.0)];
@@ -282,7 +282,7 @@ each_point(points::AbstractMatrix) = eachcol(points)
 Returns the number of points in `points`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> points = [(1.0, 1.0), (2.3, 1.5), (0.0, -5.0)];
@@ -306,7 +306,7 @@ num_points(points::AbstractMatrix) = size(points, 2)
 Returns `true` if all points in `points` are unique.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> points = [1.0 2.0 3.0 4.0 5.0; 0.0 5.5 2.0 1.3 17.0]
@@ -343,7 +343,7 @@ Returns a set of indices that give the lexicographic ordering of `points`,
 meaning the indices so that the points are sorted first by `x` and then by `y`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> points = [(1.0, 5.0), (0.0, 17.0), (0.0, 13.0), (5.0, 17.3), (3.0, 1.0), (5.0, -2.0)]
@@ -383,7 +383,7 @@ lexicographic_order(points) = sortperm(collect(each_point(points)))
 Pushes the point `p = (x, y)` into `points`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> points = [(1.0, 3.0), (5.0, 1.0)]
@@ -417,7 +417,7 @@ push_point!(points, p) = push_point!(points, getx(p), gety(p))
 Pops the last point from `points`.
 
 # Examples
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> points = [(1.0, 2.0), (1.3, 5.3)]
@@ -444,7 +444,7 @@ Returns the mean of the points in `points` indexed by `vertices`,
 given as a `Tuple` of the form `(mean_x, mean_y)`.
 
 # Examples
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> points = [(1.0, 2.0), (2.3, 5.0), (17.3, 5.3)]
@@ -496,7 +496,7 @@ end
 Sets the point at index `i` in `points` to `(x, y)`.
 
 # Examples
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> points = [(1.0, 3.0), (5.0, 17.0)]

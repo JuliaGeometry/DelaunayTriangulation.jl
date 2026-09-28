@@ -4,7 +4,7 @@
 Construct an edge of type `E` from vertices `i` and `j`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> DelaunayTriangulation.construct_edge(NTuple{2,Int}, 2, 5)
@@ -27,7 +27,7 @@ construct_edge(::Type{A}, i, j) where {I, A <: AbstractVector{I}} = A(I[i, j])
 Get the initial vertex of `e`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> e = (1, 3);
@@ -49,7 +49,7 @@ initial(e) = e[1]
 Get the terminal vertex of `e`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> e = (1, 7);
@@ -71,7 +71,7 @@ terminal(e) = e[2]
 Get the vertices of `e`
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> e = (1, 5);
@@ -93,7 +93,7 @@ edge_vertices(e) = (initial(e), terminal(e))
 Get the edge with the vertices of `e` in reverse order.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> e = (17, 3);
@@ -118,7 +118,7 @@ Compare the unoriented edges `u` and `v`, i.e. compare the vertices of `u` and `
 in any order.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> u = (1, 3);
@@ -151,7 +151,7 @@ end
 Get the number of edges in `E`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> e = [(1, 2), (3, 4), (1, 5)];
@@ -168,7 +168,7 @@ num_edges(E) = length(E)
 Get the type of edges in `E`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> e = Set(((1,2),(2,3),(17,5)))
@@ -199,7 +199,7 @@ edge_type(E) = eltype(E)
 Check if `E` contains the edge `e = (i, j)`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> E = Set(((1,3),(17,3),(1,-1)))
@@ -244,7 +244,7 @@ contains_unoriented_edge(e, E) = contains_edge(e, E) || contains_edge(reverse_ed
 Add the edge `e` to `E`.
 
 # Examples
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> E = Set(((1, 2),(3,5)))
@@ -267,7 +267,7 @@ add_to_edges!(E, e) = push!(E, e)
 Add the edges `e...` to `E`.
 
 # Examples
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> E = Set(((1,5),(17,10),(5,3)))
@@ -310,7 +310,7 @@ end
 Delete the edge `e` from `E`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> E = Set(([1,2],[5,15],[17,10],[5,-1]))
@@ -335,7 +335,7 @@ delete_from_edges!(E, e) = delete!(E, e)
 Delete the edges `e...` from `E`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> E = Set(([1,2],[10,15],[1,-1],[13,23],[1,5]))
@@ -382,7 +382,7 @@ delete_unoriented_edge!(E, e) = delete_edge!(E, e, reverse_edge(e))
 Get an iterator over the edges in `E`.
 
 # Examples 
-```jldoctest 
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> E = Set(((1,2),(1,3),(2,-1)))
@@ -408,7 +408,7 @@ each_edge(E::AbstractMatrix) = eachcol(E)
 Get a random edge from `E`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation, StableRNGs
 
 julia> E = Set(((1,2),(10,15),(23,20)))

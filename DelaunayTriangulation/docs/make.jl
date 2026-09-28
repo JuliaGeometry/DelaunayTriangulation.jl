@@ -4,11 +4,6 @@ using Literate
 using Test
 using Dates
 
-DocMeta.setdocmeta!(
-    DelaunayTriangulation, :DocTestSetup, :(using DelaunayTriangulation, Test);
-    recursive = true,
-)
-
 const IS_LIVESERVER = get(ENV, "LIVESERVER_ACTIVE", "false") == "true"
 if IS_LIVESERVER
     using Revise

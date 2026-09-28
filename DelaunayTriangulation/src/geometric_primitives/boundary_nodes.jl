@@ -5,7 +5,7 @@ const AV = AbstractVector
 Check if `boundary_nodes` has multiple curves.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> DelaunayTriangulation.has_multiple_curves([1, 2, 3, 1])
@@ -49,7 +49,7 @@ has_multiple_curves(::NTuple{N, <:Integer}) where {N} = false
 Check if `boundary_nodes` has multiple sections.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> DelaunayTriangulation.has_multiple_sections([1, 2, 3, 1])
@@ -87,7 +87,7 @@ has_multiple_sections(::NTuple{N, <:Integer}) where {N} = false
 Get the number of curves in `boundary_nodes`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> DelaunayTriangulation.num_curves([1, 2, 3, 1])
@@ -114,7 +114,7 @@ end
 Assuming `boundary_nodes` has only one curve, get the number of sections in `boundary_nodes`.
 
 # Examples
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> DelaunayTriangulation.num_sections([1, 2, 3, 4, 5, 1])
@@ -156,7 +156,7 @@ There are several forms for the methods:
 4. `get_boundary_nodes(boundary_nodes::A, ::A)`: This just returns `boundary_nodes`.  
 
 # Examples
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> get_boundary_nodes([[[1, 2, 3, 4], [4, 5, 1]], [[6, 7, 8, 9], [9, 10, 6]]], 2)
@@ -210,7 +210,7 @@ contiguous boundary; if you do want to loop over every boundary nodes for a boun
 with multiple sections, you should to see the result from [`construct_ghost_vertex_map`](@ref).
 
 # Examples 
-```jldoctest 
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> DelaunayTriangulation.each_boundary_node([7, 8, 19, 2, 17])
@@ -254,7 +254,7 @@ i.e. the `n`th section of the boundary is associated with the ghost vertex `i`.
 Returns `dict::Dict{I, A}`, mapping the ghost vertex `i` to `boundary_nodes`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> gv_map = DelaunayTriangulation.construct_ghost_vertex_map([1, 2, 3, 4, 5, 1])
@@ -336,7 +336,7 @@ in `boundary_nodes`. In particular, if `dict = construct_boundary_edge_map(bound
 associated with the section that `e` lives on, and `get_boundary_nodes(bn, ℓ)` is the first vertex of `e`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> DelaunayTriangulation.construct_boundary_edge_map([17, 18, 15, 4, 3, 17])
@@ -468,7 +468,7 @@ is the same as
     insert!(get_boundary_nodes(boundary_nodes, pos[1]), pos[2], node)
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> boundary_nodes = [1, 2, 3, 4, 5, 1];
@@ -518,7 +518,7 @@ is the same as
     deleteat!(get_boundary_nodes(boundary_nodes, pos[1]), pos[2])
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> boundary_nodes = [71, 25, 33, 44, 55, 10];
@@ -561,7 +561,7 @@ returns the index of the curve corresponding to that ghost vertex. The second me
 maps `ghost_vertex` to `1` if it is an `Integer` or a `Vector`, and `ghost_vertex[1]` if it is a `Tuple`.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> DelaunayTriangulation.get_curve_index(-1)
@@ -605,7 +605,7 @@ maps `ghost_vertex` to itself if it is an `Integer`, `1` if it is a `Vector`, an
 `ghost_vertex[2]` if it is a `Tuple`. 
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> DelaunayTriangulation.get_section_index((2, 3)) # 3rd section of the 2nd curve
@@ -650,7 +650,7 @@ Given a set of `boundary_nodes`, returns a `Dict` that maps ghost vertices to
 the range of all ghost vertices that the corresponding boundary curve could correspond to.
 
 # Examples 
-```jldoctest
+```julia-repl
 julia> using DelaunayTriangulation
 
 julia> boundary_nodes = [
