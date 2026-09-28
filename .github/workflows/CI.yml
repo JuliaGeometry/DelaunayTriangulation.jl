@@ -77,9 +77,8 @@ jobs:
       - uses: julia-actions/julia-buildpkg@v1
         with:
           project: DelaunayTriangulation
-      - uses: julia-actions/julia-docdeploy@v1
-        with:
-          project: DelaunayTriangulation
+      - run: julia --project=DelaunayTriangulation/docs --color=yes -e 'using Pkg; Pkg.instantiate()'
+      - run: julia --project=DelaunayTriangulation/docs --color=yes DelaunayTriangulation/docs/make.jl
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: |
