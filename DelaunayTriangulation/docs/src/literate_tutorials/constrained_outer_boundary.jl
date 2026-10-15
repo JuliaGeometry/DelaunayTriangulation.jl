@@ -67,7 +67,7 @@ triplot!(ax1, tri)
 triplot!(ax2, cons_tri, show_constrained_edges = true, show_convex_hull = true)
 resize_to_layout!(fig)
 fig
-@test_reference joinpath(fig_path, "constrained_ex_2.png") fig #src
+@test_reference reference_path(fig_path, "constrained_ex_2.png") fig #src
 
 # Notice now that the boundary in (b) is not convex, as is clear 
 # from the convex hull shown in red. You can access the convex hull 
@@ -77,7 +77,7 @@ fig
 # some reason you do not want this behaviour, use `delete_holes = false`:
 full_tri = triangulate(pts; boundary_nodes, delete_holes = false)
 fig, ax, sc = triplot(full_tri, show_constrained_edges = true, show_convex_hull = true)
-@test_reference joinpath(fig_path, "constrained_ex_3.png") fig #src
+@test_reference reference_path(fig_path, "constrained_ex_3.png") fig #src
 
 # This default behaviour does mean you need to be careful if you use [`DelaunayTriangulation.each_point`](@ref) 
 # or [`DelaunayTriangulation.each_point_index`](@ref), as these iterators will contain all points, possibly iterating 

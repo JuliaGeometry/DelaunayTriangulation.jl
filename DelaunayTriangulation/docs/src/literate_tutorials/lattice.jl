@@ -17,7 +17,7 @@ nx, ny = 10, 25
 tri = triangulate_rectangle(a, b, c, d, nx, ny)
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "rectangle_ex_1.png") fig #src
+@test_reference reference_path(fig_path, "rectangle_ex_1.png") fig #src
 
 # This can be much faster than if we just construct the points in the 
 # lattice manually and `triangulate` those. Here's a comparison of the times. 

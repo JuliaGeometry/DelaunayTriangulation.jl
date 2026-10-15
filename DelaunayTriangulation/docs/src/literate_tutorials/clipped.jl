@@ -33,7 +33,7 @@ voronoiplot!(ax1, vorn, show_generators = false, colormap = :matter, strokewidth
 voronoiplot!(ax2, clipped_vorn, show_generators = false, colormap = :matter, strokewidth = 4)
 resize_to_layout!(fig)
 fig
-@test_reference joinpath(fig_path, "voronoi_ex_2.png") fig #src
+@test_reference reference_path(fig_path, "voronoi_ex_2.png") fig #src
 
 # As you can see, the unbounded polygons, and any polygons that included points 
 # outside of the convex hull, have now been clipped to the convex hull.

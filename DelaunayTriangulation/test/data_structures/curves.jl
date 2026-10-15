@@ -1799,7 +1799,7 @@ end
         end
         resize_to_layout!(fig)
         fig
-        @test_reference joinpath(ASSETS, "catmull_rom_segments.png") fig
+        @test_reference reference_path(ASSETS, "catmull_rom_segments.png") fig
 
         ## Differentiate 
         for _spl in spl

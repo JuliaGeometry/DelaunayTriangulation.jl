@@ -1190,11 +1190,13 @@ end
     end
 end
 
+# The segments are stored in a Set, so which neighbour a vertex's angularly-sorted neighbours start
+# from, and the order that complexes are found in, depend on the Julia version's hash order.
 @testset "construct_segment_map" begin
     segments = segments_II
     points = points_II_extra_segments
     segment_map = DT.construct_segment_map(segments, points, Int)
-    @test segment_map == Dict(
+    expected_segment_map = Dict(
         16 => [18, 17, 19, 22, 21, 20],
         17 => [16],
         18 => [16],
@@ -1203,6 +1205,8 @@ end
         21 => [16],
         22 => [16],
     )
+    @test keys(segment_map) == keys(expected_segment_map)
+    @test all(k -> is_rotation(segment_map[k], expected_segment_map[k]), keys(expected_segment_map))
 end
 
 @testset "SmallAngleComplex with segments (from curve_II)" begin
@@ -1214,7 +1218,8 @@ end
         1 => [SAC(1, [SACM(3, 11), SACM(1, 2)])],
         16 => [SAC(16, [SACM(0, 18), SACM(0, 17), SACM(0, 19), SACM(0, 22)]), SAC(16, [SACM(0, 21), SACM(0, 20)])],
     )
-    @test complexes == _complexes
+    @test keys(complexes) == keys(_complexes)
+    @test all(k -> same_elements(complexes[k], _complexes[k]), keys(_complexes))
 
     points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.5, 0.5), (0.5, 0.9), (0.5, 0.1)]
     boundary_nodes = [1, 2, 3, 4, 1]
@@ -1600,10 +1605,10 @@ end
                                         @test_with_log msg validate_refinement(tri, args, warn=false)
                                         if _rng_num(idx1, idx2, idx3, idx4, idx5, curve_idx, point_idx) == _rng_num(1, 3, 1, 2, 2, curve_idx, point_idx)
                                             fig, ax, sc = triplot(tri)
-                                            @test_reference joinpath(ASSETS, "rcb_example_$(curve_idx)_$(names[curve_idx])_$(point_names[point_idx])_$(abs(_rng_num(1, 3, 1, 2, 2, curve_idx, point_idx))).png") fig by = psnr_equality(7)
+                                            @test_reference reference_path(ASSETS, "rcb_example_$(curve_idx)_$(names[curve_idx])_$(point_names[point_idx])_$(abs(_rng_num(1, 3, 1, 2, 2, curve_idx, point_idx))).png") fig by = psnr_equality(7)
                                         elseif _rng_num(idx1, idx2, idx3, idx4, idx5, curve_idx, point_idx) == _rng_num(2, 3, 1, 2, 2, curve_idx, point_idx)
                                             fig, ax, sc = triplot(tri)
-                                            @test_reference joinpath(ASSETS, "rcb_example_$(curve_idx)_$(names[curve_idx])_$(point_names[point_idx])_$(abs(_rng_num(2, 3, 1, 2, 2, curve_idx, point_idx))).png") fig by = psnr_equality(7)
+                                            @test_reference reference_path(ASSETS, "rcb_example_$(curve_idx)_$(names[curve_idx])_$(point_names[point_idx])_$(abs(_rng_num(2, 3, 1, 2, 2, curve_idx, point_idx))).png") fig by = psnr_equality(7)
                                         end
                                         @test_with_log msg tri.boundary_enricher.boundary_edge_map == tri.boundary_edge_map
                                     end

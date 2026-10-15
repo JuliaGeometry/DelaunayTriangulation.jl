@@ -193,7 +193,7 @@ end
     scatter!(ax, interior_sinks, color = :red)
     triplot!(ax, tri)
     fig
-    @test_reference joinpath(ASSETS, "sink_figures.png") fig
+    @test_reference reference_path(ASSETS, "sink_figures.png") fig
 end
 
 @testset "triangle_offcenter" begin

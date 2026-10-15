@@ -16,7 +16,7 @@ points = [(0.0, 0.0), (2.0, 0.0), (1.0, 2.0)]
 tri = triangulate(points)
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "triangulation_operations_1.png") fig #src
+@test_reference reference_path(fig_path, "triangulation_operations_1.png") fig #src
 
 # Note that we use a structure for `points` that is mutable so that 
 # points can be pushed into it. 
@@ -29,14 +29,14 @@ fig
 add_point!(tri, 1.0, 0.5)
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "triangulation_operations_2.png") fig #src
+@test_reference reference_path(fig_path, "triangulation_operations_2.png") fig #src
 
 # This is still a valid Delaunay triangulation, unsurprisingly due to the 
 # small number of points. We can also add points that are outside of the triangulation:
 add_point!(tri, 0.0, 1.0)
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "triangulation_operations_3.png") fig #src
+@test_reference reference_path(fig_path, "triangulation_operations_3.png") fig #src
 
 # One important thing to note here is that, if not for the ghost triangles inside `tri`,
 # adding a point outside of the triangulation would not work. Here is an example of this failing.
@@ -69,7 +69,7 @@ get_convex_hull_vertices(tri)
 convex_hull!(tri)
 fig, ax, sc = triplot(tri, show_convex_hull = true)
 fig
-@test_reference joinpath(fig_path, "triangulation_operations_4.png") fig #src
+@test_reference reference_path(fig_path, "triangulation_operations_4.png") fig #src
 
 # We now have the same triangulation that we would have had if we had done 
 # `triangulate` on this set of points originally. To now push this further, 
@@ -81,7 +81,7 @@ for _ in 1:1000
 end
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "triangulation_operations_5.png") fig #src
+@test_reference reference_path(fig_path, "triangulation_operations_5.png") fig #src
 
 # Let us now demonstrate how to delete points. To do this, we use [`delete_point!`](@ref).
 # This function takes vertices rather than coordinates, identifying the corresponding point 
@@ -97,7 +97,7 @@ for i in vertices_to_delete
 end
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "triangulation_operations_6.png") fig #src
+@test_reference reference_path(fig_path, "triangulation_operations_6.png") fig #src
 
 # Note that in this situation, `points` still contains those points that we have now deleted. 
 # This is the reason to be careful about using, say, [`DelaunayTriangulation.each_point`](@ref) rather than [`each_solid_vertex`](@ref).

@@ -34,7 +34,7 @@ fig, ax, sc = voronoiplot(vorn)
 a, b, c, d = -2.0, 3.0, 0.0, 7.0
 lines!(ax, [(a, c), (b, c), (b, d), (a, d), (a, c)], color = :black, linewidth = 4)
 fig
-@test_reference joinpath(fig_path, "voronoi_ex_3.png") fig #src
+@test_reference reference_path(fig_path, "voronoi_ex_3.png") fig #src
 
 # To apply this clipping, we need to provide a bounding box of the form 
 # `(xmin, xmax, ymin, ymax)`. Here, we will use 
@@ -52,7 +52,7 @@ clipped_coords
 # Now let's plot these. 
 fig, ax, sc = poly(clipped_coords, color = :white, strokewidth = 4)
 fig
-@test_reference joinpath(fig_path, "voronoi_ex_4.png") fig #src
+@test_reference reference_path(fig_path, "voronoi_ex_4.png") fig #src
 
 # As we can see, the polygons have been clipped to the rectangle.
 # Note that if you just want this for plotting, you can also call `voronoiplot` with the 

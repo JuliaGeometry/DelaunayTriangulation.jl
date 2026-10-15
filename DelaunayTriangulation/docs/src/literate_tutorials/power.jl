@@ -39,7 +39,7 @@ voronoiplot!(ax1, vorn, show_generators=true, colormap=:matter, strokewidth=4, c
 voronoiplot!(ax2, pvorn, show_generators=true, colormap=:matter, strokewidth=4, clip=(-5, 5, -5, 10))
 resize_to_layout!(fig)
 fig
-@test_reference joinpath(fig_path, "power_diagram_ex_1.png") fig #src
+@test_reference reference_path(fig_path, "power_diagram_ex_1.png") fig #src
 
 # Notice that, unlike the unweighted tessellation, the generators in the power diagram 
 # don't actually have to live in their own tile, and more than one generator

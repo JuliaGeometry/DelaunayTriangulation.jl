@@ -26,7 +26,7 @@ tri = triangulate(points; rng = rng)
 #-
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "unconstrained_ex_1.png") fig #src
+@test_reference reference_path(fig_path, "unconstrained_ex_1.png") fig #src
 
 # This `tri` object is our [`Triangulation`](@ref), and we can interact with it in many ways. 
 

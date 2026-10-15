@@ -31,7 +31,7 @@ voronoiplot!(ax1, vorn, colormap = :matter, strokewidth = 2)
 voronoiplot!(ax2, smooth_vorn, colormap = :matter, strokewidth = 2)
 resize_to_layout!(fig)
 fig
-@test_reference joinpath(fig_path, "voronoi_ex_5.png") fig #src
+@test_reference reference_path(fig_path, "voronoi_ex_5.png") fig #src
 
 # As you can see, the tiles are all reasonably uniform, and their generators 
 # do look to be near the centroid of their corresponding tile. Note that 

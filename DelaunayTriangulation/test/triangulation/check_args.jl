@@ -31,21 +31,30 @@ end
     @test_throws _test_throws(DT.InsufficientPointsError) triangulate(points, predicates=rt())
 end
 
+# The duplicates are listed in Dict iteration order, which depends on the Julia version,
+# so the lines listing them are compared as a set.
+function test_duplicate_points_warning(f)
+    logs, _ = Test.collect_test_logs(f)
+    @test length(logs) == 1
+    log = only(logs)
+    @test log.level == Base.CoreLogging.Warn
+    lines = split(chomp(string(log.message)), '\n')
+    @test first(lines) == "There were duplicate points. Only one of each duplicate will be used, and all other duplicates will be skipped. The indices of the duplicates are:"
+    @test last(lines) == "To suppress this warning, call `DelaunayTriangulation.toggle_warn_on_dupes!()`."
+    @test issetequal(lines[2:(end-1)], ["  (1.0, 1.0) at indices [1, 4]", "  (2.0, 2.0) at indices [2, 7, 8]", "  (5.5, 17.3) at indices [3, 10]"])
+end
+
 @testset "Duplicate points" begin
     points = [(1.0, 1.0), (2.0, 2.0), (5.5, 17.3), (1.0, 1.0), (0.0, 0.5), (1.7, 5.5), (2.0, 2.0), (2.0, 2.0), (25.5, 17.3), (5.5, 17.3)]
     boundary_nodes = nothing
     hierarchy = DT.construct_polygon_hierarchy(points)
     skip_points = Int[]
-    @test_logs (
-        :warn,
-        "There were duplicate points. Only one of each duplicate will be used, and all other duplicates will be skipped. The indices of the duplicates are:\n  (1.0, 1.0) at indices [1, 4]\n  (2.0, 2.0) at indices [2, 7, 8]\n  (5.5, 17.3) at indices [3, 10]\nTo suppress this warning, call `DelaunayTriangulation.toggle_warn_on_dupes!()`.\n") DT.check_args(points, boundary_nodes, hierarchy; skip_points)
-    @test skip_points == [4, 7, 8, 10]
+    test_duplicate_points_warning(() -> DT.check_args(points, boundary_nodes, hierarchy; skip_points))
+    @test sort(skip_points) == [4, 7, 8, 10]
     skip_points = [13, 15]
     DT.check_args(points, boundary_nodes, hierarchy; skip_points)
-    @test skip_points == [13, 15, 4, 7, 8, 10]
-    @test_logs (
-        :warn,
-        "There were duplicate points. Only one of each duplicate will be used, and all other duplicates will be skipped. The indices of the duplicates are:\n  (1.0, 1.0) at indices [1, 4]\n  (2.0, 2.0) at indices [2, 7, 8]\n  (5.5, 17.3) at indices [3, 10]\nTo suppress this warning, call `DelaunayTriangulation.toggle_warn_on_dupes!()`.\n") triangulate(points, predicates=rt())
+    @test skip_points[1:2] == [13, 15] && sort(skip_points[3:end]) == [4, 7, 8, 10]
+    test_duplicate_points_warning(() -> triangulate(points, predicates=rt()))
     DT.toggle_warn_on_dupes!()
     @test_nowarn DT.check_args(points, boundary_nodes, hierarchy)
     @test_nowarn triangulate(points; predicates=rt())
@@ -56,7 +65,7 @@ end
     @test !DT.has_vertex(tri, 8)
     @test !DT.has_vertex(tri, 10)
     @test DT.validate_triangulation(tri)
-    tri = triangulate(points; predicates=rt(), skip_points = (1,))
+    tri = triangulate(points; predicates=rt(), skip_points=(1,))
     @test !DT.has_vertex(tri, 1)
     @test !DT.has_vertex(tri, 4)
     @test !DT.has_vertex(tri, 7)
@@ -339,10 +348,10 @@ end
     I_curve = [[T1, U1, V1, W1, T1]]
     A_curve_outline = [
         [
-            K5, W3, Z3, A4, B4, C4, D4, E4, F4, G4, H4, I4, J4, K4, L4, M4, N4,
-            O4, P4, Q4, R4, S4, T4, U4, V4, W4, Z4, A5, B5, C5, D5, E5, F5, G5,
-            H5, I5, J5, K5,
-        ],
+        K5, W3, Z3, A4, B4, C4, D4, E4, F4, G4, H4, I4, J4, K4, L4, M4, N4,
+        O4, P4, Q4, R4, S4, T4, U4, V4, W4, Z4, A5, B5, C5, D5, E5, F5, G5,
+        H5, I5, J5, K5,
+    ],
     ]
     A_curve_hole = [[L5, M5, N5, O5, P5, Q5, R5, S5, T5, U5, L5]]
     dot_1 = [[Z1, A2, B2, C2, D2, E2, F2, G2, H2, I2, J2, Z1]]

@@ -193,7 +193,7 @@ is_inside = [DelaunayTriangulation.distance_to_polygon(q, points, nodes) > 0 for
 scatter!(ax, query_points[is_inside], color = :blue)
 scatter!(ax, query_points[.!is_inside], color = :red)
 fig
-@test_reference joinpath(fig_path, "point_in_polygon_ex_1.png") fig #src
+@test_reference reference_path(fig_path, "point_in_polygon_ex_1.png") fig #src
 
 # Here is the second method. 
 tri = triangulate(points; boundary_nodes = nodes)

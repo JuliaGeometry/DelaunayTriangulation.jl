@@ -52,7 +52,7 @@ ax2 = Axis(fig[1, 2], title = "After flipping")
 flip_edge!(tri, 2, 4)
 triplot!(ax2, tri)
 fig
-@test_reference joinpath(fig_path, "triangulation_operations_12.png") fig #src
+@test_reference reference_path(fig_path, "triangulation_operations_12.png") fig #src
 
 # As simple as that. Note that no checks are made for whether the edge is actually in the 
 # triangulation, on the boundary, or if the associated quadrilateral is convex. It is 

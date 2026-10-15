@@ -54,4 +54,4 @@ rng = StableRNG(123) # triangulation is not unique when there are cocircular poi
 tri = triangulate(points; boundary_nodes, rng)
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "constrained_ex_6.png") fig #src
+@test_reference reference_path(fig_path, "constrained_ex_6.png") fig #src

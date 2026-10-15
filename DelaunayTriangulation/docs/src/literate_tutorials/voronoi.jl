@@ -29,7 +29,7 @@ vorn = voronoi(tri)
 fig, ax, sc = voronoiplot(vorn, markersize = 13, colormap = :matter, strokecolor = :white, strokewidth = 5)
 triplot!(ax, tri)
 fig
-@test_reference joinpath(fig_path, "voronoi_ex_1.png") fig #src
+@test_reference reference_path(fig_path, "voronoi_ex_1.png") fig #src
 
 # The polygons each correspond to a *generator*, which is the black point 
 # inside it coming from `points`, i.e. the vertices of the triangulation. 
@@ -186,20 +186,20 @@ vorn_areas ≈ [get_area(vorn, i) for i in each_polygon_index(vorn)]
 # of the polygons will be the same, though, as they are derived from the point indices.
 
 # ## Getting polygons adjacent to an edge 
-# Given an edge in the tessellation, you can use [`get_adjacent`](@ref) to get the polygon 
-# that it is a part of (taking care of order). For example, 
-get_adjacent(vorn, 1, 8)
-@test get_adjacent(vorn, 1, 8) == 3 #src
-
-# means that the edge `(1, 8)` belongs to the third polygon, as we can easily verify: 
+# Given an edge in the tessellation, you can use [`get_adjacent`](@ref) to get the polygon
+# that it is a part of (taking care of order). For example, the vertices of the third polygon are
 get_polygon(vorn, 3)
-@test DelaunayTriangulation.circular_equality(get_polygon(vorn, 3), [4, 5, 9, 1, 8, 4]) #src
 
-# see that `(1, 8)` at the end. The order is important here, since 
-get_adjacent(vorn, 8, 1)
-@test get_adjacent(vorn, 8, 1) == 7 #src
-@test DelaunayTriangulation.circular_equality(get_polygon(vorn, 7), [8, 1, 7, -5, -2, 8]) #src
+# so `(u, v)` below is one of its edges, and
+u, v = get_polygon(vorn, 3)[1:2]
+get_adjacent(vorn, u, v)
+@test get_adjacent(vorn, u, v) == 3 #src
 
-# means that the edge `(8, 1)` belongs to the seventh polygon:
-get_polygon(vorn, 7)
-@test DelaunayTriangulation.circular_equality(get_polygon(vorn, 7), [8, 1, 7, -5, -2, 8]) #src
+# shows that the edge `(u, v)` belongs to the third polygon. The order is important here, since
+w = get_adjacent(vorn, v, u)
+@test w ∉ (3, DelaunayTriangulation.∅) #src
+
+# means that the edge `(v, u)` belongs to the polygon on the other side of the edge, as we can verify
+# by seeing that `(v, u)` appears in it:
+get_polygon(vorn, w)
+@test any(i -> get_polygon(vorn, w)[i:(i + 1)] == [v, u], 1:(length(get_polygon(vorn, w)) - 1)) #src

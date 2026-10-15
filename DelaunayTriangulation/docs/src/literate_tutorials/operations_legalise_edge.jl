@@ -39,7 +39,7 @@ tri = triangulate(points)
 fig, ax, sc = triplot(tri)
 scatter!(ax, [p], markersize = 14)
 fig
-@test_reference joinpath(fig_path, "triangulation_operations_13.png") fig #src
+@test_reference reference_path(fig_path, "triangulation_operations_13.png") fig #src
 
 # The blue point is the point to be added. It is inside the triangle `(9, 14, 3)`.
 # To insert it, follow Guibas et al. (1992) and connect the edges of `(9, 14, 3)` to the 
@@ -52,7 +52,7 @@ i, j, k = 9, 14, 3
 split_triangle!(tri, i, j, k, r)
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "triangulation_operations_14.png") fig #src
+@test_reference reference_path(fig_path, "triangulation_operations_14.png") fig #src
 
 # This splitting introduces some new illegal edges, shown in red below.
 function get_all_illegal_edges(tri) #hide 
@@ -69,7 +69,7 @@ fig, ax, sc = triplot(tri) #hide
 T = get_all_illegal_edges(tri) #hide 
 linesegments!(ax, T, color = :red, linewidth = 3) #hide
 fig #hide 
-@test_reference joinpath(fig_path, "triangulation_operations_15.png") fig #src
+@test_reference reference_path(fig_path, "triangulation_operations_15.png") fig #src
 
 # To fix this, we use `legalise_edge!`. This functions take in a single edge,
 # so to legalise all the new edges we apply the function to each edge of the 
@@ -80,6 +80,6 @@ legalise_edge!(tri, j, k, r)
 legalise_edge!(tri, k, i, r)
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "triangulation_operations_16.png") fig #src
+@test_reference reference_path(fig_path, "triangulation_operations_16.png") fig #src
 
 # The triangulation is now Delaunay, and there are no more illegal edges.

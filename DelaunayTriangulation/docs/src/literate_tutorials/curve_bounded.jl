@@ -68,7 +68,7 @@ tri = triangulate(points; boundary_nodes = [arc], rng)
 #-
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "triangulate_curve_bounded_ex_1.png") fig #src
+@test_reference reference_path(fig_path, "triangulate_curve_bounded_ex_1.png") fig #src
 
 # Notice that the domain doesn't look like a circle yet. This is because using `triangulate` on the 
 # curve just by itself isn't enough. In fact, the triangulation returned in this case is simply one where:
@@ -81,7 +81,7 @@ fig
 refine!(tri; max_area = 1.0e-1, rng)
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "triangulate_curve_bounded_ex_2.png") fig #src
+@test_reference reference_path(fig_path, "triangulate_curve_bounded_ex_2.png") fig #src
 
 # Much better! We have now triangulated our first curve-bounded domain.
 
@@ -124,7 +124,7 @@ refine!(
 )
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "triangulate_curve_bounded_ex_3.png") fig by = psnr_equality(8) #src
+@test_reference reference_path(fig_path, "triangulate_curve_bounded_ex_3.png") fig by = psnr_equality(8) #src
 
 # ## A Complicated Multiply-Connected Disjoint Domain 
 # For our last example, we take a complicated case with a domain that is disjoint, and where the individual 
@@ -188,7 +188,7 @@ tri = triangulate(copy(points); boundary_nodes = curve, rng) # copying so that w
 refine!(tri; max_area = 1.0e-2)
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "triangulate_curve_bounded_ex_4.png") fig by = psnr_equality(7) #src
+@test_reference reference_path(fig_path, "triangulate_curve_bounded_ex_4.png") fig by = psnr_equality(7) #src
 
 # ### Using Custom Constraints to Control Refinement 
 # Let's give another example of using custom constraints to better control the refinement within different domains. Referencing the 
@@ -221,7 +221,7 @@ tri = triangulate(points; boundary_nodes = curve, rng)
 refine!(tri; custom_constraint = poly_constraint, rng)
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "triangulate_curve_bounded_ex_5.png") fig by=psnr_equality(7) #src
+@test_reference reference_path(fig_path, "triangulate_curve_bounded_ex_5.png") fig by=psnr_equality(7) #src
 
 # ## Defining a New Parametric Curve 
 # Let us now give an example where we define a domain by a parametric curve that is not provided natively by this package. For this 
@@ -283,4 +283,4 @@ tri = triangulate(NTuple{2, Float64}[]; boundary_nodes = [curve], rng)
 refine!(tri; max_area = 1.0e-2)
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "triangulate_curve_bounded_ex_6.png") fig #src
+@test_reference reference_path(fig_path, "triangulate_curve_bounded_ex_6.png") fig #src

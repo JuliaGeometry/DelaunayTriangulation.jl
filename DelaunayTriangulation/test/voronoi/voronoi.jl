@@ -230,17 +230,15 @@ end
             pts = [A, B, C, D, E, F, G]
             tri = triangulate(pts; delete_ghosts=false, randomise=false)
             vorn = voronoi(tri; predicates=PT())
-            @test get_adjacent(vorn, 1, -2) == get_adjacent(vorn, -2, -1) ==
-                  get_adjacent(vorn, -1, 7) == get_adjacent(vorn, 7, 3) == get_adjacent(vorn, 3, 1) ==
-                  5
+            # The circumcenter indices depend on hash order, so get the edges of polygon 5 from the tessellation itself
+            poly = get_polygon(vorn, 5)
+            @test length(poly) == 6
+            poly_edges = [(poly[i], poly[i+1]) for i in 1:(length(poly)-1)]
+            @test all(e -> get_adjacent(vorn, e...) == 5, poly_edges)
             DT.delete_polygon_adjacent!(vorn, 5)
-            @test get_adjacent(vorn, 1, -2) == get_adjacent(vorn, -2, -1) ==
-                  get_adjacent(vorn, -1, 7) == get_adjacent(vorn, 7, 3) == get_adjacent(vorn, 3, 1) ==
-                  DT.∅
+            @test all(e -> get_adjacent(vorn, e...) == DT.∅, poly_edges)
             DT.add_polygon_adjacent!(vorn, 5)
-            @test get_adjacent(vorn, 1, -2) == get_adjacent(vorn, -2, -1) ==
-                  get_adjacent(vorn, -1, 7) == get_adjacent(vorn, 7, 3) == get_adjacent(vorn, 3, 1) ==
-                  5
+            @test all(e -> get_adjacent(vorn, e...) == 5, poly_edges)
         end
     end
 end
@@ -698,7 +696,10 @@ end
         right_edge_intersectors,
         current_edge_intersectors,
         equal_circumcenter_mapping = DT.initialise_clipping_arrays(vorn)
-        e = DT.convert_to_edge_adjoining_ghost_vertex(vorn, first(edges_to_process))
+        # Start from a fixed boundary edge rather than first(edges_to_process), which depends on hash order
+        e = (2, 1)
+        @test e ∈ edges_to_process || DT.reverse_edge(e) ∈ edges_to_process
+        e = DT.convert_to_edge_adjoining_ghost_vertex(vorn, e)
         DT.enqueue_new_edge!(polygon_edge_queue, vorn, e, Random.default_rng(), PT())
 
         empty!(intersected_edge_cache)
@@ -707,7 +708,10 @@ end
         left_edge, right_edge = DT.get_neighbouring_boundary_edges(vorn, e)
         @test left_edge == (1, 4)
         @test right_edge == (3, 2)
+        # Where the polygon's vertex list starts depends on hash order, so start it at the finite vertex that precedes its two ghost vertices
         polygon_vertices = get_polygon(vorn, incident_polygon)
+        s = findfirst(ℓ -> polygon_vertices[ℓ] > 0 && polygon_vertices[ℓ+1] < 0, 1:(length(polygon_vertices)-1))
+        polygon_vertices = [circshift(polygon_vertices[1:(end-1)], 1 - s); polygon_vertices[s]]
         nedges = num_boundary_edges(polygon_vertices)
 
         ℓ = 1
@@ -719,6 +723,7 @@ end
         @test intersected_edge_cache == [(v, u) => e]
         @test segment_intersections == [(1.5, 3.0)]
         @test boundary_sites == Dict(incident_polygon => Set(1))
+        ray_edge = (v, u)
 
         ℓ = 2
         u = get_boundary_nodes(polygon_vertices, ℓ)
@@ -743,12 +748,12 @@ end
         @test !any(isnan, DT.process_segment_intersection!(vorn, u, v, right_edge, incident_polygon, intersected_edge_cache, segment_intersections, boundary_sites, exterior_circumcenters, equal_circumcenter_mapping, PT()))
         @test collect.(segment_intersections) ≈ collect.([(1.5, 3.0), (0.0, 1.916666666666666666666666)])
         @test boundary_sites == Dict(incident_polygon => Set((1, 2)))
-        @test intersected_edge_cache == [(-3, 3) => e, (u, v) => right_edge]
+        @test intersected_edge_cache == [ray_edge => e, (u, v) => right_edge]
 
         DT.classify_intersections!(intersected_edge_cache, left_edge_intersectors, right_edge_intersectors, current_edge_intersectors, left_edge, right_edge, e)
         @test left_edge_intersectors == Set{NTuple{2,Int}}()
         @test right_edge_intersectors == Set([(u, v)])
-        @test current_edge_intersectors == Set([(-3, 3)])
+        @test current_edge_intersectors == Set([ray_edge])
 
         DT.process_intersection_points!(
             polygon_edge_queue, vorn, incident_polygon,
@@ -761,7 +766,7 @@ end
         push!(_queue, ((3, 2), 2))
         push!(_queue, ((3, 2), 5))
         push!(_queue, ((2, 1), 1))
-        @test _queue == polygon_edge_queue
+        @test same_elements(_queue.data, polygon_edge_queue.data) # the order depends on hash order
 
         a = (3.0, 3.0)
         b = (0.0, 3.0)
@@ -773,8 +778,10 @@ end
         vorn = voronoi(tri; predicates=PT())
         lock_convex_hull!(tri; predicates=PT())
         boundary_sites, segment_intersections, exterior_circumcenters = DT.find_all_intersections(vorn, predicates=PT())
-        @test collect.(segment_intersections) ≈ collect.(
-            [
+        # The order in which intersections are found, and the indices of the circumcenters, depend on hash order,
+        # so compare the intersections and circumcenters by their coordinates
+        @test same_points(
+            segment_intersections, [
                 (1.5, 3.0)
                 (0.0, 1.9166666666666665)
                 (0.0, 3.0)
@@ -787,19 +794,20 @@ end
                 (4.0, 0.0)
             ],
         )
-        @test boundary_sites[4] == Set((7, 10, 8))
-        @test boundary_sites[2] == Set((2, 3, 1))
-        @test boundary_sites[1] == Set((9, 8, 1))
-        @test boundary_sites[3] == Set((5, 4, 6))
-        @test boundary_sites[5] == Set((5, 4, 7, 2))
-        @test exterior_circumcenters == Set((2, 1))
+        boundary_site_points(i) = [segment_intersections[j] for j in boundary_sites[i]]
+        @test same_points(boundary_site_points(4), [(2.125, 0.0), (4.0, 0.0), (3.5, 1.5)])
+        @test same_points(boundary_site_points(2), [(0.0, 1.9166666666666665), (0.0, 3.0), (1.5, 3.0)])
+        @test same_points(boundary_site_points(1), [(3.0, 3.0), (3.5, 1.5), (1.5, 3.0)])
+        @test same_points(boundary_site_points(3), [(1.625, 0.0), (0.0, 1.0833333333333333), (0.0, 0.0)])
+        @test same_points(boundary_site_points(5), [(1.625, 0.0), (0.0, 1.0833333333333333), (2.125, 0.0), (0.0, 1.9166666666666665)])
+        @test same_points([get_polygon_point(vorn, c) for c in exterior_circumcenters], [(2.0, -0.25), (-0.625, 1.5)])
 
         DT.clip_voronoi_tessellation!(vorn, predicates=PT())
         @test isempty(vorn.unbounded_polygons)
         @test validate_tessellation(vorn, predicates=PT())
         @test DT.points_are_unique(vorn.polygon_points)
-        @test collect.(DT.get_polygon_points(vorn)) ≈ collect.(
-            [
+        @test same_points(
+            DT.get_polygon_points(vorn), [
                 (2.0, -0.25)
                 (-0.625, 1.5)
                 (1.5, 2.9166666666666665)
@@ -816,13 +824,13 @@ end
                 (4.0, 0.0)
             ],
         )
-        @test vorn.polygons == Dict(
-            5 => [8, 9, 11, 4, 3, 6, 8],
-            4 => [11, 14, 12, 4, 11],
-            2 => [6, 3, 5, 7, 6],
-            3 => [10, 9, 8, 10],
-            1 => [4, 12, 13, 5, 3, 4],
-        )
+        # The polygon vertex indices depend on hash order, so compare the polygons by their coordinates
+        @test keys(vorn.polygons) == Set((1, 2, 3, 4, 5))
+        @test same_polygon(polygon_coordinates(vorn, 5), [(0.0, 1.0833333333333333), (1.625, 0.0), (2.125, 0.0), (2.75, 1.25), (1.5, 2.9166666666666665), (0.0, 1.9166666666666665), (0.0, 1.0833333333333333)])
+        @test same_polygon(polygon_coordinates(vorn, 4), [(2.125, 0.0), (4.0, 0.0), (3.5, 1.5), (2.75, 1.25), (2.125, 0.0)])
+        @test same_polygon(polygon_coordinates(vorn, 2), [(0.0, 1.9166666666666665), (1.5, 2.9166666666666665), (1.5, 3.0), (0.0, 3.0), (0.0, 1.9166666666666665)])
+        @test same_polygon(polygon_coordinates(vorn, 3), [(0.0, 0.0), (1.625, 0.0), (0.0, 1.0833333333333333), (0.0, 0.0)])
+        @test same_polygon(polygon_coordinates(vorn, 1), [(2.75, 1.25), (3.5, 1.5), (3.0, 3.0), (1.5, 3.0), (1.5, 2.9166666666666665), (2.75, 1.25)])
         @test DT.get_boundary_polygons(vorn) == Set((4, 2, 1, 3, 5))
     end
 end
@@ -1157,8 +1165,8 @@ end
         a, b, c, d = -4.0, 6.0, -2.0, 4.0
         bounding_box = (a, b, c, d)
         new_vertices, new_points = DT.grow_polygon_outside_of_box(vorn, 1, bounding_box, PT())
-        @test collect.(new_points) ≈ collect.(
-            [
+        @test same_cycle( # where the polygon starts depends on hash order
+            new_points, [
                 (-1.1363636363636365, 5.954545454545455)
                 (-0.2999999999999998, 9.3)
                 (-2.3999999999999986, 21.900000000000006)
@@ -1168,8 +1176,8 @@ end
         )
         @test new_vertices == [1, 2, 3, 4, 5]
         new_vertices, new_points = DT.grow_polygon_outside_of_box(vorn, 5, bounding_box, PT())
-        @test collect.(new_points) ≈ collect.(
-            [
+        @test same_cycle( # where the polygon starts depends on hash order
+            new_points, [
                 (2.710526315789474, 1.868421052631579)
                 (-0.7307692307692308, -0.8846153846153846)
                 (1.1153846153846159, -13.807692307692308)
@@ -1178,8 +1186,8 @@ end
         )
         @test new_vertices == [1, 2, 3, 4]
         new_vertices, new_points = DT.grow_polygon_outside_of_box(vorn, 6, bounding_box, PT())
-        @test collect.(new_points) ≈ collect.(
-            [
+        @test same_cycle( # where the polygon starts depends on hash order
+            new_points, [
                 (23.34210526315789, -4.026315789473685)
                 (17.5, 15.499999999999995)
                 (3.1, 5.9)
@@ -1189,8 +1197,8 @@ end
         )
         @test new_vertices == [1, 2, 3, 4, 5]
         new_vertices, new_points = DT.grow_polygon_outside_of_box(vorn, 7, bounding_box, PT())
-        @test collect.(new_points) ≈ collect.(
-            [
+        @test same_cycle( # where the polygon starts depends on hash order
+            new_points, [
                 (-0.7307692307692308, -0.8846153846153846)
                 (-4.166666666666666, 0.8333333333333335)
                 (-10.807692307692307, 2.730769230769231)
@@ -1200,8 +1208,8 @@ end
         )
         @test new_vertices == [1, 2, 3, 4, 5]
         new_vertices, new_points = DT.grow_polygon_outside_of_box(vorn, 8, bounding_box, PT())
-        @test collect.(new_points) ≈ collect.(
-            [
+        @test same_cycle( # where the polygon starts depends on hash order
+            new_points, [
                 (17.5, 15.499999999999995)
                 (-4.799999999999997, 36.30000000000001)
                 (-0.2999999999999998, 9.3)
@@ -1575,7 +1583,7 @@ end
     tri = triangulate(points; rng)
     vorn = voronoi(tri, clip=false, clip_polygon=clip_polygon, rng=rng)
     ext = DT.find_all_exterior_circumcenters(vorn, clip_polygon...)
-    @test ext == Set((7, 2, 1))
+    @test same_points([get_polygon_point(vorn, c) for c in ext], [(-0.5, 2.5), (-7.0, 8.0), (-2.5, 6.5)]) # the circumcenter indices depend on hash order
     int, ints = DT.find_all_intersecting_polygons(vorn, clip_polygon..., ext)
     @test int == Set()
     @test ints == Set((5, 4, 7, 2, 9, 8, 3, 6, 1))
@@ -1814,14 +1822,14 @@ end
         return sum(e1 .* (point .- origin)), sum(e2 .* (point .- origin))
     end
 
-    @test_reference joinpath(ASSETS, "voronoi_issue_234_reference_n3.png") begin
+    @test_reference reference_path(ASSETS, "voronoi_issue_234_reference_n3.png") begin
         points = [projection(p) for p in generatePoints(3)]
         values = [0, 1, 2, 2, 0, 1]
         fig, ax, _ = voronoiplot([p[1] for p in points], [p[2] for p in points], values)
         fig
     end
 
-    @test_reference joinpath(ASSETS, "voronoi_issue_234_reference_n4.png") begin
+    @test_reference reference_path(ASSETS, "voronoi_issue_234_reference_n4.png") begin
         points = [projection(p) for p in generatePoints(4)]
         values = [0, 1, 2, 0, 2, 0, 1, 1, 2, 0]
         fig, ax, _ = voronoiplot([p[1] for p in points], [p[2] for p in points], values)

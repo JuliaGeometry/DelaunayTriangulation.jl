@@ -42,7 +42,7 @@ lines!(ax, section_1, color = :red, linewidth = 6)
 lines!(ax, section_2, color = :green, linewidth = 6)
 lines!(ax, section_3, color = :blue, linewidth = 6)
 fig
-@test_reference joinpath(fig_path, "constrained_ex_4.png") fig #src
+@test_reference reference_path(fig_path, "constrained_ex_4.png") fig #src
 
 # The first section is in red, the second section is in green, and the third section 
 # is in blue. We use ghost vertices to identify the sections, where the first section is identified 

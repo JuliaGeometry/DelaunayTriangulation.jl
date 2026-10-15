@@ -172,7 +172,7 @@ tri = triangulate(
 refine!(tri; max_area = 1.0e-3, rng)
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "custom_structs_ex_1.png") fig by = psnr_equality(5.0) #src
+@test_reference reference_path(fig_path, "custom_structs_ex_1.png") fig by = psnr_equality(5.0) #src
 
 # Now let's give an example of a centroidal Voronoi tessellation to show that 
 # this all works. 
@@ -190,4 +190,4 @@ tri = triangulate(
 vorn = voronoi(tri; clip = true, smooth = true, rng)
 fig, ax, sc = voronoiplot(vorn)
 fig
-@test_reference joinpath(fig_path, "custom_structs_ex_2.png") fig by = psnr_equality(5.0) #src
+@test_reference reference_path(fig_path, "custom_structs_ex_2.png") fig by = psnr_equality(5.0) #src

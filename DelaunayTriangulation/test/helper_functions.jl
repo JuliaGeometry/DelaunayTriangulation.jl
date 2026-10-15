@@ -30,6 +30,62 @@ macro test_with_log(msg, expr, kws...)
     end
 end
 
+"""
+    reference_path(dir, name)
+
+Returns the path to the reference image `name` in `dir`. Some figures depend on hash iteration
+order (e.g. which triangles mesh refinement splits first), which changed in Julia 1.13. For those
+figures, the Julia 1.13 version of the image is stored in `dir/julia-1.13/` and used on Julia ≥ 1.13.
+
+To regenerate the Julia 1.13 images, e.g. after a change that affects these figures:
+
+1. Run the tests on Julia ≥ 1.13 with the environment variable `JULIA_REFERENCETESTS_UPDATE=true`. This overwrites
+   only the reference images whose tests fail.
+2. Move each changed image into the `julia-1.13/` folder next to it (replacing any existing copy there).
+3. Restore the original images with `git checkout -- <file>`, since those are still the references for Julia < 1.13.
+
+If a figure changes on Julia < 1.13 instead, regenerate it on that version in the same way, but keep the updated image in
+place rather than moving it.
+"""
+function reference_path(dir, name)
+    if VERSION ≥ v"1.13-"
+        path = joinpath(dir, "julia-1.13", name)
+        isfile(path) && return path
+    end
+    return joinpath(dir, name)
+end
+
+# Many collections are hashed, so the order in which things are found (and hence e.g. the numbering
+# of Voronoi circumcenters, or where a polygon's vertex list starts) depends on the Julia version. These helpers compare
+# results in a way that does not depend on that order.
+
+"Returns `true` if `a` is a rotation of `b`."
+is_rotation(a, b) = length(a) == length(b) && (isempty(a) || any(k -> circshift(b, k) == a, eachindex(b)))
+
+"Returns `true` if `a` and `b` contain the same elements with the same multiplicities, in any order."
+same_elements(a, b) = length(a) == length(b) && all(x -> count(==(x), a) == count(==(x), b), a)
+
+"Returns `true` if the points in `A` and `B` are approximately equal, in any order."
+same_points(A, B) = length(A) == length(B) && sort(collect.(A)) ≈ sort(collect.(B))
+
+"Returns `true` if the closed polygons `A` and `B`, given as coordinates, are approximately equal up to where they start."
+same_polygon(A, B) = DT.circular_equality(collect.(A), collect.(B), ≈)
+
+"Returns `true` if the points in `A` are approximately a rotation of the points in `B` (neither list repeating its first point at the end)."
+same_cycle(A, B) = same_polygon([A; A[1:1]], [B; B[1:1]])
+
+"Returns the coordinates of the vertices of the `i`th polygon of `vorn`."
+polygon_coordinates(vorn, i) = [get_polygon_point(vorn, j) for j in get_polygon(vorn, i)]
+
+"""
+    polygon_triangles(vorn, i)
+
+Returns, for each vertex of the `i`th polygon of `vorn`, the (sorted) triangle whose circumcenter it is. Unlike the
+circumcenter indices themselves, these do not depend on hash order, and they also identify the ghost vertices of
+unbounded polygons.
+"""
+polygon_triangles(vorn, i) = [DT.sort_triangle(DT.get_circumcenter_to_triangle(vorn, c)) for c in get_polygon(vorn, i)]
+
 function complicated_geometry()
     x1 = [
         collect(LinRange(0, 2, 4)),
@@ -2492,4 +2548,12 @@ export NUM_CWEGT
 export get_convex_polygon_weighted_example
 export rt
 export subtypes
+export reference_path
+export is_rotation
+export same_elements
+export same_points
+export same_polygon
+export same_cycle
+export polygon_coordinates
+export polygon_triangles
 end

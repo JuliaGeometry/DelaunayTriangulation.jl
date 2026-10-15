@@ -46,7 +46,7 @@ xlims!(ax2, -2, 2)
 ylims!(ax2, -2, 2)
 resize_to_layout!(fig)
 fig
-@test_reference joinpath(fig_path, "generic_clipped_voronoi_ex_1.png") fig #src
+@test_reference reference_path(fig_path, "generic_clipped_voronoi_ex_1.png") fig #src
 
 # We can clip to any convex polygon that we want to. For example, below we clip to an elliptical boundary.
 rng = StableRNG(123333)
@@ -71,4 +71,4 @@ xlims!(ax2, -2, 2)
 ylims!(ax2, -2, 2)
 resize_to_layout!(fig)
 fig
-@test_reference joinpath(fig_path, "generic_clipped_voronoi_ex_2.png") fig #src
+@test_reference reference_path(fig_path, "generic_clipped_voronoi_ex_2.png") fig #src

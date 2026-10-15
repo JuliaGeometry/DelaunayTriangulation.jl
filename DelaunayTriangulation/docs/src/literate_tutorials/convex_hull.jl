@@ -38,4 +38,4 @@ ch_points = [get_point(tri, i) for i in DelaunayTriangulation.get_vertices(ch)]
 fig, ax, sc = lines(ch_points, color = :red, linewidth = 4)
 scatter!(ax, points)
 fig
-@test_reference joinpath(fig_path, "convex_hull_ex_1.png") fig #src
+@test_reference reference_path(fig_path, "convex_hull_ex_1.png") fig #src

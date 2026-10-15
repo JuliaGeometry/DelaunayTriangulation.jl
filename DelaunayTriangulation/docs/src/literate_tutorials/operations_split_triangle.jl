@@ -19,7 +19,7 @@ tri = triangulate(points)
 fig, ax, sc = triplot(tri)
 scatter!(ax, [p], markersize = 14)
 fig
-@test_reference joinpath(fig_path, "triangulation_operations_20.png") fig #src
+@test_reference reference_path(fig_path, "triangulation_operations_20.png") fig #src
 
 # The blue point shows the point we want to add into the triangulation 
 # using [`split_triangle!`](@ref). To use this, we provide (1) the index of the point 
@@ -32,7 +32,7 @@ i, j, k = 1, 2, 3
 split_triangle!(tri, i, j, k, r)
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "triangulation_operations_21.png") fig #src
+@test_reference reference_path(fig_path, "triangulation_operations_21.png") fig #src
 
 # See the [`legalise_edge!` tutorial](operations_legalise_edge.md) for more discussion 
 # about restoring the Delaunay property of the triangulation after using 

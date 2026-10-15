@@ -55,7 +55,7 @@ triplot!(ax1, tri)
 triplot!(ax2, cons_tri, show_constrained_edges = true)
 resize_to_layout!(fig)
 fig
-@test_reference joinpath(fig_path, "constrained_ex_1.png") fig #src
+@test_reference reference_path(fig_path, "constrained_ex_1.png") fig #src
 
 # As you can see, the constrained edges in magenta 
 # have now been included in the triangulation in (b), 

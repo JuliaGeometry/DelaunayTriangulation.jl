@@ -21,7 +21,7 @@ tri = triangulate(points)
 fig, ax, sc = triplot(tri)
 scatter!(ax, [p], markersize = 14)
 fig
-@test_reference joinpath(fig_path, "triangulation_operations_17.png") fig #src
+@test_reference reference_path(fig_path, "triangulation_operations_17.png") fig #src
 
 # We want to add the blue point onto the edge shown, which is `(1, 2)`. To do this, 
 # we can use the function `split_edge!`.
@@ -31,7 +31,7 @@ i, j = 1, 2
 split_edge!(tri, i, j, r)
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "triangulation_operations_18.png") fig #src
+@test_reference reference_path(fig_path, "triangulation_operations_18.png") fig #src
 
 # Notice that this has only split the edge in one direction. This is because the 
 # edges in this case are treated as being oriented. To split the edge in the other
@@ -39,7 +39,7 @@ fig
 split_edge!(tri, j, i, r)
 fig, ax, sc = triplot(tri)
 fig
-@test_reference joinpath(fig_path, "triangulation_operations_19.png") fig #src
+@test_reference reference_path(fig_path, "triangulation_operations_19.png") fig #src
 
 # If you also want to restore the Delaunay property of the triangulation 
 # following this splitting, you need to use [`legalise_edge!`](@ref). In this 

@@ -74,7 +74,7 @@ rng = StableRNG(123) # the triangulation is not unique due to cocircular points
 tri = triangulate(points; boundary_nodes, rng)
 fig, ax, sc = triplot(tri, show_constrained_edges = true, show_convex_hull = true)
 fig
-@test_reference joinpath(fig_path, "constrained_ex_5.png") fig #src
+@test_reference reference_path(fig_path, "constrained_ex_5.png") fig #src
 
 # Like before, we examine individual segments by referring to them by their ghost vertices, 
 # which are still in the order `-1`, `-2`, and so on in the order of the segments provided 

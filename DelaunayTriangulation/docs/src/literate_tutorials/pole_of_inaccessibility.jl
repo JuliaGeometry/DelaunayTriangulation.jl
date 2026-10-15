@@ -77,7 +77,7 @@ pole = DelaunayTriangulation.pole_of_inaccessibility(points, boundary_nodes)
 #-
 scatter!(ax, pole, color = :blue, markersize = 16)
 fig
-@test_reference joinpath(fig_path, "pole_of_inaccessibility_ex_1.png") fig #src
+@test_reference reference_path(fig_path, "pole_of_inaccessibility_ex_1.png") fig #src
 
 # This shows that the point inside the red region that is furthest from the boundary 
 # is the blue point shown.
@@ -113,7 +113,7 @@ for i in eachindex(boundary_nodes)
     scatter!(ax, coords, color = colors[i], markersize = 16)
 end
 fig
-@test_reference joinpath(fig_path, "pole_of_inaccessibility_ex_2.png") fig #src
+@test_reference reference_path(fig_path, "pole_of_inaccessibility_ex_2.png") fig #src
 
 # Note that the green and purple boundaries have the same pole of inaccessibility. The 
 # first curve, the red curve, is the only one that has the pole of inaccessibility computed 
