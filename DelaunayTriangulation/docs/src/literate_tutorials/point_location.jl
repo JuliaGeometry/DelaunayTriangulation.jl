@@ -37,7 +37,7 @@ fig
 # Using the `find_triangle` function, this is simple.
 V = find_triangle(tri, q)
 
-# The result means that the triangle `(2, 7, 6)` contains the point, as we can easily check:
+# The result means that the triangle `V` contains the point, as we can easily check:
 DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)
 @test DelaunayTriangulation.is_inside(DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)) #src
 

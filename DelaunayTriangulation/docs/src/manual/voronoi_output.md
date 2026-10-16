@@ -104,7 +104,7 @@ For example, using [`get_polygon`](@ref) with the first polygon:
 get_polygon(vorn, 1)
 ```
 
-means that the first polygon has vertices `[19, 21, 4, 18, 16, 3, 19]`. All polygons are stored as a circular vector of counter-clockwise oriented vertices. Note also that polygon indices are the same as the generator vertex, so that e.g. this polygon `1` is that associated with generator `1`.  You can get the number of polygons using [`num_polygons`](@ref):
+gives the vertices of the first polygon. All polygons are stored as a circular vector of counter-clockwise oriented vertices. Note also that polygon indices are the same as the generator vertex, so that e.g. this polygon `1` is that associated with generator `1`.  You can get the number of polygons using [`num_polygons`](@ref):
 
 ```@example vorout
 num_polygons(vorn)
@@ -175,10 +175,12 @@ When a Voronoi tessellation is constructed, the circumcenters of the triangles f
 DelaunayTriangulation.get_circumcenter_to_triangle(vorn)
 ```
 
-We see, for example, that the fifth polygon vertex is derived from the circumcenter of the triangle `(3, 6, 2)`. We can verify this:
+For example, the fifth polygon vertex is derived from the circumcenter of the triangle
+`V` below (which triangle this is depends on the order in which the polygon vertices were numbered). We can verify this:
 
 ```@example vorout 
-p = DelaunayTriangulation.triangle_circumcenter(tri, (3, 6, 2)) 
+V = DelaunayTriangulation.get_circumcenter_to_triangle(vorn, 5)
+p = DelaunayTriangulation.triangle_circumcenter(tri, V) 
 q = get_polygon_point(vorn, 5)
 p == q 
 ```
@@ -239,19 +241,20 @@ In cases where pairs of triangles are cocircular, meaning lie on the same circle
 DelaunayTriangulation.get_cocircular_circumcenters(vorn)
 ```
 
-This means that the first polygon vertex is associated with at least two cocircular triangles, and is why, for example, the values from `get_triangle_to_circumcenter(vorn)` are not unique:
+This means that the polygon vertex listed here is associated with at least two cocircular triangles, and is why, for example, the values from `get_triangle_to_circumcenter(vorn)` are not unique:
 
 ```@example vorout
 t2c = DelaunayTriangulation.get_triangle_to_circumcenter(vorn)
 allunique(values(t2c))
 ```
 
-and also explains why `get_circumcenter_to_triangle(vorn)` and `get_triangle_to_circumcenter(vorn)` are not perfect inverses of each other. The triangle mapped to from `5` inside the `circumcenter_to_triangle` map is simply the first one that the algorithm happened to encounter. To find the two cocircular triangles, we could use the `triangle_to_circumcenter` map:
+and also explains why `get_circumcenter_to_triangle(vorn)` and `get_triangle_to_circumcenter(vorn)` are not perfect inverses of each other. The triangle mapped to from this vertex inside the `circumcenter_to_triangle` map is simply the first one that the algorithm happened to encounter. To find the cocircular triangles, we could use the `triangle_to_circumcenter` map:
 
 ```@example vorout
+cc = only(DelaunayTriangulation.get_cocircular_circumcenters(vorn)) # the polygon vertex from above
 triangles = NTuple{3,Int}[]
 for (t, c) in t2c
-    c == 1 && push!(triangles, t)
+    c == cc && push!(triangles, t)
 end
 ```
 
@@ -269,13 +272,14 @@ This map is similar to the [`Adjacent`](@ref) map for triangulations:
 get_adjacent(vorn)
 ```
 
-In this case, oriented edges are being mapped to the polygon it belongs to. For example,
+In this case, oriented edges are being mapped to the polygon it belongs to. For example, taking the first edge `(u, v)` of the first polygon,
 
 ```@example vorout 
-get_adjacent(vorn, 3, 19)
+u, v = get_polygon(vorn, 1)[1:2]
+get_adjacent(vorn, u, v)
 ```
 
-means that the edge `(3, 19)` belongs to the first polygon; these vertices `3` and `19` refer to the vertices from the polygon, while the `1` from the output refers to a generator.
+means that the edge `(u, v)` belongs to the first polygon; the vertices `u` and `v` refer to vertices from the polygon, while the `1` from the output refers to a generator.
 
 ## [`get_boundary_polygons(vorn)`](@ref get_boundary_polygons)
 
