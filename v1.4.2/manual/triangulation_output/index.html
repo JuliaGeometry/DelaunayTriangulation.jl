@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Triangulation Output · DelaunayTriangulation.jl</title><meta name="title" content="Triangulation Output · DelaunayTriangulation.jl"/><meta property="og:title" content="Triangulation Output · DelaunayTriangulation.jl"/><meta property="twitter:title" content="Triangulation Output · DelaunayTriangulation.jl"/><meta name="description" content="Documentation for DelaunayTriangulation.jl."/><meta property="og:description" content="Documentation for DelaunayTriangulation.jl."/><meta property="twitter:description" content="Documentation for DelaunayTriangulation.jl."/><meta property="og:url" content="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/manual/triangulation_output/"/><meta property="twitter:url" content="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/manual/triangulation_output/"/><link rel="canonical" href="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/manual/triangulation_output/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">DelaunayTriangulation.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><input class="collapse-toggle" id="menuitem-2" type="checkbox"/><label class="tocitem" for="menuitem-2"><span class="docs-label">Tutorials</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../tutorials/overview/">Overview</a></li><li><a class="tocitem" href="../../tutorials/unconstrained/">Unconstrained Triangulations</a></li><li><input class="collapse-toggle" id="menuitem-2-3" type="checkbox"/><label class="tocitem" for="menuitem-2-3"><span class="docs-label">Constrained Triangulations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../tutorials/constrained_edges/">Constrained Edges</a></li><li><a class="tocitem" href="../../tutorials/constrained_outer_boundary/">Outer Boundary</a></li><li><a class="tocitem" href="../../tutorials/constrained_outer_boundary_segmented/">Segmented Outer Boundary</a></li><li><a class="tocitem" href="../../tutorials/constrained_multiply_connected/">Domain with Interior Holes</a></li><li><a class="tocitem" href="../../tutorials/constrained_interior_within_interiors/">Domain with Interior Holes inside Interior Holes</a></li><li><a class="tocitem" href="../../tutorials/constrained_multipolygon/">Disjoint Domains</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-2-4" type="checkbox"/><label class="tocitem" for="menuitem-2-4"><span class="docs-label">Triangulation Operations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../tutorials/operations_vertex_insertion_deletion/">Vertex Insertion and Deletion</a></li><li><a class="tocitem" href="../../tutorials/operations_segment_insertion/">Edge Insertion</a></li><li><a class="tocitem" href="../../tutorials/operations_ghost_triangles/">Adding or Clearing Ghost Triangles</a></li><li><a class="tocitem" href="../../tutorials/operations_flip_edge/">Edge Flipping</a></li><li><a class="tocitem" href="../../tutorials/operations_legalise_edge/">Legalising an Edge</a></li><li><a class="tocitem" href="../../tutorials/operations_split_edge/">Edge Splitting</a></li><li><a class="tocitem" href="../../tutorials/operations_split_triangle/">Triangle Splitting</a></li><li><a class="tocitem" href="../../tutorials/operations_convex_hull_locking/">Locking and Unlocking the Convex Hull</a></li></ul></li><li><a class="tocitem" href="../../tutorials/refinement/">Mesh Refinement</a></li><li><a class="tocitem" href="../../tutorials/lattice/">Triangulating Rectangular Regions</a></li><li><a class="tocitem" href="../../tutorials/convex/">Triangulating Convex Polygons</a></li><li><a class="tocitem" href="../../tutorials/curve_bounded/">Triangulating Curve-Bounded Domains</a></li><li><a class="tocitem" href="../../tutorials/weighted/">Weighted Triangulations</a></li><li><a class="tocitem" href="../../tutorials/voronoi/">Voronoi Tessellations</a></li><li><input class="collapse-toggle" id="menuitem-2-11" type="checkbox"/><label class="tocitem" for="menuitem-2-11"><span class="docs-label">Clipped Voronoi Tessellations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../tutorials/clipped/">Clipping to the Convex Hull</a></li><li><a class="tocitem" href="../../tutorials/clipped_rectangle/">Clipping to a Rectangle</a></li><li><a class="tocitem" href="../../tutorials/clipped_polygon/">Clipping to a Generic Convex Polygon</a></li></ul></li><li><a class="tocitem" href="../../tutorials/centroidal/">Centroidal Voronoi Tessellations</a></li><li><a class="tocitem" href="../../tutorials/power/">Power Diagrams</a></li><li><a class="tocitem" href="../../tutorials/point_location/">Point Location</a></li><li><a class="tocitem" href="../../tutorials/nearest/">Nearest Neighbour Queries</a></li><li><a class="tocitem" href="../../tutorials/convex_hull/">Convex Hulls</a></li><li><a class="tocitem" href="../../tutorials/pole_of_inaccessibility/">Pole of Inaccessibility</a></li><li><a class="tocitem" href="../../tutorials/point_in_polygon/">Point-in-Polygon Testing</a></li><li><a class="tocitem" href="../../tutorials/custom_primitive/">Using Custom Structs for Primitives and Boundaries</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3" type="checkbox" checked/><label class="tocitem" for="menuitem-3"><span class="docs-label">Manual</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../overview/">Overview</a></li><li><a class="tocitem" href="../primitives/">Representing Primitives</a></li><li><a class="tocitem" href="../boundaries/">Representing Boundaries</a></li><li><a class="tocitem" href="../ghost_triangles/">Ghost (Negative) Vertices</a></li><li><a class="tocitem" href="../curve_bounded/">Defining Curve-Bounded Domains</a></li><li><a class="tocitem" href="../predicates/">Geometrical Predicates</a></li><li class="is-active"><a class="tocitem" href>Triangulation Output</a><ul class="internal"><li><a class="tocitem" href="#Geometry-Fields"><span>Geometry Fields</span></a></li><li><a class="tocitem" href="#Topology-Fields"><span>Topology Fields</span></a></li><li><a class="tocitem" href="#Boundary-Handling-Fields"><span>Boundary Handling Fields</span></a></li><li><a class="tocitem" href="#Other-Fields"><span>Other Fields</span></a></li></ul></li><li><a class="tocitem" href="../voronoi_output/">Voronoi Tessellation Output</a></li><li><a class="tocitem" href="../predicate_kernels/">Predicate Kernels</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">API Reference</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../api/overview/">Section Overview</a></li><li><a class="tocitem" href="../../api/data_structures/">Data Structures</a></li><li><a class="tocitem" href="../../api/triangulation/">Triangulations</a></li><li><a class="tocitem" href="../../api/operations/">Triangulation Operations</a></li><li><a class="tocitem" href="../../api/voronoi/">Voronoi Tessellations</a></li><li><a class="tocitem" href="../../api/convex_hull/">Convex Hull</a></li><li><a class="tocitem" href="../../api/curves/">Curves</a></li><li><a class="tocitem" href="../../api/iterators/">Iterators</a></li><li><a class="tocitem" href="../../api/point_location/">Point Location</a></li><li><a class="tocitem" href="../../api/predicates/">Predicates</a></li><li><a class="tocitem" href="../../api/statistics/">Triangulation Statistics</a></li><li><a class="tocitem" href="../../api/primitives/">Primitive Interfaces</a></li><li><a class="tocitem" href="../../api/other/">Other</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">Extended Reference</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../extended/overview/">Overview</a></li><li><a class="tocitem" href="../../extended/data_structures/">Data Structures</a></li><li><a class="tocitem" href="../../extended/algorithms/">Algorithm Internals</a></li><li><a class="tocitem" href="../../extended/utils/">Utility Functions</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">Mathematical Details</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../math/overview/">Overview</a></li><li><a class="tocitem" href="../../math/delaunay/">Delaunay Triangulations</a></li><li><a class="tocitem" href="../../math/constrained/">Constrained Delaunay Triangulations</a></li><li><a class="tocitem" href="../../math/convex/">Triangulating Convex Polygons</a></li><li><a class="tocitem" href="../../math/refinement/">Mesh Refinement</a></li><li><a class="tocitem" href="../../math/curves/">Curves</a></li><li><a class="tocitem" href="../../math/curve_bounded/">Triangulating Curve-Bounded Domains</a></li><li><a class="tocitem" href="../../math/weighted/">Weighted Delaunay Triangulations</a></li><li><a class="tocitem" href="../../math/voronoi/">Voronoi Tessellations</a></li><li><a class="tocitem" href="../../math/clipped/">Clipped Voronoi Tessellations</a></li><li><a class="tocitem" href="../../math/centroidal/">Centroidal Voronoi Tessellations</a></li><li><a class="tocitem" href="../../math/power/">Power Diagrams</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox"/><label class="tocitem" for="menuitem-7"><span class="docs-label">Example Applications</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../applications/overview/">Overview</a></li><li><a class="tocitem" href="../../applications/interpolation/">Interpolation</a></li><li><a class="tocitem" href="../../applications/cell_simulations/">Cellular Biology</a></li><li><a class="tocitem" href="../../applications/pde_discretisation/">Solving PDEs</a></li></ul></li><li><a class="tocitem" href="../../terminology/">Terminology</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Manual</a></li><li class="is-active"><a href>Triangulation Output</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Triangulation Output</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/main/docs/src/manual/triangulation_output.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Triangulation-Output"><a class="docs-heading-anchor" href="#Triangulation-Output">Triangulation Output</a><a id="Triangulation-Output-1"></a><a class="docs-heading-anchor-permalink" href="#Triangulation-Output" title="Permalink"></a></h1><p>In this section, we discuss the output given from <a href="../../api/triangulation/#DelaunayTriangulation.triangulate"><code>triangulate</code></a>. Let&#39;s take a curve-bounded domain and inspect its output in detail; for information about this domain in particular, see the <a href="../../tutorials/curve_bounded/">curve-bounded domain tutorial</a>. First, here is the triangulation.</p><pre><code class="language-julia hljs">using DelaunayTriangulation
+using StableRNGs
+using DelaunayTriangulation: EllipticalArc
+curve = [
+    [
+        [1, 2, 3], [EllipticalArc((2.0, 0.0), (-2.0, 0.0), (0.0, 0.0), 2, 1 / 2, 0.0)]
+    ],
+    [
+        [BSpline([(0.0, 0.4), (1.0, 0.2), (0.0, 0.1), (-1.0, 0.2), (0.0, 0.4)])]
+    ],
+    [
+        [4, 5, 6, 7, 4]
+    ],
+    [
+        [BezierCurve([(0.0, -2.0), (0.0, -2.5), (-1.0, -2.5), (-1.0, -3.0)])], [CatmullRomSpline([(-1.0, -3.0), (0.0, -4.0), (1.0, -3.0), (0.0, -2.0)])]
+    ],
+    [
+        [12, 11, 10, 12]
+    ],
+    [
+        [CircularArc((1.1, -3.0), (1.1, -3.0), (0.0, -3.0), positive=false)]
+    ]
+]
+points = [(-2.0, 0.0), (0.0, 0.0), (2.0, 0.0), (-2.0, -5.0), (2.0, -5.0), (2.0, -1 / 10), (-2.0, -1 / 10), (-1.0, -3.0), (0.0, -4.0), (0.0, -2.3), (-0.5, -3.5), (0.9, -3.0)]
+rng = StableRNG(123)
+tri = triangulate(points; boundary_nodes=curve, rng)
+refine!(tri; max_area=1e-2, rng)
+tri</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Delaunay Triangulation.
+   Number of vertices: 1902
+   Number of triangles: 3403
+   Number of edges: 5305
+   Has boundary nodes: true
+   Has ghost triangles: true
+   Curve-bounded: true
+   Weighted: false
+   Constrained: true</code></pre><p>Now let&#39;s inspect <code>tri</code>. If we look at the fields in <code>tri</code>, we see that there is a lot of information stored in <code>tri</code>:</p><pre><code class="language-julia hljs">propertynames(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(:points, :triangles, :boundary_nodes, :interior_segments, :all_segments, :weights, :adjacent, :adjacent2vertex, :graph, :boundary_curves, :boundary_edge_map, :ghost_vertex_map, :ghost_vertex_ranges, :convex_hull, :representative_point_list, :polygon_hierarchy, :boundary_enricher, :cache)</code></pre><p>Note that each field <code>X</code> has an associated accessor <code>DelaunayTriangulation.get_X</code>. Let&#39;s go through each field. </p><h2 id="Geometry-Fields"><a class="docs-heading-anchor" href="#Geometry-Fields">Geometry Fields</a><a id="Geometry-Fields-1"></a><a class="docs-heading-anchor-permalink" href="#Geometry-Fields" title="Permalink"></a></h2><p>First, we list the fields relating to the actual geometry.</p><h3 id="[get_points(tri)](@ref-get_points)"><a class="docs-heading-anchor" href="#[get_points(tri)](@ref-get_points)"><a href="../../api/triangulation/#DelaunayTriangulation.get_points"><code>get_points(tri)</code></a></a><a id="[get_points(tri)](@ref-get_points)-1"></a><a class="docs-heading-anchor-permalink" href="#[get_points(tri)](@ref-get_points)" title="Permalink"></a></h3><p>This field stores the points that were triangulated. This may be a mutated version (not a copy, though, <code>tri.points === points</code> above) of the points provided into <code>tri</code>, note.</p><pre><code class="language-julia hljs">get_points(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2041-element Vector{Tuple{Float64, Float64}}:
+ (-2.0, 0.0)
+ (0.0, 0.0)
+ (2.0, 0.0)
+ (-2.0, -5.0)
+ (2.0, -5.0)
+ (2.0, -0.1)
+ (-2.0, -0.1)
+ (-1.0, -3.0)
+ (0.0, -4.0)
+ (0.0, -2.3)
+ ⋮
+ (-0.6691499520988587, -0.36911179341389855)
+ (1.0467999699355768, -1.1715446627840307)
+ (1.9552856332240731, -3.0859374999999996)
+ (-1.6982565243086727, -1.1015931034194555)
+ (1.081585161425475, -4.197474851713336)
+ (-0.3000883207300964, -0.7559157191180302)
+ (0.8408588439570197, -0.41996566069514074)
+ (-1.5397696504092864, -2.0379365189133525)
+ (-1.8033813809067116, -0.5255248910528069)</code></pre><p>In some cases, the points in this vector will not all appear in <code>tri</code>, which is why it is recommend you work with the vertices instead, via <a href="../../api/iterators/#DelaunayTriangulation.each_vertex"><code>each_vertex(tri)</code></a> or, for the solid or ghost vertices use <a href="../../api/iterators/#DelaunayTriangulation.each_solid_vertex"><code>each_solid_vertex(tri)</code></a> or <a href="../../api/iterators/#DelaunayTriangulation.each_ghost_vertex"><code>each_ghost_vertex(tri)</code></a>, respectively.</p><h3 id="[get_triangles(tri)](@ref-get_triangles)"><a class="docs-heading-anchor" href="#[get_triangles(tri)](@ref-get_triangles)"><a href="../../api/triangulation/#DelaunayTriangulation.get_triangles"><code>get_triangles(tri)</code></a></a><a id="[get_triangles(tri)](@ref-get_triangles)-1"></a><a class="docs-heading-anchor-permalink" href="#[get_triangles(tri)](@ref-get_triangles)" title="Permalink"></a></h3><p>This field stores all the triangles in the triangulation, including both solid and ghost triangles.</p><pre><code class="language-julia hljs">get_triangles(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Set{Tuple{Int64, Int64, Int64}} with 3804 elements:
+  (73, 36, -6)
+  (412, 254, 411)
+  (969, 1642, -8)
+  (572, 480, 569)
+  (1956, 1659, 603)
+  (1995, 949, 1033)
+  (1993, 767, 1952)
+  (1774, 1125, 1126)
+  (1996, 1995, 943)
+  (1585, 1584, 944)
+  (1864, 671, 1649)
+  (1829, 1060, 1828)
+  (683, 1538, -4)
+  (1983, 1288, 1203)
+  (826, 749, 625)
+  (1973, 1320, 587)
+  (1148, 1147, 584)
+  (252, 135, 175)
+  (1743, 1666, 190)
+  ⋮ </code></pre><p>This is also the same as <a href="../../api/iterators/#DelaunayTriangulation.each_triangle"><code>each_triangle(tri)</code></a>. If you only wanted the solid triangles, you could use <a href="../../api/iterators/#DelaunayTriangulation.each_solid_triangle"><code>each_solid_triangle(tri)</code></a>, and similarly for the ghost triangles with <a href="../../api/iterators/#DelaunayTriangulation.each_ghost_triangle"><code>each_ghost_triangle(tri)</code></a>. All the triangles in these sets are defined to be counter-clockwise:</p><pre><code class="language-julia hljs">using DelaunayTriangulation: is_positively_oriented, triangle_orientation
+all(T -&gt; is_positively_oriented(triangle_orientation(get_point(tri, triangle_vertices(T)...)...)), each_solid_triangle(tri))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">true</code></pre><p>The above check is not true for all the ghost triangles since the domain is non-convex.</p><h3 id="[get_boundary_nodes(tri)](@ref-get_boundary_nodes)"><a class="docs-heading-anchor" href="#[get_boundary_nodes(tri)](@ref-get_boundary_nodes)"><a href="../../api/triangulation/#DelaunayTriangulation.get_boundary_nodes"><code>get_boundary_nodes(tri)</code></a></a><a id="[get_boundary_nodes(tri)](@ref-get_boundary_nodes)-1"></a><a class="docs-heading-anchor-permalink" href="#[get_boundary_nodes(tri)](@ref-get_boundary_nodes)" title="Permalink"></a></h3><p>This field stores the boundary of the triangulation.</p><pre><code class="language-julia hljs">get_boundary_nodes(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">6-element Vector{Vector{Vector{Int64}}}:
+ [[1, 487, 59, 1633, 58, 570, 378, 525, 57, 380  …  342, 54, 530, 291, 1447, 55, 1631, 56, 483, 3], [3, 17, 484, 48, 2005, 465, 1449, 60, 1455, 210  …  196, 1533, 50, 539, 478, 2007, 49, 488, 18, 1]]
+ [[13, 1777, 305, 154, 98, 97, 400, 96, 95, 20  …  21, 86, 87, 409, 88, 89, 102, 109, 1776, 13]]
+ [[4, 1568, 1030, 1563, 706, 1687, 1026, 1517, 482, 1507  …  1003, 69, 1009, 735, 1374, 707, 1371, 989, 1569, 4]]
+ [[14, 23, 150, 457, 493, 497, 22, 1596, 469, 452, 450, 24, 8], [8, 40, 41, 42, 43, 44, 79, 80, 78, 77  …  511, 517, 91, 514, 504, 542, 38, 546, 357, 14]]
+ [[12, 1926, 394, 174, 1677, 354, 65, 576, 302, 460  …  458, 10, 506, 199, 540, 66, 565, 67, 513, 12]]
+ [[15, 1378, 1057, 921, 1656, 923, 1079, 31, 1048, 918  …  1214, 1615, 34, 1764, 1186, 681, 1699, 1080, 1358, 15]]</code></pre><p>Notice that these boundary nodes are not the same as those provided into <code>triangulate</code> above. Instead of having <code>curve</code>, <code>triangulate</code> constructs a new <code>boundary_nodes</code> vector and populates that with the piecewise linear approximation. You could work with these nodes using <a href="../../api/triangulation/#DelaunayTriangulation.get_boundary_nodes"><code>get_boundary_nodes</code></a> again. For examples, the nodes associated with the first curve are given by </p><pre><code class="language-julia hljs">get_boundary_nodes(tri, 1)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{Vector{Int64}}:
+ [1, 487, 59, 1633, 58, 570, 378, 525, 57, 380  …  342, 54, 530, 291, 1447, 55, 1631, 56, 483, 3]
+ [3, 17, 484, 48, 2005, 465, 1449, 60, 1455, 210  …  196, 1533, 50, 539, 478, 2007, 49, 488, 18, 1]</code></pre><p>The second section of this curve is given by </p><pre><code class="language-julia hljs">get_boundary_nodes(tri, 1, 2)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">39-element Vector{Int64}:
+    3
+   17
+  484
+   48
+ 2005
+  465
+ 1449
+   60
+ 1455
+  210
+    ⋮
+ 1533
+   50
+  539
+  478
+ 2007
+   49
+  488
+   18
+    1</code></pre><h3 id="[get_interior_segments(tri)](@ref-get_interior_segments)"><a class="docs-heading-anchor" href="#[get_interior_segments(tri)](@ref-get_interior_segments)"><a href="../../api/triangulation/#DelaunayTriangulation.get_interior_segments"><code>get_interior_segments(tri)</code></a></a><a id="[get_interior_segments(tri)](@ref-get_interior_segments)-1"></a><a class="docs-heading-anchor-permalink" href="#[get_interior_segments(tri)](@ref-get_interior_segments)" title="Permalink"></a></h3><p>This field stores the interior segments of the triangulation. These are the segments that are not part of the boundary.</p><pre><code class="language-julia hljs">get_interior_segments(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Set{Tuple{Int64, Int64}}()</code></pre><p>In our case, there are no such segments, but there would be if we had used <code>segments</code> when calling <code>triangulate</code>. We could add a segment now, for example</p><pre><code class="language-julia hljs">r = DelaunayTriangulation.num_points(tri)
+add_point!(tri, -3/2, -4.0, concavity_protection = true; rng)
+add_point!(tri, -3/2, -1.0, concavity_protection = true; rng)
+add_segment!(tri, r + 1, r + 2; rng)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Delaunay Triangulation.
+   Number of vertices: 1904
+   Number of triangles: 3407
+   Number of edges: 5311
+   Has boundary nodes: true
+   Has ghost triangles: true
+   Curve-bounded: true
+   Weighted: false
+   Constrained: true</code></pre><p>Now we see that we have some segments:</p><pre><code class="language-julia hljs">get_interior_segments(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Set{Tuple{Int64, Int64}} with 1 element:
+  (2042, 2043)</code></pre><p>Note that, for any segment <code>(i, j)</code>, only one of <code>(i, j)</code> or <code>(j, i)</code> will appear in the list of interior segments.</p><h3 id="[get_all_segments(tri)](@ref-get_all_segments)"><a class="docs-heading-anchor" href="#[get_all_segments(tri)](@ref-get_all_segments)"><a href="../../api/triangulation/#DelaunayTriangulation.get_all_segments"><code>get_all_segments(tri)</code></a></a><a id="[get_all_segments(tri)](@ref-get_all_segments)-1"></a><a class="docs-heading-anchor-permalink" href="#[get_all_segments(tri)](@ref-get_all_segments)" title="Permalink"></a></h3><p>In contrast to the <code>interior_segments</code> field, which only stores the interior segments, this field stores both the interior and boundary segments.</p><pre><code class="language-julia hljs">get_all_segments(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Set{Tuple{Int64, Int64}} with 402 elements:
+  (913, 950)
+  (1711, 595)
+  (697, 967)
+  (117, 118)
+  (92, 93)
+  (7, 1437)
+  (867, 68)
+  (174, 1677)
+  (487, 59)
+  (354, 65)
+  (36, 73)
+  (33, 1685)
+  (103, 2)
+  (55, 1631)
+  (115, 114)
+  (1385, 695)
+  (82, 444)
+  (111, 108)
+  (382, 196)
+  ⋮ </code></pre><p>Just as for the interior segments, only one of <code>(i, j)</code> or <code>(j, i)</code> will appear in the list of all segments.</p><h3 id="[get_weights(tri)](@ref-get_weights)"><a class="docs-heading-anchor" href="#[get_weights(tri)](@ref-get_weights)"><a href="../../api/triangulation/#DelaunayTriangulation.get_weights"><code>get_weights(tri)</code></a></a><a id="[get_weights(tri)](@ref-get_weights)-1"></a><a class="docs-heading-anchor-permalink" href="#[get_weights(tri)](@ref-get_weights)" title="Permalink"></a></h3><p>This field stores the weights associated with each point in the triangulation. By default, you will see a <a href="../../api/triangulation/#DelaunayTriangulation.ZeroWeight"><code>ZeroWeight()</code></a>:</p><pre><code class="language-julia hljs">get_weights(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">DelaunayTriangulation.ZeroWeight{Float64}()</code></pre><p>If you do provide weights, this will return those.</p><h2 id="Topology-Fields"><a class="docs-heading-anchor" href="#Topology-Fields">Topology Fields</a><a id="Topology-Fields-1"></a><a class="docs-heading-anchor-permalink" href="#Topology-Fields" title="Permalink"></a></h2><p>Now we list the fields relating to the topology of the triangulation itself.</p><h3 id="[get_adjacent(tri)](@ref-get_adjacent)"><a class="docs-heading-anchor" href="#[get_adjacent(tri)](@ref-get_adjacent)"><a href="../../api/triangulation/#DelaunayTriangulation.get_adjacent"><code>get_adjacent(tri)</code></a></a><a id="[get_adjacent(tri)](@ref-get_adjacent)-1"></a><a class="docs-heading-anchor-permalink" href="#[get_adjacent(tri)](@ref-get_adjacent)" title="Permalink"></a></h3><p>This field stores the adjacent map, mapping each edge <code>(u, v)</code> in the triangulation to the vertex <code>w</code> such that <code>(u, v, w)</code> is a positively oriented triangle in the triangulation. In cases where there is no such triangle, the vertex <code>0</code> is returned. For this triangulation, we have:</p><pre><code class="language-julia hljs">get_adjacent(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Adjacent{Int64, Tuple{Int64, Int64}}, with map:
+Dict{Tuple{Int64, Int64}, Int64} with 11424 entries:
+  (697, 967)   =&gt; 968
+  (1215, 671)  =&gt; 1430
+  (765, 1803)  =&gt; 1804
+  (843, 1529)  =&gt; 1960
+  (353, 304)   =&gt; 1959
+  (717, 1334)  =&gt; 1916
+  (1782, 549)  =&gt; 66
+  (1653, 777)  =&gt; 1651
+  (1386, 723)  =&gt; 1385
+  (1410, 1414) =&gt; 1574
+  (267, 123)   =&gt; 266
+  (1162, 764)  =&gt; 1161
+  (1186, 681)  =&gt; 1717
+  (1230, 1389) =&gt; 1255
+  (2029, 692)  =&gt; 1907
+  (1649, 1178) =&gt; 1864
+  (1150, 1534) =&gt; 481
+  (231, 181)   =&gt; 421
+  (417, 416)   =&gt; 62
+  ⋮            =&gt; ⋮</code></pre><p>For example, the mapping <code>(697, 967) =&gt; 968</code> implies that the triangle <code>(697, 967, 968)</code> is in the triangulation and is positively oriented, which we can verify:</p><pre><code class="language-julia hljs">u, v, w = 697, 967, 968
+DelaunayTriangulation.contains_triangle(tri, u, v, w)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">((968, 697, 967), true)</code></pre><p>It is important to note that, for any triangle <code>(u, v, w)</code>, the mappings <code>(u, v) =&gt; w</code>, <code>(v, w) =&gt; u</code>, and <code>(w, u) =&gt; v</code> will all appear in the adjacent map. For example:</p><pre><code class="language-julia hljs">get_adjacent(tri, u, v), get_adjacent(tri, v, w), get_adjacent(tri, w, u)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(968, 697, 967)</code></pre><p>You can use <code>get_adjacent(tri, u, v)</code> to find this vertex <code>w</code>, as we demonstrated above. For cases where the edge does not exist, you will get <code>0</code>:</p><pre><code class="language-julia hljs">get_adjacent(tri, 1, 2)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0</code></pre><p>One last thing to notice is that some of the vertices <code>w</code> will be ghost vertices, and similarly some of the edges <code>(u, v)</code> will be ghost edges. For example,</p><pre><code class="language-julia hljs">get_adjacent(tri, 73, 36)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-6</code></pre><p>This vertex <code>-6</code> means that <code>(73, 36)</code> is an edge of the boundary associated with the ghost vertex <code>-6</code>.</p><h3 id="[get_adjacent2vertex(tri)](@ref-get_adjacent2vertex)"><a class="docs-heading-anchor" href="#[get_adjacent2vertex(tri)](@ref-get_adjacent2vertex)"><a href="../../api/triangulation/#DelaunayTriangulation.get_adjacent2vertex"><code>get_adjacent2vertex(tri)</code></a></a><a id="[get_adjacent2vertex(tri)](@ref-get_adjacent2vertex)-1"></a><a class="docs-heading-anchor-permalink" href="#[get_adjacent2vertex(tri)](@ref-get_adjacent2vertex)" title="Permalink"></a></h3><p>The <code>adjacent2vertex</code> field is similar to <code>adjacent</code>. The difference is that, instead of mapping edges to vertices, <code>adjacent2vertex</code> maps vertices <code>w</code> to the set of all edges <code>(u, v)</code> such that <code>(u, v, w)</code> is a positively oriented triangle in the triangulation. For this triangulation, we have:</p><pre><code class="language-julia hljs">get_adjacent2vertex(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Adjacent2Vertex{Int64, Set{Tuple{Int64, Int64}}} with map:
+Dict{Int64, Set{Tuple{Int64, Int64}}} with 1912 entries:
+  1144 =&gt; Set([(1143, 658), (658, 744), (603, 1145), (1145, 1143), (744, 1956),…
+  1175 =&gt; Set([(1775, 1323), (1316, 1315), (1315, 1312), (1312, 1775), (1323, 1…
+  1953 =&gt; Set([(1701, 611), (611, 1954), (755, 2014), (1954, 755), (2014, 753),…
+  719  =&gt; Set([(1146, 1660), (1335, 1866), (1866, 1865), (666, 1335), (1865, 11…
+  1703 =&gt; Set([(476, 261), (196, 476), (382, 196), (261, 381), (381, 382)])
+  1956 =&gt; Set([(744, 741), (741, 1659), (1659, 603), (1144, 744), (603, 1144)])
+  1028 =&gt; Set([(1640, 1562), (1475, 1405), (1405, 1640), (1562, 1160), (1160, 1…
+  699  =&gt; Set([(800, 812), (796, 798), (812, 1705), (1706, 796), (1705, 1706), …
+  1299 =&gt; Set([(1833, 632), (1294, 630), (632, 629), (1295, 1294), (630, 1833),…
+  1438 =&gt; Set([(7, 1437), (1437, 1439), (1439, 1967), (619, 7), (1967, 619)])
+  -5   =&gt; Set([(8, 24), (457, 150), (450, 452), (497, 493), (23, 14), (469, 159…
+  1074 =&gt; Set([(1077, 938), (1073, 1077), (2016, 674), (938, 2016), (2035, 1073…
+  319  =&gt; Set([(346, 320), (229, 228), (228, 321), (321, 318), (156, 346), (318…
+  687  =&gt; Set([(1542, 1543), (1544, 1428), (799, 1542), (1427, 799), (1543, 154…
+  1812 =&gt; Set([(797, 804), (804, 689), (689, 805), (805, 797)])
+  1199 =&gt; Set([(1525, 1198), (1066, 1200), (1200, 1377), (1078, 1525), (1377, 1…
+  185  =&gt; Set([(273, 311), (311, 312), (270, 419), (418, 273), (312, 314), (419…
+  823  =&gt; Set([(866, 1800), (1800, 1589), (1039, 866), (1589, 1588), (1588, 159…
+  1090 =&gt; Set([(1092, 903), (914, 1099), (1098, 1092), (1099, 1098), (903, 1089…
+  ⋮    =&gt; ⋮</code></pre><p>An example of this mapping is:</p><pre><code class="language-julia hljs">get_adjacent2vertex(tri, 700)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Set{Tuple{Int64, Int64}} with 6 elements:
+  (792, 1936)
+  (790, 787)
+  (789, 1693)
+  (1693, 792)
+  (1936, 790)
+  (787, 789)</code></pre><p>This output means that <code>(700, 792, 1936)</code>, <code>(700, 790, 787)</code>, <code>(700, 789, 1693)</code>, <code>(700, 1693, 792)</code>, <code>(700, 1936, 790)</code>, and <code>(700, 787, 789)</code> are all positively oriented triangles in the triangulation, and these are the only triangles that contain the vertex <code>700</code>. In contrast to <code>get_adjacent</code>, calling <code>get_adjacent2vertex</code> on a vertex not in the triangulation will throw a <code>KeyError</code>. For ghost vertices, you will get the set of all edges on the boundary associated with that vertex, for example</p><pre><code class="language-julia hljs">get_adjacent2vertex(tri, -1)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Set{Tuple{Int64, Int64}} with 31 elements:
+  (2, 103)
+  (61, 492)
+  (570, 58)
+  (378, 570)
+  (523, 2)
+  (483, 56)
+  (138, 285)
+  (244, 136)
+  (63, 244)
+  (342, 138)
+  (1631, 55)
+  (530, 54)
+  (492, 99)
+  (58, 1633)
+  (295, 63)
+  (525, 378)
+  (55, 1447)
+  (56, 1631)
+  (1633, 59)
+  ⋮ </code></pre><p>gives the set of all edges on the boundary associated with the ghost vertex <code>-1</code>. It is important to note that the edges in this set are not returned in any particular order, and so you should not rely on the order of the edges in the set.</p><h3 id="[get_graph(tri)](@ref-get_graph)"><a class="docs-heading-anchor" href="#[get_graph(tri)](@ref-get_graph)"><a href="../../api/triangulation/#DelaunayTriangulation.get_graph"><code>get_graph(tri)</code></a></a><a id="[get_graph(tri)](@ref-get_graph)-1"></a><a class="docs-heading-anchor-permalink" href="#[get_graph(tri)](@ref-get_graph)" title="Permalink"></a></h3><p>The last field relating to topology is the <code>graph</code>, which stores the graph information of the underlying triangulation. In particular, it stores the information about which vertices share an edge. All together, we have three different types of connectivity information being stored in a triangulation:</p><ol><li><a href="../../extended/data_structures/#Adjacent"><code>Adjacent</code></a>: The map from edges to vertices.</li><li><a href="../../extended/data_structures/#Adjacent2Vertex"><code>Adjacent2Vertex</code></a>: The map from vertices to edges.</li><li><a href="../../extended/data_structures/#Graph"><code>Graph</code></a>: The map from vertices to vertices.</li></ol><p>For this triangulation, we have:</p><pre><code class="language-julia hljs">get_graph(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Graph
+    Number of edges: 5716
+    Number of vertices: 1912</code></pre><p>This output by itself of course isn&#39;t too useful. The returned <code>Graph</code> does have its own fields,</p><pre><code class="language-julia hljs">propertynames(get_graph(tri))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(:vertices, :edges, :neighbours)</code></pre><p>which you can expect using <a href="../../api/triangulation/#DelaunayTriangulation.get_vertices-Tuple{Triangulation}"><code>DelaunayTriangulation.get_vertices(tri)</code></a>, <a href="../../api/triangulation/#DelaunayTriangulation.get_edges-Tuple{Triangulation}"><code>DelaunayTriangulation.get_edges(tri)</code></a>, and <a href="../../api/triangulation/#DelaunayTriangulation.get_neighbours"><code>get_neighbours(tri)</code></a>. Let us go through each of these fields one at a time.</p><ul><li>For the vertices, you should not be inspecting this field directly. Instead, we provide <a href="../../api/iterators/#DelaunayTriangulation.each_vertex"><code>each_vertex(tri)</code></a>, <a href="../../api/iterators/#DelaunayTriangulation.each_solid_vertex"><code>each_solid_vertex(tri)</code></a>, and <a href="../../api/iterators/#DelaunayTriangulation.each_ghost_vertex"><code>each_ghost_vertex(tri)</code></a> to iterate over the vertices in the triangulation. These functions return iterators. For example,</li></ul><pre><code class="language-julia hljs">each_solid_vertex(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">EachSolidVertex iterator over vertices in a triangulation.</code></pre><pre><code class="language-julia hljs">collect(each_solid_vertex(tri))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">1904-element Vector{Int64}:
+ 1144
+ 1175
+ 1953
+  719
+ 1703
+ 1956
+ 1028
+  699
+ 1299
+ 1438
+    ⋮
+  641
+  887
+  979
+ 1711
+   65
+ 1827
+  298
+ 1402
+ 1115</code></pre><p>Since these iterators are derived from <code>Set</code>s, you should not rely on the particular ordering of vertices returned.</p><ul><li>For the edges, again we recommend you do not inspect this field directly. Instead, we provide <a href="../../api/iterators/#DelaunayTriangulation.each_edge"><code>each_edge(tri)</code></a>, <a href="../../api/iterators/#DelaunayTriangulation.each_solid_edge"><code>each_solid_edge(tri)</code></a>, and <a href="../../api/iterators/#DelaunayTriangulation.each_ghost_edge"><code>each_ghost_edge(tri)</code></a> to iterate over the edges in the triangulation. These functions return iterators. For example,</li></ul><pre><code class="language-julia hljs">each_edge(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Set{Tuple{Int64, Int64}} with 5716 elements:
+  (1390, 785)
+  (1519, 1463)
+  (248, 169)
+  (697, 967)
+  (1500, 1495)
+  (294, 63)
+  (1215, 671)
+  (1804, 1803)
+  (1479, 882)
+  (353, 304)
+  (36, 73)
+  (1599, 1319)
+  (331, 146)
+  (1782, 549)
+  (1920, 1762)
+  (1653, 777)
+  (1451, 291)
+  (1386, 723)
+  (111, 108)
+  ⋮ </code></pre><pre><code class="language-julia hljs">collect(each_edge(tri))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">5716-element Vector{Tuple{Int64, Int64}}:
+ (1390, 785)
+ (1519, 1463)
+ (248, 169)
+ (697, 967)
+ (1500, 1495)
+ (294, 63)
+ (1215, 671)
+ (1804, 1803)
+ (1479, 882)
+ (353, 304)
+ ⋮
+ (1964, 1778)
+ (1714, 888)
+ (1667, 349)
+ (432, 429)
+ (1686, 1417)
+ (356, 211)
+ (192, 179)
+ (1699, 1080)
+ (1738, 29)</code></pre><p>Since these iterators are derived from <code>Set</code>s, you should not rely on the particular ordering of edges returned.</p><ul><li>The neighbours are typically the more useful part of <code>Graph</code>. Looking at <a href="../../api/triangulation/#DelaunayTriangulation.get_neighbours"><code>get_neighbours</code></a> by itself, you obtain a mapping:</li></ul><pre><code class="language-julia hljs">get_neighbours(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{Int64, Set{Int64}} with 1912 entries:
+  1144 =&gt; Set([1145, 744, 603, 1956, 1143, 658])
+  1175 =&gt; Set([1316, 1312, 1315, 1323, 1775, 1990])
+  1953 =&gt; Set([1701, 753, 755, 2014, 1954, 611])
+  719  =&gt; Set([666, 1335, 1146, 1865, 1866, 1660])
+  1703 =&gt; Set([476, 261, 382, 196, 381])
+  1956 =&gt; Set([1144, 744, 603, 741, 1659])
+  1028 =&gt; Set([1905, 1405, 1640, 1475, 1160, 1562])
+  699  =&gt; Set([812, 796, 1705, 798, 800, 1706])
+  1299 =&gt; Set([630, 632, 1294, 1295, 629, 1833])
+  1438 =&gt; Set([1437, 7, 1439, 1967, 619])
+  -5   =&gt; Set([24, 8, 23, 450, 22, 497, 469, 14, 1596, 452, 457, 493, 150])
+  1074 =&gt; Set([674, 1073, 1077, 938, 2016, 2035])
+  319  =&gt; Set([318, 229, 346, 321, 156, 228, 320])
+  687  =&gt; Set([799, 1428, 1544, 1427, 1542, 1543])
+  1812 =&gt; Set([797, 804, 689, 805])
+  1199 =&gt; Set([1198, 1078, 1377, 1200, 1066, 1525])
+  185  =&gt; Set([273, 312, 314, 419, 418, 311, 270])
+  823  =&gt; Set([1588, 1589, 1800, 1039, 866, 1590])
+  1090 =&gt; Set([914, 1092, 1098, 1089, 1099, 903])
+  ⋮    =&gt; ⋮</code></pre><p>This mapping shows the neighbours for each vertex in the triangulation. For example,</p><pre><code class="language-julia hljs">get_neighbours(tri, 1)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Set{Int64} with 4 elements:
+  -1
+  18
+  487
+  -2</code></pre><p>shows that the vertices sharing edge with <code>1</code> are <code>-1</code>, <code>18</code>, <code>487</code>, and <code>-2</code>. These two ghost vertices, <code>-1</code> and <code>-2</code>, imply that <code>1</code> is on the boundary of the triangulation and is also at the corner of the two sections of the boundary associated with the ghost vertices <code>-1</code> and <code>-2</code>. Similarly,</p><pre><code class="language-julia hljs">get_neighbours(tri, -2)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Set{Int64} with 39 elements:
+  484
+  16
+  105
+  465
+  60
+  488
+  17
+  1
+  340
+  83
+  49
+  388
+  335
+  407
+  539
+  478
+  196
+  3
+  385
+  ⋮ </code></pre><p>shows the set of all vertices that are on the boundary associated with the ghost vertex <code>-2</code>. Once again, the vertices in this set are not returned in any particular order, and so you should not rely on the order of the vertices in the set. If you did want to traverse the boundary in some order, you would need to use <code>get_adjacent</code> to do so, or use the <code>boundary_nodes</code>; see, for example, the <code>get_triangulation_area</code> function in <a href="../../tutorials/constrained_multiply_connected/">this tutorial</a>. (If you have a node on the boundary you are interested in, <a href="../../api/triangulation/#DelaunayTriangulation.get_left_boundary_node"><code>DelaunayTriangulation.get_left_boundary_node</code></a> and <a href="../../api/triangulation/#DelaunayTriangulation.get_right_boundary_node"><code>DelaunayTriangulation.get_right_boundary_node</code></a> are available.)</p><h2 id="Boundary-Handling-Fields"><a class="docs-heading-anchor" href="#Boundary-Handling-Fields">Boundary Handling Fields</a><a id="Boundary-Handling-Fields-1"></a><a class="docs-heading-anchor-permalink" href="#Boundary-Handling-Fields" title="Permalink"></a></h2><p>The next set of fields relate to how the boundary is handled in the triangulation.</p><h3 id="[get_boundary_curves(tri)](@ref-get_boundary_curves)"><a class="docs-heading-anchor" href="#[get_boundary_curves(tri)](@ref-get_boundary_curves)"><a href="../../api/triangulation/#DelaunayTriangulation.get_boundary_curves"><code>get_boundary_curves(tri)</code></a></a><a id="[get_boundary_curves(tri)](@ref-get_boundary_curves)-1"></a><a class="docs-heading-anchor-permalink" href="#[get_boundary_curves(tri)](@ref-get_boundary_curves)" title="Permalink"></a></h3><p>This field is relevant only for curve-bounded domains, like the triangulation in this example. It stores the curves that were used to define the boundary of the triangulation. For our triangulation, we have </p><pre><code class="language-julia hljs">get_boundary_curves(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(PiecewiseLinear(), EllipticalArc, BSpline, PiecewiseLinear(), BezierCurve, CatmullRomSpline, PiecewiseLinear(), CircularArc)</code></pre><p>This output is not just giving the names of the curves - the actual curves themselves are stored. For example,</p><pre><code class="language-julia hljs">get_boundary_curves(tri)[3]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(::BSpline) (generic function with 1 method)</code></pre><p>is the actual <code>BSpline</code> that we have provided. The curves are stored in the same order as they were provided, so that the <code>j</code>th curve is associated with the <code>j</code>th section (i.e., the ghost vertex <code>-j</code>) of the boundary. The parts of the boundary that are a sequence of straight lines between vertices are represented by a <code>PiecewiseLinear</code> curve. For a triangulation that is not curve-bounded, the output is an empty <code>Tuple</code>. For example:</p><pre><code class="language-julia hljs">tri2 = triangulate(rand(2, 50))
+get_boundary_curves(tri2)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">()</code></pre><h3 id="[get_boundary_edge_map(tri)](@ref-get_boundary_edge_map)"><a class="docs-heading-anchor" href="#[get_boundary_edge_map(tri)](@ref-get_boundary_edge_map)"><a href="../../api/triangulation/#DelaunayTriangulation.get_boundary_edge_map"><code>get_boundary_edge_map(tri)</code></a></a><a id="[get_boundary_edge_map(tri)](@ref-get_boundary_edge_map)-1"></a><a class="docs-heading-anchor-permalink" href="#[get_boundary_edge_map(tri)](@ref-get_boundary_edge_map)" title="Permalink"></a></h3><p>This field is used to give information about where boundary edges are located in the triangulation. The precise definition is a bit cumbersome to describe: For a given boundary edge <code>(u, v)</code>, the <code>boundary_edge_map</code> will map <code>(u, v)</code> to a tuple of the form <code>(pos, ℓ)</code>, so that <code>pos</code> is the position of the edge in the boundary, and <code>ℓ</code> is the length of the boundary up to the edge. In particular, if <code>get_boundary_edge_map(tri, u, v) == (pos, ℓ)</code> and <code>bn = get_boundary_nodes(tri, pos)</code>, then <code>get_boundary_nodes(bn, ℓ) = u</code> and <code>get_boundary_nodes(bn, ℓ + 1) = v</code>. For our triangulation, we have</p><pre><code class="language-julia hljs">get_boundary_edge_map(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{Tuple{Int64, Int64}, Tuple{Tuple{Int64, Int64}, Int64}} with 401 entries:
+  (913, 950)  =&gt; ((3, 1), 37)
+  (1711, 595) =&gt; ((3, 1), 52)
+  (697, 967)  =&gt; ((6, 1), 28)
+  (117, 118)  =&gt; ((4, 2), 33)
+  (92, 93)    =&gt; ((4, 2), 27)
+  (7, 1437)   =&gt; ((3, 1), 95)
+  (867, 68)   =&gt; ((3, 1), 110)
+  (174, 1677) =&gt; ((5, 1), 4)
+  (487, 59)   =&gt; ((1, 1), 2)
+  (354, 65)   =&gt; ((5, 1), 6)
+  (36, 73)    =&gt; ((4, 2), 20)
+  (33, 1685)  =&gt; ((6, 1), 40)
+  (103, 2)    =&gt; ((1, 1), 15)
+  (55, 1631)  =&gt; ((1, 1), 28)
+  (115, 114)  =&gt; ((4, 2), 36)
+  (1385, 695) =&gt; ((3, 1), 114)
+  (82, 444)   =&gt; ((5, 1), 17)
+  (111, 108)  =&gt; ((4, 2), 39)
+  (382, 196)  =&gt; ((1, 2), 29)
+  ⋮           =&gt; ⋮</code></pre><p>Since our domain has multiple curves, the <code>pos</code> values are <code>Tuple</code>s of the form <code>(m, n)</code>, where <code>m</code> is the curve and <code>n</code> is the section of that curve. So, for example, we have</p><pre><code class="language-julia hljs">pos, ℓ = get_boundary_edge_map(tri, 913, 950)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">((3, 1), 37)</code></pre><p>This means that <code>(913, 950)</code> is the <code>37</code>th edge of the first section on the third boundary:</p><pre><code class="language-julia hljs">bn = get_boundary_nodes(tri, pos) # notice that we can pass Tuples (m, n) as a single argument
+get_boundary_nodes(bn, ℓ), get_boundary_nodes(bn, ℓ + 1)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(913, 950)</code></pre><p>For simpler domains, <code>pos</code> may be either a vector of vertices (in the case of a contiguous boundary) or a single vertex (in the case of a single boundary). For the contiguous case, we have:</p><pre><code class="language-julia hljs">tri3 = triangulate_rectangle(0, 1, 0, 1, 10, 10, single_boundary = true)
+get_boundary_edge_map(tri3)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{Tuple{Int64, Int64}, Tuple{Vector{Int64}, Int64}} with 36 entries:
+  (91, 81)  =&gt; ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10  …  91, 81, 71, 61, 51, 41, 31, …
+  (4, 5)    =&gt; ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10  …  91, 81, 71, 61, 51, 41, 31, …
+  (1, 2)    =&gt; ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10  …  91, 81, 71, 61, 51, 41, 31, …
+  (96, 95)  =&gt; ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10  …  91, 81, 71, 61, 51, 41, 31, …
+  (60, 70)  =&gt; ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10  …  91, 81, 71, 61, 51, 41, 31, …
+  (9, 10)   =&gt; ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10  …  91, 81, 71, 61, 51, 41, 31, …
+  (98, 97)  =&gt; ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10  …  91, 81, 71, 61, 51, 41, 31, …
+  (21, 11)  =&gt; ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10  …  91, 81, 71, 61, 51, 41, 31, …
+  (100, 99) =&gt; ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10  …  91, 81, 71, 61, 51, 41, 31, …
+  (95, 94)  =&gt; ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10  …  91, 81, 71, 61, 51, 41, 31, …
+  (93, 92)  =&gt; ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10  …  91, 81, 71, 61, 51, 41, 31, …
+  (30, 40)  =&gt; ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10  …  91, 81, 71, 61, 51, 41, 31, …
+  (31, 21)  =&gt; ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10  …  91, 81, 71, 61, 51, 41, 31, …
+  (61, 51)  =&gt; ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10  …  91, 81, 71, 61, 51, 41, 31, …
+  (7, 8)    =&gt; ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10  …  91, 81, 71, 61, 51, 41, 31, …
+  (71, 61)  =&gt; ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10  …  91, 81, 71, 61, 51, 41, 31, …
+  (8, 9)    =&gt; ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10  …  91, 81, 71, 61, 51, 41, 31, …
+  (3, 4)    =&gt; ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10  …  91, 81, 71, 61, 51, 41, 31, …
+  (5, 6)    =&gt; ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10  …  91, 81, 71, 61, 51, 41, 31, …
+  ⋮         =&gt; ⋮</code></pre><p>This may seem strange, but we note that <code>get_boundary_nodes(tri, pos)</code>, when <code>pos</code> is a vector of vertices, just returns <code>pos</code> once again so that <code>get_boundary_nodes(get_boundary_nodes(tri, pos), ℓ) == u</code> is always true, regardless of the boundary type. For example:</p><pre><code class="language-julia hljs">pos, ℓ = get_boundary_edge_map(tri3, 1, 2)
+bn = get_boundary_nodes(tri3, pos)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">37-element Vector{Int64}:
+  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+  ⋮
+ 81
+ 71
+ 61
+ 51
+ 41
+ 31
+ 21
+ 11
+  1</code></pre><p>For the sectioned case, we have:</p><pre><code class="language-julia hljs">tri4 = triangulate_rectangle(0, 1, 0, 1, 10, 10, single_boundary = false)
+get_boundary_edge_map(tri4)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{Tuple{Int64, Int64}, Tuple{Int64, Int64}} with 36 entries:
+  (91, 81)  =&gt; (4, 1)
+  (4, 5)    =&gt; (1, 4)
+  (1, 2)    =&gt; (1, 1)
+  (96, 95)  =&gt; (3, 5)
+  (60, 70)  =&gt; (2, 6)
+  (9, 10)   =&gt; (1, 9)
+  (98, 97)  =&gt; (3, 3)
+  (21, 11)  =&gt; (4, 8)
+  (100, 99) =&gt; (3, 1)
+  (95, 94)  =&gt; (3, 6)
+  (93, 92)  =&gt; (3, 8)
+  (30, 40)  =&gt; (2, 3)
+  (31, 21)  =&gt; (4, 7)
+  (61, 51)  =&gt; (4, 4)
+  (7, 8)    =&gt; (1, 7)
+  (71, 61)  =&gt; (4, 3)
+  (8, 9)    =&gt; (1, 8)
+  (3, 4)    =&gt; (1, 3)
+  (5, 6)    =&gt; (1, 5)
+  ⋮         =&gt; ⋮</code></pre><p>When there is no constrained boundary, the boundary edge map will be empty:</p><pre><code class="language-julia hljs">tri5 = triangulate(rand(2, 50))
+get_boundary_edge_map(tri5)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{Tuple{Int64, Int64}, Tuple{Vector{Int64}, Int64}}()</code></pre><h3 id="[get_ghost_vertex_map(tri)](@ref-get_ghost_vertex_map)"><a class="docs-heading-anchor" href="#[get_ghost_vertex_map(tri)](@ref-get_ghost_vertex_map)"><a href="../../api/triangulation/#DelaunayTriangulation.get_ghost_vertex_map"><code>get_ghost_vertex_map(tri)</code></a></a><a id="[get_ghost_vertex_map(tri)](@ref-get_ghost_vertex_map)-1"></a><a class="docs-heading-anchor-permalink" href="#[get_ghost_vertex_map(tri)](@ref-get_ghost_vertex_map)" title="Permalink"></a></h3><p>This field is used to identify to what curve and to what section a ghost vertex is associated. For example, we have</p><pre><code class="language-julia hljs">get_ghost_vertex_map(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{Int64, Tuple{Int64, Int64}} with 8 entries:
+  -5 =&gt; (4, 1)
+  -1 =&gt; (1, 1)
+  -8 =&gt; (6, 1)
+  -7 =&gt; (5, 1)
+  -3 =&gt; (2, 1)
+  -2 =&gt; (1, 2)
+  -4 =&gt; (3, 1)
+  -6 =&gt; (4, 2)</code></pre><p>We see, for example, that the ghost vertex <code>-7</code> comes from the first section of the fifth boundary curve. In general, the mappings are of the form <code>g =&gt; pos</code>, where <code>g</code> is the ghost vertex and <code>pos</code> is such that <code>get_boundary_nodes(tri, pos)</code> is the boundary curve associated with <code>g</code>. For example, using <a href="../../api/triangulation/#DelaunayTriangulation.map_ghost_vertex"><code>map_ghost_vertex</code></a>,</p><pre><code class="language-julia hljs">pos = map_ghost_vertex(tri, -7)
+bn = get_boundary_nodes(tri, pos)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">33-element Vector{Int64}:
+   12
+ 1926
+  394
+  174
+ 1677
+  354
+   65
+  576
+  302
+  460
+    ⋮
+   10
+  506
+  199
+  540
+   66
+  565
+   67
+  513
+   12</code></pre><p>The forms of <code>pos</code> for the case of a contiguous boundary, a sectioned boundary, and no boundary are the same as for <code>get_boundary_edge_map</code>. For example,</p><pre><code class="language-julia hljs">get_ghost_vertex_map(tri3) # contiguous</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{Int64, Vector{Int64}} with 1 entry:
+  -1 =&gt; [1, 2, 3, 4, 5, 6, 7, 8, 9, 10  …  91, 81, 71, 61, 51, 41, 31, 21, 11, …</code></pre><pre><code class="language-julia hljs">get_ghost_vertex_map(tri4) # sectioned</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{Int64, Int64} with 4 entries:
+  -1 =&gt; 1
+  -3 =&gt; 3
+  -2 =&gt; 2
+  -4 =&gt; 4</code></pre><pre><code class="language-julia hljs">get_ghost_vertex_map(tri5) # no boundary</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{Int64, Vector{Int64}} with 1 entry:
+  -1 =&gt; []</code></pre><h3 id="[get_ghost_vertex_ranges(tri)](@ref-get_ghost_vertex_ranges)"><a class="docs-heading-anchor" href="#[get_ghost_vertex_ranges(tri)](@ref-get_ghost_vertex_ranges)"><a href="../../api/triangulation/#DelaunayTriangulation.get_ghost_vertex_ranges"><code>get_ghost_vertex_ranges(tri)</code></a></a><a id="[get_ghost_vertex_ranges(tri)](@ref-get_ghost_vertex_ranges)-1"></a><a class="docs-heading-anchor-permalink" href="#[get_ghost_vertex_ranges(tri)](@ref-get_ghost_vertex_ranges)" title="Permalink"></a></h3><p>This field is used to identify all the ghost vertices associated with a curve that has a specific ghost vertex. For example, we have</p><pre><code class="language-julia hljs">get_ghost_vertex_ranges(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{Int64, UnitRange{Int64}} with 8 entries:
+  -5 =&gt; -6:-5
+  -1 =&gt; -2:-1
+  -8 =&gt; -8:-8
+  -7 =&gt; -7:-7
+  -3 =&gt; -3:-3
+  -2 =&gt; -2:-1
+  -4 =&gt; -4:-4
+  -6 =&gt; -6:-5</code></pre><p>This output means, for example, that the ghost vertex <code>-5</code> is associated with a curve that has both ghost vertices <code>-6</code> and <code>-5</code> associated with it. You would use <a href="../../api/triangulation/#DelaunayTriangulation.get_ghost_vertex_range"><code>get_ghost_vertex_range</code></a> to get the range of ghost vertices associated with a specific ghost vertex. For example,</p><pre><code class="language-julia hljs">get_ghost_vertex_range(tri, -5)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-6:-5</code></pre><p>Similarly, the output for the contiguous, sectioned, and no boundary cases are</p><pre><code class="language-julia hljs">get_ghost_vertex_ranges(tri3) # contiguous</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{Int64, UnitRange{Int64}} with 1 entry:
+  -1 =&gt; -1:-1</code></pre><pre><code class="language-julia hljs">get_ghost_vertex_ranges(tri4) # sectioned</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{Int64, UnitRange{Int64}} with 4 entries:
+  -1 =&gt; -4:-1
+  -3 =&gt; -4:-1
+  -2 =&gt; -4:-1
+  -4 =&gt; -4:-1</code></pre><pre><code class="language-julia hljs">get_ghost_vertex_ranges(tri5) # no boundary</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{Int64, UnitRange{Int64}} with 1 entry:
+  -1 =&gt; -1:-1</code></pre><h2 id="Other-Fields"><a class="docs-heading-anchor" href="#Other-Fields">Other Fields</a><a id="Other-Fields-1"></a><a class="docs-heading-anchor-permalink" href="#Other-Fields" title="Permalink"></a></h2><p>There are some other more general fields to inspect.</p><h3 id="[get_convex_hull(tri)](@ref-get_convex_hull)"><a class="docs-heading-anchor" href="#[get_convex_hull(tri)](@ref-get_convex_hull)"><a href="../../api/triangulation/#DelaunayTriangulation.get_convex_hull"><code>get_convex_hull(tri)</code></a></a><a id="[get_convex_hull(tri)](@ref-get_convex_hull)-1"></a><a class="docs-heading-anchor-permalink" href="#[get_convex_hull(tri)](@ref-get_convex_hull)" title="Permalink"></a></h3><p>For all triangulations, the <code>convex_hull</code> field stores the <a href="../../extended/data_structures/#ConvexHull"><code>ConvexHull</code></a> of the triangulation. For our triangulation, we have</p><pre><code class="language-julia hljs">get_convex_hull(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Convex hull.
+   Vertices:
+24-element Vector{Int64}:
+  84
+  16
+ 105
+  62
+  51
+  50
+  49
+  18
+   1
+   7
+   ⋮
+  53
+  52
+   6
+   3
+  17
+  48
+  60
+  83
+  84</code></pre><p>To inspect the vertices of the convex hull, you use <a href="../../api/triangulation/#DelaunayTriangulation.get_convex_hull_vertices"><code>get_convex_hull_vertices</code></a>:</p><pre><code class="language-julia hljs">get_convex_hull_vertices(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">24-element Vector{Int64}:
+  84
+  16
+ 105
+  62
+  51
+  50
+  49
+  18
+   1
+   7
+   ⋮
+  53
+  52
+   6
+   3
+  17
+  48
+  60
+  83
+  84</code></pre><p>If you ever need to reconstruct the convex hull, say after some dynamic updates, you would use <a href="../../api/convex_hull/#DelaunayTriangulation.convex_hull!"><code>convex_hull!</code></a>.</p><h3 id="[get_representative_point_list(tri)](@ref-get_representative_point_list)"><a class="docs-heading-anchor" href="#[get_representative_point_list(tri)](@ref-get_representative_point_list)"><a href="../../api/triangulation/#DelaunayTriangulation.get_representative_point_list"><code>get_representative_point_list(tri)</code></a></a><a id="[get_representative_point_list(tri)](@ref-get_representative_point_list)-1"></a><a class="docs-heading-anchor-permalink" href="#[get_representative_point_list(tri)](@ref-get_representative_point_list)" title="Permalink"></a></h3><p>This field is related to the need for a representative point for each curve, as described in the <a href="../ghost_triangles/">ghost vertices section</a>. For our triangulation, we have</p><pre><code class="language-julia hljs">DelaunayTriangulation.get_representative_point_list(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{Int64, DelaunayTriangulation.RepresentativeCoordinates{Int64, Float64}} with 6 entries:
+  5 =&gt; RepresentativeCoordinates{Int64, Float64}(0.2, -2.9, 0)
+  4 =&gt; RepresentativeCoordinates{Int64, Float64}(0.0654276, -3.01177, 0)
+  6 =&gt; RepresentativeCoordinates{Int64, Float64}(0.0, -3.0, 0)
+  2 =&gt; RepresentativeCoordinates{Int64, Float64}(8.65974e-15, 0.275, 0)
+  3 =&gt; RepresentativeCoordinates{Int64, Float64}(0.0, -2.55, 0)
+  1 =&gt; RepresentativeCoordinates{Int64, Float64}(-0.75, 0.25, 0)</code></pre><p>This shows, for example, that the sixth boundary curve&#39;s representative point, i.e. its pole of inaccessibility, is the point <code>(0, -3)</code>. You could also review this using <a href="../../api/triangulation/#DelaunayTriangulation.get_representative_point_coordinates"><code>DelaunayTriangulation.get_representative_point_coordinates</code></a>:</p><pre><code class="language-julia hljs">DelaunayTriangulation.get_representative_point_coordinates(tri, 6)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(0.0, -3.0)</code></pre><p>In the case of a triangulation with no constrained boundary, the representative point list is simply the centroid of the domain. If you ever need to recompute the representative points, you need <a href="../../api/triangulation/#DelaunayTriangulation.compute_representative_points!"><code>DelaunayTriangulation.compute_representative_points!</code></a>.</p><h3 id="[get_polygon_hierarchy(tri)](@ref-get_polygon_hierarchy)"><a class="docs-heading-anchor" href="#[get_polygon_hierarchy(tri)](@ref-get_polygon_hierarchy)"><a href="../../extended/data_structures/#DelaunayTriangulation.get_polygon_hierarchy-Tuple{Triangulation}"><code>get_polygon_hierarchy(tri)</code></a></a><a id="[get_polygon_hierarchy(tri)](@ref-get_polygon_hierarchy)-1"></a><a class="docs-heading-anchor-permalink" href="#[get_polygon_hierarchy(tri)](@ref-get_polygon_hierarchy)" title="Permalink"></a></h3><p>This field is used to store information about which boundary curves are contained in other boundary curves. For our triangulation, we have</p><pre><code class="language-julia hljs">DelaunayTriangulation.get_polygon_hierarchy(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">DelaunayTriangulation.PolygonHierarchy{Int64}(Bool[1, 0, 1, 1, 0, 0], DelaunayTriangulation.BoundingBox[[-2.0000000596046448, 2.0000000596046448] × [-7.450580596923828e-9, 0.5000000074505806], [-0.577350284704563, 0.5773502847045628] × [0.14999999627470972, 0.4000000037252903], [-2.0000000596046448, 2.0000000596046448] × [-5.0000000730156895, -0.09999992698431015], [-1.0000000298023222, 1.0000000124171444] × [-4.000000008207955, -1.9999999701976778], [-0.5000000208616256, 0.9000000208616257] × [-3.5000000178813933, -2.2999999821186066], [-1.1000000327825548, 1.1000000327825548] × [-4.100000032782554, -1.8999999672174452]], Dict{Int64, DelaunayTriangulation.PolygonTree{Int64}}(3 =&gt; PolygonTree at height 0 with index 3 and 1 children, 1 =&gt; PolygonTree at height 0 with index 1 and 1 children), DelaunayTriangulation.PolygonTree{Int64}[PolygonTree at height 2 with index 4 and 1 children])</code></pre><p>This field is not intended for public use. One useful method that makes direct use of the polygon hierarchy is <a href="../../api/point_location/#DelaunayTriangulation.find_polygon"><code>find_polygon</code></a>, but the hierarchy&#39;s main use is in boundary enrichment for curve-bounded domains, and for checking arguments via <a href="../../api/triangulation/#DelaunayTriangulation.check_args"><code>check_args</code></a>.</p><h3 id="[boundary_enricher(tri)](@ref-get_boundary_enricher)"><a class="docs-heading-anchor" href="#[boundary_enricher(tri)](@ref-get_boundary_enricher)"><a href="../../extended/data_structures/#DelaunayTriangulation.get_boundary_enricher-Tuple{Triangulation}"><code>boundary_enricher(tri)</code></a></a><a id="[boundary_enricher(tri)](@ref-get_boundary_enricher)-1"></a><a class="docs-heading-anchor-permalink" href="#[boundary_enricher(tri)](@ref-get_boundary_enricher)" title="Permalink"></a></h3><p>This field, just as for the <code>polygon_hierarchy</code>, is not intended for public use. It is the field used for enriching the boundary for initialising the triangulation of a curve-bounded domain. </p><pre><code class="language-julia hljs">DelaunayTriangulation.get_boundary_enricher(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">BoundaryEnricher with 8 boundary curves and 2043 points</code></pre><h3 id="[get_cache(tri)](@ref-get_cache)"><a class="docs-heading-anchor" href="#[get_cache(tri)](@ref-get_cache)"><a href="../../extended/data_structures/#DelaunayTriangulation.get_cache-Tuple{Triangulation}"><code>get_cache(tri)</code></a></a><a id="[get_cache(tri)](@ref-get_cache)-1"></a><a class="docs-heading-anchor-permalink" href="#[get_cache(tri)](@ref-get_cache)" title="Permalink"></a></h3><p>This field is not intended for public use. It is used to provide several caches for use during triangulation, such as reusing arrays for constrained triangulations.</p><pre><code class="language-julia hljs">DelaunayTriangulation.get_cache(tri)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">TriangulationCache with storage.</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../predicates/">« Geometrical Predicates</a><a class="docs-footer-nextpage" href="../voronoi_output/">Voronoi Tessellation Output »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Friday 27 September 2024 10:34">Friday 27 September 2024</span>. Using Julia version 1.10.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

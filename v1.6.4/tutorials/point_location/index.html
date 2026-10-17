@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Point Location · DelaunayTriangulation.jl</title><meta name="title" content="Point Location · DelaunayTriangulation.jl"/><meta property="og:title" content="Point Location · DelaunayTriangulation.jl"/><meta property="twitter:title" content="Point Location · DelaunayTriangulation.jl"/><meta name="description" content="Documentation for DelaunayTriangulation.jl."/><meta property="og:description" content="Documentation for DelaunayTriangulation.jl."/><meta property="twitter:description" content="Documentation for DelaunayTriangulation.jl."/><meta property="og:url" content="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/tutorials/point_location/"/><meta property="twitter:url" content="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/tutorials/point_location/"/><link rel="canonical" href="https://JuliaGeometry.github.io/DelaunayTriangulation.jl/tutorials/point_location/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">DelaunayTriangulation.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><input class="collapse-toggle" id="menuitem-2" type="checkbox" checked/><label class="tocitem" for="menuitem-2"><span class="docs-label">Tutorials</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../overview/">Overview</a></li><li><a class="tocitem" href="../unconstrained/">Unconstrained Triangulations</a></li><li><input class="collapse-toggle" id="menuitem-2-3" type="checkbox"/><label class="tocitem" for="menuitem-2-3"><span class="docs-label">Constrained Triangulations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../constrained_edges/">Constrained Edges</a></li><li><a class="tocitem" href="../constrained_outer_boundary/">Outer Boundary</a></li><li><a class="tocitem" href="../constrained_outer_boundary_segmented/">Segmented Outer Boundary</a></li><li><a class="tocitem" href="../constrained_multiply_connected/">Domain with Interior Holes</a></li><li><a class="tocitem" href="../constrained_interior_within_interiors/">Domain with Interior Holes inside Interior Holes</a></li><li><a class="tocitem" href="../constrained_multipolygon/">Disjoint Domains</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-2-4" type="checkbox"/><label class="tocitem" for="menuitem-2-4"><span class="docs-label">Triangulation Operations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../operations_vertex_insertion_deletion/">Vertex Insertion and Deletion</a></li><li><a class="tocitem" href="../operations_segment_insertion/">Edge Insertion</a></li><li><a class="tocitem" href="../operations_ghost_triangles/">Adding or Clearing Ghost Triangles</a></li><li><a class="tocitem" href="../operations_flip_edge/">Edge Flipping</a></li><li><a class="tocitem" href="../operations_legalise_edge/">Legalising an Edge</a></li><li><a class="tocitem" href="../operations_split_edge/">Edge Splitting</a></li><li><a class="tocitem" href="../operations_split_triangle/">Triangle Splitting</a></li><li><a class="tocitem" href="../operations_convex_hull_locking/">Locking and Unlocking the Convex Hull</a></li></ul></li><li><a class="tocitem" href="../refinement/">Mesh Refinement</a></li><li><a class="tocitem" href="../lattice/">Triangulating Rectangular Regions</a></li><li><a class="tocitem" href="../convex/">Triangulating Convex Polygons</a></li><li><a class="tocitem" href="../curve_bounded/">Triangulating Curve-Bounded Domains</a></li><li><a class="tocitem" href="../weighted/">Weighted Triangulations</a></li><li><a class="tocitem" href="../voronoi/">Voronoi Tessellations</a></li><li><input class="collapse-toggle" id="menuitem-2-11" type="checkbox"/><label class="tocitem" for="menuitem-2-11"><span class="docs-label">Clipped Voronoi Tessellations</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../clipped/">Clipping to the Convex Hull</a></li><li><a class="tocitem" href="../clipped_rectangle/">Clipping to a Rectangle</a></li><li><a class="tocitem" href="../clipped_polygon/">Clipping to a Generic Convex Polygon</a></li></ul></li><li><a class="tocitem" href="../centroidal/">Centroidal Voronoi Tessellations</a></li><li><a class="tocitem" href="../power/">Power Diagrams</a></li><li class="is-active"><a class="tocitem" href>Point Location</a><ul class="internal"><li><a class="tocitem" href="#Unconstrained-example"><span>Unconstrained example</span></a></li><li><a class="tocitem" href="#Region-with-concave-boundaries-and-holes"><span>Region with concave boundaries and holes</span></a></li><li><a class="tocitem" href="#Disjoint-domains"><span>Disjoint domains</span></a></li><li><a class="tocitem" href="#Just-the-code"><span>Just the code</span></a></li></ul></li><li><a class="tocitem" href="../nearest/">Nearest Neighbour Queries</a></li><li><a class="tocitem" href="../convex_hull/">Convex Hulls</a></li><li><a class="tocitem" href="../pole_of_inaccessibility/">Pole of Inaccessibility</a></li><li><a class="tocitem" href="../point_in_polygon/">Point-in-Polygon Testing</a></li><li><a class="tocitem" href="../custom_primitive/">Using Custom Structs for Primitives and Boundaries</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3" type="checkbox"/><label class="tocitem" for="menuitem-3"><span class="docs-label">Manual</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/overview/">Overview</a></li><li><a class="tocitem" href="../../manual/primitives/">Representing Primitives</a></li><li><a class="tocitem" href="../../manual/boundaries/">Representing Boundaries</a></li><li><a class="tocitem" href="../../manual/ghost_triangles/">Ghost (Negative) Vertices</a></li><li><a class="tocitem" href="../../manual/curve_bounded/">Defining Curve-Bounded Domains</a></li><li><a class="tocitem" href="../../manual/predicates/">Geometrical Predicates</a></li><li><a class="tocitem" href="../../manual/triangulation_output/">Triangulation Output</a></li><li><a class="tocitem" href="../../manual/voronoi_output/">Voronoi Tessellation Output</a></li><li><a class="tocitem" href="../../manual/predicate_kernels/">Predicate Kernels</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">API Reference</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../api/overview/">Section Overview</a></li><li><a class="tocitem" href="../../api/data_structures/">Data Structures</a></li><li><a class="tocitem" href="../../api/triangulation/">Triangulations</a></li><li><a class="tocitem" href="../../api/operations/">Triangulation Operations</a></li><li><a class="tocitem" href="../../api/voronoi/">Voronoi Tessellations</a></li><li><a class="tocitem" href="../../api/convex_hull/">Convex Hull</a></li><li><a class="tocitem" href="../../api/curves/">Curves</a></li><li><a class="tocitem" href="../../api/iterators/">Iterators</a></li><li><a class="tocitem" href="../../api/point_location/">Point Location</a></li><li><a class="tocitem" href="../../api/predicates/">Predicates</a></li><li><a class="tocitem" href="../../api/statistics/">Triangulation Statistics</a></li><li><a class="tocitem" href="../../api/primitives/">Primitive Interfaces</a></li><li><a class="tocitem" href="../../api/other/">Other</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">Extended Reference</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../extended/overview/">Overview</a></li><li><a class="tocitem" href="../../extended/data_structures/">Data Structures</a></li><li><a class="tocitem" href="../../extended/algorithms/">Algorithm Internals</a></li><li><a class="tocitem" href="../../extended/utils/">Utility Functions</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">Mathematical Details</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../math/overview/">Overview</a></li><li><a class="tocitem" href="../../math/delaunay/">Delaunay Triangulations</a></li><li><a class="tocitem" href="../../math/constrained/">Constrained Delaunay Triangulations</a></li><li><a class="tocitem" href="../../math/convex/">Triangulating Convex Polygons</a></li><li><a class="tocitem" href="../../math/refinement/">Mesh Refinement</a></li><li><a class="tocitem" href="../../math/curves/">Curves</a></li><li><a class="tocitem" href="../../math/curve_bounded/">Triangulating Curve-Bounded Domains</a></li><li><a class="tocitem" href="../../math/weighted/">Weighted Delaunay Triangulations</a></li><li><a class="tocitem" href="../../math/voronoi/">Voronoi Tessellations</a></li><li><a class="tocitem" href="../../math/clipped/">Clipped Voronoi Tessellations</a></li><li><a class="tocitem" href="../../math/centroidal/">Centroidal Voronoi Tessellations</a></li><li><a class="tocitem" href="../../math/power/">Power Diagrams</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox"/><label class="tocitem" for="menuitem-7"><span class="docs-label">Example Applications</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../applications/overview/">Overview</a></li><li><a class="tocitem" href="../../applications/interpolation/">Interpolation</a></li><li><a class="tocitem" href="../../applications/cell_simulations/">Cellular Biology</a></li><li><a class="tocitem" href="../../applications/pde_discretisation/">Solving PDEs</a></li></ul></li><li><a class="tocitem" href="../../terminology/">Terminology</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>Point Location</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Point Location</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/point_location.jl" title="View source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Point-Location"><a class="docs-heading-anchor" href="#Point-Location">Point Location</a><a id="Point-Location-1"></a><a class="docs-heading-anchor-permalink" href="#Point-Location" title="Permalink"></a></h1><p>In this tutorial, we demonstrate how triangulations can be used to perform point location. The problem of interest is: Given a point <code>p</code> and a triangulation <code>tri</code>, what triangle <code>T</code> in <code>tri</code> contains <code>p</code>? We provide a function <a href="../../api/point_location/#DelaunayTriangulation.find_triangle"><code>find_triangle</code></a> for this task, implementing the algorithm of <a href="https://doi.org/10.1016/S0925-7721(98)00035-2">Mücke, Saias, and Zhu (1999)</a>. The algorithm has been slightly modified to allow for regions with holes. Support is also provided for non-convex and disjoint domains, but the algorithm is significantly slower in these cases and requires some special case. (The approach for these cases is, basically, to just keep trying new points to start the algorithm from until it works, but you the user must specify a keyword argument <code>concavity_protection</code> to make an extra check to guarantee even greater safety.)</p><h2 id="Unconstrained-example"><a class="docs-heading-anchor" href="#Unconstrained-example">Unconstrained example</a><a id="Unconstrained-example-1"></a><a class="docs-heading-anchor-permalink" href="#Unconstrained-example" title="Permalink"></a></h2><p>We start with a simple example, demonstrating point location on an unconstrained triangulation.</p><pre><code class="language-julia hljs">using DelaunayTriangulation
+using CairoMakie
+using StableRNGs
+
+points = [
+    (-3.0, 6.0), (5.0, 1.0), (-5.0, 3.0), (2.0, -3.0),
+    (5.0, 8.0), (0.0, 0.0), (2.0, 5.0), (-3.0, 1.0),
+    (-2.0, -1.0), (-1.0, 4.0),
+]
+tri = triangulate(points)
+q = (3.0, 3.0)
+fig, ax, sc = triplot(tri)
+scatter!(ax, q)
+fig</code></pre><img src="46c0f2dc.png" alt="Example block output"/><p>The aim is to, from <code>tri</code>, find which triangle contains the point <code>q</code> shown. Using the <code>find_triangle</code> function, this is simple.</p><pre><code class="language-julia hljs">V = find_triangle(tri, q)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(2, 7, 6)</code></pre><p>The result means that the triangle <code>(2, 7, 6)</code> contains the point, as we can easily check:</p><pre><code class="language-julia hljs">DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Certificate.Inside = 0</code></pre><p>When we provide no keyword arguments, the default behaviour of <code>find_triangle</code> is to first sample some number of points (defaults to <span>$\lceil \sqrt[3]{n}\rceil$</span>, where <span>$n$</span> is the number of points), and then start at the point that is closest to <code>q</code> out of those sampled, then marching along the triangulation until <code>q</code> is found. This number of samples can be changed using the <code>m</code> keyword argument. For example,</p><pre><code class="language-julia hljs">V = find_triangle(tri, q, m = 10)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(6, 2, 7)</code></pre><p>means that we get a sample of size 10, and start at whichever point is the closest. (For technical reasons, this sampling is with replacement, so it is possible that the same point is sampled more than once.) You could also instead specify the point to start at using the <code>k</code> keyword argument, in which case no points are sampled. For example,</p><pre><code class="language-julia hljs">V = find_triangle(tri, q, k = 6)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(2, 7, 6)</code></pre><p>starts the algorithm at the point <code>6</code>.</p><p>Note also that the triangles found from <code>find_triangle</code> do not have to be given in the same order as they appear in the triangulation. For example, if a triangle <code>(i, j, k)</code> contains the point <code>q</code>, then any of <code>(i, j, k)</code>, <code>(j, k, i)</code>, or <code>(k, i, j)</code> could be returned.</p><p>The point <code>q</code> does not have to be in the triangulation. For example, consider the following point.</p><pre><code class="language-julia hljs">q = (-5.0, 8.0)
+fig, ax, sc = triplot(tri)
+scatter!(ax, q)
+fig</code></pre><img src="e245f15c.png" alt="Example block output"/><p>We obtain:</p><pre><code class="language-julia hljs">V = find_triangle(tri, q)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(1, 5, -1)</code></pre><p>See that the result is a ghost triangle <code>(1, 5, -1)</code>. As discussed in the <a href="../../manual/ghost_triangles/">manual</a>, this can be interpreted as meaning that <code>q</code> is between the two lines through the points <code>1</code> and <code>5</code> that start at a central point of the triangulation. (The index <code>-1</code> is just the ghost vertex.) This can be visualised.</p><pre><code class="language-julia hljs">fig, ax, sc = triplot(tri, show_ghost_edges = true)
+scatter!(ax, q)
+fig</code></pre><img src="2bf6009e.png" alt="Example block output"/><h2 id="Region-with-concave-boundaries-and-holes"><a class="docs-heading-anchor" href="#Region-with-concave-boundaries-and-holes">Region with concave boundaries and holes</a><a id="Region-with-concave-boundaries-and-holes-1"></a><a class="docs-heading-anchor-permalink" href="#Region-with-concave-boundaries-and-holes" title="Permalink"></a></h2><p>Now we give an example of point location for a reason with holes. Since the case where all boundaries are convex is reasonably straight forward, here we consider concave boundaries and discuss methods for improving the speed of the algorithm in this case. First, let us give our example triangulation.</p><pre><code class="language-julia hljs">a, b, c = (0.0, 8.0), (0.0, 6.0), (0.0, 4.0)
+d, e, f = (0.0, 2.0), (0.0, 0.0), (2.0, 0.0)
+g, h, i = (4.0, 0.0), (6.0, 0.0), (8.0, 0.0)
+j, k, ℓ = (8.0, 1.0), (7.0, 2.0), (5.0, 2.0)
+m, n, o = (3.0, 2.0), (2.0, 3.0), (2.0, 5.0)
+p, q, r = (2.0, 7.0), (1.0, 8.0), (1.0, 2.2)
+s, t, u = (0.4, 1.4), (1.2, 1.8), (2.8, 0.6)
+v, w, z = (3.4, 1.2), (1.6, 1.4), (1.6, 2.2)
+outer = [[a, b, c, d, e], [e, f, g, h, i, j, k, ℓ], [ℓ, m, n, o, p, q, a]]
+inner = [[r, z, v, u, w, t, s, r]]
+boundary_nodes, points = convert_boundary_points_to_indices([outer, inner])
+rng = StableRNG(125123)
+tri = triangulate(points; rng, boundary_nodes)
+refine!(tri; max_area = 0.01get_area(tri), rng);</code></pre><p>The issue with concavity is that the ghost triangles can no longer be sensibly defined. To demonstrate this, see the following plot:</p><pre><code class="language-julia hljs">fig, ax, sc = triplot(tri, show_ghost_edges = true)
+fig</code></pre><img src="046c4744.png" alt="Example block output"/><p>The ghost edges now intersect the boundary, which doesn&#39;t make sense, and creates difficulties. Let us now demonstrate how the function still works here. We try finding the blue points shown below.</p><pre><code class="language-julia hljs">qs = [
+    (4.0, 5.0), (1.0, 5.6), (0.2, 5.0),
+    (0.0, -1.0), (0.5, 3.5), (2.5, 1.5),
+    (1.0, 2.0), (4.5, 1.0), (6.0, 1.5),
+    (0.5, 8.5), (1.0, 7.5), (1.2, 1.6),
+]
+fig, ax, sc = triplot(tri, show_ghost_edges = false)
+scatter!(ax, qs, color = :blue, markersize = 16)
+fig</code></pre><img src="6e3c010f.png" alt="Example block output"/><p>Now let&#39;s find the triangles.</p><pre><code class="language-julia hljs">Vs = [find_triangle(tri, q; rng) for q in qs]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">12-element Vector{Tuple{Int64, Int64, Int64}}:
+ (35, 12, -3)
+ (76, 56, 75)
+ (83, 55, 73)
+ (68, 6, -2)
+ (103, 47, 88)
+ (54, 25, -4)
+ (18, 24, -4)
+ (70, 59, 36)
+ (62, 53, 61)
+ (96, 17, -3)
+ (79, 17, 80)
+ (-4, 18, 24)</code></pre><p>While we do find some triangles, they may not all be correct. For example, the triangle found for <code>(1.2, 1.6)</code> is</p><pre><code class="language-julia hljs">Vs[end]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(-4, 18, 24)</code></pre><p>but the point <code>(1.2, 1.6)</code> is actually inside the triangulation. To protect against this, you need to use <code>concavity_protection=true</code>, which will enable a check to be made that the point is actually outside the triangulation whenever a ghost triangle is to be returned. If the check finds this to not be the case, it restarts. With these results, we now compute:</p><pre><code class="language-julia hljs">Vs = [find_triangle(tri, q; rng, concavity_protection = true) for q in qs]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">12-element Vector{Tuple{Int64, Int64, Int64}}:
+ (35, 12, -3)
+ (75, 76, 56)
+ (55, 73, 83)
+ (68, 6, -2)
+ (88, 103, 47)
+ (25, -4, 54)
+ (18, 24, -4)
+ (57, 65, 36)
+ (62, 53, 61)
+ (96, 17, -3)
+ (17, 80, 79)
+ (22, 23, 41)</code></pre><p>Here is how we can actually test that these results are now correct. We cannot directly use <a href="../../api/predicates/#DelaunayTriangulation.point_position_relative_to_triangle"><code>DelaunayTriangulation.point_position_relative_to_triangle</code></a> because it does not know that the ghost triangles are invalid. Instead, we find the distance of each point to the triangulation&#39;s boundary using <a href="../../api/triangulation/#DelaunayTriangulation.dist"><code>DelaunayTriangulation.dist</code></a> so that we can classify it as being inside or outside of the triangulation, and then check the type of the found triangle.</p><pre><code class="language-julia hljs">δs = [DelaunayTriangulation.dist(tri, q) for q in qs]
+results = Vector{Bool}(undef, length(qs))
+for (j, (q, δ, V)) in (enumerate ∘ zip)(qs, δs, Vs)
+    cert = DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)
+    is_ghost = DelaunayTriangulation.is_ghost_triangle(V)
+    is_outside = DelaunayTriangulation.is_outside(cert)
+    if δ ≥ 0.0
+        results[j] = !is_outside &amp;&amp; !is_ghost
+    else # δ &lt; 0.0 ⟹ outside
+        results[j] = !is_outside &amp;&amp; is_ghost
+    end
+end
+results</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">12-element Vector{Bool}:
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1</code></pre><p>As we see, the triangles are now all correct.</p><h2 id="Disjoint-domains"><a class="docs-heading-anchor" href="#Disjoint-domains">Disjoint domains</a><a id="Disjoint-domains-1"></a><a class="docs-heading-anchor-permalink" href="#Disjoint-domains" title="Permalink"></a></h2><p>Now we continue the previous example by adding in another set of domains that are disjoint to the current domain, thus allowing us to demonstrate how <code>find_triangle</code> applies here. The new domain is below, along with the points we will be searching for.</p><pre><code class="language-julia hljs">m₁, n₁, o₁ = (6.0, 8.0), (8.0, 8.0), (8.0, 4.0)
+p₁, q₁, r₁ = (10.0, 4.0), (6.0, 6.0), (8.0, 6.0)
+s₁, t₁, u₁ = (9.0, 7.0), (4.0, 4.0), (5.0, 4.0)
+v₁, w₁ = (5.0, 3.0), (4.0, 3.0)
+new_domain₁ = [[m₁, q₁, o₁, p₁, r₁, s₁, n₁, m₁]]
+new_domain₂ = [[t₁, w₁, v₁, u₁, t₁]]
+boundary_nodes, points = convert_boundary_points_to_indices(
+    [outer, inner, new_domain₁, new_domain₂],
+)
+rng = StableRNG(125123)
+tri = triangulate(points; rng, boundary_nodes)
+refine!(tri; max_area = 0.001get_area(tri), rng)
+qs = [
+    (0.6, 6.4), (1.4, 0.8), (3.1, 2.9),
+    (6.3, 4.9), (4.6, 3.5), (7.0, 7.0),
+    (8.9, 5.1), (5.8, 0.8), (1.0, 1.5),
+    (1.5, 2.0), (8.15, 6.0),
+]
+fig, ax, sc = triplot(tri)
+scatter!(ax, qs, color = :blue, markersize = 16)
+fig</code></pre><img src="386e8058.png" alt="Example block output"/><p>Here are the <code>find_triangle</code> results.</p><pre><code class="language-julia hljs">Vs = [find_triangle(tri, q; rng, concavity_protection = true) for q in qs]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">11-element Vector{Tuple{Int64, Int64, Int64}}:
+ (412, 357, 378)
+ (425, 811, 424)
+ (47, 172, -3)
+ (598, 828, -5)
+ (586, 595, 944)
+ (665, 774, 604)
+ (579, 721, 735)
+ (117, 816, 920)
+ (818, 857, 237)
+ (18, -4, 294)
+ (88, 142, -2)</code></pre><p>Again, we can verify that these are all correct as follows. Without <code>concavity_protection=true</code>, these would not be all correct.</p><pre><code class="language-julia hljs">δs = [DelaunayTriangulation.dist(tri, q) for q in qs]
+results = Vector{Bool}(undef, length(qs))
+for (j, (q, δ, V)) in (enumerate ∘ zip)(qs, δs, Vs)
+    cert = DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)
+    is_ghost = DelaunayTriangulation.is_ghost_triangle(V)
+    is_outside = DelaunayTriangulation.is_outside(cert)
+    if δ ≥ 0.0
+        results[j] = !is_outside &amp;&amp; !is_ghost
+    else # δ &lt; 0.0 ⟹ outside
+        results[j] = !is_outside &amp;&amp; is_ghost
+    end
+end
+results</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">11-element Vector{Bool}:
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1</code></pre><h2 id="Just-the-code"><a class="docs-heading-anchor" href="#Just-the-code">Just the code</a><a id="Just-the-code-1"></a><a class="docs-heading-anchor-permalink" href="#Just-the-code" title="Permalink"></a></h2><p>An uncommented version of this example is given below. You can view the source code for this file <a href="https://github.com/JuliaGeometry/DelaunayTriangulation.jl/tree/main/docs/src/literate_tutorials/point_location.jl">here</a>.</p><pre><code class="language-julia hljs">using DelaunayTriangulation
+using CairoMakie
+using StableRNGs
+
+points = [
+    (-3.0, 6.0), (5.0, 1.0), (-5.0, 3.0), (2.0, -3.0),
+    (5.0, 8.0), (0.0, 0.0), (2.0, 5.0), (-3.0, 1.0),
+    (-2.0, -1.0), (-1.0, 4.0),
+]
+tri = triangulate(points)
+q = (3.0, 3.0)
+fig, ax, sc = triplot(tri)
+scatter!(ax, q)
+fig
+
+V = find_triangle(tri, q)
+
+DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)
+
+V = find_triangle(tri, q, m = 10)
+
+V = find_triangle(tri, q, k = 6)
+
+q = (-5.0, 8.0)
+fig, ax, sc = triplot(tri)
+scatter!(ax, q)
+fig
+
+V = find_triangle(tri, q)
+
+fig, ax, sc = triplot(tri, show_ghost_edges = true)
+scatter!(ax, q)
+fig
+
+a, b, c = (0.0, 8.0), (0.0, 6.0), (0.0, 4.0)
+d, e, f = (0.0, 2.0), (0.0, 0.0), (2.0, 0.0)
+g, h, i = (4.0, 0.0), (6.0, 0.0), (8.0, 0.0)
+j, k, ℓ = (8.0, 1.0), (7.0, 2.0), (5.0, 2.0)
+m, n, o = (3.0, 2.0), (2.0, 3.0), (2.0, 5.0)
+p, q, r = (2.0, 7.0), (1.0, 8.0), (1.0, 2.2)
+s, t, u = (0.4, 1.4), (1.2, 1.8), (2.8, 0.6)
+v, w, z = (3.4, 1.2), (1.6, 1.4), (1.6, 2.2)
+outer = [[a, b, c, d, e], [e, f, g, h, i, j, k, ℓ], [ℓ, m, n, o, p, q, a]]
+inner = [[r, z, v, u, w, t, s, r]]
+boundary_nodes, points = convert_boundary_points_to_indices([outer, inner])
+rng = StableRNG(125123)
+tri = triangulate(points; rng, boundary_nodes)
+refine!(tri; max_area = 0.01get_area(tri), rng);
+
+fig, ax, sc = triplot(tri, show_ghost_edges = true)
+fig
+
+qs = [
+    (4.0, 5.0), (1.0, 5.6), (0.2, 5.0),
+    (0.0, -1.0), (0.5, 3.5), (2.5, 1.5),
+    (1.0, 2.0), (4.5, 1.0), (6.0, 1.5),
+    (0.5, 8.5), (1.0, 7.5), (1.2, 1.6),
+]
+fig, ax, sc = triplot(tri, show_ghost_edges = false)
+scatter!(ax, qs, color = :blue, markersize = 16)
+fig
+
+Vs = [find_triangle(tri, q; rng) for q in qs]
+
+Vs[end]
+
+Vs = [find_triangle(tri, q; rng, concavity_protection = true) for q in qs]
+
+δs = [DelaunayTriangulation.dist(tri, q) for q in qs]
+results = Vector{Bool}(undef, length(qs))
+for (j, (q, δ, V)) in (enumerate ∘ zip)(qs, δs, Vs)
+    cert = DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)
+    is_ghost = DelaunayTriangulation.is_ghost_triangle(V)
+    is_outside = DelaunayTriangulation.is_outside(cert)
+    if δ ≥ 0.0
+        results[j] = !is_outside &amp;&amp; !is_ghost
+    else # δ &lt; 0.0 ⟹ outside
+        results[j] = !is_outside &amp;&amp; is_ghost
+    end
+end
+results
+
+m₁, n₁, o₁ = (6.0, 8.0), (8.0, 8.0), (8.0, 4.0)
+p₁, q₁, r₁ = (10.0, 4.0), (6.0, 6.0), (8.0, 6.0)
+s₁, t₁, u₁ = (9.0, 7.0), (4.0, 4.0), (5.0, 4.0)
+v₁, w₁ = (5.0, 3.0), (4.0, 3.0)
+new_domain₁ = [[m₁, q₁, o₁, p₁, r₁, s₁, n₁, m₁]]
+new_domain₂ = [[t₁, w₁, v₁, u₁, t₁]]
+boundary_nodes, points = convert_boundary_points_to_indices(
+    [outer, inner, new_domain₁, new_domain₂],
+)
+rng = StableRNG(125123)
+tri = triangulate(points; rng, boundary_nodes)
+refine!(tri; max_area = 0.001get_area(tri), rng)
+qs = [
+    (0.6, 6.4), (1.4, 0.8), (3.1, 2.9),
+    (6.3, 4.9), (4.6, 3.5), (7.0, 7.0),
+    (8.9, 5.1), (5.8, 0.8), (1.0, 1.5),
+    (1.5, 2.0), (8.15, 6.0),
+]
+fig, ax, sc = triplot(tri)
+scatter!(ax, qs, color = :blue, markersize = 16)
+fig
+
+Vs = [find_triangle(tri, q; rng, concavity_protection = true) for q in qs]
+
+δs = [DelaunayTriangulation.dist(tri, q) for q in qs]
+results = Vector{Bool}(undef, length(qs))
+for (j, (q, δ, V)) in (enumerate ∘ zip)(qs, δs, Vs)
+    cert = DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)
+    is_ghost = DelaunayTriangulation.is_ghost_triangle(V)
+    is_outside = DelaunayTriangulation.is_outside(cert)
+    if δ ≥ 0.0
+        results[j] = !is_outside &amp;&amp; !is_ghost
+    else # δ &lt; 0.0 ⟹ outside
+        results[j] = !is_outside &amp;&amp; is_ghost
+    end
+end
+results</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../power/">« Power Diagrams</a><a class="docs-footer-nextpage" href="../nearest/">Nearest Neighbour Queries »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.0 on <span class="colophon-date" title="Sunday 19 January 2025 12:58">Sunday 19 January 2025</span>. Using Julia version 1.11.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
