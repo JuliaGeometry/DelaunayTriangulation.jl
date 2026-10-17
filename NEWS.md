@@ -3,6 +3,7 @@
 ## 1.6.8
 
 - Restructured the repository to reduce package size. The package now lives in the `DelaunayTriangulation/` subdirectory and all reference images live in the top-level `assets/` directory, which is not shipped with the package. See [#237](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/issues/237).
+- The minimum supported Julia version is now the LTS, Julia 1.10. The package has not been loadable on Julia versions before 1.8 since v1.6.7, which uses `const` fields in a `mutable struct`, and Julia 1.10 is the oldest version tested in CI.
 
 ## 1.6.7
 
