@@ -74,6 +74,22 @@ end
     DT.toggle_warn_on_dupes!()
 end
 
+@testset "Duplicate points in the boundary nodes (Issue #220)" begin
+    DT.toggle_warn_on_dupes!()
+    points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.0, 0.0)]
+    boundary_nodes = [1, 2, 3, 4, 5, 1]
+    hierarchy = DT.construct_polygon_hierarchy(points, boundary_nodes)
+    @test_throws _test_throws(DT.DuplicateBoundaryNodeError) DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws _test_throws("DuplicateBoundaryNodeError: The boundary node 5 is a duplicate of vertex 1, so it would be skipped.", DT.DuplicateBoundaryNodeError) DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws _test_throws(DT.DuplicateBoundaryNodeError) triangulate(points; boundary_nodes, predicates = rt())
+    # Duplicates that are not on the boundary are still skipped as usual
+    points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.5, 0.5), (0.5, 0.5)]
+    boundary_nodes = [1, 2, 3, 4, 1]
+    hierarchy = DT.construct_polygon_hierarchy(points, boundary_nodes)
+    @test DT.check_args(points, boundary_nodes, hierarchy)
+    DT.toggle_warn_on_dupes!()
+end
+
 @testset "Orientation and connectivity of a single boundary curve" begin
     points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
     boundary_nodes = [1, 2, 3, 4, 1]

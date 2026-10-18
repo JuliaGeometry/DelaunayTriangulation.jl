@@ -261,7 +261,15 @@ function convert_boundary_points_to_indices(x::A, y::A; existing_points = NTuple
     end
     nodes = Int[]
     init = num_points(existing_points) + 1
-    for i in firstindex(x):(lastindex(x) - 1)
+    # Skip any point that repeats the previous point, since otherwise we get duplicate points, e.g. for paths that repeat their
+    # final point (see Issue #220). The last point isn't pushed since it gets added back in when closing the curve (or when
+    # connecting to the next section), so we also skip any repeats of the last point.
+    last_index = lastindex(x) - 1
+    while last_index > firstindex(x) && x[last_index] == x[end] && y[last_index] == y[end]
+        last_index -= 1
+    end
+    for i in firstindex(x):last_index
+        i > firstindex(x) && x[i] == x[i - 1] && y[i] == y[i - 1] && continue
         push!(nodes, init)
         push_point!(existing_points, x[i], y[i])
         init += 1

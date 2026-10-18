@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.7.1
+
+- Fixed a clipped Voronoi tessellation leaving a polygon unclipped when the polygon only crosses the convex hull through vertices that lie exactly on the hull. Circumcenters that lie exactly on the hull are also no longer duplicated when clipping. See [#223](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/issues/223).
+- Fixed neighbouring polygons of a tessellation clipped to a `clip_polygon` getting slightly different copies of a shared vertex, which meant `get_adjacent` could not find the neighbour. The coordinates of an unbounded polygon from `get_polygon_coordinates` now include a point on each unbounded edge that only depends on that edge. Clipped polygons also no longer repeat a vertex when an edge passes through a corner of the clip polygon. See [#239](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/issues/239).
+- `triangulate` now throws a `CollinearPointsError` when there are more than three points and they are all collinear, rather than an `UndefVarError` or hanging. Nearly collinear point sets, where every triangle is degenerate or very nearly degenerate, are now triangulated correctly. See [#216](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/issues/216).
+- `pole_of_inaccessibility` no longer runs out of memory for very thin polygons, such as the convex hull of nearly collinear points. See [#216](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/issues/216).
+- `convert_boundary_points_to_indices` now skips points that repeat the previous point, e.g. a repeated final point. `triangulate` now throws a `DuplicateBoundaryNodeError` if a boundary node is a duplicate point that would be skipped, rather than overflowing the stack. See [#220](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/issues/220).
+
 ## 1.7.0
 
 - Restructured the repository to reduce package size. The package now lives in the `DelaunayTriangulation/` subdirectory and all reference images live in the top-level `assets/` directory, which is not shipped with the package. See [#237](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/issues/237).

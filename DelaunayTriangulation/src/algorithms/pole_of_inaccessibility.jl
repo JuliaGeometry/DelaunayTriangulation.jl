@@ -1,3 +1,5 @@
+const MAX_INITIAL_POLE_CELLS = 10_000
+
 """
     pole_of_inaccessibility(points, boundary_nodes; precision = one(number_type(points)))
 
@@ -35,7 +37,11 @@ function pole_of_inaccessibility(points, boundary_nodes; precision = one(number_
             return midpoint(xmin, xmax), ymin
         end
     end
-    half_width = min_extent / 2
+    # Covering the bounding box with squares of side min_extent needs about max_extent / min_extent squares, which can exhaust
+    # memory for very thin polygons (e.g. the convex hull of nearly collinear points), so we use larger squares in that case.
+    max_extent = max(width, height)
+    cell_size = max(min_extent, max_extent / MAX_INITIAL_POLE_CELLS)
+    half_width = cell_size / 2
 
     ## Initialise the priority queue and decide if the polygon centroid of bounding box centroid is the best initial guess
     _, centroid = polygon_features(points, boundary_nodes)
@@ -51,10 +57,10 @@ function pole_of_inaccessibility(points, boundary_nodes; precision = one(number_
         y = ymin
         while y < ymax
             cell = Cell(x + half_width, y + half_width, half_width, points, boundary_nodes)
-            y += min_extent
+            y += cell_size
             insert_cell!(queue, cell)
         end
-        x += min_extent
+        x += cell_size
     end
 
     ## Now let us process all the current cells. The idea is to try and find the best cell, and any bad cells are split into four.

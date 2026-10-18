@@ -943,6 +943,14 @@ end
     @test DT.pole_of_inaccessibility(points, boundary_nodes) == (3.5, 0.0)
 end
 
+@testset "pole_of_inaccessibility of a very thin polygon" begin
+    # Covering the bounding box with squares of side 1e-9 used to run out of memory
+    points = [(0.0, 0.0), (3.0, 0.0), (1.5, 1.0e-9)]
+    boundary_nodes = [1, 2, 3, 1]
+    p = DT.pole_of_inaccessibility(points, boundary_nodes)
+    @test DT.distance_to_polygon(p, points, boundary_nodes) > 0
+end
+
 @testset "identify_side and intersection_of_ray_with_bounding_box" begin
     a, b, c, d = 0.5, 1.3, 2.7, 5.8
     p = (0.7378963231985, 4.6758264584035)

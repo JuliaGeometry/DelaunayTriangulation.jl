@@ -108,12 +108,6 @@ end
 """
     add_to_intersected_edge_cache!(intersected_edge_cache, u, v, a, b)
 
-Add the edge `uv` to the list of intersected edges, where `uv` is the edge of the Voronoi polygon intersecting the edge of the boundary `ab`.
-"""
-
-"""
-    add_to_intersected_edge_cache!(intersected_edge_cache, u, v, a, b)
-
 Add the edge `uv` to the list of intersected edges.
 
 # Arguments 
@@ -182,9 +176,12 @@ function process_ray_intersection!(
     b = getj(u_tri)
     p, q = get_generator(vorn, a, b)
     r = get_polygon_point(vorn, v)
-    _, intersection_coordinates = intersection_of_edge_and_bisector_ray(predicates, p, q, r; project = is_weighted(vorn))
+    cert, intersection_coordinates = intersection_of_edge_and_bisector_ray(predicates, p, q, r; project = is_weighted(vorn))
     F = number_type(vorn)
     any(isnan, intersection_coordinates) && (push!(exterior_circumcenters, v); return (F(NaN), F(NaN)))
+    # If r is on the edge, then r is the intersection. The midpoint (or projection) computed above can differ from r in
+    # the last digit, and would then not be recognised as being equal to r below. See Issue #223.
+    is_collinear(cert) && (intersection_coordinates = getxy(r))
     idx = add_segment_intersection!(segment_intersections, boundary_sites, intersection_coordinates, incident_polygon)
     if intersection_coordinates == r
         equal_circumcenter_mapping[idx] = v
@@ -246,7 +243,17 @@ function process_segment_intersection!(
     r, s = get_polygon_point(vorn, u, v)
     intersection_cert, cert_u, cert_v, intersection_coordinates = classify_and_compute_segment_intersection(predicates, p, q, r, s)
     F = number_type(vorn)
-    if is_none(intersection_cert) || is_touching(intersection_cert)
+    if is_touching(intersection_cert) && ((is_collinear(cert_u) && is_left(cert_v)) || (is_left(cert_u) && is_collinear(cert_v)))
+        # The edge leaves the domain through an endpoint that is exactly on the boundary edge, and the other endpoint is outside.
+        # This is still an intersection, otherwise a polygon that only crosses the boundary through such endpoints never gets clipped. See Issue #223.
+        if is_collinear(cert_u)
+            intersection_coordinates = getxy(r)
+            push!(exterior_circumcenters, v)
+        else
+            intersection_coordinates = getxy(s)
+            push!(exterior_circumcenters, u)
+        end
+    elseif is_none(intersection_cert) || is_touching(intersection_cert)
         if is_left(cert_u) && is_left(cert_v)
             push!(exterior_circumcenters, u, v)
         end
@@ -1119,6 +1126,9 @@ function _clip_voronoi_tessellation_convex_polygon!(vorn::VoronoiTessellation, c
                     end
                     clipped_tile_vertices[idx] = pidx
                 end
+                # The clipped tile can visit the same point twice in a row, e.g. if an edge passes exactly through a corner of the clip polygon
+                unique!(clipped_tile_vertices)
+                push!(clipped_tile_vertices, clipped_tile_vertices[begin])
                 add_polygon!(vorn, clipped_tile_vertices, v)
                 add_polygon_adjacent!(vorn, v)
             end

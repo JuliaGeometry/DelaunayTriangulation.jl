@@ -765,3 +765,11 @@ end
         @test DT.is_inside(DT.point_position_relative_to_triangle(tri, V, (1e-16, 0.0)))
     end
 end
+
+@testset "Issue #216" begin
+    # Searching down the boundary without finding the point threw an UndefVarError for k, rather than a PointNotFoundError
+    tri = triangulate([(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)])
+    for direction in (DT.Cert.Right, DT.Cert.Left)
+        @test_throws DT.PointNotFoundError DT.search_down_adjacent_boundary_edges(tri, 1, (0.25, 0.25), direction, DT.Cert.Inside, 2)
+    end
+end
