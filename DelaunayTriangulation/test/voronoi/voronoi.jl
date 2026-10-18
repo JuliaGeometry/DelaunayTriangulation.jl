@@ -866,12 +866,13 @@ end
             tri = triangulate(points, delete_ghosts=false)
             vorn = voronoi(tri, clip=true, predicates=PT())
             @test validate_tessellation(vorn, predicates=PT())
+            # The circumcenter is on the edge between points 1 and 3. Polygons 1 and 3 used to get slightly different
+            # copies of it, (0.15246769999999996, 0.5951460000000001) and (0.15246769999999998, 0.595146) (see Issue #239)
             @test unique(collect.(sort(vorn.polygon_points))) ≈ collect.(
                 sort(
                     [
                         (0.4365579958139866, 0.7836598194374877)
                         (0.013957399999999976, 0.803881)
-                        (0.15246769999999996, 0.5951460000000001)
                         (0.3569879785117299, 0.7308595369379514)
                         (0.29097799999999996, 0.386411)
                         (0.5608665, 0.5082095)
@@ -1171,10 +1172,11 @@ end
                 (-0.2999999999999998, 9.3)
                 (-2.3999999999999986, 21.900000000000006)
                 (-61.96153846153845, 7.846153846153847)
+                (-18.115384615384613, 3.4615384615384617) # same point as on this ray in polygon 7
                 (-10.807692307692307, 2.730769230769231)
             ],
         )
-        @test new_vertices == [1, 2, 3, 4, 5]
+        @test new_vertices == [1, 2, 3, 4, 5, 6]
         new_vertices, new_points = DT.grow_polygon_outside_of_box(vorn, 5, bounding_box, PT())
         @test same_cycle( # where the polygon starts depends on hash order
             new_points, [
@@ -1193,30 +1195,33 @@ end
                 (3.1, 5.9)
                 (2.357142857142857, 2.9285714285714284)
                 (2.710526315789474, 1.868421052631579)
+                (13.026315789473683, -1.0789473684210529) # same point as on this ray in polygon 5
             ],
         )
-        @test new_vertices == [1, 2, 3, 4, 5]
+        @test new_vertices == [1, 2, 3, 4, 5, 6]
         new_vertices, new_points = DT.grow_polygon_outside_of_box(vorn, 7, bounding_box, PT())
         @test same_cycle( # where the polygon starts depends on hash order
             new_points, [
                 (-0.7307692307692308, -0.8846153846153846)
                 (-4.166666666666666, 0.8333333333333335)
                 (-10.807692307692307, 2.730769230769231)
+                (-18.115384615384613, 3.4615384615384617) # same point as on this ray in polygon 1
                 (-61.96153846153845, 7.846153846153847)
                 (1.1153846153846159, -13.807692307692308)
             ],
         )
-        @test new_vertices == [1, 2, 3, 4, 5]
+        @test new_vertices == [1, 2, 3, 4, 5, 6]
         new_vertices, new_points = DT.grow_polygon_outside_of_box(vorn, 8, bounding_box, PT())
         @test same_cycle( # where the polygon starts depends on hash order
             new_points, [
                 (17.5, 15.499999999999995)
                 (-4.799999999999997, 36.30000000000001)
+                (-2.3999999999999986, 21.900000000000006) # same point as on this ray in polygon 1
                 (-0.2999999999999998, 9.3)
                 (3.1, 5.9)
             ],
         )
-        @test new_vertices == [1, 2, 3, 4]
+        @test new_vertices == [1, 2, 3, 4, 5]
         @inferred DT.grow_polygon_outside_of_box(vorn, 8, bounding_box, PT())
     end
 end
@@ -1834,5 +1839,101 @@ end
         values = [0, 1, 2, 0, 2, 0, 1, 1, 2, 0]
         fig, ax, _ = voronoiplot([p[1] for p in points], [p[2] for p in points], values)
         fig
+    end
+end
+
+@testset "Issue #223" begin
+    @testset "Minimal example" begin
+        # The point C = (0, -1e-16) is just below the hull edge AB, so the circumcenter of ABC is at (0, 2e16). The circumcenters
+        # of ACD and CBE are exactly (-1, 0) and (1, 0), so the polygon of C only crosses the line through AB at its own vertices
+        # and every edge of it just touches AB. These touching edges were ignored, so the polygon of C was never clipped.
+        points = [(-2.0, 0.0), (2.0, 0.0), (0.0, -1.0e-16), (-1.0, -1.0), (1.0, -1.0)]
+        for seed in 1:20
+            rng = StableRNG(seed)
+            tri = triangulate(points; rng)
+            vorn = voronoi(tri; clip = true, rng)
+            @test isempty(DT.get_unbounded_polygons(vorn))
+            @test validate_tessellation(vorn)
+            @test get_area(vorn, 3) ≈ 1.0
+            @test sum(get_area(vorn, i) for i in each_polygon_index(vorn)) ≈ get_area(tri)
+        end
+    end
+
+    @testset "Example from the issue" begin
+        # Point 14 is just below the hull edge between points 7 and 20, so the circumcenter of the triangle (7, 14, 20) is
+        # very far away. The polygon of 14 only crosses the boundary through vertices that are exactly on it, as above.
+        points = [
+            (-0.12046806941342439, 0.4173136338275707), (-0.11544856652119836, 0.4086195997894963), (-0.11042906362897237, 0.4173136338275707),
+            (-0.11042906362897235, 0.3999255657514219), (-0.10540956073674634, 0.3912315317133475), (-0.10540956073674634, 0.4086195997894963),
+            (-0.10039005784452033, 0.4173136338275707), (-0.10039005784452032, 0.3825374976752731), (-0.10039005784452032, 0.3999255657514219),
+            (-0.09537055495229432, 0.4086195997894963), (-0.09537055495229431, 0.3912315317133475), (-0.0903510520600683, 0.3999255657514219),
+            (-0.08533154916784229, 0.40861959978949625), (-0.08031204627561628, 0.41731363382757064), (-0.08031204627561626, 0.3825374976752731),
+            (-0.07529254338339025, 0.3912315317133475), (-0.07027304049116424, 0.3999255657514219), (-0.06023403470671221, 0.3825374976752731),
+            (-0.05019502892226017, 0.3999255657514219), (-0.040156023137807764, 0.4173136338275707),
+        ]
+        for seed in 1:20
+            rng = StableRNG(seed)
+            tri = triangulate(points; rng)
+            vorn = voronoi(tri; clip = true, rng)
+            @test isempty(DT.get_unbounded_polygons(vorn))
+            @test validate_tessellation(vorn; check_convex = false) # some polygons have vertices that are only collinear up to roundoff
+            @test sum(get_area(vorn, i) for i in each_polygon_index(vorn)) ≈ get_area(tri)
+        end
+    end
+end
+
+@testset "Issue #239" begin
+    # Polygons sharing an unbounded edge used to clip that edge at slightly different points,
+    # so that the clipped polygons did not share the edge and get_adjacent could not find the neighbour.
+    clip_polygon = ([(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], [1, 2, 3, 4, 1])
+    on_clip_boundary(p, q) = (p[1] == q[1] && p[1] ∈ (0.0, 1.0)) || (p[2] == q[2] && p[2] ∈ (0.0, 1.0))
+    function test_edges_have_neighbours(vorn) # only edges on the boundary of the clip polygon should have no neighbour
+        for i in each_polygon_index(vorn)
+            C = get_polygon(vorn, i)
+            for j in 1:(length(C) - 1)
+                u, v = C[j], C[j + 1]
+                if iszero(get_adjacent(vorn, v, u))
+                    @test on_clip_boundary(get_polygon_point(vorn, u, v)...)
+                end
+            end
+        end
+    end
+
+    @testset "Minimal example" begin
+        # The edge between the polygons of points 2 and 3 goes off to infinity, crossing the left side of the square at y = 0.58.
+        # Each polygon cut this edge off at a different point before clipping, so the crossing came out as (0.0, 0.5799999999999996)
+        # in one polygon and (0.0, 0.5799999999999998) in the other, and the polygons no longer shared the edge.
+        points = [(0.9, 0.1), (0.7, 0.7), (0.6, 0.2)]
+        for seed in 1:20
+            rng = StableRNG(seed)
+            tri = triangulate(points; rng)
+            vorn = voronoi(tri; clip = true, clip_polygon, rng)
+            @test validate_tessellation(vorn; check_area = false)
+            @test sum(get_area(vorn, i) for i in each_polygon_index(vorn)) ≈ 1.0
+            left_side_vertices(i) = Set(v for v in get_polygon(vorn, i) if get_polygon_point(vorn, v)[1] == 0.0 && 0.0 < get_polygon_point(vorn, v)[2] < 1.0)
+            @test length(left_side_vertices(2)) == 1 && left_side_vertices(2) == left_side_vertices(3)
+            test_edges_have_neighbours(vorn)
+        end
+    end
+
+    @testset "Random point sets" begin
+        for seed in 1:20
+            rng = StableRNG(seed)
+            points = [(0.1 + 0.8rand(rng), 0.1 + 0.8rand(rng)) for _ in 1:50]
+            tri = triangulate(points; rng)
+            vorn = voronoi(tri; clip = true, clip_polygon, rng)
+            @test validate_tessellation(vorn; check_area = false)
+            @test sum(get_area(vorn, i) for i in each_polygon_index(vorn)) ≈ 1.0
+            test_edges_have_neighbours(vorn)
+        end
+    end
+
+    @testset "Edge through a corner of the clip polygon" begin
+        # The edge between the first two polygons lies on y = x, so the clipped polygon visited the corner (1, 1) twice
+        tri = triangulate([(0.25, 0.75), (0.75, 0.25), (0.8, 0.9)]; rng = StableRNG(1))
+        vorn = voronoi(tri; clip = true, clip_polygon, rng = StableRNG(1))
+        @test validate_tessellation(vorn; check_area = false)
+        @test all(i -> allunique(get_polygon(vorn, i)[begin:(end - 1)]), each_polygon_index(vorn))
+        @test sum(get_area(vorn, i) for i in each_polygon_index(vorn)) ≈ 1.0
     end
 end

@@ -8,7 +8,8 @@ Check that the arguments `points` and `boundary_nodes` to [`triangulate`](@ref),
 - The points are all unique. If they are not, a warning is thrown and the indices of the duplicates are merged into `skip_points`.
 - There are at least three points. If there are not, an `InsufficientPointsError` is thrown.
 
-If any duplicate points are found, the indices of the duplicates are merged into `skip_points` in-place.
+If any duplicate points are found, the indices of the duplicates are merged into `skip_points` in-place. If any of these
+duplicates are also in `boundary_nodes`, a `DuplicateBoundaryNodeError` is thrown since they would not be in the triangulation.
 
 If `boundary_nodes` are provided, meaning [`has_boundary_nodes`](@ref), then the function also checks:
 
@@ -25,7 +26,7 @@ If `boundary_nodes` are provided, meaning [`has_boundary_nodes`](@ref), then the
 """
 function check_args(points, boundary_nodes, hierarchy, boundary_curves = (); skip_points = Set{Int}())
     check_dimension(points)
-    has_unique_points!(skip_points, points)
+    has_unique_points!(skip_points, points, boundary_nodes)
     has_enough_points(points)
     has_bnd = has_boundary_nodes(boundary_nodes)
     if has_bnd
@@ -37,6 +38,10 @@ end
 
 struct InsufficientPointsError{P} <: Exception
     points::P
+end
+struct DuplicateBoundaryNodeError{I} <: Exception
+    vertex::I
+    duplicate_of::I
 end
 struct InconsistentConnectionError{I, J} <: Exception
     curve_index::I
@@ -54,6 +59,10 @@ end
 function Base.showerror(io::IO, err::InsufficientPointsError)
     points = err.points
     print(io, "InsufficientPointsError: The provided point set has ", num_points(points), " points, but triangulations require at least three points.")
+    return io
+end
+function Base.showerror(io::IO, err::DuplicateBoundaryNodeError)
+    print(io, "DuplicateBoundaryNodeError: The boundary node ", err.vertex, " is a duplicate of vertex ", err.duplicate_of, ", so it would be skipped. Boundary nodes must refer to unique points, so either remove the repeated point from the boundary or use vertex ", err.duplicate_of, " instead.")
     return io
 end
 function Base.showerror(io::IO, err::InconsistentConnectionError)
@@ -99,7 +108,7 @@ function check_dimension(points)
     return valid
 end
 
-function has_unique_points!(skip_points, points)
+function has_unique_points!(skip_points, points, boundary_nodes = nothing)
     all_unique = points_are_unique(points)
     if !all_unique 
         dup_seen = find_duplicate_points(points)
@@ -120,6 +129,19 @@ function has_unique_points!(skip_points, points)
         end
         if WARN_ON_DUPES[]
             @warn String(take!(io))
+        end
+        has_boundary_nodes(boundary_nodes) && has_no_duplicate_boundary_nodes(boundary_nodes, dup_seen)
+    end
+    return true
+end
+
+function has_no_duplicate_boundary_nodes(boundary_nodes, dup_seen)
+    # Only the first of each duplicate point is kept, so the others can't be boundary nodes. See Issue #220.
+    duplicate_of = Dict(ivec[j] => ivec[1] for (_, ivec) in dup_seen for j in 2:lastindex(ivec))
+    for section_index in values(construct_ghost_vertex_map(boundary_nodes))
+        for v in each_boundary_node(get_boundary_nodes(boundary_nodes, section_index))
+            u = get(duplicate_of, v, nothing)
+            !isnothing(u) && throw(DuplicateBoundaryNodeError(v, oftype(v, u)))
         end
     end
     return true

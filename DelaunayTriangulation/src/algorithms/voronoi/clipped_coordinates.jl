@@ -270,9 +270,7 @@ function _grow_polygon_outside_of_box(
     v_m, v_r = _get_ray(vorn, i, v, predicates)
 
     u_mx, u_my = getxy(u_m)
-    u_rx, u_ry = getxy(u_r)
     v_mx, v_my = getxy(v_m)
-    v_rx, v_ry = getxy(v_r)
 
     p = (zero(T), zero(T))
     q = (zero(T), zero(T))
@@ -282,8 +280,8 @@ function _grow_polygon_outside_of_box(
 
     while inside
         t *= 2.0
-        p = (u_mx + t * (u_rx - u_mx), u_my + t * (u_ry - u_my))
-        q = (v_mx + t * (v_rx - v_mx), v_my + t * (v_ry - v_my))
+        p = _ray_point(u_m, u_r, t)
+        q = _ray_point(v_m, v_r, t)
 
         (isinf(p[1]) || isinf(p[2]) || isinf(q[1]) || isinf(q[2])) && break
 
@@ -302,9 +300,57 @@ function _grow_polygon_outside_of_box(
     end
     new_points[u] = p
     new_points[v] = q
-    new_vertices[u] = u
-    new_vertices[v] = v
+    # Each ray is shared with a neighbouring polygon, but t depends on both rays of this polygon, so the two polygons truncate the shared ray
+    # at different points and clipping it gives them slightly different intersection points (see Issue #239). So, we also put a point on each
+    # ray that only depends on that ray. Writing P(t) = m + t(r - m) for each ray, the polygon then goes ..., P_u(t_u), P_u(t), P_v(t), P_v(t_v), ...
+    t_u = _ray_escape_parameter(T, u_m, u_r, maximum_distance_to_box(a, b, c, d, u_m))
+    t_v = _ray_escape_parameter(T, v_m, v_r, maximum_distance_to_box(a, b, c, d, v_m))
+    if u > v # insert at the larger index first so that the other index stays valid
+        t_u < t && insert!(new_points, u, _ray_point(u_m, u_r, t_u))
+        t_v < t && insert!(new_points, v + 1, _ray_point(v_m, v_r, t_v))
+    else
+        t_v < t && insert!(new_points, v + 1, _ray_point(v_m, v_r, t_v))
+        t_u < t && insert!(new_points, u, _ray_point(u_m, u_r, t_u))
+    end
+    resize!(new_vertices, length(new_points)) # new_points is already in order, so new_vertices is just eachindex(new_points)
+    new_vertices .= eachindex(new_points)
     return new_vertices, new_points
+end
+
+"""
+    _ray_escape_parameter(::Type{T}, m, r, dist_to_box) -> T
+
+Returns the smallest `t = 2^k`, `k ≥ 1`, such that the point `m + t(r - m)` is outside of the bounding box, so that the result only depends on the ray and the box.
+
+# Arguments
+- `T`: The number type to use for computations.
+- `m`: The start of the ray.
+- `r`: A second point on the ray, so that `mr` gives the direction of the ray. See [`_get_ray`](@ref).
+- `dist_to_box`: The maximum squared distance from `m` to the bounding box, from [`maximum_distance_to_box`](@ref).
+
+# Outputs
+- `t`: The parameter `t` such that `m + t(r - m)` is at a squared distance of at least `dist_to_box` from `m`, or such that the point is infinite.
+"""
+function _ray_escape_parameter(::Type{T}, m, r, dist_to_box) where {T}
+    t = one(T)
+    while true
+        t *= 2.0
+        p = _ray_point(m, r, t)
+        (isinf(p[1]) || isinf(p[2])) && break
+        dist_sqr(p, getxy(m)) ≥ dist_to_box && break
+    end
+    return t
+end
+
+"""
+    _ray_point(m, r, t) -> NTuple{2, Number}
+
+Returns the point `m + t(r - m)`. This is used for all points computed along rays, so that equal `t` always give equal points.
+"""
+function _ray_point(m, r, t)
+    mx, my = getxy(m)
+    rx, ry = getxy(r)
+    return (mx + t * (rx - mx), my + t * (ry - my))
 end
 
 """

@@ -42,6 +42,8 @@ Gets the initial triangle for the Bowyer-Watson algorithm.
 
 # Output
 - `initial_triangle`: The initial triangle.
+
+If there are more than three points and they are all collinear, a `CollinearPointsError` is thrown since there is no triangulation.
 """
 function get_initial_triangle(tri::Triangulation, insertion_order, predicates::AbstractPredicateKernel = AdaptiveKernel(), itr = 0)
     i, j, k = @view insertion_order[1:3] # insertion_order got converted into a Vector, so indexing is safe 
@@ -49,6 +51,11 @@ function get_initial_triangle(tri::Triangulation, insertion_order, predicates::A
     i, j, k = triangle_vertices(initial_triangle)
     p, q, r = get_point(tri, i, j, k)
     degenerate_cert = triangle_orientation(predicates, p, q, r)
+    if iszero(itr) && length(insertion_order) > 3 && is_degenerate(degenerate_cert)
+        # If all the points are collinear then the loop below can't find a triangle, and there is no triangulation anyway
+        _, k′ = find_non_collinear_points(tri, insertion_order, predicates)
+        iszero(k′) && throw(CollinearPointsError(get_points(tri)))
+    end
     if length(insertion_order) > 3 && (is_degenerate(degenerate_cert) || check_precision(triangle_area(p, q, r))) && itr ≤ length(insertion_order) # Do not get stuck in an infinite loop if there are just three points, the three of them being collinear. The itr ≤ length(insertion_order) is needed because, if all the points are collinear, the loop could go on forever 
         @static if VERSION ≥ v"1.8.1"
             circshift!(insertion_order, -1)
@@ -57,8 +64,53 @@ function get_initial_triangle(tri::Triangulation, insertion_order, predicates::A
             copyto!(insertion_order, _insertion_order)
         end
         return get_initial_triangle(tri, insertion_order, predicates, itr + 1)
+    elseif length(insertion_order) > 3 && is_degenerate(degenerate_cert)
+        # We ran out of shifts, meaning every triangle we tried was degenerate or nearly degenerate. The points are not all
+        # collinear, though, so we can instead move three points that are not collinear to the front. See Issue #216.
+        j′, k′ = find_non_collinear_points(tri, insertion_order, predicates)
+        insertion_order[begin + 1], insertion_order[j′] = insertion_order[j′], insertion_order[begin + 1]
+        insertion_order[begin + 2], insertion_order[k′] = insertion_order[k′], insertion_order[begin + 2]
+        return get_initial_triangle(tri, insertion_order, predicates, itr)
     end
     return initial_triangle
+end
+
+struct CollinearPointsError{P} <: Exception
+    points::P
+end
+function Base.showerror(io::IO, err::CollinearPointsError)
+    print(io, "CollinearPointsError: All of the provided points are collinear, but triangulations require at least three points that are not collinear.")
+    return io
+end
+
+"""
+    find_non_collinear_points(tri::Triangulation, insertion_order, predicates::AbstractPredicateKernel=AdaptiveKernel()) -> (Integer, Integer)
+
+Finds positions `j` and `k` in `insertion_order` such that the points of the vertices `insertion_order[begin]`, `insertion_order[j]`, and `insertion_order[k]` are not collinear.
+
+# Arguments
+- `tri`: The triangulation.
+- `insertion_order`: The insertion order of the points. See [`get_insertion_order`](@ref).
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
+
+# Outputs
+- `j`: The position of the second point, with `firstindex(insertion_order) < j < k`.
+- `k`: The position of the third point. If all of the points are collinear, then `k` is zero.
+"""
+function find_non_collinear_points(tri::Triangulation, insertion_order, predicates::AbstractPredicateKernel = AdaptiveKernel())
+    p = get_point(tri, insertion_order[begin])
+    # The second point must be different from the first, which only matters if duplicate points were not skipped
+    j = firstindex(insertion_order) + 1
+    while j ≤ lastindex(insertion_order) && get_point(tri, insertion_order[j]) == p
+        j += 1
+    end
+    j > lastindex(insertion_order) && return 0, 0
+    q = get_point(tri, insertion_order[j])
+    for k in (j + 1):lastindex(insertion_order)
+        r = get_point(tri, insertion_order[k])
+        !is_degenerate(triangle_orientation(predicates, p, q, r)) && return j, k
+    end
+    return j, 0
 end
 
 """

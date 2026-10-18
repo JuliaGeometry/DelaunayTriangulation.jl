@@ -1042,6 +1042,45 @@ end
     @test pts == append!(_pt, _boundary_points)
 end
 
+@testset "convert_boundary_points_to_indices with repeated points (Issue #220)" begin
+    @testset "Minimal example" begin
+        # The path repeats its final point. The second copy of (0, 0) used to become a new point 5, giving the boundary nodes
+        # [1, 2, 3, 4, 5, 1], and triangulate then overflowed the stack since point 5 is skipped as a duplicate of point 1.
+        path = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.0, 0.0), (0.0, 0.0)]
+        boundary_nodes, points = convert_boundary_points_to_indices(path)
+        @test boundary_nodes == [1, 2, 3, 4, 1]
+        @test points == path[1:4]
+        tri = triangulate(points; boundary_nodes, rng = StableRNG(220))
+        @test validate_triangulation(tri)
+        @test get_area(tri) ≈ 1.0
+    end
+
+    @testset "Example from the issue" begin
+        p = [
+            (118.57716599999999, 28.538463999999994), (118.814236, 27.962729999999993), (119.435126, 27.759529999999994),
+            (120.044726, 27.962729999999993), (120.30437599999999, 28.538463999999994), (120.044726, 29.114197999999995),
+            (119.435126, 29.317397999999994), (118.814236, 29.114197999999995), (118.57716599999999, 28.538463999999994),
+            (118.57716599999999, 28.538463999999994),
+        ]
+        boundary_nodes, points = convert_boundary_points_to_indices([[p]])
+        @test boundary_nodes == [[[1, 2, 3, 4, 5, 6, 7, 8, 1]]]
+        @test points == p[1:8]
+        rng = StableRNG(220)
+        tri = triangulate(points; boundary_nodes, rng)
+        @test validate_triangulation(tri)
+        refine!(tri; max_area = 1.0e-2get_area(tri), rng)
+        @test validate_triangulation(tri)
+    end
+
+    @testset "Repeats inside a section and at the end of a section" begin
+        x = [[0.0, 1.0, 1.0], [1.0, 1.0, 1.0, 0.0, 0.0], [0.0, 0.0]]
+        y = [[0.0, 0.0, 0.0], [0.0, 1.0, 1.0, 1.0, 1.0], [1.0, 0.0]]
+        nodes, pts = convert_boundary_points_to_indices(x, y)
+        @test nodes == [[1, 2], [2, 3, 4], [4, 1]]
+        @test pts == [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
+    end
+end
+
 @testset "get_ordinal_suffix" begin
     @test DT.get_ordinal_suffix.(0:115) == [
         "th"

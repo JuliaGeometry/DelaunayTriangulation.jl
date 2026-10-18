@@ -37,6 +37,52 @@ end
     @test DT.is_positively_oriented(DT.triangle_orientation(tri, initial_triangle))
 end
 
+@testset "Issue #216" begin
+    @testset "Minimal example" begin
+        # Points that are all collinear have no triangulation. These four points used to give an UndefVarError for k
+        # with randomise = false, and otherwise returned two triangles with zero area.
+        points = [(0.0, 0.0), (1.0, 0.0), (2.0, 0.0), (3.0, 0.0)]
+        for PT in subtypes(DT.AbstractPredicateKernel), randomise in (false, true)
+            @test_throws DT.CollinearPointsError triangulate(points; randomise, predicates = PT())
+        end
+        @static if VERSION ≥ v"1.9"
+            @test_throws "CollinearPointsError: All of the provided points are collinear, but triangulations require at least three points that are not collinear." triangulate(points)
+        end
+        @test_throws DT.CollinearPointsError triangulate([(Float64(i), 2.0i + 1.0) for i in 1:10000])
+    end
+
+    @testset "Example from the issue" begin
+        # All of the points have the same x-coordinate. This gave the UndefVarError with randomise = false, and hung otherwise.
+        points = [
+            (1.0791812460476249, -3.7886681935906106), (1.0791812460476249, -4.4006006582615305), (1.0791812460476249, -5.012533122932451),
+            (1.0791812460476249, -4.022405596275408), (1.0791812460476249, -4.634338060946328), (1.0791812460476249, -5.2462705256172475),
+            (1.0791812460476249, -4.256142998960205), (1.0791812460476249, -4.868075463631126), (1.0791812460476249, -3.877947936974082),
+            (1.0791812460476249, -4.489880401645002), (1.0791812460476249, -5.101812866315922), (1.0791812460476249, -4.111685339658881),
+            (1.0791812460476249, -4.723617804329802), (1.0791812460476249, -3.7334902776727588), (1.0791812460476249, -4.345422742343679),
+            (1.0791812460476249, -4.957355207014598), (1.0791812460476249, -3.967227680357556), (1.0791812460476249, -4.579160145028475),
+            (1.0791812460476249, -5.191092609699395), (1.0791812460476249, -4.200965083042353), (1.0791812460476249, -4.8128975477132725),
+        ]
+        for PT in subtypes(DT.AbstractPredicateKernel), randomise in (false, true)
+            @test_throws DT.CollinearPointsError triangulate(points; randomise, predicates = PT())
+        end
+    end
+
+    @testset "Nearly collinear points" begin
+        # Every triangle is either degenerate or has a tiny area, so shifting the insertion order runs out
+        for N in (4, 50), randomise in (false, true)
+            points = push!([(Float64(i), 0.0) for i in 1:N], (N / 2 + 0.5, 1.0e-9))
+            tri = triangulate(points; randomise, rng = StableRNG(N))
+            @test validate_triangulation(tri)
+            @test DT.num_solid_triangles(tri) == N - 1
+        end
+        tri = Triangulation([(0.0, 0.0), (1.0, 0.0), (2.0, 0.0), (3.0, 0.0), (1.5, 1.0e-9)])
+        insertion_order = [1, 2, 3, 4, 5]
+        initial_triangle = DT.get_initial_triangle(tri, insertion_order, rt())
+        @test DT.is_positively_oriented(DT.triangle_orientation(tri, initial_triangle))
+        @test sort(insertion_order) == 1:5
+    end
+end
+
 @testset "Initialising the Bowyer-Watson algorithm" begin
     tri = triangulate_rectangle(0.0, 10.0, 0.0, 20.0, 11, 21, delete_ghosts = false)
     _tri = DT.Triangulation(tri.points)
