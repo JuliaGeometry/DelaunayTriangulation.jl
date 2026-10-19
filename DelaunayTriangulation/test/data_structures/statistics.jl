@@ -283,3 +283,28 @@ end
     c = DT.triangle_centroid(p, q, r)
     @test DT.is_on(DT.point_position_relative_to_triangle(p, q, r, c))
 end
+
+@testset "Statistics of a single triangle" begin
+    p, q, r = (0.0, 0.0), (3.0, 0.0), (0.0, 4.0)
+    @test collect(DT.triangle_lengths(p, q, r)) ≈ [3.0, 4.0, 5.0]
+    @test collect(DT.triangle_angles(p, q, r)) ≈ [atan(3, 4), atan(4, 3), π / 2]
+    tri = triangulate([p, q, r])
+    stats = statistics(tri)
+    T = first(each_solid_triangle(tri))
+    @test DT.get_minimum_angle(stats, T) ≈ atan(3, 4)
+    @test DT.get_median_angle(stats, T) ≈ atan(4, 3)
+    @test DT.get_maximum_angle(stats, T) ≈ π / 2
+    @test collect(DT.get_lengths(stats, T)) ≈ [3.0, 4.0, 5.0]
+    @test DT.get_area(stats, T) ≈ 6.0
+    @test DT.get_inradius(stats, T) ≈ 1.0
+    @test DT.get_circumradius(stats, T) ≈ 2.5
+    @test collect(DT.get_circumcenter(stats, T)) ≈ [1.5, 2.0]
+end
+
+@testset "Statistics of a triangulation without any triangles" begin
+    tri = Triangulation([(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)])
+    stats = statistics(tri)
+    @test DT.num_solid_triangles(stats) == 0
+    # get_all_stat calls first(keys(...)) on the empty Dict of individual statistics
+    @test_broken isempty(DT.get_all_stat(stats, :area))
+end

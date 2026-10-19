@@ -45,6 +45,7 @@ const ASSETS = joinpath(@__DIR__, "..", "..", "..", "assets", "test", "data_stru
     d = (3.0, 0.0)
     cert1 = DT.point_position_relative_to_curve(L, d)
     cert2 = DT.point_position_relative_to_curve(revL, d)
+    @test DT.is_right(cert1) && DT.is_left(cert2)
 
     ## Arclength 
     p = rand(2) |> Tuple
@@ -2651,5 +2652,30 @@ end
         @test spl.cache == spl2.cache && !(spl.cache === spl2.cache)
         spl2 = deepcopy(spl)
         @test spl == spl2 && !(spl === spl2)
+    end
+end
+
+@testset "get_circle_intersection with t₁ > t₂" begin
+    # Mesh refinement also searches for intersections backwards along a curve
+    curves = (
+        BSpline([(0.0, 0.0), (1.0, 1.0), (2.0, -1.0), (3.0, 0.5), (4.0, 0.0)]),
+        BezierCurve([(0.0, 0.0), (1.0, 2.0), (3.0, -1.0), (4.0, 0.0)]),
+        CatmullRomSpline([(0.0, 0.0), (1.0, 1.0), (2.0, -1.0), (3.0, 0.5), (4.0, 0.0)]),
+        CircularArc((1.0, 0.0), (0.0, 1.0), (0.0, 0.0)),
+    )
+    for c in curves, (t₁, t₂) in ((0.8, 0.2), (0.2, 0.8), (1.0, 0.0), (0.0, 1.0))
+        r = DT.dist(c(t₁), c((t₁ + t₂) / 2)) # a radius for which the intersection lies between t₁ and t₂
+        t, q = DT.get_circle_intersection(c, t₁, t₂, r)
+        @test min(t₁, t₂) ≤ t ≤ max(t₁, t₂)
+        @test collect(q) ≈ collect(c(t))
+        @test DT.dist(c(t₁), q) ≈ r rtol = 1.0e-2
+    end
+end
+
+@testset "marked_total_variation" begin
+    for c in (BSpline([(0.0, 0.0), (1.0, 1.0), (2.0, -1.0), (3.0, 0.5), (4.0, 0.0)]), BezierCurve([(0.0, 0.0), (1.0, 2.0), (3.0, -1.0), (4.0, 0.0)]))
+        for (t₁, t₂) in ((0.0, 1.0), (0.1, 0.4), (0.3, 0.9))
+            @test DT.marked_total_variation(c, t₁, t₂) ≈ slow_total_absolute_curvature(c, t₁, t₂) rtol = 1.0e-2
+        end
     end
 end

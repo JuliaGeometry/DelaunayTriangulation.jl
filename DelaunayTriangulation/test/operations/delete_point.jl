@@ -210,3 +210,18 @@ end
         @test validate_triangulation(tri)
     end
 end
+
+@testset "Deleting points until only three remain" begin
+    for seed in 1:10
+        rng = StableRNG(seed)
+        points = [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]
+        append!(points, [(0.4rand(rng), 0.4rand(rng)) for _ in 1:10])
+        tri = triangulate(points; rng)
+        for i in 4:13
+            delete_point!(tri, i; rng)
+            @test validate_triangulation(tri; print_result = false)
+        end
+        @test DT.num_solid_triangles(tri) == 1
+        @test DT.compare_triangle_collections(collect(each_solid_triangle(tri)), [(1, 2, 3)])
+    end
+end

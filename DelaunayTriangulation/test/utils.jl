@@ -3,7 +3,6 @@ const DT = DelaunayTriangulation
 using LinearAlgebra
 using AdaptivePredicates
 using CairoMakie
-using BenchmarkTools
 using StableRNGs
 
 @testset "is_true" begin

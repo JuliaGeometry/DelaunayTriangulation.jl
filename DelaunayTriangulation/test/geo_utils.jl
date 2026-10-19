@@ -223,8 +223,7 @@ end
             DT.distance_to_polygon(q, pts, tri.boundary_nodes)
         q = (9.5687897994641, 11.7840765682329)
         @inferred DT.distance_to_polygon(q, pts, boundary_nodes)
-        @inferred DT.distance_to_polygon(q, pts, tri.boundary_nodes) ==
-            DT.distance_to_polygon(q, pts, tri.boundary_nodes)
+        @inferred DT.distance_to_polygon(q, pts, tri.boundary_nodes)
         dist = DT.distance_to_polygon_multiple_segments(q, pts, boundary_nodes)
         @test dist ≈ 20.0 - q[2]
         @test dist == DT.distance_to_polygon(q, pts, boundary_nodes)
@@ -1149,16 +1148,9 @@ end
 end
 
 @testset "get_plane_through_three_points" begin
-    @static if VERSION ≥ v"1.10"
-        _plane_mat(p, q, r) =
-            let c = (p .+ q .+ r) ./ 3
-            [c... 1; p... 1; q... 1; r... 1]
-        end
-    else
-        _plane_mat(p, q, r) =
-            let c = (p .+ q .+ r) ./ 3
-            vcat([c... 1], [p... 1], [q... 1], [r... 1])
-        end
+    _plane_mat(p, q, r) =
+        let c = (p .+ q .+ r) ./ 3
+        [c... 1; p... 1; q... 1; r... 1]
     end
     _plane_norm(p, q, r) = begin
         x = q .- p

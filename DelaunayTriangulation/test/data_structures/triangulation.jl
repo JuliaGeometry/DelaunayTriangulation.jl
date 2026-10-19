@@ -7,6 +7,7 @@ using Random
 using StatsBase
 using StableRNGs
 using AdaptivePredicates
+using Distributions
 using ..DelaunayTriangulation: add_weight!, get_weight, get_weights
 
 using ..DelaunayTriangulation: Triangulation
@@ -1392,30 +1393,28 @@ end
     end
     tri = triangulate(points; boundary_nodes=nodes, segments=C, rng)
 
-    # Vertices 
-    ns = 5_000_000
-    function test_vertex_sampler(tri, ns)
-        solid_vertices = DefaultDict{Int,Float64,Float64}(0.0)
-        ghost_vertices = DefaultDict{Int,Float64,Float64}(0.0)
+    # Samples from itr and tests that every element of itr is equally likely using a χ² test. With a significance level
+    # of 1e-6 and a fixed rng, a sampler that is uniform will essentially never fail this test.
+    function test_uniform_sampler(itr, ns, rng)
+        counts = Dict(x => 0 for x in itr)
         for _ in 1:ns
-            sv = rand(each_solid_vertex(tri))
-            gv = rand(each_ghost_vertex(tri))
-            solid_vertices[sv] += 1 / ns
-            ghost_vertices[gv] += 1 / ns
+            x = rand(rng, itr)
+            haskey(counts, x) || return false # sampled something outside of itr
+            counts[x] += 1
         end
-        return solid_vertices, ghost_vertices
+        expected = ns / length(counts)
+        χ² = sum((c - expected)^2 / expected for c in values(counts))
+        return χ² < quantile(Chisq(length(counts) - 1), 1 - 1.0e-6)
     end
-    solid_vertices, ghost_vertices = test_vertex_sampler(tri, ns)
+
+    # Vertices
+    ns = 500_000
+    rng = StableRNG(123)
+    @test test_uniform_sampler(each_solid_vertex(tri), ns, rng)
+    @test test_uniform_sampler(each_ghost_vertex(tri), ns, rng)
+    @test DT.num_ghost_vertices(tri) == 2
     @inferred rand(each_solid_vertex(tri))
     @inferred rand(each_ghost_vertex(tri))
-    @test all(!DT.is_ghost_vertex, keys(solid_vertices))
-    @test all(DT.is_ghost_vertex, keys(ghost_vertices))
-    sm = mean(values(solid_vertices)) # sm for solid mean
-    gm = mean(values(ghost_vertices))
-    @test sm ≈ 1 / DT.num_solid_vertices(tri)
-    @test gm ≈ 1 / 2
-    @test all(y -> isapprox(y, sm, rtol=1.0e-1), values(solid_vertices))
-    @test all(y -> isapprox(y, gm, rtol=1.0e-1), values(ghost_vertices))
     for i in 1:250
         for f in (each_vertex, each_solid_vertex, each_ghost_vertex)
             rng = StableRNG(i)
@@ -1430,29 +1429,10 @@ end
     end
 
     # Triangles 
-    ns = 5_000_000
-    function test_triangle_sampler(tri, ns)
-        solid_triangles = DefaultDict{NTuple{3,Int},Float64,Float64}(0.0)
-        ghost_triangles = DefaultDict{NTuple{3,Int},Float64,Float64}(0.0)
-        for _ in 1:ns
-            st = rand(each_solid_triangle(tri))
-            gt = rand(each_ghost_triangle(tri))
-            solid_triangles[st] += 1 / ns
-            ghost_triangles[gt] += 1 / ns
-        end
-        return solid_triangles, ghost_triangles
-    end
-    solid_triangles, ghost_triangles = test_triangle_sampler(tri, ns)
+    @test test_uniform_sampler(each_solid_triangle(tri), ns, rng)
+    @test test_uniform_sampler(each_ghost_triangle(tri), ns, rng)
     @inferred rand(each_solid_triangle(tri))
     @inferred rand(each_ghost_triangle(tri))
-    @test all(!DT.is_ghost_triangle, keys(solid_triangles))
-    @test all(DT.is_ghost_triangle, keys(ghost_triangles))
-    sm = mean(values(solid_triangles)) # sm for solid mean
-    gm = mean(values(ghost_triangles))
-    @test sm ≈ 1 / DT.num_solid_triangles(tri)
-    @test gm ≈ 1 / DT.num_ghost_triangles(tri)
-    @test all(y -> isapprox(y, sm, rtol=1.0e-1), values(solid_triangles))
-    @test all(y -> isapprox(y, gm, rtol=1.0e-1), values(ghost_triangles))
     for i in 1:250
         for f in (each_triangle, each_solid_triangle, each_ghost_triangle)
             rng = StableRNG(i)
@@ -1467,29 +1447,10 @@ end
     end
 
     # Edges 
-    ns = 5_000_000
-    function test_edge_sampler(tri, ns)
-        solid_edges = DefaultDict{NTuple{2,Int},Float64,Float64}(0.0)
-        ghost_edges = DefaultDict{NTuple{2,Int},Float64,Float64}(0.0)
-        for _ in 1:ns
-            se = rand(each_solid_edge(tri))
-            ge = rand(each_ghost_edge(tri))
-            solid_edges[se] += 1 / ns
-            ghost_edges[ge] += 1 / ns
-        end
-        return solid_edges, ghost_edges
-    end
-    solid_edges, ghost_edges = test_edge_sampler(tri, ns)
+    @test test_uniform_sampler(each_solid_edge(tri), ns, rng)
+    @test test_uniform_sampler(each_ghost_edge(tri), ns, rng)
     @inferred rand(each_solid_edge(tri))
     @inferred rand(each_ghost_edge(tri))
-    @test all(!DT.is_ghost_edge, keys(solid_edges))
-    @test all(DT.is_ghost_edge, keys(ghost_edges))
-    sm = mean(values(solid_edges)) # sm for solid mean
-    gm = mean(values(ghost_edges))
-    @test sm ≈ 1 / DT.num_solid_edges(tri)
-    @test gm ≈ 1 / DT.num_ghost_edges(tri)
-    @test all(y -> isapprox(y, sm, rtol=1.0e-1), values(solid_edges))
-    @test all(y -> isapprox(y, gm, rtol=1.0e-1), values(ghost_edges))
     for i in 1:250
         for f in (each_edge, each_solid_edge, each_ghost_edge)
             rng = StableRNG(i)
@@ -1743,4 +1704,64 @@ end
     @test !DT.has_ghosts(tri1)
     @test !DT.has_ghosts(tri2)
     @test tri1 == tri2
+end
+
+@testset "Boundary queries" begin
+    x, y = complicated_geometry()
+    boundary_nodes, points = convert_boundary_points_to_indices(x, y)
+    tri = triangulate(points; boundary_nodes, rng = StableRNG(123))
+    # The first curve is the outer boundary, split into four sections, and the other curves are holes
+    for g in -1:-1:-4
+        @test DT.is_exterior_ghost_vertex(tri, g)
+        @test !DT.is_interior_ghost_vertex(tri, g)
+    end
+    for g in -5:-1:-11
+        @test !DT.is_exterior_ghost_vertex(tri, g)
+        @test DT.is_interior_ghost_vertex(tri, g)
+    end
+    @test !DT.is_exterior_ghost_vertex(tri, 1)
+    @test_broken !DT.is_interior_ghost_vertex(tri, 1) # is_interior_ghost_vertex is !is_exterior_ghost_vertex, so it is true for solid vertices
+    for e in keys(get_boundary_edge_map(tri))
+        u, v = DT.edge_vertices(e)
+        @test DT.contains_boundary_edge(tri, e) && DT.contains_boundary_edge(tri, u, v)
+        @test !DT.contains_boundary_edge(tri, v, u) # orientation matters
+    end
+    for e in each_solid_edge(tri)
+        u, v = DT.edge_vertices(e)
+        if !DT.contains_segment(tri, u, v)
+            @test !DT.contains_boundary_edge(tri, u, v) && !DT.contains_boundary_edge(tri, v, u)
+        end
+    end
+    # get_section_index(tri, ℓ) calls ghost_vertex_map, which is not defined
+    for g in -1:-1:-11
+        @test_broken DT.get_section_index(tri, g) == DT.get_section_index(get_ghost_vertex_map(tri), g)
+    end
+end
+
+@testset "Mutating a copy does not change the original" begin
+    # copy(tri) is currently only partly deep: the copy shares the neighbour sets of the graph, the edge sets of
+    # Adjacent2Vertex, and the sections of the boundary nodes with the original, and the triangulations in the
+    # copied cache keep their own copy of the original points
+    rng = StableRNG(123)
+    points = [(rand(rng), rand(rng)) for _ in 1:50]
+    unconstrained = () -> triangulate(copy(points); rng = StableRNG(1))
+    sectioned = () -> triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 5, 5)
+    contiguous = () -> triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 5, 5; single_boundary = true)
+    curve_bounded = () -> triangulate(NTuple{2, Float64}[]; boundary_nodes = [CircularArc((1.0, 0.0), (1.0, 0.0), (0.0, 0.0))], rng = StableRNG(1))
+    interior_vertex = tri -> first(sort(collect(setdiff(each_solid_vertex(tri), get_convex_hull_vertices(tri)))))
+    for (make_tri, mutate!) in (
+            (unconstrained, tri -> add_point!(tri, 0.5, 0.5; rng = StableRNG(2))),
+            (unconstrained, tri -> delete_point!(tri, interior_vertex(tri); rng = StableRNG(2))),
+            (sectioned, tri -> add_point!(tri, 0.1, 0.0; rng = StableRNG(2))),
+            (contiguous, tri -> add_point!(tri, 0.1, 0.0; rng = StableRNG(2))),
+            (sectioned, tri -> add_segment!(tri, 1, 25; rng = StableRNG(2))),
+            (sectioned, tri -> refine!(tri; max_area = 1.0e-2, rng = StableRNG(2))),
+            (curve_bounded, tri -> refine!(tri; max_area = 1.0e-2, rng = StableRNG(2))),
+        )
+        tri = make_tri()
+        orig = deepcopy(tri)
+        mutate!(deepcopy(tri))
+        @test tri == orig # mutating a deepcopy is fine
+        @test_broken (mutate!(copy(tri)); tri == orig)
+    end
 end

@@ -1,12 +1,9 @@
 using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using DataStructures
-using StructEquality
 using Setfield
 using AdaptivePredicates
 using ..DelaunayTriangulation: add_weight!, get_weight, get_weights
-
-@struct_equal DT.TriangulationCache
 
 cache = DT.TriangulationCache()
 @test isnothing(DT.get_triangulation(cache))

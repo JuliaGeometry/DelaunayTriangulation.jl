@@ -47,14 +47,14 @@ global pts4 = ((2.0, 3.5), (1.7, 23.3), (-1.0, 0.0))
             @test DT.getpoint(pts, DT.getpoint(pts, 2)) == (1.7, 23.3)
             @test DT.get_point(pts, DT.getpoint(pts, 3)) == (-1.0, 0.0)
             @inferred DT.get_point(pts, DT.getpoint(pts, 3))
-            @inferred DT.getpoint(pts, DT.getpoint(pts, 3)) == (-1.0, 0.0)
+            @test DT.getpoint(pts, DT.getpoint(pts, 3)) == (-1.0, 0.0)
+            @inferred DT.getpoint(pts, DT.getpoint(pts, 3))
             @test DT.getpoint(pts, (17.0, 23.0)) == (17.0, 23.0)
             @test DT.get_point(pts, (2.0, 5.3), (17.0, 5.3)) == ((2.0, 5.3), (17.0, 5.3))
-            @inferred DT.get_point(pts, (2.0, 5.3), (17.0, 5.3)) == ((2.0, 5.3), (17.0, 5.3))
+            @inferred DT.get_point(pts, (2.0, 5.3), (17.0, 5.3))
             @test DT.get_point(pts, 1, 2, (17.0, -2.0), (57.0, 23.0)) ==
                   ((2.0, 3.5), (1.7, 23.3), (17.0, -2.0), (57.0, 23.0))
-            @inferred DT.get_point(pts, 1, 2, (17.0, -2.0), (57.0, 23.0)) ==
-                      ((2.0, 3.5), (1.7, 23.3), (17.0, -2.0), (57.0, 23.0))
+            @inferred DT.get_point(pts, 1, 2, (17.0, -2.0), (57.0, 23.0))
         end
     end
 

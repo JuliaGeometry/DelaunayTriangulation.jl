@@ -5,20 +5,20 @@ queue = DT.Queue{Float64}()
 @test isempty(queue)
 @test length(queue) == 0
 @test eltype(queue) == Float64
-dt_queue = DT.Queue{Float64}()
+ds_queue = DataStructures.Queue{Float64}()
 els = Float64[]
-dt_els = Float64[]
+ds_els = Float64[]
 for k in 1:100
     r = randn()
     push!(queue, r)
-    push!(dt_queue, r)
+    push!(ds_queue, r)
 end
 for k in 1:100
     push!(els, popfirst!(queue))
-    push!(dt_els, popfirst!(dt_queue))
+    push!(ds_els, popfirst!(ds_queue))
 end
-@test isempty(queue)
-@test els == dt_els
+@test isempty(queue) && isempty(ds_queue)
+@test els == ds_els
 
 queue = DT.Queue{Int}()
 points = rand(2, 50)

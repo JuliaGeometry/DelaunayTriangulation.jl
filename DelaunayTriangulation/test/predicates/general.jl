@@ -912,6 +912,20 @@ end
     end
 end
 
+@testset "angle_is_acute_predicate" begin
+    for PT in subtypes(DT.AbstractPredicateKernel)
+        p, q = (1.0, 0.0), (0.0, 1.0)
+        # This tests the angle ∠prq at r
+        @test DT.angle_is_acute_predicate(PT(), p, q, (0.0, 0.0)) == 0
+        @test DT.angle_is_acute_predicate(PT(), p, q, (-1.0, -1.0)) == 1
+        @test DT.angle_is_acute_predicate(PT(), p, q, (0.1, 0.1)) == -1
+        @test DT.angle_is_acute_predicate(PT(), p, q, (0.5, 0.5)) == -1 # r on the segment pq, so ∠prq = 180°
+        @test DT.angle_is_acute_predicate(PT(), p, q, (2.0, 0.0)) == 1
+        @test DT.angle_is_acute_predicate(p, q, (0.1, 0.1)) == DT.angle_is_acute_predicate(AdaptiveKernel(), p, q, (0.1, 0.1))
+        @inferred DT.angle_is_acute_predicate(PT(), p, q, (0.1, 0.1))
+    end
+end
+
 @testset "point_position_relative_to_witness_plane" begin
     for PT in subtypes(DT.AbstractPredicateKernel)
         a, b, c, d = (-1.26, 1.0), (0.0, -1.0), (3.24, 3.34), (-0.58, 2.25)

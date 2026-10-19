@@ -133,3 +133,16 @@ end
     c2 = deepcopy(c)
     @test c == c2 && !(c === c2)
 end
+
+@testset "Cells with equal priorities" begin
+    # Cell's == and hash only use max_dist, so distinct cells with the same priority are treated as equal,
+    # and the queue in pole_of_inaccessibility keeps only one of them
+    points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
+    boundary_nodes = [1, 2, 3, 4, 1]
+    cells = [DT.Cell(x, y, 0.25, points, boundary_nodes) for (x, y) in ((0.25, 0.25), (0.75, 0.25), (0.25, 0.75), (0.75, 0.75))]
+    @test allequal(c.max_dist for c in cells)
+    @test_broken allunique(cells)
+    queue = DT.CellQueue{Float64}()
+    foreach(c -> DT.insert_cell!(queue, c), cells)
+    @test_broken length(queue.queue) == 4
+end

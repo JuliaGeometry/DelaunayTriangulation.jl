@@ -8,9 +8,7 @@ import GeometryBasics: Point2f
 using Random
 using StaticArrays
 using LinearAlgebra
-using StructEquality
 using GeometryBasics
-@struct_equal DT.Queue
 
 @testset "Simple example" begin
     for PT in subtypes(DT.AbstractPredicateKernel)

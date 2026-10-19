@@ -1193,9 +1193,7 @@ end
         ny = 3
         tri_5 = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts = false, single_boundary = false)
         tri_6 = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts = false, single_boundary = true)
-        @static if VERSION ≥ v"1.10"
-            @inferred triangulate(rand(2, 250))
-        end
+        @inferred triangulate(rand(2, 250))
         for (iii, tri) in enumerate((tri_1, tri_2, tri_3, tri_4, tri_5, tri_6))
             msg = "Testing if encroached edges are detected. Run: $iii."
             args = DT.RefinementArguments(tri; use_lens = false)

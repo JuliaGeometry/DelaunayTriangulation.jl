@@ -47,6 +47,12 @@ end
     @test ch.points == [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0)] && ch.vertices == [1, 2, 3, 1]
     ch = convex_hull([(0.0, 0.0), (1.0, 1.0), (1.0, 0.0)])
     @test ch.points == [(0.0, 0.0), (1.0, 1.0), (1.0, 0.0)] && ch.vertices == [1, 3, 2, 1]
+
+    # Duplicate points
+    ch = convex_hull([(0.0, 0.0), (1.0, 0.0), (0.0, 1.0), (0.0, 0.0)])
+    @test ch.vertices == [1, 2, 3, 1]
+    # The number of points is computed before the duplicates are removed, so this gives a BoundsError
+    @test_broken convex_hull([(0.0, 0.0), (1.0, 0.0), (0.0, 0.0)]).vertices == [1, 2, 1]
 end
 
 @testset "Random tests" begin

@@ -4,6 +4,7 @@ using Random
 using Test
 using DataStructures
 using CairoMakie
+using StableRNGs
 
 @testset "Random tests" begin
     for PT in subtypes(DT.AbstractPredicateKernel)
@@ -36,4 +37,12 @@ end
             @test validate_triangulation(tri; predicates=PT())
         end
     end
+end
+
+@testset "Signed zeros are duplicate points" begin
+    # (0.0, 0.0) and (-0.0, 0.0) hash differently, so they are not detected as duplicates
+    points = [(0.0, 0.0), (-0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]
+    tri = triangulate(points; rng = StableRNG(1))
+    @test_broken validate_triangulation(tri; print_result = false)
+    @test_broken !(DT.has_vertex(tri, 1) && DT.has_vertex(tri, 2))
 end

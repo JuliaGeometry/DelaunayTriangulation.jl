@@ -45,9 +45,7 @@ end
         for PT in subtypes(DT.AbstractPredicateKernel), randomise in (false, true)
             @test_throws DT.CollinearPointsError triangulate(points; randomise, predicates = PT())
         end
-        @static if VERSION ≥ v"1.9"
-            @test_throws "CollinearPointsError: All of the provided points are collinear, but triangulations require at least three points that are not collinear." triangulate(points)
-        end
+        @test_throws "CollinearPointsError: All of the provided points are collinear, but triangulations require at least three points that are not collinear." triangulate(points)
         @test_throws DT.CollinearPointsError triangulate([(Float64(i), 2.0i + 1.0) for i in 1:10000])
     end
 
@@ -121,9 +119,7 @@ end
     points = [a, b, c, d, e, f, g]
     rng = StableRNG(8881)
     tri = DT.triangulate(points; rng, predicates = rt(), delete_ghosts = false)
-    @static if VERSION ≥ v"1.9"
-        @inferred DT.triangulate(points; predicates = rt(), rng, delete_ghosts = false)
-    end
+    @inferred DT.triangulate(points; predicates = rt(), rng, delete_ghosts = false)
     BI = DT.𝒢
     @test get_triangles(tri) == Set{NTuple{3, Int}}(
         (

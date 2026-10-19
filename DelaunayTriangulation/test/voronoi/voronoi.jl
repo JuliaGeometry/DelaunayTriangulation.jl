@@ -8,11 +8,9 @@ import GeometryBasics: Point2f
 using Random
 using StaticArrays
 using LinearAlgebra
-using StructEquality
 using GeometryBasics
 using ReferenceTests
 const ASSETS = joinpath(@__DIR__, "..", "..", "..", "assets", "test", "voronoi")
-@struct_equal DT.Queue
 
 @testset "Unconstrained test" begin
     for PT in subtypes(DT.AbstractPredicateKernel)
@@ -1788,6 +1786,9 @@ end
             @test !(getfield(vorn, f) === getfield(_vorn, f))
         end
     end
+    @test all(i -> !(get_polygon(vorn, i) === get_polygon(vorn1, i)), each_polygon_index(vorn))
+    # copy(vorn) currently shares the vectors of polygon vertices with the original
+    @test_broken all(i -> !(get_polygon(vorn, i) === get_polygon(vorn2, i)), each_polygon_index(vorn))
 end
 
 @testset "Issue #206" begin
@@ -1936,4 +1937,30 @@ end
         @test all(i -> allunique(get_polygon(vorn, i)[begin:(end - 1)]), each_polygon_index(vorn))
         @test sum(get_area(vorn, i) for i in each_polygon_index(vorn)) ≈ 1.0
     end
+end
+
+@testset "Accessors" begin
+    rng = StableRNG(123)
+    points = [(rand(rng), rand(rng)) for _ in 1:50]
+    tri = triangulate(points; rng)
+    vorn = voronoi(tri; rng)
+    @test DT.num_generators(vorn) == DT.num_solid_vertices(tri) == 50
+    @test Set(each_generator(vorn)) == Set(each_solid_vertex(tri))
+    @test DT.num_polygons(vorn) == 50
+    @test DT.num_polygon_vertices(vorn) == length(DT.get_polygon_points(vorn))
+    @test DT.each_polygon_vertex(vorn) == eachindex(DT.get_polygon_points(vorn))
+    @test same_elements(collect(DT.each_polygon(vorn)), [get_polygon(vorn, i) for i in each_polygon_index(vorn)])
+    # The unbounded polygons are those of the generators on the convex hull
+    @test DT.each_unbounded_polygon(vorn) == DT.get_unbounded_polygons(vorn)
+    @test Set(DT.each_unbounded_polygon(vorn)) == Set(get_convex_hull_vertices(tri))
+    @test isempty(DT.get_cocircular_circumcenters(vorn)) # no four points are cocircular
+    cvorn = voronoi(tri; clip = true, rng)
+    @test isempty(DT.each_unbounded_polygon(cvorn))
+    @test DT.num_polygons(cvorn) == 50
+
+    # Each square of a lattice is split into two triangles with the same circumcenter
+    tri = triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 5, 5)
+    vorn = voronoi(tri)
+    @test !isempty(DT.get_cocircular_circumcenters(vorn))
+    @test DT.num_generators(vorn) == DT.num_polygons(vorn) == 25
 end

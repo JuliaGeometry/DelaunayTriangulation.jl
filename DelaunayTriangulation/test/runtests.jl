@@ -9,6 +9,15 @@ const NON_TEST_SCRIPTS = Set{String}(["helper_functions.jl", "runtests.jl"])
 include("helper_functions.jl")
 using .HelperFunctions
 
+# To only run some of the test groups below, pass their names as test arguments, e.g.
+#   Pkg.test("DelaunayTriangulation"; test_args = ["Voronoi", "Refinement"])
+# By default, all the groups are run.
+const TEST_GROUPS = ARGS
+run_group(name) = isempty(TEST_GROUPS) || name ∈ TEST_GROUPS
+let unknown_groups = setdiff(TEST_GROUPS, ["Aqua", "Triangulation", "Interfaces", "Data Structures", "Predicates", "Utilities", "Point Location", "Operations", "Constrained Triangulation", "Refinement", "Voronoi", "Makie", "Docstring examples", "Run the documentation examples"])
+    isempty(unknown_groups) || error("Unknown test groups: $(join(unknown_groups, ", ")).")
+end
+
 ct() = Dates.format(now(), "HH:MM:SS")
 function safe_include(filename; name=filename, push=true, verbose=true) # Workaround for not being able to interpolate into SafeTestset test names
     push && push!(ALL_TEST_SCRIPTS, normpath(filename))
@@ -23,12 +32,12 @@ function safe_include(filename; name=filename, push=true, verbose=true) # Workar
 end
 
 @testset verbose = true "DelaunayTriangulation.jl" begin
-    @testset verbose = true "Aqua" begin
+    run_group("Aqua") && @testset verbose = true "Aqua" begin
         Aqua.test_all(DelaunayTriangulation; ambiguities=false, project_extras=false, unbound_args=false) # don't care about julia < 1.2
         Aqua.test_ambiguities(DelaunayTriangulation) # don't pick up Base and Core...
     end
 
-    @testset verbose = true "Triangulation" begin
+    run_group("Triangulation") && @testset verbose = true "Triangulation" begin
         safe_include("triangulation/rectangle.jl")
         safe_include("triangulation/bowyer_watson.jl")
         safe_include("triangulation/triangulate.jl")
@@ -36,16 +45,17 @@ end
         safe_include("triangulation/constrained.jl")
         safe_include("triangulation/check_args.jl")
         safe_include("triangulation/weighted.jl")
+        safe_include("triangulation/invariance.jl")
     end
 
-    @testset verbose = true "Interfaces" begin
+    run_group("Interfaces") && @testset verbose = true "Interfaces" begin
         safe_include("interfaces/triangles.jl")
         safe_include("interfaces/edges.jl")
         safe_include("interfaces/points.jl")
         safe_include("interfaces/boundary_nodes.jl")
     end
 
-    @testset verbose = true "Data Structures" begin
+    run_group("Data Structures") && @testset verbose = true "Data Structures" begin
         safe_include("data_structures/adjacent.jl")
         safe_include("data_structures/adjacent2vertex.jl")
         safe_include("data_structures/graph.jl")
@@ -63,20 +73,20 @@ end
         safe_include("data_structures/polygon_hierarchy.jl", verbose=false)
     end
 
-    @testset verbose = true "Predicates" begin
+    run_group("Predicates") && @testset verbose = true "Predicates" begin
         safe_include("predicates/certificate.jl")
         safe_include("predicates/boundaries_and_ghosts.jl")
         safe_include("predicates/general.jl")
         safe_include("predicates/index_and_ghost_handling.jl")
     end
 
-    @testset verbose = true "Utilities" begin
+    run_group("Utilities") && @testset verbose = true "Utilities" begin
         safe_include("utils.jl")
         safe_include("geo_utils.jl")
         safe_include("helper_function_tests.jl")
     end
 
-    @testset verbose = true "Point Location" begin
+    run_group("Point Location") && @testset verbose = true "Point Location" begin
         safe_include("point_location/brute_force.jl")
         safe_include("point_location/select_initial_point.jl")
         safe_include("point_location/select_initial_triangle_interior_node.jl")
@@ -86,7 +96,7 @@ end
         safe_include("point_location/find_polygon.jl")
     end
      
-    @testset verbose = true "Operations" begin
+    run_group("Operations") && @testset verbose = true "Operations" begin
         safe_include("operations/add_triangle.jl")
         safe_include("operations/delete_triangle.jl")
         safe_include("operations/add_ghost_triangles.jl")
@@ -101,38 +111,36 @@ end
         safe_include("operations/delete_holes.jl")
     end
 
-    @testset verbose = true "Constrained Triangulation" begin
+    run_group("Constrained Triangulation") && @testset verbose = true "Constrained Triangulation" begin
         safe_include("constrained_triangulation/segment_location.jl")
         safe_include("constrained_triangulation/segment_insertion.jl")
     end
 
-    @testset verbose = true "Refinement" begin
+    run_group("Refinement") && @testset verbose = true "Refinement" begin
         safe_include("refinement/refine.jl")
         safe_include("refinement/curve_bounded.jl")
     end
 
-    @testset verbose = true "Voronoi" begin
+    run_group("Voronoi") && @testset verbose = true "Voronoi" begin
         safe_include("voronoi/voronoi.jl")
         safe_include("voronoi/power.jl")
     end
 
-    @testset verbose = true "Makie" begin
+    run_group("Makie") && @testset verbose = true "Makie" begin
         safe_include("makie/makie.jl")
     end
 
-    @testset verbose = true "Docstring examples" begin
+    run_group("Docstring examples") && @testset verbose = true "Docstring examples" begin
         safe_include("docstring_examples.jl")
     end
 
-    @testset verbose = true "Run the documentation examples" begin
+    run_group("Run the documentation examples") && @testset verbose = true "Run the documentation examples" begin
         @testset verbose = true "Check that the applications in the docs run" begin
             app_dir = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "docs", "src", "literate_applications")
             app_files = readdir(app_dir)
             for file in app_files
                 safe_include(joinpath(app_dir, file); push=false)
             end
-            mp4_path = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "cell_simulation.mp4")
-            isfile(mp4_path) && rm(mp4_path)
         end
 
         @testset verbose = true "Test the tutorials" begin
@@ -141,6 +149,10 @@ end
             for file in tut_files
                 safe_include(joinpath(tut_dir, file); push=false)
             end
+            # The weighted triangulation and power diagram tutorials record animations into the working directory
+            for mp4_file in ("varying_weight.mp4", "varying_weight_power.mp4")
+                isfile(mp4_file) && rm(mp4_file)
+            end
         end
 
         @testset verbose = true "Test the readme example" begin
@@ -148,7 +160,7 @@ end
         end
     end
 
-    @testset "All script files are included somewhere" begin
+    isempty(TEST_GROUPS) && @testset "All script files are included somewhere" begin
         missing_set = String[]
         test_dir = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "test", "")
         for (root, dir, files) in walkdir(test_dir)

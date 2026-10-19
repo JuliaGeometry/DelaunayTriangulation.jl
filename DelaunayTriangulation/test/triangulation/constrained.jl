@@ -1136,3 +1136,11 @@ end
         end
     end
 end
+
+@testset "A segment joining a vertex to itself" begin
+    # Depending on the points, a segment (i, i) is either ignored or gives an AssertionError ("S must not be circular")
+    # when the cavity around it is retriangulated
+    rng = StableRNG(123)
+    points = [(rand(rng), rand(rng)) for _ in 1:20]
+    @test_broken triangulate(points; segments = Set([(3, 3)]), rng = StableRNG(1)) == triangulate(points; rng = StableRNG(1))
+end

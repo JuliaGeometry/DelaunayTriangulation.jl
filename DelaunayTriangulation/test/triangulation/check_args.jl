@@ -1,8 +1,6 @@
 using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 
-_test_throws(e1, e2=e1) = @static VERSION ≥ v"1.9" ? e1 : e2
-
 @testset "check_dimension" begin
     points = rand(2, 50)
     boundary_nodes = nothing
@@ -26,9 +24,9 @@ end
     points = rand(2, 2)
     boundary_nodes = nothing
     hierarchy = DT.construct_polygon_hierarchy(points)
-    @test_throws _test_throws(DT.InsufficientPointsError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("InsufficientPointsError: The provided point set has 2 points, but triangulations require at least three points.", DT.InsufficientPointsError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws(DT.InsufficientPointsError) triangulate(points, predicates=rt())
+    @test_throws DT.InsufficientPointsError DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws "InsufficientPointsError: The provided point set has 2 points, but triangulations require at least three points." DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws DT.InsufficientPointsError triangulate(points, predicates=rt())
 end
 
 # The duplicates are listed in Dict iteration order, which depends on the Julia version,
@@ -79,9 +77,9 @@ end
     points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.0, 0.0)]
     boundary_nodes = [1, 2, 3, 4, 5, 1]
     hierarchy = DT.construct_polygon_hierarchy(points, boundary_nodes)
-    @test_throws _test_throws(DT.DuplicateBoundaryNodeError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("DuplicateBoundaryNodeError: The boundary node 5 is a duplicate of vertex 1, so it would be skipped.", DT.DuplicateBoundaryNodeError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws(DT.DuplicateBoundaryNodeError) triangulate(points; boundary_nodes, predicates = rt())
+    @test_throws DT.DuplicateBoundaryNodeError DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws "DuplicateBoundaryNodeError: The boundary node 5 is a duplicate of vertex 1, so it would be skipped." DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws DT.DuplicateBoundaryNodeError triangulate(points; boundary_nodes, predicates = rt())
     # Duplicates that are not on the boundary are still skipped as usual
     points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.5, 0.5), (0.5, 0.5)]
     boundary_nodes = [1, 2, 3, 4, 1]
@@ -96,43 +94,43 @@ end
     hierarchy = DT.construct_polygon_hierarchy(points, boundary_nodes)
     @test DT.check_args(points, boundary_nodes, hierarchy)
     boundary_nodes[5] = 3
-    @test_throws _test_throws(DT.InconsistentConnectionError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("InconsistentConnectionError: The boundary ends in vertex 3 but starts at vertex 1.", DT.InconsistentConnectionError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws(DT.InconsistentConnectionError) triangulate(points; boundary_nodes, predicates=rt())
+    @test_throws DT.InconsistentConnectionError DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws "InconsistentConnectionError: The boundary ends in vertex 3 but starts at vertex 1." DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws DT.InconsistentConnectionError triangulate(points; boundary_nodes, predicates=rt())
 
     boundary_nodes = [4, 3, 2, 1, 4]
     hierarchy = DT.construct_polygon_hierarchy(points, boundary_nodes)
-    @test_throws _test_throws(DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 1 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(curve).", DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws(DT.InconsistentOrientationError) triangulate(points; boundary_nodes, predicates=rt())
+    @test_throws DT.InconsistentOrientationError DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws "InconsistentOrientationError: The orientation of the boundary curve with index 1 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(curve)." DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws DT.InconsistentOrientationError triangulate(points; boundary_nodes, predicates=rt())
 
     boundary_nodes = [[1, 2, 3, 4, 1]]
     hierarchy = DT.construct_polygon_hierarchy(points, boundary_nodes)
     @test DT.check_args(points, boundary_nodes, hierarchy)
     boundary_nodes[1][1] = 2
-    @test_throws _test_throws(DT.InconsistentConnectionError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("InconsistentConnectionError: The boundary ends in vertex 1 but starts at vertex 2.", DT.InconsistentConnectionError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws(DT.InconsistentConnectionError) triangulate(points; boundary_nodes, predicates=rt())
+    @test_throws DT.InconsistentConnectionError DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws "InconsistentConnectionError: The boundary ends in vertex 1 but starts at vertex 2." DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws DT.InconsistentConnectionError triangulate(points; boundary_nodes, predicates=rt())
 
     boundary_nodes = [[4, 3, 2, 1, 4]]
     hierarchy = DT.construct_polygon_hierarchy(points, boundary_nodes)
-    @test_throws _test_throws(DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 1 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(reverse.(curve)).", DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws(DT.InconsistentOrientationError) triangulate(points; boundary_nodes, predicates=rt())
+    @test_throws DT.InconsistentOrientationError DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws "InconsistentOrientationError: The orientation of the boundary curve with index 1 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(reverse.(curve))." DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws DT.InconsistentOrientationError triangulate(points; boundary_nodes, predicates=rt())
 
     boundary_nodes = [[[1, 2, 3, 4, 1]]]
     hierarchy = DT.construct_polygon_hierarchy(points, boundary_nodes)
     @test DT.check_args(points, boundary_nodes, hierarchy)
     boundary_nodes[1][1][end] = 2
-    @test_throws _test_throws(DT.InconsistentConnectionError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("InconsistentConnectionError: The boundary ends in vertex 2 but starts at vertex 1.", DT.InconsistentConnectionError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws(DT.InconsistentConnectionError) triangulate(points; boundary_nodes, predicates=rt())
+    @test_throws DT.InconsistentConnectionError DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws "InconsistentConnectionError: The boundary ends in vertex 2 but starts at vertex 1." DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws DT.InconsistentConnectionError triangulate(points; boundary_nodes, predicates=rt())
 
     boundary_nodes = [[[4, 3, 2, 1, 4]]]
     hierarchy = DT.construct_polygon_hierarchy(points, boundary_nodes)
-    @test_throws _test_throws(DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 1 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(reverse.(curve)).", DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws(DT.InconsistentOrientationError) triangulate(points; boundary_nodes, predicates=rt())
+    @test_throws DT.InconsistentOrientationError DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws "InconsistentOrientationError: The orientation of the boundary curve with index 1 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(reverse.(curve))." DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws DT.InconsistentOrientationError triangulate(points; boundary_nodes, predicates=rt())
 end
 
 @testset "Orientation and connectivity of a sectioned boundary curve" begin
@@ -141,45 +139,45 @@ end
     hierarchy = DT.construct_polygon_hierarchy(points, boundary_nodes)
     @test DT.check_args(points, boundary_nodes, hierarchy)
     boundary_nodes[1][3] = 5
-    @test_throws _test_throws(DT.InconsistentConnectionError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("InconsistentConnectionError: Segment 1 ends at vertex 5 but the next segment, segment 2, starts at vertex 3.", DT.InconsistentConnectionError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws(DT.InconsistentConnectionError) triangulate(points; boundary_nodes, predicates=rt())
+    @test_throws DT.InconsistentConnectionError DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws "InconsistentConnectionError: Segment 1 ends at vertex 5 but the next segment, segment 2, starts at vertex 3." DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws DT.InconsistentConnectionError triangulate(points; boundary_nodes, predicates=rt())
     boundary_nodes[1][3] = 3
     boundary_nodes[4][4] = 2
-    @test_throws _test_throws(DT.InconsistentConnectionError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("InconsistentConnectionError: Segment 4 ends at vertex 2 but the next segment, segment 1, starts at vertex 1.", DT.InconsistentConnectionError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws(DT.InconsistentConnectionError) triangulate(points; boundary_nodes, predicates=rt())
+    @test_throws DT.InconsistentConnectionError DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws "InconsistentConnectionError: Segment 4 ends at vertex 2 but the next segment, segment 1, starts at vertex 1." DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws DT.InconsistentConnectionError triangulate(points; boundary_nodes, predicates=rt())
     boundary_nodes[4][4] = 1
     boundary_nodes[1][1] = 8
-    @test_throws _test_throws(DT.InconsistentConnectionError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("InconsistentConnectionError: Segment 4 ends at vertex 1 but the next segment, segment 1, starts at vertex 8.", DT.InconsistentConnectionError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws(DT.InconsistentConnectionError) triangulate(points; boundary_nodes, predicates=rt())
+    @test_throws DT.InconsistentConnectionError DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws "InconsistentConnectionError: Segment 4 ends at vertex 1 but the next segment, segment 1, starts at vertex 8." DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws DT.InconsistentConnectionError triangulate(points; boundary_nodes, predicates=rt())
 
 
     points = [(0.0, 0.0), (0.5, 0.0), (1.0, 0.0), (1.0, 1.0), (0.5, 1.0), (0.0, 1.0), (0.0, 0.5), (0.0, 0.25)]
     boundary_nodes = [[1, 8, 7, 6], [6, 5, 4], [4, 3], [3, 2, 1]]
     hierarchy = DT.construct_polygon_hierarchy(points, boundary_nodes)
-    @test_throws _test_throws(DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 1 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(reverse.(curve)).", DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws(DT.InconsistentOrientationError) triangulate(points; boundary_nodes, predicates=rt())
+    @test_throws DT.InconsistentOrientationError DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws "InconsistentOrientationError: The orientation of the boundary curve with index 1 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(reverse.(curve))." DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws DT.InconsistentOrientationError triangulate(points; boundary_nodes, predicates=rt())
 
     points = [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]
     boundary_nodes = [[1, 2], [2, 3, 1]]
     hierarchy = DT.construct_polygon_hierarchy(points, boundary_nodes)
     @test DT.check_args(points, boundary_nodes, hierarchy)
     boundary_nodes[1][2] = 3
-    @test_throws _test_throws(DT.InconsistentConnectionError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("InconsistentConnectionError: Segment 1 ends at vertex 3 but the next segment, segment 2, starts at vertex 2.", DT.InconsistentConnectionError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws(DT.InconsistentConnectionError) triangulate(points; boundary_nodes, predicates=rt())
+    @test_throws DT.InconsistentConnectionError DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws "InconsistentConnectionError: Segment 1 ends at vertex 3 but the next segment, segment 2, starts at vertex 2." DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws DT.InconsistentConnectionError triangulate(points; boundary_nodes, predicates=rt())
     boundary_nodes[1][2] = 2
     boundary_nodes[2][3] = 5
-    @test_throws _test_throws(DT.InconsistentConnectionError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("InconsistentConnectionError: Segment 2 ends at vertex 5 but the next segment, segment 1, starts at vertex 1.", DT.InconsistentConnectionError) DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws DT.InconsistentConnectionError DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws "InconsistentConnectionError: Segment 2 ends at vertex 5 but the next segment, segment 1, starts at vertex 1." DT.check_args(points, boundary_nodes, hierarchy)
     boundary_nodes[2][3] = 1
     boundary_nodes[1][1] = 3
-    @test_throws _test_throws(DT.InconsistentConnectionError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("InconsistentConnectionError: Segment 2 ends at vertex 1 but the next segment, segment 1, starts at vertex 3.", DT.InconsistentConnectionError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws(DT.InconsistentConnectionError) triangulate(points; boundary_nodes, predicates=rt())
+    @test_throws DT.InconsistentConnectionError DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws "InconsistentConnectionError: Segment 2 ends at vertex 1 but the next segment, segment 1, starts at vertex 3." DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws DT.InconsistentConnectionError triangulate(points; boundary_nodes, predicates=rt())
 end
 
 @testset "Orientation and connectivity of a multiply-connected boundary" begin
@@ -191,30 +189,30 @@ end
     hierarchy = DT.construct_polygon_hierarchy(points, boundary_nodes)
     @test DT.check_args(points, boundary_nodes, hierarchy)
     boundary_nodes[1][1][end] = 8
-    @test_throws _test_throws(DT.InconsistentConnectionError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("InconsistentConnectionError: The boundary curve with index 1 ends in vertex 8 but starts at vertex 1.", DT.InconsistentConnectionError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws(DT.InconsistentConnectionError) triangulate(points; boundary_nodes, predicates=rt())
+    @test_throws DT.InconsistentConnectionError DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws "InconsistentConnectionError: The boundary curve with index 1 ends in vertex 8 but starts at vertex 1." DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws DT.InconsistentConnectionError triangulate(points; boundary_nodes, predicates=rt())
     boundary_nodes[1][1][end] = 1
     boundary_nodes[1][1][1] = 4
-    @test_throws _test_throws(DT.InconsistentConnectionError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("InconsistentConnectionError: The boundary curve with index 1 ends in vertex 1 but starts at vertex 4.", DT.InconsistentConnectionError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws(DT.InconsistentConnectionError) triangulate(points; boundary_nodes, predicates=rt())
+    @test_throws DT.InconsistentConnectionError DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws "InconsistentConnectionError: The boundary curve with index 1 ends in vertex 1 but starts at vertex 4." DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws DT.InconsistentConnectionError triangulate(points; boundary_nodes, predicates=rt())
     boundary_nodes[1][1][1] = 1
     boundary_nodes[2][1][end] = 5
-    @test_throws _test_throws(DT.InconsistentConnectionError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("InconsistentConnectionError: The boundary curve with index 2 ends in vertex 5 but starts at vertex 11.", DT.InconsistentConnectionError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws(DT.InconsistentConnectionError) triangulate(points; boundary_nodes, predicates=rt())
+    @test_throws DT.InconsistentConnectionError DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws "InconsistentConnectionError: The boundary curve with index 2 ends in vertex 5 but starts at vertex 11." DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws DT.InconsistentConnectionError triangulate(points; boundary_nodes, predicates=rt())
 
     boundary_nodes = [[[1, 7, 6, 5, 4, 3, 2, 1]], [[11, 10, 9, 8, 11]]]
     hierarchy = DT.construct_polygon_hierarchy(points, boundary_nodes)
-    @test_throws _test_throws(DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 1 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(reverse.(curve)).", DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws(DT.InconsistentOrientationError) triangulate(points; boundary_nodes, predicates=rt())
+    @test_throws DT.InconsistentOrientationError DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws "InconsistentOrientationError: The orientation of the boundary curve with index 1 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(reverse.(curve))." DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws DT.InconsistentOrientationError triangulate(points; boundary_nodes, predicates=rt())
     boundary_nodes = [[[1, 2, 3, 4, 5, 6, 7, 1]], [[11, 8, 9, 10, 11]]]
     hierarchy = DT.construct_polygon_hierarchy(points, boundary_nodes)
-    @test_throws _test_throws(DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 2 should be negative, but it is positive. You may be able to fix this by passing the curve as reverse(reverse.(curve)).", DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws(DT.InconsistentOrientationError) triangulate(points; boundary_nodes, predicates=rt())
+    @test_throws DT.InconsistentOrientationError DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws "InconsistentOrientationError: The orientation of the boundary curve with index 2 should be negative, but it is positive. You may be able to fix this by passing the curve as reverse(reverse.(curve))." DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws DT.InconsistentOrientationError triangulate(points; boundary_nodes, predicates=rt())
 end
 
 @testset "Orientation and connectivity of a disjoint boundary" begin
@@ -383,9 +381,9 @@ end
     curves = [J_curve, U_curve, L_curve, I_curve, A_curve_outline, A_curve_hole, dot_1, dot_2, dot_3, dot_4]
     boundary_nodes, points = convert_boundary_points_to_indices(curves)
     hierarchy = DT.construct_polygon_hierarchy(points, boundary_nodes)
-    @test_throws _test_throws(DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 7 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(reverse.(curve)).", DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws(DT.InconsistentOrientationError) triangulate(points; boundary_nodes, predicates=rt())
+    @test_throws DT.InconsistentOrientationError DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws "InconsistentOrientationError: The orientation of the boundary curve with index 7 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(reverse.(curve))." DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws DT.InconsistentOrientationError triangulate(points; boundary_nodes, predicates=rt())
 end
 
 @testset "Curve-bounded domains" begin
@@ -434,11 +432,11 @@ end
     enricher_IV = DT.BoundaryEnricher(points_IV, curve_IV)
     points, boundary_nodes = get_points(enricher_IV), get_boundary_nodes(enricher_IV)
     hierarchy = DT.get_polygon_hierarchy(enricher_IV)
-    @test_throws _test_throws(DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy, DT.get_boundary_curves(enricher_IV))
+    @test_throws DT.InconsistentOrientationError DT.check_args(points, boundary_nodes, hierarchy, DT.get_boundary_curves(enricher_IV))
     str = "If this curve is defined by an AbstractParametricCurve, you may instead need to reverse the order of the control points defining the sections of the curve; the `positive` keyword may also be of interest for CircularArcs and EllipticalArcs."
-    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 1 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(curve).\n$str", DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy, DT.get_boundary_curves(enricher_IV))
-    @test_throws _test_throws(DT.InconsistentOrientationError) DT.check_args(enricher_IV)
-    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 1 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(curve).\n$str", DT.InconsistentOrientationError) DT.triangulate(NTuple{2,Float64}[]; boundary_nodes=[CircularArc((1.0, 0.0), (1.0, 0.0), (0.0, 0.0), positive=false)], predicates=rt())
+    @test_throws "InconsistentOrientationError: The orientation of the boundary curve with index 1 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(curve).\n$str" DT.check_args(points, boundary_nodes, hierarchy, DT.get_boundary_curves(enricher_IV))
+    @test_throws DT.InconsistentOrientationError DT.check_args(enricher_IV)
+    @test_throws "InconsistentOrientationError: The orientation of the boundary curve with index 1 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(curve).\n$str" DT.triangulate(NTuple{2,Float64}[]; boundary_nodes=[CircularArc((1.0, 0.0), (1.0, 0.0), (0.0, 0.0), positive=false)], predicates=rt())
 
     curve_V = [BezierCurve([(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.0, 0.0)])]
     points_V = [(0.0, 0.0), (0.2, 0.25)]
@@ -570,8 +568,8 @@ end
     enricher_XI = DT.BoundaryEnricher(points_XI, curve_XI)
     points, boundary_nodes = get_points(enricher_XI), get_boundary_nodes(enricher_XI)
     hierarchy = DT.get_polygon_hierarchy(enricher_XI)
-    @test_throws _test_throws(DT.InconsistentConnectionError) DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws _test_throws(DT.InconsistentConnectionError) DT.check_args(enricher_XI)
+    @test_throws DT.InconsistentConnectionError DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws DT.InconsistentConnectionError DT.check_args(enricher_XI)
     curve_XI = [
         [
             [1, 2, 3], [DT.EllipticalArc((2.0, 0.0), (-2.0, 0.0), (0.0, 0.0), 2, 1 / 2, 0.0)],
@@ -598,10 +596,10 @@ end
     enricher_XI = DT.BoundaryEnricher(points_XI, curve_XI)
     points, boundary_nodes = get_points(enricher_XI), get_boundary_nodes(enricher_XI)
     hierarchy = DT.get_polygon_hierarchy(enricher_XI)
-    @test_throws _test_throws(DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy, DT.get_boundary_curves(enricher_XI))
-    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 4 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(reverse.(curve)).\n$str", DT.InconsistentOrientationError) DT.check_args(points, boundary_nodes, hierarchy, DT.get_boundary_curves(enricher_XI))
-    @test_throws _test_throws(DT.InconsistentOrientationError) DT.check_args(enricher_XI)
-    @test_throws _test_throws("InconsistentOrientationError: The orientation of the boundary curve with index 4 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(reverse.(curve)).\n$str", DT.InconsistentOrientationError) triangulate(_points_XI; boundary_nodes=_curve_XI, predicates=rt())
+    @test_throws DT.InconsistentOrientationError DT.check_args(points, boundary_nodes, hierarchy, DT.get_boundary_curves(enricher_XI))
+    @test_throws "InconsistentOrientationError: The orientation of the boundary curve with index 4 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(reverse.(curve)).\n$str" DT.check_args(points, boundary_nodes, hierarchy, DT.get_boundary_curves(enricher_XI))
+    @test_throws DT.InconsistentOrientationError DT.check_args(enricher_XI)
+    @test_throws "InconsistentOrientationError: The orientation of the boundary curve with index 4 should be positive, but it is negative. You may be able to fix this by passing the curve as reverse(reverse.(curve)).\n$str" triangulate(_points_XI; boundary_nodes=_curve_XI, predicates=rt())
 
     ctrl = [
         (0.0, 0.0), (2.0, 0.0), (1.6, -0.1),
