@@ -999,7 +999,7 @@ function fix_no_intersections!(vorn::VoronoiTessellation; predicates::AbstractPr
         end
     end
     if ninterior > 1 
-        throw("No intersections were found and there were multiple interior generators wrapping the convex hull. This should not occur. Please file an issue with a reproducible example.")
+        error("No intersections were found and there were multiple interior generators wrapping the convex hull. This should not occur. Please file an issue with a reproducible example.")
     elseif ninterior == 0 
         # Maybe one of the unbounded polygons wraps it?
         bbox = polygon_bounds(clipper_points, clipper_vertices)
@@ -1015,7 +1015,7 @@ function fix_no_intersections!(vorn::VoronoiTessellation; predicates::AbstractPr
             end
         end
         if ninterior ≠ 1
-            throw("No intersections were found, there was no interior generator wrapping the convex hull, and checking all of the unbounded polygons also failed. This should not occur. Please file an issue with a reproducible example.")
+            error("No intersections were found, there was no interior generator wrapping the convex hull, and checking all of the unbounded polygons also failed. This should not occur. Please file an issue with a reproducible example.")
         end
     end
 

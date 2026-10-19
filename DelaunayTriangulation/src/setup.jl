@@ -57,10 +57,3 @@ By default, this warning is enabled.
 """
 toggle_warn_on_dupes!() = (WARN_ON_DUPES[] = !WARN_ON_DUPES[])
 
-@eval macro $(Symbol("const"))(field)
-    if VERSION >= v"1.8.0-DEV.1148"
-        return Expr(:const, esc(field))
-    else
-        return esc(field)
-    end
-end

@@ -403,16 +403,14 @@ end
     distance_to_offcenter(β, ℓ) -> Number 
 
 Given a triangle with shortest edge length `ℓ`, computes the distance from the edge
-to the offcenter of the triangle with radius-edge ratio cutoff `β`.
+to the offcenter of the triangle with radius-edge ratio cutoff `β`. The circumradius of a triangle 
+is at least half the length of each of its edges, so `β ≥ 1/2` is required.
 """
 function distance_to_offcenter(β, ℓ)
+    β < 1 / 2 && throw(DomainError(β, "The radius-edge ratio cutoff must be at least 1/2."))
     tβ = 2β
     Δ = sqrt(tβ^2 - 1)
-    if β ≥ 1 / 2
-        h = (tβ + Δ) / 2
-    else
-        h = 1 / (2Δ)
-    end
+    h = (tβ + Δ) / 2
     return h * ℓ
 end
 
@@ -593,17 +591,34 @@ Sinks were introduced in [this paper](https://doi.org/10.1145/378583.378644). Fo
 3. If neither 1 or 2, then the sink is defined as the sink of the triangle `V`, where `V` is the triangle adjoining the edge of `T`
    which intersects the line `mc`, where `m` is the centroid of `T`.
 
-In cases where the triangulation has holes, this definition can lead to loops. In such a case, we just pick one of the triangles 
+In cases where the triangulation has holes, this definition can lead to loops. In such a case, we just pick one of the triangles
 in the loop as the sink triangle.
 """
-function triangle_sink(tri::Triangulation, T, prev_T = construct_triangle(triangle_type(tri), integer_type(tri)(∅), integer_type(tri)(∅), integer_type(tri)(∅)); predicates::AbstractPredicateKernel = AdaptiveKernel())
+function triangle_sink(tri::Triangulation, T; predicates::AbstractPredicateKernel = AdaptiveKernel())
     # TODO: This function would be faster if we just always search away from the largest angle.
+    visited = triangle_type(tri)[] # the triangles we have already walked through, so that we can detect loops
+    while true
+        c, next_T = _triangle_sink_step(tri, T, predicates)
+        isnothing(next_T) && return c
+        push!(visited, sort_triangle(T))
+        sort_triangle(next_T) ∈ visited && return c
+        T = next_T
+    end
+end
+
+"""
+    _triangle_sink_step(tri::Triangulation, T, predicates::AbstractPredicateKernel) -> (NTuple{2, Number}, Union{Nothing, Triangle})
+
+Returns the circumcenter `c` of `T`, and `nothing` if `T` is its own sink or otherwise the next triangle
+to search for the sink of `T`. See [`triangle_sink`](@ref).
+"""
+function _triangle_sink_step(tri::Triangulation, T, predicates::AbstractPredicateKernel)
     T = sort_triangle(T)
     c = triangle_circumcenter(tri, T)
-    is_boundary_triangle(tri, T) && return c
-    !has_ghost_triangles(tri) && any(e -> !edge_exists(tri, reverse_edge(e)), triangle_edges(T)) && return c
+    is_boundary_triangle(tri, T) && return c, nothing
+    !has_ghost_triangles(tri) && any(e -> !edge_exists(tri, reverse_edge(e)), triangle_edges(T)) && return c, nothing
     flag = point_position_relative_to_triangle(predicates, tri, T, c)
-    !is_outside(flag) && return c
+    !is_outside(flag) && return c, nothing
     i, j, k = triangle_vertices(T)
     p, q, r = get_point(tri, i, j, k)
     #=
@@ -621,17 +636,16 @@ function triangle_sink(tri::Triangulation, T, prev_T = construct_triangle(triang
     circumcenter is outside of the triangle.
     =#
     _, _, θ₃ = triangle_angles(p, q, r)
-    θ₃ ≤ π / 2 + ε(θ₃) && return c
+    θ₃ ≤ π / 2 + ε(θ₃) && return c, nothing
     m = triangle_centroid(p, q, r)
     if !is_none(line_segment_intersection_type(predicates, p, q, m, c)) && !is_left(point_position_relative_to_line(predicates, p, q, c))
         next_T = construct_triangle(triangle_type(tri), j, i, get_adjacent(tri, j, i))
     elseif !is_none(line_segment_intersection_type(predicates, q, r, m, c)) && !is_left(point_position_relative_to_line(predicates, q, r, c))
         next_T = construct_triangle(triangle_type(tri), k, j, get_adjacent(tri, k, j))
-    else # Must intersect the edge ki instead then 
+    else # Must intersect the edge ki instead then
         next_T = construct_triangle(triangle_type(tri), i, k, get_adjacent(tri, i, k))
     end
-    sort_triangle(next_T) == prev_T && return c
-    return triangle_sink(tri, next_T, T; predicates)
+    return c, next_T
 end
 
 """

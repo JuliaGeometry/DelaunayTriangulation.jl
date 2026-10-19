@@ -40,9 +40,12 @@ end
 end
 
 @testset "Signed zeros are duplicate points" begin
-    # (0.0, 0.0) and (-0.0, 0.0) hash differently, so they are not detected as duplicates
+    # (0.0, 0.0) and (-0.0, 0.0) are == but hash differently
     points = [(0.0, 0.0), (-0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]
-    tri = triangulate(points; rng = StableRNG(1))
-    @test_broken validate_triangulation(tri; print_result = false)
-    @test_broken !(DT.has_vertex(tri, 1) && DT.has_vertex(tri, 2))
+    @test !DT.points_are_unique(points)
+    @test DT.find_duplicate_points(points) == Dict((0.0, 0.0) => [1, 2])
+    tri = @test_logs (:warn, r"duplicate points") triangulate(points; rng = StableRNG(1))
+    @test validate_triangulation(tri; print_result = false)
+    @test DT.has_vertex(tri, 1) && !DT.has_vertex(tri, 2)
+    @test DT.num_solid_vertices(tri) == 3
 end

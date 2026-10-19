@@ -34,11 +34,13 @@ function convex_hull!(ch::ConvexHull{P, I}; predicates::AbstractPredicateKernel 
     indices = get_vertices(ch)
     points = get_points(ch)
     empty!(indices)
-    n = num_points(points)
-    sizehint!(indices, n)
     insertion_order = lexicographic_order(points)
-    unique!(i -> get_point(points, i), insertion_order)
-    if n == 1
+    unique!(i -> normalise_signed_zeros(get_point(points, i)), insertion_order)
+    n = length(insertion_order) # the number of unique points
+    sizehint!(indices, n)
+    if n == 0
+        return ch
+    elseif n == 1
         push!(indices, insertion_order[begin])
         return ch
     elseif n == 2

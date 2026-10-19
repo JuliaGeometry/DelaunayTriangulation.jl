@@ -1029,4 +1029,3 @@ function Base.reverse(c::AbstractParametricCurve)
     return _reverse(c)
 end
 
-_plcopy(c::AbstractParametricCurve; kwargs...) = copy(c) # for handling PiecewiseLinear

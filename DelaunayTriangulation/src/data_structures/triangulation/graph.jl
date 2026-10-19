@@ -259,6 +259,7 @@ function delete_vertex!(G::Graph{I}, u) where {I}
     foreach(u_N) do v
         v_N = get!(Set{I}, N, v)
         delete!(v_N, u) # don't use delete_neighbour! because it will delete u_N[v] as well
+        delete_edge!(G, u, v)
     end
     delete!(N, u)
     u_G = get_vertices(G)
@@ -303,7 +304,7 @@ Deletes all empty vertices from `G`.
 """
 function clear_empty_vertices!(G::Graph)
     V = get_vertices(G)
-    foreach(V) do i
+    for i in collect(V) # collect since delete_vertex! deletes from V
         n = num_neighbours(G, i)
         iszero(n) && delete_vertex!(G, i)
     end

@@ -1,7 +1,7 @@
 const MAX_INITIAL_POLE_CELLS = 10_000
 
 """
-    pole_of_inaccessibility(points, boundary_nodes; precision = one(number_type(points)))
+    pole_of_inaccessibility(points, boundary_nodes; precision = nothing)
 
 Finds the pole of inaccessibility for the polygon defined by `points` and `boundary_nodes`. The `boundary_nodes` 
 must match the specification given in the documentation. See also [`check_args`](@ref) for this specification.
@@ -11,7 +11,9 @@ must match the specification given in the documentation. See also [`check_args`]
 - `boundary_nodes`: The boundary nodes defining the polygon.
 
 # Keyword Arguments
-- `precision=one(number_type(points))`: The precision of the returned pole. The default is `one(number_type(points))`.
+- `precision=nothing`: The precision of the returned pole, as a distance: the distance from the returned pole to the boundary is within `precision` of 
+   the largest possible distance. If `precision === nothing`, then `max(width, height) / 1000` is used, where `width` and `height` are the dimensions 
+   of the bounding box of the polygon, so that the result does not depend on the scale of the polygon.
 
 # Outputs 
 - `x`: The x-coordinate of the pole.
@@ -24,7 +26,7 @@ a centroid which is not always inside the polygon. Some useful links are [this b
 and the [the original repo](https://github.com/mapbox/polylabel). Our implementation is partially based on 
 on [the python implementation](https://github.com/Twista/python-polylabel) and [this other Julia implementation](https://github.com/asinghvi17/Polylabel.jl).
 """
-function pole_of_inaccessibility(points, boundary_nodes; precision = one(number_type(points)))
+function pole_of_inaccessibility(points, boundary_nodes; precision = nothing)
     ## Initiate
     xmin, xmax, ymin, ymax = polygon_bounds(points, boundary_nodes)
     width = xmax - xmin
@@ -42,6 +44,9 @@ function pole_of_inaccessibility(points, boundary_nodes; precision = one(number_
     max_extent = max(width, height)
     cell_size = max(min_extent, max_extent / MAX_INITIAL_POLE_CELLS)
     half_width = cell_size / 2
+    # Cells are refined until their size is about tol, so a tol relative to max_extent also limits the number of cells 
+    # needed to cover a ridge of near-optimal points, e.g. along the middle of a long rectangle.
+    tol = isnothing(precision) ? max_extent / 1000 : precision
 
     ## Initialise the priority queue and decide if the polygon centroid of bounding box centroid is the best initial guess
     _, centroid = polygon_features(points, boundary_nodes)
@@ -64,10 +69,8 @@ function pole_of_inaccessibility(points, boundary_nodes; precision = one(number_
     end
 
     ## Now let us process all the current cells. The idea is to try and find the best cell, and any bad cells are split into four.
-    itr = 1
     while !isempty(queue)
-        itr += 1
-        best_cell = process_cell!(queue, best_cell, points, boundary_nodes, precision)
+        best_cell = process_cell!(queue, best_cell, points, boundary_nodes, tol)
     end
 
     ## We are done, and the last best_cell is the solution 

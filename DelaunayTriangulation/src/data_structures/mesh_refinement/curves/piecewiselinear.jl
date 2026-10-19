@@ -23,8 +23,7 @@ Base.show(io::IO, ::PiecewiseLinear) = print(io, "PiecewiseLinear()")
 Base.show(io::IO, ::MIME"text/plain", L::PiecewiseLinear) = Base.show(io, L)
 Base.:(==)(L1::PiecewiseLinear, L2::PiecewiseLinear) = get_points(L1) == get_points(L2) && get_boundary_nodes(L1) == get_boundary_nodes(L2)
 
-Base.copy(L::PiecewiseLinear) = _plcopy(L) # so we can check the aliasing when we copy from a triangulation
-_plcopy(L::PiecewiseLinear; points=copy(get_points(L)), boundary_nodes=copy(get_boundary_nodes(L))) = PiecewiseLinear(points, boundary_nodes)
+Base.copy(L::PiecewiseLinear) = PiecewiseLinear(copy(get_points(L)), copy(get_boundary_nodes(L)))
 
 
 is_piecewise_linear(::PiecewiseLinear) = true

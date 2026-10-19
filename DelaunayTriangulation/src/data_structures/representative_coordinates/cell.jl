@@ -40,11 +40,8 @@ struct Cell{T}
     end
 end
 Base.:(<)(p::Cell, q::Cell) = p.max_dist < q.max_dist
-Base.:(==)(p::Cell, q::Cell) = p.max_dist == q.max_dist
-function Base.hash(cell::Cell, h::UInt)
-    h = hash(cell.max_dist, h)
-    return hash(Cell, h)
-end
+# == and hash are left as the defaults, which compare all fields. Comparing only max_dist would make distinct cells 
+# with the same priority equal, and a CellQueue would then keep only one of them.
 
 """
     getx(c::Cell) -> Number

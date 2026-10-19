@@ -137,7 +137,7 @@ function split_boundary_edge!(tri::Triangulation, i, j, node)
     section_path = pos[1]
     ghost_vertex_map = get_ghost_vertex_map(tri)
     for (g, path) in ghost_vertex_map
-        if path == section_path
+        if path === section_path || path == section_path # === first since, for a contiguous boundary, path is the boundary nodes vector
             add_boundary_vertex_to_ghost!(tri, node, g)
             break
         end

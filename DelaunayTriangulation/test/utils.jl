@@ -1493,6 +1493,14 @@ end
     @test DT.check_absolute_precision(sqrt(eps(Float64)), 0)
     @test !DT.check_absolute_precision(0.5, 2.0)
 
+    # With a scale
+    @test !DT.check_precision(1.0e-10, 1.0e-3)
+    @test DT.check_precision(1.0e-12, 1.0e-3)
+    @test DT.check_precision(sqrt(eps(Float64)) * 1.0e6, 1.0e6)
+    @test !DT.check_absolute_precision(1.0e-6, 2.0e-6, 1.0)
+    @test DT.check_absolute_precision(1.0e-6, 2.0e-6, 1.0e3)
+    @test DT.check_absolute_precision(1.0e8, 1.0e8 + 1.0, 1.0e9)
+
     @test !DT.check_relative_precision(1.0e-32, 0.0)
     @test !DT.check_relative_precision(sqrt(eps(Float64)), 0)
     @test !DT.check_relative_precision(0, 1.0e-32)

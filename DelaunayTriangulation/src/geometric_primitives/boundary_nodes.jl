@@ -443,15 +443,6 @@ function _construct_boundary_edge_map!(dict::Dict{E, Tuple{A, I}}, boundary_node
     return dict
 end
 
-function _bemcopy(dict::Dict{E, Tuple{A, I}}; boundary_nodes) where {A, I, E} # so that boundary_nodes remains aliased with this dict when copying in Triangulation
-    new_dict = Dict{E, Tuple{A, I}}()
-    for (e, (pos, ℓ)) in dict
-        new_dict[e] = (boundary_nodes, ℓ)
-    end
-    return new_dict
-end
-_bemcopy(dict::Dict{E, NTuple{2, I}}; boundary_nodes) where {I, E} = copy(dict)
-_bemcopy(dict::Dict{E, Tuple{NTuple{2, I}, I}}; boundary_nodes) where {E, I} = copy(dict)
 
 """
     insert_boundary_node!(boundary_nodes, pos, node)

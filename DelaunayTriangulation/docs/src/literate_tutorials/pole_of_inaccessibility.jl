@@ -71,8 +71,8 @@ fig
 
 # To now find the pole of inaccessibility, use [`DelaunayTriangulation.pole_of_inaccessibility`](@ref):
 pole = DelaunayTriangulation.pole_of_inaccessibility(points, boundary_nodes)
-@test pole[1] ≈ -1.078522500000003 #src
-@test pole[2] ≈ 5.372597499999995 #src
+@test pole[1] ≈ -1.2742271093750002 #src
+@test pole[2] ≈ 7.987922734375001 #src
 
 #-
 scatter!(ax, pole, color = :blue, markersize = 16)
@@ -116,6 +116,7 @@ fig
 @test_reference reference_path(fig_path, "pole_of_inaccessibility_ex_2.png") fig #src
 
 # Note that the green and purple boundaries have the same pole of inaccessibility. The 
-# first curve, the red curve, is the only one that has the pole of inaccessibility computed 
-# with respect to all other boundaries. You can also see that indeed the ghost edges are all 
+# first curve, the red curve, is the only one whose pole of inaccessibility takes its holes 
+# into account (here, the blue curve), so that it is not inside a hole. The poles of the other 
+# curves only use the curve itself. You can also see that indeed the ghost edges are all 
 # oriented relative to the representative points.

@@ -24,7 +24,7 @@ See also [`is_ghost_vertex`](@ref) and [`is_exterior_ghost_vertex`](@ref).
 # Extended help
 An interior ghost vertex is a ghost vertex corresponding to a curve or section appearing on the interior boundary.
 """
-is_interior_ghost_vertex(tri::Triangulation, i) = !is_exterior_ghost_vertex(tri, i)
+is_interior_ghost_vertex(tri::Triangulation, i) = is_ghost_vertex(i) && !is_exterior_ghost_vertex(tri, i)
 
 """
     get_curve_index(tri::Triangulation, ℓ) -> Integer
@@ -38,7 +38,7 @@ get_curve_index(tri::Triangulation, ℓ) = get_curve_index(get_ghost_vertex_map(
 
 Returns the section index corresponding to the ghost vertex `ℓ` in `tri`.
 """
-get_section_index(tri::Triangulation, ℓ) = get_section_index(ghost_vertex_map(tri), ℓ)
+get_section_index(tri::Triangulation, ℓ) = get_section_index(get_ghost_vertex_map(tri), ℓ)
 
 """
     map_ghost_vertex(tri::Triangulation, ℓ) -> Vertex

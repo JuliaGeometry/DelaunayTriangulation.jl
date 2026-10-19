@@ -1,5 +1,5 @@
 """
-    RefinementArguments{Q,C,H,I,E,T,R,P<:AbstractPredicateKernel}
+    RefinementArguments{Q,C,H,I,E,R,T,P<:AbstractPredicateKernel}
 
 A struct for storing arguments for mesh refinement.
 
@@ -15,6 +15,7 @@ A struct for storing arguments for mesh refinement.
 - `use_circumcenter::Bool`: Whether to use circumcenters for Steiner points, or the more general approach of [Erten and Üngör (2009)](https://doi.org/10.1109/ISVD.2009.32).
 - `use_lens::Bool`: Whether to use diametral lens (`true`) or diametral circles (`false`) for the defining encroachment.
 - `steiner_scale::T`: The factor by which to scale the Steiner points closer to the triangle's shortest edge.
+- `length_scale::Float64`: The scale of the tolerances used to detect precision issues, which is the larger side of the bounding box of the points but at most `1`. For domains smaller than `1`, the tolerances are thus relative to the size of the domain, so that the refinement does not stop early. For larger domains they are absolute, so that they do not limit the refinement near small features of the domain.
 - `locked_convex_hull::Bool`: Whether the convex hull of the triangulation had to be locked for refinement. 
 - `had_ghosts::Bool`: Whether the triangulation initially had ghost triangles or not.
 - `rng::R`: The random number generator.
@@ -41,6 +42,7 @@ struct RefinementArguments{Q, C, H, I, E, R, T, P <: AbstractPredicateKernel}
     use_circumcenter::Bool
     use_lens::Bool
     steiner_scale::T
+    length_scale::Float64
     locked_convex_hull::Bool
     had_ghosts::Bool
     rng::R
@@ -109,6 +111,8 @@ function RefinementArguments(
     sizehint!(midpoint_split_list, num_edges(get_all_segments(tri)))
     sizehint!(offcenter_split_list, 2num_edges(get_all_segments(tri)))
     min_steiner_vertex = I(num_points(tri) + 1)
+    box = bounding_box(get_points(tri))
+    length_scale = min(1.0, max(hspan(box), vspan(box)))
     return RefinementArguments(
         queue,
         constraints,
@@ -121,6 +125,7 @@ function RefinementArguments(
         use_circumcenter,
         use_lens,
         steiner_scale,
+        length_scale,
         lock_convex_hull,
         has_ghosts,
         rng,

@@ -49,20 +49,8 @@ struct VoronoiTessellation{Tr <: Triangulation, P, I, T, S, E}
     boundary_polygons::Set{I}
 end
 
-function Base.copy(vorn::VoronoiTessellation)
-    return VoronoiTessellation(
-        copy(get_triangulation(vorn)),
-        copy(get_generators(vorn)),
-        copy(get_polygon_points(vorn)),
-        copy(get_polygons(vorn)),
-        copy(get_circumcenter_to_triangle(vorn)),
-        copy(get_triangle_to_circumcenter(vorn)),
-        copy(get_unbounded_polygons(vorn)),
-        copy(get_cocircular_circumcenters(vorn)),
-        copy(get_adjacent(vorn)),
-        copy(get_boundary_polygons(vorn))
-    )
-end
+# The polygons are vectors that are mutated in-place, e.g. when clipping, so the copy must not share them. See also copy(::Triangulation).
+Base.copy(vorn::VoronoiTessellation) = deepcopy(vorn)
 
 function Base.:(==)(vorn1::VoronoiTessellation, vorn2::VoronoiTessellation)
     get_triangulation(vorn1) ≠ get_triangulation(vorn2) && return false 

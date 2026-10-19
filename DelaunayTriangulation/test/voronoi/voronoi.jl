@@ -1787,8 +1787,17 @@ end
         end
     end
     @test all(i -> !(get_polygon(vorn, i) === get_polygon(vorn1, i)), each_polygon_index(vorn))
-    # copy(vorn) currently shares the vectors of polygon vertices with the original
-    @test_broken all(i -> !(get_polygon(vorn, i) === get_polygon(vorn2, i)), each_polygon_index(vorn))
+    @test all(i -> !(get_polygon(vorn, i) === get_polygon(vorn2, i)), each_polygon_index(vorn))
+    # Mutating a copy does not change the original
+    rng = StableRNG(1)
+    points = [(rand(rng), rand(rng)) for _ in 1:100]
+    vorn = voronoi(triangulate(points; rng); rng)
+    orig = deepcopy(vorn)
+    vorn2 = copy(vorn)
+    empty!(get_polygon(vorn2, first(each_polygon_index(vorn2))))
+    add_point!(DT.get_triangulation(vorn2), 0.5, 0.5; rng = StableRNG(2))
+    @test vorn == orig
+    @test vorn2 != orig
 end
 
 @testset "Issue #206" begin
@@ -1963,4 +1972,19 @@ end
     vorn = voronoi(tri)
     @test !isempty(DT.get_cocircular_circumcenters(vorn))
     @test DT.num_generators(vorn) == DT.num_polygons(vorn) == 25
+end
+
+@testset "Errors in voronoi do not change the triangulation" begin
+    tri = triangulate(rand(StableRNG(1), 2, 50); rng = StableRNG(1))
+    orig = deepcopy(tri)
+    @test_throws ArgumentError voronoi(tri; smooth = true)
+    # The convex hull is locked before clipping, so it must be unlocked even if clipping fails
+    bad_clip_polygon = ([(0.0, 0.0), (1.0, 0.0)], [1, 2, 3, 1])
+    @test_throws Exception voronoi(tri; clip = true, clip_polygon = bad_clip_polygon, rng = StableRNG(1))
+    @test tri == orig
+    @test !DT.has_boundary_nodes(tri)
+    DT.delete_ghost_triangles!(tri)
+    orig = deepcopy(tri)
+    @test_throws Exception voronoi(tri; clip = true, clip_polygon = bad_clip_polygon, rng = StableRNG(1))
+    @test tri == orig && !DT.has_ghost_triangles(tri)
 end

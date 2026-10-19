@@ -1720,7 +1720,7 @@ end
         @test DT.is_interior_ghost_vertex(tri, g)
     end
     @test !DT.is_exterior_ghost_vertex(tri, 1)
-    @test_broken !DT.is_interior_ghost_vertex(tri, 1) # is_interior_ghost_vertex is !is_exterior_ghost_vertex, so it is true for solid vertices
+    @test !DT.is_interior_ghost_vertex(tri, 1)
     for e in keys(get_boundary_edge_map(tri))
         u, v = DT.edge_vertices(e)
         @test DT.contains_boundary_edge(tri, e) && DT.contains_boundary_edge(tri, u, v)
@@ -1732,16 +1732,12 @@ end
             @test !DT.contains_boundary_edge(tri, u, v) && !DT.contains_boundary_edge(tri, v, u)
         end
     end
-    # get_section_index(tri, ℓ) calls ghost_vertex_map, which is not defined
     for g in -1:-1:-11
-        @test_broken DT.get_section_index(tri, g) == DT.get_section_index(get_ghost_vertex_map(tri), g)
+        @test DT.get_section_index(tri, g) == DT.get_section_index(get_ghost_vertex_map(tri), g)
     end
 end
 
 @testset "Mutating a copy does not change the original" begin
-    # copy(tri) is currently only partly deep: the copy shares the neighbour sets of the graph, the edge sets of
-    # Adjacent2Vertex, and the sections of the boundary nodes with the original, and the triangulations in the
-    # copied cache keep their own copy of the original points
     rng = StableRNG(123)
     points = [(rand(rng), rand(rng)) for _ in 1:50]
     unconstrained = () -> triangulate(copy(points); rng = StableRNG(1))
@@ -1760,8 +1756,16 @@ end
         )
         tri = make_tri()
         orig = deepcopy(tri)
-        mutate!(deepcopy(tri))
-        @test tri == orig # mutating a deepcopy is fine
-        @test_broken (mutate!(copy(tri)); tri == orig)
+        tri2 = copy(tri)
+        mutate!(tri2)
+        @test tri == orig
+        @test tri2 != orig
+        @test validate_triangulation(tri2; print_result = false)
+        # The copy keeps the references between its own fields
+        @test get_points(tri2) !== get_points(tri)
+        if !isnothing(DT.get_boundary_enricher(tri2))
+            @test DT.get_points(DT.get_boundary_enricher(tri2)) === get_points(tri2)
+            @test DT.get_boundary_nodes(DT.get_boundary_enricher(tri2)) === get_boundary_nodes(tri2)
+        end
     end
 end

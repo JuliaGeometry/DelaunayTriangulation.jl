@@ -338,9 +338,7 @@ Dict{Int64, Set{Tuple{Int64, Int64}}}()
 """
 function clear_empty_keys!(adj2v::Adjacent2Vertex)
     dict = get_adjacent2vertex(adj2v)
-    foreach(dict) do (w, S)
-        isempty(S) && delete_adjacent2vertex!(adj2v, w)
-    end
+    filter!(((w, S),) -> !isempty(S), dict)
     return adj2v
 end
 

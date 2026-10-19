@@ -2120,24 +2120,6 @@ function si_diametral_bounding_box(points, i, j)
     return bbox
 end
 
-function __inorder(tree)
-    keys = Any[]
-    root = tree.root
-    __inorder!(keys, root)
-    return identity.(keys)
-end
-function __inorder!(keys, node)
-    left = node.leftChild
-    __inorder!(keys, left)
-    push!(keys, node.data)
-    right = node.rightChild
-    __inorder!(keys, right)
-    return keys
-end
-function __inorder!(keys, node::Nothing)
-    return keys
-end
-
 function get_child_from_tree(tree::DT.PolygonTree, i)
     return first(filter(subtree -> DT.get_index(subtree) == i, DT.get_children(tree)))
 end
@@ -2508,7 +2490,6 @@ export slow_get_segment
 export closest_point_on_curve
 export get_dt_rectangles
 export si_diametral_bounding_box
-export __inorder
 export get_child_from_tree
 export traverse_tree
 export poor_triangulation_example

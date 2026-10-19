@@ -385,25 +385,9 @@ struct BoundaryEnricher{P,B,C,I,BM,S,E}
     small_angle_complexes::Dict{I,Vector{SmallAngleComplex{I}}}
 end
 
-Base.copy(enricher::BoundaryEnricher) = enrcopy(enricher)
-enrcopy(::Nothing; kwargs...) = nothing
-
-function enrcopy(enricher::BoundaryEnricher; 
-        points = copy(get_points(enricher)), 
-        boundary_nodes  = copy(get_boundary_nodes(enricher)),
-        segments = copy(get_segments(enricher)),
-        boundary_curves = _plcopy.(get_boundary_curves(enricher); points),
-        polygon_hierarchy = copy(get_polygon_hierarchy(enricher)),
-        boundary_edge_map = copy(get_boundary_edge_map(enricher))) 
-    parent_map = copy(get_parent_map(enricher))
-    curve_index_map = copy(get_curve_index_map(enricher))
-    spatial_tree = copy(get_spatial_tree(enricher))
-    queue = copy(get_queue(enricher))
-    small_angle_complexes = copy(get_small_angle_complexes(enricher))
-    return BoundaryEnricher(points, boundary_nodes, segments, boundary_curves,
-        polygon_hierarchy, parent_map, curve_index_map,
-        boundary_edge_map, spatial_tree, queue, small_angle_complexes)
-end
+# The spatial tree uses the same points as the enricher, and the small angle complexes are vectors of mutable
+# complexes, so a deepcopy is needed for the copy to be independent. See also copy(::Triangulation).
+Base.copy(enricher::BoundaryEnricher) = deepcopy(enricher)
 
 function BoundaryEnricher(
     points::P, boundary_nodes::B, segments=nothing; n=4096, coarse_n=0,

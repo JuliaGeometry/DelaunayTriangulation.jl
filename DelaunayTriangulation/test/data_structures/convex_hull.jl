@@ -50,9 +50,16 @@ end
 
     # Duplicate points
     ch = convex_hull([(0.0, 0.0), (1.0, 0.0), (0.0, 1.0), (0.0, 0.0)])
-    @test ch.vertices == [1, 2, 3, 1]
-    # The number of points is computed before the duplicates are removed, so this gives a BoundsError
-    @test_broken convex_hull([(0.0, 0.0), (1.0, 0.0), (0.0, 0.0)]).vertices == [1, 2, 1]
+    @test DT.circular_equality(ch.vertices, [1, 2, 3, 1])
+    @test convex_hull([(0.0, 0.0), (1.0, 0.0), (0.0, 0.0)]).vertices == [1, 2, 1]
+    @test convex_hull([(0.0, 0.0), (0.0, 0.0), (0.0, 0.0)]).vertices == [1]
+    @test convex_hull([(0.0, 0.0), (1.0, 0.0), (0.0, 0.0), (1.0, 0.0)]).vertices == [1, 2, 1]
+    @test DT.circular_equality(convex_hull([(1.0, 0.0), (0.0, 1.0), (1.0, 0.0), (0.0, 0.0), (0.0, 1.0)]).vertices, [4, 1, 2, 4])
+    # -0.0 and 0.0 are the same coordinate
+    @test DT.circular_equality(convex_hull([(0.0, 0.0), (-0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]).vertices, [1, 3, 4, 1])
+
+    # No points
+    @test isempty(convex_hull(NTuple{2, Float64}[]).vertices)
 end
 
 @testset "Random tests" begin

@@ -43,7 +43,11 @@ Now let's inspect `tri`. If we look at the fields in `tri`, we see that there is
 propertynames(tri)
 ```
 
-Note that each field `X` has an associated accessor `DelaunayTriangulation.get_X`, except for `has_ghosts`, whose accessor is `DelaunayTriangulation.has_ghosts`. Let's go through each field. 
+Note that each field `X` has an associated accessor `DelaunayTriangulation.get_X`, except for `has_ghosts`, whose accessor is `DelaunayTriangulation.has_ghosts`. Let's go through each field.
+
+!!! note "Iteration order"
+
+    Many of these fields are `Set`s or `Dict`s, e.g. the triangles, the segments, and the graph. Their iteration order, which is also the order of iterators such as [`each_solid_triangle`](@ref) and of outputs such as [`get_all_stat`](@ref), is not guaranteed. It depends on the hashes of the elements, which can change between Julia versions, and on the order in which elements were added and removed, so you should not rely on it.
 
 ## Geometry Fields
 

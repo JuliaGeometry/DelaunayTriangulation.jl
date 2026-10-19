@@ -17,8 +17,8 @@ Constructs a [`PolygonTree`](@ref) with `parent`, `index`, and `height`, and no 
 """
 mutable struct PolygonTree{I}
     parent::Union{Nothing,PolygonTree{I}}
-    @const children::Set{PolygonTree{I}}
-    @const index::I
+    const children::Set{PolygonTree{I}}
+    const index::I
     height::Int
 end
 PolygonTree{I}(parent::Union{Nothing,PolygonTree{I}}, index, height) where {I} = PolygonTree{I}(parent, Set{PolygonTree{I}}(), index, height)
@@ -517,14 +517,13 @@ checked to see if they are contained inside `new_tree`, and if so, they are adde
 """
 function reorder_hierarchy!(hierarchy::PolygonHierarchy{I}, points, boundary_nodes, new_tree::PolygonTree) where {I}
     orig_curve_index = get_index(new_tree)
-    for (curve_index, tree) in get_trees(hierarchy) # curve_index should never be orig_curve_index
+    for (curve_index, tree) in collect(get_trees(hierarchy)) # curve_index should never be orig_curve_index. collect since delete_tree! deletes from get_trees(hierarchy)
         curve_nodes = get_boundary_nodes(boundary_nodes, curve_index)
         section_nodes = get_boundary_nodes(curve_nodes, 1)
         u = get_boundary_nodes(section_nodes, 1)
         p = get_point(points, u)
         is_in = is_in_tree(hierarchy, points, boundary_nodes, new_tree, p)
         if is_in
-            is_disjoint = false
             set_parent!(tree, new_tree)
             add_child!(new_tree, tree)
             increase_depth!(tree)
@@ -553,7 +552,7 @@ Tests if the point `p` is inside `tree`.
 """
 function is_in_tree(hierarchy::PolygonHierarchy, points, boundary_nodes, tree::PolygonTree, p)
     index = get_index(tree)
-    if has_multiple_sections(boundary_nodes)
+    if has_multiple_curves(boundary_nodes)
         curve_nodes = get_boundary_nodes(boundary_nodes, index)
     else
         curve_nodes = boundary_nodes

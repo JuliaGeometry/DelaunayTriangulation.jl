@@ -222,7 +222,7 @@ into a set of boundary nodes for use in [`triangulate`](@ref).
 """
 convert_boundary_points_to_indices
 function convert_boundary_points_to_indices(x::AAA, y::AAA; existing_points = NTuple{2, Float64}[], check_args = true, adjust = true) where {F <: Number, A <: AbstractVector{F}, AA <: AbstractVector{A}, AAA <: AbstractVector{AA}}
-    check_args && @assert length(x) == length(y)
+    check_args && length(x) ≠ length(y) && throw(ArgumentError("x and y must have the same number of curves."))
     nodes = [[Int[] for _ in eachindex(x[i])] for i in eachindex(x)]
     for i in eachindex(x)
         _nodes, _ = convert_boundary_points_to_indices(x[i], y[i]; existing_points = existing_points, check_args = true)
@@ -232,12 +232,10 @@ function convert_boundary_points_to_indices(x::AAA, y::AAA; existing_points = NT
 end
 function convert_boundary_points_to_indices(x::AA, y::AA; existing_points = NTuple{2, Float64}[], check_args = true, adjust = true) where {F <: Number, A <: AbstractVector{F}, AA <: AbstractVector{A}}
     if check_args
-        @assert length(x) == length(y)
-        @assert all(i -> length(x[i]) == length(y[i]), eachindex(x, y))
-        @assert x[begin][begin] ≈ x[end][end]
-        @assert y[begin][begin] ≈ y[end][end]
-        @assert all(i -> x[i][end] ≈ x[i + 1][begin], firstindex(x):(lastindex(x) - 1))
-        @assert all(i -> y[i][end] ≈ y[i + 1][begin], firstindex(y):(lastindex(y) - 1))
+        length(x) ≠ length(y) && throw(ArgumentError("x and y must have the same number of sections."))
+        !all(i -> length(x[i]) == length(y[i]), eachindex(x, y)) && throw(ArgumentError("Each section of x and y must have the same length."))
+        !(x[begin][begin] ≈ x[end][end] && y[begin][begin] ≈ y[end][end]) && throw(ArgumentError("The last section must end at the start of the first section, so that the curve is closed."))
+        !all(i -> x[i][end] ≈ x[i + 1][begin] && y[i][end] ≈ y[i + 1][begin], firstindex(x):(lastindex(x) - 1)) && throw(ArgumentError("Each section must start at the end of the previous section."))
     end
     nodes = [Int[] for _ in eachindex(x)]
     for i in eachindex(x)
@@ -255,9 +253,8 @@ function convert_boundary_points_to_indices(x::AA, y::AA; existing_points = NTup
 end
 function convert_boundary_points_to_indices(x::A, y::A; existing_points = NTuple{2, Float64}[], check_args = true, adjust = true) where {F <: Number, A <: AbstractVector{F}}
     if check_args
-        @assert length(x) == length(y)
-        @assert x[begin] ≈ x[end]
-        @assert y[begin] ≈ y[end]
+        length(x) ≠ length(y) && throw(ArgumentError("x and y must have the same length."))
+        !(x[begin] ≈ x[end] && y[begin] ≈ y[end]) && throw(ArgumentError("The first and last points must be the same, so that the curve is closed."))
     end
     nodes = Int[]
     init = num_points(existing_points) + 1

@@ -3103,3 +3103,32 @@ end
         @test_reference reference_path(ASSETS, "julia_logo.png") fig by = psnr_equality(15)
     end
 end
+
+@testset "Splitting a subsegment that is too small to split" begin
+    # The split point is within the tolerance of an endpoint, so the split is abandoned. The vertex that
+    # compute_split_position recorded for the split must then be removed again; the lists are Sets, so
+    # this used to call pop! on an empty Set.
+    points = [(0.0, 0.0), (1.0e-9, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
+    tri = triangulate(points; boundary_nodes = [1, 2, 3, 4, 5, 1], rng = StableRNG(1))
+    args = DT.RefinementArguments(tri; rng = StableRNG(1))
+    @test args.length_scale == 1.0
+    n = DT.num_points(tri)
+    DT.split_subsegment!(tri, args, (1, 2))
+    @test DT.num_points(tri) == n
+    @test isempty(args.midpoint_split_list) && isempty(args.offcenter_split_list)
+    @test DT.contains_segment(tri, 1, 2)
+    # The same domain scaled by 2^-20 has the same tolerance relative to its size
+    small_points = [(2.0^-20 * x, 2.0^-20 * y) for (x, y) in points]
+    tri = triangulate(small_points; boundary_nodes = [1, 2, 3, 4, 5, 1], rng = StableRNG(1))
+    args = DT.RefinementArguments(tri; rng = StableRNG(1))
+    @test args.length_scale == 2.0^-20
+    DT.split_subsegment!(tri, args, (1, 2))
+    @test DT.num_points(tri) == n
+    # For domains larger than 1 the tolerances are absolute, so a segment of length 2^20 * 1e-9 ≈ 1e-3 is split
+    big_points = [(2.0^20 * x, 2.0^20 * y) for (x, y) in points]
+    tri = triangulate(big_points; boundary_nodes = [1, 2, 3, 4, 5, 1], rng = StableRNG(1))
+    args = DT.RefinementArguments(tri; rng = StableRNG(1))
+    @test args.length_scale == 1.0
+    DT.split_subsegment!(tri, args, (1, 2))
+    @test DT.num_points(tri) == n + 1
+end

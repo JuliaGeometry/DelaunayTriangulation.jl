@@ -301,9 +301,21 @@ num_points(points) = length(points)
 num_points(points::AbstractMatrix) = size(points, 2)
 
 """
+    normalise_signed_zeros(p) -> NTuple{2, Number}
+
+Returns the coordinates `(x, y)` of `p` with any `-0.0` replaced by `0.0`. The two zeros are `==`, but they are not
+`isequal` and they hash differently, so points should be passed through this function before they are hashed or
+sorted, e.g. when looking for duplicate points.
+"""
+function normalise_signed_zeros(p)
+    x, y = getxy(p)
+    return (x + zero(x), y + zero(y))
+end
+
+"""
     points_are_unique(points) -> Bool
 
-Returns `true` if all points in `points` are unique.
+Returns `true` if all points in `points` are unique. `-0.0` and `0.0` are treated as the same coordinate.
 
 # Examples 
 ```julia-repl
@@ -329,7 +341,7 @@ function points_are_unique(points)
     seen = Set{NTuple{2, T}}()
     sizehint!(seen, n)
     for i in each_point_index(points)
-        p = get_point(points, i)
+        p = normalise_signed_zeros(get_point(points, i))
         p ∈ seen && return false
         push!(seen, p)
     end
@@ -341,6 +353,7 @@ end
 
 Returns a set of indices that give the lexicographic ordering of `points`,
 meaning the indices so that the points are sorted first by `x` and then by `y`.
+`-0.0` and `0.0` are treated as the same coordinate.
 
 # Examples 
 ```julia-repl
@@ -374,7 +387,7 @@ julia> hcat(points, points[ans])
  (5.0, -2.0)  (5.0, 17.3)
 ```
 """
-lexicographic_order(points) = sortperm(collect(each_point(points)))
+lexicographic_order(points) = sortperm(collect(each_point(points)); by = normalise_signed_zeros)
 
 @doc """
     push_point!(points, x, y)
@@ -554,6 +567,7 @@ find_point_index(points, p) = find_point_index(points, getx(p), gety(p))
     find_duplicate_points(points) -> Dict{Point, Vector{Int}}
 
 Returns a `Dict` of `points` that maps each duplicate point to a `Vector` of the indices of the duplicate points.
+`-0.0` and `0.0` are treated as the same coordinate, and the keys use `0.0`.
 """
 function find_duplicate_points(points)
     T = number_type(points)
@@ -561,7 +575,7 @@ function find_duplicate_points(points)
     dup_seen = Dict{NTuple{2, T}, Vector{Int}}()
     sizehint!(dup_seen, n)
     for i in each_point_index(points)
-        p = get_point(points, i)
+        p = normalise_signed_zeros(get_point(points, i))
         existing_inds = get!(Vector{Int}, dup_seen, p)
         push!(existing_inds, Int(i))
     end

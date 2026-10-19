@@ -1,6 +1,7 @@
 using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using StatsBase
+using StableRNGs
 
 @testset "Initialise" begin
     c = DT.RepresentativeCoordinates{Int,Float64}()
@@ -135,14 +136,43 @@ end
 end
 
 @testset "Cells with equal priorities" begin
-    # Cell's == and hash only use max_dist, so distinct cells with the same priority are treated as equal,
-    # and the queue in pole_of_inaccessibility keeps only one of them
+    # Distinct cells with the same priority must not be treated as equal, otherwise the queue in
+    # pole_of_inaccessibility keeps only one of them
     points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
     boundary_nodes = [1, 2, 3, 4, 1]
     cells = [DT.Cell(x, y, 0.25, points, boundary_nodes) for (x, y) in ((0.25, 0.25), (0.75, 0.25), (0.25, 0.75), (0.75, 0.75))]
     @test allequal(c.max_dist for c in cells)
-    @test_broken allunique(cells)
+    @test allunique(cells)
+    @test cells[1] == DT.Cell(0.25, 0.25, 0.25, points, boundary_nodes)
     queue = DT.CellQueue{Float64}()
     foreach(c -> DT.insert_cell!(queue, c), cells)
-    @test_broken length(queue.queue) == 4
+    @test length(queue.queue) == 4
+end
+
+@testset "Deleting the last point" begin
+    c = DT.RepresentativeCoordinates(0.5, 0.25, 1)
+    DT.delete_point!(c, (0.5, 0.25))
+    @test DT.getx(c) == 0.0 && DT.gety(c) == 0.0 && DT.getn(c) == 0
+    DT.add_point!(c, (2.0, 3.0))
+    @test DT.getx(c) == 2.0 && DT.gety(c) == 3.0 && DT.getn(c) == 1
+end
+
+@testset "Representative points of disjoint domains" begin
+    # The representative point of the first curve used to be the pole of inaccessibility of all of the curves together, 
+    # so it could be inside another domain. Point location outside of the first curve could then loop forever.
+    # This is the domain from the "concave boundaries and disjoint domains" test in point_location/jump_and_march.jl
+    a, b, c, d, e, f = (0.0, 8.0), (0.0, 6.0), (0.0, 4.0), (0.0, 2.0), (0.0, 0.0), (2.0, 0.0)
+    g, h, i, j, k, ℓ = (4.0, 0.0), (6.0, 0.0), (8.0, 0.0), (8.0, 1.0), (7.0, 1.0), (5.0, 2.0)
+    m, n, o, p, q, r = (3.0, 2.0), (2.0, 3.0), (2.0, 5.0), (2.0, 7.0), (1.0, 8.0), (1.0, 2.2)
+    s, t, u, v, w, z = (0.4, 1.4), (1.2, 1.8), (2.8, 0.6), (3.4, 1.2), (1.6, 1.4), (1.6, 2.2)
+    outer = [[a, b, c, d, e], [e, f, g, h, i, j, k, ℓ], [ℓ, m, n, o, p, q, a]]
+    inner = [[r, z, v, u, w, t, s, r]]
+    new_domain₁ = [[(6.0, 8.0), (6.0, 6.0), (8.0, 4.0), (10.0, 4.0), (8.0, 6.0), (9.0, 7.0), (8.0, 8.0), (6.0, 8.0)]]
+    new_domain₂ = [[(4.0, 4.0), (4.0, 3.0), (5.0, 3.0), (5.0, 4.0), (4.0, 4.0)]]
+    boundary_nodes, points = convert_boundary_points_to_indices([outer, inner, new_domain₁, new_domain₂])
+    tri = triangulate(points; boundary_nodes, rng = StableRNG(1))
+    for i in (1, 3, 4) # the exterior curves
+        c = DT.get_representative_point_coordinates(tri, i)
+        @test find_polygon(tri, c) == i
+    end
 end

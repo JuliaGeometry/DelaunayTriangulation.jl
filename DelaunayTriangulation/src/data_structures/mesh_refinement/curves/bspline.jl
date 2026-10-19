@@ -57,8 +57,8 @@ end
 
 function BSpline(control_points::Vector{NTuple{2,Float64}}; degree=3, lookup_steps=5000, kwargs...)
     nc = length(control_points)
-    @assert degree ≥ 1 "Degree must be at least 1, got $degree."
-    @assert degree ≤ nc - 1 "Degree must be at most n - 1 = $(nc - 1), where n is the number of control points, got $degree."
+    degree ≥ 1 || throw(ArgumentError("Degree must be at least 1, got $degree."))
+    degree ≤ nc - 1 || throw(ArgumentError("Degree must be at most n - 1 = $(nc - 1), where n is the number of control points, got $degree."))
     order = degree + 1
     cache = similar(control_points)
     knots = zeros(nc + order)

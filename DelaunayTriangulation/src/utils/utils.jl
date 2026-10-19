@@ -400,18 +400,20 @@ end
 midpoint(tri::Triangulation, e) = midpoint(tri, initial(e), terminal(e))
 
 """
-    check_precision(x) -> Bool 
+    check_precision(x, scale = one(x)) -> Bool
 
-Returns `true` if `abs(x)` is less than or equal to `sqrt(eps(number_type(eps)))`.
+Returns `true` if `abs(x)` is less than or equal to `scale * sqrt(eps(number_type(x)))`. The `scale`
+should have the same units as `x`, e.g. a length or an area of the domain, so that the result
+does not depend on the scale of the domain.
 """
-check_precision(x) = abs(x) ≤ ε(x)
+check_precision(x, scale = one(x)) = abs(x) ≤ ε(x) * scale
 
 """
-    check_absolute_precision(x, y) -> Bool
+    check_absolute_precision(x, y, scale = one(x)) -> Bool
 
-Returns `true` if `abs(x - y)` is less than or equal to `sqrt(eps(Float64))`.
+Returns `true` if `abs(x - y)` is less than or equal to `scale * sqrt(eps(number_type(x)))`. See also [`check_precision`](@ref).
 """
-check_absolute_precision(x, y) = check_precision(x - y)
+check_absolute_precision(x, y, scale = one(x)) = check_precision(x - y, scale)
 
 """
     check_relative_precision(x, y) -> Bool

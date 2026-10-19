@@ -176,9 +176,9 @@ for n in fieldnames(IndividualTriangleStatistics)
     Returns the $($name) field from the individual triangle statistics for the triangle `T` in the [`TriangulationStatistics`](@ref) `stats`.
     """ ($(Symbol("get_$n")))(stats::TriangulationStatistics, T) =
             let indiv_stats = get_individual_statistics(stats)
-            T = contains_triangle(T, keys(indiv_stats))
-            !T[2] && throw(BoundsError(indiv_stats, T))
-            return indiv_stats[T[1]].$n
+            V, flag = contains_triangle(T, keys(indiv_stats))
+            !flag && throw(KeyError(T))
+            return indiv_stats[V].$n
         end
     end
 end
@@ -207,12 +207,12 @@ get_median_angle(stats::TriangulationStatistics, T) = get_angles(stats, T)[2]
 """
     get_all_stat(stats::TriangulationStatistics, stat::Symbol) -> Vector 
 
-Returns a vector of the statistic `stat` for each triangle in `stats`.
+Returns a vector of the statistic `stat` for each triangle in `stats`. The order of the triangles is the 
+iteration order of `get_individual_statistics(stats)`, which is not guaranteed.
 """
 function get_all_stat(stats::TriangulationStatistics, stat::Symbol)
     indiv_stats = get_individual_statistics(stats)
-    T = first(keys(indiv_stats))
-    F = typeof(getfield(indiv_stats[T], stat))
+    F = fieldtype(valtype(indiv_stats), stat)
     stats = Vector{F}(undef, length(indiv_stats))
     return get_all_stat!(stats, indiv_stats, stat)
 end

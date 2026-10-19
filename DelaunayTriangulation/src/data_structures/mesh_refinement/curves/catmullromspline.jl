@@ -248,10 +248,10 @@ is_interpolating(spl::CatmullRomSpline) = true
 function CatmullRomSpline(control_points; _alpha=1 / 2, _tension=0.0, lookup_steps=5000, kwargs...)
     alpha = _alpha
     tension = _tension
-    @assert length(control_points) ≥ 4 "Catmull-Rom splines require at least 4 control points, got $(length(control_points))."
+    length(control_points) ≥ 4 || throw(ArgumentError("Catmull-Rom splines require at least 4 control points, got $(length(control_points))."))
     nc = length(control_points)
-    @assert 0 ≤ alpha ≤ 1 "Alpha must be in [0, 1], got $alpha."
-    @assert 0 ≤ tension ≤ 1 "Tension must be in [0, 1], got $tension."
+    0 ≤ alpha ≤ 1 || throw(ArgumentError("Alpha must be in [0, 1], got $alpha."))
+    0 ≤ tension ≤ 1 || throw(ArgumentError("Tension must be in [0, 1], got $tension."))
     knots = zeros(nc)
     for i in 2:nc
         knots[i] = knots[i-1] + dist(control_points[i-1], control_points[i])^alpha

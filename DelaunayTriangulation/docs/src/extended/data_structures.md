@@ -34,20 +34,6 @@ Pages = ["data_structures/queue/queue.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.Queue,)) 
 ```
 
-## BalancedBST
-
-The `BalancedBST` is our implementation of a balanced binary search tree; see, for example, [these notes](https://courses.csail.mit.edu/6.006/fall09/lecture_notes/lecture04.pdf). The `BalancedBST` is not currently used anywhere. Originally, it was intended for use with the Bentley–Ottmann algorithm, but the complete algorithm is yet to be implemented; this algorithm was to be implemented to allow for users to provide intersecting segments that, through the algorithm, could be automatically split for the user. The `BalancedBST` implementation is fully functional for this purpose, the work in getting the actual algorithm up and going just has to be done.
-
-```@docs 
-BalancedBST
-```
-
-```@autodocs
-Modules = [DelaunayTriangulation]
-Pages = ["data_structures/trees/bst.jl"]
-Filter = t -> !(t in (DelaunayTriangulation.BalancedBST,))
-```
-
 ## RTree
 
 The `RTree` is our implementation of a simple `RTree` data structure, following heavily the original code in [SpatialIndexing.jl](https://github.com/alyst/SpatialIndexing.jl). This tree is needed for triangulating curve-bounded domains. In particular, since the enrichment phase of triangulating a curve-bounded domain has no triangulation data structure that can be used for finding intersections between an edge's diametral circle and another vertex, the `RTree` is used to find these intersections.

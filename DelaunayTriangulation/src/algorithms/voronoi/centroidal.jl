@@ -106,12 +106,15 @@ function centroidal_smooth(vorn::VoronoiTessellation; clip_polygon = nothing, ma
     !has_ghost && add_ghost_triangles!(tri)
     has_bnds = has_boundary_nodes(tri)
     !has_bnds && lock_convex_hull!(tri; rng, predicates)
-    points = deepcopy(get_points(tri))
-    while iter < maxiters && max_dist > tol
-        vorn, max_dist = _centroidal_smooth_itr(vorn, points, rng, predicates; clip_polygon, kwargs...)
-        iter += 1
+    try
+        points = deepcopy(get_points(tri))
+        while iter < maxiters && max_dist > tol
+            vorn, max_dist = _centroidal_smooth_itr(vorn, points, rng, predicates; clip_polygon, kwargs...)
+            iter += 1
+        end
+        return vorn
+    finally # undo the changes to tri, even if an error was thrown
+        !has_bnds && unlock_convex_hull!(tri)
+        !has_ghost && delete_ghost_triangles!(tri)
     end
-    !has_bnds && unlock_convex_hull!(tri)
-    !has_ghost && delete_ghost_triangles!(tri)
-    return vorn
 end

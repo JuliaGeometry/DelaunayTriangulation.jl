@@ -179,3 +179,16 @@ end
     S2 = get_neighbours(graph2, 1)
     @test S == S2 && !(S === S2)
 end
+
+@testset "Deleting a vertex deletes its edges" begin
+    g = DT.Graph{Int}()
+    DT.add_triangle!(g, 1, 2, 3)
+    DT.add_triangle!(g, 1, 3, 4)
+    DT.delete_vertex!(g, 3)
+    @test 3 ∉ g.vertices && !haskey(g.neighbours, 3)
+    @test all(e -> 3 ∉ e, g.edges)
+    @test DT.num_edges(g) == 2 # (1, 2) and (1, 4)
+    @test all(v -> 3 ∉ get_neighbours(g, v), (1, 2, 4))
+    DT.clear_empty_vertices!(g)
+    @test g.vertices == Set((1, 2, 4))
+end

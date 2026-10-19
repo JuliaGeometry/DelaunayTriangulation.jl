@@ -53,7 +53,8 @@ end
 end
 
 @testset "Mesh refinement" begin
-    # The precision checks in get_steiner_point are absolute, so refinement stops early for small domains
+    # The tolerances for precision issues are relative to the size of the domain for domains smaller than 1, and 
+    # absolute for larger domains, where they are too small to matter here
     points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
     nverts = Dict{Float64, Int}()
     for s in SCALES
@@ -63,18 +64,13 @@ end
         nverts[s] = DT.num_solid_vertices(tri)
     end
     for s in SCALES
-        if s < 1
-            @test_broken nverts[s] == nverts[1.0]
-        else
-            @test nverts[s] == nverts[1.0]
-        end
+        @test nverts[s] == nverts[1.0]
     end
 end
 
 @testset "Pole of inaccessibility" begin
     # The pole of inaccessibility of a triangle is its incenter, at a distance of the inradius from the boundary.
-    # The default precision is absolute (precision = 1), so for polygons that are not much larger than 1 the
-    # search stops before refining any cells and returns the centroid, which is only 90% of the way there.
+    # The default precision is relative to the size of the polygon.
     points = [(0.0, 0.0), (4.0, 0.0), (1.0, 3.0)]
     boundary_nodes = [1, 2, 3, 1]
     inradius = 2DT.triangle_area(points...) / DT.triangle_perimeter(points...)
@@ -82,10 +78,15 @@ end
         pole_s = DT.pole_of_inaccessibility(scale_points(points, s), boundary_nodes)
         dist = DT.distance_to_polygon(pole_s, scale_points(points, s), boundary_nodes)
         @test dist > 0
-        if s ≤ 1
-            @test_broken dist ≥ 0.99s * inradius
-        else
-            @test dist ≥ 0.99s * inradius
-        end
+        @test dist ≥ 0.99s * inradius
     end
+end
+
+@testset "Many points at a small scale" begin
+    # Every triangle of points at this scale has an area below sqrt(eps), so get_initial_triangle used to shift the
+    # insertion order once for each point, recursing until the stack overflowed
+    points = 1.0e-5 .* rand(StableRNG(1), 2, 100_000)
+    tri = triangulate(points; rng = StableRNG(1))
+    @test DT.num_solid_vertices(tri) == 100_000
+    @test DT.num_solid_triangles(tri) == 2 * 100_000 - 2 - length(get_convex_hull_vertices(tri)) + 1
 end

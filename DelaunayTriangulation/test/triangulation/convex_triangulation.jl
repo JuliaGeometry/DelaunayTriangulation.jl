@@ -82,6 +82,9 @@ end
             pop!(S)
             tri_chew = triangulate_convex(pts, S; predicates = PT())
             tri_bowyer = triangulate(pts; skip_points = setdiff(1:50, [11, 27, 5]), predicates = PT(), delete_ghosts = false)
+            # triangulate_convex uses the mean of the vertices of S as the representative point, but triangulate
+            # uses the pole of inaccessibility, so use the same representative point before comparing
+            DT.get_representative_point_list(tri_bowyer)[1] = DT.RepresentativeCoordinates(DT.mean_points(pts, S)..., length(S))
             @test tri_chew == tri_bowyer
 
             pts[:, 28] .= [1.01, 1.01]
@@ -94,5 +97,19 @@ end
             @test (get_adjacent2vertex ∘ get_adjacent2vertex)(tri_chew) == (get_adjacent2vertex ∘ get_adjacent2vertex)(tri_bowyer)
             @test get_graph(tri_chew) == get_graph(tri_bowyer)
         end
+    end
+end
+
+@testset "Polygons without a valid triangle" begin
+    # Reshuffling the vertices can never find a positively oriented triangle, so this used to recurse until the stack overflowed
+    points = [(0.0, 0.0), (1.0, 0.0), (2.0, 0.0), (3.0, 0.0)]
+    @test_throws ArgumentError triangulate_convex(points, [1, 2, 3, 4]; rng = StableRNG(1))
+    points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
+    @test_throws ArgumentError triangulate_convex(points, [1, 4, 3, 2]; rng = StableRNG(1)) # clockwise
+    # Three collinear vertices are fine since another triangle can be found
+    points = [(0.0, 0.0), (1.0, 0.0), (2.0, 0.0), (1.0, 1.0)]
+    for seed in 1:20
+        tri = triangulate_convex(points, [1, 2, 3, 4]; rng = StableRNG(seed))
+        @test validate_triangulation(tri) && DT.num_solid_triangles(tri) == 2
     end
 end

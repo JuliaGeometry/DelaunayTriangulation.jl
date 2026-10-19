@@ -69,7 +69,6 @@ end
         safe_include("data_structures/queue.jl")
         safe_include("data_structures/curves.jl")
         safe_include("data_structures/rtree.jl")
-        safe_include("data_structures/bst.jl")
         safe_include("data_structures/polygon_hierarchy.jl", verbose=false)
     end
 

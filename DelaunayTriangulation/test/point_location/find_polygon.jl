@@ -48,12 +48,7 @@ end
     for single_boundary in (true, false)
         tri = triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 5, 5; single_boundary)
         for q in ((0.5, 0.5), (0.1, 0.9), (0.99, 0.01))
-            if single_boundary
-                @test find_polygon(tri, q) == 1
-            else
-                # A single curve that is split into sections is currently treated as having no boundary curve
-                @test_broken find_polygon(tri, q) == 1
-            end
+            @test find_polygon(tri, q) == 1
         end
         @test find_polygon(tri, (2.0, 2.0)) == 0
     end

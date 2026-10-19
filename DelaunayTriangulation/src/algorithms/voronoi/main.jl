@@ -22,9 +22,7 @@ Computes the Voronoi tessellation dual to a triangulation. If the triangulation 
 - `vorn`: The [`VoronoiTessellation`](@ref).
 """
 function voronoi(tri::Triangulation; clip = false, smooth = false, clip_polygon = nothing, rng = Random.default_rng(), predicates::AbstractPredicateKernel = AdaptiveKernel(), kwargs...)
-    if smooth
-        @assert clip "Can't pass clip = false when smooth = true. Pass clip = true if you need smoothing."
-    end
+    smooth && !clip && throw(ArgumentError("Can't pass clip = false when smooth = true. Pass clip = true if you need smoothing."))
     if !clip && !isnothing(clip_polygon)
         @warn "Clip polygon provided but clip = false. Ignoring clip polygon."
     end
@@ -33,16 +31,19 @@ function voronoi(tri::Triangulation; clip = false, smooth = false, clip_polygon 
     vorn = initialise_voronoi_tessellation(tri)
     has_bnds = has_boundary_nodes(tri)
     is_true(clip) && !has_bnds && lock_convex_hull!(tri; rng, predicates)
-    for i in each_generator(vorn)
-        add_voronoi_polygon!(vorn, i)
+    try
+        for i in each_generator(vorn)
+            add_voronoi_polygon!(vorn, i)
+        end
+        if is_true(clip)
+            clip_voronoi_tessellation!(vorn; clip_polygon, rng, predicates)
+        end
+        if is_true(smooth)
+            vorn = centroidal_smooth(vorn; clip_polygon, rng, predicates, kwargs...)
+        end
+        return vorn
+    finally # undo the changes to tri, even if an error was thrown
+        is_true(clip) && !has_bnds && unlock_convex_hull!(tri)
+        !has_ghost && delete_ghost_triangles!(tri)
     end
-    if is_true(clip)
-        clip_voronoi_tessellation!(vorn; clip_polygon, rng, predicates)
-    end
-    if is_true(smooth)
-        vorn = centroidal_smooth(vorn; clip_polygon, rng, predicates, kwargs...)
-    end
-    is_true(clip) && !has_bnds && unlock_convex_hull!(tri)
-    !has_ghost && delete_ghost_triangles!(tri)
-    return vorn
 end

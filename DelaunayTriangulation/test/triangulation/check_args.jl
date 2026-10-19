@@ -140,17 +140,17 @@ end
     @test DT.check_args(points, boundary_nodes, hierarchy)
     boundary_nodes[1][3] = 5
     @test_throws DT.InconsistentConnectionError DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws "InconsistentConnectionError: Segment 1 ends at vertex 5 but the next segment, segment 2, starts at vertex 3." DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws "InconsistentConnectionError: Section 1 ends at vertex 5 but the next section, section 2, starts at vertex 3." DT.check_args(points, boundary_nodes, hierarchy)
     @test_throws DT.InconsistentConnectionError triangulate(points; boundary_nodes, predicates=rt())
     boundary_nodes[1][3] = 3
     boundary_nodes[4][4] = 2
     @test_throws DT.InconsistentConnectionError DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws "InconsistentConnectionError: Segment 4 ends at vertex 2 but the next segment, segment 1, starts at vertex 1." DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws "InconsistentConnectionError: Section 4 ends at vertex 2 but the next section, section 1, starts at vertex 1." DT.check_args(points, boundary_nodes, hierarchy)
     @test_throws DT.InconsistentConnectionError triangulate(points; boundary_nodes, predicates=rt())
     boundary_nodes[4][4] = 1
     boundary_nodes[1][1] = 8
     @test_throws DT.InconsistentConnectionError DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws "InconsistentConnectionError: Segment 4 ends at vertex 1 but the next segment, segment 1, starts at vertex 8." DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws "InconsistentConnectionError: Section 4 ends at vertex 1 but the next section, section 1, starts at vertex 8." DT.check_args(points, boundary_nodes, hierarchy)
     @test_throws DT.InconsistentConnectionError triangulate(points; boundary_nodes, predicates=rt())
 
 
@@ -167,16 +167,18 @@ end
     @test DT.check_args(points, boundary_nodes, hierarchy)
     boundary_nodes[1][2] = 3
     @test_throws DT.InconsistentConnectionError DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws "InconsistentConnectionError: Segment 1 ends at vertex 3 but the next segment, segment 2, starts at vertex 2." DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws "InconsistentConnectionError: Section 1 ends at vertex 3 but the next section, section 2, starts at vertex 2." DT.check_args(points, boundary_nodes, hierarchy)
     @test_throws DT.InconsistentConnectionError triangulate(points; boundary_nodes, predicates=rt())
     boundary_nodes[1][2] = 2
-    boundary_nodes[2][3] = 5
+    boundary_nodes[2][3] = 2
     @test_throws DT.InconsistentConnectionError DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws "InconsistentConnectionError: Segment 2 ends at vertex 5 but the next segment, segment 1, starts at vertex 1." DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws "InconsistentConnectionError: Section 2 ends at vertex 2 but the next section, section 1, starts at vertex 1." DT.check_args(points, boundary_nodes, hierarchy)
+    boundary_nodes[2][3] = 5
+    @test_throws DT.InvalidBoundaryNodeError DT.check_args(points, boundary_nodes, hierarchy) # there are only three points
     boundary_nodes[2][3] = 1
     boundary_nodes[1][1] = 3
     @test_throws DT.InconsistentConnectionError DT.check_args(points, boundary_nodes, hierarchy)
-    @test_throws "InconsistentConnectionError: Segment 2 ends at vertex 1 but the next segment, segment 1, starts at vertex 3." DT.check_args(points, boundary_nodes, hierarchy)
+    @test_throws "InconsistentConnectionError: Section 2 ends at vertex 1 but the next section, section 1, starts at vertex 3." DT.check_args(points, boundary_nodes, hierarchy)
     @test_throws DT.InconsistentConnectionError triangulate(points; boundary_nodes, predicates=rt())
 end
 
@@ -627,4 +629,70 @@ end
     @test !DT.WARN_ON_DUPES[]
     DT.toggle_warn_on_dupes!()
     @test DT.WARN_ON_DUPES[]
+end
+
+@testset "Invalid coordinates" begin
+    points = [(0, 0), (4, 0), (0, 4), (1, 1)]
+    hierarchy = DT.construct_polygon_hierarchy(points)
+    @test_throws DT.IntegerCoordinatesError DT.check_args(points, nothing, hierarchy)
+    @test_throws "IntegerCoordinatesError: The provided points have coordinates of type Int64, but integer coordinates are not supported" triangulate(points)
+    @test_throws DT.IntegerCoordinatesError triangulate([0 4 0 1; 0 0 4 1])
+    @test_throws DT.IntegerCoordinatesError triangulate(points; boundary_nodes = [1, 2, 3, 1])
+
+    for bad in (NaN, Inf, -Inf)
+        points = [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0), (bad, 0.5), (0.3, 0.3)]
+        hierarchy = DT.construct_polygon_hierarchy(points)
+        @test_throws DT.NonFiniteCoordinatesError DT.check_args(points, nothing, hierarchy)
+        @test_throws "NonFiniteCoordinatesError: The point with index 4 has coordinates ($bad, 0.5), but all coordinates must be finite." triangulate(points)
+        @test_throws DT.NonFiniteCoordinatesError triangulate(points; boundary_nodes = [1, 2, 3, 1])
+        # Points that are skipped are not checked
+        @test DT.check_args(points, nothing, hierarchy; skip_points = Set(4))
+        tri = triangulate(points; skip_points = Set(4))
+        @test !DT.has_vertex(tri, 4) && validate_triangulation(tri)
+    end
+end
+
+@testset "Invalid weights" begin
+    points = [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0), (1.0, 1.0), (0.3, 0.3)]
+    hierarchy = DT.construct_polygon_hierarchy(points)
+    @test_throws DT.InconsistentWeightsError DT.check_args(points, nothing, hierarchy; weights = zeros(4))
+    @test_throws "InconsistentWeightsError: There are 4 weights but 5 points." triangulate(points; weights = zeros(4))
+    @test DT.check_args(points, nothing, hierarchy; weights = zeros(5))
+    @test DT.check_args(points, nothing, hierarchy; weights = zeros(6)) # e.g. for a point that will be added later
+    @test DT.check_args(points, nothing, hierarchy; weights = DT.ZeroWeight())
+end
+
+@testset "Invalid segments" begin
+    points = [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0), (1.0, 1.0), (0.3, 0.3)]
+    hierarchy = DT.construct_polygon_hierarchy(points)
+    @test DT.check_args(points, nothing, hierarchy; segments = Set([(1, 4), (2, 5)]))
+    @test_throws DT.InvalidSegmentError DT.check_args(points, nothing, hierarchy; segments = Set([(1, 4), (3, 3)]))
+    @test_throws "InvalidSegmentError: The segment (3, 3) joins the vertex 3 to itself." triangulate(points; segments = Set([(3, 3)]))
+    for e in ((1, 6), (0, 2), (-1, 3))
+        @test_throws DT.InvalidSegmentError DT.check_args(points, nothing, hierarchy; segments = Set([e]))
+        @test_throws "InvalidSegmentError: The segment $e has a vertex that is not the index of a point. There are 5 points, so the vertices of a segment must be between 1 and 5." triangulate(points; segments = Set([e]))
+    end
+end
+
+@testset "Invalid boundary nodes" begin
+    points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.3, 0.3)]
+    for boundary_nodes in ([1, 2, 6, 4, 1], [1, 2, 3, 0, 1], [[1, 2, 3], [3, 6, 1]], [[[1, 2, 3, 4, 1]], [[5, 7, 6, 5]]])
+        @test_throws DT.InvalidBoundaryNodeError triangulate(points; boundary_nodes)
+    end
+    @test_throws "InvalidBoundaryNodeError: The boundary node 6 is not the index of a point. There are 5 points, so the boundary nodes must be between 1 and 5." triangulate(points; boundary_nodes = [1, 2, 6, 4, 1])
+    @test validate_triangulation(triangulate(points; boundary_nodes = [1, 2, 3, 4, 1]))
+end
+
+@testset "Invalid curves and boundary points" begin
+    @test_throws ArgumentError BSpline([(0.0, 0.0), (1.0, 0.0), (1.0, 1.0)]; degree = 0)
+    @test_throws ArgumentError BSpline([(0.0, 0.0), (1.0, 0.0), (1.0, 1.0)]; degree = 3)
+    @test_throws ArgumentError CatmullRomSpline([(0.0, 0.0), (1.0, 0.0), (1.0, 1.0)])
+    @test_throws ArgumentError CatmullRomSpline([(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]; _alpha = 2.0)
+    @test_throws ArgumentError CatmullRomSpline([(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]; _tension = -1.0)
+    @test_throws ArgumentError convert_boundary_points_to_indices([0.0, 1.0, 0.0], [0.0, 0.0, 1.0]) # not closed
+    @test_throws ArgumentError convert_boundary_points_to_indices([0.0, 1.0, 0.0, 0.0], [0.0, 0.0, 1.0])
+    @test_throws ArgumentError convert_boundary_points_to_indices([[0.0, 1.0], [1.0, 0.0, 0.0]], [[0.0, 0.0], [0.5, 1.0, 0.0]]) # sections do not connect
+    @test_throws ArgumentError convert_boundary_points_to_indices([[0.0, 1.0], [1.0, 0.0, 0.5]], [[0.0, 0.0], [0.0, 1.0, 0.0]]) # not closed
+    nodes, points = convert_boundary_points_to_indices([[0.0, 1.0], [1.0, 0.0, 0.0]], [[0.0, 0.0], [0.0, 1.0, 0.0]])
+    @test nodes == [[1, 2], [2, 3, 1]] && points == [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]
 end

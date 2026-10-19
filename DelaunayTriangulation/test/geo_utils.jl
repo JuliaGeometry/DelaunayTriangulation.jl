@@ -371,7 +371,8 @@ end
         q = DT.Cell(7.0, 17.0, 0.3, pts, tri.boundary_nodes)
         @test (p < q) == (p.max_dist < q.max_dist)
         @test (p > q) == (p.max_dist > q.max_dist)
-        @test (p == q) == (p.max_dist == q.max_dist)
+        @test p != q
+        @test p == DT.Cell(10.0, 10.0, 10.0, pts, tri.boundary_nodes)
         @test (p ≤ q) == (p.max_dist ≤ q.max_dist)
         @test (p ≥ q) == (p.max_dist ≥ q.max_dist)
         @test p.x == 10.0
@@ -412,7 +413,16 @@ end
     end
 end
 
+# The largest distance to the boundary from the points of a grid over the bounding box of the polygon. This is
+# at most the distance from the pole of inaccessibility to the boundary.
+function grid_max_distance_to_polygon(points, boundary_nodes; n = 400)
+    xmin, xmax, ymin, ymax = DT.polygon_bounds(points, boundary_nodes)
+    return maximum(DT.distance_to_polygon((x, y), points, boundary_nodes) for x in range(xmin, xmax; length = n), y in range(ymin, ymax; length = n))
+end
+
 @testset "Pole of inaccessibility" begin
+    # The default precision is 1/1000 of the larger side of the bounding box, so for these polygons the distance
+    # from the pole to the boundary is within 0.02 of the largest possible distance
     pts = [
         (0.0, 10.0), (0.0, 8.0), (0.0, 6.0), (0.0, 4.0), (0.0, 2.0),
         (0.0, 0.0), (2.0, 0.0), (4.0, 0.0), (6.0, 0.0), (8.0, 0.0), (10.0, 0.0),
@@ -424,7 +434,12 @@ end
         boundary_nodes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 1]
         x, y = DT.pole_of_inaccessibility(pts, boundary_nodes)
         @inferred DT.pole_of_inaccessibility(pts, boundary_nodes)
-        @test x == 2.5 && y == 2.5
+        # This is an L shape with arms of width 4. The largest circle is in the corner, touching the lines x = 0 and
+        # y = 0 and the reflex vertex (4, 4), so its centre is (r, r) with √2(4 - r) = r
+        r = 4sqrt(2) / (1 + sqrt(2))
+        @test x ≈ r atol = 1.0e-2
+        @test y ≈ r atol = 1.0e-2
+        @test DT.distance_to_polygon((x, y), pts, boundary_nodes) ≈ r atol = 1.0e-2
     end
 
     @testset "Multiple segments" begin
@@ -448,7 +463,9 @@ end
         ]
         x, y = DT.pole_of_inaccessibility(pts, boundary_nodes)
         @inferred DT.pole_of_inaccessibility(pts, boundary_nodes)
-        @test (x ≈ 8.125 || x ≈ 5.625) && y ≈ 1.875
+        # The hole fills most of the corner, so the largest circles are in the horizontal arm and have radius 2
+        @test DT.distance_to_polygon((x, y), pts, boundary_nodes) ≈ 2.0 atol = 2.0e-2
+        @test y ≈ 2.0 atol = 2.0e-2
     end
 
     @testset "Multiply connected" begin
@@ -470,7 +487,7 @@ end
             [reverse([26, 27, 28, 29, 26])],
         ]
         x, y = DT.pole_of_inaccessibility(pts, boundary_nodes)
-        @test x ≈ 2.5 && y ≈ 7.5
+        @test DT.distance_to_polygon((x, y), pts, boundary_nodes) ≥ grid_max_distance_to_polygon(pts, boundary_nodes) - 2.0e-2
     end
 
     @testset "More complicated examples" begin
@@ -518,8 +535,7 @@ end
             ],
         ]
         x, y = DT.pole_of_inaccessibility(pts, boundary_nodes)
-
-        @test x ≈ 4.6146922812432685 && y ≈ 3.0953047713990314
+        @test DT.distance_to_polygon((x, y), pts, boundary_nodes) ≥ grid_max_distance_to_polygon(pts, boundary_nodes) - 2.0e-2
         len = size(pts, 2)
         pts = hcat(pts, [7.274358290326 3.0 5.3369657980869; 2.7978980291693 4.0 1.8801857960034])
         boundary_nodes = [
@@ -536,7 +552,7 @@ end
             [[len + 1, len + 2, len + 3, len + 1]],
         ]
         x, y = DT.pole_of_inaccessibility(pts, boundary_nodes)
-        @test x ≈ -1.0785224985822 && y ≈ 5.3725906833292
+        @test DT.distance_to_polygon((x, y), pts, boundary_nodes) ≥ grid_max_distance_to_polygon(pts, boundary_nodes) - 2.0e-2
     end
 end
 
@@ -580,8 +596,7 @@ end
         [[29, 31, 30, 29]],
     ]
     x, y = DT.pole_of_inaccessibility(pts, boundary_nodes)
-    @test x ≈ -1.0785225000000000003
-    @test y ≈ 5.37259749999999999999
+    @test DT.distance_to_polygon((x, y), pts, boundary_nodes) ≥ grid_max_distance_to_polygon(pts, boundary_nodes) - 2.0e-2
 
     tri = triangulate(pts; boundary_nodes)
     @test collect(DT.getxy(DT.get_representative_point_coordinates(tri, 1))) ≈ [x, y]

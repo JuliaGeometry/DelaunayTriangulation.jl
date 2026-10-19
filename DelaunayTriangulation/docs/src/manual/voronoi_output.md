@@ -26,9 +26,13 @@ vorn
 
 Now let's inspect `vorn`. The fields in `vorn` are:
 
-```@example vorout 
+```@example vorout
 propertynames(vorn)
 ```
+
+!!! note "Iteration order and numbering"
+
+    The iteration order of the `Dict`s and `Set`s below, e.g. the polygons and the unbounded polygons, is not guaranteed, and neither is the numbering of the polygon vertices. The polygon vertices are numbered in the order in which the triangles of the triangulation are iterated over, which depends on the hashes of the triangles and so can change between Julia versions. The polygon of the generator `i` is always given by `get_polygon(vorn, i)`, though.
 
 Let's examine these fields one at a time.
 

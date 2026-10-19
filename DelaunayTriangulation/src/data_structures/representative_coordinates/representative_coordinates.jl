@@ -89,6 +89,7 @@ Treating `c` as an arithmetic average, updates the coordinates of `c` to exclude
 """
 function delete_point!(c::RepresentativeCoordinates, p)
     n = getn(c)
+    isone(n) && (reset!(c); return nothing) # the centroid of no points is undefined, so just start again from zero
     c.x = 1 / (n - 1) * (n * c.x - getx(p))
     c.y = 1 / (n - 1) * (n * c.y - gety(p))
     c.n -= 1

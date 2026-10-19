@@ -77,7 +77,7 @@ function new_representative_point!(tri::Triangulation, curve_index)
 end
 
 """
-    compute_representative_points!(tri::Triangulation; use_convex_hull=!has_boundary_nodes(tri), precision=one(number_type(tri)))
+    compute_representative_points!(tri::Triangulation; use_convex_hull=!has_boundary_nodes(tri), precision=nothing)
 
 Computes a new set of representative points for `tri`.
 
@@ -86,7 +86,7 @@ Computes a new set of representative points for `tri`.
 
 # Keyword Arguments
 - `use_convex_hull=!has_boundary_nodes(tri)`: If `true`, then the representative points are computed using the convex hull of the triangulation. Otherwise, the representative points are computed using the boundary nodes of the triangulation.
-- `precision=one(number_type(tri))`: The precision to use when computing the representative points via [`pole_of_inaccessibility`](@ref).
+- `precision=nothing`: The precision to use when computing the representative points via [`pole_of_inaccessibility`](@ref). If `precision === nothing`, then the default precision of [`pole_of_inaccessibility`](@ref) is used, which is relative to the size of each curve.
 
 # Output 
 There are no outputs as `tri` is updated in-place, but for each curve the representative point is computed using [`pole_of_inaccessibility`](@ref).
@@ -94,11 +94,12 @@ There are no outputs as `tri` is updated in-place, but for each curve the repres
 !!! warning "Exterior curves"
 
     While `get_exterior_curve_indices(tri)` does store the curves corresponding to exterior curves, this function still treats the first 
-    curve as the most important exterior curve, computing the representative point so that it is in no holes. In particular, other exterior curves 
+    curve as the most important exterior curve, computing the representative point so that it is in none of its holes (the curves that are its children 
+    in the [`PolygonHierarchy`](@ref)). In particular, other exterior curves 
     might have representative points that are in a hole of one of their interior holes. This isn't much of a problem, indeed it wouldn't be a significant 
     problem even if we had the representative point in a hole of the first curve, but it is something to be aware of.
 """
-function compute_representative_points!(tri::Triangulation; use_convex_hull = !has_boundary_nodes(tri), precision = one(number_type(tri)))
+function compute_representative_points!(tri::Triangulation; use_convex_hull = !has_boundary_nodes(tri), precision = nothing)
     reset_representative_points!(tri)
     if use_convex_hull
         return _compute_representative_points!(tri, get_convex_hull_vertices(tri); precision)
@@ -106,13 +107,23 @@ function compute_representative_points!(tri::Triangulation; use_convex_hull = !h
         return _compute_representative_points!(tri, get_boundary_nodes(tri); precision)
     end
 end
-function _compute_representative_points!(tri::Triangulation, boundary_nodes; precision = one(number_type(tri))) # need this to be separate for type stability.
+function _compute_representative_points!(tri::Triangulation, boundary_nodes; precision = nothing) # need this to be separate for type stability.
     points = get_points(tri)
     representative_point_list = get_representative_point_list(tri)
     I = integer_type(tri)
     if has_multiple_curves(tri)
         nc = num_curves(tri)
-        x, y = pole_of_inaccessibility(points, boundary_nodes; precision) # this is separate so that we make sure the center is not in any of the holes
+        # The first curve is considered together with its holes, so that its representative point is not in any of them. Any 
+        # other curves, e.g. disjoint domains or domains inside the holes, must be left out, since the pole could then be in one 
+        # of those instead.
+        trees = get_trees(get_polygon_hierarchy(tri))
+        holes = haskey(trees, 1) ? [get_index(child) for child in get_children(trees[1])] : I[]
+        first_curve_nodes = if !haskey(trees, 1) || 1 + length(holes) == nc
+            boundary_nodes # there are no other curves to leave out
+        else
+            [get_boundary_nodes(boundary_nodes, i) for i in (1, holes...)]
+        end
+        x, y = pole_of_inaccessibility(points, first_curve_nodes; precision)
         representative_point_list[1] = RepresentativeCoordinates(x, y, zero(I))
         for i in 2:nc
             bn = get_boundary_nodes(boundary_nodes, i)

@@ -501,14 +501,14 @@ Type for representing a leaf node in an R-tree.
 mutable struct Leaf{Branch} <: AbstractNode
     parent::Union{Branch, Nothing}
     bounding_box::BoundingBox
-    @const children::Vector{DiametralBoundingBox}
+    const children::Vector{DiametralBoundingBox}
     Leaf(parent::Branch, bounding_box, children) where {Branch} = new{Branch}(parent, bounding_box, children)
     Leaf{Branch}(parent::Branch, bounding_box, children) where {Branch} = new{Branch}(parent, bounding_box, children)
     Leaf{Branch}(::Nothing, bounding_box, children) where {Branch} = new{Branch}(nothing, bounding_box, children)
     # need to separate out the constructors to avoid unbound type argument issues from Aqua
 end
 function Base.:(==)(leaf1::Leaf, leaf2::Leaf)
-    xor(isnothing(leaf1), isnothing(leaf2)) && return false # if we test get_parent(leaf1) ≠ get_parent(leaf2), then we get a StackOverflowError
+    # The parents are not compared, since comparing get_parent(leaf1) with get_parent(leaf2) would compare their children, giving a StackOverflowError
     get_bounding_box(leaf1) ≠ get_bounding_box(leaf2) && return false
     get_children(leaf1) ≠ get_children(leaf2) && return false
     return true
@@ -550,14 +550,14 @@ Type for representing a branch node in an R-tree.
 mutable struct Branch <: AbstractNode
     parent::Union{Branch, Nothing}
     bounding_box::BoundingBox
-    @const children::Union{Vector{Branch}, Vector{Leaf{Branch}}} # if we do e.g. Branch{C}, it makes resolving some of the other types a bit difficult, especially Leaf{Branch}.
+    const children::Union{Vector{Branch}, Vector{Leaf{Branch}}} # if we do e.g. Branch{C}, it makes resolving some of the other types a bit difficult, especially Leaf{Branch}.
     level::Int
 end
 Branch(parent::Union{Branch, Nothing} = nothing, ::Type{C} = Branch) where {C <: AbstractNode} = Branch(parent, InvalidBoundingBox, C[], 1)
 Leaf(parent::Union{Branch, Nothing} = nothing) = Leaf{Branch}(parent, InvalidBoundingBox, DiametralBoundingBox[])
 
 function Base.:(==)(branch1::Branch, branch2::Branch)
-    xor(isnothing(branch1), isnothing(branch1)) && return false # if we test get_parent(branch1) ≠ get_parent(branch2), then we get a StackOverflowError
+    # The parents are not compared, since comparing get_parent(branch1) with get_parent(branch2) would compare their children, giving a StackOverflowError
     get_bounding_box(branch1) ≠ get_bounding_box(branch2) && return false
     get_children(branch1) ≠ get_children(branch2) && return false
     get_level(branch1) ≠ get_level(branch2) && return false
@@ -809,13 +809,13 @@ The `size_limit` is the node capacity. All node types have the same capacity.
 mutable struct RTree # linear
     root::Union{Branch, Leaf{Branch}}
     num_elements::Int
-    @const branch_cache::BranchCache
-    @const twig_cache::TwigCache
-    @const leaf_cache::LeafCache
-    @const fill_factor::Float64
-    @const free_cache::BitVector
-    @const detached_cache::Vector{Union{Branch, Leaf{Branch}}}
-    @const intersection_cache::NTuple{2, RTreeIntersectionCache}
+    const branch_cache::BranchCache
+    const twig_cache::TwigCache
+    const leaf_cache::LeafCache
+    const fill_factor::Float64
+    const free_cache::BitVector
+    const detached_cache::Vector{Union{Branch, Leaf{Branch}}}
+    const intersection_cache::NTuple{2, RTreeIntersectionCache}
 end
 function RTree(; size_limit = 100, fill_factor = 0.7) # https://en.wikipedia.org/wiki/R-tree: "however best performance has been experienced with a minimum fill of 30%–40%)
     branch_cache = BranchCache(size_limit)

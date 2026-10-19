@@ -63,9 +63,11 @@ end
 """
     delete_vertices_in_random_order!(list::Triangulation, tri::ShuffledPolygonLinkedList, rng, predicates::AbstractPredicateKernel)
 
-Deletes the vertices of the polygon represented by `list` in random order, done by switching 
-the pointers of the linked list. Only three vertices will survive. If these these three vertices are 
-collinear, then the deletion is attempted again after reshuffling the vertices.
+Deletes the vertices of the polygon represented by `list` in random order, done by switching
+the pointers of the linked list. Only three vertices will survive. If these three vertices are
+collinear, then the deletion is attempted again after reshuffling the vertices. If no three consecutive vertices
+of the polygon are positively oriented, e.g. if they are all collinear or the polygon is clockwise, then
+an `ArgumentError` is thrown since no reshuffling could succeed.
 
 # Arguments 
 - `list::ShuffledPolygonLinkedList`: The linked list representing the polygon to be deleted.
@@ -77,20 +79,34 @@ collinear, then the deletion is attempted again after reshuffling the vertices.
 There is no output, as `list` is modified in-place.
 """
 function delete_vertices_in_random_order!(list::ShuffledPolygonLinkedList, tri::Triangulation, rng::Random.AbstractRNG, predicates::AbstractPredicateKernel)
-    for i in list.k:-1:4
-        delete_vertex!(list, i)
-    end
-    # Check if the three surviving vertices that survived are collinear. Note that we do not 
-    #    check for negative orientation here, since the polygon is provided in a counter-clockwise 
-    #    order already.
-    u, v, w = get_triplet(list, 1)
-    a, b, c = get_point(tri, u, v, w)
-    degenerate_cert = triangle_orientation(predicates, a, b, c)
-    if !is_positively_oriented(degenerate_cert)
+    checked_polygon = false
+    while true
+        for i in list.k:-1:4
+            delete_vertex!(list, i)
+        end
+        # Check if the three surviving vertices that survived are collinear. Note that we do not
+        #    check for negative orientation here, since the polygon is provided in a counter-clockwise
+        #    order already.
+        u, v, w = get_triplet(list, 1)
+        a, b, c = get_point(tri, u, v, w)
+        degenerate_cert = triangle_orientation(predicates, a, b, c)
+        is_positively_oriented(degenerate_cert) && return tri
+        if !checked_polygon
+            !has_positively_oriented_corner(tri, list.S, predicates) && throw(ArgumentError("The polygon S must be convex with its vertices in counter-clockwise order, and its vertices must not all be collinear."))
+            checked_polygon = true
+        end
         reset!(list; rng)
-        delete_vertices_in_random_order!(list, tri, rng, predicates)
     end
-    return tri
+end
+
+# Returns true if some three consecutive vertices of the polygon S are positively oriented.
+function has_positively_oriented_corner(tri::Triangulation, S, predicates::AbstractPredicateKernel)
+    n = length(S)
+    for i in 1:n
+        a, b, c = get_point(tri, S[i], S[mod1(i + 1, n)], S[mod1(i + 2, n)])
+        is_positively_oriented(triangle_orientation(predicates, a, b, c)) && return true
+    end
+    return false
 end
 
 """

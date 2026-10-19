@@ -1,6 +1,5 @@
 include("data_structures/queue/max_priority_queue.jl")
 include("data_structures/queue/queue.jl")
-include("data_structures/trees/bst.jl")
 include("data_structures/trees/rtree.jl")
 include("data_structures/trees/polygon_hierarchy.jl")
 include("data_structures/triangulation/adjacent.jl")

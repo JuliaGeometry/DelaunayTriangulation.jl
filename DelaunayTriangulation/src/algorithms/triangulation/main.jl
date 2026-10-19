@@ -148,12 +148,17 @@ function triangulate(
     if enrich || (isempty(boundary_curves) && is_curve_bounded(boundary_nodes)) # If boundary_curves is not empty, then we are coming from triangulate_curve_bounded
         return triangulate_curve_bounded(points; segments, boundary_nodes, predicates, weights, IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType, randomise, delete_ghosts, delete_empty_features, try_last_inserted_point, skip_points, num_sample_rule, rng, insertion_order, recompute_representative_points, delete_holes, check_arguments, polygonise_n, coarse_n)
     end
+    skip_points_set = Set{IntegerType}(skip_points)
+    if check_arguments && has_boundary_nodes(boundary_nodes)
+        # The polygon hierarchy needs valid coordinates and boundary nodes, so these are checked before it is constructed (and again in check_args)
+        has_valid_coordinates(points, skip_points_set)
+        has_valid_boundary_nodes(points, boundary_nodes)
+    end
     if isnothing(full_polygon_hierarchy)
         full_polygon_hierarchy = construct_polygon_hierarchy(points, boundary_nodes; IntegerType)
     end
-    skip_points_set = Set{IntegerType}(skip_points)
     n = length(skip_points_set)
-    check_arguments && check_args(points, boundary_nodes, full_polygon_hierarchy, boundary_curves; skip_points = skip_points_set)
+    check_arguments && check_args(points, boundary_nodes, full_polygon_hierarchy, boundary_curves; skip_points = skip_points_set, segments, weights)
     if length(skip_points_set) > n 
         setdiff!(insertion_order, skip_points_set) 
     end

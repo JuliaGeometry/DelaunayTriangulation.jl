@@ -2,6 +2,7 @@ using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using CairoMakie
 using ReferenceTests
+using StableRNGs
 const ASSETS = joinpath(@__DIR__, "..", "..", "..", "assets", "test", "data_structures")
 
 
@@ -305,6 +306,28 @@ end
     tri = Triangulation([(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)])
     stats = statistics(tri)
     @test DT.num_solid_triangles(stats) == 0
-    # get_all_stat calls first(keys(...)) on the empty Dict of individual statistics
-    @test_broken isempty(DT.get_all_stat(stats, :area))
+    @test isempty(DT.get_all_stat(stats, :area))
+    @test DT.get_all_stat(stats, :area) isa Vector{Float64}
+    @test DT.get_all_stat(stats, :angles) isa Vector{NTuple{3, Float64}}
+end
+
+@testset "Getters for a triangle that is not in the triangulation" begin
+    tri = triangulate([(0.0, 0.0), (1.0, 0.0), (0.0, 1.0), (1.0, 1.0)]; rng = StableRNG(1))
+    stats = statistics(tri)
+    @test_throws KeyError DT.get_area(stats, (1, 2, 100))
+    @test_throws KeyError DT.get_minimum_angle(stats, (1, 2, 100))
+    T = first(each_solid_triangle(tri))
+    @test DT.get_area(stats, T) ≈ 0.5
+    @test DT.get_area(stats, (T[2], T[3], T[1])) ≈ 0.5 # rotations of the triangle are found too
+end
+
+@testset "distance_to_offcenter" begin
+    # The triangle with the shortest edge (p, q) and the offcenter as its third vertex has radius-edge ratio β
+    for β in (0.5, 1 / sqrt(3), 1.0, 2.5), ℓ in (1.0e-6, 1.0, 1.0e6)
+        h = DT.distance_to_offcenter(β, ℓ)
+        p, q, c = (0.0, 0.0), (ℓ, 0.0), (ℓ / 2, h)
+        @test DT.triangle_circumradius(p, q, c) / ℓ ≈ β
+    end
+    @test DT.distance_to_offcenter(1.0, 1.0) ≈ (2 + sqrt(3)) / 2
+    @test_throws DomainError DT.distance_to_offcenter(0.4, 1.0)
 end

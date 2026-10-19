@@ -150,7 +150,7 @@ function split_triangle!(tri::Triangulation, args::RefinementArguments, T)
     is_precision_failure(precision_cert) && return precision_cert
     V, flag = locate_steiner_point(tri, args, T, c)
     c′, V′ = check_for_invisible_steiner_point(tri, V, T, flag, c)
-    check_steiner_point_precision(tri, V′, c) && return Cert.PrecisionFailure
+    check_steiner_point_precision(tri, V′, c, args.length_scale) && return Cert.PrecisionFailure
     push_point!(tri, c′)
     new_point = num_points(tri)
     segment_flag = check_for_steiner_point_on_segment(tri, V, V′, new_point, flag, args.predicates)
@@ -184,21 +184,22 @@ function get_steiner_point(tri::Triangulation, args::RefinementArguments, T)
     i, j, k = triangle_vertices(T)
     p, q, r = get_point(tri, i, j, k)
     A = triangle_area(p, q, r)
-    check_precision(A) && return Cert.PrecisionFailure, q # the point q is just for type stability with the return 
+    check_precision(A, args.length_scale^2) && return Cert.PrecisionFailure, q # the point q is just for type stability with the return
     c = triangle_circumcenter(p, q, r, A)
     if !args.use_circumcenter
         # TODO: Implement generalised Steiner points so that c above is translated appropriately.
     end
-    check_steiner_point_precision(tri, T, c) && return Cert.PrecisionFailure, c
+    check_steiner_point_precision(tri, T, c, args.length_scale) && return Cert.PrecisionFailure, c
     return Cert.None, c # nothing went wrong yet
 end
 
 """
-    check_steiner_point_precision(tri::Triangulation, T, c) -> Bool
+    check_steiner_point_precision(tri::Triangulation, T, c, length_scale = 1.0) -> Bool
 
 Checks if the Steiner point `c` of a triangle `T` of `tri` can be computed without precision issues, returning `true` if there are precision issues and `false` otherwise.
+The `length_scale` is the scale of the domain used for the absolute tolerances; see [`RefinementArguments`](@ref).
 """
-function check_steiner_point_precision(tri::Triangulation, T, c)
+function check_steiner_point_precision(tri::Triangulation, T, c, length_scale = 1.0)
     is_ghost_triangle(T) && return true # we aren't supposed to get ghost triangles, unless we are _just_ off the boundary due to precision errors
     i, j, k = triangle_vertices(T)
     (px, py), (qx, qy), (rx, ry) = get_point(tri, i, j, k)
@@ -207,9 +208,9 @@ function check_steiner_point_precision(tri::Triangulation, T, c)
     rel_err_flag_2 = check_relative_precision(qx, cx) && check_relative_precision(qy, cy)
     rel_err_flag_3 = check_relative_precision(rx, cx) && check_relative_precision(ry, cy)
     rel_err_flag = rel_err_flag_1 || rel_err_flag_2 || rel_err_flag_3
-    abs_err_flag_1 = check_absolute_precision(px, cx) && check_absolute_precision(py, cy)
-    abs_err_flag_2 = check_absolute_precision(qx, cx) && check_absolute_precision(qy, cy)
-    abs_err_flag_3 = check_absolute_precision(rx, cx) && check_absolute_precision(ry, cy)
+    abs_err_flag_1 = check_absolute_precision(px, cx, length_scale) && check_absolute_precision(py, cy, length_scale)
+    abs_err_flag_2 = check_absolute_precision(qx, cx, length_scale) && check_absolute_precision(qy, cy, length_scale)
+    abs_err_flag_3 = check_absolute_precision(rx, cx, length_scale) && check_absolute_precision(ry, cy, length_scale)
     abs_err_flag = abs_err_flag_1 || abs_err_flag_2 || abs_err_flag_3
     return rel_err_flag || abs_err_flag
 end
@@ -567,16 +568,17 @@ function encroaches_upon(p, q, r, args::RefinementArguments)
 end
 
 """
-    check_split_subsegment_precision(mx, my, p, q) -> Bool
+    check_split_subsegment_precision(mx, my, p, q, length_scale = 1.0) -> Bool
 
-Checks if there are precision issues related to the computed split position `(mx, my)` of a segment `(p, q)`, 
-returning `true` if so and `false` otherwise.
+Checks if there are precision issues related to the computed split position `(mx, my)` of a segment `(p, q)`,
+returning `true` if so and `false` otherwise. The `length_scale` is the scale of the domain used for the absolute
+tolerances; see [`RefinementArguments`](@ref).
 """
-function check_split_subsegment_precision(mx, my, p, q)
+function check_split_subsegment_precision(mx, my, p, q, length_scale = 1.0)
     px, py = getxy(p)
     qx, qy = getxy(q)
-    abs_err_flag_1 = check_absolute_precision(mx, px) && check_absolute_precision(my, py)
-    abs_err_flag_2 = check_absolute_precision(mx, qx) && check_absolute_precision(my, qy)
+    abs_err_flag_1 = check_absolute_precision(mx, px, length_scale) && check_absolute_precision(my, py, length_scale)
+    abs_err_flag_2 = check_absolute_precision(mx, qx, length_scale) && check_absolute_precision(my, qy, length_scale)
     abs_err_flag = abs_err_flag_1 || abs_err_flag_2
     return abs_err_flag
 end
@@ -609,7 +611,12 @@ function _split_subsegment_piecewise_linear!(tri::Triangulation, args::Refinemen
     mx, my = compute_split_position(tri, args, e)
     # We can run into precision issues (e.g. I found this was needed when reproducing Figure 6.14 in the Delaunay 
     # Mesh Generation book). Let's ensure that the computed splitting point isn't just one of p or q.
-    check_split_subsegment_precision(mx, my, p, q) && (pop!(args.midpoint_split_list); pop!(args.offcenter_split_list); return tri)
+    if check_split_subsegment_precision(mx, my, p, q, args.length_scale)
+        # compute_split_position already recorded the new vertex num_points(tri) + 1 in one of these lists, but it is not being added
+        delete!(args.midpoint_split_list, num_points(tri) + 1)
+        delete!(args.offcenter_split_list, num_points(tri) + 1)
+        return tri
+    end
     empty!(args.events)
     delete_free_vertices_around_subsegment!(tri, args, e)
     push_point!(tri, mx, my)
@@ -644,7 +651,7 @@ function _split_subsegment_curve_bounded_standard!(tri::Triangulation, args::Ref
     t, Δθ, ct = compute_split_position(enricher, i, j, args.predicates)
     cx, cy = getxy(ct)
     p, q = get_point(tri, i, j)
-    precision_flag = check_split_subsegment_precision(cx, cy, p, q) || isnan(Δθ)
+    precision_flag = check_split_subsegment_precision(cx, cy, p, q, args.length_scale) || isnan(Δθ)
     if precision_flag
         return tri
     else
@@ -677,7 +684,7 @@ function _split_subsegment_curve_bounded_small_angle!(tri::Triangulation, args::
         next_edge = get_next_edge(member)
         q = get_point(points, next_edge)
         cx, cy = getxy(ct)
-        precision_flag = check_split_subsegment_precision(cx, cy, p, q)
+        precision_flag = check_split_subsegment_precision(cx, cy, p, q, args.length_scale)
         precision_flag && continue
         empty!(args.events)
         push_point!(tri, cx, cy)
@@ -774,7 +781,7 @@ function is_triangle_seditious(tri::Triangulation, args, u, v, w, smallest_idx)
         #    end
         #end
         # Actually, don't need the above check. It's just about asking if the shortest edge is seditious - an edge can be seditious without being the shortest, it just isn't normally checked is all.
-        !check_seditious_precision(ℓac², ℓbc²) && continue
+        !check_seditious_precision(ℓac², ℓbc², args.length_scale^2) && continue
         if args.constraints.seditious_angle > 0.0
             p, q, r = get_point(tri, a, b, c)
             px, py = getxy(p)
@@ -795,14 +802,15 @@ function is_triangle_seditious(tri::Triangulation, args, u, v, w, smallest_idx)
 end
 
 """
-    check_seditious_precision(ℓrp, ℓrq) -> Bool
+    check_seditious_precision(ℓrp, ℓrq, scale = one(ℓrp)) -> Bool
 
 Checks if there are precision issues related to the seditiousness of a triangle, returning `true` if so and `false` otherwise.
+The `scale` is used for the absolute tolerance, and should have the same units as `ℓrp` and `ℓrq`.
 """
-function check_seditious_precision(ℓrp, ℓrq)
+function check_seditious_precision(ℓrp, ℓrq, scale = one(ℓrp))
     ratio_flag = check_ratio_precision(ℓrp, ℓrq)
     rel_err_flag = check_relative_precision(ℓrp, ℓrq)
-    abs_err_flag = check_absolute_precision(ℓrp, ℓrq)
+    abs_err_flag = check_absolute_precision(ℓrp, ℓrq, scale)
     zero_flag = iszero(ℓrp) || iszero(ℓrq)
     return ratio_flag || rel_err_flag || abs_err_flag || zero_flag
 end

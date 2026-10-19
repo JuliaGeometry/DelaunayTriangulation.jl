@@ -57,7 +57,7 @@ See also [`get_unbounded_polygon_coordinates`](@ref) and [`get_bounded_polygon_c
 function get_polygon_coordinates(vorn::VoronoiTessellation, i, bounding_box = nothing; predicates::AbstractPredicateKernel = AdaptiveKernel())
     if !isnothing(bounding_box)
         a, b, c, d = bounding_box
-        @assert a < b && c < d "The bounding box must be of the form (xmin, xmax, ymin, ymax) with xmin < xmax and ymin < ymax."
+        a < b && c < d || throw(ArgumentError("The bounding box must be of the form (xmin, xmax, ymin, ymax) with xmin < xmax and ymin < ymax."))
     end
     if i ∈ get_unbounded_polygons(vorn)
         isnothing(bounding_box) && throw(ArgumentError("The polygon is unbounded, so a bounding box must be provided. See DelaunayTriangulation.polygon_bounds for a reasonable default."))

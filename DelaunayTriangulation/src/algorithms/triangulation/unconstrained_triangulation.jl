@@ -44,35 +44,39 @@ Gets the initial triangle for the Bowyer-Watson algorithm.
 - `initial_triangle`: The initial triangle.
 
 If there are more than three points and they are all collinear, a `CollinearPointsError` is thrown since there is no triangulation.
+
+# Extended help
+A triangle is nearly degenerate if its area is at most `sqrt(eps)` times the square of its longest edge, i.e. if it is very flat.
+This is relative to the size of the triangle, so that the initial triangle does not depend on the scale of the points.
 """
 function get_initial_triangle(tri::Triangulation, insertion_order, predicates::AbstractPredicateKernel = AdaptiveKernel(), itr = 0)
-    i, j, k = @view insertion_order[1:3] # insertion_order got converted into a Vector, so indexing is safe 
-    initial_triangle = construct_positively_oriented_triangle(tri, i, j, k, predicates)
-    i, j, k = triangle_vertices(initial_triangle)
-    p, q, r = get_point(tri, i, j, k)
-    degenerate_cert = triangle_orientation(predicates, p, q, r)
-    if iszero(itr) && length(insertion_order) > 3 && is_degenerate(degenerate_cert)
-        # If all the points are collinear then the loop below can't find a triangle, and there is no triangulation anyway
-        _, k′ = find_non_collinear_points(tri, insertion_order, predicates)
-        iszero(k′) && throw(CollinearPointsError(get_points(tri)))
-    end
-    if length(insertion_order) > 3 && (is_degenerate(degenerate_cert) || check_precision(triangle_area(p, q, r))) && itr ≤ length(insertion_order) # Do not get stuck in an infinite loop if there are just three points, the three of them being collinear. The itr ≤ length(insertion_order) is needed because, if all the points are collinear, the loop could go on forever 
-        @static if VERSION ≥ v"1.8.1"
-            circshift!(insertion_order, -1)
-        else
-            _insertion_order = circshift(insertion_order, -1)
-            copyto!(insertion_order, _insertion_order)
+    n = length(insertion_order)
+    while true
+        i, j, k = @view insertion_order[1:3] # insertion_order got converted into a Vector, so indexing is safe
+        initial_triangle = construct_positively_oriented_triangle(tri, i, j, k, predicates)
+        i, j, k = triangle_vertices(initial_triangle)
+        p, q, r = get_point(tri, i, j, k)
+        degenerate_cert = triangle_orientation(predicates, p, q, r)
+        if iszero(itr) && n > 3 && is_degenerate(degenerate_cert)
+            # If all the points are collinear then the loop below can't find a triangle, and there is no triangulation anyway
+            _, k′ = find_non_collinear_points(tri, insertion_order, predicates)
+            iszero(k′) && throw(CollinearPointsError(get_points(tri)))
         end
-        return get_initial_triangle(tri, insertion_order, predicates, itr + 1)
-    elseif length(insertion_order) > 3 && is_degenerate(degenerate_cert)
-        # We ran out of shifts, meaning every triangle we tried was degenerate or nearly degenerate. The points are not all
-        # collinear, though, so we can instead move three points that are not collinear to the front. See Issue #216.
-        j′, k′ = find_non_collinear_points(tri, insertion_order, predicates)
-        insertion_order[begin + 1], insertion_order[j′] = insertion_order[j′], insertion_order[begin + 1]
-        insertion_order[begin + 2], insertion_order[k′] = insertion_order[k′], insertion_order[begin + 2]
-        return get_initial_triangle(tri, insertion_order, predicates, itr)
+        _, _, ℓmax² = squared_triangle_lengths(p, q, r)
+        nearly_degenerate = is_degenerate(degenerate_cert) || check_precision(triangle_area(p, q, r), ℓmax²)
+        if n > 3 && nearly_degenerate && itr ≤ n # Do not get stuck in an infinite loop if there are just three points, the three of them being collinear. The itr ≤ n is needed because, if all the points are collinear, the loop could go on forever
+            circshift!(insertion_order, -1)
+            itr += 1
+        elseif n > 3 && is_degenerate(degenerate_cert)
+            # We ran out of shifts, meaning every triangle we tried was degenerate or nearly degenerate. The points are not all
+            # collinear, though, so we can instead move three points that are not collinear to the front. See Issue #216.
+            j′, k′ = find_non_collinear_points(tri, insertion_order, predicates)
+            insertion_order[begin + 1], insertion_order[j′] = insertion_order[j′], insertion_order[begin + 1]
+            insertion_order[begin + 2], insertion_order[k′] = insertion_order[k′], insertion_order[begin + 2]
+        else
+            return initial_triangle
+        end
     end
-    return initial_triangle
 end
 
 struct CollinearPointsError{P} <: Exception
