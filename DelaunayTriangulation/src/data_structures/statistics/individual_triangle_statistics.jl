@@ -665,9 +665,10 @@ function triangle_orthocenter(p, q, r, a, b, c)
 end
 
 """
+    triangle_orthoradius_squared(tri::Triangulation, T) -> Number
     triangle_orthoradius_squared(p, q, r, a, b, c) -> Number
 
-Computes the squared orthoradius of the triangle `(p, q, r)` with weights `a`, `b`, and `c`. 
+Computes the squared orthoradius of the triangle `T` of `tri`, or of the triangle `(p, q, r)` with weights `a`, `b`, and `c`.
 Note that this number may be negative.
 """
 function triangle_orthoradius_squared(tri::Triangulation, T)

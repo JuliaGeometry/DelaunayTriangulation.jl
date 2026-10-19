@@ -8,9 +8,9 @@ A struct for storing constraints for mesh refinement.
 - `max_angle=180.0`: The maximum angle of a triangle. 
 - `min_area=0.0`: The minimum area of a triangle.
 - `max_area=Inf`: The maximum area of a triangle.
-- `max_radius_edge_ratio=csd(min_angle) / 2`: The maximum radius-edge ratio of a triangle. This is computed from `min_angle` - you cannot provide a value for it yourself. 
+- `max_radius_edge_ratio=cscd(min_angle) / 2`: The maximum radius-edge ratio of a triangle. This is computed from `min_angle` - you cannot provide a value for it yourself. 
 - `max_points=typemax(Int)`: The maximum number of vertices allowed in the triangulation. Note that this refers to [`num_solid_vertices`](@ref), not the amount returned by [`num_points`](@ref).
-- `seiditous_angle=20.0`: The inter-segment angle used to define seditious edges in degrees. Should not be substantially smaller than 20.0° or any greater than 60.0°.
+- `seditious_angle=20.0`: The inter-segment angle used to define seditious edges in degrees. Should not be substantially smaller than 20.0° or any greater than 60.0°.
 - `custom_constraint::F=(tri, triangle) -> false`: A custom constraint function. This should take a [`Triangulation`](@ref) and a `triangle` as arguments, and return `true` if the `triangle` violates the constraints and `false` otherwise.
 """
 struct RefinementConstraints{F}

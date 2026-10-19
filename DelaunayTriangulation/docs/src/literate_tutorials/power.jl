@@ -43,10 +43,10 @@ fig
 
 # Notice that, unlike the unweighted tessellation, the generators in the power diagram 
 # don't actually have to live in their own tile, and more than one generator
-# may inhibit a tile. This is because the power diagram is based on the power distance,
+# may lie in a tile. This is because the power diagram is based on the power distance,
 # not the Euclidean distance.
 
-# We can easily look at the affect of the weights on the power diagram.
+# We can easily look at the effect of the weights on the power diagram.
 A, B, C, D, E, F, G, H,
 I, J, K, L, M, N = (-1.0, 3.0), (1.0, 3.0),
 (2.0, 2.0), (2.0, 0.0), (1.0, -1.0), (-1.0, -1.0),

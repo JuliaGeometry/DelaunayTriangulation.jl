@@ -5,7 +5,7 @@ detailed description, see Chapters 2 and 3 of the book [_Delaunay Mesh Generatio
 
 ## Parabolic Lifting Map 
 
-The definition of a weighted triangulation is derived from the idea of a _parabolic lifting map_. The parabolic lifting map takes a triangulation $\mathcal D\mathcal T(\mathcal P)$ of a finite point set $\mathcal p$ and projects it to a parabolid in $\mathbb R^3$ via the map $\mathcal L \colon \mathbb R^2 \to \mathbb R^3$ defined by $\mathcal L(p) = (p_x, p_y, p_x^2 + p_y^2)$. The point $\mathcal L(p)$ is the _lifted compansion_ of $p$, denoted $p^+$. An example of this mapping applied to a triangulation is shown below.
+The definition of a weighted triangulation is derived from the idea of a _parabolic lifting map_. The parabolic lifting map takes a triangulation $\mathcal D\mathcal T(\mathcal P)$ of a finite point set $\mathcal P$ and projects it to a paraboloid in $\mathbb R^3$ via the map $\mathcal L \colon \mathbb R^2 \to \mathbb R^3$ defined by $\mathcal L(p) = (p_x, p_y, p_x^2 + p_y^2)$. The point $\mathcal L(p)$ is the _lifted companion_ of $p$, denoted $p^+$. An example of this mapping applied to a triangulation is shown below.
 
 ```@setup weighted_ex1 
 using DelaunayTriangulation 
@@ -35,7 +35,7 @@ Let $\mathcal P^+$ denote the set of lifted points. It can be shown that the pro
 
 ## Weighted Delaunay Triangulations
 
-Weighted Delaunay triangulations allow the lifted points $p^+$ to live away from the paraboloid $x^2 + y^2$. In particular, augment each point $p_i \in \mathcal P$ with a weight $w_i$ such that the lifted point is $p_i^+ = (x_i, y_i, x_i^2 + y_i^2 - w_i)$. The point $w_i$ gives the deviation of $p_i^+$ from the paraboloid. In particular, $w_i > 0$ means the point is below the paraboloid, and $w_i < 0$ means it is below; the sign convention here is defined so that increasing $w_i$ increases its affect on the underside of the convex hull of $\mathcal P^+$, the set of lifted points. The _weighted Delaunay triangulation_ is then defined to be the projection of the underside of the convex hull of $\mathcal P^+$.
+Weighted Delaunay triangulations allow the lifted points $p^+$ to live away from the paraboloid $x^2 + y^2$. In particular, augment each point $p_i \in \mathcal P$ with a weight $w_i$ such that the lifted point is $p_i^+ = (x_i, y_i, x_i^2 + y_i^2 - w_i)$. The weight $w_i$ gives the deviation of $p_i^+$ from the paraboloid. In particular, $w_i > 0$ means the point is below the paraboloid, and $w_i < 0$ means it is above; the sign convention here is defined so that increasing $w_i$ increases its effect on the underside of the convex hull of $\mathcal P^+$, the set of lifted points. The _weighted Delaunay triangulation_ is then defined to be the projection of the underside of the convex hull of $\mathcal P^+$.
 
 Given this definition, it is possible that not all points will appear in the weighted triangulation, since not all faces will be projected in this case. Such points are said to be _submerged_ or _redundant_. 
 

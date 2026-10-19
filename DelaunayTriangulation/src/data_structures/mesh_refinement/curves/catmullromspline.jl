@@ -170,7 +170,7 @@ Additionally, [this article](https://splines.readthedocs.io/en/latest/euclidean/
    With an alpha parameter `α`, these values are given by `knots[i+1] = knots[i] + dist(control_points[i], control_points[i+1])^α`, where `knots[1] = 0`, 
    and the vector is the normalised by dividing by `knots[end]`.
 - `lookup_table::Vector{NTuple{2,Float64}}`: A lookup table for the Catmull-Rom spline, used for finding the point on the curve closest to a given point. The `i`th entry of the lookup table
-   corresponds to the `t`-value `i / (length(lookup_table) - 1)`.
+   corresponds to the `t`-value `(i - 1) / (length(lookup_table) - 1)`.
 - `alpha::Float64`: The alpha parameter of the Catmull-Rom spline. This controls the type of the parametrisation, where `alpha = 0` corresponds to uniform parametrisation, 
    `alpha = 1/2` corresponds to centripetal parametrisation, and `alpha = 1` corresponds to chordal parametrisation. Must be in `[0, 1]`. For reasons similar to what we describe for `tension` below, we only support 
     `alpha = 1/2` for now. (If you do really want to change it, use the `_alpha` keyword argument in the constructor.)

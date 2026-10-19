@@ -1,7 +1,6 @@
 using DelaunayTriangulation
 using Documenter
 using Literate
-using Test
 using Dates
 
 const IS_LIVESERVER = get(ENV, "LIVESERVER_ACTIVE", "false") == "true"
@@ -9,12 +8,7 @@ if IS_LIVESERVER
     using Revise
     Revise.revise()
 end
-const IS_GITHUB_ACTIONS = get(ENV, "GITHUB_ACTIONS", "false") == "true"
 const IS_CI = get(ENV, "CI", "false") == "true"
-function safe_include(filename)
-    mod = @eval module $(gensym()) end
-    return Base.include(mod, filename)
-end
 const session_tmp = mktempdir()
 
 # When running docs locally, the EditURL is incorrect. For example, we might get 
@@ -64,17 +58,11 @@ for folder in ("tutorials", "applications")
     for file in files
         # See also https://github.com/Ferrite-FEM/Ferrite.jl/blob/d474caf357c696cdb80d7c5e1edcbc7b4c91af6b/docs/generate.jl for some of this
         file_path = joinpath(dir, file)
-        #if !IS_LIVESERVER
-        #    @info "[$(ct())] Processing $file: Testing"
-        #    @testset "$(file)" begin
-        #        safe_include(file_path)
-        #    end
-        #end
         new_file_path = add_just_the_code_section(dir, file)
         script = Literate.script(file_path, session_tmp, name = splitext(file)[1] * "_just_the_code_cleaned")
         code = strip(read(script, String))
         @info "[$(ct())] Processing $file: Converting markdown script"
-        line_ending_symbol = occursin(code, "\r\n") ? "\r\n" : "\n"
+        line_ending_symbol = occursin("\r\n", code) ? "\r\n" : "\n"
         code_clean = join(filter(x -> !endswith(x, "#hide"), split(code, r"\n|\r\n")), line_ending_symbol)
         code_clean = replace(code_clean, r"^# This file was generated .*$"m => "")
         code_clean = strip(code_clean)
@@ -247,7 +235,7 @@ makedocs(;
         ),
     ),
     linkcheck = false,
-    warnonly = true,
+    warnonly = false,
     draft = IS_LIVESERVER,
     pages = _PAGES,
     pagesonly = true,

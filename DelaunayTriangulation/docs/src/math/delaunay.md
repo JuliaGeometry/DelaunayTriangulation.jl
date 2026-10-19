@@ -2,16 +2,16 @@
 
 ## Triangulations
 
-We start this section by introducing what Delaunay triangulations actually are. To precisely define a Delaunay triangulation first requires a few other definitions, so we will spare some of these exact details. Roughly speaking, a _triangulation_ is a partition of a set of points $\mathcal P \subseteq \mathbb R^2$ in the plane into non-overlapping triangles, such that the union of the triangles is the _convex hull_ of the points and any two triangles intersect either at a common edge or not at all.[^1] Here, a _convex hull_ is the smallest convex set containing all the points. We will use $\mathcal T(\mathcal P)$ to denote any triangulation of $\mathcal P$, and $\mathcal C\mathcal H(\mathcal P)$ to denote the convex hull of $\mathcal P$. It is possible to show that any given $\mathcal P$ will have a triangulation.
+We start this section by introducing what Delaunay triangulations actually are. To precisely define a Delaunay triangulation first requires a few other definitions, so we will spare some of these exact details. Roughly speaking, a _triangulation_ is a partition of a set of points $\mathcal P \subseteq \mathbb R^2$ in the plane into non-overlapping triangles, such that the union of the triangles is the _convex hull_ of the points and any two triangles intersect either at a common edge, at a common vertex, or not at all.[^1] Here, a _convex hull_ is the smallest convex set containing all the points. We will use $\mathcal T(\mathcal P)$ to denote any triangulation of $\mathcal P$, and $\mathcal C\mathcal H(\mathcal P)$ to denote the convex hull of $\mathcal P$. It is possible to show that any given $\mathcal P$ will have a triangulation.
 
-[^1]: This is not the only possible definition of a triangulation. We could also define $\mathcal T(\mathcal P)$ to be a maximal planar subdivision whose vertex set is $\mathcal P$, where a maximal planar subdivision is a planar graph such that no edge can be added without intersecting other existing edges. With this definition though, there is some extra work to be done to show that the boundary of $\mathcal T(\mathcal P)$ is indeed $\mathcal C\mathcal H(\mathcal P)$. To see this, take some edge $e_{ij}$ on the boundary $\mathcal T(\mathcal P)$. To argue that $e_{ij}$ is on the boundary of $\mathcal C\mathcal H(\mathcal P)$, we argue by contradiction. Suppose that $e_{ij}$ is not on the boundary of $\mathcal C\mathcal H(\mathcal P)$. Then either $e_{ij}$ is inside of $\mathcal C\mathcal H(\mathcal P)$, or it is on the outside. It of course cannot be outside of $\mathcal C\mathcal H(\mathcal P)$ since there would have to be some edge $e_{kl}$ that is inside of $\mathcal C\mathcal H(\mathcal P)$ that intersects $e_{ij}$, which is a contradiction to the maximal planarity. So, $e_{ij}$ has to be inside. This implies that there is some space to the side of $\mathcal T(\mathcal P)$ near $e_{ij}$ that is not contained inside $\mathcal C\mathcal H(\mathcal P)$, but this implies that there is a line segment that would have to go outside of the convex hull, which is a contradiction. Thus, $e_{ij}$ must be on the boundary, and so each edge of $\mathcal T(\mathcal P)$'s boundary is on the boundary of $\mathcal C\mathcal H(\mathcal P)$, meaning $\partial\mathcal T(\mathcal P) = \mathcal C\mathcal H(\mathcal P)$, where $\partial\mathcal T(\mathcal P)$ is the boundary of $\mathcal T(\mathcal P)$.
+[^1]: This is not the only possible definition of a triangulation. We could also define $\mathcal T(\mathcal P)$ to be a maximal planar subdivision whose vertex set is $\mathcal P$, where a maximal planar subdivision is a planar graph such that no edge can be added without intersecting other existing edges. With this definition though, there is some extra work to be done to show that the boundary of $\mathcal T(\mathcal P)$ is indeed $\mathcal C\mathcal H(\mathcal P)$. To see this, take some edge $e_{ij}$ on the boundary of $\mathcal T(\mathcal P)$. To argue that $e_{ij}$ is on the boundary of $\mathcal C\mathcal H(\mathcal P)$, we argue by contradiction. Suppose that $e_{ij}$ is not on the boundary of $\mathcal C\mathcal H(\mathcal P)$. Then either $e_{ij}$ is inside of $\mathcal C\mathcal H(\mathcal P)$, or it is on the outside. It of course cannot be outside of $\mathcal C\mathcal H(\mathcal P)$ since there would have to be some edge $e_{kl}$ that is inside of $\mathcal C\mathcal H(\mathcal P)$ that intersects $e_{ij}$, which is a contradiction to the maximal planarity. So, $e_{ij}$ has to be inside. This implies that there is some space to the side of $\mathcal T(\mathcal P)$ near $e_{ij}$ that is not contained inside $\mathcal C\mathcal H(\mathcal P)$, but this implies that there is a line segment that would have to go outside of the convex hull, which is a contradiction. Thus, $e_{ij}$ must be on the boundary, and so each edge of $\mathcal T(\mathcal P)$'s boundary is on the boundary of $\mathcal C\mathcal H(\mathcal P)$, meaning $\partial\mathcal T(\mathcal P) = \partial\mathcal C\mathcal H(\mathcal P)$, where $\partial\mathcal T(\mathcal P)$ is the boundary of $\mathcal T(\mathcal P)$.
 
 ## Delaunay Property
 
 There are several ways to motivate the Delaunay property, but here we will just skip straight to the definition. We have two definitions to make first, relative to some point set $\mathcal P$:
 
 1. A triangle $T$ is said to be _Delaunay_ if its open circumcircle contains no points of $\mathcal P$ in its interior. Note that this does not prohibit points from being on the boundary of the circumcircle.
-2. An edge $e$ is said to be _Delaunay_ if its diametral circle contains no points of $\mathcal P$ in its interior. Here, the diametral circle of an edge $e$ is the circle whose diameter is the edge $e$.
+2. An edge $e$ is said to be _Delaunay_ if it has an empty open circumcircle, meaning there is some circle passing through the endpoints of $e$ that contains no points of $\mathcal P$ in its interior. (This is weaker than requiring that the diametral circle of $e$, the circle whose diameter is the edge $e$, contains no points of $\mathcal P$ in its interior; an edge with that stronger property is called a _Gabriel edge_.)
 
 With these definitions, we say that a triangulation $\mathcal T(\mathcal P)$ is a _Delaunay triangulation_, and write $\mathcal D\mathcal T(\mathcal P)$, if each triangle $T \in \mathcal T(\mathcal P)$ is Delaunay. Note that $\mathcal D\mathcal T(\mathcal P)$ is not necessarily unique if there are cocircular vertices. If we adjust the above definitions to instead require that the closed circumcircles contain no points in $\mathcal P$ other than those from $T$, meaning $T$ is _strongly Delaunay_, then the triangulation would instead be unique. It is possible to show the following fact, known as the _Delaunay lemma_: Given a triangulation $\mathcal T(\mathcal P)$ of a point set, the following three statements are equivalent:
 
@@ -65,11 +65,11 @@ We can see that the circumcircles of the triangles contain no points in their in
 
 ## Bowyer-Watson Algorithm
 
-Let us now discuss how we actually construct a Delaunay triangulation. The algorithm we use is the famous Bowyer-Watson algorithm, an incremental algorithm that builds the Delaunay triangulation one at a time. Suppose we have started with some initial triangulation $\mathcal D\mathcal T(\mathcal P_0)$, where $\mathcal P_0 \subseteq \mathcal P$, and we want to add in some point $p$, giving $\mathcal D\mathcal T(\mathcal P_0 \cup \{p\})$. To do this, we:
+Let us now discuss how we actually construct a Delaunay triangulation. The algorithm we use is the famous Bowyer-Watson algorithm, an incremental algorithm that builds the Delaunay triangulation one point at a time. Suppose we have started with some initial triangulation $\mathcal D\mathcal T(\mathcal P_0)$, where $\mathcal P_0 \subseteq \mathcal P$, and we want to add in some point $p$, giving $\mathcal D\mathcal T(\mathcal P_0 \cup \{p\})$. To do this, we:
 
 1. Find one triangle whose open circumdisk contains $p$.
 2. Find all the other triangles by a depth-first search in the triangulation.
-3. Delete all the triangles containing $p$ in their circumcircle, leaving behind a polyhedral cavity.
+3. Delete all the triangles containing $p$ in their circumcircle, leaving behind a polygonal cavity.
 4. For each edge of this cavity, adjoin the vertices to $p$ to create a new triangle.
 
 This procedure will give us $\mathcal D\mathcal T(\mathcal P_0 \cup \{p\})$. Let's consider an example of this procedure. 
@@ -151,7 +151,7 @@ resize_to_layout!(fig)
 fig #hide
 ```
 
-In the above figure, we are considering insertion the red point into the triangulation. We then then all triangles whose circumcircles contain this red point, shown in blue. Deleting these triangles leaves behind a cavity shown in the third figure. Finally, connecting the vertices of the cavity to the red point gives the final triangulation.
+In the above figure, we are considering inserting the red point into the triangulation. We then find all triangles whose circumcircles contain this red point, shown in blue. Deleting these triangles leaves behind a cavity shown in the third figure. Finally, connecting the vertices of the cavity to the red point gives the final triangulation.
 
 Of course, this procedure is hiding away many important details and leaves more questions than answers:
 
@@ -209,8 +209,8 @@ function add_point!(pᵣ,  Tᵢⱼₖ)
 end
 function dig_cavity!(pᵣ, eᵢⱼ)
     ℓ = get_adjacent(eⱼᵢ)
-    x === ∅ && return # the triangle was already deleted 
-    if in_circle(pᵣ, Tᵢⱼₗ) # Tᵢⱼₖ and Tⱼᵢₗ are not Delaunay 
+    ℓ === ∅ && return # the triangle was already deleted
+    if in_circle(pᵣ, Tⱼᵢₗ) # Tᵢⱼₖ and Tⱼᵢₗ are not Delaunay
         delete_triangle!(Tⱼᵢₗ)
         dig_cavity!(pᵣ, eᵢₗ)
         dig_cavity!(pᵣ, eₗⱼ)
@@ -229,7 +229,7 @@ To determine if a point is inside a triangle's circumcircle, we need to use a pr
 \text{in_circle}(a, b, c, d) = \begin{vmatrix} a_x & a_y & a_x^2 + a_y^2 & 1 \\ b_x & b_y & b_x^2 + b_y^2 & 1 \\ c_x & c_y & c_x^2 + c_y^2 & 1 \\ d_x & d_y & d_x^2 + d_y^2 & 1 \end{vmatrix} 
 ```
 
-can be used to determine the position of a point $d$ relative to a triangle $T_{abc}$'s circumcircle: If the determinant is positive, then $d$ is inside the circumcircle; if it is negative, then $d$ is outside the circumcircle; and if it is zero, then $d$ is on the circumcircle. This predicate is used in the above search algorithm to determine if a point is inside a circumcircle. We use [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl) for this predicate.
+can be used to determine the position of a point $d$ relative to a positively oriented triangle $T_{abc}$'s circumcircle: If the determinant is positive, then $d$ is inside the circumcircle; if it is negative, then $d$ is outside the circumcircle; and if it is zero, then $d$ is on the circumcircle. This predicate is used in the above search algorithm to determine if a point is inside a circumcircle. By default, we compute this predicate with adaptive arithmetic using [AdaptivePredicates.jl](https://github.com/JuliaGeometry/AdaptivePredicates.jl); see the discussion of [predicate kernels](../manual/predicate_kernels.md).
 
 ### Exterior Points 
 
@@ -239,7 +239,7 @@ When a point is outside of the triangulation, notice that there will be no trian
 \text{orient}(a, b, c) = \begin{vmatrix} a_x & a_y & 1 \\ b_x & b_y & 1 \\ c_x & c_y & 1 \end{vmatrix}
 ```
 
-which says that $c$ is on the right of the line $ab$ if the determinant is positive, on the left if it is negative, and on the line if it is zero. 
+which says that $c$ is on the left of the line $ab$ (so that $T_{abc}$ is positively oriented) if the determinant is positive, on the right if it is negative, and on the line if it is zero. 
 
 Let us consider an example.
 
@@ -259,7 +259,7 @@ fig #hide
 
 In this example, we are interested in the ghost triangle associated with the blue edge. The oriented outer halfplane for this edge can be defined simply as $H = \{(x, y) ∈ \mathbb R^2 : y > 1\} ∪ \{(x, y) ∈ \mathbb R^2 : 0 < x < 1, y = 1\}$. Using this definition, we see that the red point is not in $H$, the magenta point is in $H$ (in fact, it is exactly on $\partial H$, where $\partial H$ denotes the boundary of $H$), the black point is in $H$, and the green point is not in $H$.
 
-Now that we have a way of identifying when ghost triangles should be deleted, we need a way to uniquely associate an exterior point with a ghost triangle. To do this, we associate with the triangulation a central point, typically the centroid when the triangulation is constructed, that each ghost edge $e_{ig}$ is oriented with. In particular, take some vertex $v_i$ on the boundary of the triangulation so that $e_{ig}$ is a ghost edge. We treat the ghost edge $e_{ig}$ as a ray emnating from $p_i$ out to infinity, oriented in the direction of the central point. Using this definition, we are able to split the region of space outside of the triangulation into a non-overlapping set of convex sets. Consider the example below:
+Now that we have a way of identifying when ghost triangles should be deleted, we need a way to uniquely associate an exterior point with a ghost triangle. To do this, we associate with the triangulation a central point, typically the centroid when the triangulation is constructed, that each ghost edge $e_{ig}$ is oriented with. In particular, take some vertex $v_i$ on the boundary of the triangulation so that $e_{ig}$ is a ghost edge. We treat the ghost edge $e_{ig}$ as a ray emanating from $p_i$ out to infinity, oriented in the direction of the central point. Using this definition, we are able to split the region of space outside of the triangulation into a non-overlapping set of convex sets. Consider the example below:
 
 ```@setup delaunay_ex1
 a = (0.0, 0.0)
@@ -304,11 +304,11 @@ resize_to_layout!(fig)
 fig #hide
 ```
 
-The ghost edges are the blue lines, and the central point is the red dot. With this definition, we therefore see that we can uniquely each region in space with a triangle - be it a ghost triangle or a real (solid) triangle.
+The ghost edges are the blue lines, and the central point is the red dot. With this definition, we therefore see that we can uniquely associate each region in space with a triangle - be it a ghost triangle or a real (solid) triangle.
 
 ### Initialising the Triangulation
 
-The initialisation of the triangulation is simple. We pick three points $p_i$, $p_j$, and $p_k$ at random, ordering them so that they define a positively oriented triangle. We add $T_{ijk}$ into the triangulation, initialise the adjacent map $\mathcal A$, add the ghost triangles $T_{jig}$, $T_{kij}$, and $T_{kji}$, and initialise the central point as $c = (p_i + p_j + p_k) / 3$.
+The initialisation of the triangulation is simple. We pick three points $p_i$, $p_j$, and $p_k$ at random, ordering them so that they define a positively oriented triangle. We add $T_{ijk}$ into the triangulation, initialise the adjacent map $\mathcal A$, add the ghost triangles $T_{jig}$, $T_{kjg}$, and $T_{ikg}$, and initialise the central point as $c = (p_i + p_j + p_k) / 3$.
 
 ### Putting Everything Together 
 

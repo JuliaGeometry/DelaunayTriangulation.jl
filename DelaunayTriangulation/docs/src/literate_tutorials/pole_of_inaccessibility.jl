@@ -49,10 +49,10 @@ points = [
     5.33697 1.88019
 ]'
 outer_boundary = [
-    ## split into segments for demonstration purposes
+    ## split into sections for demonstration purposes
     [1, 4, 3, 2],
     [2, 9, 10, 11, 8, 7, 12],
-    [12, 6, 13, 5, 14, 15, 16, 17, 16],
+    [12, 6, 13, 5, 14, 15, 16],
     [16, 17, 18, 19, 20, 21, 22, 23, 1],
 ]
 inner_1 = [

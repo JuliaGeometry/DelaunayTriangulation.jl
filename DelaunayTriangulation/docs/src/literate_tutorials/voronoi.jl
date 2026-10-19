@@ -175,10 +175,10 @@ function direct_polygon_areas(vorn)
 end
 vorn_areas ≈ direct_polygon_areas(vorn)
 
-# Moreover, note that the following is false: 
+# Moreover, note that the following is not guaranteed to be true:
 vorn_areas ≈ [get_area(vorn, i) for i in each_polygon_index(vorn)]
 
-# because `each_polygon_index` does not return the polygons in a sorted order.
+# because `each_polygon_index` does not necessarily return the polygons in a sorted order.
 
 # Before we move on, we emphasise that it is not guaranteed that the values of the vertices 
 # for a given polygon are the same if you were to recompute the tessellation. The actual coordinates 

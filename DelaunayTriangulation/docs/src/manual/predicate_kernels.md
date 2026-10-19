@@ -11,7 +11,7 @@ In total, there are three different kernels offered for computing predicates:
 - `ExactKernel()`: Predicates will be computed using exact arithmetic via [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl). 
 
 There are clear strengths and weaknesses to each of these choices. To summarise them, here is when each kernel should be considered:
-- `FastKernel()`: This kernel can be safely used when you know that there are no collinear points or cocircular points in your data set. It may still work even in those cases, but it can not be safely relied upon. If you trust that there are no issues, this should be the kernel you use as it is the fastest. If you run into issues while using this kernel, please use try `AdaptiveKernel()`.
+- `FastKernel()`: This kernel can be safely used when you know that there are no collinear points or cocircular points in your data set. It may still work even in those cases, but it can not be safely relied upon. If you trust that there are no issues, this should be the kernel you use as it is the fastest. If you run into issues while using this kernel, please try `AdaptiveKernel()`.
 - `AdaptiveKernel()`: This is the kernel we use by default. It has performance that is reasonably close to what is offered by `FastKernel()`, except it also guarantees that predicates will return the correct result even with collinear points or cocircular points, or in other degenerate cases where one typically expects predicates to be problematic. If you are using `FastKernel()` and run into issues, this should be the next kernel you try.
 - `ExactKernel()`: This is the slowest kernel, but it is the safest. This kernel works on a much wider range of numbers than `AdaptiveKernel()`, and is guaranteed to satisfy certain combinatorial properties such as `orient(a, b, c) == orient(b, c, a) == orient(c, a, b)`. I have not seen any examples  where `AdaptiveKernel()` fails but `ExactKernel()` works, though, so you should only consider using this kernel if you do actually encounter such a case, i.e. treat this kernel as a fallback for `AdaptiveKernel()`.
 
@@ -39,7 +39,7 @@ C_{pqrs} &:= \textrm{incircle}(p, q, r, s) = \begin{vmatrix} p_x - s_x & p_y - s
 \end{align*}
 ```
 
-The signs of these determinants $O_{pqr}$ and $C_{pqrs}$ are used to determinant the answers to the above questions. In inexact arithmetic, it is common that the sign picked is wrong when the determinants are close to zero. The consequences of this can be catastrophic:
+The signs of these determinants $O_{pqr}$ and $C_{pqrs}$ are used to determine the answers to the above questions. In inexact arithmetic, it is common that the sign picked is wrong when the determinants are close to zero. The consequences of this can be catastrophic:
 
 1. The algorithms may hang or crash.
 2. The final triangulation may be completely invalid. For example, if a point is being added into a triangulation right onto an existing edge, then in exact arithmetic we would know to split the edge to the left and to the right. In inexact arithmetic, the point may be to the left of the edge but detected as being to the right of it, thus adding a triangle that crosses an edge.
@@ -51,8 +51,7 @@ Another issue is due to the fact that floating point arithmetic is not associati
 O_{pqr} = O_{qrp} = O_{rpq},
 ```
 
-but this is not true in floating point arithmetic. This causes issues with consistency - a point may be found to be both left and right of an edge depending on the order of the points given to the `orient` predicate, inevitably leading to an invalid triangulation. With the use of robust predicates, this property is guaranteed to hold, ensuring that all the predicate results are consistent with each other. (This identity does not always hold with adaptive arithmetic,
-although this is less problematic due to the design of the adaptive predicates; read Shewchuk's paper for more information.) This has the following consequence: **Even if you think robust predicates are not necessary for you because none of your inputs are exact (for example), you still want them to guarantee consistency with predicates regardless of the input order**.
+but this is not true in floating point arithmetic. This causes issues with consistency - a point may be found to be both left and right of an edge depending on the order of the points given to the `orient` predicate, inevitably leading to an invalid triangulation. With the use of robust predicates, this property is guaranteed to hold, ensuring that all the predicate results are consistent with each other. (Adaptive arithmetic also computes the sign of each determinant exactly, so this identity can only fail with `AdaptiveKernel()` if the intermediate computations overflow or underflow, e.g. for coordinates of extreme magnitude; read Shewchuk's paper for more information.) This has the following consequence: **Even if you think robust predicates are not necessary for you because none of your inputs are exact (for example), you still want them to guarantee consistency with predicates regardless of the input order**.
 
 ## Will disabling exact predicates give me better performance?
 
@@ -64,7 +63,7 @@ You should always benchmark your problems to see if using `FastKernel()` over th
 
 ## Can I check if my computed triangulation is valid?
 
-When you are not using robust predicates, you may want to check if your computed triangulation is actually a valid Delaunay triangulation. We provide the function `DelaunayTriangulation.validate_triangulation` for this purpose. This functionality is quite slow to use and is not currently optimised or well-documented (contributions towards addressing these issues are welcome), but it will work. One important note is that this check does actually use predicates in certain areas, so this check is still not guaranteed to be 100% accurate without robust predicates (by default, `validate_triangulation` will use the `ExactKernel()` kernel). Here is an example of its use.
+When you are not using robust predicates, you may want to check if your computed triangulation is actually a valid Delaunay triangulation. We provide the function [`validate_triangulation`](@ref) for this purpose. This function is quite slow, so it is best used for debugging rather than inside a loop (contributions towards optimising it are welcome). One important note is that this check does actually use predicates in certain areas, so this check is still not guaranteed to be 100% accurate without robust predicates (by default, `validate_triangulation` will use the `ExactKernel()` kernel). Here is an example of its use.
 
 ```julia
 using DelaunayTriangulation

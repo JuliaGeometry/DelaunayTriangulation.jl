@@ -1,10 +1,14 @@
-# Representing Primitives 
+```@meta
+CurrentModule = DelaunayTriangulation
+```
+
+# Representing Primitives
 In this package, we need methods for representing points, edges, triangles, and boundaries. By default, we provide a simple interface for defining these primitives, typically treating these primitives as:
 
-- Points: `Vector{NTuple{2, Float64}}` or `Matrix{Float64}`, where in the latter case points are defined by the columns of the matrix. Where mutability is needed, typically the former is preferred as an `ElasticMatrix` from `ElasticMatrix.jl` is needed if a matrix is used instead.
+- Points: `Vector{NTuple{2, Float64}}` or `Matrix{Float64}`, where in the latter case points are defined by the columns of the matrix. Where mutability is needed, typically the former is preferred as an `ElasticMatrix` from [ElasticArrays.jl](https://github.com/JuliaArrays/ElasticArrays.jl) is needed if a matrix is used instead.
 - Edges: `Set{NTuple{2, Int}}`.
 - Triangles: `Set{NTuple{3, Int}}`.
-- Boundaries: The recommended way to represent a boundary depends on the type, as described in the [Representing Boundaries](boundaries.md) section. For a contiguous boundary, `Vector{Int}` is preferred; for a boundary with a single sectioned curve, `Vector{Vector{Int}}` is preferred; for a boundary with multiple disjoint sections, `Vector{Vector{Vector{Int}}}` is preferred.
+- Boundaries: The recommended way to represent a boundary depends on the type, as described in the [Representing Boundaries](boundaries.md) section. For a contiguous boundary, `Vector{Int}` is preferred; for a boundary with a single sectioned curve, `Vector{Vector{Int}}` is preferred; for a boundary with multiple curves, `Vector{Vector{Vector{Int}}}` is preferred.
 
 For defining new methods, as discussed in [this tutorial](../tutorials/custom_primitive.md) and this [API reference](../api/primitives.md), there are many methods that could be overloaded. When defining these methods, though, there are some important things to consider:
 
@@ -14,4 +18,4 @@ For defining new methods, as discussed in [this tutorial](../tutorials/custom_pr
 
 Of course, how you implement the methods for your custom types comes down to what you need. 
 
-For using these methods inside [`triangulate`](@ref), you need to specify all types other than the point used for points, as described in its docstring.
+For using these methods inside [`triangulate`](@ref), you need to pass your types through the `IntegerType`, `EdgeType`, `TriangleType`, `EdgesType`, and `TrianglesType` keyword arguments, as described in its docstring. The point type is taken from the `points` you provide.

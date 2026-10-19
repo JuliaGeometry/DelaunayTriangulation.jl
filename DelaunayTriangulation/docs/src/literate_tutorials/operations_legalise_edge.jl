@@ -71,7 +71,7 @@ linesegments!(ax, T, color = :red, linewidth = 3) #hide
 fig #hide 
 @test_reference reference_path(fig_path, "triangulation_operations_15.png") fig #src
 
-# To fix this, we use `legalise_edge!`. This functions take in a single edge,
+# To fix this, we use `legalise_edge!`. This function takes in a single edge,
 # so to legalise all the new edges we apply the function to each edge of the 
 # triangle that the point resides in. (The function [`DelaunayTriangulation.legalise_split_triangle!`](@ref)
 # also performs these three calls below.)

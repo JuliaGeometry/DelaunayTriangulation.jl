@@ -33,8 +33,8 @@ outer_circle = CircularArc((R₂, 0.0), (R₂, 0.0), (0.0, 0.0))
 inner_circle = CircularArc((R₁, 0.0), (R₁, 0.0), (0.0, 0.0), positive = false)
 points = NTuple{2, Float64}[]
 tri = triangulate(points; rng, boundary_nodes = [[[outer_circle]], [[inner_circle]]])
-A = 2π * (R₂^2 - R₁^2)
-refine!(tri; max_area = 2.0e-3A, min_angle = 33.0, rng)
+A = π * (R₂^2 - R₁^2)
+refine!(tri; max_area = 4.0e-3A, min_angle = 33.0, rng)
 fig, ax, sc = triplot(tri)
 fig
 
@@ -212,7 +212,6 @@ function solve_met_problem(tri::Triangulation, D)
             end
         end
     end
-    Asp = sparse(A)
     ## Now we can build b
     b = zeros(nv)
     for i in each_solid_vertex(tri)
@@ -222,8 +221,8 @@ function solve_met_problem(tri::Triangulation, D)
             A[vertex_map[i], vertex_map[i]] = 1.0 # b[i] is already 0 
         end
     end
-    ## Now solve and return the solution
-    T = A \ b
+    ## Now solve and return the solution, using a sparse matrix since most entries of A are zero
+    T = sparse(A) \ b
     filled_out_T = zeros(DelaunayTriangulation.num_points(tri)) # make sure that T[i] actually refers to the vertex i
     for i in 1:nv
         filled_out_T[inverse_vertex_map[i]] = T[i]

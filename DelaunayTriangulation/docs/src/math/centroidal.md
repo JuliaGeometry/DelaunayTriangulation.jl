@@ -1,15 +1,15 @@
 # Centroidal Voronoi Tessellations
 
-We now discuss centroidal Voronoi tessellations. These are tessellations in which the generator of each Voronoi polygon is given by the polygon's centroid. The algorithm we use for this is very simple. Suppose we have a point set $\mathcal P$ and we want to compute the centroidal Voronoi tessellation of $\mathcal P$, denoted $\mathcal C\mathcal V(\mathcal P)$. We do the following:
+We now discuss centroidal Voronoi tessellations. These are tessellations in which the generator of each Voronoi polygon is given by the polygon's centroid. The algorithm we use for this is very simple, and is known as Lloyd's algorithm. Suppose we have a point set $\mathcal P$ and we want to compute the centroidal Voronoi tessellation of $\mathcal P$, denoted $\mathcal C\mathcal V(\mathcal P)$. We do the following:
 
 1. Let $\mathcal P' = \mathcal P$.
-2. Compute the clippped Voronoi tessellation $\tilde{\mathcal V}(\mathcal P') = \mathcal V(\mathcal P') \cap \mathcal C\mathcal H(\mathcal P')$.
+2. Compute the clipped Voronoi tessellation $\tilde{\mathcal V}(\mathcal P') = \mathcal V(\mathcal P') \cap \mathcal C\mathcal H(\mathcal P')$.
 
     Then, until terminating, we:
 
-2. For each generator $v_i' \in \mathcal P'$ not on the boundary, move $v_i'$ to the centroid $v_i''$ of $\mathcal V_i(\mathcal P')$.
-3. Compute $\delta = \max_i \|p_i' - p_i''\|$, i.e. the maximum displacement of a point.
-4. If $\delta < \varepsilon$, terminate. Otherwise, set $\mathcal P' = \{v_1'', \ldots, v_n''\}$ and go to step 2 after computing $\tilde{\mathcal V}(\mathcal P')$ once again.. Here, $\varepsilon$ is some displacement tolerance. In this package, we default to $\varepsilon = 10^{-4}$, where $h$ is the maximum edge length of the bounding box box $\tilde{\mathcal V}(\mathcal P)$.
+3. For each generator $v_i' \in \mathcal P'$ not on the boundary, move $v_i'$ to the centroid $v_i''$ of $\mathcal V_i(\mathcal P')$.
+4. Compute $\delta = \max_i \|p_i' - p_i''\|$, i.e. the maximum displacement of a point.
+5. If $\delta < \varepsilon$, terminate. Otherwise, set $\mathcal P' = \{v_1'', \ldots, v_n''\}$, compute $\tilde{\mathcal V}(\mathcal P')$ once again, and go to step 3. Here, $\varepsilon$ is some displacement tolerance. In this package, we default to $\varepsilon = 10^{-4}h$, where $h$ is the maximum edge length of the bounding box of $\tilde{\mathcal V}(\mathcal P)$.
 
 That is the entire description of the algorithm. We give an example of this below.
 

@@ -684,7 +684,7 @@ some warnings and notes.
 - `q`: The query point.
 
 # Keyword Arguments 
-- `predicates::AbstractPredicateKernel=ExactKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 - `point_indices=each_solid_vertex(tri)`: The indices of the vertices to consider as possible starting points for the algorithm.
 - `m=default_num_samples(num_vertices(point_indices))`: The number of samples to use when selecting the initial point.
 - `try_points=()`: A list of points to try as the initial point in addition to the `m` sampled.

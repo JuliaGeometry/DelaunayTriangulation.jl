@@ -5,10 +5,10 @@ History from using [`find_triangle`](@ref).
 
 # Fields 
 - `triangles::Vector{T}`: The visited triangles. 
-- `collinear_segments::Vector{E}`: Segments collinear with the original line `pq` using to jump.
-- `collinear_point_indices::Vector{I}`: This field contains indices to segments in `collinear_segments` that refer to points that were on the original segment, but there is no valid segment for them. We use manually fix this after the fact. For example, we could add an edge `(1, 14)`, when really we mean something like `(7, 14)` which isn't a valid edge.
+- `collinear_segments::Vector{E}`: Segments collinear with the original line `pq` used to jump.
+- `collinear_point_indices::Vector{I}`: This field contains indices to segments in `collinear_segments` that refer to points that were on the original segment, but there is no valid segment for them. We manually fix this after the fact. For example, we could add an edge `(1, 14)`, when really we mean something like `(7, 14)` which isn't a valid edge.
 - `left_vertices::Vector{I}`: Vertices from the visited triangles to the left of `pq`.
-- `right_verices::Vector{I}`: Vertices from the visited triangles to the right of `pq`.
+- `right_vertices::Vector{I}`: Vertices from the visited triangles to the right of `pq`.
 """
 struct PointLocationHistory{T, E, I}
     triangles::Vector{T}

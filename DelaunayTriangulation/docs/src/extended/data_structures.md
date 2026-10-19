@@ -22,7 +22,7 @@ Filter = t -> !(t in (DelaunayTriangulation.MaxPriorityQueue,))
 
 ## Queue 
 
-The `Queue` is our implementation of a basic FIFO queue; see, for example, [the wikipedia page](https://en.wikipedia.org/wiki/Queue_(abstract_data_type)). The implementation of a `Queue` in this package is very simple - it is just a vector. A block-based approach could also be implemented in the future, it just hasn't. The idea here is to avoid a dependency on DataStructures.jl. The `Queue` is used in a variety of places, such as during boundary enrichment in [`enrich_boundary!`](@ref) to determine which edges to process next.
+The `Queue` is our implementation of a basic FIFO queue; see, for example, [the wikipedia page](https://en.wikipedia.org/wiki/Queue_(abstract_data_type)). The implementation of a `Queue` in this package is very simple - it is just a vector. A block-based approach could also be implemented in the future. The idea here is to avoid a dependency on DataStructures.jl. The `Queue` is used in a variety of places, such as during boundary enrichment in [`enrich_boundary!`](@ref) to determine which edges to process next.
 
 ```@docs 
 Queue 
@@ -36,7 +36,7 @@ Filter = t -> !(t in (DelaunayTriangulation.Queue,))
 
 ## BalancedBST
 
-The `BalancedBST` is our implementation of a balanced binary search tree; see, for example, [these notes](https://courses.csail.mit.edu/6.006/fall09/lecture_notes/lecture04.pdf). The `BalancedBST` is not currently used anywhere. Originally, it was intended for use with the Bentley-Ottman algorithm, but the complete algorithm is yet to be implemented; this algorithm was to be implemented to allow for users to provide intersecting segments that, through the algorithm, could be automatically split for the user. The `BalancedBST` implementation is fully functional for this purpose, the work in getting the actual algorithm up and going just has to be done.
+The `BalancedBST` is our implementation of a balanced binary search tree; see, for example, [these notes](https://courses.csail.mit.edu/6.006/fall09/lecture_notes/lecture04.pdf). The `BalancedBST` is not currently used anywhere. Originally, it was intended for use with the Bentley–Ottmann algorithm, but the complete algorithm is yet to be implemented; this algorithm was to be implemented to allow for users to provide intersecting segments that, through the algorithm, could be automatically split for the user. The `BalancedBST` implementation is fully functional for this purpose, the work in getting the actual algorithm up and going just has to be done.
 
 ```@docs 
 BalancedBST
@@ -249,7 +249,7 @@ Triangulation
 ```@autodocs    
 Modules = [DelaunayTriangulation]
 Pages = ["data_structures/triangulation/triangulation.jl"]
-Filter = t -> !(t in (DelaunayTriangulation.Triangulation,))
+Filter = t -> !(t in (DelaunayTriangulation.Triangulation, DelaunayTriangulation.get_incircle_cache, DelaunayTriangulation.get_orient3_cache))
 ```
 
 ## TriangulationCache 
@@ -263,7 +263,7 @@ Pages = ["data_structures/triangulation/triangulation_cache.jl"]
 
 ## BoundaryEnricher 
 
-We use a `BoundaryEnricher` struct for storing information using during the enrichment phase of the triangulation of a curve-bounded domain.
+We use a `BoundaryEnricher` struct for storing information used during the enrichment phase of the triangulation of a curve-bounded domain.
 
 ```@docs 
 BoundaryEnricher 

@@ -91,8 +91,8 @@ get_boundary_nodes(cons_tri)
 
 # Later tutorials also consider other methods for working with the boundary 
 # where care needs to be taken with the boundary, or part of the boundary, 
-# being considered. For now, here is an example where we use 
-# `get_right_boundary_node` to iterate over the boundary in a counter-clockwise 
+# being considered. For now, here is an example where we use
+# `get_boundary_nodes` to iterate over the boundary in a counter-clockwise 
 # order, getting the area of the triangulation using 
 # ```math
 # A = \dfrac{1}{2}\sum_{i=1}^n \left(y_i + y_{i+1}\right)\left(x_i - x_{i+1}\right).
@@ -118,7 +118,7 @@ shoelace_area(cons_tri)
 # We also provide a map that contains the edges as the keys (*not* in order), and the values are `Tuple`s `(I, J)` 
 # such that `get_boundary_nodes(get_boundary_nodes(cons_tri, I), J)` gives the corresponding 
 # edge. The first call, `bn = get_boundary_nodes(cons_tri, I)` is for obtaining the chain of boundary edges 
-# containing the boundary edge, and then `get_boundary_nodes(bn, j)` gets the actual edge.
+# containing the boundary edge, and then `get_boundary_nodes(bn, J)` gets the actual edge.
 get_boundary_edge_map(cons_tri)
 
 # In our case, the `I` is just `boundary_nodes` since we only have one contiguous boundary. 
@@ -130,7 +130,8 @@ e, (I, J) = first(bem)
 bn = get_boundary_nodes(cons_tri, I) # same as boundary_nodes for this problem; see the later tutorials 
 bn_j = get_boundary_nodes(bn, J)
 
-# This returns `23`, which is the start of the edge `e`. The full edge is given by 
+# This returns the start of the edge `e` (which edge `first(bem)` gives depends on the
+# iteration order of the `Dict`, so it may differ between Julia versions). The full edge is given by 
 get_boundary_nodes.(Ref(bn), (J, J + 1)) # Ref to not broadcast over bn
 @test e == get_boundary_nodes.(Ref(bn), (J, J + 1)) #src
 

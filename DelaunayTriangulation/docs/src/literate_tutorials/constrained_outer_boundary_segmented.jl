@@ -20,10 +20,10 @@ points = [
 ]
 
 # We now want to define our boundary. The method for providing a boundary to be 
-# identified into multiple sections is to provided a vector of vectors of indices,
+# identified into multiple sections is to provide a vector of vectors of indices,
 # where each vector of indices is a section. The last index of each section must match 
 # the first index of the next section, including the last with the first 
-# section so that the boundary is closed. Here, we provide three . 
+# section so that the boundary is closed. Here, we provide three sections. 
 section_1 = [(0.0, 0.0), (14.0, 0.0)]
 section_2 = [(14.0, 0.0), (10.0, 4.0), (4.0, 6.0), (2.0, 12.0), (0.0, 14.0)]
 section_3 = [(0.0, 14.0), (0.0, 0.0)]
@@ -143,7 +143,7 @@ s = compute_sum_2(tri)
 
 # If your application instead wanted all the nodes on the section rather than the edges, 
 # you can look at the neighbours to the ghost vertex. For example, all the nodes 
-# on the section section can be identified using 
+# on the second section can be identified using 
 get_neighbours(tri, -2)
 
 # Another field is the `ghost_vertex_map`, which maps a given ghost vertex to the associated section. This is 

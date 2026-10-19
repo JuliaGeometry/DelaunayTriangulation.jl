@@ -7,6 +7,8 @@
 - `triangulate` now throws a `CollinearPointsError` when there are more than three points and they are all collinear, rather than an `UndefVarError` or hanging. Nearly collinear point sets, where every triangle is degenerate or very nearly degenerate, are now triangulated correctly. See [#216](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/issues/216).
 - `pole_of_inaccessibility` no longer runs out of memory for very thin polygons, such as the convex hull of nearly collinear points. See [#216](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/issues/216).
 - `convert_boundary_points_to_indices` now skips points that repeat the previous point, e.g. a repeated final point. `triangulate` now throws a `DuplicateBoundaryNodeError` if a boundary node is a duplicate point that would be skipped, rather than overflowing the stack. See [#220](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/issues/220).
+- The functions documented on the Primitive Interfaces page of the API reference (e.g. `geti`, `construct_edge`, `push_point!`, and `contains_edge`), which are the methods to overload when using custom primitives, are now marked `public`.
+- Fixed several errors in the documentation. In particular, the mathematical details now use the correct definition of a Delaunay edge, the correct sign convention for the orientation predicate, the correct test for a point being inside a diametral circle or lens, and the correct second derivatives of circular and elliptical arcs, and they describe how unbounded Voronoi polygons are clipped since [#239](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/issues/239). Some docstrings that were attached to the wrong function (e.g. for `each_generator`) have also been fixed.
 
 ## 1.7.0
 

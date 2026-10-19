@@ -78,7 +78,6 @@ export
     get_polygon_coordinates,
     get_nearest_neighbour,
     convex_hull,
-    get_convex_hull,
     get_graph,
     voronoi,
     retriangulate,

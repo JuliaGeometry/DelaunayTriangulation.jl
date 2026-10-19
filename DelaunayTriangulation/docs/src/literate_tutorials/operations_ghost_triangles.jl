@@ -67,7 +67,7 @@ delete_ghost_triangles!(tri)
 get_triangles(tri)
 
 # As a last note, we remark that the ghost vertices that define the 
-# vertex of these ghost triangles is still there regardless of whether 
+# vertex of these ghost triangles are still there regardless of whether 
 # the triangulation has ghost triangles. Thus, for example, the 
 # following still work 
 get_neighbours(tri, -1)

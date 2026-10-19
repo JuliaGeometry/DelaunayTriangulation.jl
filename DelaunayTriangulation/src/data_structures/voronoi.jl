@@ -10,7 +10,7 @@ See also [`voronoi`](@ref).
     Accessing the fields themselves using e.g. `vorn.field` is not recommended and is not intended 
     to be in the public API. You should be using the 
     accessor functions, e.g. instead of `vorn.adjacent` do `get_adjacent(vorn)`. Similarly, for the iterators,
-    e.g. `vorn.generators`, `each_generators(vorn)` is recommended instead.
+    e.g. `vorn.generators`, `each_generator(vorn)` is recommended instead.
 
 !!! note "Power diagram"
 
@@ -121,8 +121,9 @@ get_circumcenter_to_triangle(vorn::VoronoiTessellation) = vorn.circumcenter_to_t
 """
     get_triangle_to_circumcenter(vorn::VoronoiTessellation) -> Dict{Triangle,Index}
 
-Gets the triangles of the Voronoi tessellation `vorn` as a `Dict`, mapping triangle indices to their corresponding
-circumcenters. The circumcenters are given as their vertices, referring to points in `get_polygon_points(vorn)`.
+Gets the triangles of the Voronoi tessellation `vorn` as a `Dict`, mapping triangles to their corresponding
+circumcenters. The circumcenters are given as their vertices, referring to points in `get_polygon_points(vorn)`, and the
+triangles are sorted so that the minimum vertex is last.
 """
 get_triangle_to_circumcenter(vorn::VoronoiTessellation) = vorn.triangle_to_circumcenter
 
@@ -320,9 +321,9 @@ Adds the index `i` to the set of boundary polygons of `vor`.
 add_boundary_polygon!(vorn::VoronoiTessellation, i) = push!(get_boundary_polygons(vorn), i)
 
 """
-    each_boundary_polygon(vorn::VoronoiTessellation) -> KeySet 
+    each_generator(vor::VoronoiTessellation) -> KeySet
 
-Returns an iterator over the boundary polygon indices of `vorn`.
+Returns an iterator over the generator indices of `vor`.
 """
 each_generator(vor::VoronoiTessellation) = keys(get_generators(vor))
 
@@ -334,9 +335,9 @@ Returns an iterator over each polygon point index of `vor`.
 each_polygon_vertex(vor::VoronoiTessellation) = eachindex(get_polygon_points(vor))
 
 """
-    each_polygon(vor::VoronoiTessellation) -> Set 
+    each_unbounded_polygon(vor::VoronoiTessellation) -> Set
 
-Returns an iterator over the polygon indices of `vor`.
+Returns an iterator over the indices of the unbounded polygons of `vor`.
 """
 each_unbounded_polygon(vor::VoronoiTessellation) = get_unbounded_polygons(vor)
 
@@ -382,7 +383,7 @@ delete_adjacent!(vor::VoronoiTessellation, e) = delete_adjacent!(get_adjacent(vo
 delete_adjacent!(vor::VoronoiTessellation, i, j) = delete_adjacent!(get_adjacent(vor), i, j)
 
 """
-    delete_polygon!(vor::VoronoiTessellation, polygon)
+    delete_polygon_adjacent!(vorn::VoronoiTessellation, polygon)
 
 Deletes the adjacent polygons of the boundary edges of the polygon `polygon` from the adjacency list.
 """
@@ -454,10 +455,10 @@ Gets the bounding box for the Voronoi tessellation `vorn`.
 - `include_polygon_vertices=true`: If `true`, then the bounding box will also include the polygon vertices. Otherwise, only the generators are included.
 
 # Output 
-- `xmin`: Given by `xmin′ - unbounded_extension_factor * (xmin′ - xmin′)`, where `xmin′` is the original minimum `x`-coordinate of the computed bounding box and similarly for `xmax′`.
-- `xmax`: Given by `xmax′ + unbounded_extension_factor * (xmax′ - xmax′)`, where `xmax′` is the original maximum `x`-coordinate of the computed bounding box and similarly for `xmin′`.
-- `ymin`: Given by `ymin′ - unbounded_extension_factor * (ymin′ - ymin′)`, where `ymin′` is the original minimum `y`-coordinate of the computed bounding box and similarly for `ymax′`.
-- `ymax`: Given by `ymax′ + unbounded_extension_factor * (ymax′ - ymax′)`, where `ymax′` is the original maximum `y`-coordinate of the computed bounding box and similarly for `ymin′`.
+- `xmin`: Given by `xmin′ - unbounded_extension_factor * (xmax′ - xmin′)`, where `xmin′` is the original minimum `x`-coordinate of the computed bounding box and similarly for `xmax′`.
+- `xmax`: Given by `xmax′ + unbounded_extension_factor * (xmax′ - xmin′)`, where `xmax′` is the original maximum `x`-coordinate of the computed bounding box and similarly for `xmin′`.
+- `ymin`: Given by `ymin′ - unbounded_extension_factor * (ymax′ - ymin′)`, where `ymin′` is the original minimum `y`-coordinate of the computed bounding box and similarly for `ymax′`.
+- `ymax`: Given by `ymax′ + unbounded_extension_factor * (ymax′ - ymin′)`, where `ymax′` is the original maximum `y`-coordinate of the computed bounding box and similarly for `ymin′`.
 """
 function polygon_bounds(vorn::VoronoiTessellation, unbounded_extension_factor = 0.0; include_polygon_vertices = true)
     F = number_type(vorn)

@@ -196,16 +196,6 @@ function maximum_distance_to_box(a, b, c, d, p)
 end
 
 """
-    grow_polygon_outside_of_box(vorn::VoronoiTessellation, i, bounding_box)
-
-Truncates unbounded edges of the `i`th polygon of `vorn`, assumed to be unbounded,
-so that the line connecting the truncated unbounded edges is entirely outside 
-of the polygon. The method of growth is iterative, utilising the Liang-Barsky algorithm 
-at each stage while we translate the line. The returned polygon does not satisfy 
-`P[begin] == P[end]`.
-"""
-
-"""
     grow_polygon_outside_of_box(vorn::VoronoiTessellation, i, bounding_box, predicates::AbstractPredicateKernel=AdaptiveKernel()) -> (Vector{Int}, Vector{NTuple{2,Number}})
 
 Truncates the unbounded edges of the `i`th polygon of `vorn` so that the line connecting the truncated unbounded edges is entirely outside of `bounding_box`.

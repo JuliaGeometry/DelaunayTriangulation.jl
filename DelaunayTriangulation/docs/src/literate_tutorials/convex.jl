@@ -38,7 +38,7 @@ pop!(θ)
 x = cos.(θ)
 y = sin.(θ)
 points = tuple.(x, y)
-S = 1:4999 # can also be [1:4999; 1], if you want the array to be circular 
+S = 1:4999 # S must not be circular, i.e. S[begin] ≠ S[end]
 tri = triangulate_convex(points, S)
 
 #-

@@ -55,7 +55,7 @@ fig #hide
 
 # Let us start by defining _natural neighbours_. Consider two Voronoi polygons $\mathcal V_i$ and $\mathcal V_j$, 
 # and let $\mathcal F_{ij} = \mathcal V_i \cap \mathcal V_j$. If $\mathcal F_{ij} \neq \emptyset$, we say that $\vb x_i$ and $\vb x_j$ are natural neighbours in
-# $X$. For a point $\vb  \in X$, we denote its set of natural neighbours by $N(\vb x) \subseteq X$, and the corresponding 
+# $X$. For a point $\vb x \in X$, we denote its set of natural neighbours by $N(\vb x) \subseteq X$, and the corresponding 
 # indices by $N_i = \{j : \vb x_j \in N(\vb x_i)\}$.
 
 # We use natural neighbours to guide our representation of points. In particular, we use _natural neighbour coordinates_,
@@ -87,11 +87,11 @@ fig #hide
 # The first issue to deal with in our implementation is the computation of the _Bowyer-Watson envelope_. For a point $\vb x$, its 
 # Bowyer-Watson envelope is the boundary of the set of all triangles in $\mathcal D\mathcal T(X)$ whose circumcircles contain $\vb x$.
 # This envelope tells us the region in which any changes to the triangulation and to the tessellation can occur.
-# A reasonably straight forward way to implement this is to simply add $\vb x$ into $\mathcal D\mathcal T(X)$ and take all the triangles 
+# A reasonably straightforward way to implement this is to simply add $\vb x$ into $\mathcal D\mathcal T(X)$ and take all the triangles 
 # containing $\vb x$ as a vertex in $\mathcal D\mathcal T(X \cup \{\vb x\})$. We then remove $\vb x$ from $\mathcal D\mathcal T(X \cup \{\vb x\})$.
 # We implement this below.[^1]
 
-# [^1]: This is more expensive than we need. In NaturalNeighbours.jl, we use the `peek` keyword in `triangulate` to avoid making any changes to the triangulation itself, and use the `InsertionEventHistory` to track all changes made.
+# [^1]: This is more expensive than we need. In NaturalNeighbours.jl, we use the `peek` keyword of [`add_point!`](@ref) to avoid making any changes to the triangulation itself, and use the `InsertionEventHistory` to track all changes made.
 using DelaunayTriangulation
 function compute_envelope(tri::Triangulation, point)
     r = DelaunayTriangulation.num_points(tri)
@@ -247,7 +247,7 @@ function compute_sibson_coordinates(tri::Triangulation, envelope_vertices, point
 end
 
 # This function gives our $\boldsymbol\lambda$ vector. Notice that, in the computation of these coordinates, 
-# we need needed to have $\mathcal V(X)$ directly or make use of the data $z_i$.
+# we never needed to have $\mathcal V(X)$ directly or make use of the data $z_i$.
 
 # ## Evaluating the Sibsonian interpolant 
 # Now we can evaluate our Sibson interpolant. The following function does this for us. 
@@ -282,4 +282,4 @@ contourf!(ax2, xx, yy, zi)
 resize_to_layout!(fig)
 fig
 
-# Works perfectly!
+# The interpolant matches the original function well.

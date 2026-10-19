@@ -162,7 +162,7 @@ for n in fieldnames(TriangulationStatistics)
             @doc """
             $($(name))(stats::TriangulationStatistics)
 
-        Returns the $($name) field from the [TriangulationStatistics`](@ref) `stats`.
+        Returns the $($name) field from the [`TriangulationStatistics`](@ref) `stats`.
         """ ($(Symbol("$n")))(stats::TriangulationStatistics) = stats.$n
         end
     end

@@ -2,7 +2,7 @@
 CurrentModule = DelaunayTriangulation
 ```
 
-# Voronoi Tessellation output
+# Voronoi Tessellation Output
 
 In this section, we discuss the output given from [`voronoi`](@ref). We consider a simple clipped example for examining this output.
 
@@ -30,7 +30,7 @@ Now let's inspect `vorn`. The fields in `vorn` are:
 propertynames(vorn)
 ```
 
-Let's examine this fields one at a time.
+Let's examine these fields one at a time.
 
 ## [`get_triangulation(vorn)`](@ref get_triangulation)
 
@@ -140,7 +140,7 @@ Notice that some of these polygons have negative vertices. These vertices are no
 get_polygon_coordinates(vorn2, 5)
 ```
 
-We need to provide a bounding box to obtain these coordinates. As mentioned, we can obtain a reasonable default for a bounding box using [`polygon_bounds`](@ref), which returns the bounding box in the form `(xmin, xmax, ymin, ymax)`:
+We need to provide a bounding box to obtain these coordinates. We can obtain a reasonable default for a bounding box using [`polygon_bounds`](@ref), which returns the bounding box in the form `(xmin, xmax, ymin, ymax)`:
 
 ```@example vorout
 bbox = polygon_bounds(vorn2)
@@ -213,7 +213,7 @@ This field is used to store the polygons that are unbounded. For our clipped tes
 DelaunayTriangulation.get_unbounded_polygons(vorn)
 ```
 
- For our unclipped tessellation, we have
+For our unclipped tessellation, we have
 
 ```@example vorout
 DelaunayTriangulation.get_unbounded_polygons(vorn2)

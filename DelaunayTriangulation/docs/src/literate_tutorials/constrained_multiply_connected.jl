@@ -16,19 +16,19 @@ fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures
 # holes. To represent the boundaries for this case, 
 # we use a vector of vector of vectors. The triple-nested 
 # vector structure is necessary to allow for individual 
-# boundaries to be segmented (as in the previous tutorial). 
+# boundaries to be split into sections (as in the previous tutorial). 
 # Moreover, while the outer boundary must be counter-clockwise, 
 # the interior boundaries must be clockwise so that the orientations
 # of the interiors relative to the boundaries are consistent. Note again 
-# that neighbouring segments must connect.
+# that neighbouring sections must connect.
 curve_1 = [
-    ## first segment
+    ## first section
     [
         (0.0, 0.0), (4.0, 0.0), (8.0, 0.0), (12.0, 0.0), (12.0, 4.0),
         (12.0, 8.0), (14.0, 10.0), (16.0, 12.0), (16.0, 16.0),
         (14.0, 18.0), (12.0, 20.0), (12.0, 24.0), (12.0, 28.0),
     ],
-    ## second segment
+    ## second section
     [
         (12.0, 28.0), (8.0, 28.0), (4.0, 28.0), (0.0, 28.0), (-2.0, 26.0), (0.0, 22.0),
         (0.0, 18.0), (0.0, 10.0), (0.0, 8.0), (0.0, 4.0), (-4.0, 4.0),
@@ -36,12 +36,12 @@ curve_1 = [
     ],
 ] # outer: counter-clockwise
 curve_2 = [
-    ## first segment
+    ## first section
     [
         (4.0, 26.0), (8.0, 26.0), (10.0, 26.0), (10.0, 24.0),
         (10.0, 22.0), (10.0, 20.0),
     ],
-    ## second segment
+    ## second section
     [
         (10.0, 20.0), (8.0, 20.0), (6.0, 20.0),
         (4.0, 20.0), (4.0, 22.0), (4.0, 24.0), (4.0, 26.0),
@@ -65,9 +65,9 @@ points = [
 ]
 boundary_nodes, points = convert_boundary_points_to_indices(curves; existing_points = points);
 
-# Notice that `curve_1` and `curve_2` are split up into multiple segments. For `curve_3`
+# Notice that `curve_1` and `curve_2` are split up into multiple sections. For `curve_3`
 # and `curve_4`, note that we have to wrap the entire vector in a vector, essentially 
-# treating them as a single segment. 
+# treating them as a single section. 
 
 # Now let us triangulate.
 rng = StableRNG(123) # the triangulation is not unique due to cocircular points
@@ -76,16 +76,16 @@ fig, ax, sc = triplot(tri, show_constrained_edges = true, show_convex_hull = tru
 fig
 @test_reference reference_path(fig_path, "constrained_ex_5.png") fig #src
 
-# Like before, we examine individual segments by referring to them by their ghost vertices, 
-# which are still in the order `-1`, `-2`, and so on in the order of the segments provided 
+# Like before, we examine individual sections by referring to them by their ghost vertices, 
+# which are still in the order `-1`, `-2`, and so on in the order of the sections provided 
 # in `boundary_nodes`. This is a lot more cumbersome to keep track of than the previous
 # tutorials since there are many more ghost vertices. This is where the boundary fields 
 # become much more useful. For instance, the `boundary_edge_map` in this case is given by:
 get_boundary_edge_map(tri)
 
 # The `Tuples` in the `values` are now of the form `((I, J), K)`, with `I` the curve index 
-# (with `1` being the outer boundary), `J` the segment index, and `K` the position of the
-# edge within the segment. To look at the ghost vertices directly, another useful field is 
+# (with `1` being the outer boundary), `J` the section index, and `K` the position of the
+# edge within the section. To look at the ghost vertices directly, another useful field is 
 # `ghost_vertex_ranges`:
 get_ghost_vertex_ranges(tri)
 
@@ -96,7 +96,7 @@ get_ghost_vertex_ranges(tri)
 DelaunayTriangulation.all_ghost_vertices(tri)
 
 # which is just `keys(get_ghost_vertex_ranges(tri))`. If you just want to find 
-# what curve and what segment a ghost vertex belongs to, you can look at the `ghost_vertex_map`:
+# what curve and what section a ghost vertex belongs to, you can look at the `ghost_vertex_map`:
 get_ghost_vertex_map(tri)
 
 # So that, for example, `-3 => (2, 1)` means that the ghost vertex `-3` corresponds 
@@ -108,7 +108,7 @@ DelaunayTriangulation.get_all_boundary_nodes(tri)
 
 # To give an example of how we can work with this boundary, let us compute the area 
 # of the triangulation (a more efficient approach is with [`get_area(tri)`](@ref get_area), but this is just 
-# for demonstration). For this, the order of the boundary edges is appropriate, so we must iterate 
+# for demonstration). For this, the order of the boundary edges matters, so we must iterate 
 # in a way that respects the ordering. 
 function get_triangulation_area(tri)
     A = 0.0
@@ -116,8 +116,8 @@ function get_triangulation_area(tri)
     for curve_index in 1:nc
         bn = get_boundary_nodes(tri, curve_index)
         ns = DelaunayTriangulation.num_sections(bn)
-        for segment_index in 1:ns
-            bnn = get_boundary_nodes(bn, segment_index)
+        for section_index in 1:ns
+            bnn = get_boundary_nodes(bn, section_index)
             ne = num_boundary_edges(bnn)
             for i in 1:ne
                 vᵢ = get_boundary_nodes(bnn, i)
@@ -138,25 +138,25 @@ A = get_triangulation_area(tri)
 # care of the order. If we don't care about order, then the complexity 
 # of the code for iterating over a boundary is much simpler. For example, 
 # here we compute the perimeter of the boundary, and we also 
-# consider the length of each curve and of each segment. 
+# consider the length of each curve and of each section. 
 function get_perimeters(tri)
     total_perimeter = 0.0
     nc = DelaunayTriangulation.num_curves(tri)
     curve_perimeters = zeros(nc) # curve_index => perimeter
-    segment_perimeters = Dict{NTuple{2, Int}, Float64}() # (curve_index, segment_index) => perimeter
+    section_perimeters = Dict{NTuple{2, Int}, Float64}() # (curve_index, section_index) => perimeter
     for (e, ((curve_index, section_index), node_index)) in get_boundary_edge_map(tri)
         u, v = edge_vertices(e)
         p, q = get_point(tri, u, v)
         ℓ = sqrt((getx(p) - getx(q))^2 + (gety(p) - gety(q))^2)
         total_perimeter += ℓ
         curve_perimeters[curve_index] += ℓ
-        if haskey(segment_perimeters, (curve_index, section_index))
-            segment_perimeters[(curve_index, section_index)] += ℓ
+        if haskey(section_perimeters, (curve_index, section_index))
+            section_perimeters[(curve_index, section_index)] += ℓ
         else
-            segment_perimeters[(curve_index, section_index)] = ℓ
+            section_perimeters[(curve_index, section_index)] = ℓ
         end
     end
-    return total_perimeter, curve_perimeters, segment_perimeters
+    return total_perimeter, curve_perimeters, section_perimeters
 end
 ℓ, cℓ, sℓ = get_perimeters(tri)
 @test ℓ ≈ sum(cℓ) #src

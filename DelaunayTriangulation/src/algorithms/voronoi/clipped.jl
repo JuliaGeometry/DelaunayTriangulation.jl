@@ -840,13 +840,13 @@ end
 """
     clip_voronoi_tessellation!(vorn::VoronoiTessellation; rng=Random.default_rng(), predicates::AbstractPredicateKernel=AdaptiveKernel())
 
-Clip the Voronoi tessellation `vorn` to the convex hull of the generators in `vorn`. 
+Clip the Voronoi tessellation `vorn` to `clip_polygon`, or to the convex hull of the generators in `vorn` if `clip_polygon` is `nothing`.
 
 # Arguments
 - `vorn`: The [`VoronoiTessellation`](@ref).
 
 # Keyword Arguments
-- `clip_polygon=nothing`: If `clip=true`, then this is the polygon to clip the Voronoi tessellation to. If `nothing`, the convex hull of the triangulation is used. The polygon should be defined as a `Tuple` of the form `(points, boundary_nodes)` where the `boundary_nodes` are vertices mapping to coordinates in `points`, adhering to the usual conventions for defining boundaries. Must be a convex polygon.
+- `clip_polygon=nothing`: The polygon to clip the Voronoi tessellation to. If `nothing`, the convex hull of the triangulation is used. The polygon should be defined as a `Tuple` of the form `(points, boundary_nodes)` where the `boundary_nodes` are vertices mapping to coordinates in `points`, adhering to the usual conventions for defining boundaries. Must be a convex polygon.
 - `rng::Random.AbstractRNG=Random.default_rng()`: The random number generator.
 - `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
@@ -1073,8 +1073,8 @@ end
 """
     find_all_intersecting_polygons(vorn::VoronoiTessellation, clip_points, clip_vertices, exterior_circumcenters) -> (Set{I}, Set{I})
 
-Classifies all polygons in `vorn` into three sets depending on how they intersect the polygon 
-defined by `(clip_points, clip_vertices)`, returning `(interior, intersecting, exterior)`, where
+Classifies all polygons in `vorn` into two sets depending on how they intersect the polygon
+defined by `(clip_points, clip_vertices)`, returning `(interior, possibly_intersecting)`, where
 
 - `interior` are the polygons that are entirely inside the polygon defined by `(clip_points, clip_vertices)`,
 - `possibly_intersecting` are the polygons that might intersect the polygon defined by `(clip_points, clip_vertices)`.

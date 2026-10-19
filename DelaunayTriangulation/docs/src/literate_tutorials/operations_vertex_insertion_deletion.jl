@@ -86,8 +86,10 @@ fig
 # Let us now demonstrate how to delete points. To do this, we use [`delete_point!`](@ref).
 # This function takes vertices rather than coordinates, identifying the corresponding point 
 # in `points` by its index. Let us demonstrate this operation by 
-# deleting all points within a distance of `1/2` around `(1.0, 1.0)`.
-vertices_to_delete = Iterators.filter(each_solid_vertex(tri)) do i
+# deleting all points within a distance of `1/2` around `(1.0, 1.0)`. We `collect` the
+# vertices to delete first, since we should not delete vertices from the triangulation while
+# we are still iterating over them.
+vertices_to_delete = filter(collect(each_solid_vertex(tri))) do i
     p = get_point(tri, i)
     r2 = (getx(p) - 1.0)^2 + (gety(p) - 1.0)^2
     return r2 < 1 / 2^2

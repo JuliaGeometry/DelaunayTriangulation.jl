@@ -21,7 +21,7 @@ Our implementation of a BSpline is based on https://github.com/thibauts/b-spline
 - `knots::Vector{Int}`: The knots of the BSpline. You should not modify or set this field directly (in particular, do not expect any support for non-uniform B-splines).
 - `cache::Vector{NTuple{2,Float64}}`: A cache of the points on the curve. This is used to speed up evaluation of the curve using de Boor's algorithm.
 - `lookup_table::Vector{NTuple{2,Float64}}`: A lookup table for the B-spline curve, used for finding the point on the curve closest to a given point. The `i`th entry of the lookup table
-   corresponds to the `t`-value `i / (length(lookup_table) - 1)`.
+   corresponds to the `t`-value `(i - 1) / (length(lookup_table) - 1)`.
 - `orientation_markers::Vector{Float64}`: The orientation markers of the curve. These are defined so that the orientation of the curve is monotone between any two consecutive markers. The first and last markers are always `0` and `1`, respectively. See [`orientation_markers`](@ref).
 
 # Constructor 

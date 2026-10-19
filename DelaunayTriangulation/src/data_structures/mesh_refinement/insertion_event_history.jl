@@ -100,7 +100,7 @@ function split_boundary_edge!(events::InsertionEventHistory{T, E}, u, v, new_poi
 end
 
 """
-    has_triangle_changes(events::InsertionEventHistory) -> Bool 
+    has_segment_changes(events::InsertionEventHistory) -> Bool 
 
 Returns `true` if there are any changes to the segments in `events`, and `false` otherwise.
 """
@@ -121,9 +121,9 @@ Returns an iterator over the triangles that were added to the triangulation duri
 each_added_triangle(events::InsertionEventHistory) = each_triangle(events.added_triangles)
 
 """
-    each_deleted_triangle(events::InsertionEventHistory) -> Iterator
+    each_added_segment(events::InsertionEventHistory) -> Iterator
 
-Returns an iterator over the triangles that were deleted from the triangulation during the insertion of a point.
+Returns an iterator over the segments that were added to the triangulation during the insertion of a point.
 """
 each_added_segment(events::InsertionEventHistory) = each_edge(events.added_segments)
 

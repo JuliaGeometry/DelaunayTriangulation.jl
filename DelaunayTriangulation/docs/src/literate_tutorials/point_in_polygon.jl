@@ -2,7 +2,7 @@
 # 
 
 # This tutorial shows how we can perform point-in-polygon testing, and how we can find a polygon 
-# containing a point. First, let us build this ploygon.
+# containing a point. First, let us build this polygon.
 using DelaunayTriangulation
 using CairoMakie
 using StableRNGs
@@ -85,7 +85,6 @@ B3 = (24.4471709449133, 36.9550313567823)
 C3 = (24.3062641898756, 36.5636237038999)
 D3 = (24.4941398632592, 35.9999966837492)
 E3 = (25.0264542711793, 35.5929327247515)
-F3 = (25.5587686790994, 35.5929327247515)
 F3 = (25.5587686790994, 35.5929327247515)
 G3 = (26.0, 36.0)
 H3 = (26.1380520053653, 36.5792800100152)

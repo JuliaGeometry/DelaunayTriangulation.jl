@@ -7,7 +7,7 @@
 # and also for custom constraints based on a user-provided function.
 # You can also limit the maximum number of points.
 # Moreover, any type of triangulation can be provided, regardless of whether 
-# the triangulation is unconstrained or triangulations, and regardless of the 
+# the triangulation is unconstrained or constrained, and regardless of the 
 # number of holes and domains. Curve-bounded domains, not included in this tutorial,
 # can also be refined as discussed in [this tutorial](../tutorials/curve_bounded.md).
 #
@@ -66,7 +66,7 @@ fig
 # the algorithm just doesn't even converge, instead it reaches the maximum 
 # number of points.
 test_tri = deepcopy(tri)
-refine!(test_tri; min_angle = 35.0, max_area = 0.001A, max_points = 5_000, rng) # 20_000 so that it doesn't just keep going
+refine!(test_tri; min_angle = 35.0, max_area = 0.001A, max_points = 5_000, rng) # max_points so that it doesn't just keep going
 statistics(test_tri)
 
 # As we can see, the smallest angle is about 29 degrees instead of 
@@ -179,9 +179,10 @@ fig
 @test_reference reference_path(fig_path, "mesh_refinement_ex_8.png") fig by = psnr_equality(12) #src
 
 # This is now much better, and the two parts of the domain are 
-# appropriately refined. Let us extend our custom constraint function to also 
-# require that any triangle has minimum angle less than 33 degrees 
-# inside the innermost domain, and less than 20 degrees outside the innermost domain.
+# appropriately refined. Let us extend our custom constraint function to also
+# require that any triangle has a minimum angle of more than 33.9 degrees
+# inside the innermost domain, and more than 20 degrees outside the innermost domain. (Remember
+# that the custom constraint returns `true` for triangles that should be refined.)
 function angle_constraint(_tri, T)
     i, j, k = triangle_vertices(T)
     p, q, r = get_point(_tri, i, j, k)

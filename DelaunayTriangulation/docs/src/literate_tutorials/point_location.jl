@@ -8,7 +8,7 @@
 # implementing the algorithm of [Mücke, Saias, and Zhu (1999)](https://doi.org/10.1016/S0925-7721(98)00035-2).
 # The algorithm has been slightly modified to allow for regions with holes. 
 # Support is also provided for non-convex and disjoint domains, but the algorithm 
-# is significantly slower in these cases and requires some special case. (The approach for these cases is, basically, 
+# is significantly slower in these cases and requires some special care. (The approach for these cases is, basically, 
 # to just keep trying new points to start the algorithm from until it works, but you the user must specify 
 # a keyword argument `concavity_protection` to make an extra check to guarantee even greater safety.)
 
@@ -81,8 +81,8 @@ fig
 @test_reference reference_path(fig_path, "point_location_ex_1.png") fig #src
 
 # ## Region with concave boundaries and holes 
-# Now we give an example of point location for a reason with holes. Since the 
-# case where all boundaries are convex is reasonably straight forward, here we consider 
+# Now we give an example of point location for a region with holes. Since the 
+# case where all boundaries are convex is reasonably straightforward, here we consider 
 # concave boundaries and discuss methods for improving the speed of the algorithm in this case. 
 # First, let us give our example triangulation.
 a, b, c = (0.0, 8.0), (0.0, 6.0), (0.0, 4.0)

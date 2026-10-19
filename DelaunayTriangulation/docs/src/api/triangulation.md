@@ -60,4 +60,6 @@ get_vertices(::Triangulation)
 get_edges(::Triangulation)
 num_neighbours
 validate_triangulation
+get_incircle_cache(::Triangulation)
+get_orient3_cache(::Triangulation)
 ```

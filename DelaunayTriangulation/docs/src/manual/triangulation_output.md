@@ -43,7 +43,7 @@ Now let's inspect `tri`. If we look at the fields in `tri`, we see that there is
 propertynames(tri)
 ```
 
-Note that each field `X` has an associated accessor `DelaunayTriangulation.get_X`. Let's go through each field. 
+Note that each field `X` has an associated accessor `DelaunayTriangulation.get_X`, except for `has_ghosts`, whose accessor is `DelaunayTriangulation.has_ghosts`. Let's go through each field. 
 
 ## Geometry Fields
 
@@ -51,13 +51,13 @@ First, we list the fields relating to the actual geometry.
 
 ### [`get_points(tri)`](@ref get_points)
 
-This field stores the points that were triangulated. This may be a mutated version (not a copy, though, `tri.points === points` above) of the points provided into `tri`, note.
+This field stores the points that were triangulated. Note that this is the same vector that was provided to `triangulate` (`tri.points === points` above), not a copy, so it may have been mutated, e.g. by mesh refinement.
 
 ```@example curvout 
 get_points(tri)
 ```
 
-In some cases, the points in this vector will not all appear in `tri`, which is why it is recommend you work with the vertices instead, via [`each_vertex(tri)`](@ref each_vertex) or, for the solid or ghost vertices use [`each_solid_vertex(tri)`](@ref each_solid_vertex) or [`each_ghost_vertex(tri)`](@ref each_ghost_vertex), respectively.
+In some cases, the points in this vector will not all appear in `tri`, which is why it is recommended that you work with the vertices instead, via [`each_vertex(tri)`](@ref each_vertex) or, for the solid or ghost vertices use [`each_solid_vertex(tri)`](@ref each_solid_vertex) or [`each_ghost_vertex(tri)`](@ref each_ghost_vertex), respectively.
 
 ### [`get_triangles(tri)`](@ref get_triangles)
 
@@ -84,7 +84,7 @@ This field stores the boundary of the triangulation.
 get_boundary_nodes(tri)
 ```
 
-Notice that these boundary nodes are not the same as those provided into `triangulate` above. Instead of having `curve`, `triangulate` constructs a new `boundary_nodes` vector and populates that with the piecewise linear approximation. You could work with these nodes using [`get_boundary_nodes`](@ref) again. For examples, the nodes associated with the first curve are given by 
+Notice that these boundary nodes are not the same as those provided into `triangulate` above. Instead of having `curve`, `triangulate` constructs a new `boundary_nodes` vector and populates that with the piecewise linear approximation. You could work with these nodes using [`get_boundary_nodes`](@ref) again. For example, the nodes associated with the first curve are given by 
 
 ```@example curvout 
 get_boundary_nodes(tri, 1)
@@ -228,7 +228,7 @@ This output by itself of course isn't too useful. The returned `Graph` does have
 propertynames(get_graph(tri))
 ```
 
-which you can expect using [`DelaunayTriangulation.get_vertices(tri)`](@ref get_vertices), [`DelaunayTriangulation.get_edges(tri)`](@ref get_edges), and [`get_neighbours(tri)`](@ref get_neighbours). Let us go through each of these fields one at a time.
+which you can inspect using [`DelaunayTriangulation.get_vertices(tri)`](@ref get_vertices), [`DelaunayTriangulation.get_edges(tri)`](@ref get_edges), and [`get_neighbours(tri)`](@ref get_neighbours). Let us go through each of these fields one at a time.
 
 - For the vertices, you should not be inspecting this field directly. Instead, we provide [`each_vertex(tri)`](@ref each_vertex), [`each_solid_vertex(tri)`](@ref each_solid_vertex), and [`each_ghost_vertex(tri)`](@ref each_ghost_vertex) to iterate over the vertices in the triangulation. These functions return iterators. For example,
     
@@ -321,7 +321,7 @@ bn = get_boundary_nodes(tri, pos) # notice that we can pass Tuples (m, n) as a s
 get_boundary_nodes(bn, ℓ), get_boundary_nodes(bn, ℓ + 1)
 ```
 
-For simpler domains, `pos` may be either a vector of vertices (in the case of a contiguous boundary) or a single vertex (in the case of a single boundary). For the contiguous case, we have:
+For simpler domains, `pos` may be either a vector of vertices (in the case of a contiguous boundary) or an integer giving the section of the boundary (in the case of a sectioned boundary). For the contiguous case, we have:
 
 ```@example curvout
 tri3 = triangulate_rectangle(0, 1, 0, 1, 10, 10, single_boundary = true) 
@@ -357,7 +357,7 @@ This field is used to identify to what curve and to what section a ghost vertex 
 get_ghost_vertex_map(tri)
 ```
 
-We see, for example, that the ghost vertex `-7` comes from the first section of the fifth boundary curve. In general, the mappings are of the form `g => pos`, where `g` is the ghost vertex and `pos` is such that `get_boundary_nodes(tri, pos)` is the boundary curve associated with `g`. For example, using [`map_ghost_vertex`](@ref),
+We see, for example, that the ghost vertex `-7` comes from the first section of the fifth boundary curve. In general, the mappings are of the form `g => pos`, where `g` is the ghost vertex and `pos` is such that `get_boundary_nodes(tri, pos)` is the section of the boundary associated with `g`. For example, using [`map_ghost_vertex`](@ref),
 
 ```@example curvout
 pos = map_ghost_vertex(tri, -7)
@@ -452,7 +452,7 @@ DelaunayTriangulation.get_polygon_hierarchy(tri)
 
 This field is not intended for public use. One useful method that makes direct use of the polygon hierarchy is [`find_polygon`](@ref), but the hierarchy's main use is in boundary enrichment for curve-bounded domains, and for checking arguments via [`check_args`](@ref).
 
-### [`boundary_enricher(tri)`](@ref get_boundary_enricher)
+### [`get_boundary_enricher(tri)`](@ref get_boundary_enricher)
 
 This field, just as for the `polygon_hierarchy`, is not intended for public use. It is the field used for enriching the boundary for initialising the triangulation of a curve-bounded domain. 
 
@@ -464,6 +464,18 @@ DelaunayTriangulation.get_boundary_enricher(tri)
 
 This field is not intended for public use. It is used to provide several caches for use during triangulation, such as reusing arrays for constrained triangulations.
 
-```@example curvout 
+```@example curvout
 DelaunayTriangulation.get_cache(tri)
 ```
+
+### [`has_ghosts(tri)`](@ref has_ghosts)
+
+This field records whether `tri` currently has ghost triangles, and is what [`has_ghost_triangles`](@ref) returns. It is updated by [`add_ghost_triangles!`](@ref) and [`delete_ghost_triangles!`](@ref), so you should use those functions rather than setting it directly.
+
+```@example curvout
+DelaunayTriangulation.has_ghosts(tri)
+```
+
+### [`get_boundary_vertex_to_ghost(tri)`](@ref get_boundary_vertex_to_ghost)
+
+This field is not intended for public use. It maps each boundary vertex to a corresponding ghost vertex, so that [`is_boundary_node`](@ref) does not need to search through all of the ghost vertices. It is maintained automatically as boundary nodes are added or removed.

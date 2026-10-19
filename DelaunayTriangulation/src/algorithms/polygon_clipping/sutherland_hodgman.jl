@@ -24,29 +24,27 @@ function clip_polygon_to_edge(input_list, q, p, predicates::AbstractPredicateKer
     output_list = eltype(input_list)[]
     s = input_list[end]
     for vertex in input_list
-        # By considering s = input_list[end], we can consider each edge of the 
-        # input polygon one at a time, with the initial edge being s-vertex. 
-        # The first step is to check if vertex is to the left or to the right of the 
-        # edge qp. If it's to the left, then it is outside of the original polygon  
-        # (note the assumption here that the polygon is counter-clockwise).
+        # By considering s = input_list[end], we can consider each edge of the
+        # input polygon one at a time, with the initial edge being s-vertex.
+        # The first step is to check if vertex is to the left or to the right of the
+        # edge qp. If it's to the left, then it is on the same side of qp as the clipping polygon
+        # (note the assumption here that the clipping polygon is counter-clockwise), so we keep it.
         if is_left(point_position_relative_to_line(predicates, q, p, vertex))
-            # Now that we know that vertex is outside of the polygon, we need to know 
-            # if there is any intersection to consider. In particular, does s-vertex intersect 
-            # the edge qp? If s is also to the left of the line, then no there is no intersection 
-            # and we can safely ignore the intersection (note that this check makes the implicit 
-            # assumption that the clipping polygon is convex). If s is to the right of the line,
-            # then there is an intersection and we need to consider it.
+            # Now that we know that vertex is kept, we need to know if there is any intersection
+            # to consider. In particular, does s-vertex intersect the edge qp? If s is also to the
+            # left of the line, then there is no intersection and we can safely ignore it (note that
+            # this check makes the implicit assumption that the clipping polygon is convex). If s is
+            # not to the left of the line, then there is an intersection and we need to consider it.
             flag = point_position_relative_to_line(predicates, q, p, s)
-            if !is_left(flag) # allow for is_on. If left, then the edge s-vertex is not inside the clipping polygon, so there is no intersection to consider
+            if !is_left(flag) # allow for is_on. If left, then both s and vertex are kept, so there is no intersection to consider
                 r = segment_intersection_coordinates(q, p, s, vertex)
                 push!(output_list, r)
             end
-            # We still need to add back in the vertex to the output list regardless so that 
-            # we can keep going with the next edge of the clipping polygon easily.
+            # We then add the vertex itself to the output list, since it is kept.
             push!(output_list, vertex)
         elseif is_left(point_position_relative_to_line(predicates, q, p, s))
-            # In this case, vertex is to the right of qp, but now s is outside. This means there 
-            # is an intersection of s-vertex with qp.
+            # In this case, vertex is not to the left of qp and so is clipped away, but s is kept.
+            # This means there is an intersection of s-vertex with qp.
             r = segment_intersection_coordinates(q, p, s, vertex)
             push!(output_list, r)
         end

@@ -118,7 +118,7 @@ Deletes the `vertex` of `tri`, retriangulating the cavity formed by the surround
 It is not possible to delete vertices that are on the boundary, are ghost vertices, or adjoin a segment of `tri`. 
 See also [`check_delete_point_args`](@ref).
 
-!!! warn "Point deletion"
+!!! warning "Point deletion"
 
     This function will not actually delete the corresponding coordinates from `get_points(tri)`, nor will it remove 
     the associated weight from `get_weights(tri)`.

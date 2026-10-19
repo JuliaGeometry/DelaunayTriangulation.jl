@@ -23,7 +23,7 @@ This is a package for computing Delaunay triangulations and Voronoi tessellation
 To ensure that the algorithms are robust, by default we make use of [AdaptivePredicates.jl](https://github.com/JuliaGeometry/AdaptivePredicates.jl) to use 
 adaptive arithmetic for all geometric predicates in this package. This choice can be configured, allowing for the additional choices of [ExactPredicates.jl](https://github.com/lairez/ExactPredicates.jl) or no adaptive or exact arithmetic at all; see [here](manual/predicate_kernels.md). Much of the work in this package is derived from the book [*Delaunay Mesh Generation* by Cheng, Dey, and Shewchuk (2013)](https://people.eecs.berkeley.edu/~jrs/meshbook.html).
 
-If you would like to make an issue or contribute, please see the CONTRIBUTION.md file in the repository. For feature requests, please see the discussions tab.
+If you would like to make an issue or contribute, please see the [CONTRIBUTING.md](https://github.com/JuliaGeometry/DelaunayTriangulation.jl/blob/main/CONTRIBUTING.md) file in the repository. For feature requests, please see the discussions tab.
 
 # Documentation Structure 
 
@@ -32,7 +32,7 @@ The documentation for this package is broken into several sections.
 - **Tutorials**: These are examples that introduce the functionality of the package, demonstrating how to perform many operations. 
 - **Manual**: Some particular descriptions of how certain things work in the package, such as representing boundaries and working with the triangulation and tessellation data structures. 
 - **API Reference**: This section lists docstrings for all functions in the public API.
-- **Extended Reference**: This section is for providing more details about the internals of the package, meaning not in the public API.The material in this section is subject to change across any version, but may be useful for you to understand how certain functions work. For example, all utility functions are documented here.
+- **Extended Reference**: This section is for providing more details about the internals of the package, meaning not in the public API. The material in this section is subject to change across any version, but may be useful for you to understand how certain functions work. For example, all utility functions are documented here.
 - **Mathematical Details**: This section is for describing in detail the mathematics that underpins the algorithms in this package, for example walking you through the theory behind the algorithm for computing constrained Delaunay triangulations. 
 - **Example Applications**: In case you want to use this package for some of your applications, it might be useful to see how it has been applied in certain situations. Only a few applications are considered here, but more could be added in the future.
 - **Terminology**: This section provides a short description of some of the terminology used throughout the package.
@@ -59,7 +59,7 @@ pkg> add DelaunayTriangulation
 
 # Citing DelaunayTriangulation.jl
 
-If you use DelaunayTriangulation.jl, please cite it. There is a JOSS paper published at https://doi.org/10.21105/joss.0717. The BibTeX entry for this paper is:
+If you use DelaunayTriangulation.jl, please cite it. There is a JOSS paper published at [https://doi.org/10.21105/joss.07174](https://doi.org/10.21105/joss.07174). The BibTeX entry for this paper is:
 
 ```bibtex
 @article{VandenHeuvel2024DelaunayTriangulation,
@@ -86,7 +86,7 @@ This is not the only Delaunay triangulation package available. Some others are:
 
 - [VoronoiDelaunay.jl](https://github.com/JuliaGeometry/VoronoiDelaunay.jl): A pure Julia library that constructs planar triangulations and tessellations like in this package, although no support for constrained triangulations / mesh refinement or clipped / centroid tessellations. Restricts points to $[1, 2] \times [1, 2]$.
 - [VoronoiCells.jl](https://github.com/JuliaGeometry/VoronoiCells.jl): A pure Julia library that extends VoronoiDelaunay.jl. This package provides useful tools for constructing and working with Voronoi tessellations. Supports clipping Voronoi cells to a specified rectangle. Like VoronoiDelaunay.jl, restricts points to $[1, 2] \times [1, 2]$.
-- [Delaunay.jl](https://github.com/eschnett/Delaunay.jl): Wraps Python's main Delaunay triangulation library, [`scipy.spatial.Delaunay`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.Delaunay.html), for computing Delaunay triangulations in $\mathbb R^N$. I don't believe constrained triangulations or mesh refinement is available here.
+- [Delaunay.jl](https://github.com/eschnett/Delaunay.jl): Wraps Python's main Delaunay triangulation library, [`scipy.spatial.Delaunay`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.Delaunay.html), for computing Delaunay triangulations in $\mathbb R^N$. Constrained triangulations and mesh refinement do not appear to be available.
 - [MiniQhull.jl](https://github.com/gridap/MiniQhull.jl): Wraps [Qhull](http://www.qhull.org/) for computing unconstrained Delaunay triangulations in $\mathbb R^N$. No support is provided for mesh refinement.
 - [DirectQhull.jl](https://github.com/JuhaHeiskala/DirectQhull.jl/): Similar to MiniQhull.jl, although also provides support for convex hulls and Voronoi tessellations from Qhull.
 - [Delaunator.jl](https://github.com/JuliaGeometry/Delaunator.jl): A pure Julia library modelled after the [JavaScript Delaunator library](https://github.com/mapbox/delaunator). This package can construct unconstrained triangulations of planar point sets. No support is available for constrained triangulations or mesh refinement, although support exists for computing the dual Voronoi tessellation. Centroidal tessellations are not implemented, although the Voronoi cells can be clipped to a bounding box. 
@@ -107,10 +107,10 @@ In addition to these Julia packages, software packages in other programming lang
 - [Spade](https://github.com/Stoeoef/spade): A Rust library providing support for Delaunay triangulations and constrained Delaunay triangulations, mesh refinement, and Voronoi tessellations in the plane. 
 - [Acute](https://www.cise.ufl.edu/~ungor/aCute/index.html): A C library that builds on top of Shewchuk's Triangle library, being the first of its kind to not only allow for minimum angle constraints in mesh refinement, but also for maximum angle constraints.
 - [Tinfour](https://github.com/gwlucastrig/Tinfour): A Java library for Delaunay triangulations and constrained Delaunay triangulations in the plane, with a lot of features for interpolation.
-- [JTS](https://github.com/locationtech/jts): A Java library which, among many other features for working with vectory geometries, supports Delaunay triangulations, constrained Delaunay triangulations, mesh refinement (at least to make a conformal triangulation), and Voronoi tessellations.
+- [JTS](https://github.com/locationtech/jts): A Java library which, among many other features for working with vector geometries, supports Delaunay triangulations, constrained Delaunay triangulations, mesh refinement (at least to make a conformal triangulation), and Voronoi tessellations.
 - [Voro++](https://math.lbl.gov/voro++/): A C++ library for constructing Voronoi tessellations, power diagrams, and clipped tessellations. 
 - [Stellar](https://people.eecs.berkeley.edu/~jrs/stellar/): A C library for constructing three-dimensional Delaunay triangulations, providing the ability to efficiently refine the mesh.
 
-Compared to all these other libraries, and only in the context of planar triangulations, DelaunayTriangulation.jl is one of the most developed in terms of the features provided, except possibly with the exception of CGAL and Gmsh who provide many features although neither are in the public domain (CGAL being GPL v3+ and Gmsh being GPL v2+), unlike DelaunayTriangulation.jl which is MIT licensed. A tabular comparison of all these packages is given below (focusing only on two dimensional meshing). If there are any errors in this comparison, please let me know. Also please note that the features listed are not intended to be exhaustive, but rather to give a general idea of the capabilities of each package, and certainly not all software packages are listed here. 
+Compared to all these other libraries, and only in the context of planar triangulations, DelaunayTriangulation.jl is one of the most developed in terms of the features provided, with the possible exception of CGAL and Gmsh, which provide many features but are released under copyleft licenses (CGAL being GPL v3+ and Gmsh being GPL v2+), whereas DelaunayTriangulation.jl is MIT licensed. A tabular comparison of all these packages is given below (focusing only on two dimensional meshing). If there are any errors in this comparison, please let me know. Also please note that the features listed are not intended to be exhaustive, but rather to give a general idea of the capabilities of each package, and certainly not all software packages are listed here. 
 
 ![Comparison](softwarecomparisonc.png)

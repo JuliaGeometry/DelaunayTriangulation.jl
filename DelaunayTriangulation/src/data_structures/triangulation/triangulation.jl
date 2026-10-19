@@ -1,5 +1,5 @@
 @doc """
-    Triangulation{P,T,BN,W,I,E,Es,BC,BCT,BEM,GVM,GVR,BPL,C,BE}
+    Triangulation{P,T,BN,W,I,E,Es,BC,BEM,GVM,GVR,BPL,C,BE}
 
 Struct representing a triangulation, as constructed by [`triangulate`](@ref).
 
@@ -469,7 +469,7 @@ Returns the type used for representing individual edges in `tri`.
 edge_type(::Triangulation{P,T,BN,W,I,E}) where {P,T,BN,W,I,E} = E
 
 """
-    triangle_type(tri::Triangulation) -> DataType
+    triangles_type(tri::Triangulation) -> DataType
 
 Returns the type used for representing collections of triangles in `tri`.
 """
@@ -596,11 +596,11 @@ Returns the `Triangulation` corresponding to the triangulation of `points` with 
 # Keyword Arguments 
 - `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 - `IntegerType=Int`: The integer type to use for the triangulation. This is used for representing vertices.
-- `EdgeType=isnothing(segments) ? NTuple{2,IntegerType} : (edge_type ∘ typeof)(segments)`: The edge type to use for the triangulation. 
+- `EdgeType=NTuple{2,IntegerType}`: The edge type to use for the triangulation.
 - `TriangleType=NTuple{3,IntegerType}`: The triangle type to use for the triangulation.
-- `EdgesType=isnothing(segments) ? Set{EdgeType} : typeof(segments)`: The type to use for storing the edges of the triangulation.
+- `EdgesType=Set{EdgeType}`: The type to use for storing the edges of the triangulation.
 - `TrianglesType=Set{TriangleType}`: The type to use for storing the triangles of the triangulation.
-- `weights=ZeroWeight()`: The weights associated with the triangulation. 
+- `weights=ZeroWeight()`: The weights associated with the triangulation.
 - `delete_ghosts=false`: Whether to delete the ghost triangles after the triangulation is computed. This is done using [`delete_ghost_triangles!`](@ref).
 
 # Output 
@@ -641,11 +641,11 @@ Returns the unconstrained `Triangulation` corresponding to the triangulation of 
 # Keyword Arguments 
 - `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 - `IntegerType=Int`: The integer type to use for the triangulation. This is used for representing vertices.
-- `EdgeType=isnothing(segments) ? NTuple{2,IntegerType} : (edge_type ∘ typeof)(segments)`: The edge type to use for the triangulation. 
+- `EdgeType=NTuple{2,IntegerType}`: The edge type to use for the triangulation.
 - `TriangleType=NTuple{3,IntegerType}`: The triangle type to use for the triangulation.
-- `EdgesType=isnothing(segments) ? Set{EdgeType} : typeof(segments)`: The type to use for storing the edges of the triangulation.
+- `EdgesType=Set{EdgeType}`: The type to use for storing the edges of the triangulation.
 - `TrianglesType=Set{TriangleType}`: The type to use for storing the triangles of the triangulation.
-- `weights=ZeroWeight()`: The weights associated with the triangulation. 
+- `weights=ZeroWeight()`: The weights associated with the triangulation.
 - `delete_ghosts=false`: Whether to delete the ghost triangles after the triangulation is computed. This is done using [`delete_ghost_triangles!`](@ref).
 
 # Output 

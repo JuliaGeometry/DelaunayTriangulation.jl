@@ -2,7 +2,7 @@
 
 Now we discuss power diagrams, the dual of a weighted Delaunay triangulation. The main difference between a power diagram and a Voronoi tessellation is that the power diagram is defined using a _power distance_ instead of a _Euclidean distance_. Recall that weighted Delaunay triangulations are derived from a point set $\mathcal P$ and an associated set of weights $\mathcal W$ so that each point $p_i$ has an associated weight $w_i$. If we let $p[w]$ denote a point $p$ with weight $w$, then the power distance between two points $p$ and $q$ is defined by
 ```math 
-\pi(p[w_p], q[w_p]) = d(p, q)^2 - w_p - w_q,
+\pi(p[w_p], q[w_q]) = d(p, q)^2 - w_p - w_q,
 ```
 where $d(p, q)$ is the Euclidean distance between $p$ and $q$. This notation is also used for unweighted points, which are assigned a weight of $0$.
 
@@ -10,19 +10,19 @@ We can use this power distance to define a power diagram. For a given site $u$, 
 ```math 
 W_u = \{p \in \mathbb R^2 : \forall q \in \mathcal P^+, \pi(p, u[w_u]) \leq \pi(p, q[w_q])\},
 ```
-where $\mathcal P^+$ is the set of points $\mathcal P$ with the assigned weights from $\mathcal W$. In particular, $W_u$ is the set of all points closer to $u$ than to any other point in $\mathcal P$, where the distance is measured using the power distance.
+where $\mathcal P^+$ is the set of points $\mathcal P$ with the assigned weights from $\mathcal W$. In particular, $W_u$ is the set of all points that are at least as close to $u$ as to any other point in $\mathcal P$, where the distance is measured using the power distance.
 
 ## Orthoballs and Orthocenters: Generalising Circumcircles
 
 Recall that Voronoi tessellations are computed by simply connecting the circumcenters of the Delaunay triangles. For power diagrams, we need a generalisation of the circumcenter. Remember that the circumcenter can be derived by intersecting the perpendicular bisectors of a triangle's edges. A similar definition can be used for obtaining what is called the _orthocenter_.
 
-To start, we need a geometric interpretion of a weighted point. We can relate it to the notion of a [power of a point](https://en.wikipedia.org/wiki/Power_of_a_point). Define the ball $B_p = \{x \in \mathbb R^2: d(p, x) \leq \sqrt{w_p}\}$, and note that the squared length of the line segment extending from a point $x$ to touch $B_p$ tangentially is given by $d(x, p)^2 - w_p$ (see the first equation on the linked Wikipedia page).  This distance is exactly $\pi(x, p[w_p])$. Thus:
+To start, we need a geometric interpretation of a weighted point. We can relate it to the notion of a [power of a point](https://en.wikipedia.org/wiki/Power_of_a_point). Define the ball $B_p = \{x \in \mathbb R^2: d(p, x) \leq \sqrt{w_p}\}$, and note that the squared length of the line segment extending from a point $x$ to touch $B_p$ tangentially is given by $d(x, p)^2 - w_p$ (see the first equation on the linked Wikipedia page).  This distance is exactly $\pi(x, p[w_p])$. Thus:
 - If $x \notin B_p$, then $\pi(x, p[w_p]) > 0$.
 - If $x$ is exactly on the boundary of $B_p$, then $\pi(x, p[w_p]) = 0$.
 - If $x \in B_p$, then $\pi(x, p[w_p]) < 0$.
 Note that, since weights may be negative, $\sqrt{w_p}$ may be complex, in which case every point lies outside $B_p$. Thus, our geometric interpretation of a weighted point is exactly as the ball $B_p$.
 
-We can use this interpretation to understand how the generators of the power diagram are related to the vertices of the power cells. Remember that the definition of a power cell implies that a vertex $v$ of the diagram if equidistant in power distance from the weighted generators that generate it, e.g. if $v$ neighbours generators $u$ and $w$, then $\pi(v, u[w_u]) = \pi(v, w[w_w])$. Let this constant power distance be $\omega_v$. Then, the power distance from $v$ to its weighted generators is 
+We can use this interpretation to understand how the generators of the power diagram are related to the vertices of the power cells. Remember that the definition of a power cell implies that a vertex $v$ of the diagram is equidistant in power distance from the weighted generators that generate it, e.g. if $v$ neighbours generators $u$ and $w$, then $\pi(v, u[w_u]) = \pi(v, w[w_w])$. Let this constant power distance be $\omega_v$. Then, the power distance from $v$ to its weighted generators is 
 ```math 
 \pi(v[\omega_v], u[w_u]) = d(v, u)^2 - \omega_v - w_u,
 ```

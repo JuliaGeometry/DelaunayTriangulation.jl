@@ -44,7 +44,7 @@ resize_to_layout!(fig)
 fig #hide
 ```
 
-See that at each stage the vertex $v_u$ to be added, shown in red, it lies outside of the triangulation, and only a single edge $e_{vw}$ separates $v_u$ from the triangulation. Thus, we can identify that the point location step amounts to finding this edge $e_{vw}$ so that we inserting $v_u$ into the triangulation can be done by retriangulating the cavity formed by the union of the triangles $T_{uvw}$ and the triangles containing $u$ in their circumcircles.
+See that at each stage the vertex $v_u$ to be added, shown in red, it lies outside of the triangulation, and only a single edge $e_{vw}$ separates $v_u$ from the triangulation. Thus, we can identify that the point location step amounts to finding this edge $e_{vw}$ so that inserting $v_u$ into the triangulation can be done by retriangulating the cavity formed by the union of the triangles $T_{uvw}$ and the triangles containing $u$ in their circumcircles.
 
 We now need to find an efficient way to find this edge $e_{vw}$. Imagine running the Bowyer-Watson algorithm in reverse, meaning removing vertices one at a time in the reverse order of $\pi(\mathcal S)$. When we remove $v_u$, this is the same as connecting its neighbours $v_v$ and $v_w$ with an edge $e_{vw}$, which is exactly the edge needed for our point location problem. Thus, if we keep track of the polygon vertices and their neighbours, we can easily find the edge $e_{vw}$ in constant time. 
 
@@ -54,5 +54,5 @@ Using this insight, we can now present Chew's algorithm:
 2. Construct a circularly- and doubly-linked list of the vertices in $\mathcal S$ by defining $\mathcal S_{\text{next}} = \{2, 3, \ldots, n, 1\}$ and $\mathcal S_{\text{prev}} = \{n, 1, 2, \ldots, n-1\}$.
 3. For $i = n,n-1,\ldots,4$: Delete $v_{\pi(\mathcal S)[i]}$ from the list by setting $\mathcal S_{\text{next}}[\mathcal S_{\text{prev}}[\pi[i]]] = \mathcal S_{\text{next}}[\pi[i]]$ and $\mathcal S_{\text{prev}}[\mathcal S_{\text{next}}[\pi[i]]] = \mathcal S_{\text{prev}}[\pi[i]]$, where $\pi[i] \equiv \mathcal \pi(\mathcal S)[i]$.
 4. Initialise the triangulation by adding $T_{v_{\pi[1]}v_{\pi[2]}v_{\pi[3]}}$ to the triangulation.
-5. For $i = 4, \ldots, k$: Add $v_{\pi[i]}$ into the triangulation using the Bowyer-Watson algorithm, noting that the polygonal cavity can be evacuated starting from the edge $e_{\mathcal S_{\text{next}}[\pi[i]]\mathcal S_{\text{prev}}[\pi[i]]}$.
+5. For $i = 4, \ldots, k$: Add $v_{\pi[i]}$ into the triangulation using the Bowyer-Watson algorithm, noting that the polygonal cavity can be excavated starting from the edge $e_{\mathcal S_{\text{next}}[\pi[i]]\mathcal S_{\text{prev}}[\pi[i]]}$.
 

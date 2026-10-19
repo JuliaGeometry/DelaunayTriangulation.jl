@@ -1,7 +1,7 @@
 # # Triangulation Operations 
 # ## Edge Flipping 
 
-# This tutorial shows we can flip edges in a triangulation. Edge flipping is the flipping of some 
+# This tutorial shows how we can flip edges in a triangulation. Edge flipping is the flipping of some 
 # edge `(i, j)` to the edge `(k, ℓ)`, where `(i, j)` and `(k, ℓ)` are diagonals of the quadrilateral
 # formed by $p_ip_jp_kp_l$. The edge flip is illustrated below.
 using CairoMakie #hide 

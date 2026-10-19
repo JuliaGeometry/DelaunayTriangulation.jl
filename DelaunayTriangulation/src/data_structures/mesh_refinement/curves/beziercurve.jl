@@ -20,7 +20,7 @@ See also [`BSpline`](@ref) and [`CatmullRomSpline`](@ref).
 - `control_points::Vector{NTuple{2,Float64}}`: The control points of the Bezier curve. The curve goes through the first and last control points, but not the intermediate ones.
 - `cache::Vector{NTuple{2,Float64}}`: A cache of the points on the curve. This is used to speed up evaluation of the curve using de Casteljau's algorithm. 
 - `lookup_table::Vector{NTuple{2,Float64}}`: A lookup table for the Bezier curve, used for finding the point on the curve closest to a given point. The `i`th entry of the lookup table
-   corresponds to the `t`-value `i / (length(lookup_table) - 1)`.
+   corresponds to the `t`-value `(i - 1) / (length(lookup_table) - 1)`.
 - `orientation_markers::Vector{Float64}`: The orientation markers of the curve. These are defined so that the orientation of the curve is monotone between any two consecutive markers. The first and last markers are always `0` and `1`, respectively. See [`orientation_markers`](@ref).
 
 !!! warning "Concurrency"
@@ -32,7 +32,7 @@ You can construct a `BezierCurve` using
 
     BezierCurve(control_points::Vector{NTuple{2,Float64}}; lookup_steps=5000, kwargs...)
 
-The keyword argument `lookup_steps=100` controls how many time points in `[0, 1]` are used for the lookup table. The `kwargs...` are keyword arguments passed to [`orientation_markers`](@ref).
+The keyword argument `lookup_steps=5000` controls how many time points in `[0, 1]` are used for the lookup table. The `kwargs...` are keyword arguments passed to [`orientation_markers`](@ref).
 """
 struct BezierCurve <: AbstractParametricCurve
     control_points::Vector{NTuple{2,Float64}}

@@ -9,7 +9,7 @@
 # Keyword Arguments 
 - `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 - `point_indices=each_solid_vertex(tri)`: The indices of the points to be used in the [`find_triangle`](@ref) algorithm for selecting the initial point.
-- `m=default_num_samples(length(point_indices))`: The number of samples (without replacement) to be used in the [`find_triangle`](@ref) algorithm for selecting the initial point.
+- `m=default_num_samples(length(point_indices))`: The number of samples (with replacement) to be used in the [`find_triangle`](@ref) algorithm for selecting the initial point.
 - `try_points=()`: Additional points to try for selecting the initial point, in addition to the `m` sampled.
 - `rng::Random.AbstractRNG=Random.default_rng()`: The random number generator to be used in [`find_triangle`](@ref).
 - `initial_search_point=integer_type(tri)(select_initial_point(tri, new_point; point_indices, m, try_points, rng))`: The initial point to be used in [`find_triangle`](@ref).
@@ -30,7 +30,7 @@
 The triangulation is updated in-place, but we do return 
 - `V`: The triangle containing the point being added.
 
-!!! warn "Convex hull"
+!!! warning "Convex hull"
 
     In cases where `(x, y)` is outside of the triangulation, it will be added successfully but note that 
     the `convex_hull` field of `tri` will no longer be accurate. You can use [`convex_hull!`](@ref) to fix it.

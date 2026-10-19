@@ -99,7 +99,7 @@ function get_power_distance(tri::Triangulation, i, j)
     return dij² - wᵢ - wⱼ
 end
 
-""""
+"""
     get_distance_to_witness_plane([kernel::AbstractPredicateKernel = AdaptiveKernel(), ] tri::Triangulation, i, V; cache = nothing) -> Number
 
 Computes the distance between the lifted companion of the vertex `i` and the witness plane to the triangle `V`. If `V` is a ghost triangle 

@@ -9,7 +9,7 @@
 
 # Let's first consider a simple example. We use a triangulation with random weights and compare 
 # it to the standard unweighted Delaunay triangulation.
-using DelaunayTriangulation, CairoMakie
+using DelaunayTriangulation, CairoMakie, StableRNGs
 A, B, C, D, E, F, G, H,
 I, J, K, L, M, N = (-1.0, 3.0), (1.0, 3.0),
 (2.0, 2.0), (2.0, 0.0), (1.0, -1.0), (-1.0, -1.0),
@@ -17,8 +17,9 @@ I, J, K, L, M, N = (-1.0, 3.0), (1.0, 3.0),
 (0.0, 1.5), (1.0, 2.5), (-1.0, 0.5),
 (1.0, 0.0), (1.5, 1.0)
 points = [A, B, C, D, E, F, G, H, I, J, K, L, M, N]
-weights = randn(length(points))
-tri = triangulate(points; weights)
+rng = StableRNG(123)
+weights = randn(rng, length(points))
+tri = triangulate(points; weights, rng)
 
 #-
 tri_unweighted = triangulate(points)

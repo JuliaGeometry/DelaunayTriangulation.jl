@@ -17,8 +17,8 @@ fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures
 
 # ## Curves 
 # In this package, only a small subset of curves are provided (although 
-# arbitrary curves could be provided by the user, as discussed in 
-# [here](../api/curves.md). The curves, defined as parametric curves over 
+# arbitrary curves could be provided by the user, as discussed
+# [here](../api/curves.md)). The curves, defined as parametric curves over 
 # a parameter $t ∈ [0, 1]$, are:
 #
 # - [`LineSegment`](@ref): Just a simple line segment between two points.
@@ -95,7 +95,7 @@ points = [(0.1, 0.1), (0.15, 0.15), (0.23, 0.23), (0.009, 0.11), (0.0, -2.0), (0
 # 
 # - A circular arc defined between $(1, 0)$ and $(0, 1)$ centred at $(0, 0)$.
 # - A B-spline with control points $(0,1)$, $(-1, 2)$, $(-2,0)$, $(-2,-1)$, and $(0,-2)$.
-# - A piecewise linear curve defined between the fixth, sixth, and tenth points in `points`.
+# - A piecewise linear curve defined between the fifth, sixth, and tenth points in `points`.
 #
 # We can define these curves as follows:
 arc = CircularArc((1.0, 0.0), (0.0, 1.0), (0.0, 0.0))
@@ -151,7 +151,6 @@ curve = [
 ]
 points = [(-2.0, 0.0), (0.0, 0.0), (2.0, 0.0), (-2.0, -5.0), (2.0, -5.0), (2.0, -1 / 10), (-2.0, -1 / 10), (-1.0, -3.0), (0.0, -4.0), (0.0, -2.3), (-0.5, -3.5), (0.9, -3.0)]
 t = LinRange(0, 1, 1000)
-fig
 fig = Figure()
 ax = Axis(fig[1, 1])
 lines!(ax, [get_point(points, curve[1][1]...)...], color = :red, label = "(1, 2, 3)")
@@ -173,8 +172,8 @@ fig
 #   $(0, 0.4)$, $(1, 0.2)$, $(0, 0.1)$, $(-1, 0.2)$, $(0, 0.4)$. 
 # - The third domain that we define is the square blue curve.
 # - The fourth domain that we define is the purple curve, defined by a Bézier curve and a Catmull-Rom spline.
-#   The Bézier curve is defined by the control points $(-1, -3)$, $(-1, -2.5)$, $(0, -2.5)$, and $(0, -2)$. The Catmull-Rom spline is defined by the control points
-#   $(0, -2)$, $(1, -3)$, $(0, -4)$, and $(-1, -3)$.
+#   The Bézier curve is defined by the control points $(0, -2)$, $(0, -2.5)$, $(-1, -2.5)$, and $(-1, -3)$. The Catmull-Rom spline is defined by the control points
+#   $(-1, -3)$, $(0, -4)$, $(1, -3)$, and $(0, -2)$.
 # - The fifth domain that we define is the orange curve, defined as a piecewise linear curve to represent a triangle. 
 # - The last domain that we define is a circular arc. To get the orientation correct, i.e. to make sure the circle is defined clockwise so that the domain 
 #   remains positively oriented, we must use `positive=false`.

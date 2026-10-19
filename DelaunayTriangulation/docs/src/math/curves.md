@@ -24,13 +24,13 @@ where $\xi_i$ are the nodes and $w_i$ are the weights of the Gauss-Legendre quad
 
 ### Curvature 
 
-The curvature of a curve describes how much the curve deviates from a straight line at a given point. It is defined as 
+The curvature of a curve describes how much the curve deviates from a straight line at a given point. We use the signed curvature, defined as
 
 ```math
-\kappa(t) = \frac{\|\vb r'(t) \times \vb r''(t)\|}{\|\vb r'(t)\|^3},
+\kappa(t) = \frac{\vb r'(t) \times \vb r''(t)}{\|\vb r'(t)\|^3},
 ```
 
-where $\times$ denotes the cross product; in $\mathbb R^2$, we are defining $\vb u \times \vb v = u_1v_2 - u_2v_1$. Writing $\vb r(t) = (x(t), y(t))$, this can be written as 
+where $\times$ denotes the cross product; in $\mathbb R^2$, we are defining $\vb u \times \vb v = u_1v_2 - u_2v_1$. The curvature is positive where the curve turns left (counter-clockwise) and negative where it turns right, and $|\kappa(t)|$ is the unsigned curvature. Writing $\vb r(t) = (x(t), y(t))$, this can be written as 
 
 ```math
 \kappa(t) = \frac{x'(t)y''(t) - y'(t)x''(t)}{(x'(t)^2 + y'(t)^2)^{3/2}}.
@@ -148,7 +148,7 @@ fig #hide
 It is important that we know how to find the position of a point $p$ relative to some curve $\vb r(t)$, meaning whether $p$ is left or right of $\vb r(t)$. The approach we take for this is relatively simple:
 
 1. First, find $t^*$ so that $q = \vb r(t^*)$ is the closest point on $\vb r(t)$ to $p$.
-2. Compute $T = \vb r'(t^*)$ and construct the line segment $L$ that connects $q$ and $T$.
+2. Compute $T = \vb r'(t^*)$ and construct the line segment $L$ that connects $q$ and $q + T$.
 3. The position of $p$ is then determined by the position of $p$ relative to $L$.
 
 In the example below, $p$ would be right of the curve as it is to the right of the tangent vector $T$.
@@ -180,8 +180,8 @@ fig #hide
 
 We may want to split a curve between two points $t_1 \leq t \leq t_2$ at a point $t^*$ such that $s(t_1, t^*) = s(t^*, t_2)$. This is done using a simple bisection method:
 
-1. Compute $s_{12} = s(a, b)$, let $s = s_{12} / 2$, and set $t = (a + t_2) / 2$, where $a = t_1$.
-2. For 100 iterations, do: Compute $s' = s(a, t)$. If $|s' - s| < \varepsilon_1$ or $|b - a| < \varepsilon_2$, then break and return $t = t^*$. Otherwise, replace $t_1$ with $t$ if $s' < s$, and replace $t_2$ with $t$ otherwise. Finally, let $t = (t_1 + t_2) / 2$ and continue iterating.
+1. Let $a = t_1$, compute $s_{12} = s(t_1, t_2)$, let $s = s_{12} / 2$, and set $t = (t_1 + t_2) / 2$.
+2. For up to 100 iterations, do: Compute $s' = s(a, t)$. If $|s' - s| < \varepsilon_1$ or $|t_2 - t_1| < \varepsilon_2$, then break and return $t^* = t$. Otherwise, replace $t_1$ with $t$ if $s' < s$, and replace $t_2$ with $t$ otherwise. Finally, let $t = (t_1 + t_2) / 2$ and continue iterating. (Note that $a$ stays fixed at the original $t_1$.)
 3. Return $t$ as the equidistant split point.
 
 ### Computing equivariation splits
@@ -200,7 +200,7 @@ Given two curves $\vb r_1$ and $\vb r_2$, a problem of interest is to consider t
 
 For mesh refinement we need to use concentric circular shells to protect against small angles. For curves, this means that we need to know how to compute the intersection of a circle with a given curve. In particular, given a circle of radius $r$ centered at $\vb r(t_1)$, we need to find the first intersection $t^*$ of the curve with the circle, where $t_1 \leq t \leq t_2$, assuming that such an intersection exists. 
 
-The procedure for this problem starts by computing an interval $[t_i, t_j]$ to be used for computing $t^*$ using a bisection method. To find $t_i$ and $t_j$, we initially set $t_i = t_1$ and $t_j = t_2$. Then, for $n = 1, 2, \ldots, 500$: Compute $t_n = t_1 + (n - 1)(t_2 - t_1)/(500 - 1)$ and let $q = \vb r(t_n)$. If $\|p - q\| > r$ we set $t_j = t_n$ and return $[t_i, t_j]$, else we set $t_i = t_n$ and continue. There is also a method for finding $[t_i, t_j]$ using a lookup table, but we do not describe that here. Once we have this interval $[t_i, t_j]$, a bisection method is used to find $t^*$, remembering that we are trying to solve $\|\vb r(t) - \vb r(t^*)\| = r$. An example of such an intersection is shown below. The red curve shows the portion of the curve over an interval $[t_1, t_2]$, and the green circle shows the circle of radius $r$ centered at a point $\vb r(t_1)$. The blue point shows the first intersection of the curve with the circle. The other intersection is ignored as it is not on the red portion.
+The procedure for this problem starts by computing an interval $[t_i, t_j]$ to be used for computing $t^*$ using a bisection method. To find $t_i$ and $t_j$, we initially set $t_i = t_1$ and $t_j = t_2$. Then, for $n = 1, 2, \ldots, 500$: Compute $t_n = t_1 + (n - 1)(t_2 - t_1)/(500 - 1)$ and let $q = \vb r(t_n)$. If $\|\vb r(t_1) - q\| > r$ we set $t_j = t_n$ and return $[t_i, t_j]$, else we set $t_i = t_n$ and continue. There is also a method for finding $[t_i, t_j]$ using a lookup table, but we do not describe that here. Once we have this interval $[t_i, t_j]$, a bisection method is used to find $t^*$, remembering that we are trying to solve $\|\vb r(t^*) - \vb r(t_1)\| = r$. An example of such an intersection is shown below. The red curve shows the portion of the curve over an interval $[t_1, t_2]$, and the green circle shows the circle of radius $r$ centered at a point $\vb r(t_1)$. The blue point shows the first intersection of the curve with the circle. The other intersection is ignored as it is not on the red portion.
 
 ```@setup curvexs1
 control_points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.0, 0.0)]
@@ -237,7 +237,7 @@ where $\theta_t = \theta_1 + t\Delta\theta$ and $\Delta\theta=\theta_2-\theta_1$
 ```math
 \begin{aligned}
 \vb r'(t) &= \left(-r\Delta\theta \sin \theta_t, r\Delta\theta \cos \theta_t\right), \\
-\vb r''(t) &= \left(r\Delta\theta^2 cos \theta_t, r\Delta\theta^2 \sin\theta_t\right).
+\vb r''(t) &= \left(-r\Delta\theta^2 \cos \theta_t, -r\Delta\theta^2 \sin\theta_t\right).
 \end{aligned}
 ```
 
@@ -262,7 +262,7 @@ where $\theta_t = \theta_1 + t\Delta\theta$. The derivatives of $\vb r(t)$ are g
 ```math
 \begin{aligned}
 \vb r'(t) &= \Delta\theta\begin{bmatrix} -\alpha \sin(\theta_t)\cos\theta-\beta \cos(\theta_t)\sin\theta \\ -\alpha\sin(\theta_t)\sin\theta+\beta\cos(\theta_t)\cos\theta\end{bmatrix}, \\
-\vb r''(t) &= \Delta\theta^2 \begin{bmatrix} -\alpha\cos(\theta_t)+\beta\sin(\theta_t)\sin\theta \\ -\alpha\cos(\theta_t)\sin\theta-\beta\sin(\theta_t)\cos\theta \end{bmatrix}.
+\vb r''(t) &= \Delta\theta^2 \begin{bmatrix} -\alpha\cos(\theta_t)\cos\theta+\beta\sin(\theta_t)\sin\theta \\ -\alpha\cos(\theta_t)\sin\theta-\beta\sin(\theta_t)\cos\theta \end{bmatrix}.
 \end{aligned}
 ```
 
@@ -314,7 +314,7 @@ For our implementation, you just need to know that we use de Boor's algorithm fo
 
 ## CatmullRomSpline
 
-We now discuss Catmull-Rom splines, which is an interpolating spline defined by a set of piecewise cubic polynomials. To discuss these splines, we need to consider the Catmull-Rom spline defined by a set of four points $\vb p_0, \vb p_1, \vb p_2, \vb p_3$. This is a cubic polynomial of the form $\vb q(t) = \vb a t^3 + \vb b t^2 + \vb c t + \vb d$ over $0 \leq t \leq 1$ that interpolates the four points, but is drawn only between $\vb p_2$ and $\vb p_3$ with $\vb q(0) = \vb p_1$ and $\vb q(1) = \vb p_2$. We also define two parameters $\alpha$ and $\tau$ that define the type of the parametrisation and the tightness of the spline, respectively; $\alpha = 0$ is called a uniform parmetrisation, $\alpha = 1/2$ is called a centripetal parametrisation, and $\alpha = 1$ is called a chordal parametrisation. Increasing $\tau$ makes the spline tighter, and $\tau = 1$ turns the spline into a piecewise linear curve. In this package, we only directly support $\alpha=1/2$ and $\tau=0$.
+We now discuss Catmull-Rom splines, which is an interpolating spline defined by a set of piecewise cubic polynomials. To discuss these splines, we need to consider the Catmull-Rom spline defined by a set of four points $\vb p_0, \vb p_1, \vb p_2, \vb p_3$. This is a cubic polynomial of the form $\vb q(t) = \vb a t^3 + \vb b t^2 + \vb c t + \vb d$ over $0 \leq t \leq 1$ that interpolates the four points, but is drawn only between $\vb p_1$ and $\vb p_2$ with $\vb q(0) = \vb p_1$ and $\vb q(1) = \vb p_2$. We also define two parameters $\alpha$ and $\tau$ that define the type of the parametrisation and the tightness of the spline, respectively; $\alpha = 0$ is called a uniform parametrisation, $\alpha = 1/2$ is called a centripetal parametrisation, and $\alpha = 1$ is called a chordal parametrisation. Increasing $\tau$ makes the spline tighter, and $\tau = 1$ turns the spline into a piecewise linear curve. In this package, we only directly support $\alpha=1/2$ and $\tau=0$.
 
 Using these control points and parameters, following [this article](https://qroph.github.io/2018/07/30/smooth-paths-using-catmull-rom-splines.html), we can compute the coefficients of our polynomial as follows:
 

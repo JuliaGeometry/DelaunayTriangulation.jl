@@ -9,5 +9,5 @@ This section shows the docstrings for all functions not in the public API; for t
 Some of the functions shown here will also appear in the public API, although only very few; for example, `Triangulation` and its accessors are repeated here. Functions listed here are **NOT** necessarily in the public API (similarly, a function having a docstring does **NOT** guarantee that it is in the public API) - only those listed in the [API](../api/overview.md) have this guarantee. Here is an index of all the functions listed in the above pages.
 
 ```@index
-Pages = ["data_structures.md", "algorithm_internals.md", "utils.md"]
+Pages = ["data_structures.md", "algorithms.md", "utils.md"]
 ```

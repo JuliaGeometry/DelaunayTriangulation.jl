@@ -8,7 +8,7 @@
 # from the point set directly, using the [monotone chain algorithm](https://en.wikibooks.org/wiki/Algorithm_Implementation/Geometry/Convex_hull/Monotone_chain).
 
 # Let us first demonstrate how we compute convex hulls from a triangulation. 
-# This is only possible from triangulations without a constrained boundary 
+# This is only possible from triangulations without a constrained boundary.
 using DelaunayTriangulation
 using CairoMakie
 using StableRNGs
