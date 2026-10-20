@@ -14,7 +14,7 @@ using .HelperFunctions
 # By default, all the groups are run.
 const TEST_GROUPS = ARGS
 run_group(name) = isempty(TEST_GROUPS) || name ∈ TEST_GROUPS
-let unknown_groups = setdiff(TEST_GROUPS, ["Aqua", "Triangulation", "Interfaces", "Data Structures", "Predicates", "Utilities", "Point Location", "Operations", "Constrained Triangulation", "Refinement", "Voronoi", "Makie", "Docstring examples", "Run the documentation examples"])
+let unknown_groups = setdiff(TEST_GROUPS, ["Aqua", "Primitives", "Predicates", "Utilities", "Geometry", "Trees", "Curves", "Triangulation", "Point Location", "Refinement", "Statistics", "Voronoi", "Makie", "Docstring examples", "Run the documentation examples"])
     isempty(unknown_groups) || error("Unknown test groups: $(join(unknown_groups, ", ")).")
 end
 
@@ -37,39 +37,11 @@ end
         Aqua.test_ambiguities(DelaunayTriangulation) # don't pick up Base and Core...
     end
 
-    run_group("Triangulation") && @testset verbose = true "Triangulation" begin
-        safe_include("triangulation/rectangle.jl")
-        safe_include("triangulation/bowyer_watson.jl")
-        safe_include("triangulation/triangulate.jl")
-        safe_include("triangulation/convex_triangulation.jl")
-        safe_include("triangulation/constrained.jl")
-        safe_include("triangulation/check_args.jl")
-        safe_include("triangulation/weighted.jl")
-        safe_include("triangulation/invariance.jl")
-    end
-
-    run_group("Interfaces") && @testset verbose = true "Interfaces" begin
-        safe_include("interfaces/triangles.jl")
-        safe_include("interfaces/edges.jl")
-        safe_include("interfaces/points.jl")
-        safe_include("interfaces/boundary_nodes.jl")
-    end
-
-    run_group("Data Structures") && @testset verbose = true "Data Structures" begin
-        safe_include("data_structures/adjacent.jl")
-        safe_include("data_structures/adjacent2vertex.jl")
-        safe_include("data_structures/graph.jl")
-        safe_include("data_structures/convex_hull.jl")
-        safe_include("data_structures/triangulation.jl")
-        safe_include("data_structures/representative.jl")
-        safe_include("data_structures/statistics.jl")
-        safe_include("data_structures/shuffled_polygon_linked_list.jl")
-        safe_include("data_structures/triangulation_cache.jl")
-        safe_include("data_structures/max_priority_queue.jl")
-        safe_include("data_structures/queue.jl")
-        safe_include("data_structures/curves.jl")
-        safe_include("data_structures/rtree.jl")
-        safe_include("data_structures/polygon_hierarchy.jl", verbose=false)
+    run_group("Primitives") && @testset verbose = true "Primitives" begin
+        safe_include("primitives/triangles.jl")
+        safe_include("primitives/edges.jl")
+        safe_include("primitives/points.jl")
+        safe_include("primitives/boundary_nodes.jl")
     end
 
     run_group("Predicates") && @testset verbose = true "Predicates" begin
@@ -80,9 +52,56 @@ end
     end
 
     run_group("Utilities") && @testset verbose = true "Utilities" begin
-        safe_include("utils.jl")
-        safe_include("geo_utils.jl")
+        safe_include("utils/utils.jl")
+        safe_include("utils/max_priority_queue.jl")
+        safe_include("utils/queue.jl")
         safe_include("helper_function_tests.jl")
+    end
+
+    run_group("Geometry") && @testset verbose = true "Geometry" begin
+        safe_include("geometry/geometry_utils.jl")
+        safe_include("geometry/convex_hull.jl")
+    end
+
+    run_group("Trees") && @testset verbose = true "Trees" begin
+        safe_include("trees/rtree.jl")
+        safe_include("trees/polygon_hierarchy.jl", verbose=false)
+    end
+
+    run_group("Curves") && @testset verbose = true "Curves" begin
+        safe_include("curves/curves.jl")
+    end
+
+    run_group("Triangulation") && @testset verbose = true "Triangulation" begin
+        safe_include("triangulation/adjacent.jl")
+        safe_include("triangulation/adjacent2vertex.jl")
+        safe_include("triangulation/graph.jl")
+        safe_include("triangulation/triangulation.jl")
+        safe_include("triangulation/representative.jl")
+        safe_include("triangulation/triangulation_cache.jl")
+        safe_include("triangulation/construction/rectangle.jl")
+        safe_include("triangulation/construction/bowyer_watson.jl")
+        safe_include("triangulation/construction/triangulate.jl")
+        safe_include("triangulation/construction/shuffled_polygon_linked_list.jl")
+        safe_include("triangulation/construction/convex_triangulation.jl")
+        safe_include("triangulation/construction/segment_location.jl")
+        safe_include("triangulation/construction/segment_insertion.jl")
+        safe_include("triangulation/construction/constrained.jl")
+        safe_include("triangulation/construction/check_args.jl")
+        safe_include("triangulation/construction/weighted.jl")
+        safe_include("triangulation/operations/add_triangle.jl")
+        safe_include("triangulation/operations/delete_triangle.jl")
+        safe_include("triangulation/operations/add_ghost_triangles.jl")
+        safe_include("triangulation/operations/delete_ghost_triangles.jl")
+        safe_include("triangulation/operations/add_point.jl")
+        safe_include("triangulation/operations/flip_edge.jl")
+        safe_include("triangulation/operations/split_triangle.jl")
+        safe_include("triangulation/operations/split_edge.jl")
+        safe_include("triangulation/operations/legalise_edge.jl")
+        safe_include("triangulation/operations/delete_point.jl")
+        safe_include("triangulation/operations/lock_convex_hull.jl")
+        safe_include("triangulation/operations/delete_holes.jl")
+        safe_include("triangulation/invariance.jl")
     end
 
     run_group("Point Location") && @testset verbose = true "Point Location" begin
@@ -94,30 +113,14 @@ end
         safe_include("point_location/jump_and_march.jl")
         safe_include("point_location/find_polygon.jl")
     end
-     
-    run_group("Operations") && @testset verbose = true "Operations" begin
-        safe_include("operations/add_triangle.jl")
-        safe_include("operations/delete_triangle.jl")
-        safe_include("operations/add_ghost_triangles.jl")
-        safe_include("operations/delete_ghost_triangles.jl")
-        safe_include("operations/add_point.jl")
-        safe_include("operations/flip_edge.jl")
-        safe_include("operations/split_triangle.jl")
-        safe_include("operations/split_edge.jl")
-        safe_include("operations/legalise_edge.jl")
-        safe_include("operations/delete_point.jl")
-        safe_include("operations/lock_convex_hull.jl")
-        safe_include("operations/delete_holes.jl")
-    end
-
-    run_group("Constrained Triangulation") && @testset verbose = true "Constrained Triangulation" begin
-        safe_include("constrained_triangulation/segment_location.jl")
-        safe_include("constrained_triangulation/segment_insertion.jl")
-    end
 
     run_group("Refinement") && @testset verbose = true "Refinement" begin
         safe_include("refinement/refine.jl")
         safe_include("refinement/curve_bounded.jl")
+    end
+
+    run_group("Statistics") && @testset verbose = true "Statistics" begin
+        safe_include("statistics/statistics.jl")
     end
 
     run_group("Voronoi") && @testset verbose = true "Voronoi" begin

@@ -16,7 +16,7 @@ MaxPriorityQueue
 
 ```@autodocs 
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/queue/max_priority_queue.jl"]
+Pages = ["src/utils/max_priority_queue.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.MaxPriorityQueue,))
 ```
 
@@ -30,7 +30,7 @@ Queue
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/queue/queue.jl"]
+Pages = ["src/utils/queue.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.Queue,)) 
 ```
 
@@ -44,7 +44,7 @@ RTree
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/trees/rtree.jl"]
+Pages = ["src/trees/rtree.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.RTree,)) 
 ```
 
@@ -62,7 +62,7 @@ PolygonHierarchy
 
 ```@autodocs 
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/trees/polygon_hierarchy.jl"]
+Pages = ["src/trees/polygon_hierarchy.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.PolygonHierarchy,))
 ```
 
@@ -76,7 +76,7 @@ Adjacent
 
 ```@autodocs 
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/triangulation/adjacent.jl"]
+Pages = ["src/triangulation/adjacent.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.Adjacent,))
 ```
 
@@ -90,7 +90,7 @@ Adjacent2Vertex
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/triangulation/adjacent2vertex.jl"]
+Pages = ["src/triangulation/adjacent2vertex.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.Adjacent2Vertex,))
 ```
 
@@ -104,7 +104,7 @@ Graph
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/triangulation/graph.jl"]
+Pages = ["src/triangulation/graph.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.Graph,))
 ```
 
@@ -132,50 +132,50 @@ arc_length
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/mesh_refinement/curves/abstract.jl"]
+Pages = ["src/curves/abstract.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.AbstractParametricCurve, DelaunayTriangulation.twice_differentiate, DelaunayTriangulation.total_variation, DelaunayTriangulation.thrice_differentiate, DelaunayTriangulation.differentiate, DelaunayTriangulation.arc_length))
 ```
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/mesh_refinement/curves/beziercurve.jl"]
+Pages = ["src/curves/beziercurve.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.BezierCurve,))
 
 ```
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/mesh_refinement/curves/bspline.jl"]
+Pages = ["src/curves/bspline.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.BSpline,))
 ```
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/mesh_refinement/curves/catmullromspline.jl"]
+Pages = ["src/curves/catmullromspline.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.CatmullRomSpline,))
 ```
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/mesh_refinement/curves/circulararc.jl"]
+Pages = ["src/curves/circulararc.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.CircularArc,))
 ```
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/mesh_refinement/curves/ellipticalarc.jl"]
+Pages = ["src/curves/ellipticalarc.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.EllipticalArc,))
 ```
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/mesh_refinement/curves/linesegment.jl"]
+Pages = ["src/curves/linesegment.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.LineSegment,))
 ```
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/mesh_refinement/curves/piecewiselinear.jl"]
+Pages = ["src/curves/piecewiselinear.jl"]
 ```
 
 
@@ -185,7 +185,7 @@ We use a `RepresentativeCoordinates` struct for storing the representative coord
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/representative_coordinates/representative_coordinates.jl"]
+Pages = ["src/triangulation/representative_coordinates.jl"]
 ```
 
 ```@docs 
@@ -198,7 +198,7 @@ We use a `Cell` struct for representing an individual square in a quadtree durin
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/representative_coordinates/cell.jl"]
+Pages = ["src/geometry/pole_of_inaccessibility/cell.jl"]
 ```
 
 ## CellQueue
@@ -207,7 +207,7 @@ We use a `CellQueue` struct for storing the `Cell`s in a quadtree during the com
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/representative_coordinates/cell_queue.jl"]
+Pages = ["src/geometry/pole_of_inaccessibility/cell_queue.jl"]
 ```
 
 ## ConvexHull
@@ -220,7 +220,7 @@ ConvexHull
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/convex_hull.jl"]
+Pages = ["src/geometry/convex_hull/convex_hull.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.ConvexHull,))
 ```
 
@@ -234,7 +234,7 @@ Triangulation
 
 ```@autodocs    
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/triangulation/triangulation.jl"]
+Pages = ["src/triangulation/triangulation.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.Triangulation, DelaunayTriangulation.get_incircle_cache, DelaunayTriangulation.get_orient3_cache))
 ```
 
@@ -244,7 +244,7 @@ The `TriangulationCache` is what we store in the `cache` field of a triangulatio
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/triangulation/triangulation_cache.jl"]
+Pages = ["src/triangulation/triangulation_cache.jl"]
 ```
 
 ## BoundaryEnricher 
@@ -257,7 +257,7 @@ BoundaryEnricher
 
 ```@autodocs 
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/mesh_refinement/boundary_enricher.jl"]
+Pages = ["src/curves/boundary_enricher.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.BoundaryEnricher,))
 ```
 
@@ -267,7 +267,7 @@ We use a variety of iterators for iterating over the vertices, edges, and triang
 
 ```@autodocs 
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/triangulation/methods/iterators.jl"]
+Pages = ["src/triangulation/methods/iterators.jl"]
 ```
 
 ## PointLocationHistory 
@@ -280,7 +280,7 @@ PointLocationHistory
 
 ```@autodocs 
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/point_location_history.jl"]
+Pages = ["src/point_location/point_location_history.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.PointLocationHistory,))
 ```
 
@@ -294,7 +294,7 @@ IndividualTriangleStatistics
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/statistics/individual_triangle_statistics.jl"]
+Pages = ["src/statistics/individual_triangle_statistics.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.IndividualTriangleStatistics,))
 ```
 
@@ -308,7 +308,7 @@ TriangulationStatistics
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/statistics/triangulation_statistics.jl"]
+Pages = ["src/statistics/triangulation_statistics.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.TriangulationStatistics,))
 ```
 
@@ -322,7 +322,7 @@ InsertionEventHistory
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/mesh_refinement/insertion_event_history.jl"]
+Pages = ["src/refinement/insertion_event_history.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.InsertionEventHistory,))
 ```
 
@@ -332,7 +332,7 @@ For mesh refinement, internally we store the user-provided constraints inside th
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/mesh_refinement/refinement_constraints.jl"]
+Pages = ["src/refinement/refinement_constraints.jl"]
 ```
 
 ## RefinementQueue 
@@ -341,7 +341,7 @@ The mesh refinement algorithm we use requires a method for prioritising which se
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/mesh_refinement/refinement_queue.jl"]
+Pages = ["src/refinement/refinement_queue.jl"]
 ```
 
 ## RefinementArguments 
@@ -350,7 +350,7 @@ There are many arguments that need to be passed around during mesh refinement. T
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/mesh_refinement/refinement_arguments.jl"]
+Pages = ["src/refinement/refinement_arguments.jl"]
 ```
 
 ## VoronoiTessellation
@@ -363,7 +363,7 @@ VoronoiTessellation
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/voronoi.jl"]
+Pages = ["src/voronoi/tessellation.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.VoronoiTessellation,))
 ```
 
@@ -373,7 +373,7 @@ We sometimes find it useful to use a specific `Polygon` struct for representing 
 
 ```@autodocs 
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/polygon.jl"]
+Pages = ["src/geometry/polygon_clipping/polygon.jl"]
 ```
 
 ## ShuffledPolygonLinkedList
@@ -382,7 +382,7 @@ For computing constrained Delaunay triangulations, we use a `ShuffledPolygonLink
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["data_structures/shuffled_polygon_linked_list.jl"]
+Pages = ["src/triangulation/construction/shuffled_polygon_linked_list.jl"]
 ```
 
 ## Points (Primitive Interface)
@@ -402,7 +402,7 @@ each_point
 
 ```@autodocs 
 Modules = [DelaunayTriangulation]
-Pages = ["src/geometric_primitives/points.jl"]
+Pages = ["src/primitives/points.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.set_point!, DelaunayTriangulation.push_point!, DelaunayTriangulation.pop_point!, DelaunayTriangulation.num_points, DelaunayTriangulation.getpoint, DelaunayTriangulation.get_point, DelaunayTriangulation.each_point_index, DelaunayTriangulation.each_point))
 ```
 
@@ -419,7 +419,7 @@ construct_edge
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["src/geometric_primitives/edges.jl"]
+Pages = ["src/primitives/edges.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.random_edge, DelaunayTriangulation.each_edge, DelaunayTriangulation.contains_edge, DelaunayTriangulation.construct_edge))
 ```
 
@@ -439,7 +439,7 @@ add_triangle!
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["src/geometric_primitives/triangles.jl"]
+Pages = ["src/primitives/triangles.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.triangle_edges, DelaunayTriangulation.sort_triangle, DelaunayTriangulation.each_triangle, DelaunayTriangulation.delete_triangle!, DelaunayTriangulation.contains_triangle, DelaunayTriangulation.construct_triangle, DelaunayTriangulation.add_triangle!))
 ```
 
@@ -457,6 +457,6 @@ get_boundary_nodes
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["src/geometric_primitives/boundary_nodes.jl"]
+Pages = ["src/primitives/boundary_nodes.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.has_multiple_sections, DelaunayTriangulation.has_multiple_curves, DelaunayTriangulation.get_section_index, DelaunayTriangulation.get_curve_index, DelaunayTriangulation.get_boundary_nodes))
 ```

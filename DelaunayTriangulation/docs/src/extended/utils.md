@@ -18,7 +18,7 @@ Filter = t -> !(t in (DelaunayTriangulation.number_type,))
 
 ```@autodocs 
 Modules = [DelaunayTriangulation]
-Pages = ["src/utils/geometry_utils.jl"]
+Pages = ["src/geometry/geometry_utils.jl"]
 ```
 
 ```@autodocs 

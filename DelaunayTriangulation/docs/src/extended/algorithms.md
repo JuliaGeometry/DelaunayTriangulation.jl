@@ -16,7 +16,7 @@ postprocess_triangulate!
 
 ```@autodocs 
 Modules = [DelaunayTriangulation]
-Pages = ["src/algorithms/triangulation/unconstrained_triangulation.jl"]
+Pages = ["src/triangulation/construction/unconstrained.jl"]
 ```
 
 ## Triangulation Rectangular Domains
@@ -35,7 +35,7 @@ Here are some functions used in `triangulate_convex` for triangulating a convex 
 
 ```@autodocs 
 Modules = [DelaunayTriangulation]
-Pages = ["src/algorithms/triangulation/triangulate_convex.jl"]
+Pages = ["src/triangulation/construction/convex.jl"]
 ```
 
 ## Constrained Triangulations
@@ -44,55 +44,55 @@ There are many functions to list for the computation of a constrained triangulat
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["src/algorithms/triangulation/basic_operations/add_segment.jl"]
+Pages = ["src/triangulation/operations/add_segment.jl"]
 ```
 
 ```@autodocs
 Modules = [DelaunayTriangulation] 
-Pages = ["src/algorithms/triangulation/constrained_triangulation.jl"]
+Pages = ["src/triangulation/construction/constrained.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.convert_boundary_points_to_indices,))
 ```
 
 ```@autodocs
 Modules = [DelaunayTriangulation] 
-Pages = ["src/data_structures/triangulation/methods/boundary_edge_map.jl"]
+Pages = ["src/triangulation/methods/boundary_edge_map.jl"]
 ```
 
 ```@autodocs
 Modules = [DelaunayTriangulation] 
-Pages = ["src/data_structures/triangulation/methods/boundary_nodes.jl"]
+Pages = ["src/triangulation/methods/boundary_nodes.jl"]
 ```
 
 ```@autodocs
 Modules = [DelaunayTriangulation] 
-Pages = ["src/data_structures/triangulation/methods/exterior_curve_indices.jl"]
+Pages = ["src/triangulation/methods/exterior_curve_indices.jl"]
 ```
 
 ```@autodocs
 Modules = [DelaunayTriangulation] 
-Pages = ["src/data_structures/triangulation/methods/ghost_vertex_map.jl"]
+Pages = ["src/triangulation/methods/ghost_vertex_map.jl"]
 ```
 
 ```@autodocs
 Modules = [DelaunayTriangulation] 
-Pages = ["src/data_structures/triangulation/methods/ghost_vertex_ranges.jl"]
+Pages = ["src/triangulation/methods/ghost_vertex_ranges.jl"]
 ```
 
 ```@autodocs
 Modules = [DelaunayTriangulation] 
-Pages = ["src/data_structures/triangulation/methods/representative_point_list.jl"]
+Pages = ["src/triangulation/methods/representative_point_list.jl"]
 ```
 
 ```@autodocs
 Modules = [DelaunayTriangulation] 
-Pages = ["src/data_structures/triangulation/methods/segments.jl"]
+Pages = ["src/triangulation/methods/segments.jl"]
 ```
 
 ## Weighted Triangulations
 
 ```@autodocs 
 Modules = [DelaunayTriangulation]
-Pages = ["src/data_structures/triangulation/methods/weights.jl"]
+Pages = ["src/triangulation/methods/weights.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.ZeroWeight,))
 ```
 
@@ -102,7 +102,7 @@ Here are some functions involved with mesh refinement.
 
 ```@autodocs 
 Modules = [DelaunayTriangulation]
-Pages = ["src/algorithms/triangulation/mesh_refinement.jl"]
+Pages = ["src/refinement/mesh_refinement.jl"]
 ```
 
 ```@docs 
@@ -118,7 +118,7 @@ The RTrees we work with during boundary enrichment have several functions associ
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["src/algorithms/intersections/rtree.jl"]
+Pages = ["src/trees/rtree_intersections.jl"]
 ```
 
 ## Point Location
@@ -127,12 +127,12 @@ Here are some functions related to point location.
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["src/algorithms/point_location/brute_force.jl"]
+Pages = ["src/point_location/brute_force.jl"]
 ```
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["src/algorithms/point_location/jump_and_march.jl"]
+Pages = ["src/point_location/jump_and_march.jl"]
 ```
 
 ## Triangulation Operations
@@ -141,48 +141,48 @@ Some of the triangulation operations have internal functions associated with the
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["src/algorithms/triangulation/basic_operations/delete_holes.jl"]
+Pages = ["src/triangulation/operations/delete_holes.jl"]
 ```
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["src/algorithms/triangulation/basic_operations/delete_point.jl"]
+Pages = ["src/triangulation/operations/delete_point.jl"]
 ```
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["src/algorithms/triangulation/basic_operations/split_edge.jl"]
+Pages = ["src/triangulation/operations/split_edge.jl"]
 ```
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["src/algorithms/triangulation/basic_operations/split_triangle.jl"]
+Pages = ["src/triangulation/operations/split_triangle.jl"]
 ```
 
 ```@autodocs 
 Modules = [DelaunayTriangulation]
-Pages = ["src/data_structures/triangulation/methods/adjacent.jl"]
+Pages = ["src/triangulation/methods/adjacent.jl"]
 ```
 
 ```@autodocs 
 Modules = [DelaunayTriangulation]
-Pages = ["src/data_structures/triangulation/methods/adjacent2vertex.jl"]
+Pages = ["src/triangulation/methods/adjacent2vertex.jl"]
 ```
 
 ```@autodocs 
 Modules = [DelaunayTriangulation]
-Pages = ["src/data_structures/triangulation/methods/graph.jl"]
+Pages = ["src/triangulation/methods/graph.jl"]
 Filter = t -> !(t in (DelaunayTriangulation.get_vertices, DelaunayTriangulation.get_edges))
 ```
 
 ```@autodocs 
 Modules = [DelaunayTriangulation]
-Pages = ["src/data_structures/triangulation/methods/points.jl"]
+Pages = ["src/triangulation/methods/points.jl"]
 ```
 
 ```@autodocs 
 Modules = [DelaunayTriangulation]
-Pages = ["src/data_structures/triangulation/methods/triangles.jl"]
+Pages = ["src/triangulation/methods/triangles.jl"]
 ```
 
 ## Voronoi Tessellations
@@ -191,7 +191,7 @@ Here are some functions related to the computation of unbounded Voronoi tessella
 
 ```@autodocs 
 Modules = [DelaunayTriangulation]
-Pages = ["src/algorithms/voronoi/unbounded.jl"]
+Pages = ["src/voronoi/unbounded.jl"]
 ```
 
 ## Clipped Voronoi Tessellations
@@ -200,7 +200,7 @@ Here are some functions related to the computation of clipped Voronoi tessellati
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["src/algorithms/voronoi/clipped.jl", "src/algorithms/voronoi/clipped_coordinates.jl", "src/algorithms/polygon_clipping/liang_barsky.jl", "src/algorithms/polygon_clipping/sutherland_hodgman.jl"]
+Pages = ["src/voronoi/clipped.jl", "src/voronoi/clipped_coordinates.jl", "src/geometry/polygon_clipping/liang_barsky.jl", "src/geometry/polygon_clipping/sutherland_hodgman.jl"]
 ```
 
 ## Centroidal Voronoi Tessellations 
@@ -209,7 +209,7 @@ Here are some functions related to the computation of centroidal Voronoi tessell
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["src/algorithms/voronoi/centroidal.jl"]
+Pages = ["src/voronoi/centroidal.jl"]
 ```
 
 ## Triangulating Curve-Bounded Domains
@@ -218,12 +218,12 @@ We have several functions related to the triangulation of curve-bounded domains.
 
 ```@autodocs 
 Modules = [DelaunayTriangulation]
-Pages = ["src/algorithms/triangulation/triangulate_curve_bounded.jl"]
+Pages = ["src/triangulation/construction/curve_bounded.jl"]
 ```
 
 ```@autodocs
 Modules = [DelaunayTriangulation]
-Pages = ["src/data_structures/triangulation/methods/boundary_curves.jl"]
+Pages = ["src/triangulation/methods/boundary_curves.jl"]
 ```
 
 ```@docs 

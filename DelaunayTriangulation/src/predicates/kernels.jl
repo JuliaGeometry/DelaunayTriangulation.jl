@@ -38,8 +38,3 @@ Pass this to predicates to use AdaptivePredicates.jl for computing predicates.
 See also [`FastKernel`](@ref) and [`ExactKernel`](@ref).
 """
 struct AdaptiveKernel <: AbstractPredicateKernel end
-
-include("predicates/certificate.jl")
-include("predicates/predicate_definitions.jl")
-include("predicates/predicates.jl")
-include("predicates/boundaries_and_ghosts.jl")
