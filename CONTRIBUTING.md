@@ -67,6 +67,13 @@ This final point often takes the most time. Understanding how to test for these 
 
 Please also ensure to make your tests easy to understand.
 
+Some practical notes on the test suite:
+
+- The folders in `DelaunayTriangulation/test` mirror those in `DelaunayTriangulation/src`, e.g. the tests for `src/voronoi/` are in `test/voronoi/`. New test files need to be added to `test/runtests.jl`.
+- The full test suite takes about half an hour. To only run some of its groups, e.g. while working on a change, pass their names as test arguments: `Pkg.test("DelaunayTriangulation"; test_args = ["Voronoi", "Point Location"])`. The group names are listed in `test/runtests.jl`.
+- `test/helper_functions.jl` defines a module of helpers for the tests, e.g. example geometries, validators like `validate_statistics`, comparisons that do not depend on hash order like `same_polygon`, and slow reference implementations. The helpers are split by purpose over the files in `test/helpers/`. To use them outside of the test suite, e.g. in the REPL with the test environment active, run `include(joinpath(pkgdir(DelaunayTriangulation), "test", "helper_functions.jl")); using .HelperFunctions`.
+- Reference images for tests that compare figures are in the top-level `assets/` folder rather than in the package, so that they are not downloaded with the package. See `reference_path` in `test/helpers/testing.jl` for how images that differ between Julia versions are handled.
+
 ### 4. Try to only do one thing per pull request
 
 Ideally, a single pull request should only do one thing. This makes it easy to track your changes and track regressions between versions. For example, do not move around a bunch of files while at the same time implementing a function somewhere else - make two pull requests.

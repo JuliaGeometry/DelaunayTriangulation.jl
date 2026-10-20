@@ -5,7 +5,7 @@ using Test
 using Random
 
 const ALL_TEST_SCRIPTS = Set{String}()
-const NON_TEST_SCRIPTS = Set{String}(["helper_functions.jl", "runtests.jl"])
+const NON_TEST_SCRIPTS = Set{String}(["helper_functions.jl", "runtests.jl", (joinpath("helpers", file) for file in readdir(joinpath(@__DIR__, "helpers")))...])
 include("helper_functions.jl")
 using .HelperFunctions
 
