@@ -98,25 +98,46 @@ end
     @test DT.is_invisible(DT.test_visibility(tri, 5, 1, 7))
 end
 
-@testset "test_with_log" begin
-    lhs = MacroTools.striplines(quote
-        @testset let ctx = "2"
-            @test 2 + 4 == 6
-        end
-    end)
-    rhs = MacroTools.striplines(@macroexpand1 @test_with_log "2" 2 + 4 == 6)
-    @test lhs == rhs
+# A testset that records the results of its tests without failing the enclosing testset, so that tests that fail can be tested
+mutable struct CaptureTestSet <: Test.AbstractTestSet
+    description::String
+    results::Vector{Any}
+    CaptureTestSet(description; kwargs...) = new(description, [])
+end
+Test.record(ts::CaptureTestSet, result) = (push!(ts.results, result); result)
+Test.finish(ts::CaptureTestSet) = ts
 
+@testset "test_with_log" begin
+    # With an empty message, this is just @test
     rhs = MacroTools.striplines(@macroexpand1 @test_with_log "" f())
     lhs = MacroTools.striplines(:(@test f()))
     @test lhs == rhs
 
-    msg = "MeC"
-    rhs = MacroTools.striplines(@eval @macroexpand1 @test_with_log $(msg) 2 ≈ 4 rtol = 1e-4 atol = 1e-2)
-    lhs = MacroTools.striplines(quote
-        @testset let ctx = "MeC"
-            @test 2 ≈ 4 rtol = 1e-4 atol = 1e-2
+    # Otherwise each test is recorded as usual, and the message is only printed for a test that does not pass
+    ts, printed = mktemp() do path, io
+        ts = redirect_stdout(io) do
+            @testset CaptureTestSet "capture" begin
+                @test_with_log "first" 2 + 4 == 6
+                @test_with_log "second" 2 + 4 == 7
+                @test_with_log "MeC" 2 ≈ 2.0001 rtol = 1e-3 atol = 1e-2
+                @test_with_log "third" 2 ≈ 4 rtol = 1e-4 atol = 1e-2
+            end
         end
-    end)
-    @test lhs == rhs
+        flush(io)
+        ts, read(path, String)
+    end
+    @test [r isa Test.Pass for r in ts.results] == [true, false, true, false]
+    @test !occursin("first", printed) && occursin("Context: second", printed)
+    @test !occursin("MeC", printed) && occursin("Context: third", printed)
+end
+
+@testset "check" begin
+    failures = Dict{String, Any}()
+    for x in 1:5
+        @check failures x x < 3
+        @check failures x x ≈ 2.0 atol = 0.5
+        @check failures x x > 0
+    end
+    # Only the first failure of each check is kept
+    @test failures == Dict("x < 3" => 3, "x ≈ 2.0 atol = 0.5" => 1)
 end

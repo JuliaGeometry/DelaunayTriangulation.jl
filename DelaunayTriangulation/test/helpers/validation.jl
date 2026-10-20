@@ -136,6 +136,9 @@ function validate_statistics(tri::DT.Triangulation, stats=statistics(tri); msg="
     offcenters = Dict{T,NTuple{2,NT}}()
     sinks = Dict{T,NTuple{2,NT}}()
     total_A = zero(NT)
+    # The checks for each triangle use @check rather than a @test each, which was by far the slowest part of the refinement
+    # tests (about 30 tests per triangle). The first triangle that fails each check is printed below.
+    failures = Dict{String, Any}()
     for T in each_solid_triangle(tri)
         u, v, w = DT.triangle_vertices(T)
         p, q, r = get_point(tri, u, v, w)
@@ -172,42 +175,42 @@ function validate_statistics(tri::DT.Triangulation, stats=statistics(tri); msg="
         angles[triangle_vertices(T)] = Tuple(all_angles)
         offcenters[triangle_vertices(T)] = DT.triangle_offcenter(p, q, r)
         sinks[triangle_vertices(T)] = DT.triangle_sink(tri, T)
-        @test_with_log msg radius_edge_ratio[triangle_vertices(T)] ≥ 1 / sqrt(3) - 0.1
-        @test_with_log msg DT.get_radius_edge_ratio(stats, T) ≥ 1 / sqrt(3) - 0.1
-        @test_with_log msg angles[triangle_vertices(T)][1] ≤ deg2rad(60) + 0.01
-        @test_with_log msg DT.get_minimum_angle(stats, T) ≤ deg2rad(60) + 0.01
+        @check failures T radius_edge_ratio[triangle_vertices(T)] ≥ 1 / sqrt(3) - 0.1
+        @check failures T DT.get_radius_edge_ratio(stats, T) ≥ 1 / sqrt(3) - 0.1
+        @check failures T angles[triangle_vertices(T)][1] ≤ deg2rad(60) + 0.01
+        @check failures T DT.get_minimum_angle(stats, T) ≤ deg2rad(60) + 0.01
     end
 
     ## Now compare the statistics 
     for T in each_solid_triangle(tri)
-        @test_with_log msg areas[triangle_vertices(T)] ≈ DT.get_area(stats, T) rtol = 1.0e-6 atol = 1.0e-8
-        @test_with_log msg areas[triangle_vertices(T)] ≈ DT.triangle_area((lengths[triangle_vertices(T)] .^ 2)...) rtol = 1.0e-6 atol = 1.0e-8
-        @test_with_log msg collect(lengths[triangle_vertices(T)]) ≈ collect(DT.get_lengths(stats, T)) rtol = 1.0e-6 atol = 1.0e-8
-        @test_with_log msg collect(circumcenters[triangle_vertices(T)]) ≈ collect(DT.get_circumcenter(stats, T)) rtol = 1.0e-6 atol = 1.0e-8
-        @test_with_log msg circumradii[triangle_vertices(T)] ≈ DT.get_circumradius(stats, T) rtol = 1.0e-6 atol = 1.0e-8
-        @test_with_log msg radius_edge_ratio[triangle_vertices(T)] ≈ DT.get_radius_edge_ratio(stats, T) rtol = 1.0e-6 atol = 1.0e-8
-        @test_with_log msg collect(collect.(edge_midpoints[triangle_vertices(T)])) ≈ collect(collect.(DT.get_edge_midpoints(stats, T))) rtol = 1.0e-6 atol = 1.0e-8
-        @test_with_log msg aspect_ratio[triangle_vertices(T)] ≈ DT.get_aspect_ratio(stats, T) rtol = 1.0e-6 atol = 1.0e-8
-        @test_with_log msg aspect_ratio[triangle_vertices(T)] ≈ DT.triangle_aspect_ratio(get_point(tri, triangle_vertices(T)...)...) rtol = 1.0e-6 atol = 1.0e-8
-        @test_with_log msg inradius[triangle_vertices(T)] ≈ DT.get_inradius(stats, T) rtol = 1.0e-6 atol = 1.0e-8
-        @test_with_log msg inradius[triangle_vertices(T)] ≈ DT.triangle_inradius(get_point(tri, triangle_vertices(T)...)...) rtol = 1.0e-6 atol = 1.0e-8
-        @test_with_log msg perimeter[triangle_vertices(T)] ≈ DT.get_perimeter(stats, T) rtol = 1.0e-6 atol = 1.0e-8
-        @test_with_log msg radius_edge_ratio[triangle_vertices(T)] ≈ 1 / (2sin(minimum(angles[triangle_vertices(T)]))) rtol = 1.0e-6 atol = 1.0e-8
-        @test_with_log msg (2sin(DT.get_minimum_angle(stats, T) / 2)^2 - 0.1 ≤ DT.get_aspect_ratio(stats, T) ≤ 2tan(DT.get_minimum_angle(stats, T) / 2) + 0.1)
-        @test_with_log msg DT.get_radius_edge_ratio(stats, T) ≈ 1 / (2(sin(DT.get_minimum_angle(stats, T)))) rtol = 1.0e-6 atol = 1.0e-8
-        @test_with_log msg areas[triangle_vertices(T)] ≈ inradius[triangle_vertices(T)] * 0.5perimeter[triangle_vertices(T)] rtol = 1.0e-6 atol = 1.0e-8
-        @test_with_log msg DT.get_area(stats, T) ≈ DT.get_inradius(stats, T) * 0.5DT.get_perimeter(stats, T) rtol = 1.0e-6 atol = 1.0e-8
-        @test_with_log msg collect(centroid[triangle_vertices(T)]) ≈ collect(DT.get_centroid(stats, T)) rtol = 1.0e-6 atol = 1.0e-8
-        @test_with_log msg DT.get_angles(stats, T)[1] ≈ angles[triangle_vertices(T)][1] rtol = 1.0e-6 atol = 1.0e-8
-        @test_with_log msg DT.get_angles(stats, T)[2] ≈ angles[triangle_vertices(T)][2] rtol = 1.0e-6 atol = 1.0e-8
-        @test_with_log msg DT.get_angles(stats, T)[3] ≈ angles[triangle_vertices(T)][3] rtol = 1.0e-6 atol = 1.0e-8
-        @test_with_log msg sum(DT.get_angles(stats, T)) ≈ π rtol = 1.0e-6 atol = 1.0e-8
-        @test_with_log msg DT.get_minimum_angle(stats, T) ≈ angles[triangle_vertices(T)][1] rtol = 1.0e-6 atol = 1.0e-8
-        @test_with_log msg DT.get_maximum_angle(stats, T) ≈ angles[triangle_vertices(T)][3] rtol = 1.0e-6 atol = 1.0e-8
-        @test_with_log msg DT.get_minimum_angle(stats, T) ≈ DT.get_angles(stats, T)[1] rtol = 1.0e-6 atol = 1.0e-8
-        @test_with_log msg DT.get_maximum_angle(stats, T) ≈ DT.get_angles(stats, T)[3] rtol = 1.0e-6 atol = 1.0e-8
-        @test_with_log msg collect(offcenters[triangle_vertices(T)]) ≈ collect(DT.get_offcenter(stats, T)) rtol = 1.0e-6 atol = 1.0e-8
-        @test_with_log msg collect(sinks[triangle_vertices(T)]) ≈ collect(DT.get_sink(stats, T)) rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T areas[triangle_vertices(T)] ≈ DT.get_area(stats, T) rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T areas[triangle_vertices(T)] ≈ DT.triangle_area((lengths[triangle_vertices(T)] .^ 2)...) rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T collect(lengths[triangle_vertices(T)]) ≈ collect(DT.get_lengths(stats, T)) rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T collect(circumcenters[triangle_vertices(T)]) ≈ collect(DT.get_circumcenter(stats, T)) rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T circumradii[triangle_vertices(T)] ≈ DT.get_circumradius(stats, T) rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T radius_edge_ratio[triangle_vertices(T)] ≈ DT.get_radius_edge_ratio(stats, T) rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T collect(collect.(edge_midpoints[triangle_vertices(T)])) ≈ collect(collect.(DT.get_edge_midpoints(stats, T))) rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T aspect_ratio[triangle_vertices(T)] ≈ DT.get_aspect_ratio(stats, T) rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T aspect_ratio[triangle_vertices(T)] ≈ DT.triangle_aspect_ratio(get_point(tri, triangle_vertices(T)...)...) rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T inradius[triangle_vertices(T)] ≈ DT.get_inradius(stats, T) rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T inradius[triangle_vertices(T)] ≈ DT.triangle_inradius(get_point(tri, triangle_vertices(T)...)...) rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T perimeter[triangle_vertices(T)] ≈ DT.get_perimeter(stats, T) rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T radius_edge_ratio[triangle_vertices(T)] ≈ 1 / (2sin(minimum(angles[triangle_vertices(T)]))) rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T (2sin(DT.get_minimum_angle(stats, T) / 2)^2 - 0.1 ≤ DT.get_aspect_ratio(stats, T) ≤ 2tan(DT.get_minimum_angle(stats, T) / 2) + 0.1)
+        @check failures T DT.get_radius_edge_ratio(stats, T) ≈ 1 / (2(sin(DT.get_minimum_angle(stats, T)))) rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T areas[triangle_vertices(T)] ≈ inradius[triangle_vertices(T)] * 0.5perimeter[triangle_vertices(T)] rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T DT.get_area(stats, T) ≈ DT.get_inradius(stats, T) * 0.5DT.get_perimeter(stats, T) rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T collect(centroid[triangle_vertices(T)]) ≈ collect(DT.get_centroid(stats, T)) rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T DT.get_angles(stats, T)[1] ≈ angles[triangle_vertices(T)][1] rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T DT.get_angles(stats, T)[2] ≈ angles[triangle_vertices(T)][2] rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T DT.get_angles(stats, T)[3] ≈ angles[triangle_vertices(T)][3] rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T sum(DT.get_angles(stats, T)) ≈ π rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T DT.get_minimum_angle(stats, T) ≈ angles[triangle_vertices(T)][1] rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T DT.get_maximum_angle(stats, T) ≈ angles[triangle_vertices(T)][3] rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T DT.get_minimum_angle(stats, T) ≈ DT.get_angles(stats, T)[1] rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T DT.get_maximum_angle(stats, T) ≈ DT.get_angles(stats, T)[3] rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T collect(offcenters[triangle_vertices(T)]) ≈ collect(DT.get_offcenter(stats, T)) rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T collect(sinks[triangle_vertices(T)]) ≈ collect(DT.get_sink(stats, T)) rtol = 1.0e-6 atol = 1.0e-8
     end
     @test_with_log msg stats.individual_statistics == DT.get_individual_statistics(stats)
     @test_with_log msg stats.area ≈ DT.get_area(stats) rtol = 1.0e-6 atol = 1.0e-8
@@ -273,24 +276,26 @@ function validate_statistics(tri::DT.Triangulation, stats=statistics(tri); msg="
         r1 = DT.dist_sqr(get_point(tri, i, o)...) - DT.get_weight(tri, i)
         r2 = DT.dist_sqr(get_point(tri, j, o)...) - DT.get_weight(tri, j)
         r3 = DT.dist_sqr(get_point(tri, k, o)...) - DT.get_weight(tri, k)
-        @test_with_log msg r1 ≈ r2 rtol = 1.0e-6 atol = 1.0e-8
-        @test_with_log msg r2 ≈ r3 rtol = 1.0e-6 atol = 1.0e-8
-        @test_with_log msg r1 ≈ r3 rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T r1 ≈ r2 rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T r2 ≈ r3 rtol = 1.0e-6 atol = 1.0e-8
+        @check failures T r1 ≈ r3 rtol = 1.0e-6 atol = 1.0e-8
         if !DT.is_weighted(tri)
             c = DT.triangle_circumcenter(tri, T)
-            @test collect(o) ≈ collect(c) rtol = 1.0e-6 atol = 1.0e-8
+            @check failures T collect(o) ≈ collect(c) rtol = 1.0e-6 atol = 1.0e-8
         end
 
         r² = DT.triangle_orthoradius_squared(tri, T)
         if !DT.is_weighted(tri)
             cr2 = DT.triangle_circumradius(get_point(tri, T...)...)^2
-            @test r² ≈ cr2 rtol = 1.0e-6 atol = 1.0e-8
+            @check failures T r² ≈ cr2 rtol = 1.0e-6 atol = 1.0e-8
         end
-        @test_with_log msg r² ≈ r1
-        @test_with_log msg r² ≈ r2
-        @test_with_log msg r² ≈ r3
-        @test_with_log msg DT.dist_sqr(get_point(tri, i, o)...) - DT.get_weight(tri, i) - r² ≈ 0 atol = 1.0e-8 * max(1, abs(r²))
+        @check failures T r² ≈ r1
+        @check failures T r² ≈ r2
+        @check failures T r² ≈ r3
+        @check failures T DT.dist_sqr(get_point(tri, i, o)...) - DT.get_weight(tri, i) - r² ≈ 0 atol = 1.0e-8 * max(1, abs(r²))
     end
+    @test_with_log msg isempty(failures)
+    isempty(failures) || println("  Failed checks in validate_statistics, with the first triangle that failed each: ", failures)
 end
 
 ## TODO: Implement a brute-force DT.VoronoiTessellation that we can compare with
