@@ -8,7 +8,6 @@ using ReferenceTests
 const ASSETS = joinpath(@__DIR__, "..", "..", "..", "assets", "test", "refinement")
 using Test
 using StructEquality
-using DelimitedFiles
 
 using StableRNGs
 @struct_equal DT.InsertionEventHistory
@@ -2806,32 +2805,6 @@ end
         fig, ax, sc = triplot(tri)
         @test_reference reference_path(ASSETS, "complicated_example_with_tight_walls_and_small_angles.png") fig by = psnr_equality(15)
     end
-
-    #=
-    if !(get(ENV, "CI", "false") == "true")
-        @testset "Tasmania" begin
-            for PT in (DT.ExactKernel, DT.AdaptiveKernel)
-                msg = "Testing refinement of Tasmnia. Predicates: $PT"
-                rng = StableRNG(123)
-                tassy_path = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "test", "tassy.txt")
-                tassy = readdlm(tassy_path)
-                ymax = @views maximum(tassy[:, 2])
-                tassy = [(x, ymax - y) for (x, y) in eachrow(tassy)]
-                reverse!(tassy)
-                unique!(tassy)
-                push!(tassy, tassy[begin])
-                boundary_nodes, points = convert_boundary_points_to_indices(tassy)
-                tri = triangulate(points; rng, boundary_nodes=boundary_nodes, predicates=PT())
-                A = get_area(tri)
-                refine!(tri; max_area=1e-2A, use_circumcenter=true, rng, predicates=PT())
-                validate_statistics(tri; msg)
-                @test_with_log msg validate_refinement(tri; max_area=1e-2A, rng, use_circumcenter=true, warn=false)
-                fig, ax, sc = triplot(tri)
-                @test_reference reference_path(ASSETS, "tasmania.png") fig by = psnr_equality(15)
-            end
-        end
-    end
-    =#
 
     @testset "Test that nothing is breaking for Float32 inputs" begin
         for PT in (DT.ExactKernel, DT.AdaptiveKernel)

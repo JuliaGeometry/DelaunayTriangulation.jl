@@ -85,8 +85,6 @@ function _triangulate_curve_bounded(
     enrich_boundary!(enricher; predicates)
     new_boundary_nodes = get_boundary_nodes(enricher)
     new_segments = get_segments(enricher)
-    full_polygon_hierarchy = get_polygon_hierarchy(enricher)
-    boundary_curves = get_boundary_curves(enricher)
     tri = triangulate(
         points;
         IntegerType,
@@ -95,8 +93,6 @@ function _triangulate_curve_bounded(
         segments = new_segments,
         boundary_nodes = new_boundary_nodes,
         predicates,
-        full_polygon_hierarchy,
-        boundary_curves,
         boundary_enricher = enricher,
         check_arguments = false,
         delete_ghosts = false,

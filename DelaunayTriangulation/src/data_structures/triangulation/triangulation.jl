@@ -125,6 +125,11 @@ end
 # between the fields, so the copy is completely independent of tri.
 Base.copy(tri::Triangulation) = deepcopy(tri)
 
+# The default two-argument show prints every field, which is hundreds of thousands of characters even for a small 
+# triangulation, e.g. in a failing @test or inside a Vector, so only print a summary
+function Base.show(io::IO, tri::Triangulation)
+    print(io, "Triangulation with ", num_solid_vertices(tri), " vertices and ", num_solid_triangles(tri), " triangles")
+end
 function Base.show(io::IO, ::MIME"text/plain", tri::Triangulation)
     println(io, "Delaunay Triangulation.")
     println(io, "   Number of vertices: ", num_solid_vertices(tri))
@@ -459,7 +464,7 @@ triangle_type(tri::Triangulation) = triangle_type(triangles_type(tri))
 
 @inline function __Triangulation(
     points::P, boundary_nodes, IntegerType::Type{I}, EdgeType::Type{E},
-    TriangleType::Type{V}, EdgesType::Type{Es}, TrianglesType::Type{Ts},
+    TriangleType::Type{V}, EdgesType::Type{Es}, TrianglesType::Type{Ts}, sizehint = true,
 ) where {P,I,E,V,Es,Ts}
     T = TrianglesType()
     adj = Adjacent{IntegerType,EdgeType}()
@@ -470,12 +475,14 @@ triangle_type(tri::Triangulation) = triangle_type(triangles_type(tri))
     ghost_vertex_map = construct_ghost_vertex_map(boundary_nodes, IntegerType)
     ghost_vertex_ranges = construct_ghost_vertex_ranges(boundary_nodes, IntegerType)
     ch = ConvexHull(points, IntegerType[])
-    n = num_points(points)
-    sizehint!(T, 2n - 5) # maximum number of triangles
-    sizehint!(adj, 3n - 6) # maximum number of edges 
-    sizehint!(adj2v, n)
-    sizehint!(graph, 3n - 6, n, n)
-    sizehint!(ch, n)
+    if sizehint
+        n = num_points(points)
+        sizehint!(T, 2n - 5) # maximum number of triangles
+        sizehint!(adj, 3n - 6) # maximum number of edges 
+        sizehint!(adj2v, n)
+        sizehint!(graph, 3n - 6, n, n)
+        sizehint!(ch, n)
+    end
     polygon_hierarchy = construct_polygon_hierarchy(points; IntegerType)
     return T, adj, adj2v, graph, all_segments, boundary_edge_map, ghost_vertex_map, ghost_vertex_ranges, ch, polygon_hierarchy
 end
@@ -545,7 +552,9 @@ end
     boundary_nodes, segments, weights, representative_point_list,
     boundary_curves, build_cache::Val{B}, boundary_enricher,
 ) where {I,E,V,Es,Ts,B}
-    T, adj, adj2v, graph, all_segments, boundary_edge_map, ghost_vertex_map, ghost_vertex_ranges, ch, polygon_hierarchy = __Triangulation(points, boundary_nodes, I, E, V, Es, Ts)
+    # The triangulations in a cache (those built without a cache of their own) only ever hold small cavities, so 
+    # they are not sizehinted for all of the points. Otherwise, the cache would be about 40% of the memory of a triangulation.
+    T, adj, adj2v, graph, all_segments, boundary_edge_map, ghost_vertex_map, ghost_vertex_ranges, ch, polygon_hierarchy = __Triangulation(points, boundary_nodes, I, E, V, Es, Ts, B)
     cache = _build_cache(points, I, E, V, Es, Ts, weights, build_cache)
     has_ghosts_flag = false
     boundary_vertex_to_ghost_map = Dict{I,I}()

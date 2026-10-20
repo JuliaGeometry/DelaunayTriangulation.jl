@@ -1745,7 +1745,7 @@ The triangulations of convex polygons are computed with the code:
     end
     ```
 =#
-const WGT_DIR = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "test", "triangulation", "weighted_delaunay_mats")
+const WGT_DIR = joinpath(dirname(dirname(dirname(pathof(DelaunayTriangulation)))), "assets", "test", "triangulation", "weighted_delaunay_mats")
 const NUM_WEGT = length(readdir(WGT_DIR))
 const NUM_CWEGT = NUM_WEGT - 78 # number of convex polygon weighted examples
 function get_weighted_example(i)

@@ -9,7 +9,6 @@ using ReferenceTests
 const ASSETS = joinpath(@__DIR__, "..", "..", "..", "assets", "test", "refinement")
 using Test
 using StructEquality
-using DelimitedFiles
 using StableRNGs
 
 const SACM = DT.SmallAngleComplexMember

@@ -50,6 +50,7 @@ For the keyword arguments below, you may like to review the extended help as som
 - `check_arguments=true`: Whether to check the arguments `points` and `boundary_nodes` are valid. This is done using [`check_args`](@ref).
 - `polygonise_n=4096`: Number of points to use for polygonising the boundary when considering the polygon hierarchy for a curve-bounded domain using [`polygonise`](@ref). See [`triangulate_curve_bounded`](@ref).
 - `coarse_n=0`: Number of points to use for initialising a curve-bounded domain. See [`triangulate_curve_bounded`](@ref). (A value of `0` means the number of points is chosen automatically until the diametral circles of all edges are empty.)
+- `boundary_enricher=nothing`: Only used internally, by [`triangulate_curve_bounded`](@ref) once it has enriched the boundary.
 
 # Outputs
 - `tri::Triangulation`: The triangulation.
@@ -137,15 +138,13 @@ function triangulate(
         recompute_representative_points = true,
         delete_holes = true,
         check_arguments = true,
-        full_polygon_hierarchy::H = nothing,
-        boundary_enricher = nothing,
-        boundary_curves = (),
         polygonise_n = 4096,
         coarse_n = 0,
         enrich = false,
-    ) where {P, I, E, V, Es, Ts, M, H}
+        boundary_enricher = nothing,
+    ) where {P, I, E, V, Es, Ts, M}
     check_config(points, weights, segments, boundary_nodes, predicates)
-    if enrich || (isempty(boundary_curves) && is_curve_bounded(boundary_nodes)) # If boundary_curves is not empty, then we are coming from triangulate_curve_bounded
+    if isnothing(boundary_enricher) && (enrich || is_curve_bounded(boundary_nodes)) # with a boundary_enricher, we are coming from triangulate_curve_bounded
         return triangulate_curve_bounded(points; segments, boundary_nodes, predicates, weights, IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType, randomise, delete_ghosts, delete_empty_features, try_last_inserted_point, skip_points, num_sample_rule, rng, insertion_order, recompute_representative_points, delete_holes, check_arguments, polygonise_n, coarse_n)
     end
     skip_points_set = Set{IntegerType}(skip_points)
@@ -154,8 +153,12 @@ function triangulate(
         has_valid_coordinates(points, skip_points_set)
         has_valid_boundary_nodes(points, boundary_nodes)
     end
-    if isnothing(full_polygon_hierarchy)
+    if isnothing(boundary_enricher)
         full_polygon_hierarchy = construct_polygon_hierarchy(points, boundary_nodes; IntegerType)
+        boundary_curves = ()
+    else
+        full_polygon_hierarchy = get_polygon_hierarchy(boundary_enricher)
+        boundary_curves = get_boundary_curves(boundary_enricher)
     end
     n = length(skip_points_set)
     check_arguments && check_args(points, boundary_nodes, full_polygon_hierarchy, boundary_curves; skip_points = skip_points_set, segments, weights)

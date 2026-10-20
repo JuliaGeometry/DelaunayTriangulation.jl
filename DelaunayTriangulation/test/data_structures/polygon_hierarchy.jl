@@ -7,7 +7,6 @@ using LinearAlgebra
 using ReferenceTests
 using Test
 using StructEquality
-using DelimitedFiles
 using StableRNGs
 
 for _ in 1:20 # Run many times to make sure the segfault is gone

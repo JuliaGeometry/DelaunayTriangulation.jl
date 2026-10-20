@@ -145,6 +145,10 @@ Gets the boundary polygons of the Voronoi tessellation `vorn` as a `Set` of poly
 """
 get_boundary_polygons(vorn::VoronoiTessellation) = vorn.boundary_polygons
 
+# See show(::IO, ::Triangulation)
+function Base.show(io::IO, vor::VoronoiTessellation)
+    print(io, "VoronoiTessellation with ", num_generators(vor), " generators and ", num_polygons(vor), " polygons")
+end
 function Base.show(io::IO, ::MIME"text/plain", vor::VoronoiTessellation)
     println(io, "Voronoi Tessellation.")
     println(io, "    Number of generators: $(num_generators(vor))")
