@@ -165,7 +165,12 @@ function triangulate(
     if length(skip_points_set) > n 
         setdiff!(insertion_order, skip_points_set) 
     end
-    tri = Triangulation(points; IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType, weights, boundary_curves, boundary_enricher, build_cache = Val(true))
+    # Types passed as keyword arguments, as in Triangulation(points; IntegerType, ...), are only inferred through constant
+    # propagation, which Julia 1.14 no longer does for that constructor. So we pass them positionally to keep tri inferrable.
+    tri = _Triangulation(
+        points, IntegerType, EdgeType, TriangleType, EdgesType, TrianglesType, IntegerType[], EdgesType(), weights,
+        Dict{IntegerType, RepresentativeCoordinates{IntegerType, number_type(points)}}(), boundary_curves, Val(true), boundary_enricher,
+    )
     return _triangulate!(
         tri, segments, boundary_nodes, predicates, randomise, try_last_inserted_point, skip_points_set, num_sample_rule, rng, insertion_order,
         recompute_representative_points, delete_holes, full_polygon_hierarchy, delete_ghosts, delete_empty_features,

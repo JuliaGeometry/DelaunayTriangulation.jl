@@ -11,6 +11,7 @@ using Test
     ny = 10
     tri = DT.triangulate_rectangle(a, b, c, d, nx, ny)
     @test validate_triangulation(tri)
+    @inferred DT.triangulate_rectangle(a, b, c, d, nx, ny)
     for PT in (DT.ExactKernel, DT.AdaptiveKernel) # FastKernel is not reliable for the collinear points in a lattice
         tri = DT.triangulate_rectangle(a, b, c, d, nx, ny; predicates = PT())
         @test validate_triangulation(tri; predicates = PT())

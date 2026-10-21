@@ -46,7 +46,10 @@ end
     T, sub2ind = get_lattice_triangles(nx, ny, Ts, V)
     points = get_lattice_points(a, b, c, d, nx, ny, sub2ind)
     boundary_nodes = get_lattice_boundary(nx, ny, sub2ind, Val(single_boundary), I)
-    tri = Triangulation(points, T, boundary_nodes; predicates, IntegerType = I, EdgeType = E, TriangleType = V, EdgesType = Es, TrianglesType = Ts, delete_ghosts)
+    # Not Triangulation(points, T, boundary_nodes; IntegerType = I, ...), since types passed as keyword arguments are not
+    # inferred on Julia 1.14 (see triangulate)
+    tri = _Triangulation(points, I, E, V, Es, Ts, boundary_nodes, Es(), ZeroWeight(), Dict{I, RepresentativeCoordinates{I, number_type(points)}}(), (), Val(true), nothing)
+    build_triangulation_from_data!(tri, T, boundary_nodes, delete_ghosts, predicates)
     compute_representative_points!(tri)
     return tri
 end
