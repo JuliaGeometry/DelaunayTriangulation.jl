@@ -11,10 +11,12 @@ using .HelperFunctions
 
 # To only run some of the test groups below, pass their names as test arguments, e.g.
 #   Pkg.test("DelaunayTriangulation"; test_args = ["Voronoi", "Refinement"])
-# By default, all the groups are run.
+# By default, all the groups are run. On CI, the groups are split between jobs in .github/workflows/CI.yml,
+# and a final job checks that every test script was run by one of them.
+const ALL_TEST_GROUPS = ["Aqua", "Primitives", "Predicates", "Utilities", "Geometry", "Trees", "Curves", "Triangulation", "Point Location", "Refinement", "Statistics", "Voronoi", "Makie", "Docstring examples", "Run the documentation examples"]
 const TEST_GROUPS = ARGS
 run_group(name) = isempty(TEST_GROUPS) || name ∈ TEST_GROUPS
-let unknown_groups = setdiff(TEST_GROUPS, ["Aqua", "Primitives", "Predicates", "Utilities", "Geometry", "Trees", "Curves", "Triangulation", "Point Location", "Refinement", "Statistics", "Voronoi", "Makie", "Docstring examples", "Run the documentation examples"])
+let unknown_groups = setdiff(TEST_GROUPS, ALL_TEST_GROUPS)
     isempty(unknown_groups) || error("Unknown test groups: $(join(unknown_groups, ", ")).")
 end
 
@@ -29,6 +31,55 @@ function safe_include(filename; name=filename, push=true, verbose=true) # Workar
         @eval mod using ..Test
         Base.include(mod, filename)
     end
+end
+
+# All the test scripts, relative to the test directory, that should be included by some safe_include below
+function all_test_scripts()
+    scripts = Set{String}()
+    test_dir = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "test", "")
+    for (root, dir, files) in walkdir(test_dir)
+        for file in files
+            filename = normpath(replace(joinpath(root, file), test_dir => ""))
+            if endswith(filename, ".jl") && filename ∉ NON_TEST_SCRIPTS
+                push!(scripts, filename)
+            end
+        end
+    end
+    return scripts
+end
+
+# The number of tests that passed, failed, errored and were broken in the finished testset ts, and the time it took.
+# Test.get_test_counts returns a Tuple on Julia 1.10 and a Test.TestCounts from Julia 1.11.
+function test_counts(ts)
+    counts = Test.get_test_counts(ts)
+    if counts isa Tuple
+        passes, fails, errors, broken, c_passes, c_fails, c_errors, c_broken, duration = counts
+    else
+        (; passes, fails, errors, broken, duration) = counts
+        c_passes, c_fails, c_errors, c_broken = counts.cumulative_passes, counts.cumulative_fails, counts.cumulative_errors, counts.cumulative_broken
+    end
+    return passes + c_passes, fails + c_fails, errors + c_errors, broken + c_broken, duration
+end
+
+# Writes the results of each group in the testset ts and of the testsets directly inside each group, as well as the
+# test scripts that were and should have been included, to a tab-separated file at path. Each CI job writes one of
+# these, and .github/test_summary.jl puts them together.
+function write_test_report(path, ts)
+    open(path, "w") do io
+        println(io, join(["julia", VERSION], '\t'))
+        println(io, join(["groups"; ALL_TEST_GROUPS], '\t'))
+        for group_ts in ts.results
+            group_ts isa Test.DefaultTestSet || continue
+            println(io, join(["group"; group_ts.description; test_counts(group_ts)...], '\t'))
+            for file_ts in group_ts.results
+                file_ts isa Test.DefaultTestSet || continue
+                println(io, join(["file"; group_ts.description; file_ts.description; test_counts(file_ts)...], '\t'))
+            end
+        end
+        foreach(script -> println(io, "included\t", script), sort!(collect(ALL_TEST_SCRIPTS)))
+        foreach(script -> println(io, "expected\t", script), sort!(collect(all_test_scripts())))
+    end
+    return nothing
 end
 
 @testset verbose = true "DelaunayTriangulation.jl" begin
@@ -162,17 +213,9 @@ end
         end
     end
 
+    # When only some of the groups are run, as on CI, this is checked by .github/test_summary.jl instead
     isempty(TEST_GROUPS) && @testset "All script files are included somewhere" begin
-        missing_set = String[]
-        test_dir = joinpath(dirname(dirname(pathof(DelaunayTriangulation))), "test", "")
-        for (root, dir, files) in walkdir(test_dir)
-            for file in files
-                filename = normpath(replace(joinpath(root, file), test_dir => ""))
-                if endswith(filename, ".jl") && filename ∉ ALL_TEST_SCRIPTS && filename ∉ NON_TEST_SCRIPTS
-                    push!(missing_set, filename)
-                end
-            end
-        end
+        missing_set = sort!(collect(setdiff(all_test_scripts(), ALL_TEST_SCRIPTS)))
         if !isempty(missing_set)
             @info "There were some test scripts that were not included. These are printed below."
             for script in missing_set
@@ -181,4 +224,6 @@ end
         end
         @test isempty(missing_set)
     end
+
+    haskey(ENV, "DT_TEST_REPORT") && write_test_report(ENV["DT_TEST_REPORT"], Test.get_testset())
 end

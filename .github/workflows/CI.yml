@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 jobs:
   test:
-    name: Julia ${{ matrix.version }} - ${{ matrix.arch }} - ${{ github.event_name }} - ${{ matrix.os }}
+    name: Julia ${{ matrix.version }} - ${{ matrix.tests.name }} - ${{ matrix.arch }} - ${{ github.event_name }} - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -26,6 +26,15 @@ jobs:
           - ubuntu-latest
         arch:
           - x64
+        # The test groups from test/runtests.jl, split into jobs that take roughly the same time. A group that is
+        # not listed here is not run on CI, which the test-summary job checks. Groups with spaces in their names need quotes.
+        tests:
+          - name: 'Refinement'
+            groups: 'Refinement'
+          - name: 'Triangulation and Voronoi'
+            groups: 'Curves Triangulation "Point Location" Statistics Voronoi'
+          - name: 'Everything else'
+            groups: 'Aqua Primitives Predicates Utilities Geometry Trees Makie "Docstring examples" "Run the documentation examples"'
     steps:
       - name: Checkout repository for access
         uses: actions/checkout@v7
@@ -49,6 +58,18 @@ jobs:
         uses: julia-actions/julia-runtest@v1
         with:
           project: DelaunayTriangulation
+          test_args: ${{ matrix.tests.groups }}
+        env:
+          DT_TEST_REPORT: ${{ runner.temp }}/test_report.tsv
+
+      - name: Upload the test report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-report-${{ matrix.version }}-${{ strategy.job-index }}
+          path: ${{ runner.temp }}/test_report.tsv
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Process the coverage
         if: always()
@@ -61,8 +82,32 @@ jobs:
         uses: codecov/codecov-action@v7
         with:
             token: ${{ secrets.CODECOV_TOKEN }}
-            file: lcov.info
+            files: lcov.info
             fail_ci_if_error: false
+  test-summary:
+    name: Test summary
+    needs: test
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository for access
+        uses: actions/checkout@v7
+
+      - name: Setup Julia
+        uses: julia-actions/setup-julia@v2
+        with:
+          version: '1'
+
+      - name: Download the test reports
+        uses: actions/download-artifact@v8
+        with:
+          pattern: test-report-*
+          path: test_reports
+
+      - name: Summarise the tests
+        run: julia --color=yes .github/test_summary.jl test_reports
+        env:
+          TESTS_RESULT: ${{ needs.test.result }}
   docs:
     name: Documentation
     runs-on: ubuntu-latest
