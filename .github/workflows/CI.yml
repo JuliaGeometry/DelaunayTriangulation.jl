@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - overall-review # temporary, to test CI without a PR
     tags: ['*']
   pull_request:
 concurrency:
