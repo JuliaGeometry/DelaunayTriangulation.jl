@@ -10,6 +10,7 @@ Check that the arguments `points`, `boundary_nodes`, `segments` and `weights` to
 - There are at least three points. If there are not, an `InsufficientPointsError` is thrown.
 - If `weights` is a vector, there is a weight for each point. If there are fewer weights than points, an `InconsistentWeightsError` is thrown. (Extra weights are allowed, e.g. for points that will be added later.)
 - If `segments` are provided, each segment joins two different vertices that are indices of `points`. If not, an `InvalidSegmentError` is thrown.
+- If the points are weighted, there are no `segments` or `boundary_nodes`, since only unconstrained weighted triangulations are supported. If there are, a `WeightedConstrainedTriangulationError` is thrown.
 
 If any duplicate points are found, the indices of the duplicates are merged into `skip_points` in-place. If any of these
 duplicates are also in `boundary_nodes`, a `DuplicateBoundaryNodeError` is thrown since they would not be in the triangulation.
@@ -35,6 +36,7 @@ function check_args(points, boundary_nodes, hierarchy, boundary_curves = (); ski
     has_enough_points(points)
     has_consistent_weights(points, weights)
     has_valid_segments(points, segments)
+    is_unconstrained_if_weighted(weights, segments, boundary_nodes)
     has_bnd = has_boundary_nodes(boundary_nodes)
     if has_bnd
         has_valid_boundary_nodes(points, boundary_nodes)
@@ -80,6 +82,10 @@ end
 struct InvalidBoundaryNodeError{I} <: Exception
     vertex::I
     num_points::Int
+end
+struct WeightedConstrainedTriangulationError <: Exception
+    has_segments::Bool
+    has_boundary_nodes::Bool
 end
 function Base.showerror(io::IO, err::InsufficientPointsError)
     points = err.points
@@ -146,6 +152,11 @@ function Base.showerror(io::IO, err::InvalidSegmentError)
     end
     return io
 end
+function Base.showerror(io::IO, err::WeightedConstrainedTriangulationError)
+    constraints = err.has_segments && err.has_boundary_nodes ? "segments and boundary nodes" : err.has_segments ? "segments" : "boundary nodes"
+    print(io, "WeightedConstrainedTriangulationError: The points are weighted and ", constraints, " were provided, but only unconstrained weighted triangulations are supported.")
+    return io
+end
 function Base.showerror(io::IO, err::InvalidBoundaryNodeError)
     print(io, "InvalidBoundaryNodeError: The boundary node ", err.vertex, " is not the index of a point. There are ", err.num_points, " points, so the boundary nodes must be between 1 and ", err.num_points, ".")
     return io
@@ -177,6 +188,14 @@ function has_consistent_weights(points, weights)
     !(weights isa AbstractVector) && return true
     nw, np = length(weights), num_points(points)
     nw < np && throw(InconsistentWeightsError(nw, np))
+    return true
+end
+
+function is_unconstrained_if_weighted(weights, segments, boundary_nodes)
+    (isnothing(weights) || !is_weighted(weights)) && return true
+    has_segments = !(isnothing(segments) || isempty(segments))
+    has_bnd = has_boundary_nodes(boundary_nodes)
+    (has_segments || has_bnd) && throw(WeightedConstrainedTriangulationError(has_segments, has_bnd))
     return true
 end
 

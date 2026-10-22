@@ -711,3 +711,18 @@ end
     nodes, points = convert_boundary_points_to_indices([[0.0, 1.0], [1.0, 0.0, 0.0]], [[0.0, 0.0], [0.0, 1.0, 0.0]])
     @test nodes == [[1, 2], [2, 3, 1]] && points == [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]
 end
+
+@testset "Weights with segments or boundary nodes" begin
+    # Only unconstrained weighted triangulations are supported
+    rng = StableRNG(15)
+    points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.3, 0.3), (0.6, 0.7)]
+    weights = [0.0, 0.1, -0.1, 0.0, 0.05, 0.0]
+    hierarchy = DT.construct_polygon_hierarchy(points)
+    @test_throws DT.WeightedConstrainedTriangulationError DT.check_args(points, nothing, hierarchy; weights, segments = Set([(5, 6)]))
+    @test_throws "WeightedConstrainedTriangulationError: The points are weighted and segments were provided, but only unconstrained weighted triangulations are supported." triangulate(points; weights, segments = Set([(5, 6)]), rng)
+    @test_throws "WeightedConstrainedTriangulationError: The points are weighted and boundary nodes were provided, but only unconstrained weighted triangulations are supported." triangulate(points; weights, boundary_nodes = [1, 2, 3, 4, 1], rng)
+    @test_throws "WeightedConstrainedTriangulationError: The points are weighted and segments and boundary nodes were provided, but only unconstrained weighted triangulations are supported." triangulate(points; weights, segments = Set([(5, 6)]), boundary_nodes = [1, 2, 3, 4, 1], rng)
+    @test DT.check_args(points, nothing, hierarchy; weights, segments = Set{NTuple{2, Int}}())
+    @test DT.check_args(points, nothing, hierarchy; weights = DT.ZeroWeight(), segments = Set([(5, 6)]))
+    @test validate_triangulation(triangulate(points; weights, rng))
+end

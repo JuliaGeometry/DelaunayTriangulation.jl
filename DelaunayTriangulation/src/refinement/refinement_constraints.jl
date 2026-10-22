@@ -4,10 +4,10 @@
 A struct for storing constraints for mesh refinement.
 
 # Fields 
-- `min_angle=0.0`: The minimum angle of a triangle.
+- `min_angle=0.0`: The minimum angle of a triangle, in degrees. This must be between `0` and `60`, since the smallest angle of a triangle is at most 60°.
 - `max_angle=180.0`: The maximum angle of a triangle. 
 - `min_area=0.0`: The minimum area of a triangle.
-- `max_area=Inf`: The maximum area of a triangle.
+- `max_area=Inf`: The maximum area of a triangle. This must be positive.
 - `max_radius_edge_ratio=cscd(min_angle) / 2`: The maximum radius-edge ratio of a triangle. This is computed from `min_angle` - you cannot provide a value for it yourself. 
 - `max_points=typemax(Int)`: The maximum number of vertices allowed in the triangulation. Note that this refers to [`num_solid_vertices`](@ref), not the amount returned by [`num_points`](@ref).
 - `seditious_angle=20.0`: The inter-segment angle used to define seditious edges in degrees. Should not be substantially smaller than 20.0° or any greater than 60.0°.
@@ -31,6 +31,8 @@ struct RefinementConstraints{F}
             seditious_angle = 20.0,
             custom_constraint = (tri, triangle) -> false,
         )
+        0 ≤ min_angle ≤ 60 || throw(ArgumentError("min_angle must be between 0 and 60 degrees, since the smallest angle of a triangle is at most 60°, but it is $min_angle."))
+        max_area > 0 || throw(ArgumentError("max_area must be positive, but it is $max_area."))
         max_radius_edge_ratio = cscd(min_angle) / 2
         min_angle, max_angle, min_area, max_area, max_radius_edge_ratio, seditious_angle = convert.(Float64, (min_angle, max_angle, min_area, max_area, max_radius_edge_ratio, seditious_angle))
         F = typeof(custom_constraint)

@@ -1780,3 +1780,23 @@ end
         end
     end
 end
+
+@testset "validate_triangulation does not change the triangulation" begin
+    # It used to rebuild the ghost triangles and clear the empty features of tri itself. This did not change what tri contains, but it
+    # changed the order of iteration over its triangles and edges, so that validating could change the results of later operations.
+    # Its result also depended on the global RNG.
+    rng = StableRNG(1)
+    tri = triangulate(rand(rng, 2, 100); rng)
+    triangles = collect(each_triangle(tri))
+    edges = collect(keys(DT.get_adjacent(DT.get_adjacent(tri))))
+    before = copy(tri)
+    @test validate_triangulation(tri)
+    @test tri == before
+    @test collect(each_triangle(tri)) == triangles && collect(keys(DT.get_adjacent(DT.get_adjacent(tri)))) == edges
+    T = first(each_solid_triangle(tri))
+    DT.delete_adjacent!(tri, T[1], T[2])
+    before = copy(tri)
+    @test !validate_triangulation(tri; print_result = false)
+    @test !validate_triangulation(tri; print_result = false)
+    @test tri == before
+end

@@ -47,6 +47,22 @@ const pT = (1, 2, 3)
         @test !DT.has_max_angle_constraint(constraints)
     end
 
+    @testset "Invalid constraints" begin
+        # No triangle has all of its angles above 60°, so refinement could never finish
+        for min_angle in (-1.0, 60.5, 90.0)
+            @test_throws ArgumentError DT.RefinementConstraints(; min_angle)
+        end
+        @test_throws "min_angle must be between 0 and 60 degrees, since the smallest angle of a triangle is at most 60°, but it is 61.0." DT.RefinementConstraints(min_angle = 61.0)
+        for max_area in (0.0, -1.0)
+            @test_throws ArgumentError DT.RefinementConstraints(; max_area)
+        end
+        @test_throws "max_area must be positive, but it is 0.0." DT.RefinementConstraints(max_area = 0.0)
+        @test DT.RefinementConstraints(min_angle = 60.0).min_angle == 60.0
+        tri = triangulate([(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]; rng = StableRNG(1))
+        @test_throws ArgumentError refine!(tri; min_angle = 65.0, rng = StableRNG(1))
+        @test_throws ArgumentError refine!(tri; max_area = -1.0, rng = StableRNG(1))
+    end
+
     @testset "Constraints and setting min_angle" begin
         constraints = DT.RefinementConstraints(min_angle = 30.0, custom_constraint = (tri, T) -> T == (1, 2, 3))
         @inferred DT.RefinementConstraints(min_angle = 30.0, custom_constraint = (tri, T) -> T == (1, 2, 3))

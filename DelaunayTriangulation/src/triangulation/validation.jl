@@ -104,7 +104,7 @@ function test_delaunay_criterion(tri; predicates::AbstractPredicateKernel = Exac
             dbx = DiametralBoundingBox(bbox, (i, j))
             insert!(segment_tree.tree, dbx)
         end
-        for r in Random.shuffle(collect(each_solid_vertex(tri)))
+        for r in sort!(collect(each_solid_vertex(tri)))
             !isempty(failures) && break
             intersects = get_intersections(triangle_tree, r, cache_id = 1) # can't use multithreading here
             for box in intersects
@@ -122,7 +122,7 @@ function test_delaunay_criterion(tri; predicates::AbstractPredicateKernel = Exac
                     is_boundary_edge(tri, k, i) && is_right(point_position_relative_to_line(predicates, tri, k, i, r)) && continue
                     for (i, j) in triangle_edges(i, j, k)
                         contains_segment(tri, i, j) && continue # visibility is defined according to the relative interior of the simplex, which means that it's fine if a segment can see the vertex
-                        if rand() < 1 / 2 # just testing both
+                        if isodd(r) # alternate between the two tests, so that both are used
                             cert = test_visibility(predicates, tri, i, j, r, shift = 0.01, attractor = c)
                         else
                             cert = test_visibility(predicates, tri, segment_tree, i, j, r, c)
@@ -868,7 +868,8 @@ struct TriangulationState <: AbstractTriangulationState
 end
 
 function TriangulationState(tri::Triangulation; predicates::AbstractPredicateKernel = ExactKernel())
-    has_ghosts = has_ghost_triangles(tri)
+    # The checks rebuild the ghost triangles and clear empty features, so they are done on a copy to leave tri unchanged
+    tri = copy(tri)
     delete_ghost_triangles!(tri)
     add_ghost_triangles!(tri)
     clear_empty_features!(tri)
@@ -890,7 +891,6 @@ function TriangulationState(tri::Triangulation; predicates::AbstractPredicateKer
         TriangleOrientationState(tri; predicates),
         test_iterators(tri)...,
     )
-    !has_ghosts && delete_ghost_triangles!(tri)
     return state
 end
 
@@ -920,7 +920,7 @@ end
 
 Tests if `tri` is a valid `Triangulation`. Returns `true` if so, 
 and `false` otherwise. If `print_result=true` and `tri` is not a 
-valid triangulation, all the issues with `tri` will be printed.
+valid triangulation, all the issues with `tri` will be printed. `tri` is not modified.
 
 Use the `predicates` keyword argument to control the method used for computing predicates. 
 Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). 
