@@ -13,7 +13,7 @@ using .HelperFunctions
 #   Pkg.test("DelaunayTriangulation"; test_args = ["Voronoi", "Refinement"])
 # By default, all the groups are run. On CI, the groups are split between jobs in .github/workflows/CI.yml,
 # and a final job checks that every test script was run by one of them.
-const ALL_TEST_GROUPS = ["Aqua", "Primitives", "Predicates", "Utilities", "Geometry", "Trees", "Curves", "Triangulation", "Point Location", "Refinement", "Statistics", "Voronoi", "Makie", "Docstring examples", "Run the documentation examples"]
+const ALL_TEST_GROUPS = ["Aqua", "Primitives", "Predicates", "Utilities", "Geometry", "Trees", "Curves", "Triangulation", "Point Location", "Refinement", "Curve-bounded domains", "Statistics", "Voronoi", "Makie", "Docstring examples", "Run the documentation examples"]
 const TEST_GROUPS = ARGS
 run_group(name) = isempty(TEST_GROUPS) || name ∈ TEST_GROUPS
 let unknown_groups = setdiff(TEST_GROUPS, ALL_TEST_GROUPS)
@@ -167,6 +167,10 @@ end
 
     run_group("Refinement") && @testset verbose = true "Refinement" begin
         safe_include("refinement/refine.jl")
+    end
+
+    # This is a separate group from Refinement since it takes twice as long, and it also tests triangulate_curve_bounded and the BoundaryEnricher
+    run_group("Curve-bounded domains") && @testset verbose = true "Curve-bounded domains" begin
         safe_include("refinement/curve_bounded.jl")
     end
 

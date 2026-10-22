@@ -30,12 +30,16 @@ jobs:
         # The test groups from test/runtests.jl, split into jobs that take roughly the same time. A group that is
         # not listed here is not run on CI, which the test-summary job checks. Groups with spaces in their names need quotes.
         tests:
+          - name: 'Core and curves'
+            groups: 'Aqua Primitives Predicates Utilities Geometry Trees Curves'
+          - name: 'Triangulation'
+            groups: 'Triangulation "Point Location" Statistics'
           - name: 'Refinement'
             groups: 'Refinement'
-          - name: 'Triangulation and Voronoi'
-            groups: 'Curves Triangulation "Point Location" Statistics Voronoi'
-          - name: 'Everything else'
-            groups: 'Aqua Primitives Predicates Utilities Geometry Trees Makie "Docstring examples" "Run the documentation examples"'
+          - name: 'Curve-bounded domains'
+            groups: '"Curve-bounded domains"'
+          - name: 'Voronoi and docs'
+            groups: 'Voronoi Makie "Docstring examples" "Run the documentation examples"'
     steps:
       - name: Checkout repository for access
         uses: actions/checkout@v7
@@ -55,11 +59,13 @@ jobs:
         with:
           project: DelaunayTriangulation
 
+      # Coverage is only collected on one version, since it makes the tests up to five times slower (most of all on Julia 1.13)
       - name: Run the tests
         uses: julia-actions/julia-runtest@v1
         with:
           project: DelaunayTriangulation
           test_args: ${{ matrix.tests.groups }}
+          coverage: ${{ matrix.version == 'lts' }}
         env:
           DT_TEST_REPORT: ${{ runner.temp }}/test_report.tsv
 
@@ -73,13 +79,13 @@ jobs:
           retention-days: 7
 
       - name: Process the coverage
-        if: always()
+        if: ${{ always() && matrix.version == 'lts' }}
         uses: julia-actions/julia-processcoverage@v1
         with:
           directories: DelaunayTriangulation/src
 
       - name: Upload the results
-        if: always()
+        if: ${{ always() && matrix.version == 'lts' }}
         uses: codecov/codecov-action@v7
         with:
             token: ${{ secrets.CODECOV_TOKEN }}
