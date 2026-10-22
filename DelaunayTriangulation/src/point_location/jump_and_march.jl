@@ -604,7 +604,7 @@ function check_for_intersections_with_triangle_left_to_boundary_vertex(tri::Tria
 end
 
 """
-    exterior_find_triangle(tri::Triangulation, k, q, ghost_vertex=𝒢, predicates::AbstractPredicateKernel=AdaptiveKernel()) -> (Vertex, Vertex)
+    exterior_find_triangle(tri::Triangulation, k, q, ghost_vertex=𝒢, predicates::AbstractPredicateKernel=AdaptiveKernel()) -> (Vertex, Vertex, Bool)
 
 Given a query point `q` outside of the triangulation, find the ghost triangle containing `q`.
 
@@ -618,6 +618,8 @@ Given a query point `q` outside of the triangulation, find the ghost triangle co
 # Outputs
 - `i`: The first vertex of the edge on the boundary adjoining the positively oriented ghost triangle. 
 - `j`: The second vertex of the edge on the boundary adjoining the positively oriented ghost triangle.
+- `found`: Whether the ghost triangle was found. This is `false` if the search went all the way around the boundary without finding it, which can
+   happen if, for example, the geometry is not convex. In this case, `i` and `j` are meaningless, and the search should be restarted.
 
 !!! warning "Non-convex geometries and internal query points"
 
@@ -629,7 +631,8 @@ This function works by first finding the position of `q` relative to `pₘp`, wh
 the `ghost_vertex` and `p = get_point(tri, k)`. Depending on this position, we rotate counter-clockwise if `q` is 
 left of the line using `exterior_find_triangle_rotate_left` and clockwise otherwise using `exterior_find_triangle_rotate_right`.
 By keeping track of the current position of `q` and its position relative to the next ghost edge, we can identify when `q` 
-resides inside a ghost triangle.
+resides inside a ghost triangle. Each search takes at most `num_solid_vertices(tri)` steps, since it would otherwise be going around
+the boundary more than once.
 """
 function exterior_find_triangle(tri::Triangulation, k, q, ghost_vertex = integer_type(tri)(𝒢), predicates::AbstractPredicateKernel = AdaptiveKernel())
     pₘ, pᵢ = get_point(tri, ghost_vertex, k)
@@ -645,25 +648,31 @@ function exterior_find_triangle_rotate_left(tri, q, i, pₘ, ghost_vertex, predi
     j = get_right_boundary_node(tri, i, ghost_vertex)
     pⱼ = get_point(tri, j)
     new_q_pos = point_position_relative_to_line(predicates, pₘ, pⱼ, q)
+    num_steps, max_steps = 0, num_solid_vertices(tri)
     while is_left(new_q_pos)
+        num_steps += 1
+        num_steps > max_steps && return j, i, false
         i = j
         j = get_right_boundary_node(tri, i, ghost_vertex)
         pⱼ = get_point(tri, j)
         new_q_pos = point_position_relative_to_line(predicates, pₘ, pⱼ, q)
     end
-    return j, i  # Swap the orientation so that i, j is a boundary edge 
+    return j, i, true  # Swap the orientation so that i, j is a boundary edge 
 end
 function exterior_find_triangle_rotate_right(tri, q, i, pₘ, ghost_vertex, predicates)
     j = get_left_boundary_node(tri, i, ghost_vertex)
     pⱼ = get_point(tri, j)
     new_q_pos = point_position_relative_to_line(predicates, pₘ, pⱼ, q)
+    num_steps, max_steps = 0, num_solid_vertices(tri)
     while is_right(new_q_pos)
+        num_steps += 1
+        num_steps > max_steps && return i, j, false
         i = j
         j = get_left_boundary_node(tri, i, ghost_vertex)
         pⱼ = get_point(tri, j)
         new_q_pos = point_position_relative_to_line(predicates, pₘ, pⱼ, q)
     end
-    return i, j
+    return i, j, true
 end
 
 """
@@ -860,10 +869,10 @@ function initialise_find_triangle_boundary_vertex(tri::Triangulation, _q, k, pre
         if is_on(q_pos)
             return false, true, construct_triangle(Ttype, u, v, w), q, k, k, q, q # false is the restart_flag, true is the return_flag. We return q, q, q just to get type stability with all returns
         else
-            u, v = exterior_find_triangle(tri, u, q, ghost_vertex, predicates)
+            u, v, found = exterior_find_triangle(tri, u, q, ghost_vertex, predicates)
             w = get_adjacent(tri, u, v)
             V = construct_triangle(Ttype, u, v, w) # Can't just use I(𝒢) here since there could be multiple - just use get_adjacent
-            if concavity_protection_check(tri, concavity_protection, V, q, predicates)
+            if !found || concavity_protection_check(tri, concavity_protection, V, q, predicates)
                 return true, false, V, q, k, k, q, q # the extra returns are just for type stability
             else
                 return false, true, V, q, k, k, q, q
@@ -876,10 +885,10 @@ function initialise_find_triangle_boundary_vertex(tri::Triangulation, _q, k, pre
     if is_inside(triangle_cert)
         return false, true, construct_triangle(Ttype, i, j, k), q, i, j, q, q
     elseif is_none(edge_cert)
-        u, v = exterior_find_triangle(tri, k, q, ghost_vertex, predicates)
+        u, v, found = exterior_find_triangle(tri, k, q, ghost_vertex, predicates)
         w = get_adjacent(tri, u, v)
         V = construct_triangle(Ttype, u, v, w)
-        if concavity_protection_check(tri, concavity_protection, V, q, predicates)
+        if !found || concavity_protection_check(tri, concavity_protection, V, q, predicates)
             return true, false, V, q, i, j, q, q
         else
             return false, true, V, q, i, j, q, q
@@ -1011,9 +1020,9 @@ function find_triangle_across_triangle(tri::Triangulation, q, k, predicates::Abs
         # ghost triangles, though, we just restart the search. Note that interior boundary indices do not matter since the ghost 
         # triangles there have the same orientation, so we can find them as normal.
         if has_ghost_triangles(tri)
-            i, j = exterior_find_triangle(tri, last_changed == i ? j : i, q, k, predicates) # use last_changed to ensure we get the boundary point
+            i, j, found = exterior_find_triangle(tri, last_changed == i ? j : i, q, k, predicates) # use last_changed to ensure we get the boundary point
             V = construct_triangle(triangle_type(tri), i, j, get_adjacent(tri, i, j))
-            if concavity_protection_check(tri, concavity_protection, V, q, predicates)
+            if !found || concavity_protection_check(tri, concavity_protection, V, q, predicates)
                 return true, false, false, V, cur_iter, arrangement, k, last_changed, original_k, pᵢ, pⱼ, i, j # restart_flag, return_flag, reinitialise_flag, V
             else
                 return false, true, false, V, cur_iter, arrangement, k, last_changed, original_k, pᵢ, pⱼ, i, j

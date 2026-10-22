@@ -3,6 +3,7 @@ const DT = DelaunayTriangulation
 using LinearAlgebra
 using Random
 using StatsBase
+using StableRNGs
 
 
 tri, label_map, index_map = simple_geometry()
@@ -124,5 +125,28 @@ end
                   DT.is_exterior_ghost_triangle(tri, i, j, get_adjacent(tri, i, j))
             @test DT.is_on(DT.point_position_relative_to_triangle(tri, i, j, k, k))
         end
+    end
+end
+
+@testset "The search around the boundary does not loop forever" begin
+    # exterior_find_triangle walks along the boundary, assuming that it is convex as seen from the representative point. With a representative
+    # point outside of the convex hull (e.g. a bad custom one), this used to loop forever. The walks are now capped, and find_triangle restarts.
+    points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.5, 0.5), (0.3, 0.7)]
+    rng = StableRNG(1)
+    tri = triangulate(points; rng)
+    c = DT.get_representative_point_list(tri)[1]
+    c.x, c.y = 3.0, 0.5
+    qs = ((2.0, 0.5), (-1.0, 0.5), (0.5, 2.0), (0.5, -1.0), (2.0, 2.0))
+    hull = DT.get_convex_hull_vertices(tri)
+    @test any(!DT.exterior_find_triangle(tri, k, q)[3] for k in hull, q in qs)
+    # With such a representative point, the ghost triangles overlap and do not cover the outside of the convex hull, so q may not be in any of
+    # them. So we only check that find_triangle ends, with either a triangle or a PointNotFoundError from brute_force_search.
+    for q in qs
+        result = try
+            find_triangle(tri, q; rng)
+        catch e
+            e
+        end
+        @test result isa NTuple{3, Int} || result isa DT.PointNotFoundError
     end
 end
