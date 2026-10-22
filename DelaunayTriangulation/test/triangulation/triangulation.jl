@@ -676,8 +676,8 @@ end
     n = 20
     for _ in 1:10
         n += rand(rng, 1:5)
-        tri1 = triangulate(12randn(2, n), delete_ghosts=false; rng)
-        tri2 = triangulate(12randn(2, n), delete_ghosts=true; rng)
+        tri1 = triangulate(12randn(rng, 2, n), delete_ghosts=false; rng)
+        tri2 = triangulate(12randn(rng, 2, n), delete_ghosts=true; rng)
         for tri in (tri1, tri2)
             for qi in each_solid_vertex(tri)
                 for k in each_solid_vertex(tri)

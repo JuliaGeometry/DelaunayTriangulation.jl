@@ -900,8 +900,8 @@ end
     rng = StableRNG(2)
     @testset "Defaults" begin
         tri = triangulate(rand(rng, 2, 50); rng)
-        args = DT.RefinementArguments(tri; rng)
-        @inferred DT.RefinementArguments(tri; rng)
+        args = DT.RefinementArguments(tri)
+        @inferred DT.RefinementArguments(tri)
         @test args.constraints.min_angle == 30.0
         @test args.constraints.max_angle == 180.0
         @test args.constraints.min_area == get_area(tri) / 1.0e9
@@ -1265,7 +1265,7 @@ end
         @test log2.(nrst) ≈ [-3, 0, -14, -1, 2, 2, 5, 7, -4]
 
         for _ in 1:1000
-            ℓ = 2000rand()^2
+            ℓ = 2000rand(rng)^2
             nrst = DT.balanced_power_of_two_ternary_split(ℓ)
             balanced_power_of_two_ternary_split = 1.0
             while ℓ > 3balanced_power_of_two_ternary_split
@@ -1289,7 +1289,7 @@ end
 
     @testset "balanced_power_of_two_quarternary_split" begin
         for _ in 1:100000
-            ℓ = 2000rand()^2
+            ℓ = 2000rand(rng)^2
             nrst = DT.balanced_power_of_two_quarternary_split(ℓ)
             @inferred DT.balanced_power_of_two_quarternary_split(ℓ)
             balanced_power_of_two_quarternary_split = 1.0
@@ -1312,8 +1312,8 @@ end
 
     @testset "Testing that ternary concentric shells are split in [1/3, 2/3]ℓ" begin
         for i in 1:500000
-            p = 105randn(2)
-            q = 237randn(2)
+            p = 105randn(rng, 2)
+            q = 237randn(rng, 2)
             t = DT.compute_concentric_shell_ternary_split_position(p, q)
             @inferred DT.compute_concentric_shell_ternary_split_position(p, q)
             @test _approx_ispow2(t * norm(p .- q))
@@ -1325,8 +1325,8 @@ end
 
     @testset "Testing that quarternary concentric shells are split in [1/4, 1/2]ℓ" begin
         for _ in 1:50000
-            p = 105randn(2)
-            q = 237randn(2)
+            p = 105randn(rng, 2)
+            q = 237randn(rng, 2)
             t = DT.compute_concentric_shell_quarternary_split_position(p, q)
             @test _approx_ispow2(t * norm(p .- q))
             @test 1 / 4 ≤ t ≤ 1 / 2
@@ -2540,7 +2540,7 @@ end
             points = [(0.0, 0.0), (1.0, 0.0), (0.8, 0.2)]
             tri = triangulate(points; rng)
             args = DT.RefinementArguments(tri, use_circumcenter = true, use_lens = false, max_area = 1.0e-3get_area(tri); rng)
-            refine!(tri, args; rng)
+            refine!(tri, args)
             @test_with_log msg validate_refinement(tri, args)
             @test_reference reference_path(ASSETS, "seditious_edge_testing_3.png") triplot(tri) by = psnr_equality(15)
             validate_statistics(tri; msg)

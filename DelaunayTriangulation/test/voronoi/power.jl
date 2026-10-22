@@ -541,8 +541,8 @@ end
     flag = 0
     tot = 0
     for _ in 1:100
-        points = 2randn(2, 50)
-        weights = 2randn(50)
+        points = 2randn(rng, 2, 50)
+        weights = 2randn(rng, 50)
         tri = triangulate(points; weights, rng)
         vorn = voronoi(tri; clip=true, clip_polygon=clip_polygon, smooth=true, rng)
         @test validate_tessellation(vorn; check_area = false)

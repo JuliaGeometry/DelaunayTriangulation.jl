@@ -264,7 +264,7 @@ end
         for i in 3:10
             for j in 3:10
                 tri = triangulate_rectangle(0, 10, 0, 10, i, j)
-                tri = triangulate(get_points(tri); weights=10randn() * ones(i * j), rng)
+                tri = triangulate(get_points(tri); weights=10randn(rng) * ones(i * j), rng)
                 @test validate_triangulation(tri) # Why is this failing sometimes? Is validate not branching at weighted triangulations?
                 (i == j == 10) || validate_statistics(tri)
             end

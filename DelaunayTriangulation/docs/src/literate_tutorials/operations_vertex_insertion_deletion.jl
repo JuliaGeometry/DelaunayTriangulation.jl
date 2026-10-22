@@ -76,8 +76,8 @@ fig
 # `triangulate` on this set of points originally. To now push this further, 
 # let's add in a bunch of random points. 
 rng = StableRNG(123)
-for _ in 1:1000
-    new_point = 2rand(rng, 2)
+new_points = [2rand(rng, 2) for _ in 1:1000]
+for new_point in new_points
     add_point!(tri, new_point; rng)
 end
 fig, ax, sc = triplot(tri)

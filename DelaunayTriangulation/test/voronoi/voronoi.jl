@@ -247,13 +247,13 @@ end
 @testset "Voronoi point location" begin
     rng = StableRNG(4)
     for PT in subtypes(DT.AbstractPredicateKernel)
-        A = (-1.0, 7.0) .+ (1.0e-6rand(), 1.0e-6rand()) # perturb to allow the tests to work even without ExactPredicates
-        B = (4.0, 4.0) .+ (1.0e-6rand(), 1.0e-6rand())
-        C = (-2.0, -1.0) .+ (1.0e-6rand(), 1.0e-6rand())
-        D = (-1.0, 3.0) .+ (1.0e-6rand(), 1.0e-6rand())
-        E = (3.0, -1.0) .+ (1.0e-6rand(), 1.0e-6rand())
-        F = (1.0, 4.0) .+ (1.0e-6rand(), 1.0e-6rand())
-        G = (-3.0, 5.0) .+ (1.0e-6rand(), 1.0e-6rand())
+        A = (-1.0, 7.0) .+ (1.0e-6rand(rng), 1.0e-6rand(rng)) # perturb to allow the tests to work even without ExactPredicates
+        B = (4.0, 4.0) .+ (1.0e-6rand(rng), 1.0e-6rand(rng))
+        C = (-2.0, -1.0) .+ (1.0e-6rand(rng), 1.0e-6rand(rng))
+        D = (-1.0, 3.0) .+ (1.0e-6rand(rng), 1.0e-6rand(rng))
+        E = (3.0, -1.0) .+ (1.0e-6rand(rng), 1.0e-6rand(rng))
+        F = (1.0, 4.0) .+ (1.0e-6rand(rng), 1.0e-6rand(rng))
+        G = (-3.0, 5.0) .+ (1.0e-6rand(rng), 1.0e-6rand(rng))
         pts = [A, B, C, D, E, F, G]
         tri = triangulate(pts; delete_ghosts=false, randomise=false, rng)
         vor = voronoi(tri, predicates=PT(); rng)

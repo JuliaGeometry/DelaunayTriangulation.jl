@@ -102,6 +102,7 @@ end
 end
 
 @testset "Distance to a segment" begin
+    rng = StableRNG(1)
     p1 = [0.0, 0.0]
     p2 = [10.0, 0.0]
     q = [0.0, 5.0]
@@ -110,9 +111,9 @@ end
     @inferred DT.squared_distance_to_segment(p1..., p2..., q...)
     for _ in 1:10000
         local q
-        pᵢ = 10randn(2)
-        pⱼ = 10randn(2)
-        q = 10randn(2)
+        pᵢ = 10randn(rng, 2)
+        pⱼ = 10randn(rng, 2)
+        q = 10randn(rng, 2)
         pᵢx, pᵢy = pᵢ
         pⱼx, pⱼy = pⱼ
         qx, qy = q

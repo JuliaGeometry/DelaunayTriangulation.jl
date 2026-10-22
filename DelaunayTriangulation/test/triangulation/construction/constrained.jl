@@ -317,8 +317,8 @@ end
             @test_with_log msg DT.compare_triangle_collections(get_triangles(tri), T)
             @test_with_log msg validate_triangulation(tri; predicates = PT())
             for i in 1:25
-                x = 4rand()
-                y = 5rand()
+                x = 4rand(rng)
+                y = 5rand(rng)
                 DT.push_point!(tri, x, y)
                 add_point!(tri, DT.num_points(tri); predicates = PT(), rng)
                 @test_with_log msg validate_triangulation(tri; predicates = PT())

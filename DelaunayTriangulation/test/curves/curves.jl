@@ -559,7 +559,7 @@ end
     reverse_points = revclosed_arc.(t)
     reverse_boundary_nodes = [eachindex(t); 1]
     for _ in 1:10000
-        p = (2rand() - 1, 2rand() - 1)
+        p = (2rand(rng) - 1, 2rand(rng) - 1)
         δ = DT.distance_to_polygon(p, points, boundary_nodes)
         δ2 = DT.distance_to_polygon(p, reverse_points, reverse_boundary_nodes)
         cert = DT.point_position_relative_to_curve(closed_arc, p)
@@ -2193,7 +2193,7 @@ end
     reverse_points = rev_pspl.(t)
     reverse_boundary_nodes = [eachindex(t); 1]
     for _ in 1:1000
-        p = (30randn(), 30randn())
+        p = (30randn(rng), 30randn(rng))
         δ = DT.distance_to_polygon(p, points, boundary_nodes)
         δ2 = DT.distance_to_polygon(p, reverse_points, reverse_boundary_nodes)
         cert = DT.point_position_relative_to_curve(pspl, p)

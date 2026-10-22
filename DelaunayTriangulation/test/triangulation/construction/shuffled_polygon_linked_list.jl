@@ -35,22 +35,20 @@ const DT = DelaunayTriangulation
 end
 
 @testset "Inconsistent inputs" begin
-    rng = StableRNG(1)
-    @test_throws AssertionError DT.ShuffledPolygonLinkedList([1], [1, 2], [1, 2], 2, [1, 2]; rng)
-    @test_throws AssertionError DT.ShuffledPolygonLinkedList([1, 2], [1], [1, 2], 2, [1, 2]; rng)
-    @test_throws AssertionError DT.ShuffledPolygonLinkedList([1, 2], [1, 2], [1], 2, [1, 2]; rng)
-    @test_throws AssertionError DT.ShuffledPolygonLinkedList([1, 2], [1, 2], [1, 2], 1, [1, 2]; rng)
-    @test_throws AssertionError DT.ShuffledPolygonLinkedList([1, 2], [1, 2], [1, 2], 2, [1, 2, 3]; rng)
+    @test_throws AssertionError DT.ShuffledPolygonLinkedList([1], [1, 2], [1, 2], 2, [1, 2])
+    @test_throws AssertionError DT.ShuffledPolygonLinkedList([1, 2], [1], [1, 2], 2, [1, 2])
+    @test_throws AssertionError DT.ShuffledPolygonLinkedList([1, 2], [1, 2], [1], 2, [1, 2])
+    @test_throws AssertionError DT.ShuffledPolygonLinkedList([1, 2], [1, 2], [1, 2], 1, [1, 2])
+    @test_throws AssertionError DT.ShuffledPolygonLinkedList([1, 2], [1, 2], [1, 2], 2, [1, 2, 3])
 end
 
 @testset "Deleting vertices and swapping the permutation" begin
-    rng = StableRNG(2)
     next = [2, 3, 4, 5, 6, 1]
     prev = [6, 1, 2, 3, 4, 5]
     shuffled_indices = [3, 1, 5, 6, 2, 4]
     k = 6
     S = [1, 6, 15, 13, 23, 71]
-    list = DT.ShuffledPolygonLinkedList(next, prev, shuffled_indices, k, S; rng)
+    list = DT.ShuffledPolygonLinkedList(next, prev, shuffled_indices, k, S)
     π₂ = shuffled_indices[2]
     DT.delete_vertex!(list, 2)
     @test next[prev[π₂]] == next[π₂]

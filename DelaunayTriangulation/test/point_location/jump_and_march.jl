@@ -194,7 +194,7 @@ rep[3].y = mean([12.0, 6.0, 2.0, 4.0, 6.0, 10.0])
         # Technically this will also find points in solid triangles, but by doing random testing with large random points, 
         # we ensure that we primarily find ghost triangles
         for _ in 1:6
-            q = (50randn(), 50rand())
+            q = (50randn(rng), 50rand(rng))
             for k in DT.each_solid_vertex(tri)
                 rand(rng) < 1 / 2 && continue
                 _V1 = find_triangle(tri, q; k, rng)
@@ -740,7 +740,7 @@ end
         end
         tri = triangulate(points; boundary_nodes=[1, 2, 3, 4, 1], rng)
         for _ in 1:20000
-            q = 2randn(2)
+            q = 2randn(rng, 2)
             k = rand(rng, each_solid_vertex(tri))
             while DT.is_boundary_node(tri, k)[1]
                 k = rand(rng, each_solid_vertex(tri))

@@ -35,14 +35,14 @@ end
 @testset "Adding and deleting points to representative coordinates" begin
     rng = StableRNG(1)
     c = DT.RepresentativeCoordinates{Int,Float64}()
-    pts = [15randn(2) for _ in 1:200]
-    foreach(p -> DT.add_point!(c, p; rng), pts)
+    pts = [15randn(rng, 2) for _ in 1:200]
+    foreach(p -> DT.add_point!(c, p), pts)
     mx, my = mean(pts)
     @test getx(c) ≈ mx
     @test gety(c) ≈ my
     @test DT.getn(c) == 200
 
-    foreach(p -> DT.delete_point!(c, p; rng), pts[151:200])
+    foreach(p -> DT.delete_point!(c, p), pts[151:200])
     mx, my = mean(pts[1:150])
     @test getx(c) ≈ mx
     @test gety(c) ≈ my
@@ -153,11 +153,10 @@ end
 end
 
 @testset "Deleting the last point" begin
-    rng = StableRNG(4)
     c = DT.RepresentativeCoordinates(0.5, 0.25, 1)
-    DT.delete_point!(c, (0.5, 0.25); rng)
+    DT.delete_point!(c, (0.5, 0.25))
     @test DT.getx(c) == 0.0 && DT.gety(c) == 0.0 && DT.getn(c) == 0
-    DT.add_point!(c, (2.0, 3.0); rng)
+    DT.add_point!(c, (2.0, 3.0))
     @test DT.getx(c) == 2.0 && DT.gety(c) == 3.0 && DT.getn(c) == 1
 end
 

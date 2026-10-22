@@ -125,7 +125,7 @@ end
     tri = DT.triangulate(points; rng, predicates = rt(rng), delete_ghosts = false)
     @inferred DT.triangulate(points; predicates = rt(rng), rng, delete_ghosts = false)
     BI = DT.𝒢
-    @test get_triangles(tri) == Set{NTuple{3, Int}}(
+    expected = Set{NTuple{3, Int}}(
         (
             (3, 2, BI),
             (4, BI, 5),
@@ -141,6 +141,8 @@ end
             (1, BI, 2),
         ),
     )
+    # A triangle can be written starting from any of its vertices, which depends on the insertion order
+    @test DT.compare_triangle_collections(get_triangles(tri), expected)
     @test validate_triangulation(tri)
 end
 
