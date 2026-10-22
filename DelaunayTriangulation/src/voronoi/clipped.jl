@@ -270,7 +270,38 @@ function process_segment_intersection!(
 end
 
 """
-    initialise_clipping_arrays(vorn::VoronoiTessellation) -> (Set{E}, Queue{Tuple{E,I}}, Dict{I,Set{I}}, NTuple{2,F}[], Set{Tuple{E,I}}, Pair{E,E}[], Set{I}, Set{E}, Set{E}, Set{E}, Dict{I,I})
+    IndexedPointList{P,I} <: AbstractVector{P}
+
+A list of points that also stores the index of each point, so that `findfirst(==(p), list)` takes constant rather than linear
+time. This is used for the intersections of the Voronoi polygons with the boundary when clipping, since there can be as many of
+these as there are points, e.g. when all the points are on the convex hull.
+
+The indices are only found for points with no `NaN` coordinates, as for `findfirst(==(p), list)`, and `-0.0` and `0.0` are treated
+as the same coordinate since `-0.0 == 0.0`.
+"""
+struct IndexedPointList{P, I} <: AbstractVector{P}
+    points::Vector{P}
+    indices::Dict{P, I}
+end
+IndexedPointList{P, I}() where {P, I} = IndexedPointList{P, I}(P[], Dict{P, I}())
+Base.size(list::IndexedPointList) = size(list.points)
+Base.IndexStyle(::Type{<:IndexedPointList}) = IndexLinear()
+Base.getindex(list::IndexedPointList, i::Int) = list.points[i]
+_indexed_point_key(p) = (getx(p) + zero(getx(p)), gety(p) + zero(gety(p))) # adding zero turns -0.0 into 0.0
+function Base.push!(list::IndexedPointList{P, I}, p) where {P, I}
+    push!(list.points, p)
+    key = _indexed_point_key(p)
+    any(isnan, key) || get!(list.indices, key, I(length(list.points))) # keep the first index, as for findfirst
+    return list
+end
+function Base.findfirst(f::Base.Fix2{typeof(==)}, list::IndexedPointList)
+    key = _indexed_point_key(f.x)
+    any(isnan, key) && return nothing
+    return get(list.indices, key, nothing)
+end
+
+"""
+    initialise_clipping_arrays(vorn::VoronoiTessellation) -> (Set{E}, Queue{Tuple{E,I}}, Dict{I,Set{I}}, IndexedPointList{NTuple{2,F},I}, Set{Tuple{E,I}}, Pair{E,E}[], Set{I}, Set{E}, Set{E}, Set{E}, Dict{I,I})
 
 Initialise the arrays used in the clipping algorithm for the [`VoronoiTessellation`](@ref) `vorn`.
 
@@ -281,7 +312,7 @@ Initialise the arrays used in the clipping algorithm for the [`VoronoiTessellati
 - `edges_to_process`: The set of edges that are to be processed.
 - `polygon_edge_queue`: The queue of edges that are to be processed.
 - `boundary_sites`: A mapping from boundary sites to the indices of the segment intersections that are incident to the boundary site.
-- `segment_intersections`: The list of segment intersections.
+- `segment_intersections`: The list of segment intersections, as an [`IndexedPointList`](@ref).
 - `processed_pairs`: The set of pairs of edges and polygons that have been processed.
 - `intersected_edge_cache`: The list of intersected edges currently being considered.
 - `exterior_circumcenters`: The list of circumcenters of sites that are outside the boundary.
@@ -302,7 +333,7 @@ function initialise_clipping_arrays(vorn::VoronoiTessellation)
     polygon_edge_queue = Queue{Tuple{E, I}}()
     boundary_sites = Dict{I, Set{I}}()
     F = number_type(vorn)
-    segment_intersections = NTuple{2, F}[]
+    segment_intersections = IndexedPointList{NTuple{2, F}, I}()
     processed_pairs = Set{Tuple{E, I}}()
     intersected_edge_cache = Pair{E, E}[]
     sizehint!(intersected_edge_cache, 8)

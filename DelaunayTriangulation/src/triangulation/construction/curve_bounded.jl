@@ -197,12 +197,15 @@ function enrich_boundary!(enricher::BoundaryEnricher; predicates::AbstractPredic
     queue = get_queue(enricher)
     points = get_points(enricher)
     enqueue_all!(queue, each_point_index(points))
+    # The scale of the tolerances used to detect precision issues, as for refinement; see RefinementArguments
+    box = bounding_box(points)
+    length_scale = min(1.0, max(hspan(box), vspan(box)))
     while !isempty(queue)
-        _enrich_boundary_itr!(enricher, predicates)
+        _enrich_boundary_itr!(enricher, predicates, length_scale)
     end
     return enricher
 end
-function _enrich_boundary_itr!(enricher::BoundaryEnricher, predicates::AbstractPredicateKernel = AdaptiveKernel())
+function _enrich_boundary_itr!(enricher::BoundaryEnricher, predicates::AbstractPredicateKernel = AdaptiveKernel(), length_scale = 1.0)
     queue = get_queue(enricher)
     points = get_points(enricher)
     spatial_tree = get_spatial_tree(enricher)
@@ -218,7 +221,7 @@ function _enrich_boundary_itr!(enricher::BoundaryEnricher, predicates::AbstractP
         if is_inside(in_cert)
             vis_cert = test_visibility(predicates, enricher, i, j, v)
             if is_visible(vis_cert)
-                has_precision_issues = split_subcurve!(enricher, i, j, predicates)
+                has_precision_issues = split_subcurve!(enricher, i, j, predicates, length_scale)
                 has_precision_issues && continue
                 !requeued && push!(queue, v)
                 requeued = true
@@ -229,27 +232,28 @@ function _enrich_boundary_itr!(enricher::BoundaryEnricher, predicates::AbstractP
 end
 
 """
-    split_subcurve!(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateKernel=AdaptiveKernel()) -> Bool
+    split_subcurve!(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateKernel=AdaptiveKernel(), length_scale=1.0) -> Bool
 
 Splits the curve associated with the edge `(i, j)` into two subcurves by inserting a point `r` between `(i, j)` such that the 
 total variation of the subcurve is equal on `(i, r)` and `(r, j)`. The returned value is a `flag` that is `true` 
-if there was a precision issue, and `false` otherwise.
+if there was a precision issue, and `false` otherwise. The `length_scale` is the scale of the tolerances used to detect
+precision issues; see [`check_split_subsegment_precision`](@ref).
 
 The `predicate` argument determines how predicates are computed, and should be 
 one of [`ExactKernel`](@ref), [`FastKernel`](@ref), and [`AdaptiveKernel`](@ref) (the default).
 See the documentation for more information about these choices.
 """
-function split_subcurve!(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateKernel = AdaptiveKernel())
+function split_subcurve!(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateKernel = AdaptiveKernel(), length_scale = 1.0)
     flag, apex, complex_id, _ = is_small_angle_complex_member(enricher, i, j)
     if !flag
-        return _split_subcurve_standard!(enricher, i, j, predicates)
+        return _split_subcurve_standard!(enricher, i, j, predicates, length_scale)
     else
-        return _split_subcurve_complex!(enricher, apex, complex_id)
+        return _split_subcurve_complex!(enricher, apex, complex_id, length_scale)
     end
 end
-function _split_subcurve_standard!(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateKernel = AdaptiveKernel())
+function _split_subcurve_standard!(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateKernel = AdaptiveKernel(), length_scale = 1.0)
     points = get_points(enricher)
-    t, Δθ, ct = compute_split_position(enricher, i, j, predicates)
+    t, Δθ, ct = compute_split_position(enricher, i, j, predicates, length_scale)
     if isnan(Δθ)
         return true
     end
@@ -260,7 +264,7 @@ function _split_subcurve_standard!(enricher::BoundaryEnricher, i, j, predicates:
     push!(queue, r)
     return false
 end
-function _split_subcurve_complex!(enricher::BoundaryEnricher, apex, complex_id)
+function _split_subcurve_complex!(enricher::BoundaryEnricher, apex, complex_id, length_scale = 1.0)
     # All members of the complex get split at their intersection with the same circular shell centered at apex 
     complexes = get_small_angle_complexes(enricher, apex)
     complex = complexes[complex_id]
@@ -275,7 +279,7 @@ function _split_subcurve_complex!(enricher::BoundaryEnricher, apex, complex_id)
         split_point = _compute_split_position_complex(enricher, apex, member, circle_radius)
         next_edge = get_next_edge(member)
         q = get_point(points, next_edge)
-        if check_split_subsegment_precision(getx(split_point), gety(split_point), p, q)
+        if check_split_subsegment_precision(getx(split_point), gety(split_point), p, q, length_scale)
             num_precision_issues += 1
             continue
         end
@@ -289,7 +293,7 @@ function _split_subcurve_complex!(enricher::BoundaryEnricher, apex, complex_id)
 end
 
 """
-    compute_split_position(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateKernel=AdaptiveKernel()) -> (Float64, Float64, NTuple{2,Float64})
+    compute_split_position(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateKernel=AdaptiveKernel(), length_scale=1.0) -> (Float64, Float64, NTuple{2,Float64})
 
 Gets the point to split the edge `(i, j)` at.
 
@@ -298,13 +302,14 @@ Gets the point to split the edge `(i, j)` at.
 - `i`: The first point of the edge.
 - `j`: The second point of the edge.
 - `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
+- `length_scale=1.0`: The scale of the tolerances used to detect precision issues; see [`check_split_subsegment_precision`](@ref).
 
 # Outputs
 - `t`: The parameter value of the split point.
 - `Δθ`: The total variation of the subcurve `(i, t)`. If a split was created due to a small angle, this will be set to zero.
 - `ct`: The point to split the edge at.
 """
-function compute_split_position(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateKernel = AdaptiveKernel())
+function compute_split_position(enricher::BoundaryEnricher, i, j, predicates::AbstractPredicateKernel = AdaptiveKernel(), length_scale = 1.0)
     num_adjoin, adjoin_vert = has_acute_neighbouring_angles(predicates, enricher, i, j)
     if num_adjoin == 0
         t, Δθ, ct = _compute_split_position_standard(enricher, i, j)
@@ -314,7 +319,7 @@ function compute_split_position(enricher::BoundaryEnricher, i, j, predicates::Ab
     points = get_points(enricher)
     p, q = get_point(points, i, j)
     T = number_type(points)
-    if check_split_subsegment_precision(getx(ct), gety(ct), p, q)
+    if check_split_subsegment_precision(getx(ct), gety(ct), p, q, length_scale)
         #=
         This happens when the points p and q are so close to each other, that the interval 
         (i-1, i, i+1) found for the binary splitting used in get_closest_point are the exact same, 

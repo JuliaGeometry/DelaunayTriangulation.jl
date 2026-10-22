@@ -648,7 +648,7 @@ end
 function _split_subsegment_curve_bounded_standard!(tri::Triangulation, args::RefinementArguments, e)
     enricher = get_boundary_enricher(tri)
     i, j = edge_vertices(e)
-    t, Δθ, ct = compute_split_position(enricher, i, j, args.predicates)
+    t, Δθ, ct = compute_split_position(enricher, i, j, args.predicates, args.length_scale)
     cx, cy = getxy(ct)
     p, q = get_point(tri, i, j)
     precision_flag = check_split_subsegment_precision(cx, cy, p, q, args.length_scale) || isnan(Δθ)

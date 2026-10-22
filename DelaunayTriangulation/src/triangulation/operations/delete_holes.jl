@@ -113,20 +113,25 @@ Starting at `seed`, finds more points to spread to and mark for deletion.
 There are no outputs, as `points_to_process` is updated in-place.
 
 # Extended help 
-This function works by considering the neighbours around the vertex `seed`. For each neighbouring vertex, we designate that as a new seed, 
+This function works by considering the neighbours around the vertex `seed`. For each neighbouring vertex, we designate that as a new seed,
 and consider if it needs to be added into `points_to_process` according to its distance from the triangulation computed from [`distance_to_polygon`](@ref).
-We then call [`find_all_points_to_delete!`](@ref) recursively again on the new seed.
+We then do the same for each new seed. This uses a stack of the seeds left to consider rather than recursion, since the search can go through
+every point outside of the domain, which would overflow the stack if there are many of them.
 """
 function find_all_points_to_delete!(points_to_process, tri::Triangulation, seed, all_bn)
-    for new_seed in get_neighbours(tri, seed)
-        q = get_point(tri, new_seed)
-        δ = dist(tri, q)
-        # δ = distance_to_polygon(q, points, complete_boundary_nodes)
-        if new_seed ∈ points_to_process && δ > zero(δ) && !is_ghost_vertex(new_seed) # want to make sure we look at the ghost triangles
-            delete!(points_to_process, new_seed)
-        elseif new_seed ∉ points_to_process && new_seed ∉ all_bn && δ < zero(δ)
-            push!(points_to_process, new_seed)
-            find_all_points_to_delete!(points_to_process, tri, new_seed, all_bn)
+    seeds = [seed]
+    while !isempty(seeds)
+        seed = pop!(seeds)
+        for new_seed in get_neighbours(tri, seed)
+            q = get_point(tri, new_seed)
+            δ = dist(tri, q)
+            # δ = distance_to_polygon(q, points, complete_boundary_nodes)
+            if new_seed ∈ points_to_process && δ > zero(δ) && !is_ghost_vertex(new_seed) # want to make sure we look at the ghost triangles
+                delete!(points_to_process, new_seed)
+            elseif new_seed ∉ points_to_process && new_seed ∉ all_bn && δ < zero(δ)
+                push!(points_to_process, new_seed)
+                push!(seeds, new_seed)
+            end
         end
     end
     return points_to_process

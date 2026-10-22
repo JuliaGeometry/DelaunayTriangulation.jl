@@ -84,7 +84,7 @@ end
 
 @testset verbose = true "DelaunayTriangulation.jl" begin
     run_group("Aqua") && @testset verbose = true "Aqua" begin
-        Aqua.test_all(DelaunayTriangulation; ambiguities=false, project_extras=false, unbound_args=false) # don't care about julia < 1.2
+        Aqua.test_all(DelaunayTriangulation; ambiguities=false, unbound_args=false)
         Aqua.test_ambiguities(DelaunayTriangulation) # don't pick up Base and Core...
     end
 

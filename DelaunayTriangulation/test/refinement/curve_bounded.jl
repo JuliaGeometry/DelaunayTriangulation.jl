@@ -1739,3 +1739,19 @@ end
     @test validate_triangulation(tri)
     @test validate_refinement(tri; max_area = 1e-3)
 end
+
+@testset "Refining a curve-bounded domain does not depend on its scale" begin
+    # The tolerances for precision issues when splitting the boundary curves used to be absolute, so that for domains smaller than
+    # about 1e-7, every split was rejected and refine! never finished
+    circle = s -> [CircularArc((s, 0.0), (s, 0.0), (0.0, 0.0))]
+    arcs = s -> [[CircularArc((0.0, 0.0), (s, 0.0), (s / 2, -2s))], [CircularArc((s, 0.0), (0.0, 0.0), (s / 2, 0.2s))]]
+    for curve in (circle, arcs)
+        counts = map((1.0, 1.0e-7, 1.0e-9)) do s
+            tri = triangulate(NTuple{2, Float64}[]; boundary_nodes = curve(s), rng = StableRNG(1))
+            refine!(tri; max_area = 1.0e-2 * get_area(tri), rng = StableRNG(1))
+            @test validate_triangulation(tri)
+            DT.num_solid_vertices(tri)
+        end
+        @test allequal(counts)
+    end
+end

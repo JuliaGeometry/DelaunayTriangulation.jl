@@ -155,21 +155,21 @@ function get_weighted_nearest_neighbour(tri::Triangulation, i, j = rand(each_sol
     end
 end
 function _get_weighted_nearest_neighbour(tri, i, j)
-    min_δ² = get_power_distance(tri, i, j)
-    min_j = j
-    for k in get_neighbours(tri, j)
-        if !is_ghost_vertex(k)
-            δ² = get_power_distance(tri, i, k)
-            if δ² < min_δ²
-                min_δ² = δ²
-                min_j = k
+    # This is a loop rather than recursion, since the walk can take as many steps as there are vertices
+    while true
+        min_δ² = get_power_distance(tri, i, j)
+        min_j = j
+        for k in get_neighbours(tri, j)
+            if !is_ghost_vertex(k)
+                δ² = get_power_distance(tri, i, k)
+                if δ² < min_δ²
+                    min_δ² = δ²
+                    min_j = k
+                end
             end
         end
-    end
-    if min_j == j
-        return j
-    else
-        return _get_weighted_nearest_neighbour(tri, i, min_j)
+        min_j == j && return j
+        j = min_j
     end
 end
 
