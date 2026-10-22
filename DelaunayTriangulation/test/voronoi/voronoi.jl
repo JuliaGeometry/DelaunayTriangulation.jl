@@ -2013,3 +2013,22 @@ end
     @test_throws Exception voronoi(tri; clip = true, clip_polygon = bad_clip_polygon, rng = StableRNG(1))
     @test tri == orig && !DT.has_ghost_triangles(tri)
 end
+
+@testset "Smoothing the clipped tessellation of a refined triangulation" begin
+    # refine! adds points on the edges of the convex hull, and some of them end up just inside of it. Smoothing locks the convex hull, and
+    # delete_holes! used to keep the thin triangles between these points and the edges of the convex hull over them, giving a KeyError.
+    # The triangulation of the smoothed tessellation also used to share its boundary nodes with tri, which were then emptied when unlocking
+    # the convex hull of tri.
+    for seed in 1:4
+        points = [Tuple(p) for p in eachcol(rand(StableRNG(seed), 2, 20))]
+        tri = triangulate(points; rng = StableRNG(seed))
+        refine!(tri; max_area = 1.0e-2, rng = StableRNG(seed))
+        vorn = voronoi(tri; clip = true, smooth = true, rng = StableRNG(seed))
+        # The points just inside of the convex hull make the polygons around them very slightly non-convex
+        @test validate_tessellation(vorn; check_convex = false)
+        @test validate_triangulation(DT.get_triangulation(vorn))
+        @test DT.has_boundary_nodes(DT.get_triangulation(vorn)) && !DT.has_boundary_nodes(tri)
+        hull = DT.get_vertices(convex_hull(points))
+        @test sum(get_area(vorn, i) for i in each_polygon_index(vorn)) ≈ DT.polygon_features(points, hull)[1] rtol = 1.0e-10
+    end
+end

@@ -210,13 +210,15 @@ Retriangulates the triangulation `tri` using the points `points`, returning a ne
 
 # Keyword Arguments
 - `skip_points=Set(filter(i -> !has_vertex(tri, i), each_point_index(tri)))`: The points to skip when inserting points into the triangulation.
-- `kwargs...`: Extra keyword arguments passed to `triangulate`. Other keyword arguments, like `segments` and `boundary_nodes`, 
+- `kwargs...`: Extra keyword arguments passed to `triangulate`. Other keyword arguments, like `segments` and `boundary_nodes`,
    are automatically passed from the fields of `tri`, but may be overridden by passing the corresponding keyword arguments.
+   The `segments` and `boundary_nodes` from `tri` are copied, so that changing them in one of the triangulations, e.g. with [`unlock_convex_hull!`](@ref),
+   does not change them in the other.
 """
 function retriangulate(
         tri::T, points = get_points(tri);
-        segments = get_interior_segments(tri),
-        boundary_nodes = get_boundary_nodes(tri),
+        segments = deepcopy(get_interior_segments(tri)),
+        boundary_nodes = deepcopy(get_boundary_nodes(tri)),
         skip_points = Set(filter(i -> !has_vertex(tri, i), each_point_index(tri))),
         kwargs...,
     ) where {T <: Triangulation}

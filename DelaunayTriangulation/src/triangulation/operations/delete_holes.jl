@@ -147,9 +147,8 @@ Returns a set of all the triangles that are in the exterior faces of the triangu
 # Extended help
 This function works in two stages. 
 1. Firstly, all the non-boundary vertices, i.e. those from `points_to_process`, are processed. For each vertex `v`, the triangles adjoining it, given by `get_adjacent2vertex(tri, v)`, aremarked for deletion. 
-2. Next, all the boundary vertices need to be processed and carefully analysed to determine if any other triangles need to be deleted since, for example, a triangle may be adjoining three vertices that are all 
-   boundary vertices, and it might not be obvious if it is inside or outside of the triangulation. By applying [`dist`](@ref) to compute the distance between the triangle's centroid and the triangulation, 
-   the triangle can be accurately marked for deletion if it is outside of the triangulation.
+2. Next, all the boundary vertices need to be processed and carefully analysed to determine if any other triangles need to be deleted since, for example, a triangle may be adjoining three vertices that are all
+   boundary vertices, and it might not be obvious if it is inside or outside of the triangulation. This is decided by [`is_exterior_boundary_triangle`](@ref).
 """
 function find_all_triangles_to_delete(tri::Triangulation, points_to_process)
     ## Process the non-boundary nodes for deletion
@@ -170,15 +169,79 @@ function find_all_triangles_to_delete(tri::Triangulation, points_to_process)
         for e in each_edge(S)
             u, v = edge_vertices(e)
             V = construct_triangle(T, u, v, node)
-            if !contains_triangle(V, triangles_to_delete)[2]
-                p, q, r = get_point(tri, u, v, node)
-                c = triangle_centroid(p, q, r)
-                δ = dist(tri, c)
-                if δ < zero(δ)
-                    add_triangle!(triangles_to_delete, V)
-                end
+            if !contains_triangle(V, triangles_to_delete)[2] && is_exterior_boundary_triangle(tri, V)
+                add_triangle!(triangles_to_delete, V)
             end
         end
     end
     return triangles_to_delete
+end
+
+"""
+    is_exterior_boundary_triangle(tri::Triangulation, T) -> Bool
+
+Tests if the positively oriented triangle `T`, adjoining a boundary node of `tri`, is outside of the domain of `tri`.
+
+# Extended help
+The domain is always to the left of its boundary edges. So, if `T` has a boundary edge `(u, v)` as one of its edges, `T` is inside the domain, and if
+it has the reverse `(v, u)` of a boundary edge, `T` is outside (see [`boundary_edge_side`](@ref)). If `T` has no boundary edges, then the triangles that can be
+reached from `T` without crossing a boundary edge are either all inside or all outside of the domain, so we search through them for one that has a boundary edge,
+or for an edge of the convex hull, beyond which everything is outside of the domain.
+
+This only uses the boundary edges rather than the coordinates, so it also works for thin triangles along the boundary, e.g. between boundary nodes that
+are only just inside the convex hull and the edge of the convex hull over them. The centroid of such a triangle can be so close to the boundary that its
+computed distance to the boundary is zero or has the wrong sign. The distance from the centroid of `T` to the boundary, computed with [`dist`](@ref), is only used
+for ghost triangles, and if the search finds neither a boundary edge nor an edge of the convex hull.
+"""
+function is_exterior_boundary_triangle(tri::Triangulation, T)
+    is_ghost_triangle(T) && return centroid_is_exterior(tri, T)
+    side = boundary_edge_side(tri, T)
+    !iszero(side) && return side < 0
+    V = triangle_type(tri)
+    visited = Set{V}((sort_triangle(T),))
+    queue = [T]
+    while !isempty(queue)
+        S = popfirst!(queue) # S has no boundary edges, so we can cross any of its edges
+        i, j, k = triangle_vertices(S)
+        for (u, v) in ((i, j), (j, k), (k, i))
+            w = get_adjacent(tri, v, u)
+            edge_exists(w) || continue
+            is_ghost_vertex(w) && return true # (u, v) is an edge of the convex hull
+            R = construct_triangle(V, v, u, w)
+            sort_triangle(R) ∈ visited && continue
+            side = boundary_edge_side(tri, R)
+            !iszero(side) && return side < 0
+            push!(visited, sort_triangle(R))
+            push!(queue, R)
+        end
+    end
+    return centroid_is_exterior(tri, T)
+end
+
+"""
+    boundary_edge_side(tri::Triangulation, T) -> Int
+
+Returns `1` if the positively oriented triangle `T` has a boundary edge of `tri`, so that `T` is to the left of that edge and hence inside the domain,
+`-1` if `T` has the reverse of a boundary edge, so that `T` is outside of the domain, and `0` if `T` has neither.
+"""
+function boundary_edge_side(tri::Triangulation, T)
+    i, j, k = triangle_vertices(T)
+    for (u, v) in ((i, j), (j, k), (k, i))
+        contains_boundary_edge(tri, v, u) && return -1
+        contains_boundary_edge(tri, u, v) && return 1
+    end
+    return 0
+end
+
+"""
+    centroid_is_exterior(tri::Triangulation, T) -> Bool
+
+Tests if the centroid of the triangle `T` is outside of the domain of `tri`, using its distance to the boundary computed with [`dist`](@ref).
+"""
+function centroid_is_exterior(tri::Triangulation, T)
+    i, j, k = triangle_vertices(T)
+    p, q, r = get_point(tri, i, j, k)
+    c = triangle_centroid(p, q, r)
+    δ = dist(tri, c)
+    return δ < zero(δ)
 end

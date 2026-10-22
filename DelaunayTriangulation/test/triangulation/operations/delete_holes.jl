@@ -258,3 +258,27 @@ end
         validate_statistics(tri)
     end
 end
+
+@testset "Thin triangles outside of the domain along the boundary" begin
+    # These boundaries are parts of the convex hull of a refined triangulation, locked as in centroidal_smooth. refine! added points on the
+    # edges of the convex hull, and some of them ended up just inside of it, so that there are triangles with areas of about 1e-20 between
+    # them and the edge of the convex hull over them. These triangles are outside of the domain, but their centroids are too close to the
+    # boundary for the sign of their distance to it to be right, so they used to be kept. In the second boundary, the thin triangle (1, 3, 5)
+    # does not have any boundary edges.
+    four_points = [(0.9846112391977058, 0.7335365465035593), (0.9824510869518077, 0.7905303915071716), (0.9813710108288587, 0.8190273140089779), (0.9630703560909225, 0.9486665099367638)]
+    six_points = [
+        (0.99829297386837, 0.15000325884182525), (0.9970925682678807, 0.2744049516100221), (0.996732446587734, 0.31172545944048113),
+        (0.9963723249075872, 0.3490459672709402), (0.9958921626673916, 0.398806644378219), (0.9630703560909225, 0.9486665099367638),
+    ]
+    for points in (four_points, six_points), PT in (DT.ExactKernel, DT.AdaptiveKernel)
+        boundary_nodes = [collect(eachindex(points)); 1]
+        for seed in 1:10
+            tri = triangulate(points; boundary_nodes, predicates = PT(), rng = StableRNG(seed))
+            @test validate_triangulation(tri; predicates = PT())
+            @test DT.num_solid_triangles(tri) == length(points) - 2
+            @test get_area(tri) ≈ DT.polygon_features(points, boundary_nodes)[1]
+        end
+    end
+    tri = triangulate(four_points; boundary_nodes = [1, 2, 3, 4, 1], rng = StableRNG(1))
+    @test DT.compare_triangle_collections(Set(each_solid_triangle(tri)), Set(((1, 2, 4), (2, 3, 4))))
+end

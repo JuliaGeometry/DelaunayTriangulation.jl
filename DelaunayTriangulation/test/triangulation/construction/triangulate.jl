@@ -52,3 +52,15 @@ end
     @test DT.has_vertex(tri, 1) && !DT.has_vertex(tri, 2)
     @test DT.num_solid_vertices(tri) == 3
 end
+
+@testset "retriangulate does not share the boundary with the original triangulation" begin
+    rng = StableRNG(1)
+    tri = triangulate(rand(rng, 2, 50); rng)
+    lock_convex_hull!(tri; rng)
+    tri2 = retriangulate(tri; rng)
+    @test get_boundary_nodes(tri2) == get_boundary_nodes(tri) && get_boundary_nodes(tri2) !== get_boundary_nodes(tri)
+    @test DT.get_interior_segments(tri2) !== DT.get_interior_segments(tri)
+    unlock_convex_hull!(tri)
+    @test !DT.has_boundary_nodes(tri) && DT.has_boundary_nodes(tri2)
+    @test validate_triangulation(tri) && validate_triangulation(tri2)
+end
