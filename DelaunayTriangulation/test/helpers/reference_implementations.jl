@@ -208,8 +208,8 @@ function compute_diametral_lens(p, q, lens_angle)
 end
 
 function get_points_in_diametral_circle(p, q)
-    tri = triangulate(rand(2, 50))
-    args = DT.RefinementArguments(tri; use_lens=false)
+    tri = triangulate(rand(StableRNG(1), 2, 50); rng=StableRNG(1))
+    args = DT.RefinementArguments(tri; use_lens=false, rng=StableRNG(1))
     θ = LinRange(0, 2π, 250)
     r = LinRange(0, norm(p .- q) / 2, 250)
     m = (p .+ q) ./ 2
@@ -219,8 +219,8 @@ function get_points_in_diametral_circle(p, q)
 end
 
 function get_points_in_diametral_lens(p, q, lens_angle)
-    tri = triangulate(rand(2, 50))
-    args = DT.RefinementArguments(tri; use_lens=true, min_angle=lens_angle)
+    tri = triangulate(rand(StableRNG(1), 2, 50); rng=StableRNG(1))
+    args = DT.RefinementArguments(tri; use_lens=true, min_angle=lens_angle, rng=StableRNG(1))
     θ = LinRange(0, 2π, 250)
     r = LinRange(0, norm(p .- q) / 2, 250)
     m = (p .+ q) ./ 2

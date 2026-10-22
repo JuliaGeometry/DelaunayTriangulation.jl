@@ -8,6 +8,7 @@
 # etc., if you please). Here is a simple example.
 using DelaunayTriangulation
 using CairoMakie
+using StableRNGs # for reproducibility
 using ReferenceTests #src
 fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures") #src
 
@@ -24,7 +25,8 @@ for i in 1:2
     cx += 3.0
 end
 boundary_nodes, points = convert_boundary_points_to_indices(xy)
-tri = triangulate(points; boundary_nodes = boundary_nodes)
+rng = StableRNG(123)
+tri = triangulate(points; boundary_nodes = boundary_nodes, rng)
 fig, ax, sc = triplot(tri)
 fig
 @test_reference reference_path(fig_path, "constrained_ex_7.png") fig #src
@@ -187,7 +189,7 @@ dot_3 = [[K2, L2, M2, N2, O2, P2, Q2, R2, S2, T2, U2, V2, W2, K2]]
 dot_4 = [[K3, L3, M3, N3, O3, P3, Q3, R3, S3, T3, U3, V3, K3]]
 curves = [J_curve, U_curve, L_curve, I_curve, A_curve_outline, A_curve_hole, dot_1, dot_2, dot_3, dot_4]
 nodes, points = convert_boundary_points_to_indices(curves)
-tri = triangulate(points; boundary_nodes = nodes)
+tri = triangulate(points; boundary_nodes = nodes, rng)
 fig, ax, sc = triplot(tri)
 fig
 @test_reference reference_path(fig_path, "constrained_ex_8.png") fig by = psnr_equality(12) #src

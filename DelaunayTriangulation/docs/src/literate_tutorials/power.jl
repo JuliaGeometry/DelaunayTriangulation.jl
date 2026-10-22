@@ -56,7 +56,7 @@ I, J, K, L, M, N = (-1.0, 3.0), (1.0, 3.0),
 points = [A, B, C, D, E, F, G, H, I, J, K, L, M, N]
 w = Observable(-10.0)
 weights = @lift (wts = zeros(length(points)); wts[10] = $w; wts)
-tri = @lift tri = triangulate(points; weights=$weights)
+tri = @lift tri = triangulate(points; weights=$weights, rng)
 vorn = @lift voronoi($tri)
 weight_itr_base = LinRange(-10, 10, 30 * 5)
 weight_itr = vcat(weight_itr_base, reverse(weight_itr_base))

@@ -13,7 +13,8 @@ fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures
 
 # Let us now define our initial triangulation.
 points = [(0.0, 0.0), (2.0, 0.0), (1.0, 2.0)]
-tri = triangulate(points)
+rng = StableRNG(123)
+tri = triangulate(points; rng)
 fig, ax, sc = triplot(tri)
 fig
 @test_reference reference_path(fig_path, "triangulation_operations_1.png") fig #src
@@ -26,14 +27,14 @@ fig
 # is a method which uses the index of the vertex rather than the coordinates, 
 # but we don't use that here as the points to be added are not already in 
 # `points`. Here, we add a point at `(1.0, 0.5)`.
-add_point!(tri, 1.0, 0.5)
+add_point!(tri, 1.0, 0.5; rng)
 fig, ax, sc = triplot(tri)
 fig
 @test_reference reference_path(fig_path, "triangulation_operations_2.png") fig #src
 
 # This is still a valid Delaunay triangulation, unsurprisingly due to the 
 # small number of points. We can also add points that are outside of the triangulation:
-add_point!(tri, 0.0, 1.0)
+add_point!(tri, 0.0, 1.0; rng)
 fig, ax, sc = triplot(tri)
 fig
 @test_reference reference_path(fig_path, "triangulation_operations_3.png") fig #src
@@ -42,7 +43,7 @@ fig
 # adding a point outside of the triangulation would not work. Here is an example of this failing.
 delete_ghost_triangles!(tri)
 try #hide
-    add_point!(tri, 2.0, 1.5)
+    add_point!(tri, 2.0, 1.5; rng)
 catch e #hide
     println(e) #hide
 end #hide
@@ -77,7 +78,7 @@ fig
 rng = StableRNG(123)
 for _ in 1:1000
     new_point = 2rand(rng, 2)
-    add_point!(tri, new_point)
+    add_point!(tri, new_point; rng)
 end
 fig, ax, sc = triplot(tri)
 fig
@@ -95,7 +96,7 @@ vertices_to_delete = filter(collect(each_solid_vertex(tri))) do i
     return r2 < 1 / 2^2
 end
 for i in vertices_to_delete
-    delete_point!(tri, i)
+    delete_point!(tri, i; rng)
 end
 fig, ax, sc = triplot(tri)
 fig

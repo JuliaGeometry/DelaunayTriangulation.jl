@@ -3,6 +3,7 @@ const DT = DelaunayTriangulation
 using StructEquality
 using ..DelaunayTriangulation: Triangulation
 using StaticArrays
+using StableRNGs
 
 
 @testset "Deleting ghost triangles" begin
@@ -26,6 +27,7 @@ using StaticArrays
 end
 
 @testset "Making sure the ghost triangles are correctly adjusted on disjoint sets" begin
+    rng = StableRNG(1)
     θ = LinRange(0, 2π, 100) |> collect
     θ[end] = 0
     xy = Vector{Vector{Vector{NTuple{2, Float64}}}}()
@@ -40,7 +42,7 @@ end
     xy[3][1][end] = xy[3][1][1]
     xy[4][1][end] = xy[4][1][1]
     boundary_nodes, points = convert_boundary_points_to_indices(xy)
-    tri = triangulate(points; boundary_nodes = boundary_nodes)
+    tri = triangulate(points; boundary_nodes = boundary_nodes, rng)
     @test validate_triangulation(tri)
     validate_statistics(tri)
 end

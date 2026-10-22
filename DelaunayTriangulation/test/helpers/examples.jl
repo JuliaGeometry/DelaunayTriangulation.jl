@@ -477,7 +477,7 @@ function _make_graph_from_adjacency(A, labels=Dict(axes(A, 1) .=> axes(A, 1)))
 end
 
 function get_random_convex_polygon(points)
-    tri = triangulate(points; predicates=DT.ExactKernel())
+    tri = triangulate(points; predicates=DT.ExactKernel(), rng=StableRNG(1))
     S = get_convex_hull_vertices(tri)
     pop!(S) # Want S[begin] ≠ S[end]
     return S

@@ -9,9 +9,10 @@ using StableRNGs
 A, B, C, D, E, F, G, H, I, J, K, L = 
 (-6.0, 4.0), (-2.0, 5.0), (0.92, 2.86), (0.0, -2.0), (-5.0, -4.0), (-7.0, -2.0), (-10.0, 2.0), (-4.0, 3.0), (-5.0, 2.0), (-2.0, 1.0), (-3.0, -2.0), (4.0, 1.0)
 pts = [A, B, C, D, E, F, G, H, I, J, K, L]
-tri = triangulate(pts)
+rng = StableRNG(123)
+tri = triangulate(pts; rng)
 vorn = voronoi(tri)
-vorn2 = voronoi(tri, clip=true)
+vorn2 = voronoi(tri, clip=true; rng)
 fig = Figure(fontsize = 24)
 ax1 = Axis(fig[1, 1], width = 300, height = 300, title = "Unclipped", titlealign = :left)
 voronoiplot!(ax1, vorn)
@@ -49,8 +50,8 @@ Once we have processed all of the edges of $\mathcal V$, we store the intersecti
 Let us give an example that illustrates this part of the procedure clearly.
 
 ```@setup vornclip11
-tri = triangulate(pts)
-lock_convex_hull!(tri)
+tri = triangulate(pts; rng)
+lock_convex_hull!(tri; rng)
 vorn = voronoi(tri, clip=false)
 edges_to_process,
 polygon_edge_queue,
@@ -75,7 +76,7 @@ e1 = deepcopy(e)
 left_edge1 = deepcopy(left_edge)
 right_edge1 = deepcopy(right_edge)
 segment_intersections1 = copy(segment_intersections)
-boundary_sites, segment_intersections, exterior_circumcenters, equal_circumcenter_mapping = DelaunayTriangulation.find_all_intersections(vorn)
+boundary_sites, segment_intersections, exterior_circumcenters, equal_circumcenter_mapping = DelaunayTriangulation.find_all_intersections(vorn; rng)
 
 
 fig = Figure(fontsize = 28)
@@ -121,10 +122,12 @@ The Sutherland-Hodgman algorithm is an algorithm for clipping a polygon (called 
 using DelaunayTriangulation
 using CairoMakie  
 using Random
-function to_rand_point_verts(___points)
-    _points = [Tuple(rand(2)) for _ in 1:500]
+using StableRNGs
+rng = StableRNG(123)
+function to_rand_point_verts(___points, rng)
+    _points = [Tuple(rand(rng, 2)) for _ in 1:500]
     _points = [_points; ___points]
-    shuffle!(_points)
+    shuffle!(rng, _points)
     vertices = identity.(indexin(___points, _points)) # identity to convert eltype from Union{Nothing, Int}
     return _points, vertices
 end
@@ -136,7 +139,7 @@ e = (4.0, -1.0)
 f = (2.0, -3.0)
 g = (-2.94, -1.32)
 points = [g, f, e, d, c, b, a] # ccw
-npoints, nvertices = to_rand_point_verts(deepcopy(points))
+npoints, nvertices = to_rand_point_verts(deepcopy(points), rng)
 h = (-2.0, 7.0)
 i = (-5.0, 6.0)
 j = (-5.0, 2.0)
@@ -145,7 +148,7 @@ k = (-4.0, -2.0)
 m = (2.0, 2.0)
 n = (1.0, 5.0)
 clip_points = [h, i, j, k, ℓ, m, n]
-nclip_points, nclip_vertices = to_rand_point_verts(deepcopy(clip_points))
+nclip_points, nclip_vertices = to_rand_point_verts(deepcopy(clip_points), rng)
 result = DelaunayTriangulation.clip_polygon(nvertices, npoints, nclip_vertices, nclip_points)
 fig = Figure()
 ax1 = Axis(fig[1, 1], width = 300, height = 300)
@@ -257,7 +260,7 @@ to_fl64tup(x) = Float64.(x)
 points = to_fl64tup.(points)
 bounding_box = (0.0, 5.0, -15.0, 15.0)
 i = 7
-tri = triangulate(points)
+tri = triangulate(points; rng)
 vorn = voronoi(tri)
 fig = Figure()
 ax = Axis(fig[1, 1], width = 300, height = 300)

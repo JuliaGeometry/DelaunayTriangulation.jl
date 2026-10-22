@@ -1,6 +1,7 @@
 using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using ..DelaunayTriangulation: Certificate
+using StableRNGs
 
 global i = [
     Certificate.Inside,
@@ -74,9 +75,10 @@ global j = [
 end
 
 @testset "Conversion" begin
+    rng = StableRNG(1)
     for _ in 1:100
-        certs = rand(i, 3)
-        k = rand(1:3)
+        certs = rand(rng, i, 3)
+        k = rand(rng, 1:3)
         @test DT.convert_certificate((-1, 0, 1)[k], certs...) == certs[k]
     end
 end

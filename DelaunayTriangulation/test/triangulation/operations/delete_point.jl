@@ -5,6 +5,7 @@ using StableRNGs
 using StaticArrays
 
 @testset verbose = true "Deleting interior nodes" begin
+    rng = StableRNG(1)
     @testset "Random point sets" begin
         for PT in subtypes(DT.AbstractPredicateKernel)
             for j in 1:5
@@ -72,11 +73,11 @@ using StaticArrays
                 end
             end
             tri = triangulate_rectangle(0, 1, 0, 1, 25, 25; delete_ghosts=false, single_boundary=true, predicates=PT())
-            add_segment!(tri, 7, 7 + 25, predicates=PT())
-            @test_throws DT.InvalidVertexDeletionError delete_point!(tri, 2, predicates=PT())
-            @test_throws DT.InvalidVertexDeletionError delete_point!(tri, 7, predicates=PT())
-            @test_throws DT.InvalidVertexDeletionError delete_point!(tri, 7 + 25, predicates=PT())
-            @test_throws DT.InvalidVertexDeletionError delete_point!(tri, -1, predicates=PT())
+            add_segment!(tri, 7, 7 + 25, predicates=PT(); rng)
+            @test_throws DT.InvalidVertexDeletionError delete_point!(tri, 2, predicates=PT(); rng)
+            @test_throws DT.InvalidVertexDeletionError delete_point!(tri, 7, predicates=PT(); rng)
+            @test_throws DT.InvalidVertexDeletionError delete_point!(tri, 7 + 25, predicates=PT(); rng)
+            @test_throws DT.InvalidVertexDeletionError delete_point!(tri, -1, predicates=PT(); rng)
         end
     end
     @testset "Lattice with multiple boundary indices" begin
@@ -147,7 +148,7 @@ end
     @test get_adjacent(tri) == get_adjacent(_tri)
     @test get_adjacent2vertex(tri) == get_adjacent2vertex(_tri)
     @test get_graph(tri) == get_graph(_tri)
-    _tri = triangulate(get_points(tri); skip_points=16, delete_ghosts=false)
+    _tri = triangulate(get_points(tri); skip_points=16, delete_ghosts=false, rng)
     DT.clear_empty_features!(_tri)
     @test DT.compare_triangle_collections(get_triangles(_tri), get_triangles(tri))
     @test get_adjacent(tri) == get_adjacent(_tri)

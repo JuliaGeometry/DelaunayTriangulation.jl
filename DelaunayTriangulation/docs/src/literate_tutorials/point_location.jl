@@ -27,7 +27,8 @@ points = [
     (5.0, 8.0), (0.0, 0.0), (2.0, 5.0), (-3.0, 1.0),
     (-2.0, -1.0), (-1.0, 4.0),
 ]
-tri = triangulate(points)
+rng = StableRNG(123)
+tri = triangulate(points; rng)
 q = (3.0, 3.0)
 fig, ax, sc = triplot(tri)
 scatter!(ax, q)
@@ -35,7 +36,7 @@ fig
 
 # The aim is to, from `tri`, find which triangle contains the point `q` shown. 
 # Using the `find_triangle` function, this is simple.
-V = find_triangle(tri, q)
+V = find_triangle(tri, q; rng)
 
 # The result means that the triangle `V` contains the point, as we can easily check:
 DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)
@@ -45,14 +46,14 @@ DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)
 # sample some number of points (defaults to $\lceil \sqrt[3]{n}\rceil$, where $n$ is the number of points),
 # and then start at the point that is closest to `q` out of those sampled, then marching along the triangulation
 # until `q` is found. This number of samples can be changed using the `m` keyword argument. For example,
-V = find_triangle(tri, q, m = 10)
+V = find_triangle(tri, q, m = 10; rng)
 @test DelaunayTriangulation.is_inside(DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)) #src
 
 # means that we get a sample of size 10, and start at whichever point is the closest.
 # (For technical reasons, this sampling is with replacement, so it is possible that the same point is sampled more than once.)
 # You could also instead specify the point to start at using the `k` keyword argument, in which case no points are sampled.
 # For example, 
-V = find_triangle(tri, q, k = 6)
+V = find_triangle(tri, q, k = 6; rng)
 @test DelaunayTriangulation.is_inside(DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)) #src
 
 # starts the algorithm at the point `6`.
@@ -68,7 +69,7 @@ scatter!(ax, q)
 fig
 
 # We obtain:
-V = find_triangle(tri, q)
+V = find_triangle(tri, q; rng)
 @test DelaunayTriangulation.is_inside(DelaunayTriangulation.point_position_relative_to_triangle(tri, V, q)) #src
 
 # See that the result is a ghost triangle `(1, 5, -1)`. As discussed in the [manual](../manual/ghost_triangles.md),

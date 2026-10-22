@@ -3,11 +3,13 @@ const DT = DelaunayTriangulation
 using CairoMakie
 using DataStructures
 using StaticArrays
+using StableRNGs
 
 @testset "lock_convex_hull" begin
+    rng = StableRNG(1)
     for _ in 1:150
-        pts = rand(2, 500)
-        tri = triangulate(pts)
+        pts = rand(rng, 2, 500)
+        tri = triangulate(pts; rng)
         tri2 = deepcopy(tri)
         idx = get_convex_hull_vertices(tri)
         bn = get_boundary_nodes(tri)
@@ -26,10 +28,10 @@ using StaticArrays
             bnn_map[e] = (bn, i)
         end
         for e in keys(bnn_map)
-            add_segment!(tri, e)
+            add_segment!(tri, e; rng)
         end
-        lock_convex_hull!(tri2)
-        tri3 = triangulate(pts; boundary_nodes = bn)
+        lock_convex_hull!(tri2; rng)
+        tri3 = triangulate(pts; boundary_nodes = bn, rng)
         @test tri2.boundary_nodes == tri3.boundary_nodes == bn
         @test tri2.ghost_vertex_map == tri3.ghost_vertex_map == bn_map
         @test tri2.boundary_edge_map == tri3.boundary_edge_map == bnn_map
@@ -42,23 +44,24 @@ using StaticArrays
     p3 = (1.0, 1.0)
     p4 = (0.0, 1.0)
     pts = [p1, p2, p3, p4]
-    tri = triangulate(pts; boundary_nodes = [1, 2, 3, 4, 1])
-    @test_throws ArgumentError("Cannot lock the convex hull of a triangulation with boundary nodes.") lock_convex_hull!(tri)
+    tri = triangulate(pts; boundary_nodes = [1, 2, 3, 4, 1], rng)
+    @test_throws ArgumentError("Cannot lock the convex hull of a triangulation with boundary nodes.") lock_convex_hull!(tri; rng)
 end
 
 @testset "unlock_convex_hull" begin
+    rng = StableRNG(2)
     p1 = (0.0, 0.0)
     p2 = (1.0, 0.0)
     p3 = (1.0, 1.0)
     p4 = (0.0, 1.0)
     pts = [p1, p2, p3, p4]
-    tri = triangulate(pts)
-    add_segment!(tri, 1, 3)
-    add_segment!(tri, 3, 1)
+    tri = triangulate(pts; rng)
+    add_segment!(tri, 1, 3; rng)
+    add_segment!(tri, 3, 1; rng)
     @test tri.interior_segments ≠ Set(((1, 3), (3, 1)))
     @test tri.all_segments ≠ Set(((1, 3), (3, 1)))
     tri2 = deepcopy(tri)
-    lock_convex_hull!(tri)
+    lock_convex_hull!(tri; rng)
     @test tri.interior_segments == Set(((3, 1),)) || tri.interior_segments == Set(((1, 3),))
     unlock_convex_hull!(tri)
     @test tri.interior_segments == tri2.interior_segments
@@ -71,17 +74,18 @@ end
     @test isempty(DT.get_boundary_vertex_to_ghost(tri))
     @test isempty(DT.get_boundary_vertex_to_ghost(tri2))
     @test_throws ArgumentError("Cannot unlock the convex hull of a triangulation without boundary nodes.") unlock_convex_hull!(tri2)
-    lock_convex_hull!(tri)
+    lock_convex_hull!(tri; rng)
     push!(tri.convex_hull.vertices, 17)
     tri.convex_hull.vertices[1] = 17 # need to be circular
     @test_throws ArgumentError("Cannot unlock the convex hull of a triangulation with boundary nodes that are not the convex hull. If the boundary nodes have been split, consider setting reconstruct=true.") unlock_convex_hull!(tri)
 end
 
 @testset "Fixing interior segments that happen to be on the convex hull" begin
+    rng = StableRNG(3)
     for _ in 1:10
         points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.25, 0.5), (0.75, 0.5)]
-        tri = triangulate(points; segments = Set([(1, 2), (2, 3), (5, 6)]))
-        lock_convex_hull!(tri)
+        tri = triangulate(points; segments = Set([(1, 2), (2, 3), (5, 6)]), rng)
+        lock_convex_hull!(tri; rng)
         @test DT.compare_unoriented_edge_collections(get_interior_segments(tri), Set([(5, 6)]))
         @test DT.compare_unoriented_edge_collections(tri.cache.interior_segments_on_hull, Set([(1, 2), (2, 3)]))
         push!(points, (0.25, 0.0))
@@ -100,8 +104,8 @@ end
         validate_statistics(tri)
 
         points = [(0.0, 0.0), (9.0, 0.0), (9.0, 7.0)]
-        tri = triangulate(points; segments = Set([(1, 2), (1, 3)]))
-        lock_convex_hull!(tri)
+        tri = triangulate(points; segments = Set([(1, 2), (1, 3)]), rng)
+        lock_convex_hull!(tri; rng)
         orig_tri = deepcopy(tri)
         orig_points = copy(orig_tri.points)
         push!(points, (4.5, 0.0))
@@ -109,6 +113,6 @@ end
         @test validate_triangulation(tri)
         @test collect(get_point(tri, 4)) ≈ [4.5, 0.0]
         unlock_convex_hull!(tri; reconstruct = true)
-        @test tri == triangulate([orig_points; get_point(tri, 4)]; segments = Set([(1, 4), (4, 2), (1, 3)]))
+        @test tri == triangulate([orig_points; get_point(tri, 4)]; segments = Set([(1, 4), (4, 2), (1, 3)]), rng)
     end
 end

@@ -40,7 +40,8 @@ global T = (u, v, w)
 end
 
 @testset "Adding to empty triangulation, ghost edges included" begin
-    pts = rand(2, 500)
+    rng = StableRNG(1)
+    pts = rand(rng, 2, 500)
     u, v, w = 37, 38, 73
     pts[:, u] .= 0.0
     pts[:, v] .= [1.0, 0.0]

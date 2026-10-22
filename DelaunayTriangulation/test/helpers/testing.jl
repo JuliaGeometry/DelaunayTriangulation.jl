@@ -80,4 +80,4 @@ function ⪧(x::DT.CatmullRomSplineSegment, y::DT.CatmullRomSplineSegment; kwarg
     return true
 end
 
-rt() = rand((DT.FastKernel(), DT.ExactKernel(), DT.AdaptiveKernel()))
+rt(rng) = rand(rng, (DT.FastKernel(), DT.ExactKernel(), DT.AdaptiveKernel())) # a random predicate kernel

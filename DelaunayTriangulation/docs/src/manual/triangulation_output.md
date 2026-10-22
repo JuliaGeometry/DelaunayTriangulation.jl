@@ -299,7 +299,7 @@ get_boundary_curves(tri)[3]
 is the actual `BSpline` that we have provided. The curves are stored in the same order as they were provided, so that the `j`th curve is associated with the `j`th section (i.e., the ghost vertex `-j`) of the boundary. The parts of the boundary that are a sequence of straight lines between vertices are represented by a `PiecewiseLinear` curve. For a triangulation that is not curve-bounded, the output is an empty `Tuple`. For example:
 
 ```@example curvout
-tri2 = triangulate(rand(2, 50))
+tri2 = triangulate(rand(rng, 2, 50); rng)
 get_boundary_curves(tri2)
 ```
 
@@ -349,7 +349,7 @@ get_boundary_edge_map(tri4)
 When there is no constrained boundary, the boundary edge map will be empty:
 
 ```@example curvout
-tri5 = triangulate(rand(2, 50))
+tri5 = triangulate(rand(rng, 2, 50); rng)
 get_boundary_edge_map(tri5)
 ```
 

@@ -9,6 +9,7 @@ using Test
 using StructEquality
 using StableRNGs
 
+rng = StableRNG(1)
 for _ in 1:20 # Run many times to make sure the segfault is gone
     # Examples:
     #   I: A piecewise linear contiguous section.
@@ -116,7 +117,7 @@ for _ in 1:20 # Run many times to make sure the segfault is gone
     points_XI = [(-2.0, 0.0), (0.0, 0.0), (2.0, 0.0), (-2.0, -5.0), (2.0, -5.0), (2.0, -1 / 10), (-2.0, -1 / 10), (-1.0, -3.0), (0.0, -4.0), (0.0, -2.3), (-0.5, -3.5), (0.9, -3.0)]
 
     @testset "Points" begin
-        points = rand(2, 500)
+        points = rand(rng, 2, 500)
         hierarchy = DT.construct_polygon_hierarchy(points)
         @test DT.get_polygon_orientations(hierarchy) ⊢ BitVector([true])
         @test DT.get_polygon_orientation(hierarchy, 1)

@@ -7,25 +7,26 @@ const ASSETS = joinpath(@__DIR__, "..", "..", "..", "assets", "test", "data_stru
 
 
 @testset "Computing statistics" begin
+    rng = StableRNG(1)
     _x, _y = complicated_geometry()
     x = _x
     y = _y
     boundary_nodes, points = convert_boundary_points_to_indices(x, y)
-    tri_1 = triangulate(points; boundary_nodes, delete_ghosts = false)
+    tri_1 = triangulate(points; boundary_nodes, delete_ghosts = false, rng)
     A = get_area(tri_1) # 2356
-    refine!(tri_1; max_area = 1.0e-3A, use_circumcenter = true)
+    refine!(tri_1; max_area = 1.0e-3A, use_circumcenter = true, rng)
     boundary_nodes, points = convert_boundary_points_to_indices(x[1], y[1])
-    tri_2 = triangulate(points; boundary_nodes, delete_ghosts = false)
+    tri_2 = triangulate(points; boundary_nodes, delete_ghosts = false, rng)
     A = get_area(tri_2)
-    refine!(tri_2; max_area = 1.0e-3A, use_circumcenter = true)
+    refine!(tri_2; max_area = 1.0e-3A, use_circumcenter = true, rng)
     boundary_nodes, points = convert_boundary_points_to_indices([0.0, 2.0, 2.0, 0.0, 0.0], [0.0, 0.0, 2.0, 2.0, 0.0])
-    tri_3 = triangulate(points; boundary_nodes, delete_ghosts = false)
+    tri_3 = triangulate(points; boundary_nodes, delete_ghosts = false, rng)
     A = get_area(tri_3)
-    refine!(tri_3; max_area = 1.0e-3A, use_circumcenter = true)
+    refine!(tri_3; max_area = 1.0e-3A, use_circumcenter = true, rng)
     boundary_nodes, points = convert_boundary_points_to_indices(reverse(reverse.(x[2])), reverse(reverse.(y[2])))
-    tri_4 = triangulate(points; boundary_nodes, delete_ghosts = false)
+    tri_4 = triangulate(points; boundary_nodes, delete_ghosts = false, rng)
     A = get_area(tri_4)
-    refine!(tri_4; max_area = 1.0e-3A, use_circumcenter = true)
+    refine!(tri_4; max_area = 1.0e-3A, use_circumcenter = true, rng)
     a, b = 0.0, 5.0
     c, d = 3.0, 7.0
     nx = 3
@@ -60,13 +61,13 @@ const ASSETS = joinpath(@__DIR__, "..", "..", "..", "assets", "test", "data_stru
         (-6.94, 7.13), (-6.0, 5.0), (-4.0, 3.0), (-2.0, 1.0), (0.0, 0.0),
     ]
     boundary_nodes, pts = convert_boundary_points_to_indices(boundary_points; existing_points = pts)
-    uncons_tri = triangulate(pts, delete_ghosts = false)
-    cons_tri = triangulate(pts; boundary_nodes, delete_ghosts = false)
-    add_point!(cons_tri, 0.0, 5.0)
-    add_segment!(cons_tri, 40, 26)
-    add_segment!(cons_tri, 39, 27)
-    add_segment!(cons_tri, 38, 28)
-    add_point!(cons_tri, -3.0, 12.0)
+    uncons_tri = triangulate(pts, delete_ghosts = false; rng)
+    cons_tri = triangulate(pts; boundary_nodes, delete_ghosts = false, rng)
+    add_point!(cons_tri, 0.0, 5.0; rng)
+    add_segment!(cons_tri, 40, 26; rng)
+    add_segment!(cons_tri, 39, 27; rng)
+    add_segment!(cons_tri, 38, 28; rng)
+    add_point!(cons_tri, -3.0, 12.0; rng)
     validate_statistics(uncons_tri)
     validate_statistics(cons_tri)
     delete_ghost_triangles!(uncons_tri)
@@ -75,13 +76,15 @@ const ASSETS = joinpath(@__DIR__, "..", "..", "..", "assets", "test", "data_stru
     validate_statistics(cons_tri)
 end
 
+rng = StableRNG(2)
 @testset "tri method for circumcenter" begin
-    tri = triangulate(rand(2, 50))
-    T = rand(get_triangles(tri))
+    tri = triangulate(rand(rng, 2, 50); rng)
+    T = rand(rng, get_triangles(tri))
     @test DT.triangle_circumcenter(tri, T) == DT.triangle_circumcenter(get_point(tri, T...)...)
 end
 
 @testset "Sinks" begin
+    rng = StableRNG(3)
     # For a lattice triangulation, the circumcenters are all on the the edges, so all triangles should be sinks.
     tri1 = triangulate_rectangle(0, 10, 0, 10, 14, 14)
     tri2 = triangulate_rectangle(0, 1, 0, 6, 250, 23)
@@ -97,7 +100,7 @@ end
 
     # Make the number of sinks makes sense 
     for _ in 1:100
-        tri = triangulate(rand(2, 50))
+        tri = triangulate(rand(rng, 2, 50); rng)
         sinks = Dict(DT.sort_triangle.(each_solid_triangle(tri)) .=> DT.triangle_sink.(Ref(tri), each_solid_triangle(tri)))
         stats = statistics(tri)
         num_sinks = count(T -> is_sink(tri, T), each_solid_triangle(tri))
@@ -183,7 +186,7 @@ end
     x = r .* (1 .+ (1 / 10) .* gθ.(θ)) .* cos.(θ)
     y = r .* (1 .+ (1 / 10) .* gθ.(θ)) .* sin.(θ)
     boundary_nodes, points = convert_boundary_points_to_indices(x, y)
-    tri = triangulate(points; boundary_nodes)
+    tri = triangulate(points; boundary_nodes, rng)
     stats = statistics(tri)
     interior_sinks = NTuple{2, Float64}[]
     for T in each_solid_triangle(tri)
@@ -198,6 +201,7 @@ end
 end
 
 @testset "triangle_offcenter" begin
+    rng = StableRNG(4)
     p, q, r = (0.0, 2.0), (0.0, 0.0), (6.0, 7.0)
     _validate_offcenter(p, q, r, 1.2)
     _validate_offcenter(p, q, r, 1.2)
@@ -215,7 +219,7 @@ end
 
     # Some random triangles
     for _ in 1:50
-        tri = triangulate(rand(2, 50))
+        tri = triangulate(rand(rng, 2, 50); rng)
         for T in each_solid_triangle(tri)
             p, q, r = get_point(tri, T...)
             _validate_offcenter(p, q, r, 1.0)
@@ -286,10 +290,11 @@ end
 end
 
 @testset "Statistics of a single triangle" begin
+    rng = StableRNG(5)
     p, q, r = (0.0, 0.0), (3.0, 0.0), (0.0, 4.0)
     @test collect(DT.triangle_lengths(p, q, r)) ≈ [3.0, 4.0, 5.0]
     @test collect(DT.triangle_angles(p, q, r)) ≈ [atan(3, 4), atan(4, 3), π / 2]
-    tri = triangulate([p, q, r])
+    tri = triangulate([p, q, r]; rng)
     stats = statistics(tri)
     T = first(each_solid_triangle(tri))
     @test DT.get_minimum_angle(stats, T) ≈ atan(3, 4)

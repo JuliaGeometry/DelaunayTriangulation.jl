@@ -8,11 +8,12 @@ using StaticArrays
 rng = StableRNG(8888)
 
 @testset "Adding a point" begin
+    rng = StableRNG(1)
     for _ in 1:150
-        pts = tuple.(rand(50), rand(50))
-        tri = DT.triangulate(pts, delete_ghosts = false, skip_points = 4:50)
+        pts = tuple.(rand(rng, 50), rand(rng, 50))
+        tri = DT.triangulate(pts, delete_ghosts = false, skip_points = 4:50; rng)
         for i in setdiff(DT.each_point_index(pts), DT.get_vertices(tri))
-            add_point!(tri, i; predicates = rt())
+            add_point!(tri, i; predicates = rt(rng), rng)
             @test validate_triangulation(tri)
         end
         @test num_solid_vertices(tri) == DT.num_points(tri)
@@ -26,7 +27,7 @@ rng = StableRNG(8888)
         n = DT.num_points(tri)
         ctr = 1
         for _ in 1:50
-            add_point!(tri, rand(), rand())
+            add_point!(tri, rand(rng), rand(rng); rng)
             @test num_solid_vertices(tri) == DT.num_points(tri) == n + ctr
             ctr += 1
         end
@@ -34,18 +35,20 @@ rng = StableRNG(8888)
 end
 
 @testset "Returning the triangle" begin
-    tri = triangulate([rand(2) for _ in 1:50])
-    V = add_point!(tri, 0.5, 0.3)
+    rng = StableRNG(2)
+    tri = triangulate([rand(rng, 2) for _ in 1:50]; rng)
+    V = add_point!(tri, 0.5, 0.3; rng)
     @test DT.is_inside(DT.point_position_relative_to_triangle(tri, V..., (0.5, 0.3)))
 end
 
 @testset "Peeking" begin
+    rng = StableRNG(3)
     for _ in 1:250
-        pts = [(rand(), rand()) for _ in 1:50]
-        tri = triangulate(pts)
+        pts = [(rand(rng), rand(rng)) for _ in 1:50]
+        tri = triangulate(pts; rng)
         _tri = deepcopy(tri)
         history = DT.InsertionEventHistory(tri)
-        add_point!(tri, 0.4, 0.4, store_event_history = Val(true), event_history = history, peek = Val(true))
+        add_point!(tri, 0.4, 0.4, store_event_history = Val(true), event_history = history, peek = Val(true); rng)
         @test DT.compare_triangle_collections(get_triangles(_tri), get_triangles(tri))
         DT.clear_empty_features!(tri)
         @test get_adjacent(tri) == get_adjacent(_tri)
@@ -67,14 +70,14 @@ end
         history = DT.InsertionEventHistory(tri)
         for (x, y) in [
                 (0.0, 0.23), (0.0, 0.8), (1.0, 1.0), (0.0, 0.0), (0.0, 1.0), (1.0, 0.0), (0.39881, 0.0), (0.5, 1.0), (0.0, 0.4), (1.0, 0.881),
-                [(0.0, rand()) for _ in 1:50]..., [(rand(), 0.0) for _ in 1:50]..., [(rand(), 1.0) for _ in 1:50]..., [(1.0, rand()) for _ in 1:50]...,
-                [(rand(), rand()) for _ in 1:500]...,
+                [(0.0, rand(rng)) for _ in 1:50]..., [(rand(rng), 0.0) for _ in 1:50]..., [(rand(rng), 1.0) for _ in 1:50]..., [(1.0, rand(rng)) for _ in 1:50]...,
+                [(rand(rng), rand(rng)) for _ in 1:500]...,
             ]
             empty!(history)
-            if rand() < 1 / 2
-                add_point!(tri, x, y, store_event_history = Val(true), event_history = history, peek = Val(true))
+            if rand(rng) < 1 / 2
+                add_point!(tri, x, y, store_event_history = Val(true), event_history = history, peek = Val(true); rng)
             else
-                add_point!(tri, (x, y), store_event_history = Val(true), event_history = history, peek = Val(true))
+                add_point!(tri, (x, y), store_event_history = Val(true), event_history = history, peek = Val(true); rng)
             end
             DT.clear_empty_features!(tri)
             @test tri == _tri
@@ -92,11 +95,12 @@ end
 end
 
 @testset "Peeking concurrency" begin
-    pts = [(rand(), rand()) for _ in 1:50]
-    tri = triangulate(pts, delete_ghosts = false)
+    rng = StableRNG(4)
+    pts = [(rand(rng), rand(rng)) for _ in 1:50]
+    tri = triangulate(pts, delete_ghosts = false; rng)
     Base.Threads.@threads for _ in 1:500
         history = DT.InsertionEventHistory(tri)
-        add_point!(tri, rand(2), store_event_history = Val(true), event_history = history, peek = Val(true))
+        add_point!(tri, rand(rng, 2), store_event_history = Val(true), event_history = history, peek = Val(true); rng)
     end
     @test DT.num_points(tri) == 50
 end

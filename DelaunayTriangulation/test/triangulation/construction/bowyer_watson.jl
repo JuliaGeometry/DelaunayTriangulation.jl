@@ -6,7 +6,8 @@ using CairoMakie
 using DataStructures
 
 @testset "Getting the correct order" begin
-    points = rand(2, 50)
+    rng = StableRNG(1)
+    points = rand(rng, 2, 50)
     randomise = false
     skip_points = ()
     IntegerType = Int
@@ -29,24 +30,26 @@ using DataStructures
 end
 
 @testset "Getting the initial triangle" begin
+    rng = StableRNG(6)
     tri = triangulate_rectangle(0.0, 10.0, 0.0, 20.0, 11, 21)
     insertion_order = collect(DT.each_point_index(tri))
     insertion_order_orig = deepcopy(insertion_order)
-    initial_triangle = DT.get_initial_triangle(tri, insertion_order, rt())
+    initial_triangle = DT.get_initial_triangle(tri, insertion_order, rt(rng))
     @test initial_triangle == (10, 11, 12)
     @test DT.is_positively_oriented(DT.triangle_orientation(tri, initial_triangle))
 end
 
 @testset "Issue #216" begin
+    rng = StableRNG(2)
     @testset "Minimal example" begin
         # Points that are all collinear have no triangulation. These four points used to give an UndefVarError for k
         # with randomise = false, and otherwise returned two triangles with zero area.
         points = [(0.0, 0.0), (1.0, 0.0), (2.0, 0.0), (3.0, 0.0)]
         for PT in subtypes(DT.AbstractPredicateKernel), randomise in (false, true)
-            @test_throws DT.CollinearPointsError triangulate(points; randomise, predicates = PT())
+            @test_throws DT.CollinearPointsError triangulate(points; randomise, predicates = PT(), rng)
         end
-        @test_throws "CollinearPointsError: All of the provided points are collinear, but triangulations require at least three points that are not collinear." triangulate(points)
-        @test_throws DT.CollinearPointsError triangulate([(Float64(i), 2.0i + 1.0) for i in 1:10000])
+        @test_throws "CollinearPointsError: All of the provided points are collinear, but triangulations require at least three points that are not collinear." triangulate(points; rng)
+        @test_throws DT.CollinearPointsError triangulate([(Float64(i), 2.0i + 1.0) for i in 1:10000]; rng)
     end
 
     @testset "Example from the issue" begin
@@ -61,7 +64,7 @@ end
             (1.0791812460476249, -5.191092609699395), (1.0791812460476249, -4.200965083042353), (1.0791812460476249, -4.8128975477132725),
         ]
         for PT in subtypes(DT.AbstractPredicateKernel), randomise in (false, true)
-            @test_throws DT.CollinearPointsError triangulate(points; randomise, predicates = PT())
+            @test_throws DT.CollinearPointsError triangulate(points; randomise, predicates = PT(), rng)
         end
     end
 
@@ -75,16 +78,17 @@ end
         end
         tri = Triangulation([(0.0, 0.0), (1.0, 0.0), (2.0, 0.0), (3.0, 0.0), (1.5, 1.0e-9)])
         insertion_order = [1, 2, 3, 4, 5]
-        initial_triangle = DT.get_initial_triangle(tri, insertion_order, rt())
+        initial_triangle = DT.get_initial_triangle(tri, insertion_order, rt(rng))
         @test DT.is_positively_oriented(DT.triangle_orientation(tri, initial_triangle))
         @test sort(insertion_order) == 1:5
     end
 end
 
 @testset "Initialising the Bowyer-Watson algorithm" begin
+    rng = StableRNG(7)
     tri = triangulate_rectangle(0.0, 10.0, 0.0, 20.0, 11, 21, delete_ghosts = false)
     _tri = DT.Triangulation(tri.points)
-    DT.initialise_bowyer_watson!(_tri, DT.each_point_index(_tri) |> collect, rt())
+    DT.initialise_bowyer_watson!(_tri, DT.each_point_index(_tri) |> collect, rt(rng))
     S = filter(!DT.is_ghost_triangle, _tri.triangles)
     u, v, w = first(S)
     BI = DT.𝒢
@@ -118,8 +122,8 @@ end
         [8.0, 3.0], [-0.6, 1.57], [3.58, 6.15]
     points = [a, b, c, d, e, f, g]
     rng = StableRNG(8881)
-    tri = DT.triangulate(points; rng, predicates = rt(), delete_ghosts = false)
-    @inferred DT.triangulate(points; predicates = rt(), rng, delete_ghosts = false)
+    tri = DT.triangulate(points; rng, predicates = rt(rng), delete_ghosts = false)
+    @inferred DT.triangulate(points; predicates = rt(rng), rng, delete_ghosts = false)
     BI = DT.𝒢
     @test get_triangles(tri) == Set{NTuple{3, Int}}(
         (
@@ -141,25 +145,28 @@ end
 end
 
 @testset "A random triangulation" begin
+    rng = StableRNG(3)
     for PT in subtypes(DT.AbstractPredicateKernel)
-        pts = randn(2, 500)
-        tri = DT.triangulate(pts; predicates = PT(), delete_ghosts = false)
+        pts = randn(rng, 2, 500)
+        tri = DT.triangulate(pts; predicates = PT(), delete_ghosts = false, rng)
         @test validate_triangulation(tri; predicates = PT())
     end
 end
 
 @testset "Lots of collinearity" begin
+    rng = StableRNG(4)
     for PT in (DT.ExactKernel, DT.AdaptiveKernel)
         _tri = triangulate_rectangle(-3.0, 2.0, 5.0, 17.3, 23, 57; single_boundary = true)
         @test validate_triangulation(_tri; predicates = PT())
         for _ in 1:25
-            tri = DT.triangulate(_tri.points; predicates = PT())
+            tri = DT.triangulate(_tri.points; predicates = PT(), rng)
             @test validate_triangulation(tri; predicates = PT())
         end
     end
 end
 
 @testset "A detailed example" begin
+    rng = StableRNG(5)
     for PT in subtypes(DT.AbstractPredicateKernel)
         for _ in 1:100
             T = Set{NTuple{3, Int}}(
@@ -422,7 +429,7 @@ end
             j = [1.5, 3.0]
             pts = [a, b, c, d, e, f, g, h, i, j]
             ch = DT.ConvexHull(pts, [1, 2, 9, 7, 4, 5, 1])
-            tri = DT.triangulate(pts; delete_ghosts = false, predicates = PT())
+            tri = DT.triangulate(pts; delete_ghosts = false, predicates = PT(), rng)
             @test DT.compare_triangle_collections(T, get_triangles(tri)) &&
                 get_adjacent(tri) == adj &&
                 get_adjacent2vertex(tri) == adj2v &&
@@ -448,7 +455,7 @@ end
         i = [0.0, 0.5]
         j = [1.5, 3.0]
         pts = [a, b, c, d, e, f, g, h, i, j]
-        tri = DT.triangulate(pts; delete_ghosts = false, predicates = PT())
+        tri = DT.triangulate(pts; delete_ghosts = false, predicates = PT(), rng)
         @test validate_triangulation(tri; predicates = PT())
     end
 end

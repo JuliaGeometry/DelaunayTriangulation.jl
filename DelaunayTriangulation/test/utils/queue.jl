@@ -1,5 +1,6 @@
 using Test, DataStructures
 using ..DelaunayTriangulation
+using StableRNGs
 const DT = DelaunayTriangulation
 queue = DT.Queue{Float64}()
 @test isempty(queue)
@@ -8,8 +9,9 @@ queue = DT.Queue{Float64}()
 ds_queue = DataStructures.Queue{Float64}()
 els = Float64[]
 ds_els = Float64[]
+rng = StableRNG(1)
 for k in 1:100
-    r = randn()
+    r = randn(rng)
     push!(queue, r)
     push!(ds_queue, r)
 end
@@ -21,7 +23,8 @@ end
 @test els == ds_els
 
 queue = DT.Queue{Int}()
-points = rand(2, 50)
+rng = StableRNG(2)
+points = rand(rng, 2, 50)
 DT.enqueue_all!(queue, DT.each_point_index(points))
 @test queue.data == 1:50
 

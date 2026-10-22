@@ -1,6 +1,7 @@
 using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using DataStructures
+using StableRNGs
 
 @testset "Constructing empty graphs" begin
     g1 = DT.Graph{Int64}()
@@ -154,7 +155,8 @@ end
 end
 
 @testset "empty!" begin
-    tri = triangulate(rand(2, 50))
+    rng = StableRNG(1)
+    tri = triangulate(rand(rng, 2, 50); rng)
     graph = get_graph(tri)
     @test !isempty(get_neighbours(graph))
     @test !isempty(DT.get_edges(graph))
@@ -166,7 +168,8 @@ end
 end
 
 @testset "copy/deepcopy" begin
-    tri = triangulate(rand(2, 50))
+    rng = StableRNG(2)
+    tri = triangulate(rand(rng, 2, 50); rng)
     graph = get_graph(tri)
     graph2 = copy(graph)
     @test graph == graph2 && !(graph === graph2)

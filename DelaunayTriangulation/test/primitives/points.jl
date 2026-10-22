@@ -3,6 +3,7 @@ const DT = DelaunayTriangulation
 using Test
 using StaticArrays
 using StatsBase
+using StableRNGs
 import GeometryBasics: Point2f
 
 global p1 = [1.3, 2.5]
@@ -34,6 +35,7 @@ global pts3 = [2.0 1.7 -1.0; 3.5 23.3 0.0]
 global pts4 = ((2.0, 3.5), (1.7, 23.3), (-1.0, 0.0))
 
 @testset "Collection of points" begin
+    rng = StableRNG(1)
     @testset "Getting points" begin
         for pts in (pts1, pts2, pts3, pts4)
             @test DT.getpoint(pts, 1) == (2.0, 3.5)
@@ -134,14 +136,14 @@ global pts4 = ((2.0, 3.5), (1.7, 23.3), (-1.0, 0.0))
 
     @testset "mean_points" begin
         for _ in 1:500
-            points = [(rand(), rand()) for _ in 1:500]
+            points = [(rand(rng), rand(rng)) for _ in 1:500]
             px = first.(points)
             py = last.(points)
             cx = mean(px)
             cy = mean(py)
             _cx, _cy = DT.mean_points(points)
             @test cx ≈ _cx && cy ≈ _cy
-            verts = rand(1:500, 50)
+            verts = rand(rng, 1:500, 50)
             unique!(verts)
             cx = mean(px[verts])
             cy = mean(py[verts])
@@ -178,7 +180,7 @@ global pts4 = ((2.0, 3.5), (1.7, 23.3), (-1.0, 0.0))
         DT.set_point!(points, 2, 3.0, 4.0)
         @test points == [Point2f(2.0, 10.0), Point2f(3.0, 4.0)]
 
-        points = rand(3, 50)
+        points = rand(rng, 3, 50)
         _points = copy(points)
         DT.set_point!(points, 7, 3.0, 4.0)
         @test points[:, 7] == [3.0, 4.0, _points[3, 7]]
@@ -186,9 +188,10 @@ global pts4 = ((2.0, 3.5), (1.7, 23.3), (-1.0, 0.0))
 end
 
 @testset "find_point_index" begin
+    rng = StableRNG(2)
     points1 = [(1.0, 2.0), (5.0, 9.0), (3.0, 4.0)]
     points2 = [1.0 5.0 3.0; 2.0 9.0 4.0]
-    points3 = rand(2, 75)
+    points3 = rand(rng, 2, 75)
     points4 = [SVector{2,Float32}((1.0, 2.0)), SVector{2,Float32}((5.0, 9.0)), SVector{2,Float32}((3.0, 4.0))]
     points5 = [Point2f(1.0, 2.0), Point2f(5.0, 9.0), Point2f(3.0, 4.0)]
     points6 = [Float32[1.0, 2.0], Float32[5.0, 9.0], Float32[3.0, 4.0]]
@@ -211,18 +214,19 @@ end
     @test DT.find_point_index(points6, 5.0, 9.0) == 2
     @test DT.find_point_index(points6, 3.0, 4.0) == 3
     for _ in 1:1000
-        @test DT.find_point_index(points1, rand(2)...) == DT.∅
-        @test DT.find_point_index(points2, rand(2)...) == DT.∅
-        @test DT.find_point_index(points3, rand(2)...) == DT.∅
-        @test DT.find_point_index(points4, rand(2)...) == DT.∅
-        @test DT.find_point_index(points5, rand(2)...) == DT.∅
-        @test DT.find_point_index(points6, rand(2)...) == DT.∅
-        @test DT.find_point_index(points1, rand(2)) == DT.∅
+        @test DT.find_point_index(points1, rand(rng, 2)...) == DT.∅
+        @test DT.find_point_index(points2, rand(rng, 2)...) == DT.∅
+        @test DT.find_point_index(points3, rand(rng, 2)...) == DT.∅
+        @test DT.find_point_index(points4, rand(rng, 2)...) == DT.∅
+        @test DT.find_point_index(points5, rand(rng, 2)...) == DT.∅
+        @test DT.find_point_index(points6, rand(rng, 2)...) == DT.∅
+        @test DT.find_point_index(points1, rand(rng, 2)) == DT.∅
     end
 end
 
 @testset "find_duplicate_points" begin
-    points = rand(2, 50)
+    rng = StableRNG(3)
+    points = rand(rng, 2, 50)
     dict = DT.find_duplicate_points(points)
     @test isempty(dict)
     points = [
@@ -295,11 +299,12 @@ end
 end
 
 @testset "is_planar" begin
-    @test DT.is_planar(rand(2, 50))
+    rng = StableRNG(4)
+    @test DT.is_planar(rand(rng, 2, 50))
     @test DT.is_planar([(1.0, 2.0), (2.0, 3.0), (3.0, 4.0)])
     @test DT.is_planar([SVector{2,Float64}((1.0, 2.0)), SVector{2,Float64}((2.0, 3.0)), SVector{2,Float64}((3.0, 4.0))])
     @test !DT.is_planar([(1.0, 2.0, 3.0), (2.0, 3.0, 4.0), (3.0, 4.0, 5.0)])
-    @test !DT.is_planar(rand(3, 50))
+    @test !DT.is_planar(rand(rng, 3, 50))
     @test !DT.is_planar([SVector{3,Float64}((1.0, 2.0, 3.0)), SVector{3,Float64}((2.0, 3.0, 4.0)), SVector{3,Float64}((3.0, 4.0, 5.0))])
 end
 

@@ -40,7 +40,7 @@ fig, ax, sc = triplot(tri)
 lines!(ax, [get_point(tri, e...)...], color = :blue, linewidth = 4)
 history = DelaunayTriangulation.PointLocationHistory{NTuple{3,Int},NTuple{2,Int},Int}()
 q = get_point(tri, 7)
-find_triangle(tri, q; k = 2, history, store_history = Val(true))
+find_triangle(tri, q; k = 2, history, store_history = Val(true), rng)
 lines!(ax, [get_point(tri, 2, history.left_vertices..., 7)...], color = :red, linewidth = 4)
 lines!(ax, [get_point(tri, 2, history.right_vertices..., 7)...], color = :green, linewidth = 4)
 for T in history.triangles
@@ -124,7 +124,7 @@ r = (-4.82, 1.0)
 points = [o, p, n, q, m, r]
 boundary_nodes = [[[h, g, f, e, d, c, b, a, i, h]], [[j, l, k, j]]]
 boundary_nodes, points = convert_boundary_points_to_indices(boundary_nodes; existing_points = points)
-tri = triangulate(points; boundary_nodes, delete_holes = false)
+tri = triangulate(points; boundary_nodes, delete_holes = false, rng)
 fig = Figure()
 ax = Axis(fig[1, 1], width = 300, height = 300, title = "Triangulation", titlealign = :left)
 triplot!(ax, tri, show_points = true)

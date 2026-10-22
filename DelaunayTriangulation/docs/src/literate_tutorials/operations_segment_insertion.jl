@@ -4,6 +4,7 @@
 # This tutorial shows how we can add segments into a triangulation. First, load the packages we need:
 using DelaunayTriangulation
 using CairoMakie
+using StableRNGs # for reproducibility
 using ReferenceTests #src
 using Test #src
 fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures") #src
@@ -13,7 +14,8 @@ points = [
     (0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0),
     (0.9, 0.9), (0.5, 0.5), (0.2, 0.5), (0.5, 0.8),
 ]
-tri = triangulate(points)
+rng = StableRNG(123)
+tri = triangulate(points; rng)
 fig, ax, sc = triplot(tri)
 fig
 @test_reference reference_path(fig_path, "triangulation_operations_8.png") fig #src
@@ -21,7 +23,7 @@ fig
 # To add a segment, we use [`add_segment!`](@ref), providing the vertices for the points 
 # that a segment should be added between. Let us add a segment between `(0.0, 0.0)`
 # and `(1.0, 1.0)`, which corresponds to vertices `1` and `3`.
-add_segment!(tri, 1, 3)
+add_segment!(tri, 1, 3; rng)
 fig, ax, sc = triplot(tri, show_constrained_edges = true)
 fig
 @test_reference reference_path(fig_path, "triangulation_operations_9.png") fig #src
@@ -36,7 +38,7 @@ get_interior_segments(tri)
 # segments. 
 
 # Now we add a segment that was not already there. 
-add_segment!(tri, 1, 8)
+add_segment!(tri, 1, 8; rng)
 fig, ax, sc = triplot(tri, show_constrained_edges = true)
 fig
 @test_reference reference_path(fig_path, "triangulation_operations_10.png") fig #src
@@ -44,7 +46,7 @@ fig
 # Currently, the segments that you add must not intersect at an angle (they can be 
 # collinear with other edges as we have demonstrated above). To see what happens 
 # if we do this:
-add_segment!(tri, 8, 2)
+add_segment!(tri, 8, 2; rng)
 fig, ax, sc = triplot(tri)
 fig
 @test_reference reference_path(fig_path, "triangulation_operations_11.png") fig #src

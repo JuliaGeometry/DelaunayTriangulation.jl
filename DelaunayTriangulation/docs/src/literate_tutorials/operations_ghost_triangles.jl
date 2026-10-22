@@ -8,13 +8,15 @@
 # of the current triangulation. 
 using DelaunayTriangulation
 using CairoMakie
+using StableRNGs # for reproducibility
 using ReferenceTests #src
 using Test #src
 fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures") #src
 
 # Let us take an example triangulation. 
 points = [(-1.0, -1.0), (1.0, -1.0), (0.0, 1.0)]
-tri = triangulate(points)
+rng = StableRNG(123)
+tri = triangulate(points; rng)
 
 #-
 fig, ax, sc = triplot(tri, show_ghost_edges = true)

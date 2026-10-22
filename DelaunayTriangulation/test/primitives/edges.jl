@@ -3,6 +3,7 @@ const DT = DelaunayTriangulation
 using Test
 using StaticArraysCore
 using Random
+using StableRNGs
 
 global i = 17
 global j = 5
@@ -56,6 +57,7 @@ global es3 = Set{typeof(e3)}(
 )
 
 @testset "Collection of edges" begin
+    rng = StableRNG(1)
     @testset "Getting the type of edges in a collection" begin
         for es in (es1, es2, es3)
             F = eltype(es)
@@ -129,12 +131,13 @@ global es3 = Set{typeof(e3)}(
     @testset "Getting a random edge from a collection" begin
         for es in (es1, es2, es3)
             local i
-            i = rand(1:29991)
+            i = rand(rng, 1:29991)
             Random.seed!(i)
             u = rand(es)
             Random.seed!(i)
             v = DT.random_edge(es)
             @test u == v
+            @test DT.random_edge(StableRNG(i), es) == rand(StableRNG(i), es)
         end
     end
 end

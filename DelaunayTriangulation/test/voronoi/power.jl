@@ -11,6 +11,7 @@ using LinearAlgebra
 using GeometryBasics
 
 @testset "Simple example" begin
+    rng = StableRNG(1)
     for PT in subtypes(DT.AbstractPredicateKernel)
         for _ in 1:10
             A = (-1.0, 7.0)
@@ -22,8 +23,8 @@ using GeometryBasics
             G = (-3.0, 5.0)
             points = [A, B, C, D, E, F, G]
             weights = [0.0, 0.1, 0.2, -2.0, 17.0, 0.9, 1.5]
-            tri = triangulate(points; weights, randomise=false, predicates=PT())
-            vorn = voronoi(tri)
+            tri = triangulate(points; weights, randomise=false, predicates=PT(), rng)
+            vorn = voronoi(tri; rng)
             @test DT.is_weighted(vorn)
             for (i, p) in DT.get_generators(vorn)
                 @test get_point(tri, i) == get_generator(vorn, i) == p
@@ -78,6 +79,7 @@ using GeometryBasics
 end
 
 @testset "get_nearest_neighbour" begin
+    rng = StableRNG(2)
     for PT in subtypes(DT.AbstractPredicateKernel)
         A = (-1.0, 7.0)
         B = (4.0, 4.0)
@@ -88,11 +90,11 @@ end
         G = (-3.0, 5.0)
         points = [A, B, C, D, E, F, G]
         weights = [0.0, 0.1, 0.2, -2.0, 17.0, 0.9, 1.5]
-        tri = triangulate(points; weights, randomise=false, predicates=PT())
-        vorn = voronoi(tri)
+        tri = triangulate(points; weights, randomise=false, predicates=PT(), rng)
+        vorn = voronoi(tri; rng)
         bbox = (-20.0, 20.0, -20.0, 20.0)
-        randx = rand(100000) * 40 .- 20
-        randy = rand(100000) * 40 .- 20
+        randx = rand(rng, 100000) * 40 .- 20
+        randy = rand(rng, 100000) * 40 .- 20
         randpts = tuple.(randx, randy)
         neighs = [get_nearest_neighbour(vorn, q) for q in randpts]
         for i in each_polygon_index(vorn)
@@ -112,6 +114,7 @@ end
 end
 
 @testset "Clip" begin
+    rng = StableRNG(3)
     A = (-1.0, 7.0)
     B = (4.0, 4.0)
     C = (-2.0, -1.0)
@@ -121,8 +124,8 @@ end
     G = (-3.0, 5.0)
     points = [A, B, C, D, E, F, G]
     weights = [0.0, 0.1, 0.2, -12.0, 17.0, 6.9, 1.5]
-    tri = triangulate(points; weights, randomise=false)
-    vorn = voronoi(tri, clip=true)
+    tri = triangulate(points; weights, randomise=false, rng)
+    vorn = voronoi(tri, clip=true; rng)
     Cs = [get_polygon_coordinates(vorn, i) for i in 1:7]
     @test !DT.has_polygon(vorn, 4)
     Cs1 = [
@@ -192,6 +195,7 @@ end
 end
 
 @testset "A case where no segments of any tile intersect the convex hull" begin
+    rng = StableRNG(4)
     a = (3.0, 3.0)
     b = (0.0, 3.0)
     c = (0.0, 0.0)
@@ -199,8 +203,8 @@ end
     e = (1.0, 1.5)
     pts = [a, b, c, d, e]
     weights = [0.2, -3.0, 0.0, 1.7, 17.0]
-    tri = triangulate(pts; weights, randomise=false)
-    vorn = voronoi(tri, clip=true)
+    tri = triangulate(pts; weights, randomise=false, rng)
+    vorn = voronoi(tri, clip=true; rng)
     @test validate_tessellation(vorn)
     @test isempty(DT.get_unbounded_polygons(vorn))
     @test get_adjacent(vorn, 7, 8) ==
@@ -215,15 +219,17 @@ end
 end
 
 @testset "Single triangle" begin
+    rng = StableRNG(5)
     points = [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]
     weights = [-1.0, 0.0, 1.0]
-    tri = triangulate(points; weights, randomise=false)
-    vorn = voronoi(tri, clip=true)
+    tri = triangulate(points; weights, randomise=false, rng)
+    vorn = voronoi(tri, clip=true; rng)
     @test validate_tessellation(vorn)
     @test sort(collect.(vorn.polygon_points)) ≈ sort([[0.0, -0.5], [1.0, 0.0], [0.75, 0.25], [0.5, 0.0], [0.0, 1.0], [0.0, 0.0]])
 end
 
 @testset "A previously broken example with a non-boundary generator's intersecting edges not being previously detected" begin
+    rng = StableRNG(6)
     for _ in 1:1000
         a = (0.0, 0.0)
         b = (6.0, 0.0)
@@ -245,8 +251,8 @@ end
             5.716293846261364
         ]
         PT = AdaptiveKernel
-        tri = triangulate(pts; weights)
-        vorn = voronoi(tri, predicates=PT(), clip=true)
+        tri = triangulate(pts; weights, rng)
+        vorn = voronoi(tri, predicates=PT(), clip=true; rng)
         @test validate_tessellation(vorn)
         orig_pt = [
             (3.2942423167709074, 0.2669283425828489)
@@ -294,7 +300,7 @@ end
     weights = 10randn(rng, n)
     tri = triangulate(pts; weights, rng)
     PT = AdaptiveKernel
-    vorn = voronoi(tri, clip=true, predicates=PT())
+    vorn = voronoi(tri, clip=true, predicates=PT(); rng)
     @test sort(vorn.polygon_points) ⪧ sort([
         (-29.461464714041586, -32.54436775973904)
         (0.5358434495871474, 0.3351310497994868)
@@ -313,7 +319,7 @@ end
     weights = 10randn(rng, n)
     tri = triangulate(pts; weights, rng)
     PT = AdaptiveKernel
-    vorn = voronoi(tri, clip=true, predicates=PT())
+    vorn = voronoi(tri, clip=true, predicates=PT(); rng)
     @test validate_tessellation(vorn, predicates=PT())
     pt = [
         (0.10462050798907063, 0.4620215842278311)
@@ -335,9 +341,9 @@ end
     weights = 10randn(rng, n)
     tri = triangulate(pts; weights, rng)
     PT = AdaptiveKernel
-    vorn = voronoi(tri, predicates=PT())
+    vorn = voronoi(tri, predicates=PT(); rng)
     flag1 = validate_tessellation(vorn, predicates=PT())
-    vorn = voronoi(tri, clip=true, predicates=PT())
+    vorn = voronoi(tri, clip=true, predicates=PT(); rng)
     flag2 = validate_tessellation(vorn, predicates=PT())
     @test all((flag1, flag2))
     pt = [
@@ -361,7 +367,7 @@ end
     weights = 10randn(rng, n)
     tri = triangulate(pts; weights, rng)
     PT = AdaptiveKernel
-    vorn = voronoi(tri, clip=true, predicates=PT())
+    vorn = voronoi(tri, clip=true, predicates=PT(); rng)
     @test validate_tessellation(vorn, predicates=PT())
     pt = [
         (0.9297574334792393, 0.15491751490212047)
@@ -382,7 +388,7 @@ end
     weights = 10randn(rng, n)
     tri = triangulate(pts; weights, rng)
     PT = AdaptiveKernel
-    vorn = voronoi(tri, clip=true, predicates=PT())
+    vorn = voronoi(tri, clip=true, predicates=PT(); rng)
     @test validate_tessellation(vorn, predicates=PT())
     pt = [
         (0.04229809654442551, 0.18153429731036597)
@@ -403,6 +409,7 @@ end
 end
 
 @testset "Varying size" begin
+    rng = StableRNG(7)
     for PT in subtypes(DT.AbstractPredicateKernel)
         for n in 3:4:200
             for j in 1:15:250
@@ -410,9 +417,9 @@ end
                 pts = rand(rng, 2, n)
                 weights = 10randn(rng, n)
                 tri = triangulate(pts; weights, rng)
-                vorn = voronoi(tri, predicates=PT())
+                vorn = voronoi(tri, predicates=PT(); rng)
                 flag1 = validate_tessellation(vorn, predicates=PT())
-                vorn = voronoi(tri, clip=true, predicates=PT())
+                vorn = voronoi(tri, clip=true, predicates=PT(); rng)
                 flag2 = validate_tessellation(vorn, predicates=PT())
                 @test flag1
                 @test flag2
@@ -423,6 +430,7 @@ end
 end
 
 @testset "Generic convex clipping" begin
+    rng = StableRNG(8)
     pts = [
         0.508812 0.656662 0.785124 0.63427 0.444969 0.609253 0.0826304 0.265388 0.830807 0.658346
         0.647732 0.482994 0.809909 0.482046 0.0170022 0.821742 0.835057 0.591724 0.881006 0.97652
@@ -433,8 +441,8 @@ end
     clip_vertices = [1:(length(clip_points)); 1]
     clip_polygon = (clip_points, clip_vertices)
     weights = [6.12365, -1.50081, 0.853172, 6.57105, 0.863264, 10.1487, -5.45746, 5.78284, 4.70237, 2.69588]
-    tri = triangulate(pts; weights)
-    vorn = voronoi(tri; clip=true, clip_polygon=clip_polygon)
+    tri = triangulate(pts; weights, rng)
+    vorn = voronoi(tri; clip=true, clip_polygon=clip_polygon, rng)
     @test length(vorn.polygons) == 1
     pt = [
         (0.28013156219837776, 0.38101315174073164)
@@ -475,8 +483,8 @@ end
         1.191620421858312
         -1.7857456681807637
     ]
-    tri = triangulate(pts; weights)
-    vorn = voronoi(tri; clip=true, clip_polygon=clip_polygon)
+    tri = triangulate(pts; weights, rng)
+    vorn = voronoi(tri; clip=true, clip_polygon=clip_polygon, rng)
     @test length(vorn.polygons) == 3
     pt4 = [
         (0.33067960709356464, 0.3160690223317172)
@@ -524,6 +532,7 @@ end
 end
 
 @testset "Smoothing" begin
+    rng = StableRNG(9)
     circ = CircularArc((1/2, 0.0), (1/2, 0.0), (0.0, 0.0))
     t = LinRange(0, 1, 20)
     clip_points = circ.(t)[begin:end-1]
@@ -534,8 +543,8 @@ end
     for _ in 1:100
         points = 2randn(2, 50)
         weights = 2randn(50)
-        tri = triangulate(points; weights)
-        vorn = voronoi(tri; clip=true, clip_polygon=clip_polygon, smooth=true)
+        tri = triangulate(points; weights, rng)
+        vorn = voronoi(tri; clip=true, clip_polygon=clip_polygon, smooth=true, rng)
         @test validate_tessellation(vorn; check_area = false)
         for index in each_polygon_index(vorn)
             c = DT.get_centroid(vorn, index)

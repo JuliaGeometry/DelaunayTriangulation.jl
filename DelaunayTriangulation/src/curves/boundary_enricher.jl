@@ -859,7 +859,8 @@ end
 """
     polygonise(points, boundary_nodes, boundary_curves; n=4096)
 
-Fills out a set of points for a curve-bounded domain for use with [`PolygonHierarchy`](@ref).
+Fills out a set of points for a curve-bounded domain for use with [`PolygonHierarchy`](@ref). Each boundary edge on a curve
+is split into `n` edges, with points evenly spaced in the curve's parameter.
 
 !!! warning 
 
@@ -872,7 +873,7 @@ Fills out a set of points for a curve-bounded domain for use with [`PolygonHiera
 - `boundary_curves`: The boundary curves.
 
 # Keyword Arguments 
-- `n=4096`: The number of points to use for filling in each boundary curves.
+- `n=4096`: The number of edges that each boundary edge on a curve is split into. This must be a power of 2 (otherwise, the next highest power of 2 is used).
 
 # Output
 - `new_points`: The points defining the filled out boundaries.
@@ -886,8 +887,49 @@ Fills out a set of points for a curve-bounded domain for use with [`PolygonHiera
 function polygonise(points, boundary_nodes, boundary_curves; n=4096)
     new_points = deepcopy(points)
     new_boundary_nodes = deepcopy(boundary_nodes)
-    coarse_discretisation!(new_points, new_boundary_nodes, boundary_curves; n)
+    !is_curve_bounded(boundary_curves) && return new_points, new_boundary_nodes
+    n = max(n, 4)
+    n = !ispow2(n) ? nextpow(2, n) : n
+    if has_multiple_curves(new_boundary_nodes)
+        curve_index = 1
+        for boundary_curve_index in 1:num_curves(new_boundary_nodes)
+            curve_nodes = get_boundary_nodes(new_boundary_nodes, boundary_curve_index)
+            for section_index in 1:num_sections(curve_nodes)
+                _polygonise_section!(new_points, get_boundary_nodes(curve_nodes, section_index), boundary_curves, curve_index, n)
+                curve_index += 1
+            end
+        end
+    elseif has_multiple_sections(new_boundary_nodes)
+        for section_index in 1:num_sections(new_boundary_nodes)
+            _polygonise_section!(new_points, get_boundary_nodes(new_boundary_nodes, section_index), boundary_curves, section_index, n)
+        end
+    else
+        _polygonise_section!(new_points, new_boundary_nodes, boundary_curves, 1, n)
+    end
     return new_points, new_boundary_nodes
+end
+
+# Splits each edge of the section into n edges whose points are evenly spaced in the curve's parameter. Unlike
+# coarse_discretisation!, which splits by total variation, this only needs one get_inverse per edge of the section.
+function _polygonise_section!(points, section_nodes, boundary_curves, curve_index, n)
+    (is_piecewise_linear(boundary_curves, curve_index) || is_linear(boundary_curves, curve_index)) && return nothing
+    nn = num_boundary_edges(section_nodes)
+    t₁ = 0.0
+    j = 1
+    for _ in 1:nn
+        v = get_boundary_nodes(section_nodes, j + 1)
+        t₂ = get_inverse(boundary_curves, curve_index, get_point(points, v))
+        if iszero(t₂)
+            t₂ = 1.0 # fix for periodic curves
+        end
+        for k in 1:(n - 1)
+            push_point!(points, eval_boundary_curve(boundary_curves, curve_index, t₁ + k * (t₂ - t₁) / n))
+            insert_boundary_node!(section_nodes, (section_nodes, j + k), num_points(points))
+        end
+        t₁ = t₂
+        j += n
+    end
+    return nothing
 end
 
 """

@@ -2,6 +2,7 @@ using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using DataStructures
 using StaticArrays
+using StableRNGs
 
 
 @testset "Specific example" begin
@@ -215,6 +216,7 @@ using StaticArrays
 end
 
 @testset "complete_split_triangle_and_legalise!, also with constrained edges" begin
+    rng = StableRNG(1)
     for _ in 1:100
         tri = fixed_shewchuk_example_constrained()
         function test_fnc(tri, i, j, k)
@@ -239,7 +241,7 @@ end
         @test test_fnc(tri, 10, 17, 19)
         @test test_fnc(tri, 3, 17, 10)
         @test test_fnc(tri, 3, 2, 17)
-        add_segment!(tri, 4, 21)
+        add_segment!(tri, 4, 21; rng)
         i, j, k = 21, 9, 4
         p, q, r = get_point(tri, i, j, k)
         c = DT.triangle_centroid(p, q, r)
@@ -249,7 +251,7 @@ end
         @test validate_triangulation(tri)
         @test DT.contains_segment(tri, 4, 21)
         @test DT.edge_exists(tri, 4, 21) && DT.edge_exists(tri, 21, 4)
-        add_segment!(tri, 1, 11)
+        add_segment!(tri, 1, 11; rng)
         i, j, k = 11, 1, 9
         p, q, r = get_point(tri, i, j, k)
         c = DT.triangle_centroid(p, q, r)

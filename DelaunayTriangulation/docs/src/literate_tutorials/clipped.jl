@@ -22,7 +22,7 @@ tri = triangulate(points; rng)
 vorn = voronoi(tri)
 
 #-
-clipped_vorn = voronoi(tri, clip = true)
+clipped_vorn = voronoi(tri, clip = true; rng)
 
 # Note that the clipping has put more polygon vertices in. We compare 
 # the clipped tessellations below. 

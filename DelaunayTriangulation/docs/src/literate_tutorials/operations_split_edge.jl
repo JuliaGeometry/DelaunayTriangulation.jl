@@ -7,6 +7,7 @@
 # edge. First, let us consider the following triangulation. 
 using DelaunayTriangulation
 using CairoMakie
+using StableRNGs # for reproducibility
 using ReferenceTests #src
 using Test #src
 fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures") #src
@@ -17,7 +18,8 @@ points = [
     (1.0, 5.0),
 ]
 p = (0.0, 3.0)
-tri = triangulate(points)
+rng = StableRNG(123)
+tri = triangulate(points; rng)
 fig, ax, sc = triplot(tri)
 scatter!(ax, [p], markersize = 14)
 fig

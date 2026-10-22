@@ -13,6 +13,7 @@
 # some example point set.
 using DelaunayTriangulation
 using CairoMakie
+using StableRNGs # for reproducibility
 using ReferenceTests #src
 using Test #src
 fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures") #src
@@ -25,7 +26,8 @@ F = (5.0, 5.0)
 G = (-4.0, -3.0)
 H = (3.0, 8.0)
 points = [A, B, C, D, E, F, G, H]
-tri = triangulate(points)
+rng = StableRNG(123)
+tri = triangulate(points; rng)
 vorn = voronoi(tri)
 
 # Let us show the tessellation, and the rectangle we want to clip 

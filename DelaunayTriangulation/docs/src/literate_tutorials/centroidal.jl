@@ -16,7 +16,7 @@ fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures
 rng = StableRNG(123)
 points = 25randn(rng, 2, 500)
 tri = triangulate(points; rng)
-vorn = voronoi(tri, clip = true)
+vorn = voronoi(tri, clip = true; rng)
 
 # To now compute the centroidal tessellation, use [`centroidal_smooth`](@ref). (
 # If you want to go straight from a triangulation to a centroidal tessellation, you 

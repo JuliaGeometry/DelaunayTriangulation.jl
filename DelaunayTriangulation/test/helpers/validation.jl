@@ -217,8 +217,9 @@ function validate_statistics(tri::DT.Triangulation, stats=statistics(tri); msg="
     @test_with_log msg stats.area ≈ total_A rtol = 1.0e-6 atol = 1.0e-8
 
     ## Inference 
+    rng = StableRNG(1)
     for _ in 1:5
-        _T = rand(DT.each_solid_triangle(tri))
+        _T = rand(rng, DT.each_solid_triangle(tri))
         _p, _q, _r = @inferred DT.get_point(tri, DT.triangle_vertices(_T)...)
         _ℓmin², _ℓmed², _ℓmax² = @inferred DT.squared_triangle_lengths(_p, _q, _r)
         _ℓmin, _ℓmed, _ℓmax = sqrt(_ℓmin²), sqrt(_ℓmed²), sqrt(_ℓmax²)
@@ -579,7 +580,7 @@ function compute_φmin(tri)
     φmin = Inf
     locked = !DT.has_boundary_nodes(tri)
     if !DT.has_boundary_nodes(tri)
-        lock_convex_hull!(tri)
+        lock_convex_hull!(tri; rng=StableRNG(1))
     end
     for e in each_segment(tri)
         for η in each_segment(tri)
@@ -624,6 +625,7 @@ function compute_φmin(tri)
 end
 
 function validate_refinement(tri, args; check_conformal=true, warn=true)
+    rng = StableRNG(1) # for find_triangle
     ## Things to check:
     ##   1. All angle constraints are met, except for seditious and nestled triangles.
     ##   2. If !use_lens, the triangulation is conformal. 
@@ -658,7 +660,7 @@ function validate_refinement(tri, args; check_conformal=true, warn=true)
             minθ = min(minθ, t1, t2, t3)
             maxθ = max(maxθ, t1, t2, t3)
         end
-        V = find_triangle(tri, steiner_point; predicates=DT.ExactKernel())
+        V = find_triangle(tri, steiner_point; predicates=DT.ExactKernel(), rng)
         flag = DT.point_position_relative_to_triangle(DT.ExactKernel(), tri, V, steiner_point)
         if DT.is_on(flag) && DT.is_ghost_triangle(V)
             V = DT.replace_ghost_triangle_with_boundary_triangle(tri, V)

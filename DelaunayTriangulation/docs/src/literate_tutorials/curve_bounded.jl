@@ -184,7 +184,7 @@ fig
 # Let's now triangulate.
 rng = StableRNG(123)
 tri = triangulate(copy(points); boundary_nodes = curve, rng) # copying so that we don't mutate for the next section
-refine!(tri; max_area = 1.0e-2)
+refine!(tri; max_area = 1.0e-2, rng)
 fig, ax, sc = triplot(tri)
 fig
 @test_reference reference_path(fig_path, "triangulate_curve_bounded_ex_4.png") fig by = psnr_equality(7) #src
@@ -279,7 +279,7 @@ end
 rng = StableRNG(123)
 curve = Astroid(1000)
 tri = triangulate(NTuple{2, Float64}[]; boundary_nodes = [curve], rng)
-refine!(tri; max_area = 1.0e-2)
+refine!(tri; max_area = 1.0e-2, rng)
 fig, ax, sc = triplot(tri)
 fig
 @test_reference reference_path(fig_path, "triangulate_curve_bounded_ex_6.png") fig #src

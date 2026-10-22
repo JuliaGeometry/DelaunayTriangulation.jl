@@ -33,15 +33,16 @@ end
 end
 
 @testset "Adding and deleting points to representative coordinates" begin
+    rng = StableRNG(1)
     c = DT.RepresentativeCoordinates{Int,Float64}()
     pts = [15randn(2) for _ in 1:200]
-    foreach(p -> DT.add_point!(c, p), pts)
+    foreach(p -> DT.add_point!(c, p; rng), pts)
     mx, my = mean(pts)
     @test getx(c) ≈ mx
     @test gety(c) ≈ my
     @test DT.getn(c) == 200
 
-    foreach(p -> DT.delete_point!(c, p), pts[151:200])
+    foreach(p -> DT.delete_point!(c, p; rng), pts[151:200])
     mx, my = mean(pts[1:150])
     @test getx(c) ≈ mx
     @test gety(c) ≈ my
@@ -55,10 +56,11 @@ end
 end
 
 @testset "Representative points from a triangulation" begin
+    rng = StableRNG(2)
     x = [0.0, 1.0, 1.0, 0.0, 0.0]
     y = [0.0, 0.0, 1.0, 1.0, 0.0]
     boundary_nodes, points = convert_boundary_points_to_indices(x, y)
-    tri = triangulate(points; boundary_nodes)
+    tri = triangulate(points; boundary_nodes, rng)
     DT.compute_representative_points!(tri)
     rep = DT.get_representative_point_list(tri)
     @test rep[1].x ≈ 0.5 atol = 1.0e-12
@@ -68,7 +70,7 @@ end
     x = [[0.0, 1.0], [1.0, 1.0], [1.0, 0.0], [0.0, 0.0]]
     y = [[0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [1.0, 0.0]]
     boundary_nodes, points = convert_boundary_points_to_indices(x, y)
-    tri = triangulate(points; boundary_nodes)
+    tri = triangulate(points; boundary_nodes, rng)
     rep = DT.get_representative_point_list(tri)
     DT.compute_representative_points!(tri)
     @test rep[1].x ≈ 0.5 atol = 1.0e-12
@@ -77,9 +79,10 @@ end
 end
 
 @testset "Polylabel, representative points, and distance" begin
+    rng = StableRNG(3)
     x, y, x1, x2, x3, x4, x5, y1, y2, y3, y4, y5 = complicated_geometry()
     boundary_nodes, points = convert_boundary_points_to_indices(x, y)
-    tri = triangulate(points; boundary_nodes, delete_ghosts=false)
+    tri = triangulate(points; boundary_nodes, delete_ghosts=false, rng)
     for i in (1, 2, 3)
         local x1, y1, x2, y2, x3, y3, x4, y4, x5, y5
         if i == 3
@@ -150,10 +153,11 @@ end
 end
 
 @testset "Deleting the last point" begin
+    rng = StableRNG(4)
     c = DT.RepresentativeCoordinates(0.5, 0.25, 1)
-    DT.delete_point!(c, (0.5, 0.25))
+    DT.delete_point!(c, (0.5, 0.25); rng)
     @test DT.getx(c) == 0.0 && DT.gety(c) == 0.0 && DT.getn(c) == 0
-    DT.add_point!(c, (2.0, 3.0))
+    DT.add_point!(c, (2.0, 3.0); rng)
     @test DT.getx(c) == 2.0 && DT.gety(c) == 3.0 && DT.getn(c) == 1
 end
 

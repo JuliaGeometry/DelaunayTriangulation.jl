@@ -22,8 +22,10 @@ fig
 # This can be much faster than if we just construct the points in the 
 # lattice manually and `triangulate` those. Here's a comparison of the times. 
 using BenchmarkTools
+using StableRNGs # for reproducibility
 points = get_points(tri)
-@benchmark triangulate($points; randomise = $false) # randomise=false because points are already in lattice order, i.e. spatially sorted
+rng = StableRNG(123)
+@benchmark triangulate($points; randomise = $false, rng = $rng) # randomise=false because points are already in lattice order, i.e. spatially sorted
 
 #-
 @benchmark triangulate_rectangle($a, $b, $c, $d, $nx, $ny)

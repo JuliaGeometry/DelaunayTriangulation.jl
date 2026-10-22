@@ -31,7 +31,7 @@ clip_vertices = (1, 2, 3, 4, 1)
 clip_polygon = (clip_points, clip_vertices)
 
 # Now we simply pass the polygon into `voronoi`.
-clipped_vorn = voronoi(tri, clip = true, clip_polygon = clip_polygon)
+clipped_vorn = voronoi(tri, clip = true, clip_polygon = clip_polygon; rng)
 
 # Now let's look at the results.
 fig = Figure()
@@ -58,7 +58,7 @@ t = LinRange(0, 1, 50)
 clip_points = ellip.(t)
 clip_vertices = [1:(length(clip_points)-1); 1]
 clip_polygon = (clip_points, clip_vertices)
-clipped_vorn = voronoi(tri, clip = true, clip_polygon = clip_polygon)
+clipped_vorn = voronoi(tri, clip = true, clip_polygon = clip_polygon; rng)
 fig = Figure()
 ax1 = Axis(fig[1, 1], title = "Unclipped", width = 600, height = 400)
 ax2 = Axis(fig[1, 2], title = "Clipped", width = 600, height = 400)

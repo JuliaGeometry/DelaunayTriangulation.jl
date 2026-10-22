@@ -12,19 +12,21 @@
 # in case you want to do this for your own application.
 using DelaunayTriangulation
 using CairoMakie
+using StableRNGs # for reproducibility
 using ReferenceTests #src
 using Test #src
 fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures") #src
 
-points = rand(2, 50)
-tri = triangulate(points)
+rng = StableRNG(123)
+points = rand(rng, 2, 50)
+tri = triangulate(points; rng)
 get_boundary_nodes(tri)
 @test isempty(get_boundary_nodes(tri)) #src
 @test !DelaunayTriangulation.has_boundary_nodes(tri) #src
 
 # As you can see, the boundary nodes field is empty.
 # We can lock the convex hull using [`lock_convex_hull!`](@ref):
-lock_convex_hull!(tri)
+lock_convex_hull!(tri; rng)
 get_boundary_nodes(tri)
 @test !isempty(get_boundary_nodes(tri)) #src
 @test DelaunayTriangulation.has_boundary_nodes(tri) #src

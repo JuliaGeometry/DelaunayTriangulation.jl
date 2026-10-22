@@ -93,14 +93,14 @@ fig #hide
 
 # [^1]: This is more expensive than we need. In NaturalNeighbours.jl, we use the `peek` keyword of [`add_point!`](@ref) to avoid making any changes to the triangulation itself, and use the `InsertionEventHistory` to track all changes made.
 using DelaunayTriangulation
-function compute_envelope(tri::Triangulation, point)
+function compute_envelope(tri::Triangulation, point; rng)
     r = DelaunayTriangulation.num_points(tri)
     x, y = getxy(point)
-    add_point!(tri, x, y)
+    add_point!(tri, x, y; rng)
     envelope_vertices = DelaunayTriangulation.get_surrounding_polygon(tri, r + 1)
     push!(envelope_vertices, envelope_vertices[begin])
     envelope_points = [get_point(tri, i) for i in envelope_vertices]
-    delete_point!(tri, r + 1)
+    delete_point!(tri, r + 1; rng)
     DelaunayTriangulation.pop_point!(tri)
     return envelope_vertices, envelope_points
 end
@@ -112,13 +112,13 @@ using ElasticArrays
 rng = StableRNG(999)
 points = ElasticMatrix(randn(rng, 2, 50)) # so that the points are mutable
 tri = triangulate(points; rng)
-envelope_vertices, envelope_points = compute_envelope(tri, (0.5, 0.5))
+envelope_vertices, envelope_points = compute_envelope(tri, (0.5, 0.5); rng)
 
 fig = Figure(fontsize = 24)
 ax = Axis(fig[1, 1], width = 400, height = 400)
 triplot!(ax, tri, show_points = true)
 ax2 = Axis(fig[1, 2], width = 400, height = 400)
-add_point!(tri, 0.5, 0.5)
+add_point!(tri, 0.5, 0.5; rng)
 triplot!(ax2, tri, show_points = true)
 poly!(ax2, envelope_points, color = (:red, 0.2))
 resize_to_layout!(fig)
@@ -251,8 +251,8 @@ end
 
 # ## Evaluating the Sibsonian interpolant 
 # Now we can evaluate our Sibson interpolant. The following function does this for us. 
-function evaluate_sibson_interpolant(tri::Triangulation, z, point)
-    envelope_vertices, _ = compute_envelope(tri, point)
+function evaluate_sibson_interpolant(tri::Triangulation, z, point; rng)
+    envelope_vertices, _ = compute_envelope(tri, point; rng)
     λ = compute_sibson_coordinates(tri, envelope_vertices, point)
     if length(λ) == 1
         for i in each_solid_vertex(tri)
@@ -277,7 +277,7 @@ fig = Figure(fontsize = 24)
 ax = Axis(fig[1, 1], xlabel = L"x", ylabel = L"y", title = "True function", titlealign = :left, width = 400, height = 400)
 contourf!(ax, xx, yy, f.(xx, yy'))
 ax2 = Axis(fig[1, 2], xlabel = L"x", ylabel = L"y", title = "Interpolant", titlealign = :left, width = 400, height = 400)
-zi = [evaluate_sibson_interpolant(trit, zz, (xᵢ, yᵢ)) for xᵢ in xx, yᵢ in yy]
+zi = [evaluate_sibson_interpolant(trit, zz, (xᵢ, yᵢ); rng) for xᵢ in xx, yᵢ in yy]
 contourf!(ax2, xx, yy, zi)
 resize_to_layout!(fig)
 fig

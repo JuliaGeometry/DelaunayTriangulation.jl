@@ -16,21 +16,22 @@ using ..DelaunayTriangulation: add_weight!, get_weight, get_weights
 end
 
 @testset "get_weight" begin
-    weights = rand(10)
+    rng = StableRNG(1)
+    weights = rand(rng, 10)
     @test get_weight(weights, 1) == weights[1]
     @test get_weight(weights, 5) == weights[5]
-    tri = Triangulation(rand(2, 10); weights)
+    tri = Triangulation(rand(rng, 2, 10); weights)
     @test get_weight(tri, 1) == weights[1]
     @test get_weight(tri, 5) == weights[5]
     @test DT.get_weights(tri) == weights
-    weights = rand(Float32, 10)
+    weights = rand(rng, Float32, 10)
     @test get_weight(weights, 2) ⊢ weights[2]
-    tri = Triangulation(rand(Float32, 2, 10); weights)
+    tri = Triangulation(rand(rng, Float32, 2, 10); weights)
     @test get_weight(tri, 2) ⊢ weights[2]
     @test DT.get_weights(tri) == weights
 
-    w1 = randn(10)
-    w2 = randn(Float32, 5)
+    w1 = randn(rng, 10)
+    w2 = randn(rng, Float32, 5)
     w3 = DT.ZeroWeight()
     @test DT.get_weight(w1, 1) == w1[1]
     @test DT.get_weight(w1, ()) == 0.0
@@ -44,38 +45,41 @@ end
 end
 
 @testset "add_weight!" begin
-    weights = rand(10)
+    rng = StableRNG(2)
+    weights = rand(rng, 10)
     add_weight!(weights, 0.5)
     @test weights[11] == 1 / 2 && length(weights) == 11
-    tri = Triangulation(rand(2, 10); weights)
+    tri = Triangulation(rand(rng, 2, 10); weights)
     add_weight!(tri, 27.5)
     @test get_weight(tri, 12) == 27.5 && length(DT.get_weights(tri)) == 12
 end
 
 @testset "is_weighted" begin
-    tri = Triangulation(rand(2, 10))
+    rng = StableRNG(3)
+    tri = Triangulation(rand(rng, 2, 10))
     @test !DT.is_weighted(tri)
-    tri = Triangulation(rand(2, 10); weights=rand(10))
+    tri = Triangulation(rand(rng, 2, 10); weights=rand(rng, 10))
     @test DT.is_weighted(tri)
-    tri = Triangulation(rand(2, 10); weights=DT.ZeroWeight())
+    tri = Triangulation(rand(rng, 2, 10); weights=DT.ZeroWeight())
     @test !DT.is_weighted(tri)
-    tri = Triangulation(rand(2, 10); weights=zeros(Float32, 10))
+    tri = Triangulation(rand(rng, 2, 10); weights=zeros(Float32, 10))
     @test DT.is_weighted(tri)
 end
 
 @testset "get_lifted_point" begin
+    rng = StableRNG(4)
     for _ in 1:100
-        p, w = rand(2), rand()
+        p, w = rand(rng, 2), rand(rng)
         @test DT.get_lifted_point(p, w) == (p..., sum(p .^ 2) - w)
     end
-    weights = randn(1000)
-    points = randn(2, 1000)
+    weights = randn(rng, 1000)
+    points = randn(rng, 2, 1000)
     tri = Triangulation(points; weights)
     for i in 1:1000
         @test DT.get_lifted_point(tri, i) == (points[:, i]..., sum(points[:, i] .^ 2) .- weights[i])
         @inferred DT.get_lifted_point(tri, i)
     end
-    points = randn(Float32, 2, 1000)
+    points = randn(rng, Float32, 2, 1000)
     tri = Triangulation(points; weights)
     for i in 1:1000
         @test DT.get_lifted_point(tri, i) == (Float32.(points[:, i])..., sum(Float32.(points[:, i]) .^ 2) .- weights[i])
@@ -100,7 +104,8 @@ end
 end
 
 @testset "get_weighted_nearest_neighbour" begin
-    tri = triangulate(rand(2, 50))
+    rng = StableRNG(5)
+    tri = triangulate(rand(rng, 2, 50); rng)
     for i in 1:50
         for _ in 1:50
             j = DT.get_weighted_nearest_neighbour(tri, i)
@@ -123,15 +128,16 @@ end
 end
 
 @testset "get_distance_to_witness_plane" begin
+    rng = StableRNG(6)
     # solid triangles
     points = [(-2.6, -2.82), (0.0, 0.0), (2.11, 4.42), (1.0, 1.0)]
-    _points = [Tuple(rand(2)) for _ in 1:500]
+    _points = [Tuple(rand(rng, 2)) for _ in 1:500]
     _points[137] = points[1]
     _points[58] = points[2]
     _points[498] = points[3]
     _points[5] = points[4]
     weights = [3.7, -20.0, 9.2, 2.5]
-    _weights = rand(500)
+    _weights = rand(rng, 500)
     _weights[137] = weights[1]
     _weights[58] = weights[2]
     _weights[498] = weights[3]
@@ -160,7 +166,7 @@ end
     a, b, c = (0.0, -6.0), (6.0, 2.0), (-7.0, 7.0)
     points = [a, b, c]
     weights = zeros(4)
-    tri = triangulate(points; weights)
+    tri = triangulate(points; weights, rng)
     d = (3.18, 7.62)
     push!(points, d)
     points[4] = (7.21, 0.5)
@@ -207,6 +213,7 @@ end
 end
 
 @testset "is_submerged" begin
+    rng = StableRNG(7)
     for fi in 1:NUM_WEGT
         tri, submerged, nonsubmerged, weights = get_weighted_example(fi)
         for i in submerged
@@ -216,18 +223,19 @@ end
             @test !DT.is_submerged(tri, i)
         end
         for i in 1:DT.num_points(tri)
-            @test (DT.is_submerged(tri, i, find_triangle(tri, get_point(tri, i)); cache=DT.get_orient3_cache(tri))) == (i ∈ submerged)
+            @test (DT.is_submerged(tri, i, find_triangle(tri, get_point(tri, i); rng); cache=DT.get_orient3_cache(tri))) == (i ∈ submerged)
         end
     end
 end
 
 @testset "Weighted triangulations with identical/no weights and random sets/collinear sets" begin
+    rng = StableRNG(8)
     @testset "Triangulation with zero weights" begin
         for n in 3:150
-            points = rand(2, n)
+            points = rand(rng, 2, n)
             weights = zeros(size(points, 2))
-            tri1 = triangulate(points)
-            tri2 = triangulate(points; weights)
+            tri1 = triangulate(points; rng)
+            tri2 = triangulate(points; weights, rng)
             @test tri1 == tri2
             @test validate_triangulation(tri2)
             validate_statistics(tri2)
@@ -235,7 +243,7 @@ end
         for i in 3:10
             for j in 3:10
                 tri = triangulate_rectangle(0, 10, 0, 10, i, j)
-                tri = triangulate(get_points(tri); weights=zeros(i * j))
+                tri = triangulate(get_points(tri); weights=zeros(i * j), rng)
                 @test validate_triangulation(tri)
                 validate_statistics(tri)
             end
@@ -244,11 +252,11 @@ end
 
     @testset "Triangulation with identical weights" begin
         for n in Iterators.flatten((3:20, 25:5:250))
-            points = rand(2, n)
-            w = randn()
+            points = rand(rng, 2, n)
+            w = randn(rng)
             weights = w * ones(size(points, 2))
-            tri1 = triangulate(points)
-            tri2 = triangulate(points; weights)
+            tri1 = triangulate(points; rng)
+            tri2 = triangulate(points; weights, rng)
             @test validate_triangulation(tri2)
             @test DT.compare_triangle_collections(each_triangle(tri1), each_triangle(tri2))
             validate_statistics(tri2)
@@ -256,7 +264,7 @@ end
         for i in 3:10
             for j in 3:10
                 tri = triangulate_rectangle(0, 10, 0, 10, i, j)
-                tri = triangulate(get_points(tri); weights=10randn() * ones(i * j))
+                tri = triangulate(get_points(tri); weights=10randn() * ones(i * j), rng)
                 @test validate_triangulation(tri) # Why is this failing sometimes? Is validate not branching at weighted triangulations?
                 (i == j == 10) || validate_statistics(tri)
             end
@@ -265,10 +273,11 @@ end
 end
 
 @testset "Brute force search" begin
-    tri = triangulate(rand(2, 50))
+    rng = StableRNG(9)
+    tri = triangulate(rand(rng, 2, 50); rng)
     for i in 1:50
         V = DT.brute_force_search_enclosing_circumcircle(tri, i)
-        @test !DT.is_outside(DT.point_position_relative_to_circumcircle(tri, V, i; cache=rand() < 1 / 2 ? nothing : DT.get_incircle_cache(tri)))
+        @test !DT.is_outside(DT.point_position_relative_to_circumcircle(tri, V, i; cache=rand(rng) < 1 / 2 ? nothing : DT.get_incircle_cache(tri)))
     end
 
     for fi in 1:NUM_WEGT
@@ -285,17 +294,18 @@ end
 end
 
 @testset "Point location" begin
+    rng = StableRNG(10)
     for fi in 1:NUM_CWEGT
         tri, submerged, nonsubmerged, weights, S = get_convex_polygon_weighted_example(fi)
         for i in each_solid_vertex(tri)
-            V = find_triangle(tri, get_point(tri, i))
+            V = find_triangle(tri, get_point(tri, i); rng)
             cert = DT.point_position_relative_to_triangle(tri, V, i)
             @test DT.is_on(cert)
         end
         for V in each_solid_triangle(tri)
             p, q, r = get_point(tri, triangle_vertices(V)...)
             c = DT.triangle_centroid(p, q, r)
-            T = find_triangle(tri, c)
+            T = find_triangle(tri, c; rng)
             cert = DT.point_position_relative_to_triangle(tri, T, c)
             @test DT.is_inside(cert)
         end
@@ -303,14 +313,14 @@ end
     for fi in 1:NUM_WEGT
         tri, submerged, nonsubmerged, weights = get_weighted_example(fi)
         for i in each_solid_vertex(tri)
-            V = find_triangle(tri, get_point(tri, i))
+            V = find_triangle(tri, get_point(tri, i); rng)
             cert = DT.point_position_relative_to_triangle(tri, V, i)
             @test DT.is_on(cert)
         end
         for V in each_solid_triangle(tri)
             p, q, r = get_point(tri, triangle_vertices(V)...)
             c = DT.triangle_centroid(p, q, r)
-            T = find_triangle(tri, c)
+            T = find_triangle(tri, c; rng)
             cert = DT.point_position_relative_to_triangle(tri, T, c)
             @test DT.is_inside(cert)
         end
@@ -318,10 +328,11 @@ end
 end
 
 @testset "Convex polygons" begin
+    rng = StableRNG(11)
     for fi in 1:NUM_CWEGT
         msg = "Testing triangulation of a weighted convex polygon: $fi"
         tri, submerged, nonsubmerged, weights, S = get_convex_polygon_weighted_example(fi)
-        ctri = triangulate_convex(get_points(tri), S; weights)
+        ctri = triangulate_convex(get_points(tri), S; weights, rng)
         @test_with_log msg tri == ctri
         for v in submerged
             @test_with_log msg !DT.has_vertex(tri, v)
@@ -333,10 +344,11 @@ end
 end
 
 @testset "Random" begin
+    rng = StableRNG(12)
     for fi in 1:NUM_WEGT
         msg = "Testing triangulation of a random weighted set: $fi"
         tri, submerged, nonsubmerged, weights = get_weighted_example(fi)
-        rtri = triangulate(get_points(tri); weights)
+        rtri = triangulate(get_points(tri); weights, rng)
         @test_with_log msg tri == rtri
         for v in submerged
             @test_with_log msg !DT.has_vertex(tri, v)
@@ -349,15 +361,16 @@ end
 end
 
 @testset "add_point!" begin
+    rng = StableRNG(13)
     for fi in 1:NUM_WEGT
         msg = "Testing adding points to a weighted triangulation: $fi"
         tri, submerged, nonsubmerged, weights = get_weighted_example(fi)
         points = get_points(tri)
         vpoints = points[:, 1:3]
         vweights = weights[1:3]
-        rtri = triangulate(vpoints; weights=vweights)
+        rtri = triangulate(vpoints; weights=vweights, rng)
         for j in 4:size(points, 2)
-            add_point!(rtri, points[:, j]..., weights[j])
+            add_point!(rtri, points[:, j]..., weights[j]; rng)
         end
         convex_hull!(rtri)
         DT.compute_representative_points!(rtri)
@@ -368,10 +381,11 @@ end
 end
 
 @testset "retriangulate" begin
+    rng = StableRNG(14)
     for fi in 1:NUM_WEGT
         msg = "Testing retriangulation of a weighted triangulation: $fi"
         tri, submerged, nonsubmerged, weights = get_weighted_example(fi)
-        rtri = retriangulate(tri)
+        rtri = retriangulate(tri; rng)
         @test_with_log msg tri == rtri
         for v in submerged
             @test_with_log msg !DT.has_vertex(tri, v)
@@ -382,10 +396,11 @@ end
 end
 
 @testset "A case where all lifted points lie on a plane" begin
+    rng = StableRNG(15)
     for _ in 1:10000
         points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (1 / 2, 1 / 2)]
         weights = [0.0, 0.0, 0.0, 0.0, -0.5]
-        tri = triangulate(points; weights)
+        tri = triangulate(points; weights, rng)
         @test DT.validate_triangulation(tri)
     end
 end

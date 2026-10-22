@@ -1,6 +1,7 @@
 using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using CairoMakie
+using StableRNGs
 
 
 @testset "Shewchuk Example: A small example with some collinearities" begin
@@ -280,6 +281,7 @@ end
 end
 
 @testset "A previously broken example" begin
+    rng = StableRNG(1)
     for PT in (DT.ExactKernel, DT.AdaptiveKernel)
         for m in 1:100
             a = -0.1
@@ -289,17 +291,17 @@ end
             nx = 25
             ny = 25
             tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts = false, single_boundary = true, predicates = PT())
-            tri = triangulate(get_points(tri), predicates = PT())
+            tri = triangulate(get_points(tri), predicates = PT(); rng)
             for i in 2:24
-                add_segment!(tri, i, 600 + i, predicates = PT())
+                add_segment!(tri, i, 600 + i, predicates = PT(); rng)
             end
             tri = triangulate_rectangle(a, b, c, d, nx, ny; delete_ghosts = false, single_boundary = true, predicates = PT())
-            tri = triangulate(get_points(tri), predicates = PT())
+            tri = triangulate(get_points(tri), predicates = PT(); rng)
             e = (23, 71)
             history = DT.PointLocationHistory{NTuple{3, Int}, NTuple{2, Int}, Int}()
             find_triangle(
                 tri, get_point(tri, 71);
-                m = nothing, k = 23, store_history = true, history = history, predicates = PT(),
+                m = nothing, k = 23, store_history = true, history = history, predicates = PT(), rng,
             )
             collinear_segments = history.collinear_segments
             DT.connect_segments!(collinear_segments)
@@ -310,13 +312,14 @@ end
 end
 
 @testset "Some other previously broken examples, dealing with segments going through points without passing through segments" begin
+    rng = StableRNG(2)
     for PT in subtypes(DT.AbstractPredicateKernel)
         tri = triangulate_rectangle(0, 5, 0, 10, 6, 11; delete_ghosts = false, predicates = PT())
         e = (14, 40)
         history = DT.PointLocationHistory{NTuple{3, Int}, NTuple{2, Int}, Int}()
         find_triangle(
             tri, get_point(tri, 40);
-            m = nothing, k = 14, store_history = true, history = history, predicates = PT(),
+            m = nothing, k = 14, store_history = true, history = history, predicates = PT(), rng,
         )
         collinear_segments = history.collinear_segments
         DT.fix_segments!(collinear_segments, history.collinear_point_indices)
@@ -328,7 +331,7 @@ end
         history = DT.PointLocationHistory{NTuple{3, Int}, NTuple{2, Int}, Int}()
         find_triangle(
             tri, get_point(tri, 54);
-            m = nothing, k = 2, store_history = true, history = history, predicates = PT(),
+            m = nothing, k = 2, store_history = true, history = history, predicates = PT(), rng,
         )
         collinear_segments = history.collinear_segments
         bad_indices = history.collinear_point_indices

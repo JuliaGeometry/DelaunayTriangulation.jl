@@ -14,6 +14,7 @@
 # in this tutorial. First, we load in the packages we need.
 using DelaunayTriangulation
 using CairoMakie
+using StableRNGs # for reproducibility
 using ReferenceTests #src
 using Test #src
 
@@ -24,7 +25,8 @@ points = [
     (0.0, 0.0), (-5.0, 5.0), (-3.0, 1.0),
     (2.0, -3.0), (5.0, 5.0), (-4.0, 3.0),
 ]
-tri = triangulate(points)
+rng = StableRNG(123)
+tri = triangulate(points; rng)
 vorn = voronoi(tri)
 p, q = (-2.0, 7.5), (0.0, 4.0)
 fig, ax, sc = voronoiplot(vorn, markersize = 14)

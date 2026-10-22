@@ -4,29 +4,33 @@ using ..DelaunayTriangulation
 using StaticArrays
 const DT = DelaunayTriangulation
 using ..DelaunayTriangulation: Certificate
+using StableRNGs
 
 @testset "ext" begin
+    rng = StableRNG(1)
     for _ in 1:50
-        p = @SVector rand(2)
-        q = @SVector rand(2)
+        p = @SVector rand(rng, 2)
+        q = @SVector rand(rng, 2)
         @test ExactPredicates.ext(p, q) == DT.ext(p..., q...)
     end
 end
 
 @testset "inp" begin
+    rng = StableRNG(2)
     for _ in 1:50
-        p = @SVector rand(2)
-        q = @SVector rand(2)
+        p = @SVector rand(rng, 2)
+        q = @SVector rand(rng, 2)
         @test ExactPredicates.inp(p, q) == DT.inp(p..., q...)
     end
 end
 
 @testset "det" begin
+    rng = StableRNG(3)
     for _ in 1:50
-        a, b, c, d = rand(4)
+        a, b, c, d = rand(rng, 4)
         @test ExactPredicates.det(a, b, c, d) == DT.det(a, b, c, d)
 
-        a, b, c, d, e, f, g, h, i = rand(9)
+        a, b, c, d, e, f, g, h, i = rand(rng, 9)
         @test ExactPredicates.det(a, b, c, d, e, f, g, h, i) == DT.det(a, b, c, d, e, f, g, h, i)
     end
 end
@@ -54,45 +58,46 @@ end
 end
 
 @testset "Basic predicates" begin
+    rng = StableRNG(4)
     @testset "Random points" begin
         for _ in 1:1500
-            p, q, r = eachcol(rand(2, 3))
+            p, q, r = eachcol(rand(rng, 2, 3))
             @test DT.orient_predicate(DT.ExactKernel(), p, q, r) === ExactPredicates.orient(p, q, r)
             @test DT.orient_predicate(DT.FastKernel(), p, q, r) === Int(sign(AdaptivePredicates.orient2fast(p, q, r))) === ExactPredicates.orient(p, q, r)
             @test DT.orient_predicate(DT.AdaptiveKernel(), p, q, r) === AdaptivePredicates.orient2p(p, q, r) === ExactPredicates.orient(p, q, r)
-            @inferred DT.orient_predicate(rt(), p, q, r)
+            @inferred DT.orient_predicate(rt(rng), p, q, r)
             @test DT.orient_predicate(DT.AdaptiveKernel(), p, q, r) === DT.orient_predicate(p, q, r)
 
-            p, q, r, s = eachcol(rand(3, 4))
+            p, q, r, s = eachcol(rand(rng, 3, 4))
             @test DT.orient_predicate(DT.ExactKernel(), p, q, r, s) === ExactPredicates.orient(p, q, r, s)
             @test DT.orient_predicate(DT.FastKernel(), p, q, r, s) === Int(sign(AdaptivePredicates.orient3fast(p, q, r, s))) === ExactPredicates.orient(p, q, r, s)
             @test DT.orient_predicate(DT.AdaptiveKernel(), p, q, r, s) === AdaptivePredicates.orient3p(p, q, r, s) === ExactPredicates.orient(p, q, r, s)
-            @inferred DT.orient_predicate(rt(), p, q, r, s)
+            @inferred DT.orient_predicate(rt(rng), p, q, r, s)
             @test DT.orient_predicate(DT.AdaptiveKernel(), p, q, r) === DT.orient_predicate(p, q, r)
 
-            a, b, c, p = eachcol(rand(2, 4))
+            a, b, c, p = eachcol(rand(rng, 2, 4))
             @test DT.incircle_predicate(DT.ExactKernel(), a, b, c, p) === ExactPredicates.incircle(a, b, c, p)
             @test DT.incircle_predicate(DT.FastKernel(), a, b, c, p) === Int(sign(AdaptivePredicates.incirclefast(a, b, c, p))) === ExactPredicates.incircle(a, b, c, p)
             @test DT.incircle_predicate(DT.AdaptiveKernel(), a, b, c, p) === AdaptivePredicates.incirclep(a, b, c, p) === ExactPredicates.incircle(a, b, c, p)
-            @inferred DT.incircle_predicate(rt(), a, b, c, p)
+            @inferred DT.incircle_predicate(rt(rng), a, b, c, p)
             @test DT.incircle_predicate(DT.AdaptiveKernel(), a, b, c, p) === DT.incircle_predicate(a, b, c, p)
 
-            a, b, p, q = eachcol(rand(2, 4))
+            a, b, p, q = eachcol(rand(rng, 2, 4))
             @test DT.parallelorder_predicate(DT.ExactKernel(), a, b, p, q) === ExactPredicates.parallelorder(a, b, p, q)
             @test DT.parallelorder_predicate(DT.FastKernel(), a, b, p, q) === DT.parallelorder(DT.FastKernel(), a, b, p, q) === ExactPredicates.parallelorder(a, b, p, q)
             @test DT.parallelorder_predicate(DT.AdaptiveKernel(), a, b, p, q) === ExactPredicates.parallelorder(a, b, p, q) === ExactPredicates.parallelorder(a, b, p, q)
-            @inferred DT.parallelorder_predicate(rt(), a, b, p, q)
+            @inferred DT.parallelorder_predicate(rt(rng), a, b, p, q)
             @test DT.parallelorder_predicate(DT.AdaptiveKernel(), a, b, p, q) === DT.parallelorder_predicate(a, b, p, q)
 
-            p, a, b = eachcol(rand(2, 3))
+            p, a, b = eachcol(rand(rng, 2, 3))
             @test DT.sameside_predicate(a, b, p) === ExactPredicates.sameside(p, a, b)
             @inferred DT.sameside_predicate(a, b, p)
 
-            p, q, a, b = eachcol(rand(2, 4))
+            p, q, a, b = eachcol(rand(rng, 2, 4))
             @test DT.meet_predicate(DT.ExactKernel(), p, q, a, b) === ExactPredicates.meet(p, q, a, b)
             @test DT.meet_predicate(DT.FastKernel(), p, q, a, b) === ExactPredicates.meet(p, q, a, b)
             @test DT.meet_predicate(DT.AdaptiveKernel(), p, q, a, b) === ExactPredicates.meet(p, q, a, b)
-            @inferred DT.meet_predicate(rt(), p, q, a, b)
+            @inferred DT.meet_predicate(rt(rng), p, q, a, b)
             @test DT.meet_predicate(DT.AdaptiveKernel(), p, q, a, b) === DT.meet_predicate(p, q, a, b)
         end
     end
@@ -102,23 +107,23 @@ end
         y = [float(j) for _ in 0:5, j in 0:5, _ in 0:5]
         z = [float(k) for _ in 0:5, _ in 0:5, k in 0:5]
         for _ in 1:15000
-            p = (rand(x), rand(y))
-            q = (rand(x), rand(y))
-            r = (rand(x), rand(y))
-            s = (rand(x), rand(y))
-            a = (rand(x), rand(y))
-            b = (rand(x), rand(y))
-            c = (rand(x), rand(y))
+            p = (rand(rng, x), rand(rng, y))
+            q = (rand(rng, x), rand(rng, y))
+            r = (rand(rng, x), rand(rng, y))
+            s = (rand(rng, x), rand(rng, y))
+            a = (rand(rng, x), rand(rng, y))
+            b = (rand(rng, x), rand(rng, y))
+            c = (rand(rng, x), rand(rng, y))
             @test DT.orient_predicate(DT.ExactKernel(), p, q, r) === ExactPredicates.orient(p, q, r)
             @test DT.orient_predicate(DT.AdaptiveKernel(), p, q, r) === DT.orient_predicate(DT.FastKernel(), p, q, r) === AdaptivePredicates.orient2p(p, q, r) === ExactPredicates.orient(p, q, r) === Int(sign(AdaptivePredicates.orient2fast(p, q, r)))
             @test DT.incircle_predicate(DT.ExactKernel(), a, b, c, p) === ExactPredicates.incircle(a, b, c, p)
             @test DT.incircle_predicate(DT.AdaptiveKernel(), a, b, c, p) === DT.incircle_predicate(DT.FastKernel(), a, b, c, p) === AdaptivePredicates.incirclep(a, b, c, p) === ExactPredicates.incircle(a, b, c, p) === Int(sign(AdaptivePredicates.incirclefast(a, b, c, p)))
             @test DT.sameside_predicate(a, b, p) == ExactPredicates.sameside(p, a, b)
-            @test DT.meet_predicate(rt(), p, q, a, b) === ExactPredicates.meet(p, q, a, b)
-            p = (rand(x), rand(y), rand(z))
-            q = (rand(x), rand(y), rand(z))
-            r = (rand(x), rand(y), rand(z))
-            s = (rand(x), rand(y), rand(z))
+            @test DT.meet_predicate(rt(rng), p, q, a, b) === ExactPredicates.meet(p, q, a, b)
+            p = (rand(rng, x), rand(rng, y), rand(rng, z))
+            q = (rand(rng, x), rand(rng, y), rand(rng, z))
+            r = (rand(rng, x), rand(rng, y), rand(rng, z))
+            s = (rand(rng, x), rand(rng, y), rand(rng, z))
             @test DT.orient_predicate(DT.ExactKernel(), p, q, r, s) == ExactPredicates.orient(p, q, r, s) === DT.orient_predicate(DT.AdaptiveKernel(), p, q, r, s) === DT.orient_predicate(DT.FastKernel(), p, q, r, s)
             @test DT.orient_predicate(DT.AdaptiveKernel(), p, q, r, s) == DT.orient_predicate(p, q, r, s)
         end
@@ -380,6 +385,7 @@ end
 end
 
 @testset "point_position_relative_to_triangle" begin
+    rng = StableRNG(5)
     for PT in subtypes(DT.AbstractPredicateKernel)
         p, q, r = (2.0, 1.0), (5.0, 1.0), (2.0, 5.0)
         c1, c2, c3, c4 = (2.57, 3.35), (2.45, 2.51), (3.11, 2.43), (3.33, 1.83) # inside 
@@ -582,11 +588,11 @@ end
         @test all(DT.is_on, e)
         for _ in 1:5000
             local pts, i, j, k
-            n = rand(3:5000)
-            pts = rand(SVector{2, Float64}, n)
-            i, j, k = rand(1:n, 3)
+            n = rand(rng, 3:5000)
+            pts = rand(rng, SVector{2, Float64}, n)
+            i, j, k = rand(rng, 1:n, 3)
             while length(unique((i, j, k))) < 3
-                i, j, k = rand(1:n, 3)
+                i, j, k = rand(rng, 1:n, 3)
             end
             local τ1, τ2, τ3, e
             τ = DT.construct_positively_oriented_triangle(NTuple{3, Int}, i, j, k, pts, PT())
@@ -608,15 +614,15 @@ end
         end
         for _ in 1:5000
             local r, pts
-            n = rand(3:5000)
-            r = 5sqrt.(rand(n))
-            θ = 2π * rand(n)
+            n = rand(rng, 3:5000)
+            r = 5sqrt.(rand(rng, n))
+            θ = 2π * rand(rng, n)
             pts = [@SVector[r * cos(θ), r * sin(θ)] for (r, θ) in zip(r, θ)]
             for _ in 1:50
                 local i, j, k, τ1, τ2, τ3, e
-                i, j, k = rand(1:n, 3)
+                i, j, k = rand(rng, 1:n, 3)
                 while length(unique((i, j, k))) < 3
-                    i, j, k = rand(1:n, 3)
+                    i, j, k = rand(rng, 1:n, 3)
                 end
                 τ = DT.construct_positively_oriented_triangle(NTuple{3, Int}, i, j, k, pts, PT())
                 i, j, k = triangle_vertices(τ)
@@ -700,6 +706,7 @@ end
 end
 
 @testset "is_legal" begin
+    rng = StableRNG(6)
     @testset "Solid edges" begin
         p1 = [-1.0, 4.0]
         p2 = [4.0, 6.0]
@@ -712,7 +719,7 @@ end
         p9 = [31.7813088302274, -22.9759380718838]
         pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9]
         for PT in subtypes(DT.AbstractPredicateKernel)
-            tri = triangulate(pts; predicates = PT())
+            tri = triangulate(pts; predicates = PT(), rng)
             for (i, j) in ((1, 3), (3, 2), (2, 1), (1, 4), (4, 3), (3, 1), (3, 4), (4, 5), (5, 3), (3, 5), (5, 2), (2, 3))
                 @test DT.is_legal(AdaptiveKernel(), tri, i, j) == DT.is_legal(tri, i, j)
                 @test DT.is_legal(DT.is_legal(PT(), tri, i, j))
@@ -742,7 +749,7 @@ end
     @testset "Constrained triangulations" begin
         for PT in subtypes(DT.AbstractPredicateKernel)
             tri = fixed_shewchuk_example_constrained()
-            add_segment!(tri, 2, 7; predicates = PT())
+            add_segment!(tri, 2, 7; predicates = PT(), rng)
             for e in each_edge(tri)
                 i, j = DT.edge_vertices(e)
                 @test DT.is_legal(DT.is_legal(PT(), tri, i, j))
@@ -927,6 +934,7 @@ end
 end
 
 @testset "point_position_relative_to_witness_plane" begin
+    rng = StableRNG(7)
     for PT in subtypes(DT.AbstractPredicateKernel)
         a, b, c, d = (-1.26, 1.0), (0.0, -1.0), (3.24, 3.34), (-0.58, 2.25)
         points = [a, b, c, d]
@@ -972,7 +980,7 @@ end
         a, b, c = (0.0, -6.0), (6.0, 2.0), (-7.0, 7.0)
         points = [a, b, c]
         weights = DT.ZeroWeight()
-        tri = triangulate(points; weights, predicates = PT())
+        tri = triangulate(points; weights, predicates = PT(), rng)
         d = (3.18, 7.62)
         push!(points, d)
         cert = DT.point_position_relative_to_circumcircle(PT(), tri, 3, 1, 2, 4)
@@ -1038,7 +1046,7 @@ end
         @test DT.is_on(cert)
         weights = [2.9, 3.7, -4.4, 0.0]
         @test_broken begin
-            tri = triangulate(points; weights)
+            tri = triangulate(points; weights, rng)
             cert = DT.point_position_relative_to_circumcircle(PT(), tri, 1, 3, -1, 4)
             flag1 = DT.is_on(cert)
             weights[4] = -16.0

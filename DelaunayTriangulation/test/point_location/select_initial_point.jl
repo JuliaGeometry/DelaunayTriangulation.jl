@@ -54,6 +54,7 @@ end
 end
 
 @testset "Selecting random initial points" begin
+    rng = StableRNG(1)
     @testset "Specific example" begin
         rng = StableRNG(92884881)
         m = DT.default_num_samples(length(each_solid_vertex(tri)))
@@ -66,7 +67,7 @@ end
     end
 
     @testset "Random points" begin
-        seeds = rand(1:50000000, 50)
+        seeds = rand(rng, 1:50000000, 50)
         for s in seeds
             local m, tried_idx, q, ci, ci2
             rng = StableRNG(s)
@@ -80,7 +81,7 @@ end
             @test ci == ci2
         end
 
-        seeds = rand(1:527700, 50)
+        seeds = rand(rng, 1:527700, 50)
         for s in seeds
             rng = StableRNG(s)
             m = 9
@@ -95,7 +96,7 @@ end
         end
 
         for k in DT.each_point_index(pts)
-            @test DT.select_initial_point(tri, k; try_points = k) == k
+            @test DT.select_initial_point(tri, k; try_points = k, rng) == k
         end
     end
 end

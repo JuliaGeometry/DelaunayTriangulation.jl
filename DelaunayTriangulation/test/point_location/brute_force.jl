@@ -1,6 +1,7 @@
 using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using StatsBase
+using StableRNGs
 
 
 global tri, label_map, index_map = simple_geometry()
@@ -45,6 +46,7 @@ global tri, label_map, index_map = simple_geometry()
 end
 
 @testset "Finding points in each triangle" begin
+    rng = StableRNG(1)
     pts = get_points(tri)
     rep = DT.get_representative_point_list(tri)
     c1 = (5.3197, 26.51)
@@ -64,7 +66,7 @@ end
         for i in triangle_vertices(T)
             if i ≠ DT.𝒢
                 p = get_point(tri, i)
-                V = DT.brute_force_search(tri, p; predicates = rt())
+                V = DT.brute_force_search(tri, p; predicates = rt(rng))
                 @inferred DT.brute_force_search(tri, p)
                 if !DT.is_ghost_triangle(T)
                     @test i ∈ V

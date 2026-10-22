@@ -9,6 +9,7 @@
 # for a differential equation problem. To start, let us load in the packages we will need.
 using DelaunayTriangulation
 using CairoMakie
+using StableRNGs # for reproducibility
 using ReferenceTests #src
 using Test #src
 fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures") #src
@@ -34,7 +35,8 @@ boundary_points = [section_1, section_2, section_3]
 # We also add a constrained edge.
 E = Set(((6, 9),)) # (0, 0) → (4, 6)
 boundary_nodes, points = convert_boundary_points_to_indices(boundary_points; existing_points = points)
-tri = triangulate(points; boundary_nodes, segments = E)
+rng = StableRNG(123)
+tri = triangulate(points; boundary_nodes, segments = E, rng)
 
 #-
 fig, ax, sc = triplot(tri, show_constrained_edges = true, constrained_edge_linewidth = 6)

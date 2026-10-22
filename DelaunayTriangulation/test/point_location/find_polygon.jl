@@ -1,8 +1,10 @@
 using ..DelaunayTriangulation
 using ..DelaunayTriangulation: EllipticalArc
+using StableRNGs
 const DT = DelaunayTriangulation
 
 @testset "A curve-bounded multipolygon" begin
+    rng = StableRNG(1)
     curve = [
         [
             [1, 2, 3], [EllipticalArc((2.0, 0.0), (-2.0, 0.0), (0.0, 0.0), 2, 1 / 2, 0.0)],
@@ -24,8 +26,8 @@ const DT = DelaunayTriangulation
         ],
     ]
     points = [(-2.0, 0.0), (0.0, 0.0), (2.0, 0.0), (-2.0, -5.0), (2.0, -5.0), (2.0, -1 / 10), (-2.0, -1 / 10), (-1.0, -3.0), (0.0, -4.0), (0.0, -2.3), (-0.5, -3.5), (0.9, -3.0)]
-    tri = triangulate(points; boundary_nodes = curve)
-    refine!(tri; max_area = 1.0e-2)
+    tri = triangulate(points; boundary_nodes = curve, rng)
+    refine!(tri; max_area = 1.0e-2, rng)
 
     q = (-1.0, -4.0)
     idx = find_polygon(tri, q)

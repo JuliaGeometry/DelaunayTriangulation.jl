@@ -6,13 +6,15 @@ using StaticArrays
 using StatsBase
 using ElasticArrays
 using ..DelaunayTriangulation: Certificate
+using StableRNGs
 
+rng = StableRNG(1)
 for PT in subtypes(DT.AbstractPredicateKernel)
     global x, y = complicated_geometry()
     boundary_nodes, points = convert_boundary_points_to_indices(x, y; existing_points = ElasticMatrix{Float64}(undef, 2, 0))
-    _tri = triangulate(points; boundary_nodes, delete_ghosts = false, predicates = PT())
+    _tri = triangulate(points; boundary_nodes, delete_ghosts = false, predicates = PT(), rng)
     A = get_area(_tri)
-    refine!(_tri; max_area = 1.0e-2A, use_circumcenter = true, predicates = PT())
+    refine!(_tri; max_area = 1.0e-2A, use_circumcenter = true, predicates = PT(), rng)
     _pts = ElasticMatrix(get_points(_tri))
     global tri = DT.Triangulation(
         _pts, _tri.triangles, _tri.boundary_nodes, _tri.interior_segments,
@@ -49,7 +51,7 @@ for PT in subtypes(DT.AbstractPredicateKernel)
         p7 = Float64[4, -1]
         p8 = Float64[-1, 4]
         points = [p0, p1, p2, p3, p4, p5, p6, p7, p8]
-        temptri = triangulate(points; predicates = PT())
+        temptri = triangulate(points; predicates = PT(), rng)
         @test DT.is_positively_oriented(DT.triangle_orientation(PT(), temptri, (4, 6, 7)))
         @test DT.is_negatively_oriented(DT.triangle_orientation(PT(), temptri, (4, 7, 6)))
         @test DT.is_negatively_oriented(DT.triangle_orientation(PT(), temptri, (4, 2, 3)))
@@ -58,10 +60,10 @@ for PT in subtypes(DT.AbstractPredicateKernel)
         @test DT.is_negatively_oriented(DT.triangle_orientation(PT(), temptri, (5, 9, 7)))
         @test DT.is_negatively_oriented(DT.triangle_orientation(PT(), temptri, (3, 8, 5)))
         points = [[1.0, 2.0], [1.0, 5.0], [1.0, 8.0]]
-        temptrit = triangulate(points; predicates = PT())
+        temptrit = triangulate(points; predicates = PT(), rng)
         @test DT.is_degenerate(DT.triangle_orientation(PT(), tri, (1, 2, 3)))
         points = [[0, -3.0], [3.0, 0.0], [0.0, 3.0], [-3.0, 0.0]]
-        temptri = triangulate(points; predicates = PT())
+        temptri = triangulate(points; predicates = PT(), rng)
         @test DT.is_positively_oriented(DT.triangle_orientation(PT(), temptri, (1, 2, 3))) &&
             DT.is_positively_oriented(DT.triangle_orientation(PT(), temptri, (2, 3, 4))) &&
             DT.is_positively_oriented(DT.triangle_orientation(PT(), temptri, (4, 1, 2)))
@@ -111,7 +113,7 @@ for PT in subtypes(DT.AbstractPredicateKernel)
             p10 = @SVector[4.74, 2.21]
             p11 = @SVector[2.32, -0.27]
             pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11]
-            tri = triangulate(pts; delete_ghosts = false, predicates = PT())
+            tri = triangulate(pts; delete_ghosts = false, predicates = PT(), rng)
             p12 = @SVector[-1.86, 5.99]
             push!(pts, p12)
             @test DT.is_inside(DT.point_position_relative_to_circumcircle(PT(), tri, 1, 9, DT.𝒢, 12))
@@ -220,7 +222,7 @@ for PT in subtypes(DT.AbstractPredicateKernel)
             p13 = (8.0, 2.0)
             p14 = (0.0, 0.0)
             pts = [p8, p9, p13, p14]
-            tri = triangulate(pts; delete_ghosts = false, predicates = PT())
+            tri = triangulate(pts; delete_ghosts = false, predicates = PT(), rng)
             @test DT.is_on(DT.point_position_relative_to_circumcircle(PT(), tri, 1, 2, DT.𝒢, 3))
             push!(pts, (2.0, 14.0))
             @test DT.is_outside(DT.point_position_relative_to_circumcircle(PT(), tri, 1, 2, DT.𝒢, 5))
@@ -245,7 +247,7 @@ for PT in subtypes(DT.AbstractPredicateKernel)
         p10 = @SVector[4.74, 2.21]
         p11 = @SVector[2.32, -0.27]
         pts = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11]
-        tri = triangulate(pts; delete_ghosts = false, randomise = false)
+        tri = triangulate(pts; delete_ghosts = false, randomise = false, rng)
         p12 = @SVector[3.538447, 3.99844]
         push!(pts, p12)
         @test DT.is_left(DT.point_position_relative_to_line(PT(), tri, 9, 10, 12))

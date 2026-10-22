@@ -7,6 +7,7 @@
 # a non-convex boundary. To start, let us load in the packages we will need.
 using DelaunayTriangulation
 using CairoMakie
+using StableRNGs # for reproducibility
 import LinearAlgebra: norm #src
 using ReferenceTests #src
 using Test #src
@@ -48,8 +49,9 @@ boundary_nodes
 
 # To now triangulate, we use the `boundary_nodes` keyword argument. Like in the last tutorial, 
 # we also give a comparison to the unconstrained version.
-tri = triangulate(pts)
-cons_tri = triangulate(pts; boundary_nodes)
+rng = StableRNG(123)
+tri = triangulate(pts; rng)
+cons_tri = triangulate(pts; boundary_nodes, rng)
 
 #- 
 fig = Figure()
@@ -75,7 +77,7 @@ fig
 # no longer contains every point in `pts`, as by default all triangles away 
 # from the boundary are deleted, so that we do actually have a boundary. If for 
 # some reason you do not want this behaviour, use `delete_holes = false`:
-full_tri = triangulate(pts; boundary_nodes, delete_holes = false)
+full_tri = triangulate(pts; boundary_nodes, delete_holes = false, rng)
 fig, ax, sc = triplot(full_tri, show_constrained_edges = true, show_convex_hull = true)
 @test_reference reference_path(fig_path, "constrained_ex_3.png") fig #src
 

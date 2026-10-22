@@ -2,6 +2,7 @@ using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using DataStructures
 using StaticArrays
+using StableRNGs
 
 global dict_1 = Dict{Int,Set{NTuple{2,Int}}}()
 global dict_2 = Dict{Int,Vector{NTuple{2,Int}}}()
@@ -233,7 +234,8 @@ end
 end
 
 @testset "empty!" begin
-    tri = triangulate(rand(2, 50))
+    rng = StableRNG(1)
+    tri = triangulate(rand(rng, 2, 50); rng)
     adj2v = get_adjacent2vertex(tri)
     @test !isempty(get_adjacent2vertex(adj2v))
     empty!(adj2v)
@@ -241,7 +243,8 @@ end
 end
 
 @testset "copy/deepcopy" begin
-    tri = triangulate(rand(2, 50))
+    rng = StableRNG(2)
+    tri = triangulate(rand(rng, 2, 50); rng)
     adj2v = get_adjacent2vertex(tri)
     adj2v2 = copy(adj2v)
     @test adj2v == adj2v2 && !(adj2v === adj2v2)

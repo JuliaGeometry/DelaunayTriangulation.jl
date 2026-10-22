@@ -3,6 +3,7 @@ const DT = DelaunayTriangulation
 using Test
 using DataStructures
 using StaticArraysCore
+using StableRNGs
 
 
 global bn1 = [
@@ -92,6 +93,7 @@ end
 end
 
 @testset "Getting ghost vertex ranges" begin
+    rng = StableRNG(1)
     for r in 1:500 # this example used to StackOverflow randomly, so let's just be sure it doesn't come back
         d1 = DT.construct_ghost_vertex_ranges(bn1)
         d2 = DT.construct_ghost_vertex_ranges(bn2)
@@ -130,7 +132,7 @@ end
 
         x, y = complicated_geometry()
         boundary_nodes, points = convert_boundary_points_to_indices(x, y)
-        tri = triangulate(points; boundary_nodes)
+        tri = triangulate(points; boundary_nodes, rng)
         @test tri.ghost_vertex_ranges == Dict(
             -1 => -4:-1,
             -2 => -4:-1,

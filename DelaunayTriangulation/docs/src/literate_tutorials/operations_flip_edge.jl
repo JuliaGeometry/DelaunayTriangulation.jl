@@ -37,13 +37,15 @@ fig #hide
 # packages we need.
 using DelaunayTriangulation
 using CairoMakie
+using StableRNGs # for reproducibility
 using ReferenceTests #src
 using Test #src
 fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures") #src
 
 # Let us now define our initial triangulation.
 points = [(0.0, 0.0), (0.8, 0.0), (1.3, 1.0), (0.0, 1.0)]
-tri = triangulate(points);
+rng = StableRNG(123)
+tri = triangulate(points; rng);
 
 # Now, flipping the edge is simple. We simply provide the indices `i` and `j` 
 # for the edge we want to flip. Let us flip the edge `(2, 4)`.

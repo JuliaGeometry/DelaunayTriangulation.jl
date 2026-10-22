@@ -13,6 +13,7 @@ using ReferenceTests
 const ASSETS = joinpath(@__DIR__, "..", "..", "..", "assets", "test", "voronoi")
 
 @testset "Unconstrained test" begin
+    rng = StableRNG(1)
     for PT in subtypes(DT.AbstractPredicateKernel)
         for _ in 1:10
             A = (-1.0, 7.0)
@@ -23,9 +24,9 @@ const ASSETS = joinpath(@__DIR__, "..", "..", "..", "assets", "test", "voronoi")
             F = (1.0, 4.0)
             G = (-3.0, 5.0)
             pts = [A, B, C, D, E, F, G]
-            tri = triangulate(pts; delete_ghosts=false, randomise=false)
+            tri = triangulate(pts; delete_ghosts=false, randomise=false, rng)
 
-            vorn = voronoi(tri; predicates=PT())
+            vorn = voronoi(tri; predicates=PT(), rng)
             for (i, p) in DT.get_generators(vorn)
                 @test get_point(tri, i) == get_generator(vorn, i) == p
             end
@@ -112,11 +113,12 @@ const ASSETS = joinpath(@__DIR__, "..", "..", "..", "assets", "test", "voronoi")
 end
 
 @testset "Smaller example, checking ray coordinates" begin
+    rng = StableRNG(2)
     for PT in subtypes(DT.AbstractPredicateKernel)
         for _ in 1:10
             tri = example_triangulation()
-            tri = triangulate(get_points(tri))
-            vorn = voronoi(tri; predicates=PT())
+            tri = triangulate(get_points(tri); rng)
+            vorn = voronoi(tri; predicates=PT(), rng)
             @test validate_tessellation(vorn; predicates=PT())
             bbox = DT.polygon_bounds(vorn, 0.1)
             xmin, xmax, ymin, ymax = bbox
@@ -216,6 +218,7 @@ end
 end
 
 @testset "delete/add_polygon_adjacencies" begin
+    rng = StableRNG(3)
     for PT in subtypes(DT.AbstractPredicateKernel)
         for _ in 1:10
             A = (-1.0, 7.0)
@@ -226,8 +229,8 @@ end
             F = (1.0, 4.0)
             G = (-3.0, 5.0)
             pts = [A, B, C, D, E, F, G]
-            tri = triangulate(pts; delete_ghosts=false, randomise=false)
-            vorn = voronoi(tri; predicates=PT())
+            tri = triangulate(pts; delete_ghosts=false, randomise=false, rng)
+            vorn = voronoi(tri; predicates=PT(), rng)
             # The circumcenter indices depend on hash order, so get the edges of polygon 5 from the tessellation itself
             poly = get_polygon(vorn, 5)
             @test length(poly) == 6
@@ -242,6 +245,7 @@ end
 end
 
 @testset "Voronoi point location" begin
+    rng = StableRNG(4)
     for PT in subtypes(DT.AbstractPredicateKernel)
         A = (-1.0, 7.0) .+ (1.0e-6rand(), 1.0e-6rand()) # perturb to allow the tests to work even without ExactPredicates
         B = (4.0, 4.0) .+ (1.0e-6rand(), 1.0e-6rand())
@@ -251,14 +255,14 @@ end
         F = (1.0, 4.0) .+ (1.0e-6rand(), 1.0e-6rand())
         G = (-3.0, 5.0) .+ (1.0e-6rand(), 1.0e-6rand())
         pts = [A, B, C, D, E, F, G]
-        tri = triangulate(pts; delete_ghosts=false, randomise=false)
-        vor = voronoi(tri, predicates=PT())
+        tri = triangulate(pts; delete_ghosts=false, randomise=false, rng)
+        vor = voronoi(tri, predicates=PT(); rng)
         @test validate_tessellation(vor, predicates=PT())
         xmin, xmax, ymin, ymax = DT.polygon_bounds(get_points(tri), get_convex_hull_vertices(tri))
         p = NTuple{2,Float64}[]
         n = 10000
         while length(p) ≤ n # only going to test points that are inside the polygon
-            pt = (xmin + rand() * (xmax - xmin), ymin + rand() * (ymax - ymin))
+            pt = (xmin + rand(rng) * (xmax - xmin), ymin + rand(rng) * (ymax - ymin))
             if DT.distance_to_polygon(pt, get_points(tri), get_convex_hull_vertices(tri)) ≥ 0
                 push!(p, pt)
             end
@@ -278,8 +282,8 @@ end
                 (-0.1, -0.8), (0.2, -0.8),
                 (-0.6, -0.4), (0.9, 0.0), (-0.5, 0.5), (-0.4, 0.6), (-0.1, 0.8),
             ]
-            tri = triangulate(points, delete_ghosts=false)
-            vorn = voronoi(tri, predicates=PT())
+            tri = triangulate(points, delete_ghosts=false; rng)
+            vorn = voronoi(tri, predicates=PT(); rng)
             @test validate_tessellation(vorn, predicates=PT())
             xg = LinRange(-1, 1, 50)
             yg = LinRange(-1, 1, 50)
@@ -302,6 +306,7 @@ end
 end
 
 @testset "Clipping a simple VoronoiTessellation" begin
+    rng = StableRNG(5)
     for PT in subtypes(DT.AbstractPredicateKernel)
         for _ in 1:333
             A = (-1.0, 7.0)
@@ -312,9 +317,9 @@ end
             F = (1.0, 4.0)
             G = (-3.0, 5.0)
             pts = [A, B, C, D, E, F, G]
-            tri = triangulate(pts; delete_ghosts=false, randomise=true)
+            tri = triangulate(pts; delete_ghosts=false, randomise=true, rng)
             #lock_convex_hull!(tri)
-            vorn = voronoi(tri; clip=true, predicates=PT())
+            vorn = voronoi(tri; clip=true, predicates=PT(), rng)
             for (i, p) in DT.get_generators(vorn)
                 @test get_point(tri, i) == get_generator(vorn, i) == p
             end
@@ -386,10 +391,11 @@ end
 end
 
 @testset "Another example" begin
+    rng = StableRNG(6)
     for PT in subtypes(DT.AbstractPredicateKernel)
         for _ in 1:100
             tri = fixed_shewchuk_example_constrained()
-            vorn = voronoi(tri; clip=false, predicates=PT())
+            vorn = voronoi(tri; clip=false, predicates=PT(), rng)
             @test validate_tessellation(vorn, predicates=PT())
             for (i, p) in DT.get_generators(vorn)
                 @test get_point(tri, i) == get_generator(vorn, i) == p
@@ -496,7 +502,7 @@ end
                 ),
             )
 
-            _vorn = voronoi(tri; clip=true, predicates=PT())
+            _vorn = voronoi(tri; clip=true, predicates=PT(), rng)
             @test validate_tessellation(_vorn, predicates=PT())
             for (i, p) in DT.get_generators(_vorn)
                 @test get_point(tri, i) == get_generator(_vorn, i) == p
@@ -580,6 +586,7 @@ end
 end
 
 @testset "initialise_clipping_arrays" begin
+    rng = StableRNG(7)
     for PT in subtypes(DT.AbstractPredicateKernel)
         a = (4.0, 3.0)
         b = (0.0, 3.0)
@@ -587,9 +594,9 @@ end
         d = (4.0, 0.0)
         e = (2.0, 1.5)
         pts = [a, b, c, d, e]
-        tri = triangulate(pts, delete_ghosts=false, randomise=false)
-        vorn = voronoi(tri, predicates=PT())
-        lock_convex_hull!(tri; predicates=PT())
+        tri = triangulate(pts, delete_ghosts=false, randomise=false; rng)
+        vorn = voronoi(tri, predicates=PT(); rng)
+        lock_convex_hull!(tri; predicates=PT(), rng)
         edges_to_process,
         polygon_edge_queue,
         boundary_sites,
@@ -615,6 +622,7 @@ end
 end
 
 @testset "enqueue_new_edge" begin
+    rng = StableRNG(8)
     for PT in subtypes(DT.AbstractPredicateKernel)
         for _ in 1:180
             a = (3.0, 3.0)
@@ -623,9 +631,9 @@ end
             d = (4.0, 0.0)
             e = (1.0, 1.5)
             pts = [a, b, c, d, e]
-            tri = triangulate(pts, delete_ghosts=false)
-            vorn = voronoi(tri; predicates=PT())
-            lock_convex_hull!(tri; predicates=PT())
+            tri = triangulate(pts, delete_ghosts=false; rng)
+            vorn = voronoi(tri; predicates=PT(), rng)
+            lock_convex_hull!(tri; predicates=PT(), rng)
             edges_to_process, polygon_edge_queue = DT.initialise_clipping_arrays(vorn)
             e = (1, 2)
             DT.enqueue_new_edge!(polygon_edge_queue, vorn, e, Random.default_rng(), PT())
@@ -673,6 +681,7 @@ end
 end
 
 @testset "More detailed test with a tessellation that has a finite edge going completely through the interior" begin
+    rng = StableRNG(9)
     for PT in subtypes(DT.AbstractPredicateKernel)
         a = (3.0, 3.0)
         b = (0.0, 3.0)
@@ -680,9 +689,9 @@ end
         d = (4.0, 0.0)
         e = (1.0, 1.5)
         pts = [a, b, c, d, e]
-        tri = triangulate(pts, delete_ghosts=false, randomise=false)
-        vorn = voronoi(tri, predicates=PT())
-        lock_convex_hull!(tri, predicates=PT())
+        tri = triangulate(pts, delete_ghosts=false, randomise=false; rng)
+        vorn = voronoi(tri, predicates=PT(); rng)
+        lock_convex_hull!(tri, predicates=PT(); rng)
         edges_to_process,
         polygon_edge_queue,
         boundary_sites,
@@ -772,10 +781,10 @@ end
         d = (4.0, 0.0)
         e = (1.0, 1.5)
         pts = [a, b, c, d, e]
-        tri = triangulate(pts, delete_ghosts=false, randomise=false)
-        vorn = voronoi(tri; predicates=PT())
-        lock_convex_hull!(tri; predicates=PT())
-        boundary_sites, segment_intersections, exterior_circumcenters = DT.find_all_intersections(vorn, predicates=PT())
+        tri = triangulate(pts, delete_ghosts=false, randomise=false; rng)
+        vorn = voronoi(tri; predicates=PT(), rng)
+        lock_convex_hull!(tri; predicates=PT(), rng)
+        boundary_sites, segment_intersections, exterior_circumcenters = DT.find_all_intersections(vorn, predicates=PT(); rng)
         # The order in which intersections are found, and the indices of the circumcenters, depend on hash order,
         # so compare the intersections and circumcenters by their coordinates
         @test same_points(
@@ -800,7 +809,7 @@ end
         @test same_points(boundary_site_points(5), [(1.625, 0.0), (0.0, 1.0833333333333333), (2.125, 0.0), (0.0, 1.9166666666666665)])
         @test same_points([get_polygon_point(vorn, c) for c in exterior_circumcenters], [(2.0, -0.25), (-0.625, 1.5)])
 
-        DT.clip_voronoi_tessellation!(vorn, predicates=PT())
+        DT.clip_voronoi_tessellation!(vorn, predicates=PT(); rng)
         @test isempty(vorn.unbounded_polygons)
         @test validate_tessellation(vorn, predicates=PT())
         @test DT.points_are_unique(vorn.polygon_points)
@@ -834,13 +843,14 @@ end
 end
 
 @testset "Single triangle" begin
+    rng = StableRNG(10)
     for PT in subtypes(DT.AbstractPredicateKernel)
         for _ in 1:333
             points = [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]
-            tri = triangulate(points)
-            vorn = voronoi(tri, predicates=PT())
+            tri = triangulate(points; rng)
+            vorn = voronoi(tri, predicates=PT(); rng)
             @test validate_tessellation(vorn, predicates=PT())
-            vorn = voronoi(tri, clip=true, predicates=PT())
+            vorn = voronoi(tri, clip=true, predicates=PT(); rng)
             @test validate_tessellation(vorn, predicates=PT())
             @test sort(unique(vorn.polygon_points)) == sort(unique([
                 (0.5, 0.5),
@@ -861,8 +871,8 @@ end
                 0.290978 0.830755 0.0139574
                 0.386411 0.630008 0.803881
             ]
-            tri = triangulate(points, delete_ghosts=false)
-            vorn = voronoi(tri, clip=true, predicates=PT())
+            tri = triangulate(points, delete_ghosts=false; rng)
+            vorn = voronoi(tri, clip=true, predicates=PT(); rng)
             @test validate_tessellation(vorn, predicates=PT())
             # The circumcenter is on the edge between points 1 and 3. Polygons 1 and 3 used to get slightly different
             # copies of it, (0.15246769999999996, 0.5951460000000001) and (0.15246769999999998, 0.595146) (see Issue #239)
@@ -883,15 +893,16 @@ end
         end
 
         for _ in 1:1000
-            pts = rand(2, 3)
-            tri = triangulate(pts)
-            vorn = voronoi(tri, clip=true, predicates=PT())
+            pts = rand(rng, 2, 3)
+            tri = triangulate(pts; rng)
+            vorn = voronoi(tri, clip=true, predicates=PT(); rng)
             @test validate_tessellation(vorn, predicates=PT())
         end
     end
 end
 
 @testset "Another previously broken example with a non-boundary generator's intersecting edges not being previously detected" begin
+    rng = StableRNG(11)
     for PT in subtypes(DT.AbstractPredicateKernel)
         for _ in 1:43
             a = (0.0, 0.0)
@@ -903,9 +914,9 @@ end
             g = (0.1, 0.2)
             h = (0.2, 0.1)
             pts = [a, b, c, d, e, f, g, h]
-            tri = triangulate(pts)
-            vorn = voronoi(tri, predicates=PT())
-            _vorn = voronoi(tri, clip=true, predicates=PT())
+            tri = triangulate(pts; rng)
+            vorn = voronoi(tri, predicates=PT(); rng)
+            _vorn = voronoi(tri, clip=true, predicates=PT(); rng)
             @test validate_tessellation(vorn, predicates=PT())
             @test validate_tessellation(_vorn, predicates=PT())
             orig_pt = [
@@ -957,15 +968,16 @@ end
 end
 
 @testset "Varying size" begin
+    rng = StableRNG(12)
     for PT in subtypes(DT.AbstractPredicateKernel)
         for n in 3:4:200
             for j in 1:15:250
                 rng = StableRNG(2^(isqrt(n)) * 3^(isqrt(n)))
                 pts = rand(rng, 2, n)
                 tri = triangulate(pts; rng)
-                vorn = voronoi(tri, predicates=PT())
+                vorn = voronoi(tri, predicates=PT(); rng)
                 flag1 = validate_tessellation(vorn, predicates=PT())
-                vorn = voronoi(tri, clip=true, predicates=PT())
+                vorn = voronoi(tri, clip=true, predicates=PT(); rng)
                 flag2 = validate_tessellation(vorn, predicates=PT())
                 @test flag1
                 @test flag2
@@ -975,26 +987,27 @@ end
 end
 
 @testset "Centroidal tessellation" begin
+    rng = StableRNG(13)
     for PT in subtypes(DT.AbstractPredicateKernel)
         flag = 0
         tot = 0
         for i in 1:25
             msg = "Testing centroidal tessellation: Run: $i"
-            p1 = randn(2, 50)
-            p2 = rand(SVector{2,Float64}, 30)
-            p3 = rand(Point2f, 250)
-            p4 = randn(Float32, 2, 70)
-            p5 = randn(2, 4)
-            p6 = rand(SVector{2,Float64}, 7)
-            p7 = rand(Point2f, 5)
-            p8 = randn(Float32, 2, 15)
+            p1 = randn(rng, 2, 50)
+            p2 = rand(rng, SVector{2,Float64}, 30)
+            p3 = rand(rng, Point2f, 250)
+            p4 = randn(rng, Float32, 2, 70)
+            p5 = randn(rng, 2, 4)
+            p6 = rand(rng, SVector{2,Float64}, 7)
+            p7 = rand(rng, Point2f, 5)
+            p8 = randn(rng, Float32, 2, 15)
             _pts = (p1, p2, p3, p4, p5, p6, p7, p8)
             for jj in eachindex(_pts)
                 points = _pts[jj]
-                tri = triangulate(points, predicates=PT())
-                vorn = voronoi(tri, clip=true, predicates=PT())
+                tri = triangulate(points, predicates=PT(); rng)
+                vorn = voronoi(tri, clip=true, predicates=PT(); rng)
                 @test_with_log msg validate_tessellation(vorn, check_convex=!(jj ∈ (3, 4, 7, 8)), predicates=PT())
-                for smooth_vorn in (centroidal_smooth(vorn, maxiters=5000, predicates=PT()), voronoi(tri, clip=true, smooth=true, maxiters=5000, predicates=PT()))
+                for smooth_vorn in (centroidal_smooth(vorn, maxiters=5000, predicates=PT(); rng), voronoi(tri, clip=true, smooth=true, maxiters=5000, predicates=PT(); rng))
                     @test_with_log msg validate_tessellation(smooth_vorn, check_convex=!(jj ∈ (3, 4, 7, 8)), predicates=PT())
                     for i in each_polygon_index(smooth_vorn)
                         p = get_generator(smooth_vorn, i)
@@ -1015,26 +1028,28 @@ end
 end
 
 @testset "Lattice" begin
+    rng = StableRNG(14)
     for PT in (DT.ExactKernel, DT.AdaptiveKernel)
         for _ in 1:50
             tri = triangulate_rectangle(0, 1, 0, 1, 11, 11, delete_ghosts=false, predicates=PT())
-            tri = triangulate(tri.points, predicates=PT())
-            vorn = voronoi(tri, predicates=PT())
+            tri = triangulate(tri.points, predicates=PT(); rng)
+            vorn = voronoi(tri, predicates=PT(); rng)
             @test validate_tessellation(vorn; check_convex=false, predicates=PT())
-            vorn = voronoi(tri, clip=true, predicates=PT())
+            vorn = voronoi(tri, clip=true, predicates=PT(); rng)
             @test validate_tessellation(vorn; check_convex=false, check_adjacent=false, predicates=PT())
         end
     end
 end
 
 @testset "Example that used to previously break: Plotting a Voronoi tile with unbounded edges intersecting over non-neighbouring sides" begin
+    rng = StableRNG(15)
     for PT in subtypes(DT.AbstractPredicateKernel)
         pts = [
             0.508812 0.656662 0.785124 0.63427 0.444969 0.609253 0.0826304 0.265388 0.830807 0.658346
             0.647732 0.482994 0.809909 0.482046 0.0170022 0.821742 0.835057 0.591724 0.881006 0.97652
         ]
-        tri = triangulate(pts)
-        vorn = voronoi(tri, predicates=PT())
+        tri = triangulate(pts; rng)
+        vorn = voronoi(tri, predicates=PT(); rng)
         clip = DT.get_polygon_coordinates(vorn, 9, DT.polygon_bounds(vorn, 0.1), predicates=PT())
         @test DT.circular_equality(
             collect.(clip), collect.(
@@ -1052,13 +1067,14 @@ end
 end
 
 @testset "Example that used to previously break: Plotting a Voronoi tile with unbounded edges intersecting over non-neighbouring sides, needing THREE corners" begin
+    rng = StableRNG(16)
     for PT in subtypes(DT.AbstractPredicateKernel)
         pts = [
             0.279402 0.874842 0.163028
             0.274178 0.831658 0.223709
         ]
-        tri = triangulate(pts, predicates=PT())
-        vorn = voronoi(tri, predicates=PT())
+        tri = triangulate(pts, predicates=PT(); rng)
+        vorn = voronoi(tri, predicates=PT(); rng)
         clip = DT.get_polygon_coordinates(vorn, 2, DT.polygon_bounds(vorn, 2.0), predicates=PT())
         @test DT.circular_equality(
             collect.(clip), collect.(
@@ -1075,6 +1091,7 @@ end
 end
 
 @testset "Issue #72" begin
+    rng = StableRNG(17)
     for PT in subtypes(DT.AbstractPredicateKernel)
         points = [
             Float32[0.32965052, 0.7966664],
@@ -1103,8 +1120,8 @@ end
             Float32[0.8563475, 0.88143903],
             Float32[0.18311942, 0.8367877],
         ]
-        tri = triangulate(points)
-        vorn = voronoi(tri, predicates=PT())
+        tri = triangulate(points; rng)
+        vorn = voronoi(tri, predicates=PT(); rng)
         @test validate_tessellation(vorn, predicates=PT())
 
         points = [
@@ -1129,16 +1146,17 @@ end
             [0.28790158f0, 0.39447558f0],
             [0.6525599f0, 0.6425986f0],
         ]
-        tri = triangulate(points)
-        vorn = voronoi(tri, predicates=PT())
+        tri = triangulate(points; rng)
+        vorn = voronoi(tri, predicates=PT(); rng)
         @test validate_tessellation(vorn, predicates=PT())
     end
 end
 
 @testset "Polygon bounds with generators only" begin
-    points = rand(2, 50)
-    tri = triangulate(points)
-    vorn = voronoi(tri, predicates=rt())
+    rng = StableRNG(18)
+    points = rand(rng, 2, 50)
+    tri = triangulate(points; rng)
+    vorn = voronoi(tri, predicates=rt(rng); rng)
     xmin, xmax, ymin, ymax = DT.polygon_bounds(vorn, 0.1; include_polygon_vertices=false)
     _xmin, _xmax = extrema(points[1, :])
     _ymin, _ymax = extrema(points[2, :])
@@ -1149,6 +1167,7 @@ end
 end
 
 @testset "grow_polygon_outside_of_box" begin
+    rng = StableRNG(19)
     for PT in subtypes(DT.AbstractPredicateKernel)
         A = (-3.0, 7.0)
         B = (1.0, 6.0)
@@ -1159,8 +1178,8 @@ end
         G = (-4.0, -3.0)
         H = (3.0, 8.0)
         points = [A, B, C, D, E, F, G, H]
-        tri = triangulate(points)
-        vorn = voronoi(tri, predicates=PT())
+        tri = triangulate(points; rng)
+        vorn = voronoi(tri, predicates=PT(); rng)
         a, b, c, d = -4.0, 6.0, -2.0, 4.0
         bounding_box = (a, b, c, d)
         new_vertices, new_points = DT.grow_polygon_outside_of_box(vorn, 1, bounding_box, PT())
@@ -1225,6 +1244,7 @@ end
 end
 
 @testset "Clipping polygons to arbitrary bounding box" begin
+    rng = StableRNG(20)
     for PT in subtypes(DT.AbstractPredicateKernel)
         A = (-3.0, 7.0)
         B = (1.0, 6.0)
@@ -1235,8 +1255,8 @@ end
         G = (-4.0, -3.0)
         H = (3.0, 8.0)
         points = [A, B, C, D, E, F, G, H]
-        tri = triangulate(points)
-        vorn = voronoi(tri, predicates=PT())
+        tri = triangulate(points; rng)
+        vorn = voronoi(tri, predicates=PT(); rng)
         a, b, c, d = -4.0, 6.0, -2.0, 4.0
         bounding_box = (a, b, c, d)
         _pa = get_polygon_coordinates(vorn, 1, bounding_box; predicates=PT())
@@ -1266,8 +1286,8 @@ end
 
         # test a small example 
         points = [(0.0, 1.0), (-1.0, 2.0), (-2.0, -1.0)]
-        tri = triangulate(points)
-        vorn = voronoi(tri, predicates=PT())
+        tri = triangulate(points; rng)
+        vorn = voronoi(tri, predicates=PT(); rng)
         bb = (-1.0, 0.0, -1.0, 2.0)
         coord1 = get_polygon_coordinates(vorn, 1, bb; predicates=PT())
         coord2 = get_polygon_coordinates(vorn, 2, bb; predicates=PT())
@@ -1290,8 +1310,8 @@ end
         G = (-4.0, -3.0)
         H = (3.0, 8.0)
         points = [A, B, C, D, E, F, G, H]
-        tri = triangulate(points)
-        vorn = voronoi(tri, predicates=PT())
+        tri = triangulate(points; rng)
+        vorn = voronoi(tri, predicates=PT(); rng)
         bounding_box = (0.0, 5.0, -15.0, 15.0)
         _pa = get_polygon_coordinates(vorn, 1, bounding_box; predicates=PT())
         _pb = get_polygon_coordinates(vorn, 2, bounding_box; predicates=PT())
@@ -1337,14 +1357,15 @@ end
 end
 
 @testset "Previously broken example" begin
+    rng = StableRNG(21)
     for PT in subtypes(DT.AbstractPredicateKernel)
         # The points were duplicated from refine and not included in tri, but 
         # retriangulate kept trying to use them
         points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
-        tri = triangulate(points; boundary_nodes=[1, 2, 3, 4, 1], predicates=PT())
-        refine!(tri; max_area=1.0e-2, min_angle=29.871, predicates=PT())
-        vorn = voronoi(tri, predicates=PT())
-        smooth_vorn = centroidal_smooth(vorn; maxiters=250, predicates=PT())
+        tri = triangulate(points; boundary_nodes=[1, 2, 3, 4, 1], predicates=PT(), rng)
+        refine!(tri; max_area=1.0e-2, min_angle=29.871, predicates=PT(), rng)
+        vorn = voronoi(tri, predicates=PT(); rng)
+        smooth_vorn = centroidal_smooth(vorn; maxiters=250, predicates=PT(), rng)
         @test validate_tessellation(smooth_vorn, predicates=PT())
     end
 end
@@ -1358,6 +1379,7 @@ end
 end
 
 @testset "Issue #72" begin
+    rng = StableRNG(22)
     function is_point_in_polygon(point::Point, polygon::Polygon)
         # Check if the point is on the boundary of the polygon
         point in polygon && return false
@@ -1379,21 +1401,21 @@ end
     p2 = coordinates(p)
     push!(p2, p2[1])
     boundary_nodes, points2 = convert_boundary_points_to_indices(getxy.(p2))
-    triangulation = triangulate(points2; boundary_nodes)
+    triangulation = triangulate(points2; boundary_nodes, rng)
     minx, miny = extrema(p2)[1]
     maxx, maxy = extrema(p2)[2]
     for i in range(minx + 0.05, maxx - 0.05, step=0.05)
         for j in range(maxy - 0.05, miny + 0.05, step=-0.05)
             if is_point_in_polygon(Point(i, j), p)
                 try
-                    add_point!(triangulation, (i, j))
+                    add_point!(triangulation, (i, j); rng)
                 catch
                     @warn "There was a problem adding this point."
                 end
             end
         end
     end
-    vorn = voronoi(triangulation, clip=false)
+    vorn = voronoi(triangulation, clip=false; rng)
     @test validate_tessellation(vorn, check_convex=false)
 end
 
@@ -1408,7 +1430,7 @@ end
     clip_polygon = (clip_points, clip_vertices)
     rng = StableRNG(123)
     tri = triangulate(points; rng)
-    @test_logs (:warn, "Clip polygon provided but clip = false. Ignoring clip polygon.") voronoi(tri, clip_polygon=clip_polygon)
+    @test_logs (:warn, "Clip polygon provided but clip = false. Ignoring clip polygon.") voronoi(tri, clip_polygon=clip_polygon; rng)
     vorn = voronoi(tri, clip=false, clip_polygon=clip_polygon, rng=rng)
     @test DT.find_all_exterior_circumcenters(vorn, clip_polygon...) == Set{Int}()
     int, ints = DT.find_all_intersecting_polygons(vorn, clip_polygon..., DT.find_all_exterior_circumcenters(vorn, clip_polygon...))
@@ -1729,9 +1751,10 @@ end
 end
 
 @testset "==" begin
-    tri = triangulate(rand(2, 100))
-    vorn = voronoi(tri, clip=true)
-    vorn2 = voronoi(tri, clip=true)
+    rng = StableRNG(23)
+    tri = triangulate(rand(rng, 2, 100); rng)
+    vorn = voronoi(tri, clip=true; rng)
+    vorn2 = voronoi(tri, clip=true; rng)
     @test vorn == vorn
     @test vorn == vorn2
     g1 = vorn.generators[1]
@@ -1775,7 +1798,8 @@ end
 end
 
 @testset "copy/deepcopy" begin
-    vorn = voronoi(triangulate(rand(2, 100)), clip=true, smooth=true)
+    rng = StableRNG(24)
+    vorn = voronoi(triangulate(rand(rng, 2, 100); rng), clip=true, smooth=true; rng)
     vorn1 = deepcopy(vorn)
     vorn2 = copy(vorn)
     @test typeof(vorn1) == typeof(vorn) == typeof(vorn2)
@@ -1801,19 +1825,19 @@ end
 end
 
 @testset "Issue #206" begin
-    Random.seed!(123)
+    rng = StableRNG(25)
     pts = [(0.1, 0.2), (1.1, 0.2), (0.1, 1.7)]
-    tri = triangulate(pts)
+    tri = triangulate(pts; rng)
     vorn = voronoi(tri, clip=true, clip_polygon=(
         [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)], [1, 2, 3, 4, 1]
-    ))
+    ); rng)
     @test validate_tessellation(vorn; check_area=false)
     A = 0.0
     for i in each_polygon_index(vorn)
         A += get_area(vorn, i)
     end
     @test A ≈ 1.0
-    vorn = voronoi(tri)
+    vorn = voronoi(tri; rng)
     poly = get_polygon_coordinates(vorn, 3, (0.0, 1.0, 0.0, 1.0))
     @test poly ⪧ [(0.675, 1.0), (0.0, 1.0), (0.0, 0.95), (0.6, 0.95), (0.675, 1.0)]
 end
@@ -1969,15 +1993,16 @@ end
 
     # Each square of a lattice is split into two triangles with the same circumcenter
     tri = triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 5, 5)
-    vorn = voronoi(tri)
+    vorn = voronoi(tri; rng)
     @test !isempty(DT.get_cocircular_circumcenters(vorn))
     @test DT.num_generators(vorn) == DT.num_polygons(vorn) == 25
 end
 
 @testset "Errors in voronoi do not change the triangulation" begin
+    rng = StableRNG(26)
     tri = triangulate(rand(StableRNG(1), 2, 50); rng = StableRNG(1))
     orig = deepcopy(tri)
-    @test_throws ArgumentError voronoi(tri; smooth = true)
+    @test_throws ArgumentError voronoi(tri; smooth = true, rng)
     # The convex hull is locked before clipping, so it must be unlocked even if clipping fails
     bad_clip_polygon = ([(0.0, 0.0), (1.0, 0.0)], [1, 2, 3, 1])
     @test_throws Exception voronoi(tri; clip = true, clip_polygon = bad_clip_polygon, rng = StableRNG(1))

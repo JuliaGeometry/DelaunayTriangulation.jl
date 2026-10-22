@@ -158,6 +158,7 @@ using StaticArrays
 end
 
 @testset "complete_split_edge_and_legalise!" begin
+    rng = StableRNG(1)
     @testset "Free edges and constrained segments" begin
         for i in 1:100
             tri = fixed_shewchuk_example_constrained()
@@ -174,7 +175,7 @@ end
             DT.complete_split_edge_and_legalise!(tri, 4, 5, DT.num_points(tri))
             @test DT.is_ghost_vertex(get_adjacent(tri, 15, 4))
             @test DT.is_ghost_vertex(get_adjacent(tri, 5, 15))
-            add_segment!(tri, 2, 9)
+            add_segment!(tri, 2, 9; rng)
             DT.push_point!(tri, 2.0, 1.0)
             DT.complete_split_edge_and_legalise!(tri, 2, 9, DT.num_points(tri))
             @test compare_edge_vectors(collect(get_interior_segments(tri)), [(16, 9), (2, 16)])
@@ -231,8 +232,8 @@ end
                 (7.0, 7.8), (7.0, 7.4),
             ]
             boundary_nodes, points = convert_boundary_points_to_indices(curves; existing_points = points)
-            uncons_tri = triangulate(points)
-            cons_tri = triangulate(points; boundary_nodes = boundary_nodes)
+            uncons_tri = triangulate(points; rng)
+            cons_tri = triangulate(points; boundary_nodes = boundary_nodes, rng)
             tri = cons_tri
             @test validate_triangulation(tri)
             validate_statistics(tri)
@@ -307,7 +308,7 @@ end
             @test test_fnc(tri, 62, 63)
             @test test_fnc(tri, 65, 66)
             @test test_fnc(tri, 94, 95)
-            add_segment!(tri, 101, 1)
+            add_segment!(tri, 101, 1; rng)
             @test test_fnc(tri, 15, 16)
             @test test_fnc(tri, 15, 23)
             @test test_fnc(tri, 78, 77)

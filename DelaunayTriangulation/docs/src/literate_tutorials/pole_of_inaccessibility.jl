@@ -11,6 +11,7 @@
 # We give a simple example. First, let us define our polygon.
 using DelaunayTriangulation
 using CairoMakie
+using StableRNGs # for reproducibility
 using ReferenceTests #src
 using Test #src
 fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures") #src
@@ -98,7 +99,8 @@ for i in 1:2
     cx += 3.0
 end
 boundary_nodes, points = convert_boundary_points_to_indices(xy)
-tri = triangulate(points; boundary_nodes = boundary_nodes)
+rng = StableRNG(123)
+tri = triangulate(points; boundary_nodes = boundary_nodes, rng)
 
 # To see the poles, called representative points, we use 
 DelaunayTriangulation.get_representative_point_list(tri)

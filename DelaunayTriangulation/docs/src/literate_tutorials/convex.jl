@@ -6,6 +6,7 @@
 # Let us start with a simple example.
 using DelaunayTriangulation
 using CairoMakie
+using StableRNGs # for reproducibility
 using ReferenceTests #src
 using Test #src
 fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures") #src
@@ -16,7 +17,8 @@ points = [
     (13.0, 12.0),
 ]
 S = 1:7
-tri = triangulate_convex(points, 1:7)
+rng = StableRNG(123)
+tri = triangulate_convex(points, 1:7; rng)
 
 #-
 fig, ax, sc = triplot(tri)
@@ -39,7 +41,7 @@ x = cos.(θ)
 y = sin.(θ)
 points = tuple.(x, y)
 S = 1:4999 # S must not be circular, i.e. S[begin] ≠ S[end]
-tri = triangulate_convex(points, S)
+tri = triangulate_convex(points, S; rng)
 
 #-
 fig, ax, sc = triplot(tri)
@@ -49,10 +51,10 @@ fig
 # Here is a comparison of the time it takes to triangulate this 
 # using `triangulate_convex` or `triangulate`.
 using BenchmarkTools
-@benchmark triangulate_convex($points, $S)
+@benchmark triangulate_convex($points, $S; rng = $rng)
 
 #-
-@benchmark triangulate($points)
+@benchmark triangulate($points; rng = $rng)
 
 # For the smaller example that we started with above, `triangulate_convex` is also 
 # faster, although not by much (≈15.10 μs versus ≈10.7 μs).

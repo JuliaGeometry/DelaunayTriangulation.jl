@@ -215,11 +215,12 @@ end
 end
 
 @testset "has_boundary_nodes and is_constrained" begin
+    rng = StableRNG(1)
     @test DT.has_boundary_nodes(tri)
     @test DT.has_boundary_nodes(tri2)
     _tri = triangulate_rectangle(-3.0, 2.0, 5.0, 17.3, 23, 57; single_boundary = true)
     @test DT.has_boundary_nodes(_tri)
-    __tri = triangulate(_tri.points)
+    __tri = triangulate(_tri.points; rng)
     @test !DT.has_boundary_nodes(__tri)
     @test !DT.is_constrained(__tri)
     push!(__tri.all_segments, (1, 2), (2, 3), (4, 5))
@@ -228,11 +229,12 @@ end
 end
 
 @testset "Orientation of a bare ghost triangle" begin
+    rng = StableRNG(2)
     p1 = @SVector[-3.32, 3.53]
     p2 = @SVector[-5.98, 2.17]
     p3 = @SVector[-6.36, -1.55]
     pts = [p1, p2, p3]
-    tri = triangulate(pts; delete_ghosts = false)
+    tri = triangulate(pts; delete_ghosts = false, rng)
     @test all(DT.is_positively_oriented(DT.triangle_orientation(tri, T)) for T in each_triangle(tri))
     DT.add_triangle!(get_triangles(tri), (2, 3, -1))
     @test !all(DT.is_positively_oriented(DT.triangle_orientation(tri, T)) for T in each_triangle(tri))

@@ -1,5 +1,6 @@
 using Test, DataStructures
 using ..DelaunayTriangulation
+using StableRNGs
 const DT = DelaunayTriangulation
 
 
@@ -18,12 +19,13 @@ const DT = DelaunayTriangulation
 end
 
 @testset "Comparing with DataStructures.PriorityQueue" begin
+    rng = StableRNG(1)
     pmax = 1000
 
     for n in [1:10; (11:50:10000)]
         if n ≠ 11
-            r = rand(1:pmax, n)
-            ks, vs = 1:(n + 1), rand(1:pmax, n)
+            r = rand(rng, 1:pmax, n)
+            ks, vs = 1:(n + 1), rand(rng, 1:pmax, n)
         else
             r = [670, 438, 251, 527, 40, 428, 913, 922, 756, 344, 562]
             ks, vs = 1:(n + 1), [591, 242, 443, 24, 640, 173, 83, 409, 197, 125, 352]
@@ -45,8 +47,8 @@ end
         dt_queue[27] = 5000.0
         @test queue == dt_queue
         for _ in 1:n
-            k = rand(1:n)
-            v = rand(1:pmax)
+            k = rand(rng, 1:n)
+            v = rand(rng, 1:pmax)
             queue[k] = v
             dt_queue[k] = v
             @test queue[k] == dt_queue[k]

@@ -48,8 +48,9 @@ curve_I = [1, 2, 3, 4, 1]
 points_I = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
 fpoints_I = flatten_boundary_nodes(points_I, curve_I)
 points_I_extra = copy(points_I)
+rng = StableRNG(1)
 for _ in 1:50
-    push!(points_I_extra, (rand(), rand()))
+    push!(points_I_extra, (rand(rng), rand(rng)))
 end
 fpoints_I_extra = flatten_boundary_nodes(points_I_extra, curve_I)
 points_I_extra_segments = copy(points_I_extra)
@@ -499,9 +500,10 @@ end
 end
 
 @testset "copy/deepcopy" begin 
+    rng = StableRNG(2)
     ppoints_XI = deepcopy(points_XI)
     ccurve_XI = deepcopy(curve_XI)
-    tri = triangulate(ppoints_XI; boundary_nodes = ccurve_XI)
+    tri = triangulate(ppoints_XI; boundary_nodes = ccurve_XI, rng)
     enricher = DT.get_boundary_enricher(tri)
     enricher2 = copy(enricher)
     @test enricher == enricher2 && !(enricher === enricher2)
@@ -806,6 +808,7 @@ end
 end
 
 @testset "Calling on BoundaryEnricher and performance checking" begin
+    rng = StableRNG(3)
     enricher_I = DT.BoundaryEnricher(deepcopy(points_I), deepcopy(curve_I))
     enricher_II = DT.BoundaryEnricher(deepcopy(points_II), deepcopy(curve_II))
     enricher_III = DT.BoundaryEnricher(deepcopy(points_III), deepcopy(curve_III))
@@ -872,72 +875,72 @@ end
     @inferred DT.get_equivariation_split(enricher_X, 3, t₁, t₂)
 
     curve = enricher_IV.boundary_curves[1]
-    t = rand()
+    t = rand(rng)
     @test DT.eval_boundary_curve(enricher_IV, 1, t) == curve(t)
     @inferred DT.eval_boundary_curve(enricher_IV, 1, t)
     curve = enricher_XI.boundary_curves[2]
-    t = rand()
+    t = rand(rng)
     @test DT.eval_boundary_curve(enricher_XI, 2, t) == curve(t)
     @inferred DT.eval_boundary_curve(enricher_XI, 2, t)
     curve = enricher_XI.boundary_curves[8]
-    t = rand()
+    t = rand(rng)
     @test DT.eval_boundary_curve(enricher_XI, 8, t) == curve(t)
     @inferred DT.eval_boundary_curve(enricher_XI, 8, t)
     curve = enricher_X.boundary_curves[3]
-    t = rand()
+    t = rand(rng)
     @test DT.eval_boundary_curve(enricher_X, 3, t) == curve(t)
     @inferred DT.eval_boundary_curve(enricher_X, 3, t)
 
     curve = enricher_IV.boundary_curves[1]
     p = (10randn(), 10randn())
-    @test DT.point_position_relative_to_curve(rt(), enricher_IV, 1, p) == DT.point_position_relative_to_curve(rt(), curve, p)
+    @test DT.point_position_relative_to_curve(rt(rng), enricher_IV, 1, p) == DT.point_position_relative_to_curve(rt(rng), curve, p)
     @test DT.point_position_relative_to_curve(enricher_IV, 1, p) == DT.point_position_relative_to_curve(AdaptiveKernel(), curve, p)
-    @inferred DT.point_position_relative_to_curve(rt(), enricher_IV, 1, p)
+    @inferred DT.point_position_relative_to_curve(rt(rng), enricher_IV, 1, p)
     curve = enricher_XI.boundary_curves[2]
     p = (10randn(), 10randn())
-    @test DT.point_position_relative_to_curve(rt(), enricher_XI, 2, p) == DT.point_position_relative_to_curve(rt(), curve, p)
-    @inferred DT.point_position_relative_to_curve(rt(), enricher_XI, 2, p)
+    @test DT.point_position_relative_to_curve(rt(rng), enricher_XI, 2, p) == DT.point_position_relative_to_curve(rt(rng), curve, p)
+    @inferred DT.point_position_relative_to_curve(rt(rng), enricher_XI, 2, p)
     curve = enricher_XI.boundary_curves[8]
     p = (10randn(), 10randn())
-    @test DT.point_position_relative_to_curve(rt(), enricher_XI, 8, p) == DT.point_position_relative_to_curve(rt(), curve, p)
-    @inferred DT.point_position_relative_to_curve(rt(), enricher_XI, 8, p)
+    @test DT.point_position_relative_to_curve(rt(rng), enricher_XI, 8, p) == DT.point_position_relative_to_curve(rt(rng), curve, p)
+    @inferred DT.point_position_relative_to_curve(rt(rng), enricher_XI, 8, p)
     curve = enricher_X.boundary_curves[3]
     p = (10randn(), 10randn())
-    @test DT.point_position_relative_to_curve(rt(), enricher_X, 3, p) == DT.point_position_relative_to_curve(rt(), curve, p)
-    @inferred DT.point_position_relative_to_curve(rt(), enricher_X, 3, p)
+    @test DT.point_position_relative_to_curve(rt(rng), enricher_X, 3, p) == DT.point_position_relative_to_curve(rt(rng), curve, p)
+    @inferred DT.point_position_relative_to_curve(rt(rng), enricher_X, 3, p)
     @test DT.point_position_relative_to_curve(DT.get_boundary_curves(enricher_X), 3, p) == DT.point_position_relative_to_curve(AdaptiveKernel(), DT.get_boundary_curves(enricher_X), 3, p)
 
     curve = enricher_IV.boundary_curves[1]
-    t₁, t₂, r = rand(3)
+    t₁, t₂, r = rand(rng, 3)
     @test DT.get_circle_intersection(enricher_IV, 1, t₁, t₂, r) == DT.get_circle_intersection(curve, t₁, t₂, r)
     @inferred DT.get_circle_intersection(enricher_IV, 1, t₁, t₂, r)
     curve = enricher_XI.boundary_curves[2]
-    t₁, t₂, r = rand(3)
+    t₁, t₂, r = rand(rng, 3)
     @test DT.get_circle_intersection(enricher_XI, 2, t₁, t₂, r) == DT.get_circle_intersection(curve, t₁, t₂, r)
     @inferred DT.get_circle_intersection(enricher_XI, 2, t₁, t₂, r)
     curve = enricher_XI.boundary_curves[8]
-    t₁, t₂, r = rand(3)
+    t₁, t₂, r = rand(rng, 3)
     @test DT.get_circle_intersection(enricher_XI, 8, t₁, t₂, r) == DT.get_circle_intersection(curve, t₁, t₂, r)
     @inferred DT.get_circle_intersection(enricher_XI, 8, t₁, t₂, r)
     curve = enricher_X.boundary_curves[3]
-    t₁, t₂, r = rand(3)
+    t₁, t₂, r = rand(rng, 3)
     @test DT.get_circle_intersection(enricher_X, 3, t₁, t₂, r) == DT.get_circle_intersection(curve, t₁, t₂, r)
     @inferred DT.get_circle_intersection(enricher_X, 3, t₁, t₂, r)
 
     curve = enricher_IV.boundary_curves[1]
-    t₁, t₂ = rand(2)
+    t₁, t₂ = rand(rng, 2)
     @test DT.get_equidistant_split(enricher_IV, 1, t₁, t₂) == DT.get_equidistant_split(curve, t₁, t₂)
     @inferred DT.get_equidistant_split(enricher_IV, 1, t₁, t₂)
     curve = enricher_XI.boundary_curves[2]
-    t₁, t₂ = rand(2)
+    t₁, t₂ = rand(rng, 2)
     @test DT.get_equidistant_split(enricher_XI, 2, t₁, t₂) == DT.get_equidistant_split(curve, t₁, t₂)
     @inferred DT.get_equidistant_split(enricher_XI, 2, t₁, t₂)
     curve = enricher_XI.boundary_curves[8]
-    t₁, t₂ = rand(2)
+    t₁, t₂ = rand(rng, 2)
     @test DT.get_equidistant_split(enricher_XI, 8, t₁, t₂) == DT.get_equidistant_split(curve, t₁, t₂)
     @inferred DT.get_equidistant_split(enricher_XI, 8, t₁, t₂)
     curve = enricher_X.boundary_curves[3]
-    t₁, t₂ = rand(2)
+    t₁, t₂ = rand(rng, 2)
     @test DT.get_equidistant_split(enricher_X, 3, t₁, t₂) == DT.get_equidistant_split(curve, t₁, t₂)
     @inferred DT.get_equidistant_split(enricher_X, 3, t₁, t₂)
 end
@@ -1390,56 +1393,56 @@ end
     points = [E, F, G, B, H, I, C, A, D, E]
     boundary_nodes, points = convert_boundary_points_to_indices(points)
     enricher = DT.BoundaryEnricher(points, boundary_nodes)
-    num_adjoin, adjoin_vert = DT.has_acute_neighbouring_angles(rt(), enricher, 1, 2)
-    @inferred DT.has_acute_neighbouring_angles(rt(), enricher, 1, 2)
+    num_adjoin, adjoin_vert = DT.has_acute_neighbouring_angles(rt(rng), enricher, 1, 2)
+    @inferred DT.has_acute_neighbouring_angles(rt(rng), enricher, 1, 2)
     @test num_adjoin == 0 && adjoin_vert == 0
-    num_adjoin, adjoin_vert = DT.has_acute_neighbouring_angles(rt(), enricher, 2, 3)
+    num_adjoin, adjoin_vert = DT.has_acute_neighbouring_angles(rt(rng), enricher, 2, 3)
     @test num_adjoin == adjoin_vert == 0
-    num_adjoin, adjoin_vert = DT.has_acute_neighbouring_angles(rt(), enricher, 3, 4)
+    num_adjoin, adjoin_vert = DT.has_acute_neighbouring_angles(rt(rng), enricher, 3, 4)
     @test num_adjoin == 1 && adjoin_vert == 4
-    num_adjoin, adjoin_vert = DT.has_acute_neighbouring_angles(rt(), enricher, 4, 5)
+    num_adjoin, adjoin_vert = DT.has_acute_neighbouring_angles(rt(rng), enricher, 4, 5)
     @test num_adjoin == 1 && adjoin_vert == 4
-    num_adjoin, adjoin_vert = DT.has_acute_neighbouring_angles(rt(), enricher, 5, 6)
+    num_adjoin, adjoin_vert = DT.has_acute_neighbouring_angles(rt(rng), enricher, 5, 6)
     @test num_adjoin == adjoin_vert == 0
-    num_adjoin, adjoin_vert = DT.has_acute_neighbouring_angles(rt(), enricher, 6, 7)
+    num_adjoin, adjoin_vert = DT.has_acute_neighbouring_angles(rt(rng), enricher, 6, 7)
     @test num_adjoin == 1 && adjoin_vert == 7
-    num_adjoin, adjoin_vert = DT.has_acute_neighbouring_angles(rt(), enricher, 7, 8)
+    num_adjoin, adjoin_vert = DT.has_acute_neighbouring_angles(rt(rng), enricher, 7, 8)
     @test num_adjoin == 1 && adjoin_vert == 7
-    num_adjoin, adjoin_vert = DT.has_acute_neighbouring_angles(rt(), enricher, 8, 9)
+    num_adjoin, adjoin_vert = DT.has_acute_neighbouring_angles(rt(rng), enricher, 8, 9)
     @test num_adjoin == adjoin_vert == 0
-    t12, Δθ12, ct12 = DT.compute_split_position(enricher, 1, 2, rt())
+    t12, Δθ12, ct12 = DT.compute_split_position(enricher, 1, 2, rt(rng))
     @test (t12, Δθ12, ct12)[2:3] == DT._compute_split_position_standard(enricher, 1, 2)[2:3]
-    t23, Δθ23, ct23 = DT.compute_split_position(enricher, 2, 3, rt())
+    t23, Δθ23, ct23 = DT.compute_split_position(enricher, 2, 3, rt(rng))
     @test (t23, Δθ23, ct23)[2:3] == DT._compute_split_position_standard(enricher, 2, 3)[2:3]
-    t34, Δθ34, ct34 = DT.compute_split_position(enricher, 3, 4, rt())
+    t34, Δθ34, ct34 = DT.compute_split_position(enricher, 3, 4, rt(rng))
     @test (t34, Δθ34, ct34) == DT._compute_split_position_acute(enricher, 3, 4, 1, 4)
     @test ispow2(t34 * DT.dist(DT.get_point(enricher.points, 3, 4)...))
-    t45, Δθ45, ct45 = DT.compute_split_position(enricher, 4, 5, rt())
+    t45, Δθ45, ct45 = DT.compute_split_position(enricher, 4, 5, rt(rng))
     @test (t45, Δθ45, ct45) == DT._compute_split_position_acute(enricher, 4, 5, 1, 4)
     @test ispow2(t45 * DT.dist(DT.get_point(enricher.points, 4, 5)...))
-    t56, Δθ56, ct56 = DT.compute_split_position(enricher, 5, 6, rt())
+    t56, Δθ56, ct56 = DT.compute_split_position(enricher, 5, 6, rt(rng))
     @test (t56, Δθ56, ct56)[2:3] == DT._compute_split_position_standard(enricher, 5, 6)[2:3]
-    t67, Δθ67, ct67 = DT.compute_split_position(enricher, 6, 7, rt())
+    t67, Δθ67, ct67 = DT.compute_split_position(enricher, 6, 7, rt(rng))
     @test (t67, Δθ67, ct67) == DT._compute_split_position_acute(enricher, 6, 7, 1, 7)
     @test ispow2((1 - t67) * DT.dist(DT.get_point(enricher.points, 6, 7)...))
-    t78, Δθ78, ct78 = DT.compute_split_position(enricher, 7, 8, rt())
+    t78, Δθ78, ct78 = DT.compute_split_position(enricher, 7, 8, rt(rng))
     @test (t78, Δθ78, ct78) == DT._compute_split_position_acute(enricher, 7, 8, 1, 7)
     @test ispow2(t78 * DT.dist(DT.get_point(enricher.points, 7, 8)...))
-    t89, Δθ89, ct89 = DT.compute_split_position(enricher, 8, 9, rt())
+    t89, Δθ89, ct89 = DT.compute_split_position(enricher, 8, 9, rt(rng))
     @test (t89, Δθ89, ct89)[2:3] == DT._compute_split_position_standard(enricher, 8, 9)[2:3]
 
     A, B, C, D, E = (0.0, 0.0), (3.0, 0.0), (0.5, 1.0), (2.5, 1.0), (1.5, 1.5)
     points = [A, B, C, D, E]
     boundary_nodes = [5, 3, 1, 2, 4, 5]
     enricher = DT.BoundaryEnricher(points, boundary_nodes)
-    num_adjoin, adjoin_vert = DT.has_acute_neighbouring_angles(rt(), enricher, 1, 2)
+    num_adjoin, adjoin_vert = DT.has_acute_neighbouring_angles(rt(rng), enricher, 1, 2)
     @test num_adjoin == 2 && adjoin_vert == 0
-    num_adjoin, adjoin_vert = DT.has_acute_neighbouring_angles(rt(), enricher, 3, 1)
+    num_adjoin, adjoin_vert = DT.has_acute_neighbouring_angles(rt(rng), enricher, 3, 1)
     @test num_adjoin == 1 && adjoin_vert == 1
-    t12, Δθ12, ct12 = DT.compute_split_position(enricher, 1, 2, rt())
+    t12, Δθ12, ct12 = DT.compute_split_position(enricher, 1, 2, rt(rng))
     @test (t12, Δθ12, ct12) == DT._compute_split_position_acute(enricher, 1, 2, 2, 0)
     @test t12 == DT.compute_concentric_shell_quarternary_split_position(get_point(enricher.points, 1, 2)...)
-    t23, Δθ23, ct23 = DT.compute_split_position(enricher, 3, 1, rt())
+    t23, Δθ23, ct23 = DT.compute_split_position(enricher, 3, 1, rt(rng))
     @test (t23, Δθ23, ct23) == DT._compute_split_position_acute(enricher, 3, 1, 1, 1)
     @test (1 - t23) * DT.dist(DT.get_point(enricher.points, 3, 1)...) ≈ 1 / 2
 end
@@ -1450,7 +1453,7 @@ end
         curve_sets = [curve_I, curve_II, curve_III, curve_IV, curve_V, curve_VI, curve_VII, curve_VIII, curve_IX, curve_X, curve_XI, curve_XII]
         for (points, curve) in zip(point_sets, curve_sets)
             enricher = DT.BoundaryEnricher(deepcopy(points), deepcopy(curve))
-            DT.enrich_boundary!(enricher; predicates=rt())
+            DT.enrich_boundary!(enricher; predicates=rt(rng))
             @test all_diametral_circles_are_empty(enricher) == 1
             @test allunique(get_points(enricher))
             @test all_points_are_inside(enricher, points, curve)
@@ -1462,7 +1465,7 @@ end
         points = [E, F, G, B, H, I, C, J, K, A, D, E]
         boundary_nodes, points = convert_boundary_points_to_indices(points)
         enricher = DT.BoundaryEnricher(points, boundary_nodes)
-        DT.enrich_boundary!(enricher; predicates=rt())
+        DT.enrich_boundary!(enricher; predicates=rt(rng))
         @test all_diametral_circles_are_empty(enricher) == 1
         @test all_points_are_inside(enricher, points, boundary_nodes)
     end
@@ -1472,7 +1475,7 @@ end
         curve_sets = [curve_I, curve_II, curve_III, curve_IV, curve_V, curve_VI, curve_VII, curve_VIII, curve_IX, curve_X, curve_XI, curve_XII]
         for (points, curve) in zip(point_sets, curve_sets)
             enricher = DT.BoundaryEnricher(deepcopy(points), deepcopy(curve))
-            DT.enrich_boundary!(enricher; predicates=rt())
+            DT.enrich_boundary!(enricher; predicates=rt(rng))
             @test all_diametral_circles_are_empty(enricher) == 1
             @test allunique(get_points(enricher))
             @test all_points_are_inside(enricher, points, curve)
@@ -1496,13 +1499,14 @@ end
 end
 
 @testset "triangulate_curve_bounded" begin
+    rng = StableRNG(4)
     @testset "triangulate_curve_bounded (no points or extra segments)" begin
         for PT in (DT.ExactKernel, DT.AdaptiveKernel)
             point_sets = deepcopy.([points_I, points_II, points_III, points_IV, points_V, points_VI, points_VII, points_VIII, points_IX, points_X, points_XI, points_XII])
             curve_sets = deepcopy.([curve_I, curve_II, curve_III, curve_IV, curve_V, curve_VI, curve_VII, curve_VIII, curve_IX, curve_X, curve_XI, curve_XII])
             for i in eachindex(point_sets, curve_sets)
                 points, curve = deepcopy(point_sets[i]), deepcopy(curve_sets[i])
-                tri = triangulate(points; boundary_nodes=curve, enrich=i ≤ 3, predicates=PT())
+                tri = triangulate(points; boundary_nodes=curve, enrich=i ≤ 3, predicates=PT(), rng)
                 @test validate_triangulation(tri)
                 @test is_conformal(tri; predicates=PT())
                 @test DT.get_boundary_enricher(tri) == DT.enrich_boundary!(DT.BoundaryEnricher(deepcopy(point_sets[i]), deepcopy(curve_sets[i])), predicates=PT())
@@ -1518,7 +1522,7 @@ end
             curve_sets = deepcopy.([curve_I, curve_II, curve_III, curve_IV, curve_V, curve_VI, curve_VII, curve_VIII, curve_IX, curve_X, curve_XI, curve_XII])
             for i in eachindex(point_sets, curve_sets)
                 points, curve = deepcopy(point_sets[i]), deepcopy(curve_sets[i])
-                tri = triangulate(points; boundary_nodes=curve, enrich=i ≤ 3, predicates=PT())
+                tri = triangulate(points; boundary_nodes=curve, enrich=i ≤ 3, predicates=PT(), rng)
                 @test validate_triangulation(tri)
                 @test is_conformal(tri; predicates=PT())
                 i ∉ (2, 11) && @test DT.get_boundary_enricher(tri) == DT.enrich_boundary!(DT.BoundaryEnricher(deepcopy(point_sets[i]), deepcopy(curve_sets[i])), predicates=PT()) # i ≠ 2 since we deliberately included some boundary points in the extra points, which triangulate then sees and mutates
@@ -1535,7 +1539,7 @@ end
             segment_sets = deepcopy.([segments_I, segments_II, segments_III, segments_IV])
             for i in eachindex(point_sets, curve_sets, segment_sets)
                 points, curve, segments = deepcopy(point_sets[i]), deepcopy(curve_sets[i]), deepcopy(segment_sets[i])
-                tri = triangulate(points; boundary_nodes=curve, segments=segments, enrich=i ≤ 3, predicates=PT())
+                tri = triangulate(points; boundary_nodes=curve, segments=segments, enrich=i ≤ 3, predicates=PT(), rng)
                 @test validate_triangulation(tri)
                 @test is_conformal(tri; predicates=PT())
                 i ≠ 2 && @test DT.get_boundary_enricher(tri) == DT.enrich_boundary!(DT.BoundaryEnricher(deepcopy(point_sets[i]), deepcopy(curve_sets[i]), deepcopy(segment_sets[i])), predicates=PT())
@@ -1547,6 +1551,7 @@ end
 end
 
 @testset "refine_curve_bounded with circumcenters" begin
+    rng = StableRNG(5)
     point_sets_no_extra = deepcopy.([points_I, points_II, points_III, points_IV, points_V, points_VI, points_VII, points_VIII, points_IX, points_X, points_XI, points_XII])
     point_sets_extra_points = deepcopy.([points_I_extra, points_II_extra, points_III_extra, points_IV_extra, points_V_extra, points_VI_extra, points_VII_extra, points_VIII_extra, points_IX_extra, points_X_extra, points_XI_extra, points_XII_extra])
     point_sets_extra_segments = deepcopy.([points_I_extra_segments, points_II_extra_segments, points_III_extra_segments, points_IV_extra_segments])
@@ -1600,7 +1605,7 @@ end
                                             return (x + y^2 < 1 / 4) && DT.triangle_area(p, q, r) > 1.0e-4 / 2
                                         end
                                         refine!(tri; min_angle, min_area, max_area, custom_constraint, seditious_angle, use_circumcenter=true, use_lens, rng, predicates=PT())
-                                        args = DT.RefinementArguments(tri; min_angle, min_area, max_area, seditious_angle, custom_constraint, use_circumcenter=true, use_lens, predicates=PT())
+                                        args = DT.RefinementArguments(tri; min_angle, min_area, max_area, seditious_angle, custom_constraint, use_circumcenter=true, use_lens, predicates=PT(), rng)
                                         @test_with_log msg validate_refinement(tri, args, warn=false)
                                         if _rng_num(idx1, idx2, idx3, idx4, idx5, curve_idx, point_idx) == _rng_num(1, 3, 1, 2, 2, curve_idx, point_idx)
                                             fig, ax, sc = triplot(tri)
@@ -1625,8 +1630,8 @@ end
             curve_idx = 12
             point_idx = 2
             points, curve = deepcopy(point_sets[point_idx][curve_idx]), deepcopy(curve_sets[curve_idx])
-            tri = triangulate(points; boundary_nodes=curve, predicates=PT())
-            refine!(tri; max_area=1.0e-3, max_points=500, use_circumcenter=true, predicates=PT())
+            tri = triangulate(points; boundary_nodes=curve, predicates=PT(), rng)
+            refine!(tri; max_area=1.0e-3, max_points=500, use_circumcenter=true, predicates=PT(), rng)
             @test DT.num_solid_vertices(tri) == 500
             @test validate_triangulation(tri)
             @test !validate_refinement(tri; max_area=1.0e-3, max_points=500, use_circumcenter=true, warn=false)
@@ -1635,6 +1640,7 @@ end
 end
 
 @testset "adding segment to a curve-bounded domain with no existing segments" begin
+    rng = StableRNG(6)
     for PT in subtypes(DT.AbstractPredicateKernel)
         curve = [
             [
@@ -1659,19 +1665,20 @@ end
         points = [(-2.0, 0.0), (0.0, 0.0), (2.0, 0.0), (-2.0, -5.0), (2.0, -5.0), (2.0, -1 / 10), (-2.0, -1 / 10), (-1.0, -3.0), (0.0, -4.0), (0.0, -2.3), (-0.5, -3.5), (0.9, -3.0)]
         rng = StableRNG(123)
         tri = triangulate(points; boundary_nodes=curve, rng, predicates=PT())
-        refine!(tri; max_area=1.0e-2, predicates=PT())
+        refine!(tri; max_area=1.0e-2, predicates=PT(), rng)
         @test validate_triangulation(tri, predicates=PT())
         r = DT.num_points(tri)
-        add_point!(tri, -3 / 2, -4.0, concavity_protection=true, predicates=PT())
-        add_point!(tri, -3 / 2, -1.0, concavity_protection=true, predicates=PT())
+        add_point!(tri, -3 / 2, -4.0, concavity_protection=true, predicates=PT(); rng)
+        add_point!(tri, -3 / 2, -1.0, concavity_protection=true, predicates=PT(); rng)
         @test validate_triangulation(tri, predicates=PT())
-        add_segment!(tri, r + 1, r + 2, predicates=PT())
+        add_segment!(tri, r + 1, r + 2, predicates=PT(); rng)
         @test validate_triangulation(tri, predicates=PT())
         @test tri.boundary_enricher.segments ∈ (Set(((r + 1, r + 2),)), Set(((r + 2, r + 1),)))
     end
 end
 
 @testset "Custom structs" begin
+    rng = StableRNG(7)
     # Used to be a broken example
     DT = DelaunayTriangulation
     struct Custom2Points
@@ -1710,24 +1717,25 @@ end
     DT.set_point!(points::Custom2Segments, i, x, y) = points.points[i] = (x, y)
     Base.push!(triangles::Custom2Triangles, T::NTuple{3,Int}) = push!(triangles.triangles, T)
     points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
-    append!(points, [(clamp(0.5 + randn(), -2, 2), clamp(0.5 + randn(), -2, 2)) for _ in 1:100])
+    append!(points, [(clamp(0.5 + randn(rng), -2, 2), clamp(0.5 + randn(rng), -2, 2)) for _ in 1:100])
     unique!(points)
     inner_circle = CircularArc((0.5, 0.25), (0.5, 0.25), (0.5, 0.5), positive=false)
     boundary_nodes = [[[1, 2, 3, 4, 1]], [[inner_circle]]]
     points = Custom2Points(points)
-    tri = triangulate(points; boundary_nodes, TrianglesType=Custom2Triangles, EdgesType=Custom2Segments)
+    tri = triangulate(points; boundary_nodes, TrianglesType=Custom2Triangles, EdgesType=Custom2Segments, rng)
     @test DT.validate_triangulation(tri)
 end
 
 @testset "LineSegment domain" begin 
+    rng = StableRNG(8)
     a, b, c, d = (0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)
     L1, L2, L3, L4 = LineSegment(a, b), LineSegment(b, c), LineSegment(c, d), LineSegment(d, a)
     boundary_nodes = [[L1], [L2], [L3], [L4]]
-    tri = triangulate(NTuple{2,Float64}[]; boundary_nodes)
+    tri = triangulate(NTuple{2,Float64}[]; boundary_nodes, rng)
     @test get_points(tri) == [a, b, c, d] # test that we didn't do any more discretisation than is needed 
     @test validate_triangulation(tri)
     @test DT.is_curve_bounded(tri)
-    refine!(tri; max_area = 1e-3)
+    refine!(tri; max_area = 1e-3, rng)
     @test validate_triangulation(tri)
     @test validate_refinement(tri; max_area = 1e-3)
 end

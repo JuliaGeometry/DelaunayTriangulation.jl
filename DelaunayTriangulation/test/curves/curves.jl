@@ -12,9 +12,10 @@ using ReferenceTests
 const ASSETS = joinpath(@__DIR__, "..", "..", "..", "assets", "test", "data_structures")
 
 @testset "LineSegment" begin
+    rng = StableRNG(1)
     # Construction 
-    p = rand(2) |> Tuple
-    q = rand(2) |> Tuple
+    p = rand(rng, 2) |> Tuple
+    q = rand(rng, 2) |> Tuple
     L = LineSegment(p, q)
     @test !DT.is_interpolating(L)
     @test DT.is_curve_bounded(L)
@@ -48,8 +49,8 @@ const ASSETS = joinpath(@__DIR__, "..", "..", "..", "assets", "test", "data_stru
     @test DT.is_right(cert1) && DT.is_left(cert2)
 
     ## Arclength 
-    p = rand(2) |> Tuple
-    q = rand(2) |> Tuple
+    p = rand(rng, 2) |> Tuple
+    q = rand(rng, 2) |> Tuple
     L = LineSegment(p, q)
     s = DT.arc_length(L)
     @test s ≈ norm(p .- q)
@@ -59,8 +60,8 @@ const ASSETS = joinpath(@__DIR__, "..", "..", "..", "assets", "test", "data_stru
     @test s ≈ slow_arc_length(L, 0.3, 0.7)
 
     ## Differentiate 
-    p = rand(2) |> Tuple
-    q = rand(2) |> Tuple
+    p = rand(rng, 2) |> Tuple
+    q = rand(rng, 2) |> Tuple
     L = LineSegment(p, q)
     for t in LinRange(0, 1, 100)
         der1 = DT.differentiate(L, t)
@@ -68,12 +69,12 @@ const ASSETS = joinpath(@__DIR__, "..", "..", "..", "assets", "test", "data_stru
         der2 = (L(t + h) .- L(t - h)) ./ (2h)
         @test der1 ⪧ der2 rtol = 1.0e-5 atol = 1.0e-5
     end
-    @test DT.twice_differentiate(L, rand()) == (0.0, 0.0)
-    @inferred DT.differentiate(L, rand())
-    @inferred DT.twice_differentiate(L, rand())
+    @test DT.twice_differentiate(L, rand(rng)) == (0.0, 0.0)
+    @inferred DT.differentiate(L, rand(rng))
+    @inferred DT.twice_differentiate(L, rand(rng))
 
     ## Curvature 
-    @test DT.curvature(L, rand()) ≈ 0.0
+    @test DT.curvature(L, rand(rng)) ≈ 0.0
 
     ## Total variation 
     TV = DT.total_variation(L)
@@ -95,7 +96,7 @@ const ASSETS = joinpath(@__DIR__, "..", "..", "..", "assets", "test", "data_stru
     @test t ≈ (0.38 + 0.95) / 2 && T == 0.0
 
     ## Inverse 
-    L1 = LineSegment(Tuple(rand(2)), Tuple(rand(2)))
+    L1 = LineSegment(Tuple(rand(rng, 2)), Tuple(rand(rng, 2)))
     L2 = LineSegment((2.0, 5.0), (2.0, 10.0))
     L3 = LineSegment((2.0, 5.0), (-5.0, 5.0))
     for t in LinRange(0, 1, 2500)
@@ -124,8 +125,8 @@ const ASSETS = joinpath(@__DIR__, "..", "..", "..", "assets", "test", "data_stru
     @test t′ ≈ 0.6464466094067263 && q′ ⪧ (0.6464466094067263, 0.6464466094067263)
 
     ## == 
-    p = rand(2) |> Tuple
-    q = rand(2) |> Tuple
+    p = rand(rng, 2) |> Tuple
+    q = rand(rng, 2) |> Tuple
     L1 = LineSegment(p, q)
     L2 = LineSegment(p, q)
     @test L1 == L2
@@ -144,7 +145,7 @@ const ASSETS = joinpath(@__DIR__, "..", "..", "..", "assets", "test", "data_stru
 
     ## Reverse
     for _ in 1:100
-        p, q = rand(2) |> Tuple, rand(2) |> Tuple
+        p, q = rand(rng, 2) |> Tuple, rand(rng, 2) |> Tuple
         L = LineSegment(p, q)
         LR = reverse(L)
         @test LR.first == q && LR.last == p
@@ -155,6 +156,7 @@ const ASSETS = joinpath(@__DIR__, "..", "..", "..", "assets", "test", "data_stru
 end
 
 @testset "PiecewiseLinear" begin
+    rng = StableRNG(2)
     L = DT.PiecewiseLinear([(1.0, 0.0), (1.0, 1.0)], [1, 1, 1])
     @test !DT.is_curve_bounded(L)
     @test DT.is_piecewise_linear(L)
@@ -162,7 +164,7 @@ end
     @test get_points(L) == [(1.0, 0.0), (1.0, 1.0)]
     @test get_boundary_nodes(L) == [1, 1, 1]
 
-    L = DT.PiecewiseLinear(rand(2, 50), [5, 17, 23, 19, 25])
+    L = DT.PiecewiseLinear(rand(rng, 2, 50), [5, 17, 23, 19, 25])
     @test L(0) == L.points[:, 5] |> Tuple
     @test L(1) == L.points[:, 25] |> Tuple
     @inferred L(0)
@@ -197,6 +199,7 @@ end
 end
 
 @testset "CircularArc" begin
+    rng = StableRNG(3)
     ## Construction 
     center1 = (1.0, 0.0)
     p1 = (5.0, 5.0)
@@ -305,7 +308,7 @@ end
         @test DT.arc_length(c, 0.3, 0.9) ≈ slow_arc_length(c, 0.3, 0.9)
         @test DT.arc_length(c, 0.2, 0.21) ≈ slow_arc_length(c, 0.2, 0.21)
         for _ in 1:1000
-            t₁, t₂ = rand(2)
+            t₁, t₂ = rand(rng, 2)
             t₁, t₂ = minmax(t₁, t₂)
             @test DT.arc_length(c, t₁, t₂) ≈ slow_arc_length(c, t₁, t₂)
         end
@@ -352,7 +355,7 @@ end
         TVslow = slow_total_absolute_curvature(c, 0, 1)
         @test TV ≈ TVslow ≈ abs(c.sector_angle)
         for _ in 1:1000
-            t1, t2 = minmax(rand(2)...)
+            t1, t2 = minmax(rand(rng, 2)...)
             TV = DT.total_variation(c, t1, t2)
             @inferred DT.total_variation(c, t1, t2)
             TVslow = slow_total_absolute_curvature(c, t1, t2)
@@ -363,7 +366,7 @@ end
     ## Equidistant split 
     for c in (arc, negarc, revarc, revnegarc)
         for _ in 1:1000
-            t1, t2 = minmax(rand(2)...)
+            t1, t2 = minmax(rand(rng, 2)...)
             @inferred DT.get_equidistant_split(c, t1, t2)
             t = DT.get_equidistant_split(c, t1, t2)
             s1 = DT.arc_length(c, t1, t)
@@ -377,7 +380,7 @@ end
     ## Equivariation split 
     for c in (arc, negarc, revarc, revnegarc)
         for _ in 1:1000
-            t1, t2 = minmax(rand(2)...)
+            t1, t2 = minmax(rand(rng, 2)...)
             @inferred DT.get_equivariation_split(c, t1, t2)
             t, T = DT.get_equivariation_split(c, t1, t2)
             T1 = DT.total_variation(c, t1, t)
@@ -438,6 +441,7 @@ end
 end
 
 @testset "EllipticalArc" begin
+    rng = StableRNG(4)
     ## Construction
     Rx, Ry, Cx, Cy, s = 2.2, 2.75, 0.6, 0.65, 60.0
     A, B = (-1.9827767129992, 1.4963893939715), (2.5063071261053, -1.2608915244961)
@@ -598,7 +602,7 @@ end
         @test DT.arc_length(c, 0.2, 0.21) ≈ slow_arc_length(c, 0.2, 0.21)
         @inferred DT.arc_length(c, 0.2, 0.21)
         for _ in 1:1000
-            t₁, t₂ = rand(2)
+            t₁, t₂ = rand(rng, 2)
             t₁, t₂ = minmax(t₁, t₂)
             @test DT.arc_length(c, t₁, t₂) ≈ slow_arc_length(c, t₁, t₂)
         end
@@ -635,7 +639,7 @@ end
         TVslow = slow_total_absolute_curvature(c, 0, 1)
         @test TV ≈ TVslow
         for _ in 1:1000
-            t1, t2 = minmax(rand(2)...)
+            t1, t2 = minmax(rand(rng, 2)...)
             TV = DT.total_variation(c, t1, t2)
             @inferred DT.total_variation(c, t1, t2)
             TVslow = slow_total_absolute_curvature(c, t1, t2)
@@ -646,7 +650,7 @@ end
     ## Equidistant split
     for c in (arc, negarc, revarc, revnegarc, closed_arc, revclosed_arc)
         for _ in 1:1000
-            t1, t2 = minmax(rand(2)...)
+            t1, t2 = minmax(rand(rng, 2)...)
             @inferred DT.get_equidistant_split(c, t1, t2)
             t = DT.get_equidistant_split(c, t1, t2)
             s1 = DT.arc_length(c, t1, t)
@@ -660,7 +664,7 @@ end
     ## Equivariation split 
     for c in (arc, negarc, revarc, revnegarc, closed_arc, revclosed_arc)
         for _ in 1:1000
-            t1, t2 = minmax(rand(2)...)
+            t1, t2 = minmax(rand(rng, 2)...)
             @inferred DT.get_equivariation_split(c, t1, t2)
             t, T = DT.get_equivariation_split(c, t1, t2)
             T1 = DT.total_variation(c, t1, t)
@@ -723,6 +727,7 @@ end
 end
 
 @testset "BezierCurve" begin
+    rng = StableRNG(5)
     ## Construction
     control_points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (1 / 2, 1 / 2)]
     bezier = BezierCurve(control_points)
@@ -774,7 +779,7 @@ end
         t′, q = DT.get_closest_point(bezier, p)
         @test q ⪧ bezier(t′)
         for _ in 1:50
-            p = rand(2) * 300 |> Tuple
+            p = rand(rng, 2) * 300 |> Tuple
             t′, q = DT.get_closest_point(bezier, p)
             @test q ⪧ bezier(t′)
             _t, _q = closest_point_on_curve(bezier, p)
@@ -841,7 +846,7 @@ end
     control_points = [(0.0, 0.0), (1.0, 1.0)]
     bezier = BezierCurve(control_points)
     for _ in 1:100
-        p = randn(2) |> Tuple
+        p = randn(rng, 2) |> Tuple
         cert = DT.point_position_relative_to_curve(bezier, p)
         cert2 = DT.point_position_relative_to_curve(LineSegment((0.0, 0.0), (1.0, 1.0)), p)
         @test cert == cert2
@@ -882,7 +887,7 @@ end
         @test DT.arc_length(bezier, 0.3, 0.9) ≈ slow_arc_length(bezier, 0.3, 0.9)
         @test DT.arc_length(bezier, 0.2, 0.21) ≈ slow_arc_length(bezier, 0.2, 0.21)
         for _ in 1:1000
-            t₁, t₂ = rand(2)
+            t₁, t₂ = rand(rng, 2)
             t₁, t₂ = minmax(t₁, t₂)
             @test DT.arc_length(bezier, t₁, t₂) ≈ slow_arc_length(bezier, t₁, t₂) rtol = 1.0e-2
         end
@@ -1066,7 +1071,7 @@ end
         TVslow = slow_total_absolute_curvature(c, 0, 1)
         @test TV ≈ TVslow rtol = 1.0e-3 atol = 1.0e-3
         for _ in 1:1000
-            t1, t2 = minmax(rand(2)...)
+            t1, t2 = minmax(rand(rng, 2)...)
             TV = DT.total_variation(c, t1, t2)
             @inferred DT.total_variation(c, t1, t2)
             TVslow = slow_total_absolute_curvature(c, t1, t2)
@@ -1077,7 +1082,7 @@ end
     ## Equidistant split
     for c in (bezier1, bezier2, bezier3, bezier4, bezier5, bezier6, bezier7)
         for _ in 1:1000
-            t1, t2 = minmax(rand(2)...)
+            t1, t2 = minmax(rand(rng, 2)...)
             @inferred DT.get_equidistant_split(c, t1, t2)
             t = DT.get_equidistant_split(c, t1, t2)
             s1 = DT.arc_length(c, t1, t)
@@ -1091,7 +1096,7 @@ end
     ## Equivariation split 
     for c in (bezier1, bezier2, bezier3, bezier4, bezier5, bezier6, bezier7)
         for _ in 1:1000
-            t1, t2 = minmax(rand(2)...)
+            t1, t2 = minmax(rand(rng, 2)...)
             @inferred DT.get_equivariation_split(c, t1, t2)
             t, T = DT.get_equivariation_split(c, t1, t2)
             T1 = DT.total_variation(c, t1, t)
@@ -1157,6 +1162,7 @@ end
 end
 
 @testset "BSpline" begin
+    rng = StableRNG(6)
     ## Construction 
     control_points = [(1.3, 5.0), (10.0, 2.0), (17.3, 25.0), (17.3, 17.3)]
     spline = BSpline(control_points)
@@ -1449,7 +1455,7 @@ end
     ## Closest point 
     for spl in (spline, periodic_spline, longer_spline, quadratic_spline, sextic_spline, quadratic_periodic_spline)
         for _ in 1:500
-            p = rand(2) * 30 |> Tuple
+            p = rand(rng, 2) * 30 |> Tuple
             t′, q = DT.get_closest_point(spl, p)
             @test q ⪧ spl(t′)
             _t, _q = closest_point_on_curve(spl, p)
@@ -1520,7 +1526,7 @@ end
     boundary_nodes = [eachindex(t); 1]
     reverse_periodic_spline = BSpline(reverse(periodic_spline.control_points))
     for _ in 1:10000
-        p = (rand(), rand())
+        p = (rand(rng), rand(rng))
         δ = DT.distance_to_polygon(p, points, boundary_nodes)
         cert = DT.point_position_relative_to_curve(periodic_spline, p)
         cert2 = DT.point_position_relative_to_curve(reverse_periodic_spline, p)
@@ -1639,7 +1645,7 @@ end
         @test DT.arc_length(spl, 0.3, 0.9) ≈ slow_arc_length(spl, 0.3, 0.9) rtol = 1.0e-3
         @test DT.arc_length(spl, 0.2, 0.21) ≈ slow_arc_length(spl, 0.2, 0.21) rtol = 1.0e-4
         for _ in 1:1000
-            t₁, t₂ = rand(2)
+            t₁, t₂ = rand(rng, 2)
             t₁, t₂ = minmax(t₁, t₂)
             @test DT.arc_length(spl, t₁, t₂) ≈ slow_arc_length(spl, t₁, t₂) rtol = 1.0e-2
         end
@@ -1666,7 +1672,7 @@ end
         TVslow = slow_total_absolute_curvature(c, 0, 1)
         @test TV ≈ TVslow rtol = 1.0e-3 atol = 1.0e-3
         for _ in 1:1000
-            t1, t2 = minmax(rand(2)...)
+            t1, t2 = minmax(rand(rng, 2)...)
             TV = DT.total_variation(c, t1, t2)
             @inferred DT.total_variation(c, t1, t2)
             TVslow = slow_total_absolute_curvature(c, t1, t2)
@@ -1677,7 +1683,7 @@ end
     ## Equidistant split
     for c in (spline, periodic_spline, longer_spline, quadratic_spline, sextic_spline, quadratic_periodic_spline)
         for _ in 1:1000
-            t1, t2 = minmax(rand(2)...)
+            t1, t2 = minmax(rand(rng, 2)...)
             @inferred DT.get_equidistant_split(c, t1, t2)
             t = DT.get_equidistant_split(c, t1, t2)
             s1 = DT.arc_length(c, t1, t)
@@ -1691,7 +1697,7 @@ end
     ## Equivariation split 
     for c in (spline, periodic_spline, longer_spline, quadratic_spline, sextic_spline, quadratic_periodic_spline)
         for _ in 1:1000
-            t1, t2 = minmax(rand(2)...)
+            t1, t2 = minmax(rand(rng, 2)...)
             @inferred DT.get_equivariation_split(c, t1, t2)
             t, T = DT.get_equivariation_split(c, t1, t2)
             T1 = DT.total_variation(c, t1, t)
@@ -1767,6 +1773,7 @@ end
 end
 
 @testset "CatmullRomSpline" begin
+    rng = StableRNG(7)
     @testset "CatmullRomSplineSegment" begin
         ## Evaluation 
         p₀ = (0.0, 0.0)
@@ -1783,9 +1790,9 @@ end
             @test !DT.is_linear(_spl)
             @test _spl(0.0) == p₁
             @test _spl(1.0) == p₂
-            @inferred _spl(rand())
+            @inferred _spl(rand(rng))
             for _ in 1:10000
-                t = rand()
+                t = rand(rng)
                 @test _spl(t) ⪧ _spl.a .* t^3 .+ _spl.b .* t^2 .+ _spl.c .* t .+ _spl.d
             end
         end
@@ -2104,7 +2111,7 @@ end
     ## Closest point 
     for spl in (spl, pspl)
         for _ in 1:500
-            p = randn(2) * 30 |> Tuple
+            p = randn(rng, 2) * 30 |> Tuple
             t′, q = DT.get_closest_point(spl, p)
             @test q ⪧ spl(t′)
             _t, _q = closest_point_on_curve(spl, p)
@@ -2218,7 +2225,7 @@ end
         @test DT.arc_length(spl, 0.3, 0.9) ≈ slow_arc_length(spl, 0.3, 0.9) rtol = 1.0e-3
         @test DT.arc_length(spl, 0.2, 0.21) ≈ slow_arc_length(spl, 0.2, 0.21) rtol = 1.0e-4
         for _ in 1:1000
-            t₁, t₂ = rand(2)
+            t₁, t₂ = rand(rng, 2)
             t₁, t₂ = minmax(t₁, t₂)
             @test DT.arc_length(spl, t₁, t₂) ≈ slow_arc_length(spl, t₁, t₂) rtol = 1.0e-2
         end
@@ -2246,7 +2253,7 @@ end
         TVslow = slow_total_absolute_curvature(c, 0, 1)
         @test TV ≈ TVslow rtol = 1.0e-1 atol = 1.0e-3
         for _ in 1:1000
-            t1, t2 = minmax(rand(2)...)
+            t1, t2 = minmax(rand(rng, 2)...)
             TV = DT.total_variation(c, t1, t2)
             @inferred DT.total_variation(c, t1, t2)
             TVslow = slow_total_absolute_curvature(c, t1, t2)
@@ -2257,7 +2264,7 @@ end
     ## Equidistant split
     for c in (spl, pspl)
         for _ in 1:1000
-            t1, t2 = minmax(rand(2)...)
+            t1, t2 = minmax(rand(rng, 2)...)
             @inferred DT.get_equidistant_split(c, t1, t2)
             t = DT.get_equidistant_split(c, t1, t2)
             s1 = DT.arc_length(c, t1, t)
@@ -2271,7 +2278,7 @@ end
     ## Equivariation split 
     for c in (spl, pspl)
         for _ in 1:1000
-            t1, t2 = minmax(rand(2)...)
+            t1, t2 = minmax(rand(rng, 2)...)
             @inferred DT.get_equivariation_split(c, t1, t2)
             t, T = DT.get_equivariation_split(c, t1, t2)
             T1 = DT.total_variation(c, t1, t)

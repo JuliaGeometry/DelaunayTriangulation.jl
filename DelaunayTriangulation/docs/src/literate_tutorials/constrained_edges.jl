@@ -7,6 +7,7 @@
 # To start, let us load in the packages we will need. 
 using DelaunayTriangulation
 using CairoMakie
+using StableRNGs # for reproducibility
 using ReferenceTests #src
 using Test #src
 fig_path = joinpath(@__DIR__, "..", "..", "..", "..", "assets", "docs", "figures") #src
@@ -34,10 +35,11 @@ C = Set([(2, 1), (2, 11), (2, 7), (2, 5)])
 # `pts[i]` and `pts[j]` together. Let us now 
 # make the triangulation, comparing it to its 
 # unconstrained counterpart. 
-tri = triangulate(pts)
+rng = StableRNG(123)
+tri = triangulate(pts; rng)
 
 #-
-cons_tri = triangulate(pts; segments = C)
+cons_tri = triangulate(pts; segments = C, rng)
 
 #- 
 fig = Figure()

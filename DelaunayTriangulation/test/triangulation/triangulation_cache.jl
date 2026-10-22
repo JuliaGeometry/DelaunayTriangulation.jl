@@ -4,6 +4,7 @@ using DataStructures
 using Setfield
 using AdaptivePredicates
 using ..DelaunayTriangulation: add_weight!, get_weight, get_weights
+using StableRNGs
 
 cache = DT.TriangulationCache()
 @test isnothing(DT.get_triangulation(cache))
@@ -17,10 +18,11 @@ cache = DT.TriangulationCache()
 @test isnothing(DT.get_surrounding_polygon(cache))
 @test typeof(cache) == DT.EmptyTriangulationCache
 
-tri = triangulate(rand(2, 50); weights=rand(50))
+rng = StableRNG(1)
+tri = triangulate(rand(rng, 2, 50); weights=rand(rng, 50), rng)
 cache = DT.get_cache(tri)
 @test get_weights(DT.get_triangulation(DT.get_cache(tri))) === get_weights(tri)
-DT.unconstrained_triangulation!(DT.get_triangulation(cache))
+DT.unconstrained_triangulation!(DT.get_triangulation(cache); rng)
 @test !isempty(DT.get_triangles(DT.get_triangulation(cache)))
 @test !isempty(DT.get_adjacent(DT.get_adjacent(DT.get_triangulation(cache))))
 @test !isempty(DT.get_adjacent2vertex(DT.get_adjacent2vertex(DT.get_triangulation(cache))))
@@ -29,7 +31,7 @@ DT.unconstrained_triangulation!(DT.get_triangulation(cache))
 @test !isempty(DT.get_neighbours(DT.get_graph(DT.get_triangulation(cache))))
 @test !isempty(DT.get_vertices(DT.get_convex_hull(DT.get_triangulation(cache))))
 @test get_weights(DT.get_triangulation_2(DT.get_cache(tri))) === get_weights(tri)
-DT.unconstrained_triangulation!(DT.get_triangulation_2(cache))
+DT.unconstrained_triangulation!(DT.get_triangulation_2(cache); rng)
 @test !isempty(DT.get_triangles(DT.get_triangulation_2(cache)))
 @test !isempty(DT.get_adjacent(DT.get_adjacent(DT.get_triangulation_2(cache))))
 @test !isempty(DT.get_adjacent2vertex(DT.get_adjacent2vertex(DT.get_triangulation_2(cache))))
@@ -88,16 +90,17 @@ empty!(cache)
 @test length.(DT.get_insphere_cache(cache)) == length.(AdaptivePredicates.insphereexact_cache(Float64))
 
 @testset "copy/deepcopy" begin
+    rng = StableRNG(2)
     cache = DT.TriangulationCache()
     @test copy(cache) === cache
 
-    tri = triangulate(rand(2, 50))
+    tri = triangulate(rand(rng, 2, 50); rng)
     cache = DT.get_cache(tri)
     cache2 = copy(cache)
     @inferred copy(cache2)
     @test typeof(cache2) == typeof(cache) && !(cache2 === cache)
 
-    tri = triangulate(rand(2, 50); weights=rand(50))
+    tri = triangulate(rand(rng, 2, 50); weights=rand(rng, 50), rng)
     cache = DT.get_cache(tri)
     cache2 = copy(cache)
     @inferred copy(cache2)

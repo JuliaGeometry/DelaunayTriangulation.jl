@@ -30,9 +30,11 @@ The physical point associated with a ghost vertex `g`, and the interpretation of
 ```@example ghosttrifigex
 using DelaunayTriangulation
 using CairoMakie
+using StableRNGs
 points = [(-1.0, -1.0), (1.0, -1.0), (1.0, 1.0), (-1.0, 1.0)]
 boundary_nodes = [[[1, 2, 3, 4, 1]], [[CircularArc((0.0, 0.5), (0.0, 0.5), (0.0, 0.0), positive=false)]]]
-tri = triangulate(points; boundary_nodes, coarse_n=32)
+rng = StableRNG(123)
+tri = triangulate(points; boundary_nodes, coarse_n=32, rng)
 fig, ax, sc = triplot(tri, show_ghost_edges=true)
 c1 = DelaunayTriangulation.get_representative_point_coordinates(tri, 1)
 c2 = DelaunayTriangulation.get_representative_point_coordinates(tri, 2)

@@ -2,6 +2,7 @@ using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using DataStructures
 using StaticArrays
+using StableRNGs
 
 global def_adj = DT.∅
 global default_1 = Dict{NTuple{2,Int},Int}()
@@ -101,12 +102,14 @@ global adj_3 = DT.Adjacent(ddict_3)
 end
 
 @testset "Testing if edges exist" begin
-    tri = triangulate(rand(2, 50))
+    rng = StableRNG(1)
+    tri = triangulate(rand(rng, 2, 50); rng)
     @test !DT.edge_exists(get_adjacent(tri, 122, -7))
 end
 
 @testset "empty!" begin
-    tri = triangulate(rand(2, 50))
+    rng = StableRNG(2)
+    tri = triangulate(rand(rng, 2, 50); rng)
     adj = get_adjacent(tri)
     @test !isempty(get_adjacent(adj))
     empty!(adj)
@@ -114,7 +117,8 @@ end
 end
 
 @testset "copy/deepcopy" begin
-    tri = triangulate(rand(2, 50))
+    rng = StableRNG(3)
+    tri = triangulate(rand(rng, 2, 50); rng)
     adj = get_adjacent(tri)
     adj2 = copy(adj)
     @test adj == adj2 && !(adj === adj2)

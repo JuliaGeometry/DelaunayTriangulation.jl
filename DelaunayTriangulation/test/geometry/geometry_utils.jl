@@ -3,6 +3,7 @@ const DT = DelaunayTriangulation
 using LinearAlgebra
 using Random
 using CairoMakie
+using StableRNGs
 
 @testset "Getting polygon features" begin
     tri, label_map, index_map = simple_geometry()
@@ -78,8 +79,9 @@ using CairoMakie
     @test cy ≈ (c1[2] * a1 - c2[2] * a2 - c3[2] * a3) / (a1 - a2 - a3)
 end
 
+rng = StableRNG(1)
 @testset "Another test for area" begin
-    tri = triangulate(rand(2, 50))
+    tri = triangulate(rand(rng, 2, 50); rng)
     for T in each_solid_triangle(tri)
         u, v, w = T
         p, q, r = get_point(tri, u, v, w)
@@ -557,6 +559,7 @@ end
 end
 
 @testset "Making a figure" begin
+    rng = StableRNG(2)
     pts = [
         0.0 8.0
         2.0 5.0
@@ -598,7 +601,7 @@ end
     x, y = DT.pole_of_inaccessibility(pts, boundary_nodes)
     @test DT.distance_to_polygon((x, y), pts, boundary_nodes) ≥ grid_max_distance_to_polygon(pts, boundary_nodes) - 2.0e-2
 
-    tri = triangulate(pts; boundary_nodes)
+    tri = triangulate(pts; boundary_nodes, rng)
     @test collect(DT.getxy(DT.get_representative_point_coordinates(tri, 1))) ≈ [x, y]
 end
 
@@ -932,14 +935,15 @@ end
 end
 
 @testset "sort_convex_polygon!" begin
+    rng = StableRNG(3)
     for _ in 1:50
-        tri = triangulate(rand(2, 500))
+        tri = triangulate(rand(rng, 2, 500); rng)
         ch = get_convex_hull(tri)
         pts = get_points(ch)
         verts = DT.get_vertices(ch)
         orig_verts = deepcopy(verts)
         pop!(verts)
-        shuffle!(verts)
+        shuffle!(rng, verts)
         DT.sort_convex_polygon!(verts, pts)
         push!(verts, verts[begin])
         @test DT.circular_equality(verts, orig_verts)
@@ -1032,9 +1036,10 @@ end
 end
 
 @testset "Polygon" begin
+    rng = StableRNG(4)
     verts = [1, 11, 18, 26, 32, 72]
     _verts = [verts; 1]
-    points = [rand(2) for _ in 1:maximum(verts)]
+    points = [rand(rng, 2) for _ in 1:maximum(verts)]
     for verts in (verts, _verts)
         poly = DT.Polygon(verts, points)
         @test length(poly) == 6
@@ -1054,6 +1059,7 @@ end
 end
 
 @testset "Sutherland-Hodgman algorithm" begin
+    rng = StableRNG(5)
     # rectangular
     verts = [1, 2, 3, 4, 5, 6, 7, 8, 9]
     points = [
@@ -1084,9 +1090,9 @@ end
 
     # bigger example 
     function to_rand_point_verts(___points)
-        _points = [Tuple(rand(2)) for _ in 1:500]
+        _points = [Tuple(rand(rng, 2)) for _ in 1:500]
         _points = [_points; ___points]
-        shuffle!(_points)
+        shuffle!(rng, _points)
         vertices = identity.(indexin(___points, _points)) # identity to convert eltype from Union{Nothing, Int}
         return _points, vertices
     end
@@ -1163,6 +1169,7 @@ end
 end
 
 @testset "get_plane_through_three_points" begin
+    rng = StableRNG(6)
     _plane_mat(p, q, r) =
         let c = (p .+ q .+ r) ./ 3
         [c... 1; p... 1; q... 1; r... 1]
@@ -1174,24 +1181,24 @@ end
         return nv ./ norm(nv)
     end
     for _ in 1:10000
-        p, q, r = Tuple(rand(3)), Tuple(rand(3)), Tuple(rand(3))
+        p, q, r = Tuple(rand(rng, 3)), Tuple(rand(rng, 3)), Tuple(rand(rng, 3))
         α, β, γ, δ = DT.get_plane_through_three_points(p, q, r)
         @inferred DT.get_plane_through_three_points(p, q, r)
         @test det(_plane_mat(p, q, r)) ≈ 0.0 atol = 1.0e-14
         n = _plane_norm(p, q, r)
         @test n ≈ [α, β, γ] / norm([α, β, γ]) || n ≈ -[α, β, γ] / norm([α, β, γ])
 
-        p, q, r = (rand(2)..., 0.0), (rand(2)..., 0.0), (rand(2)..., 0.0)
+        p, q, r = (rand(rng, 2)..., 0.0), (rand(rng, 2)..., 0.0), (rand(rng, 2)..., 0.0)
         α, β, γ, δ = DT.get_plane_through_three_points(p, q, r)
         @test det(_plane_mat(p, q, r)) ≈ 0.0 atol = 1.0e-14
         n = [0, 0, 1]
         @test n ≈ [α, β, γ] / norm([α, β, γ]) || n ≈ -[α, β, γ] / norm([α, β, γ])
-        p, q, r = (rand(), 2.0, rand()), (rand(), 2.0, rand()), (rand(), 2.0, rand())
+        p, q, r = (rand(rng), 2.0, rand(rng)), (rand(rng), 2.0, rand(rng)), (rand(rng), 2.0, rand(rng))
         α, β, γ, δ = DT.get_plane_through_three_points(p, q, r)
         @test det(_plane_mat(p, q, r)) ≈ 0.0 atol = 1.0e-14
         n = [0, 1, 0]
         @test n ≈ [α, β, γ] / norm([α, β, γ]) || n ≈ -[α, β, γ] / norm([α, β, γ])
-        p, q, r = (2.0, rand(), rand()), (2.0, rand(), rand()), (2.0, rand(), rand())
+        p, q, r = (2.0, rand(rng), rand(rng)), (2.0, rand(rng), rand(rng)), (2.0, rand(rng), rand(rng))
         α, β, γ, δ = DT.get_plane_through_three_points(p, q, r)
         @test det(_plane_mat(p, q, r)) ≈ 0.0 atol = 1.0e-14
         n = [1, 0, 0]
@@ -1206,8 +1213,9 @@ end
 end
 
 @testset "get_steepest_descent_direction" begin
+    rng = StableRNG(7)
     for _ in 1:10000
-        p, q, r = Tuple(rand(3)), Tuple(rand(3)), Tuple(rand(3))
+        p, q, r = Tuple(rand(rng, 3)), Tuple(rand(rng, 3)), Tuple(rand(rng, 3))
         α, β, γ, δ = DT.get_plane_through_three_points(p, q, r)
         x, y = DT.get_steepest_descent_direction(p, q, r)
         @inferred DT.get_steepest_descent_direction(p, q, r)
@@ -1224,16 +1232,17 @@ end
 end
 
 @testset "get_distance_to_plane" begin
+    rng = StableRNG(8)
     for _ in 1:10000
-        p, q, r = Tuple(rand(3)), Tuple(rand(3)), Tuple(rand(3))
-        s = Tuple(rand(3))
+        p, q, r = Tuple(rand(rng, 3)), Tuple(rand(rng, 3)), Tuple(rand(rng, 3))
+        s = Tuple(rand(rng, 3))
         α, β, γ, δ = DT.get_plane_through_three_points(p, q, r)
         d = DT.get_vertical_distance_to_plane(p, q, r, s)
         @inferred DT.get_vertical_distance_to_plane(p, q, r, s)
         @test d ≈ s[3] + (α * s[1] + β * s[2] + δ) / γ
 
-        p, q, r = Tuple(rand(3)), Tuple(rand(3)), Tuple(rand(3))
-        s = Tuple(rand(3))
+        p, q, r = Tuple(rand(rng, 3)), Tuple(rand(rng, 3)), Tuple(rand(rng, 3))
+        s = Tuple(rand(rng, 3))
         α, β, γ, δ = DT.get_plane_through_three_points(p, q, r)
         n = [α, β, γ] / norm([α, β, γ])
         x, y, z = s
@@ -1249,8 +1258,8 @@ end
     end
 
     for _ in 1:1000
-        p, q, r = (rand(), rand(), 2.0), (rand(), rand(), 2.0), (rand(), rand(), 2.0)
-        s = (rand(), rand(), 10 * randn())
+        p, q, r = (rand(rng), rand(rng), 2.0), (rand(rng), rand(rng), 2.0), (rand(rng), rand(rng), 2.0)
+        s = (rand(rng), rand(rng), 10 * randn(rng))
         d = DT.get_distance_to_plane(p, q, r, s)
         @test d ≈ s[3] - 2 ≈ DT.get_vertical_distance_to_plane(p, q, r, s)
         if s[3] > 2.0

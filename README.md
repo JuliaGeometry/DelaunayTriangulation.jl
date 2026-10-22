@@ -39,10 +39,11 @@ If you would like to make an issue or contribute, please see the [CONTRIBUTING.m
 Here is a minimal example that triangulates some random points, computes their Voronoi tessellation, and plots both. The plotting functions `triplot` and `voronoiplot` are provided by [Makie.jl](https://github.com/MakieOrg/Makie.jl), so you need a Makie backend such as CairoMakie to use them.
 
 ```julia
-using DelaunayTriangulation, CairoMakie
-points = rand(2, 50)    # 50 random points, given as the columns of a matrix
-tri = triangulate(points)  # the Delaunay triangulation of the points
-vorn = voronoi(tri)        # the Voronoi tessellation dual to the triangulation
+using DelaunayTriangulation, CairoMakie, StableRNGs
+rng = StableRNG(123)            # for reproducibility
+points = rand(rng, 2, 50)       # 50 random points, given as the columns of a matrix
+tri = triangulate(points; rng)  # the Delaunay triangulation of the points
+vorn = voronoi(tri)             # the Voronoi tessellation dual to the triangulation
 fig = Figure()
 triplot(fig[1, 1], tri)
 voronoiplot(fig[1, 2], vorn)

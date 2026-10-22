@@ -14,6 +14,7 @@ _rand(args...) = rand(STABLE_RNG, args...)
 const RNG = (; reseed!, randn=_randn, rand=_rand, STABLE_RNG)
 
 @testset "tricontour" begin
+    rng = RNG.STABLE_RNG
     @test_reference reference_path(ASSETS, "tricontourf.png") begin
         reseed!()
         x = RNG.randn(50)
@@ -84,7 +85,7 @@ const RNG = (; reseed!, randn=_randn, rand=_rand, STABLE_RNG)
         inner = [n:-1:1; n] # clockwise inner
         outer = [(n+1):(2n); n + 1] # counter-clockwise outer
         boundary_nodes = [[outer], [inner]]
-        tri = triangulate([x'; y'], boundary_nodes=boundary_nodes)
+        tri = triangulate([x'; y'], boundary_nodes=boundary_nodes; rng)
         f, ax, _ = tricontourf(tri, z)
         scatter!(x, y, color=z, strokewidth=1, strokecolor=:black)
         f
@@ -120,7 +121,7 @@ const RNG = (; reseed!, randn=_randn, rand=_rand, STABLE_RNG)
         boundary_nodes, points = convert_boundary_points_to_indices(curves; existing_points=points)
         edges = Set(((1, 19), (19, 12), (46, 4), (45, 12)))
 
-        tri = triangulate(points; boundary_nodes=boundary_nodes, segments=edges, check_arguments=false)
+        tri = triangulate(points; boundary_nodes=boundary_nodes, segments=edges, check_arguments=false, rng)
         z = [(x - 1) * (y + 1) for (x, y) in DelaunayTriangulation.each_point(tri)]
         f, ax, _ = tricontourf(tri, z, levels=30)
         f
@@ -136,7 +137,7 @@ const RNG = (; reseed!, randn=_randn, rand=_rand, STABLE_RNG)
             push!(xy, [[(cx[i] + 0.5cos(θ), 0.5sin(θ)) for θ in reverse(θ)]])
         end
         boundary_nodes, points = convert_boundary_points_to_indices(xy)
-        tri = triangulate(points; boundary_nodes=boundary_nodes, check_arguments=false)
+        tri = triangulate(points; boundary_nodes=boundary_nodes, check_arguments=false, rng)
         z = [(x - 3 / 2)^2 + y^2 for (x, y) in DelaunayTriangulation.each_point(tri)]
 
         f, ax, tr = tricontourf(tri, z, colormap=:matter)
@@ -145,6 +146,7 @@ const RNG = (; reseed!, randn=_randn, rand=_rand, STABLE_RNG)
 end
 
 @testset "triplot" begin
+    rng = RNG.STABLE_RNG
     @test_reference reference_path(ASSETS, "Triplot with points, ghost edges, and convex hull.png") begin
         reseed!()
         pts = RNG.rand(2, 50)
@@ -217,10 +219,10 @@ end
     @test_reference reference_path(ASSETS, "Triplot after adding points and make sure the representative_point_list is correctly updated.png") begin
         reseed!()
         points = [(0.0, 0.0), (0.95, 0.0), (1.0, 1.4), (0.0, 1.0)] # not 1 so that we have a unique triangulation
-        tri = Observable(triangulate(points; delete_ghosts=false))
+        tri = Observable(triangulate(points; delete_ghosts=false, rng))
         fig, ax, sc = triplot(tri, show_points=true, markersize=14, show_ghost_edges=true, recompute_centers=true, linestyle=:dash)
         for p in [(0.3, 0.5), (-1.5, 2.3), (0.2, 0.2), (0.2, 0.5)]
-            add_point!(tri[], p)
+            add_point!(tri[], p; rng)
         end
         convex_hull!(tri[])
         notify(tri)
@@ -243,18 +245,19 @@ end
             cx += 3.0
         end
         boundary_nodes, points = convert_boundary_points_to_indices(xy)
-        tri = triangulate(points; boundary_nodes=boundary_nodes, check_arguments=false)
+        tri = triangulate(points; boundary_nodes=boundary_nodes, check_arguments=false, rng)
         fig, ax, sc = triplot(tri, show_ghost_edges=true)
         fig
     end
 end
 
 @testset "voronoiplot" begin
+    rng = RNG.STABLE_RNG
     @test_reference reference_path(ASSETS, "Voronoiplot for a tessellation with a custom bounding box.png") begin
         reseed!()
         pts = 25RNG.randn(2, 50)
         tri = triangulate(pts; rng=RNG.STABLE_RNG)
-        vorn = voronoi(tri, clip=false)
+        vorn = voronoi(tri, clip=false; rng)
         fig, ax, sc = voronoiplot(vorn,
             show_generators=true,
             colormap=:RdBu,
@@ -273,13 +276,13 @@ end
         reseed!()
         pts = 25RNG.randn(2, 10)
         tri = triangulate(pts; rng=RNG.STABLE_RNG)
-        vorn = voronoi(tri, clip=true)
+        vorn = voronoi(tri, clip=true; rng)
         fig, ax, sc = voronoiplot(vorn, color=(:blue, 0.2), markersize=20, strokewidth=4)
 
         # used to be bugged
         points = [(0.0, 1.0), (-1.0, 2.0), (-2.0, -1.0)]
-        tri = triangulate(points)
-        vorn = voronoi(tri)
+        tri = triangulate(points; rng)
+        vorn = voronoi(tri; rng)
         voronoiplot(fig[1, 2], vorn, show_generators=true, strokewidth=4,
             color=[:red, :blue, :green], markercolor=:white, markersize=20)
 
@@ -306,8 +309,8 @@ end
     @test_reference reference_path(ASSETS, "Voronoiplot with some custom bounding boxes may not contain all data sites.png") begin
         reseed!()
         points = [(-3.0, 7.0), (1.0, 6.0), (-1.0, 3.0), (-2.0, 4.0), (3.0, -2.0), (5.0, 5.0), (-4.0, -3.0), (3.0, 8.0)]
-        tri = triangulate(points)
-        vorn = voronoi(tri)
+        tri = triangulate(points; rng)
+        vorn = voronoi(tri; rng)
         color = [:red, :blue, :green, :yellow, :cyan, :magenta, :black, :brown] # the polygon colors should not change even if some are not included (because they're outside of the box)
         fig = Figure()
         ax1 = Axis(fig[1, 1], title="Default")
@@ -332,7 +335,7 @@ end
         push!(points[], (2.0, 2.0), (0.5, 0.5), (0.25, 0.25), (0.25, 0.75), (0.75, 0.25), (0.75, 0.75))
         notify(points)
         ax2 = Axis(fig[1, 2])
-        voronoiplot!(ax2, voronoi(triangulate(points[])), show_generators=true, markersize=36)
+        voronoiplot!(ax2, voronoi(triangulate(points[]; rng); rng), show_generators=true, markersize=36)
         xlims!(ax, -0.5, 2.5)
         ylims!(ax, -0.5, 2.5)
         xlims!(ax2, -0.5, 2.5)

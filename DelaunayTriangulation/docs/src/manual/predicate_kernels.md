@@ -66,8 +66,9 @@ You should always benchmark your problems to see if using `FastKernel()` over th
 When you are not using robust predicates, you may want to check if your computed triangulation is actually a valid Delaunay triangulation. We provide the function [`validate_triangulation`](@ref) for this purpose. This function is quite slow, so it is best used for debugging rather than inside a loop (contributions towards optimising it are welcome). One important note is that this check does actually use predicates in certain areas, so this check is still not guaranteed to be 100% accurate without robust predicates (by default, `validate_triangulation` will use the `ExactKernel()` kernel). Here is an example of its use.
 
 ```julia
-using DelaunayTriangulation
-tri = triangulate(rand(2, 50))
+using DelaunayTriangulation, StableRNGs
+rng = StableRNG(123)
+tri = triangulate(rand(rng, 2, 50); rng)
 DelaunayTriangulation.validate_triangulation(tri)
 ```
 ```julia 

@@ -1,9 +1,11 @@
 using ..DelaunayTriangulation
 const DT = DelaunayTriangulation
 using CairoMakie
+using StableRNGs
 
 @testset "Basic getters" begin
-    ch = DT.ConvexHull(rand(2, 500), [1, 2, 4, 5, 6, 10, 29, 45, 71, 1])
+    rng = StableRNG(1)
+    ch = DT.ConvexHull(rand(rng, 2, 500), [1, 2, 4, 5, 6, 10, 29, 45, 71, 1])
     @test DT.get_points(ch) == ch.points
     @test DT.get_vertices(ch) == ch.vertices == [1, 2, 4, 5, 6, 10, 29, 45, 71, 1]
 end
@@ -63,9 +65,10 @@ end
 end
 
 @testset "Random tests" begin
+    rng = StableRNG(2)
     for _ in 1:500
-        pts = rand(2, 6)
-        tri = triangulate(pts)
+        pts = rand(rng, 2, 6)
+        tri = triangulate(pts; rng)
         ch = convex_hull(pts)
         @test ch == get_convex_hull(tri)
 
@@ -79,7 +82,8 @@ end
 end
 
 @testset "empty!" begin
-    tri = triangulate(rand(2, 50))
+    rng = StableRNG(3)
+    tri = triangulate(rand(rng, 2, 50); rng)
     ch = get_convex_hull(tri)
     @test !isempty(DT.get_vertices(ch))
     empty!(ch)
@@ -87,12 +91,14 @@ end
 end
 
 @testset "Issue #109" begin
-    points = rand(2, 50)
+    rng = StableRNG(4)
+    points = rand(rng, 2, 50)
     @test convex_hull(points).vertices == convex_hull(vcat(points, points)).vertices
 end
 
 @testset "copy/deepcopy" begin
-    ch = convex_hull(rand(2, 50))
+    rng = StableRNG(5)
+    ch = convex_hull(rand(rng, 2, 50))
     ch2 = copy(ch)
     @test ch == ch2 && !(ch === ch2)
     ch2 = deepcopy(ch)

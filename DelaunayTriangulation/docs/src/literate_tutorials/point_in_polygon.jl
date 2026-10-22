@@ -195,7 +195,7 @@ fig
 @test_reference reference_path(fig_path, "point_in_polygon_ex_1.png") fig #src
 
 # Here is the second method. 
-tri = triangulate(points; boundary_nodes = nodes)
+tri = triangulate(points; boundary_nodes = nodes, rng)
 is_inside_2 = [DelaunayTriangulation.dist(tri, q) > 0 for q in query_points];
 @test is_inside == is_inside_2 #src
 
