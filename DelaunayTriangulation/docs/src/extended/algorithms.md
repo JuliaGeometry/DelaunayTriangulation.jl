@@ -19,6 +19,15 @@ Modules = [DelaunayTriangulation]
 Pages = ["src/triangulation/construction/unconstrained.jl"]
 ```
 
+## Spatial Sorting
+
+Here are the functions used for sorting the points spatially before inserting them with the Bowyer-Watson algorithm.
+
+```@autodocs 
+Modules = [DelaunayTriangulation]
+Pages = ["src/triangulation/construction/spatial_sorting.jl"]
+```
+
 ## Triangulation Rectangular Domains
 
 Here are some of the internal functions used for `triangulate_rectangle`.

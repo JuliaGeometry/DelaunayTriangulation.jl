@@ -2783,6 +2783,28 @@ end
         @test_reference reference_path(ASSETS, "complicated_example_with_tight_walls_and_small_angles.png") fig by = psnr_equality(15)
     end
 
+    @testset "Steiner points behind a wall at the start of the point location" begin
+        # The circumcenter of a triangle between two of the walls can be behind the wall at the vertex that
+        # locate_steiner_point starts the point location from, so that find_triangle stops before it finds any
+        # triangle. This used to throw a BoundsError, for about a quarter of these seeds
+        for seed in 1:20
+            msg = "Testing refinement of the tight walls example with seed $seed"
+            rng = StableRNG(seed)
+            nodes, points = convert_boundary_points_to_indices(tight_walls_boundary())
+            push!(points, (20.0, 20.0))
+            C = Set{NTuple{2, Int}}()
+            for i in 1:50
+                θ = 2π * rand(rng)
+                r = 4sqrt(rand(rng))
+                push!(points, (20 + r * cos(θ), 20 + r * sin(θ)))
+                push!(C, (48, 48 + i))
+            end
+            tri = triangulate(points; boundary_nodes = nodes, segments = C, rng)
+            refine!(tri; max_area = 1.0, rng, use_circumcenter = true)
+            @test_with_log msg validate_triangulation(tri)
+        end
+    end
+
     @testset "Test that nothing is breaking for Float32 inputs" begin
         for PT in (DT.ExactKernel, DT.AdaptiveKernel)
             for i in 1:25

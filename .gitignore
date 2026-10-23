@@ -15,3 +15,7 @@ varying_weight_power.mp4
 varying_weight.mp4
 *settings.local.json
 REVIEW.md
+# Results from DelaunayTriangulation/benchmark/run.jl
+benchmark_results.json
+/baseline.json
+/new.json

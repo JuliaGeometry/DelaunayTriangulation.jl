@@ -6,12 +6,12 @@ Gets the insertion order for points into a triangulation.
 
 # Arguments 
 - `points`: The points to insert.
-- `randomise`: If `true`, then the insertion order is randomised. Otherwise, the insertion order is the same as the order of the points.
+- `randomise`: If `true`, then the insertion order is a biased randomised insertion order, which is random but spatially sorted, as given by [`brio_order`](@ref). Otherwise, the insertion order is the same as the order of the points.
 - `skip_points`: The points to skip.
 - `I::Type{I}`: The type of the vertices.
 - `rng::Random.AbstractRNG`: The random number generator to use.
 
-# Output 
+# Output
 - `order`: The order to insert the points in.
 
 !!! warning "Mutation of `order`"
@@ -21,8 +21,8 @@ Gets the insertion order for points into a triangulation.
 function get_insertion_order(points, randomise, skip_points, ::Type{I}, rng) where {I}
     point_indices = each_point_index(points)
     collected_point_indices = convert(Vector{I}, point_indices)
-    randomise && Random.shuffle!(rng, collected_point_indices)
     setdiff!(collected_point_indices, skip_points)
+    randomise && return brio_order(points, collected_point_indices, rng)
     return collected_point_indices
 end
 function get_insertion_order(tri::Triangulation, randomise, skip_points, rng)
@@ -493,9 +493,10 @@ Computes the unconstrained Delaunay triangulation of the points in `tri`.
 
 # Keyword Arguments 
 - `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
-- `randomise=true`: If `true`, then the insertion order is randomised. Otherwise, the insertion order is the same as the order of the points.
-- `skip_points=()`: The vertices to skip. 
-- `num_sample_rule::M=default_num_samples`: The rule to use to determine the number of points to sample. See [`default_num_samples`](@ref) for the default.
+- `randomise=true`: If `true`, then the insertion order is randomised, as in [`get_insertion_order`](@ref). Otherwise, the insertion order is the same as the order of the points.
+- `try_last_inserted_point=true`: If `true`, then the last inserted point is also considered as the start point for the point location of each new point.
+- `skip_points=()`: The vertices to skip.
+- `num_sample_rule::M=randomise && try_last_inserted_point ? spatial_num_samples : default_num_samples`: The rule to use to determine the number of points to sample. See [`spatial_num_samples`](@ref) and [`default_num_samples`](@ref).
 - `rng::Random.AbstractRNG=Random.default_rng()`: The random number generator to use.
 - `insertion_order=get_insertion_order(tri, randomise, skip_points, rng)`: The insertion order of the points. See [`get_insertion_order`](@ref).
 
@@ -508,7 +509,7 @@ function unconstrained_triangulation!(
         randomise = true,
         try_last_inserted_point = true,
         skip_points = (),
-        num_sample_rule::M = default_num_samples,
+        num_sample_rule::M = randomise && try_last_inserted_point ? spatial_num_samples : default_num_samples,
         rng::Random.AbstractRNG = Random.default_rng(),
         insertion_order = get_insertion_order(tri, randomise, skip_points, rng),
     ) where {M}

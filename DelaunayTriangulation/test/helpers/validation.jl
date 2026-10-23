@@ -161,10 +161,8 @@ function validate_statistics(tri::DT.Triangulation, stats=statistics(tri); msg="
         oy = r[2] + det([r′[1] norm(r′)^2; s′[1] norm(s′)^2]) / (4areas[triangle_vertices(T)])
         circumcenters[triangle_vertices(T)] = (ox, oy)
         circumradii[triangle_vertices(T)] = norm(r - collect(circumcenters[triangle_vertices(T)]))
-        all_angles = [(norm(p - r)^2 + norm(q - r)^2 - norm(p - q)^2) / (2norm(p - r) * norm(q - r)) for (p, q, r) in ((p, q, r), (q, r, p), (r, p, q))]
-        all_angles[all_angles.<-1.0] .= -1.0
-        all_angles[all_angles.>1.0] .= 1.0
-        all_angles = acos.(all_angles)
+        # atan(|cross|, dot) rather than acos of the law of cosines, which loses most of its precision for small angles, e.g. for slivers on the convex hull
+        all_angles = [atan(abs((p - r)[1] * (q - r)[2] - (p - r)[2] * (q - r)[1]), dot(p - r, q - r)) for (p, q, r) in ((p, q, r), (q, r, p), (r, p, q))]
         sort!(all_angles)
         radius_edge_ratio[triangle_vertices(T)] = circumradii[triangle_vertices(T)] / ℓ1
         edge_midpoints[triangle_vertices(T)] = ((Tuple(0.5 * (p + q))), Tuple(0.5 * (q + r)), Tuple(0.5 * (r + p)))

@@ -36,13 +36,13 @@ For the keyword arguments below, you may like to review the extended help as som
 - `TriangleType=NTuple{3,IntegerType}`: The triangle type to use for the triangulation.
 - `EdgesType=isnothing(segments) ? Set{EdgeType} : typeof(segments)`: The type to use for storing the edges of the triangulation.
 - `TrianglesType=Set{TriangleType}`: The type to use for storing the triangles of the triangulation.
-- `randomise=true`: Whether to randomise the order in which the points are inserted into the triangulation. This is done using [`get_insertion_order`](@ref).
+- `randomise=true`: Whether to randomise the order in which the points are inserted into the triangulation. This is done using [`get_insertion_order`](@ref), which gives a biased randomised insertion order, i.e. a random order that is also spatially sorted (see [`brio_order`](@ref)).
 - `delete_ghosts=false`: Whether to delete the ghost triangles after the triangulation is computed. This is done using [`delete_ghost_triangles!`](@ref).
 - `delete_empty_features=true`: Whether to delete empty features after the triangulation is computed. This is done using [`clear_empty_features!`](@ref).
 - `try_last_inserted_point=true`: Whether to try the last inserted point first when inserting points into the triangulation. 
 - `skip_points=()`: The points to skip when inserting points into the triangulation. 
    Note that, for curve-bounded domains, `skip_points` is ignored when using [`enrich_boundary!`](@ref).
-- `num_sample_rule=default_num_samples`: A function mapping a number of points `n` to a number of samples `m` to use for sampling the initial points during the point location step of the algorithm within [`find_triangle`](@ref).
+- `num_sample_rule=randomise && try_last_inserted_point ? spatial_num_samples : default_num_samples`: A function mapping a number of points `n` to a number of samples `m` to use for sampling the initial points during the point location step of the algorithm within [`find_triangle`](@ref). With the default insertion order, the last inserted point is nearly always close to the next point, so only one point is sampled (see [`spatial_num_samples`](@ref)). If you provide an `insertion_order` that is not spatially sorted, you may like to use `num_sample_rule = default_num_samples` instead.
 - `rng::Random.AbstractRNG=Random.default_rng()`: The random number generator.
 - `insertion_order::Vector=get_insertion_order(points, randomise, skip_points, IntegerType, rng)`: The insertion order to use for inserting points into the triangulation. This is ignored if you are defining a curve-bounded domain.
 - `recompute_representative_points=true`: Whether to recompute the representative points after the triangulation is computed. This is done using [`compute_representative_points!`](@ref). 
@@ -132,7 +132,7 @@ function triangulate(
         delete_empty_features = true,
         try_last_inserted_point = true,
         skip_points = (),
-        num_sample_rule::M = default_num_samples,
+        num_sample_rule::M = randomise && try_last_inserted_point ? spatial_num_samples : default_num_samples,
         rng::Random.AbstractRNG = Random.default_rng(),
         insertion_order::Vector = get_insertion_order(points, randomise, skip_points, IntegerType, rng),
         recompute_representative_points = true,

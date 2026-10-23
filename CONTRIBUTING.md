@@ -87,6 +87,21 @@ As stated at the start, please describe your changes in the NEWS.md file.
 
 In addition to the guidance above for making a pull request, if your contribution is aimed at improving performance, benchmarks comparing the results with and without your change are extremely useful.
 
+The `DelaunayTriangulation/benchmark` directory has a benchmark suite, `benchmarks.jl`, covering most of the package: triangulating (unconstrained, weighted, constrained, multiply connected, disjoint and curve-bounded domains), refinement, operations such as `add_point!` and `delete_point!`, point location, Voronoi tessellations and power diagrams, and some geometry utilities. To run it, from the repository's root:
+
+```sh
+julia DelaunayTriangulation/benchmark/run.jl --output new.json
+```
+
+To compare your changes with another version, e.g. the `main` branch, check that version out somewhere else, e.g. with `git worktree add ../baseline main`, benchmark it with the same script, and compare the two results:
+
+```sh
+julia DelaunayTriangulation/benchmark/run.jl --package ../baseline/DelaunayTriangulation --output baseline.json
+julia DelaunayTriangulation/benchmark/compare.jl baseline.json new.json
+```
+
+The comparison is printed as a Markdown table. You can run only some of the benchmarks with e.g. `--filter voronoi`, and see the comments at the start of `run.jl` and `compare.jl` for their other options. For pull requests that change the source code, the Benchmarks workflow does this comparison automatically, and its results are in the summary of its run in the Actions tab. If you add a feature, please consider adding a benchmark for it to `benchmarks.jl`.
+
 ## Feature Contributions
 
 If you want to contribute a new feature then, depending on how substantial the feature is, please make an issue or a discussion thread (in the discussions tab) to discuss your ideas first. If there is already an existing feature request in the discussions tab, comment there with some ideas. This will help make sure we get the design of your feature right and that we can help each other.

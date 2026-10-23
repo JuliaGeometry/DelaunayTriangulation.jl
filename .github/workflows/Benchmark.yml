@@ -1,0 +1,51 @@
+name: Benchmarks
+# Runs the benchmarks in DelaunayTriangulation/benchmark for a pull request and for its base, on the same machine, and
+# writes a comparison to the summary of the run (in the Actions tab). Nothing is posted to the pull request itself. It can
+# also be started by hand from the Actions tab, to compare a branch with main.
+on:
+  pull_request:
+    paths:
+      - 'DelaunayTriangulation/src/**'
+      - 'DelaunayTriangulation/Project.toml'
+      - 'DelaunayTriangulation/benchmark/**'
+      - '.github/workflows/Benchmark.yml'
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  benchmark:
+    name: Benchmarks
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      actions: write # for julia-actions/cache to delete old caches
+      contents: read
+    steps:
+      - name: Check out the new version
+        uses: actions/checkout@v7
+        with:
+          path: new
+      - name: Check out the baseline
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.base.sha || 'main' }}
+          path: baseline
+      - uses: julia-actions/setup-julia@v3
+        with:
+          version: '1'
+      - uses: julia-actions/cache@v3
+      # Both versions are benchmarked with the benchmarks from the new version, so that the same things are compared
+      - name: Benchmark the baseline
+        run: julia --color=yes new/DelaunayTriangulation/benchmark/run.jl --package baseline/DelaunayTriangulation --output baseline.json
+      - name: Benchmark the new version
+        run: julia --color=yes new/DelaunayTriangulation/benchmark/run.jl --package new/DelaunayTriangulation --output new.json
+      - name: Compare
+        run: julia new/DelaunayTriangulation/benchmark/compare.jl baseline.json new.json | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Upload the results
+        uses: actions/upload-artifact@v7
+        with:
+          name: benchmark-results
+          path: |
+            baseline.json
+            new.json

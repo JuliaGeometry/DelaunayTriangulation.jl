@@ -717,7 +717,7 @@ end
 
 @testset "get_surrounding_polygon" begin
     tri = example_triangulation()
-    rng = StableRNG(999987897899)
+    rng = StableRNG(1) # some of the points are cocircular, so the triangulation, and thus polys below, depends on the seed
     tri = triangulate(get_points(tri); delete_ghosts=false, rng)
     polys = Dict(
         1 => [6, 3, 7, 4, 6],

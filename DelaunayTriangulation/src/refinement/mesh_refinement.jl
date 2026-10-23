@@ -254,6 +254,9 @@ function locate_steiner_point(tri::Triangulation, args::RefinementArguments, T, 
     !is_outside(flag) && return T, flag # T is never a ghost triangle, so don't worry about checking is_on(flag) here
     init = get_init_for_steiner_point(tri, T)
     V, _ = find_triangle(tri, c; predicates = args.predicates, m = nothing, point_indices = nothing, try_points = nothing, k = init, args.rng, args.concavity_protection, use_barriers = Val(true))
+    # If the walk reached a barrier before it found any triangle, e.g. because it would immediately leave the
+    # domain from init, then there is no triangle to return and c is not visible from T
+    any(!edge_exists, triangle_vertices(V)) && return T, flag
     flag = point_position_relative_to_triangle(args.predicates, tri, V, c)
     if is_ghost_triangle(V) && is_on(flag)
         V = replace_ghost_triangle_with_boundary_triangle(tri, V)

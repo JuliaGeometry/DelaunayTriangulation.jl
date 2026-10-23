@@ -132,6 +132,7 @@ end
         safe_include("triangulation/triangulation_cache.jl")
         safe_include("triangulation/construction/rectangle.jl")
         safe_include("triangulation/construction/bowyer_watson.jl")
+        safe_include("triangulation/construction/spatial_sorting.jl")
         safe_include("triangulation/construction/triangulate.jl")
         safe_include("triangulation/construction/shuffled_polygon_linked_list.jl")
         safe_include("triangulation/construction/convex_triangulation.jl")
