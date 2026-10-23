@@ -3,6 +3,9 @@ name: Benchmarks
 # writes a comparison to the summary of the run (in the Actions tab). Nothing is posted to the pull request itself. It can
 # also be started by hand from the Actions tab, to compare a branch with main.
 on:
+  push:
+    branches:
+      - overall-review # temporary, to test the benchmarks without a PR
   pull_request:
     paths:
       - 'DelaunayTriangulation/src/**'
