@@ -49,6 +49,7 @@ function find_all_points_to_delete(tri::Triangulation)
     I = integer_type(tri)
     points_to_process = Set{I}()
     all_bn = get_all_boundary_nodes(tri)
+    distances = Dict{I, number_type(tri)}() # shared between the seeds, so that each distance is only computed once
     # Now spread the seed
     if has_multiple_curves(tri)
         nc = num_curves(tri)
@@ -63,8 +64,9 @@ function find_all_points_to_delete(tri::Triangulation)
                     v = get_boundary_nodes(segment_boundary_nodes, edge_index + 1)
                     seed = get_adjacent(tri, v, u)
                     !edge_exists(seed) && break
+                    seed ∈ points_to_process && continue # already spread from, e.g. a ghost vertex that is the seed for every edge of its curve
                     seed ∉ all_bn && push!(points_to_process, seed) # boundary nodes are processed separately 
-                    find_all_points_to_delete!(points_to_process, tri, seed, all_bn)
+                    find_all_points_to_delete!(points_to_process, tri, seed, all_bn, distances)
                 end
             end
         end
@@ -78,8 +80,9 @@ function find_all_points_to_delete(tri::Triangulation)
                 v = get_boundary_nodes(segment_boundary_nodes, edge_index + 1)
                 seed = get_adjacent(tri, v, u)
                 !edge_exists(seed) && break
+                seed ∈ points_to_process && continue
                 seed ∉ all_bn && push!(points_to_process, seed)
-                find_all_points_to_delete!(points_to_process, tri, seed, all_bn)
+                find_all_points_to_delete!(points_to_process, tri, seed, all_bn, distances)
             end
         end
     else
@@ -90,8 +93,9 @@ function find_all_points_to_delete(tri::Triangulation)
             v = get_boundary_nodes(boundary_nodes, edge_index + 1)
             seed = get_adjacent(tri, v, u)
             !edge_exists(seed) && break
+            seed ∈ points_to_process && continue
             seed ∉ all_bn && push!(points_to_process, seed)
-            find_all_points_to_delete!(points_to_process, tri, seed, all_bn)
+            find_all_points_to_delete!(points_to_process, tri, seed, all_bn, distances)
         end
     end
     I(𝒢) ∉ points_to_process && push!(points_to_process, I(𝒢)) # need to make sure we include this to get rid of any lingering ghost triangles
@@ -99,38 +103,45 @@ function find_all_points_to_delete(tri::Triangulation)
 end
 
 """
-    find_all_points_to_delete!(points_to_process, tri::Triangulation, seed, all_bn)
+    find_all_points_to_delete!(points_to_process, tri::Triangulation, seed, all_bn, distances = Dict{integer_type(tri), number_type(tri)}())
 
-Starting at `seed`, finds more points to spread to and mark for deletion. 
+Starting at `seed`, finds more points to spread to and mark for deletion.
 
-# Arguments 
-- `points_to_process`: The current list of points marked for deletion. 
+# Arguments
+- `points_to_process`: The current list of points marked for deletion.
 - `tri::Triangulation`: The [`Triangulation`](@ref).
 - `seed`: The seed vertex to start spreading from.
 - `all_bn`: All the boundary nodes in the triangulation, obtained from [`get_all_boundary_nodes`](@ref).
+- `distances`: The distances from the boundary of the vertices considered so far, computed from [`dist`](@ref) and updated in-place.
 
-# Outputs 
+# Outputs
 There are no outputs, as `points_to_process` is updated in-place.
 
-# Extended help 
+# Extended help
 This function works by considering the neighbours around the vertex `seed`. For each neighbouring vertex, we designate that as a new seed,
 and consider if it needs to be added into `points_to_process` according to its distance from the triangulation computed from [`distance_to_polygon`](@ref).
 We then do the same for each new seed. This uses a stack of the seeds left to consider rather than recursion, since the search can go through
 every point outside of the domain, which would overflow the stack if there are many of them.
+
+Computing a distance takes time proportional to the number of boundary nodes, so it is only computed for the vertices that could be marked
+or unmarked, and at most once for each vertex. Otherwise, for a seed that is a ghost vertex, whose neighbours are all the boundary nodes on its
+curve, the distance would be computed for every boundary node each time the seed is considered.
 """
-function find_all_points_to_delete!(points_to_process, tri::Triangulation, seed, all_bn)
+function find_all_points_to_delete!(points_to_process, tri::Triangulation, seed, all_bn, distances = Dict{integer_type(tri), number_type(tri)}())
     seeds = [seed]
     while !isempty(seeds)
         seed = pop!(seeds)
         for new_seed in get_neighbours(tri, seed)
-            q = get_point(tri, new_seed)
-            δ = dist(tri, q)
-            # δ = distance_to_polygon(q, points, complete_boundary_nodes)
-            if new_seed ∈ points_to_process && δ > zero(δ) && !is_ghost_vertex(new_seed) # want to make sure we look at the ghost triangles
-                delete!(points_to_process, new_seed)
-            elseif new_seed ∉ points_to_process && new_seed ∉ all_bn && δ < zero(δ)
-                push!(points_to_process, new_seed)
-                push!(seeds, new_seed)
+            if new_seed ∈ points_to_process
+                is_ghost_vertex(new_seed) && continue # want to make sure we look at the ghost triangles
+                δ = get!(() -> dist(tri, get_point(tri, new_seed)), distances, new_seed)
+                δ > zero(δ) && delete!(points_to_process, new_seed)
+            elseif new_seed ∉ all_bn
+                δ = get!(() -> dist(tri, get_point(tri, new_seed)), distances, new_seed)
+                if δ < zero(δ)
+                    push!(points_to_process, new_seed)
+                    push!(seeds, new_seed)
+                end
             end
         end
     end

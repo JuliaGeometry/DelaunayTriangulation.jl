@@ -50,6 +50,7 @@ For the keyword arguments below, you may like to review the extended help as som
 - `check_arguments=true`: Whether to check the arguments `points` and `boundary_nodes` are valid. This is done using [`check_args`](@ref).
 - `polygonise_n=4096`: Number of points to use for polygonising the boundary when considering the polygon hierarchy for a curve-bounded domain using [`polygonise`](@ref). See [`triangulate_curve_bounded`](@ref).
 - `coarse_n=0`: Number of points to use for initialising a curve-bounded domain. See [`triangulate_curve_bounded`](@ref). (A value of `0` means the number of points is chosen automatically until the diametral circles of all edges are empty.)
+- `enrich=false`: Whether to enrich the boundary as for a curve-bounded domain even if all of `boundary_nodes` is piecewise linear. With `enrich = true`, the boundary edges and the `segments` are split by [`enrich_boundary!`](@ref) until no point is inside the diametral circle of any of them, and the [`BoundaryEnricher`](@ref) is kept in the triangulation (see [`triangulate_curve_bounded`](@ref)). The domain is still not curve-bounded. Note that `points` and `segments` are then mutated by the enrichment.
 - `boundary_enricher=nothing`: Only used internally, by [`triangulate_curve_bounded`](@ref) once it has enriched the boundary.
 
 # Outputs

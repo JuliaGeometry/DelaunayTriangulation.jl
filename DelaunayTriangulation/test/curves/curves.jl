@@ -117,7 +117,7 @@ const ASSETS = joinpath(@__DIR__, "..", "..", "..", "assets", "test", "data_stru
 
     r = 0.1
     t′, q′ = DT.get_circle_intersection(L, 0.2, 1.0, r)
-    @test t′ ≈ 0.08838834764831845 && q′ ⪧ (0.2707106781186548, 0.2707106781186548)
+    @test t′ ≈ 0.2707106781186548 && q′ ⪧ L(t′) ⪧ (0.2707106781186548, 0.2707106781186548) # the t-value on L, not on the segment from L(0.2) to L(1.0)
     @test DT.dist(L(0.2), q′) ≈ r
 
     r = 0.5
@@ -698,8 +698,8 @@ end
     @test DT.dist(c(t₁), q′) ≈ r rtol = 1.0e-3
     t₁, t₂, r = 1.0, 0.5, 0.18889
     t′, q′ = DT.get_circle_intersection(c, t₁, t₂, r)
-    @test t′ ≈ 0.967434869739479 && q′ ⪧ (2.349597231970133, -1.368111418490932)
-    @test DT.dist(c(t₁), q′) ≈ r rtol = 1.0e-2
+    @test q′ ⪧ c(t′) && min(t₁, t₂) ≤ t′ ≤ max(t₁, t₂) # t₁ > t₂ or a small circle, which used to give a t′ that was not accurate
+    @test DT.dist(c(t₁), q′) ≈ r rtol = 2.0e-3
 
     ## == 
     @test arc ≠ negarc
@@ -1129,8 +1129,8 @@ end
     @test DT.dist(c(t₁), q′) ≈ r rtol = 1.0e-3
     t₁, t₂, r = 1.0, 0.5, 0.6
     t′, q′ = DT.get_circle_intersection(c, t₁, t₂, r)
-    @test t′ ≈ 0.7954590918183637 && q′ ⪧ (0.186063568848561, 0.5706424003210613)
-    @test DT.dist(c(t₁), q′) ≈ r rtol = 1.0e-2
+    @test q′ ⪧ c(t′) && min(t₁, t₂) ≤ t′ ≤ max(t₁, t₂) # t₁ > t₂ or a small circle, which used to give a t′ that was not accurate
+    @test DT.dist(c(t₁), q′) ≈ r rtol = 2.0e-3
 
     ## == 
     ctrl1 = [(0.0, 0.0), (1.3, 1.5), (2.7, 5.3), (17.3, 5.2), (23.5, -0.5)]
@@ -1728,8 +1728,8 @@ end
     @test DT.dist(c(t₁), q′) ≈ r rtol = 1.0e-3
     t₁, t₂, r = 1.0, 0.0, 1.0
     t′, q′ = DT.get_circle_intersection(c, t₁, t₂, r)
-    @test t′ ≈ 0.49019803960792163 && q′ ⪧ (0.4997446106449962, 0.8384596166783065)
-    @test DT.dist(c(t₁), q′) ≈ r rtol = 1.0e-2
+    @test q′ ⪧ c(t′) && min(t₁, t₂) ≤ t′ ≤ max(t₁, t₂) # t₁ > t₂ or a small circle, which used to give a t′ that was not accurate
+    @test DT.dist(c(t₁), q′) ≈ r rtol = 2.0e-3
     t₁, t₂, r = 0.0, 0.1, 0.2
     t′, q′ = DT.get_circle_intersection(c, t₁, t₂, r)
     @test t′ ≈ 0.04410882176435287 && q′ ⪧ (0.9666126168475349, 0.1970440391610145)
@@ -2321,12 +2321,12 @@ end
     @test DT.dist(c(t₁), q′) ≈ r rtol = 1.0e-3
     t₁, t₂, r = 1.0, 0.0, 1.0
     t′, q′ = DT.get_circle_intersection(c, t₁, t₂, r)
-    @test t′ ≈ 0.9865973255686293 && q′ ⪧ (-7.9932950700471235, 10.152688406611302)
-    @test DT.dist(c(t₁), q′) ≈ r rtol = 1.0e-1
+    @test q′ ⪧ c(t′) && min(t₁, t₂) ≤ t′ ≤ max(t₁, t₂) # t₁ > t₂ or a small circle, which used to give a t′ that was not accurate
+    @test DT.dist(c(t₁), q′) ≈ r rtol = 2.0e-3
     t₁, t₂, r = 0.0, 0.1, 0.2
     t′, q′ = DT.get_circle_intersection(c, t₁, t₂, r)
-    @test t′ ≈ 0.007051410282056411 && q′ ⪧ (-8.812636716331587, 5.071072149949431)
-    @test DT.dist(c(t₁), q′) ≈ r rtol = 1.0e-2
+    @test q′ ⪧ c(t′) && min(t₁, t₂) ≤ t′ ≤ max(t₁, t₂) # t₁ > t₂ or a small circle, which used to give a t′ that was not accurate
+    @test DT.dist(c(t₁), q′) ≈ r rtol = 2.0e-3
 
     # == 
     @test spl == spl
@@ -2676,6 +2676,28 @@ end
         @test min(t₁, t₂) ≤ t ≤ max(t₁, t₂)
         @test collect(q) ≈ collect(c(t))
         @test DT.dist(c(t₁), q) ≈ r rtol = 1.0e-2
+    end
+end
+
+@testset "get_circle_intersection for random intervals and small circles" begin
+    # The lookup table was searched in the wrong direction for t₁ > t₂, and the tolerance on the distance was absolute,
+    # so that small circles were found inaccurately
+    rng = StableRNG(5)
+    for scale in (1.0, 1.0e-4)
+        points = [scale .* p for p in ((0.0, 0.0), (1.0, 2.0), (2.0, -1.0), (3.0, 1.0), (4.0, 0.0))]
+        curves = (
+            BSpline(points), BezierCurve(points[1:4]), CatmullRomSpline(points), LineSegment(points[1], points[4]),
+            CircularArc((scale, 0.0), (0.0, scale), (0.0, 0.0)), EllipticalArc((2scale, 0.0), (-2scale, 0.0), (0.0, 0.0), 2scale, scale / 2, 0.0),
+        )
+        for c in curves, _ in 1:100
+            t₁, t₂ = rand(rng), rand(rng)
+            abs(t₁ - t₂) < 0.05 && continue
+            r = 0.9rand(rng) * DT.dist(c(t₁), c(t₂)) # c(t₂) is outside of the circle, so it meets the curve between t₁ and t₂
+            t, q = DT.get_circle_intersection(c, t₁, t₂, r)
+            @test min(t₁, t₂) ≤ t ≤ max(t₁, t₂)
+            @test DT.dist(q, c(t)) ≤ 1.0e-8scale
+            @test DT.dist(c(t₁), q) ≈ r rtol = 2.0e-3
+        end
     end
 end
 

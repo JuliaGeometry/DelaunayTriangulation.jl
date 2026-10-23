@@ -958,10 +958,11 @@ is `(t, q)`, where `t` is the parameter value of the intersection and `q` is the
 function get_circle_intersection(c::AbstractParametricCurve, t₁, t₂, r)
     tᵢ, tⱼ, p = _get_interval_for_get_circle_intersection(c, t₁, t₂, r)
     t = midpoint(tᵢ, tⱼ)
+    tol = 1.0e-3min(r, one(r)) # relative to r for small circles, so that they are found as accurately as large ones
     for _ in 1:100
         q = c(t)
         δ = dist(p, q)
-        if abs(δ - r) < 1.0e-3 || abs(tᵢ - tⱼ) < 2.0e-8
+        if abs(δ - r) < tol || abs(tᵢ - tⱼ) < 2.0e-8
             return t, q
         end
         (δ > r) ? (tⱼ = t) : (tᵢ = t)
@@ -974,9 +975,9 @@ end
     _get_interval_for_get_circle_intersection(c::AbstractParametricCurve, t₁, t₂, r) -> (Float64, Float64, NTuple{2, Float64})
 
 Given a circle centered at `c(t₁)` with radius `r`, finds an initial interval for [`get_circle_intersection`](@ref)
-to perform bisection on to find a point of intersection. The returned interval is `(tᵢ, tⱼ)`, 
-where `tᵢ` is the parameter value of the first point in the interval and `tⱼ` 
-is the parameter value of the last point in the interval. (The interval does not have to be sorted.) The third returned value is `p = c(t₁)`.
+to perform bisection on to find a point of intersection. The returned interval is `(tᵢ, tⱼ)`,
+where `c(tᵢ)` is inside the circle and `c(tⱼ)` is outside of it, and both are between `t₁` and `t₂`.
+(The interval is not sorted if `t₁ > t₂`.) The third returned value is `p = c(t₁)`.
 """
 function _get_interval_for_get_circle_intersection(c::AbstractParametricCurve, t₁, t₂, r)
     if has_lookup_table(c)
@@ -1004,19 +1005,21 @@ end
 function _get_interval_for_get_circle_intersection_lookup(c::AbstractParametricCurve, t₁, t₂, r)
     n = length(c.lookup_table)
     p = c(t₁) # the center
-    i₁ = floor(Int, t₁ * (n - 1)) + 1
-    i₂ = ceil(Int, t₂ * (n - 1)) + 1
-    i = i₁
-    itr = t₁ < t₂ ? (i₁:1:i₂) : (i₁:-1:i₂) # explicit :1 step so that bothr anges are a StepRange
-    for outer i in itr
+    # The indices of the lookup table whose t-values are strictly between t₁ and t₂, in the order from t₁ to t₂
+    if t₁ < t₂
+        itr = (floor(Int, t₁ * (n - 1)) + 2):1:ceil(Int, t₂ * (n - 1)) # explicit :1 step so that both ranges are a StepRange
+    else
+        itr = ceil(Int, t₁ * (n - 1)):-1:(floor(Int, t₂ * (n - 1)) + 2)
+    end
+    tᵢ = float(t₁) # the last t-value inside the circle
+    for i in itr
         t = convert_lookup_idx(c, i)
         q = c(t)
         δ = dist(p, q)
-        δ > r && break
+        δ > r && return tᵢ, t, p
+        tᵢ = t
     end
-    i, j = i - 1, i # δ = r somewhere inside here 
-    tᵢ, tⱼ = convert_lookup_idx(c, i), convert_lookup_idx(c, j)
-    return tᵢ, tⱼ, p
+    return tᵢ, float(t₂), p # c(t₂) is outside of the circle
 end
 
 """

@@ -123,7 +123,8 @@ function get_circle_intersection(L::LineSegment, t₁, t₂, r)
     else
         p, q = L(t₁), L(t₂)
         Ls = LineSegment(p, q)
-        return get_circle_intersection(Ls, 0.0, 1.0, r)
+        s, u = get_circle_intersection(Ls, 0.0, 1.0, r)
+        return t₁ + s * (t₂ - t₁), u # the t-value on L rather than on Ls
     end
     return t, L(t)
 end
