@@ -4,6 +4,7 @@ using Test
 using StaticArrays
 using StatsBase
 using StableRNGs
+using ElasticArrays
 import GeometryBasics: Point2f
 
 global p1 = [1.3, 2.5]
@@ -126,6 +127,13 @@ global pts4 = ((2.0, 3.5), (1.7, 23.3), (-1.0, 0.0))
         p1 = [(1.0, 5.0), (17.0, 3.0)]
         DT.push_point!(p1, (17.9, 15.0))
         @test p1 == [(1.0, 5.0), (17.0, 3.0), (17.9, 15.0)]
+        p1 = ElasticMatrix([1.0 17.0; 5.0 3.0])
+        DT.push_point!(p1, (17.9, 15.0))
+        @test p1 == [1.0 17.0 17.9; 5.0 3.0 15.0]
+        # A Matrix can not grow, which used to give a MethodError from append!, e.g. when refining a triangulation
+        @test_throws ArgumentError DT.push_point!([1.0 17.0; 5.0 3.0], 17.9, 15.0)
+        tri = triangulate([0.0 1.0 1.0 0.0; 0.0 0.0 1.0 1.0]; boundary_nodes = [1, 2, 3, 4, 1], rng = StableRNG(4))
+        @test_throws ArgumentError refine!(tri; max_area = 1.0e-2, rng = StableRNG(5))
     end
 
     @testset "pop_point!" begin

@@ -14,3 +14,4 @@ This section gives a manual for certain parts of the package. Little code will b
 - [Triangulation Output](triangulation_output.md): How the output of a triangulation is defined.
 - [Voronoi Tessellation Output](voronoi_output.md): How the output of a Voronoi tessellation is defined.
 - [Predicate Kernels](predicate_kernels.md): The methods available for computing geometric predicates.
+- [Performance Tips](performance.md): Some ways to make your code faster, and some things to avoid.

@@ -11,6 +11,13 @@ end
 const IS_CI = get(ENV, "CI", "false") == "true"
 const session_tmp = mktempdir()
 
+# The comparison table on the introduction page is the same image as in the README. It lives in the top-level assets
+# folder, rather than in docs/src, so that it is not shipped with the package. It is only copied if it changed, since
+# LiveServer rebuilds the documentation whenever a file in docs/src is written to
+let src = joinpath(@__DIR__, "..", "..", "assets", "softwarecomparison.png"), dst = joinpath(@__DIR__, "src", "softwarecomparison.png")
+    (isfile(dst) && read(dst) == read(src)) || cp(src, dst, force = true)
+end
+
 # When running docs locally, the EditURL is incorrect. For example, we might get 
 #   ```@meta
 #   EditURL = "<unknown>/docs/src/literate_tutorials/constrained.jl"
@@ -135,6 +142,7 @@ const _PAGES = [
         "Triangulation Output" => "manual/triangulation_output.md",
         "Voronoi Tessellation Output" => "manual/voronoi_output.md",
         "Predicate Kernels" => "manual/predicate_kernels.md",
+        "Performance Tips" => "manual/performance.md",
     ],
     "API Reference" => [
         "Section Overview" => "api/overview.md",
@@ -153,6 +161,7 @@ const _PAGES = [
     ],
     "Extended Reference" => [
         "Overview" => "extended/overview.md",
+        "Package Structure" => "extended/package_structure.md",
         "Data Structures" => "extended/data_structures.md",
         "Algorithm Internals" => "extended/algorithms.md",
         "Utility Functions" => "extended/utils.md",

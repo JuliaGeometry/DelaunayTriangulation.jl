@@ -501,7 +501,7 @@ function prepare_vertex_linked_list(V::AbstractArray{I}) where {I}
         prev[i] = i - 1
         shuffled_indices[i] = i
     end
-    return ShuffledPolygonLinkedList(next, prev, shuffled_indices, m, V)
+    return ShuffledPolygonLinkedList(next, prev, shuffled_indices, I(m), V)
 end
 
 """

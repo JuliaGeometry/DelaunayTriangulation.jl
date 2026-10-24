@@ -11,6 +11,8 @@ LocalPreferences.toml
 **/docs/src/applications/*.md
 !**/docs/src/tutorials/overview.md
 !**/docs/src/applications/overview.md
+# Copied by docs/make.jl from the top-level assets folder
+**/docs/src/softwarecomparison.png
 varying_weight_power.mp4
 varying_weight.mp4
 *settings.local.json

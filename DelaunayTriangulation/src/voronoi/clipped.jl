@@ -1138,6 +1138,7 @@ function _clip_voronoi_tessellation_convex_polygon!(vorn::VoronoiTessellation, c
     polygon_points = get_polygon_points(vorn)
     point_dict = Dict(polygon_points .=> each_polygon_vertex(vorn))
     I = integer_type(vorn)
+    F = number_type(vorn)
     for v in intersecting_polygons # This might be parallelisable
         poly_points = get_polygon_coordinates(vorn, v, bbox; predicates)
         delete_polygon_adjacent!(vorn, v)
@@ -1149,6 +1150,9 @@ function _clip_voronoi_tessellation_convex_polygon!(vorn::VoronoiTessellation, c
                 add_boundary_polygon!(vorn, v)
                 clipped_tile_vertices  = Vector{I}(undef, length(clipped_tile))
                 for (idx, p) in enumerate(clipped_tile)
+                    # The coordinates of unbounded polygons are computed in Float64, so p has to be converted to the type of the
+                    # polygon points before it can be looked up in point_dict, e.g. for Float32 points
+                    p = (F(getx(p)), F(gety(p)))
                     n = num_polygon_vertices(vorn)
                     pidx = get(point_dict, p, I(n + 1))
                     if pidx == n + 1 

@@ -95,7 +95,9 @@ Smooths `vorn` into a centroidal tessellation so that the new tessellation is of
 
 # Extended help 
 The algorithm is simple. We iteratively smooth the generators, moving them to the centroid of their associated Voronoi polygon for the current tessellation, 
-continuing until the maximum distance moved of any generator is less than `tol`. Boundary generators are not moved.
+continuing until the maximum distance moved of any generator is less than `tol`. Boundary generators are not moved: these are the generators
+at the boundary nodes of the triangulation or, if it has none and no `clip_polygon` is given, at the vertices of its convex hull. With a `clip_polygon`,
+a boundary generator is only kept in place if it is also a vertex of one of the clipped polygons, e.g. a corner of the `clip_polygon`.
 """
 function centroidal_smooth(vorn::VoronoiTessellation; clip_polygon = nothing, maxiters = 1000, tol = default_displacement_tolerance(vorn), rng = Random.default_rng(), predicates::AbstractPredicateKernel = AdaptiveKernel(), kwargs...)
     iter = 0
@@ -105,7 +107,10 @@ function centroidal_smooth(vorn::VoronoiTessellation; clip_polygon = nothing, ma
     has_ghost = has_ghost_triangles(tri)
     !has_ghost && add_ghost_triangles!(tri)
     has_bnds = has_boundary_nodes(tri)
-    !has_bnds && lock_convex_hull!(tri; rng, predicates)
+    # With a clip_polygon, the generators can move outside of the convex hull, so the convex hull must not be locked:
+    # the triangulation is retriangulated with its boundary in each iteration, which would delete these generators
+    lock_hull = !has_bnds && isnothing(clip_polygon)
+    lock_hull && lock_convex_hull!(tri; rng, predicates)
     try
         points = deepcopy(get_points(tri))
         while iter < maxiters && max_dist > tol
@@ -114,7 +119,7 @@ function centroidal_smooth(vorn::VoronoiTessellation; clip_polygon = nothing, ma
         end
         return vorn
     finally # undo the changes to tri, even if an error was thrown
-        !has_bnds && unlock_convex_hull!(tri)
+        lock_hull && unlock_convex_hull!(tri)
         !has_ghost && delete_ghost_triangles!(tri)
     end
 end

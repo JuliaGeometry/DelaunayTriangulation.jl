@@ -38,12 +38,14 @@ function voronoi(tri::Triangulation; clip = false, smooth = false, clip_polygon 
         if is_true(clip)
             clip_voronoi_tessellation!(vorn; clip_polygon, rng, predicates)
         end
-        if is_true(smooth)
-            vorn = centroidal_smooth(vorn; clip_polygon, rng, predicates, kwargs...)
-        end
-        return vorn
     finally # undo the changes to tri, even if an error was thrown
         is_true(clip) && !has_bnds && unlock_convex_hull!(tri)
         !has_ghost && delete_ghost_triangles!(tri)
     end
+    # The convex hull is unlocked before smoothing since, with a clip_polygon, the generators can move outside of it. Without
+    # a clip_polygon, centroidal_smooth locks the convex hull itself
+    if is_true(smooth)
+        vorn = centroidal_smooth(vorn; clip_polygon, rng, predicates, kwargs...)
+    end
+    return vorn
 end

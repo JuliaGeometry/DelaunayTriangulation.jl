@@ -1521,80 +1521,14 @@ end
     @test isempty(vorn.unbounded_polygons)
     @test vorn.boundary_polygons == Set((4, 6, 2, 9, 3, 1))
 
+    # Smoothing used to lose generator 8. The convex hull was still locked when the triangulation was retriangulated after
+    # moving the generators towards the centroids of their polygons, so the generators that moved outside of the convex
+    # hull were deleted as if they were outside of the domain
+    polygons_before = Set(each_polygon_index(vorn))
     vorn = voronoi(tri, clip=true, clip_polygon=clip_polygon, rng=rng, smooth=true)
-    pt1 = [
-        (-5.1590315116169645, 8.028359015649276)
-        (-2.0329830757675342, 9.155154224395774)
-        (-1.5930583264171334, 12.0)
-        (-6.067362675362922, 12.0)
-        (-6.059020473726599, 8.97155876785828)
-        (-5.1590315116169645, 8.028359015649276)
-    ]
-    pt2 = [
-        (-10.0, 12.0)
-        (-10.0, 8.234478977169747)
-        (-6.059020473726599, 8.97155876785828)
-        (-6.067362675362922, 12.0)
-        (-10.0, 12.0)
-    ]
-    pt3 = [
-        (-10.0, 5.764961735169299)
-        (-10.0, 2.0)
-        (-6.066696497738481, 2.0)
-        (-6.058578287005368, 5.028158005937482)
-        (-10.0, 5.764961735169299)
-    ]
-    pt4 = [
-        (-6.058578287005368, 5.028158005937482)
-        (-6.066696497738481, 2.0)
-        (-1.592374540035335, 2.0)
-        (-2.032629690319553, 4.8454051776002)
-        (-5.158841519410821, 5.971443006049375)
-        (-6.058578287005368, 5.028158005937482)
-    ]
-    pt5 = [
-        (-5.158841519410821, 5.971443006049375)
-        (-5.1590315116169645, 8.028359015649276)
-        (-6.059020473726599, 8.97155876785828)
-        (-10.0, 8.234478977169747)
-        (-10.0, 5.764961735169299)
-        (-6.058578287005368, 5.028158005937482)
-        (-5.158841519410821, 5.971443006049375)
-    ]
-    pt6 = [
-        (-1.592374540035335, 2.0)
-        (2.0, 2.0)
-        (2.0, 7.000229455337406)
-        (-0.15539885081025462, 7.000135534420414)
-        (-2.032629690319553, 4.8454051776002)
-        (-1.592374540035335, 2.0)
-    ]
-    pt7 = [
-        (-5.158841519410821, 5.971443006049375)
-        (-2.032629690319553, 4.8454051776002)
-        (-0.15539885081025462, 7.000135534420414)
-        (-2.0329830757675342, 9.155154224395774)
-        (-5.1590315116169645, 8.028359015649276)
-        (-5.158841519410821, 5.971443006049375)
-    ]
-    @test !DT.has_polygon(vorn, 8)
-    pt9 = [
-        (2.0, 7.000229455337406)
-        (2.0, 12.0)
-        (-1.5930583264171334, 12.0)
-        (-2.0329830757675342, 9.155154224395774)
-        (-0.15539885081025462, 7.000135534420414)
-        (2.0, 7.000229455337406)
-    ]
     @test validate_tessellation(vorn; check_area=false)
-    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[1]...), pt1, ⪧)
-    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[2]...), pt2, ⪧)
-    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[3]...), pt3, ⪧)
-    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[4]...), pt4, ⪧)
-    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[5]...), pt5, ⪧)
-    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[6]...), pt6, ⪧)
-    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[7]...), pt7, ⪧)
-    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[9]...), pt9, ⪧)
+    @test Set(each_polygon_index(vorn)) == polygons_before == Set(1:9)
+    @test sum(get_area(vorn, index) for index in each_polygon_index(vorn)) ≈ 120
     for index in each_polygon_index(vorn)
         c = DT.get_centroid(vorn, index)
         @test c ⪧ get_generator(vorn, index) rtol = 1e-2 atol = 1e-4
@@ -1688,62 +1622,13 @@ end
     @test vorn.boundary_polygons == Set((5, 4, 7, 2, 9, 8, 3, 1))
     @test isempty(vorn.unbounded_polygons)
 
+    # As above, smoothing used to lose generators 5 and 7. Generator 6 has no polygon, since its polygon does not intersect
+    # the clip polygon
+    polygons_before = Set(each_polygon_index(vorn))
     vorn = voronoi(tri, clip=true, clip_polygon=clip_polygon, rng=rng, smooth=true)
-    pt1 = [
-        (-2.364836958330981, 8.540652166676075)
-        (-4.029198089942065, 9.294402546743912)
-        (-5.173208375837535, 7.7690554988832865)
-        (-4.17127917698101, 6.722638795624013)
-        (-2.855277812679444, 6.578888749282224)
-        (-2.364836958330981, 8.540652166676075)
-    ]
-    pt2 = [
-        (-6.659997738183602, 5.786669682421865)
-        (-5.185697692423832, 4.903140482793648)
-        (-4.17127917698101, 6.722638795624013)
-        (-5.173208375837535, 7.7690554988832865)
-        (-6.659997738183602, 5.786669682421865)
-    ]
-    pt3 = [
-        (-8.0, 4.0)
-        (-6.026707081932514, 3.013353540966257)
-        (-5.120548573308532, 4.754263677601372)
-        (-5.185697692423832, 4.903140482793648)
-        (-6.659997738183602, 5.786669682421865)
-        (-8.0, 4.0)
-    ]
-    pt4 = [
-        (-4.0, 2.0)
-        (-3.4550765743281895, 4.179693702687242)
-        (-5.120548573308532, 4.754263677601372)
-        (-6.026707081932514, 3.013353540966257)
-        (-4.0, 2.0)
-    ]
-    @test !DT.has_polygon(vorn, 5)
-    @test !DT.has_polygon(vorn, 6)
-    @test !DT.has_polygon(vorn, 7)
-    pt8 = [
-        (-3.4550765743281895, 4.179693702687242)
-        (-2.855277812679444, 6.578888749282224)
-        (-4.17127917698101, 6.722638795624013)
-        (-5.185697692423832, 4.903140482793648)
-        (-5.120548573308532, 4.754263677601372)
-        (-3.4550765743281895, 4.179693702687242)
-    ]
-    pt9 = [
-        (-2.0, 10.0)
-        (-2.0, 12.0)
-        (-4.029198089942065, 9.294402546743912)
-        (-2.364836958330981, 8.540652166676075)
-        (-2.0, 10.0)
-    ]
     @test validate_tessellation(vorn; check_area=false)
-    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[1]...), pt1, ⪧)
-    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[2]...), pt2, ⪧)
-    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[3]...), pt3, ⪧)
-    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[4]...), pt4, ⪧)
-    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[8]...), pt8, ⪧)
-    @test DT.circular_equality(DT.get_polygon_point(vorn, vorn.polygons[9]...), pt9, ⪧)
+    @test Set(each_polygon_index(vorn)) == polygons_before == Set((1, 2, 3, 4, 5, 7, 8, 9))
+    @test sum(get_area(vorn, index) for index in each_polygon_index(vorn)) ≈ 24
     for index in each_polygon_index(vorn)
         c = DT.get_centroid(vorn, index)
         @test c ⪧ get_generator(vorn, index) rtol = 1e-2 atol = 1e-4
@@ -2030,5 +1915,27 @@ end
         @test DT.has_boundary_nodes(DT.get_triangulation(vorn)) && !DT.has_boundary_nodes(tri)
         hull = DT.get_vertices(convex_hull(points))
         @test sum(get_area(vorn, i) for i in each_polygon_index(vorn)) ≈ DT.polygon_features(points, hull)[1] rtol = 1.0e-10
+    end
+end
+
+@testset "Clipping to a clip polygon around Float32 points, and smoothing" begin
+    # The coordinates of unbounded polygons are computed in Float64, and with Float32 points they could not be looked up
+    # among the polygon points, so clipping them to a clip_polygon threw a TypeError, as did clipping a power diagram.
+    # Smoothing also lost about half of the generators, since their centroids were outside of the convex hull of the points
+    for F in (Float64, Float32)
+        rng = StableRNG(1)
+        points = [(F(rand(rng)), F(rand(rng))) for _ in 1:200]
+        clip_polygon = ([(F(-0.5), F(-0.5)), (F(1.5), F(-0.5)), (F(1.5), F(1.5)), (F(-0.5), F(1.5))], [1, 2, 3, 4, 1])
+        tri = triangulate(points; rng)
+        for smooth in (false, true)
+            vorn = voronoi(tri; clip = true, clip_polygon, smooth, rng)
+            @test num_polygons(vorn) == 200
+            @test sum(get_area(vorn, i) for i in each_polygon_index(vorn)) ≈ 4 rtol = sqrt(eps(F))
+            @test validate_tessellation(vorn; check_area = false)
+        end
+        weights = F.(1.0e-4 .* randn(rng, 200))
+        tri = triangulate(points; weights, rng)
+        vorn = voronoi(tri; clip = true, rng)
+        @test sum(get_area(vorn, i) for i in each_polygon_index(vorn)) ≈ DT.get_area(tri) rtol = sqrt(eps(F))
     end
 end

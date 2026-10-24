@@ -1153,3 +1153,25 @@ end
     points = [(rand(rng), rand(rng)) for _ in 1:20]
     @test_throws DT.InvalidSegmentError triangulate(points; segments = Set([(3, 3)]), rng = StableRNG(1))
 end
+
+@testset "Constrained triangulations with Int32 vertices" begin
+    # The vertex linked list used for retriangulating the cavity around a segment was given the number of vertices as an Int,
+    # so every constrained triangulation with IntegerType = Int32 threw a MethodError
+    rng = StableRNG(123)
+    points = [(rand(rng), rand(rng)) for _ in 1:200]
+    tri = triangulate(points; segments = Set([(Int32(1), Int32(2)), (Int32(3), Int32(4))]), IntegerType = Int32, rng = StableRNG(1))
+    @test DT.integer_type(tri) == Int32
+    @test validate_triangulation(tri)
+    @test DT.contains_segment(tri, 1, 2) && DT.contains_segment(tri, 3, 4)
+    tri = triangulate(points; IntegerType = Int32, rng = StableRNG(2))
+    add_segment!(tri, Int32(5), Int32(6); rng = StableRNG(3))
+    @test validate_triangulation(tri)
+    @test DT.contains_segment(tri, 5, 6)
+    points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0), (0.4, 0.4), (0.4, 0.6), (0.6, 0.6), (0.6, 0.4)]
+    boundary_nodes = [[Int32[1, 2, 3, 4, 1]], [Int32[5, 6, 7, 8, 5]]]
+    tri = triangulate(points; boundary_nodes, IntegerType = Int32, rng = StableRNG(4))
+    refine!(tri; max_area = 1.0e-2, rng = StableRNG(5))
+    @test DT.integer_type(tri) == Int32
+    @test validate_triangulation(tri)
+    @test DT.get_area(tri) ≈ 1 - 0.2^2
+end

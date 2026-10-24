@@ -422,6 +422,7 @@ push_point!
 push_point!(points::AbstractVector{T}, x, y) where {F, T <: NTuple{2, F}} = push!(points, (F(x), F(y)))
 push_point!(points::AbstractVector{T}, x, y) where {F <: Number, T <: AbstractVector{F}} = push!(points, F[x, y])
 push_point!(points::AbstractMatrix{T}, x, y) where {T <: Number} = append!(points, (x, y)) # ElasticArrays 
+push_point!(points::Matrix{T}, x, y) where {T <: Number} = throw(ArgumentError("Points can not be added to a Matrix of points. Use a Vector of points, or an ElasticMatrix from ElasticArrays.jl, instead."))
 push_point!(points, p) = push_point!(points, getx(p), gety(p))
 
 @doc """

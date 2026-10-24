@@ -5,7 +5,7 @@ using StableRNGs
 # These tests reproduce the examples shown in the docstrings, which are not run as doctests.
 # Sets and Dicts are compared by value, so that the tests do not depend on hash iteration order.
 
-@testset "constrained_triangulation.jl" begin
+@testset "constrained.jl" begin
     @testset "fix_segments!" begin
         segments = [(2, 15), (2, 28), (2, 41)]
         bad_indices = [1, 2, 3]

@@ -1,15 +1,18 @@
 # Puts together the test reports written by the CI test jobs (see write_test_report in DelaunayTriangulation/test/runtests.jl).
-# Each job only runs some of the test groups, so this is also where we check that every test script was run on each Julia version.
+# Each job only runs some of the test groups, so this is also where we check that every test script was run on each Julia version
+# and operating system.
 #
 # Usage:
 #   julia .github/test_summary.jl test_reports
-# where test_reports has a directory test-report-<version>-<job index> for each downloaded artifact, containing its test_report.tsv.
+# where test_reports has a directory test-report-<version>-<os>-<job index> for each downloaded artifact, containing its test_report.tsv.
 # The summary is written to the job summary page on CI (and printed). The script fails if any test failed or errored, if any
 # test script was not run, or if TESTS_RESULT (the result of the test jobs) is given and is not "success".
 
 const REPORT_DIR = only(ARGS)
 
-const JULIA_VERSIONS = Dict{String, String}() # the Julia version that each version in the matrix, e.g. "lts", resolved to
+# The results are kept for each configuration, which is the version in the matrix, e.g. "lts", followed by the operating system
+# if it is not Linux, e.g. "1 on windows"
+const JULIA_VERSIONS = Dict{String, String}() # the Julia version that each configuration resolved to
 const GROUPS = String[]
 const GROUP_RESULTS = Dict{Tuple{String, String}, Vector{String}}() # (version, group) => [passes, fails, errors, broken, duration]
 const FAILED_TESTSETS = Tuple{String, String, String, Int, Int}[] # (version, group, testset, fails, errors)
@@ -17,10 +20,10 @@ const INCLUDED_SCRIPTS = Dict{String, Set{String}}()
 const EXPECTED_SCRIPTS = Set{String}()
 
 for dir in readdir(REPORT_DIR)
-    m = match(r"^test-report-(.+)-\d+$", dir)
+    m = match(r"^test-report-(.+)-([a-z]+)-latest-\d+$", dir)
     report = joinpath(REPORT_DIR, dir, "test_report.tsv")
     (isnothing(m) || !isfile(report)) && continue
-    version = m[1]
+    version = m[2] == "ubuntu" ? m[1] : "$(m[1]) on $(m[2])"
     included = get!(INCLUDED_SCRIPTS, version, Set{String}())
     for line in eachline(report)
         fields = split(line, '\t')
@@ -92,7 +95,7 @@ else
 
     println(io, "\n### Test scripts\n")
     if all(isempty, values(MISSING_SCRIPTS))
-        println(io, "All $(length(EXPECTED_SCRIPTS)) test scripts were run on every Julia version.")
+        println(io, "All $(length(EXPECTED_SCRIPTS)) test scripts were run on every Julia version and operating system.")
     else
         for version in VERSIONS
             isempty(MISSING_SCRIPTS[version]) && continue

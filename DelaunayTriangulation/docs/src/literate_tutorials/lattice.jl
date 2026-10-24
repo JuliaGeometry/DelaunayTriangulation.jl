@@ -25,7 +25,7 @@ using BenchmarkTools
 using StableRNGs # for reproducibility
 points = get_points(tri)
 rng = StableRNG(123)
-@benchmark triangulate($points; randomise = $false, rng = $rng) # randomise=false because points are already in lattice order, i.e. spatially sorted
+@benchmark triangulate($points; rng = $rng)
 
 #-
 @benchmark triangulate_rectangle($a, $b, $c, $d, $nx, $ny)

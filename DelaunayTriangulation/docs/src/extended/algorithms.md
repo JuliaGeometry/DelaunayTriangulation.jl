@@ -28,7 +28,7 @@ Modules = [DelaunayTriangulation]
 Pages = ["src/triangulation/construction/spatial_sorting.jl"]
 ```
 
-## Triangulation Rectangular Domains
+## Triangulating Rectangular Domains
 
 Here are some of the internal functions used for `triangulate_rectangle`.
 

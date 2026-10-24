@@ -32,7 +32,7 @@ The documentation for this package is broken into several sections.
 - **Tutorials**: These are examples that introduce the functionality of the package, demonstrating how to perform many operations. 
 - **Manual**: Some particular descriptions of how certain things work in the package, such as representing boundaries and working with the triangulation and tessellation data structures. 
 - **API Reference**: This section lists docstrings for all functions in the public API.
-- **Extended Reference**: This section is for providing more details about the internals of the package, meaning not in the public API. The material in this section is subject to change across any version, but may be useful for you to understand how certain functions work. For example, all utility functions are documented here.
+- **Extended Reference**: This section is for providing more details about the internals of the package, meaning not in the public API. The material in this section is subject to change across any version, but may be useful for you to understand how certain functions work. For example, all utility functions are documented here, and the [Package Structure](extended/package_structure.md) page describes where each part of the package is implemented and tested.
 - **Mathematical Details**: This section is for describing in detail the mathematics that underpins the algorithms in this package, for example walking you through the theory behind the algorithm for computing constrained Delaunay triangulations. 
 - **Example Applications**: In case you want to use this package for some of your applications, it might be useful to see how it has been applied in certain situations. Only a few applications are considered here, but more could be added in the future.
 - **Terminology**: This section provides a short description of some of the terminology used throughout the package.
@@ -113,4 +113,4 @@ In addition to these Julia packages, software packages in other programming lang
 
 Compared to all these other libraries, and only in the context of planar triangulations, DelaunayTriangulation.jl is one of the most developed in terms of the features provided, with the possible exception of CGAL and Gmsh, which provide many features but are released under copyleft licenses (CGAL being GPL v3+ and Gmsh being GPL v2+), whereas DelaunayTriangulation.jl is MIT licensed. A tabular comparison of all these packages is given below (focusing only on two dimensional meshing). If there are any errors in this comparison, please let me know. Also please note that the features listed are not intended to be exhaustive, but rather to give a general idea of the capabilities of each package, and certainly not all software packages are listed here. 
 
-![Comparison](softwarecomparisonc.png)
+![A table comparing the two-dimensional meshing features of DelaunayTriangulation.jl with the packages listed above](softwarecomparison.png)

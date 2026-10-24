@@ -8,6 +8,8 @@ An easy way to contribute to the package is to make pull requests fixing any iss
 
 ## Writing a Pull Request
 
+If you are not sure where in the package something is implemented or tested, the [Package Structure](https://JuliaGeometry.github.io/DelaunayTriangulation.jl/dev/extended/package_structure/) page of the documentation describes how the repository is organised.
+
 For changes beyond simple documentation improvements, your pull request description should have a bit more detail. Some loose requirements are listed below. The point of these requirements is not to make you concerned about the amount of work needed to fulfill them, but to ensure that your contribution can be accepted easily without the reviewer and yourself needing to go back-and-forth to meet the package's standards. If you do not meet them, you may still be fine depending on what you are contributing. You can always ask for help.
 
 ### 1. Outline what your pull request does in the description

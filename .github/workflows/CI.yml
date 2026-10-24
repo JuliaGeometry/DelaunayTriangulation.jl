@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 jobs:
   test:
-    name: Julia ${{ matrix.version }} - ${{ matrix.tests.name }} - ${{ matrix.arch }} - ${{ github.event_name }} - ${{ matrix.os }}
+    name: Julia ${{ matrix.version }} - ${{ matrix.tests.name }} - ${{ github.event_name }} - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -23,10 +23,20 @@ jobs:
           - '1.11'
           - 'pre'
           - 'lts'
+        # Windows and macOS are only tested on the latest release, which is enough to catch problems specific to an
+        # operating system, e.g. with paths or with how figures are rendered. The architecture is the runner's own, so
+        # macOS runs on Apple silicon.
         os:
           - ubuntu-latest
-        arch:
-          - x64
+          - windows-latest
+          - macos-latest
+        exclude:
+          - { version: '1.11', os: windows-latest }
+          - { version: 'pre', os: windows-latest }
+          - { version: 'lts', os: windows-latest }
+          - { version: '1.11', os: macos-latest }
+          - { version: 'pre', os: macos-latest }
+          - { version: 'lts', os: macos-latest }
         # The test groups from test/runtests.jl, split into jobs that take roughly the same time. A group that is
         # not listed here is not run on CI, which the test-summary job checks. Groups with spaces in their names need quotes.
         tests:
@@ -48,7 +58,6 @@ jobs:
         uses: julia-actions/setup-julia@v3
         with:
           version: ${{ matrix.version }}
-          arch: ${{ matrix.arch }}
       - run: julia -e 'using InteractiveUtils; versioninfo(verbose=true)'
 
       - name: Cache artifacts, etc.
@@ -73,7 +82,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: test-report-${{ matrix.version }}-${{ strategy.job-index }}
+          name: test-report-${{ matrix.version }}-${{ matrix.os }}-${{ strategy.job-index }}
           path: ${{ runner.temp }}/test_report.tsv
           if-no-files-found: ignore
           retention-days: 7

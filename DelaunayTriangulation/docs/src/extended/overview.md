@@ -2,6 +2,7 @@
 
 This section shows the docstrings for all functions not in the public API; for those in the public API, see the [API](../api/overview.md). We will describe the following:
 
+- [Package Structure](package_structure.md): How the repository and the source code are organised, i.e. where each feature is implemented, tested, and documented.
 - [Data Structures](data_structures.md): All data structures used inside the package, along with functions related to working with them. Both public and private data structures are listed here.
 - [Algorithm Internals](algorithms.md): All internal functions used for algorithms inside the package.
 - [Utility Functions](utils.md): All internal utility or other miscellaneous functions used inside the package.
