@@ -19,6 +19,9 @@ const FAILED_TESTSETS = Tuple{String, String, String, Int, Int}[] # (version, gr
 const INCLUDED_SCRIPTS = Dict{String, Set{String}}()
 const EXPECTED_SCRIPTS = Set{String}()
 
+# The paths of the test scripts are written with the separator of the job's operating system, e.g. voronoi\voronoi.jl on Windows
+script_path(path) = replace(path, '\\' => '/')
+
 for dir in readdir(REPORT_DIR)
     m = match(r"^test-report-(.+)-([a-z]+)-latest-\d+$", dir)
     report = joinpath(REPORT_DIR, dir, "test_report.tsv")
@@ -38,9 +41,9 @@ for dir in readdir(REPORT_DIR)
             fails, errors = parse(Int, fields[5]), parse(Int, fields[6])
             fails + errors > 0 && push!(FAILED_TESTSETS, (version, fields[2], fields[3], fails, errors))
         elseif kind == "included"
-            push!(included, fields[2])
+            push!(included, script_path(fields[2]))
         elseif kind == "expected"
-            push!(EXPECTED_SCRIPTS, fields[2])
+            push!(EXPECTED_SCRIPTS, script_path(fields[2]))
         end
     end
 end
