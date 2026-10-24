@@ -413,7 +413,9 @@ function validate_tessellation(vorn::DT.VoronoiTessellation; check_convex=true, 
                 _pts = unique(poly_points)
                 ch = convex_hull(_pts; predicates)
                 _poly_points = _pts[DT.get_vertices(ch)]
-                flag = DT.circular_equality(collect.(poly_points), collect.(_poly_points), ≈)
+                # The vertices of the convex hull are the same points as those of the polygon, so they are compared exactly. With ≈,
+                # two vertices of a polygon closer together than the tolerance (e.g. 3e-4 apart for Float32) could be matched wrongly
+                flag = DT.circular_equality(collect.(poly_points), collect.(_poly_points))
                 if !flag
                     println("Polygon $i is not convex.")
                     return false
