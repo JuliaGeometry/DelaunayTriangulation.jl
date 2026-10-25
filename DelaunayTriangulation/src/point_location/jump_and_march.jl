@@ -698,7 +698,7 @@ some warnings and notes.
 - `m=default_num_samples(num_vertices(point_indices))`: The number of samples to use when selecting the initial point.
 - `try_points=()`: A list of points to try as the initial point in addition to the `m` sampled.
 - `rng=Random.default_rng()`: The random number generator to use.
-- `k=select_initial_point(tri, q; point_indices, m, try_points, rng)`: The initial point to start the algorithm from. See [`select_initial_point`](@ref).
+- `k=select_initial_point(tri, q; point_indices, m, try_points, rng)`: The initial point to start the algorithm from. See [`select_initial_point`](@ref). If you are locating many points, sorting them so that consecutive points are close together and starting each search from a vertex of the previous triangle is much faster; see the [performance tips](@ref performance-tips).
 - `store_history=Val(false)`: Whether to store the history of the algorithm.
 - `history=nothing`: The history of the algorithm. If `store_history`, then this should be a [`PointLocationHistory`](@ref) object.
 - `maxiters=2 + num_exterior_curves(tri) - num_solid_vertices(tri) + num_solid_edges(tri)`: The maximum number of iterations to perform before restarting the algorithm with [`restart_find_triangle`](@ref).

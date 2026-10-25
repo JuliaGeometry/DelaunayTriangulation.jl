@@ -31,12 +31,12 @@ For the keyword arguments below, you may like to review the extended help as som
    follow the same specification, but use [`AbstractParametricCurve`](@ref)s to fill out the vector, and any piecewise linear section should still be provided as a sequence of vertices. 
 - `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates. Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 - `weights=ZeroWeight{number_type(points)}()`: The weights to use for the triangulation. By default, the triangulation is unweighted. The weights can also be provided as a vector, with the `i`th weight referring to the `i`th vertex, or more generally any object that defines [`get_weight`](@ref). Only unconstrained weighted triangulations are supported, so weights cannot be used together with `segments` or `boundary_nodes`.
-- `IntegerType=Int`: The integer type to use for the triangulation. This is used for representing vertices.
+- `IntegerType=Int`: The integer type to use for the triangulation. This is used for representing vertices. Using `Int32` reduces the memory used by the triangulation by more than a third; see the [performance tips](@ref performance-tips).
 - `EdgeType=isnothing(segments) ? NTuple{2,IntegerType} : (edge_type ∘ typeof)(segments)`: The edge type to use for the triangulation. 
 - `TriangleType=NTuple{3,IntegerType}`: The triangle type to use for the triangulation.
 - `EdgesType=isnothing(segments) ? Set{EdgeType} : typeof(segments)`: The type to use for storing the edges of the triangulation.
 - `TrianglesType=Set{TriangleType}`: The type to use for storing the triangles of the triangulation.
-- `randomise=true`: Whether to randomise the order in which the points are inserted into the triangulation. This is done using [`get_insertion_order`](@ref), which gives a biased randomised insertion order, i.e. a random order that is also spatially sorted (see [`brio_order`](@ref)).
+- `randomise=true`: Whether to randomise the order in which the points are inserted into the triangulation. This is done using [`get_insertion_order`](@ref), which gives a biased randomised insertion order, i.e. a random order that is also spatially sorted (see [`brio_order`](@ref)). Inserting the points in the given order with `randomise=false` is rarely faster, and can be much slower; see the [performance tips](@ref performance-tips).
 - `delete_ghosts=false`: Whether to delete the ghost triangles after the triangulation is computed. This is done using [`delete_ghost_triangles!`](@ref).
 - `delete_empty_features=true`: Whether to delete empty features after the triangulation is computed. This is done using [`clear_empty_features!`](@ref).
 - `try_last_inserted_point=true`: Whether to try the last inserted point first when inserting points into the triangulation. 

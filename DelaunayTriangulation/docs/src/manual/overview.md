@@ -15,3 +15,4 @@ This section gives a manual for certain parts of the package. Little code will b
 - [Voronoi Tessellation Output](voronoi_output.md): How the output of a Voronoi tessellation is defined.
 - [Predicate Kernels](predicate_kernels.md): The methods available for computing geometric predicates.
 - [Performance Tips](performance.md): Some ways to make your code faster, and some things to avoid.
+- [Performance Measurements](performance_measurements.md): Measurements of the effects discussed in the performance tips, and the code used to make them.

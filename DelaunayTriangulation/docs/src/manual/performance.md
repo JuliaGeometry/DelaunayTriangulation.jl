@@ -2,9 +2,9 @@
 CurrentModule = DelaunayTriangulation
 ```
 
-# Performance Tips
+# [Performance Tips](@id performance-tips)
 
-The default settings of this package are chosen to be robust and reasonably fast for most problems, but there are some things you can do to make your code faster, and some things to avoid. The timings below are only to give an idea of the differences. They were measured on a laptop with Julia 1.13, and will depend on your machine and your problem. As for any Julia code, the general [performance tips](https://docs.julialang.org/en/v1/manual/performance-tips/) in the Julia manual also apply, e.g. you should put loops that work with a triangulation inside of a function rather than at the top level of a script.
+The default settings of this package are chosen to be robust and reasonably fast for most problems, but there are some things you can do to make your code faster, and some things to avoid. The timings below are only to give an idea of the differences. They were measured on a laptop with Julia 1.13, and will depend on your machine and your problem. As for any Julia code, the general [performance tips](https://docs.julialang.org/en/v1/manual/performance-tips/) in the Julia manual also apply, e.g. you should put loops that work with a triangulation inside of a function rather than at the top level of a script. The [Performance Measurements](performance_measurements.md) page shows how the differences discussed here grow with the number of points, together with the code used to measure them.
 
 ## Constructing Triangulations
 
@@ -29,7 +29,7 @@ By default, the vertices of a triangulation are `Int`s, i.e. `Int64` on a 64-bit
 tri = triangulate(points; IntegerType = Int32)
 ```
 
-This reduces the memory used by the triangulation by about a third. For 100,000 random points, the triangulation then uses 85 MiB rather than 136 MiB, and `triangulate` takes 0.82 s rather than 1.1 s. [`triangulate_rectangle`](@ref) also has an `IntegerType` keyword argument.
+This reduces the memory used by the triangulation by more than a third. For 100,000 random points, the triangulation then uses 85 MiB rather than 136 MiB, and `triangulate` is around 10% faster. [`triangulate_rectangle`](@ref) also has an `IntegerType` keyword argument.
 
 ### The Predicate Kernel Matters Less than You Might Expect
 
@@ -52,7 +52,7 @@ function add_points!(tri, new_points)
 end
 ```
 
-For the same 20,000 points sorted along a space-filling curve, this takes 0.14 s. Only do this if consecutive points are close together, though: for points in a random order, it takes 0.29 s instead.
+For the same 20,000 points sorted into strips with the `strip_sort` function below, this takes 0.17 s rather than 0.20 s. Only do this if consecutive points are close together, though: for points in a random order, it takes 0.29 s instead.
 
 ## Point Location and Nearest Neighbours
 

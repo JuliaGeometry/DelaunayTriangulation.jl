@@ -16,6 +16,8 @@ The first option is fine for most applications where the point sets are in gener
 Lastly, in all but one of the tutorials we consider only a basic interface for defining the geometric primitives, e.g. matrices or vectors for points and sets for edges. This interface is customisable, as described in [Representing Primitives](../manual/primitives.md) and [Representing Boundaries](../manual/boundaries.md) (with the API defined in [Primitive Interfaces](../api/primitives.md)). The last tutorial will demonstrate how to use custom structs for 
 representing these primitives.
 
+The tutorials use the default settings, which are a good choice for most problems. If you need your code to be faster, e.g. for large point sets or for locating many points, see the [Performance Tips](../manual/performance.md).
+
 The tutorials that we consider are as follows:
 
 - [Unconstrained Triangulations](unconstrained.md): How Delaunay triangulations can be computed and accessed. We also give examples here of how we iterate over the triangulation's vertices, edges, and triangles, some warnings about having to be careful about ghost objects defined in the [manual](../manual/ghost_triangles.md), and how to query neighbour information.

@@ -8,6 +8,34 @@ This page describes how the repository and the source code of the package are or
 
 If you are looking for a specific function rather than a feature, the quickest way to find it is to use the _source_ link on its docstring (in the [API](../api/overview.md) or in this section), or `@which` or `methods` in the REPL, e.g. `@which triangulate(rand(2, 10))`.
 
+The layout of the repository, at a glance:
+
+```
+DelaunayTriangulation.jl/
+├── assets/                     reference images for the tests and the tutorials, and the README's images
+├── .github/                    the GitHub workflows
+└── DelaunayTriangulation/      the package
+    ├── src/
+    │   ├── DelaunayTriangulation.jl   the module, which includes all the other files
+    │   ├── primitives/         the interface for points, edges, triangles, and boundary nodes
+    │   ├── predicates/         predicate kernels, orientation and incircle tests, and predicates built on them
+    │   ├── utils/              queues and other utilities
+    │   ├── geometry/           convex hulls, poles of inaccessibility, and polygon clipping
+    │   ├── trees/              the R-tree and the polygon hierarchy
+    │   ├── curves/             the curves for curve-bounded domains, and the BoundaryEnricher
+    │   ├── triangulation/      the Triangulation type and its data structures
+    │   │   ├── construction/   triangulate and the algorithms it uses
+    │   │   ├── methods/        functions for working with the fields of a Triangulation
+    │   │   └── operations/     add_point!, delete_point!, add_segment!, flip_edge!, ...
+    │   ├── point_location/     find_triangle, find_polygon, and nearest neighbours
+    │   ├── refinement/         refine!
+    │   ├── statistics/         statistics of triangulations and triangles
+    │   └── voronoi/            Voronoi tessellations, clipping, and centroidal tessellations
+    ├── test/                   the tests, with the same folders as src/
+    ├── docs/                   this documentation
+    └── benchmark/              the benchmark suite
+```
+
 ## The Repository
 
 The package does not live at the top level of the repository, but in the `DelaunayTriangulation` folder. This is so that the reference images used by the tests and the documentation, which live in the top-level `assets` folder, are not downloaded with the package. The top level of the repository has:
@@ -64,6 +92,16 @@ The `triangulation` folder is the largest. In it are:
 - `operations/`: The operations that modify a triangulation, with one file for each operation, e.g. [`add_point!`](@ref) is in `add_point.jl` and [`flip_edge!`](@ref) is in `flip_edge.jl`. See the [operations tutorials](../tutorials/operations_vertex_insertion_deletion.md).
 - `validation.jl`: [`validate_triangulation`](@ref), for checking that a triangulation is valid.
 
+### What `triangulate` Does
+
+The main steps of [`triangulate`](@ref), with the files in `src/triangulation/` that they are in, are:
+
+1. For a curve-bounded domain, the curves are discretised and the boundary is enriched (`construction/curve_bounded.jl`), and `triangulate` is then called again with the new points and boundary nodes.
+2. The input is checked (`construction/check_args.jl`).
+3. The points are inserted with the Bowyer-Watson algorithm (`construction/unconstrained.jl`), in the order from `construction/spatial_sorting.jl`, finding the triangle containing each new point with [`find_triangle`](@ref).
+4. The segments and boundary edges are inserted with [`add_segment!`](@ref) (`operations/add_segment.jl` and `construction/constrained.jl`), and the triangles outside of the domain are deleted (`operations/delete_holes.jl`).
+5. The ghost triangles, empty features, and representative points are updated (`construction/triangulate.jl`).
+
 ## [The Tests](@id package-structure-test)
 
 The folders in `test` mirror those in `src`, e.g. the tests for `src/voronoi/` are in `test/voronoi/`. All the tests are run by `test/runtests.jl`, in groups, e.g. `"Voronoi"` and `"Refinement"`. The full test suite takes over 20 minutes, so while working on a change you might want to only run some of the groups, which you can do by passing their names as test arguments, e.g.
@@ -87,6 +125,8 @@ The tutorials and applications in the documentation are also run by the tests, i
 The documentation is built by `docs/make.jl`. Every page is listed in its `_PAGES`, and the build fails if a Markdown file in `docs/src` is not listed there, if a docstring is not on any page, or if a cross-reference such as `[triangulate](@ref)` is broken. The pages are in `docs/src`, in a folder for each section, e.g. `manual/`, `api/`, `extended/`, and `math/`. The exceptions are the tutorials and applications, which are written as [Literate.jl](https://github.com/fredrikekre/Literate.jl) scripts in `docs/src/literate_tutorials/` and `docs/src/literate_applications/`. These are converted by `docs/make.jl` into the pages in `docs/src/tutorials/` and `docs/src/applications/`, so it is the scripts that should be edited.
 
 The docstrings of the public API are on the [API](../api/overview.md) pages, listed by name in `@docs` blocks. All other docstrings are in this section, mostly in `@autodocs` blocks that list the source files whose docstrings they show. A new source file that has docstrings therefore needs to be added to one of these lists, or its docstrings to an `@docs` block.
+
+The timings on the [Performance Measurements](../manual/performance_measurements.md) page are not measured when the documentation is built, but by the script `docs/performance_measurements.jl`, which saves them to `docs/src/manual/performance_measurements.toml`. Run it again to update them, e.g. for a new version of the package.
 
 To view the documentation locally while you edit it, run `docs/liveserver.jl`. This uses [LiveServer.jl](https://github.com/JuliaDocs/LiveServer.jl) to build the documentation and update it in your browser whenever a file changes.
 

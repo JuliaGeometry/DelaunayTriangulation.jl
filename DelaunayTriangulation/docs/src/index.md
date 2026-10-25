@@ -30,7 +30,7 @@ If you would like to make an issue or contribute, please see the [CONTRIBUTING.m
 The documentation for this package is broken into several sections.
 
 - **Tutorials**: These are examples that introduce the functionality of the package, demonstrating how to perform many operations. 
-- **Manual**: Some particular descriptions of how certain things work in the package, such as representing boundaries and working with the triangulation and tessellation data structures. 
+- **Manual**: Some particular descriptions of how certain things work in the package, such as representing boundaries and working with the triangulation and tessellation data structures. It also has [Performance Tips](manual/performance.md) for making your code faster. 
 - **API Reference**: This section lists docstrings for all functions in the public API.
 - **Extended Reference**: This section is for providing more details about the internals of the package, meaning not in the public API. The material in this section is subject to change across any version, but may be useful for you to understand how certain functions work. For example, all utility functions are documented here, and the [Package Structure](extended/package_structure.md) page describes where each part of the package is implemented and tested.
 - **Mathematical Details**: This section is for describing in detail the mathematics that underpins the algorithms in this package, for example walking you through the theory behind the algorithm for computing constrained Delaunay triangulations. 

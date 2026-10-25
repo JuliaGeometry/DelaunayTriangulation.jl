@@ -143,6 +143,7 @@ const _PAGES = [
         "Voronoi Tessellation Output" => "manual/voronoi_output.md",
         "Predicate Kernels" => "manual/predicate_kernels.md",
         "Performance Tips" => "manual/performance.md",
+        "Performance Measurements" => "manual/performance_measurements.md",
     ],
     "API Reference" => [
         "Section Overview" => "api/overview.md",
