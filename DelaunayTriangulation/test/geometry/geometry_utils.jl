@@ -79,6 +79,23 @@ using StableRNGs
     @test cy ≈ (c1[2] * a1 - c2[2] * a2 - c3[2] * a3) / (a1 - a2 - a3)
 end
 
+@testset "Polygon features far from the origin" begin
+    # The sums for the area and the centroid used the coordinates themselves, so for a polygon that is small compared with
+    # its distance from the origin, they were lost to rounding errors, e.g. an area of 1.0 rather than 0.925 at 1e8, and an
+    # infinite centroid at 1e9
+    for offset in (0.0, 1.0e6, 1.0e8, 1.0e9)
+        points = [(offset, offset), (offset + 1, offset), (offset + 1, offset + 0.5), (offset + 0.3, offset + 1.2), (offset, offset + 1)]
+        local_points = [(x - offset, y - offset) for (x, y) in points] # these subtractions are exact
+        a₀, (cx₀, cy₀) = DT.polygon_features(local_points, [1, 2, 3, 4, 5, 1])
+        for boundary_nodes in ([1, 2, 3, 4, 5, 1], [[1, 2, 3], [3, 4, 5, 1]], [[[1, 2, 3, 4, 5, 1]]])
+            a, (cx, cy) = DT.polygon_features(points, boundary_nodes)
+            @test a ≈ a₀
+            @test cx - offset ≈ cx₀ atol = 1.0e-6
+            @test cy - offset ≈ cy₀ atol = 1.0e-6
+        end
+    end
+end
+
 rng = StableRNG(1)
 @testset "Another test for area" begin
     tri = triangulate(rand(rng, 2, 50); rng)

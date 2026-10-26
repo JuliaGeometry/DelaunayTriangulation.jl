@@ -5,7 +5,7 @@ Struct for representing a convex hull. See also [`convex_hull`](@ref).
 
 # Fields 
 - `points::PointsType`: The underlying point set.
-- `vertices::Vector{IntegerType}`: The vertices of the convex hull, in counter-clockwise order. Defined so that `vertices[begin] == vertices[end]`.
+- `vertices::Vector{IntegerType}`: The vertices of the convex hull, in counter-clockwise order. Defined so that `vertices[begin] == vertices[end]`. Points that lie on an edge of the convex hull are included.
 
 # Constructors 
     ConvexHull(points, vertices)

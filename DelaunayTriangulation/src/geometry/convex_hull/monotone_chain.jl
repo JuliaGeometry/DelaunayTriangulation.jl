@@ -1,7 +1,8 @@
 """
     convex_hull(points; predicates::AbstractPredicateKernel=AdaptiveKernel(), IntegerType::Type{I}=Int) where {I} -> ConvexHull 
 
-Computes the convex hull of `points`. The monotone chain algorithm is used.
+Computes the convex hull of `points`. The monotone chain algorithm is used. Points that lie on an edge of the convex hull,
+e.g. collinear points on its boundary, are included in its vertices, as they are for the convex hull of a triangulation.
 
 # Arguments 
 - `points`: The set of points.

@@ -1939,3 +1939,19 @@ end
         @test sum(get_area(vorn, i) for i in each_polygon_index(vorn)) ≈ DT.get_area(tri) rtol = sqrt(eps(F))
     end
 end
+
+@testset "Centroidal tessellations far from the origin" begin
+    # The centroids of the polygons were inaccurate far from the origin (see polygon_features), so that smoothing moved the
+    # generators to the wrong places, e.g. by 0.15 at an offset of 1e4, and threw an InexactError at an offset of 1e7
+    rng = StableRNG(1)
+    points = [(rand(rng), rand(rng)) for _ in 1:100]
+    vorn = voronoi(triangulate(points; rng = StableRNG(2)); clip = true, smooth = true, rng = StableRNG(3))
+    area = sum(get_area(vorn, i) for i in each_polygon_index(vorn))
+    for offset in (1.0e4, 1.0e7)
+        shifted_points = [(x + offset, y + offset) for (x, y) in points]
+        shifted_vorn = voronoi(triangulate(shifted_points; rng = StableRNG(2)); clip = true, smooth = true, rng = StableRNG(3))
+        @test Set(each_polygon_index(shifted_vorn)) == Set(each_polygon_index(vorn))
+        @test all(i -> isapprox(collect(get_generator(shifted_vorn, i) .- offset), collect(get_generator(vorn, i)); atol = 1.0e-6), each_polygon_index(vorn))
+        @test sum(get_area(shifted_vorn, i) for i in each_polygon_index(shifted_vorn)) ≈ area rtol = 1.0e-6
+    end
+end

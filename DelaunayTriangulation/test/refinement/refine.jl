@@ -2948,3 +2948,21 @@ end
     DT.split_subsegment!(tri, args, (1, 2))
     @test DT.num_points(tri) == n + 1
 end
+
+@testset "check_steiner_point_relative_precision" begin
+    rng = StableRNG(1)
+    # For coordinates within the extent of the origin, it is the same as check_relative_precision
+    for _ in 1:10_000
+        x = 10randn(rng)
+        y = x + rand(rng, (0.0, 1.0e-12, 1.0e-9, 1.0e-7, 1.0e-3)) * randn(rng)
+        @test DT.check_steiner_point_relative_precision(x, y, 20 + abs(x) + abs(y)) == DT.check_relative_precision(x, y)
+        @test DT.check_steiner_point_relative_precision(x, y) == DT.check_relative_precision(x, y)
+    end
+    @test DT.check_steiner_point_relative_precision(0.0, 0.0, 1.0) == DT.check_relative_precision(0.0, 0.0)
+    # Far from the origin, the tolerance is relative to the extent instead, so points 1 apart at 1e8 are no longer too
+    # close in a domain of size 1, but points that floating point numbers can barely distinguish still are
+    @test DT.check_relative_precision(1.0e8, 1.0e8 + 1)
+    @test !DT.check_steiner_point_relative_precision(1.0e8, 1.0e8 + 1, 1.0)
+    @test !DT.check_steiner_point_relative_precision(1.0e8, 1.0e8 + 1.0e-4, 1.0)
+    @test DT.check_steiner_point_relative_precision(1.0e8, nextfloat(1.0e8, 10), 1.0)
+end

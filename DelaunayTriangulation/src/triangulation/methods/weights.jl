@@ -71,7 +71,8 @@ Returns the lifted companion of the point `p`, in particular `(x, y, x^2 + y^2 -
 """
 function get_lifted_point(p, w)
     x, y = getxy(p)
-    return (x, y, norm_sqr((x, y)) - w)
+    # The coordinates are promoted to the same type, since the predicates need it, e.g. for Float32 points with Float64 weights
+    return promote(x, y, norm_sqr((x, y)) - w)
 end
 
 """

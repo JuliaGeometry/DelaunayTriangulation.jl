@@ -131,19 +131,27 @@ function polygon_features(points, boundary_nodes)
         return polygon_features_single_segment(points, boundary_nodes)
     end
 end
-function polygon_features_single_segment(points, boundary_nodes; scale = Val(true))
+# The coordinates are taken relative to a reference point, by default the first point of the polygon. With the coordinates
+# themselves, the products in the sums below are about as large as the square of the distance from the origin, so for a
+# polygon that is small compared with that distance (e.g. a polygon of size 1 at 1e8), the area and centroid are lost to
+# rounding errors. With scale = Val(false), the sums are returned without being scaled, and the centroid is relative to the
+# reference point.
+function polygon_features_single_segment(points, boundary_nodes; scale = Val(true), reference = get_point(points, get_boundary_nodes(boundary_nodes, 1)))
     F = number_type(points)
     cx = zero(F)
     cy = zero(F)
     a = zero(F)
+    x₀, y₀ = getxy(reference)
     n_edge = num_boundary_edges(boundary_nodes)
     vᵢ = get_boundary_nodes(boundary_nodes, 1)
     pᵢ = get_point(points, vᵢ)
     xᵢ, yᵢ = getxy(pᵢ)
+    xᵢ, yᵢ = xᵢ - x₀, yᵢ - y₀
     for j in 2:(n_edge + 1)
         vᵢ₊₁ = get_boundary_nodes(boundary_nodes, j)
         pᵢ₊₁ = get_point(points, vᵢ₊₁)
         xᵢ₊₁, yᵢ₊₁ = getxy(pᵢ₊₁)
+        xᵢ₊₁, yᵢ₊₁ = xᵢ₊₁ - x₀, yᵢ₊₁ - y₀
         area_contribution = xᵢ * yᵢ₊₁ - xᵢ₊₁ * yᵢ
         cx += (xᵢ + xᵢ₊₁) * area_contribution
         cy += (yᵢ + yᵢ₊₁) * area_contribution
@@ -151,7 +159,7 @@ function polygon_features_single_segment(points, boundary_nodes; scale = Val(tru
         vᵢ, pᵢ, xᵢ, yᵢ = vᵢ₊₁, pᵢ₊₁, xᵢ₊₁, yᵢ₊₁
     end
     if is_true(scale)
-        return a / 2, (cx / (3a), cy / (3a))
+        return a / 2, (x₀ + cx / (3a), y₀ + cy / (3a))
     else
         return a, (cx, cy)
     end
@@ -161,18 +169,22 @@ function polygon_features_multiple_segments(points, boundary_nodes)
     cx = zero(F)
     cy = zero(F)
     a = zero(F)
+    # The sections must all use the same reference point, since the sums are only independent of it for the whole polygon
+    reference = get_point(points, get_boundary_nodes(get_boundary_nodes(boundary_nodes, 1), 1))
+    x₀, y₀ = getxy(reference)
     ns = num_sections(boundary_nodes)
     for i in 1:ns
         bn = get_boundary_nodes(boundary_nodes, i)
         sub_a, (sub_cx, sub_cy) = polygon_features_single_segment(
             points, bn;
             scale = Val(false),
+            reference,
         )
         a += sub_a
         cx += sub_cx
         cy += sub_cy
     end
-    return a / 2, (cx / (3a), cy / (3a))
+    return a / 2, (x₀ + cx / (3a), y₀ + cy / (3a))
 end
 function polygon_features_multiple_curves(points, boundary_nodes)
     F = number_type(points)

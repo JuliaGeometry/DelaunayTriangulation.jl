@@ -68,6 +68,24 @@ end
     end
 end
 
+@testset "Mesh refinement far from the origin" begin
+    # A Steiner point used to be rejected if it was within sqrt(eps) of a vertex relative to the size of its coordinates,
+    # which for a domain of size 1 at 2^27 ≈ 1.3e8 is 2, so that almost nothing was refined there, and at 2^20 ≈ 1e6
+    # the refinement stopped at triangles of size about 0.02. Translating the computed points is not exact, so the
+    # results are only compared approximately
+    points = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
+    tri = triangulate(copy(points); boundary_nodes = [1, 2, 3, 4, 1], rng = StableRNG(1)) # refine! adds to the points it is given
+    refine!(tri; max_area = 1.0e-4, rng = StableRNG(1))
+    n = DT.num_solid_vertices(tri)
+    for t in (2.0^10, 2.0^20, 2.0^27)
+        shifted_tri = triangulate([(x + t, y + t) for (x, y) in points]; boundary_nodes = [1, 2, 3, 4, 1], rng = StableRNG(1))
+        refine!(shifted_tri; max_area = 1.0e-4, rng = StableRNG(1))
+        @test validate_triangulation(shifted_tri; print_result = false)
+        @test DT.num_solid_vertices(shifted_tri) ≈ n rtol = 0.05
+        @test all(T -> DT.triangle_area(get_point(shifted_tri, triangle_vertices(T)...)...) ≤ 1.0e-4, each_solid_triangle(shifted_tri))
+    end
+end
+
 @testset "Pole of inaccessibility" begin
     # The pole of inaccessibility of a triangle is its incenter, at a distance of the inradius from the boundary.
     # The default precision is relative to the size of the polygon.

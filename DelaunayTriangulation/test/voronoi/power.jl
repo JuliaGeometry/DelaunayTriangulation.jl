@@ -560,3 +560,19 @@ end
     end
     @test flag / tot > 0.9
 end
+
+@testset "Float32 points with Float64 weights" begin
+    # The lifted points mixed Float32 and Float64 coordinates, which the predicates do not accept, and the orthocenters
+    # could not be stored in the Float32 dictionaries of the tessellation. Smoothing also moved generators to infinity when
+    # the area of a small polygon was lost to rounding (see polygon_features)
+    rng = StableRNG(1)
+    points = [(Float32(rand(rng)), Float32(rand(rng))) for _ in 1:300]
+    weights = 1.0e-3 .* randn(rng, 300)
+    tri = triangulate(points; weights, rng)
+    @test validate_triangulation(tri)
+    vorn = voronoi(tri; clip = true)
+    @test sum(get_area(vorn, i) for i in each_polygon_index(vorn)) ≈ DT.get_area(tri) rtol = 1.0e-5
+    vorn = voronoi(tri; clip = true, smooth = true, rng)
+    @test all(i -> all(isfinite, get_generator(vorn, i)), each_polygon_index(vorn))
+    @test sum(get_area(vorn, i) for i in each_polygon_index(vorn)) ≈ DT.get_area(tri) rtol = 1.0e-5
+end

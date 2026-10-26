@@ -14,6 +14,9 @@ Moves the generator `generator` to the centroid of its Voronoi cell. Returns the
 function move_generator_to_centroid!(points, vorn::VoronoiTessellation, generator)
     c = get_centroid(vorn, generator)
     cx, cy = getxy(c)
+    # A polygon with a zero area, e.g. a sliver of a power diagram whose area is lost to rounding, has no centroid, and
+    # moving its generator to infinity would break the next triangulation
+    !(isfinite(cx) && isfinite(cy)) && return zero(number_type(vorn))
     p = get_generator(vorn, generator)
     δ = dist(c, p)
     set_point!(points, generator, cx, cy)

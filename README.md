@@ -50,6 +50,8 @@ voronoiplot(fig[1, 2], vorn)
 fig
 ```
 
+The defaults are a good choice for most problems. For large point sets, or for locating many points, see the [performance tips](https://JuliaGeometry.github.io/DelaunayTriangulation.jl/dev/manual/performance/) in the documentation.
+
 ## Example Usage 
 
 Here is a longer example showing some more of the ways the package can be used. As mentioned, see the docs for many more examples. The figure below is produced by this code.

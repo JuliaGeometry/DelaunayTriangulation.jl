@@ -150,7 +150,7 @@ function split_triangle!(tri::Triangulation, args::RefinementArguments, T)
     is_precision_failure(precision_cert) && return precision_cert
     V, flag = locate_steiner_point(tri, args, T, c)
     c′, V′ = check_for_invisible_steiner_point(tri, V, T, flag, c)
-    check_steiner_point_precision(tri, V′, c, args.length_scale) && return Cert.PrecisionFailure
+    check_steiner_point_precision(tri, V′, c, args.length_scale, args.extent) && return Cert.PrecisionFailure
     push_point!(tri, c′)
     new_point = num_points(tri)
     segment_flag = check_for_steiner_point_on_segment(tri, V, V′, new_point, flag, args.predicates)
@@ -189,30 +189,49 @@ function get_steiner_point(tri::Triangulation, args::RefinementArguments, T)
     if !args.use_circumcenter
         # TODO: Implement generalised Steiner points so that c above is translated appropriately.
     end
-    check_steiner_point_precision(tri, T, c, args.length_scale) && return Cert.PrecisionFailure, c
+    check_steiner_point_precision(tri, T, c, args.length_scale, args.extent) && return Cert.PrecisionFailure, c
     return Cert.None, c # nothing went wrong yet
 end
 
 """
-    check_steiner_point_precision(tri::Triangulation, T, c, length_scale = 1.0) -> Bool
+    check_steiner_point_precision(tri::Triangulation, T, c, length_scale = 1.0, extent = Inf) -> Bool
 
 Checks if the Steiner point `c` of a triangle `T` of `tri` can be computed without precision issues, returning `true` if there are precision issues and `false` otherwise.
-The `length_scale` is the scale of the domain used for the absolute tolerances; see [`RefinementArguments`](@ref).
+The `length_scale` is the scale of the domain used for the absolute tolerances, and `extent` is the size of the domain, which
+bounds the coordinates that the relative tolerances are measured against; see [`RefinementArguments`](@ref) and
+[`check_steiner_point_relative_precision`](@ref).
 """
-function check_steiner_point_precision(tri::Triangulation, T, c, length_scale = 1.0)
+function check_steiner_point_precision(tri::Triangulation, T, c, length_scale = 1.0, extent = Inf)
     is_ghost_triangle(T) && return true # we aren't supposed to get ghost triangles, unless we are _just_ off the boundary due to precision errors
     i, j, k = triangle_vertices(T)
     (px, py), (qx, qy), (rx, ry) = get_point(tri, i, j, k)
     cx, cy = getxy(c)
-    rel_err_flag_1 = check_relative_precision(px, cx) && check_relative_precision(py, cy)
-    rel_err_flag_2 = check_relative_precision(qx, cx) && check_relative_precision(qy, cy)
-    rel_err_flag_3 = check_relative_precision(rx, cx) && check_relative_precision(ry, cy)
+    rel_err_flag_1 = check_steiner_point_relative_precision(px, cx, extent) && check_steiner_point_relative_precision(py, cy, extent)
+    rel_err_flag_2 = check_steiner_point_relative_precision(qx, cx, extent) && check_steiner_point_relative_precision(qy, cy, extent)
+    rel_err_flag_3 = check_steiner_point_relative_precision(rx, cx, extent) && check_steiner_point_relative_precision(ry, cy, extent)
     rel_err_flag = rel_err_flag_1 || rel_err_flag_2 || rel_err_flag_3
     abs_err_flag_1 = check_absolute_precision(px, cx, length_scale) && check_absolute_precision(py, cy, length_scale)
     abs_err_flag_2 = check_absolute_precision(qx, cx, length_scale) && check_absolute_precision(qy, cy, length_scale)
     abs_err_flag_3 = check_absolute_precision(rx, cx, length_scale) && check_absolute_precision(ry, cy, length_scale)
     abs_err_flag = abs_err_flag_1 || abs_err_flag_2 || abs_err_flag_3
     return rel_err_flag || abs_err_flag
+end
+
+"""
+    check_steiner_point_relative_precision(x, y, extent = Inf) -> Bool
+
+Returns `true` if the coordinate `x` of a vertex and the coordinate `y` of a Steiner point are too close to be distinguished
+relative to their size `m = max(abs(x), abs(y))`, meaning `abs(x - y) ≤ sqrt(eps) * min(m, extent)`, and `false` otherwise.
+Measuring against `min(m, extent)` rather than `m` makes no difference for a domain within `extent` of the origin, but
+means that a domain far from the origin, e.g. a domain of size `1` at `(1e8, 1e8)`, is refined as finely as the same
+domain at the origin. The tolerance is never smaller than `1024` times the spacing of the floating point numbers near
+`m`, so that Steiner points that can not be distinguished from a vertex are still found.
+"""
+function check_steiner_point_relative_precision(x, y, extent = Inf)
+    m = max(abs(x), abs(y))
+    iszero(m) && return false
+    tol = max(ε(m) * min(m, extent), 1024eps(m))
+    return abs(x - y) ≤ tol
 end
 
 """
