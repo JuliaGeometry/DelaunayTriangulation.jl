@@ -32,6 +32,7 @@ The tutorials that we consider are as follows:
 - [Clipped Voronoi Tessellations](clipped.md): How to compute a Voronoi tessellation of a point set such that the polygons are [clipped to the point set's convex hull](clipped.md), or [to an arbitrary rectangle](clipped_rectangle.md). We also show how to more generally clip Voronoi tessellations to [a generic convex polygon](clipped_polygon.md).
 - [Centroidal Voronoi Tessellation](centroidal.md): How to compute centroidal Voronoi tessellations, in particular how to shift a given set of points so that each point's associated Voronoi tile is that tile's centroid.
 - [Power Diagrams](power.md): How to compute power diagrams, the dual of the weighted Delaunay triangulation.
+- [Voronoi Treemaps](voronoi_treemap.md): What Voronoi treemaps are for and how power diagrams are used to compute them, with an implementation of the algorithm and of a Makie recipe in the form they would have in the package, recreating the examples of d3-voronoi-treemap.
 - [Point Location](point_location.md): How to use a triangulation to perform point location.
 - [Nearest Neighbour Queries](nearest.md): How to use a Voronoi tessellation to find a point's nearest neighbour.
 - [Convex Hulls](convex_hull.md): How to compute a convex hull of a point set, using either an existing triangulation or from scratch.

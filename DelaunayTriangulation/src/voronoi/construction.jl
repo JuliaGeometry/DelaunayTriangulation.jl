@@ -28,7 +28,7 @@ function voronoi(tri::Triangulation; clip = false, smooth = false, clip_polygon 
     end
     has_ghost = has_ghost_triangles(tri)
     !has_ghost && add_ghost_triangles!(tri)
-    vorn = initialise_voronoi_tessellation(tri)
+    vorn = initialise_voronoi_tessellation(tri, predicates)
     has_bnds = has_boundary_nodes(tri)
     is_true(clip) && !has_bnds && lock_convex_hull!(tri; rng, predicates)
     try

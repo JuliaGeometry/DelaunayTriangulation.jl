@@ -85,6 +85,16 @@ end
         @test DT.get_lifted_point(tri, i) == (Float32.(points[:, i])..., sum(Float32.(points[:, i]) .^ 2) .- weights[i])
         @inferred DT.get_lifted_point(tri, i)
     end
+    # Relative to a point
+    points = randn(rng, 2, 1000)
+    tri = Triangulation(points; weights)
+    o = DT.get_lifting_origin(tri)
+    @test o == (points[1, 1], points[2, 1])
+    for i in 1:1000
+        @test DT.get_lifted_point(tri, i, o) == (points[:, i]..., sum((points[:, i] .- points[:, 1]) .^ 2) .- weights[i])
+        @inferred DT.get_lifted_point(tri, i, o)
+    end
+    @test DT.get_lifting_origin(Triangulation([(NaN, 1.0), (2.0, 3.0), (4.0, 1.0)]; weights = zeros(3))) == (0.0, 0.0)
 end
 
 @testset "get_power_distance" begin
@@ -402,5 +412,60 @@ end
         weights = [0.0, 0.0, 0.0, 0.0, -0.5]
         tri = triangulate(points; weights, rng)
         @test DT.validate_triangulation(tri)
+    end
+end
+
+@testset "Collinear points with a submerged vertex" begin
+    # Inserting 3 on the line through the boundary edge (1, 2), beyond 2, submerges 2. The ghost triangle of (1, 2) was not
+    # put into the cavity, since 3 is not on the edge itself, so the cavity ended at (1, 2) and the flat triangle (3, 2, 1) was added
+    points = [(0.0, 0.0), (0.01, 0.0), (5.0, 0.0), (2.0, -5.0)]
+    weights = [0.05, 0.0, 3.0, 0.0]
+    tri = triangulate(points; weights, insertion_order = [4, 2, 1, 3])
+    @test validate_triangulation(tri)
+    @test !DT.has_vertex(tri, 2)
+    @test DT.compare_triangle_collections(collect(each_solid_triangle(tri)), [(3, 1, 4)])
+
+    # The case that was found: seven points on a line, as the centroids of a row of cells, and three far away. Point 6 is submerged
+    points = [
+        (4.821549686549365, 0.5), (1.734287074194316, 0.5), (8.524301485423187, 0.5), (9.796451536806932, 0.5), (0.16096937525835298, 0.5),
+        (0.17065198813423343, 0.5), (6.985764549105537, 0.5), (5.000000000000006, 100.5), (-81.60254037844388, -49.49999999999997), (91.60254037844383, -49.50000000000004),
+    ]
+    weights = [2.9391719727127508, 2.019554899365599, 1.2313657906888233, 0.1336320779734141, 0.05642050128578187, 0.0, 0.3071065115217992, 0.0, 0.0, 0.0]
+    for i in 1:100
+        tri = triangulate(points; weights, rng = StableRNG(i))
+        @test validate_triangulation(tri)
+        @test !DT.has_vertex(tri, 6)
+        vorn = voronoi(tri)
+        @test validate_tessellation(vorn)
+    end
+
+    # Random points on a line, some of them only nearly on it, with a few points off the line
+    for i in 1:300
+        rng = StableRNG(i)
+        n = rand(rng, 3:9)
+        θ = rand(rng, (0.0, π / 2, π / 4, 2π * rand(rng)))
+        o = (randn(rng), randn(rng))
+        ts = rand(rng) < 0.5 ? round.(10rand(rng, n), digits = 1) : 10rand(rng, n)
+        points = [(o[1] + t * cos(θ), o[2] + t * sin(θ)) for t in ts]
+        append!(points, [(o[1] + 20randn(rng), o[2] + 20randn(rng)) for _ in 1:rand(rng, 1:3)])
+        allunique(points) || continue
+        weights = [rand(rng) < 0.3 ? 0.0 : 3rand(rng) for _ in eachindex(points)]
+        tri = triangulate(points; weights, rng)
+        @test_with_log "Collinear points: $i" validate_triangulation(tri)
+    end
+end
+
+@testset "Weighted triangulations far from the origin" begin
+    # The lifted heights x^2 + y^2 - w were rounded by about 1e-6 near (1e5, 1e5), which lost the weights and the distances between these points
+    for i in 1:50
+        rng = StableRNG(i)
+        points = [(1.0e5 + 1.0e-4rand(rng), 1.0e5 + 1.0e-4rand(rng)) for _ in 1:30]
+        weights = 1.0e-9rand(rng, 30)
+        _points = [(x - 1.0e5, y - 1.0e5) for (x, y) in points] # exact, since x and 1e5 are within a factor of two of each other
+        tri = triangulate(points; weights, rng = StableRNG(i))
+        _tri = triangulate(_points; weights, rng = StableRNG(i))
+        @test validate_triangulation(tri)
+        @test DT.compare_triangle_collections(collect(each_solid_triangle(tri)), collect(each_solid_triangle(_tri)))
+        @test sort(collect(each_solid_vertex(tri))) == sort(collect(each_solid_vertex(_tri)))
     end
 end

@@ -354,7 +354,9 @@ Determines whether to enter the cavity in `tri` through the edge `(i, j)` when i
 """
 function enter_cavity(tri::Triangulation, r, i, j, ℓ, predicates::AbstractPredicateKernel = AdaptiveKernel())
     contains_segment(tri, i, j)  && return false
-    if is_ghost_vertex(ℓ)
+    # A ghost triangle has to be tested as (j, i, ℓ) against r: testing ℓ against (r, i, j) instead, as is done for solid triangles, gives
+    # the same answer for points strictly to either side of the solid edge, but not for collinear points, which matter for weighted triangulations
+    if is_ghost_vertex(i) || is_ghost_vertex(j) || is_ghost_vertex(ℓ)
         cert = point_position_relative_to_circumcircle(predicates, tri, j, i, ℓ, r; cache = get_incircle_cache(tri))
     else
         cert = point_position_relative_to_circumcircle(predicates, tri, r, i, j, ℓ; cache =  get_incircle_cache(tri))

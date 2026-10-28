@@ -36,6 +36,8 @@ function convex_hull!(tri::Triangulation; reconstruct = has_boundary_nodes(tri),
         start_index = u
         v = get_right_boundary_node(tri, u, I(𝒢))
         while v ≠ start_index
+            # If the ghost triangles were inconsistent, this walk could go on forever, filling up indices until there is no memory left
+            length(indices) > num_points(tri) && error("The boundary of the triangulation does not return to its starting vertex, so its ghost triangles are inconsistent. This should not occur. Please file an issue with a reproducible example.")
             push!(indices, v)
             v = get_right_boundary_node(tri, v, I(𝒢))
         end

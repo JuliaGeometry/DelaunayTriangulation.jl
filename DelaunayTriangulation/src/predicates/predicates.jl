@@ -569,8 +569,9 @@ In case the wrong cache type is used, it is replaced with `nothing`.
 !!! note "Weighted triangulations"
 
     If `tri` is a weighted triangulation, then an orientation test is instead applied, testing the orientation of the lifted companions of each point to determine if 
-    `ℓ` is above or below the witness plane relative to `(i, j, k)`. For ghost triangles, the same rule applies, although if the vertex is on the solid edge of the ghost triangle then,
-    in addition to checking [`point_position_relative_to_oriented_outer_halfplane`](@ref), we must check if the new vertex is not submerged by the adjoining solid triangle.
+    `ℓ` is above or below the witness plane relative to `(i, j, k)`. For ghost triangles, the same rule applies, although if the vertex is on the line through the solid edge of
+    the ghost triangle, whether or not it is on the edge itself, then it is instead compared with the witness plane of the adjoining solid triangle, i.e. with the lifted line
+    through the edge. In particular, a vertex on the line beyond the edge is inside if the endpoint of the edge between them would be submerged.
 """
 point_position_relative_to_circumcircle
 function point_position_relative_to_circumcircle(kernel::AbstractPredicateKernel, tri::Triangulation, i, j, k, ℓ; cache::PredicateCacheType = nothing)
@@ -578,12 +579,15 @@ function point_position_relative_to_circumcircle(kernel::AbstractPredicateKernel
     a, b, c, p = get_point(tri, u, v, w, ℓ)
     if is_ghost_vertex(w)
         cert = point_position_relative_to_oriented_outer_halfplane(kernel, a, b, p)
-        if is_on(cert) && is_weighted(tri)
+        # For a weighted triangulation, a vertex on the line through the solid edge, whether or not it is on the edge itself, is compared
+        # with the lifted line through the edge, which is where the witness plane of the adjoining solid triangle meets the vertical plane
+        # through the edge. A vertex beyond the edge can then be inside, which means that the endpoint of the edge between them is submerged
+        if is_weighted(tri) && (is_on(cert) || is_outside(cert) && is_collinear(point_position_relative_to_line(kernel, a, b, p)))
             u′, v′, w′ = replace_ghost_triangle_with_boundary_triangle(tri, (u, v, w))
-            !edge_exists(w′) && return Cert.Inside # needed for the case tri = triangulate(get_points(triangulate_rectangle(0, 10, 0, 10, 3, 3)), weights = zeros(9), insertion_order = [9, 7, 6, 8, 4, 5, 3, 1, 2]) 
+            !edge_exists(w′) && return Cert.Inside # needed for the case tri = triangulate(get_points(triangulate_rectangle(0, 10, 0, 10, 3, 3)), weights = zeros(9), insertion_order = [9, 7, 6, 8, 4, 5, 3, 1, 2])
             sub_cert = point_position_relative_to_witness_plane(kernel, tri, u′, v′, w′, ℓ; cache = fix_orient3_cache(tri, cache))
             is_above(sub_cert) && return Cert.Outside
-            return cert
+            return is_on(cert) || is_on(sub_cert) ? Cert.On : Cert.Inside
         else
             return cert
         end
@@ -658,12 +662,15 @@ The `cache` keyword argument is useful when an `AdaptiveKernel()` is used, and s
 # Extended help 
 The witness plane of a triangle is defined as the plane through the triangle `(i⁺, j⁺, k⁺)` where, for example, `pᵢ⁺ = (x, y, x^2 + y^2 - wᵢ)` is the lifted companion of `i` 
 and `(x, y)` are the coordinates of the `i`th vertex. Moreover, by the orientation of `ℓ` relative to this witness plane we are referring to `ℓ⁺`'s position, not the plane point `ℓ`.
+The points are lifted relative to [`get_lifting_origin`](@ref)`(tri)` rather than to the origin, which gives the same orientation but loses less to rounding
+far from the origin.
 """
 function point_position_relative_to_witness_plane(kernel::AbstractPredicateKernel, tri::Triangulation, i, j, k, ℓ; cache::PredicateCacheType = nothing)
-    p⁺ = get_lifted_point(tri, i)
-    q⁺ = get_lifted_point(tri, j)
-    r⁺ = get_lifted_point(tri, k)
-    a⁺ = get_lifted_point(tri, ℓ)
+    o = get_lifting_origin(tri) # see get_lifting_origin for why the points are not lifted relative to the origin
+    p⁺ = get_lifted_point(tri, i, o)
+    q⁺ = get_lifted_point(tri, j, o)
+    r⁺ = get_lifted_point(tri, k, o)
+    a⁺ = get_lifted_point(tri, ℓ, o)
     cert = orient_predicate(kernel, p⁺, q⁺, r⁺, a⁺; cache)
     return convert_certificate(cert, Cert.Above, Cert.On, Cert.Below)
 end

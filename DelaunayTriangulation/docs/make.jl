@@ -125,6 +125,7 @@ const _PAGES = [
         ],
         "Centroidal Voronoi Tessellations" => "tutorials/centroidal.md",
         "Power Diagrams" => "tutorials/power.md",
+        "Voronoi Treemaps" => "tutorials/voronoi_treemap.md",
         "Point Location" => "tutorials/point_location.md",
         "Nearest Neighbour Queries" => "tutorials/nearest.md",
         "Convex Hulls" => "tutorials/convex_hull.md",

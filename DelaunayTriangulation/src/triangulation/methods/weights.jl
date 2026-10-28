@@ -88,6 +88,44 @@ function get_lifted_point(tri::Triangulation, i)
 end
 
 """
+    get_lifted_point(p, w, o) -> NTuple{3, Number}
+    get_lifted_point(tri::Triangulation, i, o) -> NTuple{3, Number}
+
+Returns the lifted companion of the point `p` with weight `w`, or of the `i`th vertex of `tri`, lifted relative to the point `o`,
+in particular `(x, y, (x - ox)^2 + (y - oy)^2 - w)`, where `(x, y)` is `p` and `(ox, oy)` is `o`. See also [`get_lifting_origin`](@ref).
+"""
+function get_lifted_point(p, w, o)
+    x, y = getxy(p)
+    ox, oy = getxy(o)
+    # Only the height is relative to o. Translating x and y too would round them, which could change the orientation of nearly collinear points
+    return promote(x, y, norm_sqr((x - ox, y - oy)) - w)
+end
+function get_lifted_point(tri::Triangulation, i, o)
+    p = get_point(tri, i)
+    w = get_weight(tri, i)
+    return get_lifted_point(p, w, o)
+end
+
+"""
+    get_lifting_origin(tri::Triangulation) -> NTuple{2, Number}
+
+Returns the point that the vertices of `tri` are lifted relative to in [`point_position_relative_to_witness_plane`](@ref). This
+is the first point of `tri`, or the origin if that point is not finite, e.g. if it is a skipped point.
+
+# Extended help
+Lifting each point relative to a fixed point `o`, i.e. to the height `(x - ox)^2 + (y - oy)^2 - w` rather than `x^2 + y^2 - w`, changes
+the heights by an affine function of `x` and `y`, which does not change the orientation of any four lifted points. Far from the origin,
+though, it keeps the heights small, so that rounding them does not lose the weights or the distances between nearby points: near
+`(1e5, 1e5)`, for example, the heights relative to the origin are about `2e10`, and are rounded by about `1e-6`. The coordinates `x` and
+`y` themselves are not changed, so that the lifted points project exactly onto the points. Since `o` is the same for every test, the
+tests are all exact for the same lifted points, and so they are consistent with each other.
+"""
+function get_lifting_origin(tri::Triangulation)
+    x, y = getxy(get_point(tri, first(each_point_index(tri))))
+    return isfinite(x) && isfinite(y) ? (x, y) : (zero(x), zero(y))
+end
+
+"""
     get_power_distance(tri::Triangulation, i, j) -> Number
 
 Returns the power distance between vertices `i` and `j`, defined by 

@@ -1800,3 +1800,12 @@ end
     @test !validate_triangulation(tri; print_result = false)
     @test tri == before
 end
+
+@testset "convex_hull! with inconsistent ghost triangles" begin
+    # The walk around the boundary used to go on forever, filling up the vertices of the convex hull until there was no memory left
+    rng = StableRNG(1)
+    tri = triangulate(rand(rng, 2, 50); rng)
+    u, v = first(DT.each_edge(DT.get_adjacent2vertex(tri, DT.𝒢)))
+    DT.delete_triangle!(tri, u, v, DT.𝒢)
+    @test_throws ErrorException DT.convex_hull!(tri; reconstruct = false)
+end

@@ -1,15 +1,16 @@
 """
-    initialise_voronoi_tessellation(tri::Triangulation) -> VoronoiTessellation
+    initialise_voronoi_tessellation(tri::Triangulation, predicates::AbstractPredicateKernel=AdaptiveKernel()) -> VoronoiTessellation
 
 Initialise a `VoronoiTessellation` from the triangulation `tri`.
 
 # Arguments 
 - `tri`: The [`Triangulation`](@ref).
+- `predicates::AbstractPredicateKernel=AdaptiveKernel()`: Method to use for computing predicates, used for finding triangles with the same circumcircle; see [`assign_cocircular_neighbours!`](@ref). Can be one of [`FastKernel`](@ref), [`ExactKernel`](@ref), and [`AdaptiveKernel`](@ref). See the documentation for a further discussion of these methods.
 
 # Output
 - `vorn`: The [`VoronoiTessellation`](@ref). This tessellation is not yet filled in, as all the polygons and other fields need to be properly defined. This simply defines all the initial objects that will be pushed into.
 """
-function initialise_voronoi_tessellation(tri::Tr) where {Tr <: Triangulation}
+function initialise_voronoi_tessellation(tri::Tr, predicates::AbstractPredicateKernel = AdaptiveKernel()) where {Tr <: Triangulation}
     I = integer_type(tri)
     T = triangle_type(tri)
     F = number_type(tri)
@@ -21,41 +22,21 @@ function initialise_voronoi_tessellation(tri::Tr) where {Tr <: Triangulation}
     sizehint!(circumcenter_to_triangle, num_triangles(tri))
     sizehint!(triangle_to_circumcenter, num_triangles(tri))
     cur_ghost_idx = I(0)
-    cocircular_dict = Dict{P, I}()
-    encountered_circumcenters = Dict{P, I}()
     cocircular_circumcenters = Set{I}()
     for V in each_triangle(tri)
         V = sort_triangle(V)
+        haskey(triangle_to_circumcenter, V) && continue # it was given the circumcenter of a neighbour with the same circumcircle
         if !is_ghost_triangle(V)
             u, v, w = triangle_vertices(V)
-            if !is_weighted(tri)
-                p, q, r = get_point(tri, u, v, w)
-                A = triangle_area(p, q, r)
-                cx, cy = triangle_circumcenter(p, q, r, A)
-            else
-                cx, cy = triangle_orthocenter(tri, V)
-                # The orthocenter has the type of the weights if they are wider than the points, e.g. Float64 weights with
-                # Float32 points, but it is stored and looked up below as a point of type P
-                cx, cy = F(cx), F(cy)
-            end
+            cx, cy = get_voronoi_vertex(tri, V)
             if any(isinf, (cx, cy)) && INF_WARN[]
                 @warn "The triangle $((u, v, w)) has a degenerate circumcenter, $((cx, cy)). You may encounter issues with this tessellation. You can disable this warning using toggle_inf_warn!()."
             end
-            if haskey(encountered_circumcenters, (cx, cy))
-                encountered_circumcenters[(cx, cy)] += 1
-            else
-                encountered_circumcenters[(cx, cy)] = 1
-            end
-            if get(encountered_circumcenters, (cx, cy), zero(I)) > 1 # If we've already encountered this circumcenter, don't push another
-                idx = cocircular_dict[(cx, cy)]
-                triangle_to_circumcenter[V] = idx
-                push!(cocircular_circumcenters, idx)
-            else
-                push_point!(polygon_points, cx, cy)
-                circumcenter_to_triangle[num_points(polygon_points)] = V
-                triangle_to_circumcenter[V] = num_points(polygon_points)
-                cocircular_dict[(cx, cy)] = num_points(polygon_points)
-            end
+            push_point!(polygon_points, cx, cy)
+            idx = I(num_points(polygon_points))
+            circumcenter_to_triangle[idx] = V
+            triangle_to_circumcenter[V] = idx
+            assign_cocircular_neighbours!(triangle_to_circumcenter, cocircular_circumcenters, tri, V, idx, (cx, cy), predicates)
         else
             circumcenter_to_triangle[I(𝒢) - cur_ghost_idx] = V
             triangle_to_circumcenter[V] = I(𝒢) - cur_ghost_idx
@@ -75,6 +56,60 @@ function initialise_voronoi_tessellation(tri::Tr) where {Tr <: Triangulation}
     adj = Adjacent{I, E}()
     boundary_polygons = Set{I}()
     return VoronoiTessellation{Tr, P, I, T, typeof(cocircular_circumcenters), E}(tri, generators, polygon_points, polygons, circumcenter_to_triangle, triangle_to_circumcenter, unbounded_polygons, cocircular_circumcenters, adj, boundary_polygons)
+end
+
+"""
+    get_voronoi_vertex(tri::Triangulation, V) -> NTuple{2, Number}
+
+Returns the vertex of the Voronoi tessellation of `tri` that is dual to the solid triangle `V`, i.e. the circumcenter of `V`, or
+its orthocenter if `tri` is weighted. It has the same number type as the points of `tri`; the orthocenter has the type of the
+weights if they are wider than the points, e.g. `Float64` weights with `Float32` points, so it is converted.
+"""
+function get_voronoi_vertex(tri::Triangulation, V)
+    F = number_type(tri)
+    if !is_weighted(tri)
+        u, v, w = triangle_vertices(V)
+        p, q, r = get_point(tri, u, v, w)
+        A = triangle_area(p, q, r)
+        cx, cy = triangle_circumcenter(p, q, r, A)
+    else
+        cx, cy = triangle_orthocenter(tri, V)
+    end
+    return F(cx), F(cy)
+end
+
+"""
+    assign_cocircular_neighbours!(triangle_to_circumcenter, cocircular_circumcenters, tri::Triangulation, V, idx, c, predicates::AbstractPredicateKernel=AdaptiveKernel())
+
+Gives the vertex `idx`, at the coordinates `c`, of the Voronoi tessellation of `tri` that is dual to the triangle `V` to every
+triangle of `tri` that is connected to `V` through neighbouring triangles with the same dual vertex, and adds `idx` to
+`cocircular_circumcenters` if there are any. A neighbour has the same dual vertex if its opposite vertex is exactly on the
+circumcircle of the triangle it neighbours (or, for a weighted triangulation, on its witness plane), as decided by
+[`point_position_relative_to_circumcircle`](@ref), or if its computed vertex has the same coordinates `c`.
+
+The exact test is needed since the circumcenters of triangles with the same circumcircle can be rounded differently, e.g.
+`(0.15, 0.85)` and `(0.15000000000000002, 0.85)` for four points on a circle. Comparing coordinates also merges neighbours
+whose circumcenters are only equal after rounding, so that the tessellation does not get an edge of length zero. Only
+neighbours are merged: triangles that do not neighbour each other can have circumcenters that are rounded to the same
+coordinates while being different, and merging those used to give a polygon the same vertex twice.
+"""
+function assign_cocircular_neighbours!(triangle_to_circumcenter, cocircular_circumcenters, tri::Triangulation, V, idx, c, predicates::AbstractPredicateKernel = AdaptiveKernel())
+    stack = [V]
+    while !isempty(stack)
+        W = pop!(stack)
+        for (a, b) in triangle_edges(W)
+            ℓ = get_adjacent(tri, b, a)
+            (!edge_exists(ℓ) || is_ghost_vertex(ℓ)) && continue
+            N = sort_triangle(construct_triangle(triangle_type(tri), b, a, ℓ))
+            haskey(triangle_to_circumcenter, N) && continue
+            if is_on(point_position_relative_to_circumcircle(predicates, tri, W, ℓ)) || get_voronoi_vertex(tri, N) == c
+                triangle_to_circumcenter[N] = idx
+                push!(cocircular_circumcenters, idx)
+                push!(stack, N)
+            end
+        end
+    end
+    return triangle_to_circumcenter
 end
 
 """

@@ -1955,3 +1955,41 @@ end
         @test sum(get_area(shifted_vorn, i) for i in each_polygon_index(shifted_vorn)) ≈ area rtol = 1.0e-6
     end
 end
+
+@testset "Circumcenters of nearly cocircular points" begin
+    # Points with one decimal place lie on many circles that are no longer exact after rounding to binary. Triangles with
+    # different circumcircles can then have circumcenters that are rounded to the same coordinates, e.g.
+    # (0.15000000000000002, 0.85) for the triangles (10, 4, 5) and (10, 16, 2) here, and triangles that share a circle can
+    # have them rounded differently. Circumcenters used to be merged whenever their coordinates were equal, which gave the
+    # polygon of point 10 one of its vertices twice, so that clipping threw a KeyError. Now only neighbouring triangles are
+    # merged, exactly if they share a circle.
+    function is_consistent(vorn)
+        for i in each_polygon_index(vorn)
+            P = get_polygon(vorn, i)
+            (P[begin] == P[end] && allunique(P[begin:(end - 1)])) || return false
+            all(k -> get_adjacent(vorn, P[k], P[k + 1]) == i, 1:(length(P) - 1)) || return false
+        end
+        return true
+    end
+    points = [
+        (0.8, 0.2), (0.1, 1.0), (1.0, 0.7), (0.1, 0.7), (0.2, 0.7), (0.8, 0.3), (0.3, 0.4), (0.1, 0.5), (0.9, 0.4), (0.3, 0.9),
+        (0.6, 0.1), (0.3, 0.3), (0.2, 0.4), (0.1, 0.4), (0.9, 0.6), (0.2, 1.0), (0.5, 0.2), (0.5, 0.8), (0.9, 0.2), (0.8, 0.1),
+    ]
+    tri = triangulate(points; rng = StableRNG(4))
+    vorn = voronoi(tri)
+    @test is_consistent(vorn)
+    @test length(get_polygon(vorn, 10)) == 6 # one vertex for each of the five triangles around point 10
+    vorn = voronoi(tri; clip = true, rng = StableRNG(4))
+    @test sum(get_area(vorn, i) for i in each_polygon_index(vorn)) ≈ DT.get_area(tri)
+    rng = StableRNG(1)
+    for n in (20, 50, 100), _ in 1:20
+        points = unique([(round(rand(rng), digits = 1), round(rand(rng), digits = 1)) for _ in 1:n])
+        tri = triangulate(points; rng)
+        @test is_consistent(voronoi(tri))
+        @test voronoi(tri; clip = true, rng) isa DT.VoronoiTessellation
+    end
+    # The corners of each square of a lattice are exactly cocircular, so the two triangles of each square share a vertex,
+    # even when their circumcenters are rounded differently
+    tri = triangulate_rectangle(0, 1, 0, 1, 11, 11)
+    @test num_polygon_vertices(voronoi(tri)) == 100
+end

@@ -316,16 +316,12 @@ function validate_tessellation(vorn::DT.VoronoiTessellation; check_convex=true, 
     triangle_to_circumcenter = DT.get_triangle_to_circumcenter(vorn)
     for V in DT.each_solid_triangle(DT.get_triangulation(vorn))
         V = DT.sort_triangle(V)
-        c = DT.get_triangle_to_circumcenter(vorn, V)
-        c = get_polygon_point(vorn, c)
-        i, j, k = triangle_vertices(V)
-        p, q, r = get_point(DT.get_triangulation(vorn), i, j, k)
-        if DT.is_weighted(tri)
-            cx, cy = DT.triangle_orthocenter(tri, V)
-        else
-            cx, cy = DT.triangle_circumcenter(p, q, r)
-        end
-        flag = cx == c[1] && cy == c[2]
+        ci = DT.get_triangle_to_circumcenter(vorn, V)
+        c = get_polygon_point(vorn, ci)
+        # The vertex is computed from the triangle that it was first found for. The triangles that share it, e.g. those with
+        # the same circumcircle, can round it differently, so only that triangle's vertex has to be the same
+        V₀ = DT.get_circumcenter_to_triangle(vorn, ci)
+        flag = DT.get_voronoi_vertex(tri, V₀) == c && isapprox(collect(DT.get_voronoi_vertex(tri, V)), collect(c); rtol = sqrt(eps(DT.number_type(tri))))
         if !flag
             println("Circumcenter of $V is not correct, mapped to $c.")
             return false
